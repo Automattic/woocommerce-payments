@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 
 export default {
-	button: __( 'Finish Setup', 'woocommerce-payments' ),
+	button: __( 'Finish setup', 'woocommerce-payments' ),
 
 	heading: __( 'WooCommerce Payments', 'woocommerce-payments' ),
 
