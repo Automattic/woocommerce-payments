@@ -331,11 +331,15 @@ export default class WCPayAPI {
 	/**
 	 * Creates an intent based on a payment method.
 	 *
+	 * @param {int} orderId The id of the order if creating the intent on Order Pay page.
+	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	createIntent() {
+	createIntent( orderId ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			action: 'create_payment_intent',
+			// eslint-disable-next-line camelcase
+			wcpay_order_id: orderId,
 			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
 		} )
@@ -355,6 +359,37 @@ export default class WCPayAPI {
 			} );
 	}
 
+	/**
+	 * Updates a payment intent with data from an order.
+	 *
+	 * @param {string} paymentIntentId The id of the payment intent.
+	 * @param {int} orderId The id of the order.
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	updateIntent( paymentIntentId, orderId ) {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			// eslint-disable-next-line camelcase
+			wcpay_order_id: orderId,
+			// eslint-disable-next-line camelcase
+			wc_payment_intent_id: paymentIntentId,
+			action: 'update_payment_intent',
+		} )
+			.then( ( response ) => {
+				if ( 'failure' === response.result ) {
+					throw new Error( response.messages );
+				}
+				return response;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajaxrequest.
+					throw new Error( error.statusText );
+				}
+			} );
+	}
 	/**
 	 * Process checkout and update payment intent via AJAX.
 	 *
