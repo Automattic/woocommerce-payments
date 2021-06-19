@@ -91,8 +91,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	/**
 	 * Handle AJAX request for updating a payment intent for Stripe UPE.
-	 *
-	 * @throws Process_Payment_Exception - If nonce or setup intent is invalid.
 	 */
 	public function update_payment_intent_ajax() {
 		try {

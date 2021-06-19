@@ -304,7 +304,7 @@ jQuery( function ( $ ) {
 			).is( ':checked' );
 			const savePaymentMethod = isSavingPaymentMethod ? 'yes' : 'no';
 
-			const redirectUrl =
+			const returnUrl =
 				getConfig( 'orderReturnURL' ) +
 				`&save_payment_method=${ savePaymentMethod }`;
 
@@ -321,7 +321,7 @@ jQuery( function ( $ ) {
 				element: upeElement,
 				confirmParams: {
 					// eslint-disable-next-line camelcase
-					return_url: redirectUrl,
+					return_url: returnUrl,
 				},
 			} );
 			if ( error ) {
