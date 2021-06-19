@@ -248,7 +248,7 @@ class WC_Payments_Admin {
 		$wcpay_settings = [
 			'connect'               => [
 				'url'                => WC_Payments_Account::get_connect_url(),
-				'country'            => wc_get_base_location()['country'],
+				'country'            => WC()->countries->get_base_country(),
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 			],
 			'testMode'              => $this->wcpay_gateway->is_in_test_mode(),

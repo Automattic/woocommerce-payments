@@ -540,6 +540,7 @@ class WC_Payments_Account {
 				'email'         => $current_user->user_email,
 				'business_name' => get_bloginfo( 'name' ),
 				'url'           => get_home_url(),
+				'country'       => WC()->countries->get_base_country(),
 			],
 			[
 				'site_username' => $current_user->user_login,
