@@ -115,7 +115,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_intention', 'create_setup_intention', 'get_intent', 'get_payment_method', 'is_server_connected' ] )
+			->setMethods( [ 'create_intention', 'create_setup_intention', 'update_intention', 'get_intent', 'get_payment_method', 'is_server_connected' ] )
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -190,6 +190,63 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->mock_upe_gateway->payment_fields();
 
 		$this->expectOutputRegex( '/<div id="wcpay-upe-element"><\/div>/' );
+	}
+
+	public function test_update_payment_intent_ads_customer_save_payment_and_level3_data() {
+		$order               = WC_Helper_Order::create_order();
+		$order_id            = $order->get_id();
+		$intent_id           = 'pi_mock';
+		$user                = '';
+		$customer_id         = 'cus_12345';
+		$save_payment_method = true;
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'manage_customer_details_for_order' )
+			->will(
+				$this->returnValue( [ $user, $customer_id ] )
+			);
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'create_customer_for_user' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_intention' )
+			->with(
+				'pi_mock',
+				5000,
+				'usd',
+				true,
+				'cus_12345',
+				[
+					'merchant_reference' => '18',
+					'shipping_amount'    => 1000.0,
+					'line_items'         => [
+						(object) [
+							'product_code'        => 30,
+							'product_description' => 'Beanie with Logo',
+							'unit_cost'           => 1800,
+							'quantity'            => 1,
+							'tax_amount'          => 270,
+							'discount_amount'     => 0,
+							'product_code'        => '17',
+							'product_description' => 'Dummy Product',
+							'unit_cost'           => 1000.0,
+							'quantity'            => 4,
+							'tax_amount'          => 0.0,
+							'discount_amount'     => 0.0,
+						],
+					],
+				]
+			)
+			->willReturn(
+				[
+					'sucess' => 'true',
+				]
+			);
+
+		$result = $this->mock_upe_gateway->update_payment_intent( $intent_id, $order_id, );
 	}
 
 	public function test_create_setup_intent_existing_customer() {
