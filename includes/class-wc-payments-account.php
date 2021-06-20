@@ -233,7 +233,7 @@ class WC_Payments_Account {
 	 *
 	 * @param string $error_message Optional error message to show in a notice.
 	 */
-	private function redirect_to_onboarding_page( $error_message = null ) {
+	public function redirect_to_onboarding_page( $error_message = null ) {
 		if ( isset( $error_message ) ) {
 			set_transient( self::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
 		}
