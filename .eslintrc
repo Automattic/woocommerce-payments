@@ -8,11 +8,7 @@
 		"prettier",
 		"plugin:@woocommerce/eslint-plugin/recommended"
 	],
-	"plugins": [
-		"jsx-a11y",
-		"jest",
-		"jsdoc-alignment"
-	],
+	"plugins": [ "jsx-a11y", "jest", "jsdoc-alignment" ],
 	"env": {
 		"browser": true,
 		"jest/globals": true,
@@ -76,15 +72,10 @@
 		"jsdoc/check-tag-names": [
 			"error",
 			{
-				"definedTags": [
-					"format"
-				]
+				"definedTags": [ "format" ]
 			}
 		],
-		"yoda": [
-			"error",
-			"always"
-		],
+		"yoda": [ "error", "always" ],
 		/* partially disable rules to get @woocommerce/eslint-plugin integration done */
 		"jsdoc/no-undefined-types": "off",
 		"jsdoc/require-param": "off",
@@ -110,16 +101,9 @@
 	},
 	"overrides": [
 		{
-			"files": [
-				"*.ts",
-				"*.tsx"
-			],
+			"files": [ "*.ts", "*.tsx" ],
 			"parser": "@typescript-eslint/parser",
-			"plugins": [
-				"jsx-a11y",
-				"jest",
-				"@typescript-eslint"
-			],
+			"plugins": [ "jsx-a11y", "jest", "@typescript-eslint" ],
 			"extends": [
 				"wpcalypso/react",
 				"plugin:jsx-a11y/recommended",
@@ -131,17 +115,18 @@
 				"camelcase": "off",
 				"@typescript-eslint/naming-convention": [
 					"error",
-					{ "selector": ["method", "variableLike"], "format": ["camelCase", "PascalCase"] },
+					{
+						"selector": [ "method", "variableLike" ],
+						"format": [ "camelCase", "PascalCase" ]
+					},
 					{
 						"selector": "typeProperty",
-						"format": ["camelCase", "snake_case"]
-					  }
-				  ],
+						"format": [ "camelCase", "snake_case" ]
+					}
+				],
 				"@typescript-eslint/no-explicit-any": "off",
 				"no-use-before-define": "off",
-				"@typescript-eslint/no-use-before-define": [
-					"error"
-				],
+				"@typescript-eslint/no-use-before-define": [ "error" ],
 				"wpcalypso/jsx-classname-namespace": "off",
 				"react/react-in-jsx-scope": "error"
 			}
