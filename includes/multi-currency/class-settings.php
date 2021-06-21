@@ -310,12 +310,14 @@ class Settings extends \WC_Settings_Page {
 			$currency->get_code()
 		);
 
-		// Output breadcrumbs.
-		?>
-		<h2>
-			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=wcpay_multi_currency' ) ); ?>"><?php esc_html_e( 'Currencies', 'woocommerce-payments' ); ?></a> &gt; <?php echo esc_html( "{$currency->get_name()} ({$currency->get_code()}) {$currency->get_flag()}" ); ?>
-		</h2>
-		<?php
+		// Output breadcrumbs when rendering the wcpay_multi_currency settings page.
+		if ( doing_action( 'woocommerce_settings_wcpay_multi_currency' ) ) {
+			?>
+			<h2>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=wcpay_multi_currency' ) ); ?>"><?php esc_html_e( 'Currencies', 'woocommerce-payments' ); ?></a> &gt; <?php echo esc_html( "{$currency->get_name()} ({$currency->get_code()}) {$currency->get_flag()}" ); ?>
+			</h2>
+			<?php
+		}
 
 		return apply_filters(
 			$this->id . '_single_settings',
