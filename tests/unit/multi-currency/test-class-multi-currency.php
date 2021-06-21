@@ -47,7 +47,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			'GBP',
 			[
 				'price_charm'    => '-0.1',
-				'price_rounding' => '0',
+				'price_rounding' => '1.00',
 			]
 		);
 		update_option( 'wcpay_multi_currency_stored_currencies', $this->mock_available_currencies );
@@ -106,7 +106,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			$expected[ $currency->get_code() ] = $currency;
 		}
 		$expected['GBP']->set_charm( '-0.1' );
-		$expected['GBP']->set_rounding( '0' );
+		$expected['GBP']->set_rounding( '1.00' );
 
 		$this->assertEquals( $expected, $this->multi_currency->get_enabled_currencies() );
 	}

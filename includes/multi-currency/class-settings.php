@@ -273,9 +273,11 @@ class Settings extends \WC_Settings_Page {
 			$this->id . '_price_rounding_options',
 			[
 				'none' => __( 'None', 'woocommerce-payments' ),
-				'-1'   => '10.00',
-				'0'    => '1.00 (recommended)',
-				'1'    => '0.10',
+				'0.25' => '0.25',
+				'0.50' => '0.50',
+				'1'    => '1.00 (recommended)',
+				'5'    => '5.00',
+				'10'   => '10.00',
 			]
 		);
 
