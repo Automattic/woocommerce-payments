@@ -137,16 +137,18 @@ const EnabledCurrenciesModal = ( { className } ) => {
 							  )
 							: __( 'All currencies', 'woocommerce-payments' ) }
 					</h3>
-					<EnabledCurrenciesModalCheckboxList>
-						{ filteredCurrencyCodes.map( ( code ) => (
-							<EnabledCurrenciesModalCheckbox
-								key={ availableCurrencies[ code ].id }
-								checked={ selectedCurrencies[ code ] }
-								onChange={ handleChange }
-								currency={ availableCurrencies[ code ] }
-							/>
-						) ) }
-					</EnabledCurrenciesModalCheckboxList>
+					<div className="add-enabled-currencies-modal__content">
+						<EnabledCurrenciesModalCheckboxList>
+							{ filteredCurrencyCodes.map( ( code ) => (
+								<EnabledCurrenciesModalCheckbox
+									key={ availableCurrencies[ code ].id }
+									checked={ selectedCurrencies[ code ] }
+									onChange={ handleChange }
+									currency={ availableCurrencies[ code ] }
+								/>
+							) ) }
+						</EnabledCurrenciesModalCheckboxList>
+					</div>
 					<div className="add-enabled-currencies-modal__footer">
 						<Button
 							isSecondary
