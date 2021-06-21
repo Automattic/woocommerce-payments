@@ -127,6 +127,15 @@ jQuery( function ( $ ) {
 		} );
 	};
 
+	/**
+	 * Unblock UI to remove overlay and loading icon
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 */
+	const unblockUI = ( $form ) => {
+		$form.removeClass( 'processing' ).unblock();
+	};
+
 	// Show error notice at top of checkout form.
 	const showError = ( errorMessage ) => {
 		let messageWrapper = '';
@@ -183,10 +192,14 @@ jQuery( function ( $ ) {
 			? api.initSetupIntent()
 			: api.createIntent();
 
+		const $upeContainer = $( '#wcpay-upe-element' );
+		blockUI( $upeContainer );
+
 		intentAction
 			.then( ( response ) => {
 				// I repeat, do NOT mount UPE twice.
 				if ( upeElement || paymentIntentId ) {
+					unblockUI( $upeContainer );
 					return;
 				}
 
@@ -205,10 +218,12 @@ jQuery( function ( $ ) {
 				} );
 				upeElement.mount( '#wcpay-upe-element' );
 				upeElement.on( 'change', ( event ) => {
+					unblockUI( $upeContainer );
 					isUPEComplete = event.complete;
 				} );
 			} )
 			.catch( ( error ) => {
+				unblockUI( $upeContainer );
 				showError( error.message );
 				const gatewayErrorMessage =
 					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
