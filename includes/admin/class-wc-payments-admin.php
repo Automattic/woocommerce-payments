@@ -582,7 +582,7 @@ class WC_Payments_Admin {
 		return $label;
 	}
 
-	/*
+	/**
 	 * Check to see if the current user is in an A/B test treatment mode.
 	 *
 	 * @return bool
