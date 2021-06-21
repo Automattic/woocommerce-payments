@@ -13,13 +13,13 @@ jQuery( function ( $ ) {
 		'click',
 		'button.refund-items',
 		function () {
-			const $refundButton = $( '.do-manual-refund' );
+			const $manualRefundButton = $( '.do-manual-refund' );
 
 			if ( disableManualRefunds ) {
-				$refundButton.hide();
+				$manualRefundButton.hide();
 			} else {
 				// Adjust the messaging on the manual refund button.
-				$refundButton
+				$manualRefundButton
 					.attr( {
 						// Tips are readable through $.data(), but jQuery.tipTip use the title attribute to generate
 						// the tooltip.
