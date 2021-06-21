@@ -32,22 +32,24 @@ const storeSettingsSection = document.querySelector(
 );
 const submitButton = document.querySelector( 'p.submit' );
 
-const toggleSettingsSectionDisplay = () => {
-	const display =
-		1 >= enabledCurrenciesList.children.length ? 'none' : 'block';
-	storeSettingsSection.style.display = display;
-	submitButton.style.display = display;
-};
+if ( storeSettingsSection ) {
+	const toggleSettingsSectionDisplay = () => {
+		const display =
+			1 >= enabledCurrenciesList.children.length ? 'none' : 'block';
+		storeSettingsSection.style.display = display;
+		submitButton.style.display = display;
+	};
 
-const enabledCurrenciesObserver = new MutationObserver(
-	toggleSettingsSectionDisplay
-);
+	const enabledCurrenciesObserver = new MutationObserver(
+		toggleSettingsSectionDisplay
+	);
 
-enabledCurrenciesObserver.observe( enabledCurrenciesList, {
-	childList: true,
-} );
+	enabledCurrenciesObserver.observe( enabledCurrenciesList, {
+		childList: true,
+	} );
 
-toggleSettingsSectionDisplay();
+	toggleSettingsSectionDisplay();
+}
 
 /**
  * Single currency settings
