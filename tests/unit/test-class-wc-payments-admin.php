@@ -59,7 +59,7 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$this->wcpay_admin = new WC_Payments_Admin(
 			$this->mock_api_client,
 			$this->mock_gateway,
-			$this->mock_account,
+			$this->mock_account
 		);
 
 		$this->wcpay_admin->add_payments_menu();
