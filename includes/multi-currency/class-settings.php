@@ -369,7 +369,7 @@ class Settings extends \WC_Settings_Page {
 				],
 
 				[
-					'title'    => __( 'Charm pricing', 'woocommerce-payments' ),
+					'title'    => __( 'Price charm', 'woocommerce-payments' ),
 					'desc'     => $charm_desc,
 					'id'       => $this->id . '_price_charm_' . $currency->get_id(),
 					'default'  => '0.00',
