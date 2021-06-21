@@ -510,7 +510,21 @@ export default ( { query } ) => {
 			We rely on WC-Admin Transient notices to display success message.
 			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
 		*/
-		createSuccessNotice( message );
+		createSuccessNotice( message, {
+			actions: [
+				{
+					label: __(
+						'Return to challenge dispute',
+						'woocommerce-payments'
+					),
+					url: addQueryArgs( 'admin.php', {
+						page: 'wc-admin',
+						path: '/payments/disputes/challenge',
+						id: query.id,
+					} ),
+				},
+			],
+		} );
 
 		getHistory().push( href );
 	};
