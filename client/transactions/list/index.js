@@ -202,7 +202,6 @@ export const TransactionsList = ( props ) => {
 
 		// Map transaction into table row.
 		const data = {
-			// eslint-disable-next-line camelcase
 			transaction_id: {
 				value: txn.transaction_id,
 				display: clickable( txn.transaction_id ),
@@ -238,17 +237,14 @@ export const TransactionsList = ( props ) => {
 				value: subscriptionsValue,
 				display: subscriptions,
 			},
-			// eslint-disable-next-line camelcase
 			customer_name: {
 				value: txn.customer_name,
 				display: customerName,
 			},
-			// eslint-disable-next-line camelcase
 			customer_email: {
 				value: txn.customer_email,
 				display: customerEmail,
 			},
-			// eslint-disable-next-line camelcase
 			customer_country: {
 				value: txn.customer_country,
 				display: clickable( txn.customer_country ),
@@ -273,7 +269,6 @@ export const TransactionsList = ( props ) => {
 				value: txn.net / 100,
 				display: clickable( formatCurrency( txn.net, currency ) ),
 			},
-			// eslint-disable-next-line camelcase
 			risk_level: {
 				value: calculateRiskMapping( txn.risk_level ),
 				display: clickable( riskLevel ),
@@ -326,9 +321,7 @@ export const TransactionsList = ( props ) => {
 		);
 
 		wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-			// eslint-disable-next-line camelcase
 			exported_transactions: rows.length,
-			// eslint-disable-next-line camelcase
 			total_transactions: transactionsSummary.count,
 		} );
 	};

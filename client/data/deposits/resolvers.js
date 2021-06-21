@@ -86,7 +86,6 @@ export function* getAllDepositsOverviews() {
 	}
 }
 
-/*eslint-disable camelcase*/
 const formatQueryFilters = ( query ) => ( {
 	match: query.match,
 	store_currency_is: query.storeCurrencyIs,
@@ -99,7 +98,6 @@ const formatQueryFilters = ( query ) => ( {
 	status_is: query.statusIs,
 	status_is_not: query.statusIsNot,
 } );
-/*eslint-enable camelcase*/
 
 /**
  * Retrieves a series of deposits from the deposits list API.

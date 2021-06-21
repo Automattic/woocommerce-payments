@@ -13,7 +13,6 @@ export const displayType = {
 export const displayStatus = {
 	paid: __( 'Paid', 'woocommerce-payments' ),
 	pending: __( 'Pending', 'woocommerce-payments' ),
-	// eslint-disable-next-line camelcase
 	in_transit: __( 'In transit', 'woocommerce-payments' ),
 	canceled: __( 'Canceled', 'woocommerce-payments' ),
 	failed: __( 'Failed', 'woocommerce-payments' ),

@@ -265,7 +265,6 @@ describe( 'Settings reducer tests', () => {
 		test( 'toggles `data.is_digital_wallets_enabled`', () => {
 			const oldState = {
 				data: {
-					// eslint-disable-next-line camelcase
 					is_digital_wallets_enabled: false,
 				},
 			};
@@ -282,7 +281,6 @@ describe( 'Settings reducer tests', () => {
 			const oldState = {
 				foo: 'bar',
 				data: {
-					// eslint-disable-next-line camelcase
 					is_digital_wallets_enabled: false,
 					baz: 'quux',
 				},
@@ -296,7 +294,6 @@ describe( 'Settings reducer tests', () => {
 			expect( state ).toEqual( {
 				foo: 'bar',
 				data: {
-					// eslint-disable-next-line camelcase
 					is_digital_wallets_enabled: true,
 					baz: 'quux',
 				},
@@ -311,7 +308,6 @@ describe( 'Settings reducer tests', () => {
 		test( 'toggle `data.digital_wallets_enabled_locations`', () => {
 			const oldState = {
 				data: {
-					// eslint-disable-next-line camelcase
 					digital_wallets_enabled_locations: initDigitalWalletsState,
 				},
 			};
@@ -330,7 +326,6 @@ describe( 'Settings reducer tests', () => {
 			const oldState = {
 				foo: 'bar',
 				data: {
-					// eslint-disable-next-line camelcase
 					digital_wallets_enabled_locations: initDigitalWalletsState,
 					baz: 'quux',
 				},
@@ -344,7 +339,6 @@ describe( 'Settings reducer tests', () => {
 			expect( state ).toEqual( {
 				foo: 'bar',
 				data: {
-					// eslint-disable-next-line camelcase
 					digital_wallets_enabled_locations: enableAlldigitalWalletsState,
 					baz: 'quux',
 				},

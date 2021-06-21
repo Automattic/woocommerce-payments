@@ -18,7 +18,6 @@ import {
 } from './actions';
 import { formatDateValue } from 'utils';
 
-/*eslint-disable camelcase*/
 const formatQueryFilters = ( query ) => ( {
 	match: query.match,
 	date_before: formatDateValue( query.dateBefore, true ),
@@ -33,7 +32,6 @@ const formatQueryFilters = ( query ) => ( {
 	deposit_id: query.depositId,
 	search: query.search,
 } );
-/*eslint-enable camelcase*/
 
 /**
  * Retrieves a series of transactions from the transactions list API.
