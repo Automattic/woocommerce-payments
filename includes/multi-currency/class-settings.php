@@ -269,14 +269,6 @@ class Settings extends \WC_Settings_Page {
 			'manual'    => __( 'Manual rate. Enter your own fixed rate of exchange.', 'woocommerce-payments' ),
 		];
 
-		$rounding_desc = sprintf(
-			/* translators: %1$s currency being converted to, %2$s url to documentation. */
-			__( 'Make your %1$s prices consistent by rounding them up after they are converted. <a href="%2$s">Learn more</a>', 'woocommerce-payments' ),
-			$currency->get_code(),
-			// TODO: Url to documentation needed.
-			''
-		);
-
 		$rounding_options = apply_filters(
 			$this->id . '_price_rounding_options',
 			[
@@ -285,13 +277,6 @@ class Settings extends \WC_Settings_Page {
 				'0'    => '1.00 (recommended)',
 				'1'    => '0.10',
 			]
-		);
-
-		$charm_desc = sprintf(
-			/* translators: %s: url to documentation.*/
-			__( 'Reduce the converted price by a specific amount. <a href="%s">Learn more</a>', 'woocommerce-payments' ),
-			// TODO: Url to documentation needed.
-			''
 		);
 
 		$charm_options = apply_filters(
@@ -360,7 +345,11 @@ class Settings extends \WC_Settings_Page {
 
 				[
 					'title'   => __( 'Price rounding', 'woocommerce-payments' ),
-					'desc'    => $rounding_desc,
+					'desc'    => sprintf(
+						/* translators: %1$s currency being converted to. */
+						__( 'Make your %1$s prices consistent by rounding them up after they are converted.', 'woocommerce-payments' ),
+						$currency->get_code()
+					),
 					'id'      => $this->id . '_price_rounding_' . $currency->get_id(),
 					'default' => 'none',
 					'type'    => 'select',
@@ -369,7 +358,7 @@ class Settings extends \WC_Settings_Page {
 
 				[
 					'title'   => __( 'Price charm', 'woocommerce-payments' ),
-					'desc'    => $charm_desc,
+					'desc'    => __( 'Reduce the converted price by a specific amount.', 'woocommerce-payments' ),
 					'id'      => $this->id . '_price_charm_' . $currency->get_id(),
 					'default' => '0.00',
 					'type'    => 'select',
