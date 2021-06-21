@@ -18,6 +18,7 @@
 * Tweak - Run post-upgrade actions during any request instead of only on wp-admin requests.
 * Update - Payment request button should guide users to login when necessary.
 * Add - When setting WooCommerce Payments up, inform if merchant business country is not supported.
+* Add - Introduce advance filters on deposits page.
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
