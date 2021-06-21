@@ -20,6 +20,7 @@ const webpackConfig = {
 			'./client/additional-methods-setup/index.js',
 		'payment-gateways': './client/payment-gateways/index.js',
 		'multi-currency': './client/multi-currency/index.js',
+		order: './client/order/index.js',
 	},
 	output: {
 		filename: '[name].js',

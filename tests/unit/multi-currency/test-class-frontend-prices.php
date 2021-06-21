@@ -60,6 +60,9 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 			[ 'woocommerce_coupon_get_amount', 'get_coupon_amount' ],
 			[ 'woocommerce_coupon_get_minimum_amount', 'get_coupon_min_max_amount' ],
 			[ 'woocommerce_coupon_get_maximum_amount', 'get_coupon_min_max_amount' ],
+			[ 'woocommerce_new_order', 'add_order_meta' ],
+			[ 'woocommerce_subscriptions_product_price', 'get_product_price' ],
+			[ 'woocommerce_subscriptions_product_sign_up_fee', 'get_product_price' ],
 		];
 	}
 
@@ -249,5 +252,36 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$this->mock_multi_currency->method( 'get_price' )->with( 5.0, 'product' )->willReturn( 12.5 );
 
 		$this->assertSame( [ 'min_amount' => 12.5 ], $this->frontend_prices->get_free_shipping_min_amount( [ 'min_amount' => '5.0' ] ) );
+	}
+
+	public function test_add_order_meta_skips_default_currency() {
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\Multi_Currency\Currency( 'USD' ) );
+
+		$order = wc_create_order();
+		$order->set_currency( 'USD' );
+
+		$this->frontend_prices->add_order_meta( $order->get_id(), $order );
+
+		// Get the order from the database.
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
+	}
+
+	public function test_add_order_meta() {
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\Multi_Currency\Currency( 'USD' ) );
+		$this->mock_multi_currency->method( 'get_price' )->with( 1, 'exchange_rate' )->willReturn( 0.71 );
+
+		$order = wc_create_order();
+		$order->set_currency( 'GBP' );
+
+		$this->frontend_prices->add_order_meta( $order->get_id(), $order );
+
+		// Get the order from the database.
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertSame( '0.71', $order->get_meta( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertSame( 'USD', $order->get_meta( '_wcpay_multi_currency_order_default_currency' ) );
 	}
 }
