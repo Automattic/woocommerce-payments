@@ -22,6 +22,34 @@ if ( currencyContainer ) {
 }
 
 /**
+ * Store settings section
+ */
+const enabledCurrenciesList = document.querySelector(
+	'.enabled-currencies-list'
+);
+const storeSettingsSection = document.querySelector(
+	'#wcpay_currencies_settings_section'
+);
+const submitButton = document.querySelector( 'p.submit' );
+
+const toggleSettingsSectionDisplay = () => {
+	const display =
+		1 >= enabledCurrenciesList.children.length ? 'none' : 'block';
+	storeSettingsSection.style.display = display;
+	submitButton.style.display = display;
+};
+
+const enabledCurrenciesObserver = new MutationObserver(
+	toggleSettingsSectionDisplay
+);
+
+enabledCurrenciesObserver.observe( enabledCurrenciesList, {
+	childList: true,
+} );
+
+toggleSettingsSectionDisplay();
+
+/**
  * Single currency settings
  */
 let rateType = 'automatic';
@@ -94,22 +122,3 @@ document.querySelectorAll( '.exchange-rate-selector' ).forEach( ( radio ) => {
 	.forEach( ( element ) =>
 		element.addEventListener( 'input', () => updatePreview() )
 	);
-
-/**
- * Store settings section
- */
-const enabledCurrenciesList = document.querySelector(
-	'.enabled-currencies-list'
-);
-const storeSettingsSection = document.querySelector(
-	'#wcpay_currencies_settings_section'
-);
-
-const enabledCurrenciesObserver = new MutationObserver( () => {
-	storeSettingsSection.style.display =
-		1 >= enabledCurrenciesList.children.length ? 'none' : 'block';
-} );
-
-enabledCurrenciesObserver.observe( enabledCurrenciesList, {
-	childList: true,
-} );
