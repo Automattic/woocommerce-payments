@@ -359,23 +359,21 @@ class Settings extends \WC_Settings_Page {
 				],
 
 				[
-					'title'    => __( 'Price rounding', 'woocommerce-payments' ),
-					'desc'     => $rounding_desc,
-					'id'       => $this->id . '_price_rounding_' . $currency->get_id(),
-					'default'  => 'none',
-					'type'     => 'select',
-					'options'  => $rounding_options,
-					'desc_tip' => __( 'Conversion rates at the bank may differ from current conversion rates. Rounding up to the nearest whole number helps prevent losses on sales.', 'woocommerce-payments' ),
+					'title'   => __( 'Price rounding', 'woocommerce-payments' ),
+					'desc'    => $rounding_desc,
+					'id'      => $this->id . '_price_rounding_' . $currency->get_id(),
+					'default' => 'none',
+					'type'    => 'select',
+					'options' => $rounding_options,
 				],
 
 				[
-					'title'    => __( 'Price charm', 'woocommerce-payments' ),
-					'desc'     => $charm_desc,
-					'id'       => $this->id . '_price_charm_' . $currency->get_id(),
-					'default'  => '0.00',
-					'type'     => 'select',
-					'options'  => $charm_options,
-					'desc_tip' => __( 'A value of -0.01 would reduce 20.00 to 19.99.', 'woocommerce-payments' ),
+					'title'   => __( 'Price charm', 'woocommerce-payments' ),
+					'desc'    => $charm_desc,
+					'id'      => $this->id . '_price_charm_' . $currency->get_id(),
+					'default' => '0.00',
+					'type'    => 'select',
+					'options' => $charm_options,
 				],
 
 				[
