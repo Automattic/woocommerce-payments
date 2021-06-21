@@ -204,7 +204,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				true,
 				'cus_12345',
 				[
-					'merchant_reference' => '18',
+					'merchant_reference' => (string) $order_id,
 					'shipping_amount'    => 1000.0,
 					'line_items'         => [
 						(object) [
