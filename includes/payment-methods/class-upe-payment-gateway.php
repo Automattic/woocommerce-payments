@@ -527,4 +527,23 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			<?php
 		}
 	}
+
+
+	/**
+	 * Returns the list of available payment method types for UPE.
+	 * See https://stripe.com/docs/stripe-js/payment-element#web-create-payment-intent for a complete list.
+	 *
+	 * @return string[]
+	 */
+	public function get_upe_available_payment_methods() {
+		$methods = parent::get_upe_available_payment_methods();
+
+		$methods[] = 'giropay';
+		$methods[] = 'sofort';
+
+		return apply_filters(
+			'wcpay_upe_available_payment_methods',
+			$methods
+		);
+	}
 }
