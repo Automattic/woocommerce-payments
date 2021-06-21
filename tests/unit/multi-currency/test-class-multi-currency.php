@@ -47,7 +47,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			'GBP',
 			[
 				'price_charm'    => '-0.1',
-				'price_rounding' => '1.00',
+				'price_rounding' => '0.50',
 			]
 		);
 		update_option( 'wcpay_multi_currency_stored_currencies', $this->mock_available_currencies );
@@ -102,11 +102,13 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		foreach ( $mock_currencies as $code => $rate ) {
 			$currency = new WCPay\Multi_Currency\Currency( $code, $rate );
 			$currency->set_charm( 0.00 );
-			$currency->set_rounding( 'none' );
+			$currency->set_rounding( '1.00' );
 			$expected[ $currency->get_code() ] = $currency;
 		}
 		$expected['GBP']->set_charm( '-0.1' );
-		$expected['GBP']->set_rounding( '1.00' );
+		$expected['GBP']->set_rounding( '0.50' );
+		// Zero-decimal currencies should default to rounding = 100.
+		$expected['BIF']->set_rounding( '100' );
 
 		$this->assertEquals( $expected, $this->multi_currency->get_enabled_currencies() );
 	}
@@ -240,24 +242,24 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
 
-		// 0.708099 * 10 = 7,08099 -> ceiled to 8 -> 8 - 0.1 = 7.9
-		$this->assertSame( 7.9, $this->multi_currency->get_price( '10.0', 'product' ) );
+		// 0.708099 * 10 = 7,08099 -> ceiled to 7.5 -> 7.5 - 0.1 = 7.4
+		$this->assertSame( 7.4, $this->multi_currency->get_price( '10.0', 'product' ) );
 	}
 
 	public function test_get_price_returns_converted_shipping_price_with_charm() {
 		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
-		// 0.708099 * 10 = 7,08099 -> ceiled to 8 -> 8 - 0.1 = 7.9
-		$this->assertSame( 7.9, $this->multi_currency->get_price( '10.0', 'shipping' ) );
+		// 0.708099 * 10 = 7,08099 -> ceiled to 7.5 -> 7.5 - 0.1 = 7.4
+		$this->assertSame( 7.4, $this->multi_currency->get_price( '10.0', 'shipping' ) );
 	}
 
 	public function test_get_price_returns_converted_shipping_price_without_charm() {
 		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
 
-		// 0.708099 * 10 = 7,08099 -> ceiled to 8 -> 8 + 0.0 = 8.0
-		$this->assertSame( 8.0, $this->multi_currency->get_price( '10.0', 'shipping' ) );
+		// 0.708099 * 10 = 7,08099 -> ceiled to 7.5 -> 7.5 + 0.0 = 7.5
+		$this->assertSame( 7.5, $this->multi_currency->get_price( '10.0', 'shipping' ) );
 	}
 
 	public function test_get_price_returns_converted_coupon_price_without_adjustments() {

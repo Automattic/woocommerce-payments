@@ -376,7 +376,7 @@ class Settings extends \WC_Settings_Page {
 						$currency->get_code()
 					),
 					'id'      => $this->id . '_price_rounding_' . $currency->get_id(),
-					'default' => 'none',
+					'default' => $currency->get_is_zero_decimal() ? '100' : '1.00',
 					'type'    => 'select',
 					'options' => $rounding_options,
 				],
