@@ -85,16 +85,6 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	private $return_url = 'test_url';
 
 	/**
-	 * Mocked object to be used as response from create_payment_intent()
-	 *
-	 * @var array
-	 */
-	private $mock_payment_intent = [
-		'id'            => 'pi_mock',
-		'client_secret' => 'cs_mock',
-	];
-
-	/**
 	 * Mocked object to be used as response from process_payment_using_saved_method()
 	 *
 	 * @var array
@@ -151,7 +141,6 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			)
 			->setMethods(
 				[
-					'create_payment_intent',
 					'get_return_url',
 					'manage_customer_details_for_order',
 					'process_payment_using_saved_method',
@@ -165,12 +154,6 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->method( 'get_return_url' )
 			->will(
 				$this->returnValue( $this->return_url )
-			);
-		$this->mock_upe_gateway
-			->expects( $this->any() )
-			->method( 'create_payment_intent' )
-			->will(
-				$this->returnValue( $this->mock_payment_intent )
 			);
 		$this->mock_upe_gateway
 			->expects( $this->any() )
@@ -246,7 +229,20 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$result = $this->mock_upe_gateway->update_payment_intent( $intent_id, $order_id, );
+		$result = $this->mock_upe_gateway->update_payment_intent( $intent_id, $order_id, $save_payment_method );
+	}
+
+	public function test_create_payment_intent_uses_order_amount_if_order() {
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = new WC_Payments_API_Intention( 'pi_mock', 5000, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_intention' )
+			->with( 5000, 'usd', [ 'card' ] )
+			->willReturn( $intent );
+
+		$result = $this->mock_upe_gateway->create_payment_intent( $order_id );
 	}
 
 	public function test_create_setup_intent_existing_customer() {
