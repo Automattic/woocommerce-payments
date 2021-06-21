@@ -535,7 +535,7 @@ class WC_Payments_Account {
 		$return_url   = $this->get_oauth_return_url( $wcpay_connect_from );
 
 		$country = WC()->countries->get_base_country();
-		if ( ! in_array( $country, array_keys( WC_Payments_Utils::supported_countries() ), true ) ) {
+		if ( ! array_key_exists( $country, WC_Payments_Utils::supported_countries() ) ) {
 			$country = null;
 		}
 
