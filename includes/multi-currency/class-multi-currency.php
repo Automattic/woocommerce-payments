@@ -428,12 +428,12 @@ class Multi_Currency {
 	 * Gets the converted price using the current currency with the rounding and charm pricing settings.
 	 *
 	 * @param mixed $price The price to be converted.
-	 * @param bool  $type  The type of price being converted. One of 'product', 'shipping', 'tax', or 'coupon'.
+	 * @param bool  $type  The type of price being converted. One of 'product', 'shipping', 'tax', 'coupon', or 'exchange_rate'.
 	 *
 	 * @return float The converted price.
 	 */
 	public function get_price( $price, $type ): float {
-		$supported_types = [ 'product', 'shipping', 'tax', 'coupon' ];
+		$supported_types = [ 'product', 'shipping', 'tax', 'coupon', 'exchange_rate' ];
 		$currency        = $this->get_selected_currency();
 
 		if ( ! in_array( $type, $supported_types, true ) || $currency->get_is_default() ) {
@@ -442,7 +442,7 @@ class Multi_Currency {
 
 		$converted_price = ( (float) $price ) * $currency->get_rate();
 
-		if ( 'tax' === $type || 'coupon' === $type ) {
+		if ( 'tax' === $type || 'coupon' === $type || 'exchange_rate' === $type ) {
 			return $converted_price;
 		}
 

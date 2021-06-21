@@ -243,7 +243,11 @@ class WC_Payments_Admin {
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
 		$wcpay_settings = [
-			'connectUrl'            => WC_Payments_Account::get_connect_url(),
+			'connect'               => [
+				'url'                => WC_Payments_Account::get_connect_url(),
+				'country'            => wc_get_base_location()['country'],
+				'availableCountries' => WC_Payments_Utils::supported_countries(),
+			],
 			'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'    => WC_Payments_Account::is_on_boarding_disabled(),
