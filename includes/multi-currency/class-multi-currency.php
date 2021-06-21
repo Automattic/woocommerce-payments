@@ -275,6 +275,8 @@ class Multi_Currency {
 			}
 		);
 
+		$this->enabled_currencies = [];
+
 		foreach ( $enabled_currencies as $enabled_currency ) {
 			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
 			$currency = clone $enabled_currency;
@@ -334,6 +336,18 @@ class Multi_Currency {
 	}
 
 	/**
+	 * Sets the enabled currencies for the store.
+	 *
+	 * @param array $currencies Array of currency codes to be enabled.
+	 */
+	public function set_enabled_currencies( $currencies = [] ) {
+		if ( 0 < count( $currencies ) ) {
+			update_option( $this->id . '_enabled_currencies', $currencies );
+			$this->initialize_enabled_currencies();
+		}
+	}
+
+	/**
 	 * Gets the user selected currency, or `$default_currency` if is not set.
 	 *
 	 * @return Currency
@@ -375,16 +389,12 @@ class Multi_Currency {
 		} elseif ( $user_id ) {
 			update_user_meta( $user_id, self::CURRENCY_META_KEY, $currency->get_code() );
 		}
-	}
 
-	/**
-	 * Sets the enabled currencies for the store.
-	 *
-	 * @param array $currencies Array of currency codes to be enabled.
-	 */
-	public function set_enabled_currencies( $currencies = [] ) {
-		if ( 0 < count( $currencies ) ) {
-			update_option( $this->id . '_enabled_currencies', $currencies );
+		// Recalculate cart when currency changes.
+		if ( did_action( 'wp_loaded' ) ) {
+			$this->recalculate_cart();
+		} else {
+			add_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
 		}
 	}
 
@@ -399,9 +409,13 @@ class Multi_Currency {
 		}
 
 		$this->update_selected_currency( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
 
-		// Recalculate cart when currency changes.
-		add_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
+	/**
+	 * Recalculates WooCommerce cart totals.
+	 */
+	public function recalculate_cart() {
+		WC()->cart->calculate_totals();
 	}
 
 	/**
@@ -417,12 +431,12 @@ class Multi_Currency {
 	 * Gets the converted price using the current currency with the rounding and charm pricing settings.
 	 *
 	 * @param mixed $price The price to be converted.
-	 * @param bool  $type  The type of price being converted. One of 'product', 'shipping', 'tax', or 'coupon'.
+	 * @param bool  $type  The type of price being converted. One of 'product', 'shipping', 'tax', 'coupon', or 'exchange_rate'.
 	 *
 	 * @return float The converted price.
 	 */
 	public function get_price( $price, $type ): float {
-		$supported_types = [ 'product', 'shipping', 'tax', 'coupon' ];
+		$supported_types = [ 'product', 'shipping', 'tax', 'coupon', 'exchange_rate' ];
 		$currency        = $this->get_selected_currency();
 
 		if ( ! in_array( $type, $supported_types, true ) || $currency->get_is_default() ) {
@@ -431,7 +445,7 @@ class Multi_Currency {
 
 		$converted_price = ( (float) $price ) * $currency->get_rate();
 
-		if ( 'tax' === $type || 'coupon' === $type ) {
+		if ( 'tax' === $type || 'coupon' === $type || 'exchange_rate' === $type ) {
 			return $converted_price;
 		}
 
@@ -441,13 +455,6 @@ class Multi_Currency {
 			: in_array( $type, $charm_compatible_types, true );
 
 		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing, $currency );
-	}
-
-	/**
-	 * Recalculates WooCommerce cart totals.
-	 */
-	public function recalculate_cart() {
-		WC()->cart->calculate_totals();
 	}
 
 	/**

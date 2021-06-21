@@ -51,6 +51,13 @@ class Frontend_Prices {
 			add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 50, 2 );
 			add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
 			add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
+
+			// Order hooks.
+			add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 50, 2 );
+
+			// Subscription product hooks.
+			add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_subscriptions_product_sign_up_fee', [ $this, 'get_product_price' ], 50, 2 );
 		}
 	}
 
@@ -102,26 +109,32 @@ class Frontend_Prices {
 
 	/**
 	 * Returns the shipping rates with their prices converted.
+	 * Creates new rate objects to avoid issues with extensions that cache
+	 * them before this hook is called.
 	 *
 	 * @param array $rates Shipping rates.
 	 *
 	 * @return array Shipping rates with converted costs.
 	 */
 	public function convert_package_rates_prices( $rates ) {
-		foreach ( $rates as $rate ) {
-			if ( $rate->cost ) {
-				$rate->cost = $this->multi_currency->get_price( $rate->cost, 'shipping' );
-			}
-			if ( $rate->taxes ) {
-				$rate->taxes = array_map(
-					function ( $tax ) {
-						return $this->multi_currency->get_price( $tax, 'tax' );
-					},
-					$rate->taxes
-				);
-			}
-		}
-		return $rates;
+		return array_map(
+			function ( $rate ) {
+				$rate = clone $rate;
+				if ( $rate->cost ) {
+					$rate->cost = $this->multi_currency->get_price( $rate->cost, 'shipping' );
+				}
+				if ( $rate->taxes ) {
+					$rate->taxes = array_map(
+						function ( $tax ) {
+							return $this->multi_currency->get_price( $tax, 'tax' );
+						},
+						$rate->taxes
+					);
+				}
+				return $rate;
+			},
+			$rates
+		);
 	}
 
 	/**
@@ -196,5 +209,26 @@ class Frontend_Prices {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Adds the exchange rate and default currency to the order's meta if prices have been converted.
+	 *
+	 * @param int      $order_id The order ID.
+	 * @param WC_Order $order    The order object.
+	 */
+	public function add_order_meta( $order_id, $order ) {
+		$default_currency = $this->multi_currency->get_default_currency();
+
+		// Do not add exchange rate if order was made in the store's default currency.
+		if ( $default_currency->get_code() === $order->get_currency() ) {
+			return;
+		}
+
+		$exchange_rate = $this->multi_currency->get_price( 1, 'exchange_rate' );
+
+		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $exchange_rate );
+		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', $default_currency->get_code() );
+		$order->save_meta_data();
 	}
 }

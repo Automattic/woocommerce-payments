@@ -13,6 +13,13 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_Admin {
 
 	/**
+	 * Badge with number "1" displayed next to a menu item when there is something important to communicate on a page.
+	 *
+	 * @var string
+	 */
+	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
 	 * @var WC_Payments_API_Client
@@ -164,7 +171,7 @@ class WC_Payments_Admin {
 			$submenu_keys                   = array_keys( $submenu );
 			$last_submenu_key               = $submenu_keys[ count( $submenu ) - 1 ];
 			$submenu[ $last_submenu_key ][] = [ // PHPCS:Ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-				__( 'Settings', 'woocommerce' ), // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
+				$this->get_settings_menu_item_name(),
 				'manage_woocommerce',
 				WC_Payment_Gateway_WCPay::get_settings_url(),
 			];
@@ -239,7 +246,11 @@ class WC_Payments_Admin {
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
 		$wcpay_settings = [
-			'connectUrl'            => WC_Payments_Account::get_connect_url(),
+			'connect'               => [
+				'url'                => WC_Payments_Account::get_connect_url(),
+				'country'            => WC()->countries->get_base_country(),
+				'availableCountries' => WC_Payments_Utils::supported_countries(),
+			],
 			'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'    => WC_Payments_Account::is_on_boarding_disabled(),
@@ -516,7 +527,7 @@ class WC_Payments_Admin {
 
 		foreach ( $menu as $index => $menu_item ) {
 			if ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) {
-				$menu[ $index ][0] .= ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				$menu[ $index ][0] .= self::MENU_NOTIFICATION_BADGE; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				break;
 			}
 		}
@@ -547,5 +558,22 @@ class WC_Payments_Admin {
 	public function payment_gateways_container() {
 		?><div id="wcpay-payment-gateways-container" />
 		<?php
+	}
+
+	/**
+	 * Returns the name to display for the "Payments > Settings" submenu item.
+	 *
+	 * The name will also contain a notification badge if the UPE settings preview is enabled but UPE is not.
+	 *
+	 * @return string
+	 */
+	private function get_settings_menu_item_name() {
+		$label = __( 'Settings', 'woocommerce' ); // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
+
+		if ( WC_Payments_Features::is_upe_settings_preview_enabled() && ! WC_Payments_Features::is_upe_enabled() ) {
+			$label .= self::MENU_NOTIFICATION_BADGE;
+		}
+
+		return $label;
 	}
 }

@@ -60,6 +60,33 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Registers all scripts, necessary for the gateway.
+	 */
+	public function register_scripts() {
+		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
+		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
+		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
+		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
+		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
+		// https://stripe.com/docs/stripe-js/elements/migrating).
+		wp_register_script(
+			'stripe',
+			'https://js.stripe.com/v3/',
+			[],
+			'3.0',
+			true
+		);
+
+		wp_register_script(
+			'wcpay-upe-checkout',
+			plugins_url( 'dist/upe_checkout.js', WCPAY_PLUGIN_FILE ),
+			[ 'stripe', 'wc-checkout' ],
+			WC_Payments::get_file_version( 'dist/upe_checkout.js' ),
+			true
+		);
+	}
+
+	/**
 	 * Handle AJAX request for creating a payment intent for Stripe UPE.
 	 *
 	 * @throws Process_Payment_Exception - If nonce or setup intent is invalid.
@@ -98,7 +125,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_intent = $this->payments_api_client->create_intention(
 			WC_Payments_Utils::prepare_amount( $amount, $currency ),
 			strtolower( $currency ),
-			$this->get_enabled_payment_gateways()
+			$this->get_upe_enabled_payment_method_ids()
 		);
 		return [
 			'id'            => $payment_intent->get_id(),
@@ -150,22 +177,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$setup_intent = $this->payments_api_client->create_setup_intention(
 			$customer_id,
-			$this->get_enabled_payment_gateways()
+			$this->get_upe_enabled_payment_method_ids()
 		);
 		return [
 			'id'            => $setup_intent['id'],
 			'client_secret' => $setup_intent['client_secret'],
 		];
-	}
-
-	/**
-	 * Returns enabled payment gateways.
-	 *
-	 * @return array
-	 */
-	public function get_enabled_payment_gateways() {
-		$enabled_gateways = [ 'card' ];
-		return $enabled_gateways;
 	}
 
 	/**
@@ -374,9 +391,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function get_payment_fields_js_config() {
-		$payment_fields                                = parent::get_payment_fields_js_config();
-		$payment_fields['accountDescriptor']           = $this->get_account_statement_descriptor();
-		$payment_fields['confirmSetupIntentreturnURL'] = wc_get_account_endpoint_url( 'payment-methods' );
+		$payment_fields                      = parent::get_payment_fields_js_config();
+		$payment_fields['accountDescriptor'] = $this->get_account_statement_descriptor();
+		$payment_fields['paymentMethodsURL'] = wc_get_account_endpoint_url( 'payment-methods' );
 
 		return $payment_fields;
 	}
@@ -441,16 +458,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
 
 			$payment_fields = $this->get_payment_fields_js_config();
-			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $payment_fields );
-			wp_enqueue_script( 'WCPAY_CHECKOUT' );
+			wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $payment_fields );
+			wp_enqueue_script( 'wcpay-upe-checkout' );
 
 			$prepared_customer_data = $this->get_prepared_customer_data();
 			if ( ! empty( $prepared_customer_data ) ) {
-				wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayCustomerData', $prepared_customer_data );
+				wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
 			}
 
 			wp_enqueue_style(
-				'WCPAY_CHECKOUT',
+				'wcpay-upe-checkout',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/checkout.css' )
