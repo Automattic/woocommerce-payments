@@ -33,6 +33,8 @@ const events = {
 	CONNECT_ACCOUNT_VIEW: 'page_view',
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
+	DEPOSITS_SUMMARY_EMPTY_STATE_CLICKED:
+		'wcpay_deposits_summary_empty_state_click',
 };
 
 export default {

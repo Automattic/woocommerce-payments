@@ -75,6 +75,11 @@ class WC_Payments_Admin {
 			$should_render_full_menu = true;
 		}
 
+		// When the account is not connected, see if the user is in an A/B test treatment mode.
+		if ( false === $should_render_full_menu ) {
+			$should_render_full_menu = $this->is_in_treatment_mode();
+		}
+
 		$top_level_link = $should_render_full_menu ? '/payments/overview' : '/payments/connect';
 
 		wc_admin_register_page(
@@ -471,8 +476,8 @@ class WC_Payments_Admin {
 		$version_regex = '/^([\d\.]+)(-.*)?$/';
 		if ( ! preg_match( $version_regex, $version1, $matches1 )
 			|| ! preg_match( $version_regex, $version2, $matches2 ) ) {
-				// Fall back to comparing the two versions as they are.
-				return version_compare( $version1, $version2, $operator );
+			// Fall back to comparing the two versions as they are.
+			return version_compare( $version1, $version2, $operator );
 		}
 		// Only compare the numeric parts of the versions, ignore the bit after the dash.
 		$version1 = $matches1[1];
@@ -575,5 +580,24 @@ class WC_Payments_Admin {
 		}
 
 		return $label;
+	}
+
+	/**
+	 * Check to see if the current user is in an A/B test treatment mode.
+	 *
+	 * @return bool
+	 */
+	private function is_in_treatment_mode() {
+		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
+			return false;
+		}
+
+		$abtest = new \WCPay\Experimental_Abtest(
+			esc_url_raw( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			'woocommerce',
+			'yes' === get_option( 'woocommerce_allow_tracking' )
+		);
+
+		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode' );
 	}
 }
