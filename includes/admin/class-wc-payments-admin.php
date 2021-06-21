@@ -302,6 +302,14 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/tos.css' )
 		);
 
+		wp_register_script(
+			'WCPAY_ADMIN_ORDER_ACTIONS',
+			plugins_url( 'dist/order.js', WCPAY_PLUGIN_FILE ),
+			[ 'jquery-tiptip' ],
+			WC_Payments::get_file_version( 'dist/order.js' ),
+			true
+		);
+
 		$settings_script_src_url    = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
 		$settings_script_asset_path = WCPAY_ABSPATH . 'dist/settings.asset.php';
 		$settings_script_asset      = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : [ 'dependencies' => [] ];
@@ -413,6 +421,23 @@ class WC_Payments_Admin {
 		if ( WC_Payments_Features::is_grouped_settings_enabled() && $is_payment_methods_page ) {
 			wp_enqueue_script( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
 			wp_enqueue_style( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
+		}
+
+		$screen = get_current_screen();
+		if ( 'shop_order' === $screen->id ) {
+			$order = wc_get_order();
+
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
+				wp_localize_script(
+					'WCPAY_ADMIN_ORDER_ACTIONS',
+					'wcpay_order_config',
+					[
+						'disableManualRefunds' => ! $this->wcpay_gateway->has_refund_failed( $order ),
+						'manualRefundsTip'     => __( 'Refunding manually requires reimbursing your customer offline via cash, check, etc. The refund amounts entered here will only be used to balance your analytics.', 'woocommerce-payments' ),
+					]
+				);
+				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
+			}
 		}
 	}
 
