@@ -269,25 +269,48 @@ class Settings extends \WC_Settings_Page {
 			'manual'    => __( 'Manual rate. Enter your own fixed rate of exchange.', 'woocommerce-payments' ),
 		];
 
+		$decimal_currency_rounding_options      = [
+			'none' => __( 'None', 'woocommerce-payments' ),
+			'0.25' => '0.25',
+			'0.50' => '0.50',
+			'1'    => '1.00 (recommended)',
+			'5'    => '5.00',
+			'10'   => '10.00',
+		];
+		$zero_decimal_currency_rounding_options = [
+			'none' => __( 'None', 'woocommerce-payments' ),
+			'10'   => '10',
+			'25'   => '25',
+			'50'   => '50',
+			'100'  => '100 (recommended)',
+			'500'  => '500',
+			'1000' => '1000',
+		];
+
 		$rounding_options = apply_filters(
 			$this->id . '_price_rounding_options',
-			[
-				'none' => __( 'None', 'woocommerce-payments' ),
-				'0.25' => '0.25',
-				'0.50' => '0.50',
-				'1'    => '1.00 (recommended)',
-				'5'    => '5.00',
-				'10'   => '10.00',
-			]
+			$currency->get_is_zero_decimal() ? $zero_decimal_currency_rounding_options : $decimal_currency_rounding_options
 		);
+
+		$decimal_currency_charm_options      = [
+			'0.00'  => __( 'None', 'woocommerce-payments' ),
+			'-0.01' => '-0.01',
+			'-0.05' => '-0.05',
+		];
+		$zero_decimal_currency_charm_options = [
+			'0.00' => __( 'None', 'woocommerce-payments' ),
+			'-1'   => '-1',
+			'-5'   => '-5',
+			'-10'  => '-10',
+			'-20'  => '-20',
+			'-25'  => '-25',
+			'-50'  => '-50',
+			'-100' => '-100',
+		];
 
 		$charm_options = apply_filters(
 			$this->id . '_charm_options',
-			[
-				'0.00'  => __( 'None', 'woocommerce-payments' ),
-				'-0.01' => '-0.01',
-				'-0.05' => '-0.05',
-			]
+			$currency->get_is_zero_decimal() ? $zero_decimal_currency_charm_options : $decimal_currency_charm_options
 		);
 
 		$preview_desc = sprintf(
