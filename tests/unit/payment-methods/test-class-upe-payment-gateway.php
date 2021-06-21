@@ -178,6 +178,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	public function test_update_payment_intent_ads_customer_save_payment_and_level3_data() {
 		$order               = WC_Helper_Order::create_order();
 		$order_id            = $order->get_id();
+		$product_item        = current( $order->get_items( 'line_item' ) );
 		$intent_id           = 'pi_mock';
 		$user                = '';
 		$customer_id         = 'cus_12345';
@@ -213,7 +214,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 							'quantity'            => 1,
 							'tax_amount'          => 270,
 							'discount_amount'     => 0,
-							'product_code'        => '17',
+							'product_code'        => $product_item->get_product_id(),
 							'product_description' => 'Dummy Product',
 							'unit_cost'           => 1000.0,
 							'quantity'            => 4,
