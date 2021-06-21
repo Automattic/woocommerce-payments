@@ -71,12 +71,13 @@ describe( 'Deposits list', () => {
 	test( 'renders table summary only when the deposits summary data is available', () => {
 		useDeposits.mockReturnValue( {
 			deposits: mockDeposits,
-			depositsCount: 2,
 			isLoading: false,
 		} );
 
 		useDepositsSummary.mockReturnValue( {
-			depositsSummary: {},
+			depositsSummary: {
+				count: 30,
+			},
 			isLoading: true,
 		} );
 
