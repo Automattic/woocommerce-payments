@@ -468,7 +468,7 @@ class Multi_Currency {
 	 */
 	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
 		if ( 'none' !== $currency->get_rounding() ) {
-			$price = $this->ceil_price( $price, intval( $currency->get_rounding() ) );
+			$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
 		}
 
 		if ( $apply_charm_pricing ) {
@@ -480,16 +480,18 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Ceils the price to the next number based on the precision.
+	 * Ceils the price to the next number based on the rounding value.
 	 *
-	 * @param float $price     The price to be ceiled.
-	 * @param int   $precision The precision to be used.
+	 * @param float $price    The price to be ceiled.
+	 * @param float $rounding The rounding option.
 	 *
 	 * @return float The ceiled price.
 	 */
-	protected function ceil_price( $price, $precision ) {
-		$precision_modifier = pow( 10, $precision );
-		return ceil( $price * $precision_modifier ) / $precision_modifier;
+	protected function ceil_price( float $price, float $rounding ) {
+		if ( 0.00 === $rounding ) {
+			return $price;
+		}
+		return ceil( $price / $rounding ) * $rounding;
 	}
 
 	/**

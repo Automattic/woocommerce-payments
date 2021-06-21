@@ -65,7 +65,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		delete_user_meta( self::LOGGED_IN_USER_ID, WCPay\Multi_Currency\Multi_Currency::CURRENCY_META_KEY );
 		wp_set_current_user( 0 );
 
-		$this->remove_currency_settings_mock( 'GBP', [ 'price_charm', 'price_rounding' ] );
+		$this->remove_currency_settings_mock( 'GBP', [ 'price_charm', 'price_rounding', 'manual_rate', 'exchange_rate' ] );
 		delete_option( 'wcpay_multi_currency_stored_currencies' );
 		delete_option( 'wcpay_multi_currency_enabled_currencies' );
 
@@ -287,9 +287,16 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	/**
 	 * @dataProvider get_price_provider
 	 */
-	public function test_get_price_converts_using_ceil_and_precision( $price, $precision, $expected ) {
+	public function test_get_price_converts_using_ceil_and_precision( $target_price, $precision, $expected ) {
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
-		$this->mock_currency_settings( 'GBP', [ 'price_rounding' => $precision ] );
+		$this->mock_currency_settings(
+			'GBP',
+			[
+				'price_rounding' => $precision,
+				'exchange_rate'  => 'manual',
+				'manual_rate'    => $target_price,
+			]
+		);
 
 		// Recreate Multi_Currency instance to use the recently set price_rounding.
 		$this->reset_multi_currency_instance();
@@ -297,24 +304,27 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
 
-		$this->assertSame( $expected, $this->multi_currency->get_price( $price, 'shipping' ) );
+		$this->assertSame( $expected, $this->multi_currency->get_price( 1, 'shipping' ) );
 	}
 
 	public function get_price_provider() {
 		return [
-			[ '7.07', '2', 5.01 ], // 5.006 after conversion
-			[ '7.06', '2', 5.0 ], // 4.999 after conversion
-			[ '7.04', '2', 4.99 ], // 4.985 after conversion
-			[ '7.07', '1', 5.1 ], // 5.006 after conversion
-			[ '7.06', '1', 5.0 ], // 4.999 after conversion
-			[ '6.90', '1', 4.9 ], // 4.885 after conversion
-			[ '7.07', '0', 6.0 ], // 5.006 after conversion
-			[ '7.06', '0', 5.0 ], // 4.999 after conversion
-			[ '5.80', '0', 5.0 ], // 4.106 after conversion
-			[ '14.26', '-1', 20.0 ], // 10.097 after conversion
-			[ '14.02', '-1', 10.0 ], // 9.927 after conversion
-			[ '141.0', '-2', 100.0 ], // 99.841 after conversion
-			[ '142.0', '-2', 200.0 ], // 100.550 after conversion
+			[ '5.2499', '0.00', 5.2499 ],
+			[ '5.2499', '0.25', 5.25 ],
+			[ '5.2500', '0.25', 5.25 ],
+			[ '5.2501', '0.25', 5.50 ],
+			[ '5.4999', '0.50', 5.50 ],
+			[ '5.5000', '0.50', 5.50 ],
+			[ '5.5001', '0.50', 6.00 ],
+			[ '4.9999', '1.00', 5.00 ],
+			[ '5.0000', '1.00', 5.00 ],
+			[ '5.0001', '1.00', 6.00 ],
+			[ '4.9999', '5.00', 5.00 ],
+			[ '5.0000', '5.00', 5.00 ],
+			[ '5.0001', '5.00', 10.00 ],
+			[ '9.9999', '10.00', 10.00 ],
+			[ '10.000', '10.00', 10.00 ],
+			[ '10.0001', '10.00', 20.00 ],
 		];
 	}
 
