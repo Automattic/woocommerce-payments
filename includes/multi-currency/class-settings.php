@@ -290,7 +290,7 @@ class Settings extends \WC_Settings_Page {
 
 		$preview_desc = sprintf(
 			/* translators: %1$s: default currency of the store, %2$s currency being converted to. */
-			__( 'Enter a price in your default currency of %1$s to see it converted into %2$s using the excange rate and formatting rules above.', 'woocommerce-payments' ),
+			__( 'Enter a price in your default currency of %1$s to see it converted into %2$s using the exchange rate and formatting rules above.', 'woocommerce-payments' ),
 			$default_currency->get_code(),
 			$currency->get_code()
 		);
