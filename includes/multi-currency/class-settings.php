@@ -283,7 +283,7 @@ class Settings extends \WC_Settings_Page {
 			$this->id . '_charm_options',
 			[
 				'0.00'  => __( 'None', 'woocommerce-payments' ),
-				'-0.01' => __( '-0.01 (recommended)', 'woocommerce-payments' ),
+				'-0.01' => '-0.01',
 				'-0.05' => '-0.05',
 			]
 		);
