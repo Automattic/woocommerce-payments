@@ -15,7 +15,7 @@
 
 		&.is-enabled {
 			&::after {
-				opacity: 0;
+				display: none;
 			}
 		}
 	}
