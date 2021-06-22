@@ -30,8 +30,8 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 	 * Get the note.
 	 */
 	public static function get_note() {
-		// Show this notice only if UPE is not enabled.
-		if ( WC_Payments_Features::is_upe_enabled() ) {
+		// Show this notice only if UPE settings preview is disabled.
+		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			return;
 		}
 

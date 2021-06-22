@@ -11,8 +11,22 @@ use Automattic\WooCommerce\Admin\Notes\Note;
  * Class WC_Payments_Notes_Additional_Payment_Methods tests.
  */
 class WC_Payments_Notes_Additional_Payment_Methods_Test extends WP_UnitTestCase {
+	public function setUp() {
+		parent::setUp();
+
+		update_option( '_wcpay_feature_upe_settings_preview', '0' );
+	}
+
+	public function tearDown() {
+		parent::tearDown();
+
+		delete_option( '_wcpay_feature_upe_settings_preview' );
+	}
+
+
 	public function test_get_note() {
 		$note = WC_Payments_Notes_Additional_Payment_Methods::get_note();
+
 		$this->assertSame( 'Boost your sales by accepting new payment methods', $note->get_title() );
 		$this->assertSame( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.', $note->get_content() );
 		$this->assertSame( Note::E_WC_ADMIN_NOTE_INFORMATIONAL, $note->get_type() );

@@ -1450,6 +1450,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_maybe_enable_upe_feature_flag_enabling_flag() {
 		update_option( '_wcpay_feature_upe', '0' );
+		update_option( '_wcpay_feature_upe_settings_preview', '1' );
+
 		add_action( 'wp_redirect', [ $this, 'mock_wp_redirect' ] );
 
 		// Mock a request triggered by admin note.
@@ -1473,10 +1475,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		unset( $_GET['action'] );
 		remove_action( 'wp_redirect', [ $this, 'mock_wp_redirect' ] );
 		delete_option( '_wcpay_feature_upe' );
+		delete_option( '_wcpay_feature_upe_settings_preview' );
 	}
 
 	public function test_maybe_enable_upe_feature_flag_called_without_update_upe_action() {
 		update_option( '_wcpay_feature_upe', '0' );
+		update_option( '_wcpay_feature_upe_settings_preview', '0' );
+
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
@@ -1487,8 +1492,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->wcpay_gateway->maybe_enable_upe_feature_flag();
 
-		$this->assertSame( 0, get_option( '_wcpay_feature_upe' ) );
+		$this->assertSame( '0', get_option( '_wcpay_feature_upe' ) );
 		delete_option( '_wcpay_feature_upe' );
+		delete_option( '_wcpay_feature_upe_settings_preview' );
 	}
 
 }
