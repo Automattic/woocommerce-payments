@@ -97,8 +97,10 @@ const ConnectPageOnboardingDisabled = () => (
 
 const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
-	const { url: connectUrl } = wcpaySettings;
-	const { availableCountries, country } = wcpaySettings.connect;
+	const {
+		url: connectUrl,
+		connect: { availableCountries, country },
+	} = wcpaySettings;
 
 	const handleLocationCheck = () => {
 		// Reset the 'Set up' button state if merchant decided to stop
