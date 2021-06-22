@@ -560,7 +560,7 @@ class Multi_Currency {
 	 *
 	 * @return float The ceiled price.
 	 */
-	protected function ceil_price( float $price, float $rounding ) {
+	protected function ceil_price( float $price, float $rounding ): float {
 		if ( 0.00 === $rounding ) {
 			return $price;
 		}
