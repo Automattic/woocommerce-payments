@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 
 export default {
-	button: __( 'Finish Setup', 'woocommerce-payments' ),
+	button: __( 'Finish setup', 'woocommerce-payments' ),
 
 	heading: __( 'WooCommerce Payments', 'woocommerce-payments' ),
 
@@ -61,7 +61,7 @@ export default {
 
 	terms: createInterpolateElement(
 		__(
-			'By clicking “Finish Setup” you agree to the <a>Terms of Service</a>',
+			'By clicking “Finish setup”, you agree to the <a>Terms of Service</a>',
 			'woocommerce-payments'
 		),
 		{
