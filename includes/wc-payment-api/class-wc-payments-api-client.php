@@ -823,15 +823,15 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Update Stripe account data
+	 * Update account data
 	 *
-	 * @param array $stripe_account_settings Settings to update.
+	 * @param array $account_settings Settings to update.
 	 *
 	 * @return array Updated account data.
 	 */
-	public function update_account( $stripe_account_settings ) {
+	public function update_account( $account_settings ) {
 		return $this->request(
-			$stripe_account_settings,
+			$account_settings,
 			self::ACCOUNTS_API,
 			self::POST,
 			true,
