@@ -79,7 +79,7 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 		$GLOBALS['current_section'] = 'gbp';
 		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( [ 'GBP' => new Currency( 'GBP' ) ] );
 
-		$this->expectOutputRegex( '/<a href=".*\/wp-admin\/admin\.php\?page=wc-settings\&\#038\;tab=wcpay_multi_currency">Currencies<\/a> \&gt\; Pound sterling \(GBP\) 🇬🇧/' );
+		$this->expectOutputRegex( '/<a href=".*\/wp-admin\/admin\.php\?page=wc-settings&#038;tab=wcpay_multi_currency">Currencies<\/a> &gt; Pound sterling \(GBP\) 🇬🇧/' );
 
 		$this->settings->render_single_currency_breadcrumbs();
 	}
