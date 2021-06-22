@@ -1437,4 +1437,58 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertEquals( [ 'default', 'buy', 'donate', 'book' ], array_keys( $form_fields['payment_request_button_type']['options'] ) );
 		$this->assertEquals( [ 'dark', 'light', 'light-outline' ], array_keys( $form_fields['payment_request_button_theme']['options'] ) );
 	}
+
+	/**
+	 * A hook to stop wp_redirect to do anything so that we don't get
+	 * header already sent error.
+	 *
+	 * @return void
+	 */
+	public function mock_wp_redirect() {
+		return null;
+	}
+
+	public function test_maybe_enable_upe_feature_flag_enabling_flag() {
+		update_option( '_wcpay_feature_upe', '0' );
+		add_action( 'wp_redirect', [ $this, 'mock_wp_redirect' ] );
+
+		// Mock a request triggered by admin note.
+		$_GET['page']   = 'wc-settings';
+		$_GET['action'] = 'enable-upe';
+
+		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service
+		);
+
+		$this->wcpay_gateway->maybe_enable_upe_feature_flag();
+
+		$this->assertSame( 1, get_option( '_wcpay_feature_upe' ) );
+
+		// Clean up.
+		unset( $_GET['page'] );
+		unset( $_GET['action'] );
+		remove_action( 'wp_redirect', [ $this, 'mock_wp_redirect' ] );
+		delete_option( '_wcpay_feature_upe' );
+	}
+
+	public function test_maybe_enable_upe_feature_flag_called_without_update_upe_action() {
+		update_option( '_wcpay_feature_upe', '0' );
+		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service
+		);
+
+		$this->wcpay_gateway->maybe_enable_upe_feature_flag();
+
+		$this->assertSame( 0, get_option( '_wcpay_feature_upe' ) );
+		delete_option( '_wcpay_feature_upe' );
+	}
+
 }

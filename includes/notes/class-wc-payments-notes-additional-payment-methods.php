@@ -30,8 +30,8 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 	 * Get the note.
 	 */
 	public static function get_note() {
-		// Store must be at least 60 days old.
-		if ( ! self::wc_admin_active_for( 60 * DAY_IN_SECONDS ) ) {
+		// Show this notice only if UPE is not enabled.
+		if ( WC_Payments_Features::is_upe_enabled() ) {
 			return;
 		}
 
@@ -47,8 +47,8 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		$note->add_action(
 			self::NOTE_NAME,
 			__( 'Enable on your store', 'woocommerce-payments' ),
-			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
-			'unactioned',
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&action=enable-upe' ),
+			$note_class::E_WC_ADMIN_NOTE_UNACTIONED,
 			true
 		);
 		$note->add_action( 'learn-more', __( 'Learn more', 'woocommerce-payments' ), self::NOTE_DOCUMENTATION_URL );

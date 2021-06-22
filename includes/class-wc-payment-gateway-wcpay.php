@@ -369,6 +369,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+
+		add_action( 'admin_init', [ $this, 'maybe_enable_upe_feature_flag' ] );
 	}
 
 	/**
@@ -2233,5 +2235,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return [
 			'card',
 		];
+	}
+
+	/**
+	 * Enable UPE feature flag. CTA from Admin Notes. See WC_Payments_Notes_Additional_Payment_Methods.
+	 */
+	public function maybe_enable_upe_feature_flag() {
+		if (
+			! isset( $_GET['page'] ) ||
+			'wc-settings' !== $_GET['page'] ||
+			! isset( $_GET['action'] ) ||
+			'enable-upe' !== $_GET['action']
+		) {
+			return;
+		}
+
+		// Enable UPE.
+		WC_Payments_Features::update_upe_enabled( true );
+
+		$wcpay_settings_url = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' );
+		wp_safe_redirect( $wcpay_settings_url );
 	}
 }
