@@ -787,7 +787,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
               <span
                 class="wcpay-connect-account-page-terms-of-service"
               >
-                By clicking “Set up,” you agree to the 
+                By clicking “Finish setup”, you agree to the 
                 <a
                   href="https://wordpress.com/tos"
                   rel="noopener noreferrer"
@@ -800,7 +800,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
                 class="components-button is-primary"
                 href="/wcpay-connect-url"
               >
-                Finish Setup
+                Finish setup
               </a>
             </p>
           </div>

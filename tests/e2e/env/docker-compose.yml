@@ -19,6 +19,7 @@ services:
       - ${WCP_ROOT}:/var/www/html/wp-content/plugins/woocommerce-payments
       - ${E2E_ROOT}/deps/${DEV_TOOLS_DIR}:/var/www/html/wp-content/plugins/${DEV_TOOLS_DIR}
       - ${E2E_ROOT}/deps/woocommerce-subscriptions:/var/www/html/wp-content/plugins/woocommerce-subscriptions
+      - ${E2E_ROOT}/deps/action-scheduler:/var/www/html/wp-content/plugins/action-scheduler
   db:
     container_name: wcp_e2e_mysql
     image: mariadb:10.5.8

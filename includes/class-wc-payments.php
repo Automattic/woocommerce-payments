@@ -183,6 +183,7 @@ class WC_Payments {
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
+		include_once __DIR__ . '/class-experimental-abtest.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -748,6 +749,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_API_Client
+	 *
+	 * @return WC_Payments_API_Client API Client instance
+	 */
+	public static function get_payments_api_client() {
+		return self::$api_client;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
@@ -820,5 +830,4 @@ class WC_Payments {
 	public static function is_network_saved_cards_enabled() {
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
 	}
-
 }

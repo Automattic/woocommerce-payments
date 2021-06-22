@@ -2,14 +2,15 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { Card } from '@woocommerce/components';
 import { Button, Notice } from '@wordpress/components';
-import { useState, useEffect } from '@wordpress/element';
+import { render, useState, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import './style.scss';
+import OnboardingLocationCheckModal from './modal';
 import Page from 'components/page';
 import strings from './strings';
 import wcpayTracks from 'tracks';
@@ -24,6 +25,7 @@ import Discover from './cards/discover.js';
 import GPay from './cards/gpay.js';
 import JCB from './cards/jcb.js';
 import UnionPay from './cards/unionpay.js';
+import './style.scss';
 
 const LearnMore = () => {
 	const handleClick = () => {
@@ -95,8 +97,49 @@ const ConnectPageOnboardingDisabled = () => (
 
 const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
+	const {
+		connectUrl,
+		connect: { availableCountries, country },
+	} = wcpaySettings;
 
-	const handleSetup = () => {
+	const handleLocationCheck = () => {
+		// Reset the 'Set up' button state if merchant decided to stop
+		const handleModalDeclined = () => {
+			setSubmitted( false );
+		};
+		// Redirect the merchant if merchant decided to continue
+		const handleModalConfirmed = () => {
+			window.location = connectUrl;
+		};
+
+		// Populate translated list of supported countries we want to render in the modal window.
+		const countries = Object.values( availableCountries )
+			.sort()
+			.map( ( countryName ) => {
+				return { title: countryName };
+			} );
+
+		const container = document.createElement( 'div' );
+		container.id = 'wcpay-onboarding-location-check-container';
+		render(
+			<OnboardingLocationCheckModal
+				countries={ countries }
+				onDeclined={ handleModalDeclined }
+				onConfirmed={ handleModalConfirmed }
+			/>,
+			container
+		);
+		document.body.appendChild( container );
+	};
+
+	const handleSetup = ( event ) => {
+		const isCountryAvailable = availableCountries[ country ] !== undefined;
+		if ( ! isCountryAvailable ) {
+			// Inform the merchant if country specified in business address is not yet supported, but allow to proceed.
+			event.preventDefault();
+			handleLocationCheck( availableCountries );
+		}
+
 		setSubmitted( true );
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
 			// eslint-disable-next-line camelcase
@@ -126,7 +169,7 @@ const ConnectPageOnboarding = () => {
 					isBusy={ isSubmitted }
 					disabled={ isSubmitted }
 					onClick={ handleSetup }
-					href={ wcpaySettings.connectUrl }
+					href={ connectUrl }
 				>
 					{ strings.button }
 				</Button>
