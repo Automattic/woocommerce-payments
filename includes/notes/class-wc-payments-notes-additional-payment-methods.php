@@ -31,7 +31,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 	 */
 	public static function get_note() {
 		// Show this notice only if UPE settings preview is disabled.
-		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
+		if ( ! WC_Payments_Features::is_upe_settings_preview_enabled() || WC_Payments_Features::is_upe_enabled() ) {
 			return;
 		}
 

@@ -14,13 +14,15 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WP_UnitTestCase 
 	public function setUp() {
 		parent::setUp();
 
-		update_option( '_wcpay_feature_upe_settings_preview', '0' );
+		update_option( '_wcpay_feature_upe_settings_preview', '1' );
+		update_option( '_wcpay_feature_upe', '0' );
 	}
 
 	public function tearDown() {
 		parent::tearDown();
 
 		delete_option( '_wcpay_feature_upe_settings_preview' );
+		delete_option( '_wcpay_feature_upe' );
 	}
 
 
