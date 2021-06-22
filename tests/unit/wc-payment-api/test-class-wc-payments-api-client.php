@@ -810,6 +810,106 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * @dataProvider data_request_with_level3_data
+	 */
+	public function test_request_with_level3_data( $input_args, $expected_level3_args ) {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->anything(),
+				$this->callback(
+					function( $request_args_json ) use ( $expected_level3_args ) {
+						$request_args = json_decode( $request_args_json, true );
+
+						$this->assertSame( $expected_level3_args, $request_args['level3'] );
+
+						return true;
+					}
+				)
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request_with_level3_data',
+			[ $input_args, 'intentions', 'POST' ]
+		);
+	}
+
+	/**
+	 * Data provider for test_request_with_level3_data
+	 */
+	public function data_request_with_level3_data() {
+		return [
+			'australian_merchant'               => [
+				[
+					'level3' => [],
+				],
+				[],
+			],
+			'american_merchant_no_line_items'   => [
+				[
+					'level3' => [
+						'merchant_reference' => 'abc123',
+					],
+				],
+				[
+					'merchant_reference' => 'abc123',
+					'line_items'         => [
+						[
+							'discount_amount'     => 0,
+							'product_code'        => 'zero-cost-fee',
+							'product_description' => 'Zero cost fee',
+							'quantity'            => 1,
+							'tax_amount'          => 0,
+							'unit_cost'           => 0,
+						],
+					],
+				],
+			],
+			'american_merchant_with_line_items' => [
+				[
+					'level3' => [
+						'merchant_reference' => 'abc123',
+						'line_items'         => [
+							[
+								'discount_amount'     => 0,
+								'product_code'        => 'free-hug',
+								'product_description' => 'Free hug',
+								'quantity'            => 1,
+								'tax_amount'          => 0,
+								'unit_cost'           => 0,
+							],
+						],
+					],
+				],
+				[
+					'merchant_reference' => 'abc123',
+					'line_items'         => [
+						[
+							'discount_amount'     => 0,
+							'product_code'        => 'free-hug',
+							'product_description' => 'Free hug',
+							'quantity'            => 1,
+							'tax_amount'          => 0,
+							'unit_cost'           => 0,
+						],
+					],
+				],
+			],
+		];
+	}
+
+	/**
 	 * Set up http mock response.
 	 *
 	 * @param int   $status_code status code for the mocked response.

@@ -48,6 +48,9 @@ class Settings extends \WC_Settings_Page {
 		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
 		add_action( 'woocommerce_admin_field_wcpay_enabled_currencies_list', [ $this, 'enabled_currencies_list' ] );
+		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_section_start', [ $this, 'currencies_settings_section_start' ] );
+		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_section_end', [ $this, 'currencies_settings_section_end' ] );
+
 		add_action( 'woocommerce_admin_field_wcpay_single_currency_preview_helper', [ $this, 'single_currency_preview_helper' ] );
 		parent::__construct();
 	}
@@ -99,16 +102,14 @@ class Settings extends \WC_Settings_Page {
 						'type' => 'sectionend',
 						'id'   => $this->id . '_enabled_currencies',
 					],
-				]
-			);
-		} elseif ( 'store' === $current_section ) {
-			// TODO: Store settings are not available at the moment.
-			$settings = apply_filters(
-				$this->id . 'store_settings',
-				[
+
+					[
+						'type' => 'wcpay_currencies_settings_section_start',
+					],
+
 					[
 						'title' => __( 'Store settings', 'woocommerce-payments' ),
-						// TODO: Need learn more link.
+						// TODO: Learn more documentation link, to be done on #1780.
 						'desc'  => sprintf(
 							/* translators: %s: url to documentation. */
 							__( 'Store settings allow your customers to choose which currency they would like to use when shopping at your store. <a href="%s">Learn more</a>', 'woocommerce-payments' ),
@@ -116,33 +117,33 @@ class Settings extends \WC_Settings_Page {
 						),
 						'type'  => 'title',
 						'id'    => $this->id . '_store_settings',
+						'class' => $this->id . '_store_settings_input',
 					],
 
 					[
 						'title'         => __( 'Store settings', 'woocommerce-payments' ),
 						'desc'          => __( 'Automatically switch customers to the local currency if it is enabled above.', 'woocommerce-payments' ),
-						// TODO: Need preview link... what is expected?
+						// TODO: Preview link, to be done on #2258.
 						'desc_tip'      => sprintf(
-							/* translators: %s: url to preview? */
+							/* translators: %s: url to a preview of alert banner */
 							__( 'Customers will be notified via store alert banner. <a href="%s">Preview</a>', 'woocommerce-payments' ),
 							''
 						),
 						'id'            => $this->id . '_enable_auto_currency',
-						'default'       => 'no',
+						'default'       => 'yes',
 						'type'          => 'checkbox',
 						'checkboxgroup' => 'start',
 					],
 
 					[
 						'desc'          => __( 'Add a currency switcher to the cart widget', 'woocommerce-payments' ),
-						// TODO: Need configure link... what is expected? Widgets?
 						'desc_tip'      => sprintf(
-							/* translators: %s: url to the widgets? */
+							/* translators: %s: url to the widgets page */
 							__( 'A currency switcher is also available in your widgets. <a href="%s">Configure now</a>', 'woocommerce-payments' ),
-							''
+							'widgets.php'
 						),
 						'id'            => $this->id . '_enable_cart_switcher',
-						'default'       => 'no',
+						'default'       => 'yes',
 						'type'          => 'checkbox',
 						'checkboxgroup' => 'end',
 					],
@@ -150,6 +151,10 @@ class Settings extends \WC_Settings_Page {
 					[
 						'type' => 'sectionend',
 						'id'   => $this->id . 'store_settings',
+					],
+
+					[
+						'type' => 'wcpay_currencies_settings_section_end',
 					],
 				]
 			);
@@ -184,6 +189,24 @@ class Settings extends \WC_Settings_Page {
 	}
 
 	/**
+	 * Output section start for store settings.
+	 */
+	public function currencies_settings_section_start() {
+		?>
+		<div id="wcpay_currencies_settings_section" style="display: none;">
+		<?php
+	}
+
+	/**
+	 * Output section end for store settings.
+	 */
+	public function currencies_settings_section_end() {
+		?>
+		</div>
+		<?php
+	}
+
+	/**
 	 * Output hidden fields for preview.
 	 */
 	public function single_currency_preview_helper() {
@@ -211,14 +234,16 @@ class Settings extends \WC_Settings_Page {
 					<?php echo esc_html( $currency->get_symbol() ); ?>
 					<span style="display:inline-block;"></span>
 				</div>
-				<input type="hidden" 
-					name="<?php echo esc_attr( $this->id . '_automatic_exchange_rate' ); ?>" 
-					value="<?php echo esc_attr( $available_currencies[ $currency->get_code() ]->get_rate() ); ?>" 
+				<input type="hidden"
+					name="<?php echo esc_attr( $this->id . '_automatic_exchange_rate' ); ?>"
+					value="<?php echo esc_attr( $available_currencies[ $currency->get_code() ]->get_rate() ); ?>"
 				/>
 			</td>
 		</tr>
 		<?php
 	}
+
+
 
 	/**
 	 * Returns the settings for the single currency.
@@ -231,8 +256,6 @@ class Settings extends \WC_Settings_Page {
 		$available_currencies = $this->multi_currency->get_available_currencies();
 		$default_currency     = $this->multi_currency->get_default_currency();
 		$page_id              = $this->id . '_single_currency';
-
-		$page_title = sprintf( '%1$s (%2$s)', $currency->get_name(), $currency->get_code() );
 
 		$exchange_rate_options = [
 			'automatic' => sprintf(
@@ -287,13 +310,19 @@ class Settings extends \WC_Settings_Page {
 			$currency->get_code()
 		);
 
+		// Output breadcrumbs.
+		?>
+		<h2>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=wcpay_multi_currency' ) ); ?>"><?php esc_html_e( 'Currencies', 'woocommerce-payments' ); ?></a> &gt; <?php echo esc_html( "{$currency->get_name()} ({$currency->get_code()}) {$currency->get_flag()}" ); ?>
+		</h2>
+		<?php
+
 		return apply_filters(
 			$this->id . '_single_settings',
 			[
 				[
-					'title' => $page_title,
-					'type'  => 'title',
-					'id'    => $page_id,
+					'type' => 'title',
+					'id'   => $page_id,
 				],
 
 				[
@@ -382,11 +411,17 @@ class Settings extends \WC_Settings_Page {
 		// Save all settings through the settings API.
 		\WC_Admin_Settings::save_fields( $this->get_settings( $current_section ) );
 
-		// If the manual rate was blank, or zero, we set it to the automatic rate.
-		$manual_rate = get_option( $this->id . '_manual_rate_' . $current_section, false );
-		if ( ! $manual_rate || 0 >= $manual_rate || '' === $manual_rate ) {
-			$available_currencies = $this->multi_currency->get_available_currencies();
-			update_option( $this->id . '_manual_rate_' . $current_section, $available_currencies[ strtoupper( $current_section ) ]->get_rate() );
+		// If we are saving the settings for an individual currency, we have some additional logic.
+		if ( '' !== $current_section ) {
+			// If the manual rate was blank, or zero, we set it to the automatic rate.
+			$manual_rate = get_option( $this->id . '_manual_rate_' . $current_section, false );
+			if ( ! $manual_rate || 0 >= $manual_rate || '' === $manual_rate ) {
+				$available_currencies = $this->multi_currency->get_available_currencies();
+				$selected_currency    = strtoupper( $current_section );
+				if ( isset( $available_currencies[ $selected_currency ] ) ) {
+					update_option( $this->id . '_manual_rate_' . $current_section, $available_currencies[ $selected_currency ]->get_rate() );
+				}
+			}
 		}
 
 		do_action( 'woocommerce_update_options_' . $this->id );

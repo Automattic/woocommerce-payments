@@ -1226,7 +1226,7 @@ class WC_Payments_API_Client {
 	 */
 	private function request_with_level3_data( $params, $api, $method, $is_site_specific = true ) {
 		// If level3 data is not present for some reason, simply proceed normally.
-		if ( ! isset( $params['level3'] ) || ! is_array( $params['level3'] ) ) {
+		if ( empty( $params['level3'] ) || ! is_array( $params['level3'] ) ) {
 			return $this->request( $params, $api, $method, $is_site_specific );
 		}
 

@@ -16,6 +16,7 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
  */
 import { reasons as disputeReasons } from 'disputes/strings';
 import { formatCurrency, formatFX } from 'utils/currency';
+import { formatFee } from 'utils/fees';
 
 /**
  * Creates a Gridicon
@@ -194,9 +195,9 @@ const composeFeeString = ( event ) => {
 
 	return sprintf(
 		/* translators: %1$s is the total fee amount, %2$f%% is the fee percentage, and %3$s is the fixed fee amount. */
-		__( 'Fee (%2$.1f%% + %3$s): %1$s', 'woocommerce-payments' ),
+		__( 'Fee (%2$f%% + %3$s): %1$s', 'woocommerce-payments' ),
 		formatCurrency( -feeAmount, feeCurrency ),
-		percentage * 100,
+		formatFee( percentage ),
 		formatCurrency( fixed, fixedCurrency )
 	);
 };
