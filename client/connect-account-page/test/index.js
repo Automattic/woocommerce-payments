@@ -14,8 +14,8 @@ describe( 'ConnectAccountPage', () => {
 	beforeEach( () => {
 		window.location.assign = jest.fn();
 		global.wcpaySettings = {
+			connectUrl: '/wcpay-connect-url',
 			connect: {
-				url: '/wcpay-connect-url',
 				country: 'US',
 				availableCountries: { US: 'United States (US)' },
 			},
@@ -35,8 +35,8 @@ describe( 'ConnectAccountPage', () => {
 
 	test( 'should prompt unsupported countries', () => {
 		global.wcpaySettings = {
+			connectUrl: '/wcpay-connect-url',
 			connect: {
-				url: '/wcpay-connect-url',
 				country: 'CA',
 				availableCountries: {
 					GB: 'United Kingdom (UK)',
@@ -46,7 +46,7 @@ describe( 'ConnectAccountPage', () => {
 		};
 
 		render( <ConnectAccountPage /> );
-		user.click( screen.getByRole( 'link', { name: /Finish Setup/ } ) );
+		user.click( screen.getByRole( 'link', { name: /Finish setup/ } ) );
 
 		const modalSelector =
 			'.woocommerce-payments__onboarding_location_check-modal';
