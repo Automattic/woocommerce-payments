@@ -275,6 +275,8 @@ class Multi_Currency {
 			}
 		);
 
+		$this->enabled_currencies = [];
+
 		foreach ( $enabled_currencies as $enabled_currency ) {
 			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
 			$currency = clone $enabled_currency;
@@ -341,6 +343,7 @@ class Multi_Currency {
 	public function set_enabled_currencies( $currencies = [] ) {
 		if ( 0 < count( $currencies ) ) {
 			update_option( $this->id . '_enabled_currencies', $currencies );
+			$this->initialize_enabled_currencies();
 		}
 	}
 
