@@ -57,7 +57,7 @@
     "tube:stop": "./docker/bin/jt/tunnel.sh break"
   },
   "dependencies": {
-    "@stripe/react-stripe-js": "1.1.2",
+    "@stripe/react-stripe-js": "1.4.1",
     "@stripe/stripe-js": "1.12.1",
     "@woocommerce/explat": "^1.0.0",
     "css-loader": "^5.0.0",
