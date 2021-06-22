@@ -261,8 +261,8 @@ class WC_Payments_Admin {
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
 		$wcpay_settings = [
+			'connectUrl'            => WC_Payments_Account::get_connect_url(),
 			'connect'               => [
-				'url'                => WC_Payments_Account::get_connect_url(),
 				'country'            => WC()->countries->get_base_country(),
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 			],
