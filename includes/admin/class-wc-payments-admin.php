@@ -224,7 +224,14 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'assets/css/admin.css' )
 		);
 
-		$this->add_menu_notification_badge();
+		// Temporarily don't show the badge at all. This should be removed
+		// when implementing https://github.com/automattic/woocommerce-payments/issues/2071.
+		// There are also unit tests that need to be re-enabled in
+		// tests/unit/admin/test-class-wc-payments-admin.php.
+		if ( true === false ) {
+			$this->add_menu_notification_badge();
+		}
+
 		$this->add_update_business_details_task();
 	}
 
