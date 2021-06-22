@@ -93,15 +93,22 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_product_price_converts_prices() {
-		$this->mock_compatibility->method( 'should_convert_product_price' )->willReturn( true );
+		$mock_product = new WC_Product( 0 );
+		$this->mock_compatibility
+			->method( 'should_convert_product_price' )
+			->with( $mock_product )
+			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_price' )->with( 10.0, 'product' )->willReturn( 25.0 );
-		$this->assertSame( 25.0, $this->frontend_prices->get_product_price( 10.0 ) );
+		$this->assertSame( 25.0, $this->frontend_prices->get_product_price( 10.0, $mock_product ) );
 	}
 
 	public function test_get_product_price_skips_conversion_on_compatibility() {
-		$this->mock_compatibility->method( 'should_convert_product_price' )->willReturn( false );
-		$this->mock_multi_currency->method( 'get_price' )->with( 10.0, 'product' )->willReturn( 10.0 );
-		$this->assertSame( 10.0, $this->frontend_prices->get_product_price( 10.0 ) );
+		$mock_product = new WC_Product( 0 );
+		$this->mock_compatibility
+			->method( 'should_convert_product_price' )
+			->with( $mock_product )
+			->willReturn( false );
+		$this->assertSame( 10.0, $this->frontend_prices->get_product_price( 10.0, $mock_product ) );
 	}
 
 	public function test_get_variation_price_range_converts_non_empty_prices() {

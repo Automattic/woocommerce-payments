@@ -83,11 +83,11 @@ class Frontend_Prices {
 			return $price;
 		}
 
-		if ( $this->compatibility->should_convert_product_price( $product ) ) {
-			return $this->multi_currency->get_price( $price, 'product' );
+		if ( ! $this->compatibility->should_convert_product_price( $product ) ) {
+			return $price;
 		}
 
-		return $price;
+		return $this->multi_currency->get_price( $price, 'product' );
 	}
 
 	/**
