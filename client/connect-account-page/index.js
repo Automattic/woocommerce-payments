@@ -98,10 +98,9 @@ const ConnectPageOnboardingDisabled = () => (
 const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const {
-		availableCountries,
-		country,
-		url: connectUrl,
-	} = wcpaySettings.connect;
+		connectUrl,
+		connect: { availableCountries, country },
+	} = wcpaySettings;
 
 	const handleLocationCheck = () => {
 		// Reset the 'Set up' button state if merchant decided to stop
@@ -110,8 +109,7 @@ const ConnectPageOnboarding = () => {
 		};
 		// Redirect the merchant if merchant decided to continue
 		const handleModalConfirmed = () => {
-			// The raw URL value has ampersands escaped and we need to unescape them for redirect to happen
-			window.location = connectUrl.replaceAll( '&amp;', '&' );
+			window.location = connectUrl;
 		};
 
 		// Populate translated list of supported countries we want to render in the modal window.
