@@ -14,6 +14,7 @@ import EnableUpePreviewTask from './enable-upe-preview-task';
 import SetupCompleteTask from './setup-complete-task';
 import './index.scss';
 import useIsUpeEnabled from '../../settings/wcpay-upe-toggle/hook';
+import WcpaySettingsFetcher from './wcpay-settings-fetcher';
 
 const UpePreviewMethodsSelector = () => {
 	const [ isUpeEnabled ] = useIsUpeEnabled();
@@ -32,6 +33,7 @@ const UpePreviewMethodsSelector = () => {
 					<WizardTaskList>
 						<WizardTask id="enable-upe-preview">
 							<EnableUpePreviewTask />
+							<WcpaySettingsFetcher />
 						</WizardTask>
 						<WizardTask id="setup-complete">
 							<SetupCompleteTask />
