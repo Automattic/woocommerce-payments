@@ -98,7 +98,7 @@ const ConnectPageOnboardingDisabled = () => (
 const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const {
-		url: connectUrl,
+		connectUrl,
 		connect: { availableCountries, country },
 	} = wcpaySettings;
 

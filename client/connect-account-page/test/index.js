@@ -14,7 +14,7 @@ describe( 'ConnectAccountPage', () => {
 	beforeEach( () => {
 		window.location.assign = jest.fn();
 		global.wcpaySettings = {
-			url: '/wcpay-connect-url',
+			connectUrl: '/wcpay-connect-url',
 			connect: {
 				country: 'US',
 				availableCountries: { US: 'United States (US)' },
@@ -35,7 +35,7 @@ describe( 'ConnectAccountPage', () => {
 
 	test( 'should prompt unsupported countries', () => {
 		global.wcpaySettings = {
-			url: '/wcpay-connect-url',
+			connectUrl: '/wcpay-connect-url',
 			connect: {
 				country: 'CA',
 				availableCountries: {
