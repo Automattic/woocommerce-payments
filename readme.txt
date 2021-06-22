@@ -115,6 +115,8 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Payment request button should guide users to login when necessary.
 * Add - When setting WooCommerce Payments up, inform if merchant business country is not supported.
 * Update - Bump minimum supported version of WooCommerce from 4.8 to 5.2.
+* Add - Introduce advance filters on deposits page.
+* Update: Prefill OAuth flow with WC store country
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
