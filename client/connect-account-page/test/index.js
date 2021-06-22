@@ -46,7 +46,7 @@ describe( 'ConnectAccountPage', () => {
 		};
 
 		render( <ConnectAccountPage /> );
-		user.click( screen.getByRole( 'link', { name: /Finish Setup/ } ) );
+		user.click( screen.getByRole( 'link', { name: /Finish setup/ } ) );
 
 		const modalSelector =
 			'.woocommerce-payments__onboarding_location_check-modal';
