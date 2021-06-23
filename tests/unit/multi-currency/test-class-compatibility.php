@@ -38,16 +38,6 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			->willReturn( 42 );
 	}
 
-	public function test_is_product_subscription_renewal_false_on_no_match() {
-		$this->mock_wcs_cart_contains_renewal( false );
-		$this->assertFalse( $this->compatibility->is_product_subscription_renewal( $this->mock_product ) );
-	}
-
-	public function test_is_product_subscription_renewal_true_on_match() {
-		$this->mock_wcs_cart_contains_renewal( true );
-		$this->assertTrue( $this->compatibility->is_product_subscription_renewal( $this->mock_product ) );
-	}
-
 	public function test_override_selected_currency_return_false() {
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->assertFalse( $this->compatibility->override_selected_currency() );
