@@ -21,6 +21,7 @@ defined( 'ABSPATH' ) || exit;
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
 define( 'WCPAY_ABSPATH', __DIR__ . '/' );
 define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
+defined( 'JETPACK__WPCOM_JSON_API_BASE' ) || define( 'JETPACK__WPCOM_JSON_API_BASE', 'https://public-api.wordpress.com' );
 
 require_once __DIR__ . '/vendor/autoload_packages.php';
 
@@ -114,8 +115,6 @@ function wcpay_check_old_jetpack_version() {
 	}
 	return true;
 }
-
-define('JETPACK__WPCOM_JSON_API_BASE', 'https://public-api.wordpress.com');
 
 /**
  * Display an error notice if the installed Jetpack version is too old to even start initializing the plugin.
