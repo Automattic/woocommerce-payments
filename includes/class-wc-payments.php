@@ -800,8 +800,6 @@ class WC_Payments {
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
-			// TODO: Remember to remove this line. Added here for testing only.
-			WC_Payments_Notes_Additional_Payment_Methods::possibly_delete_note();
 			WC_Payments_Notes_Additional_Payment_Methods::possibly_add_note();
 		}
 	}
