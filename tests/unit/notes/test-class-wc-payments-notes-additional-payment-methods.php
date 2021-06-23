@@ -35,7 +35,7 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WP_UnitTestCase 
 		$this->assertSame( 'wc-payments-notes-additional-payment-methods', $note->get_name() );
 		$this->assertSame( 'woocommerce-payments', $note->get_source() );
 
-		[$enable_upe_action] = $note->get_actions();
+		list( $enable_upe_action ) = $note->get_actions();
 		$this->assertSame( 'wc-payments-notes-additional-payment-methods', $enable_upe_action->name );
 		$this->assertSame( 'Enable on your store', $enable_upe_action->label );
 		$this->assertStringStartsWith( 'http://example.org/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&action=enable-upe&_wpnonce=', $enable_upe_action->query );
