@@ -52,6 +52,8 @@ class Settings extends \WC_Settings_Page {
 		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_section_end', [ $this, 'currencies_settings_section_end' ] );
 
 		add_action( 'woocommerce_admin_field_wcpay_single_currency_preview_helper', [ $this, 'single_currency_preview_helper' ] );
+
+		add_action( 'woocommerce_settings_' . $this->id, [ $this, 'render_single_currency_breadcrumbs' ] );
 		parent::__construct();
 	}
 
@@ -310,13 +312,6 @@ class Settings extends \WC_Settings_Page {
 			$currency->get_code()
 		);
 
-		// Output breadcrumbs.
-		?>
-		<h2>
-			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=wcpay_multi_currency' ) ); ?>"><?php esc_html_e( 'Currencies', 'woocommerce-payments' ); ?></a> &gt; <?php echo esc_html( "{$currency->get_name()} ({$currency->get_code()}) {$currency->get_flag()}" ); ?>
-		</h2>
-		<?php
-
 		return apply_filters(
 			$this->id . '_single_settings',
 			[
@@ -425,5 +420,28 @@ class Settings extends \WC_Settings_Page {
 		}
 
 		do_action( 'woocommerce_update_options_' . $this->id );
+	}
+
+	/**
+	 * Renders the breadcrumbs for the single currency settings page.
+	 */
+	public function render_single_currency_breadcrumbs() {
+		global $current_section;
+
+		$currency_code = strtoupper( $current_section );
+		$currencies    = $this->multi_currency->get_enabled_currencies();
+
+		// Exit early if this is not a single currency page or the currency is not enabled.
+		if ( empty( $current_section ) || ! isset( $currencies[ $currency_code ] ) ) {
+			return;
+		}
+
+		$currency = $currencies[ $currency_code ];
+
+		?>
+		<h2>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=wcpay_multi_currency' ) ); ?>"><?php esc_html_e( 'Currencies', 'woocommerce-payments' ); ?></a> &gt; <?php echo esc_html( "{$currency->get_name()} ({$currency->get_code()}) {$currency->get_flag()}" ); ?>
+		</h2>
+		<?php
 	}
 }
