@@ -83,12 +83,16 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay_Subscriptions_Compat(
+		$this->cc_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->wcpay_account,
 			$this->mock_customer_service,
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service
+		);
+
+		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay_Subscriptions_Compat(
+			$this->cc_gateway
 		);
 	}
 
@@ -302,7 +306,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 
 	public function test_subscription_payment_method_filter_adds_card_details() {
 		$subscription = WC_Helper_Order::create_order( self::USER_ID );
-		$subscription->set_payment_method( $this->wcpay_gateway->id );
+		$subscription->set_payment_method( $this->wcpay_gateway->gateway->id );
 		$subscription->add_payment_token( WC_Helper_Token::create_token( 'new_payment_method_1', self::USER_ID ) );
 
 		$last_token = WC_Helper_Token::create_token( 'new_payment_method_2', self::USER_ID );
@@ -352,7 +356,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 					],
 				],
 			],
-			$payment_meta[ $this->wcpay_gateway->id ]
+			$payment_meta[ $this->wcpay_gateway->gateway->id ]
 		);
 	}
 
@@ -370,7 +374,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 					],
 				],
 			],
-			$payment_meta[ $this->wcpay_gateway->id ]
+			$payment_meta[ $this->wcpay_gateway->gateway->id ]
 		);
 	}
 
@@ -382,7 +386,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		// but we need to assert something to avoid PHPUnit's risky test warning.
 		$this->assertNull(
 			$this->wcpay_gateway->validate_subscription_payment_meta(
-				$this->wcpay_gateway->id,
+				$this->wcpay_gateway->gateway->id,
 				[ 'wc_order_tokens' => [ 'token' => [ 'value' => strval( $token->get_id() ) ] ] ],
 				$subscription
 			)
@@ -408,7 +412,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription = WC_Helper_Order::create_order( self::USER_ID );
 
 		$this->wcpay_gateway->validate_subscription_payment_meta(
-			$this->wcpay_gateway->id,
+			$this->wcpay_gateway->gateway->id,
 			[ 'wc_order_tokens' => [ 'token' => [ 'value' => '' ] ] ],
 			$subscription
 		);
@@ -421,7 +425,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription = WC_Helper_Order::create_order( self::USER_ID );
 
 		$this->wcpay_gateway->validate_subscription_payment_meta(
-			$this->wcpay_gateway->id,
+			$this->wcpay_gateway->gateway->id,
 			[ 'wc_order_tokens' => [ 'token' => [ 'value' => '158651' ] ] ],
 			$subscription
 		);
@@ -435,7 +439,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$token        = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID + 1 );
 
 		$this->wcpay_gateway->validate_subscription_payment_meta(
-			$this->wcpay_gateway->id,
+			$this->wcpay_gateway->gateway->id,
 			[ 'wc_order_tokens' => [ 'token' => [ 'value' => strval( $token->get_id() ) ] ] ],
 			$subscription
 		);
@@ -535,11 +539,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 
 		WC_Subscriptions::$version = '3.0.7';
 		new \WC_Payment_Gateway_WCPay_Subscriptions_Compat(
-			$this->mock_api_client,
-			$this->wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_token_service,
-			$this->mock_action_scheduler_service
+			$this->cc_gateway
 		);
 
 		$this->assertTrue( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
@@ -550,11 +550,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 
 		WC_Subscriptions::$version = '3.0.8';
 		new \WC_Payment_Gateway_WCPay_Subscriptions_Compat(
-			$this->mock_api_client,
-			$this->wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_token_service,
-			$this->mock_action_scheduler_service
+			$this->cc_gateway
 		);
 
 		$this->assertFalse( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
