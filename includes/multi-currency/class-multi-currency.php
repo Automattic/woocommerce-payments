@@ -7,6 +7,10 @@
 
 namespace WCPay\Multi_Currency;
 
+use WC_Payments;
+use WC_Payments_API_Client;
+use WCPay\Exceptions\API_Exception;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -14,8 +18,10 @@ defined( 'ABSPATH' ) || exit;
  */
 class Multi_Currency {
 
-	const CURRENCY_SESSION_KEY = 'wcpay_currency';
-	const CURRENCY_META_KEY    = 'wcpay_currency';
+	const CURRENCY_SESSION_KEY     = 'wcpay_currency';
+	const CURRENCY_META_KEY        = 'wcpay_currency';
+	const CURRENCY_CACHE_OPTION    = 'wcpay_multi_currency_cached_currencies';
+	const CURRENCY_RETRIEVAL_ERROR = 'error';
 
 	/**
 	 * The plugin's ID.
@@ -74,6 +80,13 @@ class Multi_Currency {
 	protected $enabled_currencies;
 
 	/**
+	 * Client for making requests to the WooCommerce Payments API
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	private $payments_api_client;
+
+	/**
 	 * Main Multi_Currency Instance.
 	 *
 	 * Ensures only one instance of Multi_Currency is loaded or can be loaded.
@@ -83,21 +96,37 @@ class Multi_Currency {
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
-			self::$instance = new self();
+			self::$instance = new self( WC_Payments::get_payments_api_client() );
 		}
 		return self::$instance;
 	}
 
 	/**
-	 * Constructor.
+	 * Class constructor.
+	 *
+	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
 	 */
-	private function __construct() {
+	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+		// Load the include files.
 		$this->includes();
-		$this->init();
+
+		$this->payments_api_client = $payments_api_client;
+
+		add_action( 'init', [ $this, 'init' ] );
+		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
+		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
+
+		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
+
+		if ( $is_frontend_request ) {
+			// Make sure that this runs after the main init function.
+			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
+		}
 	}
 
 	/**
-	 * Init.
+	 * Called after the WooCommerce session has been initialized. Initialises the available currencies,
+	 * default currency and enabled currencies for the multi currency plugin.
 	 */
 	public function init() {
 		$this->initialize_available_currencies();
@@ -151,7 +180,7 @@ class Multi_Currency {
 	 *
 	 * @return array The new settings pages.
 	 */
-	public function init_settings_pages( $settings_pages ) {
+	public function init_settings_pages( $settings_pages ): array {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-settings.php';
 
 		$settings_pages[] = new Settings( $this );
@@ -196,21 +225,59 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Gets the mock available.
+	 * Wipes the cached currency data option, forcing to re-fetch the data from WPCOM.
 	 *
-	 * @return array Array of currencies.
+	 * @return void
 	 */
-	public function get_mock_currencies() {
+	public function clear_cache() {
+		delete_option( self::CURRENCY_CACHE_OPTION );
+	}
+
+	/**
+	 * Gets and caches the data for the currency rates from the server.
+	 * Will be returned as an array with three keys, 'currencies' (the currencies), 'expires' (the expiry time)
+	 * and 'updated' (when this data was fetched from the API).
+	 *
+	 * @return ?array
+	 */
+	public function get_cached_currencies() {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return null;
+		}
+
+		$cache_data = $this->read_currencies_from_cache();
+
+		// If the option contains the error value, return false early and do not attempt another API call.
+		if ( isset( $cache_data['currencies'] ) && self::CURRENCY_RETRIEVAL_ERROR === $cache_data['currencies'] ) {
+			return null;
+		}
+
+		// If an array of currencies was returned from the cache, return it here.
+		if ( null !== $cache_data ) {
+			return $cache_data;
+		}
+
+		// If the cache was expired or something went wrong, make a call to the server to get the
+		// currency data.
+		try {
+			$currency_data = $this->payments_api_client->get_currency_rates( get_woocommerce_currency() );
+		} catch ( API_Exception $e ) {
+			// Failed to retrieve currencies from the server. Exception is logged in http client.
+			// Rate limit for a short amount of time by caching the failure.
+			$this->cache_currencies( self::CURRENCY_RETRIEVAL_ERROR, time(), 1 * MINUTE_IN_SECONDS );
+
+			// Return null to signal currency retrieval error.
+			return null;
+		}
+
+		$updated = time();
+
+		// Cache the currency data so we don't call the server every time.
+		$this->cache_currencies( $currency_data, $updated, 6 * HOUR_IN_SECONDS );
+
 		return [
-			[ 'CAD', 1.206823 ],
-			[ 'GBP', 0.708099 ],
-			[ 'EUR', 0.826381 ],
-			[ 'AED', 3.6732 ],
-			[ 'CDF', 2000 ],
-			[ 'NZD', 1.387163 ],
-			[ 'DKK', 6.144615 ],
-			[ 'BIF', 1974 ], // Zero decimal currency.
-			[ 'CLP', 706.8 ], // Zero decimal currency.
+			'currencies' => $currency_data,
+			'updated'    => $updated,
 		];
 	}
 
@@ -228,7 +295,7 @@ class Multi_Currency {
 	 *
 	 * @return Frontend_Prices
 	 */
-	public function get_frontend_prices() {
+	public function get_frontend_prices(): Frontend_Prices {
 		return $this->frontend_prices;
 	}
 
@@ -237,21 +304,8 @@ class Multi_Currency {
 	 *
 	 * @return Frontend_Currencies
 	 */
-	public function get_frontend_currencies() {
+	public function get_frontend_currencies(): Frontend_Currencies {
 		return $this->frontend_currencies;
-	}
-
-	/**
-	 * Gets the currencies stored in the db.
-	 *
-	 * @return array Multi-dimensional array of currencies and rates.
-	 */
-	private function get_stored_currencies(): array {
-		$stored_currencies = get_option( $this->id . '_stored_currencies', false );
-		if ( ! $stored_currencies ) {
-			$stored_currencies = $this->get_mock_currencies();
-		}
-		return $stored_currencies;
 	}
 
 	/**
@@ -262,9 +316,16 @@ class Multi_Currency {
 		$woocommerce_currency                                = get_woocommerce_currency();
 		$this->available_currencies[ $woocommerce_currency ] = new Currency( $woocommerce_currency, 1.0 );
 
-		$currencies = $this->get_stored_currencies();
-		foreach ( $currencies as $currency ) {
-			$new_currency                                      = new Currency( $currency[0], $currency[1] );
+		$available_currencies = [];
+
+		$wc_currencies = get_woocommerce_currencies();
+		$cache_data    = $this->get_cached_currencies();
+
+		foreach ( $wc_currencies as $currency_code => $currency_name ) {
+			$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 1.0;
+			$new_currency  = new Currency( $currency_code, $currency_rate );
+
+			// Add this to our list of available currencies.
 			$available_currencies[ $new_currency->get_name() ] = $new_currency;
 		}
 
@@ -292,11 +353,13 @@ class Multi_Currency {
 			}
 		);
 
+		$this->enabled_currencies = [];
+
 		foreach ( $enabled_currencies as $enabled_currency ) {
 			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
 			$currency = clone $enabled_currency;
 			$charm    = get_option( $this->id . '_price_charm_' . $currency->get_id(), 0.00 );
-			$rounding = get_option( $this->id . '_price_rounding_' . $currency->get_id(), 'none' );
+			$rounding = get_option( $this->id . '_price_rounding_' . $currency->get_id(), $currency->get_is_zero_decimal() ? '100' : '1.00' );
 			$currency->set_charm( $charm );
 			$currency->set_rounding( $rounding );
 
@@ -358,6 +421,7 @@ class Multi_Currency {
 	public function set_enabled_currencies( $currencies = [] ) {
 		if ( 0 < count( $currencies ) ) {
 			update_option( $this->id . '_enabled_currencies', $currencies );
+			$this->initialize_enabled_currencies();
 		}
 	}
 
@@ -385,6 +449,7 @@ class Multi_Currency {
 	 * Update the selected currency from a currency code.
 	 *
 	 * @param string $currency_code Three letter currency code.
+	 *
 	 * @return void
 	 */
 	public function update_selected_currency( string $currency_code ) {
@@ -428,16 +493,9 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Recalculates WooCommerce cart totals.
-	 */
-	public function recalculate_cart() {
-		WC()->cart->calculate_totals();
-	}
-
-	/**
 	 * Gets the configured value for apply charm pricing only to products.
 	 *
-	 * @return bool The configured value.
+	 * @return mixed The configured value.
 	 */
 	public function get_apply_charm_only_to_products() {
 		return apply_filters( 'wcpay_multi_currency_apply_charm_only_to_products', true );
@@ -474,52 +532,10 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Gets the price after adjusting it with the rounding and charm settings.
-	 *
-	 * @param float    $price               The price to be adjusted.
-	 * @param bool     $apply_charm_pricing Whether charm pricing should be applied.
-	 * @param Currency $currency The currency to be used when adjusting.
-	 *
-	 * @return float The adjusted price.
+	 * Recalculates WooCommerce cart totals.
 	 */
-	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
-		if ( 'none' !== $currency->get_rounding() ) {
-			$price = $this->ceil_price( $price, intval( $currency->get_rounding() ) );
-		}
-
-		if ( $apply_charm_pricing ) {
-			$price += floatval( $currency->get_charm() );
-		}
-
-		// Do not return negative prices (possible because of $currency->get_charm()).
-		return max( 0, $price );
-	}
-
-	/**
-	 * Ceils the price to the next number based on the precision.
-	 *
-	 * @param float $price     The price to be ceiled.
-	 * @param int   $precision The precision to be used.
-	 *
-	 * @return float The ceiled price.
-	 */
-	protected function ceil_price( $price, $precision ) {
-		$precision_modifier = pow( 10, $precision );
-		return ceil( $price * $precision_modifier ) / $precision_modifier;
-	}
-
-	/**
-	 * Include required core files used in admin and on the frontend.
-	 */
-	protected function includes() {
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-compatibility.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-utils.php';
+	public function recalculate_cart() {
+		WC()->cart->calculate_totals();
 	}
 
 	/**
@@ -540,5 +556,115 @@ class Multi_Currency {
 			require_once WCPAY_ABSPATH . 'includes/multi-currency/notes/class-note-multi-currency-available.php';
 			Note_Multi_Currency_Available::possibly_delete_note();
 		}
+	}
+
+	/**
+	 * Gets the price after adjusting it with the rounding and charm settings.
+	 *
+	 * @param float    $price               The price to be adjusted.
+	 * @param bool     $apply_charm_pricing Whether charm pricing should be applied.
+	 * @param Currency $currency The currency to be used when adjusting.
+	 *
+	 * @return float The adjusted price.
+	 */
+	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
+		if ( 'none' !== $currency->get_rounding() ) {
+			$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
+		}
+
+		if ( $apply_charm_pricing ) {
+			$price += floatval( $currency->get_charm() );
+		}
+
+		// Do not return negative prices (possible because of $currency->get_charm()).
+		return max( 0, $price );
+	}
+
+	/**
+	 * Ceils the price to the next number based on the rounding value.
+	 *
+	 * @param float $price    The price to be ceiled.
+	 * @param float $rounding The rounding option.
+	 *
+	 * @return float The ceiled price.
+	 */
+	protected function ceil_price( float $price, float $rounding ): float {
+		if ( 0.00 === $rounding ) {
+			return $price;
+		}
+		return ceil( $price / $rounding ) * $rounding;
+	}
+
+	/**
+	 * Include required core files used in admin and on the frontend.
+	 */
+	protected function includes() {
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-compatibility.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-utils.php';
+	}
+
+	/**
+	 * Caches currency data for a period of time.
+	 *
+	 * @param string|array $currencies - Currency data to cache.
+	 * @param int|null     $updated    - The time the data was fetched from the server.
+	 * @param int|null     $expiration - The length of time to cache the currency data, in seconds.
+	 *
+	 * @return bool
+	 */
+	private function cache_currencies( $currencies, int $updated = null, int $expiration = null ): bool {
+		// Default $expiration to 6 hours if not set.
+		if ( null === $expiration ) {
+			$expiration = 6 * HOUR_IN_SECONDS;
+		}
+
+		// Default $updated to the current time.
+		if ( null === $updated ) {
+			$updated = time();
+		}
+
+		// Add the currency data, expiry time, and time updated to the array we're caching.
+		$currency_cache = [
+			'currencies' => $currencies,
+			'expires'    => time() + $expiration,
+			'updated'    => $updated,
+		];
+
+		// Create or update the currency option cache.
+		if ( false === get_option( self::CURRENCY_CACHE_OPTION ) ) {
+			$result = add_option( self::CURRENCY_CACHE_OPTION, $currency_cache, '', 'no' );
+		} else {
+			$result = update_option( self::CURRENCY_CACHE_OPTION, $currency_cache, 'no' );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Read the currency data from the WP option we cache it in.
+	 *
+	 * @return ?array
+	 */
+	private function read_currencies_from_cache() {
+		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION );
+
+		if ( false === $currency_cache || ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
+			// No option found or the data isn't in the format we expect.
+			return null;
+		}
+
+		// Return false if the cache has expired, triggering another fetch.
+		if ( $currency_cache['expires'] < time() ) {
+			return null;
+		}
+
+		// We have fresh currency data in the cache, so return it.
+		return $currency_cache;
 	}
 }

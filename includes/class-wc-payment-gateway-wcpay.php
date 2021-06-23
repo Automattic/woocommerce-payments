@@ -292,6 +292,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// no longer valid options.
 			unset( $this->form_fields['payment_request_button_type']['options']['branded'] );
 			unset( $this->form_fields['payment_request_button_type']['options']['custom'] );
+
+			add_filter(
+				'woocommerce_payment_gateways_setting_columns',
+				[ $this, 'add_all_payment_methods_logos_column' ]
+			);
+
+			add_action(
+				'woocommerce_payment_gateways_setting_column_logos',
+				[ $this, 'add_all_payment_methods_icon_logos' ]
+			);
 		}
 
 		// Giropay option hidden behind feature flag.
@@ -354,21 +364,50 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+	}
 
-		/**
-		 * Add a new logo column on the right of "method" in the payment methods table.
-		 */
-		add_filter(
-			'woocommerce_payment_gateways_setting_columns',
-			function( $columns ) {
-				$logos  = [ 'logos' => '' ]; // Setting an ID for the column, but not a label.
-				$offset = array_search( 'name', array_keys( $columns ), true ) + 1;
+	/**
+	 * Add a new logo column on the right of "method" in the payment methods table.
+	 *
+	 * @param array $columns the columns in the "all payment methods" page.
+	 * @return array
+	 */
+	public function add_all_payment_methods_logos_column( $columns ) {
+		$logos  = [ 'logos' => '' ]; // Setting an ID for the column, but not a label.
+		$offset = array_search( 'name', array_keys( $columns ), true ) + 1;
 
-				$columns = array_merge( array_slice( $columns, 0, $offset ), $logos, array_slice( $columns, $offset ) );
+		return array_merge( array_slice( $columns, 0, $offset ), $logos, array_slice( $columns, $offset ) );
+	}
 
-				return $columns;
-			}
-		);
+	/**
+	 * Add a list of payment method logos to WooCommerce Payment in the logo column.
+	 *
+	 * @param WC_Payment_Gateway $gateway the current gateway iterated over to be displayed in the "all payment methods" page.
+	 */
+	public function add_all_payment_methods_icon_logos( $gateway ) {
+		if ( 'woocommerce_payments' !== $gateway->id ) {
+			echo '<td class="logo"></td>';
+
+			return;
+		}
+
+		$icons = [
+			'visa',
+			'mastercard',
+			'amex',
+			'apple-pay',
+			'google-pay',
+		];
+
+		echo '<td class="logo">';
+		?>
+		<div>
+			<?php foreach ( $icons as $icon ) : ?>
+				<span class="payment-method__icon payment-method__brand payment-method__brand--<?php echo esc_attr( $icon ); ?>"/></span>
+			<?php endforeach; ?>
+		</div>
+		<?php
+		echo '</td>';
 	}
 
 	/**
@@ -409,7 +448,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public static function is_current_page_settings() {
-		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:disable WordPress.Security.NonceVerification.Recommended
+		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -504,11 +543,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		global $hide_save_button;
 		$hide_save_button = true;
 
-		if ( ! empty( $_GET['method'] ) ) :
+		if ( ! empty( $_GET['method'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			?>
 			<div
 				id="wcpay-payment-method-settings-container"
-				data-method-id="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['method'] ) ) ); ?>"
+				data-method-id="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>"
 			></div>
 		<?php else : ?>
 			<div id="wcpay-account-settings-container"></div>
@@ -596,7 +635,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array|null An array with customer data or nothing.
 	 */
 	public function get_prepared_customer_data() {
-		if ( ! isset( $_GET['pay_for_order'] ) && ! is_add_payment_method_page() ) {
+		if ( ! isset( $_GET['pay_for_order'] ) && ! is_add_payment_method_page() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return null;
 		}
 
@@ -605,7 +644,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$firstname  = '';
 		$lastname   = '';
 
-		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) {
+		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$order_id = absint( $wp->query_vars['order-pay'] );
 			$order    = wc_get_order( $order_id );
 
@@ -1166,6 +1205,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			Logger::log( $note );
 			$order->add_order_note( $note );
+			$order->update_meta_data( '_wcpay_refund_status', 'failed' );
+			$order->save();
 
 			Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
 			return new WP_Error( 'wcpay_edit_order_refund_failure', $e->getMessage() );
@@ -1187,8 +1228,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$order->add_order_note( $note );
+		$order->update_meta_data( '_wcpay_refund_status', 'successful' );
+		$order->save();
 
 		return true;
+	}
+
+	/**
+	 * Checks whether a refund through the gateway has already failed.
+	 *
+	 * @param WC_Order $order The order to check.
+	 * @return boolean
+	 */
+	public function has_refund_failed( $order ) {
+		return 'failed' === $order->get_meta( '_wcpay_refund_status', true );
 	}
 
 	/**

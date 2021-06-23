@@ -40,7 +40,7 @@ Our global support team is available to answer questions you may have about WooC
 
 * United States-based business.
 * WordPress 5.5 or newer.
-* WooCommerce 4.8 or newer.
+* WooCommerce 5.2 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -108,12 +108,16 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Use of deprecated call-style to registerPaymentMethods. WooCommerce Payments now requires WooCommerce Blocks of at least version 3.9.0.
 * Fix - Deposit date on Transactions list page.
 * Fix - Rounding error when displaying fee percentages on the Overview and Transactions pages.
+* Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
 * Add - Error message when total size of dispute evidence files uploaded goes over limit.
 * Update - Pass currency to wc_price when adding intent notes to orders.
 * Update - Instant deposit inbox note wording.
 * Fix - Deposit overview details for non instant ones.
 * Update - Payment request button should guide users to login when necessary.
 * Add - When setting WooCommerce Payments up, inform if merchant business country is not supported.
+* Update - Bump minimum supported version of WooCommerce from 4.8 to 5.2.
+* Add - Introduce advance filters on deposits page.
+* Update: Prefill OAuth flow with WC store country
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
