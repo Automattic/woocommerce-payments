@@ -38,6 +38,13 @@ class Multi_Currency {
 	protected static $instance = null;
 
 	/**
+	 * Compatibility instance.
+	 *
+	 * @var Compatibility
+	 */
+	protected $compatibility;
+
+	/**
 	 * Frontend_Prices instance.
 	 *
 	 * @var Frontend_Prices
@@ -104,6 +111,8 @@ class Multi_Currency {
 		$this->includes();
 
 		$this->payments_api_client = $payments_api_client;
+		$this->utils               = new Utils();
+		$this->compatibility       = new Compatibility( $this->utils );
 
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
@@ -128,7 +137,7 @@ class Multi_Currency {
 
 		new User_Settings( $this );
 
-		$this->frontend_prices     = new Frontend_Prices( $this );
+		$this->frontend_prices     = new Frontend_Prices( $this, $this->compatibility );
 		$this->frontend_currencies = new Frontend_Currencies( $this );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -153,7 +162,7 @@ class Multi_Currency {
 	 * Initialize the Widgets.
 	 */
 	public function init_widgets() {
-		register_widget( new Currency_Switcher_Widget( $this ) );
+		register_widget( new Currency_Switcher_Widget( $this, $this->compatibility ) );
 	}
 
 	/**
@@ -262,6 +271,15 @@ class Multi_Currency {
 			'currencies' => $currency_data,
 			'updated'    => $updated,
 		];
+	}
+
+	/**
+	 * Returns the Compatibility instance.
+	 *
+	 * @return Compatibility
+	 */
+	public function get_compatibility() {
+		return $this->compatibility;
 	}
 
 	/**
@@ -413,6 +431,8 @@ class Multi_Currency {
 		} elseif ( $user_id ) {
 			$code = get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
 		}
+
+		$code = $this->compatibility->override_selected_currency() ? $this->compatibility->override_selected_currency() : $code;
 
 		return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
 	}
@@ -571,12 +591,14 @@ class Multi_Currency {
 	 * Include required core files used in admin and on the frontend.
 	 */
 	protected function includes() {
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-compatibility.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-utils.php';
 	}
 
 	/**

@@ -23,6 +23,13 @@ class Currency_Switcher_Widget extends WP_Widget {
 	];
 
 	/**
+	 * Compatibility instance.
+	 *
+	 * @var Compatibility
+	 */
+	protected $compatibility;
+
+	/**
 	 * Multi-Currency instance.
 	 *
 	 * @var Multi_Currency
@@ -33,9 +40,11 @@ class Currency_Switcher_Widget extends WP_Widget {
 	 * Register widget with WordPress.
 	 *
 	 * @param Multi_Currency $multi_currency The Multi_Currency instance.
+	 * @param Compatibility  $compatibility The Compatibility instance.
 	 */
-	public function __construct( Multi_Currency $multi_currency ) {
+	public function __construct( Multi_Currency $multi_currency, Compatibility $compatibility ) {
 		$this->multi_currency = $multi_currency;
+		$this->compatibility  = $compatibility;
 
 		parent::__construct(
 			'currency_switcher_widget',
@@ -51,6 +60,9 @@ class Currency_Switcher_Widget extends WP_Widget {
 	 * @param array $instance Saved values from database.
 	 */
 	public function widget( $args, $instance ) {
+		if ( $this->compatibility->should_hide_widgets() ) {
+			return;
+		}
 		$instance = wp_parse_args(
 			$instance,
 			self::DEFAULT_SETTINGS
