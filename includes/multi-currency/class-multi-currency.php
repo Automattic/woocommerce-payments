@@ -111,6 +111,8 @@ class Multi_Currency {
 		$this->includes();
 
 		$this->payments_api_client = $payments_api_client;
+		$this->utils               = new Utils();
+		$this->compatibility       = new Compatibility( $this->utils );
 
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
@@ -135,8 +137,6 @@ class Multi_Currency {
 
 		new User_Settings( $this );
 
-		$this->utils               = new Utils();
-		$this->compatibility       = new Compatibility( $this->utils );
 		$this->frontend_prices     = new Frontend_Prices( $this, $this->compatibility );
 		$this->frontend_currencies = new Frontend_Currencies( $this );
 
@@ -146,8 +146,6 @@ class Multi_Currency {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
 		}
 
-		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
-		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
 		if ( is_admin() ) {
