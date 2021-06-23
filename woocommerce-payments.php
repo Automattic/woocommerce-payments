@@ -115,6 +115,8 @@ function wcpay_check_old_jetpack_version() {
 	return true;
 }
 
+define('JETPACK__WPCOM_JSON_API_BASE', 'https://public-api.wordpress.com');
+
 /**
  * Display an error notice if the installed Jetpack version is too old to even start initializing the plugin.
  */
