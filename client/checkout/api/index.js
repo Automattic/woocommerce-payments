@@ -273,6 +273,24 @@ export default class WCPayAPI {
 	}
 
 	/**
+	 * Creates a setup intent without confirming it.
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	initSetupIntent() {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			action: 'init_setup_intent',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+		} ).then( ( response ) => {
+			if ( ! response.success ) {
+				throw response.data.error;
+			}
+			return response.data;
+		} );
+	}
+
+	/**
 	 * Sets up an intent based on a payment method.
 	 *
 	 * @param {string} paymentMethodId The ID of the payment method.
@@ -320,12 +338,21 @@ export default class WCPayAPI {
 			action: 'create_payment_intent',
 			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
-		} ).then( ( response ) => {
-			if ( ! response.success ) {
-				throw response.data.error;
-			}
-			return response.data;
-		} );
+		} )
+			.then( ( response ) => {
+				if ( ! response.success ) {
+					throw response.data.error;
+				}
+				return response.data;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajax request.
+					throw new Error( error.statusText );
+				}
+			} );
 	}
 
 	/**
@@ -344,12 +371,17 @@ export default class WCPayAPI {
 		} )
 			.then( ( response ) => {
 				if ( 'failure' === response.result ) {
-					throw response.messages;
+					throw new Error( response.messages );
 				}
 				return response;
 			} )
 			.catch( ( error ) => {
-				throw `Error submitting form! ${ error.status }: ${ error.statusText }.`;
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajaxrequest.
+					throw new Error( error.statusText );
+				}
 			} );
 	}
 

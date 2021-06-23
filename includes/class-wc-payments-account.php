@@ -328,6 +328,11 @@ class WC_Payments_Account {
 			return;
 		}
 
+		if ( isset( $_GET['wcpay-reconnect-wpcom'] ) && check_admin_referer( 'wcpay-reconnect-wpcom' ) ) {
+			$this->payments_api_client->start_server_connection( WC_Payment_Gateway_WCPay::get_settings_url() );
+			return;
+		}
+
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
@@ -438,6 +443,24 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get WPCOM/Jetpack reconnect url, for use in case of missing connection owner.
+	 *
+	 * @return string WPCOM/Jetpack reconnect url.
+	 */
+	public static function get_wpcom_reconnect_url() {
+		return admin_url(
+			add_query_arg(
+				[
+					'wcpay-reconnect-wpcom' => '1',
+					'_wpnonce'              => wp_create_nonce( 'wcpay-reconnect-wpcom' ),
+				],
+				'admin.php'
+			)
+		);
+	}
+
+
+	/**
 	 * Has on-boarding been disabled?
 	 *
 	 * @return boolean
@@ -456,7 +479,7 @@ class WC_Payments_Account {
 	 * @throws API_Exception If there was an error when registering the site on WP.com.
 	 */
 	private function maybe_init_jetpack_connection( $wcpay_connect_from ) {
-		$is_jetpack_fully_connected = $this->payments_api_client->is_server_connected();
+		$is_jetpack_fully_connected = $this->payments_api_client->is_server_connected() && $this->payments_api_client->has_server_connection_owner();
 		if ( $is_jetpack_fully_connected ) {
 			return;
 		}
@@ -511,12 +534,18 @@ class WC_Payments_Account {
 		$current_user = wp_get_current_user();
 		$return_url   = $this->get_oauth_return_url( $wcpay_connect_from );
 
+		$country = WC()->countries->get_base_country();
+		if ( ! array_key_exists( $country, WC_Payments_Utils::supported_countries() ) ) {
+			$country = null;
+		}
+
 		$oauth_data = $this->payments_api_client->get_oauth_data(
 			$return_url,
 			[
 				'email'         => $current_user->user_email,
 				'business_name' => get_bloginfo( 'name' ),
 				'url'           => get_home_url(),
+				'country'       => $country,
 			],
 			[
 				'site_username' => $current_user->user_login,

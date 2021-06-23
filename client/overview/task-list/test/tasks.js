@@ -67,4 +67,39 @@ describe( 'getTasks()', () => {
 			] )
 		);
 	} );
+
+	it( 'adds WPCOM user reconnect task when the url is specified', () => {
+		const actual = getTasks( {
+			accountStatus: {
+				status: 'complete',
+			},
+			wpcomReconnectUrl: 'http://example.com',
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'reconnect-wpcom-user',
+					completed: false,
+				} ),
+			] )
+		);
+	} );
+
+	it( 'should omit the WPCOM user reconnect task when the url is not specified', () => {
+		const actual = getTasks( {
+			accountStatus: {
+				status: 'complete',
+			},
+			wpcomReconnectUrl: null,
+		} );
+
+		expect( actual ).toEqual(
+			expect.not.arrayContaining( [
+				expect.objectContaining( {
+					key: 'reconnect-wpcom-user',
+				} ),
+			] )
+		);
+	} );
 } );

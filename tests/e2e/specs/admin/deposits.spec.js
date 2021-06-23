@@ -1,13 +1,12 @@
 /**
  * External dependencies
  */
-import config from 'config';
-
 const { merchant } = require( '@woocommerce/e2e-utils' );
 
-const WCPAY_DEPOSITS =
-	config.get( 'url' ) +
-	'wp-admin/admin.php?page=wc-admin&path=/payments/deposits';
+/**
+ * Internal dependencies
+ */
+import { merchantWCP } from '../../utils/flows';
 
 describe( 'Admin deposits', () => {
 	beforeAll( async () => {
@@ -15,9 +14,7 @@ describe( 'Admin deposits', () => {
 	} );
 
 	it( 'page should load without any errors', async () => {
-		await page.goto( WCPAY_DEPOSITS, {
-			waitUntil: 'networkidle0',
-		} );
+		await merchantWCP.openDeposits();
 		await expect( page ).toMatchElement( 'h2', {
 			text: 'Deposit history',
 		} );

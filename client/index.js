@@ -14,7 +14,7 @@ import 'wp-mediaelement';
  * Internal dependencies
  */
 import './style.scss';
-import ConnectAccountPageExperiment from 'connect-account-page-experiment';
+import ConnectAccountPage from 'connect-account-page';
 import DepositsPage from 'deposits';
 import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
@@ -23,6 +23,7 @@ import DisputesPage from 'disputes';
 import DisputeDetailsPage from 'disputes/details';
 import DisputeEvidencePage from 'disputes/evidence';
 import OverviewPage from 'overview';
+import { getTasks } from 'overview/task-list/tasks';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -37,7 +38,7 @@ addFilter(
 			: __( 'Connect', 'woocommerce-payments' );
 
 		pages.push( {
-			container: ConnectAccountPageExperiment,
+			container: ConnectAccountPage,
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, connectionPageTitle ],
@@ -161,3 +162,26 @@ function getMenuSettings() {
 		],
 	};
 }
+
+addFilter(
+	'woocommerce_admin_onboarding_task_list',
+	'woocommerce-payments',
+	( tasks ) => {
+		const {
+			accountStatus,
+			showUpdateDetailsTask,
+			featureFlags: { accountOverviewTaskList },
+		} = wcpaySettings;
+
+		if ( ! Boolean( accountOverviewTaskList ) ) {
+			return tasks;
+		}
+
+		const wcPayTasks = getTasks( {
+			accountStatus,
+			showUpdateDetailsTask,
+		} );
+
+		return [ ...tasks, ...wcPayTasks ];
+	}
+);
