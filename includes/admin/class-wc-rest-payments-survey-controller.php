@@ -36,7 +36,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 			$this->namespace,
 			'/' . $this->rest_base,
 			[
-				'methods'             => WP_REST_Server::ALLMETHODS,
+				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'submit_survey' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [],
