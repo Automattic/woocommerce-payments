@@ -32,6 +32,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 
 		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
 		$note       = new $note_class();
+		$nonce      = wp_create_nonce( 'enable-upe' );
 
 		$note->set_title( __( 'Boost your sales by accepting new payment methods', 'woocommerce-payments' ) );
 		$note->set_content( __( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments. <a href="https://docs.woocommerce.com/document/payments/" target="wcpay_upe_learn_more">Learn more</a>', 'woocommerce-payments' ) );
@@ -42,7 +43,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		$note->add_action(
 			self::NOTE_NAME,
 			__( 'Enable on your store', 'woocommerce-payments' ),
-			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&action=enable-upe' ),
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&action=enable-upe&_wpnonce=' . $nonce ),
 			$note_class::E_WC_ADMIN_NOTE_UNACTIONED,
 			true
 		);

@@ -1455,8 +1455,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		add_action( 'wp_redirect', [ $this, 'mock_wp_redirect' ] );
 
 		// Mock a request triggered by admin note.
-		$_GET['page']   = 'wc-settings';
-		$_GET['action'] = 'enable-upe';
+		$_GET['page']     = 'wc-settings';
+		$_GET['action']   = 'enable-upe';
+		$_GET['_wpnonce'] = wp_create_nonce( 'enable-upe' );
 
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

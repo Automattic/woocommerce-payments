@@ -2241,10 +2241,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Enable UPE feature flag. CTA from Admin Notes. See WC_Payments_Notes_Additional_Payment_Methods.
 	 */
 	public function maybe_enable_upe_feature_flag() {
+		$nonce = '';
+		if ( ! empty( $_GET['_wpnonce'] ) ) {
+			$nonce = sanitize_key( $_GET['_wpnonce'] );
+		}
+
 		if (
-			! isset( $_GET['page'] ) ||
+			! wp_verify_nonce( $nonce, 'enable-upe' ) ||
+			empty( $_GET['page'] ) ||
 			'wc-settings' !== $_GET['page'] ||
-			! isset( $_GET['action'] ) ||
+			empty( $_GET['action'] ) ||
 			'enable-upe' !== $_GET['action']
 		) {
 			return;
