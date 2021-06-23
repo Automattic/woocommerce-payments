@@ -1,10 +1,18 @@
 /** @format */
+/* eslint-disable max-len */
+
 /**
  * External dependencies
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, CardDivider } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardDivider,
+	ExternalLink,
+	Button,
+} from '@wordpress/components';
 import classNames from 'classnames';
 
 /**
@@ -106,6 +114,27 @@ const PaymentMethods = () => {
 						) }
 					</PaymentMethodsList>
 				</CardBody>
+
+				<CardDivider />
+				<CardBody>
+					<span>Early access</span>
+
+					<h3>
+						Enable the new WooCommerce Payments checkout experience
+					</h3>
+
+					<p>
+						{ __(
+							'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.'
+						) }
+					</p>
+
+					<Button isPrimary>Get started</Button>
+					<ExternalLink href="https://docs.woocommerce.com/document/payments/">
+						{ __( 'Learn more', 'woocommerce-payments' ) }
+					</ExternalLink>
+				</CardBody>
+
 				{ 1 < availablePaymentMethodIds.length ? (
 					<>
 						<CardDivider />
