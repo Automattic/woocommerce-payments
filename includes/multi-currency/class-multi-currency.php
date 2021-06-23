@@ -118,6 +118,8 @@ class Multi_Currency {
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
+		add_filter( 'woocommerce_save_settings_general', [ $this, 'update_store_currency' ] );
+
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
 		if ( $is_frontend_request ) {
@@ -435,6 +437,17 @@ class Multi_Currency {
 		$code = $this->compatibility->override_selected_currency() ? $this->compatibility->override_selected_currency() : $code;
 
 		return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
+	}
+
+	/**
+	 * WIP. Update the store currency.
+	 *
+	 * @param mixed $currency The currency.
+	 *
+	 * @return mixed
+	 */
+	public function update_store_currency( $currency ) {
+		return $currency;
 	}
 
 	/**
