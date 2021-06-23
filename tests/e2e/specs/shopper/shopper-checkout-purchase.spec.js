@@ -9,13 +9,13 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
  * Internal dependencies
  */
 
-import { shopperWCP } from '../utils';
+import { shopperWCP } from '../../utils';
 
 import {
 	fillCardDetails,
 	setupProductCheckout,
 	confirmCardAuthentication,
-} from '../utils/payments';
+} from '../../utils/payments';
 
 describe( 'Successful purchase', () => {
 	beforeAll( async () => {
