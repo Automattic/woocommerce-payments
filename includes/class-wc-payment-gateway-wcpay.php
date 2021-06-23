@@ -22,6 +22,8 @@ use WCPay\Tracker;
  */
 class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
+	use WC_Payment_Gateway_WCPay_Subscriptions_Trait;
+
 	/**
 	 * Internal ID of the payment gateway.
 	 *
@@ -339,6 +341,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Load the settings.
 		$this->init_settings();
+
+		// Check if subscriptions are enabled and add support for them.
+		$this->maybe_init_subscriptions();
 
 		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
 		if ( $this->is_saved_cards_enabled() ) {
@@ -812,9 +817,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function prepare_payment_information( $order ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
+		$payment_information = $this->maybe_prepare_subscription_payment_information( $payment_information, $order->get_id() );
 
-		// During normal orders the payment method is saved when the customer enters a new one and choses to save it.
 		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			// During normal orders the payment method is saved when the customer enters a new one and choses to save it.
 			$payment_information->must_save_payment_method();
 		}
 
@@ -1133,6 +1139,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( is_null( $payment_token ) || $token->get_id() !== $payment_token->get_id() ) {
 			$order->add_payment_token( $token );
 		}
+
+		$this->maybe_add_token_to_subscription_order( $order, $token );
 	}
 
 	/**
@@ -2026,6 +2034,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order|null $order     The order that has been created.
 	 */
 	public function schedule_order_tracking( $order_id, $order = null ) {
+		$this->maybe_schedule_subscription_order_tracking( $order_id, $order );
+
 		// If Sift is not enabled, exit out and don't do the tracking here.
 		if ( ! isset( $this->account->get_fraud_services_config()['sift'] ) ) {
 			return;
