@@ -132,14 +132,22 @@ class Frontend_Currencies {
 	 */
 	private function get_currency_format( $currency_code ) {
 		// Default to USD settings if mapping not found.
-		$currency_format = $this->currency_format[ $currency_code ] ?? [
+		$currency_format = [
 			'currency_pos' => 'left',
 			'thousand_sep' => ',',
 			'decimal_sep'  => '.',
 			'num_decimals' => 2,
 		];
 
-		return apply_filters( 'wcpay_multi_currency_' . strtolower( $currency_code ) . '_format', $currency_format );
+		$country = 'US';
+
+		if ( ! empty( $this->currency_format[ $currency_code ] ) ) {
+			$currency_options = $this->currency_format[ $currency_code ];
+			// If there's no country-specific formatting, default to the first entry in the array.
+			$currency_format = $currency_options[ $country ] ?? reset( $currency_options );
+		}
+
+		return apply_filters( 'wcpay_multi_currency_' . strtolower( $currency_code ) . '_format', $currency_format, $country );
 	}
 
 	/**
@@ -150,7 +158,7 @@ class Frontend_Currencies {
 		$locale_info = include WC()->plugin_path() . '/i18n/locale-info.php';
 
 		// Extract the currency formatting options from the locale info.
-		foreach ( $locale_info as $locale ) {
+		foreach ( $locale_info as $country => $locale ) {
 			$currency_code = $locale['currency_code'];
 
 			// Convert Norwegian Krone symbol to its ISO 4217 currency code.
@@ -158,14 +166,12 @@ class Frontend_Currencies {
 				$currency_code = 'NOK';
 			}
 
-			if ( empty( $this->currency_format[ $currency_code ] ) ) {
-				$this->currency_format[ $currency_code ] = [
-					'currency_pos' => $locale['currency_pos'],
-					'thousand_sep' => $locale['thousand_sep'],
-					'decimal_sep'  => $locale['decimal_sep'],
-					'num_decimals' => $locale['num_decimals'],
-				];
-			}
+			$this->currency_format[ $currency_code ][ $country ] = [
+				'currency_pos' => $locale['currency_pos'],
+				'thousand_sep' => $locale['thousand_sep'],
+				'decimal_sep'  => $locale['decimal_sep'],
+				'num_decimals' => $locale['num_decimals'],
+			];
 		}
 	}
 }
