@@ -140,12 +140,6 @@ class Multi_Currency {
 		$this->frontend_prices     = new Frontend_Prices( $this, $this->compatibility );
 		$this->frontend_currencies = new Frontend_Currencies( $this );
 
-		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
-
-		if ( $is_frontend_request ) {
-			add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
-		}
-
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
 		if ( is_admin() ) {
