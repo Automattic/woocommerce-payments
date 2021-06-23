@@ -104,9 +104,6 @@ class Multi_Currency {
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
 
-		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
-		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
-
 		new User_Settings( $this );
 
 		$this->utils               = new Utils();
@@ -120,6 +117,8 @@ class Multi_Currency {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
 		}
 
+		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
+		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
 		if ( is_admin() ) {
