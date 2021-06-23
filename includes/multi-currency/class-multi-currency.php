@@ -333,7 +333,7 @@ class Multi_Currency {
 			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
 			$currency = clone $enabled_currency;
 			$charm    = get_option( $this->id . '_price_charm_' . $currency->get_id(), 0.00 );
-			$rounding = get_option( $this->id . '_price_rounding_' . $currency->get_id(), 'none' );
+			$rounding = get_option( $this->id . '_price_rounding_' . $currency->get_id(), $currency->get_is_zero_decimal() ? '100' : '1.00' );
 			$currency->set_charm( $charm );
 			$currency->set_rounding( $rounding );
 
@@ -541,7 +541,7 @@ class Multi_Currency {
 	 */
 	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
 		if ( 'none' !== $currency->get_rounding() ) {
-			$price = $this->ceil_price( $price, intval( $currency->get_rounding() ) );
+			$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
 		}
 
 		if ( $apply_charm_pricing ) {
@@ -553,16 +553,18 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Ceils the price to the next number based on the precision.
+	 * Ceils the price to the next number based on the rounding value.
 	 *
-	 * @param float $price     The price to be ceiled.
-	 * @param int   $precision The precision to be used.
+	 * @param float $price    The price to be ceiled.
+	 * @param float $rounding The rounding option.
 	 *
 	 * @return float The ceiled price.
 	 */
-	protected function ceil_price( $price, $precision ): float {
-		$precision_modifier = pow( 10, $precision );
-		return ceil( $price * $precision_modifier ) / $precision_modifier;
+	protected function ceil_price( float $price, float $rounding ): float {
+		if ( 0.00 === $rounding ) {
+			return $price;
+		}
+		return ceil( $price / $rounding ) * $rounding;
 	}
 
 	/**

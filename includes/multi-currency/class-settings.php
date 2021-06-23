@@ -271,43 +271,53 @@ class Settings extends \WC_Settings_Page {
 			'manual'    => __( 'Manual rate. Enter your own fixed rate of exchange.', 'woocommerce-payments' ),
 		];
 
-		$rounding_desc = sprintf(
-			/* translators: %1$s currency being converted to, %2$s url to documentation. */
-			__( 'Make your %1$s prices consistent by rounding them up after they are converted. <a href="%2$s">Learn more</a>', 'woocommerce-payments' ),
-			$currency->get_code(),
-			// TODO: Url to documentation needed.
-			''
-		);
+		$decimal_currency_rounding_options      = [
+			'none' => __( 'None', 'woocommerce-payments' ),
+			'0.25' => '0.25',
+			'0.50' => '0.50',
+			'1'    => '1.00 (recommended)',
+			'5'    => '5.00',
+			'10'   => '10.00',
+		];
+		$zero_decimal_currency_rounding_options = [
+			'none' => __( 'None', 'woocommerce-payments' ),
+			'10'   => '10',
+			'25'   => '25',
+			'50'   => '50',
+			'100'  => '100 (recommended)',
+			'500'  => '500',
+			'1000' => '1000',
+		];
 
 		$rounding_options = apply_filters(
 			$this->id . '_price_rounding_options',
-			[
-				'none' => __( 'None', 'woocommerce-payments' ),
-				'-1'   => '10.00',
-				'0'    => '1.00 (recommended)',
-				'1'    => '0.10',
-			]
+			$currency->get_is_zero_decimal() ? $zero_decimal_currency_rounding_options : $decimal_currency_rounding_options
 		);
 
-		$charm_desc = sprintf(
-			/* translators: %s: url to documentation.*/
-			__( 'Reduce the converted price by a specific amount. <a href="%s">Learn more</a>', 'woocommerce-payments' ),
-			// TODO: Url to documentation needed.
-			''
-		);
+		$decimal_currency_charm_options      = [
+			'0.00'  => __( 'None', 'woocommerce-payments' ),
+			'-0.01' => '-0.01',
+			'-0.05' => '-0.05',
+		];
+		$zero_decimal_currency_charm_options = [
+			'0.00' => __( 'None', 'woocommerce-payments' ),
+			'-1'   => '-1',
+			'-5'   => '-5',
+			'-10'  => '-10',
+			'-20'  => '-20',
+			'-25'  => '-25',
+			'-50'  => '-50',
+			'-100' => '-100',
+		];
 
 		$charm_options = apply_filters(
 			$this->id . '_charm_options',
-			[
-				'0.00'  => __( 'None', 'woocommerce-payments' ),
-				'-0.01' => __( '-0.01 (recommended)', 'woocommerce-payments' ),
-				'-0.05' => '-0.05',
-			]
+			$currency->get_is_zero_decimal() ? $zero_decimal_currency_charm_options : $decimal_currency_charm_options
 		);
 
 		$preview_desc = sprintf(
 			/* translators: %1$s: default currency of the store, %2$s currency being converted to. */
-			__( 'Enter a price in your default currency of %1$s to see it converted into %2$s using the excange rate and formatting rules above.', 'woocommerce-payments' ),
+			__( 'Enter a price in your default currency of %1$s to see it converted into %2$s using the exchange rate and formatting rules above.', 'woocommerce-payments' ),
 			$default_currency->get_code(),
 			$currency->get_code()
 		);
@@ -354,23 +364,25 @@ class Settings extends \WC_Settings_Page {
 				],
 
 				[
-					'title'    => __( 'Price rounding', 'woocommerce-payments' ),
-					'desc'     => $rounding_desc,
-					'id'       => $this->id . '_price_rounding_' . $currency->get_id(),
-					'default'  => 'none',
-					'type'     => 'select',
-					'options'  => $rounding_options,
-					'desc_tip' => __( 'Conversion rates at the bank may differ from current conversion rates. Rounding up to the nearest whole number helps prevent losses on sales.', 'woocommerce-payments' ),
+					'title'   => __( 'Price rounding', 'woocommerce-payments' ),
+					'desc'    => sprintf(
+						/* translators: %1$s currency being converted to. */
+						__( 'Make your %1$s prices consistent by rounding them up after they are converted.', 'woocommerce-payments' ),
+						$currency->get_code()
+					),
+					'id'      => $this->id . '_price_rounding_' . $currency->get_id(),
+					'default' => $currency->get_is_zero_decimal() ? '100' : '1.00',
+					'type'    => 'select',
+					'options' => $rounding_options,
 				],
 
 				[
-					'title'    => __( 'Charm pricing', 'woocommerce-payments' ),
-					'desc'     => $charm_desc,
-					'id'       => $this->id . '_price_charm_' . $currency->get_id(),
-					'default'  => '0.00',
-					'type'     => 'select',
-					'options'  => $charm_options,
-					'desc_tip' => __( 'A value of -0.01 would reduce 20.00 to 19.99.', 'woocommerce-payments' ),
+					'title'   => __( 'Price charm', 'woocommerce-payments' ),
+					'desc'    => __( 'Reduce the converted price by a specific amount.', 'woocommerce-payments' ),
+					'id'      => $this->id . '_price_charm_' . $currency->get_id(),
+					'default' => '0.00',
+					'type'    => 'select',
+					'options' => $charm_options,
 				],
 
 				[
