@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 2.6.0 - 2021-xx-xx =
+= 2.6.0 - 2021-06-23 =
 * Add - Notify the admin if WordPress.com user connection is broken.
 * Add - Experimental PHP client for Explat.
 * Add - WooCommerce Payment inbox notifications to the overview screen.
