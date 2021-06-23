@@ -77,6 +77,7 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
     </h3>
     <div
       class="add-enabled-currencies-modal__content"
+      style="width: auto;"
     >
       <ul>
         <li

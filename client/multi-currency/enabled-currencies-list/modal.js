@@ -4,7 +4,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Modal } from '@wordpress/components';
-import { useState, useCallback, useEffect } from '@wordpress/element';
+import { useState, useCallback, useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -24,6 +24,7 @@ import './style.scss';
 const EnabledCurrenciesModal = ( { className } ) => {
 	const availableCurrencies = useAvailableCurrencies();
 	const availableCurrencyCodes = Object.keys( availableCurrencies );
+	const enabledCurrenciesList = useRef( null );
 
 	const {
 		enabledCurrencies,
@@ -85,17 +86,23 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		setIsEnabledCurrenciesModalOpen,
 	] = useState( false );
 
+	const [ enabledCurrenciesListWidth, setCurrenciesListWidth ] = useState(
+		false
+	);
+
 	const handleEnabledCurrenciesAddButtonClick = useCallback( () => {
 		setIsEnabledCurrenciesModalOpen( true );
 	}, [ setIsEnabledCurrenciesModalOpen ] );
 
 	const handleAddSelectedCancelClick = useCallback( () => {
 		setIsEnabledCurrenciesModalOpen( false );
+		setCurrenciesListWidth( false );
 		setSearchText( '' );
 	}, [ setIsEnabledCurrenciesModalOpen ] );
 
 	const handleAddSelectedClick = () => {
 		setIsEnabledCurrenciesModalOpen( false );
+		setCurrenciesListWidth( false );
 		setSearchText( '' );
 		const newCurrencies = Object.entries( selectedCurrencies )
 			.filter( ( [ , enabled ] ) => enabled )
@@ -104,6 +111,23 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		newCurrencies.sort();
 		submitEnabledCurrenciesUpdate( newCurrencies );
 	};
+
+	const handleCurrenciesListWidth = () => {
+		if (
+			isEnabledCurrenciesModalOpen &&
+			enabledCurrenciesList &&
+			false === enabledCurrenciesListWidth
+		) {
+			setCurrenciesListWidth( enabledCurrenciesList.current.offsetWidth );
+		}
+	};
+
+	useEffect( () => {
+		handleCurrenciesListWidth();
+		/* eslint-disable react-hooks/exhaustive-deps */
+	}, [ JSON.stringify( filteredCurrencyCodes ) ] );
+	/* eslint-enable react-hooks/exhaustive-deps */
+
 	return (
 		<>
 			{ isEnabledCurrenciesModalOpen && (
@@ -137,7 +161,13 @@ const EnabledCurrenciesModal = ( { className } ) => {
 							  )
 							: __( 'All currencies', 'woocommerce-payments' ) }
 					</h3>
-					<div className="add-enabled-currencies-modal__content">
+					<div
+						className="add-enabled-currencies-modal__content"
+						ref={ enabledCurrenciesList }
+						style={ {
+							width: enabledCurrenciesListWidth || 'auto',
+						} }
+					>
 						<EnabledCurrenciesModalCheckboxList>
 							{ filteredCurrencyCodes.map( ( code ) => (
 								<EnabledCurrenciesModalCheckbox
