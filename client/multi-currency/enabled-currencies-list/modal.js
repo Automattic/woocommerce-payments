@@ -125,7 +125,10 @@ const EnabledCurrenciesModal = ( { className } ) => {
 	useEffect( () => {
 		handleCurrenciesListWidth();
 		/* eslint-disable react-hooks/exhaustive-deps */
-	}, [ JSON.stringify( filteredCurrencyCodes ) ] );
+	}, [
+		JSON.stringify( filteredCurrencyCodes ),
+		isEnabledCurrenciesModalOpen,
+	] );
 	/* eslint-enable react-hooks/exhaustive-deps */
 
 	return (
