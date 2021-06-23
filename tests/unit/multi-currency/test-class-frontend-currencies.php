@@ -17,6 +17,13 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	private $mock_multi_currency;
 
 	/**
+	 * Mock WCPay\Multi_Currency\Utils.
+	 *
+	 * @var WCPay\Multi_Currency\Utils|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_utils;
+
+	/**
 	 * WCPay\Multi_Currency\Frontend_Currencies instance.
 	 *
 	 * @var WCPay\Multi_Currency\Frontend_Currencies
@@ -27,8 +34,9 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		parent::setUp();
 
 		$this->mock_multi_currency = $this->createMock( WCPay\Multi_Currency\Multi_Currency::class );
+		$this->mock_utils          = $this->createMock( WCPay\Multi_Currency\Utils::class );
 
-		$this->frontend_currencies = new WCPay\Multi_Currency\Frontend_Currencies( $this->mock_multi_currency );
+		$this->frontend_currencies = new WCPay\Multi_Currency\Frontend_Currencies( $this->mock_multi_currency, $this->mock_utils );
 	}
 
 	public function tearDown() {
@@ -80,6 +88,14 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->assertEquals( 0, $this->frontend_currencies->get_price_decimals() );
 	}
 
+	public function test_get_price_decimals_returns_currency_settings_by_country() {
+		$current_currency = new WCPay\Multi_Currency\Currency( 'EUR' );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
+		$this->mock_utils->method( 'get_customer_country' )->willReturn( 'DE' );
+
+		$this->assertEquals( 2, $this->frontend_currencies->get_price_decimals() );
+	}
+
 	public function test_get_price_decimals_returns_filtered_settings() {
 		$current_currency = new WCPay\Multi_Currency\Currency( 'JPY' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
@@ -100,6 +116,14 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 
 		$this->assertEquals( ',', $this->frontend_currencies->get_price_decimal_separator() );
+	}
+
+	public function test_get_price_decimal_separator_returns_currency_settings_by_country() {
+		$current_currency = new WCPay\Multi_Currency\Currency( 'EUR' );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
+		$this->mock_utils->method( 'get_customer_country' )->willReturn( 'NL' );
+
+		$this->assertEquals( '.', $this->frontend_currencies->get_price_decimal_separator() );
 	}
 
 	public function test_get_price_decimal_separator_returns_filtered_settings() {
@@ -124,6 +148,14 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->assertEquals( '.', $this->frontend_currencies->get_price_thousand_separator() );
 	}
 
+	public function test_get_price_thousand_separator_returns_currency_settings_by_country() {
+		$current_currency = new WCPay\Multi_Currency\Currency( 'EUR' );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
+		$this->mock_utils->method( 'get_customer_country' )->willReturn( 'BE' );
+
+		$this->assertEquals( ' ', $this->frontend_currencies->get_price_thousand_separator() );
+	}
+
 	public function test_get_price_thousand_separator_returns_filtered_settings() {
 		$current_currency = new WCPay\Multi_Currency\Currency( 'BRL' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
@@ -144,6 +176,14 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 
 		$this->assertEquals( '%2$s&nbsp;%1$s', $this->frontend_currencies->get_woocommerce_price_format() );
+	}
+
+	public function test_get_woocommerce_price_format_returns_currency_settings_by_country() {
+		$current_currency = new WCPay\Multi_Currency\Currency( 'EUR' );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
+		$this->mock_utils->method( 'get_customer_country' )->willReturn( 'ES' );
+
+		$this->assertEquals( '%2$s%1$s', $this->frontend_currencies->get_woocommerce_price_format() );
 	}
 
 	public function test_get_woocommerce_price_format_returns_filtered_settings() {

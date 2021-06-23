@@ -21,6 +21,13 @@ class Frontend_Currencies {
 	protected $multi_currency;
 
 	/**
+	 * Utils instance.
+	 *
+	 * @var Utils
+	 */
+	protected $utils;
+
+	/**
 	 * Multi-Currency currency formatting map.
 	 *
 	 * @var array
@@ -31,9 +38,11 @@ class Frontend_Currencies {
 	 * Constructor.
 	 *
 	 * @param Multi_Currency $multi_currency The Multi_Currency instance.
+	 * @param Utils          $utils          The Utils instance.
 	 */
-	public function __construct( Multi_Currency $multi_currency ) {
+	public function __construct( Multi_Currency $multi_currency, Utils $utils ) {
 		$this->multi_currency = $multi_currency;
+		$this->utils          = $utils;
 
 		$this->load_locale_data();
 
@@ -139,7 +148,7 @@ class Frontend_Currencies {
 			'num_decimals' => 2,
 		];
 
-		$country = 'US';
+		$country = $this->utils->get_customer_country();
 
 		if ( ! empty( $this->currency_format[ $currency_code ] ) ) {
 			$currency_options = $this->currency_format[ $currency_code ];

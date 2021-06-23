@@ -138,7 +138,7 @@ class Multi_Currency {
 		new User_Settings( $this );
 
 		$this->frontend_prices     = new Frontend_Prices( $this, $this->compatibility );
-		$this->frontend_currencies = new Frontend_Currencies( $this );
+		$this->frontend_currencies = new Frontend_Currencies( $this, $this->utils );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
