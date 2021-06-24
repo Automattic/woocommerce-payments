@@ -151,9 +151,9 @@ class Compatibility {
 			return get_post_meta( $subscription_renewal['subscription_renewal']['renewal_order_id'], '_order_currency', true );
 		}
 
-		if ( isset( $_GET['switch-subscription'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			$subscription_id = (int) $_GET['switch-subscription']; // phpcs:ignore WordPress.Security.NonceVerification
-			return get_post_meta( $subscription_id, '_order_currency', true );
+		$switch_id = $this->get_subscription_switch_id_from_superglobal();
+		if ( $switch_id ) {
+			return get_post_meta( $switch_id, '_order_currency', true );
 		}
 
 		$switch_cart_items = $this->get_subscription_switch_cart_items();
@@ -172,7 +172,7 @@ class Compatibility {
 	 */
 	public function should_hide_widgets(): bool {
 		if ( $this->cart_contains_renewal()
-			|| isset( $_GET['switch-subscription'] ) // phpcs:ignore WordPress.Security.NonceVerification
+			|| $this->get_subscription_switch_id_from_superglobal()
 			|| 0 < count( $this->get_subscription_switch_cart_items() ) ) {
 			return true;
 		}
@@ -226,6 +226,20 @@ class Compatibility {
 			return [];
 		}
 		return wcs_get_order_type_cart_items( 'switch' );
+	}
+
+	/**
+	 * Checks $_GET superglobal for a switch id and returns it if found.
+	 *
+	 * @return mixed Id of the sub being switched, or false.
+	 */
+	private function get_subscription_switch_id_from_superglobal() {
+		if ( isset( $_GET['_wcsnonce'] ) && wp_verify_nonce( sanitize_key( $_GET['_wcsnonce'] ), 'wcs_switch_request' ) ) {
+			if ( isset( $_GET['switch-subscription'] ) ) {
+				return (int) $_GET['switch-subscription'];
+			}
+		}
+		return false;
 	}
 
 	/**

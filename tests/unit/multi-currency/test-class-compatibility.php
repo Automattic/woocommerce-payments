@@ -221,6 +221,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 	public function test_override_selected_currency_return_currency_code_test_2() {
 		$this->mock_wcs_cart_contains_renewal( false );
 		$_GET['switch-subscription'] = 42;
+		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
 		update_post_meta( 42, '_order_currency', 'CAD', true );
 		$this->mock_wcs_get_order_type_cart_items( false );
 		$this->assertSame( 'CAD', $this->compatibility->override_selected_currency() );
@@ -249,6 +250,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 	public function test_should_hide_widgets_return_true_test_2() {
 		$this->mock_wcs_cart_contains_renewal( false );
 		$_GET['switch-subscription'] = 42;
+		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
 		$this->mock_wcs_get_order_type_cart_items( false );
 		$this->assertTrue( $this->compatibility->should_hide_widgets() );
 	}
