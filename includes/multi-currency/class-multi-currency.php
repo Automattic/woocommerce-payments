@@ -118,8 +118,6 @@ class Multi_Currency {
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
-		add_filter( 'woocommerce_save_settings_general', [ $this, 'update_store_currency' ] );
-
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
 		if ( $is_frontend_request ) {
@@ -133,9 +131,7 @@ class Multi_Currency {
 	 * default currency and enabled currencies for the multi currency plugin.
 	 */
 	public function init() {
-		$this->initialize_available_currencies();
-		$this->set_default_currency();
-		$this->initialize_enabled_currencies();
+		$this->initialize_currencies();
 
 		new User_Settings( $this );
 
@@ -146,6 +142,7 @@ class Multi_Currency {
 
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
+			add_action( 'woocommerce_update_options_general', [ $this, 'update_default_currency' ] );
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
 	}
@@ -440,14 +437,17 @@ class Multi_Currency {
 	}
 
 	/**
-	 * WIP. Update the store currency.
+	 * This action is triggered when the WooCommerce store settings are updated. It will check if the store currency has changed,
+	 * and if it has, clear the cache and reinitialize the currencies, which will update the default currency, available currencies and
+	 * enabled currencies.
 	 *
-	 * @param mixed $currency The currency.
-	 *
-	 * @return mixed
+	 * @return void
 	 */
-	public function update_store_currency( $currency ) {
-		return $currency;
+	public function update_default_currency() {
+		if ( get_woocommerce_currency() !== $this->get_default_currency()->get_code() ) {
+			$this->clear_cache();
+			$this->initialize_currencies();
+		}
 	}
 
 	/**
@@ -612,6 +612,17 @@ class Multi_Currency {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-utils.php';
+	}
+
+	/**
+	 * Helper function to initialise the default currency, enabled currencies, and available currencies.
+	 *
+	 * @return void
+	 */
+	private function initialize_currencies() {
+		$this->initialize_available_currencies();
+		$this->set_default_currency();
+		$this->initialize_enabled_currencies();
 	}
 
 	/**
