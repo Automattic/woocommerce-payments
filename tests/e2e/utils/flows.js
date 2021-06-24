@@ -30,6 +30,7 @@ const WCPAY_TRANSACTIONS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/transactions';
 const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
+const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
 
 export const RUN_SUBSCRIPTIONS_TESTS =
 	'1' !== process.env.SKIP_WC_SUBSCRIPTIONS_TESTS;
@@ -191,5 +192,11 @@ export const merchantWCP = {
 			waitUntil: 'networkidle0',
 		} );
 		await uiLoaded();
+	},
+
+	openActionScheduler: async () => {
+		await page.goto( ACTION_SCHEDULER, {
+			waitUntil: 'networkidle0',
+		} );
 	},
 };
