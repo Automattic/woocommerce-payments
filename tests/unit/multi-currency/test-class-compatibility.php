@@ -121,7 +121,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 				[ [ 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation' ] ],
 				[ [ 'WC_Subscriptions_Product::get_sign_up_fee' ] ],
 				[ [ 'WC_Cart->calculate_totals' ] ],
-				[ [ 'WCS_Switch_Totals_Calculator->apportion_sign_up_fees' ] ],
+				[ [ 'WCS_Switch_Totals_Calculator->apportion_sign_up_fees' ] ]
 			)
 			->willReturn( false, true, true, false );
 		$this->mock_wcs_get_order_type_cart_items( true );
