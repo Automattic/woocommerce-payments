@@ -163,7 +163,7 @@ const AddPaymentMethodsTask = () => {
 					),
 					components: {
 						settingsLink: (
-							<a href="admin.php?page=wc-settings">
+							<a href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments">
 								{ __( 'settings', 'woocommerce-payments' ) }
 							</a>
 						),
@@ -184,16 +184,12 @@ const AddPaymentMethodsTask = () => {
 							) }
 						</p>
 						<PaymentMethodCheckboxes>
-							{ availablePaymentMethods.includes(
-								'woocommerce_payments'
-							) && (
+							{ availablePaymentMethods.includes( 'card' ) && (
 								<PaymentMethodCheckbox
-									checked={
-										paymentMethodsState.woocommerce_payments
-									}
+									checked={ paymentMethodsState.card }
 									onChange={ handlePaymentMethodChange }
 									fees="missing fees"
-									name="woocommerce_payments"
+									name="card"
 								/>
 							) }
 						</PaymentMethodCheckboxes>
@@ -207,40 +203,30 @@ const AddPaymentMethodsTask = () => {
 							) }
 						</p>
 						<PaymentMethodCheckboxes>
-							{ availablePaymentMethods.includes(
-								'woocommerce_payments_giropay'
-							) && (
+							{ availablePaymentMethods.includes( 'giropay' ) && (
 								<PaymentMethodCheckbox
-									checked={
-										paymentMethodsState.woocommerce_payments_giropay
-									}
+									checked={ paymentMethodsState.giropay }
 									onChange={ handlePaymentMethodChange }
 									fees="missing fees"
-									name="woocommerce_payments_giropay"
+									name="giropay"
+								/>
+							) }
+							{ availablePaymentMethods.includes( 'sofort' ) && (
+								<PaymentMethodCheckbox
+									checked={ paymentMethodsState.sofort }
+									onChange={ handlePaymentMethodChange }
+									fees="missing fees"
+									name="sofort"
 								/>
 							) }
 							{ availablePaymentMethods.includes(
-								'woocommerce_payments_sofort'
+								'sepa_debit'
 							) && (
 								<PaymentMethodCheckbox
-									checked={
-										paymentMethodsState.woocommerce_payments_sofort
-									}
+									checked={ paymentMethodsState.sepa_debit }
 									onChange={ handlePaymentMethodChange }
 									fees="missing fees"
-									name="woocommerce_payments_sofort"
-								/>
-							) }
-							{ availablePaymentMethods.includes(
-								'woocommerce_payments_sepa'
-							) && (
-								<PaymentMethodCheckbox
-									checked={
-										paymentMethodsState.woocommerce_payments_sepa
-									}
-									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
-									name="woocommerce_payments_sepa"
+									name="sepa_debit"
 								/>
 							) }
 						</PaymentMethodCheckboxes>

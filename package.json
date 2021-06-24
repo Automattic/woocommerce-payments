@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-2.0-or-later",
@@ -56,25 +56,10 @@
     "tube:start": "./docker/bin/jt/tunnel.sh",
     "tube:stop": "./docker/bin/jt/tunnel.sh break"
   },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "npm run format:provided",
-      "eslint"
-    ],
-    "*.{ts,tsx}": [
-      "tsc --noEmit --jsx react"
-    ],
-    "*.{scss,css}": [
-      "npm run format:provided",
-      "npm run lint:css"
-    ],
-    "*.php": "./vendor/bin/phpcs --standard=phpcs.xml.dist --basepath=. --colors",
-    "composer.json": "composer validate --strict --no-check-all"
-  },
   "dependencies": {
     "@stripe/react-stripe-js": "1.1.2",
     "@stripe/stripe-js": "1.12.1",
-    "@woocommerce/explat": "^1.0.0",
+    "@woocommerce/explat": "^1.0.1",
     "css-loader": "^5.0.0",
     "debug": "^4.1.1",
     "interpolate-components": "^1.1.1",
@@ -98,7 +83,7 @@
     "@woocommerce/date": "2.1.0",
     "@woocommerce/e2e-utils": "^0.1.5",
     "@woocommerce/eslint-plugin": "1.1.0",
-    "@woocommerce/experimental": "1.2.0",
+    "@woocommerce/experimental": "1.3.0",
     "@wordpress/api-fetch": "3.3.0",
     "@wordpress/babel-plugin-makepot": "2.1.3",
     "@wordpress/babel-preset-default": "4.3.0",

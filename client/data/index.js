@@ -17,3 +17,4 @@ export * from './charges/hooks';
 export * from './timeline/hooks';
 export * from './disputes/hooks';
 export * from './settings/hooks';
+export * from './multi-currency';

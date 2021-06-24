@@ -195,7 +195,7 @@ export const TransactionsList = ( props ) => {
 		const deposit = (
 			<Deposit
 				depositId={ txn.deposit_id }
-				dateAvailable={ txn.date_available }
+				dateAvailable={ txn.available_on }
 			/>
 		);
 		const currency = txn.currency.toUpperCase();
