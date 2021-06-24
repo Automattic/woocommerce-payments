@@ -132,8 +132,10 @@ class MultiCurrency {
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
+		$this->check_store_currency_for_change();
 
-		new UserSettings( $this );
+		new Admin_Notices();
+		new User_Settings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->utils );
@@ -580,6 +582,24 @@ class MultiCurrency {
 	}
 
 	/**
+<<<<<<< HEAD:includes/multi-currency/MultiCurrency.php
+=======
+	 * Include required core files used in admin and on the frontend.
+	 */
+	protected function includes() {
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-admin-notices.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-compatibility.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-utils.php';
+	}
+
+	/**
+>>>>>>> ee6a7490 (Added Admin_Notices class to handle displaying admin notices. Created notice if store currency is changed and enabled currencies have manual rates.):includes/multi-currency/class-multi-currency.php
 	 * Caches currency data for a period of time.
 	 *
 	 * @param string|array $currencies - Currency data to cache.
@@ -614,6 +634,32 @@ class MultiCurrency {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Checks to see if the store currency has changed and puts any manual rate currencies into an option for a notice to display.
+	 */
+	private function check_store_currency_for_change() {
+		$last_known_currency  = get_option( $this->id . '_store_currency', false );
+		$woocommerce_currency = get_woocommerce_currency();
+		$manual_currencies    = [];
+		if ( $last_known_currency && $last_known_currency !== $woocommerce_currency ) {
+			$enabled_currencies = $this->get_enabled_currencies();
+
+			// Check enabled currencies for manual rates.
+			foreach ( $enabled_currencies as $currency ) {
+				$rate_type = get_option( $this->id . '_exchange_rate_' . $currency->get_id(), false );
+				if ( 'manual' === $rate_type ) {
+					$manual_currencies[] = $currency->get_name();
+				}
+			}
+
+			if ( 0 < count( $manual_currencies ) ) {
+				update_option( $this->id . '_show_store_currency_changed_notice', $manual_currencies );
+			}
+		}
+
+		update_option( $this->id . '_store_currency', $woocommerce_currency );
 	}
 
 	/**
