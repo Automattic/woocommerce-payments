@@ -2,7 +2,6 @@
 /**
  * External dependencies
  */
-
 import React from 'react';
 import { Card } from '@woocommerce/components';
 import { Button, Notice } from '@wordpress/components';
