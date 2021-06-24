@@ -86,8 +86,7 @@ function updatePreview() {
 	let total = previewAmount.value * rate;
 
 	if ( 'none' !== rounding.value ) {
-		const precision = Math.pow( 10, rounding.value );
-		total = Math.ceil( total * precision ) / precision;
+		total = Math.ceil( total / rounding.value ) * rounding.value;
 	}
 
 	total += parseFloat( charm.value );

@@ -13,6 +13,7 @@
 			<exclude>./tests/unit/multi-currency</exclude>
 		</testsuite>
 		<testsuite name="WCPayMultiCurrency">
+			<directory suffix=".php">./tests/unit/helpers</directory>
 			<directory suffix=".php">./tests/unit/multi-currency</directory>
 		</testsuite>
 	</testsuites>

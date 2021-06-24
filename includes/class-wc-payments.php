@@ -156,6 +156,7 @@ class WC_Payments {
 
 		self::$api_client = self::create_api_client();
 
+		include_once __DIR__ . '/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
@@ -205,11 +206,7 @@ class WC_Payments {
 		$sepa_class    = Sepa_Payment_Gateway::class;
 		$sofort_class  = Sofort_Payment_Gateway::class;
 
-		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
-		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
-			include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
-			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
-		} elseif ( WC_Payments_Features::is_upe_enabled() ) {
+		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$gateway_class = UPE_Payment_Gateway::class;
 		}
 
@@ -745,6 +742,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_API_Client
+	 *
+	 * @return WC_Payments_API_Client API Client instance
+	 */
+	public static function get_payments_api_client() {
+		return self::$api_client;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
@@ -826,12 +832,13 @@ class WC_Payments {
 	 * @param mixed  $new_value   The new option value.
 	 */
 	public static function possibly_update_wcpay_account_locale( $option_name, $old_value, $new_value ) {
-		if ( 'WPLANG' === $option_name && self::$api_client->is_server_connected() ) {
+		$api = self::get_payments_api_client();
+		if ( 'WPLANG' === $option_name && $api->is_server_connected() ) {
 			try {
 				$account_settings = [
 					'locale' => $new_value,
 				];
-				self::$api_client->update_account( $account_settings );
+				$api->update_account( $account_settings );
 			} catch ( Exception $e ) {
 				Logger::error( __( 'Failed to update Account locale. ', 'woocommerce-payments' ) . $e );
 			}

@@ -30,6 +30,7 @@ class WC_Payments_API_Client {
 	const CHARGES_API         = 'charges';
 	const CONN_TOKENS_API     = 'terminal/connection_tokens';
 	const CUSTOMERS_API       = 'customers';
+	const CURRENCY_API        = 'currency';
 	const INTENTIONS_API      = 'intentions';
 	const REFUNDS_API         = 'refunds';
 	const DEPOSITS_API        = 'deposits';
@@ -803,6 +804,28 @@ class WC_Payments_API_Client {
 	 */
 	public function get_timeline( $intention_id ) {
 		return $this->request( [], self::TIMELINE_API . '/' . $intention_id, self::GET );
+	}
+
+	/**
+	 * Get currency rates from the server.
+	 *
+	 * @param string $currency_from - The currency to convert from.
+	 * @param ?array $currencies_to - An array of the currencies we want to convert into. If left empty, will get all supported currencies.
+	 *
+	 * @return array
+	 */
+	public function get_currency_rates( string $currency_from, $currencies_to = null ) {
+		$query_body = [ 'currency_from' => $currency_from ];
+
+		if ( null !== $currencies_to ) {
+			$query_body['currencies_to'] = $currencies_to;
+		}
+
+		return $this->request(
+			$query_body,
+			self::CURRENCY_API . '/rates',
+			self::GET
+		);
 	}
 
 	/**
