@@ -38,6 +38,13 @@ class Multi_Currency {
 	protected static $instance = null;
 
 	/**
+	 * Compatibility instance.
+	 *
+	 * @var Compatibility
+	 */
+	protected $compatibility;
+
+	/**
 	 * Frontend_Prices instance.
 	 *
 	 * @var Frontend_Prices
@@ -104,6 +111,8 @@ class Multi_Currency {
 		$this->includes();
 
 		$this->payments_api_client = $payments_api_client;
+		$this->utils               = new Utils();
+		$this->compatibility       = new Compatibility( $this->utils );
 
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
@@ -128,7 +137,7 @@ class Multi_Currency {
 
 		new User_Settings( $this );
 
-		$this->frontend_prices     = new Frontend_Prices( $this );
+		$this->frontend_prices     = new Frontend_Prices( $this, $this->compatibility );
 		$this->frontend_currencies = new Frontend_Currencies( $this );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -153,7 +162,7 @@ class Multi_Currency {
 	 * Initialize the Widgets.
 	 */
 	public function init_widgets() {
-		register_widget( new Currency_Switcher_Widget( $this ) );
+		register_widget( new Currency_Switcher_Widget( $this, $this->compatibility ) );
 	}
 
 	/**
@@ -265,6 +274,15 @@ class Multi_Currency {
 	}
 
 	/**
+	 * Returns the Compatibility instance.
+	 *
+	 * @return Compatibility
+	 */
+	public function get_compatibility() {
+		return $this->compatibility;
+	}
+
+	/**
 	 * Returns the Frontend_Prices instance.
 	 *
 	 * @return Frontend_Prices
@@ -333,7 +351,7 @@ class Multi_Currency {
 			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
 			$currency = clone $enabled_currency;
 			$charm    = get_option( $this->id . '_price_charm_' . $currency->get_id(), 0.00 );
-			$rounding = get_option( $this->id . '_price_rounding_' . $currency->get_id(), 'none' );
+			$rounding = get_option( $this->id . '_price_rounding_' . $currency->get_id(), $currency->get_is_zero_decimal() ? '100' : '1.00' );
 			$currency->set_charm( $charm );
 			$currency->set_rounding( $rounding );
 
@@ -413,6 +431,8 @@ class Multi_Currency {
 		} elseif ( $user_id ) {
 			$code = get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
 		}
+
+		$code = $this->compatibility->override_selected_currency() ? $this->compatibility->override_selected_currency() : $code;
 
 		return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
 	}
@@ -541,7 +561,7 @@ class Multi_Currency {
 	 */
 	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
 		if ( 'none' !== $currency->get_rounding() ) {
-			$price = $this->ceil_price( $price, intval( $currency->get_rounding() ) );
+			$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
 		}
 
 		if ( $apply_charm_pricing ) {
@@ -553,28 +573,32 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Ceils the price to the next number based on the precision.
+	 * Ceils the price to the next number based on the rounding value.
 	 *
-	 * @param float $price     The price to be ceiled.
-	 * @param int   $precision The precision to be used.
+	 * @param float $price    The price to be ceiled.
+	 * @param float $rounding The rounding option.
 	 *
 	 * @return float The ceiled price.
 	 */
-	protected function ceil_price( $price, $precision ): float {
-		$precision_modifier = pow( 10, $precision );
-		return ceil( $price * $precision_modifier ) / $precision_modifier;
+	protected function ceil_price( float $price, float $rounding ): float {
+		if ( 0.00 === $rounding ) {
+			return $price;
+		}
+		return ceil( $price / $rounding ) * $rounding;
 	}
 
 	/**
 	 * Include required core files used in admin and on the frontend.
 	 */
 	protected function includes() {
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-compatibility.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-utils.php';
 	}
 
 	/**

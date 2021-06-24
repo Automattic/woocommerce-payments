@@ -156,6 +156,7 @@ class WC_Payments {
 
 		self::$api_client = self::create_api_client();
 
+		include_once __DIR__ . '/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
@@ -205,11 +206,7 @@ class WC_Payments {
 		$sepa_class    = Sepa_Payment_Gateway::class;
 		$sofort_class  = Sofort_Payment_Gateway::class;
 
-		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
-		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
-			include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
-			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
-		} elseif ( WC_Payments_Features::is_upe_enabled() ) {
+		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$gateway_class = UPE_Payment_Gateway::class;
 		}
 
