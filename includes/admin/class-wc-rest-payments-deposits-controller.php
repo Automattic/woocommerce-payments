@@ -139,6 +139,11 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 			[
 				'match'             => $request->get_param( 'match' ),
 				'store_currency_is' => $request->get_param( 'store_currency_is' ),
+				'date_before'       => $request->get_param( 'date_before' ),
+				'date_after'        => $request->get_param( 'date_after' ),
+				'date_between'      => $request->get_param( 'date_between' ),
+				'status_is'         => $request->get_param( 'status_is' ),
+				'status_is_not'     => $request->get_param( 'status_is_not' ),
 			],
 			static function ( $filter ) {
 				return null !== $filter;

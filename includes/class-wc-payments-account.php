@@ -233,7 +233,7 @@ class WC_Payments_Account {
 	 *
 	 * @param string $error_message Optional error message to show in a notice.
 	 */
-	private function redirect_to_onboarding_page( $error_message = null ) {
+	public function redirect_to_onboarding_page( $error_message = null ) {
 		if ( isset( $error_message ) ) {
 			set_transient( self::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
 		}
@@ -534,12 +534,18 @@ class WC_Payments_Account {
 		$current_user = wp_get_current_user();
 		$return_url   = $this->get_oauth_return_url( $wcpay_connect_from );
 
+		$country = WC()->countries->get_base_country();
+		if ( ! array_key_exists( $country, WC_Payments_Utils::supported_countries() ) ) {
+			$country = null;
+		}
+
 		$oauth_data = $this->payments_api_client->get_oauth_data(
 			$return_url,
 			[
 				'email'         => $current_user->user_email,
 				'business_name' => get_bloginfo( 'name' ),
 				'url'           => get_home_url(),
+				'country'       => $country,
 			],
 			[
 				'site_username' => $current_user->user_login,

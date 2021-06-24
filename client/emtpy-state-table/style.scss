@@ -1,0 +1,48 @@
+.empty-state-list {
+	padding: 20px;
+}
+
+.empty-state-table {
+	background: rgb( 255, 255, 255 );
+	box-sizing: border-box;
+	border-radius: 3px;
+	border: 1px solid rgb( 226, 228, 231 );
+
+	td.woocommerce-table__empty-item:hover {
+		background: #fff;
+	}
+
+	th {
+		border-top: 1px solid #e2e4e7;
+	}
+
+	.components-card__header {
+		background: #f6f7f7;
+	}
+
+	p.intro-copy {
+		color: #1e1e1e;
+		font-weight: 600;
+		font-size: 14px;
+		text-align: center;
+		width: 56%;
+		margin: 0 auto 0 auto;
+	}
+
+	p.terms-of-service {
+		color: #1e1e1e;
+		font-size: 14px;
+		text-align: center;
+		font-weight: normal;
+	}
+
+	h2 {
+		font-weight: 600;
+		font-size: 14px;
+		margin-left: 20px;
+	}
+
+	a {
+		font-weight: normal;
+	}
+}

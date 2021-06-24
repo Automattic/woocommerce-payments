@@ -71,7 +71,7 @@ const getColumns = ( sortByDate ) => [
 ];
 
 export const DepositsList = () => {
-	const { deposits, depositsCount, isLoading } = useDeposits( getQuery() );
+	const { deposits, isLoading } = useDeposits( getQuery() );
 	const { depositsSummary, isLoading: isSummaryLoading } = useDepositsSummary(
 		getQuery()
 	);
@@ -172,7 +172,7 @@ export const DepositsList = () => {
 				title={ __( 'Deposit history', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ getQuery().per_page || 25 }
-				totalRows={ depositsCount }
+				totalRows={ depositsSummary.count }
 				headers={ columns }
 				rows={ rows }
 				summary={ summary }
