@@ -10,6 +10,7 @@ import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { addQueryArgs } from '@wordpress/url';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -96,7 +97,7 @@ const getDepositTimelineItem = (
 
 		headline = createInterpolateElement( headline, {
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
-			a: <a href={ depositUrl } />,
+			a: <Link href={ depositUrl } />,
 		} );
 	} else {
 		headline = sprintf(
@@ -463,9 +464,9 @@ const mapEventToTimelineItems = ( event ) => {
 					'is-error',
 					[
 						// eslint-disable-next-line react/jsx-key
-						<a href={ disputeUrl }>
+						<Link href={ disputeUrl }>
 							{ __( 'View dispute', 'woocommerce-payments' ) }
-						</a>,
+						</Link>,
 					]
 				),
 			];
