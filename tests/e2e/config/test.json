@@ -163,6 +163,15 @@
       },
       "cvc": "626",
       "label": "Visa ending in 0119"
+    },
+    "declined-3ds": {
+      "number": "4000008400001629",
+      "expires": {
+        "month": "06",
+        "year": "25"
+      },
+      "cvc": "626",
+      "label": "Visa ending in 1629"
     }
   }
 }

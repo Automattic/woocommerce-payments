@@ -8,7 +8,11 @@ const {
 	uiUnblocked,
 } = require( '@woocommerce/e2e-utils' );
 
-import { fillCardDetails, setupProductCheckout } from '../../utils/payments';
+import {
+	fillCardDetails,
+	setupProductCheckout,
+	confirmCardAuthentication,
+} from '../../utils/payments';
 
 describe( 'Shopper > Checkout > Failures with various cards', () => {
 	beforeAll( async () => {
@@ -85,6 +89,45 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 				text:
 					'Error: An error occurred while processing your card. Try again in a little bit.',
 			}
+		);
+	} );
+
+	it( 'should throw an error that the card was declined due to invalid 3DS card', async () => {
+		const declinedCard = config.get( 'cards.declined-3ds' );
+		await fillCardDetails( page, declinedCard );
+		await expect( page ).toClick( '#place_order' );
+		await uiUnblocked();
+		await confirmCardAuthentication( page, '3DS' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+		await expect(
+			page
+		).toMatchElement(
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
+			{ text: 'Error: Your card was declined.' }
+		);
+	} );
+
+	it( 'should throw an error that the card was declined due to incorrect card number', async () => {
+		const cardIncorrectNumber = config.get( 'cards.declined-incorrect' );
+		await fillCardDetails( page, cardIncorrectNumber );
+
+		// Verify the error message
+		await expect( page ).toMatchElement(
+			'div#wcpay-errors > ul.woocommerce-error > li',
+			{
+				text: 'Your card number is invalid.',
+			}
+		);
+
+		await expect( page ).toClick( '#place_order' );
+		await uiUnblocked();
+		await expect(
+			page
+		).toMatchElement(
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
+			{ text: 'Your card number is invalid.' }
 		);
 	} );
 } );
