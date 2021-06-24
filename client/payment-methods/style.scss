@@ -27,4 +27,26 @@
 			margin-right: 1px; // 1px to accommodate for box-shadow
 		}
 	}
+
+	&__express-checkouts {
+		background: url( '../../assets/images/banner.png' ) no-repeat right;
+		background-size: contain;
+
+		&-get-started {
+			margin-right: 16px;
+		}
+		&-actions {
+			padding-top: 11px;
+		}
+	}
+
+	&__pill {
+		/* adapted from https://github.com/woocommerce/woocommerce-admin/blob/main/packages/components/src/pill/style.scss */
+		font-size: 12px;
+		border: 1px solid $studio-gray-70;
+		border-radius: 28px;
+		color: $studio-gray-70;
+		display: inline-block;
+		padding: 2px 8px;
+	}
 }

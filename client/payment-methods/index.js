@@ -116,8 +116,8 @@ const PaymentMethods = () => {
 				</CardBody>
 
 				<CardDivider />
-				<CardBody>
-					<span>Early access</span>
+				<CardBody className="payment-methods__express-checkouts">
+					<span className="payment-methods__pill">Early access</span>
 
 					<h3>
 						Enable the new WooCommerce Payments checkout experience
@@ -129,10 +129,14 @@ const PaymentMethods = () => {
 						) }
 					</p>
 
-					<Button isPrimary>Get started</Button>
-					<ExternalLink href="https://docs.woocommerce.com/document/payments/">
-						{ __( 'Learn more', 'woocommerce-payments' ) }
-					</ExternalLink>
+					<div className="payment-methods__express-checkouts-actions">
+						<span className="payment-methods__express-checkouts-get-started">
+							<Button isPrimary>Get started</Button>
+						</span>
+						<ExternalLink href="https://docs.woocommerce.com/document/payments/">
+							{ __( 'Learn more', 'woocommerce-payments' ) }
+						</ExternalLink>
+					</div>
 				</CardBody>
 
 				{ 1 < availablePaymentMethodIds.length ? (
