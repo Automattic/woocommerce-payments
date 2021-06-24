@@ -1,0 +1,39 @@
+<?php
+/**
+ * Class Sofort_Payment_Method
+ *
+ * @package WCPay\Payment_Methods
+ */
+
+namespace WCPay\Payment_Methods;
+
+/**
+ * Sofort Payment Method class extending UPE base class
+ */
+class Sofort_Payment_Method extends UPE_Payment_Method {
+
+	const STRIPE_ID = 'sofort';
+
+	const TITLE = 'Sofort';
+
+	/**
+	 * Can payment method be saved or reused?
+	 *
+	 * @var bool
+	 */
+	protected $can_reuse_payment_method = false;// TODO: This should actually be true, but will need some work...
+
+	/**
+	 * Add payment method to user and return WC payment token
+	 *
+	 * @param WP_User $user User to get payment token from.
+	 * @param string  $payment_method_id Stripe payment method ID string.
+	 *
+	 * @return WC_Payment_Token_CC|WC_Payment_Token_Sepa WC object for payment token.
+	 */
+	public function get_payment_token_for_user( $user, $payment_method_id = false ) {
+		// TODO: This function will also need to work a little differently...
+		return $this->token_service->add_payment_method_to_user( $user, $payment_method_id );
+	}
+
+}

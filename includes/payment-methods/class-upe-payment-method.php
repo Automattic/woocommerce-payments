@@ -49,9 +49,11 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Returns payment method title
 	 *
+	 * @param array $payment_details Optional payment details from charge object.
+	 *
 	 * @return string
 	 */
-	public function get_title() {
+	public function get_title( $payment_details = false ) {
 		return self::TITLE;
 	}
 
@@ -59,9 +61,15 @@ abstract class UPE_Payment_Method {
 	 * Returns boolean dependent on whether payment method
 	 * can be used at checkout
 	 *
-	 * @var bool
+	 * @return bool
 	 */
 	public function is_enabled_at_checkout() {
+		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return $this->is_payment_method_reusable();
+			}
+		}
+
 		return true;
 	}
 
@@ -83,7 +91,7 @@ abstract class UPE_Payment_Method {
 	 *
 	 * @return WC_Payment_Token_CC|WC_Payment_Token_Sepa WC object for payment token.
 	 */
-	public function get_token_for_payment_method( $user, $payment_method_id ) {
-		return $this->token_service->add_payment_method_to_user( $user, $payment_method_id );
+	public function get_payment_token_for_user( $user, $payment_method_id ) {
+		return $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
 	}
 }
