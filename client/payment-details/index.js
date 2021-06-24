@@ -27,12 +27,12 @@ const PaymentDetails = ( props ) => {
 			<Page maxWidth={ 1032 } className="wcpay-payment-details">
 				{ testModeNotice }
 				<Card>
-					<div>
+					<CardBody>
 						{ __(
 							'Payment details not loaded',
 							'woocommerce-payments'
 						) }
-					</div>
+					</CardBody>
 				</Card>
 			</Page>
 		);
