@@ -1,10 +1,8 @@
-/** @format **/
-
 /**
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card } from '@woocommerce/components';
+import { Card, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies

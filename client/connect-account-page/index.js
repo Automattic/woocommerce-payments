@@ -3,8 +3,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card } from '@woocommerce/components';
-import { Button, Notice } from '@wordpress/components';
+import { Button, Card, CardBody, Notice } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 /**
@@ -74,16 +73,18 @@ const ConnectAccountPage = () => {
 		<Page isNarrow className="connect-account">
 			<ConnectPageError />
 			<Card className="connect-account__card">
-				<HeroImage className="hero-image" />
-				<h2>{ strings.heading }</h2>
-				<p className="connect-account__description">
-					{ strings.description }
-				</p>
-				{ wcpaySettings.onBoardingDisabled ? (
-					<ConnectPageOnboardingDisabled />
-				) : (
-					<ConnectPageOnboarding />
-				) }
+				<CardBody>
+					<HeroImage className="hero-image" />
+					<h2>{ strings.heading }</h2>
+					<p className="connect-account__description">
+						{ strings.description }
+					</p>
+					{ wcpaySettings.onBoardingDisabled ? (
+						<ConnectPageOnboardingDisabled />
+					) : (
+						<ConnectPageOnboarding />
+					) }
+				</CardBody>
 			</Card>
 		</Page>
 	);
