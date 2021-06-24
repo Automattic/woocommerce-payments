@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.5
 Tested up to: 5.7
 Requires PHP: 7.0
-Stable tag: 2.5.0
+Stable tag: 2.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,9 +101,10 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.6.0 - 2021-xx-xx =
+= 2.6.0 - 2021-06-23 =
 * Add - Notify the admin if WordPress.com user connection is broken.
 * Add - Experimental PHP client for Explat.
+* Add - WooCommerce Payment inbox notifications to the overview screen.
 * Fix - Fix fatal error if store currency is changed after enabled (multi) currencies set.
 * Fix - Use of deprecated call-style to registerPaymentMethods. WooCommerce Payments now requires WooCommerce Blocks of at least version 3.9.0.
 * Fix - Deposit date on Transactions list page.
@@ -113,6 +114,10 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Pass currency to wc_price when adding intent notes to orders.
 * Update - Instant deposit inbox note wording.
 * Fix - Deposit overview details for non instant ones.
+* Add - Introduce new settings layout
+* Update - Removed "Branded" and "Custom label" options on Payment request buttons to align with design guidelines.
+* Update - Converted payment request button size value to distinct options to align with design guidelines.
+* Tweak - Run post-upgrade actions during any request instead of only on wp-admin requests.
 * Update - Payment request button should guide users to login when necessary.
 * Add - When setting WooCommerce Payments up, inform if merchant business country is not supported.
 * Update - Bump minimum supported version of WooCommerce from 4.8 to 5.2.

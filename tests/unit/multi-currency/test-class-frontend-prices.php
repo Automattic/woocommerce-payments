@@ -10,6 +10,13 @@
  */
 class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	/**
+	 * Mock WCPay\Multi_Currency\Compatibility.
+	 *
+	 * @var WCPay\Multi_Currency\Compatibility|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_compatibility;
+
+	/**
 	 * Mock WCPay\Multi_Currency\Multi_Currency.
 	 *
 	 * @var WCPay\Multi_Currency\Multi_Currency|PHPUnit_Framework_MockObject_MockObject
@@ -29,9 +36,10 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
+		$this->mock_compatibility  = $this->createMock( WCPay\Multi_Currency\Compatibility::class );
 		$this->mock_multi_currency = $this->createMock( WCPay\Multi_Currency\Multi_Currency::class );
 
-		$this->frontend_prices = new WCPay\Multi_Currency\Frontend_Prices( $this->mock_multi_currency );
+		$this->frontend_prices = new WCPay\Multi_Currency\Frontend_Prices( $this->mock_multi_currency, $this->mock_compatibility );
 	}
 
 	/**
@@ -85,11 +93,26 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_product_price_converts_prices() {
+		$mock_product = new WC_Product( 0 );
+		$this->mock_compatibility
+			->method( 'should_convert_product_price' )
+			->with( $mock_product )
+			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_price' )->with( 10.0, 'product' )->willReturn( 25.0 );
-		$this->assertSame( 25.0, $this->frontend_prices->get_product_price( 10.0 ) );
+		$this->assertSame( 25.0, $this->frontend_prices->get_product_price( 10.0, $mock_product ) );
+	}
+
+	public function test_get_product_price_skips_conversion_on_compatibility() {
+		$mock_product = new WC_Product( 0 );
+		$this->mock_compatibility
+			->method( 'should_convert_product_price' )
+			->with( $mock_product )
+			->willReturn( false );
+		$this->assertSame( 10.0, $this->frontend_prices->get_product_price( 10.0, $mock_product ) );
 	}
 
 	public function test_get_variation_price_range_converts_non_empty_prices() {
+		$this->mock_compatibility->method( 'should_convert_product_price' )->willReturn( true );
 		$this->mock_multi_currency
 			->method( 'get_price' )
 			->withConsecutive( [ 10.0, 'product' ], [ 12.0, 'product' ], [ 6.0, 'product' ], [ 8.0, 'product' ] )
@@ -141,6 +164,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_exchange_rate_is_added_to_prices_hash() {
+		$this->mock_compatibility->method( 'should_convert_product_price' )->willReturn( true );
 		$this->mock_multi_currency->method( 'get_price' )->with( 1.0, 'product' )->willReturn( 2.5 );
 
 		$this->assertSame(

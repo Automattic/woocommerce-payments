@@ -12,6 +12,13 @@ use WCPay\Multi_Currency\Currency;
  */
 class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCase {
 	/**
+	 * Mock WCPay\Multi_Currency\Compatibility.
+	 *
+	 * @var WCPay\Multi_Currency\Compatibility|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_compatibility;
+
+	/**
 	 * Mock WCPay\Multi_Currency\Multi_Currency.
 	 *
 	 * @var WCPay\Multi_Currency\Multi_Currency|PHPUnit_Framework_MockObject_MockObject
@@ -31,6 +38,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 	public function setUp() {
 		parent::setUp();
 
+		$this->mock_compatibility  = $this->createMock( WCPay\Multi_Currency\Compatibility::class );
 		$this->mock_multi_currency = $this->createMock( WCPay\Multi_Currency\Multi_Currency::class );
 		$this->mock_multi_currency
 			->method( 'get_enabled_currencies' )
@@ -42,11 +50,11 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 				]
 			);
 
-		$this->currency_switcher_widget = new WCPay\Multi_Currency\Currency_Switcher_Widget( $this->mock_multi_currency );
+		$this->currency_switcher_widget = new WCPay\Multi_Currency\Currency_Switcher_Widget( $this->mock_multi_currency, $this->mock_compatibility );
 	}
 
-
 	public function test_widget_renders_title_with_args() {
+		$this->mock_compatibility->method( 'should_hide_widgets' )->willReturn( false );
 		$instance = [
 			'title' => 'Test Title',
 		];
@@ -58,6 +66,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 	}
 
 	public function test_widget_renders_enabled_currencies_with_symbol() {
+		$this->mock_compatibility->method( 'should_hide_widgets' )->willReturn( false );
 		$this->render_widget();
 		$this->expectOutputRegex( '/<option value="USD">&#36; USD<\/option>/' );
 		$this->expectOutputRegex( '/<option value="CAD">&#36; CAD<\/option>/' );
@@ -65,6 +74,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 	}
 
 	public function test_widget_renders_enabled_currencies_without_symbol() {
+		$this->mock_compatibility->method( 'should_hide_widgets' )->willReturn( false );
 		$instance = [
 			'symbol' => 0,
 		];
@@ -75,6 +85,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 	}
 
 	public function test_widget_renders_enabled_currencies_with_symbol_and_flag() {
+		$this->mock_compatibility->method( 'should_hide_widgets' )->willReturn( false );
 		$instance = [
 			'symbol' => 1,
 			'flag'   => 1,
@@ -98,6 +109,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 	} //<input type="hidden" name="test_array[0][0]" value="test_array_value" />
 
 	public function test_widget_selects_selected_currency() {
+		$this->mock_compatibility->method( 'should_hide_widgets' )->willReturn( false );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'CAD' ) );
 		$this->render_widget();
 		$this->expectOutputRegex( '/<option value="USD">&#36; USD<\/option>/' );
@@ -106,8 +118,15 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 	}
 
 	public function test_widget_submits_form_on_change() {
+		$this->mock_compatibility->method( 'should_hide_widgets' )->willReturn( false );
 		$this->render_widget();
 		$this->expectOutputRegex( '/onchange="this.form.submit\(\)"/' );
+	}
+
+	public function test_widget_does_not_render_on_hide() {
+		$this->mock_compatibility->method( 'should_hide_widgets' )->willReturn( true );
+		$this->render_widget();
+		$this->expectOutputString( '' );
 	}
 
 	public function test_update_method() {
