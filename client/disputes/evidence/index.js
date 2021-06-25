@@ -514,7 +514,7 @@ export default ( { query } ) => {
 			actions: [
 				{
 					label: __(
-						'Return to challenge dispute',
+						'Return to evidence submission',
 						'woocommerce-payments'
 					),
 					url: addQueryArgs( 'admin.php', {
