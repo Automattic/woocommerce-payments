@@ -9,10 +9,26 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_Token_Service;
+
 /**
  * Extendable abstract class for payment methods.
  */
 abstract class UPE_Payment_Method {
+
+	/**
+	 * Stripe key name
+	 *
+	 * @var string
+	 */
+	protected $stripe_id;
+
+	/**
+	 * Display title
+	 *
+	 * @var string
+	 */
+	protected $title;
 
 	/**
 	 * Can payment method be saved or reused?
@@ -43,7 +59,7 @@ abstract class UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_id() {
-		return self::STRIPE_ID;
+		return $this->stripe_id;
 	}
 
 	/**
@@ -54,7 +70,7 @@ abstract class UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_title( $payment_details = false ) {
-		return self::TITLE;
+		return $this->title;
 	}
 
 	/**

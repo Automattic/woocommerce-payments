@@ -12,16 +12,17 @@ namespace WCPay\Payment_Methods;
  */
 class Sofort_Payment_Method extends UPE_Payment_Method {
 
-	const STRIPE_ID = 'sofort';
-
-	const TITLE = 'Sofort';
-
 	/**
-	 * Can payment method be saved or reused?
+	 * Constructor for Sofort payment method
 	 *
-	 * @var bool
+	 * @param WC_Payments_Token_Service $token_service Token class instance.
 	 */
-	protected $can_reuse_payment_method = false;// TODO: This should actually be true, but will need some work...
+	public function __construct( $token_service ) {
+		parent::__construct( $token_service );
+		$this->stripe_id                = 'sofort';
+		$this->title                    = 'Sofort';
+		$this->can_reuse_payment_method = false;// TODO: This should actually be true, but will need some work...
+	}
 
 	/**
 	 * Add payment method to user and return WC payment token

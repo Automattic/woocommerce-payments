@@ -12,16 +12,17 @@ namespace WCPay\Payment_Methods;
  */
 class CC_Payment_Method extends UPE_Payment_Method {
 
-	const STRIPE_ID = 'card';
-
-	const TITLE = 'Credit card / debit card';
-
 	/**
-	 * Can payment method be saved or reused?
+	 * Constructor for card payment method
 	 *
-	 * @var bool
+	 * @param WC_Payments_Token_Service $token_service Token class instance.
 	 */
-	protected $can_reuse_payment_method = true;
+	public function __construct( $token_service ) {
+		parent::__construct( $token_service );
+		$this->stripe_id                = 'card';
+		$this->title                    = 'Credit card / debit card';
+		$this->can_reuse_payment_method = true;
+	}
 
 	/**
 	 * Returns payment method title
