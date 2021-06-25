@@ -148,7 +148,7 @@ class Frontend_Currencies {
 			'num_decimals' => 2,
 		];
 
-		$country = $this->utils->get_customer_country();
+		$country = $this->utils->get_user_locale_country();
 
 		if ( ! empty( $this->currency_format[ $currency_code ] ) ) {
 			$currency_options = $this->currency_format[ $currency_code ];

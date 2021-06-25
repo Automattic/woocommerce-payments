@@ -31,16 +31,12 @@ class Utils {
 	}
 
 	/**
-	 * Returns the customer country.
+	 * Returns the user locale country.
 	 *
 	 * @return string The country code.
 	 */
-	public function get_customer_country(): string {
-		$customer = WC()->customer;
-		if ( $customer && ! empty( $customer->get_billing_country() ) ) {
-			return $customer->get_billing_country();
-		}
-
-		return wc_get_customer_default_location()['country'];
+	public function get_user_locale_country(): string {
+		$locale = explode( '_', get_user_locale() );
+		return end( $locale );
 	}
 }

@@ -17,27 +17,17 @@ class WCPay_Multi_Currency_Utils_Tests extends WP_UnitTestCase {
 	private $utils;
 
 	/**
-	 * Store options to be restored between tests.
-	 *
-	 * @var array
-	 */
-	private $wc_options;
-
-	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
 		parent::setUp();
 
 		$this->utils = new WCPay\Multi_Currency\Utils();
-
-		$this->wc_options['woocommerce_default_customer_address'] = get_option( 'woocommerce_default_customer_address' );
-		$this->wc_options['woocommerce_default_country']          = get_option( 'woocommerce_default_country' );
 	}
 
 	public function tearDown() {
-		update_option( 'woocommerce_default_customer_address', $this->wc_options['woocommerce_default_customer_address'] );
-		update_option( 'woocommerce_default_country', $this->wc_options['woocommerce_default_country'] );
+		wp_set_current_user( 0 );
+		remove_all_filters( 'locale' );
 	}
 
 	public function test_is_call_in_backtrace_return_false() {
@@ -48,19 +38,31 @@ class WCPay_Multi_Currency_Utils_Tests extends WP_UnitTestCase {
 		$this->assertTrue( $this->utils->is_call_in_backtrace( [ 'WCPay_Multi_Currency_Utils_Tests->test_is_call_in_backtrace_return_true' ] ) );
 	}
 
-	public function test_get_customer_country_returns_wc_default_location() {
-		update_option( 'woocommerce_default_customer_address', 'base' );
-		update_option( 'woocommerce_default_country', 'US:CA' );
-
-		$this->assertSame( 'US', $this->utils->get_customer_country() );
+	public function test_get_user_locale_country_returns_default_locale_country() {
+		$this->assertSame( 'US', $this->utils->get_user_locale_country() );
 	}
 
-	public function test_get_customer_country_returns_wc_customer_country() {
-		update_option( 'woocommerce_default_customer_address', 'base' );
-		update_option( 'woocommerce_default_country', 'US:CA' );
+	public function test_get_user_locale_country_returns_filtered_locale_country() {
+		$this->mock_locale( 'pt_BR' );
 
-		WC()->customer->set_billing_country( 'BR' );
+		$this->assertSame( 'BR', $this->utils->get_user_locale_country() );
+	}
 
-		$this->assertSame( 'BR', $this->utils->get_customer_country() );
+	public function test_get_user_locale_country_returns_user_locale_country() {
+		$this->mock_locale( 'pt_BR' ); // Make sure filtered locale is ignored.
+
+		wp_set_current_user( 1 );
+		wp_get_current_user()->locale = 'en_GB';
+
+		$this->assertSame( 'GB', $this->utils->get_user_locale_country() );
+	}
+
+	private function mock_locale( $locale ) {
+		add_filter(
+			'locale',
+			function () use ( $locale ) {
+				return $locale;
+			}
+		);
 	}
 }
