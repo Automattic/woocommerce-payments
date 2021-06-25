@@ -40,7 +40,7 @@ class CurrencySwitcherWidget extends WP_Widget {
 	 * Register widget with WordPress.
 	 *
 	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
-	 * @param Compatibility  $compatibility The Compatibility instance.
+	 * @param Compatibility $compatibility The Compatibility instance.
 	 */
 	public function __construct( MultiCurrency $multi_currency, Compatibility $compatibility ) {
 		$this->multi_currency = $multi_currency;
