@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_REST_Upe_Flag_Toggle_Controller
+ * Class WC_REST_UPE_Flag_Toggle_Controller
  *
  * @package WooCommerce\Payments\Admin
  */
@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * REST controller for UPE feature flag.
  */
-class WC_REST_Upe_Flag_Toggle_Controller extends WP_REST_Controller {
+class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 
 	/**
 	 * Endpoint namespace.
@@ -34,7 +34,7 @@ class WC_REST_Upe_Flag_Toggle_Controller extends WP_REST_Controller {
 	private $wcpay_gateway;
 
 	/**
-	 * WC_REST_Upe_Flag_Toggle_Controller constructor.
+	 * WC_REST_UPE_Flag_Toggle_Controller constructor.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
 	 */

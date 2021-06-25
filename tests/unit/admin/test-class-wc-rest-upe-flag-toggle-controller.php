@@ -1,14 +1,14 @@
 <?php
 /**
- * Class WC_REST_Upe_Flag_Toggle_Controller
+ * Class WC_REST_UPE_Flag_Toggle_Controller
  *
  * @package WooCommerce\Payments\Tests
  */
 
 /**
- * WC_REST_Upe_Flag_Toggle_Controller unit tests.
+ * WC_REST_UPE_Flag_Toggle_Controller unit tests.
  */
-class WC_REST_Upe_Flag_Toggle_Controller_Test extends WP_UnitTestCase {
+class WC_REST_UPE_Flag_Toggle_Controller_Test extends WP_UnitTestCase {
 
 	/**
 	 * Tested REST route.
@@ -18,7 +18,7 @@ class WC_REST_Upe_Flag_Toggle_Controller_Test extends WP_UnitTestCase {
 	/**
 	 * The system under test.
 	 *
-	 * @var WC_REST_Upe_Flag_Toggle_Controller
+	 * @var WC_REST_UPE_Flag_Toggle_Controller
 	 */
 	private $controller;
 
@@ -48,7 +48,7 @@ class WC_REST_Upe_Flag_Toggle_Controller_Test extends WP_UnitTestCase {
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay( $mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
-		$this->controller = new WC_REST_Upe_Flag_Toggle_Controller( $this->gateway );
+		$this->controller = new WC_REST_UPE_Flag_Toggle_Controller( $this->gateway );
 	}
 
 	public function test_get_flag_request_returns_status_code_200() {
