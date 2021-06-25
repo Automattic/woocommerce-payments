@@ -2150,7 +2150,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return add_query_arg(
 			[
 				'page' => 'wc-admin',
-				'path' => '/payments/transactions/details&',
+				'path' => '/payments/transactions/details',
 				'id'   => $charge_id,
 			],
 			admin_url( 'admin.php' )
