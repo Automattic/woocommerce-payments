@@ -145,9 +145,9 @@ describe( 'PaymentMethods', () => {
 		] );
 	} );
 
-	test( 'express payments rendered when UPE preview feautre flag is enabled', () => {
+	test( 'express payments rendered when UPE preview feture flag is enabled', () => {
 		const featureFlagContext = {
-			featureFlags: { upeSettingsPreview: true },
+			featureFlags: { upeSettingsPreview: true, upe: false },
 		};
 
 		render(
@@ -163,9 +163,9 @@ describe( 'PaymentMethods', () => {
 		expect( enableWooCommercePaymentText ).toBeInTheDocument();
 	} );
 
-	test( 'express payments should not rendered when UPE preview feautre flag is disabled', () => {
+	test( 'express payments should not rendered when UPE preview feture flag is disabled', () => {
 		const featureFlagContext = {
-			featureFlags: { upeSettingsPreview: false },
+			featureFlags: { upeSettingsPreview: false, upe: false },
 		};
 
 		render(

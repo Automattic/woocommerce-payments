@@ -93,7 +93,10 @@ const PaymentMethods = () => {
 	};
 
 	const {
-		featureFlags: { upeSettingsPreview: isUPESettingsPreviewEnabled },
+		featureFlags: {
+			upeSettingsPreview: isUPESettingsPreviewEnabled,
+			upe: isUPEEnabled,
+		},
 	} = useContext( WCPaySettingsContext );
 
 	return (
@@ -120,7 +123,7 @@ const PaymentMethods = () => {
 					</PaymentMethodsList>
 				</CardBody>
 
-				{ isUPESettingsPreviewEnabled && (
+				{ isUPESettingsPreviewEnabled && ! isUPEEnabled && (
 					<>
 						<CardDivider />
 						<CardBody className="payment-methods__express-checkouts">
