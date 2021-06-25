@@ -140,7 +140,6 @@ class Multi_Currency {
 		$this->frontend_prices     = new Frontend_Prices( $this, $this->compatibility );
 		$this->frontend_currencies = new Frontend_Currencies( $this, $this->utils );
 
-		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 
 		if ( is_admin() ) {
@@ -215,33 +214,6 @@ class Multi_Currency {
 		// Output the settings JS and CSS only on the settings page.
 		wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 		wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
-	}
-
-	/**
-	 * Register the CSS and JS scripts.
-	 */
-	private function register_scripts() {
-		$checkout_script_src_url    = plugins_url( 'dist/multi-currency-checkout.js', WCPAY_PLUGIN_FILE );
-		$checkout_script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency-checkout.asset.php';
-		$checkout_script_asset      = file_exists( $checkout_script_asset_path ) ? require_once $checkout_script_asset_path : [ 'dependencies' => [] ];
-		wp_register_script(
-			'WCPAY_MULTI_CURRENCY_CHECKOUT',
-			$checkout_script_src_url,
-			$checkout_script_asset['dependencies'],
-			\WC_Payments::get_file_version( 'dist/multi-currency-checkout.js' ),
-			true
-		);
-	}
-
-	/**
-	 * Load the scripts.
-	 */
-	public function enqueue_scripts() {
-		$this->register_scripts();
-
-		if ( is_checkout() ) {
-			wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_CHECKOUT' );
-		}
 	}
 
 	/**
