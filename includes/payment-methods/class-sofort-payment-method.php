@@ -19,9 +19,9 @@ class Sofort_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-		$this->stripe_id                = 'sofort';
-		$this->title                    = 'Sofort';
-		$this->can_reuse_payment_method = false;// TODO: This should actually be true, but will need some work...
+		$this->stripe_id   = 'sofort';
+		$this->title       = 'Sofort';
+		$this->is_reusable = true;
 	}
 
 	/**
@@ -33,7 +33,7 @@ class Sofort_Payment_Method extends UPE_Payment_Method {
 	 * @return WC_Payment_Token_CC|WC_Payment_Token_Sepa WC object for payment token.
 	 */
 	public function get_payment_token_for_user( $user, $payment_method_id = false ) {
-		// TODO: This function will also need to work a little differently...
+		// TODO: This function will need to work a little differently...
 		return $this->token_service->add_payment_method_to_user( $user, $payment_method_id );
 	}
 

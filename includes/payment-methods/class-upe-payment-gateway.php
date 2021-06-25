@@ -111,14 +111,24 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	/**
 	 * Handle AJAX request for updating a payment intent for Stripe UPE.
+	 *
+	 * @throws Process_Payment_Exception - If nonce or setup intent is invalid.
 	 */
 	public function update_payment_intent_ajax() {
 		try {
-			$order_id = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$is_nonce_valid = check_ajax_referer( 'wcpay_update_payment_intent_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Process_Payment_Exception(
+					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'wcpay_upe_intent_error'
+				);
+			}
 
-			$payment_intent_id = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$order_id = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
 
-			$save_payment_method = isset( $_POST['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_POST['save_payment_method'] ) ) : false; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$payment_intent_id = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : '';
+
+			$save_payment_method = isset( $_POST['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_POST['save_payment_method'] ) ) : false;
 
 			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method ), 200 );
 		} catch ( Exception $e ) {
@@ -436,7 +446,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					'upe_payment_intent_error'
 				);
 			} else {
-				if ( $save_payment_method && $payment_method->is_payment_method_reusable() ) {
+				if ( $save_payment_method && $payment_method->is_reusable() ) {
 					try {
 						$token = $payment_method->get_payment_token_for_user( $user, $payment_method_id );
 						$this->add_token_to_order( $order, $token );
@@ -488,10 +498,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function get_payment_fields_js_config() {
-		$payment_fields                      = parent::get_payment_fields_js_config();
-		$payment_fields['accountDescriptor'] = $this->get_account_statement_descriptor();
-		$payment_fields['paymentMethodsURL'] = wc_get_account_endpoint_url( 'payment-methods' );
-		$payment_fields['gatewayId']         = self::GATEWAY_ID;
+		$payment_fields                         = parent::get_payment_fields_js_config();
+		$payment_fields['accountDescriptor']    = $this->get_account_statement_descriptor();
+		$payment_fields['paymentMethodsURL']    = wc_get_account_endpoint_url( 'payment-methods' );
+		$payment_fields['gatewayId']            = self::GATEWAY_ID;
+		$payment_fields['paymentMethodsConfig'] = $this->get_enabled_payment_method_config();
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			$payment_fields['isOrderPay'] = true;
@@ -619,6 +630,24 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Gets payment method settings to pass to client scripts
+	 *
+	 * @return array
+	 */
+	private function get_enabled_payment_method_config() {
+		$settings                = [];
+		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] );
+
+		foreach ( $enabled_payment_methods as $payment_method ) {
+			$settings[ $payment_method ] = [
+				'isReusable' => $this->payment_methods[ $payment_method ]->is_reusable(),
+			];
+		}
+
+		return $settings;
+	}
+
+	/**
 	 * Function to be used with array_filter
 	 * to filter UPE payment methods supported with current checkout
 	 *
@@ -645,6 +674,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( ! isset( $this->payment_methods[ $payment_method_id ] ) ) {
 			return false;
 		}
-		return $this->payment_methods[ $payment_method_id ]->is_payment_method_reusable();
+		return $this->payment_methods[ $payment_method_id ]->is_reusable();
 	}
 }

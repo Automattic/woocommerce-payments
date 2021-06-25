@@ -19,9 +19,9 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-		$this->stripe_id                = 'card';
-		$this->title                    = 'Credit card / debit card';
-		$this->can_reuse_payment_method = true;
+		$this->stripe_id   = 'card';
+		$this->title       = 'Credit card / debit card';
+		$this->is_reusable = true;
 	}
 
 	/**
@@ -33,10 +33,10 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function get_title( $payment_details = false ) {
 		if ( ! $payment_details ) {
-			return self::TITLE;
+			return $this->title;
 		}
 
-		$details       = $payment_details[ self::STRIPE_ID ];
+		$details       = $payment_details[ $this->stripe_id ];
 		$funding_types = [
 			'credit'  => __( 'credit', 'woocommerce-payments' ),
 			'debit'   => __( 'debit', 'woocommerce-payments' ),

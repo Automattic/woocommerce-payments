@@ -35,7 +35,7 @@ abstract class UPE_Payment_Method {
 	 *
 	 * @var bool
 	 */
-	protected $can_reuse_payment_method;
+	protected $is_reusable;
 
 	/**
 	 * Instance of WC Payments Token Service to save payment method
@@ -82,7 +82,7 @@ abstract class UPE_Payment_Method {
 	public function is_enabled_at_checkout() {
 		if ( class_exists( 'WC_Subscriptions' ) && version_compare( \WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
 			if ( \WC_Subscriptions_Cart::cart_contains_subscription() ) {
-				return $this->is_payment_method_reusable();
+				return $this->is_reusable();
 			}
 		}
 
@@ -95,8 +95,8 @@ abstract class UPE_Payment_Method {
 	 *
 	 * @return bool
 	 */
-	public function is_payment_method_reusable() {
-		return $this->can_reuse_payment_method;
+	public function is_reusable() {
+		return $this->is_reusable;
 	}
 
 	/**
