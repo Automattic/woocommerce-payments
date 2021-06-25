@@ -71,3 +71,11 @@ declare module 'gridicons' {
 
 	export = Gridicon;
 }
+
+declare module '@woocommerce/components' {
+	type LinkParams = {
+		href: string;
+		children: React.ReactNode;
+	};
+	const Link: ( props: LinkParams ) => JSX.Element;
+}

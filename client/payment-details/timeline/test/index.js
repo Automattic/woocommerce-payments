@@ -14,16 +14,6 @@ jest.mock( 'data', () => ( {
 	useTimeline: jest.fn(),
 } ) );
 
-// Mock the Timeline component because it's not published at the time of writing this test.
-// TODO: Remove this mock and update snapshots once the Timeline component is live.
-jest.mock( '@woocommerce/components', () => {
-	const Card = require.requireActual( '@woocommerce/components' ).Card;
-	return {
-		Card,
-		Timeline: jest.fn( () => <div>Mock timeline</div> ),
-	};
-} );
-
 describe( 'PaymentDetailsTimeline', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
