@@ -68,6 +68,11 @@ const fields = [
 				label: 'Customer signature',
 				type: 'file',
 			},
+			{
+				key: 'service_date',
+				label: 'Service date',
+				type: 'date',
+			},
 		],
 	},
 ];
