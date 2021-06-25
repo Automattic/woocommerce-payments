@@ -642,9 +642,9 @@ class MultiCurrency {
 	private function check_store_currency_for_change() {
 		$last_known_currency  = get_option( $this->id . '_store_currency', false );
 		$woocommerce_currency = get_woocommerce_currency();
-		$manual_currencies    = [];
 		if ( $last_known_currency && $last_known_currency !== $woocommerce_currency ) {
 			$enabled_currencies = $this->get_enabled_currencies();
+			$manual_currencies  = [];
 
 			// Check enabled currencies for manual rates.
 			foreach ( $enabled_currencies as $currency ) {
