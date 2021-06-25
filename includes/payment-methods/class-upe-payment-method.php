@@ -10,6 +10,8 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
+use WC_Subscriptions;
+use WC_Subscriptions_Cart;
 
 /**
  * Extendable abstract class for payment methods.
@@ -80,8 +82,8 @@ abstract class UPE_Payment_Method {
 	 * @return bool
 	 */
 	public function is_enabled_at_checkout() {
-		if ( class_exists( 'WC_Subscriptions' ) && version_compare( \WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
-			if ( \WC_Subscriptions_Cart::cart_contains_subscription() ) {
+		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
 				return $this->is_reusable();
 			}
 		}
