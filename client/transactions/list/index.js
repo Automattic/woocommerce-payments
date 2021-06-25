@@ -8,7 +8,7 @@ import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import { TableCard, Search } from '@woocommerce/components';
+import { TableCard, Search, Link } from '@woocommerce/components';
 import { Button } from '@wordpress/components';
 import {
 	onQueryChange,
@@ -182,12 +182,12 @@ export const TransactionsList = ( props ) => {
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 
 		const customerName = txn.order ? (
-			<a href={ txn.order.customer_url }>{ txn.customer_name }</a>
+			<Link href={ txn.order.customer_url }>{ txn.customer_name }</Link>
 		) : (
 			txn.customer_name
 		);
 		const customerEmail = txn.order ? (
-			<a href={ txn.order.customer_url }>{ txn.customer_email }</a>
+			<Link href={ txn.order.customer_url }>{ txn.customer_email }</Link>
 		) : (
 			txn.customer_email
 		);

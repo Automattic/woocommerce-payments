@@ -39,6 +39,8 @@ const getMockTransactions = () => [
 		order: {
 			number: 123,
 			url: 'https://example.com/order/123',
+			// eslint-disable-next-line camelcase
+			customer_url: 'https://example.com/customer/my-name',
 		},
 		// eslint-disable-next-line camelcase
 		customer_name: 'Another customer',
@@ -72,6 +74,8 @@ const getMockTransactions = () => [
 		order: {
 			number: 125,
 			url: 'https://example.com/order/125',
+			// eslint-disable-next-line camelcase
+			customer_url: 'https://example.com/customer/my-name',
 		},
 		// eslint-disable-next-line camelcase
 		customer_name: 'My name',
