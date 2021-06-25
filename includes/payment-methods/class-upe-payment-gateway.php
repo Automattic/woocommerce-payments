@@ -18,10 +18,6 @@ use WC_Payments_Token_Service;
 use WC_Payments;
 use WC_Payments_Utils;
 
-use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Method;
-
 use Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 
