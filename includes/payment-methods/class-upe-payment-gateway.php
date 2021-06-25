@@ -73,6 +73,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 
+		add_action( 'wp_ajax_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
+		add_action( 'wp_ajax_nopriv_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
+
 		add_action( 'wp_ajax_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
 
@@ -107,21 +110,17 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Handle AJAX request for creating a payment intent for Stripe UPE.
-	 *
-	 * @throws Process_Payment_Exception - If nonce or setup intent is invalid.
+	 * Handle AJAX request for updating a payment intent for Stripe UPE.
 	 */
-	public function create_payment_intent_ajax() {
+	public function update_payment_intent_ajax() {
 		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Process_Payment_Exception(
-					__( 'Something terrible has happened. Please refresh the page and try again.', 'woocommerce-payments' ),
-					'wcpay_upe_intent_error'
-				);
-			}
+			$order_id = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
-			wp_send_json_success( $this->create_payment_intent(), 200 );
+			$payment_intent_id = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+			$save_payment_method = isset( $_POST['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_POST['save_payment_method'] ) ) : false; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method ), 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
@@ -135,12 +134,84 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Creates payment intent using current cart and store details.
+	 * Updates payment intent to be able to save payment method.
+	 *
+	 * @param {string}  $payment_intent_id The id of the payment intent to update.
+	 * @param {int}     $order_id The id of the order if intent created from Order.
+	 * @param {boolean} $save_payment_method True if saving the payment method.
+	 *
+	 * @return array|null An array with result of the update, or nothing
+	 */
+	public function update_payment_intent( $payment_intent_id = '', $order_id = null, $save_payment_method = false ) {
+		$order = wc_get_order( $order_id );
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return;
+		}
+		$amount   = $order->get_total();
+		$currency = $order->get_currency();
+
+		if ( $payment_intent_id ) {
+			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+
+			$this->payments_api_client->update_intention(
+				$payment_intent_id,
+				WC_Payments_Utils::prepare_amount( $amount, $currency ),
+				strtolower( $currency ),
+				$save_payment_method,
+				$customer_id,
+				$this->get_level3_data_from_order( $this->account->get_account_country(), $order )
+			);
+		}
+
+		return [
+			'success' => true,
+		];
+	}
+
+	/**
+	 * Handle AJAX request for creating a payment intent for Stripe UPE.
+	 *
+	 * @throws Process_Payment_Exception - If nonce or setup intent is invalid.
+	 */
+	public function create_payment_intent_ajax() {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Process_Payment_Exception(
+					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'wcpay_upe_intent_error'
+				);
+			}
+
+			// If paying from order, we need to get the total from the order instead of the cart.
+			$order_id = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
+
+			wp_send_json_success( $this->create_payment_intent( $order_id ), 200 );
+		} catch ( Exception $e ) {
+			// Send back error so it can be displayed to the customer.
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+		}
+	}
+
+	/**
+	 * Creates payment intent using current cart or order and store details.
+	 *
+	 * @param {int} $order_id The id of the order if intent created from Order.
 	 *
 	 * @return array
 	 */
-	public function create_payment_intent() {
-		$amount         = WC()->cart->get_total( false );
+	public function create_payment_intent( $order_id = null ) {
+		$amount = WC()->cart->get_total( false );
+		$order  = wc_get_order( $order_id );
+		if ( is_a( $order, 'WC_Order' ) ) {
+			$amount = $order->get_total();
+		}
 		$currency       = get_woocommerce_currency();
 		$payment_intent = $this->payments_api_client->create_intention(
 			WC_Payments_Utils::prepare_amount( $amount, $currency ),
@@ -420,7 +491,26 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields                      = parent::get_payment_fields_js_config();
 		$payment_fields['accountDescriptor'] = $this->get_account_statement_descriptor();
 		$payment_fields['paymentMethodsURL'] = wc_get_account_endpoint_url( 'payment-methods' );
+		$payment_fields['gatewayId']         = self::GATEWAY_ID;
 
+		if ( is_wc_endpoint_url( 'order-pay' ) ) {
+			$payment_fields['isOrderPay'] = true;
+			$order_id                     = absint( get_query_var( 'order-pay' ) );
+			$payment_fields['orderId']    = $order_id;
+			$order                        = wc_get_order( $order_id );
+			if ( is_a( $order, 'WC_Order' ) ) {
+				$payment_fields['orderReturnURL'] = esc_url_raw(
+					add_query_arg(
+						[
+							'order_id'          => $order_id,
+							'wc_payment_method' => self::GATEWAY_ID,
+							'_wpnonce'          => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
+						],
+						$this->get_return_url( $order )
+					)
+				);
+			}
+		}
 		return $payment_fields;
 	}
 
