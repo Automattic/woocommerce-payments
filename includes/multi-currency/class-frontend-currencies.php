@@ -63,7 +63,7 @@ class Frontend_Currencies {
 	 *
 	 * @return string The code of the currency to be used.
 	 */
-	public function get_woocommerce_currency() {
+	public function get_woocommerce_currency(): string {
 		return $this->multi_currency->get_selected_currency()->get_code();
 	}
 
@@ -72,17 +72,17 @@ class Frontend_Currencies {
 	 *
 	 * @return int The number of decimals.
 	 */
-	public function get_price_decimals() {
+	public function get_price_decimals(): int {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		return $this->get_currency_format( $currency_code )['num_decimals'];
+		return absint( $this->get_currency_format( $currency_code )['num_decimals'] );
 	}
 
 	/**
 	 * Returns the decimal separator to be used by WooCommerce.
 	 *
-	 * @return int The decimal separator.
+	 * @return string The decimal separator.
 	 */
-	public function get_price_decimal_separator() {
+	public function get_price_decimal_separator(): string {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
 		return $this->get_currency_format( $currency_code )['decimal_sep'];
 	}
@@ -90,9 +90,9 @@ class Frontend_Currencies {
 	/**
 	 * Returns the thousand separator to be used by WooCommerce.
 	 *
-	 * @return int The thousand separator.
+	 * @return string The thousand separator.
 	 */
-	public function get_price_thousand_separator() {
+	public function get_price_thousand_separator(): string {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
 		return $this->get_currency_format( $currency_code )['thousand_sep'];
 	}
@@ -100,9 +100,9 @@ class Frontend_Currencies {
 	/**
 	 * Returns the currency format to be used by WooCommerce.
 	 *
-	 * @return int The currency format.
+	 * @return string The currency format.
 	 */
-	public function get_woocommerce_price_format() {
+	public function get_woocommerce_price_format(): string {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
 		$currency_pos  = $this->get_currency_format( $currency_code )['currency_pos'];
 
@@ -127,7 +127,7 @@ class Frontend_Currencies {
 	 *
 	 * @return string The adjusted cart hash.
 	 */
-	public function add_currency_to_cart_hash( $hash ) {
+	public function add_currency_to_cart_hash( $hash ): string {
 		$currency = $this->multi_currency->get_selected_currency();
 		return md5( $hash . $currency->get_code() . $currency->get_rate() );
 	}
@@ -139,7 +139,7 @@ class Frontend_Currencies {
 	 *
 	 * @return array The currency's format.
 	 */
-	private function get_currency_format( $currency_code ) {
+	private function get_currency_format( $currency_code ): array {
 		// Default to USD settings if mapping not found.
 		$currency_format = [
 			'currency_pos' => 'left',
