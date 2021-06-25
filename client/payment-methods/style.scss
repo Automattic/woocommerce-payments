@@ -29,7 +29,9 @@
 	}
 
 	&__express-checkouts {
-		background: url( '../../assets/images/banner.png' ) no-repeat right;
+		background: url( '../../assets/images/upe_preview_illustration.svg' )
+			no-repeat right;
+		background-color: #f7edf7;
 		background-size: contain;
 
 		&-get-started {
@@ -45,7 +47,6 @@
 		font-size: 12px;
 		border: 1px solid $studio-gray-70;
 		border-radius: 28px;
-		color: $studio-gray-70;
 		display: inline-block;
 		padding: 2px 8px;
 	}
