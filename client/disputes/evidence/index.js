@@ -20,6 +20,7 @@ import {
 	SelectControl,
 } from '@wordpress/components';
 import { merge, some, flatten, isMatchWith } from 'lodash';
+import moment from 'moment';
 
 /**
  * Internal dependencies.
@@ -107,6 +108,15 @@ export const DisputeEvidenceForm = ( props ) => {
 				return (
 					<TextControl
 						key={ field.key }
+						{ ...composeDefaultControlProps( field ) }
+					/>
+				);
+			case 'date':
+				return (
+					<TextControl
+						key={ field.key }
+						type={ 'date' }
+						max={ moment().format( 'YYYY-MM-DD' ) }
 						{ ...composeDefaultControlProps( field ) }
 					/>
 				);
