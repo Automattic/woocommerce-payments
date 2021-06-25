@@ -117,7 +117,7 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 		$is_upe_enabled = $request->get_param( 'is_upe_enabled' );
 
 		if ( $is_upe_enabled ) {
-			update_option( '_wcpay_feature_upe', '1' );
+			update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
 			return;
 		}
 
@@ -129,6 +129,6 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 				'card',
 			]
 		);
-		delete_option( '_wcpay_feature_upe' );
+		delete_option( WC_Payments_Features::UPE_FLAG_NAME );
 	}
 }
