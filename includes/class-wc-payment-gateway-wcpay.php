@@ -955,6 +955,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$charge_id     = $intent->get_charge_id();
 			$client_secret = $intent->get_client_secret();
 			$currency      = $intent->get_currency();
+			$next_action   = $intent->get_next_action();
 
 			if ( 'requires_action' === $status &&
 				$payment_information->is_merchant_initiated() ) {
@@ -973,6 +974,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$charge_id     = '';
 			$client_secret = $intent['client_secret'];
 			$currency      = $order->get_currency();
+			$next_action   = $intent['next_action'];
 		}
 
 		if ( ! empty( $intent ) ) {
@@ -996,7 +998,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( 'requires_action' === $status ) {
-				$next_action = $intent->get_next_action();
 				if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
 					$response = [
 						'result'   => 'success',
