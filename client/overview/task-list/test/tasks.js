@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { getTasks } from '../tasks';
+import { getTasks, taskSort } from '../tasks';
 
 jest.mock( 'utils/currency', () => {
 	return {
@@ -178,6 +178,53 @@ describe( 'getTasks()', () => {
 					level: 3,
 				} ),
 			] )
+		);
+	} );
+} );
+
+describe( 'taskSort()', () => {
+	it( 'should sort the tasks', () => {
+		/*eslint-disable camelcase*/
+		const disputes = [
+			{
+				id: 123,
+				amount: 10,
+				currency: 'USD',
+				evidence_details: { due_by: 1624147199 },
+				status: 'won',
+			},
+			{
+				id: 456,
+				amount: 10,
+				currency: 'USD',
+				evidence_details: { due_by: 1624147199 },
+				status: 'needs_response',
+			},
+		];
+		/*eslint-enable camelcase*/
+		const unsortedTasks = getTasks( {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+			},
+			disputes,
+		} );
+		expect( unsortedTasks[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				key: 'dispute-resolution-123',
+				completed: true,
+				level: 3,
+			} )
+		);
+		const sortedTasks = unsortedTasks.sort( taskSort );
+		expect( sortedTasks[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				key: 'dispute-resolution-456',
+				completed: false,
+				level: 3,
+			} )
 		);
 	} );
 } );

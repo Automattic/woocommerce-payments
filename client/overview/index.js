@@ -16,7 +16,7 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
 import DepositsInformation from 'components/deposits-information';
 import TaskList from './task-list';
-import { getTasks } from './task-list/tasks';
+import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
 import { useDisputes } from 'data';
 
@@ -32,12 +32,14 @@ const OverviewPage = () => {
 	} = wcpaySettings;
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
-	const tasks = getTasks( {
+	const tasksUnsorted = getTasks( {
 		accountStatus,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		disputes,
 	} );
+	const tasks =
+		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
 	const queryParams = getQuery();
 
 	const showKycSuccessNotice =

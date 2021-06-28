@@ -131,3 +131,16 @@ export const getTasks = ( {
 		...disputesToResolve,
 	].filter( Boolean );
 };
+
+export const taskSort = ( a, b ) => {
+	if ( a.completed || b.completed ) {
+		return a.completed ? 1 : -1;
+	}
+	// Three is the lowest level.
+	const aLevel = a.level || 3;
+	const bLevel = b.level || 3;
+	if ( aLevel === bLevel ) {
+		return 0;
+	}
+	return aLevel > bLevel ? 1 : -1;
+};
