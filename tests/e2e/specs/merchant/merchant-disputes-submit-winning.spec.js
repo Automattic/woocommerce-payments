@@ -107,6 +107,12 @@ describe( 'Disputes > Submit winning dispute', () => {
 			text: 'Additional details',
 		} );
 
+		// Fill required additional text in order to make a winning dispute
+		await page.click( '#inspector-textarea-control-3' );
+		await expect( page ).toFill( '#inspector-textarea-control-3', {
+			text: 'winning_evidence'
+		} );
+
 		// Submit the evidence and accept the dialog
 		await Promise.all( [
 			page.removeAllListeners( 'dialog' ),
