@@ -19,5 +19,8 @@ module.exports = {
 				],
 			],
 		},
+		development: {
+			plugins: process.env.ENABLE_HMR && [ 'react-refresh/babel' ],
+		},
 	},
 };

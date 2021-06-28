@@ -37,6 +37,7 @@
     "test:update-snapshots": "npm run test:js -- --updateSnapshot",
     "test:php": "./bin/run-tests.sh",
     "watch": "webpack --watch",
+    "watch:hmr": "ENABLE_HMR=1 webpack serve --hot",
     "start": "npm run watch",
     "dev": "npm run up && npm run watch",
     "up": "docker-compose up --build --force-recreate -d && ./bin/docker-setup.sh",
@@ -70,6 +71,7 @@
     "@automattic/color-studio": "2.3.1",
     "@automattic/puppeteer-utils": "github:Automattic/puppeteer-utils",
     "@babel/plugin-proposal-object-rest-spread": "7.12.13",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@testing-library/jest-dom": "5.11.9",
     "@testing-library/react": "11.2.5",
     "@testing-library/user-event": "10.4.1",
@@ -128,6 +130,8 @@
     "prettier": "npm:wp-prettier@2.0.5",
     "react": "16.14.0",
     "react-dom": "16.14.0",
+    "react-reconciler": "^0.26.2",
+    "react-refresh": "^0.10.0",
     "react-test-renderer": "16.14.0",
     "sass-loader": "10.1.1",
     "shelljs": "0.8.4",
@@ -140,6 +144,7 @@
     "typescript": "4.1.5",
     "webpack": "^4.46.0",
     "webpack-cli": "4.5.0",
+    "webpack-dev-server": "^3.11.2",
     "yarnhook": "^0.5.1"
   }
 }

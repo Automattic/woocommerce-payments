@@ -4,6 +4,12 @@ var NODE_ENV = process.env.NODE_ENV || 'development';
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 
+// HMR
+const ReactRefreshWebpackPlugin = require( '@pmmmwh/react-refresh-webpack-plugin' );
+const ENABLE_HMR = process.env.ENABLE_HMR;
+const WP_PORT = 8082;
+const HMR_PORT = 8882;
+
 const webpackConfig = {
 	mode: NODE_ENV,
 	devtool: process.env.SOURCEMAP === 'none' ? undefined : 'source-map',
@@ -25,6 +31,7 @@ const webpackConfig = {
 	output: {
 		filename: '[name].js',
 		path: path.resolve( 'dist' ),
+		publicPath: `http://localhost:${ HMR_PORT }/wp-content/plugins/woocommerce-payments/dist/`,
 	},
 	module: {
 		rules: [
@@ -121,7 +128,19 @@ const webpackConfig = {
 				}
 			},
 		} ),
-	],
+		ENABLE_HMR && new ReactRefreshWebpackPlugin(),
+	].filter( Boolean ),
+	devServer: {
+		index: '',
+		hotOnly: true,
+		port: HMR_PORT,
+		contentBase: path.resolve( 'dist' ),
+		proxy: {
+			context: [ '**', '!**/woocommerce-payments/dist/*.js*' ],
+			target: `http://localhost:${ WP_PORT }`,
+		},
+		writeToDisk: true,
+	},
 };
 
 module.exports = webpackConfig;
