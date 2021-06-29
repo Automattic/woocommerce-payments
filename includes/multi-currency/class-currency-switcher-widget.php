@@ -136,7 +136,7 @@ class Currency_Switcher_Widget extends WP_Widget {
 				type="checkbox"<?php checked( $instance['flag'] ); ?>
 			/>
 			<label for="<?php echo esc_attr( $this->get_field_id( 'flag' ) ); ?>">
-				<?php esc_html_e( 'Display flags', 'woocommerce-payments' ); ?>
+				<?php esc_html_e( 'Display flags in supported devices', 'woocommerce-payments' ); ?>
 			</label>
 		</p>
 		<?php

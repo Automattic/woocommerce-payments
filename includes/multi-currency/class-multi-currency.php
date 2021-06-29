@@ -138,9 +138,9 @@ class Multi_Currency {
 		new User_Settings( $this );
 
 		$this->frontend_prices     = new Frontend_Prices( $this, $this->compatibility );
-		$this->frontend_currencies = new Frontend_Currencies( $this );
+		$this->frontend_currencies = new Frontend_Currencies( $this, $this->utils );
 
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
@@ -180,9 +180,9 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Register the CSS and JS scripts.
+	 * Register the CSS and JS admin scripts.
 	 */
-	public function register_scripts() {
+	public function register_admin_scripts() {
 		$script_src_url    = plugins_url( 'dist/multi-currency.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency.asset.php';
 		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
@@ -203,12 +203,12 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Load the assets.
+	 * Load the admin assets.
 	 */
-	public function enqueue_scripts() {
+	public function enqueue_admin_scripts() {
 		global $current_tab, $current_section;
 
-		$this->register_scripts();
+		$this->register_admin_scripts();
 
 		// TODO: Set this to only display when needed.
 		// Output the settings JS and CSS only on the settings page.
