@@ -16,7 +16,8 @@
       "automattic/jetpack-connection": "1.20.0",
       "automattic/jetpack-config": "1.4.3",
       "automattic/jetpack-autoloader": "2.8.0",
-      "myclabs/php-enum": "1.7.7"
+      "myclabs/php-enum": "1.7.7",
+      "ext-json": "*"
     },
     "require-dev": {
       "composer/installers": "1.10.0",

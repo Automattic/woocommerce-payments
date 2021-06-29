@@ -704,6 +704,10 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 			$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
 			$settings_controller->register_routes();
+
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+			$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
+			$survey_controller->register_routes();
 		}
 
 		if ( WC_Payments_Features::is_grouped_settings_enabled() && WC_Payments_Features::is_upe_settings_preview_enabled() ) {
