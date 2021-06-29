@@ -3,8 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Card } from '@woocommerce/components';
-import { Button, Notice } from '@wordpress/components';
+import { Button, Card, CardBody, Notice } from '@wordpress/components';
 import { render, useState, useEffect } from '@wordpress/element';
 
 /**
@@ -215,18 +214,22 @@ const ConnectAccountPage = () => {
 			<Page isNarrow className="connect-account">
 				<ConnectPageError />
 				<Card className="connect-account__card">
-					<Banner style="account-page" />
-					<div className="content">
-						{ wcpaySettings.onBoardingDisabled ? (
-							<ConnectPageOnboardingDisabled />
-						) : (
-							<ConnectPageOnboarding />
-						) }
-					</div>
+					<CardBody>
+						<Banner style="account-page" />
+						<div className="content">
+							{ wcpaySettings.onBoardingDisabled ? (
+								<ConnectPageOnboardingDisabled />
+							) : (
+								<ConnectPageOnboarding />
+							) }
+						</div>
+					</CardBody>
 				</Card>
 				{ ! wcpaySettings.onBoardingDisabled && (
 					<Card className="connect-account__steps">
-						<ConnectPageOnboardingSteps />
+						<CardBody>
+							<ConnectPageOnboardingSteps />
+						</CardBody>
 					</Card>
 				) }
 			</Page>
