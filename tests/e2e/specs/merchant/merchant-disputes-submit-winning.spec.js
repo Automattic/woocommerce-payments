@@ -109,9 +109,10 @@ describe( 'Disputes > Submit winning dispute', () => {
 
 		// Fill required additional text in order to make a winning dispute
 		await page.click( '#inspector-textarea-control-3' );
-		await expect( page ).toFill( '#inspector-textarea-control-3', {
-			text: 'winning_evidence'
-		} );
+		await page.$eval(
+			'#inspector-textarea-control-3',
+			( el ) => ( el.value = 'winning_evidence' )
+		);
 
 		// Submit the evidence and accept the dialog
 		await Promise.all( [
@@ -158,6 +159,14 @@ describe( 'Disputes > Submit winning dispute', () => {
 
 		// Open the dispute details
 		await merchantWCP.openDisputeDetails( disputeDetailsLink );
+
+		// Check if a new button is present now
+		await expect( page ).not.toMatchElement(
+			'div.components-card > .components-card__footer > a',
+			{
+				text: 'View submitted evidence',
+			}
+		);
 
 		// Check if buttons are not present anymore since a dispute has been challenged
 		await expect( page ).not.toMatchElement(
