@@ -96,7 +96,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		const declinedCard = config.get( 'cards.declined-3ds' );
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
-		await uiUnblocked();
 		await confirmCardAuthentication( page, '3DS' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
@@ -104,7 +103,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await expect(
 			page
 		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
+			'div.woocommerce > div.woocommerce-NoticeGroup > ul.woocommerce-error',
 			{ text: 'Error: Your card was declined.' }
 		);
 	} );
