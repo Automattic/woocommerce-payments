@@ -108,6 +108,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 		} );
 
 		// Fill required additional text in order to make a winning dispute
+		// Used $eval as a workaround since .toFill won't work for this textarea
 		await page.click( '#inspector-textarea-control-3' );
 		await page.$eval(
 			'#inspector-textarea-control-3',
