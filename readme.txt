@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 2.7.0 - 2021-xx-xx =
 * Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
+* Fix - Updates the notes query filters to prevent breaking the WooCommerce > Home inbox.
 
 = 2.6.0 - 2021-06-23 =
 * Add - Notify the admin if WordPress.com user connection is broken.
