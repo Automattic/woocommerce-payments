@@ -776,6 +776,7 @@ class WC_Payments {
 		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) ) {
 			do_action( 'woocommerce_woocommerce_payments_updated' );
 			self::update_plugin_version();
+			self::set_plugin_activation_timestamp();
 		}
 	}
 
@@ -784,6 +785,15 @@ class WC_Payments {
 	 */
 	public static function update_plugin_version() {
 		update_option( 'woocommerce_woocommerce_payments_version', WCPAY_VERSION_NUMBER );
+	}
+
+	/**
+	 * Sets the plugin activation timestamp.
+	 *
+	 * Use add_option so that we don't overwrite the value.
+	 */
+	public static function set_plugin_activation_timestamp() {
+		add_option( 'wcpay_activation_timestamp', time() );
 	}
 
 	/**
