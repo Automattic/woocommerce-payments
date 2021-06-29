@@ -24,10 +24,13 @@ import { useDisputes } from 'data';
 import './style.scss';
 
 const OverviewPage = () => {
-	const { dismissedTasks } = useSelect( ( select ) => {
+	const { dismissedTasks, remindMeLaterTasks } = useSelect( ( select ) => {
 		const { getOption } = select( 'wc/admin/options' );
 		return {
 			dismissedTasks: getOption( 'woocommerce_dismissed_tasks_todo' ),
+			remindMeLaterTasks: getOption(
+				'woocommerce_remind_me_later_tasks_todo'
+			),
 		};
 	} );
 	const {
@@ -69,6 +72,7 @@ const OverviewPage = () => {
 				<TaskList
 					tasks={ tasks }
 					dismissedTasks={ dismissedTasks || [] }
+					remindMeLaterTasks={ remindMeLaterTasks || [] }
 				/>
 			) }
 			<InboxNotifications />

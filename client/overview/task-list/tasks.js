@@ -49,6 +49,7 @@ const getDisputesTasks = ( disputes ) => {
 					'needs_response',
 				].includes( disputeStatus ),
 				isDismissable: true,
+				allowRemindMeLater: true,
 				onClick: () => {
 					window.location.href = getDetailsURL( id, 'disputes' );
 				},
