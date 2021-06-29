@@ -7,6 +7,7 @@
 import { Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies.
@@ -23,6 +24,12 @@ import { useDisputes } from 'data';
 import './style.scss';
 
 const OverviewPage = () => {
+	const { dismissedTasks } = useSelect( ( select ) => {
+		const { getOption } = select( 'wc/admin/options' );
+		return {
+			dismissedTasks: getOption( 'woocommerce_dismissed_tasks_todo' ),
+		};
+	} );
 	const {
 		accountStatus,
 		showUpdateDetailsTask,
@@ -59,7 +66,10 @@ const OverviewPage = () => {
 				accountFees={ wcpaySettings.accountFees }
 			/>
 			{ !! accountOverviewTaskList && 0 < tasks.length && (
-				<TaskList tasks={ tasks } />
+				<TaskList
+					tasks={ tasks }
+					dismissedTasks={ dismissedTasks || [] }
+				/>
 			) }
 			<InboxNotifications />
 		</Page>

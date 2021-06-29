@@ -6,14 +6,64 @@
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { Badge } from '@woocommerce/components';
-import { CollapsibleList, TaskItem, Text } from '@woocommerce/experimental';
+import {
+	CollapsibleList,
+	List,
+	TaskItem,
+	Text,
+} from '@woocommerce/experimental';
+import { useDispatch } from '@wordpress/data';
 
-/**
- * Internal dependencies.
- */
+const TaskList = ( { collapsible = false, dismissedTasks, tasks } ) => {
+	const { createNotice } = useDispatch( 'core/notices' );
+	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
-const TaskList = ( { tasks } ) => {
-	const pendingTaskCount = tasks.filter( ( task ) => ! task.completed )
+	const undoDismissTask = ( key ) => {
+		const updatedDismissedTasks = dismissedTasks.filter(
+			( task ) => task !== key
+		);
+
+		/*eslint-disable camelcase*/
+		updateOptions( {
+			woocommerce_dismissed_tasks_todo: updatedDismissedTasks,
+		} );
+		/*eslint-enable camelcase*/
+	};
+	const dismissTask = ( { key, onDismiss } ) => {
+		createNotice( 'success', __( 'Task dismissed' ), {
+			actions: [
+				{
+					label: __( 'Undo', 'woocommerce-admin' ),
+					onClick: () => undoDismissTask( key ),
+				},
+			],
+		} );
+
+		/*eslint-disable camelcase*/
+		updateOptions( {
+			woocommerce_dismissed_tasks_todo: [ ...dismissedTasks, key ],
+		} );
+		/*eslint-enable camelcase*/
+		if ( onDismiss ) {
+			onDismiss();
+		}
+	};
+
+	const listTasks = tasks.filter(
+		( task ) => ! dismissedTasks.includes( task.key )
+	);
+
+	const ListComp = collapsible ? CollapsibleList : List;
+
+	const listProps = collapsible
+		? {
+				collapseLabel: __( 'Hide tasks', 'woocommerce-payments' ),
+				expandLabel: __( 'Show tasks', 'woocommerce-payments' ),
+				collapsed: false,
+		  }
+		: {};
+
+	const pendingTaskCount = listTasks.filter( ( task ) => ! task.completed )
 		.length;
 	return (
 		<Card
@@ -31,24 +81,25 @@ const TaskList = ( { tasks } ) => {
 				</div>
 			</CardHeader>
 			<CardBody>
-				<CollapsibleList
-					collapsed={ false }
-					collapseLabel={ __( 'Hide tasks', 'woocommerce-payments' ) }
-					expandLabel={ __( 'Show tasks', 'woocommerce-payments' ) }
-				>
-					{ tasks.map( ( task ) => (
+				<ListComp animation="custom" { ...listProps }>
+					{ listTasks.map( ( task ) => (
 						<TaskItem
 							key={ task.key }
 							title={ task.title }
 							completed={ task.completed }
 							content={ task.content || task.additionalInfo }
 							expanded
-							onClick={ task.onClick }
+							action={ task.onClick }
 							time={ task.time }
 							level={ task.level }
+							onDismiss={
+								task.isDismissable
+									? () => dismissTask( task )
+									: undefined
+							}
 						/>
 					) ) }
-				</CollapsibleList>
+				</ListComp>
 			</CardBody>
 		</Card>
 	);
