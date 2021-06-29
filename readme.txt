@@ -101,6 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.7.0 - 2021-xx-xx =
+* Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
+
 = 2.6.0 - 2021-06-23 =
 * Add - Notify the admin if WordPress.com user connection is broken.
 * Add - Experimental PHP client for Explat.
@@ -109,7 +112,6 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Use of deprecated call-style to registerPaymentMethods. WooCommerce Payments now requires WooCommerce Blocks of at least version 3.9.0.
 * Fix - Deposit date on Transactions list page.
 * Fix - Rounding error when displaying fee percentages on the Overview and Transactions pages.
-* Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
 * Add - Error message when total size of dispute evidence files uploaded goes over limit.
 * Update - Pass currency to wc_price when adding intent notes to orders.
 * Update - Instant deposit inbox note wording.
