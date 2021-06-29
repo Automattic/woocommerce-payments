@@ -513,10 +513,15 @@ export default ( { query } ) => {
 		createSuccessNotice( message, {
 			actions: [
 				{
-					label: __(
-						'Return to evidence submission',
-						'woocommerce-payments'
-					),
+					label: submit
+						? __(
+								'View submitted evidence',
+								'woocommerce-payments'
+						  )
+						: __(
+								'Return to evidence submission',
+								'woocommerce-payments'
+						  ),
 					url: addQueryArgs( 'admin.php', {
 						page: 'wc-admin',
 						path: '/payments/disputes/challenge',
