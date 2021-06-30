@@ -30,12 +30,22 @@ const webpackConfig = {
 		rules: [
 			{
 				test: /\.tsx?$/,
-				use: [ 'cache-loader', 'babel-loader', 'ts-loader' ],
+				use: [
+					'cache-loader',
+					'thread-loader',
+					'babel-loader',
+					{
+						loader: 'ts-loader',
+						options: {
+							happyPackMode: true,
+						},
+					},
+				],
 				exclude: /node_modules/,
 			},
 			{
 				test: /\.jsx?$/,
-				use: [ 'cache-loader', 'babel-loader' ],
+				use: [ 'cache-loader', 'thread-loader', 'babel-loader' ],
 				exclude: /node_modules/,
 			},
 			{
@@ -43,6 +53,7 @@ const webpackConfig = {
 				use: [
 					MiniCssExtractPlugin.loader,
 					'cache-loader',
+					'thread-loader',
 					'css-loader',
 					{
 						loader: 'sass-loader',
