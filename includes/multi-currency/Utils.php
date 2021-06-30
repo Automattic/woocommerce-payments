@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Utils
  */
 
-namespace WCPay\Multi_Currency;
+namespace WCPay\MultiCurrency;
 
 defined( 'ABSPATH' ) || exit;
 

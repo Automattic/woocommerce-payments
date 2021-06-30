@@ -6,27 +6,27 @@
  */
 
 /**
- * WCPay\Multi_Currency\Frontend_Prices unit tests.
+ * WCPay\MultiCurrency\FrontendPrices unit tests.
  */
 class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	/**
-	 * Mock WCPay\Multi_Currency\Compatibility.
+	 * Mock WCPay\MultiCurrency\Compatibility.
 	 *
-	 * @var WCPay\Multi_Currency\Compatibility|PHPUnit_Framework_MockObject_MockObject
+	 * @var WCPay\MultiCurrency\Compatibility|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_compatibility;
 
 	/**
-	 * Mock WCPay\Multi_Currency\Multi_Currency.
+	 * Mock WCPay\MultiCurrency\MultiCurrency.
 	 *
-	 * @var WCPay\Multi_Currency\Multi_Currency|PHPUnit_Framework_MockObject_MockObject
+	 * @var WCPay\MultiCurrency\MultiCurrency|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_multi_currency;
 
 	/**
-	 * WCPay\Multi_Currency\Frontend_Prices instance.
+	 * WCPay\MultiCurrency\FrontendPrices instance.
 	 *
-	 * @var WCPay\Multi_Currency\Frontend_Prices
+	 * @var WCPay\MultiCurrency\FrontendPrices
 	 */
 	private $frontend_prices;
 
@@ -36,10 +36,10 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->mock_compatibility  = $this->createMock( WCPay\Multi_Currency\Compatibility::class );
-		$this->mock_multi_currency = $this->createMock( WCPay\Multi_Currency\Multi_Currency::class );
+		$this->mock_compatibility  = $this->createMock( WCPay\MultiCurrency\Compatibility::class );
+		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
 
-		$this->frontend_prices = new WCPay\Multi_Currency\Frontend_Prices( $this->mock_multi_currency, $this->mock_compatibility );
+		$this->frontend_prices = new WCPay\MultiCurrency\FrontendPrices( $this->mock_multi_currency, $this->mock_compatibility );
 	}
 
 	/**
@@ -279,7 +279,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_add_order_meta_skips_default_currency() {
-		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\Multi_Currency\Currency( 'USD' ) );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( 'USD' ) );
 
 		$order = wc_create_order();
 		$order->set_currency( 'USD' );
@@ -294,7 +294,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_add_order_meta() {
-		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\Multi_Currency\Currency( 'USD' ) );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( 'USD' ) );
 		$this->mock_multi_currency->method( 'get_price' )->with( 1, 'exchange_rate' )->willReturn( 0.71 );
 
 		$order = wc_create_order();

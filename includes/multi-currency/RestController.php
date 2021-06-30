@@ -2,17 +2,17 @@
 /**
  * Class WC_REST_Controller
  *
- * @package WooCommerce\Payments\Multi_Currency
+ * @package WooCommerce\Payments\MultiCurrency
  */
 
-namespace WCPay\Multi_Currency;
+namespace WCPay\MultiCurrency;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * REST controller for multi-currency.
  */
-class WC_REST_Controller extends \WC_Payments_REST_Controller {
+class RestController extends \WC_Payments_REST_Controller {
 
 	/**
 	 * Endpoint path.

@@ -47,5 +47,10 @@
         "check-lock-file",
         "check-abandoned"
       ]
+    },
+    "autoload": {
+      "psr-4": {
+        "WCPay\\MultiCurrency\\": "includes/multi-currency"
+      }
     }
 }
