@@ -55,7 +55,7 @@
     "tube:setup": "./bin/jurassic-tube-setup.sh",
     "tube:start": "./docker/bin/jt/tunnel.sh",
     "tube:stop": "./docker/bin/jt/tunnel.sh break",
-	"psalm": "./bin/run-psalm.sh"
+	  "psalm": "./bin/run-psalm.sh"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "1.1.2",
