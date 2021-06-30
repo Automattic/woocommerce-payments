@@ -274,12 +274,12 @@ class Settings extends \WC_Settings_Page {
 		];
 
 		$decimal_currency_rounding_options      = [
-			'none' => __( 'None', 'woocommerce-payments' ),
-			'0.25' => '0.25',
-			'0.50' => '0.50',
-			'1'    => '1.00 (recommended)',
-			'5'    => '5.00',
-			'10'   => '10.00',
+			'none'  => __( 'None', 'woocommerce-payments' ),
+			'0.25'  => '0.25',
+			'0.50'  => '0.50',
+			'1.00'  => '1.00 (recommended)',
+			'5.00'  => '5.00',
+			'10.00' => '10.00',
 		];
 		$zero_decimal_currency_rounding_options = [
 			'1'    => '1',
