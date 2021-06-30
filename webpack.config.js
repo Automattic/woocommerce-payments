@@ -69,12 +69,6 @@ const webpackConfig = {
 				],
 			},
 			{
-				enforce: 'pre',
-				test: /\.js$/,
-				exclude: /node_modules/,
-				loader: 'source-map-loader',
-			},
-			{
 				test: /\.(svg|png)$/,
 				exclude: /node_modules/,
 				loader: 'url-loader',
