@@ -5,9 +5,9 @@
  * @package WooCommerce\Admin
  */
 
-namespace WCPay\Multi_Currency;
+namespace WCPay\MultiCurrency;
 
-use WCPay\Multi_Currency\Currency;
+use WCPay\MultiCurrency\Currency;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -31,18 +31,18 @@ class Settings extends \WC_Settings_Page {
 	public $label;
 
 	/**
-	 * Instance of Multi_Currency class.
+	 * Instance of MultiCurrency class.
 	 *
-	 * @var Multi_Currency
+	 * @var MultiCurrency
 	 */
 	protected $multi_currency;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param Multi_Currency $multi_currency The Multi_Currency instance.
+	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
 	 */
-	public function __construct( Multi_Currency $multi_currency ) {
+	public function __construct( MultiCurrency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
 		$this->id             = $this->multi_currency->id;
 		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );

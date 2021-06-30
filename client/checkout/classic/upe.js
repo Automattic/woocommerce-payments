@@ -274,7 +274,6 @@ jQuery( function ( $ ) {
 			const { error } = await api.getStripe().confirmPayment( {
 				element: upeElement,
 				confirmParams: {
-					// eslint-disable-next-line camelcase
 					return_url: '',
 				},
 			} );
@@ -320,7 +319,6 @@ jQuery( function ( $ ) {
 			const { error } = await api.getStripe().confirmPayment( {
 				element: upeElement,
 				confirmParams: {
-					// eslint-disable-next-line camelcase
 					return_url: returnUrl,
 				},
 			} );
@@ -354,7 +352,6 @@ jQuery( function ( $ ) {
 			const { error } = await api.getStripe().confirmSetup( {
 				element: upeElement,
 				confirmParams: {
-					// eslint-disable-next-line camelcase
 					return_url: returnUrl,
 				},
 			} );
@@ -396,7 +393,6 @@ jQuery( function ( $ ) {
 			const { error } = await api.getStripe().confirmPayment( {
 				element: upeElement,
 				confirmParams: {
-					// eslint-disable-next-line camelcase
 					return_url: redirectUrl,
 				},
 			} );

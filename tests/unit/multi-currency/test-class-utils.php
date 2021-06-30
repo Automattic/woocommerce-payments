@@ -6,13 +6,13 @@
  */
 
 /**
- * WCPay\Multi_Currency\Utils unit tests.
+ * WCPay\MultiCurrency\Utils unit tests.
  */
 class WCPay_Multi_Currency_Utils_Tests extends WP_UnitTestCase {
 	/**
-	 * WCPay\Multi_Currency\Utils instance.
+	 * WCPay\MultiCurrency\Utils instance.
 	 *
-	 * @var WCPay\Multi_Currency\Utils
+	 * @var WCPay\MultiCurrency\Utils
 	 */
 	private $utils;
 
@@ -22,7 +22,7 @@ class WCPay_Multi_Currency_Utils_Tests extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->utils = new WCPay\Multi_Currency\Utils();
+		$this->utils = new WCPay\MultiCurrency\Utils();
 	}
 
 	public function tearDown() {

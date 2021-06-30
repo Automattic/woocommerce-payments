@@ -5,18 +5,18 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Multi_Currency;
+namespace WCPay\MultiCurrency;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class that formats Multi Currency currencies on the frontend.
  */
-class Frontend_Currencies {
+class FrontendCurrencies {
 	/**
 	 * Multi-Currency instance.
 	 *
-	 * @var Multi_Currency
+	 * @var MultiCurrency
 	 */
 	protected $multi_currency;
 
@@ -37,10 +37,10 @@ class Frontend_Currencies {
 	/**
 	 * Constructor.
 	 *
-	 * @param Multi_Currency $multi_currency The Multi_Currency instance.
-	 * @param Utils          $utils          The Utils instance.
+	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
+	 * @param Utils         $utils          The Utils instance.
 	 */
-	public function __construct( Multi_Currency $multi_currency, Utils $utils ) {
+	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
 		$this->multi_currency = $multi_currency;
 		$this->utils          = $utils;
 
