@@ -6,6 +6,7 @@
 	xmlns="https://getpsalm.org/schema/config"
 	xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
 	autoloader="psalm-loader.php"
+    errorBaseline="psalm-baseline.xml"
 >
     <projectFiles>
         <file name="woocommerce-payments.php" />
