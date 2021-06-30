@@ -124,6 +124,9 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
 			( el ) => el.innerText
 		);
-		await expect( page ).toMatch( declined3dsCardError, 'Error: Your card was declined.' );
+		await expect( page ).toMatch(
+			declined3dsCardError,
+			'Error: Your card was declined.'
+		);
 	} );
 } );
