@@ -602,7 +602,7 @@ class WC_Payments {
 	 * @return string Modified where clause.
 	 */
 	public static function possibly_add_note_source_where_clause( $where_clauses, $args ) {
-		if ( isset( $args['source'] ) && ! empty( $args['source'] ) && false === strpos( $where_clauses, 'AND source IN' ) ) {
+		if ( ! empty( $args['source'] ) && false === strpos( $where_clauses, 'AND source IN' ) ) {
 			$where_source_array = [];
 			foreach ( $args['source'] as $args_type ) {
 				$args_type            = trim( $args_type );
