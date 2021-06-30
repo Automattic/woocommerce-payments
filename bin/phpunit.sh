@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# set strict mode for bash
-set -euo pipefail
-IFS=$'\n\t'
-
 if [[ $RUN_PHPCS == 1 || $SHOULD_DEPLOY == 1 ]]; then
 	exit
 fi
