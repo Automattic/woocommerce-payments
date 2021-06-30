@@ -5,18 +5,15 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns="https://getpsalm.org/schema/config"
 	xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
-	autoloader="bin/psalm-loader.php"
+	autoloader="psalm-loader.php"
     errorBaseline="psalm-baseline.xml"
 >
     <projectFiles>
         <file name="woocommerce-payments.php" />
         <directory name="includes" />
         <ignoreFiles>
-            <directory name="bin" />
-			<directory name="client" />
+			<directory name="docker" />
             <directory name="vendor" />
-            <directory name="release" />
-			<directory name="tests" />
         </ignoreFiles>
     </projectFiles>
 
