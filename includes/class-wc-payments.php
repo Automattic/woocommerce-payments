@@ -584,11 +584,10 @@ class WC_Payments {
 	 */
 	public static function possibly_add_source_to_notes_query( $args, $request ) {
 		if ( isset( $request['source'] ) && ! isset( $args['source'] ) ) {
-			$args['source'] = 'woocommerce-payments';
 			return array_merge(
 				$args,
 				[
-					'source' => $request['source'],
+					'source' => wp_parse_list( $request['source'] ),
 				]
 			);
 		}
@@ -606,8 +605,13 @@ class WC_Payments {
 	 * @return string Modified where clause.
 	 */
 	public static function possibly_add_note_source_where_clause( $where_clauses, $args ) {
-		if ( isset( $args['source'] ) && false === strpos( $where_clauses, 'AND source IN' ) ) {
-			$escaped_where_source = sprintf( "'%s'", esc_sql( $args['source'] ) );
+		if ( ! empty( $args['source'] ) && false === strpos( $where_clauses, 'AND source IN' ) ) {
+			$where_source_array = [];
+			foreach ( $args['source'] as $args_type ) {
+				$args_type            = trim( $args_type );
+				$where_source_array[] = "'" . esc_sql( $args_type ) . "'";
+			}
+			$escaped_where_source = implode( ',', $where_source_array );
 			$where_clauses       .= " AND source IN ($escaped_where_source)";
 		}
 		return $where_clauses;
