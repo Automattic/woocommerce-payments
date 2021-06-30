@@ -24,6 +24,10 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 
 	afterEach( async () => {
 		await page.reload();
+		await page.waitForSelector( 'div.blockUI' );
+		await page.waitForSelector( 'div.blockUI', {
+			hidden: true,
+		} );
 	} );
 
 	it( 'should throw an error that the card was simply declined', async () => {
@@ -92,22 +96,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		);
 	} );
 
-	it( 'should throw an error that the card was declined due to invalid 3DS card', async () => {
-		const declinedCard = config.get( 'cards.declined-3ds' );
-		await fillCardDetails( page, declinedCard );
-		await expect( page ).toClick( '#place_order' );
-		await confirmCardAuthentication( page, '3DS' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-		await expect(
-			page
-		).toMatchElement(
-			'div.woocommerce > div.woocommerce-NoticeGroup > ul.woocommerce-error',
-			{ text: 'Error: Your card was declined.' }
-		);
-	} );
-
 	it( 'should throw an error that the card was declined due to incorrect card number', async () => {
 		const cardIncorrectNumber = config.get( 'cards.declined-incorrect' );
 		await fillCardDetails( page, cardIncorrectNumber );
@@ -127,6 +115,23 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		).toMatchElement(
 			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
 			{ text: 'Your card number is invalid.' }
+		);
+	} );
+
+	it( 'should throw an error that the card was declined due to invalid 3DS card', async () => {
+		const declinedCard = config.get( 'cards.declined-3ds' );
+		await fillCardDetails( page, declinedCard );
+		await expect( page ).toClick( '#place_order' );
+		await confirmCardAuthentication( page, '3DS' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+		await uiUnblocked();
+		await expect(
+			page
+		).toMatchElement(
+			'div.woocommerce > div.woocommerce-NoticeGroup > ul.woocommerce-error',
+			{ text: 'Error: Your card was declined.' }
 		);
 	} );
 } );
