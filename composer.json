@@ -24,9 +24,9 @@
       "woocommerce/woocommerce-sniffs": "0.1.0",
       "woocommerce/action-scheduler": "3.1.6",
       "kalessil/production-dependencies-guard": "dev-master",
-	  "vimeo/psalm": "^4.8",
-	  "php-stubs/wordpress-stubs": "^5.7",
-	  "php-stubs/woocommerce-stubs": "^5.4"
+      "vimeo/psalm": "^4.8",
+	    "php-stubs/wordpress-stubs": "^5.7",
+	    "php-stubs/woocommerce-stubs": "^5.4"
     },
     "scripts": {
       "test": [
