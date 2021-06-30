@@ -25,7 +25,6 @@ export default {
 	name: 'transactions',
 	className: 'woocommerce-search__transactions-result',
 	options( term ) {
-		// eslint-disable-next-line camelcase
 		const query = term ? { search_term: term } : {};
 		return apiFetch( {
 			path: addQueryArgs( '/wc/v3/payments/transactions/search', query ),

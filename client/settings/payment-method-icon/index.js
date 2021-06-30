@@ -14,7 +14,6 @@ import SepaIcon from '../../gateway-icons/sepa';
 import SofortIcon from '../../gateway-icons/sofort';
 
 const paymentMethods = {
-	/* eslint-disable camelcase */
 	card: {
 		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
 		Icon: CreditCardIcon,
@@ -31,7 +30,6 @@ const paymentMethods = {
 		label: __( 'Sofort', 'woocommerce-payments' ),
 		Icon: SofortIcon,
 	},
-	/* eslint-enable camelcase */
 };
 
 const PaymentMethodIcon = ( props ) => {

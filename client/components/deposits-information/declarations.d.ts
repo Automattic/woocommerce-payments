@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 declare namespace AccountOverview {
 	interface Account {
 		default_currency: string;
