@@ -48,6 +48,7 @@ const getDisputesTasks = ( disputes ) => {
 					'warning_needs_response',
 					'needs_response',
 				].includes( disputeStatus ),
+				isDeletable: true,
 				isDismissable: true,
 				allowRemindMeLater: true,
 				onClick: () => {

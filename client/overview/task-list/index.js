@@ -18,6 +18,7 @@ const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 const TaskList = ( {
 	collapsible = false,
+	deletedTasks,
 	dismissedTasks,
 	remindMeLaterTasks,
 	tasks,
@@ -25,36 +26,67 @@ const TaskList = ( {
 	const { createNotice } = useDispatch( 'core/notices' );
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
-	const undoDismissTask = ( key ) => {
-		const updatedDismissedTasks = dismissedTasks.filter(
+	const undoDismissTask = ( key, dismissedTasksList, optionName ) => {
+		const updatedDismissedTasks = dismissedTasksList.filter(
 			( task ) => task !== key
 		);
 
 		/*eslint-disable camelcase*/
 		updateOptions( {
-			woocommerce_dismissed_tasks_todo: updatedDismissedTasks,
+			[ optionName ]: updatedDismissedTasks,
 		} );
 		/*eslint-enable camelcase*/
 	};
 
-	const dismissTask = ( { key, onDismiss } ) => {
-		createNotice( 'success', __( 'Task dismissed' ), {
+	const dismissSelectedTask = ( {
+		task,
+		dismissedTasksList,
+		noticeMessage,
+		optionName,
+	} ) => {
+		const { key, onDismiss } = task;
+		createNotice( 'success', noticeMessage, {
 			actions: [
 				{
-					label: __( 'Undo', 'woocommerce-admin' ),
-					onClick: () => undoDismissTask( key ),
+					label: __( 'Undo', 'woocommerce-payments' ),
+					onClick: () =>
+						undoDismissTask( key, dismissedTasksList, optionName ),
 				},
 			],
 		} );
 
 		/*eslint-disable camelcase*/
 		updateOptions( {
-			woocommerce_dismissed_tasks_todo: [ ...dismissedTasks, key ],
+			[ optionName ]: [ ...dismissedTasksList, key ],
 		} );
 		/*eslint-enable camelcase*/
 		if ( onDismiss ) {
 			onDismiss();
 		}
+	};
+
+	const dismissTask = ( task, type ) => {
+		const params =
+			'dismiss' === type
+				? {
+						task,
+						dismissedTasksList: dismissedTasks,
+						noticeMessage: __(
+							'Task dismissed',
+							'woocommerce-payments'
+						),
+						optionName: 'woocommerce_dismissed_todo_tasks',
+				  }
+				: {
+						task,
+						dismissedTasksList: deletedTasks,
+						noticeMessage: __(
+							'Task deleted',
+							'woocommerce-payments'
+						),
+						optionName: 'woocommerce_deleted_todo_tasks',
+				  };
+		dismissSelectedTask( params );
 	};
 
 	const undoRemindTaskLater = ( key ) => {
@@ -66,7 +98,7 @@ const TaskList = ( {
 
 		/*eslint-disable camelcase*/
 		updateOptions( {
-			woocommerce_remind_me_later_tasks_todo: updatedRemindMeLaterTasks,
+			woocommerce_remind_me_later_todo_tasks: updatedRemindMeLaterTasks,
 		} );
 		/*eslint-enable camelcase*/
 	};
@@ -74,11 +106,11 @@ const TaskList = ( {
 	const remindTaskLater = ( { key, onDismiss } ) => {
 		createNotice(
 			'success',
-			__( 'Task postponed until tomorrow', 'woocommerce-admin' ),
+			__( 'Task postponed until tomorrow', 'woocommerce-payments' ),
 			{
 				actions: [
 					{
-						label: __( 'Undo', 'woocommerce-admin' ),
+						label: __( 'Undo', 'woocommerce-payments' ),
 						onClick: () => undoRemindTaskLater( key ),
 					},
 				],
@@ -88,7 +120,7 @@ const TaskList = ( {
 		const dismissTime = Date.now() + DAY_IN_MS;
 		/*eslint-disable camelcase*/
 		updateOptions( {
-			woocommerce_remind_me_later_tasks_todo: {
+			woocommerce_remind_me_later_todo_tasks: {
 				...remindMeLaterTasks,
 				[ key ]: dismissTime,
 			},
@@ -102,6 +134,7 @@ const TaskList = ( {
 	const nowTimestamp = Date.now();
 	const visibleTasks = tasks.filter(
 		( task ) =>
+			! deletedTasks.includes( task.key ) &&
 			! dismissedTasks.includes( task.key ) &&
 			( ! remindMeLaterTasks[ task.key ] ||
 				remindMeLaterTasks[ task.key ] < nowTimestamp )
@@ -146,9 +179,14 @@ const TaskList = ( {
 							action={ task.onClick }
 							time={ task.time }
 							level={ task.level }
+							onDelete={
+								task.isDeletable && task.completed
+									? () => dismissTask( task, 'delete' )
+									: undefined
+							}
 							onDismiss={
 								task.isDismissable
-									? () => dismissTask( task )
+									? () => dismissTask( task, 'dismiss' )
 									: undefined
 							}
 							remindMeLater={

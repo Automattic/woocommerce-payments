@@ -24,15 +24,18 @@ import { useDisputes } from 'data';
 import './style.scss';
 
 const OverviewPage = () => {
-	const { dismissedTasks, remindMeLaterTasks } = useSelect( ( select ) => {
-		const { getOption } = select( 'wc/admin/options' );
-		return {
-			dismissedTasks: getOption( 'woocommerce_dismissed_tasks_todo' ),
-			remindMeLaterTasks: getOption(
-				'woocommerce_remind_me_later_tasks_todo'
-			),
-		};
-	} );
+	const { deletedTasks, dismissedTasks, remindMeLaterTasks } = useSelect(
+		( select ) => {
+			const { getOption } = select( 'wc/admin/options' );
+			return {
+				dismissedTasks: getOption( 'woocommerce_dismissed_todo_tasks' ),
+				deletedTasks: getOption( 'woocommerce_deleted_todo_tasks' ),
+				remindMeLaterTasks: getOption(
+					'woocommerce_remind_me_later_todo_tasks'
+				),
+			};
+		}
+	);
 	const {
 		accountStatus,
 		showUpdateDetailsTask,
@@ -71,6 +74,7 @@ const OverviewPage = () => {
 			{ !! accountOverviewTaskList && 0 < tasks.length && (
 				<TaskList
 					tasks={ tasks }
+					deletedTasks={ deletedTasks || [] }
 					dismissedTasks={ dismissedTasks || [] }
 					remindMeLaterTasks={ remindMeLaterTasks || [] }
 				/>
