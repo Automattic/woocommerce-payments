@@ -30,18 +30,19 @@ const webpackConfig = {
 		rules: [
 			{
 				test: /\.tsx?$/,
-				use: [ 'babel-loader', 'ts-loader' ],
+				use: [ 'cache-loader', 'babel-loader', 'ts-loader' ],
 				exclude: /node_modules/,
 			},
 			{
 				test: /\.jsx?$/,
-				loader: 'babel-loader',
+				use: [ 'cache-loader', 'babel-loader' ],
 				exclude: /node_modules/,
 			},
 			{
 				test: /\.(scss|css)$/,
 				use: [
 					MiniCssExtractPlugin.loader,
+					'cache-loader',
 					'css-loader',
 					{
 						loader: 'sass-loader',
