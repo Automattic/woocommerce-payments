@@ -139,6 +139,12 @@ describe( 'Disputes > Submit winning dispute', () => {
 				text: 'Evidence submitted!',
 			}
 		);
+
+		// Verify Won status in disputes timeline
+		await page.waitForSelector( 'span.chip-light' );
+		await expect( page ).toMatchElement( 'span.chip-light', {
+			text: 'Won',
+		} );
 	} );
 
 	it( 'should verify a dispute has been challenged properly', async () => {
@@ -162,25 +168,10 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await merchantWCP.openDisputeDetails( disputeDetailsLink );
 
 		// Check if a new button is present now
-		await expect( page ).not.toMatchElement(
-			'div.components-card > .components-card__footer > a',
-			{
-				text: 'View submitted evidence',
-			}
+		const buttonText = await page.$eval(
+			'div.components-card > div.components-flex > div > a',
+			( el ) => el.innerText
 		);
-
-		// Check if buttons are not present anymore since a dispute has been challenged
-		await expect( page ).not.toMatchElement(
-			'div.components-card > .components-card__footer > a',
-			{
-				text: 'Challenge dispute',
-			}
-		);
-		await expect( page ).not.toMatchElement(
-			'div.components-card > .components-card__footer > button',
-			{
-				text: 'Accept dispute',
-			}
-		);
+		await expect( page ).toMatch( buttonText, 'View submitted evidence' );
 	} );
 } );

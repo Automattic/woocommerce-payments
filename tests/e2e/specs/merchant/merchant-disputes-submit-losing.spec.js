@@ -96,6 +96,12 @@ describe( 'Disputes > Submit losing dispute', () => {
 					'You have accepted the dispute for order #' + orderId + '.',
 			}
 		);
+
+		// Verify Lost status in disputes timeline
+		await page.waitForSelector('span.chip-light');
+		await expect( page ).toMatchElement( 'span.chip-light', {
+			text: 'Lost'
+		} );
 	} );
 
 	it( 'should verify a dispute has been accepted properly', async () => {
