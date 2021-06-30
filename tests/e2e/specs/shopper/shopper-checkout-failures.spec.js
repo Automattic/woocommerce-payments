@@ -24,10 +24,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 
 	afterEach( async () => {
 		await page.reload();
-		await page.waitForSelector( 'div.blockUI' );
-		await page.waitForSelector( 'div.blockUI', {
-			hidden: true,
-		} );
 	} );
 
 	it( 'should throw an error that the card was simply declined', async () => {
@@ -123,15 +119,11 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await confirmCardAuthentication( page, '3DS' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-		await uiUnblocked();
-		await expect(
-			page
-		).toMatchElement(
-			'div.woocommerce > div.woocommerce-NoticeGroup > ul.woocommerce-error',
-			{ text: 'Error: Your card was declined.' }
+		await page.waitForSelector( 'ul.woocommerce-error' );
+		const declined3dsCardError = await page.$eval(
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
+			( el ) => el.innerText
 		);
+		await expect( page ).toMatch( declined3dsCardError, 'Error: Your card was declined.' );
 	} );
 } );
