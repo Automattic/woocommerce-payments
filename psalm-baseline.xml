@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="4.8.1@f73f2299dbc59a3e6c4d66cff4605176e728ee69">
+  <file src="includes/admin/class-wc-payments-admin-additional-methods-setup.php">
+    <UndefinedFunction occurrences="1">
+      <code>wc_admin_is_registered_page()</code>
+    </UndefinedFunction>
+  </file>
+  <file src="includes/admin/class-wc-payments-admin.php">
+    <UndefinedFunction occurrences="9">
+      <code>wc_admin_is_registered_page()</code>
+      <code>wc_admin_is_registered_page()</code>
+      <code>wc_admin_register_page( $admin_child_page )</code>
+    </UndefinedFunction>
+  </file>
+  <file src="includes/class-experimental-abtest.php">
+    <UndefinedDocblockClass occurrences="2">
+      <code>mixed|Automattic\Jetpack\Error</code>
+      <code>mixed|Automattic\Jetpack\Error</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="includes/class-logger.php">
+    <UndefinedDocblockClass occurrences="2">
+      <code>WC_Logger</code>
+      <code>self::$logger</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="includes/class-payment-information.php">
+    <UndefinedDocblockClass occurrences="2">
+      <code>$this-&gt;manual_capture</code>
+      <code>Capture_Type</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="includes/class-wc-payments-account.php">
+    <UndefinedDocblockClass occurrences="1">
+      <code>$data_store</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="includes/class-wc-payments-action-scheduler-service.php">
+    <UndefinedClass occurrences="1">
+      <code>ActionScheduler_Store</code>
+    </UndefinedClass>
+    <UndefinedFunction occurrences="3">
+      <code>as_schedule_single_action( $timestamp, $hook, $args, self::GROUP_ID )</code>
+      <code>as_unschedule_action( $hook, $args, self::GROUP_ID )</code>
+    </UndefinedFunction>
+  </file>
+  <file src="includes/class-wc-payments-blocks-payment-method.php">
+    <UndefinedClass occurrences="1">
+      <code>AbstractPaymentMethodType</code>
+    </UndefinedClass>
+  </file>
+  <file src="includes/class-wc-payments-payment-request-button-handler.php">
+    <UndefinedClass occurrences="3">
+      <code>WC_Pre_Orders_Product</code>
+      <code>WC_Subscriptions_Product</code>
+      <code>WC_Subscriptions_Product</code>
+    </UndefinedClass>
+  </file>
+  <file src="includes/class-wc-payments-token-service.php">
+    <UndefinedDocblockClass occurrences="2">
+      <code>$token</code>
+      <code>WC_Payment_Token_CC|WC_Payment_Token_Sepa</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="includes/class-wc-payments.php">
+    <UndefinedClass occurrences="1"/>
+    <UndefinedDocblockClass occurrences="1">
+      <code>Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="includes/compat/class-wc-payment-woo-compat-utils.php">
+    <UndefinedClass occurrences="1">
+      <code>WC_Admin_Note</code>
+    </UndefinedClass>
+  </file>
+  <file src="includes/constants/class-digital-wallets-locations.php">
+    <MissingImmutableAnnotation occurrences="1">
+      <code>Enum</code>
+    </MissingImmutableAnnotation>
+  </file>
+  <file src="includes/constants/class-payment-capture-type.php">
+    <MissingImmutableAnnotation occurrences="1">
+      <code>Enum</code>
+    </MissingImmutableAnnotation>
+  </file>
+  <file src="includes/constants/class-payment-initiated-by.php">
+    <MissingImmutableAnnotation occurrences="1">
+      <code>Enum</code>
+    </MissingImmutableAnnotation>
+  </file>
+  <file src="includes/constants/class-payment-method.php">
+    <MissingImmutableAnnotation occurrences="1">
+      <code>Enum</code>
+    </MissingImmutableAnnotation>
+  </file>
+  <file src="includes/constants/class-payment-type.php">
+    <MissingImmutableAnnotation occurrences="1">
+      <code>Enum</code>
+    </MissingImmutableAnnotation>
+  </file>
+  <file src="includes/exceptions/class-api-exception.php">
+    <UndefinedDocblockClass occurrences="1">
+      <code>Throwable</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="includes/exceptions/class-base-exception.php">
+    <UndefinedDocblockClass occurrences="1">
+      <code>Throwable</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="includes/multi-currency/class-frontend-prices.php">
+    <UndefinedDocblockClass occurrences="1">
+      <code>WC_Order</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="includes/multi-currency/class-wc-rest-controller.php">
+    <UndefinedDocblockClass occurrences="1">
+      <code>WP_REST_Request</code>
+    </UndefinedDocblockClass>
+    <UndefinedFunction occurrences="3">
+      <code>WC_Payments_Multi_Currency()</code>
+      <code>WC_Payments_Multi_Currency()</code>
+      <code>WC_Payments_Multi_Currency()</code>
+    </UndefinedFunction>
+  </file>
+  <file src="includes/multi-currency/notes/class-note-multi-currency-available.php">
+    <UndefinedTrait occurrences="1">
+      <code>NoteTraits</code>
+    </UndefinedTrait>
+  </file>
+  <file src="includes/multi-currency/wc-payments-multi-currency.php">
+    <UndefinedDocblockClass occurrences="1">
+      <code>Multi_Currency</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="includes/notes/class-wc-payments-notes-instant-deposits-eligible.php">
+    <UndefinedTrait occurrences="1">
+      <code>NoteTraits</code>
+    </UndefinedTrait>
+  </file>
+  <file src="includes/notes/class-wc-payments-notes-qualitative-feedback.php">
+    <UndefinedTrait occurrences="1">
+      <code>NoteTraits</code>
+    </UndefinedTrait>
+  </file>
+  <file src="includes/notes/class-wc-payments-notes-set-https-for-checkout.php">
+    <UndefinedTrait occurrences="1">
+      <code>NoteTraits</code>
+    </UndefinedTrait>
+  </file>
+  <file src="includes/notes/class-wc-payments-notes-set-up-refund-policy.php">
+    <UndefinedTrait occurrences="1">
+      <code>NoteTraits</code>
+    </UndefinedTrait>
+  </file>
+  <file src="includes/notes/class-wc-payments-remote-note-service.php">
+    <UndefinedDocblockClass occurrences="2">
+      <code>$note</code>
+      <code>WC_Admin_Note|Note</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="includes/wc-payment-api/class-wc-payments-api-client.php">
+    <ParadoxicalCondition occurrences="1">
+      <code>defined( 'ABSPATH' )</code>
+    </ParadoxicalCondition>
+  </file>
+  <file src="includes/wc-payment-api/class-wc-payments-http-interface.php">
+    <UndefinedDocblockClass occurrences="2">
+      <code>API_Exception</code>
+      <code>API_Exception</code>
+    </UndefinedDocblockClass>
+  </file>
+  <file src="includes/wc-payment-api/class-wc-payments-http.php">
+    <UndefinedDocblockClass occurrences="3">
+      <code>$response</code>
+      <code>$this-&gt;connection_manager-&gt;is_active()</code>
+      <code>Automattic\Jetpack\Connection\Client::remote_request( $args, $body )</code>
+    </UndefinedDocblockClass>
+  </file>
+</files>
