@@ -282,7 +282,7 @@ class Settings extends \WC_Settings_Page {
 			'10'   => '10.00',
 		];
 		$zero_decimal_currency_rounding_options = [
-			'none' => __( 'None', 'woocommerce-payments' ),
+			'1'    => '1',
 			'10'   => '10',
 			'25'   => '25',
 			'50'   => '50',
