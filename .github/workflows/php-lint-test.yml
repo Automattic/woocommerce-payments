@@ -6,6 +6,7 @@ on:
 env:
   WP_VERSION: latest
   WC_VERSION: 4.5.0  # the most used version here
+  MIN_COVERAGE: 92
 
 jobs:
   lint:
