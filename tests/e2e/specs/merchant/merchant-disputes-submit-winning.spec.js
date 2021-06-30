@@ -140,7 +140,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 			}
 		);
 
-		// Verify Won status in disputes timeline
+		// Verify Won status in disputes view
 		await page.waitForSelector( 'span.chip-light' );
 		await expect( page ).toMatchElement( 'span.chip-light', {
 			text: 'Won',

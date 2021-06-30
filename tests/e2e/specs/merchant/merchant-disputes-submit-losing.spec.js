@@ -97,7 +97,7 @@ describe( 'Disputes > Submit losing dispute', () => {
 			}
 		);
 
-		// Verify Lost status in disputes timeline
+		// Verify Lost status in disputes view
 		await page.waitForSelector( 'span.chip-light' );
 		await expect( page ).toMatchElement( 'span.chip-light', {
 			text: 'Lost',
