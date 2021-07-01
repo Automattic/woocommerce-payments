@@ -14,7 +14,6 @@
 			<directory name="client" />
 			<directory name="docker" />
             <directory name="vendor" />
-            <directory name="node_modules" />
         </ignoreFiles>
     </projectFiles>
 
