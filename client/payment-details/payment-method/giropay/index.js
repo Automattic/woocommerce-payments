@@ -19,15 +19,13 @@ import PaymentDetailsPaymentMethodDetail from '../detail';
 const formatPaymentMethodDetails = ( charge ) => {
 	const { billing_details: billingDetails, payment_method: id } = charge;
 
-	// eslint-disable-next-line camelcase
-	const { bank_name, bic } = charge.payment_method_details.giropay;
+	const { bank_name: bankName, bic } = charge.payment_method_details.giropay;
 
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
 
 	return {
 		id,
-		// eslint-disable-next-line camelcase
-		bankName: bank_name,
+		bankName,
 		bic,
 		name,
 		email,

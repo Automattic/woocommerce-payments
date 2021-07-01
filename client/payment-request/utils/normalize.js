@@ -42,7 +42,6 @@ export const normalizeOrderData = ( paymentData ) => {
 	}
 
 	return {
-		/* eslint-disable camelcase */
 		billing_first_name:
 			name?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
 		billing_last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
@@ -74,7 +73,6 @@ export const normalizeOrderData = ( paymentData ) => {
 		terms: 1,
 		'wcpay-payment-method': paymentData?.paymentMethod?.id,
 		payment_request_type: paymentRequestType,
-		/* eslint-enable camelcase */
 	};
 };
 
@@ -88,7 +86,6 @@ export const normalizeOrderData = ( paymentData ) => {
  */
 export const normalizeShippingAddress = ( shippingAddress ) => {
 	return {
-		/* eslint-disable camelcase */
 		first_name:
 			shippingAddress?.recipient
 				?.split( ' ' )
@@ -104,6 +101,5 @@ export const normalizeShippingAddress = ( shippingAddress ) => {
 		state: shippingAddress?.region ?? '',
 		country: shippingAddress?.country ?? '',
 		postcode: shippingAddress?.postalCode?.replace( ' ', '' ) ?? '',
-		/* eslint-enable camelcase */
 	};
 };

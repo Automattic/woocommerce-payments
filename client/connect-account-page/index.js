@@ -141,7 +141,6 @@ const ConnectPageOnboarding = () => {
 
 		setSubmitted( true );
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
-			// eslint-disable-next-line camelcase
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
 		} );
 	};

@@ -5,23 +5,23 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Multi_Currency\Currency;
+use WCPay\MultiCurrency\Currency;
 
 /**
- * WCPay\Multi_Currency\Settings unit tests.
+ * WCPay\MultiCurrency\Settings unit tests.
  */
 class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 	/**
-	 * Mock WCPay\Multi_Currency\Multi_Currency.
+	 * Mock WCPay\MultiCurrency\MultiCurrency.
 	 *
-	 * @var WCPay\Multi_Currency\Multi_Currency|PHPUnit_Framework_MockObject_MockObject
+	 * @var WCPay\MultiCurrency\MultiCurrency|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_multi_currency;
 
 	/**
-	 * WCPay\Multi_Currency\Settings instance.
+	 * WCPay\MultiCurrency\Settings instance.
 	 *
-	 * @var WCPay\Multi_Currency\Settings
+	 * @var WCPay\MultiCurrency\Settings
 	 */
 	private $settings;
 
@@ -31,11 +31,10 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->mock_multi_currency = $this->createMock( WCPay\Multi_Currency\Multi_Currency::class );
+		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
 
 		// The settings pages file is only included in woocommerce_get_settings_pages, so we need to manually include it here.
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-settings.php';
-		$this->settings = new WCPay\Multi_Currency\Settings( $this->mock_multi_currency );
+		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency );
 	}
 
 	/**
