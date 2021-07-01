@@ -4,6 +4,7 @@
 import config from 'config';
 
 const {
+	shopper,
 	createSimpleProduct,
 	uiUnblocked,
 } = require( '@woocommerce/e2e-utils' );
@@ -20,6 +21,11 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
 		);
+	} );
+
+	afterAll( async () => {
+		// Clear the cart at the end
+		await shopper.emptyCart();
 	} );
 
 	afterEach( async () => {
