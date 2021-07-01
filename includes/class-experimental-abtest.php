@@ -86,7 +86,7 @@ final class Experimental_Abtest {
 	 * Fetch and cache the test variation for a provided A/B test from WP.com.
 	 *
 	 * @param string $test_name Name of the A/B test.
-	 * @return mixed|Automattic\Jetpack\Error A/B test variation, or Automattic\Jetpack\Error on failure.
+	 * @return array|\WP_Error A/B test variation, or error on failure.
 	 */
 	protected function fetch_variation( $test_name ) {
 		// Make sure test name exists.
@@ -140,7 +140,7 @@ final class Experimental_Abtest {
 	 * Perform the request for a variation of a provided A/B test from WP.com.
 	 *
 	 * @param string $test_name Name of the A/B test.
-	 * @return mixed|Automattic\Jetpack\Error A/B test variation, or Automattic\Jetpack\Error on failure.
+	 * @return array|\WP_Error A/B test variation error on failure.
 	 */
 	protected function request_variation( $test_name ) {
 		$args = [
