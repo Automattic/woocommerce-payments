@@ -107,14 +107,11 @@ describe( 'Disputes > Submit winning dispute', () => {
 			text: 'Additional details',
 		} );
 
-		// Fill required additional text in order to make a winning dispute
-		// Used $eval as a workaround since .toFill won't work for this textarea
-		await page.click( '.components-base-control__label', {
-			text: 'Additional details',
-		} );
-		await page.$eval(
-			'.components-textarea-control__input',
-			( el ) => ( el.value = 'winning_evidence' )
+		// Fill Additional Details field with required text in order to win dispute
+		await expect( page ).toFill(
+			'#inspector-textarea-control-3',
+			'winning_evidence',
+			{ delay: 20 }
 		);
 
 		// Submit the evidence and accept the dialog
