@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Returns the main instance of MultiCurrency.
  *
- * @return WCPay\Multi_Currency\Multi_Currency
+ * @return WCPay\MultiCurrency\MultiCurrency
  */
 function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid
 	return WCPay\MultiCurrency\MultiCurrency::instance();
