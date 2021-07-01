@@ -15,6 +15,8 @@ use MyCLabs\Enum\Enum;
 
 /**
  * Possible locations for digital wallets to show on.
+ *
+ * @psalm-immutable
  */
 class Digital_Wallets_Locations extends Enum {
 	const CART         = 'cart';
