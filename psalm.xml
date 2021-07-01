@@ -21,5 +21,6 @@
 		<UndefinedConstant errorLevel="suppress" />
 		<ParadoxicalCondition errorLevel="suppress" />
 		<MissingFile errorLevel="suppress" />
+		<DuplicateClass errorLevel="suppress" />
 	</issueHandlers>
 </psalm>
