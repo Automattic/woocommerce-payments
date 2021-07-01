@@ -20,5 +20,6 @@
 
 	<issueHandlers>
 		<UndefinedConstant errorLevel="suppress" />
+		<ParadoxicalCondition errorLevel="suppress" />
 	</issueHandlers>
 </psalm>
