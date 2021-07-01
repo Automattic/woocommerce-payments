@@ -60,7 +60,7 @@ class RestController extends \WC_Payments_REST_Controller {
 	/**
 	 * Update enabled currencies based on posted data.
 	 *
-	 * @param WP_REST_Request $request Full data about the request.
+	 * @param \WP_REST_Request $request Full data about the request.
 	 */
 	public function update_enabled_currencies( $request ) {
 		$params = $request->get_params();

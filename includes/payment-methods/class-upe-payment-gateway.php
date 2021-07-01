@@ -7,6 +7,8 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Order;
+use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WC_Payment_Gateway_WCPay;
