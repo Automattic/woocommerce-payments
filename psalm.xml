@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <psalm
 	errorLevel="7"
-	resolveFromConfigFile="true"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns="https://getpsalm.org/schema/config"
 	xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
@@ -12,8 +11,10 @@
         <file name="woocommerce-payments.php" />
         <directory name="includes" />
         <ignoreFiles>
+			<directory name="client" />
 			<directory name="docker" />
             <directory name="vendor" />
+            <directory name="node_modules" />
         </ignoreFiles>
     </projectFiles>
 
