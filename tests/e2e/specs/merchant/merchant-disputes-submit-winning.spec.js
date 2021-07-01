@@ -87,7 +87,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 			}
 		);
 
-		// Click to accept the dispute
+		// Challenge the dispute
 		await merchantWCP.openChallengeDispute();
 
 		// Select product type
@@ -109,9 +109,11 @@ describe( 'Disputes > Submit winning dispute', () => {
 
 		// Fill required additional text in order to make a winning dispute
 		// Used $eval as a workaround since .toFill won't work for this textarea
-		await page.click( '#inspector-textarea-control-3' );
+		await page.click( '.components-base-control__label', {
+			text: 'Additional details',
+		} );
 		await page.$eval(
-			'#inspector-textarea-control-3',
+			'.components-textarea-control__input',
 			( el ) => ( el.value = 'winning_evidence' )
 		);
 

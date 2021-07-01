@@ -82,7 +82,7 @@ describe( 'Disputes > Submit losing dispute', () => {
 			}
 		);
 
-		// Click to accept the dispute
+		// Accept the dispute
 		await merchantWCP.openAcceptDispute();
 		await page.waitForSelector(
 			'div.components-snackbar > .components-snackbar__content'
