@@ -101,6 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.6.1 - 2021-xx-xx =
+* Fix - Updates the notes query filters to prevent breaking the WooCommerce > Home inbox.
+
 = 2.6.0 - 2021-06-23 =
 * Add - Notify the admin if WordPress.com user connection is broken.
 * Add - Experimental PHP client for Explat.
