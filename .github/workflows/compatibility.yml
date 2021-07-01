@@ -35,7 +35,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           tools:       composer
-          coverage:    none
+          coverage:    xdebug2
       # run CI checks
       - run: if [[ "${{ matrix.php }}" == '7.0' ]]; then wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar; fi;
       - run: bash bin/run-ci-tests.bash
@@ -66,6 +66,6 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           tools:       composer
-          coverage:    none
+          coverage:    xdebug2
       # run CI checks
       - run: bash bin/run-ci-tests.bash
