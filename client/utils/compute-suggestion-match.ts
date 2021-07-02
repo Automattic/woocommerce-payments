@@ -7,11 +7,11 @@ import { decodeEntities } from '@wordpress/html-entities';
  * Internal dependencies
  */
 
-type SuggestionMatch = {
+interface SuggestionMatch {
 	suggestionBeforeMatch: string;
 	suggestionMatch: string;
 	suggestionAfterMatch: string;
-};
+}
 
 /**
  * Parse a string suggestion, split apart by where the first matching query is.

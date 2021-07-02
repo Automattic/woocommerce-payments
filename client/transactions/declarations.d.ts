@@ -7,43 +7,43 @@
  */
 
 declare module '@woocommerce/explat' {
-	type ExperimentProps = {
+	interface ExperimentProps {
 		name: string;
 		defaultExperience: JSX.Element;
 		treatmentExperience?: JSX.Element;
 		loadingExperience?: JSX.Element;
-	};
+	}
 
 	const Experiment: ( props: ExperimentProps ) => JSX.Element;
 }
 
 declare module 'interpolate-components' {
-	type interpolateComponentsProps = {
+	interface InterpolateComponentsParams {
 		mixedString: string;
 		components: Record< string, React.ReactNode >;
-	};
+	}
 
 	const interpolateComponents: (
-		props: interpolateComponentsProps
+		props: InterpolateComponentsParams
 	) => JSX.Element;
 
 	export = interpolateComponents;
 }
 declare module '@woocommerce/components' {
-	import type { query } from '@woocommerce/navigation';
+	import type { Query } from '@woocommerce/navigation';
 
-	type ReportFiltersProps = {
+	interface ReportFiltersProps {
 		advancedFilters?: Record< string, unknown >;
 		filters?: Array< any >;
 		path?: string;
-		query?: Record< string, unknown >;
+		query?: Query;
 		showDatePicker: boolean;
 		// some properties are omitted, as we are not currently using them
-	};
+	}
 
 	const ReportFilters: ( props: ReportFiltersProps ) => JSX.Element;
 
-	type searchProps = {
+	interface SearchProps {
 		allowFreeTextSearch?: boolean;
 		inlineTags?: boolean;
 		key?: string;
@@ -65,8 +65,8 @@ declare module '@woocommerce/components' {
 			| 'variations'
 			| 'custom';
 		autocompleter: unknown;
-	};
-	const Search: ( props: searchProps ) => JSX.Element;
+	}
+	const Search: ( props: SearchProps ) => JSX.Element;
 
 	interface TableCardColumn {
 		key: string;
@@ -79,7 +79,7 @@ declare module '@woocommerce/components' {
 		isSortable?: boolean;
 		defaultSort?: boolean;
 	}
-	type tableCardProps = {
+	interface TableCardProps {
 		className?: string;
 		title?: string;
 		isLoading?: boolean;
@@ -91,16 +91,16 @@ declare module '@woocommerce/components' {
 			display?: React.ReactNode;
 		}[][];
 		summary?: { label: string; value: string | number | boolean }[];
-		query?: query;
+		query?: Query;
 		onQueryChange?: unknown;
 		actions?: React.ReactNode[];
-	};
-	const TableCard: ( props: tableCardProps ) => JSX.Element;
+	}
+	const TableCard: ( props: TableCardProps ) => JSX.Element;
 }
 
 declare module '@woocommerce/navigation' {
 	// TODO: replace the `unknown` types with actual types.
-	type query = {
+	interface Query {
 		path?: unknown;
 		page?: unknown;
 		paged?: string;
@@ -115,15 +115,15 @@ declare module '@woocommerce/navigation' {
 		type_is_not?: unknown;
 		store_currency_is?: string;
 		search?: string[];
-	};
+	}
 
 	const onQueryChange: unknown;
-	const getQuery: () => query;
-	function updateQueryString(
-		q: query,
+	const getQuery: () => Query;
+	const updateQueryString: (
+		query: Query,
 		path?: string,
-		currentQuery?: query
-	): void;
+		currentQuery?: Query
+	) => void;
 }
 
 declare module '@woocommerce/csv-export' {

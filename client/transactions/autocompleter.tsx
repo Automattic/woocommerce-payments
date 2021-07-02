@@ -16,10 +16,10 @@ import computeSuggestionMatch from 'utils/compute-suggestion-match';
  * @typedef {Object} Completer
  */
 
-type CompletionOption = {
+interface CompletionOption {
 	key: string;
 	label: string;
-};
+}
 
 /**
  * A transaction completer.

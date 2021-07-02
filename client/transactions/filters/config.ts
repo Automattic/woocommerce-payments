@@ -8,19 +8,19 @@ import { __, _x } from '@wordpress/i18n';
  */
 import { displayType } from 'transactions/strings';
 
-type TransactionsFilterEntryType = {
+interface TransactionsFilterEntryType {
 	label: string;
 	value: string;
-};
+}
 
-export type TransactionsFilterType = {
+export interface TransactionsFilterType {
 	label: string;
 	param: string;
 	staticParams: string[];
 	showFilters: () => boolean;
 	filters: TransactionsFilterEntryType[];
 	defaultValue?: string;
-};
+}
 
 const transactionTypesOptions = Object.entries( displayType )
 	// Currently, we do not support APMs from the shopper's experience, so we can hide those filters.

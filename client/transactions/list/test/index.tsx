@@ -13,7 +13,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  */
 import { TransactionsList } from '../';
 import { useTransactions, useTransactionsSummary } from 'data/index';
-import type { transaction } from 'data/transactions/hooks';
+import type { Transaction } from 'data/transactions/hooks';
 
 import { downloadCSVFile } from '@woocommerce/csv-export';
 
@@ -52,7 +52,7 @@ declare const global: {
 	};
 };
 
-const getMockTransactions: () => transaction[] = () => [
+const getMockTransactions: () => Transaction[] = () => [
 	{
 		available_on: '',
 		transaction_id: 'txn_j23jda9JJa',
@@ -124,7 +124,7 @@ describe( 'Transactions list', () => {
 	test( 'renders correctly when filtered by deposit', () => {
 		mockUseTransactions.mockReturnValue( {
 			transactions: getMockTransactions().filter(
-				( txn: transaction ) => 'po_mock' === txn.deposit_id
+				( txn: Transaction ) => 'po_mock' === txn.deposit_id
 			),
 			transactionsError: undefined,
 			isLoading: false,

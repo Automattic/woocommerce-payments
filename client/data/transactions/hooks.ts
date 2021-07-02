@@ -4,7 +4,7 @@
  */
 import { useSelect } from '@wordpress/data';
 import moment from 'moment';
-import type { query } from '@woocommerce/navigation';
+import type { Query } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -12,7 +12,7 @@ import type { query } from '@woocommerce/navigation';
 import { STORE_NAME } from '../constants';
 
 // TODO: refine this type with more detailed information.
-export type transaction = {
+export interface Transaction {
 	amount: number;
 	order: {
 		subscriptions?: { number: number; url: string }[];
@@ -36,14 +36,14 @@ export type transaction = {
 	date: string;
 	type: 'charge' | 'refund';
 	source: string;
-};
+}
 
-type transactions = {
-	transactions: transaction[];
+interface Transactions {
+	transactions: Transaction[];
 	transactionsError: unknown;
 	isLoading: boolean;
-};
-type transactionsSummary = {
+}
+interface TransactionsSummary {
 	transactionsSummary: {
 		count?: number;
 		total?: number;
@@ -53,7 +53,7 @@ type transactionsSummary = {
 		store_currencies?: string[];
 	};
 	isLoading: boolean;
-};
+}
 
 export const useTransactions = (
 	{
@@ -69,9 +69,9 @@ export const useTransactions = (
 		type_is_not: typeIsNot,
 		store_currency_is: storeCurrencyIs,
 		search,
-	}: query,
+	}: Query,
 	depositId: string
-): transactions =>
+): Transactions =>
 	useSelect(
 		( select ) => {
 			const {
@@ -80,7 +80,7 @@ export const useTransactions = (
 				isResolving,
 			} = select( STORE_NAME );
 
-			const newQuery = {
+			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
 					? '1'
 					: paged,
@@ -105,9 +105,9 @@ export const useTransactions = (
 			};
 
 			return {
-				transactions: getTransactions( newQuery ),
-				transactionsError: getTransactionsError( newQuery ),
-				isLoading: isResolving( 'getTransactions', [ newQuery ] ),
+				transactions: getTransactions( query ),
+				transactionsError: getTransactionsError( query ),
+				isLoading: isResolving( 'getTransactions', [ query ] ),
 			};
 		},
 		[
@@ -137,16 +137,16 @@ export const useTransactionsSummary = (
 		type_is_not: typeIsNot,
 		store_currency_is: storeCurrencyIs,
 		search,
-	}: query,
+	}: Query,
 	depositId: string
-): transactionsSummary =>
+): TransactionsSummary =>
 	useSelect(
 		( select ) => {
 			const { getTransactionsSummary, isResolving } = select(
 				STORE_NAME
 			);
 
-			const newQuery = {
+			const query = {
 				match,
 				dateBefore,
 				dateAfter,
@@ -159,10 +159,8 @@ export const useTransactionsSummary = (
 			};
 
 			return {
-				transactionsSummary: getTransactionsSummary( newQuery ),
-				isLoading: isResolving( 'getTransactionsSummary', [
-					newQuery,
-				] ),
+				transactionsSummary: getTransactionsSummary( query ),
+				isLoading: isResolving( 'getTransactionsSummary', [ query ] ),
 			};
 		},
 		[

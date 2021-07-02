@@ -54,9 +54,9 @@ declare const wcpaySettings: {
 	};
 };
 
-type transactionsListProps = {
+interface TransactionsListProps {
 	depositId?: string;
-};
+}
 
 interface Column extends TableCardColumn {
 	key:
@@ -178,7 +178,7 @@ const getColumns = (
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
 export const TransactionsList = (
-	props: transactionsListProps
+	props: TransactionsListProps
 ): JSX.Element => {
 	const { transactions, isLoading } = useTransactions(
 		getQuery(),
