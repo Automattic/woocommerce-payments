@@ -45,7 +45,7 @@ export const filters: [ TransactionsFilterType, TransactionsFilterType ] = [
 			'date_after',
 			'date_between',
 		],
-		showFilters: (): boolean => false,
+		showFilters: () => false,
 		filters: [
 			{
 				label: __( 'All currencies', 'woocommerce-payments' ),
@@ -66,7 +66,7 @@ export const filters: [ TransactionsFilterType, TransactionsFilterType ] = [
 			'search',
 			'store_currency_is',
 		],
-		showFilters: (): boolean => true,
+		showFilters: () => true,
 		filters: [
 			{
 				label: __( 'All transactions', 'woocommerce-payments' ),
