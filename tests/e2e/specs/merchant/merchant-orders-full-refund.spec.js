@@ -76,7 +76,6 @@ describe( 'Order > Full refund', () => {
 		const refundDialog = await expect( page ).toDisplayDialog( async () => {
 			await expect( page ).toClick( 'button.do-api-refund' );
 		} );
-		await takeScreenshot( 'merchant-orders-full-refund_confirming' );
 
 		// Accept the refund
 		await refundDialog.accept();
