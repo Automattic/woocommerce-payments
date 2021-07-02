@@ -38,7 +38,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 
 		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
 		$this->mock_utils          = $this->createMock( WCPay\MultiCurrency\Utils::class );
-		$this->compatibility       = new WCPay\MultiCurrency\Compatibility( $this->mock_utils );
+		$this->compatibility       = new WCPay\MultiCurrency\Compatibility( $this->mock_multi_currency, $this->mock_utils );
 
 		$this->mock_meta_data = $this->createMock( \WC_Meta_Data::class );
 

@@ -21,9 +21,9 @@ class Compatibility {
 	public $switch_cart_item = '';
 
 	/**
-	 * Multi_Currency class.
+	 * MultiCurrency class.
 	 *
-	 * @var Multi_Currency
+	 * @var MultiCurrency
 	 */
 	private $multi_currency;
 
@@ -37,10 +37,10 @@ class Compatibility {
 	/**
 	 * Constructor.
 	 *
-	 * @param Multi_Currency $multi_currency Multi_Currency class.
-	 * @param Utils          $utils Utils class.
+	 * @param MultiCurrency $multi_currency MultiCurrency class.
+	 * @param Utils         $utils Utils class.
 	 */
-	public function __construct( Multi_Currency $multi_currency, Utils $utils ) {
+	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
 		$this->multi_currency = $multi_currency;
 		$this->utils          = $utils;
 
