@@ -31,10 +31,7 @@ import Gridicon from 'gridicons';
 /**
  * Internal dependencies
  */
-import {
-	useTransactions,
-	useTransactionsSummary,
-} from 'data/transactions/hooks';
+import { useTransactions, useTransactionsSummary } from 'data/index';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
