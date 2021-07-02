@@ -142,3 +142,11 @@ declare module '@woocommerce/csv-export' {
 		params: Record< string, any >
 	) => string;
 }
+
+declare module '@wordpress/date' {
+	function dateI18n(
+		dateFormat: string,
+		dateValue: string,
+		timezone?: boolean
+	): string;
+}
