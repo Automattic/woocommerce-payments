@@ -7,6 +7,12 @@ import { decodeEntities } from '@wordpress/html-entities';
  * Internal dependencies
  */
 
+type SuggestionMatch = {
+	suggestionBeforeMatch: string;
+	suggestionMatch: string;
+	suggestionAfterMatch: string;
+};
+
 /**
  * Parse a string suggestion, split apart by where the first matching query is.
  * Used to display matched partial in bold.
@@ -15,7 +21,10 @@ import { decodeEntities } from '@wordpress/html-entities';
  * @param {string} query The search term to match in the string.
  * @return {Object} A list in three parts: before, match, and after.
  */
-export default function computeSuggestionMatch( suggestion, query ) {
+export default function computeSuggestionMatch(
+	suggestion: string,
+	query: string
+): SuggestionMatch | null {
 	if ( ! query ) {
 		return null;
 	}

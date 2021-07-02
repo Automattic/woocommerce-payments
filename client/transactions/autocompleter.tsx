@@ -17,7 +17,10 @@ import computeSuggestionMatch from 'utils/compute-suggestion-match';
  */
 
 // add any other params here
-type completionOption = { label: string };
+type CompletionOption = {
+	key: string;
+	label: string;
+};
 
 /**
  * A transaction completer.
@@ -28,20 +31,20 @@ type completionOption = { label: string };
 export default {
 	name: 'transactions',
 	className: 'woocommerce-search__transactions-result',
-	options( term: string ) {
+	options( term: string ): Promise< CompletionOption[] > {
 		const query = term ? { search_term: term } : {};
 		return apiFetch( {
 			path: addQueryArgs( '/wc/v3/payments/transactions/search', query ),
 		} );
 	},
 	isDebounced: true,
-	getOptionIdentifier( option: completionOption ): string {
+	getOptionIdentifier( option: CompletionOption ): string {
 		return option.label;
 	},
-	getOptionKeywords( option: completionOption ): [ string ] {
+	getOptionKeywords( option: CompletionOption ): string[] {
 		return [ option.label ];
 	},
-	getFreeTextOptions( query ) {
+	getFreeTextOptions( query: string ): any[] {
 		const label = (
 			<span key="name" className="woocommerce-search__result-name">
 				{ interpolateComponents( {
@@ -67,8 +70,9 @@ export default {
 
 		return [ nameOption ];
 	},
-	getOptionLabel( option, query ) {
+	getOptionLabel( option: CompletionOption, query: string ): JSX.Element {
 		const match = computeSuggestionMatch( option.label, query );
+
 		return (
 			<span
 				key="name"
@@ -85,7 +89,7 @@ export default {
 	},
 	// This is slightly different than gutenberg/Autocomplete, we don't support different methods
 	// of replace/insertion, so we can just return the value.
-	getOptionCompletion( option ) {
+	getOptionCompletion( option: CompletionOption ): CompletionOption {
 		return {
 			key: option.label,
 			label: option.label,

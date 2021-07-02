@@ -8,3 +8,14 @@ declare module '@woocommerce/explat' {
 
 	const Experiment: ( props: ExperimentProps ) => JSX.Element;
 }
+
+declare module 'interpolate-components' {
+	type InterpolateComponentsProps = {
+		mixedString: string;
+		components: JSX.Element;
+	};
+
+	const interpolateComponents: (
+		props: InterpolateComponentsProps
+	) => JSX.Element;
+}
