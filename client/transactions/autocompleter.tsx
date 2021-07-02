@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import apiFetch from '@wordpress/api-fetch';
@@ -15,6 +16,9 @@ import computeSuggestionMatch from 'utils/compute-suggestion-match';
  * @typedef {Object} Completer
  */
 
+// add any other params here
+type completionOption = { label: string };
+
 /**
  * A transaction completer.
  * See https://github.com/WordPress/gutenberg/tree/master/packages/components/src/autocomplete#the-completer-interface
@@ -24,17 +28,17 @@ import computeSuggestionMatch from 'utils/compute-suggestion-match';
 export default {
 	name: 'transactions',
 	className: 'woocommerce-search__transactions-result',
-	options( term ) {
+	options( term: string ) {
 		const query = term ? { search_term: term } : {};
 		return apiFetch( {
 			path: addQueryArgs( '/wc/v3/payments/transactions/search', query ),
 		} );
 	},
 	isDebounced: true,
-	getOptionIdentifier( option ) {
+	getOptionIdentifier( option: completionOption ): string {
 		return option.label;
 	},
-	getOptionKeywords( option ) {
+	getOptionKeywords( option: completionOption ): [ string ] {
 		return [ option.label ];
 	},
 	getFreeTextOptions( query ) {
