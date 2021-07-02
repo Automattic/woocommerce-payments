@@ -51,7 +51,7 @@ const ConvertedAmount: React.FunctionComponent< ConvertedAmountProps > = ( {
 	currency,
 	fromAmount,
 	fromCurrency,
-} ): React.ReactElement => {
+} ): JSX.Element => {
 	const formattedCurrency = formatCurrency( amount, currency );
 
 	// No conversion if currencies match.

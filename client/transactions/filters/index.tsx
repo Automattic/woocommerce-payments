@@ -17,7 +17,7 @@ interface TransactionsFiltersProps {
 
 export const TransactionsFilters: React.FunctionComponent< TransactionsFiltersProps > = ( {
 	storeCurrencies,
-} ): React.ReactElement => {
+} ): JSX.Element => {
 	const populateDepositCurrencies = (
 		filtersConfiguration: TransactionsFilterType[]
 	): TransactionsFilterType[] => {

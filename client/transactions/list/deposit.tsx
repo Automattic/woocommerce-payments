@@ -18,28 +18,24 @@ interface DepositProps {
 const Deposit: React.FunctionComponent< DepositProps > = ( {
 	depositId,
 	dateAvailable,
-} ): React.ReactElement => {
-	const depositUrl = addQueryArgs( 'admin.php', {
-		page: 'wc-admin',
-		path: '/payments/deposits/details',
-		id: depositId,
-	} );
+} ): JSX.Element => {
+	if ( depositId && dateAvailable ) {
+		const depositUrl = addQueryArgs( 'admin.php', {
+			page: 'wc-admin',
+			path: '/payments/deposits/details',
+			id: depositId,
+		} );
 
-	const formattedDateAvailable =
-		null != dateAvailable &&
-		// Do not localize because it is intended as a date only, without time information.
-		dateI18n(
+		const formattedDateAvailable = dateI18n(
 			'M j, Y',
 			moment.utc( dateAvailable ).toISOString(),
 			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 		);
 
-	const estimated =
-		depositId && depositId.includes( 'wcpay_estimated_' )
+		const estimated = depositId.includes( 'wcpay_estimated_' )
 			? __( 'Estimated', 'woocommerce-payments' )
 			: '';
 
-	if ( depositId && dateAvailable ) {
 		return (
 			<Link href={ depositUrl }>
 				{ estimated } { formattedDateAvailable }

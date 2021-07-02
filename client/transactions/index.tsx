@@ -17,7 +17,7 @@ import EmptyStateTable from 'emtpy-state-table';
 import ListBanner from '../emtpy-state-table/transactions-banner.svg';
 import { Experiment } from '@woocommerce/explat';
 
-export const TransactionsPage: () => JSX.Element = () => {
+export const TransactionsPage = (): JSX.Element => {
 	return (
 		<Page>
 			<Experiment

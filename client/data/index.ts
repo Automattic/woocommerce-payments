@@ -19,7 +19,3 @@ export * from './timeline/hooks';
 export * from './disputes/hooks';
 export * from './settings/hooks';
 export * from './multi-currency';
-
-// import { useTransactions, useTransactionsSummary } from './transactions/hooks';
-
-// export { useTransactions, useTransactionsSummary };
