@@ -20,8 +20,8 @@ export const TransactionsFilters = ( {
 }: TransactionsFiltersProps ): JSX.Element => {
 	const populateDepositCurrencies = (
 		filtersConfiguration: TransactionsFilterType[]
-	): TransactionsFilterType[] => {
-		filtersConfiguration.forEach( ( filter: TransactionsFilterType ) => {
+	) => {
+		filtersConfiguration.forEach( ( filter ) => {
 			if ( 'store_currency_is' === filter.param ) {
 				const currencies = storeCurrencies || [];
 				// Generate select options: pick the first one (default) and add provided currencies
