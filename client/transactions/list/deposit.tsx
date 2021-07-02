@@ -15,10 +15,7 @@ interface DepositProps {
 	dateAvailable?: string;
 }
 
-const Deposit: React.FunctionComponent< DepositProps > = ( {
-	depositId,
-	dateAvailable,
-} ): JSX.Element => {
+const Deposit = ( { depositId, dateAvailable }: DepositProps ): JSX.Element => {
 	if ( depositId && dateAvailable ) {
 		const depositUrl = addQueryArgs( 'admin.php', {
 			page: 'wc-admin',

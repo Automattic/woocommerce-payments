@@ -18,10 +18,10 @@ interface ConversionIndicatorProps {
 	currency: string;
 }
 
-const ConversionIndicator: React.FunctionComponent< ConversionIndicatorProps > = ( {
+const ConversionIndicator = ( {
 	amount,
 	currency,
-} ): React.ReactElement => (
+}: ConversionIndicatorProps ): React.ReactElement => (
 	<Tooltip
 		text={ sprintf(
 			/* translators: %s is a monetary amount */
@@ -46,12 +46,12 @@ interface ConvertedAmountProps {
 	fromCurrency: string;
 }
 
-const ConvertedAmount: React.FunctionComponent< ConvertedAmountProps > = ( {
+const ConvertedAmount = ( {
 	amount,
 	currency,
 	fromAmount,
 	fromCurrency,
-} ): JSX.Element => {
+}: ConvertedAmountProps ): JSX.Element => {
 	const formattedCurrency = formatCurrency( amount, currency );
 
 	// No conversion if currencies match.

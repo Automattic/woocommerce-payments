@@ -13,18 +13,19 @@ import './style.scss';
 declare const wcpaySettings: any;
 
 interface PageProps {
-	children: React.ReactNode;
 	isNarrow?: boolean;
 	maxWidth?: string;
 	className?: string;
 }
 
-const Page: React.FunctionComponent< PageProps > = ( {
+// The React.FunctionComponent is helpful here to make the type declaration of the props a bit
+// more concise; we get the `children` prop for free.
+const Page: React.FC< PageProps > = ( {
 	children,
 	maxWidth,
 	isNarrow,
 	className = '',
-} ): JSX.Element => {
+} ) => {
 	const customStyle = maxWidth ? { maxWidth } : undefined;
 	const classNames = [ className, 'woocommerce-payments-page' ];
 	if ( isNarrow ) {
