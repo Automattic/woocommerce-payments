@@ -7,7 +7,6 @@
 import { Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
-import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies.
@@ -24,20 +23,9 @@ import { useDisputes } from 'data';
 import './style.scss';
 
 const OverviewPage = () => {
-	const { deletedTasks, dismissedTasks, remindMeLaterTasks } = useSelect(
-		( select ) => {
-			const { getOption } = select( 'wc/admin/options' );
-			return {
-				dismissedTasks: getOption( 'woocommerce_dismissed_todo_tasks' ),
-				deletedTasks: getOption( 'woocommerce_deleted_todo_tasks' ),
-				remindMeLaterTasks: getOption(
-					'woocommerce_remind_me_later_todo_tasks'
-				),
-			};
-		}
-	);
 	const {
 		accountStatus,
+		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
@@ -74,9 +62,7 @@ const OverviewPage = () => {
 			{ !! accountOverviewTaskList && 0 < tasks.length && (
 				<TaskList
 					tasks={ tasks }
-					deletedTasks={ deletedTasks || [] }
-					dismissedTasks={ dismissedTasks || [] }
-					remindMeLaterTasks={ remindMeLaterTasks || [] }
+					overviewTasksVisibility={ overviewTasksVisibility }
 				/>
 			) }
 			<InboxNotifications />
