@@ -9,8 +9,17 @@ import moment from 'moment';
 import { addQueryArgs } from '@wordpress/url';
 import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
+import React from 'react';
 
-const Deposit = ( { depositId, dateAvailable } ) => {
+interface DepositProps {
+	depositId: string;
+	dateAvailable: string | null;
+}
+
+const Deposit: React.FunctionComponent< DepositProps > = ( {
+	depositId,
+	dateAvailable,
+} ): React.ReactElement => {
 	const depositUrl = addQueryArgs( 'admin.php', {
 		page: 'wc-admin',
 		path: '/payments/deposits/details',
@@ -31,13 +40,15 @@ const Deposit = ( { depositId, dateAvailable } ) => {
 			? __( 'Estimated', 'woocommerce-payments' )
 			: '';
 
-	return depositId && dateAvailable ? (
-		<Link href={ depositUrl }>
-			{ estimated } { formattedDateAvailable }
-		</Link>
-	) : (
-		''
-	);
+	if ( depositId && dateAvailable ) {
+		return (
+			<Link href={ depositUrl }>
+				{ estimated } { formattedDateAvailable }
+			</Link>
+		);
+	}
+
+	return <></>;
 };
 
 export default Deposit;

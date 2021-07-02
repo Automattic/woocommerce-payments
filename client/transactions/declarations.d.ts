@@ -30,3 +30,11 @@ declare module '@woocommerce/navigation' {
 		currentQuery: Record< string, unknown >
 	): void;
 }
+
+declare module '@wordpress/date' {
+	function dateI18n(
+		dateFormat: string,
+		dateValue: string,
+		timezone: boolean
+	): string;
+}
