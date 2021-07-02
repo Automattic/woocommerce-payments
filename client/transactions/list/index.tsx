@@ -3,12 +3,18 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { uniq } from 'lodash';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import { TableCard, Search, Link } from '@woocommerce/components';
+import {
+	TableCard,
+	Search,
+	Link,
+	TableCardColumn,
+} from '@woocommerce/components';
 import { Button } from '@wordpress/components';
 import {
 	onQueryChange,
@@ -25,7 +31,10 @@ import Gridicon from 'gridicons';
 /**
  * Internal dependencies
  */
-import { useTransactions, useTransactionsSummary } from 'data';
+import {
+	useTransactions,
+	useTransactionsSummary,
+} from 'data/transactions/hooks';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
@@ -41,7 +50,41 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 
-const getColumns = ( includeDeposit, includeSubscription ) =>
+declare const wcpaySettings: {
+	isSubscriptionsActive: boolean;
+	featureFlags: {
+		customSearch: boolean;
+	};
+};
+
+type transactionsListProps = {
+	depositId?: string;
+};
+
+interface Column extends TableCardColumn {
+	key:
+		| 'transaction_id'
+		| 'date'
+		| 'type'
+		| 'amount'
+		| 'fees'
+		| 'net'
+		| 'order'
+		| 'subscriptions'
+		| 'source'
+		| 'customer_name'
+		| 'customer_email'
+		| 'customer_country'
+		| 'risk_level'
+		| 'deposit';
+	visible?: boolean;
+	cellClassName?: string;
+}
+
+const getColumns = (
+	includeDeposit: boolean,
+	includeSubscription: boolean
+): Column[] =>
 	[
 		{
 			key: 'transaction_id',
@@ -135,32 +178,35 @@ const getColumns = ( includeDeposit, includeSubscription ) =>
 			screenReaderLabel: __( 'Deposit', 'woocommerce-payments' ),
 			cellClassName: 'deposit',
 		},
-	].filter( Boolean );
+	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
-export const TransactionsList = ( props ) => {
+export const TransactionsList = (
+	props: transactionsListProps
+): JSX.Element => {
 	const { transactions, isLoading } = useTransactions(
 		getQuery(),
-		props.depositId
+		props.depositId ?? ''
 	);
 	const {
 		transactionsSummary,
 		isLoading: isSummaryLoading,
-	} = useTransactionsSummary( getQuery(), props.depositId );
+	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
 
-	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
+	// TODO: was sortByDate ever used? Why isn't it used now?
+	// const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
 	const columnsToDisplay = useMemo(
 		() =>
 			getColumns(
 				! props.depositId,
-				wcpaySettings.isSubscriptionsActive,
-				sortByDate
+				wcpaySettings.isSubscriptionsActive
+				// sortByDate
 			),
-		[ props.depositId, sortByDate ]
+		[ props.depositId /* , sortByDate */ ]
 	);
 
 	const rows = transactions.map( ( txn ) => {
 		const detailsURL = getDetailsURL( txn.charge_id, 'transactions' );
-		const clickable = ( children ) => (
+		const clickable = ( children: React.ReactNode ) => (
 			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 		);
 
@@ -283,12 +329,12 @@ export const TransactionsList = ( props ) => {
 
 	const searchedLabels =
 		getQuery().search &&
-		getQuery().search.map( ( v ) => ( {
+		getQuery().search?.map( ( v ) => ( {
 			key: v,
 			label: v,
 		} ) );
 
-	const onSearchChange = ( values ) => {
+	const onSearchChange = ( values: Column[] ) => {
 		updateQueryString( {
 			search: values.length
 				? uniq( values.map( ( v ) => v.label ) )
@@ -313,6 +359,8 @@ export const TransactionsList = ( props ) => {
 	const downloadable = !! rows.length;
 
 	const onDownload = () => {
+		// We destructure page and path to get the right params.
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 
 		downloadCSVFile(
@@ -359,21 +407,23 @@ export const TransactionsList = ( props ) => {
 				{
 					label: __( 'total', 'woocommerce-payments' ),
 					value: `${ formatCurrency(
-						transactionsSummary.total,
+						// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
+						// that so we remove the `undefined` in the type manually.
+						transactionsSummary.total as number,
 						transactionsSummary.currency
 					) }`,
 				},
 				{
 					label: __( 'fees', 'woocommerce-payments' ),
 					value: `${ formatCurrency(
-						transactionsSummary.fees,
+						transactionsSummary.fees ?? 0,
 						transactionsSummary.currency
 					) }`,
 				},
 				{
 					label: __( 'net', 'woocommerce-payments' ),
 					value: `${ formatCurrency(
-						transactionsSummary.net,
+						transactionsSummary.net ?? 0,
 						transactionsSummary.currency
 					) }`,
 				}
@@ -399,7 +449,7 @@ export const TransactionsList = ( props ) => {
 						: __( 'Transactions', 'woocommerce-payments' )
 				}
 				isLoading={ isLoading }
-				rowsPerPage={ getQuery().per_page || 25 }
+				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
 				totalRows={ transactionsSummary.count || 0 }
 				headers={ columnsToDisplay }
 				rows={ rows }

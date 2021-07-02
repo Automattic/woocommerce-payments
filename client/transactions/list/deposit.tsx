@@ -3,7 +3,6 @@
 /**
  * External dependencies
  */
-
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { addQueryArgs } from '@wordpress/url';
