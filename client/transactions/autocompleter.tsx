@@ -43,7 +43,13 @@ export default {
 	getOptionKeywords( option: CompletionOption ): string[] {
 		return [ option.label ];
 	},
-	getFreeTextOptions( query: string ): any[] {
+	getFreeTextOptions(
+		query: string
+	): {
+		key: string;
+		label: JSX.Element;
+		value: { label: string };
+	}[] {
 		const label = (
 			<span key="name" className="woocommerce-search__result-name">
 				{ interpolateComponents( {
