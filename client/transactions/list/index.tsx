@@ -196,7 +196,7 @@ export const TransactionsList = (
 
 	const rows = transactions.map( ( txn ) => {
 		const detailsURL = getDetailsURL( txn.charge_id, 'transactions' );
-		const clickable = ( children: React.ReactNode ) => (
+		const clickable = ( children: JSX.Element | string ) => (
 			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 		);
 
