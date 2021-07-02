@@ -182,16 +182,13 @@ export const TransactionsList = (
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
 
-	// TODO: was sortByDate ever used? Why isn't it used now?
-	// const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
 	const columnsToDisplay = useMemo(
 		() =>
 			getColumns(
 				! props.depositId,
 				wcpaySettings.isSubscriptionsActive
-				// sortByDate
 			),
-		[ props.depositId /* , sortByDate */ ]
+		[ props.depositId ]
 	);
 
 	const rows = transactions.map( ( txn ) => {
