@@ -116,9 +116,7 @@ describe( 'Order > Full refund', () => {
 				text: `A payment of ${ orderAmount } was successfully refunded.`,
 			} ),
 			expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-				text: new RegExp(
-					`${ orderAmount } was deducted from your (?<date>[^\\.]+) deposit\\.`
-				),
+				text: `${ orderAmount } was deducted from your`, // …followed by deposit link.
 			} ),
 			expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
 				text: 'Payment status changed to Refunded.',
