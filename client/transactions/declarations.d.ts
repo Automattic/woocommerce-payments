@@ -142,3 +142,5 @@ declare module '@woocommerce/csv-export' {
 		params: Record< string, any >
 	) => string;
 }
+
+declare module '*.svg';
