@@ -134,8 +134,8 @@ class MultiCurrency {
 		$this->initialize_enabled_currencies();
 		$this->check_store_currency_for_change();
 
-		new Admin_Notices();
-		new User_Settings( $this );
+		new AdminNotices();
+		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->utils );
@@ -582,24 +582,6 @@ class MultiCurrency {
 	}
 
 	/**
-<<<<<<< HEAD:includes/multi-currency/MultiCurrency.php
-=======
-	 * Include required core files used in admin and on the frontend.
-	 */
-	protected function includes() {
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-admin-notices.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-compatibility.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-utils.php';
-	}
-
-	/**
->>>>>>> ee6a7490 (Added Admin_Notices class to handle displaying admin notices. Created notice if store currency is changed and enabled currencies have manual rates.):includes/multi-currency/class-multi-currency.php
 	 * Caches currency data for a period of time.
 	 *
 	 * @param string|array $currencies - Currency data to cache.

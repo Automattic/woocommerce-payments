@@ -6,13 +6,13 @@
  */
 
 /**
- * WCPay\Multi_Currency\Admin_Notices unit tests.
+ * WCPay\MultiCurrency\AdminNotices unit tests.
  */
 class WCPay_Multi_Currency_Admin_Notices_Tests extends WP_UnitTestCase {
 	/**
-	 * WCPay\Multi_Currency\Admin_Notices instance.
+	 * WCPay\MultiCurrency\AdminNotices instance.
 	 *
-	 * @var WCPay\Multi_Currency\Admin_Notices
+	 * @var WCPay\MultiCurrency\AdminNotices
 	 */
 	private $admin_notices;
 
@@ -22,7 +22,7 @@ class WCPay_Multi_Currency_Admin_Notices_Tests extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->admin_notices = new WCPay\Multi_Currency\Admin_Notices();
+		$this->admin_notices = new WCPay\MultiCurrency\AdminNotices();
 	}
 
 	public function test_admin_notices_displays_currency_changed_notice() {

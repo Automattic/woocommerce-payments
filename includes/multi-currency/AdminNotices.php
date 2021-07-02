@@ -1,18 +1,18 @@
 <?php
 /**
- * Class Admin_Notices
+ * Admin notices for Multi-Currency.
  *
- * @package WooCommerce\Payments\Multi_Currency
+ * @package WooCommerce\Payments\MultiCurrency
  */
 
-namespace WCPay\Multi_Currency;
+namespace WCPay\MultiCurrency;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class that will display admin notices.
  */
-class Admin_Notices {
+class AdminNotices {
 	/**
 	 * Notices.
 	 *
