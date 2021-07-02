@@ -24,4 +24,9 @@ declare module '@woocommerce/components' {
 
 declare module '@woocommerce/navigation' {
 	function getQuery(): Record< string, unknown >;
+	function updateQueryString(
+		query: Record< string, unknown >,
+		path: string,
+		currentQuery: Record< string, unknown >
+	): void;
 }
