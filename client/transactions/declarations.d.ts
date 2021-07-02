@@ -12,12 +12,11 @@ declare module '@woocommerce/explat' {
 declare module '@woocommerce/components' {
 	type ReportFiltersProps = {
 		advancedFilters?: Record< string, unknown >;
-		siteLocale?: string;
-		currency?: unknown;
 		filters?: Array< any >;
 		path?: string;
 		query?: Record< string, unknown >;
 		showDatePicker: boolean;
+		// some properties are omitted, as we are not currently using them
 	};
 
 	const ReportFilters: ( props: ReportFiltersProps ) => JSX.Element;
