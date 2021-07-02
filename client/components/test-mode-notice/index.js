@@ -114,5 +114,5 @@ export const TestModeNotice = ( { topic } ) => {
 			</Notice>
 		);
 	}
-	return null;
+	return undefined;
 };
