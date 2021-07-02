@@ -11,8 +11,8 @@ import { __ } from '@wordpress/i18n';
 import React from 'react';
 
 interface DepositProps {
-	depositId: string;
-	dateAvailable: string | null;
+	depositId?: string;
+	dateAvailable?: string;
 }
 
 const Deposit: React.FunctionComponent< DepositProps > = ( {

@@ -225,19 +225,23 @@ export const TransactionsList = (
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 
 		const customerName = txn.order ? (
-			<Link href={ txn.order.customer_url }>{ txn.customer_name }</Link>
+			<Link href={ txn.order.customer_url ?? '' }>
+				{ txn.customer_name }
+			</Link>
 		) : (
 			txn.customer_name
 		);
 		const customerEmail = txn.order ? (
-			<Link href={ txn.order.customer_url }>{ txn.customer_email }</Link>
+			<Link href={ txn.order.customer_url ?? '' }>
+				{ txn.customer_email }
+			</Link>
 		) : (
 			txn.customer_email
 		);
 
 		const deposit = (
 			<Deposit
-				depositId={ txn.deposit_id }
+				depositId={ txn.deposit_id ?? '' }
 				dateAvailable={ txn.available_on }
 			/>
 		);
@@ -431,7 +435,7 @@ export const TransactionsList = (
 	const showFilters = ! props.depositId;
 	const storeCurrencies =
 		transactionsSummary.store_currencies ||
-		( isCurrencyFiltered ? [ getQuery().store_currency_is ] : [] );
+		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
 
 	return (
 		<Page>

@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
@@ -11,14 +12,22 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { TransactionsList } from '../';
-import { useTransactions, useTransactionsSummary } from 'data';
+import { useTransactions, useTransactionsSummary } from 'data/index';
+import type { transaction } from 'data/transactions/hooks';
 
 import { downloadCSVFile } from '@woocommerce/csv-export';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'data/index', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
 } ) );
+
+const mockUseTransactions = useTransactions as jest.MockedFunction<
+	typeof useTransactions
+>;
+const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
+	typeof useTransactionsSummary
+>;
 
 jest.mock( '@woocommerce/csv-export', () => {
 	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
@@ -29,8 +38,23 @@ jest.mock( '@woocommerce/csv-export', () => {
 	};
 } );
 
-const getMockTransactions = () => [
+const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
+	typeof downloadCSVFile
+>;
+
+declare const global: {
+	wcpaySettings: {
+		isSubscriptionsActive: boolean;
+		featureFlags: {
+			customSearch: boolean;
+		};
+		zeroDecimalCurrencies: string[];
+	};
+};
+
+const getMockTransactions: () => transaction[] = () => [
 	{
+		available_on: '',
 		transaction_id: 'txn_j23jda9JJa',
 		date: '2020-01-02 17:46:02',
 		type: 'refund',
@@ -52,7 +76,7 @@ const getMockTransactions = () => [
 		customer_amount: 1000,
 		customer_currency: 'usd',
 		risk_level: 0,
-		deposit_id: null,
+		deposit_id: undefined,
 	},
 	{
 		transaction_id: 'txn_oa9kaKaa8',
@@ -98,14 +122,15 @@ describe( 'Transactions list', () => {
 	} );
 
 	test( 'renders correctly when filtered by deposit', () => {
-		useTransactions.mockReturnValue( {
+		mockUseTransactions.mockReturnValue( {
 			transactions: getMockTransactions().filter(
-				( txn ) => 'po_mock' === txn.deposit_id
+				( txn: transaction ) => 'po_mock' === txn.deposit_id
 			),
+			transactionsError: undefined,
 			isLoading: false,
 		} );
 
-		useTransactionsSummary.mockReturnValue( {
+		mockUseTransactionsSummary.mockReturnValue( {
 			transactionsSummary: {
 				count: 3,
 				currency: 'usd',
@@ -121,18 +146,20 @@ describe( 'Transactions list', () => {
 			<TransactionsList depositId="po_mock" />
 		);
 		expect( container ).toMatchSnapshot();
-		expect( useTransactions.mock.calls[ 0 ][ 1 ] ).toBe( 'po_mock' );
+		expect( mockUseTransactions.mock.calls[ 0 ][ 1 ] ).toBe( 'po_mock' );
 	} );
 
 	describe( 'when not filtered by deposit', () => {
-		let container, rerender;
+		let container: Element;
+		let rerender: ( ui: React.ReactElement ) => void;
 		beforeEach( () => {
-			useTransactions.mockReturnValue( {
+			mockUseTransactions.mockReturnValue( {
 				transactions: getMockTransactions(),
 				isLoading: false,
+				transactionsError: undefined,
 			} );
 
-			useTransactionsSummary.mockReturnValue( {
+			mockUseTransactionsSummary.mockReturnValue( {
 				transactionsSummary: {
 					count: 10,
 					currency: 'usd',
@@ -146,6 +173,22 @@ describe( 'Transactions list', () => {
 
 			( { container, rerender } = render( <TransactionsList /> ) );
 		} );
+
+		function expectSortingToBe( field: string, direction: string ) {
+			expect( getQuery().orderby ).toEqual( field );
+			expect( getQuery().order ).toEqual( direction );
+			const useTransactionsCall =
+				mockUseTransactions.mock.calls[
+					mockUseTransactions.mock.calls.length - 1
+				];
+			expect( useTransactionsCall[ 0 ].orderby ).toEqual( field );
+			expect( useTransactionsCall[ 0 ].order ).toEqual( direction );
+		}
+
+		function sortBy( field: string ) {
+			user.click( screen.getByRole( 'button', { name: field } ) );
+			rerender( <TransactionsList /> );
+		}
 
 		test( 'renders correctly', () => {
 			expect( container ).toMatchSnapshot();
@@ -184,7 +227,7 @@ describe( 'Transactions list', () => {
 		} );
 
 		test( 'renders table summary only when the transactions summary data is available', () => {
-			useTransactionsSummary.mockReturnValue( {
+			mockUseTransactionsSummary.mockReturnValue( {
 				transactionsSummary: {},
 				isLoading: true,
 			} );
@@ -195,7 +238,7 @@ describe( 'Transactions list', () => {
 			);
 			expect( tableSummary ).toHaveLength( 0 );
 
-			useTransactionsSummary.mockReturnValue( {
+			mockUseTransactionsSummary.mockReturnValue( {
 				transactionsSummary: {
 					count: 10,
 					currency: 'usd',
@@ -214,22 +257,6 @@ describe( 'Transactions list', () => {
 
 			expect( tableSummary ).toHaveLength( 1 );
 		} );
-
-		function sortBy( field ) {
-			user.click( screen.getByRole( 'button', { name: field } ) );
-			rerender( <TransactionsList /> );
-		}
-
-		function expectSortingToBe( field, direction ) {
-			expect( getQuery().orderby ).toEqual( field );
-			expect( getQuery().order ).toEqual( direction );
-			const useTransactionsCall =
-				useTransactions.mock.calls[
-					useTransactions.mock.calls.length - 1
-				];
-			expect( useTransactionsCall[ 0 ].orderby ).toEqual( field );
-			expect( useTransactionsCall[ 0 ].order ).toEqual( direction );
-		}
 	} );
 
 	test( 'subscription column renders correctly', () => {
@@ -244,12 +271,13 @@ describe( 'Transactions list', () => {
 		];
 		mockTransactions[ 1 ].order.subscriptions = [];
 
-		useTransactions.mockReturnValue( {
+		mockUseTransactions.mockReturnValue( {
 			transactions: mockTransactions,
 			isLoading: false,
+			transactionsError: undefined,
 		} );
 
-		useTransactionsSummary.mockReturnValue( {
+		mockUseTransactionsSummary.mockReturnValue( {
 			transactionsSummary: {
 				count: 10,
 				currency: 'usd',
@@ -268,12 +296,13 @@ describe( 'Transactions list', () => {
 
 	// Several settlement currencies are available -> render the currency filter.
 	test( 'renders correctly when can filter by several currencies', () => {
-		useTransactions.mockReturnValue( {
+		mockUseTransactions.mockReturnValue( {
 			transactions: getMockTransactions(),
 			isLoading: false,
+			transactionsError: undefined,
 		} );
 
-		useTransactionsSummary.mockReturnValue( {
+		mockUseTransactionsSummary.mockReturnValue( {
 			transactionsSummary: {
 				count: 10,
 				currency: 'usd',
@@ -293,14 +322,15 @@ describe( 'Transactions list', () => {
 	test( 'renders correctly when filtered by currency', () => {
 		updateQueryString( { store_currency_is: 'usd' }, '/', {} );
 
-		useTransactions.mockReturnValue( {
+		mockUseTransactions.mockReturnValue( {
 			transactions: getMockTransactions().filter(
 				( txn ) => txn.currency === getQuery().store_currency_is
 			),
 			isLoading: false,
+			transactionsError: undefined,
 		} );
 
-		useTransactionsSummary.mockReturnValue( {
+		mockUseTransactionsSummary.mockReturnValue( {
 			transactionsSummary: {
 				count: 10,
 				currency: 'usd',
@@ -318,12 +348,13 @@ describe( 'Transactions list', () => {
 
 	describe( 'CSV download', () => {
 		beforeEach( () => {
-			useTransactions.mockReturnValue( {
+			mockUseTransactions.mockReturnValue( {
 				transactions: getMockTransactions(),
 				isLoading: false,
+				transactionsError: undefined,
 			} );
 
-			useTransactionsSummary.mockReturnValue( {
+			mockUseTransactionsSummary.mockReturnValue( {
 				transactionsSummary: {
 					count: 10,
 					currency: 'usd',
@@ -366,7 +397,7 @@ describe( 'Transactions list', () => {
 
 			// checking if columns in CSV are rendered correctly
 			expect(
-				downloadCSVFile.mock.calls[ 0 ][ 1 ]
+				mockDownloadCSVFile.mock.calls[ 0 ][ 1 ]
 					.split( '\n' )[ 0 ]
 					.split( ',' )
 			).toEqual( expected );

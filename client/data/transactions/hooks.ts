@@ -12,28 +12,29 @@ import type { query } from '@woocommerce/navigation';
 import { STORE_NAME } from '../constants';
 
 // TODO: refine this type with more detailed information.
-type transaction = {
+export type transaction = {
 	amount: number;
 	order: {
-		subscriptions: [ { number: string } ];
-		customer_url: string;
-		number: number;
+		subscriptions?: { number: number; url: string }[];
+		url?: string;
+		customer_url?: string;
+		number?: number;
 	};
 	charge_id: string;
 	fees: number;
 	net: number;
-	risk_level: string;
+	risk_level: number;
 	customer_amount: number;
 	customer_name: string;
 	customer_email: string;
 	customer_country: string;
 	customer_currency: string;
-	deposit_id: string;
+	deposit_id?: string;
 	available_on: string;
 	currency: string;
 	transaction_id: string;
 	date: string;
-	type: 'charge';
+	type: 'charge' | 'refund';
 	source: string;
 };
 
@@ -49,7 +50,7 @@ type transactionsSummary = {
 		fees?: number;
 		net?: number;
 		currency?: string;
-		store_currencies: string[];
+		store_currencies?: string[];
 	};
 	isLoading: boolean;
 };
