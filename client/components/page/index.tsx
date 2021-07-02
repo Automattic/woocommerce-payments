@@ -8,16 +8,33 @@ import { useEffect } from '@wordpress/element';
  */
 import enqueueFraudScripts from 'fraud-scripts';
 import './style.scss';
+import { ReactElement, ReactNode } from 'react';
+// eslint-disable-next-line no-duplicate-imports
+import React from 'react';
 
-const Page = ( { children, maxWidth, isNarrow, className = '' } ) => {
-	const customStyle = maxWidth ? { maxWidth } : null;
+declare const wcpaySettings: any;
+
+interface PageProps {
+	children: ReactNode;
+	isNarrow?: boolean;
+	maxWidth?: string;
+	className?: string;
+}
+
+const Page = ( {
+	children,
+	maxWidth,
+	isNarrow,
+	className = '',
+}: PageProps ): ReactElement => {
+	const customStyle = maxWidth ? { maxWidth } : undefined;
 	const classNames = [ className, 'woocommerce-payments-page' ];
 	if ( isNarrow ) {
 		classNames.push( 'is-narrow' );
 	}
 
 	useEffect( () => {
-		const fraudScriptsConfig =
+		const fraudScriptsConfig: any[] =
 			'undefined' !== typeof wcpaySettings
 				? wcpaySettings.fraudServices
 				: [];
