@@ -103,8 +103,8 @@ export const getNoticeMessage = ( topic ) => {
 };
 
 export const TestModeNotice = ( { topic } ) => {
-	return (
-		isInTestMode() && (
+	if ( isInTestMode() ) {
+		return (
 			<Notice
 				className="wcpay-test-mode-notice"
 				status="warning"
@@ -112,6 +112,7 @@ export const TestModeNotice = ( { topic } ) => {
 			>
 				{ getNoticeMessage( topic ) }
 			</Notice>
-		)
-	);
+		);
+	}
+	return null;
 };

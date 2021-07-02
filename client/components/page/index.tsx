@@ -2,15 +2,15 @@
  * External dependencies
  */
 import { useEffect } from '@wordpress/element';
+import React from 'react';
 
 /**
  * Internal dependencies
  */
 import enqueueFraudScripts from 'fraud-scripts';
 import './style.scss';
-import { ReactElement, ReactNode } from 'react';
 // eslint-disable-next-line no-duplicate-imports
-import React from 'react';
+import { ReactElement, ReactNode } from 'react';
 
 declare const wcpaySettings: any;
 
@@ -21,12 +21,12 @@ interface PageProps {
 	className?: string;
 }
 
-const Page = ( {
+const Page: React.FunctionComponent< PageProps > = ( {
 	children,
 	maxWidth,
 	isNarrow,
 	className = '',
-}: PageProps ): ReactElement => {
+} ): ReactElement => {
 	const customStyle = maxWidth ? { maxWidth } : undefined;
 	const classNames = [ className, 'woocommerce-payments-page' ];
 	if ( isNarrow ) {

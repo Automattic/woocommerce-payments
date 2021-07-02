@@ -1,4 +1,7 @@
-/** @format */
+/**
+ * External dependencies
+ */
+import React from 'react';
 
 /**
  * Internal dependencies
@@ -32,6 +35,7 @@ export const TransactionsPage = () => {
 						<TransactionsList />
 					</>
 				}
+				loadingExperience={ null }
 			/>
 		</Page>
 	);
