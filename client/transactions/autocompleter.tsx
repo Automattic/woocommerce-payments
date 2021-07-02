@@ -16,7 +16,6 @@ import computeSuggestionMatch from 'utils/compute-suggestion-match';
  * @typedef {Object} Completer
  */
 
-// add any other params here
 type CompletionOption = {
 	key: string;
 	label: string;
