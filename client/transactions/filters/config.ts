@@ -8,13 +8,27 @@ import { __, _x } from '@wordpress/i18n';
  */
 import { displayType } from 'transactions/strings';
 
+type TransactionsFilterEntryType = {
+	label: string;
+	value: string;
+};
+
+export type TransactionsFilterType = {
+	label: string;
+	param: string;
+	staticParams: string[];
+	showFilters: () => boolean;
+	filters: TransactionsFilterEntryType[];
+	defaultValue?: string;
+};
+
 const transactionTypesOptions = Object.entries( displayType )
 	// Currently, we do not support APMs from the shopper's experience, so we can hide those filters.
 	// TODO: Remove line below when implementing APMs support. See https://github.com/Automattic/woocommerce-payments/issues/692.
 	.filter( ( [ type ] ) => ! type.startsWith( 'payment' ) )
 	.map( ( [ type, label ] ) => ( { label, value: type } ) );
 
-export const filters = [
+export const filters: [ TransactionsFilterType, TransactionsFilterType ] = [
 	{
 		label: __( 'Deposit currency', 'woocommerce-payments' ),
 		param: 'store_currency_is',
