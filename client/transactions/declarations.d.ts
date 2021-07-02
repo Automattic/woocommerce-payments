@@ -6,8 +6,8 @@ declare module '@woocommerce/explat' {
 
 	export interface Experiment {
 		name: string;
-		defaultExperience: any;
-		treatmentExperience?: any;
-		loadingExperience?: any;
+		defaultExperience: React.ReactNode;
+		treatmentExperience?: React.ReactNode;
+		loadingExperience?: React.ReactNode;
 	}
 }
