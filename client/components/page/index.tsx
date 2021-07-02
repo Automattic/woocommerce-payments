@@ -10,8 +10,6 @@ import * as React from 'react';
 import enqueueFraudScripts from 'fraud-scripts';
 import './style.scss';
 
-declare const wcpaySettings: any;
-
 interface PageProps {
 	isNarrow?: boolean;
 	maxWidth?: string;
@@ -33,7 +31,7 @@ const Page: React.FC< PageProps > = ( {
 	}
 
 	useEffect( () => {
-		const fraudScriptsConfig: any[] =
+		const fraudScriptsConfig =
 			'undefined' !== typeof wcpaySettings
 				? wcpaySettings.fraudServices
 				: [];

@@ -47,13 +47,6 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 
-declare const wcpaySettings: {
-	isSubscriptionsActive: boolean;
-	featureFlags: {
-		customSearch: boolean;
-	};
-};
-
 interface TransactionsListProps {
 	depositId?: string;
 }
