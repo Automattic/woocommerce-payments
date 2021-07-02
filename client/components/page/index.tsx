@@ -24,7 +24,7 @@ const Page: React.FunctionComponent< PageProps > = ( {
 	maxWidth,
 	isNarrow,
 	className = '',
-} ): React.ReactElement => {
+} ): JSX.Element => {
 	const customStyle = maxWidth ? { maxWidth } : undefined;
 	const classNames = [ className, 'woocommerce-payments-page' ];
 	if ( isNarrow ) {
