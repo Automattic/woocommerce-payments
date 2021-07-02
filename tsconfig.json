@@ -12,6 +12,10 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "noImplicitAny": true,
+    "types": [
+      "node", 
+      "jest"
+    ]
   },
   "include": [
     "./client/"
