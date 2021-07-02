@@ -18,12 +18,16 @@ declare module '@woocommerce/explat' {
 }
 
 declare module 'interpolate-components' {
-	type InterpolateComponentsProps = {
+	type interpolateComponentsProps = {
 		mixedString: string;
-		components: JSX.Element;
+		components: Record< string, React.ReactNode >;
 	};
 
-	const interpolateComponents: ( props: InterpolateComponentsProps ) => JSX.Element;
+	const interpolateComponents: (
+		props: interpolateComponentsProps
+	) => JSX.Element;
+
+	export = interpolateComponents;
 }
 declare module '@woocommerce/components' {
 	import type { query } from '@woocommerce/navigation';

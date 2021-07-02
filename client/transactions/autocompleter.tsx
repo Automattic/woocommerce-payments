@@ -78,11 +78,11 @@ export default {
 				className="woocommerce-search__result-name"
 				aria-label={ option.label }
 			>
-				{ match.suggestionBeforeMatch }
+				{ match?.suggestionBeforeMatch }
 				<strong className="components-form-token-field__suggestion-match">
-					{ match.suggestionMatch }
+					{ match?.suggestionMatch }
 				</strong>
-				{ match.suggestionAfterMatch }
+				{ match?.suggestionAfterMatch }
 			</span>
 		);
 	},
