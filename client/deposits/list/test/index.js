@@ -58,7 +58,6 @@ describe( 'Deposits list', () => {
 			depositsSummary: {
 				count: 2,
 				total: 5000,
-				// eslint-disable-next-line camelcase
 				store_currencies: [ 'usd', 'eur' ],
 			},
 			isLoading: false,

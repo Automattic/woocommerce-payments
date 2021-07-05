@@ -3,6 +3,7 @@
  */
 import * as React from 'react';
 import { Card, CardHeader, Flex } from '@wordpress/components';
+import { Link } from '@woocommerce/components';
 import Gridicon from 'gridicons';
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -50,32 +51,31 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 
 	const pendingAmount = pending ? pending.amount : 0;
 	const pendingDepositsLink = pending?.deposits_count ? (
-		<a href={ getDetailsURL( nextScheduled.id, 'deposits' ) }>
+		<Link href={ getDetailsURL( nextScheduled.id, 'deposits' ) }>
 			{ getBalanceDepositCount( pending ) }
-		</a>
+		</Link>
 	) : (
 		''
 	);
 
 	const nextScheduledAmount = nextScheduled ? nextScheduled.amount : 0;
 	const nextScheduledLink = nextScheduled && (
-		<a href={ getDetailsURL( nextScheduled.id, 'deposits' ) }>
+		<Link href={ getDetailsURL( nextScheduled.id, 'deposits' ) }>
 			{ getNextDepositLabelFormatted( nextScheduled ) }
-		</a>
+		</Link>
 	);
 
 	const lastPaidAmount = lastPaid ? lastPaid.amount : 0;
 	const lastPaidLink = lastPaid && (
-		<a href={ getDetailsURL( lastPaid.id, 'deposits' ) }>
+		<Link href={ getDetailsURL( lastPaid.id, 'deposits' ) }>
 			{ getDepositDate( lastPaid ) }
-		</a>
+		</Link>
 	);
 
 	const availableAmount = available ? available.amount : 0;
 
 	const scheduleDescriptor = getDepositScheduleDescriptor( {
 		account,
-		// eslint-disable-next-line camelcase
 		last_deposit: lastPaid,
 	} );
 
