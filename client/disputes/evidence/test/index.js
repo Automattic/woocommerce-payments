@@ -13,6 +13,8 @@ import { DisputeEvidenceForm, DisputeEvidencePage } from '../';
 jest.mock( 'data', () => ( {
 	useDisputeEvidence: jest.fn(),
 } ) );
+// mock Date.now that moment library uses to get current date for testing purposes
+Date.now = jest.fn( () => new Date( '2021-06-24T12:33:37.000Z' ) );
 
 const disputeNeedsResponse = {
 	id: 'dp_asdfghjkl',
