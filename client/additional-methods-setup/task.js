@@ -12,7 +12,7 @@ import MethodSelector from './methods-selector';
 import UpePreviewMethodSelector from './upe-preview-methods-selector';
 import WcPayUpeContextProvider from '../settings/wcpay-upe-toggle/provider';
 
-const createAdditionalPaymentMethodsSetupTask = () => ( {
+const createAdditionalMethodsSetupTask = () => ( {
 	key: 'woocommerce-payments--additional-payment-methods',
 	title: __( 'Set up additional payment methods', 'woocommerce-payments' ),
 	// it might be worth exploring how to use Suspense
@@ -64,4 +64,4 @@ const createAdditionalPaymentMethodsSetupTask = () => ( {
 		: {} ),
 } );
 
-export default createAdditionalPaymentMethodsSetupTask;
+export default createAdditionalMethodsSetupTask;

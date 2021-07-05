@@ -10,7 +10,7 @@ import moment from 'moment';
 /**
  * Internal dependencies
  */
-import createAdditionalPaymentMethodsSetupTask from '../../additional-methods-setup/task';
+import createAdditionalMethodsSetupTask from '../../additional-methods-setup/task';
 
 export const getTasks = ( {
 	accountStatus,
@@ -79,7 +79,6 @@ export const getTasks = ( {
 				window.location.href = wpcomReconnectUrl;
 			},
 		},
-		showAdditionalMethodsSetupTask &&
-			createAdditionalPaymentMethodsSetupTask(),
+		showAdditionalMethodsSetupTask && createAdditionalMethodsSetupTask(),
 	].filter( Boolean );
 };
