@@ -1,18 +1,18 @@
 <?php
 /**
- * Class Country_Flags
+ * Class CountryFlags
  *
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Multi_Currency;
+namespace WCPay\MultiCurrency;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class that bring flags per country/currency.
  */
-class Country_Flags {
+class CountryFlags {
 
 	const EMOJI_COUNTRIES_FLAGS = [
 		'AD' => '🇦🇩',

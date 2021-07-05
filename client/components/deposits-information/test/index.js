@@ -16,7 +16,6 @@ jest.mock( 'data', () => ( {
 	useInstantDeposit: jest.fn(),
 } ) );
 
-/* eslint-disable camelcase */
 const createMockAccount = ( account = {} ) =>
 	merge(
 		{
@@ -55,7 +54,6 @@ const createMockCurrency = ( currencyCode, extra = {} ) =>
 		},
 		extra
 	);
-/* eslint-enable camelcase */
 
 const mockOverviews = ( currencies = null, account = null ) => {
 	return useAllDeposistsOverviews.mockReturnValue( {
