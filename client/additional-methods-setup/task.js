@@ -12,7 +12,11 @@ import MethodSelector from './methods-selector';
 import UpePreviewMethodSelector from './upe-preview-methods-selector';
 import WcPayUpeContextProvider from '../settings/wcpay-upe-toggle/provider';
 
-const createAdditionalMethodsSetupTask = () => ( {
+const createAdditionalMethodsSetupTask = ( {
+	isSetupCompleted,
+	isUpeEnabled,
+	isUpeSettingsPreviewEnabled,
+} ) => ( {
 	key: 'woocommerce-payments--additional-payment-methods',
 	title: __( 'Set up additional payment methods', 'woocommerce-payments' ),
 	// it might be worth exploring how to use Suspense
@@ -20,8 +24,7 @@ const createAdditionalMethodsSetupTask = () => ( {
 	// It might also be worth exploring adding an error boundary to prevent the whole page to be blank in case of error?
 	container: <MethodSelector />,
 	// please note: marking an item as "dismissed" does not mean it's "completed" - they are considered 2 different things
-	completed:
-		'yes' === window.wcpaySettings.additionalMethodsSetup.isSetupCompleted,
+	completed: 'yes' === isSetupCompleted,
 	visible: true,
 	additionalInfo: __(
 		'Offer your customers preferred payment methods with WooCommerce Payments',
@@ -31,7 +34,7 @@ const createAdditionalMethodsSetupTask = () => ( {
 
 	// overwriting the default values, while the test is running
 	// using object spread to override the attributes makes things a bit easier when it'll be time to clean up
-	...( window.wcpaySettings.additionalMethodsSetup.isUpeSettingsPreviewEnabled
+	...( isUpeSettingsPreviewEnabled
 		? {
 				additionalInfo: __(
 					'Get early access to additional payment methods and an improved checkout experience',
@@ -43,23 +46,14 @@ const createAdditionalMethodsSetupTask = () => ( {
 				),
 				container: (
 					<WcPayUpeContextProvider
-						defaultIsUpeEnabled={
-							'1' ===
-							window.wcpaySettings.additionalMethodsSetup
-								.isUpeEnabled
-						}
+						defaultIsUpeEnabled={ '1' === isUpeEnabled }
 					>
 						<UpePreviewMethodSelector />
 					</WcPayUpeContextProvider>
 				),
 				completed:
 					// eslint-disable-next-line max-len
-					'yes' ===
-						window.wcpaySettings.additionalMethodsSetup
-							.isSetupCompleted ||
-					'1' ===
-						window.wcpaySettings.additionalMethodsSetup
-							.isUpeEnabled,
+					'yes' === isSetupCompleted || '1' === isUpeEnabled,
 		  }
 		: {} ),
 } );

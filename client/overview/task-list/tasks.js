@@ -15,7 +15,7 @@ import createAdditionalMethodsSetupTask from '../../additional-methods-setup/tas
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
-	showAdditionalMethodsSetupTask,
+	additionalMethodsSetup,
 	wpcomReconnectUrl,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
@@ -79,6 +79,7 @@ export const getTasks = ( {
 				window.location.href = wpcomReconnectUrl;
 			},
 		},
-		showAdditionalMethodsSetupTask && createAdditionalMethodsSetupTask(),
+		additionalMethodsSetup.showTask &&
+			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
 	].filter( Boolean );
 };
