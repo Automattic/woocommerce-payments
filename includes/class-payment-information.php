@@ -53,7 +53,7 @@ class Payment_Information {
 	/**
 	 * Indicates whether the payment will be only authorized (true) or captured immediately (false).
 	 *
-	 * @var Capture_Type
+	 * @var Payment_Capture_Type
 	 */
 	private $manual_capture;
 

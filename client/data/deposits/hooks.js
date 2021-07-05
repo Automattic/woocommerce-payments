@@ -54,7 +54,6 @@ export const useAllDeposistsOverviews = () =>
 		};
 	} );
 
-// eslint-disable-next-line camelcase
 export const useDeposits = ( {
 	paged,
 	per_page: perPage,

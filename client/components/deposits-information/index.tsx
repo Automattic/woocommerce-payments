@@ -76,7 +76,6 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 
 	const scheduleDescriptor = getDepositScheduleDescriptor( {
 		account,
-		// eslint-disable-next-line camelcase
 		last_deposit: lastPaid,
 	} );
 

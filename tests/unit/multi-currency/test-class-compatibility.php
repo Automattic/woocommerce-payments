@@ -6,20 +6,20 @@
  */
 
 /**
- * WCPay\Multi_Currency\Compatibility unit tests.
+ * WCPay\MultiCurrency\Compatibility unit tests.
  */
 class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 	/**
-	 * WCPay\Multi_Currency\Compatibility instance.
+	 * WCPay\MultiCurrency\Compatibility instance.
 	 *
-	 * @var WCPay\Multi_Currency\Compatibility
+	 * @var WCPay\MultiCurrency\Compatibility
 	 */
 	private $compatibility;
 
 	/**
-	 * Mock WCPay\Multi_Currency\Utils.
+	 * Mock WCPay\MultiCurrency\Utils.
 	 *
-	 * @var WCPay\Multi_Currency\Utils|PHPUnit_Framework_MockObject_MockObject
+	 * @var WCPay\MultiCurrency\Utils|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_utils;
 
@@ -29,8 +29,8 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->mock_utils    = $this->createMock( WCPay\Multi_Currency\Utils::class );
-		$this->compatibility = new WCPay\Multi_Currency\Compatibility( $this->mock_utils );
+		$this->mock_utils    = $this->createMock( WCPay\MultiCurrency\Utils::class );
+		$this->compatibility = new WCPay\MultiCurrency\Compatibility( $this->mock_utils );
 
 		$this->mock_product = $this->createMock( \WC_Product::class );
 		$this->mock_product

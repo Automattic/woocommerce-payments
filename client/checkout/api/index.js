@@ -96,7 +96,6 @@ export default class WCPayAPI {
 			constructor() {
 				this.args = {
 					...elements,
-					// eslint-disable-next-line camelcase
 					billing_details: {
 						address: {},
 					},
@@ -233,15 +232,11 @@ export default class WCPayAPI {
 
 				const ajaxCall = this.request( ajaxUrl, {
 					action: 'update_order_status',
-					// eslint-disable-next-line camelcase
 					order_id: orderId,
 					// Update the current order status nonce with the new one to ensure that the update
 					// order status call works when a guest user creates an account during checkout.
-					// eslint-disable-next-line camelcase
 					_ajax_nonce: nonce,
-					// eslint-disable-next-line camelcase
 					intent_id: intentId,
-					// eslint-disable-next-line camelcase
 					payment_method_id: paymentMethodToSave || null,
 				} );
 
@@ -280,7 +275,6 @@ export default class WCPayAPI {
 	initSetupIntent() {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			action: 'init_setup_intent',
-			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
 		} ).then( ( response ) => {
 			if ( ! response.success ) {
@@ -300,7 +294,6 @@ export default class WCPayAPI {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			action: 'create_setup_intent',
 			'wcpay-payment-method': paymentMethodId,
-			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
 		} ).then( ( response ) => {
 			if ( ! response.success ) {
@@ -312,19 +305,16 @@ export default class WCPayAPI {
 				return response.data;
 			}
 
-			return (
-				this.getStripe()
-					// eslint-disable-next-line camelcase
-					.confirmCardSetup( response.data.client_secret )
-					.then( ( confirmedSetupIntent ) => {
-						const { setupIntent, error } = confirmedSetupIntent;
-						if ( error ) {
-							throw error;
-						}
+			return this.getStripe()
+				.confirmCardSetup( response.data.client_secret )
+				.then( ( confirmedSetupIntent ) => {
+					const { setupIntent, error } = confirmedSetupIntent;
+					if ( error ) {
+						throw error;
+					}
 
-						return setupIntent;
-					} )
-			);
+					return setupIntent;
+				} );
 		} );
 	}
 
@@ -338,9 +328,7 @@ export default class WCPayAPI {
 	createIntent( orderId ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			action: 'create_payment_intent',
-			// eslint-disable-next-line camelcase
 			wcpay_order_id: orderId,
-			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
 		} )
 			.then( ( response ) => {
@@ -403,7 +391,6 @@ export default class WCPayAPI {
 	processCheckout( paymentIntentId, fields ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			...fields,
-			// eslint-disable-next-line camelcase
 			wc_payment_intent_id: paymentIntentId,
 			action: 'woocommerce_checkout',
 		} )
@@ -435,7 +422,6 @@ export default class WCPayAPI {
 			getPaymentRequestAjaxURL( 'get_shipping_options' ),
 			{
 				security: getPaymentRequestData( 'nonce' )?.shipping,
-				// eslint-disable-next-line camelcase
 				is_product_page: getPaymentRequestData( 'is_product_page' ),
 				...shippingAddress,
 			}
@@ -453,10 +439,8 @@ export default class WCPayAPI {
 			getPaymentRequestAjaxURL( 'update_shipping_method' ),
 			{
 				security: getPaymentRequestData( 'nonce' )?.update_shipping,
-				/* eslint-disable camelcase */
 				shipping_method: [ shippingOption.id ],
 				is_product_page: getPaymentRequestData( 'is_product_page' ),
-				/* eslint-enable camelcase */
 			}
 		);
 	}

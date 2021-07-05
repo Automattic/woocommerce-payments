@@ -2230,11 +2230,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_upe_available_payment_methods() {
-		return apply_filters(
-			'wcpay_upe_available_payment_methods',
-			[
-				'card',
-			]
-		);
+		return [
+			'card',
+		];
 	}
 }
