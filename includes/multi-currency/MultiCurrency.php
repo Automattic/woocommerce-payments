@@ -624,7 +624,12 @@ class MultiCurrency {
 	private function check_store_currency_for_change() {
 		$last_known_currency  = get_option( $this->id . '_store_currency', false );
 		$woocommerce_currency = get_woocommerce_currency();
-		if ( $last_known_currency && $last_known_currency !== $woocommerce_currency ) {
+		if ( ! $last_known_currency ) {
+			update_option( $this->id . '_store_currency', $woocommerce_currency );
+			return;
+		}
+
+		if ( $last_known_currency !== $woocommerce_currency ) {
 			$enabled_currencies = $this->get_enabled_currencies();
 			$manual_currencies  = [];
 
@@ -639,9 +644,8 @@ class MultiCurrency {
 			if ( 0 < count( $manual_currencies ) ) {
 				update_option( $this->id . '_show_store_currency_changed_notice', $manual_currencies );
 			}
+			update_option( $this->id . '_store_currency', $woocommerce_currency );
 		}
-
-		update_option( $this->id . '_store_currency', $woocommerce_currency );
 	}
 
 	/**

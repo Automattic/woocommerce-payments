@@ -38,7 +38,7 @@ class AdminNotices {
 
 		$this->check_for_notices();
 
-		foreach ( (array) $this->notices as $notice_key => $notice ) {
+		foreach ( $this->notices as $notice_key => $notice ) {
 			echo '<div class="' . esc_attr( $notice['class'] ) . '" style="position:relative;">';
 
 			if ( $notice['dismissible'] ) {
@@ -76,9 +76,8 @@ class AdminNotices {
 
 			$notice = wc_clean( wp_unslash( $_GET['wcpay-multi-currency-hide-notice'] ) );
 
-			switch ( $notice ) {
-				case 'currency_changed':
-					update_option( 'wcpay_multi_currency_show_store_currency_changed_notice', 'no' );
+			if ( 'currency_changed' === $notice ) {
+				update_option( 'wcpay_multi_currency_show_store_currency_changed_notice', 'no' );
 			}
 		}
 	}
