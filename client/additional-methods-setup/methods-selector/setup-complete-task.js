@@ -15,10 +15,12 @@ import interpolateComponents from 'interpolate-components';
 import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
 import WizardTaskContext from '../wizard/task/context';
+import AdditionalMethodsSetupContext from '../context';
 import './setup-complete-task.scss';
 
 const SetupComplete = () => {
 	const { isActive } = useContext( WizardTaskContext );
+	const { setSetupCompleted } = useContext( AdditionalMethodsSetupContext );
 
 	const handleGoHome = useCallback( () => {
 		getHistory().push( getNewPath( {}, '/', {} ) );
@@ -37,8 +39,8 @@ const SetupComplete = () => {
 
 		// Set the local `isSetupCompleted` to `yes` so that task appears completed on the list.
 		// Please note that marking an item as "completed" is different from "dismissing" it.
-		window.wcpaySettings.additionalMethodsSetup.isSetupCompleted = 'yes';
-	}, [ isActive, updateOptions ] );
+		setSetupCompleted();
+	}, [ isActive, setSetupCompleted, updateOptions ] );
 
 	return (
 		<WizardTaskItem
