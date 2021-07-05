@@ -4,11 +4,56 @@
  */
 import { useSelect } from '@wordpress/data';
 import moment from 'moment';
+import type { Query } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
+
+// TODO: refine this type with more detailed information.
+export interface Transaction {
+	amount: number;
+	order: {
+		subscriptions?: { number: number; url: string }[];
+		url?: string;
+		customer_url?: string;
+		number?: number;
+	};
+	charge_id: string;
+	fees: number;
+	net: number;
+	risk_level: number;
+	customer_amount: number;
+	customer_name: string;
+	customer_email: string;
+	customer_country: string;
+	customer_currency: string;
+	deposit_id?: string;
+	available_on: string;
+	currency: string;
+	transaction_id: string;
+	date: string;
+	type: 'charge' | 'refund';
+	source: string;
+}
+
+interface Transactions {
+	transactions: Transaction[];
+	transactionsError: unknown;
+	isLoading: boolean;
+}
+interface TransactionsSummary {
+	transactionsSummary: {
+		count?: number;
+		total?: number;
+		fees?: number;
+		net?: number;
+		currency?: string;
+		store_currencies?: string[];
+	};
+	isLoading: boolean;
+}
 
 export const useTransactions = (
 	{
@@ -24,9 +69,9 @@ export const useTransactions = (
 		type_is_not: typeIsNot,
 		store_currency_is: storeCurrencyIs,
 		search,
-	},
-	depositId
-) =>
+	}: Query,
+	depositId: string
+): Transactions =>
 	useSelect(
 		( select ) => {
 			const {
@@ -36,8 +81,10 @@ export const useTransactions = (
 			} = select( STORE_NAME );
 
 			const query = {
-				paged: Number.isNaN( parseInt( paged, 10 ) ) ? '1' : paged,
-				perPage: Number.isNaN( parseInt( perPage, 10 ) )
+				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
+					? '1'
+					: paged,
+				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
 					? '25'
 					: perPage,
 				orderby: orderby || 'date',
@@ -90,9 +137,9 @@ export const useTransactionsSummary = (
 		type_is_not: typeIsNot,
 		store_currency_is: storeCurrencyIs,
 		search,
-	},
-	depositId
-) =>
+	}: Query,
+	depositId: string
+): TransactionsSummary =>
 	useSelect(
 		( select ) => {
 			const { getTransactionsSummary, isResolving } = select(
