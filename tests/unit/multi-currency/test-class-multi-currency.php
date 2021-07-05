@@ -108,38 +108,6 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
-	/**
-	 * @group underTest
-	 */
-	public function test_update_default_currency() {
-		add_filter(
-			'woocommerce_currency',
-			function () {
-				return 'NEW';
-			},
-			100
-		);
-
-		$rates_for_testing = [
-			'CAD' => 0.783214,
-			'GBP' => 0.452525,
-			'EUR' => 0.635252,
-			'CDF' => 1500,
-			'BIF' => 1452, // Zero decimal currency.
-			'CLP' => 405.8, // Zero decimal currency.
-		];
-
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_currency_rates' )
-			->with( 'NEW' )
-			->willReturn( $rates_for_testing );
-
-		$this->multi_currency->update_default_currency();
-
-		$cached_rates = get_option( self::CACHED_CURRENCIES_OPTION, [] );
-		$this->assertEquals( $cached_rates['currencies'], $rates_for_testing );
-	}
-
 	public function test_get_available_currencies_adds_store_currency() {
 		add_filter(
 			'woocommerce_currency',
