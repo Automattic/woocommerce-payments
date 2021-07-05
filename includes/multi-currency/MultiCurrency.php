@@ -1,22 +1,23 @@
 <?php
 /**
- * Class Multi_Currency
+ * Class MultiCurrency
  *
- * @package WooCommerce\Payments\Multi_Currency
+ * @package WooCommerce\Payments\MultiCurrency
  */
 
-namespace WCPay\Multi_Currency;
+namespace WCPay\MultiCurrency;
 
 use WC_Payments;
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
+use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class that controls Multi Currency functionality.
  */
-class Multi_Currency {
+class MultiCurrency {
 
 	const CURRENCY_SESSION_KEY     = 'wcpay_currency';
 	const CURRENCY_META_KEY        = 'wcpay_currency';
@@ -33,7 +34,7 @@ class Multi_Currency {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Multi_Currency
+	 * @var MultiCurrency
 	 */
 	protected static $instance = null;
 
@@ -45,16 +46,16 @@ class Multi_Currency {
 	protected $compatibility;
 
 	/**
-	 * Frontend_Prices instance.
+	 * FrontendPrices instance.
 	 *
-	 * @var Frontend_Prices
+	 * @var FrontendPrices
 	 */
 	protected $frontend_prices;
 
 	/**
-	 * Frontend_Currencies instance.
+	 * FrontendCurrencies instance.
 	 *
-	 * @var Frontend_Currencies
+	 * @var FrontendCurrencies
 	 */
 	protected $frontend_currencies;
 
@@ -87,12 +88,12 @@ class Multi_Currency {
 	private $payments_api_client;
 
 	/**
-	 * Main Multi_Currency Instance.
+	 * Main MultiCurrency Instance.
 	 *
-	 * Ensures only one instance of Multi_Currency is loaded or can be loaded.
+	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
 	 *
 	 * @static
-	 * @return Multi_Currency - Main instance.
+	 * @return MultiCurrency - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -107,9 +108,6 @@ class Multi_Currency {
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
-		// Load the include files.
-		$this->includes();
-
 		$this->payments_api_client = $payments_api_client;
 		$this->utils               = new Utils();
 		$this->compatibility       = new Compatibility( $this->utils );
@@ -133,12 +131,12 @@ class Multi_Currency {
 	public function init() {
 		$this->initialize_currencies();
 
-		new User_Settings( $this );
+		new UserSettings( $this );
 
-		$this->frontend_prices     = new Frontend_Prices( $this, $this->compatibility );
-		$this->frontend_currencies = new Frontend_Currencies( $this );
+		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->utils );
 
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
@@ -151,9 +149,7 @@ class Multi_Currency {
 	 * Initialize the REST API controller.
 	 */
 	public function init_rest_api() {
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-wc-rest-controller.php';
-
-		$api_controller = new WC_REST_Controller( \WC_Payments::create_api_client() );
+		$api_controller = new RestController( \WC_Payments::create_api_client() );
 		$api_controller->register_routes();
 	}
 
@@ -161,7 +157,7 @@ class Multi_Currency {
 	 * Initialize the Widgets.
 	 */
 	public function init_widgets() {
-		register_widget( new Currency_Switcher_Widget( $this, $this->compatibility ) );
+		register_widget( new CurrencySwitcherWidget( $this, $this->compatibility ) );
 	}
 
 	/**
@@ -172,16 +168,14 @@ class Multi_Currency {
 	 * @return array The new settings pages.
 	 */
 	public function init_settings_pages( $settings_pages ): array {
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-settings.php';
-
 		$settings_pages[] = new Settings( $this );
 		return $settings_pages;
 	}
 
 	/**
-	 * Register the CSS and JS scripts.
+	 * Register the CSS and JS admin scripts.
 	 */
-	public function register_scripts() {
+	public function register_admin_scripts() {
 		$script_src_url    = plugins_url( 'dist/multi-currency.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency.asset.php';
 		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
@@ -202,12 +196,12 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Load the assets.
+	 * Load the admin assets.
 	 */
-	public function enqueue_scripts() {
+	public function enqueue_admin_scripts() {
 		global $current_tab, $current_section;
 
-		$this->register_scripts();
+		$this->register_admin_scripts();
 
 		// TODO: Set this to only display when needed.
 		// Output the settings JS and CSS only on the settings page.
@@ -282,20 +276,20 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Returns the Frontend_Prices instance.
+	 * Returns the FrontendPrices instance.
 	 *
-	 * @return Frontend_Prices
+	 * @return FrontendPrices
 	 */
-	public function get_frontend_prices(): Frontend_Prices {
+	public function get_frontend_prices(): FrontendPrices {
 		return $this->frontend_prices;
 	}
 
 	/**
-	 * Returns the Frontend_Currencies instance.
+	 * Returns the FrontendCurrencies instance.
 	 *
-	 * @return Frontend_Currencies
+	 * @return FrontendCurrencies
 	 */
-	public function get_frontend_currencies(): Frontend_Currencies {
+	public function get_frontend_currencies(): FrontendCurrencies {
 		return $this->frontend_currencies;
 	}
 
@@ -548,8 +542,7 @@ class Multi_Currency {
 	 */
 	public static function add_woo_admin_notes() {
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			require_once WCPAY_ABSPATH . 'includes/multi-currency/notes/class-note-multi-currency-available.php';
-			Note_Multi_Currency_Available::possibly_add_note();
+			NoteMultiCurrencyAvailable::possibly_add_note();
 		}
 	}
 
@@ -558,8 +551,7 @@ class Multi_Currency {
 	 */
 	public static function remove_woo_admin_notes() {
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			require_once WCPAY_ABSPATH . 'includes/multi-currency/notes/class-note-multi-currency-available.php';
-			Note_Multi_Currency_Available::possibly_delete_note();
+			NoteMultiCurrencyAvailable::possibly_delete_note();
 		}
 	}
 
@@ -598,20 +590,6 @@ class Multi_Currency {
 			return $price;
 		}
 		return ceil( $price / $rounding ) * $rounding;
-	}
-
-	/**
-	 * Include required core files used in admin and on the frontend.
-	 */
-	protected function includes() {
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-compatibility.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-utils.php';
 	}
 
 	/**

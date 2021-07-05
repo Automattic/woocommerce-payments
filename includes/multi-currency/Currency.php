@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Multi_Currency;
+namespace WCPay\MultiCurrency;
 
 use WC_Payments_Utils;
 
@@ -113,7 +113,7 @@ class Currency implements \JsonSerializable {
 	 */
 	public function get_flag(): string {
 		// Maybe add param img/emoji to return which you want?
-		return Country_Flags::get_by_currency( $this->code );
+		return CountryFlags::get_by_currency( $this->code );
 	}
 
 	/**

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 declare namespace AccountOverview {
 	interface Account {
 		default_currency: string;
@@ -70,4 +69,12 @@ declare module 'gridicons' {
 	const Gridicon: ( props: GridiconParams ) => JSX.Element;
 
 	export = Gridicon;
+}
+
+declare module '@woocommerce/components' {
+	type LinkParams = {
+		href: string;
+		children: React.ReactNode;
+	};
+	const Link: ( props: LinkParams ) => JSX.Element;
 }

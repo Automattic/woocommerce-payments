@@ -6,10 +6,10 @@
  */
 
 use WCPay\Exceptions\API_Exception;
-use WCPay\Multi_Currency\Multi_Currency;
+use WCPay\MultiCurrency\MultiCurrency;
 
 /**
- * WCPay\Multi_Currency\Multi_Currency unit tests.
+ * WCPay\MultiCurrency\MultiCurrency unit tests.
  */
 class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	const LOGGED_IN_USER_ID         = 1;
@@ -46,9 +46,9 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	private $mock_cached_currencies;
 
 	/**
-	 * WCPay\Multi_Currency\Multi_Currency instance.
+	 * WCPay\MultiCurrency\MultiCurrency instance.
 	 *
-	 * @var WCPay\Multi_Currency\Multi_Currency
+	 * @var WCPay\MultiCurrency\MultiCurrency
 	 */
 	private $multi_currency;
 
@@ -89,16 +89,16 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			->method( 'is_server_connected' )
 			->willReturn( true );
 
-		$this->multi_currency = new Multi_Currency( $this->mock_api_client );
+		$this->multi_currency = new MultiCurrency( $this->mock_api_client );
 		$this->multi_currency->init();
 	}
 
 	public function tearDown() {
-		WC()->session->__unset( Multi_Currency::CURRENCY_SESSION_KEY );
+		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'woocommerce_currency' );
 
-		delete_user_meta( self::LOGGED_IN_USER_ID, Multi_Currency::CURRENCY_META_KEY );
+		delete_user_meta( self::LOGGED_IN_USER_ID, MultiCurrency::CURRENCY_META_KEY );
 		wp_set_current_user( 0 );
 
 		$this->remove_currency_settings_mock( 'GBP', [ 'price_charm', 'price_rounding', 'manual_rate', 'exchange_rate' ] );
@@ -149,8 +149,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			100
 		);
 
-		// Recreate Multi_Currency instance to use the recently set DEFAULT currency.
-		$this->multi_currency = new Multi_Currency( $this->mock_api_client );
+		// Recreate MultiCurrency instance to use the recently set DEFAULT currency.
+		$this->multi_currency = new MultiCurrency( $this->mock_api_client );
 		$this->multi_currency->init();
 
 		$default_currency = $this->multi_currency->get_available_currencies()['DEFAULT'];
@@ -168,7 +168,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		];
 
 		foreach ( $mock_currencies as $code => $rate ) {
-			$currency = new WCPay\Multi_Currency\Currency( $code, $rate );
+			$currency = new WCPay\MultiCurrency\Currency( $code, $rate );
 			$currency->set_charm( 0.00 );
 			$currency->set_rounding( '1.00' );
 			$expected[ $currency->get_code() ] = $currency;
@@ -195,8 +195,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	public function test_enabled_but_unavailable_currencies_are_skipped() {
 		update_option( self::ENABLED_CURRENCIES_OPTION, [ 'RANDOM_CURRENCY', 'USD' ] );
 
-		// Recreate Multi_Currency instance to use the recently set currencies.
-		$this->multi_currency = new Multi_Currency( $this->mock_api_client );
+		// Recreate MultiCurrency instance to use the recently set currencies.
+		$this->multi_currency = new MultiCurrency( $this->mock_api_client );
 		$this->multi_currency->init();
 
 		$this->assertSame( [ 'USD' ], array_keys( $this->multi_currency->get_enabled_currencies() ) );
@@ -207,27 +207,27 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_selected_currency_returns_default_currency_for_invalid_session_currency() {
-		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'UNSUPPORTED_CURRENCY' );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'UNSUPPORTED_CURRENCY' );
 
 		$this->assertSame( get_woocommerce_currency(), $this->multi_currency->get_selected_currency()->get_code() );
 	}
 
 	public function test_get_selected_currency_returns_default_currency_for_invalid_user_currency() {
 		wp_set_current_user( self::LOGGED_IN_USER_ID );
-		update_user_meta( self::LOGGED_IN_USER_ID, WCPay\Multi_Currency\Multi_Currency::CURRENCY_META_KEY, 'UNSUPPORTED_CURRENCY' );
+		update_user_meta( self::LOGGED_IN_USER_ID, WCPay\MultiCurrency\MultiCurrency::CURRENCY_META_KEY, 'UNSUPPORTED_CURRENCY' );
 
 		$this->assertSame( get_woocommerce_currency(), $this->multi_currency->get_selected_currency()->get_code() );
 	}
 
 	public function test_get_selected_currency_returns_currency_from_session() {
-		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 
 		$this->assertSame( 'GBP', $this->multi_currency->get_selected_currency()->get_code() );
 	}
 
 	public function test_get_selected_currency_returns_currency_from_user() {
 		wp_set_current_user( self::LOGGED_IN_USER_ID );
-		update_user_meta( self::LOGGED_IN_USER_ID, WCPay\Multi_Currency\Multi_Currency::CURRENCY_META_KEY, 'GBP' );
+		update_user_meta( self::LOGGED_IN_USER_ID, WCPay\MultiCurrency\MultiCurrency::CURRENCY_META_KEY, 'GBP' );
 
 		$this->assertSame( 'GBP', $this->multi_currency->get_selected_currency()->get_code() );
 	}
@@ -235,7 +235,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	public function test_update_selected_currency_does_not_set_invalid_session_currency() {
 		$this->multi_currency->update_selected_currency( 'UNSUPPORTED_CURRENCY' );
 
-		$this->assertNull( WC()->session->get( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY ) );
+		$this->assertNull( WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
 	}
 
 	public function test_update_selected_currency_does_not_set_invalid_user_currency() {
@@ -243,13 +243,13 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$this->multi_currency->update_selected_currency( 'UNSUPPORTED_CURRENCY' );
 
-		$this->assertEmpty( get_user_meta( self::LOGGED_IN_USER_ID, WCPay\Multi_Currency\Multi_Currency::CURRENCY_META_KEY, true ) );
+		$this->assertEmpty( get_user_meta( self::LOGGED_IN_USER_ID, WCPay\MultiCurrency\MultiCurrency::CURRENCY_META_KEY, true ) );
 	}
 
 	public function test_update_selected_currency_sets_session_currency() {
 		$this->multi_currency->update_selected_currency( 'GBP' );
 
-		$this->assertSame( 'GBP', WC()->session->get( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY ) );
+		$this->assertSame( 'GBP', WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
 	}
 
 	public function test_update_selected_currency_sets_user_currency() {
@@ -257,7 +257,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$this->multi_currency->update_selected_currency( 'GBP' );
 
-		$this->assertSame( 'GBP', get_user_meta( self::LOGGED_IN_USER_ID, WCPay\Multi_Currency\Multi_Currency::CURRENCY_META_KEY, true ) );
+		$this->assertSame( 'GBP', get_user_meta( self::LOGGED_IN_USER_ID, WCPay\MultiCurrency\MultiCurrency::CURRENCY_META_KEY, true ) );
 	}
 
 	public function test_update_selected_currency_recalculates_cart() {
@@ -275,7 +275,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	public function test_update_selected_currency_by_url_does_not_set_session_when_parameter_not_set() {
 		$this->multi_currency->update_selected_currency_by_url();
 
-		$this->assertNull( WC()->session->get( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY ) );
+		$this->assertNull( WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
 	}
 
 	public function test_update_selected_currency_by_url_does_not_set_session_when_currency_not_enabled() {
@@ -283,7 +283,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$this->multi_currency->update_selected_currency_by_url();
 
-		$this->assertNull( WC()->session->get( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY ) );
+		$this->assertNull( WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
 	}
 
 	public function test_update_selected_currency_by_url_updates_session_when_currency_is_enabled() {
@@ -291,23 +291,23 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$this->multi_currency->update_selected_currency_by_url();
 
-		$this->assertSame( 'GBP', WC()->session->get( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY ) );
+		$this->assertSame( 'GBP', WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
 	}
 
 	public function test_get_price_returns_price_in_default_currency() {
-		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, get_woocommerce_currency() );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, get_woocommerce_currency() );
 
 		$this->assertSame( 5.0, $this->multi_currency->get_price( '5.0', 'product' ) );
 	}
 
 	public function test_get_price_returns_price_if_unsupported_type() {
-		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, get_woocommerce_currency() );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, get_woocommerce_currency() );
 
 		$this->assertSame( 5.0, $this->multi_currency->get_price( '5.0', 'unsupported_type' ) );
 	}
 
 	public function test_get_price_returns_converted_product_price_with_charm() {
-		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
 
 		// 0.708099 * 10 = 7,08099 -> ceiled to 7.5 -> 7.5 - 0.1 = 7.4
@@ -315,7 +315,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_returns_converted_shipping_price_with_charm() {
-		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
 		// 0.708099 * 10 = 7,08099 -> ceiled to 7.5 -> 7.5 - 0.1 = 7.4
@@ -323,7 +323,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_returns_converted_shipping_price_without_charm() {
-		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
 
 		// 0.708099 * 10 = 7,08099 -> ceiled to 7.5 -> 7.5 + 0.0 = 7.5
@@ -331,7 +331,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_returns_converted_coupon_price_without_adjustments() {
-		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
 		// 0.708099 * 10 = 7,08099
@@ -339,7 +339,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_returns_converted_exchange_rate_without_adjustments() {
-		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
 		// 0.708099 * 10 = 7,08099
@@ -347,7 +347,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_returns_converted_tax_price() {
-		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
 		// 0.708099 * 10 = 7,08099
@@ -368,17 +368,17 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			]
 		);
 
-		// Recreate Multi_Currency instance to use the recently set price_rounding.
-		$this->multi_currency = new Multi_Currency( $this->mock_api_client );
+		// Recreate MultiCurrency instance to use the recently set price_rounding.
+		$this->multi_currency = new MultiCurrency( $this->mock_api_client );
 		$this->multi_currency->init();
 
-		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 
 		$this->assertSame( $expected, $this->multi_currency->get_price( 1, 'shipping' ) );
 	}
 
 	public function test_get_cached_currencies_with_no_server_connection() {
-		// Need to create a new instance of Multi_Currency with a different $mock_api_client
+		// Need to create a new instance of MultiCurrency with a different $mock_api_client
 		// Because the mock return value of 'is_server_connected' cannot be overridden.
 		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
@@ -390,7 +390,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			->method( 'is_server_connected' )
 			->willReturn( false );
 
-		$this->multi_currency = new Multi_Currency( $mock_api_client );
+		$this->multi_currency = new MultiCurrency( $mock_api_client );
 		$this->multi_currency->init();
 		$this->assertNull( $this->multi_currency->get_cached_currencies() );
 	}
@@ -399,13 +399,13 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$current_time = time();
 
 		$currency_cache = [
-			'currencies' => Multi_Currency::CURRENCY_RETRIEVAL_ERROR,
+			'currencies' => MultiCurrency::CURRENCY_RETRIEVAL_ERROR,
 			'updated'    => $current_time,
 			'expires'    => $current_time + DAY_IN_SECONDS,
 		];
 
 		// Create or update the currency option cache.
-		update_option( Multi_Currency::CURRENCY_CACHE_OPTION, $currency_cache, 'no' );
+		update_option( MultiCurrency::CURRENCY_CACHE_OPTION, $currency_cache, 'no' );
 
 		$this->assertNull( $this->multi_currency->get_cached_currencies() );
 	}
@@ -465,7 +465,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		// Assert that the cache was correctly set with the error string.
 		$cached_data = get_option( self::CACHED_CURRENCIES_OPTION );
-		$this->assertEquals( Multi_Currency::CURRENCY_RETRIEVAL_ERROR, $cached_data['currencies'] );
+		$this->assertEquals( MultiCurrency::CURRENCY_RETRIEVAL_ERROR, $cached_data['currencies'] );
 	}
 
 	public function get_price_provider() {

@@ -44,9 +44,7 @@ describe( 'Dispute details screen', () => {
 			amount: 1000,
 			currency: 'usd',
 			created: 1572590800,
-			// eslint-disable-next-line camelcase
 			evidence_details: {
-				// eslint-disable-next-line camelcase
 				due_by: 1573199200,
 			},
 			reason,

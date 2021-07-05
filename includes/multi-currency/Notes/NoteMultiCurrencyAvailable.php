@@ -2,19 +2,19 @@
 /**
  * Notify merchant that Multi-Currency is available.
  *
- * @package WooCommerce\Payments\Multi_Currency
+ * @package WooCommerce\Payments\MultiCurrency
  */
 
-namespace WCPay\Multi_Currency;
+namespace WCPay\MultiCurrency\Notes;
 
 use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Note_Multi_Currency_Available
+ * Class NoteMultiCurrencyAvailable
  */
-class Note_Multi_Currency_Available {
+class NoteMultiCurrencyAvailable {
 	use NoteTraits;
 
 	/**

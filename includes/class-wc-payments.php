@@ -156,6 +156,7 @@ class WC_Payments {
 
 		self::$api_client = self::create_api_client();
 
+		include_once __DIR__ . '/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
@@ -205,11 +206,7 @@ class WC_Payments {
 		$sepa_class    = Sepa_Payment_Gateway::class;
 		$sofort_class  = Sofort_Payment_Gateway::class;
 
-		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
-		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
-			include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
-			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
-		} elseif ( WC_Payments_Features::is_upe_enabled() ) {
+		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$gateway_class = UPE_Payment_Gateway::class;
 		}
 
@@ -584,11 +581,10 @@ class WC_Payments {
 	 */
 	public static function possibly_add_source_to_notes_query( $args, $request ) {
 		if ( isset( $request['source'] ) && ! isset( $args['source'] ) ) {
-			$args['source'] = 'woocommerce-payments';
 			return array_merge(
 				$args,
 				[
-					'source' => $request['source'],
+					'source' => wp_parse_list( $request['source'] ),
 				]
 			);
 		}
@@ -606,8 +602,13 @@ class WC_Payments {
 	 * @return string Modified where clause.
 	 */
 	public static function possibly_add_note_source_where_clause( $where_clauses, $args ) {
-		if ( isset( $args['source'] ) && false === strpos( $where_clauses, 'AND source IN' ) ) {
-			$escaped_where_source = sprintf( "'%s'", esc_sql( $args['source'] ) );
+		if ( ! empty( $args['source'] ) && false === strpos( $where_clauses, 'AND source IN' ) ) {
+			$where_source_array = [];
+			foreach ( $args['source'] as $args_type ) {
+				$args_type            = trim( $args_type );
+				$where_source_array[] = "'" . esc_sql( $args_type ) . "'";
+			}
+			$escaped_where_source = implode( ',', $where_source_array );
 			$where_clauses       .= " AND source IN ($escaped_where_source)";
 		}
 		return $where_clauses;
@@ -707,6 +708,12 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 			$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
 			$settings_controller->register_routes();
+		}
+
+		if ( WC_Payments_Features::is_grouped_settings_enabled() && WC_Payments_Features::is_upe_settings_preview_enabled() ) {
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
+			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
+			$upe_flag_toggle_controller->register_routes();
 		}
 	}
 

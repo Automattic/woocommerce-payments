@@ -10,6 +10,7 @@ import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { addQueryArgs } from '@wordpress/url';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -96,7 +97,7 @@ const getDepositTimelineItem = (
 
 		headline = createInterpolateElement( headline, {
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
-			a: <a href={ depositUrl } />,
+			a: <Link href={ depositUrl } />,
 		} );
 	} else {
 		headline = sprintf(
@@ -148,15 +149,14 @@ const getMainTimelineItem = (
 } );
 
 const isFXEvent = ( event = {} ) => {
-	/* eslint-disable camelcase */
-	const { transaction_details = {} } = event;
-	const { customer_currency, store_currency } = transaction_details;
+	const { transaction_details: transactionDetails = {} } = event;
+	const {
+		customer_currency: customerCurrency,
+		store_currency: storeCurrency,
+	} = transactionDetails;
 	return (
-		customer_currency &&
-		store_currency &&
-		customer_currency !== store_currency
+		customerCurrency && storeCurrency && customerCurrency !== storeCurrency
 	);
-	/* eslint-enable camelcase */
 };
 
 const composeNetString = ( event ) => {
@@ -206,23 +206,21 @@ const composeFXString = ( event ) => {
 	if ( ! isFXEvent( event ) ) {
 		return;
 	}
-	/* eslint-disable camelcase */
 	const {
 		transaction_details: {
-			customer_currency,
-			customer_amount,
-			store_currency,
-			store_amount,
+			customer_currency: customerCurrency,
+			customer_amount: customerAmount,
+			store_currency: storeCurrency,
+			store_amount: storeAmount,
 		},
 	} = event;
 	return formatFX(
-		{ currency: customer_currency, amount: customer_amount },
+		{ currency: customerCurrency, amount: customerAmount },
 		{
-			currency: store_currency,
-			amount: store_amount,
+			currency: storeCurrency,
+			amount: storeAmount,
 		}
 	);
-	/* eslint-enable camelcase */
 };
 
 /**
@@ -463,9 +461,9 @@ const mapEventToTimelineItems = ( event ) => {
 					'is-error',
 					[
 						// eslint-disable-next-line react/jsx-key
-						<a href={ disputeUrl }>
+						<Link href={ disputeUrl }>
 							{ __( 'View dispute', 'woocommerce-payments' ) }
-						</a>,
+						</Link>,
 					]
 				),
 			];

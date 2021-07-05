@@ -33,6 +33,20 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	private $gateway;
 
 	/**
+	 * UPE Gateway.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $upe_gateway;
+
+	/**
+	 * UPE Controller.
+	 *
+	 * @var WC_REST_Payments_Settings_Controller
+	 */
+	private $upe_controller;
+
+	/**
 	 * @var WC_Payments_API_Client
 	 */
 	private $mock_api_client;
@@ -49,7 +63,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 		update_option( '_wcpay_feature_grouped_settings', '1' );
-		$this->set_available_gateways( [ 'card' ] );
 
 		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
@@ -62,6 +75,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
 		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
+
+		$this->upe_gateway    = new \WCPay\Payment_Methods\UPE_Payment_Gateway( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
+		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->upe_gateway );
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {
@@ -83,12 +99,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_get_settings_returns_available_payment_method_ids() {
-		$this->set_available_gateways( [ 'foo', 'bar' ] );
-		$response           = $this->controller->get_settings();
+		$response           = $this->upe_controller->get_settings();
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'foo', 'bar' ],
+			[ 'card', 'giropay', 'sofort' ],
 			$enabled_method_ids
 		);
 	}
@@ -104,8 +119,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_get_settings_fails_if_user_cannot_manage_woocommerce() {
-		$this->set_available_gateways( [] );
-
 		$cb = $this->create_can_manage_woocommerce_cap_override( false );
 		add_filter( 'user_has_cap', $cb );
 		$response = rest_do_request( new WP_REST_Request( 'GET', self::SETTINGS_ROUTE ) );
@@ -167,19 +180,17 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_update_settings_saves_enabled_payment_methods() {
-		$this->set_available_gateways( [ 'foo', 'bar' ] );
+		$this->upe_gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
 
 		$request = new WP_REST_Request();
-		$request->set_param( 'enabled_payment_method_ids', [ 'bar' ] );
+		$request->set_param( 'enabled_payment_method_ids', [ 'card', 'giropay' ] );
 
-		$this->controller->update_settings( $request );
+		$this->upe_controller->update_settings( $request );
 
-		$this->assertEquals( [ 'bar' ], $this->gateway->get_option( 'upe_enabled_payment_method_ids' ) );
+		$this->assertEquals( [ 'card', 'giropay' ], $this->upe_gateway->get_option( 'upe_enabled_payment_method_ids' ) );
 	}
 
 	public function test_update_settings_validation_fails_if_invalid_gateway_id_supplied() {
-		$this->set_available_gateways( [ 'foo', 'bar' ] );
-
 		$request = new WP_REST_Request( 'POST', self::SETTINGS_ROUTE );
 		$request->set_param( 'enabled_payment_method_ids', [ 'foo', 'baz' ] );
 
@@ -364,18 +375,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 			return $allcaps;
 		};
-	}
-
-	/**
-	 * @param string[] $gateways Available gateways.
-	 */
-	private function set_available_gateways( array $gateways ) {
-		add_filter(
-			'wcpay_upe_available_payment_methods',
-			function () use ( $gateways ) {
-				return $gateways;
-			}
-		);
 	}
 
 	/**

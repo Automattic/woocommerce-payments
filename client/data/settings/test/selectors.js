@@ -39,7 +39,6 @@ describe( 'Settings selectors tests', () => {
 			const state = {
 				settings: {
 					data: {
-						// eslint-disable-next-line camelcase
 						is_wcpay_enabled: true,
 					},
 				},
@@ -63,7 +62,6 @@ describe( 'Settings selectors tests', () => {
 			const state = {
 				settings: {
 					data: {
-						// eslint-disable-next-line camelcase
 						enabled_payment_method_ids: [ 'foo', 'bar' ],
 					},
 				},
@@ -109,7 +107,6 @@ describe( 'Settings selectors tests', () => {
 			const state = {
 				settings: {
 					data: {
-						// eslint-disable-next-line camelcase
 						is_manual_capture_enabled: true,
 					},
 				},
@@ -133,7 +130,6 @@ describe( 'Settings selectors tests', () => {
 			const state = {
 				settings: {
 					data: {
-						// eslint-disable-next-line camelcase
 						account_statement_descriptor: 'my account statement',
 					},
 				},
@@ -159,7 +155,6 @@ describe( 'Settings selectors tests', () => {
 			const state = {
 				settings: {
 					data: {
-						// eslint-disable-next-line camelcase
 						is_digital_wallets_enabled: true,
 					},
 				},
@@ -183,7 +178,6 @@ describe( 'Settings selectors tests', () => {
 			const state = {
 				settings: {
 					data: {
-						// eslint-disable-next-line camelcase
 						digital_wallets_enabled_locations: [
 							'product',
 							'cart',

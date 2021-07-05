@@ -13,6 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WC Payments Features class
  */
 class WC_Payments_Features {
+	const UPE_FLAG_NAME = '_wcpay_feature_upe';
+
 	/**
 	 * Checks whether the grouped settings feature is enabled
 	 *
@@ -55,7 +57,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_upe_enabled() {
-		return '1' === get_option( '_wcpay_feature_upe', '0' );
+		return '1' === get_option( self::UPE_FLAG_NAME, '0' );
 	}
 
 	/**

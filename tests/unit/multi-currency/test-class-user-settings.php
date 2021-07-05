@@ -5,23 +5,23 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Multi_Currency\Currency;
+use WCPay\MultiCurrency\Currency;
 
 /**
- * WCPay\Multi_Currency\User_Settings unit tests.
+ * WCPay\MultiCurrency\UserSettings unit tests.
  */
 class WCPay_Multi_Currency_User_Settings_Tests extends WP_UnitTestCase {
 	/**
-	 * Mock WCPay\Multi_Currency\Multi_Currency.
+	 * Mock WCPay\MultiCurrency\MultiCurrency.
 	 *
-	 * @var WCPay\Multi_Currency\Multi_Currency|PHPUnit_Framework_MockObject_MockObject
+	 * @var WCPay\MultiCurrency\MultiCurrency|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_multi_currency;
 
 	/**
-	 * WCPay\Multi_Currency\User_Settings instance.
+	 * WCPay\MultiCurrency\UserSettings instance.
 	 *
-	 * @var WCPay\Multi_Currency\User_Settings
+	 * @var WCPay\MultiCurrency\UserSettings
 	 */
 	private $user_settings;
 
@@ -31,7 +31,7 @@ class WCPay_Multi_Currency_User_Settings_Tests extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->mock_multi_currency = $this->createMock( WCPay\Multi_Currency\Multi_Currency::class );
+		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
 		$this->mock_multi_currency
 			->method( 'get_enabled_currencies' )
 			->willReturn(
@@ -42,7 +42,7 @@ class WCPay_Multi_Currency_User_Settings_Tests extends WP_UnitTestCase {
 				]
 			);
 
-		$this->user_settings = new WCPay\Multi_Currency\User_Settings( $this->mock_multi_currency );
+		$this->user_settings = new WCPay\MultiCurrency\UserSettings( $this->mock_multi_currency );
 	}
 
 	public function test_add_presentment_currency_switch_renders_markup() {
