@@ -7,9 +7,15 @@ import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
+/**
+ * Internal dependencies
+ */
+import createAdditionalPaymentMethodsSetupTask from '../../additional-methods-setup/task';
+
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
+	showAdditionalMethodsSetupTask,
 	wpcomReconnectUrl,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
@@ -73,5 +79,7 @@ export const getTasks = ( {
 				window.location.href = wpcomReconnectUrl;
 			},
 		},
+		showAdditionalMethodsSetupTask &&
+			createAdditionalPaymentMethodsSetupTask(),
 	].filter( Boolean );
 };

@@ -261,25 +261,31 @@ class WC_Payments_Admin {
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
 		$wcpay_settings = [
-			'connectUrl'            => WC_Payments_Account::get_connect_url(),
-			'connect'               => [
+			'connectUrl'                     => WC_Payments_Account::get_connect_url(),
+			'connect'                        => [
 				'country'            => WC()->countries->get_base_country(),
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 			],
-			'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
+			'testMode'                       => $this->wcpay_gateway->is_in_test_mode(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
-			'onBoardingDisabled'    => WC_Payments_Account::is_on_boarding_disabled(),
-			'errorMessage'          => $error_message,
-			'featureFlags'          => $this->get_frontend_feature_flags(),
-			'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
+			'onBoardingDisabled'             => WC_Payments_Account::is_on_boarding_disabled(),
+			'errorMessage'                   => $error_message,
+			'featureFlags'                   => $this->get_frontend_feature_flags(),
+			'isSubscriptionsActive'          => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
 			// used in the settings page by the AccountFees component.
-			'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
-			'fraudServices'         => $this->account->get_fraud_services_config(),
-			'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
-			'accountStatus'         => $this->account->get_account_status_data(),
-			'accountFees'           => $this->account->get_fees(),
-			'showUpdateDetailsTask' => get_option( 'wcpay_show_update_business_details_task', 'no' ),
-			'wpcomReconnectUrl'     => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
+			'zeroDecimalCurrencies'          => WC_Payments_Utils::zero_decimal_currencies(),
+			'fraudServices'                  => $this->account->get_fraud_services_config(),
+			'isJetpackConnected'             => $this->payments_api_client->is_server_connected(),
+			'accountStatus'                  => $this->account->get_account_status_data(),
+			'accountFees'                    => $this->account->get_fees(),
+			'showUpdateDetailsTask'          => get_option( 'wcpay_show_update_business_details_task', 'no' ),
+			'wpcomReconnectUrl'              => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
+			'showAdditionalMethodsSetupTask' => count( $this->wcpay_gateway->get_upe_available_payment_methods() ) > 1, // TODO: we also need to check whether giropay/etc are available and whether they have been set up before or not.
+			'additionalMethodsSetup'         => [
+				'isSetupCompleted'            => get_option( 'wcpay_additional_methods_setup_completed', 'no' ),
+				'isUpeSettingsPreviewEnabled' => WC_Payments_Features::is_upe_settings_preview_enabled(),
+				'isUpeEnabled'                => WC_Payments_Features::is_upe_enabled(),
+			],
 		];
 
 		wp_localize_script(

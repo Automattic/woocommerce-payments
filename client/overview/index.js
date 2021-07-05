@@ -25,6 +25,7 @@ const OverviewPage = () => {
 	const {
 		accountStatus,
 		showUpdateDetailsTask,
+		showAdditionalMethodsSetupTask,
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 	} = wcpaySettings;
@@ -32,6 +33,7 @@ const OverviewPage = () => {
 	const tasks = getTasks( {
 		accountStatus,
 		showUpdateDetailsTask,
+		showAdditionalMethodsSetupTask,
 		wpcomReconnectUrl,
 	} );
 	const queryParams = getQuery();
