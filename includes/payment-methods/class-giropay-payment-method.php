@@ -7,6 +7,8 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_Token_Service;
+
 /**
  * Giropay Payment Method class extending UPE base class
  */

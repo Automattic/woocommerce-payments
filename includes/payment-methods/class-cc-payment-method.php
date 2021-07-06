@@ -7,6 +7,8 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_Token_Service;
+
 /**
  * Credit card Payment Method class extending UPE base class
  */
@@ -27,7 +29,7 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Returns payment method title
 	 *
-	 * @param array $payment_details Optional payment details from charge object.
+	 * @param array|bool $payment_details Optional payment details from charge object.
 	 *
 	 * @return string
 	 */

@@ -7,6 +7,10 @@
 
 namespace WCPay\Payment_Methods;
 
+use WP_User;
+use WC_Payments_Token_Service;
+use WC_Payment_Token_WCPay_SEPA;
+
 /**
  * Sofort Payment Method class extending UPE base class
  */
@@ -27,10 +31,10 @@ class Sofort_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Add payment method to user and return WC payment token
 	 *
-	 * @param WP_User $user User to get payment token from.
-	 * @param string  $payment_method_id Stripe payment method ID string.
+	 * @param WP_User     $user User to get payment token from.
+	 * @param string|bool $payment_method_id Stripe payment method ID string.
 	 *
-	 * @return WC_Payment_Token_CC|WC_Payment_Token_Sepa WC object for payment token.
+	 * @return WC_Payment_Token_WCPay_SEPA WC object for payment token.
 	 */
 	public function get_payment_token_for_user( $user, $payment_method_id = false ) {
 		// TODO: This function will need to work a little differently...
