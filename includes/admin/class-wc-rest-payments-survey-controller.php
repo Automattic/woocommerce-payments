@@ -9,10 +9,6 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * REST controller for settings.
- *
- * Test with:
- * - wp.apiFetch({ path: '/wc/v3/payments/upe_survey', method: 'POST' })
- * - wp.apiFetch({ path: '/wc/v3/payments/upe_survey', method: 'POST', data: { reasons: ['theme-compatibility'], comments: 'test' } })
  */
 class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 
