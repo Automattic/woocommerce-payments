@@ -129,10 +129,21 @@ class MultiCurrency {
 	 * default currency and enabled currencies for the multi currency plugin.
 	 */
 	public function init() {
+		$store_currency_updated = $this->check_store_currency_for_change();
+
+		// If the store currency has been updated, clear the cache to make sure we fetch fresh rates from the server.
+		if ( $store_currency_updated ) {
+			$this->clear_cache();
+		}
+
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
-		$this->check_store_currency_for_change();
+
+		// If the store currency has been updated, we need to update the notice that will display any manual currencies.
+		if ( $store_currency_updated ) {
+			$this->update_manual_rate_currencies_notice_option();
+		}
 
 		new AdminNotices();
 		new UserSettings( $this );
@@ -619,34 +630,49 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Checks to see if the store currency has changed and puts any manual rate currencies into an option for a notice to display.
+	 * Checks to see if the store currency has changed. If it has, this will
+	 * also update the option containing the store currency.
+	 *
+	 * @return bool
 	 */
-	private function check_store_currency_for_change() {
+	private function check_store_currency_for_change(): bool {
 		$last_known_currency  = get_option( $this->id . '_store_currency', false );
 		$woocommerce_currency = get_woocommerce_currency();
+
+		// If the last known currency was not set, update the option to set it and return false.
 		if ( ! $last_known_currency ) {
 			update_option( $this->id . '_store_currency', $woocommerce_currency );
-			return;
+			return false;
 		}
 
 		if ( $last_known_currency !== $woocommerce_currency ) {
-			$enabled_currencies = $this->get_enabled_currencies();
-			$manual_currencies  = [];
-
-			// Check enabled currencies for manual rates.
-			foreach ( $enabled_currencies as $currency ) {
-				$rate_type = get_option( $this->id . '_exchange_rate_' . $currency->get_id(), false );
-				if ( 'manual' === $rate_type ) {
-					$manual_currencies[] = $currency->get_name();
-				}
-			}
-
-			if ( 0 < count( $manual_currencies ) ) {
-				update_option( $this->id . '_show_store_currency_changed_notice', $manual_currencies );
-			}
 			update_option( $this->id . '_store_currency', $woocommerce_currency );
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Called when the store currency has changed. Puts any manual rate currencies into an option for a notice to display.
+	 */
+	private function update_manual_rate_currencies_notice_option() {
+		$enabled_currencies = $this->get_enabled_currencies();
+		$manual_currencies  = [];
+
+		// Check enabled currencies for manual rates.
+		foreach ( $enabled_currencies as $currency ) {
+			$rate_type = get_option( $this->id . '_exchange_rate_' . $currency->get_id(), false );
+			if ( 'manual' === $rate_type ) {
+				$manual_currencies[] = $currency->get_name();
+			}
+		}
+
+		if ( 0 < count( $manual_currencies ) ) {
+			update_option( $this->id . '_show_store_currency_changed_notice', $manual_currencies );
 		}
 	}
+
 
 	/**
 	 * Read the currency data from the WP option we cache it in.
