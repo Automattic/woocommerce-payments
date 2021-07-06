@@ -18,41 +18,41 @@ import interpolateComponents from 'interpolate-components';
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
 import {
-	useDigitalWalletsEnabledSettings,
-	useDigitalWalletsLocations,
+	usePaymentRequestEnabledSettings,
+	usePaymentRequestLocations,
 } from 'data';
 import CardBody from '../card-body';
 import './style.scss';
 
-const DigitalWallets = () => {
+const PaymentRequest = () => {
 	const [
-		isDigitalWalletsEnabled,
-		updateIsDigitalWalletsEnabled,
-	] = useDigitalWalletsEnabledSettings();
+		isPaymentRequestEnabled,
+		updateIsPaymentRequestEnabled,
+	] = usePaymentRequestEnabledSettings();
 	const [
-		digitalWalletsLocations,
-		updateDigitalWalletsLocations,
-	] = useDigitalWalletsLocations();
+		paymentRequestLocations,
+		updatePaymentRequestLocations,
+	] = usePaymentRequestLocations();
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
 		if ( isChecked ) {
-			updateDigitalWalletsLocations( [
-				...digitalWalletsLocations,
+			updatePaymentRequestLocations( [
+				...paymentRequestLocations,
 				location,
 			] );
 		} else {
-			updateDigitalWalletsLocations(
-				digitalWalletsLocations.filter( ( name ) => name !== location )
+			updatePaymentRequestLocations(
+				paymentRequestLocations.filter( ( name ) => name !== location )
 			);
 		}
 	};
 
 	return (
-		<Card className="digital-wallets">
+		<Card className="payment-request">
 			<CardBody>
 				<CheckboxControl
-					checked={ isDigitalWalletsEnabled }
-					onChange={ updateIsDigitalWalletsEnabled }
+					checked={ isPaymentRequestEnabled }
+					onChange={ updateIsPaymentRequestEnabled }
 					label={ __(
 						'Enable express checkouts',
 						'woocommerce-payments'
@@ -92,8 +92,8 @@ const DigitalWallets = () => {
 				/>
 				<div
 					className={ classNames(
-						'digital-wallets__additional-controls-wrapper',
-						{ 'is-enabled': isDigitalWalletsEnabled }
+						'payment-request__additional-controls-wrapper',
+						{ 'is-enabled': isPaymentRequestEnabled }
 					) }
 				>
 					<h4>
@@ -105,10 +105,10 @@ const DigitalWallets = () => {
 					<ul>
 						<li>
 							<CheckboxControl
-								disabled={ ! isDigitalWalletsEnabled }
+								disabled={ ! isPaymentRequestEnabled }
 								checked={
-									isDigitalWalletsEnabled &&
-									digitalWalletsLocations.includes(
+									isPaymentRequestEnabled &&
+									paymentRequestLocations.includes(
 										'checkout'
 									)
 								}
@@ -123,10 +123,10 @@ const DigitalWallets = () => {
 						</li>
 						<li>
 							<CheckboxControl
-								disabled={ ! isDigitalWalletsEnabled }
+								disabled={ ! isPaymentRequestEnabled }
 								checked={
-									isDigitalWalletsEnabled &&
-									digitalWalletsLocations.includes(
+									isPaymentRequestEnabled &&
+									paymentRequestLocations.includes(
 										'product'
 									)
 								}
@@ -141,10 +141,10 @@ const DigitalWallets = () => {
 						</li>
 						<li>
 							<CheckboxControl
-								disabled={ ! isDigitalWalletsEnabled }
+								disabled={ ! isPaymentRequestEnabled }
 								checked={
-									isDigitalWalletsEnabled &&
-									digitalWalletsLocations.includes( 'cart' )
+									isPaymentRequestEnabled &&
+									paymentRequestLocations.includes( 'cart' )
 								}
 								onChange={ makeLocationChangeHandler( 'cart' ) }
 								label={ __( 'Cart', 'woocommerce-payments' ) }
@@ -157,7 +157,7 @@ const DigitalWallets = () => {
 			<CardBody>
 				<Button
 					isSecondary
-					href={ getPaymentMethodSettingsUrl( 'digital_wallets' ) }
+					href={ getPaymentMethodSettingsUrl( 'payment_request' ) }
 				>
 					{ __( 'Customize appearance', 'woocommerce-payments' ) }
 				</Button>
@@ -166,4 +166,4 @@ const DigitalWallets = () => {
 	);
 };
 
-export default DigitalWallets;
+export default PaymentRequest;

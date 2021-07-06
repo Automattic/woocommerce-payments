@@ -25,7 +25,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useSettings,
-	useDigitalWalletsEnabledSettings,
+	usePaymentRequestEnabledSettings,
 } from '../../data';
 import './add-payment-methods-task.scss';
 
@@ -73,9 +73,9 @@ const AddPaymentMethodsTask = () => {
 	] = useEnabledPaymentMethodIds();
 
 	const [
-		initialIsDigitalWalletsEnabled,
-		setIsDigitalWalletsEnabled,
-	] = useDigitalWalletsEnabledSettings();
+		initialIsPaymentRequestEnabled,
+		setIsPaymentRequestEnabled,
+	] = usePaymentRequestEnabledSettings();
 
 	const { saveSettings, isSaving } = useSettings();
 
@@ -94,7 +94,7 @@ const AddPaymentMethodsTask = () => {
 	);
 
 	const [ isWalletsChecked, setWalletsChecked ] = useState(
-		initialIsDigitalWalletsEnabled
+		initialIsPaymentRequestEnabled
 	);
 
 	const { setCompleted } = useContext( WizardTaskContext );
@@ -116,13 +116,13 @@ const AddPaymentMethodsTask = () => {
 				return;
 			}
 
-			setIsDigitalWalletsEnabled( isWalletsChecked );
+			setIsPaymentRequestEnabled( isWalletsChecked );
 			updateEnabledPaymentMethodIds( checkedPaymentMethods );
 
 			const isSuccess = await saveSettings();
 			if ( ! isSuccess ) {
 				// restoring the state, in case of soft route
-				setIsDigitalWalletsEnabled( initialIsDigitalWalletsEnabled );
+				setIsPaymentRequestEnabled( initialIsPaymentRequestEnabled );
 				updateEnabledPaymentMethodIds( initialEnabledPaymentMethodIds );
 				return;
 			}
@@ -137,9 +137,9 @@ const AddPaymentMethodsTask = () => {
 		saveSettings,
 		setCompleted,
 		initialEnabledPaymentMethodIds,
-		initialIsDigitalWalletsEnabled,
+		initialIsPaymentRequestEnabled,
 		isWalletsChecked,
-		setIsDigitalWalletsEnabled,
+		setIsPaymentRequestEnabled,
 	] );
 
 	const countryName = useGetCountryName();

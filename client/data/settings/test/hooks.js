@@ -13,8 +13,8 @@ import {
 	useManualCapture,
 	useSettings,
 	useTestMode,
-	useDigitalWalletsEnabledSettings,
-	useDigitalWalletsLocations,
+	usePaymentRequestEnabledSettings,
+	usePaymentRequestLocations,
 } from '../hooks';
 import { STORE_NAME } from '../../constants';
 
@@ -212,55 +212,55 @@ describe( 'Settings hooks tests', () => {
 		);
 	} );
 
-	describe( 'useDigitalWalletsEnabledSettings()', () => {
+	describe( 'usePaymentRequestEnabledSettings()', () => {
 		test( 'returns digital wallets settings from selector', () => {
 			actions = {
-				updateIsDigitalWalletsEnabled: jest.fn(),
+				updateIsPaymentRequestEnabled: jest.fn(),
 			};
 
 			selectors = {
-				getIsDigitalWalletsEnabled: jest.fn( () => true ),
+				getIsPaymentRequestEnabled: jest.fn( () => true ),
 			};
 
 			const [
-				isDigitalWalletsEnabled,
-				updateIsDigitalWalletsEnabled,
-			] = useDigitalWalletsEnabledSettings();
+				isPaymentRequestEnabled,
+				updateIsPaymentRequestEnabled,
+			] = usePaymentRequestEnabledSettings();
 
-			updateIsDigitalWalletsEnabled( false );
+			updateIsPaymentRequestEnabled( false );
 
-			expect( isDigitalWalletsEnabled ).toEqual( true );
+			expect( isPaymentRequestEnabled ).toEqual( true );
 			expect(
-				actions.updateIsDigitalWalletsEnabled
+				actions.updateIsPaymentRequestEnabled
 			).toHaveBeenCalledWith( false );
 		} );
 	} );
 
-	describe( 'useDigitalWalletsLocations()', () => {
+	describe( 'usePaymentRequestLocations()', () => {
 		test( 'returns and updates digital wallets locations', () => {
 			const locationsBeforeUpdate = [];
 			const locationsAfterUpdate = [ 'cart' ];
 
 			actions = {
-				updateDigitalWalletsLocations: jest.fn(),
+				updatePaymentRequestLocations: jest.fn(),
 			};
 
 			selectors = {
-				getDigitalWalletsLocations: jest.fn(
+				getPaymentRequestLocations: jest.fn(
 					() => locationsBeforeUpdate
 				),
 			};
 
 			const [
-				digitalWalletsLocations,
-				updateDigitalWalletsLocations,
-			] = useDigitalWalletsLocations();
+				paymentRequestLocations,
+				updatePaymentRequestLocations,
+			] = usePaymentRequestLocations();
 
-			updateDigitalWalletsLocations( locationsAfterUpdate );
+			updatePaymentRequestLocations( locationsAfterUpdate );
 
-			expect( digitalWalletsLocations ).toEqual( locationsBeforeUpdate );
+			expect( paymentRequestLocations ).toEqual( locationsBeforeUpdate );
 			expect(
-				actions.updateDigitalWalletsLocations
+				actions.updatePaymentRequestLocations
 			).toHaveBeenCalledWith( locationsAfterUpdate );
 		} );
 	} );
