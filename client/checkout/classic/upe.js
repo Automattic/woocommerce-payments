@@ -188,9 +188,17 @@ jQuery( function ( $ ) {
 		if ( upeElement || paymentIntentId ) {
 			return;
 		}
+
+		// If paying from order, we need to create Payment Intent from order not cart.
+		const isOrderPay = getConfig( 'isOrderPay' );
+		let orderId;
+		if ( isOrderPay ) {
+			orderId = getConfig( 'orderId' );
+		}
+
 		const intentAction = isSetupIntent
 			? api.initSetupIntent()
-			: api.createIntent();
+			: api.createIntent( orderId );
 
 		const $upeContainer = $( '#wcpay-upe-element' );
 		blockUI( $upeContainer );
@@ -265,6 +273,80 @@ jQuery( function ( $ ) {
 	}
 
 	/**
+	 * Checks if UPE form is filled out. Displays errors if not.
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 * @return {boolean} false if incomplete.
+	 */
+	const checkUPEForm = async ( $form ) => {
+		if ( ! upeElement ) {
+			showError( 'Your payment information is incomplete.' );
+			return false;
+		}
+
+		if ( ! isUPEComplete ) {
+			// If UPE fields are not filled, confirm payment to trigger validation errors
+			const { error } = await api.getStripe().confirmPayment( {
+				element: upeElement,
+				confirmParams: {
+					return_url: '',
+				},
+			} );
+			$form.removeClass( 'processing' ).unblock();
+			showError( error.message );
+			return false;
+		}
+		return true;
+	};
+	/**
+	 * Submits the confirmation of the intent to Stripe on Pay for Order page.
+	 * Stripe redirects to Order Thank you page on sucess.
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 * @return {boolean} A flag for the event handler.
+	 */
+	const handleUPEOrderPay = async ( $form ) => {
+		const isUPEFormValid = await checkUPEForm( $( '#order_review' ) );
+		if ( ! isUPEFormValid ) {
+			return;
+		}
+		blockUI( $form );
+
+		try {
+			const isSavingPaymentMethod = $(
+				'#wc-woocommerce_payments-new-payment-method'
+			).is( ':checked' );
+			const savePaymentMethod = isSavingPaymentMethod ? 'yes' : 'no';
+
+			const returnUrl =
+				getConfig( 'orderReturnURL' ) +
+				`&save_payment_method=${ savePaymentMethod }`;
+
+			const orderId = getConfig( 'orderId' );
+
+			// Update payment intent with level3 data, customer and maybe setup for future use.
+			await api.updateIntent(
+				paymentIntentId,
+				orderId,
+				savePaymentMethod
+			);
+
+			const { error } = await api.getStripe().confirmPayment( {
+				element: upeElement,
+				confirmParams: {
+					return_url: returnUrl,
+				},
+			} );
+			if ( error ) {
+				throw error;
+			}
+		} catch ( error ) {
+			$form.removeClass( 'processing' ).unblock();
+			showError( error.message );
+		}
+	};
+
+	/**
 	 * Submits the confirmation of the setup intent to Stripe on Add Payment Method page.
 	 * Stripe redirects to Payment Methods page on sucess.
 	 *
@@ -272,33 +354,19 @@ jQuery( function ( $ ) {
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handleUPEAddPayment = async ( $form ) => {
-		if ( ! upeElement ) {
-			showError( 'Your payment information is incomplete.' );
-			return;
-		}
-
-		const returnUrl = getConfig( 'paymentMethodsURL' );
-		if ( ! isUPEComplete ) {
-			// If UPE fields are not filled, confirm setup to trigger validation errors
-			const { error } = await api.getStripe().confirmSetup( {
-				element: upeElement,
-				confirmParams: {
-					// eslint-disable-next-line camelcase
-					return_url: returnUrl,
-				},
-			} );
-			$form.removeClass( 'processing' ).unblock();
-			showError( error.message );
+		const isUPEFormValid = await checkUPEForm( $form );
+		if ( ! isUPEFormValid ) {
 			return;
 		}
 
 		blockUI( $form );
 
 		try {
+			const returnUrl = getConfig( 'paymentMethodsURL' );
+
 			const { error } = await api.getStripe().confirmSetup( {
 				element: upeElement,
 				confirmParams: {
-					// eslint-disable-next-line camelcase
 					return_url: returnUrl,
 				},
 			} );
@@ -319,21 +387,8 @@ jQuery( function ( $ ) {
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handleUPECheckout = async ( $form ) => {
-		if ( ! upeElement ) {
-			showError( 'Your payment information is incomplete.' );
-			return;
-		}
-
-		if ( ! isUPEComplete ) {
-			// If UPE fields are not filled, confirm payment to trigger validation errors
-			const { error } = await api.getStripe().confirmPayment( {
-				element: upeElement,
-				confirmParams: {
-					// eslint-disable-next-line camelcase
-					return_url: '',
-				},
-			} );
-			showError( error.message );
+		const isUPEFormValid = await checkUPEForm( $form );
+		if ( ! isUPEFormValid ) {
 			return;
 		}
 
@@ -353,7 +408,6 @@ jQuery( function ( $ ) {
 			const { error } = await api.getStripe().confirmPayment( {
 				element: upeElement,
 				confirmParams: {
-					// eslint-disable-next-line camelcase
 					return_url: redirectUrl,
 				},
 			} );
@@ -457,6 +511,14 @@ jQuery( function ( $ ) {
 				handleUPEAddPayment( $( this ) );
 				return false;
 			}
+		}
+	} );
+
+	// Handle the Pay for Order form if WooCommerce Payments is chosen.
+	$( '#order_review' ).on( 'submit', () => {
+		if ( ! isUsingSavedPaymentMethod() ) {
+			handleUPEOrderPay( $( '#order_review' ) );
+			return false;
 		}
 	} );
 

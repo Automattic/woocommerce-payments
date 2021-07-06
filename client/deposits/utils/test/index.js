@@ -19,8 +19,7 @@ function getDepositSchedule(
 	includeLastDeposit = true,
 	disabled = false
 ) {
-	/* eslint-disable camelcase */
-	const last_deposit = {
+	const lastDeposit = {
 		id: 'last_deposit',
 		amount: 6574,
 		date: new Date( '2019-04-18' ).getTime(),
@@ -31,9 +30,8 @@ function getDepositSchedule(
 			deposits_schedule: schedule,
 			deposits_disabled: disabled,
 		},
-		last_deposit: includeLastDeposit ? last_deposit : null,
+		last_deposit: includeLastDeposit ? lastDeposit : null,
 	} );
-	/* eslint-enable camelcase */
 
 	if ( 'string' === typeof descriptor ) {
 		return descriptor;
@@ -70,7 +68,6 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 	test( 'renders deposit schedule for weekly interval', () => {
 		const depositSchedule = getDepositSchedule( {
 			interval: 'weekly',
-			// eslint-disable-next-line camelcase
 			weekly_anchor: 'monday',
 		} );
 		expect( depositSchedule ).toEqual( 'Automatic, every week on Monday' );
@@ -79,7 +76,6 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 	test( 'renders deposit schedule for monthly interval', () => {
 		const depositSchedule = getDepositSchedule( {
 			interval: 'monthly',
-			// eslint-disable-next-line camelcase
 			monthly_anchor: 26,
 		} );
 		expect( depositSchedule ).toEqual(
@@ -91,7 +87,6 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 		momentLib.locale( 'de' );
 		const depositSchedule = getDepositSchedule( {
 			interval: 'weekly',
-			// eslint-disable-next-line camelcase
 			weekly_anchor: 'tuesday',
 		} );
 		// without resetting the locale to en the anchor monday would become Sonntag, instead of Dienstag
@@ -126,13 +121,11 @@ describe( 'Deposits Overview Utils / getDepositDate', () => {
 
 describe( 'Deposits Overview Utils / getBalanceDepositCount', () => {
 	test( 'formats the count with a single deposit', () => {
-		// eslint-disable-next-line camelcase
 		const balance = { deposits_count: 1 };
 		expect( getBalanceDepositCount( balance ) ).toEqual( '1 deposit' );
 	} );
 
 	test( 'formats the count with multiple deposits', () => {
-		// eslint-disable-next-line camelcase
 		const balance = { deposits_count: 3 };
 		expect( getBalanceDepositCount( balance ) ).toEqual( '3 deposits' );
 	} );
