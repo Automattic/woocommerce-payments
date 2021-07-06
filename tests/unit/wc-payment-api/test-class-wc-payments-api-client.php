@@ -910,6 +910,29 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * @dataProvider data_get_intent_description
+	 */
+	public function test_get_intent_description( $order_id, $expected_intent_description ) {
+		$actual_intent_description = PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'get_intent_description',
+			[ $order_id ]
+		);
+
+		$this->assertSame( $expected_intent_description, $actual_intent_description );
+	}
+
+	/**
+	 * Data provider for test_get_intent_description
+	 */
+	public function data_get_intent_description() {
+		return [
+			'no_order_id'   => [ 0, 'Online Payment for Test Blog' ],
+			'with_order_id' => [ 100, 'Online Payment for Order #100 for Test Blog' ],
+		];
+	}
+
+	/**
 	 * Set up http mock response.
 	 *
 	 * @param int   $status_code status code for the mocked response.
