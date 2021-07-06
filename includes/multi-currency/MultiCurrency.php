@@ -132,7 +132,9 @@ class MultiCurrency {
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
+		$this->check_store_currency_for_change();
 
+		new AdminNotices();
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
@@ -614,6 +616,36 @@ class MultiCurrency {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Checks to see if the store currency has changed and puts any manual rate currencies into an option for a notice to display.
+	 */
+	private function check_store_currency_for_change() {
+		$last_known_currency  = get_option( $this->id . '_store_currency', false );
+		$woocommerce_currency = get_woocommerce_currency();
+		if ( ! $last_known_currency ) {
+			update_option( $this->id . '_store_currency', $woocommerce_currency );
+			return;
+		}
+
+		if ( $last_known_currency !== $woocommerce_currency ) {
+			$enabled_currencies = $this->get_enabled_currencies();
+			$manual_currencies  = [];
+
+			// Check enabled currencies for manual rates.
+			foreach ( $enabled_currencies as $currency ) {
+				$rate_type = get_option( $this->id . '_exchange_rate_' . $currency->get_id(), false );
+				if ( 'manual' === $rate_type ) {
+					$manual_currencies[] = $currency->get_name();
+				}
+			}
+
+			if ( 0 < count( $manual_currencies ) ) {
+				update_option( $this->id . '_show_store_currency_changed_notice', $manual_currencies );
+			}
+			update_option( $this->id . '_store_currency', $woocommerce_currency );
+		}
 	}
 
 	/**
