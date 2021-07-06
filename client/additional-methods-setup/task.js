@@ -65,7 +65,7 @@ const createAdditionalMethodsSetupTask = ( {
 							value={ contextValue }
 						>
 							<WcPayUpeContextProvider
-								defaultIsUpeEnabled={ '1' === isUpeEnabled }
+								defaultIsUpeEnabled={ isUpeEnabled }
 							>
 								<UpePreviewMethodSelector />
 							</WcPayUpeContextProvider>
@@ -73,7 +73,7 @@ const createAdditionalMethodsSetupTask = ( {
 					),
 					completed:
 						// eslint-disable-next-line max-len
-						'yes' === isSetupCompleted || '1' === isUpeEnabled,
+						'yes' === isSetupCompleted || isUpeEnabled,
 			  }
 			: {} ),
 	};

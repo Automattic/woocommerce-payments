@@ -174,7 +174,7 @@ describe( 'getTasks()', () => {
 				accountStatus: {},
 			} );
 
-			window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = '0';
+			window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = false;
 			createAdditionalMethodsSetupTask.mock.calls[ 0 ][ 0 ].setUpeEnabled();
 
 			expect(

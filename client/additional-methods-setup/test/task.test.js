@@ -82,12 +82,12 @@ describe( 'createAdditionalMethodsSetupTask()', () => {
 		} );
 
 		it.each( [
-			[ 'yes', '1' ],
-			[ 'yes', '0' ],
-			[ 'no', '1' ],
-			[ 'no', '0' ],
+			[ 'yes', true ],
+			[ 'yes', false ],
+			[ 'no', true ],
+			[ 'no', false ],
 		] )(
-			'marks task completed if isSetupCompleted equals "yes" or isUpeEnabled equals "1" (testing: %s, %s)',
+			'marks task completed if isSetupCompleted equals "yes" or isUpeEnabled is true (testing: %s, %s)',
 			( isSetupCompleted, isUpeEnabled ) => {
 				const result = createAdditionalMethodsSetupTask( {
 					isUpeSettingsPreviewEnabled: true,
@@ -96,7 +96,7 @@ describe( 'createAdditionalMethodsSetupTask()', () => {
 				} );
 
 				expect( result.completed ).toEqual(
-					'yes' === isSetupCompleted || '1' === isUpeEnabled
+					'yes' === isSetupCompleted || isUpeEnabled
 				);
 			}
 		);
