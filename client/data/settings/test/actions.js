@@ -36,10 +36,8 @@ describe( 'Settings actions tests', () => {
 
 		test( 'makes POST request with settings', () => {
 			const settingsMock = {
-				/* eslint-disable camelcase */
 				enabled_payment_method_ids: [ 'foo', 'bar' ],
 				is_wcpay_enabled: true,
-				/* eslint-enable camelcase */
 			};
 
 			select.mockReturnValue( {

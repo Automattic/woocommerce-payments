@@ -41,7 +41,6 @@ const PaymentGatewaysConfirmation = () => {
 				return;
 			}
 
-			// eslint-disable-next-line camelcase
 			if ( woocommerce_admin.ajax_url !== settings.url ) {
 				return;
 			}

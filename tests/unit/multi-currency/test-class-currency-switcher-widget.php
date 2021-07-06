@@ -5,30 +5,30 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Multi_Currency\Currency;
+use WCPay\MultiCurrency\Currency;
 
 /**
- * WCPay\Multi_Currency\Currency_Switcher_Widget unit tests.
+ * WCPay\MultiCurrency\CurrencySwitcherWidget unit tests.
  */
 class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCase {
 	/**
-	 * Mock WCPay\Multi_Currency\Compatibility.
+	 * Mock WCPay\MultiCurrency\Compatibility.
 	 *
-	 * @var WCPay\Multi_Currency\Compatibility|PHPUnit_Framework_MockObject_MockObject
+	 * @var WCPay\MultiCurrency\Compatibility|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_compatibility;
 
 	/**
-	 * Mock WCPay\Multi_Currency\Multi_Currency.
+	 * Mock WCPay\MultiCurrency\MultiCurrency.
 	 *
-	 * @var WCPay\Multi_Currency\Multi_Currency|PHPUnit_Framework_MockObject_MockObject
+	 * @var WCPay\MultiCurrency\MultiCurrency|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_multi_currency;
 
 	/**
-	 * WCPay\Multi_Currency\Currency_Switcher_Widget instance.
+	 * WCPay\MultiCurrency\CurrencySwitcherWidget instance.
 	 *
-	 * @var WCPay\Multi_Currency\Currency_Switcher_Widget
+	 * @var WCPay\MultiCurrency\CurrencySwitcherWidget
 	 */
 	private $currency_switcher_widget;
 
@@ -38,8 +38,8 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 	public function setUp() {
 		parent::setUp();
 
-		$this->mock_compatibility  = $this->createMock( WCPay\Multi_Currency\Compatibility::class );
-		$this->mock_multi_currency = $this->createMock( WCPay\Multi_Currency\Multi_Currency::class );
+		$this->mock_compatibility  = $this->createMock( WCPay\MultiCurrency\Compatibility::class );
+		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
 		$this->mock_multi_currency
 			->method( 'get_enabled_currencies' )
 			->willReturn(
@@ -50,7 +50,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 				]
 			);
 
-		$this->currency_switcher_widget = new WCPay\Multi_Currency\Currency_Switcher_Widget( $this->mock_multi_currency, $this->mock_compatibility );
+		$this->currency_switcher_widget = new WCPay\MultiCurrency\CurrencySwitcherWidget( $this->mock_multi_currency, $this->mock_compatibility );
 	}
 
 	public function test_widget_renders_title_with_args() {
