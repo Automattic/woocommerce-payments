@@ -7,8 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use Automattic\Jetpack\Connection\Client;
-
 /**
  * REST controller for settings.
  *
@@ -43,9 +41,9 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	 * The constructor.
 	 * WC_REST_Payments_Survey_Controller constructor.
 	 *
-	 * @param WC_Payments_Http $http_client - The HTTP client, used to forward the request to WPCom.
+	 * @param WC_Payments_Http_Interface $http_client - The HTTP client, used to forward the request to WPCom.
 	 */
-	public function __construct( WC_Payments_Http $http_client ) {
+	public function __construct( WC_Payments_Http_Interface $http_client ) {
 		$this->http_client = $http_client;
 	}
 
@@ -85,6 +83,8 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	}
 
 	/**
+	 * Submits the survey trhough the WPcom API.
+	 *
 	 * @param WP_REST_Request $request the request being made.
 	 *
 	 * @return WP_REST_Response
@@ -148,7 +148,6 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 				'survey_responses' => $survey_responses,
 			]
 		);
-		var_dump( '###', $this->http_client );
 
 		$wpcom_request_body = json_decode( wp_remote_retrieve_body( $wpcom_request ) );
 
@@ -186,6 +185,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 			] as $key
 		) {
 			if ( ! empty( $_SERVER[ $key ] ) ) {
+				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 				return $_SERVER[ $key ];
 			}
 		}

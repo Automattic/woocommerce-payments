@@ -43,21 +43,14 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_empty_request_returns_400_status_code() {
-		$request  = new WP_REST_Request( 'POST', self::ROUTE );
-		$response = rest_do_request( $request );
+		$request = new WP_REST_Request( 'POST', self::ROUTE );
+
+		$response = $this->controller->submit_survey( $request );
 
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	public function test_valid_request_forwards_data_to_jetpack() {
-		$request = new WP_REST_Request( 'POST', self::ROUTE );
-		$request->set_body_params(
-			[
-				'reasons'  => [ 'slow-buggy', 'store-sales' ],
-				'comments' => 'test comment',
-			]
-		);
-
 		/**
 		 * '/marketing/survey',
 		 * '2',
@@ -75,22 +68,54 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 		 * ]
 		 */
 
-		$this->http_client_stub->expects( $this->once() )
-							   ->method( 'wpcom_json_api_request_as_user' )
-							->with(
-								$this->stringContains( '/marketing/survey' ),
-								$this->anything(),
-								$this->anything(),
-								$this->anything()
-							)
-							->willReturn(
-								[
-									'body'     => '{"err": ""}',
-									'response' => [ 'code' => 200 ],
-								]
-							);
+		$this->http_client_stub
+			->expects( $this->any() )
+			->method( 'wpcom_json_api_request_as_user' )
+			->with(
+				$this->stringContains( '/marketing/survey' ),
+				$this->anything(),
+				$this->anything(),
+				$this->logicalAnd(
+					$this->arrayHasKey( 'survey_id' ),
+					$this->arrayHasKey( 'survey_responses' ),
+					$this->callback(
+						function ( $argument ) {
+							return 'wcpay-disable-upe-early-access' === $argument['survey_id'];
+						}
+					),
+					$this->callback(
+						function ( $argument ) {
+							return 'yes' === $argument['survey_responses']['why-disable-slow-buggy'];
+						}
+					),
+					$this->callback(
+						function ( $argument ) {
+							return 'yes' === $argument['survey_responses']['why-disable-store-sales'];
+						}
+					),
+					$this->callback(
+						function ( $argument ) {
+							return 'test comment' === $argument['survey_responses']['comments']['text'];
+						}
+					)
+				)
+			)
+			->willReturn(
+				[
+					'body'     => '{"err": ""}',
+					'response' => [ 'code' => 200 ],
+				]
+			);
 
-		$response = rest_do_request( $request );
+		$request = new WP_REST_Request( 'POST', self::ROUTE );
+		$request->set_body_params(
+			[
+				'reasons'  => [ 'slow-buggy', 'store-sales' ],
+				'comments' => 'test comment',
+			]
+		);
+
+		$response = $this->controller->submit_survey( $request );
 
 		$this->assertEquals( 200, $response->get_status() );
 	}
