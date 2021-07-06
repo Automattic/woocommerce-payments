@@ -4,6 +4,9 @@
  * Internal dependencies
  */
 import { getTasks } from '../tasks';
+import createAdditionalMethodsSetupTask from '../../../additional-methods-setup/task';
+
+jest.mock( '../../../additional-methods-setup/task', () => jest.fn() );
 
 describe( 'getTasks()', () => {
 	it( 'should include business details when flag is set', () => {
@@ -101,5 +104,82 @@ describe( 'getTasks()', () => {
 				} ),
 			] )
 		);
+	} );
+
+	describe( 'additional method setup task', () => {
+		beforeEach( () => {
+			createAdditionalMethodsSetupTask.mockReturnValue( {} );
+			window.wcpaySettings = { additionalMethodsSetup: {} };
+		} );
+
+		afterEach( () => {
+			jest.restoreAllMocks();
+		} );
+
+		it( 'renders task if `showTask` is true', () => {
+			createAdditionalMethodsSetupTask.mockReturnValue( {
+				key: 'woocommerce-payments--additional-payment-methods',
+			} );
+
+			const actual = getTasks( {
+				additionalMethodsSetup: { showTask: true },
+				accountStatus: {},
+			} );
+
+			expect( actual ).toEqual(
+				expect.arrayContaining( [
+					expect.objectContaining( {
+						key: 'woocommerce-payments--additional-payment-methods',
+					} ),
+				] )
+			);
+		} );
+
+		it( 'does not render task if `showTask` is true', () => {
+			createAdditionalMethodsSetupTask.mockReturnValue( {
+				key: 'woocommerce-payments--additional-payment-methods',
+			} );
+
+			const actual = getTasks( {
+				additionalMethodsSetup: { showTask: false },
+				accountStatus: {},
+			} );
+
+			expect( actual ).toEqual(
+				expect.not.arrayContaining( [
+					expect.objectContaining( {
+						key: 'woocommerce-payments--additional-payment-methods',
+					} ),
+				] )
+			);
+		} );
+
+		it( 'receives callback updating window.~.isSetupCompleted as setSetupCompleted()', () => {
+			getTasks( {
+				additionalMethodsSetup: { showTask: true },
+				accountStatus: {},
+			} );
+
+			window.wcpaySettings.additionalMethodsSetup.isSetupCompleted = 'no';
+			createAdditionalMethodsSetupTask.mock.calls[ 0 ][ 0 ].setSetupCompleted();
+
+			expect(
+				window.wcpaySettings.additionalMethodsSetup.isSetupCompleted
+			).toEqual( 'yes' );
+		} );
+
+		it( 'receives callback updating window.~.isUpeEnabled as setUpeEnabled()', () => {
+			getTasks( {
+				additionalMethodsSetup: { showTask: true },
+				accountStatus: {},
+			} );
+
+			window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = '0';
+			createAdditionalMethodsSetupTask.mock.calls[ 0 ][ 0 ].setUpeEnabled();
+
+			expect(
+				window.wcpaySettings.additionalMethodsSetup.isUpeEnabled
+			).toEqual( true );
+		} );
 	} );
 } );
