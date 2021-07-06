@@ -1443,7 +1443,7 @@ class WC_Payments_API_Client {
 	 * @return string        A formatted intention description.
 	 */
 	private function get_intent_description( int $order_id ): string {
-		if ( empty( $order_id ) ) {
+		if ( 0 === $order_id ) {
 			return sprintf(
 				// Forgo i18n as this is only visible in the Stripe dashboard.
 				'Online Payment for %s',
