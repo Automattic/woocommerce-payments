@@ -17,6 +17,7 @@ import interpolateComponents from 'interpolate-components';
  * Internal dependencies
  */
 import WizardTaskContext from '../wizard/task/context';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
@@ -28,6 +29,7 @@ import {
 	useDigitalWalletsEnabledSettings,
 } from '../../data';
 import './add-payment-methods-task.scss';
+import { formatAccountFeesDescription } from '../../utils/account-fees';
 
 const useGetCountryName = () => {
 	const baseLocation = useSelect(
@@ -66,6 +68,8 @@ const usePaymentMethodsCheckboxState = ( initialValue ) => {
 };
 
 const AddPaymentMethodsTask = () => {
+	const { accountFees } = useContext( WCPaySettingsContext );
+
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
 	const [
 		initialEnabledPaymentMethodIds,
@@ -144,6 +148,19 @@ const AddPaymentMethodsTask = () => {
 
 	const countryName = useGetCountryName();
 
+	const getMethodFee = ( methodId ) => {
+		const methodFees = accountFees[ methodId ];
+
+		if ( ! methodFees ) {
+			return __( 'missing fees', 'woocommerce-payments' );
+		}
+
+		/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
+		const format = __( '%1$f%% + %2$s', 'woocommerce-payments' );
+
+		return formatAccountFeesDescription( methodFees, format, '' );
+	};
+
 	return (
 		<WizardTaskItem
 			className="add-payment-methods-task"
@@ -188,7 +205,7 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.card }
 									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
+									fees={ getMethodFee( 'card' ) }
 									name="card"
 								/>
 							) }
@@ -207,7 +224,7 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.giropay }
 									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
+									fees={ getMethodFee( 'giropay' ) }
 									name="giropay"
 								/>
 							) }
@@ -215,7 +232,7 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.sofort }
 									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
+									fees={ getMethodFee( 'sofort' ) }
 									name="sofort"
 								/>
 							) }
@@ -225,7 +242,7 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.sepa_debit }
 									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
+									fees={ getMethodFee( 'sepa_debit' ) }
 									name="sepa_debit"
 								/>
 							) }

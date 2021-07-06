@@ -12,6 +12,7 @@ import { addFilter } from '@wordpress/hooks';
 import MethodSelector from './methods-selector';
 import UpePreviewMethodSelector from './upe-preview-methods-selector';
 import WcPayUpeContextProvider from '../settings/wcpay-upe-toggle/provider';
+import WCPaySettingsContext from '../settings/wcpay-settings-context';
 
 addFilter(
 	'woocommerce_admin_onboarding_task_list',
@@ -28,7 +29,13 @@ addFilter(
 				// it might be worth exploring how to use Suspense
 				// to lazily load the JS that might not be necessary if the action is not taken.
 				// It might also be worth exploring adding an error boundary to prevent the whole page to be blank in case of error?
-				container: <MethodSelector />,
+				container: (
+					<WCPaySettingsContext.Provider
+						value={ window.wcpaySettings }
+					>
+						<MethodSelector />
+					</WCPaySettingsContext.Provider>
+				),
 				// please note: marking an item as "dismissed" does not mean it's "completed" - they are considered 2 different things
 				completed:
 					'yes' ===
