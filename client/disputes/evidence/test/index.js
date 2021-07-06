@@ -14,7 +14,6 @@ jest.mock( 'data', () => ( {
 	useDisputeEvidence: jest.fn(),
 } ) );
 
-/* eslint-disable camelcase */
 const disputeNeedsResponse = {
 	id: 'dp_asdfghjkl',
 	amount: 1000,
@@ -46,7 +45,6 @@ const disputeNoNeedForResponse = {
 	reason: 'general',
 	status: 'under_review',
 };
-/* eslint-enable camelcase */
 
 const fields = [
 	{

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 declare namespace AccountOverview {
 	interface Account {
 		default_currency: string;
@@ -64,7 +63,7 @@ declare module 'data' {
 declare module 'gridicons' {
 	type GridiconParams = {
 		icon: string;
-		size: number;
+		size?: number;
 		className?: string;
 	};
 	const Gridicon: ( props: GridiconParams ) => JSX.Element;

@@ -23,11 +23,11 @@ class API_Exception extends Base_Exception {
 	/**
 	 * Constructor
 	 *
-	 * @param string    $message    The Exception message to throw.
-	 * @param string    $error_code Error code returned by the server, for example wcpay_account_not_found.
-	 * @param int       $http_code  HTTP response code.
-	 * @param int       $code       The Exception code.
-	 * @param Throwable $previous   The previous exception used for the exception chaining.
+	 * @param string     $message    The Exception message to throw.
+	 * @param string     $error_code Error code returned by the server, for example wcpay_account_not_found.
+	 * @param int        $http_code  HTTP response code.
+	 * @param int        $code       The Exception code.
+	 * @param \Throwable $previous   The previous exception used for the exception chaining.
 	 */
 	public function __construct( $message, $error_code, $http_code, $code = 0, $previous = null ) {
 		$this->http_code = $http_code;
