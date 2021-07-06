@@ -1344,16 +1344,14 @@ class WC_Payments_API_Client {
 			$object['order'] = [
 				'number'       => $order->get_order_number(),
 				'url'          => $order->get_edit_order_url(),
-				'customer_url' => admin_url(
-					add_query_arg(
-						[
-							'page'      => 'wc-admin',
-							'path'      => '/customers',
-							'filter'    => 'single_customer',
-							'customers' => $order->get_customer_id(),
-						],
-						'admin.php'
-					)
+				'customer_url' => add_query_arg(
+					[
+						'page'      => 'wc-admin',
+						'path'      => '/customers',
+						'filter'    => 'single_customer',
+						'customers' => $order->get_customer_id(),
+					],
+					'admin.php'
 				),
 			];
 

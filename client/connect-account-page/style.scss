@@ -91,7 +91,7 @@
 		}
 
 		.connect-account__card {
-			.woocommerce-card__body {
+			> .components-card__body {
 				padding: 0;
 
 				.content {
@@ -116,7 +116,7 @@
 		}
 
 		.connect-account__steps {
-			.woocommerce-card__body {
+			.components-card__body {
 				padding: 24px;
 			}
 

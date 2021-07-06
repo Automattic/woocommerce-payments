@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 /**
  * External dependencies
  */
@@ -57,8 +56,8 @@ const renderEmptyCard = () => (
 );
 
 function hasValidNotes( notes ) {
-	const validNotes = notes.filter( ( { is_deleted } ) => {
-		return ! is_deleted;
+	const validNotes = notes.filter( ( { is_deleted: isDeleted } ) => {
+		return ! isDeleted;
 	} );
 	return 0 !== validNotes.length;
 }

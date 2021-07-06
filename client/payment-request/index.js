@@ -143,7 +143,6 @@ jQuery( ( $ ) => {
 			}
 
 			const data = {
-				// eslint-disable-next-line camelcase
 				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
 				attributes: $( '.variations_form' ).length
@@ -247,13 +246,11 @@ jQuery( ( $ ) => {
 			);
 
 			const data = {
-				// eslint-disable-next-line camelcase
 				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
 				attributes: $( '.variations_form' ).length
 					? wcpayPaymentRequest.getAttributes().data
 					: [],
-				// eslint-disable-next-line camelcase
 				addon_value: addonValue,
 			};
 
@@ -430,14 +427,12 @@ jQuery( ( $ ) => {
 						addToCartButton.is( '.wc-variation-is-unavailable' )
 					) {
 						window.alert(
-							// eslint-disable-next-line camelcase
 							wc_add_to_cart_variation_params.i18n_unavailable_text
 						);
 					} else if (
 						addToCartButton.is( '.wc-variation-selection-needed' )
 					) {
 						window.alert(
-							// eslint-disable-next-line camelcase
 							wc_add_to_cart_variation_params.i18n_make_a_selection_text
 						);
 					}
