@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Tooltip } from '@wordpress/components';
 import Gridicon from 'gridicons';
@@ -12,7 +13,15 @@ import Gridicon from 'gridicons';
  */
 import { formatCurrency } from 'utils/currency';
 
-const ConversionIndicator = ( { amount, currency } ) => (
+interface ConversionIndicatorProps {
+	amount: number;
+	currency: string;
+}
+
+const ConversionIndicator = ( {
+	amount,
+	currency,
+}: ConversionIndicatorProps ): React.ReactElement => (
 	<Tooltip
 		text={ sprintf(
 			/* translators: %s is a monetary amount */
@@ -30,12 +39,24 @@ const ConversionIndicator = ( { amount, currency } ) => (
 	</Tooltip>
 );
 
-const ConvertedAmount = ( { amount, currency, fromAmount, fromCurrency } ) => {
+interface ConvertedAmountProps {
+	amount: number;
+	currency: string;
+	fromAmount: number;
+	fromCurrency: string;
+}
+
+const ConvertedAmount = ( {
+	amount,
+	currency,
+	fromAmount,
+	fromCurrency,
+}: ConvertedAmountProps ): JSX.Element => {
 	const formattedCurrency = formatCurrency( amount, currency );
 
 	// No conversion if currencies match.
 	if ( currency === fromCurrency ) {
-		return formattedCurrency;
+		return <>{ formattedCurrency }</>;
 	}
 
 	return (
