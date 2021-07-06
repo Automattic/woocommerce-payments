@@ -4,7 +4,16 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, CardDivider } from '@wordpress/components';
+import {
+	Button,
+	Card,
+	CardBody,
+	CardDivider,
+	CardHeader,
+	DropdownMenu,
+} from '@wordpress/components';
+import { moreVertical, trash } from '@wordpress/icons';
+import { useState } from '@wordpress/element';
 import classNames from 'classnames';
 
 /**
@@ -64,7 +73,7 @@ const methodsConfiguration = {
 	},
 };
 
-const PaymentMethods = () => {
+const PaymentMethods = ( { isUPEEnabled = true } ) => {
 	const [
 		enabledMethodIds,
 		updateEnabledMethodIds,
@@ -85,30 +94,83 @@ const PaymentMethods = () => {
 		);
 	};
 
+	// @todo - use the custom hook registered in #2239.
+	const [ isUPE = isUPEEnabled, setUPE ] = useState();
+
+	// @todo - remove once #2174 is merged and use real banner instead.
+	function UPESetupBanner() {
+		return (
+			<>
+				<p>UPE IS DISABLED!!!</p>
+				<Button
+					label="Enable UPE"
+					isPrimary
+					onClick={ () => setUPE( true ) }
+				>
+					{ __( 'Enable UPE', 'woocommerce-payments' ) }
+				</Button>
+			</>
+		);
+	}
+
+	function PaymentMethodsDropdownMenu() {
+		return (
+			<DropdownMenu
+				icon={ moreVertical }
+				label="Add Feedback or Disable"
+				controls={ [
+					{
+						title: 'Provide Feedback',
+						icon: 'megaphone',
+						onClick: () => console.log( 'Provide Feedback' ),
+					},
+					{
+						title: 'Disable',
+						isDisabled: ! isUPE,
+						icon: trash,
+						// @todo - change the value of { featureFlags: { upe } } to false
+						onClick: () => setUPE( false ),
+					},
+				] }
+			/>
+		);
+	}
+
 	return (
 		<>
 			<Card className="payment-methods">
-				<CardBody size={ null }>
-					<PaymentMethodsList className="payment-methods__enabled-methods">
-						{ enabledMethods.map(
-							( { id, label, description, Icon } ) => (
-								<PaymentMethod
-									key={ id }
-									Icon={ Icon }
-									onDeleteClick={
-										1 < enabledMethods.length
-											? handleDeleteClick
-											: undefined
-									}
-									id={ id }
-									label={ label }
-									description={ description }
-								/>
-							)
-						) }
-					</PaymentMethodsList>
+				{ isUPE && (
+					<CardHeader
+						size={ null }
+						className="payment-methods-header"
+					>
+						<PaymentMethodsDropdownMenu />
+					</CardHeader>
+				) }
+				<CardBody>
+					{ isUPE && (
+						<PaymentMethodsList className="payment-methods__enabled-methods">
+							{ enabledMethods.map(
+								( { id, label, description, Icon } ) => (
+									<PaymentMethod
+										key={ id }
+										Icon={ Icon }
+										onDeleteClick={
+											1 < enabledMethods.length
+												? handleDeleteClick
+												: undefined
+										}
+										id={ id }
+										label={ label }
+										description={ description }
+									/>
+								)
+							) }
+						</PaymentMethodsList>
+					) }
+					{ ! isUPE && <UPESetupBanner /> }
 				</CardBody>
-				{ 1 < availablePaymentMethodIds.length ? (
+				{ isUPE && 1 < availablePaymentMethodIds.length ? (
 					<>
 						<CardDivider />
 						<CardBody className="payment-methods__available-methods-container">

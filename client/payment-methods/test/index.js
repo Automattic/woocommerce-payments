@@ -143,4 +143,33 @@ describe( 'PaymentMethods', () => {
 			'sofort',
 		] );
 	} );
+
+	test( 'renders the Feedback/Disable Header when UPE is enabled', () => {
+		render( <PaymentMethods /> );
+		const DisableUPEButton = screen.getByRole( 'button', {
+			name: 'Add Feedback or Disable',
+		} );
+
+		expect( DisableUPEButton ).toBeInTheDocument();
+	} );
+
+	test( 'renders the "Enable UPE" button when UPE is disabled', () => {
+		render( <PaymentMethods isUPEEnabled={ false } /> );
+
+		const EnableUPEButton = screen.queryByRole( 'button', {
+			name: 'Enable UPE',
+		} );
+
+		expect( EnableUPEButton ).toBeInTheDocument();
+	} );
+
+	test( 'Does not render the Feedback/Disable Header when UPE is disabled', () => {
+		render( <PaymentMethods isUPEEnabled={ false } /> );
+
+		const DisableUPEButton = screen.getByRole( 'button', {
+			name: 'Add Feedback or Disable',
+		} );
+
+		expect( DisableUPEButton ).not.toBeInTheDocument();
+	} );
 } );
