@@ -832,13 +832,12 @@ class WC_Payments {
 	 * @param mixed  $new_value   The new option value.
 	 */
 	public static function possibly_update_wcpay_account_locale( $option_name, $old_value, $new_value ) {
-		$api = self::get_payments_api_client();
-		if ( 'WPLANG' === $option_name && $api->is_server_connected() ) {
+		if ( 'WPLANG' === $option_name && self::get_account_service()->is_stripe_connected() ) {
 			try {
 				$account_settings = [
-					'locale' => $new_value,
+					'locale' => $new_value ? $new_value : 'en_US',
 				];
-				$api->update_account( $account_settings );
+				self::get_payments_api_client()->update_account( $account_settings );
 			} catch ( Exception $e ) {
 				Logger::error( __( 'Failed to update Account locale. ', 'woocommerce-payments' ) . $e );
 			}
