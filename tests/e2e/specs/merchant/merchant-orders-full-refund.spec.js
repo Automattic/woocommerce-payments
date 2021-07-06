@@ -18,6 +18,9 @@ describe( 'Order > Full refund', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
+		// Clear the cart if any items are inside
+		await shopper.emptyCart();
+
 		// Place an order to refund later
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )

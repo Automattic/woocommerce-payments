@@ -23,11 +23,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		);
 	} );
 
-	afterAll( async () => {
-		// Clear the cart at the end
-		await shopper.emptyCart();
-	} );
-
 	afterEach( async () => {
 		await page.reload();
 	} );
@@ -134,5 +129,10 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 			declined3dsCardError,
 			'Error: Your card was declined.'
 		);
+	} );
+
+	afterAll( async () => {
+		// Clear the cart at the end
+		await shopper.emptyCart();
 	} );
 } );
