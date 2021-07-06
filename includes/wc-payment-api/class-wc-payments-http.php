@@ -83,7 +83,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 * @param string $body Body passed to {@see WP_Http}. Default is `null`.
 	 * @param string $base_api_path REST API root. Default is `wpcom`.
 	 *
-	 * @return array|\WP_Error $response Response data, else WP_Error on failure.
+	 * @return array|WP_Error $response Response data, else WP_Error on failure.
 	 */
 	public function wpcom_json_api_request_as_user(
 		$path,
@@ -92,6 +92,11 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 		$body = null,
 		$base_api_path = 'wpcom'
 	) {
+		/**
+		 * Disabled because of internal typing issue within the Jetpack library.
+		 *
+		 * @psalm-suppress UndefinedDocblockClass
+		 */
 		return Automattic\Jetpack\Connection\Client::wpcom_json_api_request_as_user( $path, $version, $args, $body, $base_api_path );
 	}
 
