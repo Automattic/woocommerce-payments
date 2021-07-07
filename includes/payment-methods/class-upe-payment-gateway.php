@@ -599,8 +599,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				<input id="wcpay-payment-method-upe" type="hidden" name="wcpay-payment-method-upe" />
 
 			<?php
-			$saveable_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );
-			if ( $this->is_saved_cards_enabled() && ! empty( $saveable_payment_methods ) ) {
+			$methods_enabled_for_saved_payments = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );
+			if ( $this->is_saved_cards_enabled() && ! empty( $methods_enabled_for_saved_payments ) ) {
 				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
 				$this->save_payment_method_checkbox( $force_save_payment );
 			}
