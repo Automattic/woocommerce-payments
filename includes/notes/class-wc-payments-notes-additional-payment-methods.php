@@ -64,6 +64,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		 * requires WC requirement is > 5.4.
 		 */
 		if (
+			! current_user_can( 'manage_woocommerce' ) ||
 			empty( $_GET['page'] ) || // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			'wc-settings' !== $_GET['page'] || // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			empty( $_GET['action'] ) || // phpcs:disable WordPress.Security.NonceVerification.Recommended
