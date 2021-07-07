@@ -12,7 +12,6 @@ import { Button, Icon } from '@wordpress/components';
 import DeleteButton from './delete-button';
 
 const EnabledCurrenciesListItem = ( {
-	// eslint-disable-next-line camelcase
 	currency: { code, flag, id, is_default: isDefault, name, symbol, rate },
 	defaultCurrency: {
 		code: defaultCode,
@@ -29,7 +28,6 @@ const EnabledCurrenciesListItem = ( {
 			? Number.parseFloat( rate * 1000 ).toFixed( 2 )
 			: Number.parseFloat( rate ).toFixed( 2 );
 
-		// eslint-disable-next-line camelcase
 		if ( isDefault ) {
 			return __( 'Default currency', 'woocommerce-payments' );
 		}
