@@ -22,6 +22,11 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 	const NOTE_NAME = 'wc-payments-notes-additional-payment-methods';
 
 	/**
+	 * Nonce action name
+	 */
+	const NOTE_ACTION = 'enable-upe';
+
+	/**
 	 * Get the note.
 	 */
 	public static function get_note() {
@@ -32,7 +37,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 
 		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
 		$note       = new $note_class();
-		$nonce      = wp_create_nonce( 'enable-upe' );
+		$nonce      = wp_create_nonce( self::NOTE_ACTION );
 
 		$note->set_title( __( 'Boost your sales by accepting new payment methods', 'woocommerce-payments' ) );
 		$note->set_content( __( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments. <a href="https://docs.woocommerce.com/document/payments/" target="wcpay_upe_learn_more">Learn more</a>', 'woocommerce-payments' ) );
@@ -43,11 +48,34 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		$note->add_action(
 			self::NOTE_NAME,
 			__( 'Enable on your store', 'woocommerce-payments' ),
-			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&action=enable-upe&_wpnonce=' . $nonce ),
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&action=' . self::NOTE_ACTION . '&_wpnonce=' . $nonce ),
 			$note_class::E_WC_ADMIN_NOTE_UNACTIONED,
 			true
 		);
 
 		return $note;
+	}
+
+	/**
+	 * Enable UPE feature flag. CTA from Admin Notes. See WC_Payments_Notes_Additional_Payment_Methods.
+	 */
+	public static function maybe_enable_upe_feature_flag() {
+		if (
+			empty( $_GET['page'] ) ||
+			'wc-settings' !== $_GET['page'] ||
+			empty( $_GET['action'] ) ||
+			'enable-upe' !== $_GET['action'] ||
+			! check_admin_referer( self::NOTE_ACTION )
+		) {
+			return;
+		}
+
+		// Enable UPE.
+		WC_Payments_Features::update_upe_enabled( true );
+		self::possibly_delete_note();
+
+		$wcpay_settings_url = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' );
+		wp_safe_redirect( $wcpay_settings_url );
+		exit;
 	}
 }
