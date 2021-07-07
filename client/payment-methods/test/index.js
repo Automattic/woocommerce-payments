@@ -156,7 +156,7 @@ describe( 'PaymentMethods', () => {
 	test( 'renders the "Enable UPE" button when UPE is disabled', () => {
 		render( <PaymentMethods isUPEEnabled={ false } /> );
 
-		const EnableUPEButton = screen.queryByRole( 'button', {
+		const EnableUPEButton = screen.getByRole( 'button', {
 			name: 'Enable UPE',
 		} );
 
@@ -166,7 +166,7 @@ describe( 'PaymentMethods', () => {
 	test( 'Does not render the Feedback/Disable Header when UPE is disabled', () => {
 		render( <PaymentMethods isUPEEnabled={ false } /> );
 
-		const DisableUPEButton = screen.getByRole( 'button', {
+		const DisableUPEButton = screen.queryByRole( 'button', {
 			name: 'Add Feedback or Disable',
 		} );
 
