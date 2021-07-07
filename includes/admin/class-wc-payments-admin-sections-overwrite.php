@@ -20,9 +20,17 @@ class WC_Payments_Admin_Sections_Overwrite {
 
 	/**
 	 * WC_Payments_Admin_Sections_Overwrite constructor.
+	 *
+	 * @param WC_Payments_Account $account WC_Payments_Account instance.
 	 */
-	public function __construct() {
+	public function __construct( WC_Payments_Account $account ) {
 		add_filter( 'woocommerce_get_sections_checkout', [ $this, 'add_checkout_sections' ] );
+
+		$is_account_disconnected = empty( $account->get_cached_account_data() );
+		if ( $is_account_disconnected ) {
+			return;
+		}
+
 		add_action( 'woocommerce_sections_checkout', [ $this, 'overwrite_current_section_global' ], 5 );
 		add_action( 'woocommerce_sections_checkout', [ $this, 'restore_current_section_global' ], 15 );
 
