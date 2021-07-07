@@ -85,16 +85,12 @@ abstract class UPE_Payment_Method {
 	 * @return bool
 	 */
 	public function is_enabled_at_checkout() {
-		// If cart contains subscription items.
 		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
-			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			// If cart contains subscription items or subscription renewal items.
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ||
+				0 < count( wcs_get_order_type_cart_items( 'renewal' ) ) ) {
 				return $this->is_reusable();
 			}
-		}
-
-		// If cart contains subscription renewal items.
-		if ( 0 < count( wcs_get_order_type_cart_items( 'renewal' ) ) ) {
-			return $this->is_reusable();
 		}
 
 		return true;
