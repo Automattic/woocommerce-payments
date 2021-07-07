@@ -52,21 +52,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
 	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
+	 * @param array                                $payment_methods          - Array of UPE payment methods.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service, array $payment_methods ) {
 		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
 		$this->method_title       = __( 'WooCommerce Payments - UPE', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via Stripe.', 'woocommerce-payments' );
 		$this->title              = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->description        = __( 'You will be redirected to Stripe.', 'woocommerce-payments' );
-
-		$card_method    = new CC_Payment_Method( $token_service );
-		$giropay_method = new Giropay_Payment_Method( $token_service );
-		$sofort_method  = new Sofort_Payment_Method( $token_service );
-
-		$this->payment_methods[ $card_method->get_id() ]    = $card_method;
-		$this->payment_methods[ $giropay_method->get_id() ] = $giropay_method;
-		$this->payment_methods[ $sofort_method->get_id() ]  = $sofort_method;
+		$this->payment_methods    = $payment_methods;
 
 		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );

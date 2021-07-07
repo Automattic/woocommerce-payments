@@ -85,14 +85,9 @@ abstract class UPE_Payment_Method {
 	 * @return bool
 	 */
 	public function is_enabled_at_checkout() {
-		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
-			// If cart contains subscription items or subscription renewal items.
-			if ( WC_Subscriptions_Cart::cart_contains_subscription() ||
-				0 < count( wcs_get_order_type_cart_items( 'renewal' ) ) ) {
-				return $this->is_reusable();
-			}
+		if ( $this->is_subscription_item_in_cart() ) {
+			return $this->is_reusable();
 		}
-
 		return true;
 	}
 
@@ -116,5 +111,18 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_payment_token_for_user( $user, $payment_method_id ) {
 		return $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
+	}
+
+	/**
+	 * Returns boolean on whether current WC_Cart or WC_Subscriptions_Cart
+	 * contains a subscription or subscription renewal item
+	 *
+	 * @return bool
+	 */
+	public function is_subscription_item_in_cart() {
+		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
+			return WC_Subscriptions_Cart::cart_contains_subscription() || 0 < count( wcs_get_order_type_cart_items( 'renewal' ) );
+		}
+		return false;
 	}
 }

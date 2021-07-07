@@ -12,9 +12,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
+use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Gateway;
+use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Gateway;
+use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Gateway;
+use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 
 /**
@@ -205,16 +209,27 @@ class WC_Payments {
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
 
-		$gateway_class = CC_Payment_Gateway::class;
+		$card_class    = CC_Payment_Gateway::class;
+		$upe_class     = UPE_Payment_Gateway::class;
 		$giropay_class = Giropay_Payment_Gateway::class;
 		$sepa_class    = Sepa_Payment_Gateway::class;
 		$sofort_class  = Sofort_Payment_Gateway::class;
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
-			$gateway_class = UPE_Payment_Gateway::class;
+			$card_method     = new CC_Payment_Method( self::$token_service );
+			$giropay_method  = new Giropay_Payment_Method( self::$token_service );
+			$sofort_method   = new Sofort_Payment_Method( self::$token_service );
+			$payment_methods = [];
+
+			$payment_methods[ $card_method->get_id() ]    = $card_method;
+			$payment_methods[ $giropay_method->get_id() ] = $giropay_method;
+			$payment_methods[ $sofort_method->get_id() ]  = $sofort_method;
+
+			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods );
+		} else {
+			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 
-		self::$card_gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		if ( WC_Payments_Features::is_giropay_enabled() ) {
 			self::$giropay_gateway = new $giropay_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}

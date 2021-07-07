@@ -7,6 +7,10 @@
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
+use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\Giropay_Payment_Method;
+use WCPay\Payment_Methods\Sofort_Payment_Method;
 
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
@@ -76,7 +80,25 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->gateway    = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
 		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
 
-		$this->upe_gateway    = new \WCPay\Payment_Methods\UPE_Payment_Gateway( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
+		$mock_payment_methods   = [];
+		$payment_method_classes = [
+			CC_Payment_Method::class,
+			Giropay_Payment_Method::class,
+			Sofort_Payment_Method::class,
+		];
+		foreach ( $payment_method_classes as $payment_method_class ) {
+			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
+				->setConstructorArgs( [ $this->mock_token_service ] )
+				->setMethods( [ 'is_subscription_item_in_cart' ] )
+				->getMock();
+			$mock_payment_method->expects( $this->any() )
+				->method( 'is_subscription_item_in_cart' )
+				->will( $this->returnValue( false ) );
+
+			$mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
+		}
+
+		$this->upe_gateway    = new UPE_Payment_Gateway( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $mock_payment_methods );
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->upe_gateway );
 	}
 
