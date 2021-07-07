@@ -16,9 +16,6 @@ let orderAmount;
 
 describe( 'Order > Full refund', () => {
 	beforeAll( async () => {
-		// Make sure the cart is empty
-		await shopper.emptyCart();
-
 		// Place an order to refund later
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
