@@ -109,6 +109,69 @@
       },
       "cvc": "626",
       "label": "Visa ending in 2685"
+    },
+    "declined": {
+      "number": "4000000000000002",
+      "expires": {
+        "month": "06",
+        "year": "25"
+      },
+      "cvc": "626",
+      "label": "Visa ending in 0002"
+    },
+    "declined-funds": {
+      "number": "4000000000009995",
+      "expires": {
+        "month": "06",
+        "year": "25"
+      },
+      "cvc": "626",
+      "label": "Visa ending in 9995"
+    },
+    "declined-incorrect": {
+      "number": "4242424242424241",
+      "expires": {
+        "month": "06",
+        "year": "25"
+      },
+      "cvc": "626",
+      "label": "Visa ending in 4241"
+    },
+    "declined-expired": {
+      "number": "4000000000000069",
+      "expires": {
+        "month": "06",
+        "year": "25"
+      },
+      "cvc": "626",
+      "label": "Visa ending in 0069"
+    },
+    "declined-cvc": {
+      "number": "4000000000000127",
+      "expires": {
+        "month": "06",
+        "year": "25"
+      },
+      "cvc": "626",
+      "label": "Visa ending in 0127"
+    },
+    "declined-processing": {
+      "number": "4000000000000119",
+      "expires": {
+        "month": "06",
+        "year": "25"
+      },
+      "cvc": "626",
+      "label": "Visa ending in 0119"
+    },
+    "declined-3ds": {
+      "number": "4000008400001629",
+      "expires": {
+        "month": "06",
+        "year": "25"
+      },
+      "cvc": "626",
+      "label": "Visa ending in 1629"
     }
   }
 }
