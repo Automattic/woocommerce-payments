@@ -2,12 +2,19 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
 import ConvertedAmount from '../converted-amount';
+
+declare const global: {
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+	};
+};
 
 describe( 'ConvertedAmount', () => {
 	beforeEach( () => {

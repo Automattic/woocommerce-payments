@@ -571,9 +571,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                 </td>
                 <td
                   class="woocommerce-table__item deposit"
-                >
-                  
-                </td>
+                />
               </tr>
               <tr>
                 <th
@@ -1304,9 +1302,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                 </td>
                 <td
                   class="woocommerce-table__item deposit"
-                >
-                  
-                </td>
+                />
               </tr>
               <tr>
                 <th
@@ -2656,9 +2652,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                 </td>
                 <td
                   class="woocommerce-table__item deposit"
-                >
-                  
-                </td>
+                />
               </tr>
               <tr>
                 <th
@@ -3407,9 +3401,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 </td>
                 <td
                   class="woocommerce-table__item deposit"
-                >
-                  
-                </td>
+                />
               </tr>
               <tr>
                 <th
