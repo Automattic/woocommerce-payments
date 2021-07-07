@@ -71,7 +71,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		}
 
 		// Enable UPE.
-		WC_Payments_Features::update_upe_enabled( true );
+		update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
 		self::possibly_delete_note();
 
 		$wcpay_settings_url = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' );

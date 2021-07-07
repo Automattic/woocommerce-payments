@@ -91,14 +91,4 @@ class WC_Payments_Features {
 			]
 		);
 	}
-
-	/**
-	 * Enable/Disable UPE gateway.
-	 *
-	 * @param bool $enable True to enable UPE, false otherwise.
-	 */
-	public static function update_upe_enabled( $enable ) {
-		$enabled_flag = true ? 1 : 0 === $enable;
-		update_option( '_wcpay_feature_upe', $enabled_flag );
-	}
 }
