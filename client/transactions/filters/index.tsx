@@ -1,24 +1,33 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { ReportFilters } from '@woocommerce/components';
 import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
-import { filters, advancedFilters } from './config';
+import { filters, advancedFilters, TransactionsFilterType } from './config';
 import { formatCurrencyName } from '../../utils/currency';
 
-export const TransactionsFilters = ( props ) => {
-	const populateDepositCurrencies = ( filtersConfiguration ) => {
+interface TransactionsFiltersProps {
+	storeCurrencies?: string[];
+}
+
+export const TransactionsFilters = ( {
+	storeCurrencies,
+}: TransactionsFiltersProps ): JSX.Element => {
+	const populateDepositCurrencies = (
+		filtersConfiguration: TransactionsFilterType[]
+	) => {
 		filtersConfiguration.forEach( ( filter ) => {
 			if ( 'store_currency_is' === filter.param ) {
-				const currencies = props.storeCurrencies || [];
+				const currencies = storeCurrencies || [];
 				// Generate select options: pick the first one (default) and add provided currencies
 				filter.filters = [
 					filter.filters[ 0 ],
-					...currencies.map( ( currencyCode ) => ( {
+					...currencies.map( ( currencyCode: string ) => ( {
 						label: formatCurrencyName( currencyCode ),
 						value: currencyCode,
 					} ) ),
