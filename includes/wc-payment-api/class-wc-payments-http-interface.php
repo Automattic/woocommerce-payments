@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Exceptions\API_Exception;
+
 /**
  * A wrapper around Jetpack HTTP request library. Necessary to increase
  * the testability of WC_Payments_API_Client, and allow dependency
