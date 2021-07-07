@@ -26,6 +26,16 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		);
 	} );
 
+	afterEach( async () => {
+		// Reload the page after every test so there are no messages
+		await page.reload();
+	} );
+
+	afterAll( async () => {
+		// Clear the cart at the end so it's ready for another test
+		await shopper.emptyCart();
+	} );
+
 	it( 'should throw an error that the card was simply declined', async () => {
 		const declinedCard = config.get( 'cards.declined' );
 		await fillCardDetails( page, declinedCard );
@@ -37,7 +47,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
 			{ text: 'Error: Your card was declined.' }
 		);
-		await page.reload();
 	} );
 
 	it( 'should throw an error that the card was declined due to insufficient funds', async () => {
@@ -51,7 +60,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
 			{ text: 'Error: Your card has insufficient funds.' }
 		);
-		await page.reload();
 	} );
 
 	it( 'should throw an error that the card was declined due to expired card', async () => {
@@ -65,7 +73,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
 			{ text: 'Error: Your card has expired.' }
 		);
-		await page.reload();
 	} );
 
 	it( 'should throw an error that the card was declined due to incorrect CVC number', async () => {
@@ -79,7 +86,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
 			{ text: "Error: Your card's security code is incorrect." }
 		);
-		await page.reload();
 	} );
 
 	it( 'should throw an error that the card was declined due to processing error', async () => {
@@ -94,7 +100,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 					'Error: An error occurred while processing your card. Try again in a little bit.',
 			}
 		);
-		await page.reload();
 	} );
 
 	it( 'should throw an error that the card was declined due to incorrect card number', async () => {
@@ -117,7 +122,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
 			{ text: 'Your card number is invalid.' }
 		);
-		await page.reload();
 	} );
 
 	it( 'should throw an error that the card was declined due to invalid 3DS card', async () => {
@@ -134,8 +138,5 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 			declined3dsCardError,
 			'Error: Your card was declined.'
 		);
-
-		// Clear the cart at the end so it's ready for another test
-		await shopper.emptyCart();
 	} );
 } );
