@@ -51,23 +51,6 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_valid_request_forwards_data_to_jetpack() {
-		/**
-		 * '/marketing/survey',
-		 * '2',
-		 * array(
-		 * 'method'  => 'POST',
-		 * 'headers' => array(
-		 * 'Content-Type'    => 'application/json',
-		 * 'X-Forwarded-For' => $this->get_current_user_ip(),
-		 * ),
-		 * ),
-		 * [
-		 * 'site_id'          => Jetpack_Options::get_option( 'id' ),
-		 * 'survey_id'        => 'wcpay-disable-upe-early-access',
-		 * 'survey_responses' => $survey_responses,
-		 * ]
-		 */
-
 		$this->http_client_stub
 			->expects( $this->any() )
 			->method( 'wpcom_json_api_request_as_user' )
