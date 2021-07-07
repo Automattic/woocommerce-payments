@@ -103,7 +103,7 @@ describe( 'Settings reducer tests', () => {
 		test( 'sets `data.enabled_payment_method_ids`', () => {
 			const oldState = {
 				data: {
-					enabled_payment_method_ids: [], // eslint-disable-line
+					enabled_payment_method_ids: [],
 				},
 			};
 
@@ -123,7 +123,7 @@ describe( 'Settings reducer tests', () => {
 			const oldState = {
 				baz: 'quux',
 				data: {
-					enabled_payment_method_ids: [], // eslint-disable-line
+					enabled_payment_method_ids: [],
 					quuz: 'corge',
 				},
 			};
@@ -138,7 +138,7 @@ describe( 'Settings reducer tests', () => {
 			expect( state ).toEqual( {
 				baz: 'quux',
 				data: {
-					enabled_payment_method_ids: methodIds, // eslint-disable-line
+					enabled_payment_method_ids: methodIds,
 					quuz: 'corge',
 				},
 			} );
@@ -149,7 +149,7 @@ describe( 'Settings reducer tests', () => {
 		test( 'toggles `data.is_wcpay_enabled`', () => {
 			const oldState = {
 				data: {
-					is_wcpay_enabled: false, // eslint-disable-line
+					is_wcpay_enabled: false,
 				},
 			};
 
@@ -162,7 +162,7 @@ describe( 'Settings reducer tests', () => {
 			const oldState = {
 				foo: 'bar',
 				data: {
-					is_wcpay_enabled: false, // eslint-disable-line
+					is_wcpay_enabled: false,
 					baz: 'quux',
 				},
 			};
@@ -172,7 +172,7 @@ describe( 'Settings reducer tests', () => {
 			expect( state ).toEqual( {
 				foo: 'bar',
 				data: {
-					is_wcpay_enabled: true, // eslint-disable-line
+					is_wcpay_enabled: true,
 					baz: 'quux',
 				},
 			} );
@@ -183,7 +183,7 @@ describe( 'Settings reducer tests', () => {
 		test( 'toggles `data.is_manual_capture_enabled`', () => {
 			const oldState = {
 				data: {
-					is_manual_capture_enabled: false, // eslint-disable-line
+					is_manual_capture_enabled: false,
 				},
 			};
 
@@ -199,7 +199,7 @@ describe( 'Settings reducer tests', () => {
 			const oldState = {
 				foo: 'bar',
 				data: {
-					is_manual_capture_enabled: false, // eslint-disable-line
+					is_manual_capture_enabled: false,
 					baz: 'quux',
 				},
 			};
@@ -212,7 +212,7 @@ describe( 'Settings reducer tests', () => {
 			expect( state ).toEqual( {
 				foo: 'bar',
 				data: {
-					is_manual_capture_enabled: true, // eslint-disable-line
+					is_manual_capture_enabled: true,
 					baz: 'quux',
 				},
 			} );
@@ -223,7 +223,7 @@ describe( 'Settings reducer tests', () => {
 		test( 'toggles `data.account_statement_descriptor`', () => {
 			const oldState = {
 				data: {
-					account_statement_descriptor: 'Statement', // eslint-disable-line
+					account_statement_descriptor: 'Statement',
 				},
 			};
 
@@ -241,7 +241,7 @@ describe( 'Settings reducer tests', () => {
 			const oldState = {
 				foo: 'bar',
 				data: {
-					account_statement_descriptor: 'Statement', // eslint-disable-line
+					account_statement_descriptor: 'Statement',
 					baz: 'quux',
 				},
 			};
@@ -254,7 +254,7 @@ describe( 'Settings reducer tests', () => {
 			expect( state ).toEqual( {
 				foo: 'bar',
 				data: {
-					account_statement_descriptor: 'New Statement', // eslint-disable-line
+					account_statement_descriptor: 'New Statement',
 					baz: 'quux',
 				},
 			} );
@@ -265,7 +265,6 @@ describe( 'Settings reducer tests', () => {
 		test( 'toggles `data.is_digital_wallets_enabled`', () => {
 			const oldState = {
 				data: {
-					// eslint-disable-next-line camelcase
 					is_digital_wallets_enabled: false,
 				},
 			};
@@ -282,7 +281,6 @@ describe( 'Settings reducer tests', () => {
 			const oldState = {
 				foo: 'bar',
 				data: {
-					// eslint-disable-next-line camelcase
 					is_digital_wallets_enabled: false,
 					baz: 'quux',
 				},
@@ -296,7 +294,6 @@ describe( 'Settings reducer tests', () => {
 			expect( state ).toEqual( {
 				foo: 'bar',
 				data: {
-					// eslint-disable-next-line camelcase
 					is_digital_wallets_enabled: true,
 					baz: 'quux',
 				},
@@ -311,7 +308,6 @@ describe( 'Settings reducer tests', () => {
 		test( 'toggle `data.digital_wallets_enabled_locations`', () => {
 			const oldState = {
 				data: {
-					// eslint-disable-next-line camelcase
 					digital_wallets_enabled_locations: initDigitalWalletsState,
 				},
 			};
@@ -330,7 +326,6 @@ describe( 'Settings reducer tests', () => {
 			const oldState = {
 				foo: 'bar',
 				data: {
-					// eslint-disable-next-line camelcase
 					digital_wallets_enabled_locations: initDigitalWalletsState,
 					baz: 'quux',
 				},
@@ -344,7 +339,6 @@ describe( 'Settings reducer tests', () => {
 			expect( state ).toEqual( {
 				foo: 'bar',
 				data: {
-					// eslint-disable-next-line camelcase
 					digital_wallets_enabled_locations: enableAlldigitalWalletsState,
 					baz: 'quux',
 				},

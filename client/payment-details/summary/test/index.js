@@ -9,7 +9,6 @@ import { render } from '@testing-library/react';
  */
 import PaymentDetailsSummary from '../';
 
-/* eslint-disable camelcase */
 const getBaseCharge = () => ( {
 	id: 'ch_38jdHA39KKA',
 	/* Stripe data comes in seconds, instead of the default Date milliseconds */
@@ -50,7 +49,6 @@ const getBaseCharge = () => ( {
 		risk_level: 'normal',
 	},
 } );
-/* eslint-enable camelcase */
 
 describe( 'PaymentDetailsSummary', () => {
 	beforeEach( () => {
@@ -68,10 +66,8 @@ describe( 'PaymentDetailsSummary', () => {
 	test( 'renders partially refunded information for a charge', () => {
 		const charge = getBaseCharge();
 		charge.refunded = false;
-		// eslint-disable-next-line camelcase
 		charge.amount_refunded = 1200;
 		charge.refunds.data.push( {
-			// eslint-disable-next-line camelcase
 			balance_transaction: {
 				amount: -charge.amount_refunded,
 			},
@@ -84,10 +80,8 @@ describe( 'PaymentDetailsSummary', () => {
 	test( 'renders fully refunded information for a charge', () => {
 		const charge = getBaseCharge();
 		charge.refunded = true;
-		// eslint-disable-next-line camelcase
 		charge.amount_refunded = 2000;
 		charge.refunds.data.push( {
-			// eslint-disable-next-line camelcase
 			balance_transaction: {
 				amount: -charge.amount_refunded,
 			},
@@ -103,7 +97,6 @@ describe( 'PaymentDetailsSummary', () => {
 		charge.dispute = {
 			amount: 1500,
 			status: 'under_review',
-			// eslint-disable-next-line camelcase
 			balance_transactions: [
 				{
 					amount: -1500,

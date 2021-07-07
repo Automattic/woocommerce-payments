@@ -17,7 +17,6 @@ import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 
-/* eslint-disable camelcase */
 const methods = {
 	digital_wallets: {
 		title: 'Express checkouts',
@@ -51,7 +50,6 @@ const methods = {
 		controls: () => <DigitalWalletsSettings />,
 	},
 };
-/* eslint-enable camelcase */
 
 const PaymentMethodSettings = ( { methodId } ) => {
 	const method = methods[ methodId ];

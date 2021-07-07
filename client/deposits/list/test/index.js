@@ -46,27 +46,7 @@ describe( 'Deposits list', () => {
 		global.wcpaySettings = { zeroDecimalCurrencies: [] };
 	} );
 
-	test( 'renders correctly with single currency', () => {
-		useDeposits.mockReturnValue( {
-			deposits: mockDeposits,
-			depositsCount: 2,
-			isLoading: false,
-		} );
-
-		useDepositsSummary.mockReturnValue( {
-			depositsSummary: {
-				count: 2,
-				total: 5000,
-				// eslint-disable-next-line camelcase
-				store_currencies: [ 'usd' ],
-			},
-			isLoading: false,
-		} );
-
-		const { container } = render( <DepositsList /> );
-		expect( container ).toMatchSnapshot();
-	} );
-
+	// this also covers structural test for single currency.
 	test( 'renders correctly with multiple currencies', () => {
 		useDeposits.mockReturnValue( {
 			deposits: mockDeposits,
@@ -78,7 +58,6 @@ describe( 'Deposits list', () => {
 			depositsSummary: {
 				count: 2,
 				total: 5000,
-				// eslint-disable-next-line camelcase
 				store_currencies: [ 'usd', 'eur' ],
 			},
 			isLoading: false,
@@ -91,12 +70,13 @@ describe( 'Deposits list', () => {
 	test( 'renders table summary only when the deposits summary data is available', () => {
 		useDeposits.mockReturnValue( {
 			deposits: mockDeposits,
-			depositsCount: 2,
 			isLoading: false,
 		} );
 
 		useDepositsSummary.mockReturnValue( {
-			depositsSummary: {},
+			depositsSummary: {
+				count: 30,
+			},
 			isLoading: true,
 		} );
 

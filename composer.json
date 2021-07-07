@@ -23,7 +23,10 @@
       "phpunit/phpunit": "7.5.20",
       "woocommerce/woocommerce-sniffs": "0.1.0",
       "woocommerce/action-scheduler": "3.1.6",
-      "kalessil/production-dependencies-guard": "dev-master"
+      "kalessil/production-dependencies-guard": "dev-master",
+      "vimeo/psalm": "^4.8",
+	    "php-stubs/wordpress-stubs": "^5.7",
+	    "php-stubs/woocommerce-stubs": "^5.4"
     },
     "scripts": {
       "test": [
@@ -47,5 +50,10 @@
         "check-lock-file",
         "check-abandoned"
       ]
+    },
+    "autoload": {
+      "psr-4": {
+        "WCPay\\MultiCurrency\\": "includes/multi-currency"
+      }
     }
 }

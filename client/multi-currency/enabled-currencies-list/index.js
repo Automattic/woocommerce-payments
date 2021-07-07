@@ -54,7 +54,7 @@ const EnabledCurrencies = () => {
 								<EnabledCurrenciesListItem
 									key={ enabledCurrencies[ code ].id }
 									currency={ enabledCurrencies[ code ] }
-									defaultCurrencyCode={ defaultCurrency.code }
+									defaultCurrency={ defaultCurrency }
 									onDeleteClick={
 										enabledCurrencies[ code ].is_default
 											? undefined

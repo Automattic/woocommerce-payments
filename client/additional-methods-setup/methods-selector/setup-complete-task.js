@@ -32,7 +32,6 @@ const SetupComplete = () => {
 		}
 
 		updateOptions( {
-			// eslint-disable-next-line camelcase
 			wcpay_additional_methods_setup_completed: 'yes',
 		} );
 

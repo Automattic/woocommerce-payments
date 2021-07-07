@@ -3,8 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Card } from '@woocommerce/components';
-import { Button, Notice } from '@wordpress/components';
+import { Button, Card, CardBody, Notice } from '@wordpress/components';
 import { render, useState, useEffect } from '@wordpress/element';
 
 /**
@@ -98,10 +97,9 @@ const ConnectPageOnboardingDisabled = () => (
 const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const {
-		availableCountries,
-		country,
-		url: connectUrl,
-	} = wcpaySettings.connect;
+		connectUrl,
+		connect: { availableCountries, country },
+	} = wcpaySettings;
 
 	const handleLocationCheck = () => {
 		// Reset the 'Set up' button state if merchant decided to stop
@@ -110,8 +108,7 @@ const ConnectPageOnboarding = () => {
 		};
 		// Redirect the merchant if merchant decided to continue
 		const handleModalConfirmed = () => {
-			// The raw URL value has ampersands escaped and we need to unescape them for redirect to happen
-			window.location = connectUrl.replaceAll( '&amp;', '&' );
+			window.location = connectUrl;
 		};
 
 		// Populate translated list of supported countries we want to render in the modal window.
@@ -144,7 +141,6 @@ const ConnectPageOnboarding = () => {
 
 		setSubmitted( true );
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
-			// eslint-disable-next-line camelcase
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
 		} );
 	};
@@ -217,18 +213,22 @@ const ConnectAccountPage = () => {
 			<Page isNarrow className="connect-account">
 				<ConnectPageError />
 				<Card className="connect-account__card">
-					<Banner style="account-page" />
-					<div className="content">
-						{ wcpaySettings.onBoardingDisabled ? (
-							<ConnectPageOnboardingDisabled />
-						) : (
-							<ConnectPageOnboarding />
-						) }
-					</div>
+					<CardBody>
+						<Banner style="account-page" />
+						<div className="content">
+							{ wcpaySettings.onBoardingDisabled ? (
+								<ConnectPageOnboardingDisabled />
+							) : (
+								<ConnectPageOnboarding />
+							) }
+						</div>
+					</CardBody>
 				</Card>
 				{ ! wcpaySettings.onBoardingDisabled && (
 					<Card className="connect-account__steps">
-						<ConnectPageOnboardingSteps />
+						<CardBody>
+							<ConnectPageOnboardingSteps />
+						</CardBody>
 					</Card>
 				) }
 			</Page>

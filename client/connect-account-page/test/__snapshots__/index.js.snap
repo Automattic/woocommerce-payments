@@ -9,10 +9,10 @@ exports[`ConnectAccountPage should render correctly 1`] = `
       class="connect-account woocommerce-payments-page is-narrow"
     >
       <div
-        class="woocommerce-card connect-account__card"
+        class="components-card is-size-medium connect-account__card css-1xs3c37-CardUI e1q7k77g0"
       >
         <div
-          class="woocommerce-card__body"
+          class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
         >
           <div
             class="components-card is-size-large woocommerce-payments-banner account-page css-1xs3c37-CardUI e1q7k77g0"
@@ -787,7 +787,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
               <span
                 class="wcpay-connect-account-page-terms-of-service"
               >
-                By clicking “Finish Setup” you agree to the 
+                By clicking “Finish setup”, you agree to the 
                 <a
                   href="https://wordpress.com/tos"
                   rel="noopener noreferrer"
@@ -800,17 +800,17 @@ exports[`ConnectAccountPage should render correctly 1`] = `
                 class="components-button is-primary"
                 href="/wcpay-connect-url"
               >
-                Finish Setup
+                Finish setup
               </a>
             </p>
           </div>
         </div>
       </div>
       <div
-        class="woocommerce-card connect-account__steps"
+        class="components-card is-size-medium connect-account__steps css-1xs3c37-CardUI e1q7k77g0"
       >
         <div
-          class="woocommerce-card__body"
+          class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
         >
           <h2>
             You’re only steps away from getting paid
@@ -880,10 +880,10 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
       class="connect-account woocommerce-payments-page is-narrow"
     >
       <div
-        class="woocommerce-card connect-account__card"
+        class="components-card is-size-medium connect-account__card css-1xs3c37-CardUI e1q7k77g0"
       >
         <div
-          class="woocommerce-card__body"
+          class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
         >
           <div
             class="components-card is-size-large woocommerce-payments-banner account-page css-1xs3c37-CardUI e1q7k77g0"
