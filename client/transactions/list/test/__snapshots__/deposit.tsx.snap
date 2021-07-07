@@ -13,17 +13,9 @@ exports[`Deposit renders with date and deposit available 1`] = `
 </div>
 `;
 
-exports[`Deposit renders with date available but no deposit 1`] = `
-<div>
-  
-</div>
-`;
+exports[`Deposit renders with date available but no deposit 1`] = `<div />`;
 
-exports[`Deposit renders with deposit but no date available 1`] = `
-<div>
-  
-</div>
-`;
+exports[`Deposit renders with deposit but no date available 1`] = `<div />`;
 
 exports[`Deposit renders with estimated date and deposit available 1`] = `
 <div>
@@ -38,8 +30,4 @@ exports[`Deposit renders with estimated date and deposit available 1`] = `
 </div>
 `;
 
-exports[`Deposit renders with no date or deposit available 1`] = `
-<div>
-  
-</div>
-`;
+exports[`Deposit renders with no date or deposit available 1`] = `<div />`;

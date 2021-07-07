@@ -397,11 +397,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_currency_rates' )
-			->with(
-				$currency_from
-			)->willReturn(
-				$this->mock_available_currencies
-			);
+			->with( $currency_from )
+			->willReturn( $this->mock_available_currencies );
 
 		$result = $this->multi_currency->get_cached_currencies();
 

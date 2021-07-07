@@ -25,10 +25,10 @@ import { useAllDeposistsOverviews } from 'data';
 
 import './style.scss';
 
-type OverviewProps = {
+interface OverviewProps {
 	overview: AccountOverview.Overview;
 	account: AccountOverview.Account;
-};
+}
 
 /**
  * Renders a deposits overview

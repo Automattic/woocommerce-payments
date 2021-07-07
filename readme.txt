@@ -102,6 +102,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 2.7.0 - 2021-xx-xx =
+* Add - Add a link to the snackbar notice that appears after submitting or saving evidence for a dispute challenge.
 * Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
 * Add - Use date picker for applicable dispute evidence fields.
 
