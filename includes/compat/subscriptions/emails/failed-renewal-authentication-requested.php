@@ -1,6 +1,8 @@
 <?php
 /**
- * Admin email about payment retry failed due to authentication
+ * Admin email about payment retry failed due to authentication.
+ *
+ * @package WooCommerce\Payments
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -1,4 +1,10 @@
 <?php
+/**
+ * Class WC_Payments_Email_Failed_Renewal_Authentication
+ *
+ * @package WooCommerce\Payments
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -152,7 +158,7 @@ class WC_Payments_Email_Failed_Renewal_Authentication extends WC_Email {
 
 			$this->recipient = $order->get_billing_email();
 
-			$this->find['order_date'] = '{order_date}';
+			$this->find['order_date']    = '{order_date}';
 			$this->replace['order_date'] = wc_format_datetime( $order->get_date_created() );
 
 			$this->find['order_number']    = '{order_number}';
@@ -162,14 +168,20 @@ class WC_Payments_Email_Failed_Renewal_Authentication extends WC_Email {
 
 			// Prevent the renewal email from WooCommerce Subscriptions from being sent.
 			if ( isset( $this->original_email ) ) {
-				remove_action( 'woocommerce_generated_manual_renewal_order_renewal_notification', [
-					$this->original_email,
-					'trigger'
-				] );
-				remove_action( 'woocommerce_order_status_failed_renewal_notification', [
-					$this->original_email,
-					'trigger'
-				] );
+				remove_action(
+					'woocommerce_generated_manual_renewal_order_renewal_notification',
+					[
+						$this->original_email,
+						'trigger',
+					]
+				);
+				remove_action(
+					'woocommerce_order_status_failed_renewal_notification',
+					[
+						$this->original_email,
+						'trigger',
+					]
+				);
 			}
 
 			// Prevent the retry email from WooCommerce Subscriptions from being sent.
@@ -184,8 +196,8 @@ class WC_Payments_Email_Failed_Renewal_Authentication extends WC_Email {
 	 * Prevent all customer-facing retry notifications from being sent after this email.
 	 *
 	 * @param array $rule_array The raw details about the retry rule.
-	 * @param int $retry_number The number of the retry.
-	 * @param int $order_id The ID of the order that needs payment.
+	 * @param int   $retry_number The number of the retry.
+	 * @param int   $order_id The ID of the order that needs payment.
 	 *
 	 * @return array
 	 */
@@ -201,8 +213,8 @@ class WC_Payments_Email_Failed_Renewal_Authentication extends WC_Email {
 	 * Send store owner a different email when the retry is related to an authentication required error.
 	 *
 	 * @param array $rule_array The raw details about the retry rule.
-	 * @param int $retry_number The number of the retry.
-	 * @param int $order_id The ID of the order that needs payment.
+	 * @param int   $retry_number The number of the retry.
+	 * @param int   $order_id The ID of the order that needs payment.
 	 *
 	 * @return array
 	 */

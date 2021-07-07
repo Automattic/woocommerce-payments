@@ -105,7 +105,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			]
 		);
 
-		add_filter( 'woocommerce_email_classes', array( $this, 'add_emails' ), 20 );
+		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
 		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'prepare_order_pay_page' ] );
 
 		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
@@ -138,8 +138,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		 * See: https://github.com/woocommerce/woocommerce-subscriptions/blob/99a75687e109b64cbc07af6e5518458a6305f366/includes/class-wcs-cart-renewal.php#L165
 		 * If we are in the "You just need to authorize SCA" flow, we don't want that redirection to happen.
 		 */
-		add_action( 'template_redirect', array( $this, 'remove_order_pay_var' ), 99 );
-		add_action( 'template_redirect', array( $this, 'restore_order_pay_var' ), 101 );
+		add_action( 'template_redirect', [ $this, 'remove_order_pay_var' ], 99 );
+		add_action( 'template_redirect', [ $this, 'restore_order_pay_var' ], 101 );
 	}
 
 	/**
@@ -150,7 +150,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return WC_Payment_Gateway[]          Either the same list or an empty one in the right conditions.
 	 */
 	public function prepare_order_pay_page( $gateways ) {
-		if ( ! is_wc_endpoint_url( 'order-pay' ) || ! isset( $_GET['wcpay-confirmation'] ) ) { // wpcs: csrf ok.
+		if ( ! is_wc_endpoint_url( 'order-pay' ) || ! isset( $_GET['wcpay-confirmation'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return $gateways;
 		}
 
@@ -159,7 +159,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				return $gateways;
 			}
 		} catch ( Exception $e ) {
-			// Just show the full order pay page if there was a problem preparing the Payment Intent
+			// Just show the full order pay page if there was a problem preparing the Payment Intent.
 			return $gateways;
 		}
 
@@ -173,25 +173,16 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 	/**
 	 * Prepares the Payment Intent for it to be completed in the "Pay for Order" page.
+	 *
+	 * @return bool True if the Intent was fetched and prepared successfully, false otherwise.
 	 */
-	public function prepare_intent_for_order_pay_page() {
+	public function prepare_intent_for_order_pay_page(): bool {
 		if ( ! isset( $order ) || empty( $order ) ) {
 			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
 		}
 		$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
 
-		if ( ! $intent ) {
-			throw new Process_Payment_Exception(
-				sprintf(
-				/* translators: %s is the order Id */
-					__( 'Payment Intent not found for order #%s', 'woocommerce-payments' ),
-					$order->get_id()
-				),
-				'wcpay_get_intent_error'
-			);
-		}
-
-		if ( 'requires_action' !== $intent->get_status() ) {
+		if ( ! $intent || 'requires_action' !== $intent->get_status() ) {
 			return false;
 		}
 
@@ -741,8 +732,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 */
 	public function remove_order_pay_var() {
 		global $wp;
-		if ( isset( $_GET['wcpay-confirmation'] ) ) {
-			$this->order_pay_var = $wp->query_vars['order-pay'];
+		if ( isset( $_GET['wcpay-confirmation'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$this->order_pay_var         = $wp->query_vars['order-pay'];
 			$wp->query_vars['order-pay'] = null;
 		}
 	}

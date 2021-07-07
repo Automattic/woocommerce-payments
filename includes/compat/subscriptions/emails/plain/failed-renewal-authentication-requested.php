@@ -1,7 +1,11 @@
 <?php
 /**
- * Admin email about payment retry failed due to authentication
+ * Admin email about payment retry failed due to authentication.
+ *
+ * @package WooCommerce\Payments
  */
+
+// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

@@ -6,6 +6,7 @@
  * with the `authentication_needed` error, and a retry rule has been applied to retry the payment in the future.
  *
  * @extends     WC_Email_Failed_Order
+ * @package WooCommerce\Payments
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
