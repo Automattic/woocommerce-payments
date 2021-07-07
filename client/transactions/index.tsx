@@ -1,4 +1,7 @@
-/** @format */
+/**
+ * External dependencies
+ */
+import React from 'react';
 
 /**
  * Internal dependencies
@@ -9,12 +12,12 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import {
 	EmptyStateList,
 	EmptyStateTableHeaders,
-} from '../emtpy-state-table/list';
-import EmptyStateTable from 'emtpy-state-table';
-import ListBanner from '../emtpy-state-table/transactions-banner.svg';
+} from '../empty-state-table/list';
+import EmptyStateTable from 'empty-state-table';
+import ListBanner from '../empty-state-table/transactions-banner.svg';
 import { Experiment } from '@woocommerce/explat';
 
-export const TransactionsPage = () => {
+export const TransactionsPage = (): JSX.Element => {
 	return (
 		<Page>
 			<Experiment

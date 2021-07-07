@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
@@ -11,6 +12,11 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { TransactionsFilters } from '../';
+
+function addAdvancedFilter( filter: string ) {
+	user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
+	user.click( screen.getByRole( 'button', { name: filter } ) );
+}
 
 describe( 'Transactions filters', () => {
 	beforeEach( () => {
@@ -30,7 +36,7 @@ describe( 'Transactions filters', () => {
 	} );
 
 	describe( 'when filtering by date', () => {
-		let ruleSelector;
+		let ruleSelector: HTMLElement;
 
 		beforeEach( () => {
 			addAdvancedFilter( 'Date' );
@@ -81,7 +87,7 @@ describe( 'Transactions filters', () => {
 	} );
 
 	describe( 'when filtering by type', () => {
-		let ruleSelector;
+		let ruleSelector: HTMLElement;
 
 		beforeEach( () => {
 			addAdvancedFilter( 'Type' );
@@ -93,7 +99,7 @@ describe( 'Transactions filters', () => {
 		test( 'should render all types', () => {
 			const typeSelect = screen.getByRole( 'combobox', {
 				name: /transaction type$/i,
-			} );
+			} ) as HTMLSelectElement;
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
 
@@ -136,9 +142,4 @@ describe( 'Transactions filters', () => {
 			expect( getQuery().type_is ).toEqual( 'refund' );
 		} );
 	} );
-
-	function addAdvancedFilter( filter ) {
-		user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
-		user.click( screen.getByRole( 'button', { name: filter } ) );
-	}
 } );
