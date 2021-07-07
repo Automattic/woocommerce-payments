@@ -216,15 +216,16 @@ class WC_Payments {
 		$sofort_class  = Sofort_Payment_Gateway::class;
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
-			$card_method     = new CC_Payment_Method( self::$token_service );
-			$giropay_method  = new Giropay_Payment_Method( self::$token_service );
-			$sofort_method   = new Sofort_Payment_Method( self::$token_service );
-			$payment_methods = [];
-
-			$payment_methods[ $card_method->get_id() ]    = $card_method;
-			$payment_methods[ $giropay_method->get_id() ] = $giropay_method;
-			$payment_methods[ $sofort_method->get_id() ]  = $sofort_method;
-
+			$payment_methods        = [];
+			$payment_method_classes = [
+				CC_Payment_Method::class,
+				Giropay_Payment_Method::class,
+				Sofort_Payment_Method::class,
+			];
+			foreach ( $payment_method_classes as $payment_method_class ) {
+				$payment_method                               = new $payment_method_class( self::$token_service );
+				$payment_methods[ $payment_method->get_id() ] = $payment_method;
+			}
 			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods );
 		} else {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );

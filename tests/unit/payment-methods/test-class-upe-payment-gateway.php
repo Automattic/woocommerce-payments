@@ -136,23 +136,19 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$mock_cc_payment_method      = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
-			->setMethods( [ 'is_subscription_item_in_cart' ] )
-			->getMock();
-		$mock_giropay_payment_method = $this->getMockBuilder( Giropay_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
-			->setMethods( [ 'is_subscription_item_in_cart' ] )
-			->getMock();
-		$mock_sofort_payment_method  = $this->getMockBuilder( Sofort_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
-			->setMethods( [ 'is_subscription_item_in_cart' ] )
-			->getMock();
-		$this->mock_payment_methods  = [
-			$mock_cc_payment_method->get_id()      => $mock_cc_payment_method,
-			$mock_giropay_payment_method->get_id() => $mock_giropay_payment_method,
-			$mock_sofort_payment_method->get_id()  => $mock_sofort_payment_method,
+		$this->mock_payment_methods = [];
+		$payment_method_classes     = [
+			CC_Payment_Method::class,
+			Giropay_Payment_Method::class,
+			Sofort_Payment_Method::class,
 		];
+		foreach ( $payment_method_classes as $payment_method_class ) {
+			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
+				->setConstructorArgs( [ $this->mock_token_service ] )
+				->setMethods( [ 'is_subscription_item_in_cart' ] )
+				->getMock();
+			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
+		}
 
 		// Arrange: Mock UPE_Payment_Gateway so that some of its methods can be
 		// mocked, and their return values can be used for testing.
