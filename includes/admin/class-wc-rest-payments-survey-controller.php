@@ -72,6 +72,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 					'comments' => [
 						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
+						'sanitize_callback' => 'wp_filter_nohtml_kses',
 					],
 				],
 			]
