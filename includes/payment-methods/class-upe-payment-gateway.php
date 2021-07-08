@@ -198,7 +198,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_intent = $this->payments_api_client->create_intention(
 			WC_Payments_Utils::prepare_amount( $amount, $currency ),
 			strtolower( $currency ),
-			$this->get_upe_enabled_payment_method_ids()
+			$this->get_upe_enabled_payment_method_ids(),
+			$order_id ?? 0
 		);
 		return [
 			'id'            => $payment_intent->get_id(),
