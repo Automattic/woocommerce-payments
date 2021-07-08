@@ -33,7 +33,6 @@ import SofortIcon from '../gateway-icons/sofort';
 import SepaIcon from '../gateway-icons/sepa';
 
 const methodsConfiguration = {
-	// eslint-disable-next-line camelcase
 	card: {
 		id: 'card',
 		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
@@ -61,7 +60,6 @@ const methodsConfiguration = {
 		),
 		Icon: SofortIcon,
 	},
-	// eslint-disable-next-line camelcase
 	sepa_debit: {
 		id: 'sepa_debit',
 		label: __( 'Direct debit payment', 'woocommerce-payments' ),
