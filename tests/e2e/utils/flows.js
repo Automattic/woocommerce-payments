@@ -12,6 +12,10 @@ const {
 	evalAndClick,
 	uiUnblocked,
 } = require( '@woocommerce/e2e-utils' );
+const {
+	fillCardDetails,
+	confirmCardAuthentication,
+} = require( '../utils/payments' );
 
 const config = require( 'config' );
 const baseUrl = config.get( 'url' );
@@ -96,6 +100,29 @@ export const shopperWCP = {
 
 	goToSubscriptions: async () => {
 		await page.goto( MY_ACCOUNT_SUBSCRIPTIONS, {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	// In 'My account' page, fill the 'Add payment method' form and submit
+	addNewPaymentMethod: async ( cardType, card ) => {
+		const cardIs3DS = cardType.toUpperCase().includes( '3DS' );
+
+		await expect( page ).toClick( 'a', {
+			text: 'Add payment method',
+		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+		await fillCardDetails( page, card );
+		await expect( page ).toClick( 'button', {
+			text: 'Add payment method',
+		} );
+
+		if ( cardIs3DS ) {
+			await confirmCardAuthentication( page, cardType );
+		}
+		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
 	},
