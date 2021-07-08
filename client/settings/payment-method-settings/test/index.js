@@ -58,7 +58,7 @@ describe( 'PaymentMethodSettings', () => {
 		expect( errorMessage ).toBeInTheDocument();
 	} );
 
-	test( 'renders digital wallets settings and confirm its h2 copy', () => {
+	test( 'renders payment request settings and confirm its h2 copy', () => {
 		render( <PaymentMethodSettings methodId="payment_request" /> );
 
 		const heading = screen.queryByRole( 'heading', {

@@ -93,7 +93,7 @@ const AddPaymentMethodsTask = () => {
 		)
 	);
 
-	const [ isWalletsChecked, setWalletsChecked ] = useState(
+	const [ isPaymentRequestChecked, setPaymentRequestChecked ] = useState(
 		initialIsPaymentRequestEnabled
 	);
 
@@ -116,7 +116,7 @@ const AddPaymentMethodsTask = () => {
 				return;
 			}
 
-			setIsPaymentRequestEnabled( isWalletsChecked );
+			setIsPaymentRequestEnabled( isPaymentRequestChecked );
 			updateEnabledPaymentMethodIds( checkedPaymentMethods );
 
 			const isSuccess = await saveSettings();
@@ -138,7 +138,7 @@ const AddPaymentMethodsTask = () => {
 		setCompleted,
 		initialEnabledPaymentMethodIds,
 		initialIsPaymentRequestEnabled,
-		isWalletsChecked,
+		isPaymentRequestChecked,
 		setIsPaymentRequestEnabled,
 	] );
 
@@ -234,8 +234,8 @@ const AddPaymentMethodsTask = () => {
 				</Card>
 				<div className="wcpay-wizard-task__description-element">
 					<CheckboxControl
-						checked={ isWalletsChecked }
-						onChange={ setWalletsChecked }
+						checked={ isPaymentRequestChecked }
+						onChange={ setPaymentRequestChecked }
 						label={ __(
 							'Enable Apple Pay & Google Pay',
 							'woocommerce-payments'

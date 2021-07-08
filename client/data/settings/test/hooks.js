@@ -213,7 +213,7 @@ describe( 'Settings hooks tests', () => {
 	} );
 
 	describe( 'usePaymentRequestEnabledSettings()', () => {
-		test( 'returns digital wallets settings from selector', () => {
+		test( 'returns payment request settings from selector', () => {
 			actions = {
 				updateIsPaymentRequestEnabled: jest.fn(),
 			};
@@ -237,7 +237,7 @@ describe( 'Settings hooks tests', () => {
 	} );
 
 	describe( 'usePaymentRequestLocations()', () => {
-		test( 'returns and updates digital wallets locations', () => {
+		test( 'returns and updates payment request locations', () => {
 			const locationsBeforeUpdate = [];
 			const locationsAfterUpdate = [ 'cart' ];
 

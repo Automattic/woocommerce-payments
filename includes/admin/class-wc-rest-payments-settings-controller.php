@@ -296,7 +296,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates the digital wallets enable/disable settings.
+	 * Updates the "payment request" enable/disable settings.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
@@ -311,7 +311,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates the list of locations that will show digital wallets.
+	 * Updates the list of locations that will show the payment request button.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
@@ -326,7 +326,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates appearance attributes of the digital wallets button.
+	 * Updates appearance attributes of the payment request button.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */

@@ -178,7 +178,7 @@ describe( 'PaymentRequest', () => {
 		).toHaveBeenLastCalledWith( [ 'checkout' ] );
 	} );
 
-	it( 'has the correct href link to the digital wallets setting page', async () => {
+	it( 'has the correct href link to the payment request setting page', async () => {
 		render( <PaymentRequest /> );
 
 		const customizeAppearanceButton = screen.getByText(
