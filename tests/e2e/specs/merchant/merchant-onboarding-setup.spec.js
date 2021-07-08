@@ -24,6 +24,36 @@ describe( 'Onboarding > WooCommerce Setup Wizard', () => {
 } );
 
 describe( 'Onboarding > WooCommerce Task List', () => {
+	beforeAll( async () => {
+		await merchant.login();
+	} );
+
+	afterAll( async () => {
+		await merchant.logout();
+	} );
+
+	it( 'can dismiss tax setup', async () => {
+		await page.evaluate( () => {
+			document
+				.querySelector( '.woocommerce-list__item-title' )
+				.scrollIntoView();
+		} );
+
+		// Click on "Set up tax" task to move to the next step
+		const [ setUpTax ] = await page.$x(
+			'//div[contains(text(),"Set up tax")]'
+		);
+		await setUpTax.click();
+
+		// Click to dismiss setting up taxes
+		await expect( page ).toClick( 'button.components-button.is-tertiary', {
+			text: "I don't charge sales tax",
+		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	} );
+
 	it( 'can setup shipping', async () => {
 		await page.evaluate( () => {
 			document
@@ -32,10 +62,10 @@ describe( 'Onboarding > WooCommerce Task List', () => {
 		} );
 
 		// Click on "Set up shipping" task to move to the next step
-		const [ setupTaskListItem ] = await page.$x(
+		const [ setUpShipping ] = await page.$x(
 			'//div[contains(text(),"Set up shipping")]'
 		);
-		await setupTaskListItem.click();
+		await setUpShipping.click();
 
 		// Wait for "Proceed" button to become active
 		await page.waitForSelector( 'button.is-primary:not(:disabled)' );
@@ -51,5 +81,8 @@ describe( 'Onboarding > WooCommerce Task List', () => {
 
 		// Click "No, thanks" to get back to the task list
 		await expect( page ).toClick( 'button.components-button.is-tertiary' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
 	} );
 } );
