@@ -34,11 +34,24 @@
 		background-color: #f7edf7;
 		background-size: contain;
 
+		h3,
+		p {
+			padding-right: 228px;
+		}
+
 		&-get-started {
 			margin-right: 16px;
 		}
 		&-actions {
 			padding-top: 11px;
+		}
+
+		@media ( max-width: 600px ) {
+			h3,
+			p {
+				padding-right: 0;
+			}
+			background-image: none;
 		}
 	}
 

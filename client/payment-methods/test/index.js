@@ -163,21 +163,28 @@ describe( 'PaymentMethods', () => {
 		expect( enableWooCommercePaymentText ).toBeInTheDocument();
 	} );
 
-	test( 'express payments should not rendered when UPE preview feture flag is disabled', () => {
-		const featureFlagContext = {
-			featureFlags: { upeSettingsPreview: false, upe: false },
-		};
+	test.each( [
+		[ false, false ],
+		[ false, true ],
+		[ true, true ],
+	] )(
+		'express payments should not rendered when UPE preview = %s and UPE = %s',
+		( upeSettingsPreview, upe ) => {
+			const featureFlagContext = {
+				featureFlags: { upeSettingsPreview, upe },
+			};
 
-		render(
-			<WCPaySettingsContext.Provider value={ featureFlagContext }>
-				<PaymentMethods />
-			</WCPaySettingsContext.Provider>
-		);
+			render(
+				<WCPaySettingsContext.Provider value={ featureFlagContext }>
+					<PaymentMethods />
+				</WCPaySettingsContext.Provider>
+			);
 
-		const enableWooCommercePaymentText = screen.queryByText(
-			'Enable the new WooCommerce Payments checkout experience'
-		);
+			const enableWooCommercePaymentText = screen.queryByText(
+				'Enable the new WooCommerce Payments checkout experience'
+			);
 
-		expect( enableWooCommercePaymentText ).toBeNull();
-	} );
+			expect( enableWooCommercePaymentText ).toBeNull();
+		}
+	);
 } );

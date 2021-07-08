@@ -128,15 +128,18 @@ const PaymentMethods = () => {
 						<CardDivider />
 						<CardBody className="payment-methods__express-checkouts">
 							<span className="payment-methods__pill">
-								Early access
+								{ __( 'Early access', 'woocommerce-payments' ) }
 							</span>
 							<h3>
-								Enable the new WooCommerce Payments checkout
-								experience
+								{ __(
+									'Enable the new WooCommerce Payments checkout experience',
+									'woocommerce-payments'
+								) }
 							</h3>
 							<p>
 								{ __(
-									'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.'
+									'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.',
+									'woocommerce-payments'
 								) }
 							</p>
 
