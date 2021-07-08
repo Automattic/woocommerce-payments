@@ -6,16 +6,17 @@
  */
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use WCPay\Payment_Methods\UPE_Payment_Gateway;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
  */
-class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
+class WC_Payments_UPE_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	/**
 	 * Initializes the class.
 	 */
 	public function initialize() {
-		$this->name    = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$this->name    = UPE_Payment_Gateway::GATEWAY_ID;
 		$this->gateway = WC_Payments::get_gateway();
 	}
 
@@ -44,7 +45,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 
 		wp_register_script(
 			'WCPAY_BLOCKS_CHECKOUT',
-			plugins_url( 'dist/blocks-checkout.js', WCPAY_PLUGIN_FILE ),
+			plugins_url( 'dist/upe-blocks-checkout.js', WCPAY_PLUGIN_FILE ),
 			[ 'stripe' ],
 			'1.0.1',
 			true

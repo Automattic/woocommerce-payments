@@ -4,7 +4,6 @@
 import {
 	Elements,
 	ElementsConsumer,
-	CardElement,
 	PaymentElement,
 } from '@stripe/react-stripe-js';
 import { useEffect, useState } from '@wordpress/element';
@@ -12,9 +11,9 @@ import { useEffect, useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import generatePaymentMethod from './generate-payment-method.js';
-import confirmCardPayment from './confirm-card-payment.js';
-import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
+import confirmUPEPayment from './confirm-upe-payment.js';
+import { getConfig } from 'utils/checkout';
+import { payment } from '@wordpress/icons/build-types';
 
 const WCPayUPEFields = ( {
 	api,
@@ -22,16 +21,24 @@ const WCPayUPEFields = ( {
 	stripe,
 	elements,
 	billing: { billingData },
-	eventRegistration: {
-		onPaymentProcessing,
-		onCheckoutAfterProcessingWithSuccess,
-	},
+	eventRegistration: { onCheckoutAfterProcessingWithSuccess },
 	emitResponse,
 } ) => {
 	const [ errorMessage, setErrorMessage ] = useState( null );
 	const [ paymentIntentId, setPaymentIntentId ] = useState( null );
 	const [ clientSecret, setClientSecret ] = useState( null );
 	const [ isFetchingIntent, setIsFetchingIntent ] = useState( false );
+
+	const testMode = getConfig( 'testMode' );
+	let testCopy = '';
+	if ( testMode ) {
+		testCopy = (
+			<p>
+				<strong>Test mode:</strong> use the test VISA card
+				4242424242424242 with any expiry date and CVC.
+			</p>
+		);
+	}
 
 	useEffect( () => {
 		if ( paymentIntentId || isFetchingIntent ) {
@@ -49,48 +56,36 @@ const WCPayUPEFields = ( {
 		createIntent();
 	}, [ paymentIntentId, isFetchingIntent, api ] );
 
-	// When it's time to process the payment, generate a Stripe payment method object.
-	useEffect(
-		() =>
-			onPaymentProcessing( () => {
-				if ( PAYMENT_METHOD_NAME_CARD !== activePaymentMethod ) {
-					return;
-				}
-
-				if ( errorMessage ) {
-					return {
-						type: 'error',
-						message: errorMessage,
-					};
-				}
-
-				const cardElement = elements.getElement( CardElement );
-				const paymentElements = {
-					type: 'card',
-					card: cardElement,
-				};
-
-				return generatePaymentMethod(
-					api,
-					paymentElements,
-					billingData
-				);
-			} ),
-		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[ elements, stripe, activePaymentMethod ]
-	);
-
 	// Once the server has completed payment processing, confirm the intent of necessary.
 	useEffect(
 		() =>
 			onCheckoutAfterProcessingWithSuccess(
-				( { processingResponse: { paymentDetails } } ) =>
-					confirmCardPayment( api, paymentDetails, emitResponse )
+				( { orderId, processingResponse: { paymentDetails } } ) => {
+					async function updateIntent() {
+						await api.updateIntent(
+							paymentIntentId,
+							orderId,
+							false
+						);
+
+						const paymentElement = elements.getElement(
+							PaymentElement
+						);
+
+						confirmUPEPayment(
+							api,
+							paymentDetails,
+							paymentElement,
+							emitResponse
+						);
+					}
+
+					updateIntent();
+				}
 			),
 		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[ elements, stripe, api ]
+		[ elements, stripe, api, paymentIntentId ]
 	);
 
 	// Checks whether there are errors within a field, and saves them for later reporting.
@@ -106,7 +101,20 @@ const WCPayUPEFields = ( {
 	};
 
 	if ( clientSecret ) {
-		return <PaymentElement options={ elementOptions } />;
+		return (
+			<>
+				<input
+					type="hidden"
+					name="wc_payment_intent_id"
+					value={ paymentIntentId }
+				/>
+				{ testCopy }
+				<PaymentElement
+					options={ elementOptions }
+					onChange={ checkForErrors }
+				/>
+			</>
+		);
 	}
 
 	return <h1>Loading...</h1>;
