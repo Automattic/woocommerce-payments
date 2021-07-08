@@ -269,7 +269,9 @@ class Settings extends \WC_Settings_Page {
 			$converted_rate = number_format( $available_currencies[ $currency->get_code() ]->get_rate(), 4 ) . ' ' . $currency->get_code();
 		}
 
-		$last_updated = ! is_null( $currency->get_last_updated() ) ? gmdate( 'H:m' ) . ' UTC' : 'Error: Unable to fetch automatic rate for this currency!';
+		$last_updated = ! is_null( $available_currencies[ $currency->get_code() ]->get_last_updated() )
+			? gmdate( 'H:m', $available_currencies[ $currency->get_code() ]->get_last_updated() ) . ' UTC'
+			: 'Error: Unable to fetch automatic rate for this currency!';
 
 		$exchange_rate_options = [
 			'automatic' => sprintf(
