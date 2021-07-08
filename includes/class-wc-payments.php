@@ -12,9 +12,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
+use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Gateway;
+use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Gateway;
+use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Gateway;
+use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 
 /**
@@ -166,6 +170,10 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-sepa-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
+		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-giropay-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
@@ -200,16 +208,28 @@ class WC_Payments {
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
 
-		$gateway_class = CC_Payment_Gateway::class;
+		$card_class    = CC_Payment_Gateway::class;
+		$upe_class     = UPE_Payment_Gateway::class;
 		$giropay_class = Giropay_Payment_Gateway::class;
 		$sepa_class    = Sepa_Payment_Gateway::class;
 		$sofort_class  = Sofort_Payment_Gateway::class;
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
-			$gateway_class = UPE_Payment_Gateway::class;
+			$payment_methods        = [];
+			$payment_method_classes = [
+				CC_Payment_Method::class,
+				Giropay_Payment_Method::class,
+				Sofort_Payment_Method::class,
+			];
+			foreach ( $payment_method_classes as $payment_method_class ) {
+				$payment_method                               = new $payment_method_class( self::$token_service );
+				$payment_methods[ $payment_method->get_id() ] = $payment_method;
+			}
+			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods );
+		} else {
+			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 
-		self::$card_gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		if ( WC_Payments_Features::is_giropay_enabled() ) {
 			self::$giropay_gateway = new $giropay_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
