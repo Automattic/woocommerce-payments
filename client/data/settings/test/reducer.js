@@ -9,8 +9,8 @@ import {
 	updateIsSavingSettings,
 	updateIsManualCaptureEnabled,
 	updateAccountStatementDescriptor,
-	updateDigitalWalletsLocations,
-	updateIsDigitalWalletsEnabled,
+	updatePaymentRequestLocations,
+	updateIsPaymentRequestEnabled,
 } from '../actions';
 
 describe( 'Settings reducer tests', () => {
@@ -283,28 +283,28 @@ describe( 'Settings reducer tests', () => {
 		} );
 	} );
 
-	describe( 'SET_IS_DIGITAL_WALLETS_ENABLED', () => {
-		test( 'toggles `data.is_digital_wallets_enabled`', () => {
+	describe( 'SET_IS_PAYMENT_REQUEST_ENABLED', () => {
+		test( 'toggles `data.is_payment_request_enabled`', () => {
 			const oldState = {
 				data: {
-					is_digital_wallets_enabled: false,
+					is_payment_request_enabled: false,
 				},
 				savingError: null,
 			};
 
 			const state = reducer(
 				oldState,
-				updateIsDigitalWalletsEnabled( true )
+				updateIsPaymentRequestEnabled( true )
 			);
 
-			expect( state.data.is_digital_wallets_enabled ).toBeTruthy();
+			expect( state.data.is_payment_request_enabled ).toBeTruthy();
 		} );
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
 				foo: 'bar',
 				data: {
-					is_digital_wallets_enabled: false,
+					is_payment_request_enabled: false,
 					baz: 'quux',
 				},
 				savingError: {},
@@ -312,38 +312,38 @@ describe( 'Settings reducer tests', () => {
 
 			const state = reducer(
 				oldState,
-				updateIsDigitalWalletsEnabled( true )
+				updateIsPaymentRequestEnabled( true )
 			);
 
 			expect( state ).toEqual( {
 				foo: 'bar',
 				savingError: null,
 				data: {
-					is_digital_wallets_enabled: true,
+					is_payment_request_enabled: true,
 					baz: 'quux',
 				},
 			} );
 		} );
 	} );
 
-	describe( 'SET_DIGITAL_WALLETS_LOCATIONS', () => {
-		const initDigitalWalletsState = [ 'product' ];
-		const enableAlldigitalWalletsState = [ 'product', 'checkout', 'cart' ];
+	describe( 'SET_PAYMENT_REQUEST_LOCATIONS', () => {
+		const initPaymentRequestState = [ 'product' ];
+		const enableAllpaymentRequestState = [ 'product', 'checkout', 'cart' ];
 
-		test( 'toggle `data.digital_wallets_enabled_locations`', () => {
+		test( 'toggle `data.payment_request_enabled_locations`', () => {
 			const oldState = {
 				data: {
-					digital_wallets_enabled_locations: initDigitalWalletsState,
+					payment_request_enabled_locations: initPaymentRequestState,
 				},
 			};
 
 			const state = reducer(
 				oldState,
-				updateDigitalWalletsLocations( enableAlldigitalWalletsState )
+				updatePaymentRequestLocations( enableAllpaymentRequestState )
 			);
 
-			expect( state.data.digital_wallets_enabled_locations ).toEqual(
-				enableAlldigitalWalletsState
+			expect( state.data.payment_request_enabled_locations ).toEqual(
+				enableAllpaymentRequestState
 			);
 		} );
 
@@ -351,7 +351,7 @@ describe( 'Settings reducer tests', () => {
 			const oldState = {
 				foo: 'bar',
 				data: {
-					digital_wallets_enabled_locations: initDigitalWalletsState,
+					payment_request_enabled_locations: initPaymentRequestState,
 					baz: 'quux',
 				},
 				savingError: {},
@@ -359,13 +359,13 @@ describe( 'Settings reducer tests', () => {
 
 			const state = reducer(
 				oldState,
-				updateDigitalWalletsLocations( enableAlldigitalWalletsState )
+				updatePaymentRequestLocations( enableAllpaymentRequestState )
 			);
 
 			expect( state ).toEqual( {
 				foo: 'bar',
 				data: {
-					digital_wallets_enabled_locations: enableAlldigitalWalletsState,
+					payment_request_enabled_locations: enableAllpaymentRequestState,
 					baz: 'quux',
 				},
 				savingError: null,

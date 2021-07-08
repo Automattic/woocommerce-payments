@@ -9,22 +9,22 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import DigitalWalletsSettings from '../digital-wallets-settings';
+import PaymentRequestSettings from '../payment-request-settings';
 import {
-	useDigitalWalletsButtonType,
-	useDigitalWalletsButtonSize,
-	useDigitalWalletsButtonTheme,
+	usePaymentRequestButtonType,
+	usePaymentRequestButtonSize,
+	usePaymentRequestButtonTheme,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
-	useDigitalWalletsButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
-	useDigitalWalletsButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
-	useDigitalWalletsButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
+	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
+	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
+	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 } ) );
 
-describe( 'DigitalWalletsSettings', () => {
+describe( 'PaymentRequestSettings', () => {
 	it( 'renders settings with defaults', () => {
-		render( <DigitalWalletsSettings /> );
+		render( <PaymentRequestSettings /> );
 
 		// confirm settings headings
 		expect(
@@ -53,20 +53,20 @@ describe( 'DigitalWalletsSettings', () => {
 		const setButtonTypeMock = jest.fn();
 		const setButtonSizeMock = jest.fn();
 		const setButtonThemeMock = jest.fn();
-		useDigitalWalletsButtonType.mockReturnValue( [
+		usePaymentRequestButtonType.mockReturnValue( [
 			'buy',
 			setButtonTypeMock,
 		] );
-		useDigitalWalletsButtonSize.mockReturnValue( [
+		usePaymentRequestButtonSize.mockReturnValue( [
 			'default',
 			setButtonSizeMock,
 		] );
-		useDigitalWalletsButtonTheme.mockReturnValue( [
+		usePaymentRequestButtonTheme.mockReturnValue( [
 			'dark',
 			setButtonThemeMock,
 		] );
 
-		render( <DigitalWalletsSettings /> );
+		render( <PaymentRequestSettings /> );
 
 		expect( setButtonTypeMock ).not.toHaveBeenCalled();
 		expect( setButtonSizeMock ).not.toHaveBeenCalled();
