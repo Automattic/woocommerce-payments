@@ -270,7 +270,7 @@ class Settings extends \WC_Settings_Page {
 		}
 
 		$last_updated = ! is_null( $available_currencies[ $currency->get_code() ]->get_last_updated() )
-			? gmdate( 'H:m', $available_currencies[ $currency->get_code() ]->get_last_updated() ) . ' UTC'
+			? gmdate( 'H:i', $available_currencies[ $currency->get_code() ]->get_last_updated() ) . ' UTC'
 			: 'Error: Unable to fetch automatic rate for this currency!';
 
 		$exchange_rate_options = [
