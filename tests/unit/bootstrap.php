@@ -60,6 +60,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http.php';
 
 	// Load the gateway files, so subscriptions can be tested.
+	require_once $_plugin_dir . 'includes/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php';
 	require_once $_plugin_dir . 'includes/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 	require_once $_plugin_dir . 'includes/class-wc-payment-gateway-wcpay.php';
 
