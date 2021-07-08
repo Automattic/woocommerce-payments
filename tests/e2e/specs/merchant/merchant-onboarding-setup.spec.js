@@ -81,8 +81,5 @@ describe( 'Onboarding > WooCommerce Task List', () => {
 
 		// Click "No, thanks" to get back to the task list
 		await expect( page ).toClick( 'button.components-button.is-tertiary' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
 	} );
 } );
