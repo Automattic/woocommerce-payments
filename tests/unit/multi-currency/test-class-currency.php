@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\MultiCurrency\Currency;
+
 /**
  * WCPay\MultiCurrency\Currency unit tests.
  */
@@ -17,19 +19,25 @@ class WCPay_Multi_Currency_Currency_Tests extends WP_UnitTestCase {
 	private $currency;
 
 	/**
+	 * @var int
+	 */
+	private $timestamp_for_testing;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
 		parent::setUp();
 
-		$this->currency = new WCPay\MultiCurrency\Currency( 'USD' );
+		$this->timestamp_for_testing = strtotime( '1 January 2021' );
+		$this->currency              = new Currency( 'USD', 1.0, $this->timestamp_for_testing );
 	}
 
 	public function test_should_include_all_data_when_serialized() {
 		$json = wp_json_encode( $this->currency );
 
 		$this->assertSame(
-			'{"code":"USD","rate":1,"name":"United States (US) dollar","id":"usd","is_default":true,"flag":"\ud83c\uddfa\ud83c\uddf8","symbol":"$","is_zero_decimal":false}',
+			'{"code":"USD","rate":1,"name":"United States (US) dollar","id":"usd","is_default":true,"flag":"\ud83c\uddfa\ud83c\uddf8","symbol":"$","is_zero_decimal":false,"last_updated":' . $this->timestamp_for_testing . '}',
 			$json
 		);
 	}
@@ -38,7 +46,7 @@ class WCPay_Multi_Currency_Currency_Tests extends WP_UnitTestCase {
 		$json = wp_json_encode( new WCPay\MultiCurrency\Currency( 'WST' ) );
 
 		$this->assertSame(
-			'{"code":"WST","rate":1,"name":"Samoan t\u0101l\u0101","id":"wst","is_default":false,"flag":"\ud83c\uddfc\ud83c\uddf8","symbol":"T","is_zero_decimal":false}',
+			'{"code":"WST","rate":1,"name":"Samoan t\u0101l\u0101","id":"wst","is_default":false,"flag":"\ud83c\uddfc\ud83c\uddf8","symbol":"T","is_zero_decimal":false,"last_updated":null}',
 			$json
 		);
 	}

@@ -34,7 +34,7 @@ class MultiCurrency {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var MultiCurrency
+	 * @var ?MultiCurrency
 	 */
 	protected static $instance = null;
 
@@ -44,6 +44,13 @@ class MultiCurrency {
 	 * @var Compatibility
 	 */
 	protected $compatibility;
+
+	/**
+	 * Utils instance.
+	 *
+	 * @var Utils
+	 */
+	protected $utils;
 
 	/**
 	 * FrontendPrices instance.
@@ -69,7 +76,7 @@ class MultiCurrency {
 	/**
 	 * The default currency.
 	 *
-	 * @var object
+	 * @var Currency
 	 */
 	protected $default_currency;
 
@@ -127,6 +134,8 @@ class MultiCurrency {
 	/**
 	 * Called after the WooCommerce session has been initialized. Initialises the available currencies,
 	 * default currency and enabled currencies for the multi currency plugin.
+	 *
+	 * @return void
 	 */
 	public function init() {
 		$store_currency_updated = $this->check_store_currency_for_change();
@@ -161,6 +170,8 @@ class MultiCurrency {
 
 	/**
 	 * Initialize the REST API controller.
+	 *
+	 * @return void
 	 */
 	public function init_rest_api() {
 		$api_controller = new RestController( \WC_Payments::create_api_client() );
@@ -169,6 +180,8 @@ class MultiCurrency {
 
 	/**
 	 * Initialize the Widgets.
+	 *
+	 * @return void
 	 */
 	public function init_widgets() {
 		register_widget( new CurrencySwitcherWidget( $this, $this->compatibility ) );
@@ -188,6 +201,8 @@ class MultiCurrency {
 
 	/**
 	 * Register the CSS and JS admin scripts.
+	 *
+	 * @return void
 	 */
 	public function register_admin_scripts() {
 		$script_src_url    = plugins_url( 'dist/multi-currency.js', WCPAY_PLUGIN_FILE );
@@ -211,6 +226,8 @@ class MultiCurrency {
 
 	/**
 	 * Load the admin assets.
+	 *
+	 * @return void
 	 */
 	public function enqueue_admin_scripts() {
 		global $current_tab, $current_section;
@@ -309,6 +326,8 @@ class MultiCurrency {
 
 	/**
 	 * Sets up the available currencies, which are alphabetical by name.
+	 *
+	 * @return void
 	 */
 	private function initialize_available_currencies() {
 		// Add default store currency with a rate of 1.0.
@@ -322,7 +341,8 @@ class MultiCurrency {
 
 		foreach ( $wc_currencies as $currency_code => $currency_name ) {
 			$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 1.0;
-			$new_currency  = new Currency( $currency_code, $currency_rate );
+			$update_time   = $cache_data['updated'] ?? null;
+			$new_currency  = new Currency( $currency_code, $currency_rate, $update_time );
 
 			// Add this to our list of available currencies.
 			$available_currencies[ $new_currency->get_name() ] = $new_currency;
@@ -337,11 +357,14 @@ class MultiCurrency {
 
 	/**
 	 * Sets up the enabled currencies.
+	 *
+	 * @return void
 	 */
 	private function initialize_enabled_currencies() {
 		$available_currencies     = $this->get_available_currencies();
 		$enabled_currency_codes   = get_option( $this->id . '_enabled_currencies', [] );
 		$default_code             = $this->get_default_currency()->get_code();
+		$default                  = [];
 		$enabled_currency_codes[] = $default_code;
 
 		// This allows to keep the alphabetical sorting by name.
@@ -380,6 +403,8 @@ class MultiCurrency {
 
 	/**
 	 * Sets the default currency.
+	 *
+	 * @return void
 	 */
 	private function set_default_currency() {
 		$this->default_currency = $this->available_currencies[ get_woocommerce_currency() ] ?? null;
@@ -388,7 +413,7 @@ class MultiCurrency {
 	/**
 	 * Gets the currencies available.
 	 *
-	 * @return array Array of Currency objects.
+	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_available_currencies(): array {
 		return $this->available_currencies;
@@ -406,7 +431,7 @@ class MultiCurrency {
 	/**
 	 * Gets the currently enabled currencies.
 	 *
-	 * @return array Array of Currency objects.
+	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_enabled_currencies(): array {
 		return $this->enabled_currencies;
@@ -416,6 +441,8 @@ class MultiCurrency {
 	 * Sets the enabled currencies for the store.
 	 *
 	 * @param array $currencies Array of currency codes to be enabled.
+	 *
+	 * @return void
 	 */
 	public function set_enabled_currencies( $currencies = [] ) {
 		if ( 0 < count( $currencies ) ) {
@@ -503,12 +530,12 @@ class MultiCurrency {
 	/**
 	 * Gets the converted price using the current currency with the rounding and charm pricing settings.
 	 *
-	 * @param mixed $price The price to be converted.
-	 * @param bool  $type  The type of price being converted. One of 'product', 'shipping', 'tax', 'coupon', or 'exchange_rate'.
+	 * @param mixed  $price The price to be converted.
+	 * @param string $type The type of price being converted. One of 'product', 'shipping', 'tax', 'coupon', or 'exchange_rate'.
 	 *
 	 * @return float The converted price.
 	 */
-	public function get_price( $price, $type ): float {
+	public function get_price( $price, string $type ): float {
 		$supported_types = [ 'product', 'shipping', 'tax', 'coupon', 'exchange_rate' ];
 		$currency        = $this->get_selected_currency();
 
@@ -532,6 +559,8 @@ class MultiCurrency {
 
 	/**
 	 * Recalculates WooCommerce cart totals.
+	 *
+	 * @return void
 	 */
 	public function recalculate_cart() {
 		WC()->cart->calculate_totals();
@@ -539,6 +568,8 @@ class MultiCurrency {
 
 	/**
 	 * Adds Multi-Currency notes to the WC-Admin inbox.
+	 *
+	 * @return void
 	 */
 	public static function add_woo_admin_notes() {
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
@@ -548,6 +579,8 @@ class MultiCurrency {
 
 	/**
 	 * Removes Multi-Currency notes from the WC-Admin inbox.
+	 *
+	 * @return void
 	 */
 	public static function remove_woo_admin_notes() {
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
@@ -655,6 +688,8 @@ class MultiCurrency {
 
 	/**
 	 * Called when the store currency has changed. Puts any manual rate currencies into an option for a notice to display.
+	 *
+	 * @return void
 	 */
 	private function update_manual_rate_currencies_notice_option() {
 		$enabled_currencies = $this->get_enabled_currencies();
@@ -682,7 +717,7 @@ class MultiCurrency {
 	private function read_currencies_from_cache() {
 		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION );
 
-		if ( false === $currency_cache || ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
+		if ( false === $currency_cache || ! is_array( $currency_cache ) || ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
 			// No option found or the data isn't in the format we expect.
 			return null;
 		}

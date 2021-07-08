@@ -269,14 +269,15 @@ class Settings extends \WC_Settings_Page {
 			$converted_rate = number_format( $available_currencies[ $currency->get_code() ]->get_rate(), 4 ) . ' ' . $currency->get_code();
 		}
 
+		$last_updated = ! is_null( $currency->get_last_updated() ) ? gmdate( 'H:m' ) . ' UTC' : 'Error: Unable to fetch automatic rate for this currency!';
+
 		$exchange_rate_options = [
 			'automatic' => sprintf(
 				/* translators: %1$s: default currency rate, %2$s: new currency exchange rate, %3$s: time rates were last updated. */
 				__( 'Fetch rate automatically. Current rate: %1$s = %2$s (Last updated %3$s)', 'woocommerce-payments' ),
 				$default_rate,
 				$converted_rate,
-				// TODO: Proper timestamp needed from API data.
-				'12:00 UTC'
+				$last_updated
 			),
 			'manual'    => __( 'Manual rate. Enter your own fixed rate of exchange.', 'woocommerce-payments' ),
 		];
