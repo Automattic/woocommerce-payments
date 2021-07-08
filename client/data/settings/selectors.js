@@ -70,3 +70,7 @@ export const getDigitalWalletsButtonSize = ( state ) => {
 export const getDigitalWalletsButtonTheme = ( state ) => {
 	return getSettings( state ).digital_wallets_button_theme || '';
 };
+
+export const getSavingError = ( state ) => {
+	return getSettingsState( state ).savingError;
+};

@@ -8,14 +8,19 @@ import {
 	CheckboxControl,
 	ExternalLink,
 	TextControl,
+	Notice,
 } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { useAccountStatementDescriptor, useManualCapture } from 'data';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';
+import {
+	useAccountStatementDescriptor,
+	useManualCapture,
+	useGetSavingError,
+} from '../../data';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 
@@ -31,6 +36,8 @@ const TransactionsAndDeposits = () => {
 		accountStatementDescriptor,
 		setAccountStatementDescriptor,
 	] = useAccountStatementDescriptor();
+	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
+		?.account_statement_descriptor?.message;
 
 	return (
 		<Card>
@@ -51,6 +58,15 @@ const TransactionsAndDeposits = () => {
 						'woocommerce-payments'
 					) }
 				/>
+				{ customerBankStatementErrorMessage && (
+					<Notice status="error" isDismissible={ false }>
+						<span
+							dangerouslySetInnerHTML={ {
+								__html: customerBankStatementErrorMessage,
+							} }
+						/>
+					</Notice>
+				) }
 				<div className="general-settings__account-statement-wrapper">
 					<TextControl
 						className="general-settings__account-statement-input"
