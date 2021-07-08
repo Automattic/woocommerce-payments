@@ -12,8 +12,8 @@ import { useEffect, useState } from '@wordpress/element';
  * Internal dependencies
  */
 import generatePaymentMethod from './generate-payment-method.js';
-import confirmCardPayment from './confirm-card-payment.js';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
+import { usePaymentCompleteHandler } from './hooks';
 
 const WCPayFields = ( {
 	api,
@@ -62,15 +62,12 @@ const WCPayFields = ( {
 	);
 
 	// Once the server has completed payment processing, confirm the intent of necessary.
-	useEffect(
-		() =>
-			onCheckoutAfterProcessingWithSuccess(
-				( { processingResponse: { paymentDetails } } ) =>
-					confirmCardPayment( api, paymentDetails, emitResponse )
-			),
-		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[ elements, stripe, api ]
+	usePaymentCompleteHandler(
+		api,
+		stripe,
+		elements,
+		onCheckoutAfterProcessingWithSuccess,
+		emitResponse
 	);
 
 	// Checks whether there are errors within a field, and saves them for later reporting.
