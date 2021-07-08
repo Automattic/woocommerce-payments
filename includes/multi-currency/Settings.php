@@ -261,12 +261,20 @@ class Settings extends \WC_Settings_Page {
 		$default_currency     = $this->multi_currency->get_default_currency();
 		$page_id              = $this->id . '_single_currency';
 
+		if ( $default_currency->get_is_zero_decimal() ) {
+			$default_rate   = '1,000' . $default_currency->get_code();
+			$converted_rate = number_format( $available_currencies[ $currency->get_code() ]->get_rate() * 1000, 4 ) . ' ' . $currency->get_code();
+		} else {
+			$default_rate   = '1' . $default_currency->get_code();
+			$converted_rate = number_format( $available_currencies[ $currency->get_code() ]->get_rate(), 4 ) . ' ' . $currency->get_code();
+		}
+
 		$exchange_rate_options = [
 			'automatic' => sprintf(
 				/* translators: %1$s: default currency rate, %2$s: new currency exchange rate, %3$s: time rates were last updated. */
 				__( 'Fetch rate automatically. Current rate: %1$s = %2$s (Last updated %3$s)', 'woocommerce-payments' ),
-				'1 ' . $default_currency->get_code(),
-				$available_currencies[ $currency->get_code() ]->get_rate() . ' ' . $currency->get_code(),
+				$default_rate,
+				$converted_rate,
 				// TODO: Proper timestamp needed from API data.
 				'12:00 UTC'
 			),
