@@ -246,13 +246,12 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_coupon_amount_skips_conversion_on_compatibility() {
-		$fixed_coupon = new WC_Coupon();
-		$fixed_coupon->set_discount_type( 'recurring_fee' );
+		$coupon = new WC_Coupon();
 		$this->mock_compatibility
 			->method( 'should_convert_coupon_amount' )
-			->with( $fixed_coupon )
+			->with( $coupon )
 			->willReturn( false );
-		$this->assertSame( '10', $this->frontend_prices->get_coupon_amount( '10', $fixed_coupon ) );
+		$this->assertSame( '10', $this->frontend_prices->get_coupon_amount( '10', $coupon ) );
 	}
 
 	public function test_get_coupon_amount_converts_fixed_cart_amount() {
@@ -260,6 +259,11 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 
 		$fixed_cart_coupon = new WC_Coupon();
 		$fixed_cart_coupon->set_discount_type( 'fixed_cart' );
+
+		$this->mock_compatibility
+			->method( 'should_convert_coupon_amount' )
+			->with( $fixed_cart_coupon )
+			->willReturn( true );
 
 		$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', $fixed_cart_coupon ) );
 	}

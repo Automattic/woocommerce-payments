@@ -62,24 +62,21 @@ class Compatibility {
 	 */
 	public function should_convert_coupon_amount( $coupon = null ): bool {
 		$subscription_renewal = $this->cart_contains_renewal();
-		if ( $coupon && $subscription_renewal ) {
-			/**
-			 * We need to allow the early renewal to convert the cost, as it pulls the original value of the coupon.
-			 * Subsequent queries for the amount use the first converted amount.
-			 * This also works for normal manual renewals.
-			 */
-			if ( ! $this->utils->is_call_in_backtrace( [ 'WCS_Cart_Early_Renewal->setup_cart' ] )
-				&& $this->utils->is_call_in_backtrace( [ 'WC_Discounts->apply_coupon' ] ) ) {
-				// If there's a renewal in the cart we need to get the coupons used on the subscription.
-				$subscription = new \WC_Order( $subscription_renewal['subscription_renewal']['subscription_id'] );
-				$used_coupons = $subscription->get_coupon_codes();
+		if ( ! $coupon || ! $subscription_renewal ) {
+			return true;
+		}
 
-				// Then check to see if the coupon in the cart came from the subscription.
-				foreach ( $used_coupons as $used_coupon ) {
-					if ( $coupon->get_code() === $used_coupon ) {
-						return false;
-					}
-				}
+		/**
+		 * We need to allow the early renewal to convert the cost, as it pulls the original value of the coupon.
+		 * Subsequent queries for the amount use the first converted amount.
+		 * This also works for normal manual renewals.
+		 */
+		if ( ! $this->utils->is_call_in_backtrace( [ 'WCS_Cart_Early_Renewal->setup_cart' ] )
+			&& $this->utils->is_call_in_backtrace( [ 'WC_Discounts->apply_coupon' ] ) ) {
+			// Renewal/recurring coupons are not able to be added to manual renewals, so we don't need to convert.
+			$renewal_types = [ 'recurring_fee', 'recurring_percent', 'renewal_fee', 'renewal_percent', 'renewal_cart' ];
+			if ( in_array( $coupon->get_discount_type(), $renewal_types, true ) ) {
+				return false;
 			}
 		}
 
