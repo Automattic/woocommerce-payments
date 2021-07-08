@@ -261,6 +261,7 @@ class WC_Payments {
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 	}
 
 	/**
@@ -786,6 +787,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Sets the plugin activation timestamp.
+	 *
+	 * Use add_option so that we don't overwrite the value.
+	 */
+	public static function set_plugin_activation_timestamp() {
+		add_option( 'wcpay_activation_timestamp', time() );
+	}
+
+	/**
 	 * Adds WCPay notes to the WC-Admin inbox.
 	 */
 	public static function add_woo_admin_notes() {
@@ -797,6 +807,10 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
+			WC_Payments_Notes_Additional_Payment_Methods::possibly_add_note();
+			WC_Payments_Notes_Additional_Payment_Methods::maybe_enable_upe_feature_flag();
 		}
 	}
 
@@ -816,6 +830,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 			WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
+			WC_Payments_Notes_Additional_Payment_Methods::possibly_delete_note();
 		}
 	}
 

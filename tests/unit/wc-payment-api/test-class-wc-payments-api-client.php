@@ -41,7 +41,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->mock_http_client = $this->getMockBuilder( 'WC_Payments_Http' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'remote_request' ] )
+			->setMethods( [ 'get_blog_id', 'is_connected', 'remote_request' ] )
 			->getMock();
 
 		$this->mock_db_wrapper = $this->getMockBuilder( 'WC_Payments_DB' )
@@ -905,6 +905,50 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						],
 					],
 				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider data_get_intent_description
+	 */
+	public function test_get_intent_description( $order_id, $blog_id, $expected_intent_description ) {
+		$this->mock_http_client
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$this->mock_http_client
+			->method( 'get_blog_id' )
+			->willReturn( $blog_id );
+
+		$actual_intent_description = PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'get_intent_description',
+			[ $order_id ]
+		);
+
+		$this->assertSame( $expected_intent_description, $actual_intent_description );
+	}
+
+	/**
+	 * Data provider for test_get_intent_description
+	 */
+	public function data_get_intent_description() {
+		return [
+			'no_order_id'               => [
+				0,
+				999,
+				'Online Payment for example.org blog_id 999',
+			],
+			'no_blog_id'                => [
+				100,
+				null,
+				'Online Payment for Order #100 for example.org',
+			],
+			'with_order_id_and_blog_id' => [
+				100,
+				999,
+				'Online Payment for Order #100 for example.org blog_id 999',
 			],
 		];
 	}
