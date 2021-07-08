@@ -13,6 +13,49 @@ import moment from 'moment';
 import { formatCurrency } from 'utils/currency';
 import { getDetailsURL } from 'components/details-link';
 
+const getDisputesTasks = ( disputes ) => {
+	if ( ! disputes ) {
+		return [];
+	}
+	return disputes.map(
+		( {
+			amount,
+			currency,
+			evidence_details: evidenceDetails,
+			id,
+			status: disputeStatus,
+		} ) => {
+			return {
+				key: `dispute-resolution-${ id }`,
+				level: 3,
+				title: sprintf(
+					/* translators: %s - amount referred to in the dispute */
+					__(
+						'A disputed payment for %s needs your response',
+						'woocommerce-payments'
+					),
+					formatCurrency( amount || 0, currency || 'USD' )
+				),
+				content: sprintf(
+					/* translators: %s - deadline to respond (date) */
+					__( 'Respond by %s', 'woocommerce-payments' ),
+					dateI18n(
+						'M j, Y - g:iA',
+						moment( evidenceDetails.due_by * 1000 ).toISOString()
+					)
+				),
+				completed: ! [
+					'warning_needs_response',
+					'needs_response',
+				].includes( disputeStatus ),
+				onClick: () => {
+					window.location.href = getDetailsURL( id, 'disputes' );
+				},
+			};
+		}
+	);
+};
+
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
@@ -24,52 +67,7 @@ export const getTasks = ( {
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	let accountDetailsTaskDescription;
 
-	const getDisputesTasks = () => {
-		if ( ! disputes ) {
-			return [];
-		}
-		return disputes.map(
-			( {
-				amount,
-				currency,
-				evidence_details: evidenceDetails,
-				id,
-				status: disputeStatus,
-			} ) => {
-				return {
-					key: `dispute-resolution-${ id }`,
-					level: 3,
-					title: sprintf(
-						/* translators: %s - amount referred to in the dispute */
-						__(
-							'A disputed payment for %s needs your response',
-							'woocommerce-payments'
-						),
-						formatCurrency( amount || 0, currency || 'USD' )
-					),
-					content: sprintf(
-						/* translators: %s - deadline to respond (date) */
-						__( 'Respond by %s', 'woocommerce-payments' ),
-						dateI18n(
-							'M j, Y - g:iA',
-							moment(
-								evidenceDetails.due_by * 1000
-							).toISOString()
-						)
-					),
-					completed: ! [
-						'warning_needs_response',
-						'needs_response',
-					].includes( disputeStatus ),
-					onClick: () => {
-						window.location.href = getDetailsURL( id, 'disputes' );
-					},
-				};
-			}
-		);
-	};
-
-	const disputesToResolve = getDisputesTasks();
+	const disputesToResolve = getDisputesTasks( disputes );
 
 	if ( accountRestrictedSoon ) {
 		accountDetailsTaskDescription = sprintf(
