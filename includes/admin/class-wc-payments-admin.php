@@ -343,6 +343,18 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/settings.css' )
 		);
 
+		wp_localize_script(
+			'WCPAY_ADMIN_SETTINGS',
+			'wcpayPaymentRequestParams',
+			[
+				'stripe' => [
+					'publishableKey' => $this->account->get_publishable_key( $this->wcpay_gateway->is_in_test_mode() ),
+					'accountId'      => $this->account->get_stripe_account_id(),
+					'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+				],
+			]
+		);
+
 		$payment_gateways_script_src_url    = plugins_url( 'dist/payment-gateways.js', WCPAY_PLUGIN_FILE );
 		$payment_gateways_script_asset_path = WCPAY_ABSPATH . 'dist/payment-gateways.asset.php';
 		$payment_gateways_script_asset      = file_exists( $payment_gateways_script_asset_path ) ? require_once $payment_gateways_script_asset_path : [ 'dependencies' => [] ];
