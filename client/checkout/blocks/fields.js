@@ -86,7 +86,12 @@ const WCPayFields = ( {
 	};
 
 	return (
-		<CardElement options={ elementOptions } onChange={ checkForErrors } />
+		<div className="wc-block-gateway-container wc-inline-card-element">
+			<CardElement
+				options={ elementOptions }
+				onChange={ checkForErrors }
+			/>
+		</div>
 	);
 };
 
