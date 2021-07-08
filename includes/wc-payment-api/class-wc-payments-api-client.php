@@ -1443,19 +1443,15 @@ class WC_Payments_API_Client {
 	 * @return string        A formatted intention description.
 	 */
 	private function get_intent_description( int $order_id ): string {
-		if ( 0 === $order_id ) {
-			return sprintf(
-				// Forgo i18n as this is only visible in the Stripe dashboard.
-				'Online Payment for %s',
-				get_bloginfo( 'name' )
-			);
-		}
+		$domain_name = str_replace( [ 'https://', 'http://' ], '', get_site_url() );
+		$blog_id     = $this->get_blog_id();
 
+		// Forgo i18n as this is only visible in the Stripe dashboard.
 		return sprintf(
-			// Forgo i18n as this is only visible in the Stripe dashboard.
-			'Online Payment for Order #%d for %s',
-			$order_id,
-			get_bloginfo( 'name' )
+			'Online Payment%s for %s%s',
+			0 !== $order_id ? " for Order #$order_id" : '',
+			$domain_name,
+			null !== $blog_id ? " blog_id $blog_id" : ''
 		);
 	}
 }
