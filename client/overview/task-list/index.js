@@ -6,22 +6,13 @@
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { Badge } from '@woocommerce/components';
-import {
-	CollapsibleList,
-	List,
-	TaskItem,
-	Text,
-} from '@woocommerce/experimental';
+import { CollapsibleList, TaskItem, Text } from '@woocommerce/experimental';
 import { useDispatch } from '@wordpress/data';
 import { useCallback, useEffect, useState } from '@wordpress/element';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-const TaskList = ( {
-	collapsible = false,
-	overviewTasksVisibility,
-	tasks,
-} ) => {
+const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	const { createNotice } = useDispatch( 'core/notices' );
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const [ visibleTasks, setVisibleTasks ] = useState( tasks );
@@ -173,16 +164,6 @@ const TaskList = ( {
 		return <div></div>;
 	}
 
-	const ListComp = collapsible ? CollapsibleList : List;
-
-	const listProps = collapsible
-		? {
-				collapseLabel: __( 'Hide tasks', 'woocommerce-payments' ),
-				expandLabel: __( 'Show tasks', 'woocommerce-payments' ),
-				collapsed: false,
-		  }
-		: {};
-
 	const pendingTaskCount = visibleTasks.filter( ( task ) => ! task.completed )
 		.length;
 	return (
@@ -201,7 +182,12 @@ const TaskList = ( {
 				</div>
 			</CardHeader>
 			<CardBody>
-				<ListComp animation="custom" { ...listProps }>
+				<CollapsibleList
+					animation="custom"
+					collapsed={ false }
+					collapseLabel={ __( 'Hide tasks', 'woocommerce-payments' ) }
+					expandLabel={ __( 'Show tasks', 'woocommerce-payments' ) }
+				>
 					{ visibleTasks.map( ( task ) => (
 						<TaskItem
 							key={ task.key }
@@ -229,7 +215,7 @@ const TaskList = ( {
 							}
 						/>
 					) ) }
-				</ListComp>
+				</CollapsibleList>
 			</CardBody>
 		</Card>
 	);
