@@ -55,13 +55,13 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->assertFalse( $this->compatibility->should_hide_widgets() );
 	}
 
-	public function test_should_hide_widgets_return_true_test_1() {
+	public function test_should_hide_widgets_return_true_when_renewal_in_cart() {
 		$this->mock_wcs_cart_contains_renewal( true );
 		$this->mock_wcs_cart_contains_resubscribe( false );
 		$this->assertTrue( $this->compatibility->should_hide_widgets() );
 	}
 
-	public function test_should_hide_widgets_return_true_test_2() {
+	public function test_should_hide_widgets_return_true_when_resubscribe_in_cart() {
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_cart_contains_resubscribe( true );
 		$this->assertTrue( $this->compatibility->should_hide_widgets() );

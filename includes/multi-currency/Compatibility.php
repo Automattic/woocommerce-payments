@@ -71,19 +71,21 @@ class Compatibility {
 	 * @return bool True if it should be converted.
 	 */
 	public function should_convert_product_price( $product = null ): bool {
-		// If we have a product, and it's a subscription renewal.
-		if ( $product ) {
-			if ( $this->is_product_subscription_type_in_cart( $product, 'renewal' )
-				|| $this->is_product_subscription_type_in_cart( $product, 'resubscribe' ) ) {
-				$calls = [
-					'WC_Cart_Totals->calculate_item_totals',
-					'WC_Cart->get_product_subtotal',
-					'wc_get_price_excluding_tax',
-					'wc_get_price_including_tax',
-				];
-				if ( $this->utils->is_call_in_backtrace( $calls ) ) {
-					return false;
-				}
+		if ( ! $product ) {
+			return true;
+		}
+
+		// Check for subscription renewal or resubscribe.
+		if ( $this->is_product_subscription_type_in_cart( $product, 'renewal' )
+			|| $this->is_product_subscription_type_in_cart( $product, 'resubscribe' ) ) {
+			$calls = [
+				'WC_Cart_Totals->calculate_item_totals',
+				'WC_Cart->get_product_subtotal',
+				'wc_get_price_excluding_tax',
+				'wc_get_price_including_tax',
+			];
+			if ( $this->utils->is_call_in_backtrace( $calls ) ) {
+				return false;
 			}
 		}
 
