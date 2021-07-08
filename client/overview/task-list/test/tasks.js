@@ -109,7 +109,6 @@ describe( 'getTasks()', () => {
 		);
 	} );
 	it( 'should include a dispute resolution task', () => {
-		/*eslint-disable camelcase*/
 		const disputes = [
 			{
 				id: 123,
@@ -119,7 +118,6 @@ describe( 'getTasks()', () => {
 				status: 'needs_response',
 			},
 		];
-		/*eslint-enable camelcase*/
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -141,7 +139,6 @@ describe( 'getTasks()', () => {
 		);
 	} );
 	it( 'should include two different dispute resolution tasks', () => {
-		/*eslint-disable camelcase*/
 		const disputes = [
 			{
 				id: 456,
@@ -158,7 +155,6 @@ describe( 'getTasks()', () => {
 				status: 'won',
 			},
 		];
-		/*eslint-enable camelcase*/
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
