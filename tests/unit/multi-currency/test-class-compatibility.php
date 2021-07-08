@@ -36,6 +36,8 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->mock_product
 			->method( 'get_id' )
 			->willReturn( 42 );
+
+		$this->mock_coupon = $this->createMock( \WC_Coupon::class );
 	}
 
 	public function test_override_selected_currency_return_false() {
@@ -93,6 +95,24 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->assertTrue( $this->compatibility->should_convert_product_price( null ) );
 	}
 
+	public function test_should_convert_coupon_amount_return_false_when_renewal_in_cart() {
+		$this->mock_utils
+			->expects( $this->exactly( 4 ) )
+			->method( 'is_call_in_backtrace' )
+			->withConsecutive(
+				[ [ 'WCS_Cart_Early_Renewal->setup_cart' ] ],
+				[ [ 'WC_Discounts->apply_coupon' ] ]
+			)
+			->willReturn( false, true );
+		$this->mock_wcs_cart_contains_renewal( true );
+		$this->assertFalse( $this->compatibility->should_convert_coupon_amount( $this->mock_coupon ) );
+	}
+
+	public function test_should_convert_coupon_amount_return_true_with_no_renewal_in_cart() {
+		$this->mock_wcs_cart_contains_renewal( false );
+		$this->assertTrue( $this->compatibility->should_convert_coupon_amount( $this->mock_coupon ) );
+	}
+
 	private function mock_wcs_cart_contains_renewal( $value ) {
 		WC_Subscriptions::wcs_cart_contains_renewal(
 			function () use ( $value ) {
@@ -101,6 +121,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 						'product_id'           => 42,
 						'subscription_renewal' => [
 							'renewal_order_id' => 42,
+							'subscription_id'  => 42,
 						],
 					];
 				}
