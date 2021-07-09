@@ -767,8 +767,6 @@ class MultiCurrency {
 			return;
 		}
 
-		// The options in the database are lowercased.
-		$id       = strtolower( $code );
 		$settings = [
 			'price_charm',
 			'price_rounding',
@@ -778,7 +776,7 @@ class MultiCurrency {
 
 		// Go through each setting and remove them.
 		foreach ( $settings as $setting ) {
-			delete_option( $this->id . '_' . $setting . '_' . $id );
+			delete_option( $this->id . '_' . $setting . '_' . strtolower( $code ) );
 		}
 	}
 }
