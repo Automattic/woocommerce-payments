@@ -11,9 +11,9 @@ import interpolateComponents from 'interpolate-components';
  * Internal dependencies
  */
 import {
-	useDigitalWalletsButtonType,
-	useDigitalWalletsButtonSize,
-	useDigitalWalletsButtonTheme,
+	usePaymentRequestButtonType,
+	usePaymentRequestButtonSize,
+	usePaymentRequestButtonTheme,
 } from '../../data';
 import CardBody from '../card-body';
 
@@ -114,10 +114,10 @@ const buttonThemeOptions = [
 	},
 ];
 
-const DigitalWalletsSettings = () => {
-	const [ buttonType, setButtonType ] = useDigitalWalletsButtonType();
-	const [ size, setSize ] = useDigitalWalletsButtonSize();
-	const [ theme, setTheme ] = useDigitalWalletsButtonTheme();
+const PaymentRequestSettings = () => {
+	const [ buttonType, setButtonType ] = usePaymentRequestButtonType();
+	const [ size, setSize ] = usePaymentRequestButtonSize();
+	const [ theme, setTheme ] = usePaymentRequestButtonTheme();
 
 	return (
 		<Card>
@@ -157,4 +157,4 @@ const DigitalWalletsSettings = () => {
 	);
 };
 
-export default DigitalWalletsSettings;
+export default PaymentRequestSettings;

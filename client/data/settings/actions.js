@@ -20,16 +20,16 @@ function updateSettingsValues( payload ) {
 	};
 }
 
-export function updateDigitalWalletsButtonType( type ) {
-	return updateSettingsValues( { digital_wallets_button_type: type } );
+export function updatePaymentRequestButtonType( type ) {
+	return updateSettingsValues( { payment_request_button_type: type } );
 }
 
-export function updateDigitalWalletsButtonSize( size ) {
-	return updateSettingsValues( { digital_wallets_button_size: size } );
+export function updatePaymentRequestButtonSize( size ) {
+	return updateSettingsValues( { payment_request_button_size: size } );
 }
 
-export function updateDigitalWalletsButtonTheme( theme ) {
-	return updateSettingsValues( { digital_wallets_button_theme: theme } );
+export function updatePaymentRequestButtonTheme( theme ) {
+	return updateSettingsValues( { payment_request_button_theme: theme } );
 }
 
 export function updateSettings( data ) {
@@ -43,8 +43,8 @@ export function updateIsWCPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_wcpay_enabled: isEnabled } );
 }
 
-export function updateIsDigitalWalletsEnabled( isEnabled ) {
-	return updateSettingsValues( { is_digital_wallets_enabled: isEnabled } );
+export function updateIsPaymentRequestEnabled( isEnabled ) {
+	return updateSettingsValues( { is_payment_request_enabled: isEnabled } );
 }
 
 export function updateEnabledPaymentMethodIds( methodIds ) {
@@ -107,8 +107,8 @@ export function* saveSettings() {
 	return isSuccess;
 }
 
-export function updateDigitalWalletsLocations( locations ) {
+export function updatePaymentRequestLocations( locations ) {
 	return updateSettingsValues( {
-		digital_wallets_enabled_locations: [ ...locations ],
+		payment_request_enabled_locations: [ ...locations ],
 	} );
 }
