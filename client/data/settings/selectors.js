@@ -47,26 +47,26 @@ export const getIsDevModeEnabled = ( state ) => {
 	return getSettings( state ).is_dev_mode_enabled || false;
 };
 
-export const getIsDigitalWalletsEnabled = ( state ) => {
-	return getSettings( state ).is_digital_wallets_enabled || false;
+export const getIsPaymentRequestEnabled = ( state ) => {
+	return getSettings( state ).is_payment_request_enabled || false;
 };
 
 export const getIsDebugLogEnabled = ( state ) => {
 	return getSettings( state ).is_debug_log_enabled || false;
 };
 
-export const getDigitalWalletsLocations = ( state ) => {
-	return getSettings( state ).digital_wallets_enabled_locations || EMPTY_ARR;
+export const getPaymentRequestLocations = ( state ) => {
+	return getSettings( state ).payment_request_enabled_locations || EMPTY_ARR;
 };
 
-export const getDigitalWalletsButtonType = ( state ) => {
-	return getSettings( state ).digital_wallets_button_type || '';
+export const getPaymentRequestButtonType = ( state ) => {
+	return getSettings( state ).payment_request_button_type || '';
 };
 
-export const getDigitalWalletsButtonSize = ( state ) => {
-	return getSettings( state ).digital_wallets_button_size || '';
+export const getPaymentRequestButtonSize = ( state ) => {
+	return getSettings( state ).payment_request_button_size || '';
 };
 
-export const getDigitalWalletsButtonTheme = ( state ) => {
-	return getSettings( state ).digital_wallets_button_theme || '';
+export const getPaymentRequestButtonTheme = ( state ) => {
+	return getSettings( state ).payment_request_button_theme || '';
 };
