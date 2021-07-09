@@ -10,7 +10,7 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
  */
 import { shopperWCP } from '../../utils/flows';
 
-const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 8000;
+const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 10000;
 const cards = Object.entries( config.get( 'cards' ) );
 const validCards = cards.filter( ( [ cardType ] ) =>
 	[ 'basic', '3ds', '3ds2' ].includes( cardType )
@@ -38,6 +38,9 @@ describe( 'Payment Methods', () => {
 			timeAdded = Date.now();
 
 			// Verify that the card was added
+			await expect( page ).not.toMatch(
+				'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
+			);
 			await expect( page ).toMatch( 'Payment method successfully added' );
 			await expect( page ).toMatch( label );
 			await expect( page ).toMatch( `${ month }/${ year }` );
