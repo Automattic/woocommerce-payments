@@ -185,6 +185,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 				<CollapsibleList
 					animation="slide-right"
 					collapsed={ false }
+					show={ 5 }
 					collapseLabel={ __( 'Hide tasks', 'woocommerce-payments' ) }
 					expandLabel={ __( 'Show tasks', 'woocommerce-payments' ) }
 				>
