@@ -70,3 +70,7 @@ export const getPaymentRequestButtonSize = ( state ) => {
 export const getPaymentRequestButtonTheme = ( state ) => {
 	return getSettings( state ).payment_request_button_theme || '';
 };
+
+export const getSavingError = ( state ) => {
+	return getSettingsState( state ).savingError;
+};
