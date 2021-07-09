@@ -493,7 +493,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function get_payment_fields_js_config() {
 		$payment_fields                         = parent::get_payment_fields_js_config();
 		$payment_fields['accountDescriptor']    = $this->get_account_statement_descriptor();
-		$payment_fields['paymentMethodsURL']    = wc_get_account_endpoint_url( 'payment-methods' );
+		$payment_fields['addPaymentReturnURL']  = wc_get_account_endpoint_url( 'payment-methods' );
 		$payment_fields['gatewayId']            = self::GATEWAY_ID;
 		$payment_fields['paymentMethodsConfig'] = $this->get_enabled_payment_method_config();
 
@@ -502,6 +502,26 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$order_id                     = absint( get_query_var( 'order-pay' ) );
 			$payment_fields['orderId']    = $order_id;
 			$order                        = wc_get_order( $order_id );
+
+			if ( $this->is_changing_payment_method_for_subscription() ) {
+				$payment_fields['isChangingPayment']   = true;
+				$payment_fields['addPaymentReturnURL'] = esc_url_raw( home_url( add_query_arg( [] ) ) );
+
+				if ( ! empty( $_GET['setup_intent_client_secret'] ) & ! empty( $_GET['setup_intent'] ) & ! empty( $_GET['redirect_status'] ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wpnonce'] ) ) ) ) {
+					if ( 'succeeded' === $_GET['redirect_status'] ) {
+							$setup_intent_id   = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
+							$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
+							$payment_method_id = $setup_intent['payment_method'];
+							// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
+							// We can then replace the hardcoded value 'card' with the corresponding type.
+							$payment_method                   = $this->payment_methods['card'];
+							$token                            = $payment_method->get_payment_token_for_user( wp_get_current_user(), $payment_method_id );
+							$payment_fields['newTokenFormId'] = '#wc-' . $token->get_gateway_id() . '-payment-token-' . $token->get_id();
+					}
+				}
+				return $payment_fields;
+			}
+
 			if ( is_a( $order, 'WC_Order' ) ) {
 				$payment_fields['orderReturnURL'] = esc_url_raw(
 					add_query_arg(

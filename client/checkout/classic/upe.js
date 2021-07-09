@@ -269,7 +269,14 @@ jQuery( function ( $ ) {
 			isUPEEnabled &&
 			! upeElement
 		) {
-			const useSetUpIntent = $( 'form#add_payment_method' ).length;
+			const isChangingPayment = getConfig( 'isChangingPayment' );
+			const useSetUpIntent =
+				$( 'form#add_payment_method' ).length || isChangingPayment;
+			if ( isChangingPayment && getConfig( 'newTokenFormId' ) ) {
+				const token = getConfig( 'newTokenFormId' );
+				$( token ).prop( 'selected', true ).trigger( 'click' );
+				$( 'form#order_review' ).submit();
+			}
 			mountUPEElement( useSetUpIntent );
 		}
 	}
@@ -364,7 +371,7 @@ jQuery( function ( $ ) {
 		blockUI( $form );
 
 		try {
-			const returnUrl = getConfig( 'paymentMethodsURL' );
+			const returnUrl = getConfig( 'addPaymentReturnURL' );
 
 			const { error } = await api.getStripe().confirmSetup( {
 				element: upeElement,
@@ -519,6 +526,10 @@ jQuery( function ( $ ) {
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
 		if ( ! isUsingSavedPaymentMethod() ) {
+			if ( getConfig( 'isChangingPayment' ) ) {
+				handleUPEAddPayment( $( '#order_review' ) );
+				return false;
+			}
 			handleUPEOrderPay( $( '#order_review' ) );
 			return false;
 		}
