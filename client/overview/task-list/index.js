@@ -50,11 +50,9 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		dismissedTasks.splice( dismissedTodoTasks.indexOf( key ), 1 );
 		setVisibleTasks( getVisibleTasks() );
 
-		/*eslint-disable camelcase*/
 		await updateOptions( {
 			[ optionName ]: updatedDismissedTasks,
 		} );
-		/*eslint-enable camelcase*/
 	};
 
 	const dismissSelectedTask = async ( {
@@ -68,11 +66,9 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		dismissedTasks.push( key );
 		setVisibleTasks( getVisibleTasks() );
 
-		/*eslint-disable camelcase*/
 		await updateOptions( {
 			[ optionName ]: [ ...dismissedTasks ],
 		} );
-		/*eslint-enable camelcase*/
 
 		createNotice( 'success', noticeMessage, {
 			actions: [
@@ -122,11 +118,9 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		delete remindMeLaterTodoTasks[ key ];
 		setVisibleTasks( getVisibleTasks() );
 
-		/*eslint-disable camelcase*/
 		await updateOptions( {
 			woocommerce_remind_me_later_todo_tasks: updatedRemindMeLaterTasks,
 		} );
-		/*eslint-enable camelcase*/
 	};
 
 	const remindTaskLater = async ( { key, onDismiss } ) => {
@@ -134,14 +128,12 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		remindMeLaterTodoTasks[ key ] = dismissTime;
 		setVisibleTasks( getVisibleTasks() );
 
-		/*eslint-disable camelcase*/
 		await updateOptions( {
 			woocommerce_remind_me_later_todo_tasks: {
 				...remindMeLaterTodoTasks,
 				[ key ]: dismissTime,
 			},
 		} );
-		/*eslint-enable camelcase*/
 
 		createNotice(
 			'success',
