@@ -242,6 +242,10 @@ class Settings extends \WC_Settings_Page {
 					name="<?php echo esc_attr( $this->id . '_automatic_exchange_rate' ); ?>"
 					value="<?php echo esc_attr( $available_currencies[ $currency->get_code() ]->get_rate() ); ?>"
 				/>
+				<input type="hidden"
+					name="<?php echo esc_attr( $this->id . '_num_decimals' ); ?>"
+					value="<?php echo esc_attr( $currency->get_is_zero_decimal() ? 0 : 2 ); ?>"
+				/>
 			</td>
 		</tr>
 		<?php
@@ -285,15 +289,15 @@ class Settings extends \WC_Settings_Page {
 		];
 
 		$decimal_currency_rounding_options      = [
-			'none' => __( 'None', 'woocommerce-payments' ),
-			'0.25' => '0.25',
-			'0.50' => '0.50',
-			'1'    => '1.00 (recommended)',
-			'5'    => '5.00',
-			'10'   => '10.00',
+			'none'  => __( 'None', 'woocommerce-payments' ),
+			'0.25'  => '0.25',
+			'0.50'  => '0.50',
+			'1.00'  => '1.00 (recommended)',
+			'5.00'  => '5.00',
+			'10.00' => '10.00',
 		];
 		$zero_decimal_currency_rounding_options = [
-			'none' => __( 'None', 'woocommerce-payments' ),
+			'1'    => '1',
 			'10'   => '10',
 			'25'   => '25',
 			'50'   => '50',
