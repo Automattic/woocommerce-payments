@@ -504,22 +504,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$order                        = wc_get_order( $order_id );
 
 			if ( $this->is_changing_payment_method_for_subscription() ) {
-				$payment_fields['isChangingPayment']   = true;
-				$payment_fields['addPaymentReturnURL'] = esc_url_raw( home_url( add_query_arg( [] ) ) );
-
-				if ( ! empty( $_GET['setup_intent_client_secret'] ) & ! empty( $_GET['setup_intent'] ) & ! empty( $_GET['redirect_status'] ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wpnonce'] ) ) ) ) {
-					if ( 'succeeded' === $_GET['redirect_status'] ) {
-							$setup_intent_id   = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
-							$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
-							$payment_method_id = $setup_intent['payment_method'];
-							// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
-							// We can then replace the hardcoded value 'card' with the corresponding type.
-							$payment_method                   = $this->payment_methods['card'];
-							$token                            = $payment_method->get_payment_token_for_user( wp_get_current_user(), $payment_method_id );
-							$payment_fields['newTokenFormId'] = '#wc-' . $token->get_gateway_id() . '-payment-token-' . $token->get_id();
-					}
-				}
-				return $payment_fields;
+				return $this->add_payment_fields_js_config_to_change_subscription_payment( $payment_fields );
 			}
 
 			if ( is_a( $order, 'WC_Order' ) ) {
@@ -533,6 +518,35 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						$this->get_return_url( $order )
 					)
 				);
+			}
+		}
+		return $payment_fields;
+	}
+
+	/**
+	 * Adds the configuration values needed when changing a subscription payment method.
+	 *
+	 * @param array $payment_fields Configuration values.
+	 *
+	 * @return array
+	 */
+	public function add_payment_fields_js_config_to_change_subscription_payment( $payment_fields ) {
+		$payment_fields['isChangingPayment']   = true;
+		$payment_fields['addPaymentReturnURL'] = esc_url_raw( home_url( add_query_arg( [] ) ) );
+
+		// After the setup intent is created using UPE, we are redirect back.
+		// We get the payment token for the user and pass it on the config.
+		// This value will be used to resubmit the form and change the subscription to this new payment method.
+		if ( ! empty( $_GET['setup_intent_client_secret'] ) & ! empty( $_GET['setup_intent'] ) & ! empty( $_GET['redirect_status'] ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wpnonce'] ) ) ) ) {
+			if ( 'succeeded' === $_GET['redirect_status'] ) {
+					$setup_intent_id   = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
+					$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
+					$payment_method_id = $setup_intent['payment_method'];
+					// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
+					// Leaving 'card' as a hardcoded value for now to avoid a new API call.
+					$payment_method                   = $this->payment_methods['card'];
+					$token                            = $payment_method->get_payment_token_for_user( wp_get_current_user(), $payment_method_id );
+					$payment_fields['newTokenFormId'] = '#wc-' . $token->get_gateway_id() . '-payment-token-' . $token->get_id();
 			}
 		}
 		return $payment_fields;

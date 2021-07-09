@@ -270,9 +270,15 @@ jQuery( function ( $ ) {
 			! upeElement
 		) {
 			const isChangingPayment = getConfig( 'isChangingPayment' );
+
+			// We use a setup intent if we are on the screens to add a new payment method or to change a subscription payment.
 			const useSetUpIntent =
 				$( 'form#add_payment_method' ).length || isChangingPayment;
+
 			if ( isChangingPayment && getConfig( 'newTokenFormId' ) ) {
+				// Changing the method for a subscription takes two steps:
+				// 1. Create the new payment method that will redirect back.
+				// 2. Select the new payment method and resubmit the form to update the subscription.
 				const token = getConfig( 'newTokenFormId' );
 				$( token ).prop( 'selected', true ).trigger( 'click' );
 				$( 'form#order_review' ).submit();
