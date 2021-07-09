@@ -104,9 +104,17 @@ export const shopperWCP = {
 		} );
 	},
 
-	// In 'My account' page, fill the 'Add payment method' form and submit
+	/**
+	 * Happy path for adding a new payment method in 'My Account > Payment methods' page.
+	 * It can handle 3DS and 3DS2 flows.
+	 *
+	 * @param {*} cardType Card type as defined in the `test.json` file. Examples: `basic`, `3ds2`, `declined`.
+	 * @param {*} card Card object that you want to add as the new payment method.
+	 */
 	addNewPaymentMethod: async ( cardType, card ) => {
-		const cardIs3DS = cardType.toUpperCase().includes( '3DS' );
+		const cardIs3DS =
+			cardType.toUpperCase().includes( '3DS' ) &&
+			! cardType.toLowerCase().includes( 'declined' );
 
 		await expect( page ).toClick( 'a', {
 			text: 'Add payment method',
