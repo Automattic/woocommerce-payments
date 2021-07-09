@@ -270,13 +270,13 @@ class Settings extends \WC_Settings_Page {
 		}
 
 		$last_updated = ! is_null( $available_currencies[ $currency->get_code() ]->get_last_updated() )
-			? gmdate( 'H:i', $available_currencies[ $currency->get_code() ]->get_last_updated() ) . ' UTC'
-			: 'Error: Unable to fetch automatic rate for this currency!';
+			? $this->format_last_updated_date( $available_currencies[ $currency->get_code() ]->get_last_updated() )
+			: 'Error - Unable to fetch automatic rate for this currency';
 
 		$exchange_rate_options = [
 			'automatic' => sprintf(
 				/* translators: %1$s: default currency rate, %2$s: new currency exchange rate, %3$s: time rates were last updated. */
-				__( 'Fetch rate automatically. Current rate: %1$s = %2$s (Last updated %3$s)', 'woocommerce-payments' ),
+				__( 'Fetch rate automatically. Current rate: %1$s = %2$s (Last updated: %3$s)', 'woocommerce-payments' ),
 				$default_rate,
 				$converted_rate,
 				$last_updated
@@ -468,5 +468,16 @@ class Settings extends \WC_Settings_Page {
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=wcpay_multi_currency' ) ); ?>"><?php esc_html_e( 'Currencies', 'woocommerce-payments' ); ?></a> &gt; <?php echo esc_html( "{$currency->get_name()} ({$currency->get_code()}) {$currency->get_flag()}" ); ?>
 		</h2>
 		<?php
+	}
+
+	/**
+	 * Format the last updated date using the WordPress installations date/time settings for use on the frontend.
+	 *
+	 * @param int $last_updated The last updated unix timestamp.
+	 *
+	 * @return string
+	 */
+	private function format_last_updated_date( int $last_updated ): string {
+		return wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $last_updated );
 	}
 }
