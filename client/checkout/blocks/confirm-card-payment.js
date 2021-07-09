@@ -16,7 +16,6 @@ export default async function confirmCardPayment(
 	const { redirect, payment_method: paymentMethod } = paymentDetails;
 
 	try {
-		// TODO: add second parameter with payment method ID to indicate whether card should be saved or not.
 		const confirmation = api.confirmIntent(
 			redirect,
 			shouldSavePayment ? paymentMethod : null
