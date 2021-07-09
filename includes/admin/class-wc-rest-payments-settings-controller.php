@@ -88,7 +88,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					'account_statement_descriptor'      => [
 						'description'       => __( 'WooCommerce Payments bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
 						'type'              => 'string',
-						'validate_callback' => 'rest_validate_request_arg',
+						'validate_callback' => [ $this, 'validate_statement_descriptor' ],
 					],
 					'is_payment_request_enabled'        => [
 						'description'       => __( 'If WooCommerce Payments express checkouts should be enabled.', 'woocommerce-payments' ),
@@ -135,6 +135,34 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				],
 			]
 		);
+	}
+
+	/**
+	 * Validate the statement descriptor argument.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param mixed           $value The value being validated.
+	 * @param WP_REST_Request $request The request made.
+	 * @param string          $param The parameter name, used in error messages.
+	 * @return true|WP_Error
+	 */
+	public function validate_statement_descriptor( $value, $request, $param ) {
+		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
+		if ( true !== $string_validation_result ) {
+			return $string_validation_result;
+		}
+
+		try {
+			$this->wcpay_gateway->validate_account_statement_descriptor_field( 'account_statement_descriptor', $value );
+		} catch ( Exception $exception ) {
+			return new WP_Error(
+				'rest_invalid_pattern',
+				$exception->getMessage()
+			);
+		}
+
+		return true;
 	}
 
 	/**
