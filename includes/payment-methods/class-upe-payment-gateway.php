@@ -498,7 +498,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['paymentMethodsConfig'] = $this->get_enabled_payment_method_config();
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
-			if ( $this->is_changing_payment_method_for_subscription() ) {
+			if ( $this->is_subscriptions_enabled() && $this->is_changing_payment_method_for_subscription() ) {
 				$payment_fields['isChangingPayment']   = true;
 				$payment_fields['addPaymentReturnURL'] = esc_url_raw( home_url( add_query_arg( [] ) ) );
 
