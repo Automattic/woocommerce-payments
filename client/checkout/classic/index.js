@@ -60,7 +60,7 @@ jQuery( function ( $ ) {
 
 	// Giropay payment method details
 	const giropayPayment = {
-		type: 'giropay' /* eslint-disable camelcase */,
+		type: 'giropay',
 	};
 
 	// Create a SEPA element
@@ -71,13 +71,13 @@ jQuery( function ( $ ) {
 	} );
 
 	const sepaPayment = {
-		type: 'sepa_debit' /* eslint-disable camelcase */,
+		type: 'sepa_debit',
 		sepa_debit: sepaElement,
 	};
 
 	// Sofort payment method details
 	const sofortPayment = {
-		type: 'sofort' /* eslint-disable camelcase */,
+		type: 'sofort',
 	};
 
 	/**

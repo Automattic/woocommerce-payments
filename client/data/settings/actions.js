@@ -20,19 +20,16 @@ function updateSettingsValues( payload ) {
 	};
 }
 
-export function updateDigitalWalletsButtonType( type ) {
-	// eslint-disable-next-line camelcase
-	return updateSettingsValues( { digital_wallets_button_type: type } );
+export function updatePaymentRequestButtonType( type ) {
+	return updateSettingsValues( { payment_request_button_type: type } );
 }
 
-export function updateDigitalWalletsButtonSize( size ) {
-	// eslint-disable-next-line camelcase
-	return updateSettingsValues( { digital_wallets_button_size: size } );
+export function updatePaymentRequestButtonSize( size ) {
+	return updateSettingsValues( { payment_request_button_size: size } );
 }
 
-export function updateDigitalWalletsButtonTheme( theme ) {
-	// eslint-disable-next-line camelcase
-	return updateSettingsValues( { digital_wallets_button_theme: theme } );
+export function updatePaymentRequestButtonTheme( theme ) {
+	return updateSettingsValues( { payment_request_button_theme: theme } );
 }
 
 export function updateSettings( data ) {
@@ -43,18 +40,15 @@ export function updateSettings( data ) {
 }
 
 export function updateIsWCPayEnabled( isEnabled ) {
-	// eslint-disable-next-line camelcase
 	return updateSettingsValues( { is_wcpay_enabled: isEnabled } );
 }
 
-export function updateIsDigitalWalletsEnabled( isEnabled ) {
-	// eslint-disable-next-line camelcase
-	return updateSettingsValues( { is_digital_wallets_enabled: isEnabled } );
+export function updateIsPaymentRequestEnabled( isEnabled ) {
+	return updateSettingsValues( { is_payment_request_enabled: isEnabled } );
 }
 
 export function updateEnabledPaymentMethodIds( methodIds ) {
 	return updateSettingsValues( {
-		// eslint-disable-next-line camelcase
 		enabled_payment_method_ids: [ ...methodIds ],
 	} );
 }
@@ -67,23 +61,19 @@ export function updateIsSavingSettings( isSaving ) {
 }
 
 export function updateIsManualCaptureEnabled( isEnabled ) {
-	// eslint-disable-next-line camelcase
 	return updateSettingsValues( { is_manual_capture_enabled: isEnabled } );
 }
 
 export function updateIsTestModeEnabled( isEnabled ) {
-	// eslint-disable-next-line camelcase
 	return updateSettingsValues( { is_test_mode_enabled: isEnabled } );
 }
 
 export function updateIsDebugLogEnabled( isEnabled ) {
-	// eslint-disable-next-line camelcase
 	return updateSettingsValues( { is_debug_log_enabled: isEnabled } );
 }
 
 export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	return updateSettingsValues( {
-		// eslint-disable-next-line camelcase
 		account_statement_descriptor: accountStatementDescriptor,
 	} );
 }
@@ -117,9 +107,8 @@ export function* saveSettings() {
 	return isSuccess;
 }
 
-export function updateDigitalWalletsLocations( locations ) {
+export function updatePaymentRequestLocations( locations ) {
 	return updateSettingsValues( {
-		// eslint-disable-next-line camelcase
-		digital_wallets_enabled_locations: [ ...locations ],
+		payment_request_enabled_locations: [ ...locations ],
 	} );
 }
