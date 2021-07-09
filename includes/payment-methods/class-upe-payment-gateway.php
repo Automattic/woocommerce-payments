@@ -8,6 +8,7 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Order;
+use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
@@ -17,6 +18,7 @@ use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
+use WC_Payment_Token_CC;
 use WC_Payments;
 use WC_Payments_Utils;
 
@@ -552,7 +554,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
 			$payment_method_id = $setup_intent['payment_method'];
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
-			// Leaving 'card' as a hardcoded value for now to avoid a new API call.
+			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.
 			$payment_method = $this->payment_methods['card'];
 
 			return $payment_method->get_payment_token_for_user( $user, $payment_method_id );
