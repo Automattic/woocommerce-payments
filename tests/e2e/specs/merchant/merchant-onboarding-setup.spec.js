@@ -14,20 +14,12 @@ describe( 'Onboarding > WooCommerce Setup Wizard', () => {
 		await withRestApi.deleteAllShippingZones();
 	} );
 
-	afterAll( async () => {
-		await merchant.logout();
-	} );
-
 	it( 'can complete onboarding when visiting the first time', async () => {
 		await completeOnboardingWizard();
 	} );
 } );
 
 describe( 'Onboarding > WooCommerce Task List', () => {
-	beforeAll( async () => {
-		await merchant.login();
-	} );
-
 	afterAll( async () => {
 		await merchant.logout();
 	} );
