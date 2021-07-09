@@ -760,7 +760,7 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function remove_currency_settings( $currency ) {
-		$code = is_a( $currency, 'Currency' ) ? $currency->get_code() : strtoupper( $currency );
+		$code = is_a( $currency, Currency::class ) ? $currency->get_code() : strtoupper( $currency );
 
 		// Bail if the currency code passed is not 3 characters, or if the currency is presently enabled.
 		if ( 3 !== strlen( $code ) || isset( $this->enabled_currencies[ $code ] ) ) {
