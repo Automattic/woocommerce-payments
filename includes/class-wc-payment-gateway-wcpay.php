@@ -1005,16 +1005,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					];
 				} else {
 					$response = [
-						'result'   => 'success',
+						'result'         => 'success',
 						// Include a new nonce for update_order_status to ensure the update order
 						// status call works when a guest user creates an account during checkout.
-						'redirect' => sprintf(
+						'redirect'       => sprintf(
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
 							$client_secret,
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						),
+						// Include the payment method ID so the Blocks integration can save cards.
+						'payment_method' => $payment_information->get_payment_method(),
 					];
 				}
 			}

@@ -16,7 +16,8 @@ export const SavedTokenHandler = ( {
 		stripe,
 		elements,
 		onCheckoutAfterProcessingWithSuccess,
-		emitResponse
+		emitResponse,
+		false // No need to save a payment that has already been saved.
 	);
 
 	return <></>;

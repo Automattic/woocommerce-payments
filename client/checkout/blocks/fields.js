@@ -26,6 +26,7 @@ const WCPayFields = ( {
 		onCheckoutAfterProcessingWithSuccess,
 	},
 	emitResponse,
+	shouldSavePayment,
 } ) => {
 	const [ errorMessage, setErrorMessage ] = useState( null );
 
@@ -67,7 +68,8 @@ const WCPayFields = ( {
 		stripe,
 		elements,
 		onCheckoutAfterProcessingWithSuccess,
-		emitResponse
+		emitResponse,
+		shouldSavePayment
 	);
 
 	// Checks whether there are errors within a field, and saves them for later reporting.
