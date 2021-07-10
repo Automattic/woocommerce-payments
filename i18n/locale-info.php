@@ -8,7 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$locales = include 'currency-info.php';
+$locales = include WCPAY_ABSPATH . '/i18n/currency-info.php';
 
 return [
 	'AD' => [
