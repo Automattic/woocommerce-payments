@@ -162,6 +162,8 @@ class FrontendCurrencies {
 	/**
 	 * Loads locale data from WooCommerce core (/i18n/locale-info.php) and maps it
 	 * to be used by currency.
+	 *
+	 * @return void
 	 */
 	private function load_locale_data() {
 		$locale_info = include WC()->plugin_path() . '/i18n/locale-info.php';

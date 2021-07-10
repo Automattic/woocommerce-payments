@@ -19,6 +19,7 @@ use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
 use WC_Payments;
 use WC_Payments_Utils;
+
 use Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 
@@ -37,6 +38,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	const METHOD_ENABLED_KEY = 'enabled';
 
 	/**
+	 * Array mapping payment method string IDs to classes
+	 *
+	 * @var array
+	 */
+	protected $payment_methods = [];
+
+	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
@@ -44,13 +52,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
 	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
+	 * @param array                                $payment_methods          - Array of UPE payment methods.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service, array $payment_methods ) {
 		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
 		$this->method_title       = __( 'WooCommerce Payments - UPE', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via Stripe.', 'woocommerce-payments' );
 		$this->title              = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->description        = __( 'You will be redirected to Stripe.', 'woocommerce-payments' );
+		$this->payment_methods    = $payment_methods;
 
 		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
@@ -93,14 +103,24 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	/**
 	 * Handle AJAX request for updating a payment intent for Stripe UPE.
+	 *
+	 * @throws Process_Payment_Exception - If nonce or setup intent is invalid.
 	 */
 	public function update_payment_intent_ajax() {
 		try {
-			$order_id = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$is_nonce_valid = check_ajax_referer( 'wcpay_update_payment_intent_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Process_Payment_Exception(
+					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'wcpay_upe_intent_error'
+				);
+			}
 
-			$payment_intent_id = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$order_id = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
 
-			$save_payment_method = isset( $_POST['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_POST['save_payment_method'] ) ) : false; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$payment_intent_id = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : '';
+
+			$save_payment_method = isset( $_POST['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_POST['save_payment_method'] ) ) : false;
 
 			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method ), 200 );
 		} catch ( Exception $e ) {
@@ -198,7 +218,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_intent = $this->payments_api_client->create_intention(
 			WC_Payments_Utils::prepare_amount( $amount, $currency ),
 			strtolower( $currency ),
-			$this->get_upe_enabled_payment_method_ids()
+			array_values( array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] ) ),
+			$order_id ?? 0
 		);
 		return [
 			'id'            => $payment_intent->get_id(),
@@ -250,7 +271,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$setup_intent = $this->payments_api_client->create_setup_intention(
 			$customer_id,
-			$this->get_upe_enabled_payment_method_ids()
+			array_values( array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] ) )
 		);
 		return [
 			'id'            => $setup_intent['id'],
@@ -402,8 +423,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$status                 = $intent->get_status();
 			$charge_id              = $intent->get_charge_id();
 			$currency               = $intent->get_currency();
-			$payment_method         = $intent->get_payment_method_id();
+			$payment_method_id      = $intent->get_payment_method_id();
 			$payment_method_details = $intent->get_payment_method_details();
+			$payment_method_type    = $payment_method_details['type'];
+
+			if ( ! isset( $this->payment_methods[ $payment_method_type ] ) ) {
+				return;
+			}
+			$payment_method = $this->payment_methods[ $payment_method_type ];
 
 			$error = $intent->get_last_payment_error();
 			if ( ! empty( $error ) ) {
@@ -412,9 +439,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					'upe_payment_intent_error'
 				);
 			} else {
-				if ( $save_payment_method ) {
+				if ( $save_payment_method && $payment_method->is_reusable() ) {
 					try {
-						$token = $this->token_service->add_payment_method_to_user( $payment_method, $user );
+						$token = $payment_method->get_payment_token_for_user( $user, $payment_method_id );
 						$this->add_token_to_order( $order, $token );
 					} catch ( Exception $e ) {
 						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
@@ -422,7 +449,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					}
 				}
 
-				$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+				$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
 				$this->set_payment_method_title_for_order( $order, $payment_method_details );
 
 				if ( 'requires_action' === $status ) {
@@ -464,10 +491,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function get_payment_fields_js_config() {
-		$payment_fields                      = parent::get_payment_fields_js_config();
-		$payment_fields['accountDescriptor'] = $this->get_account_statement_descriptor();
-		$payment_fields['paymentMethodsURL'] = wc_get_account_endpoint_url( 'payment-methods' );
-		$payment_fields['gatewayId']         = self::GATEWAY_ID;
+		$payment_fields                         = parent::get_payment_fields_js_config();
+		$payment_fields['accountDescriptor']    = $this->get_account_statement_descriptor();
+		$payment_fields['paymentMethodsURL']    = wc_get_account_endpoint_url( 'payment-methods' );
+		$payment_fields['gatewayId']            = self::GATEWAY_ID;
+		$payment_fields['paymentMethodsConfig'] = $this->get_enabled_payment_method_config();
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			$payment_fields['isOrderPay'] = true;
@@ -502,39 +530,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return;
 		}
 
-		switch ( $payment_method_details['type'] ) {
-			case 'card':
-				$details       = $payment_method_details['card'];
-				$funding_types = [
-					'credit'  => __( 'credit', 'woocommerce-payments' ),
-					'debit'   => __( 'debit', 'woocommerce-payments' ),
-					'prepaid' => __( 'prepaid', 'woocommerce-payments' ),
-					'unknown' => __( 'unknown', 'woocommerce-payments' ),
-				];
-
-				$payment_method_title = sprintf(
-					// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
-					__( '%1$s %2$s card', 'woocommerce-payments' ),
-					ucfirst( $details['network'] ),
-					$funding_types[ $details['funding'] ]
-				);
-				break;
-
-			case 'giropay':
-				$payment_method_title = 'Giropay';
-				break;
-
-			case 'sepa_debit':
-				$payment_method_title = 'SEPA Direct Debit';
-				break;
-
-			case 'sofort':
-				$payment_method_title = 'Sofort';
-				break;
-
-			default:
-				return;
+		$payment_method_id = $payment_method_details['type'];
+		if ( ! isset( $this->payment_methods[ $payment_method_id ] ) ) {
+			return;
 		}
+
+		$payment_method_title = $this->payment_methods[ $payment_method_id ]->get_title( $payment_method_details );
 
 		$order->set_payment_method_title( "$payment_method_title (WooCommerce Payments)" );
 		$order->save();
@@ -599,9 +600,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				<input id="wcpay-payment-method-upe" type="hidden" name="wcpay-payment-method-upe" />
 
 			<?php
-			if ( $this->is_saved_cards_enabled() ) {
+			$methods_enabled_for_saved_payments = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );
+			if ( $this->is_saved_cards_enabled() && ! empty( $methods_enabled_for_saved_payments ) ) {
 				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
-				$this->save_payment_method_checkbox( $force_save_payment );
+				if ( is_user_logged_in() || $force_save_payment ) {
+					$this->save_payment_method_checkbox( $force_save_payment );
+				}
 			}
 			?>
 
@@ -619,7 +623,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			<?php
 		}
 	}
-
 
 	/**
 	 * Returns the list of available payment method types for UPE.
@@ -639,5 +642,53 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$methods
 			)
 		);
+	}
+
+	/**
+	 * Gets payment method settings to pass to client scripts
+	 *
+	 * @return array
+	 */
+	private function get_enabled_payment_method_config() {
+		$settings                = [];
+		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] );
+
+		foreach ( $enabled_payment_methods as $payment_method ) {
+			$settings[ $payment_method ] = [
+				'isReusable' => $this->payment_methods[ $payment_method ]->is_reusable(),
+			];
+		}
+
+		return $settings;
+	}
+
+	/**
+	 * Function to be used with array_filter
+	 * to filter UPE payment methods supported with current checkout
+	 *
+	 * @param string $payment_method_id Stripe payment method.
+	 *
+	 * @return bool
+	 */
+	private function is_enabled_at_checkout( $payment_method_id ) {
+		if ( ! isset( $this->payment_methods[ $payment_method_id ] ) ) {
+			return false;
+		}
+		return $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout();
+	}
+
+	/**
+	 * Function to be used with array_filter
+	 * to filter UPE payment methods that support saved payments
+	 *
+	 * @param string $payment_method_id Stripe payment method.
+	 *
+	 * @return bool
+	 */
+	private function is_enabled_for_saved_payments( $payment_method_id ) {
+		if ( ! isset( $this->payment_methods[ $payment_method_id ] ) ) {
+			return false;
+		}
+		return $this->payment_methods[ $payment_method_id ]->is_reusable();
 	}
 }
