@@ -9,52 +9,52 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import DigitalWallets from '..';
+import PaymentRequest from '..';
 import {
-	useDigitalWalletsEnabledSettings,
-	useDigitalWalletsLocations,
+	usePaymentRequestEnabledSettings,
+	usePaymentRequestLocations,
 } from 'data';
 
 jest.mock( 'data', () => ( {
-	useDigitalWalletsEnabledSettings: jest.fn(),
-	useDigitalWalletsLocations: jest.fn(),
+	usePaymentRequestEnabledSettings: jest.fn(),
+	usePaymentRequestLocations: jest.fn(),
 } ) );
 
-const getMockDigitalWalletsEnabledSettings = (
+const getMockPaymentRequestEnabledSettings = (
 	isEnabled,
-	updateIsDigitalWalletsEnabledHandler
-) => [ isEnabled, updateIsDigitalWalletsEnabledHandler ];
+	updateIsPaymentRequestEnabledHandler
+) => [ isEnabled, updateIsPaymentRequestEnabledHandler ];
 
-const getMockDigitalWalletsLocations = (
+const getMockPaymentRequestLocations = (
 	isCheckoutEnabled,
 	isProductPageEnabled,
 	isCartEnabled,
-	updateDigitalWalletsLocationsHandler
+	updatePaymentRequestLocationsHandler
 ) => [
 	[
 		isCheckoutEnabled && 'checkout',
 		isProductPageEnabled && 'product',
 		isCartEnabled && 'cart',
 	].filter( Boolean ),
-	updateDigitalWalletsLocationsHandler,
+	updatePaymentRequestLocationsHandler,
 ];
 
-describe( 'DigitalWallets', () => {
+describe( 'PaymentRequest', () => {
 	beforeEach( () => {
-		useDigitalWalletsEnabledSettings.mockReturnValue(
-			getMockDigitalWalletsEnabledSettings( false, jest.fn() )
+		usePaymentRequestEnabledSettings.mockReturnValue(
+			getMockPaymentRequestEnabledSettings( false, jest.fn() )
 		);
-		useDigitalWalletsLocations.mockReturnValue(
-			getMockDigitalWalletsLocations( true, true, true, jest.fn() )
+		usePaymentRequestLocations.mockReturnValue(
+			getMockPaymentRequestLocations( true, true, true, jest.fn() )
 		);
 	} );
 
 	it( 'should enable express checkout locations if express checkout is enabled', async () => {
-		useDigitalWalletsEnabledSettings.mockReturnValue(
-			getMockDigitalWalletsEnabledSettings( false, jest.fn() )
+		usePaymentRequestEnabledSettings.mockReturnValue(
+			getMockPaymentRequestEnabledSettings( false, jest.fn() )
 		);
 
-		render( <DigitalWallets /> );
+		render( <PaymentRequest /> );
 
 		const [
 			,
@@ -73,11 +73,11 @@ describe( 'DigitalWallets', () => {
 	} );
 
 	it( 'should disable express checkout locations if express checkout is disabled', async () => {
-		useDigitalWalletsEnabledSettings.mockReturnValue(
-			getMockDigitalWalletsEnabledSettings( true, jest.fn() )
+		usePaymentRequestEnabledSettings.mockReturnValue(
+			getMockPaymentRequestEnabledSettings( true, jest.fn() )
 		);
 
-		render( <DigitalWallets /> );
+		render( <PaymentRequest /> );
 
 		const [
 			,
@@ -96,97 +96,97 @@ describe( 'DigitalWallets', () => {
 	} );
 
 	it( 'should dispatch enabled status update if express checkout is being toggled', async () => {
-		const updateIsDigitalWalletsEnabledHandler = jest.fn();
-		useDigitalWalletsEnabledSettings.mockReturnValue(
-			getMockDigitalWalletsEnabledSettings(
+		const updateIsPaymentRequestEnabledHandler = jest.fn();
+		usePaymentRequestEnabledSettings.mockReturnValue(
+			getMockPaymentRequestEnabledSettings(
 				false,
-				updateIsDigitalWalletsEnabledHandler
+				updateIsPaymentRequestEnabledHandler
 			)
 		);
 
-		render( <DigitalWallets /> );
+		render( <PaymentRequest /> );
 
 		userEvent.click( screen.getByText( 'Enable express checkouts' ) );
 
-		expect( updateIsDigitalWalletsEnabledHandler ).toHaveBeenCalledWith(
+		expect( updateIsPaymentRequestEnabledHandler ).toHaveBeenCalledWith(
 			true
 		);
 	} );
 
 	it( 'should trigger an action to save the checked locations when un-checking the location checkboxes', async () => {
-		const updateDigitalWalletsLocationsHandler = jest.fn();
-		useDigitalWalletsEnabledSettings.mockReturnValue(
-			getMockDigitalWalletsEnabledSettings( true, jest.fn() )
+		const updatePaymentRequestLocationsHandler = jest.fn();
+		usePaymentRequestEnabledSettings.mockReturnValue(
+			getMockPaymentRequestEnabledSettings( true, jest.fn() )
 		);
-		useDigitalWalletsLocations.mockReturnValue(
-			getMockDigitalWalletsLocations(
+		usePaymentRequestLocations.mockReturnValue(
+			getMockPaymentRequestLocations(
 				true,
 				true,
 				true,
-				updateDigitalWalletsLocationsHandler
+				updatePaymentRequestLocationsHandler
 			)
 		);
 
-		render( <DigitalWallets /> );
+		render( <PaymentRequest /> );
 
 		// Uncheck each checkbox, and verify them what kind of action should have been called
 		userEvent.click( screen.getByText( 'Product page' ) );
 		expect(
-			updateDigitalWalletsLocationsHandler
+			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'cart' ] );
 
 		userEvent.click( screen.getByText( 'Checkout' ) );
 		expect(
-			updateDigitalWalletsLocationsHandler
+			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'product', 'cart' ] );
 
 		userEvent.click( screen.getByText( 'Cart' ) );
 		expect(
-			updateDigitalWalletsLocationsHandler
+			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );
 	} );
 
 	it( 'should trigger an action to save the checked locations when checking the location checkboxes', async () => {
-		const updateDigitalWalletsLocationsHandler = jest.fn();
-		useDigitalWalletsEnabledSettings.mockReturnValue(
-			getMockDigitalWalletsEnabledSettings( true, jest.fn() )
+		const updatePaymentRequestLocationsHandler = jest.fn();
+		usePaymentRequestEnabledSettings.mockReturnValue(
+			getMockPaymentRequestEnabledSettings( true, jest.fn() )
 		);
-		useDigitalWalletsLocations.mockReturnValue(
-			getMockDigitalWalletsLocations(
+		usePaymentRequestLocations.mockReturnValue(
+			getMockPaymentRequestLocations(
 				false,
 				false,
 				false,
-				updateDigitalWalletsLocationsHandler
+				updatePaymentRequestLocationsHandler
 			)
 		);
 
-		render( <DigitalWallets /> );
+		render( <PaymentRequest /> );
 
 		userEvent.click( screen.getByText( 'Cart' ) );
 		expect(
-			updateDigitalWalletsLocationsHandler
+			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'cart' ] );
 
 		userEvent.click( screen.getByText( 'Product page' ) );
 		expect(
-			updateDigitalWalletsLocationsHandler
+			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'product' ] );
 
 		userEvent.click( screen.getByText( 'Checkout' ) );
 		expect(
-			updateDigitalWalletsLocationsHandler
+			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout' ] );
 	} );
 
-	it( 'has the correct href link to the digital wallets setting page', async () => {
-		render( <DigitalWallets /> );
+	it( 'has the correct href link to the payment request setting page', async () => {
+		render( <PaymentRequest /> );
 
 		const customizeAppearanceButton = screen.getByText(
 			'Customize appearance'
 		);
 		expect( customizeAppearanceButton ).toHaveAttribute(
 			'href',
-			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&method=digital_wallets'
+			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&method=payment_request'
 		);
 	} );
 } );
