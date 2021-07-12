@@ -58,6 +58,6 @@ class Analytics {
 	 * @return void
 	 */
 	public function init() {
-
+		// TODO. See The analytics controller in the multi currency plugin.
 	}
 }
