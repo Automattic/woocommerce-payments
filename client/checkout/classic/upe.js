@@ -407,12 +407,22 @@ jQuery( function ( $ ) {
 				formFields
 			);
 			const redirectUrl = response.redirect_url;
-			const { error } = await api.getStripe().confirmPayment( {
-				element: upeElement,
-				confirmParams: {
-					return_url: redirectUrl,
-				},
-			} );
+			let error;
+			if ( response.payment_needed ) {
+				( { error } = await api.getStripe().confirmPayment( {
+					element: upeElement,
+					confirmParams: {
+						return_url: redirectUrl,
+					},
+				} ) );
+			} else {
+				( { error } = await api.getStripe().confirmSetup( {
+					element: upeElement,
+					confirmParams: {
+						return_url: redirectUrl,
+					},
+				} ) );
+			}
 			if ( error ) {
 				throw error;
 			}
