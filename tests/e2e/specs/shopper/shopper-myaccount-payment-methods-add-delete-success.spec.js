@@ -10,7 +10,7 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
  */
 import { shopperWCP } from '../../utils/flows';
 
-const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 10000;
+const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
 const cards = Object.entries( config.get( 'cards' ) );
 const validCards = cards.filter( ( [ cardType ] ) =>
 	[ 'basic', '3ds', '3ds2' ].includes( cardType )
