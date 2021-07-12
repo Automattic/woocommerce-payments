@@ -14,7 +14,6 @@ import {
 	Button,
 } from '@wordpress/components';
 import classNames from 'classnames';
-import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -33,7 +32,7 @@ import GiropayIcon from '../gateway-icons/giropay';
 import SofortIcon from '../gateway-icons/sofort';
 import SepaIcon from '../gateway-icons/sepa';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
-import { NAMESPACE } from '../data/constants';
+import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook';
 
 const methodsConfiguration = {
 	card: {
@@ -95,23 +94,15 @@ const PaymentMethods = () => {
 		);
 	};
 
+	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
+
 	const handleEnableUpeClick = () => {
-		return apiFetch( {
-			path: `${ NAMESPACE }/upe_flag_toggle`,
-			method: 'POST',
-			// eslint-disable-next-line camelcase
-			data: { is_upe_enabled: true },
-		} )
-			.then( () => {
-				console.log( 'success' );
-				window.location.href = addQueryArgs( 'admin.php', {
-					page: 'wc-admin',
-					task: 'woocommerce-payments--additional-payment-methods',
-				} );
-			} )
-			.catch( () => {
-				// error handling
+		setIsUpeEnabled( true ).then( () => {
+			window.location.href = addQueryArgs( 'admin.php', {
+				page: 'wc-admin',
+				task: 'woocommerce-payments--additional-payment-methods',
 			} );
+		} );
 	};
 
 	const {
