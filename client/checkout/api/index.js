@@ -365,6 +365,8 @@ export default class WCPayAPI {
 			// eslint-disable-next-line camelcase
 			save_payment_method: savePaymentMethod,
 			action: 'update_payment_intent',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
 		} )
 			.then( ( response ) => {
 				if ( 'failure' === response.result ) {

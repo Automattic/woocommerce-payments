@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Order;
+
 defined( 'ABSPATH' ) || exit;
 
 /**

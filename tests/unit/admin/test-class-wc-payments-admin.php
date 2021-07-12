@@ -90,33 +90,8 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Settings', $settings_item_name );
 	}
 
-	public function test_it_renders_payments_badge_if_stripe_is_not_connected() {
-		global $menu;
-
-		// The badge is temporarily not shown at all. See
-		// class-wc-payments-admin.php line 227. This should be removed when
-		// implementing https://github.com/automattic/woocommerce-payments/issues/2071.
-		static::markTestSkipped( 'Not yet implemented.' );
-
-		$this->mock_current_user_is_admin();
-
-		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( false );
-		$this->payments_admin->add_payments_menu();
-
-		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
-		$this->assertEquals( 'Payments' . WC_Payments_Admin::MENU_NOTIFICATION_BADGE, $item_names_by_urls['wc-admin&path=/payments/connect'] );
-		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
-	}
-
 	public function test_it_does_not_render_payments_badge_if_stripe_is_connected() {
 		global $menu;
-
-		// The badge is temporarily not shown at all. See
-		// class-wc-payments-admin.php line 227. This should be removed when
-		// implementing https://github.com/automattic/woocommerce-payments/issues/2071.
-		static::markTestSkipped( 'Not yet implemented.' );
-
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
@@ -126,6 +101,35 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
 		$this->assertEquals( 'Payments', $item_names_by_urls['wc-admin&path=/payments/overview'] );
 		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/connect', $item_names_by_urls );
+	}
+
+	public function test_it_renders_payments_badge_if_activation_date_is_older_than_7_days_and_stripe_is_not_connected() {
+		global $menu;
+		$this->mock_current_user_is_admin();
+
+		// Make sure we render the menu with submenu items.
+		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( false );
+		update_option( 'wcpay_activation_timestamp', time() - WEEK_IN_SECONDS );
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
+		$this->assertEquals( 'Payments' . WC_Payments_Admin::MENU_NOTIFICATION_BADGE, $item_names_by_urls['wc-admin&path=/payments/connect'] );
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
+	}
+
+	public function test_it_does_not_render_payments_badge_if_activation_date_is_less_than_7_days() {
+		global $menu;
+		$this->mock_current_user_is_admin();
+
+		// Make sure we render the menu with submenu items.
+		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( false );
+		update_option( 'wcpay_menu_badge_hidden', 'no' );
+		update_option( 'wcpay_activation_timestamp', time() - ( DAY_IN_SECONDS * 6 ) );
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
+		$this->assertEquals( 'Payments', $item_names_by_urls['wc-admin&path=/payments/connect'] );
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
 	}
 
 	public function feature_flag_combinations_not_causing_settings_badge_render_provider() {

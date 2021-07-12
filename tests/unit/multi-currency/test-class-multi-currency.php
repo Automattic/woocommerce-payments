@@ -24,6 +24,11 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	private $mock_enabled_currencies = [ 'USD', 'CAD', 'GBP', 'BIF' ];
 
 	/**
+	 * @var int
+	 */
+	private $timestamp_for_testing;
+
+	/**
 	 * Mock available currencies with their rates.
 	 *
 	 * @var array
@@ -70,10 +75,12 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			]
 		);
 
+		$this->timestamp_for_testing = strtotime( 'today midnight' );
+
 		$this->mock_cached_currencies = [
 			'currencies' => $this->mock_available_currencies,
-			'updated'    => strtotime( 'today midnight' ),
-			'expires'    => strtotime( 'today midnight' ) + DAY_IN_SECONDS,
+			'updated'    => $this->timestamp_for_testing,
+			'expires'    => $this->timestamp_for_testing + DAY_IN_SECONDS,
 		];
 
 		update_option( self::CACHED_CURRENCIES_OPTION, $this->mock_cached_currencies );
@@ -139,8 +146,10 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			$currency = new WCPay\MultiCurrency\Currency( $code, $rate );
 			$currency->set_charm( 0.00 );
 			$currency->set_rounding( '1.00' );
+			$currency->set_last_updated( $this->timestamp_for_testing );
 			$expected[ $currency->get_code() ] = $currency;
 		}
+
 		$expected['GBP']->set_charm( '-0.1' );
 		$expected['GBP']->set_rounding( '0.50' );
 		// Zero-decimal currencies should default to rounding = 100.
@@ -397,11 +406,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_currency_rates' )
-			->with(
-				$currency_from
-			)->willReturn(
-				$this->mock_available_currencies
-			);
+			->with( $currency_from )
+			->willReturn( $this->mock_available_currencies );
 
 		$result = $this->multi_currency->get_cached_currencies();
 
