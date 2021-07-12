@@ -22,8 +22,23 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 	 */
 	private $current_section_validator;
 
-	public function test_payments_tab_url_is_overwritten() {
-		new WC_Payments_Admin_Sections_Overwrite(); // Instantiate to add hook callbacks.
+	/**
+	 * @var WC_Payments_Account
+	 */
+	private $account_service;
+
+	public function setUp() {
+		parent::setUp();
+
+		$this->account_service = $this->getMockBuilder( WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'get_cached_account_data' ] )->getMock();
+	}
+
+	public function test_payments_tab_url_is_overwritten_when_account_connected() {
+		$this->account_service
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'is_live' => true ] );
+		new WC_Payments_Admin_Sections_Overwrite( $this->account_service ); // Instantiate to add hook callbacks.
 
 		do_action( 'woocommerce_settings_start' );
 		$url = admin_url( self::PAYMENTS_TAB_PATH );
@@ -35,8 +50,29 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_payments_tab_url_is_not_overwritten_outside_expected_scope() {
-		new WC_Payments_Admin_Sections_Overwrite(); // Instantiate to add hook callbacks.
+	public function test_payments_tab_url_not_is_overwritten_when_account_disconnected() {
+		$this->account_service
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [] );
+		new WC_Payments_Admin_Sections_Overwrite( $this->account_service ); // Instantiate to add hook callbacks.
+
+		do_action( 'woocommerce_settings_start' );
+		$url = admin_url( self::PAYMENTS_TAB_PATH );
+		do_action( 'woocommerce_settings_tabs' );
+
+		$this->assertEquals(
+			'http://example.org/wp-admin/' . self::PAYMENTS_TAB_PATH,
+			$url
+		);
+	}
+
+	public function test_payments_tab_url_is_not_overwritten_outside_expected_scope_when_account_connected() {
+		$this->account_service
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'is_live' => true ] );
+		new WC_Payments_Admin_Sections_Overwrite( $this->account_service ); // Instantiate to add hook callbacks.
 
 		$url_before = admin_url( self::PAYMENTS_TAB_PATH );
 		do_action( 'woocommerce_settings_start' );
@@ -58,7 +94,11 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 	 * @param string $path Path that should not be overwritten.
 	 */
 	public function test_url_other_than_payments_tab_is_not_overwritten( $path ) {
-		new WC_Payments_Admin_Sections_Overwrite(); // Instantiate to add hook callbacks.
+		$this->account_service
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'is_live' => true ] );
+		new WC_Payments_Admin_Sections_Overwrite( $this->account_service ); // Instantiate to add hook callbacks.
 
 		do_action( 'woocommerce_settings_start' );
 		$url = admin_url( $path );
@@ -80,11 +120,15 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 			''                     => 'All payment methods',
 		];
 
-		$overwrite = new WC_Payments_Admin_Sections_Overwrite();
+		$this->account_service
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'is_live' => true ] );
+		new WC_Payments_Admin_Sections_Overwrite( $this->account_service );
 
 		$this->assertEquals(
 			$expected_sections,
-			$overwrite->add_checkout_sections( $sections )
+			apply_filters( 'woocommerce_get_sections_checkout', $sections )
 		);
 	}
 
@@ -140,7 +184,11 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 		$this->check_value_at_priority( 10, $expected_overwritten_value );
 		$this->check_value_at_priority( 20, $current_section );
 
-		new WC_Payments_Admin_Sections_Overwrite();
+		$this->account_service
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'is_live' => true ] );
+		new WC_Payments_Admin_Sections_Overwrite( $this->account_service );
 
 		/* Prevent outputting the section list HTML while running the action. */
 		ob_start();
