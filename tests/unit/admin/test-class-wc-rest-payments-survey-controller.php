@@ -63,17 +63,12 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 					$this->arrayHasKey( 'survey_responses' ),
 					$this->callback(
 						function ( $argument ) {
-							return 'wcpay-disable-upe-early-access' === $argument['survey_id'];
+							return 'wcpay-upe-disable-early-access' === $argument['survey_id'];
 						}
 					),
 					$this->callback(
 						function ( $argument ) {
-							return 'yes' === $argument['survey_responses']['why-disable-slow-buggy'];
-						}
-					),
-					$this->callback(
-						function ( $argument ) {
-							return 'yes' === $argument['survey_responses']['why-disable-store-sales'];
+							return 'slow-buggy' === $argument['survey_responses']['why-disable'];
 						}
 					),
 					$this->callback(
@@ -93,8 +88,8 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 		$request = new WP_REST_Request( 'POST', self::ROUTE );
 		$request->set_body_params(
 			[
-				'reasons'  => [ 'slow-buggy', 'store-sales' ],
-				'comments' => 'test comment',
+				'why-disable' => 'slow-buggy',
+				'comments'    => 'test comment',
 			]
 		);
 

@@ -55,8 +55,8 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 				'callback'            => [ $this, 'submit_survey' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'reasons'  => [
-						'type'              => 'array',
+					'why-disable' => [
+						'type'              => 'string',
 						'items'             => [
 							'type' => 'string',
 							'enum' => [
@@ -65,11 +65,12 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 								'missing-features',
 								'store-sales',
 								'poor-customer-experience',
+								'other',
 							],
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'comments' => [
+					'comments'    => [
 						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
 						'sanitize_callback' => 'wp_filter_nohtml_kses',
@@ -88,16 +89,16 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	 */
 	public function submit_survey( WP_REST_Request $request ): WP_REST_Response {
 		$cancellation_comments = '';
-		$cancellation_reasons  = [];
-		if ( $request->has_param( 'reasons' ) ) {
-			$cancellation_reasons = $request->get_param( 'reasons' );
+		$cancellation_reason   = '';
+		if ( $request->has_param( 'why-disable' ) ) {
+			$cancellation_reason = $request->get_param( 'why-disable' );
 		}
 
 		if ( $request->has_param( 'comments' ) ) {
 			$cancellation_comments = $request->get_param( 'comments' );
 		}
 
-		if ( empty( $cancellation_comments ) && empty( $cancellation_reasons ) ) {
+		if ( empty( $cancellation_comments ) && empty( $cancellation_reason ) ) {
 			return new WP_REST_Response(
 				[
 					'success' => false,
@@ -105,21 +106,6 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 				],
 				400
 			);
-		}
-
-		$survey_responses = [
-			'why-disable-slow-buggy'               => 'no',
-			'why-disable-theme-compatibility'      => 'no',
-			'why-disable-missing-features'         => 'no',
-			'why-disable-store-sales'              => 'no',
-			'why-disable-poor-customer-experience' => 'no',
-			'comments'                             => [ 'text' => $cancellation_comments ],
-		];
-
-		// the questions presented in the frontend are multiple choice, but the backend handles them as individual yes/no questions.
-		// so let's map the "checked" answers to the frontend to "yes" answers to the questions in the backend.
-		foreach ( $cancellation_reasons as $cancellation_reason ) {
-			$survey_responses[ "why-disable-{$cancellation_reason}" ] = 'yes';
 		}
 
 		// Jetpack connection 1.27.0 created a default value for this constant, but we're using an older version of the package
@@ -141,8 +127,11 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 			],
 			[
 				'site_id'          => $this->http_client->get_blog_id(),
-				'survey_id'        => 'wcpay-disable-upe-early-access',
-				'survey_responses' => $survey_responses,
+				'survey_id'        => 'wcpay-upe-disable-early-access',
+				'survey_responses' => [
+					'why-disable' => $cancellation_reason,
+					'comments'    => [ 'text' => $cancellation_comments ],
+				],
 			]
 		);
 
