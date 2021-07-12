@@ -31,4 +31,18 @@
 	.payment-methods-header {
 		justify-content: flex-end;
 	}
+
+	&.loading-placeholder {
+		animation: loading-fade 1.6s ease-in-out infinite;
+		background-color: $light-gray-500;
+		opacity: 0.5 !important;
+
+		@media screen and ( prefers-reduced-motion: reduce ) {
+			animation: none;
+		}
+
+		.payment-method {
+			background-color: $light-gray-500;
+		}
+	}
 }

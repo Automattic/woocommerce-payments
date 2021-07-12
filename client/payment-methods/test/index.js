@@ -16,6 +16,8 @@ import {
 	useGetAvailablePaymentMethodIds,
 } from 'data';
 
+import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
+
 jest.mock( '../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
@@ -35,7 +37,11 @@ describe( 'PaymentMethods', () => {
 	test( 'does not render the "Add payment method" button when there is only one payment method available', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const addPaymentMethodButton = screen.queryByRole( 'button', {
 			name: 'Add payment method',
@@ -45,7 +51,11 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'renders the "Add payment method" button when there are at least 2 payment methods', () => {
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const addPaymentMethodButton = screen.queryByRole( 'button', {
 			name: 'Add payment method',
@@ -145,31 +155,29 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'renders the Feedback/Disable Header when UPE is enabled', () => {
-		render( <PaymentMethods /> );
-		const DisableUPEButton = screen.getByRole( 'button', {
+		render(
+			<WcPayUpeContextProvider>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+		const disableUPEButton = screen.getByRole( 'button', {
 			name: 'Add Feedback or Disable',
 		} );
 
-		expect( DisableUPEButton ).toBeInTheDocument();
-	} );
-
-	test( 'renders the "Enable UPE" button when UPE is disabled', () => {
-		render( <PaymentMethods isUPEEnabled={ false } /> );
-
-		const EnableUPEButton = screen.getByRole( 'button', {
-			name: 'Enable UPE',
-		} );
-
-		expect( EnableUPEButton ).toBeInTheDocument();
+		expect( disableUPEButton ).toBeInTheDocument();
 	} );
 
 	test( 'Does not render the Feedback/Disable Header when UPE is disabled', () => {
-		render( <PaymentMethods isUPEEnabled={ false } /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ false }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
-		const DisableUPEButton = screen.queryByRole( 'button', {
+		const disableUPEButton = screen.queryByRole( 'button', {
 			name: 'Add Feedback or Disable',
 		} );
 
-		expect( DisableUPEButton ).not.toBeInTheDocument();
+		expect( disableUPEButton ).not.toBeInTheDocument();
 	} );
 } );

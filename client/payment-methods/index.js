@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Button,
@@ -11,9 +11,9 @@ import {
 	CardDivider,
 	CardHeader,
 	DropdownMenu,
+	Notice,
 } from '@wordpress/components';
 import { moreVertical, trash } from '@wordpress/icons';
-import { useState } from '@wordpress/element';
 import classNames from 'classnames';
 
 /**
@@ -24,6 +24,11 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 } from 'data';
+
+// @todo - use a hook rather than the context?
+import WCPaySettingsContext from '../settings/wcpay-settings-context';
+import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
+import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
@@ -71,7 +76,62 @@ const methodsConfiguration = {
 	},
 };
 
-const PaymentMethods = ( { isUPEEnabled = true } ) => {
+// @todo - remove once #2174 is merged and use real banner instead.
+function UPESetupBanner( { setIsUpeEnabled } ) {
+	return (
+		<>
+			<p>UPE IS DISABLED!!!</p>
+			<Button
+				label="Enable UPE"
+				isPrimary
+				onClick={ () => setIsUpeEnabled( true ) }
+			>
+				{ __( 'Enable UPE', 'woocommerce-payments' ) }
+			</Button>
+		</>
+	);
+}
+
+function PaymentMethodsDropdownMenu( { isUpeEnabled, setIsUpeEnabled } ) {
+	return (
+		<DropdownMenu
+			icon={ moreVertical }
+			label={ __( 'Add Feedback or Disable', 'woocommerce-payments' ) }
+			controls={ [
+				{
+					title: __( 'Provide Feedback', 'woocommerce-payments' ),
+					icon: 'megaphone',
+					onClick: () => console.log( 'Provide Feedback' ),
+				},
+				{
+					title: 'Disable',
+					isDisabled: ! isUpeEnabled,
+					icon: trash,
+					onClick: setIsUpeEnabled,
+				},
+			] }
+		/>
+	);
+}
+
+const UPEDisableError = () => {
+	/* @todo - figure out how to only show it once.
+	Can we pass in a memoized message?
+	if ( ! wcpaySettings.errorMessage ) {
+		return null;
+	}
+	*/
+	return (
+		<Notice status="error" isDismissible={ true }>
+			{ __(
+				'Error disabling payment methods. Please try again.',
+				'woocommerce-payments'
+			) }
+		</Notice>
+	);
+};
+
+const PaymentMethods = () => {
 	const [
 		enabledMethodIds,
 		updateEnabledMethodIds,
@@ -81,6 +141,8 @@ const PaymentMethods = ( { isUPEEnabled = true } ) => {
 	const enabledMethods = availablePaymentMethodIds
 		.filter( ( method ) => enabledMethodIds.includes( method ) )
 		.map( ( methodId ) => methodsConfiguration[ methodId ] );
+
+	console.log( 'enabledMethods', enabledMethods );
 
 	const disabledMethods = availablePaymentMethodIds
 		.filter( ( methodId ) => ! enabledMethodIds.includes( methodId ) )
@@ -92,61 +154,37 @@ const PaymentMethods = ( { isUPEEnabled = true } ) => {
 		);
 	};
 
-	// @todo - use the custom hook registered in #2239.
-	const [ isUPE = isUPEEnabled, setUPE ] = useState();
-
-	// @todo - remove once #2174 is merged and use real banner instead.
-	function UPESetupBanner() {
-		return (
-			<>
-				<p>UPE IS DISABLED!!!</p>
-				<Button
-					label="Enable UPE"
-					isPrimary
-					onClick={ () => setUPE( true ) }
-				>
-					{ __( 'Enable UPE', 'woocommerce-payments' ) }
-				</Button>
-			</>
-		);
-	}
-
-	function PaymentMethodsDropdownMenu() {
-		return (
-			<DropdownMenu
-				icon={ moreVertical }
-				label="Add Feedback or Disable"
-				controls={ [
-					{
-						title: 'Provide Feedback',
-						icon: 'megaphone',
-						onClick: () => console.log( 'Provide Feedback' ),
-					},
-					{
-						title: 'Disable',
-						isDisabled: ! isUPE,
-						icon: trash,
-						// @todo - change the value of { featureFlags: { upe } } to false
-						onClick: () => setUPE( false ),
-					},
-				] }
-			/>
-		);
-	}
+	const {
+		featureFlags: { upe: initialUPESetting },
+	} = useContext( WCPaySettingsContext );
+	const [ isUpeEnabled, setIsUpeEnabled ] = useIsUpeEnabled(
+		initialUPESetting
+	);
+	const { status } = useContext( WcPayUpeContext );
 
 	return (
 		<>
-			<Card className="payment-methods">
-				{ isUPE && (
+			{ console.log( 'enabledMethods', enabledMethods ) }
+			{ console.log( 'isUpeEnabled', isUpeEnabled ) }
+			{ 'error' === status && <UPEDisableError /> }
+			<Card
+				className={ classNames( 'payment-methods', {
+					'loading-placeholder': 'pending' === status,
+				} ) }
+			>
+				{ isUpeEnabled && (
 					<CardHeader
 						size={ null }
 						className="payment-methods-header"
 					>
-						<PaymentMethodsDropdownMenu />
+						<PaymentMethodsDropdownMenu
+							isUpeEnabled={ isUpeEnabled }
+							setIsUpeEnabled={ setIsUpeEnabled }
+						/>
 					</CardHeader>
 				) }
 				<CardBody>
-					{ isUPE && (
+					{ isUpeEnabled && (
 						<PaymentMethodsList className="payment-methods__enabled-methods">
 							{ enabledMethods.map(
 								( { id, label, description, Icon } ) => (
@@ -166,9 +204,11 @@ const PaymentMethods = ( { isUPEEnabled = true } ) => {
 							) }
 						</PaymentMethodsList>
 					) }
-					{ ! isUPE && <UPESetupBanner /> }
+					{ ! isUpeEnabled && (
+						<UPESetupBanner setIsUpeEnabled={ setIsUpeEnabled } />
+					) }
 				</CardBody>
-				{ isUPE && 1 < availablePaymentMethodIds.length ? (
+				{ isUpeEnabled && 1 < availablePaymentMethodIds.length ? (
 					<>
 						<CardDivider />
 						<CardBody className="payment-methods__available-methods-container">
