@@ -71,8 +71,18 @@ class Compatibility {
 	 * @return bool True if it should be converted.
 	 */
 	public function should_convert_coupon_amount( $coupon = null ): bool {
+		if ( ! $coupon ) {
+			return true;
+		}
+
+		// We do not need to convert percentage coupons.
+		if ( $this->is_coupon_type( $coupon, 'subscription_percent' ) ) {
+			return false;
+		}
+
+		// If there's not a renewal in the cart, we can convert.
 		$subscription_renewal = $this->cart_contains_renewal();
-		if ( ! $coupon || ! $subscription_renewal ) {
+		if ( ! $subscription_renewal ) {
 			return true;
 		}
 
@@ -82,12 +92,9 @@ class Compatibility {
 		 * This also works for normal manual renewals.
 		 */
 		if ( ! $this->utils->is_call_in_backtrace( [ 'WCS_Cart_Early_Renewal->setup_cart' ] )
-			&& $this->utils->is_call_in_backtrace( [ 'WC_Discounts->apply_coupon' ] ) ) {
-			// Renewal/recurring coupons are not able to be added to manual renewals, so we don't need to convert.
-			$renewal_types = [ 'recurring_fee', 'recurring_percent', 'renewal_fee', 'renewal_percent', 'renewal_cart' ];
-			if ( in_array( $coupon->get_discount_type(), $renewal_types, true ) ) {
-				return false;
-			}
+			&& $this->utils->is_call_in_backtrace( [ 'WC_Discounts->apply_coupon' ] )
+			&& $this->is_coupon_type( $coupon, 'subscription_recurring' ) ) {
+			return false;
 		}
 
 		return true;
@@ -174,6 +181,32 @@ class Compatibility {
 			}
 		}
 
+		return false;
+	}
+
+	/**
+	 * Checks to see if the coupon passed is of a specified type.
+	 *
+	 * @param WC_Coupon $coupon Coupon to test.
+	 * @param string    $type   Type of coupon to test for.
+	 *
+	 * @return bool True on match.
+	 */
+	private function is_coupon_type( $coupon, string $type ) {
+
+		switch ( $type ) {
+			case 'subscription_percent':
+				$types = [ 'recurring_percent', 'sign_up_fee_percent', 'renewal_percent' ];
+				break;
+
+			case 'subscription_recurring':
+				$types = [ 'recurring_fee', 'recurring_percent', 'renewal_fee', 'renewal_percent', 'renewal_cart' ];
+				break;
+		}
+
+		if ( in_array( $coupon->get_discount_type(), $types, true ) ) {
+			return true;
+		}
 		return false;
 	}
 }

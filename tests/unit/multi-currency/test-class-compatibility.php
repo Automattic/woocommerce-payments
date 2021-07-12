@@ -202,6 +202,19 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->assertTrue( $this->compatibility->should_convert_coupon_amount( $this->mock_coupon ) );
 	}
 
+	public function test_should_convert_coupon_amount_return_false_when_percentage_coupon_used() {
+		$this->mock_utils
+			->expects( $this->exactly( 0 ) )
+			->method( 'is_call_in_backtrace' );
+
+		$this->mock_coupon
+			->method( 'get_discount_type' )
+			->willReturn( 'recurring_percent' );
+
+		$this->mock_wcs_cart_contains_renewal( false );
+		$this->assertFalse( $this->compatibility->should_convert_coupon_amount( $this->mock_coupon ) );
+	}
+
 	private function mock_wcs_cart_contains_renewal( $value ) {
 		WC_Subscriptions::wcs_cart_contains_renewal(
 			function () use ( $value ) {
