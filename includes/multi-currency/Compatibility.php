@@ -187,8 +187,8 @@ class Compatibility {
 	/**
 	 * Checks to see if the coupon passed is of a specified type.
 	 *
-	 * @param WC_Coupon $coupon Coupon to test.
-	 * @param string    $type   Type of coupon to test for.
+	 * @param \WC_Coupon $coupon Coupon to test.
+	 * @param string     $type   Type of coupon to test for.
 	 *
 	 * @return bool True on match.
 	 */
