@@ -53,7 +53,7 @@ describe( 'Payment Methods', () => {
 		} );
 
 		afterAll( async () => {
-			// Make sure that at least 8s had already elapsed since the last card was added.
+			// Make sure that at least 20s had already elapsed since the last card was added.
 			// Otherwise, you will get the error message,
 			// "You cannot add a new payment method so soon after the previous one."
 			const timeTestFinished = Date.now();
