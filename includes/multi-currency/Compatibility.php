@@ -41,6 +41,11 @@ class Compatibility {
 			return get_post_meta( $subscription_renewal['subscription_renewal']['renewal_order_id'], '_order_currency', true );
 		}
 
+		$subscription_resubscribe = $this->cart_contains_resubscribe();
+		if ( $subscription_resubscribe ) {
+			return get_post_meta( $subscription_resubscribe['subscription_resubscribe']['subscription_id'], '_order_currency', true );
+		}
+
 		return false;
 	}
 
@@ -50,7 +55,12 @@ class Compatibility {
 	 * @return bool False if it shouldn't be hidden, true if it should.
 	 */
 	public function should_hide_widgets(): bool {
-		return $this->cart_contains_renewal() ? true : false;
+		if ( $this->cart_contains_renewal()
+			|| $this->cart_contains_resubscribe() ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -91,8 +101,13 @@ class Compatibility {
 	 * @return bool True if it should be converted.
 	 */
 	public function should_convert_product_price( $product = null ): bool {
-		// If we have a product, and it's a subscription renewal.
-		if ( $product && $this->is_product_subscription_renewal( $product ) ) {
+		if ( ! $product ) {
+			return true;
+		}
+
+		// Check for subscription renewal or resubscribe.
+		if ( $this->is_product_subscription_type_in_cart( $product, 'renewal' )
+			|| $this->is_product_subscription_type_in_cart( $product, 'resubscribe' ) ) {
 			$calls = [
 				'WC_Cart_Totals->calculate_item_totals',
 				'WC_Cart->get_product_subtotal',
@@ -120,20 +135,45 @@ class Compatibility {
 	}
 
 	/**
-	 * Checks to see if the product passed is in the cart as a subscription renewal.
+	 * Checks the cart to see if it contains a resubscription.
+	 *
+	 * @return mixed The cart item containing the resubscription as an array, else false.
+	 */
+	private function cart_contains_resubscribe() {
+		if ( ! function_exists( 'wcs_cart_contains_resubscribe' ) ) {
+			return false;
+		}
+		return wcs_cart_contains_resubscribe();
+	}
+
+	/**
+	 * Checks to see if the product passed is in the cart as a subscription type.
 	 *
 	 * @param object $product Product to test.
+	 * @param string $type    Type of subscription.
 	 *
-	 * @return bool True if it's a subscription renewal in the cart, false if not.
+	 * @return bool True if found in the cart, false if not.
 	 */
-	private function is_product_subscription_renewal( $product ): bool {
-		$subscription_renewal = $this->cart_contains_renewal();
-		if ( $subscription_renewal && $product ) {
-			if ( ( isset( $subscription_renewal['variation_id'] ) && $subscription_renewal['variation_id'] === $product->get_id() )
-				|| $subscription_renewal['product_id'] === $product->get_id() ) {
+	private function is_product_subscription_type_in_cart( $product, $type ): bool {
+		$subscription = false;
+
+		switch ( $type ) {
+			case 'renewal':
+				$subscription = $this->cart_contains_renewal();
+				break;
+
+			case 'resubscribe':
+				$subscription = $this->cart_contains_resubscribe();
+				break;
+		}
+
+		if ( $subscription && $product ) {
+			if ( ( isset( $subscription['variation_id'] ) && $subscription['variation_id'] === $product->get_id() )
+				|| $subscription['product_id'] === $product->get_id() ) {
 				return true;
 			}
 		}
+
 		return false;
 	}
 }
