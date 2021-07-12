@@ -18,6 +18,7 @@ jQuery( function ( $ ) {
 
 	const publishableKey = getConfig( 'publishableKey' );
 	const isUPEEnabled = getConfig( 'isUPEEnabled' );
+	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -169,6 +170,19 @@ jQuery( function ( $ ) {
 		$( document.body ).trigger( 'checkout_error' );
 	};
 
+	// Show or hide save payment information checkbox
+	const showNewPaymentMethodCheckbox = ( show = true ) => {
+		if ( show ) {
+			$( '.woocommerce-SavedPaymentMethods-saveNew' ).show();
+		} else {
+			$( '.woocommerce-SavedPaymentMethods-saveNew' ).hide();
+			$( 'input#wc-woocommerce_payments-new-payment-method' ).prop(
+				'checked',
+				false
+			);
+		}
+	};
+
 	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
@@ -213,6 +227,9 @@ jQuery( function ( $ ) {
 				} );
 				upeElement.mount( '#wcpay-upe-element' );
 				upeElement.on( 'change', ( event ) => {
+					const isPaymentMethodReusable =
+						paymentMethodsConfig[ event.value.type ].isReusable;
+					showNewPaymentMethodCheckbox( isPaymentMethodReusable );
 					isUPEComplete = event.complete;
 				} );
 			} )
