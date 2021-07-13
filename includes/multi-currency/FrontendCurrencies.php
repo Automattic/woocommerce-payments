@@ -168,21 +168,31 @@ class FrontendCurrencies {
 	private function load_locale_data() {
 		$locale_info = include WC()->plugin_path() . '/i18n/locale-info.php';
 
-		// Extract the currency formatting options from the locale info.
-		foreach ( $locale_info as $country => $locale ) {
-			$currency_code = $locale['currency_code'];
+		if ( is_array( $locale_info ) && 0 < count( $locale_info ) ) {
+			$countries          = array_keys( $locale_info );
+			$first_country_data = $locale_info[ $countries[0] ];
 
-			// Convert Norwegian Krone symbol to its ISO 4217 currency code.
-			if ( 'Kr' === $currency_code ) {
-				$currency_code = 'NOK';
+			// If the loaded locale_info doesn't contain the locales keys, load the fallback file.
+			if ( is_array( $first_country_data ) && ! array_key_exists( 'locales', $first_country_data ) ) {
+				$locale_info = include WCPAY_ABSPATH . 'i18n/locale-info.php';
 			}
 
-			$this->currency_format[ $currency_code ][ $country ] = [
-				'currency_pos' => $locale['currency_pos'],
-				'thousand_sep' => $locale['thousand_sep'],
-				'decimal_sep'  => $locale['decimal_sep'],
-				'num_decimals' => $locale['num_decimals'],
-			];
+			// Extract the currency formatting options from the locale info.
+			foreach ( $locale_info as $country => $locale ) {
+				$currency_code = $locale['currency_code'];
+
+				// Convert Norwegian Krone symbol to its ISO 4217 currency code.
+				if ( 'Kr' === $currency_code ) {
+					$currency_code = 'NOK';
+				}
+
+				$this->currency_format[ $currency_code ][ $country ] = [
+					'currency_pos' => $locale['currency_pos'],
+					'thousand_sep' => $locale['thousand_sep'],
+					'decimal_sep'  => $locale['decimal_sep'],
+					'num_decimals' => $locale['num_decimals'],
+				];
+			}
 		}
 	}
 }

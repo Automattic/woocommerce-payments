@@ -123,7 +123,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 		$this->mock_utils->method( 'get_user_locale_country' )->willReturn( 'NL' );
 
-		$this->assertEquals( '.', $this->frontend_currencies->get_price_decimal_separator() );
+		$this->assertEquals( ',', $this->frontend_currencies->get_price_decimal_separator() );
 	}
 
 	public function test_get_price_decimal_separator_returns_filtered_settings() {
@@ -153,7 +153,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 		$this->mock_utils->method( 'get_user_locale_country' )->willReturn( 'BE' );
 
-		$this->assertEquals( ' ', $this->frontend_currencies->get_price_thousand_separator() );
+		$this->assertEquals( '.', $this->frontend_currencies->get_price_thousand_separator() );
 	}
 
 	public function test_get_price_thousand_separator_returns_filtered_settings() {
@@ -183,7 +183,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 		$this->mock_utils->method( 'get_user_locale_country' )->willReturn( 'ES' );
 
-		$this->assertEquals( '%2$s%1$s', $this->frontend_currencies->get_woocommerce_price_format() );
+		$this->assertEquals( '%2$s&nbsp;%1$s', $this->frontend_currencies->get_woocommerce_price_format() );
 	}
 
 	public function test_get_woocommerce_price_format_returns_filtered_settings() {
