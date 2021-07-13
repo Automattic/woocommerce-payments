@@ -17,6 +17,7 @@ import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
 import WCPayFields from './fields.js';
+import { SavedTokenHandler } from './saved-token-handler';
 import request from './request.js';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
@@ -36,11 +37,14 @@ registerPaymentMethod( {
 	name: PAYMENT_METHOD_NAME_CARD,
 	content: <WCPayFields api={ api } />,
 	edit: <WCPayFields api={ api } />,
+	savedTokenComponent: <SavedTokenHandler api={ api } />,
 	canMakePayment: () => !! api.getStripe(),
 	paymentMethodId: PAYMENT_METHOD_NAME_CARD,
 	label: __( 'Credit Card', 'woocommerce-payments' ),
 	ariaLabel: __( 'Credit Card', 'woocommerce-payments' ),
 	supports: {
+		showSavedCards: getConfig( 'isSavedCardsEnabled' ) ?? false,
+		showSaveOption: getConfig( 'isSavedCardsEnabled' ) ?? false,
 		features: getConfig( 'features' ),
 	},
 } );

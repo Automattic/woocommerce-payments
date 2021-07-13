@@ -11,3 +11,11 @@ export const uiLoaded = async () => {
 // Conditionally determine whether or not to skip a test suite
 export const describeif = ( condition ) =>
 	condition ? describe : describe.skip;
+
+// Save full page screenshot to file.
+export const takeScreenshot = ( name ) => {
+	return page.screenshot( {
+		path: `./screenshots/${ name }.png`,
+		fullPage: true,
+	} );
+};
