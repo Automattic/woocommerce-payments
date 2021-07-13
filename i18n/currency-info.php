@@ -390,6 +390,7 @@ return [
 	],
 	'GBP' => [
 		'en_GB'   => $global_formats['lx_dot_comma_ltr'],
+		'en_GG'   => $global_formats['lx_dot_comma_ltr'],
 		'en_IM'   => $global_formats['lx_dot_comma_ltr'],
 		'en_JE'   => $global_formats['lx_dot_comma_ltr'],
 		'ga_GB'   => $global_formats['lx_dot_comma_ltr'],
@@ -466,6 +467,7 @@ return [
 		'dz_BT'   => $global_formats['lx_dot_comma_ltr'],
 		'gu_IN'   => $global_formats['lx_dot_comma_ltr'],
 		'hi_IN'   => $global_formats['lx_dot_comma_ltr'],
+		'kn_IN'   => $global_formats['lx_dot_comma_ltr'],
 		'kok_IN'  => $global_formats['ls_dot_comma_ltr'],
 		'mai_IN'  => $global_formats['ls_dot_comma_ltr'],
 		'ml_IN'   => $global_formats['lx_dot_comma_ltr'],
@@ -515,7 +517,6 @@ return [
 	'KHR' => [
 		'default' => $global_formats['rx_comma_dot_ltr'],
 		'km_KH'   => $global_formats['rx_comma_dot_ltr'],
-		'kn_IN'   => $global_formats['lx_comma_dot_ltr'],
 	],
 	'KMF' => [
 		'ar_KM'   => $global_formats['rs_comma_dot_rtl'],
@@ -613,7 +614,7 @@ return [
 		'default' => $global_formats['lx_dot_comma_ltr'],
 	],
 	'MVR' => [
-		'default' => null,
+		'default' => [],
 	],
 	'MWK' => [
 		'en_MW'   => $global_formats['lx_dot_comma_ltr'],
