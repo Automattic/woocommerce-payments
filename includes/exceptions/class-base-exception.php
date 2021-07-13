@@ -27,10 +27,10 @@ abstract class Base_Exception extends Exception {
 	 * Constructor, including the usual $message, $code, and $previous,
 	 * and a new parameter $error_code.
 	 *
-	 * @param string    $message    The Exception message to throw.
-	 * @param string    $error_code String error code.
-	 * @param int       $code       The Exception code.
-	 * @param Throwable $previous   The previous exception used for the exception chaining.
+	 * @param string     $message    The Exception message to throw.
+	 * @param string     $error_code String error code.
+	 * @param int        $code       The Exception code.
+	 * @param \Throwable $previous   The previous exception used for the exception chaining.
 	 */
 	public function __construct( $message, $error_code, $code = 0, $previous = null ) {
 		$this->error_code = $error_code;

@@ -6,7 +6,7 @@ const { merchant } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP } from '../../utils/flows';
+import { merchantWCP, takeScreenshot } from '../../utils';
 
 describe( 'Admin deposits', () => {
 	beforeAll( async () => {
@@ -18,5 +18,6 @@ describe( 'Admin deposits', () => {
 		await expect( page ).toMatchElement( 'h2', {
 			text: 'Deposit history',
 		} );
+		await takeScreenshot( 'merchant-admin-deposits' );
 	} );
 } );

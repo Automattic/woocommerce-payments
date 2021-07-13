@@ -10,6 +10,8 @@ import { addFilter } from '@wordpress/hooks';
  * Internal dependencies
  */
 import MethodSelector from './methods-selector';
+import UpePreviewMethodSelector from './upe-preview-methods-selector';
+import WcPayUpeContextProvider from '../settings/wcpay-upe-toggle/provider';
 
 addFilter(
 	'woocommerce_admin_onboarding_task_list',
@@ -37,6 +39,40 @@ addFilter(
 					'woocommerce-payments'
 				),
 				isDismissable: true,
+
+				// overwriting the default values, while the test is running
+				// using object spread to override the attributes makes things a bit easier when it'll be time to clean up
+				...( window.wcpayAdditionalMethodsSetup
+					.isUpeSettingsPreviewEnabled
+					? {
+							additionalInfo: __(
+								'Get early access to additional payment methods and an improved checkout experience',
+								'woocommerce-payments'
+							),
+							title: __(
+								'Boost your sales by accepting new payment methods',
+								'woocommerce-payments'
+							),
+							container: (
+								<WcPayUpeContextProvider
+									defaultIsUpeEnabled={
+										'1' ===
+										window.wcpayAdditionalMethodsSetup
+											.isUpeEnabled
+									}
+								>
+									<UpePreviewMethodSelector />
+								</WcPayUpeContextProvider>
+							),
+							completed:
+								'yes' ===
+									window.wcpayAdditionalMethodsSetup
+										.isSetupCompleted ||
+								'1' ===
+									window.wcpayAdditionalMethodsSetup
+										.isUpeEnabled,
+					  }
+					: {} ),
 			},
 		];
 	}

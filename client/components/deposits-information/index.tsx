@@ -25,10 +25,10 @@ import { useAllDeposistsOverviews } from 'data';
 
 import './style.scss';
 
-type OverviewProps = {
+interface OverviewProps {
 	overview: AccountOverview.Overview;
 	account: AccountOverview.Account;
-};
+}
 
 /**
  * Renders a deposits overview
@@ -76,7 +76,6 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 
 	const scheduleDescriptor = getDepositScheduleDescriptor( {
 		account,
-		// eslint-disable-next-line camelcase
 		last_deposit: lastPaid,
 	} );
 

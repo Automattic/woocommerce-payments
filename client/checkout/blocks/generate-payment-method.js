@@ -37,7 +37,6 @@ const generatePaymentMethod = async ( api, elements, billingData ) => {
 			meta: {
 				paymentMethodData: {
 					paymentMethod: PAYMENT_METHOD_NAME_CARD,
-					// eslint-disable-next-line camelcase
 					'wcpay-payment-method': id,
 				},
 			},

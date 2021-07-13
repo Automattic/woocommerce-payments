@@ -4,11 +4,11 @@
 import * as React from 'react';
 import { FlexBlock } from '@wordpress/components';
 
-type DepositsInformationBlockProps = {
+interface DepositsInformationBlockProps {
 	title: string;
 	value: string;
 	children?: any;
-};
+}
 
 const DepositsInformationBlock: React.FunctionComponent< DepositsInformationBlockProps > = ( {
 	title,
