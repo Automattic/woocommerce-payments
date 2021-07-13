@@ -61,4 +61,23 @@ interface WC_Payments_Http_Interface {
 	 * @throws API_Exception - Exception thrown on failure.
 	 */
 	public function start_connection( $redirect );
+
+	/**
+	 * Queries the WordPress.com REST API with a user token.
+	 *
+	 * @param string $path REST API path.
+	 * @param string $version REST API version. Default is `2`.
+	 * @param array  $args Arguments to {@see WP_Http}. Default is `array()`.
+	 * @param string $body Body passed to {@see WP_Http}. Default is `null`.
+	 * @param string $base_api_path REST API root. Default is `wpcom`.
+	 *
+	 * @return array|WP_Error $response Response data, else {@see WP_Error} on failure.
+	 */
+	public function wpcom_json_api_request_as_user(
+		$path,
+		$version = '2',
+		$args = [],
+		$body = null,
+		$base_api_path = 'wpcom'
+	);
 }

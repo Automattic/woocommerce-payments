@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payment_Token_SEPA
+ * Class WC_Payment_Token_WCPay_SEPA
  *
  * @package WooCommerce\Payments
  */
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Representation of a payment token for SEPA.
  *
- * @class    WC_Payment_Token_SEPA
+ * @class    WC_Payment_Token_WCPay_SEPA
  */
 class WC_Payment_Token_WCPay_SEPA extends WC_Payment_Token {
 
