@@ -73,11 +73,6 @@ class Locale {
 			foreach ( $locale_info as $country => $locale ) {
 				$currency_code = $locale['currency_code'];
 
-				// Convert Norwegian Krone symbol to its ISO 4217 currency code.
-				if ( 'Kr' === $currency_code ) {
-					$currency_code = 'NOK';
-				}
-
 				$this->currency_format[ $currency_code ][ $country ] = [
 					'currency_pos' => $locale['currency_pos'],
 					'thousand_sep' => $locale['thousand_sep'],
