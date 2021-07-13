@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button, Card, CardBody } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
@@ -19,11 +19,11 @@ import {
 } from '../../data';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
+import { LoadableBlock } from '../../components/loadable';
 
-const usePaymentMethodsCheckboxState = ( initialValue ) => {
-	const [ paymentMethodsState, setPaymentMethodsState ] = useState(
-		initialValue
-	);
+const usePaymentMethodsCheckboxState = () => {
+	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {} );
+
 	const handleChange = useCallback(
 		( paymentMethodName, enabled ) => {
 			setPaymentMethodsState( ( oldValues ) => ( {
@@ -34,7 +34,7 @@ const usePaymentMethodsCheckboxState = ( initialValue ) => {
 		[ setPaymentMethodsState ]
 	);
 
-	return [ paymentMethodsState, handleChange ];
+	return [ paymentMethodsState, handleChange, setPaymentMethodsState ];
 };
 
 const AddPaymentMethodsTask = () => {
@@ -44,7 +44,11 @@ const AddPaymentMethodsTask = () => {
 		updateEnabledPaymentMethodIds,
 	] = useEnabledPaymentMethodIds();
 
-	const { saveSettings, isSaving } = useSettings();
+	const {
+		saveSettings,
+		isSaving,
+		isLoading: isLoadingSettings,
+	} = useSettings();
 
 	// I am using internal state in this component
 	// and committing the changes on `initialEnabledPaymentMethodIds` only when the "continue" button is clicked.
@@ -53,17 +57,21 @@ const AddPaymentMethodsTask = () => {
 	const [
 		paymentMethodsState,
 		handlePaymentMethodChange,
-	] = usePaymentMethodsCheckboxState(
-		initialEnabledPaymentMethodIds
-			.filter( ( methodId ) => 'card' === methodId )
-			.reduce(
+		setPaymentMethodsState,
+	] = usePaymentMethodsCheckboxState();
+
+	useEffect( () => {
+		setPaymentMethodsState(
+			// by default, all the checkboxes should be "checked"
+			availablePaymentMethods.reduce(
 				( map, paymentMethod ) => ( {
 					...map,
 					[ paymentMethod ]: true,
 				} ),
 				{}
 			)
-	);
+		);
+	}, [ availablePaymentMethods, setPaymentMethodsState ] );
 
 	const { setCompleted } = useContext( WizardTaskContext );
 
@@ -92,11 +100,7 @@ const AddPaymentMethodsTask = () => {
 			const isSuccess = await saveSettings();
 			if ( ! isSuccess ) {
 				// restoring the state, in case of soft route
-				updateEnabledPaymentMethodIds(
-					initialEnabledPaymentMethodIds.filter(
-						( methodId ) => 'card' === methodId
-					)
-				);
+				updateEnabledPaymentMethodIds( initialEnabledPaymentMethodIds );
 				return;
 			}
 
@@ -116,35 +120,35 @@ const AddPaymentMethodsTask = () => {
 		<WizardTaskItem
 			className="add-payment-methods-task"
 			title={ __(
-				'Set up additional payment methods',
+				'Boost your sales with payment methods',
 				'woocommerce-payments'
 			) }
 			index={ 2 }
 		>
 			<CollapsibleBody>
+				<p className="wcpay-wizard-task__description-element is-muted-color">
+					{ interpolateComponents( {
+						mixedString: __(
+							'For best results, we recommend adding all available payment methods. ' +
+								"We'll only show your customer the most relevant payment methods " +
+								'based on their location. {{learnMoreLink /}}.',
+							'woocommerce-payments'
+						),
+						components: {
+							// TODO
+							learnMoreLink: (
+								<a href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments">
+									{ __(
+										'Learn more',
+										'woocommerce-payments'
+									) }
+								</a>
+							),
+						},
+					} ) }
+				</p>
 				<Card className="add-payment-methods-task__payment-selector-wrapper">
 					<CardBody>
-						<p className="wcpay-wizard-task__description-element is-muted-color">
-							{ interpolateComponents( {
-								mixedString: __(
-									'For best results, we recommend adding all available payment methods. ' +
-										"We'll only show your customer the most relevant payment methods " +
-										'based on their location. {{learnMoreLink /}}.',
-									'woocommerce-payments'
-								),
-								components: {
-									// TODO
-									learnMoreLink: (
-										<a href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments">
-											{ __(
-												'Learn more',
-												'woocommerce-payments'
-											) }
-										</a>
-									),
-								},
-							} ) }
-						</p>
 						{ /* eslint-disable-next-line max-len */ }
 						<p className="add-payment-methods-task__payment-selector-title wcpay-wizard-task__description-element">
 							{ __(
@@ -152,34 +156,45 @@ const AddPaymentMethodsTask = () => {
 								'woocommerce-payments'
 							) }
 						</p>
-						<PaymentMethodCheckboxes>
-							{ availablePaymentMethods.includes( 'giropay' ) && (
-								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.giropay }
-									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
-									name="giropay"
-								/>
-							) }
-							{ availablePaymentMethods.includes( 'sofort' ) && (
-								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.sofort }
-									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
-									name="sofort"
-								/>
-							) }
-							{ availablePaymentMethods.includes(
-								'sepa_debit'
-							) && (
-								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.sepa_debit }
-									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
-									name="sepa_debit"
-								/>
-							) }
-						</PaymentMethodCheckboxes>
+						<LoadableBlock
+							numLines={ 10 }
+							isLoading={ isLoadingSettings }
+						>
+							<PaymentMethodCheckboxes>
+								{ availablePaymentMethods.includes(
+									'giropay'
+								) && (
+									<PaymentMethodCheckbox
+										checked={ paymentMethodsState.giropay }
+										onChange={ handlePaymentMethodChange }
+										fees="missing fees"
+										name="giropay"
+									/>
+								) }
+								{ availablePaymentMethods.includes(
+									'sofort'
+								) && (
+									<PaymentMethodCheckbox
+										checked={ paymentMethodsState.sofort }
+										onChange={ handlePaymentMethodChange }
+										fees="missing fees"
+										name="sofort"
+									/>
+								) }
+								{ availablePaymentMethods.includes(
+									'sepa_debit'
+								) && (
+									<PaymentMethodCheckbox
+										checked={
+											paymentMethodsState.sepa_debit
+										}
+										onChange={ handlePaymentMethodChange }
+										fees="missing fees"
+										name="sepa_debit"
+									/>
+								) }
+							</PaymentMethodCheckboxes>
+						</LoadableBlock>
 					</CardBody>
 				</Card>
 				<Button
