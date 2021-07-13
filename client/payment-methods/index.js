@@ -25,8 +25,6 @@ import {
 	useGetAvailablePaymentMethodIds,
 } from 'data';
 
-// @todo - use a hook rather than the context?
-import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
 import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
 import PaymentMethodsList from 'components/payment-methods-list';
@@ -77,7 +75,8 @@ const methodsConfiguration = {
 };
 
 // @todo - remove once #2174 is merged and use real banner instead.
-function UPESetupBanner( { setIsUpeEnabled } ) {
+function UpeSetupBanner() {
+	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
 	return (
 		<>
 			<p>UPE IS DISABLED!!!</p>
@@ -92,7 +91,8 @@ function UPESetupBanner( { setIsUpeEnabled } ) {
 	);
 }
 
-function PaymentMethodsDropdownMenu( { isUpeEnabled, setIsUpeEnabled } ) {
+function PaymentMethodsDropdownMenu() {
+	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
 	return (
 		<DropdownMenu
 			icon={ moreVertical }
@@ -105,16 +105,15 @@ function PaymentMethodsDropdownMenu( { isUpeEnabled, setIsUpeEnabled } ) {
 				},
 				{
 					title: 'Disable',
-					isDisabled: ! isUpeEnabled,
 					icon: trash,
-					onClick: setIsUpeEnabled,
+					onClick: () => setIsUpeEnabled( false ),
 				},
 			] }
 		/>
 	);
 }
 
-const UPEDisableError = () => {
+const UpeDisableError = () => {
 	return (
 		<Notice status="error" isDismissible={ true }>
 			{ __(
@@ -146,17 +145,11 @@ const PaymentMethods = () => {
 		);
 	};
 
-	const {
-		featureFlags: { upe: initialUPESetting },
-	} = useContext( WCPaySettingsContext );
-	const [ isUpeEnabled, setIsUpeEnabled ] = useIsUpeEnabled(
-		initialUPESetting
-	);
-	const { status } = useContext( WcPayUpeContext );
+	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
 
 	return (
 		<>
-			{ 'error' === status && <UPEDisableError /> }
+			{ 'error' === status && <UpeDisableError /> }
 			<Card
 				className={ classNames( 'payment-methods', {
 					'loading-placeholder': 'pending' === status,
@@ -167,14 +160,11 @@ const PaymentMethods = () => {
 						size={ null }
 						className="payment-methods-header"
 					>
-						<PaymentMethodsDropdownMenu
-							isUpeEnabled={ isUpeEnabled }
-							setIsUpeEnabled={ setIsUpeEnabled }
-						/>
+						<PaymentMethodsDropdownMenu />
 					</CardHeader>
 				) }
 				<CardBody>
-					{ isUpeEnabled && (
+					{ isUpeEnabled ? (
 						<PaymentMethodsList className="payment-methods__enabled-methods">
 							{ enabledMethods.map(
 								( { id, label, description, Icon } ) => (
@@ -193,9 +183,8 @@ const PaymentMethods = () => {
 								)
 							) }
 						</PaymentMethodsList>
-					) }
-					{ ! isUpeEnabled && (
-						<UPESetupBanner setIsUpeEnabled={ setIsUpeEnabled } />
+					) : (
+						<UpeSetupBanner />
 					) }
 				</CardBody>
 				{ isUpeEnabled && 1 < availablePaymentMethodIds.length ? (

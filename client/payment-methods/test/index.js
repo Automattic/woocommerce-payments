@@ -180,7 +180,7 @@ describe( 'PaymentMethods', () => {
 				<PaymentMethods />
 			</WcPayUpeContextProvider>
 		);
-		const disableUPEButton = screen.getByRole( 'button', {
+		const disableUPEButton = screen.queryByRole( 'button', {
 			name: 'Add Feedback or Disable',
 		} );
 
