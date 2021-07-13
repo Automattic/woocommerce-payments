@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AdvancedSettings from '../advanced-settings';
 import PaymentMethods from '../../payment-methods';
-import DigitalWallets from '../digital-wallets';
+import PaymentRequest from '../payment-request';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
 import ApplePayIcon from '../../gateway-icons/apple-pay';
@@ -39,7 +39,7 @@ const PaymentMethodsDescription = () => (
 	</>
 );
 
-const DigitalWalletsDescription = () => (
+const PaymentRequestDescription = () => (
 	<>
 		<h2>{ __( 'Express checkouts', 'woocommerce-payments' ) }</h2>
 		<ul className="settings-section__icons">
@@ -114,9 +114,9 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</SettingsSection>
 			) }
-			<SettingsSection Description={ DigitalWalletsDescription }>
+			<SettingsSection Description={ PaymentRequestDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
-					<DigitalWallets />
+					<PaymentRequest />
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection Description={ TransactionsAndDepositsDescription }>
