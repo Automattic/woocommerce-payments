@@ -30,23 +30,37 @@ class WC_Payments_Admin_Additional_Methods_Setup {
 	}
 
 	/**
-	 * Adds the scripts to the WC home, when necessary.
+	 * Checks whether the current page should be eligible to enqueue the task.
 	 */
-	public function enqueue_scripts() {
+	public function is_page_eligible() {
 		if ( ! wc_admin_is_registered_page() ) {
-			return;
+			return false;
+		}
+
+		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
+			return true;
 		}
 
 		$available_methods = $this->gateway->get_upe_available_payment_methods();
 		if ( empty( $available_methods ) ) {
-			return;
+			return false;
 		}
 
 		if ( 1 >= count( $available_methods ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Adds the scripts to the WC home, when necessary.
+	 */
+	public function enqueue_scripts() {
+		if ( ! $this->is_page_eligible() ) {
 			return;
 		}
 
-		// TODO: we also need to check whether giropay/etc are available and whether they have been set up before or not.
 		$script_src_url    = plugins_url( 'dist/additional-methods-setup.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/additional-methods-setup.asset.php';
 		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];

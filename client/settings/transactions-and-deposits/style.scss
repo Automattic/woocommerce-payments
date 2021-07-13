@@ -1,4 +1,10 @@
-.general-settings {
+.transactions-and-deposits {
+	.components-notice {
+		margin-left: 0;
+		margin-right: 0;
+		margin-bottom: 1em;
+	}
+
 	&__account-statement-wrapper {
 		max-width: 500px;
 		position: relative;
