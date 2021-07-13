@@ -169,6 +169,19 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertSame( $currencies, get_option( self::ENABLED_CURRENCIES_OPTION ) );
 	}
 
+	public function test_set_enabled_currencies_triggers_removing_currency_settings() {
+		update_option( 'wcpay_multi_currency_exchange_rate_bif', 'manual' );
+		update_option( 'wcpay_multi_currency_manual_rate_bif', '2' );
+		update_option( 'wcpay_multi_currency_price_rounding_bif', '10.00' );
+		update_option( 'wcpay_multi_currency_price_charm_bif', '-0.05' );
+		$currencies = [ 'USD', 'CAD', 'GBP' ];
+		$this->multi_currency->set_enabled_currencies( $currencies );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_exchange_rate_bif' ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_manual_rate_bif' ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_price_rounding_bif' ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_price_charm_bif' ) );
+	}
+
 	public function test_enabled_but_unavailable_currencies_are_skipped() {
 		update_option( self::ENABLED_CURRENCIES_OPTION, [ 'RANDOM_CURRENCY', 'USD' ] );
 
