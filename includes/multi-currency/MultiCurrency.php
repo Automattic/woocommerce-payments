@@ -46,6 +46,13 @@ class MultiCurrency {
 	protected $compatibility;
 
 	/**
+	 * Locale instance.
+	 *
+	 * @var Locale
+	 */
+	protected $locale;
+
+	/**
 	 * Utils instance.
 	 *
 	 * @var Utils
@@ -116,6 +123,7 @@ class MultiCurrency {
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
+		$this->locale              = new Locale();
 		$this->utils               = new Utils();
 		$this->compatibility       = new Compatibility( $this->utils );
 
@@ -158,7 +166,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->utils );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->locale );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 
