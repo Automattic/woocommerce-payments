@@ -142,8 +142,6 @@ const PaymentMethods = () => {
 		.filter( ( method ) => enabledMethodIds.includes( method ) )
 		.map( ( methodId ) => methodsConfiguration[ methodId ] );
 
-	console.log( 'enabledMethods', enabledMethods );
-
 	const disabledMethods = availablePaymentMethodIds
 		.filter( ( methodId ) => ! enabledMethodIds.includes( methodId ) )
 		.map( ( methodId ) => methodsConfiguration[ methodId ] );
@@ -164,8 +162,6 @@ const PaymentMethods = () => {
 
 	return (
 		<>
-			{ console.log( 'enabledMethods', enabledMethods ) }
-			{ console.log( 'isUpeEnabled', isUpeEnabled ) }
 			{ 'error' === status && <UPEDisableError /> }
 			<Card
 				className={ classNames( 'payment-methods', {
