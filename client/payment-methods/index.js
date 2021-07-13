@@ -14,6 +14,7 @@ import {
 	Button,
 } from '@wordpress/components';
 import classNames from 'classnames';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -31,6 +32,7 @@ import GiropayIcon from '../gateway-icons/giropay';
 import SofortIcon from '../gateway-icons/sofort';
 import SepaIcon from '../gateway-icons/sepa';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
+import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook';
 
 const methodsConfiguration = {
 	card: {
@@ -92,6 +94,17 @@ const PaymentMethods = () => {
 		);
 	};
 
+	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
+
+	const handleEnableUpeClick = () => {
+		setIsUpeEnabled( true ).then( () => {
+			window.location.href = addQueryArgs( 'admin.php', {
+				page: 'wc-admin',
+				task: 'woocommerce-payments--additional-payment-methods',
+			} );
+		} );
+	};
+
 	const {
 		featureFlags: {
 			upeSettingsPreview: isUPESettingsPreviewEnabled,
@@ -145,9 +158,12 @@ const PaymentMethods = () => {
 
 							<div className="payment-methods__express-checkouts-actions">
 								<span className="payment-methods__express-checkouts-get-started">
-									<Button isPrimary href="">
+									<Button
+										isPrimary
+										onClick={ handleEnableUpeClick }
+									>
 										{ __(
-											'Get started',
+											'Enable in your store',
 											'woocommerce-payments'
 										) }
 									</Button>
