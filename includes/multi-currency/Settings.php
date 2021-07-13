@@ -136,19 +136,6 @@ class Settings extends \WC_Settings_Page {
 					],
 
 					[
-						'desc'          => __( 'Add a currency switcher to the cart widget', 'woocommerce-payments' ),
-						'desc_tip'      => sprintf(
-							/* translators: %s: url to the widgets page */
-							__( 'A currency switcher is also available in your widgets. <a href="%s">Configure now</a>', 'woocommerce-payments' ),
-							'widgets.php'
-						),
-						'id'            => $this->id . '_enable_cart_switcher',
-						'default'       => 'yes',
-						'type'          => 'checkbox',
-						'checkboxgroup' => 'end',
-					],
-
-					[
 						'type' => 'sectionend',
 						'id'   => $this->id . 'store_settings',
 					],

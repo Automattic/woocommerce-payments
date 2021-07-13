@@ -192,6 +192,12 @@ class MultiCurrency {
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 
+		// Check for Storefront being active and load the integration if it is.
+		$theme = wp_get_theme();
+		if ( 'storefront' === $theme->stylesheet || 'storefront' === $theme->parent ) {
+			new StorefrontIntegration( $this );
+		}
+
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
