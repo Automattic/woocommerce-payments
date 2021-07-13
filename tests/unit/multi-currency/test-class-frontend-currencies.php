@@ -5,38 +5,43 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\MultiCurrency\Currency;
+use WCPay\MultiCurrency\FrontendCurrencies;
+use WCPay\MultiCurrency\MultiCurrency;
+use WCPay\MultiCurrency\Locale;
+
 /**
- * WCPay\MultiCurrency\FrontendCurrencies unit tests.
+ * FrontendCurrencies unit tests.
  */
 class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	/**
-	 * Mock WCPay\MultiCurrency\Locale.
+	 * Mock Locale.
 	 *
-	 * @var WCPay\MultiCurrency\Locale|PHPUnit_Framework_MockObject_MockObject
+	 * @var Locale|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_locale;
 
 	/**
-	 * Mock WCPay\MultiCurrency\MultiCurrency.
+	 * Mock MultiCurrency.
 	 *
-	 * @var WCPay\MultiCurrency\MultiCurrency|PHPUnit_Framework_MockObject_MockObject
+	 * @var MultiCurrency|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_multi_currency;
 
 	/**
-	 * WCPay\MultiCurrency\FrontendCurrencies instance.
+	 * FrontendCurrencies instance.
 	 *
-	 * @var WCPay\MultiCurrency\FrontendCurrencies
+	 * @var FrontendCurrencies
 	 */
 	private $frontend_currencies;
 
 	public function setUp() {
 		parent::setUp();
 
-		$this->mock_locale         = $this->createMock( WCPay\MultiCurrency\Locale::class );
-		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+		$this->mock_locale         = $this->createMock( Locale::class );
+		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
 
-		$this->frontend_currencies = new WCPay\MultiCurrency\FrontendCurrencies( $this->mock_multi_currency, $this->mock_locale );
+		$this->frontend_currencies = new FrontendCurrencies( $this->mock_multi_currency, $this->mock_locale );
 	}
 
 	public function tearDown() {
@@ -68,143 +73,191 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_woocommerce_currency() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'USD' );
+		$current_currency = new Currency( 'USD' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 
 		$this->assertSame( 'USD', $this->frontend_currencies->get_woocommerce_currency() );
 	}
 
 	public function test_get_price_decimals_returns_default_settings() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'RANDOM_CODE' );
+		$current_currency = new Currency( 'RANDOM_CODE' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->once() )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->assertEquals( 2, $this->frontend_currencies->get_price_decimals() );
 	}
 
 	public function test_get_price_decimals_returns_currency_settings() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'JPY' );
+		$current_currency = new Currency( 'JPY' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->assertEquals( 0, $this->frontend_currencies->get_price_decimals() );
 	}
 
 	public function test_get_price_decimals_returns_currency_settings_by_country() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'EUR' );
+		$current_currency = new Currency( 'EUR' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 		$this->mock_locale->method( 'get_user_locale_country' )->willReturn( 'DE' );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->assertEquals( 2, $this->frontend_currencies->get_price_decimals() );
 	}
 
 	public function test_get_price_decimals_returns_filtered_settings() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'JPY' );
+		$current_currency = new Currency( 'JPY' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 		$this->mock_currency_format( 'jpy', [ 'num_decimals' => 1 ] );
 
 		$this->assertEquals( 1, $this->frontend_currencies->get_price_decimals() );
 	}
 
 	public function test_get_price_decimal_separator_returns_default_settings() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'RANDOM_CODE' );
+		$current_currency = new Currency( 'RANDOM_CODE' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->once() )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->assertEquals( '.', $this->frontend_currencies->get_price_decimal_separator() );
 	}
 
 	public function test_get_price_decimal_separator_returns_currency_settings() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'BRL' );
+		$current_currency = new Currency( 'BRL' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->assertEquals( ',', $this->frontend_currencies->get_price_decimal_separator() );
 	}
 
 	public function test_get_price_decimal_separator_returns_currency_settings_by_country() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'EUR' );
+		$current_currency = new Currency( 'EUR' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 		$this->mock_locale->method( 'get_user_locale_country' )->willReturn( 'NL' );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->assertEquals( ',', $this->frontend_currencies->get_price_decimal_separator() );
 	}
 
 	public function test_get_price_decimal_separator_returns_filtered_settings() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'BRL' );
+		$current_currency = new Currency( 'BRL' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 		$this->mock_currency_format( 'brl', [ 'decimal_sep' => '/' ] );
 
 		$this->assertEquals( '/', $this->frontend_currencies->get_price_decimal_separator() );
 	}
 
 	public function test_get_price_thousand_separator_returns_default_settings() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'RANDOM_CODE' );
+		$current_currency = new Currency( 'RANDOM_CODE' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->once() )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->assertEquals( ',', $this->frontend_currencies->get_price_thousand_separator() );
 	}
 
 	public function test_get_price_thousand_separator_returns_currency_settings() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'BRL' );
+		$current_currency = new Currency( 'BRL' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->assertEquals( '.', $this->frontend_currencies->get_price_thousand_separator() );
 	}
 
 	public function test_get_price_thousand_separator_returns_currency_settings_by_country() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'EUR' );
+		$current_currency = new Currency( 'EUR' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 		$this->mock_locale->method( 'get_user_locale_country' )->willReturn( 'BE' );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->assertEquals( '.', $this->frontend_currencies->get_price_thousand_separator() );
 	}
 
 	public function test_get_price_thousand_separator_returns_filtered_settings() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'BRL' );
+		$current_currency = new Currency( 'BRL' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 		$this->mock_currency_format( 'brl', [ 'thousand_sep' => '/' ] );
 
 		$this->assertEquals( '/', $this->frontend_currencies->get_price_thousand_separator() );
 	}
 
 	public function test_get_woocommerce_price_format_returns_default_settings() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'RANDOM_CODE' );
+		$current_currency = new Currency( 'RANDOM_CODE' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->once() )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->assertEquals( '%1$s%2$s', $this->frontend_currencies->get_woocommerce_price_format() );
 	}
 
 	public function test_get_woocommerce_price_format_returns_currency_settings() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'HUF' );
+		$current_currency = new Currency( 'HUF' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->assertEquals( '%2$s&nbsp;%1$s', $this->frontend_currencies->get_woocommerce_price_format() );
 	}
 
 	public function test_get_woocommerce_price_format_returns_currency_settings_by_country() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'EUR' );
+		$current_currency = new Currency( 'EUR' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 		$this->mock_locale->method( 'get_user_locale_country' )->willReturn( 'ES' );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->assertEquals( '%2$s&nbsp;%1$s', $this->frontend_currencies->get_woocommerce_price_format() );
 	}
 
 	public function test_get_woocommerce_price_format_returns_filtered_settings() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'HUF' );
+		$current_currency = new Currency( 'HUF' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 		$this->mock_currency_format( 'huf', [ 'currency_pos' => 'left_space' ] );
 
 		$this->assertEquals( '%1$s&nbsp;%2$s', $this->frontend_currencies->get_woocommerce_price_format() );
@@ -214,9 +267,12 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	 * @dataProvider currency_format_provider
 	 */
 	public function test_get_woocommerce_price_format_outputs_right_format( $currency_pos, $expected_format ) {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'USD' );
+		$current_currency = new Currency( 'USD' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_locale->method( 'get_currency_format' )->willReturn( $this->mock_get_currency_format( $current_currency ) );
+		$this->mock_locale
+			->expects( $this->once() )
+			->method( 'get_currency_format' )
+			->willReturn( $this->mock_get_currency_format( $current_currency ) );
 
 		$this->mock_currency_format( 'usd', [ 'currency_pos' => $currency_pos ] );
 		$this->assertEquals( $expected_format, $this->frontend_currencies->get_woocommerce_price_format() );
@@ -234,7 +290,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_add_currency_to_cart_hash_adds_currency_and_rate() {
-		$current_currency = new WCPay\MultiCurrency\Currency( 'GBP', 0.71 );
+		$current_currency = new Currency( 'GBP', 0.71 );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 
 		$this->assertSame(
