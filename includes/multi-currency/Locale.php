@@ -58,17 +58,17 @@ class Locale {
 	 * @return void
 	 */
 	private function load_locale_data() {
-		$locale_info = include WC()->plugin_path() . '/i18n/locale-info.php';
+		$locale_info_path = WC()->plugin_path() . '/i18n/locale-info.php';
+
+		// The full locale data was introduced in the currency-info.php file.
+		// If it doesn't exist we have to use the fallback.
+		if ( ! file_exists( WC()->plugin_path() . '/i18n/currency-info.php' ) ) {
+			$locale_info_path = WCPAY_ABSPATH . 'i18n/locale-info.php';
+		}
+
+		$locale_info = include $locale_info_path;
 
 		if ( is_array( $locale_info ) && 0 < count( $locale_info ) ) {
-			$countries          = array_keys( $locale_info );
-			$first_country_data = $locale_info[ $countries[0] ];
-
-			// If the loaded locale_info doesn't contain the locales keys, load the fallback file.
-			if ( is_array( $first_country_data ) && ! array_key_exists( 'locales', $first_country_data ) ) {
-				$locale_info = include WCPAY_ABSPATH . 'i18n/locale-info.php';
-			}
-
 			// Extract the currency formatting options from the locale info.
 			foreach ( $locale_info as $country => $locale ) {
 				$currency_code = $locale['currency_code'];
