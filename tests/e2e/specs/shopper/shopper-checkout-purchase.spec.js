@@ -9,7 +9,7 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
  * Internal dependencies
  */
 
-import { shopperWCP } from '../../utils';
+import { shopperWCP, takeScreenshot } from '../../utils';
 
 import {
 	fillCardDetails,
@@ -40,11 +40,14 @@ describe( 'Successful purchase', () => {
 		await shopperWCP.toggleCreateAccount();
 		const card = config.get( 'cards.3ds' );
 		await fillCardDetails( page, card );
+		await takeScreenshot( 'shopper-checkout-purchase_filled-card-details' );
 		await expect( page ).toClick( '#place_order' );
 		await confirmCardAuthentication( page, '3DS' );
+		await takeScreenshot( 'shopper-checkout-purchase_authenticating' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
 		await expect( page ).toMatch( 'Order received' );
+		await takeScreenshot( 'shopper-checkout-purchase_order-received' );
 	} );
 } );
