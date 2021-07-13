@@ -115,12 +115,6 @@ function PaymentMethodsDropdownMenu( { isUpeEnabled, setIsUpeEnabled } ) {
 }
 
 const UPEDisableError = () => {
-	/* @todo - figure out how to only show it once.
-	Can we pass in a memoized message?
-	if ( ! wcpaySettings.errorMessage ) {
-		return null;
-	}
-	*/
 	return (
 		<Notice status="error" isDismissible={ true }>
 			{ __(

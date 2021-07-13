@@ -65,7 +65,11 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( '"Add payment method" button opens the payment methods selector modal', () => {
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const addPaymentMethodButton = screen.getByRole( 'button', {
 			name: 'Add payment method',
@@ -83,7 +87,11 @@ describe( 'PaymentMethods', () => {
 			[ 'card', 'sepa_debit' ],
 		] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const cc = screen.getByText( 'Credit card / debit card' );
 		const sepa = screen.getByText( 'Direct debit payment' );
@@ -107,7 +115,11 @@ describe( 'PaymentMethods', () => {
 			[ 'card', 'sepa_debit' ],
 		] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		expect(
 			screen.queryByRole( 'button', {
@@ -119,7 +131,11 @@ describe( 'PaymentMethods', () => {
 	test( 'when only one enabled method is rendered, the "Delete" button is not visible', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		expect(
 			screen.queryByRole( 'button', {
@@ -135,7 +151,11 @@ describe( 'PaymentMethods', () => {
 			updateEnabledMethodsMock,
 		] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const ccDeleteButton = screen.getByRole( 'button', {
 			name: 'Delete Credit card / debit card from checkout',
@@ -156,7 +176,7 @@ describe( 'PaymentMethods', () => {
 
 	test( 'renders the Feedback/Disable Header when UPE is enabled', () => {
 		render(
-			<WcPayUpeContextProvider>
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
 				<PaymentMethods />
 			</WcPayUpeContextProvider>
 		);

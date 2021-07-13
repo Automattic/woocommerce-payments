@@ -104,11 +104,11 @@ const SettingsManager = () => {
 			</SettingsSection>
 			{ isUPESettingsPreviewEnabled && (
 				<SettingsSection Description={ PaymentMethodsDescription }>
-					<WcPayUpeContextProvider>
-						<LoadableSettingsSection numLines={ 20 }>
+					<LoadableSettingsSection numLines={ 20 }>
+						<WcPayUpeContextProvider>
 							<PaymentMethods />
-						</LoadableSettingsSection>
-					</WcPayUpeContextProvider>
+						</WcPayUpeContextProvider>
+					</LoadableSettingsSection>
 				</SettingsSection>
 			) }
 			<SettingsSection Description={ DigitalWalletsDescription }>
