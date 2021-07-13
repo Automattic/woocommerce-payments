@@ -225,8 +225,8 @@ jQuery( function ( $ ) {
 					business: { name: businessName },
 				} );
 				upeElement.mount( '#wcpay-upe-element' );
+				unblockUI( $upeContainer );
 				upeElement.on( 'change', ( event ) => {
-					unblockUI( $upeContainer );
 					isUPEComplete = event.complete;
 				} );
 			} )
