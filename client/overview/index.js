@@ -25,11 +25,12 @@ import './style.scss';
 const OverviewPage = () => {
 	const {
 		accountStatus,
+		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 	} = wcpaySettings;
-	const { disputes } = useDisputes( getQuery() );
+	const { disputes, isLoading } = useDisputes( getQuery() );
 
 	const tasks = getTasks( {
 		accountStatus,
@@ -58,8 +59,11 @@ const OverviewPage = () => {
 				accountStatus={ wcpaySettings.accountStatus }
 				accountFees={ wcpaySettings.accountFees }
 			/>
-			{ !! accountOverviewTaskList && 0 < tasks.length && (
-				<TaskList tasks={ tasks } />
+			{ !! accountOverviewTaskList && 0 < tasks.length && ! isLoading && (
+				<TaskList
+					tasks={ tasks }
+					overviewTasksVisibility={ overviewTasksVisibility }
+				/>
 			) }
 			<InboxNotifications />
 		</Page>
