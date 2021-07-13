@@ -42,13 +42,12 @@ class Locale {
 	}
 
 	/**
-	 * Returns the user locale country.
+	 * Returns the user locale.
 	 *
-	 * @return string The country code.
+	 * @return string The locale.
 	 */
-	public function get_user_locale_country(): string {
-		$locale = explode( '_', get_user_locale() );
-		return end( $locale );
+	public function get_user_locale(): string {
+		return get_user_locale();
 	}
 
 	/**
@@ -70,15 +69,21 @@ class Locale {
 
 		if ( is_array( $locale_info ) && 0 < count( $locale_info ) ) {
 			// Extract the currency formatting options from the locale info.
-			foreach ( $locale_info as $country => $locale ) {
-				$currency_code = $locale['currency_code'];
+			foreach ( $locale_info as $country_data ) {
+				$currency_code = $country_data['currency_code'];
 
-				$this->currency_format[ $currency_code ][ $country ] = [
-					'currency_pos' => $locale['currency_pos'],
-					'thousand_sep' => $locale['thousand_sep'],
-					'decimal_sep'  => $locale['decimal_sep'],
-					'num_decimals' => $locale['num_decimals'],
-				];
+				foreach ( $country_data['locales'] as $locale => $locale_data ) {
+					if ( empty( $locale_data ) ) {
+						continue;
+					}
+
+					$this->currency_format[ $currency_code ][ $locale ] = [
+						'currency_pos' => $locale_data['currency_pos'],
+						'thousand_sep' => $locale_data['thousand_sep'],
+						'decimal_sep'  => $locale_data['decimal_sep'],
+						'num_decimals' => $country_data['num_decimals'],
+					];
+				}
 			}
 		}
 	}
