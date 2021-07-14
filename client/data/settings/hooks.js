@@ -17,7 +17,7 @@ export const useEnabledPaymentMethodIds = () => {
 		const { getEnabledPaymentMethodIds } = select( STORE_NAME );
 
 		return getEnabledPaymentMethodIds();
-	}, [] );
+	} );
 
 	return [ enabledPaymentMethodIds, updateEnabledPaymentMethodIds ];
 };
@@ -29,7 +29,7 @@ export const useDebugLog = () => {
 		const { getIsDebugLogEnabled } = select( STORE_NAME );
 
 		return getIsDebugLogEnabled();
-	}, [] );
+	} );
 
 	return [ isDebugLogEnabled, updateIsDebugLogEnabled ];
 };
@@ -41,7 +41,7 @@ export const useTestMode = () => {
 		const { getIsTestModeEnabled } = select( STORE_NAME );
 
 		return getIsTestModeEnabled();
-	}, [] );
+	} );
 
 	return [ isTestModeEnabled, updateIsTestModeEnabled ];
 };
@@ -51,7 +51,7 @@ export const useDevMode = () => {
 		const { getIsDevModeEnabled } = select( STORE_NAME );
 
 		return getIsDevModeEnabled();
-	}, [] );
+	} );
 };
 
 export const useAccountStatementDescriptor = () => {
@@ -61,7 +61,7 @@ export const useAccountStatementDescriptor = () => {
 		const { getAccountStatementDescriptor } = select( STORE_NAME );
 
 		return getAccountStatementDescriptor();
-	}, [] );
+	} );
 
 	return [ accountStatementDescriptor, updateAccountStatementDescriptor ];
 };
@@ -73,7 +73,7 @@ export const useManualCapture = () => {
 		const { getIsManualCaptureEnabled } = select( STORE_NAME );
 
 		return getIsManualCaptureEnabled();
-	}, [] );
+	} );
 
 	return [ isManualCaptureEnabled, updateIsManualCaptureEnabled ];
 };
@@ -85,7 +85,7 @@ export const useIsWCPayEnabled = () => {
 		const { getIsWCPayEnabled } = select( STORE_NAME );
 
 		return getIsWCPayEnabled();
-	}, [] );
+	} );
 
 	return [ isWCPayEnabled, updateIsWCPayEnabled ];
 };
@@ -97,24 +97,22 @@ export const useGetAvailablePaymentMethodIds = () =>
 		return getAvailablePaymentMethodIds();
 	} );
 
-export const useSettingsFetch = () =>
-	useSelect( ( select ) => select( STORE_NAME ).getSettings(), [] );
-
 export const useSettings = () => {
-	useSettingsFetch();
 	const { saveSettings } = useDispatch( STORE_NAME );
-	const isSaving = useSelect(
-		( select ) => select( STORE_NAME ).isSavingSettings(),
-		[]
+	const isSaving = useSelect( ( select ) =>
+		select( STORE_NAME ).isSavingSettings()
 	);
-	const isLoading = useSelect( ( select ) => {
-		const { hasFinishedResolution, isResolving } = select( STORE_NAME );
 
-		return (
-			isResolving( 'getSettings' ) ||
-			! hasFinishedResolution( 'getSettings' )
+	const isLoading = useSelect( ( select ) => {
+		select( STORE_NAME ).getSettings();
+		const { hasFinishedResolution } = select( STORE_NAME );
+		const { isResolving } = select( STORE_NAME );
+		const isResolvingSettings = isResolving( 'getSettings' );
+		const hasFinishedResolvingSettings = hasFinishedResolution(
+			'getSettings'
 		);
-	}, [] );
+		return isResolvingSettings || ! hasFinishedResolvingSettings;
+	} );
 
 	return {
 		isLoading,
@@ -130,7 +128,7 @@ export const usePaymentRequestEnabledSettings = () => {
 		const { getIsPaymentRequestEnabled } = select( STORE_NAME );
 
 		return getIsPaymentRequestEnabled();
-	}, [] );
+	} );
 
 	return [ isPaymentRequestEnabled, updateIsPaymentRequestEnabled ];
 };
@@ -142,7 +140,7 @@ export const usePaymentRequestLocations = () => {
 		const { getPaymentRequestLocations } = select( STORE_NAME );
 
 		return getPaymentRequestLocations();
-	}, [] );
+	} );
 
 	return [ paymentRequestLocations, updatePaymentRequestLocations ];
 };
@@ -154,7 +152,7 @@ export const usePaymentRequestButtonType = () => {
 		const { getPaymentRequestButtonType } = select( STORE_NAME );
 
 		return getPaymentRequestButtonType();
-	}, [] );
+	} );
 
 	return [ paymentRequestButtonType, updatePaymentRequestButtonType ];
 };
@@ -166,7 +164,7 @@ export const usePaymentRequestButtonSize = () => {
 		const { getPaymentRequestButtonSize } = select( STORE_NAME );
 
 		return getPaymentRequestButtonSize();
-	}, [] );
+	} );
 
 	return [ paymentRequestButtonSize, updatePaymentRequestButtonSize ];
 };
@@ -178,7 +176,7 @@ export const usePaymentRequestButtonTheme = () => {
 		const { getPaymentRequestButtonTheme } = select( STORE_NAME );
 
 		return getPaymentRequestButtonTheme();
-	}, [] );
+	} );
 
 	return [ paymentRequestButtonTheme, updatePaymentRequestButtonTheme ];
 };
@@ -188,5 +186,5 @@ export const useGetSavingError = () => {
 		const { getSavingError } = select( STORE_NAME );
 
 		return getSavingError();
-	}, [] );
+	} );
 };
