@@ -8,6 +8,7 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Order;
+use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
@@ -17,6 +18,7 @@ use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
+use WC_Payment_Token_CC;
 use WC_Payments;
 use WC_Payments_Utils;
 
@@ -369,12 +371,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function maybe_process_upe_redirect() {
 		if ( $this->is_payment_methods_page() ) {
 			// If a payment method was added using UPE, we need to clear the cache and notify the user.
-			if ( ! empty( $_GET['setup_intent_client_secret'] ) & ! empty( $_GET['setup_intent'] ) & ! empty( $_GET['redirect_status'] ) ) {
-				if ( 'succeeded' === $_GET['redirect_status'] ) {
+			if ( $this->is_setup_intent_success_creation_redirection() ) {
 					wc_add_notice( __( 'Payment method successfully added.', 'woocommerce-payments' ) );
 					$user = wp_get_current_user();
 					$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
-				}
 			}
 			return;
 		}
@@ -526,15 +526,28 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function get_payment_fields_js_config() {
 		$payment_fields                         = parent::get_payment_fields_js_config();
 		$payment_fields['accountDescriptor']    = $this->get_account_statement_descriptor();
-		$payment_fields['paymentMethodsURL']    = wc_get_account_endpoint_url( 'payment-methods' );
+		$payment_fields['addPaymentReturnURL']  = wc_get_account_endpoint_url( 'payment-methods' );
 		$payment_fields['gatewayId']            = self::GATEWAY_ID;
 		$payment_fields['paymentMethodsConfig'] = $this->get_enabled_payment_method_config();
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
+			if ( $this->is_subscriptions_enabled() && $this->is_changing_payment_method_for_subscription() ) {
+				$payment_fields['isChangingPayment']   = true;
+				$payment_fields['addPaymentReturnURL'] = esc_url_raw( home_url( add_query_arg( [] ) ) );
+
+				if ( $this->is_setup_intent_success_creation_redirection() && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wpnonce'] ) ) ) ) {
+					$setup_intent_id                  = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
+					$token                            = $this->create_token_from_setup_intent( $setup_intent_id, wp_get_current_user() );
+					$payment_fields['newTokenFormId'] = '#wc-' . $token->get_gateway_id() . '-payment-token-' . $token->get_id();
+				}
+				return $payment_fields;
+			}
+
 			$payment_fields['isOrderPay'] = true;
 			$order_id                     = absint( get_query_var( 'order-pay' ) );
 			$payment_fields['orderId']    = $order_id;
 			$order                        = wc_get_order( $order_id );
+
 			if ( is_a( $order, 'WC_Order' ) ) {
 				$payment_fields['orderReturnURL'] = esc_url_raw(
 					add_query_arg(
@@ -549,6 +562,42 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 		}
 		return $payment_fields;
+	}
+
+	/**
+	 * True if the request contains the values that indicates a redirection after a successful setup intent creation.
+	 *
+	 * @return bool
+	 */
+	public function is_setup_intent_success_creation_redirection() {
+		return (
+			! empty( $_GET['setup_intent_client_secret'] ) & ! empty( $_GET['setup_intent'] ) & ! empty( $_GET['redirect_status'] ) && 'succeeded' === $_GET['redirect_status'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	}
+
+	/**
+	 * Adds a token to current user from a setup intent id.
+	 *
+	 * @param string  $setup_intent_id ID of the setup intent.
+	 * @param WP_User $user            User to add token to.
+	 *
+	 * @return WC_Payment_Token_CC The added token.
+	 */
+	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
+		try {
+			$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
+			$payment_method_id = $setup_intent['payment_method'];
+			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
+			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.
+			$payment_method = $this->payment_methods['card'];
+
+			return $payment_method->get_payment_token_for_user( $user, $payment_method_id );
+		} catch ( Exception $e ) {
+			wc_add_notice( $e->getMessage(), 'error', [ 'icon' => 'error' ] );
+			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
+			return [
+				'result' => 'error',
+			];
+		}
 	}
 
 	/**

@@ -791,6 +791,32 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertTrue( $sofort_method->is_enabled_at_checkout() );
 	}
 
+	public function test_create_token_from_setup_intent_adds_token() {
+		$mock_token           = WC_Helper_Token::create_token( 'pm_mock' );
+		$mock_setup_intent_id = 'si_mock';
+		$mock_user            = wp_get_current_user();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_setup_intent' )
+			->with( $mock_setup_intent_id )
+			->willReturn(
+				[
+					'id'             => $mock_setup_intent_id,
+					'payment_method' => 'pm_mock',
+				]
+			);
+
+		$this->mock_token_service->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->with( 'pm_mock', $mock_user )
+			->will(
+				$this->returnValue( $mock_token )
+			);
+
+		$this->assertEquals( $mock_token, $this->mock_upe_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
+	}
+
 	/**
 	 * Helper function to mock subscriptions for internal UPE payment methods.
 	 */
