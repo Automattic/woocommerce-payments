@@ -41,6 +41,13 @@ class WC_Payments_Admin {
 	private $account;
 
 	/**
+	 * WCPay admin child pages.
+	 *
+	 * @var array
+	 */
+	private $admin_child_pages;
+
+	/**
 	 * Hook in admin menu items.
 	 *
 	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
@@ -58,8 +65,52 @@ class WC_Payments_Admin {
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
+		add_action( 'admin_menu', [ $this, 'maybe_redirect_to_onboarding' ], 1 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
+
+		$this->admin_child_pages = [
+			'wc-payments-overview'     => [
+				'id'       => 'wc-payments-overview',
+				'title'    => __( 'Overview', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/overview',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 10,
+				],
+			],
+			'wc-payments-deposits'     => [
+				'id'       => 'wc-payments-deposits',
+				'title'    => __( 'Deposits', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/deposits',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 20,
+				],
+			],
+			'wc-payments-transactions' => [
+				'id'       => 'wc-payments-transactions',
+				'title'    => __( 'Transactions', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/transactions',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 30,
+				],
+			],
+			'wc-payments-disputes'     => [
+				'id'       => 'wc-payments-disputes',
+				'title'    => __( 'Disputes', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/disputes',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 40,
+				],
+			],
+		];
 	}
 
 	/**
@@ -106,57 +157,9 @@ class WC_Payments_Admin {
 			 * wc_admin_register_page to duplicate "Payments" menu item as a
 			 * first item in the sub-menu.
 			 */
-			wc_admin_register_page(
-				[
-					'id'       => 'wc-payments-overview',
-					'title'    => __( 'Overview', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/overview',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 10,
-					],
-				]
-			);
-
-			wc_admin_register_page(
-				[
-					'id'       => 'wc-payments-deposits',
-					'title'    => __( 'Deposits', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/deposits',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 20,
-					],
-				]
-			);
-
-			wc_admin_register_page(
-				[
-					'id'       => 'wc-payments-transactions',
-					'title'    => __( 'Transactions', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/transactions',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 30,
-					],
-				]
-			);
-
-			wc_admin_register_page(
-				[
-					'id'       => 'wc-payments-disputes',
-					'title'    => __( 'Disputes', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/disputes',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 40,
-					],
-				]
-			);
+			foreach ( $this->admin_child_pages as $admin_child_page ) {
+				wc_admin_register_page( $admin_child_page );
+			}
 
 			wc_admin_connect_page(
 				[
@@ -224,14 +227,7 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'assets/css/admin.css' )
 		);
 
-		// Temporarily don't show the badge at all. This should be removed
-		// when implementing https://github.com/automattic/woocommerce-payments/issues/2071.
-		// There are also unit tests that need to be re-enabled in
-		// tests/unit/admin/test-class-wc-payments-admin.php.
-		if ( true === false ) {
-			$this->add_menu_notification_badge();
-		}
-
+		$this->add_menu_notification_badge();
 		$this->add_update_business_details_task();
 	}
 
@@ -532,6 +528,12 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		// If plugin activation date is less than 7 days, do not show the badge.
+		$past_7_days = time() - get_option( 'wcpay_activation_timestamp', 0 ) >= WEEK_IN_SECONDS;
+		if ( false === $past_7_days ) {
+			return;
+		}
+
 		if ( $this->account->is_stripe_connected() ) {
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 			return;
@@ -605,6 +607,40 @@ class WC_Payments_Admin {
 			'yes' === get_option( 'woocommerce_allow_tracking' )
 		);
 
-		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode' );
+		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode_v1' );
+	}
+
+	/**
+	 * Checks if Stripe account is connected and redirects to the onboarding page
+	 * if it is not and the user is attempting to view a WCPay admin page.
+	 */
+	public function maybe_redirect_to_onboarding() {
+		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page'] ) {
+			return;
+		}
+
+		$current_path = ! empty( $url_params['path'] ) ? $url_params['path'] : '';
+
+		if ( empty( $current_path ) ) {
+			return;
+		}
+
+		$page_paths = [];
+
+		foreach ( $this->admin_child_pages as $payments_child_page ) {
+			$page_paths[] = preg_quote( $payments_child_page['path'], '/' );
+		}
+
+		if ( ! preg_match( '/^(' . implode( '|', $page_paths ) . ')/', $current_path ) ) {
+			return;
+		}
+
+		if ( $this->account->is_stripe_connected() ) {
+			return;
+		}
+
+		$this->account->redirect_to_onboarding_page();
 	}
 }

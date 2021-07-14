@@ -25,7 +25,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useSettings,
-	useDigitalWalletsEnabledSettings,
+	usePaymentRequestEnabledSettings,
 } from '../../data';
 import './add-payment-methods-task.scss';
 
@@ -73,9 +73,9 @@ const AddPaymentMethodsTask = () => {
 	] = useEnabledPaymentMethodIds();
 
 	const [
-		initialIsDigitalWalletsEnabled,
-		setIsDigitalWalletsEnabled,
-	] = useDigitalWalletsEnabledSettings();
+		initialIsPaymentRequestEnabled,
+		setIsPaymentRequestEnabled,
+	] = usePaymentRequestEnabledSettings();
 
 	const { saveSettings, isSaving } = useSettings();
 
@@ -93,8 +93,8 @@ const AddPaymentMethodsTask = () => {
 		)
 	);
 
-	const [ isWalletsChecked, setWalletsChecked ] = useState(
-		initialIsDigitalWalletsEnabled
+	const [ isPaymentRequestChecked, setPaymentRequestChecked ] = useState(
+		initialIsPaymentRequestEnabled
 	);
 
 	const { setCompleted } = useContext( WizardTaskContext );
@@ -116,13 +116,13 @@ const AddPaymentMethodsTask = () => {
 				return;
 			}
 
-			setIsDigitalWalletsEnabled( isWalletsChecked );
+			setIsPaymentRequestEnabled( isPaymentRequestChecked );
 			updateEnabledPaymentMethodIds( checkedPaymentMethods );
 
 			const isSuccess = await saveSettings();
 			if ( ! isSuccess ) {
 				// restoring the state, in case of soft route
-				setIsDigitalWalletsEnabled( initialIsDigitalWalletsEnabled );
+				setIsPaymentRequestEnabled( initialIsPaymentRequestEnabled );
 				updateEnabledPaymentMethodIds( initialEnabledPaymentMethodIds );
 				return;
 			}
@@ -137,9 +137,9 @@ const AddPaymentMethodsTask = () => {
 		saveSettings,
 		setCompleted,
 		initialEnabledPaymentMethodIds,
-		initialIsDigitalWalletsEnabled,
-		isWalletsChecked,
-		setIsDigitalWalletsEnabled,
+		initialIsPaymentRequestEnabled,
+		isPaymentRequestChecked,
+		setIsPaymentRequestEnabled,
 	] );
 
 	const countryName = useGetCountryName();
@@ -234,8 +234,8 @@ const AddPaymentMethodsTask = () => {
 				</Card>
 				<div className="wcpay-wizard-task__description-element">
 					<CheckboxControl
-						checked={ isWalletsChecked }
-						onChange={ setWalletsChecked }
+						checked={ isPaymentRequestChecked }
+						onChange={ setPaymentRequestChecked }
 						label={ __(
 							'Enable Apple Pay & Google Pay',
 							'woocommerce-payments'

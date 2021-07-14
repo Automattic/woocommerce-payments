@@ -61,7 +61,9 @@ class WC_Payments_Admin_Additional_Methods_Setup {
 			'WCPAY_ADDITIONAL_METHODS_SETUP',
 			'wcpayAdditionalMethodsSetup',
 			[
-				'isSetupCompleted' => get_option( 'wcpay_additional_methods_setup_completed', 'no' ),
+				'isSetupCompleted'            => get_option( 'wcpay_additional_methods_setup_completed', 'no' ),
+				'isUpeSettingsPreviewEnabled' => WC_Payments_Features::is_upe_settings_preview_enabled(),
+				'isUpeEnabled'                => WC_Payments_Features::is_upe_enabled(),
 			]
 		);
 

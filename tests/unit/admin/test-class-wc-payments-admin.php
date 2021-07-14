@@ -43,6 +43,11 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$this->payments_admin = new WC_Payments_Admin( $mock_api_client, $mock_gateway, $this->mock_account );
 	}
 
+	public function tearDown() {
+		unset( $_GET );
+		parent::tearDown();
+	}
+
 	public function test_it_renders_settings_badge_if_upe_settings_preview_is_enabled_and_upe_is_not() {
 		global $submenu;
 
@@ -85,37 +90,8 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Settings', $settings_item_name );
 	}
 
-	public function test_it_renders_payments_badge_if_stripe_is_not_connected() {
-		global $menu;
-
-		// The badge is temporarily not shown at all. See
-		// class-wc-payments-admin.php line 227. This should be removed when
-		// implementing https://github.com/automattic/woocommerce-payments/issues/2071.
-		if ( true === true ) {
-			return;
-		}
-
-		$this->mock_current_user_is_admin();
-
-		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( false );
-		$this->payments_admin->add_payments_menu();
-
-		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
-		$this->assertEquals( 'Payments' . WC_Payments_Admin::MENU_NOTIFICATION_BADGE, $item_names_by_urls['wc-admin&path=/payments/connect'] );
-		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
-	}
-
 	public function test_it_does_not_render_payments_badge_if_stripe_is_connected() {
 		global $menu;
-
-		// The badge is temporarily not shown at all. See
-		// class-wc-payments-admin.php line 227. This should be removed when
-		// implementing https://github.com/automattic/woocommerce-payments/issues/2071.
-		if ( true === true ) {
-			return;
-		}
-
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
@@ -125,6 +101,35 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
 		$this->assertEquals( 'Payments', $item_names_by_urls['wc-admin&path=/payments/overview'] );
 		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/connect', $item_names_by_urls );
+	}
+
+	public function test_it_renders_payments_badge_if_activation_date_is_older_than_7_days_and_stripe_is_not_connected() {
+		global $menu;
+		$this->mock_current_user_is_admin();
+
+		// Make sure we render the menu with submenu items.
+		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( false );
+		update_option( 'wcpay_activation_timestamp', time() - WEEK_IN_SECONDS );
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
+		$this->assertEquals( 'Payments' . WC_Payments_Admin::MENU_NOTIFICATION_BADGE, $item_names_by_urls['wc-admin&path=/payments/connect'] );
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
+	}
+
+	public function test_it_does_not_render_payments_badge_if_activation_date_is_less_than_7_days() {
+		global $menu;
+		$this->mock_current_user_is_admin();
+
+		// Make sure we render the menu with submenu items.
+		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( false );
+		update_option( 'wcpay_menu_badge_hidden', 'no' );
+		update_option( 'wcpay_activation_timestamp', time() - ( DAY_IN_SECONDS * 6 ) );
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
+		$this->assertEquals( 'Payments', $item_names_by_urls['wc-admin&path=/payments/connect'] );
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
 	}
 
 	public function feature_flag_combinations_not_causing_settings_badge_render_provider() {
@@ -138,5 +143,81 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 	private function mock_current_user_is_admin() {
 		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $admin_user );
+	}
+
+	/**
+	 * @dataProvider data_maybe_redirect_to_onboarding
+	 */
+	public function test_maybe_redirect_to_onboarding( $expected_times_redirect_called, $is_stripe_connected, $get_params ) {
+		$_GET = $get_params;
+
+		$this->mock_account
+			->method( 'is_stripe_connected' )
+			->willReturn( $is_stripe_connected );
+
+		$this->mock_account
+			->expects( $this->exactly( $expected_times_redirect_called ) )
+			->method( 'redirect_to_onboarding_page' );
+
+		$this->payments_admin->maybe_redirect_to_onboarding();
+	}
+
+	/**
+	 * Data provider for test_maybe_redirect_to_onboarding
+	 */
+	public function data_maybe_redirect_to_onboarding() {
+		return [
+			'no_get_params'        => [
+				0,
+				false,
+				[],
+			],
+			'empty_page_param'     => [
+				0,
+				false,
+				[
+					'path' => '/payments/overview',
+				],
+			],
+			'incorrect_page_param' => [
+				0,
+				false,
+				[
+					'page' => 'wc-settings',
+					'path' => '/payments/overview',
+				],
+			],
+			'empty_path_param'     => [
+				0,
+				false,
+				[
+					'page' => 'wc-admin',
+				],
+			],
+			'incorrect_path_param' => [
+				0,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/does-not-exist',
+				],
+			],
+			'stripe_connected'     => [
+				0,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/overview',
+				],
+			],
+			'happy_path'           => [
+				1,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/overview',
+				],
+			],
+		];
 	}
 }
