@@ -119,18 +119,13 @@ export const useSettings = () => {
 		( select ) => {
 			const {
 				getSettings,
-				hasFinishedResolution,
-				isResolving,
+				getIsFetchingSettings,
 				isSavingSettings,
 			} = select( STORE_NAME );
 
-			const isLoading =
-				isResolving( 'getSettings' ) ||
-				! hasFinishedResolution( 'getSettings' );
-
 			return {
 				settings: getSettings(),
-				isLoading,
+				isLoading: getIsFetchingSettings(),
 				saveSettings,
 				isSaving: isSavingSettings(),
 			};

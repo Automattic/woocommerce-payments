@@ -9,6 +9,7 @@ const defaultState = {
 	isSaving: false,
 	savingError: null,
 	data: {},
+	fetchingStatus: 'idle',
 };
 
 export const receiveSettings = (
@@ -20,6 +21,13 @@ export const receiveSettings = (
 			return {
 				...state,
 				data: action.data,
+				fetchingStatus: 'resolved',
+			};
+
+		case ACTION_TYPES.SET_SETTINGS_FETCHING_STATUS:
+			return {
+				...state,
+				fetchingStatus: action.status,
 			};
 
 		case ACTION_TYPES.SET_SETTINGS_VALUES:

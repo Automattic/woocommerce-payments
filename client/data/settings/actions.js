@@ -20,6 +20,13 @@ function updateSettingsValues( payload ) {
 	};
 }
 
+export function updateFetchingStatus( status ) {
+	return {
+		type: ACTION_TYPES.SET_SETTINGS_FETCHING_STATUS,
+		status,
+	};
+}
+
 export function updatePaymentRequestButtonType( type ) {
 	return updateSettingsValues( { payment_request_button_type: type } );
 }
