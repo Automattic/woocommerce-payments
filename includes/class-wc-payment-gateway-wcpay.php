@@ -575,12 +575,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
 			'createSetupIntentNonce'   => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 			'createPaymentIntentNonce' => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
+			'updatePaymentIntentNonce' => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
 			'genericErrorMessage'      => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'            => $this->account->get_fraud_services_config(),
 			'features'                 => $this->supports,
 			'forceNetworkSavedCards'   => WC_Payments::is_network_saved_cards_enabled(),
 			'locale'                   => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isUPEEnabled'             => WC_Payments_Features::is_upe_enabled(),
+			'isSavedCardsEnabled'      => $this->is_saved_cards_enabled(),
 		];
 	}
 
@@ -955,6 +957,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$charge_id     = $intent->get_charge_id();
 			$client_secret = $intent->get_client_secret();
 			$currency      = $intent->get_currency();
+			$next_action   = $intent->get_next_action();
 
 			if ( 'requires_action' === $status &&
 				$payment_information->is_merchant_initiated() ) {
@@ -973,6 +976,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$charge_id     = '';
 			$client_secret = $intent['client_secret'];
 			$currency      = $order->get_currency();
+			$next_action   = $intent['next_action'];
 		}
 
 		if ( ! empty( $intent ) ) {
@@ -996,7 +1000,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( 'requires_action' === $status ) {
-				$next_action = $intent->get_next_action();
 				if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
 					$response = [
 						'result'   => 'success',
@@ -1004,16 +1007,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					];
 				} else {
 					$response = [
-						'result'   => 'success',
+						'result'         => 'success',
 						// Include a new nonce for update_order_status to ensure the update order
 						// status call works when a guest user creates an account during checkout.
-						'redirect' => sprintf(
+						'redirect'       => sprintf(
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
 							$client_secret,
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						),
+						// Include the payment method ID so the Blocks integration can save cards.
+						'payment_method' => $payment_information->get_payment_method(),
 					];
 				}
 			}

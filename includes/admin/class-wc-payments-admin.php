@@ -227,14 +227,7 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'assets/css/admin.css' )
 		);
 
-		// Temporarily don't show the badge at all. This should be removed
-		// when implementing https://github.com/automattic/woocommerce-payments/issues/2071.
-		// There are also unit tests that need to be re-enabled in
-		// tests/unit/admin/test-class-wc-payments-admin.php.
-		if ( true === false ) {
-			$this->add_menu_notification_badge();
-		}
-
+		$this->add_menu_notification_badge();
 		$this->add_update_business_details_task();
 	}
 
@@ -535,6 +528,12 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		// If plugin activation date is less than 7 days, do not show the badge.
+		$past_7_days = time() - get_option( 'wcpay_activation_timestamp', 0 ) >= WEEK_IN_SECONDS;
+		if ( false === $past_7_days ) {
+			return;
+		}
+
 		if ( $this->account->is_stripe_connected() ) {
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 			return;
@@ -608,7 +607,7 @@ class WC_Payments_Admin {
 			'yes' === get_option( 'woocommerce_allow_tracking' )
 		);
 
-		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode' );
+		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode_v1' );
 	}
 
 	/**
