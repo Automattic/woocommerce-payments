@@ -274,7 +274,7 @@ class WC_Payments {
 
 			if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
 				include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
-				new WC_Payments_Admin_Sections_Overwrite();
+				new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 
 				include_once __DIR__ . '/admin/class-wc-payments-admin-additional-methods-setup.php';
 				new WC_Payments_Admin_Additional_Methods_Setup( self::$card_gateway );
@@ -735,6 +735,10 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
 			$upe_flag_toggle_controller->register_routes();
+
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+			$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
+			$survey_controller->register_routes();
 		}
 	}
 
