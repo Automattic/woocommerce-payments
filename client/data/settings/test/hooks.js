@@ -176,14 +176,6 @@ describe( 'Settings hooks tests', () => {
 			};
 		} );
 
-		test( 'returns settings from selector', () => {
-			const { settings, saveSettings } = useSettings();
-			saveSettings( 'bar' );
-
-			expect( settings ).toEqual( { foo: 'bar' } );
-			expect( actions.saveSettings ).toHaveBeenCalledWith( 'bar' );
-		} );
-
 		test( 'returns isLoading = false when isResolving = false and hasFinishedResolution = true', () => {
 			selectors.hasFinishedResolution.mockReturnValue( true );
 			selectors.isResolving.mockReturnValue( false );
