@@ -32,6 +32,11 @@
       <code>wcs_order_contains_subscription( $order_id )</code>
     </UndefinedFunction>
   </file>
+  <file src="includes/payment-methods/class-upe-payment-method.php">
+    <UndefinedClass occurrences="1">
+      <code>WC_Subscriptions_Cart</code>
+    </UndefinedClass>
+  </file>
   <file src="includes/wc-payment-api/class-wc-payments-http.php">
     <UndefinedDocblockClass occurrences="3">
       <code>$response</code>
