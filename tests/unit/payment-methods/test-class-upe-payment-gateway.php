@@ -626,11 +626,11 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			$sofort_details,
 		];
 		$expected_payment_method_titles = [
-			'Visa credit card (WooCommerce Payments)',
-			'Visa debit card (WooCommerce Payments)',
-			'Mastercard credit card (WooCommerce Payments)',
-			'Giropay (WooCommerce Payments)',
-			'Sofort (WooCommerce Payments)',
+			'Visa credit card',
+			'Visa debit card',
+			'Mastercard credit card',
+			'Giropay',
+			'Sofort',
 		];
 
 		foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
