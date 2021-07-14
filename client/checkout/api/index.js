@@ -394,11 +394,13 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise containing redirect URL for UPE element.
 	 */
 	processCheckout( paymentIntentId, fields ) {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			...fields,
-			wc_payment_intent_id: paymentIntentId,
-			action: 'woocommerce_checkout',
-		} )
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'checkout', '' ),
+			{
+				...fields,
+				wc_payment_intent_id: paymentIntentId,
+			}
+		)
 			.then( ( response ) => {
 				if ( 'failure' === response.result ) {
 					throw new Error( response.messages );
