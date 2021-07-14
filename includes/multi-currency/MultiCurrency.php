@@ -53,6 +53,13 @@ class MultiCurrency {
 	protected $utils;
 
 	/**
+	 * Analytics instance.
+	 *
+	 * @var Analytics
+	 */
+	protected $analytics;
+
+	/**
 	 * FrontendPrices instance.
 	 *
 	 * @var FrontendPrices
@@ -118,6 +125,7 @@ class MultiCurrency {
 		$this->payments_api_client = $payments_api_client;
 		$this->utils               = new Utils();
 		$this->compatibility       = new Compatibility( $this->utils );
+		$this->analytics           = new Analytics( $this );
 
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
