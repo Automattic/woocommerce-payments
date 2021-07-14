@@ -45,7 +45,7 @@ const EnableUpePreviewTask = () => {
 			} ) }
 			index={ 1 }
 		>
-			<CollapsibleBody>
+			<CollapsibleBody className="enable-upe-preview__body">
 				<p>
 					{ interpolateComponents( {
 						mixedString: __(
