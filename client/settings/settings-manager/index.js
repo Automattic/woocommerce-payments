@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AdvancedSettings from '../advanced-settings';
 import PaymentMethods from '../../payment-methods';
-import DigitalWallets from '../digital-wallets';
+import PaymentRequest from '../payment-request';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
 import ApplePayIcon from '../../gateway-icons/apple-pay';
@@ -21,6 +21,7 @@ import SaveSettingsSection from '../save-settings-section';
 import TransactionsAndDeposits from '../transactions-and-deposits';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
+import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -38,7 +39,7 @@ const PaymentMethodsDescription = () => (
 	</>
 );
 
-const DigitalWalletsDescription = () => (
+const PaymentRequestDescription = () => (
 	<>
 		<h2>{ __( 'Express checkouts', 'woocommerce-payments' ) }</h2>
 		<ul className="settings-section__icons">
@@ -91,7 +92,10 @@ const TransactionsAndDepositsDescription = () => (
 
 const SettingsManager = () => {
 	const {
-		featureFlags: { upeSettingsPreview: isUPESettingsPreviewEnabled },
+		featureFlags: {
+			upeSettingsPreview: isUPESettingsPreviewEnabled,
+			upe: isUpeEnabled,
+		},
 	} = useContext( WCPaySettingsContext );
 
 	return (
@@ -104,13 +108,17 @@ const SettingsManager = () => {
 			{ isUPESettingsPreviewEnabled && (
 				<SettingsSection Description={ PaymentMethodsDescription }>
 					<LoadableSettingsSection numLines={ 20 }>
-						<PaymentMethods />
+						<WcPayUpeContextProvider
+							defaultIsUpeEnabled={ isUpeEnabled }
+						>
+							<PaymentMethods />
+						</WcPayUpeContextProvider>
 					</LoadableSettingsSection>
 				</SettingsSection>
 			) }
-			<SettingsSection Description={ DigitalWalletsDescription }>
+			<SettingsSection Description={ PaymentRequestDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
-					<DigitalWallets />
+					<PaymentRequest />
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection Description={ TransactionsAndDepositsDescription }>

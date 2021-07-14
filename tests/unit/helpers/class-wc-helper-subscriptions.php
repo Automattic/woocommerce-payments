@@ -48,6 +48,13 @@ function wcs_get_order_type_cart_items( $order_type ) {
 	return ( WC_Subscriptions::$wcs_get_order_type_cart_items )( $order_type );
 }
 
+function wcs_cart_contains_resubscribe() {
+	if ( ! WC_Subscriptions::$wcs_cart_contains_resubscribe ) {
+		return;
+	}
+	return ( WC_Subscriptions::$wcs_cart_contains_resubscribe )();
+}
+
 /**
  * Class WC_Subscriptions.
  *
@@ -103,6 +110,13 @@ class WC_Subscriptions {
 	 */
 	public static $wcs_get_order_type_cart_items = null;
 
+  /*
+	 * wcs_cart_contains_resubscribe mock.
+	 *
+	 * @var function
+	 */
+	public static $wcs_cart_contains_resubscribe = null;
+
 	public static function set_wcs_order_contains_subscription( $function ) {
 		self::$wcs_order_contains_subscription = $function;
 	}
@@ -125,5 +139,9 @@ class WC_Subscriptions {
 
 	public static function wcs_get_order_type_cart_items( $function ) {
 		self::$wcs_get_order_type_cart_items = $function;
+	}
+ 
+	public static function wcs_cart_contains_resubscribe( $function ) {
+		self::$wcs_cart_contains_resubscribe = $function;
 	}
 }

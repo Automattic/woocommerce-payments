@@ -156,7 +156,9 @@ class FrontendPrices {
 	public function get_coupon_amount( $amount, $coupon ) {
 		$percent_coupon_types = [ 'percent' ];
 
-		if ( ! $amount || $coupon->is_type( $percent_coupon_types ) ) {
+		if ( ! $amount
+			|| $coupon->is_type( $percent_coupon_types )
+			|| ! $this->compatibility->should_convert_coupon_amount( $coupon ) ) {
 			return $amount;
 		}
 
