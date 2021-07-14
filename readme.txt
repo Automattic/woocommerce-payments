@@ -103,7 +103,10 @@ Please note that our support for the checkout block is still experimental and th
 
 = 2.7.0 - 2021-xx-xx =
 * Add - Add a link to the snackbar notice that appears after submitting or saving evidence for a dispute challenge.
+* Add - Support saving new cards and paying with previously saved cards in the WooCommerce Checkout Block.
 * Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
+* Update - Set a description when creating payment intents.
+* Add - Use date picker for applicable dispute evidence fields.
 
 = 2.6.1 - 2021-07-01 =
 * Fix - Updates the notes query filters to prevent breaking the WooCommerce > Home inbox.

@@ -227,14 +227,7 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'assets/css/admin.css' )
 		);
 
-		// Temporarily don't show the badge at all. This should be removed
-		// when implementing https://github.com/automattic/woocommerce-payments/issues/2071.
-		// There are also unit tests that need to be re-enabled in
-		// tests/unit/admin/test-class-wc-payments-admin.php.
-		if ( true === false ) {
-			$this->add_menu_notification_badge();
-		}
-
+		$this->add_menu_notification_badge();
 		$this->add_update_business_details_task();
 	}
 
@@ -281,7 +274,7 @@ class WC_Payments_Admin {
 			'showUpdateDetailsTask'  => get_option( 'wcpay_show_update_business_details_task', 'no' ),
 			'wpcomReconnectUrl'      => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'additionalMethodsSetup' => [
-				'showTask'                    => count( $this->wcpay_gateway->get_upe_available_payment_methods() ) > 1, // TODO: we also need to check whether giropay/etc are available and whether they have been set up before or not.
+				'showTask'                    => $this->is_page_eligible_for_additional_methods_setup_task(),
 				'isSetupCompleted'            => get_option( 'wcpay_additional_methods_setup_completed', 'no' ),
 				'isUpeSettingsPreviewEnabled' => WC_Payments_Features::is_upe_settings_preview_enabled(),
 				'isUpeEnabled'                => WC_Payments_Features::is_upe_enabled(),
@@ -541,6 +534,12 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		// If plugin activation date is less than 7 days, do not show the badge.
+		$past_7_days = time() - get_option( 'wcpay_activation_timestamp', 0 ) >= WEEK_IN_SECONDS;
+		if ( false === $past_7_days ) {
+			return;
+		}
+
 		if ( $this->account->is_stripe_connected() ) {
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 			return;
@@ -614,7 +613,7 @@ class WC_Payments_Admin {
 			'yes' === get_option( 'woocommerce_allow_tracking' )
 		);
 
-		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode' );
+		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode_v1' );
 	}
 
 	/**
@@ -649,5 +648,29 @@ class WC_Payments_Admin {
 		}
 
 		$this->account->redirect_to_onboarding_page();
+	}
+
+	/**
+	 * Checks whether the current page should be eligible to enqueue the task.
+	 */
+	private function is_page_eligible_for_additional_methods_setup_task() {
+		if ( ! wc_admin_is_registered_page() ) {
+			return false;
+		}
+
+		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
+			return true;
+		}
+
+		$available_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
+		if ( empty( $available_methods ) ) {
+			return false;
+		}
+
+		if ( 1 >= count( $available_methods ) ) {
+			return false;
+		}
+
+		return true;
 	}
 }

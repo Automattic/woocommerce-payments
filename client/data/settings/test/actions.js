@@ -65,12 +65,12 @@ describe( 'Settings actions tests', () => {
 
 			const isSavingStartIndex = findIndex(
 				yielded,
-				updateIsSavingSettings( true )
+				updateIsSavingSettings( true, null )
 			);
 
 			const isSavingEndIndex = findIndex(
 				yielded,
-				updateIsSavingSettings( false )
+				updateIsSavingSettings( false, null )
 			);
 
 			expect( apiRequestIndex ).not.toEqual( -1 );
@@ -117,7 +117,14 @@ describe( 'Settings actions tests', () => {
 			expect(
 				dispatch( 'core/notices' ).createErrorNotice
 			).toHaveBeenCalled();
-			expect( yielded ).toContainEqual( updateIsSavingSettings( false ) );
+			expect( yielded ).toEqual(
+				expect.arrayContaining( [
+					expect.objectContaining( {
+						type: 'SET_IS_SAVING_SETTINGS',
+						isSaving: false,
+					} ),
+				] )
+			);
 		} );
 	} );
 } );
