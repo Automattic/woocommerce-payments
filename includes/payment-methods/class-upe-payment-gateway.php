@@ -64,14 +64,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$this->description        = __( 'You will be redirected to Stripe.', 'woocommerce-payments' );
 		$this->payment_methods    = $payment_methods;
 
-		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
-		add_action( 'wp_ajax_nopriv_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
-
-		add_action( 'wp_ajax_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
-		add_action( 'wp_ajax_nopriv_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
-
-		add_action( 'wp_ajax_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
-		add_action( 'wp_ajax_nopriv_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
+		add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
+		add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
+		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
 
 		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
 	}
