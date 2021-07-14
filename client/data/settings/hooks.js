@@ -105,13 +105,11 @@ export const useSettings = () => {
 
 	const isLoading = useSelect( ( select ) => {
 		select( STORE_NAME ).getSettings();
-		const { hasFinishedResolution } = select( STORE_NAME );
-		const { isResolving } = select( STORE_NAME );
-		const isResolvingSettings = isResolving( 'getSettings' );
-		const hasFinishedResolvingSettings = hasFinishedResolution(
+		const isResolving = select( STORE_NAME ).isResolving( 'getSettings' );
+		const hasFinishedResolving = select( STORE_NAME ).hasFinishedResolution(
 			'getSettings'
 		);
-		return isResolvingSettings || ! hasFinishedResolvingSettings;
+		return isResolving || ! hasFinishedResolving;
 	} );
 
 	return {
