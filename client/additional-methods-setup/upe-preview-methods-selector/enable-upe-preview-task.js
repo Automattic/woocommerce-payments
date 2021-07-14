@@ -54,9 +54,8 @@ const EnableUpePreviewTask = () => {
 							'woocommerce-payments'
 						),
 						components: {
-							// TODO
 							learnMoreLink: (
-								<a href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments">
+								<a href="?TODO">
 									{ __(
 										'Learn more',
 										'woocommerce-payments'
