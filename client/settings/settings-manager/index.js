@@ -92,8 +92,7 @@ const TransactionsAndDepositsDescription = () => (
 
 const SettingsManager = () => {
 	const {
-		featureFlags: { upeSettingsPreview: isUPESettingsPreviewEnabled },
-		featureFlags: { upe: isUpeEnabled },
+		featureFlags: { upeSettingsPreview: isUPESettingsPreviewEnabled, upe: isUpeEnabled, },
 	} = useContext( WCPaySettingsContext );
 
 	return (
