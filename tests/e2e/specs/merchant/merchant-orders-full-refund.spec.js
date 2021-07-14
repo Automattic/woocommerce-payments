@@ -8,7 +8,7 @@ const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP } from '../../utils';
+import { merchantWCP, takeScreenshot } from '../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../utils/payments';
 
 let orderId;
@@ -71,6 +71,7 @@ describe( 'Order > Full refund', () => {
 		await expect( page ).toMatchElement( '.do-api-refund', {
 			text: `Refund ${ orderAmount } via WooCommerce Payments`,
 		} );
+		await takeScreenshot( 'merchant-orders-full-refund_refunding' );
 
 		const refundDialog = await expect( page ).toDisplayDialog( async () => {
 			await expect( page ).toClick( 'button.do-api-refund' );
@@ -99,6 +100,7 @@ describe( 'Order > Full refund', () => {
 				text: `A refund of ${ orderAmount } was successfully processed using WooCommerce Payments. Reason: No longer wanted`,
 			} ),
 		] );
+		await takeScreenshot( 'merchant-orders-full-refund_refunded' );
 	} );
 
 	it( 'should be able to view a refunded transaction', async () => {
@@ -109,6 +111,7 @@ describe( 'Order > Full refund', () => {
 		);
 
 		await merchantWCP.openPaymentDetails( paymentDetailsLink );
+		await takeScreenshot( 'merchant-orders-full-refund_payment-details' );
 
 		// Verify the transaction timeline reflects the refund events
 		await Promise.all( [

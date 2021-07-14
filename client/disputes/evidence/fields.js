@@ -207,7 +207,7 @@ const sections = [
 			{
 				key: 'shipping_date',
 				label: __( 'Date of shipment', 'woocommerce-payments' ),
-				type: 'text', // TODO use 'date'.
+				type: 'date',
 				description: __(
 					'The date on which a physical product began its route to the shipping address. This date should be prior to the date of the dispute.',
 					'woocommerce-payments'
@@ -338,7 +338,7 @@ const sections = [
 			{
 				key: 'service_date',
 				label: __( 'Service date', 'woocommerce-payments' ),
-				type: 'text', // TODO use 'date'.
+				type: 'date',
 				description: __(
 					'The date on which the cardholder received or began receiving the purchased service.',
 					'woocommerce-payments'

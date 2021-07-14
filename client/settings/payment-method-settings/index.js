@@ -12,13 +12,13 @@ import { ExternalLink } from '@wordpress/components';
 import './index.scss';
 import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
-import DigitalWalletsSettings from './digital-wallets-settings';
+import PaymentRequestSettings from './payment-request-settings';
 import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 
 const methods = {
-	digital_wallets: {
+	payment_request: {
 		title: 'Express checkouts',
 		description: () => (
 			<>
@@ -47,7 +47,7 @@ const methods = {
 				</p>
 			</>
 		),
-		controls: () => <DigitalWalletsSettings />,
+		controls: () => <PaymentRequestSettings />,
 	},
 };
 
