@@ -24,7 +24,7 @@ const EnableUpePreviewTask = () => {
 
 	const handleContinueClick = useCallback( () => {
 		setIsUpeEnabled( true ).then( () => {
-			setCompleted( true, 'add-payment-methods' );
+			setCompleted( true, 'setup-complete' );
 		} );
 	}, [ setIsUpeEnabled, setCompleted ] );
 
