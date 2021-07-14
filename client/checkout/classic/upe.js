@@ -128,6 +128,15 @@ jQuery( function ( $ ) {
 		} );
 	};
 
+	/**
+	 * Unblock UI to remove overlay and loading icon
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 */
+	const unblockUI = ( $form ) => {
+		$form.removeClass( 'processing' ).unblock();
+	};
+
 	// Show error notice at top of checkout form.
 	const showError = ( errorMessage ) => {
 		let messageWrapper = '';
@@ -205,10 +214,14 @@ jQuery( function ( $ ) {
 			? api.initSetupIntent()
 			: api.createIntent( orderId );
 
+		const $upeContainer = $( '#wcpay-upe-element' );
+		blockUI( $upeContainer );
+
 		intentAction
 			.then( ( response ) => {
 				// I repeat, do NOT mount UPE twice.
 				if ( upeElement || paymentIntentId ) {
+					unblockUI( $upeContainer );
 					return;
 				}
 
@@ -226,6 +239,7 @@ jQuery( function ( $ ) {
 					business: { name: businessName },
 				} );
 				upeElement.mount( '#wcpay-upe-element' );
+				unblockUI( $upeContainer );
 				upeElement.on( 'change', ( event ) => {
 					const isPaymentMethodReusable =
 						paymentMethodsConfig[ event.value.type ].isReusable;
@@ -234,6 +248,7 @@ jQuery( function ( $ ) {
 				} );
 			} )
 			.catch( ( error ) => {
+				unblockUI( $upeContainer );
 				showError( error.message );
 				const gatewayErrorMessage =
 					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
@@ -269,7 +284,20 @@ jQuery( function ( $ ) {
 			isUPEEnabled &&
 			! upeElement
 		) {
-			const useSetUpIntent = $( 'form#add_payment_method' ).length;
+			const isChangingPayment = getConfig( 'isChangingPayment' );
+
+			// We use a setup intent if we are on the screens to add a new payment method or to change a subscription payment.
+			const useSetUpIntent =
+				$( 'form#add_payment_method' ).length || isChangingPayment;
+
+			if ( isChangingPayment && getConfig( 'newTokenFormId' ) ) {
+				// Changing the method for a subscription takes two steps:
+				// 1. Create the new payment method that will redirect back.
+				// 2. Select the new payment method and resubmit the form to update the subscription.
+				const token = getConfig( 'newTokenFormId' );
+				$( token ).prop( 'selected', true ).trigger( 'click' );
+				$( 'form#order_review' ).submit();
+			}
 			mountUPEElement( useSetUpIntent );
 		}
 	}
@@ -364,7 +392,7 @@ jQuery( function ( $ ) {
 		blockUI( $form );
 
 		try {
-			const returnUrl = getConfig( 'paymentMethodsURL' );
+			const returnUrl = getConfig( 'addPaymentReturnURL' );
 
 			const { error } = await api.getStripe().confirmSetup( {
 				element: upeElement,
@@ -519,6 +547,10 @@ jQuery( function ( $ ) {
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
 		if ( ! isUsingSavedPaymentMethod() ) {
+			if ( getConfig( 'isChangingPayment' ) ) {
+				handleUPEAddPayment( $( '#order_review' ) );
+				return false;
+			}
 			handleUPEOrderPay( $( '#order_review' ) );
 			return false;
 		}

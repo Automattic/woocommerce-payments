@@ -36,6 +36,8 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->mock_product
 			->method( 'get_id' )
 			->willReturn( 42 );
+
+		$this->mock_coupon = $this->createMock( \WC_Coupon::class );
 	}
 
 	public function test_override_selected_currency_return_false() {
@@ -120,6 +122,97 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->mock_wcs_cart_contains_renewal( true );
 		$this->mock_wcs_cart_contains_resubscribe( true );
 		$this->assertTrue( $this->compatibility->should_convert_product_price( null ) );
+	}
+
+	public function test_should_convert_coupon_amount_return_false_when_renewal_in_cart() {
+		$this->mock_utils
+			->expects( $this->exactly( 2 ) )
+			->method( 'is_call_in_backtrace' )
+			->withConsecutive(
+				[ [ 'WCS_Cart_Early_Renewal->setup_cart' ] ],
+				[ [ 'WC_Discounts->apply_coupon' ] ]
+			)
+			->willReturn( false, true );
+
+		$this->mock_coupon
+			->method( 'get_discount_type' )
+			->willReturn( 'recurring_fee' );
+
+		$this->mock_wcs_cart_contains_renewal( true );
+		$this->assertFalse( $this->compatibility->should_convert_coupon_amount( $this->mock_coupon ) );
+	}
+
+	public function test_should_convert_coupon_amount_return_true_with_no_renewal_in_cart() {
+		$this->mock_utils
+		->expects( $this->exactly( 0 ) )
+		->method( 'is_call_in_backtrace' );
+
+		$this->mock_wcs_cart_contains_renewal( false );
+		$this->assertTrue( $this->compatibility->should_convert_coupon_amount( $this->mock_coupon ) );
+	}
+
+	public function test_should_convert_coupon_amount_return_true_with_early_renewal_in_backtrace() {
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->with( [ 'WCS_Cart_Early_Renewal->setup_cart' ] )
+			->willReturn( true );
+
+		$this->mock_coupon
+			->method( 'get_discount_type' )
+			->willReturn( 'recurring_fee' );
+
+		$this->mock_wcs_cart_contains_renewal( true );
+		$this->assertTrue( $this->compatibility->should_convert_coupon_amount( $this->mock_coupon ) );
+	}
+
+	public function test_should_convert_coupon_amount_return_true_when_apply_coupon_not_in_backtrace() {
+		$this->mock_utils
+			->expects( $this->exactly( 2 ) )
+			->method( 'is_call_in_backtrace' )
+			->withConsecutive(
+				[ [ 'WCS_Cart_Early_Renewal->setup_cart' ] ],
+				[ [ 'WC_Discounts->apply_coupon' ] ]
+			)
+			->willReturn( false, false );
+
+		$this->mock_coupon
+			->method( 'get_discount_type' )
+			->willReturn( 'recurring_fee' );
+
+		$this->mock_wcs_cart_contains_renewal( true );
+		$this->assertTrue( $this->compatibility->should_convert_coupon_amount( $this->mock_coupon ) );
+	}
+
+	public function test_should_convert_coupon_amount_return_true_when_coupon_type_does_not_match() {
+		$this->mock_utils
+			->expects( $this->exactly( 2 ) )
+			->method( 'is_call_in_backtrace' )
+			->withConsecutive(
+				[ [ 'WCS_Cart_Early_Renewal->setup_cart' ] ],
+				[ [ 'WC_Discounts->apply_coupon' ] ]
+			)
+			->willReturn( false, true );
+
+		$this->mock_coupon
+			->method( 'get_discount_type' )
+			->willReturn( 'failing_fee' );
+
+		$this->mock_wcs_cart_contains_renewal( true );
+		$this->assertTrue( $this->compatibility->should_convert_coupon_amount( $this->mock_coupon ) );
+	}
+
+	public function test_should_convert_coupon_amount_return_false_when_percentage_coupon_used() {
+		$this->mock_utils
+			->expects( $this->exactly( 0 ) )
+			->method( 'is_call_in_backtrace' );
+
+		$this->mock_coupon
+			->method( 'get_discount_type' )
+			->willReturn( 'recurring_percent' );
+
+		$this->mock_wcs_cart_contains_renewal( false );
+		$this->assertFalse( $this->compatibility->should_convert_coupon_amount( $this->mock_coupon ) );
 	}
 
 	private function mock_wcs_cart_contains_renewal( $value ) {
