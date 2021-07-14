@@ -13,43 +13,37 @@ import { STORE_NAME } from '../constants';
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
+	const enabledPaymentMethodIds = useSelect( ( select ) => {
+		const { getEnabledPaymentMethodIds } = select( STORE_NAME );
 
-			return [
-				getEnabledPaymentMethodIds(),
-				updateEnabledPaymentMethodIds,
-			];
-		},
-		[ updateEnabledPaymentMethodIds ]
-	);
+		return getEnabledPaymentMethodIds();
+	}, [] );
+
+	return [ enabledPaymentMethodIds, updateEnabledPaymentMethodIds ];
 };
 
 export const useDebugLog = () => {
 	const { updateIsDebugLogEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsDebugLogEnabled } = select( STORE_NAME );
+	const isDebugLogEnabled = useSelect( ( select ) => {
+		const { getIsDebugLogEnabled } = select( STORE_NAME );
 
-			return [ getIsDebugLogEnabled(), updateIsDebugLogEnabled ];
-		},
-		[ updateIsDebugLogEnabled ]
-	);
+		return getIsDebugLogEnabled();
+	}, [] );
+
+	return [ isDebugLogEnabled, updateIsDebugLogEnabled ];
 };
 
 export const useTestMode = () => {
 	const { updateIsTestModeEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsTestModeEnabled } = select( STORE_NAME );
+	const isTestModeEnabled = useSelect( ( select ) => {
+		const { getIsTestModeEnabled } = select( STORE_NAME );
 
-			return [ getIsTestModeEnabled(), updateIsTestModeEnabled ];
-		},
-		[ updateIsTestModeEnabled ]
-	);
+		return getIsTestModeEnabled();
+	}, [] );
+
+	return [ isTestModeEnabled, updateIsTestModeEnabled ];
 };
 
 export const useDevMode = () => {
@@ -63,46 +57,37 @@ export const useDevMode = () => {
 export const useAccountStatementDescriptor = () => {
 	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountStatementDescriptor } = select( STORE_NAME );
+	const accountStatementDescriptor = useSelect( ( select ) => {
+		const { getAccountStatementDescriptor } = select( STORE_NAME );
 
-			return [
-				getAccountStatementDescriptor(),
-				updateAccountStatementDescriptor,
-			];
-		},
-		[ updateAccountStatementDescriptor ]
-	);
+		return getAccountStatementDescriptor();
+	}, [] );
+
+	return [ accountStatementDescriptor, updateAccountStatementDescriptor ];
 };
 
 export const useManualCapture = () => {
 	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsManualCaptureEnabled } = select( STORE_NAME );
+	const isManualCaptureEnabled = useSelect( ( select ) => {
+		const { getIsManualCaptureEnabled } = select( STORE_NAME );
 
-			return [
-				getIsManualCaptureEnabled(),
-				updateIsManualCaptureEnabled,
-			];
-		},
-		[ updateIsManualCaptureEnabled ]
-	);
+		return getIsManualCaptureEnabled();
+	}, [] );
+
+	return [ isManualCaptureEnabled, updateIsManualCaptureEnabled ];
 };
 
 export const useIsWCPayEnabled = () => {
 	const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsWCPayEnabled } = select( STORE_NAME );
+	const isWCPayEnabled = useSelect( ( select ) => {
+		const { getIsWCPayEnabled } = select( STORE_NAME );
 
-			return [ getIsWCPayEnabled(), updateIsWCPayEnabled ];
-		},
-		[ updateIsWCPayEnabled ]
-	);
+		return getIsWCPayEnabled();
+	}, [] );
+
+	return [ isWCPayEnabled, updateIsWCPayEnabled ];
 };
 
 export const useGetAvailablePaymentMethodIds = () =>
@@ -142,60 +127,61 @@ export const useSettings = () => {
 export const usePaymentRequestEnabledSettings = () => {
 	const { updateIsPaymentRequestEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
+	const isPaymentRequestEnabled = useSelect( ( select ) => {
 		const { getIsPaymentRequestEnabled } = select( STORE_NAME );
 
-		return [ getIsPaymentRequestEnabled(), updateIsPaymentRequestEnabled ];
-	} );
+		return getIsPaymentRequestEnabled();
+	}, [] );
+
+	return [ isPaymentRequestEnabled, updateIsPaymentRequestEnabled ];
 };
 
 export const usePaymentRequestLocations = () => {
 	const { updatePaymentRequestLocations } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
+	const paymentRequestLocations = useSelect( ( select ) => {
 		const { getPaymentRequestLocations } = select( STORE_NAME );
 
-		return [ getPaymentRequestLocations(), updatePaymentRequestLocations ];
-	} );
+		return getPaymentRequestLocations();
+	}, [] );
+
+	return [ paymentRequestLocations, updatePaymentRequestLocations ];
 };
 
 export const usePaymentRequestButtonType = () => {
 	const { updatePaymentRequestButtonType } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
+	const paymentRequestButtonType = useSelect( ( select ) => {
 		const { getPaymentRequestButtonType } = select( STORE_NAME );
 
-		return [
-			getPaymentRequestButtonType(),
-			updatePaymentRequestButtonType,
-		];
-	} );
+		return getPaymentRequestButtonType();
+	}, [] );
+
+	return [ paymentRequestButtonType, updatePaymentRequestButtonType ];
 };
 
 export const usePaymentRequestButtonSize = () => {
 	const { updatePaymentRequestButtonSize } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
+	const paymentRequestButtonSize = useSelect( ( select ) => {
 		const { getPaymentRequestButtonSize } = select( STORE_NAME );
 
-		return [
-			getPaymentRequestButtonSize(),
-			updatePaymentRequestButtonSize,
-		];
-	} );
+		return getPaymentRequestButtonSize();
+	}, [] );
+
+	return [ paymentRequestButtonSize, updatePaymentRequestButtonSize ];
 };
 
 export const usePaymentRequestButtonTheme = () => {
 	const { updatePaymentRequestButtonTheme } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
+	const paymentRequestButtonTheme = useSelect( ( select ) => {
 		const { getPaymentRequestButtonTheme } = select( STORE_NAME );
 
-		return [
-			getPaymentRequestButtonTheme(),
-			updatePaymentRequestButtonTheme,
-		];
-	} );
+		return getPaymentRequestButtonTheme();
+	}, [] );
+
+	return [ paymentRequestButtonTheme, updatePaymentRequestButtonTheme ];
 };
 
 export const useGetSavingError = () => {
