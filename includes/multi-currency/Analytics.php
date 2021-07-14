@@ -58,6 +58,28 @@ class Analytics {
 	 * @return void
 	 */
 	public function init() {
-		// TODO. See The analytics controller in the multi currency plugin.
+		add_action( 'init', [ $this, 'add_currency_settings' ] );
+
+		foreach ( self::ANALYTICS_PAGES as $analytics_page ) {
+			add_filter( "woocommerce_analytics_{$analytics_page}_query_args", [ $this, 'filter_stats_by_currency' ] );
+			add_filter( "woocommerce_analytics_{$analytics_page}_stats_query_args", [ $this, 'filter_stats_by_currency' ] );
+		}
+	}
+
+	/**
+	 * Undocumented function
+	 *
+	 * @return void
+	 */
+	public function add_currency_settings() {
+		$enabled_currencies = $this->multi_currency->get_enabled_currencies();
+		$currency_names     = get_woocommerce_currencies();
+		$currencies         = [];
+
+		foreach ( $enabled_currencies as $enabled_currency ) {
+			$currencies[] = [
+				'label' => $enabled_currency->code,
+			];
+		}
 	}
 }
