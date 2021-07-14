@@ -114,7 +114,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_intention', 'create_setup_intention', 'update_intention', 'get_intent', 'get_payment_method', 'is_server_connected' ] )
+			->setMethods( [ 'create_intention', 'create_setup_intention', 'update_intention', 'get_intent', 'get_setup_intent', 'get_payment_method', 'is_server_connected' ] )
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -707,6 +707,32 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertTrue( $card_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_enabled_at_checkout() );
 		$this->assertTrue( $sofort_method->is_enabled_at_checkout() );
+	}
+
+	public function test_create_token_from_setup_intent_adds_token() {
+		$mock_token           = WC_Helper_Token::create_token( 'pm_mock' );
+		$mock_setup_intent_id = 'si_mock';
+		$mock_user            = wp_get_current_user();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_setup_intent' )
+			->with( $mock_setup_intent_id )
+			->willReturn(
+				[
+					'id'             => $mock_setup_intent_id,
+					'payment_method' => 'pm_mock',
+				]
+			);
+
+		$this->mock_token_service->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->with( 'pm_mock', $mock_user )
+			->will(
+				$this->returnValue( $mock_token )
+			);
+
+		$this->assertEquals( $mock_token, $this->mock_upe_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 	}
 
 	/**
