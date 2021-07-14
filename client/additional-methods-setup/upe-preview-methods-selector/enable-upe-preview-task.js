@@ -32,20 +32,16 @@ const EnableUpePreviewTask = () => {
 		<WizardTaskItem
 			title={ interpolateComponents( {
 				mixedString: __(
-					'Enable the new WooCommerce Payments checkout experience {{earlyAccessPill /}}',
+					'Enable the new WooCommerce Payments checkout experience {{earlyAccessWrapper}}Early access{{/earlyAccessWrapper}}',
 					'woocommerce-payments'
 				),
 				components: {
-					earlyAccessPill: (
-						<Pill>
-							{ __( 'Early access', 'woocommerce-payments' ) }
-						</Pill>
-					),
+					earlyAccessWrapper: <Pill />,
 				},
 			} ) }
 			index={ 1 }
 		>
-			<CollapsibleBody>
+			<CollapsibleBody className="enable-upe-preview__body">
 				<p>
 					{ interpolateComponents( {
 						mixedString: __(
@@ -54,9 +50,8 @@ const EnableUpePreviewTask = () => {
 							'woocommerce-payments'
 						),
 						components: {
-							// TODO
 							learnMoreLink: (
-								<a href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments">
+								<a href="?TODO">
 									{ __(
 										'Learn more',
 										'woocommerce-payments'

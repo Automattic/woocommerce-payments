@@ -1,6 +1,14 @@
 .enable-upe-preview {
+	&__body {
+		&.is-active {
+			// there's so much text that on mobile the text overflows the max-height set on the collapsible body.
+			max-height: 1000px;
+		}
+	}
+
 	&__advantages-wrapper {
 		display: flex;
+		flex-direction: column;
 
 		@include breakpoint( '>660px' ) {
 			flex-direction: row;
