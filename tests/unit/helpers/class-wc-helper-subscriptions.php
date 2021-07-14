@@ -110,7 +110,7 @@ class WC_Subscriptions {
 	 */
 	public static $wcs_get_order_type_cart_items = null;
 
-  /*
+	/**
 	 * wcs_cart_contains_resubscribe mock.
 	 *
 	 * @var function
@@ -140,7 +140,7 @@ class WC_Subscriptions {
 	public static function wcs_get_order_type_cart_items( $function ) {
 		self::$wcs_get_order_type_cart_items = $function;
 	}
- 
+
 	public static function wcs_cart_contains_resubscribe( $function ) {
 		self::$wcs_cart_contains_resubscribe = $function;
 	}

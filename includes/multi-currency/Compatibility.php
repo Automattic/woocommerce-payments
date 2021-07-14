@@ -160,8 +160,8 @@ class Compatibility {
 		if ( 0 < count( $switch_cart_items ) ) {
 			$switch_cart_item = array_shift( $switch_cart_items );
 			return get_post_meta( $switch_cart_item['subscription_switch']['subscription_id'], '_order_currency', true );
-    }
-    
+		}
+
 		$subscription_resubscribe = $this->cart_contains_resubscribe();
 		if ( $subscription_resubscribe ) {
 			return get_post_meta( $subscription_resubscribe['subscription_resubscribe']['subscription_id'], '_order_currency', true );
@@ -178,7 +178,7 @@ class Compatibility {
 	public function should_hide_widgets(): bool {
 		if ( $this->cart_contains_renewal()
 			|| $this->get_subscription_switch_id_from_superglobal()
-			|| 0 < count( $this->get_subscription_switch_cart_items() ) ) {
+			|| 0 < count( $this->get_subscription_switch_cart_items() )
 			|| $this->cart_contains_resubscribe() ) {
 			return true;
 		}
@@ -291,8 +291,6 @@ class Compatibility {
 	}
 
 	/**
-	 * Checks to see if the product passed is in the cart as a subscription renewal.
-
 	 * Checks the cart to see if it contains a resubscription.
 	 *
 	 * @return mixed The cart item containing the resubscription as an array, else false.
@@ -306,7 +304,6 @@ class Compatibility {
 
 	/**
 	 * Checks to see if the product passed is in the cart as a subscription type.
-
 	 *
 	 * @param object $product Product to test.
 	 * @param string $type    Type of subscription.

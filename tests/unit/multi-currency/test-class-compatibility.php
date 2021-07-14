@@ -261,7 +261,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_get_order_type_cart_items( true );
 		$this->mock_wcs_cart_contains_resubscribe( false );
-		$this->assertFalse( $this->compatibility->should_hide_widgets() );
+		$this->assertTrue( $this->compatibility->should_hide_widgets() );
 	}
 
 	public function test_should_hide_widgets_return_true_when_renewal_in_cart() {
@@ -458,8 +458,8 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			}
 		);
 	}
-  
-  private function mock_wcs_cart_contains_resubscribe( $value ) {
+
+	private function mock_wcs_cart_contains_resubscribe( $value ) {
 		WC_Subscriptions::wcs_cart_contains_resubscribe(
 			function () use ( $value ) {
 				if ( $value ) {
