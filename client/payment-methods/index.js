@@ -1,10 +1,18 @@
 /** @format */
+/* eslint-disable max-len */
+
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, CardDivider } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardDivider,
+	ExternalLink,
+	Button,
+} from '@wordpress/components';
 import classNames from 'classnames';
 
 /**
@@ -22,6 +30,7 @@ import CreditCardIcon from '../gateway-icons/credit-card';
 import GiropayIcon from '../gateway-icons/giropay';
 import SofortIcon from '../gateway-icons/sofort';
 import SepaIcon from '../gateway-icons/sepa';
+import WCPaySettingsContext from '../settings/wcpay-settings-context';
 
 const methodsConfiguration = {
 	card: {
@@ -83,6 +92,13 @@ const PaymentMethods = () => {
 		);
 	};
 
+	const {
+		featureFlags: {
+			upeSettingsPreview: isUPESettingsPreviewEnabled,
+			upe: isUPEEnabled,
+		},
+	} = useContext( WCPaySettingsContext );
+
 	return (
 		<>
 			<Card className="payment-methods">
@@ -106,6 +122,47 @@ const PaymentMethods = () => {
 						) }
 					</PaymentMethodsList>
 				</CardBody>
+
+				{ isUPESettingsPreviewEnabled && ! isUPEEnabled && (
+					<>
+						<CardDivider />
+						<CardBody className="payment-methods__express-checkouts">
+							<span className="payment-methods__pill">
+								{ __( 'Early access', 'woocommerce-payments' ) }
+							</span>
+							<h3>
+								{ __(
+									'Enable the new WooCommerce Payments checkout experience',
+									'woocommerce-payments'
+								) }
+							</h3>
+							<p>
+								{ __(
+									'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.',
+									'woocommerce-payments'
+								) }
+							</p>
+
+							<div className="payment-methods__express-checkouts-actions">
+								<span className="payment-methods__express-checkouts-get-started">
+									<Button isPrimary href="">
+										{ __(
+											'Get started',
+											'woocommerce-payments'
+										) }
+									</Button>
+								</span>
+								<ExternalLink href="https://docs.woocommerce.com/document/payments/">
+									{ __(
+										'Learn more',
+										'woocommerce-payments'
+									) }
+								</ExternalLink>
+							</div>
+						</CardBody>
+					</>
+				) }
+
 				{ 1 < availablePaymentMethodIds.length ? (
 					<>
 						<CardDivider />

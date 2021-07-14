@@ -6,6 +6,7 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 
 /**
  * Internal dependencies
@@ -143,4 +144,47 @@ describe( 'PaymentMethods', () => {
 			'sofort',
 		] );
 	} );
+
+	test( 'express payments rendered when UPE preview feture flag is enabled', () => {
+		const featureFlagContext = {
+			featureFlags: { upeSettingsPreview: true, upe: false },
+		};
+
+		render(
+			<WCPaySettingsContext.Provider value={ featureFlagContext }>
+				<PaymentMethods />
+			</WCPaySettingsContext.Provider>
+		);
+
+		const enableWooCommercePaymentText = screen.getByText(
+			'Enable the new WooCommerce Payments checkout experience'
+		);
+
+		expect( enableWooCommercePaymentText ).toBeInTheDocument();
+	} );
+
+	test.each( [
+		[ false, false ],
+		[ false, true ],
+		[ true, true ],
+	] )(
+		'express payments should not rendered when UPE preview = %s and UPE = %s',
+		( upeSettingsPreview, upe ) => {
+			const featureFlagContext = {
+				featureFlags: { upeSettingsPreview, upe },
+			};
+
+			render(
+				<WCPaySettingsContext.Provider value={ featureFlagContext }>
+					<PaymentMethods />
+				</WCPaySettingsContext.Provider>
+			);
+
+			const enableWooCommercePaymentText = screen.queryByText(
+				'Enable the new WooCommerce Payments checkout experience'
+			);
+
+			expect( enableWooCommercePaymentText ).toBeNull();
+		}
+	);
 } );
