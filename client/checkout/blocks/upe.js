@@ -39,8 +39,8 @@ registerPaymentMethod( {
 	edit: <WCPayUPEFields api={ api } />,
 	canMakePayment: () => !! api.getStripe(),
 	paymentMethodId: PAYMENT_METHOD_NAME_CARD,
-	label: __( 'Credit Card', 'woocommerce-payments' ),
-	ariaLabel: __( 'Credit Card', 'woocommerce-payments' ),
+	label: __( 'WooCommerce Payments', 'woocommerce-payments' ),
+	ariaLabel: __( 'WooCommerce Payments', 'woocommerce-payments' ),
 	supports: {
 		features: getConfig( 'features' ),
 	},

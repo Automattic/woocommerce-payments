@@ -13,7 +13,7 @@ import { useEffect, useState } from '@wordpress/element';
  */
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
-import { payment } from '@wordpress/icons/build-types';
+import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 
 const WCPayUPEFields = ( {
 	api,
@@ -21,40 +21,59 @@ const WCPayUPEFields = ( {
 	stripe,
 	elements,
 	billing: { billingData },
-	eventRegistration: { onCheckoutAfterProcessingWithSuccess },
+	eventRegistration: {
+		onPaymentProcessing,
+		onCheckoutAfterProcessingWithSuccess,
+	},
 	emitResponse,
 } ) => {
-	const [ errorMessage, setErrorMessage ] = useState( null );
 	const [ paymentIntentId, setPaymentIntentId ] = useState( null );
 	const [ clientSecret, setClientSecret ] = useState( null );
-	const [ isFetchingIntent, setIsFetchingIntent ] = useState( false );
+	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
+	const [ isUPEComplete, setIsUPEComplete ] = useState( false );
 
 	const testMode = getConfig( 'testMode' );
-	let testCopy = '';
-	if ( testMode ) {
-		testCopy = (
-			<p>
-				<strong>Test mode:</strong> use the test VISA card
-				4242424242424242 with any expiry date and CVC.
-			</p>
-		);
-	}
+	const testCopy = (
+		<p>
+			<strong>Test mode:</strong> use the test VISA card 4242424242424242
+			with any expiry date and CVC.
+		</p>
+	);
 
 	useEffect( () => {
-		if ( paymentIntentId || isFetchingIntent ) {
+		if ( paymentIntentId || hasRequestedIntent ) {
 			return;
 		}
 
 		async function createIntent() {
 			const response = await api.createIntent();
-			setIsFetchingIntent( false );
 			setPaymentIntentId( response.id );
 			setClientSecret( response.client_secret );
 		}
-		setIsFetchingIntent( true );
+		setHasRequestedIntent( true );
 
 		createIntent();
-	}, [ paymentIntentId, isFetchingIntent, api ] );
+	}, [ paymentIntentId, hasRequestedIntent, api ] );
+
+	// When it's time to process the payment, generate a Stripe payment method object.
+	useEffect(
+		() =>
+			onPaymentProcessing( () => {
+				if ( PAYMENT_METHOD_NAME_CARD !== activePaymentMethod ) {
+					return;
+				}
+
+				if ( ! isUPEComplete ) {
+					return {
+						type: 'error',
+						message: 'Your payment information is incomplete.',
+					};
+				}
+			} ),
+		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[ activePaymentMethod, isUPEComplete ]
+	);
 
 	// Once the server has completed payment processing, confirm the intent of necessary.
 	useEffect(
@@ -72,10 +91,11 @@ const WCPayUPEFields = ( {
 							PaymentElement
 						);
 
-						confirmUPEPayment(
+						return confirmUPEPayment(
 							api,
-							paymentDetails,
+							paymentDetails.redirect_url,
 							paymentElement,
+							billingData,
 							emitResponse
 						);
 					}
@@ -89,8 +109,8 @@ const WCPayUPEFields = ( {
 	);
 
 	// Checks whether there are errors within a field, and saves them for later reporting.
-	const checkForErrors = ( { error } ) => {
-		setErrorMessage( error ? error.message : null );
+	const upeOnChange = ( event ) => {
+		setIsUPEComplete( event.complete );
 	};
 
 	const elementOptions = {
@@ -98,26 +118,29 @@ const WCPayUPEFields = ( {
 		classes: {
 			base: 'wcpay-card-mounted',
 		},
+		fields: {
+			billingDetails: {
+				address: {
+					postalCode: 'never',
+					country: 'never',
+				},
+			},
+		},
 	};
 
-	if ( clientSecret ) {
-		return (
-			<>
-				<input
-					type="hidden"
-					name="wc_payment_intent_id"
-					value={ paymentIntentId }
-				/>
-				{ testCopy }
-				<PaymentElement
-					options={ elementOptions }
-					onChange={ checkForErrors }
-				/>
-			</>
-		);
+	if ( ! clientSecret ) {
+		return null;
 	}
 
-	return <h1>Loading...</h1>;
+	return (
+		<>
+			{ testMode ? testCopy : '' }
+			<PaymentElement
+				options={ elementOptions }
+				onChange={ upeOnChange }
+			/>
+		</>
+	);
 };
 
 /**
