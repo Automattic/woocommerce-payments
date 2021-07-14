@@ -20,6 +20,7 @@ describe( 'Settings reducer tests', () => {
 		expect( defaultState ).toEqual( {
 			isSaving: false,
 			data: {},
+			savingError: null,
 		} );
 	} );
 
@@ -56,6 +57,7 @@ describe( 'Settings reducer tests', () => {
 				data: {
 					baz: 'quux',
 				},
+				savingError: {},
 			};
 
 			const newSettings = {
@@ -69,6 +71,7 @@ describe( 'Settings reducer tests', () => {
 				data: {
 					quuz: 'corge',
 				},
+				savingError: {},
 			} );
 		} );
 	} );
@@ -77,23 +80,33 @@ describe( 'Settings reducer tests', () => {
 		test( 'toggles isSaving', () => {
 			const oldState = {
 				isSaving: false,
+				savingError: null,
 			};
 
-			const state = reducer( oldState, updateIsSavingSettings( true ) );
+			const state = reducer(
+				oldState,
+				updateIsSavingSettings( true, {} )
+			);
 
 			expect( state.isSaving ).toBeTruthy();
+			expect( state.savingError ).toEqual( {} );
 		} );
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
 				foo: 'bar',
 				isSaving: false,
+				savingError: {},
 			};
 
-			const state = reducer( oldState, updateIsSavingSettings( true ) );
+			const state = reducer(
+				oldState,
+				updateIsSavingSettings( true, null )
+			);
 
 			expect( state ).toEqual( {
 				foo: 'bar',
+				savingError: null,
 				isSaving: true,
 			} );
 		} );
@@ -105,6 +118,7 @@ describe( 'Settings reducer tests', () => {
 				data: {
 					enabled_payment_method_ids: [],
 				},
+				savingError: null,
 			};
 
 			const methodIds = [ 'foo', 'bar' ];
@@ -126,6 +140,7 @@ describe( 'Settings reducer tests', () => {
 					enabled_payment_method_ids: [],
 					quuz: 'corge',
 				},
+				savingError: {},
 			};
 
 			const methodIds = [ 'foo', 'bar' ];
@@ -141,6 +156,7 @@ describe( 'Settings reducer tests', () => {
 					enabled_payment_method_ids: methodIds,
 					quuz: 'corge',
 				},
+				savingError: null,
 			} );
 		} );
 	} );
@@ -165,6 +181,7 @@ describe( 'Settings reducer tests', () => {
 					is_wcpay_enabled: false,
 					baz: 'quux',
 				},
+				savingError: {},
 			};
 
 			const state = reducer( oldState, updateIsWCPayEnabled( true ) );
@@ -175,6 +192,7 @@ describe( 'Settings reducer tests', () => {
 					is_wcpay_enabled: true,
 					baz: 'quux',
 				},
+				savingError: null,
 			} );
 		} );
 	} );
@@ -202,6 +220,7 @@ describe( 'Settings reducer tests', () => {
 					is_manual_capture_enabled: false,
 					baz: 'quux',
 				},
+				savingError: {},
 			};
 
 			const state = reducer(
@@ -210,6 +229,7 @@ describe( 'Settings reducer tests', () => {
 			);
 
 			expect( state ).toEqual( {
+				savingError: null,
 				foo: 'bar',
 				data: {
 					is_manual_capture_enabled: true,
@@ -244,6 +264,7 @@ describe( 'Settings reducer tests', () => {
 					account_statement_descriptor: 'Statement',
 					baz: 'quux',
 				},
+				savingError: {},
 			};
 
 			const state = reducer(
@@ -253,6 +274,7 @@ describe( 'Settings reducer tests', () => {
 
 			expect( state ).toEqual( {
 				foo: 'bar',
+				savingError: null,
 				data: {
 					account_statement_descriptor: 'New Statement',
 					baz: 'quux',
@@ -267,6 +289,7 @@ describe( 'Settings reducer tests', () => {
 				data: {
 					is_payment_request_enabled: false,
 				},
+				savingError: null,
 			};
 
 			const state = reducer(
@@ -284,6 +307,7 @@ describe( 'Settings reducer tests', () => {
 					is_payment_request_enabled: false,
 					baz: 'quux',
 				},
+				savingError: {},
 			};
 
 			const state = reducer(
@@ -293,6 +317,7 @@ describe( 'Settings reducer tests', () => {
 
 			expect( state ).toEqual( {
 				foo: 'bar',
+				savingError: null,
 				data: {
 					is_payment_request_enabled: true,
 					baz: 'quux',
@@ -329,6 +354,7 @@ describe( 'Settings reducer tests', () => {
 					payment_request_enabled_locations: initPaymentRequestState,
 					baz: 'quux',
 				},
+				savingError: {},
 			};
 
 			const state = reducer(
@@ -342,6 +368,7 @@ describe( 'Settings reducer tests', () => {
 					payment_request_enabled_locations: enableAllpaymentRequestState,
 					baz: 'quux',
 				},
+				savingError: null,
 			} );
 		} );
 	} );

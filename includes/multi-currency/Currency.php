@@ -40,7 +40,7 @@ class Currency implements \JsonSerializable {
 	/**
 	 * Is currency default for store?
 	 *
-	 * @var bool|null
+	 * @var bool
 	 */
 	private $is_default = false;
 
@@ -54,18 +54,25 @@ class Currency implements \JsonSerializable {
 	/**
 	 * Is currency zero decimal?
 	 *
-	 * @var bool|null
+	 * @var bool
 	 */
 	private $is_zero_decimal = false;
 
+	/**
+	 * A timestamp representing the time this currency was last fetched successfully from the server.
+	 *
+	 * @var int|null
+	 */
+	private $last_updated = null;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param string $code Three letter currency code.
-	 * @param float  $rate The conversion rate.
+	 * @param string   $code Three letter currency code.
+	 * @param float    $rate The conversion rate.
+	 * @param int|null $last_updated The time this currency was last updated.
 	 */
-	public function __construct( $code = '', $rate = 1.0 ) {
+	public function __construct( string $code = '', float $rate = 1.0, $last_updated = null ) {
 		$this->code = $code;
 		$this->rate = $rate;
 
@@ -75,6 +82,10 @@ class Currency implements \JsonSerializable {
 
 		if ( in_array( strtolower( $code ), WC_Payments_Utils::zero_decimal_currencies(), true ) ) {
 			$this->is_zero_decimal = true;
+		}
+
+		if ( ! is_null( $last_updated ) ) {
+			$this->last_updated = $last_updated;
 		}
 	}
 
@@ -181,6 +192,15 @@ class Currency implements \JsonSerializable {
 	}
 
 	/**
+	 * Get the timestamp reprenting when the currency was last updated.
+	 *
+	 * @return int|null A timestamp representing when the currency was last updated.
+	 */
+	public function get_last_updated() {
+		return $this->last_updated;
+	}
+
+	/**
 	 * Sets the currency's charm rate.
 	 *
 	 * @param float $charm Charm rate.
@@ -208,6 +228,17 @@ class Currency implements \JsonSerializable {
 	}
 
 	/**
+	 * Set the currency's last updated timestamp.
+	 *
+	 * @param int $last_updated A timestamp representing when the currency was last updated.
+	 *
+	 * @return void
+	 */
+	public function set_last_updated( int $last_updated ) {
+		$this->last_updated = $last_updated;
+	}
+
+	/**
 	 * Specify the data that should be serialized to JSON.
 	 *
 	 * @return array Serialized Currency object.
@@ -222,6 +253,7 @@ class Currency implements \JsonSerializable {
 			'flag'            => $this->get_flag(),
 			'symbol'          => html_entity_decode( $this->get_symbol() ),
 			'is_zero_decimal' => $this->get_is_zero_decimal(),
+			'last_updated'    => $this->get_last_updated(),
 		];
 	}
 }

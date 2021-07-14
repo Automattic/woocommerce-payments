@@ -53,10 +53,11 @@ export function updateEnabledPaymentMethodIds( methodIds ) {
 	} );
 }
 
-export function updateIsSavingSettings( isSaving ) {
+export function updateIsSavingSettings( isSaving, error ) {
 	return {
 		type: ACTION_TYPES.SET_IS_SAVING_SETTINGS,
 		isSaving,
+		error,
 	};
 }
 
@@ -79,11 +80,11 @@ export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 }
 
 export function* saveSettings() {
-	let isSuccess = false;
+	let error = null;
 	try {
 		const settings = select( STORE_NAME ).getSettings();
 
-		yield updateIsSavingSettings( true );
+		yield updateIsSavingSettings( true, null );
 
 		yield apiFetch( {
 			path: `${ NAMESPACE }/settings`,
@@ -94,17 +95,16 @@ export function* saveSettings() {
 		yield dispatch( 'core/notices' ).createSuccessNotice(
 			__( 'Settings saved.', 'woocommerce-payments' )
 		);
-
-		isSuccess = true;
 	} catch ( e ) {
+		error = e;
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error saving settings.', 'woocommerce-payments' )
 		);
 	} finally {
-		yield updateIsSavingSettings( false );
+		yield updateIsSavingSettings( false, error );
 	}
 
-	return isSuccess;
+	return null === error;
 }
 
 export function updatePaymentRequestLocations( locations ) {
