@@ -285,6 +285,12 @@ class CountryFlags {
 	 * @return string
 	 */
 	public static function get_by_currency( string $currency ): string {
-		return self::get_by_country( substr( $currency, 0, -1 ) );
+		$flag = self::get_by_country( substr( $currency, 0, -1 ) );
+
+		if ( '' === $flag ) {
+			$flag = '💵';
+		}
+
+		return $flag;
 	}
 }
