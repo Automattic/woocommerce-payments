@@ -97,31 +97,30 @@ export const useGetAvailablePaymentMethodIds = () =>
 		return getAvailablePaymentMethodIds();
 	} );
 
+export const useSettingsFetch = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getSettings(), [] );
+
 export const useSettings = () => {
+	useSettingsFetch();
 	const { saveSettings } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const {
-				getSettings,
-				hasFinishedResolution,
-				isResolving,
-				isSavingSettings,
-			} = select( STORE_NAME );
-
-			const isLoading =
-				isResolving( 'getSettings' ) ||
-				! hasFinishedResolution( 'getSettings' );
-
-			return {
-				settings: getSettings(),
-				isLoading,
-				saveSettings,
-				isSaving: isSavingSettings(),
-			};
-		},
-		[ saveSettings ]
+	const isSaving = useSelect(
+		( select ) => select( STORE_NAME ).isSavingSettings(),
+		[]
 	);
+	const isLoading = useSelect( ( select ) => {
+		const { hasFinishedResolution, isResolving } = select( STORE_NAME );
+
+		return (
+			isResolving( 'getSettings' ) ||
+			! hasFinishedResolution( 'getSettings' )
+		);
+	}, [] );
+
+	return {
+		isLoading,
+		saveSettings,
+		isSaving,
+	};
 };
 
 export const usePaymentRequestEnabledSettings = () => {
