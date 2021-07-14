@@ -24,6 +24,7 @@ class StorefrontIntegration {
 		$this->id             = $this->multi_currency->id;
 
 		add_filter( $this->id . '_enabled_currencies_settings', [ $this, 'filter_store_settings' ] );
+		add_action( 'storefront_before_content', [ $this, 'maybe_add_switcher_after_breadcrumb' ], 11 );
 	}
 
 	/**
@@ -38,14 +39,14 @@ class StorefrontIntegration {
 				$setting['checkboxgroup'] = 'start';
 				$new_settings[]           = $setting;
 				$new_settings[]           = [
-					'desc'          => __( 'Add a currency switcher to the Storefront header and mobile menu.', 'woocommerce-payments' ),
+					'desc'          => __( 'Add a currency switcher to the Storefront theme.', 'woocommerce-payments' ),
 					'desc_tip'      => sprintf(
 						/* translators: %s: url to the widgets page */
 						__( 'A currency switcher is also available in your widgets. <a href="%s">Configure now</a>', 'woocommerce-payments' ),
 						'widgets.php'
 					),
 					'id'            => $this->id . '_enable_storefront_switcher',
-					'default'       => 'no',
+					'default'       => 'yes',
 					'type'          => 'checkbox',
 					'checkboxgroup' => 'end',
 				];
@@ -56,5 +57,18 @@ class StorefrontIntegration {
 			}
 		}
 		return $new_settings;
+	}
+
+	/**
+	 * Checks to see if the widget should be added, and then adds it.
+	 */
+	public function maybe_add_switcher_after_breadcrumb() {
+		// We specifically look for 'no', because we want it enabled by default.
+		if ( 'no' === get_option( $this->id . '_enable_storefront_switcher' ) ) {
+			return;
+		}
+		// If so, add it.
+		the_widget( CurrencySwitcherWidget::class );
+		// What about CSS changes?
 	}
 }
