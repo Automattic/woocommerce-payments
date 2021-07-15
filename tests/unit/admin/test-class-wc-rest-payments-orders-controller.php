@@ -88,11 +88,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			->method( 'get_intent' )
 			->willReturn( $mock_intent );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'update_intention' )
-			->willReturn( $mock_intent );
-
 		$this->mock_gateway
 			->expects( $this->once() )
 			->method( 'capture_charge' )
@@ -156,11 +151,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			->method( 'get_intent' )
 			->willReturn( $mock_intent );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'update_intention' )
-			->willReturn( $mock_intent );
-
 		$this->mock_gateway
 			->expects( $this->never() )
 			->method( 'capture_charge' );
@@ -197,11 +187,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_intent' )
-			->willReturn( $mock_intent );
-
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'update_intention' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway

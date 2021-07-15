@@ -78,16 +78,6 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
-			// Actualize the intent by supplying level 3 data.
-			$intent = $this->api_client->update_intention(
-				$intent->get_id(),
-				$intent->get_amount(),
-				$intent->get_currency(),
-				false,
-				$intent->get_customer_id(),
-				$this->gateway->get_level3_data_from_order( $order )
-			);
-
 			// Update the order: set the payment method and attach intent attributes.
 			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 			$order->set_payment_method_title( __( 'WooCommerce Payments', 'woocommerce-payments' ) );
