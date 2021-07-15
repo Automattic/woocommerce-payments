@@ -74,3 +74,7 @@ export const getPaymentRequestButtonTheme = ( state ) => {
 export const getSavingError = ( state ) => {
 	return getSettingsState( state ).savingError;
 };
+
+export const getIsFetchingSettings = ( state ) =>
+	'idle' === getSettingsState( state ).fetchingStatus ||
+	'pending' === getSettingsState( state ).fetchingStatus;

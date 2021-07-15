@@ -19,6 +19,7 @@ describe( 'Settings reducer tests', () => {
 			isSaving: false,
 			data: {},
 			savingError: null,
+			fetchingStatus: 'idle',
 		} );
 	} );
 
@@ -56,6 +57,7 @@ describe( 'Settings reducer tests', () => {
 					baz: 'quux',
 				},
 				savingError: {},
+				fetchingStatus: 'pending',
 			};
 
 			const newSettings = {
@@ -69,6 +71,7 @@ describe( 'Settings reducer tests', () => {
 				data: {
 					quuz: 'corge',
 				},
+				fetchingStatus: 'resolved',
 				savingError: {},
 			} );
 		} );
