@@ -6,7 +6,7 @@ const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extr
 
 const webpackConfig = {
 	mode: NODE_ENV,
-	devtool: process.env.SOURCEMAP === 'none' ? undefined : 'source-map',
+	devtool: process.env.SOURCEMAP === 'none' ? undefined : 'eval-source-map',
 	entry: {
 		index: './client/index.js',
 		settings: './client/settings/index.js',
@@ -30,18 +30,30 @@ const webpackConfig = {
 		rules: [
 			{
 				test: /\.tsx?$/,
-				use: [ 'babel-loader', 'ts-loader' ],
+				use: [
+					'cache-loader',
+					'thread-loader',
+					'babel-loader',
+					{
+						loader: 'ts-loader',
+						options: {
+							happyPackMode: true,
+						},
+					},
+				],
 				exclude: /node_modules/,
 			},
 			{
 				test: /\.jsx?$/,
-				loader: 'babel-loader',
+				use: [ 'cache-loader', 'thread-loader', 'babel-loader' ],
 				exclude: /node_modules/,
 			},
 			{
 				test: /\.(scss|css)$/,
 				use: [
 					MiniCssExtractPlugin.loader,
+					'cache-loader',
+					'thread-loader',
 					'css-loader',
 					{
 						loader: 'sass-loader',
@@ -66,12 +78,6 @@ const webpackConfig = {
 						},
 					},
 				],
-			},
-			{
-				enforce: 'pre',
-				test: /\.js$/,
-				exclude: /node_modules/,
-				loader: 'source-map-loader',
 			},
 			{
 				test: /\.(svg|png)$/,
