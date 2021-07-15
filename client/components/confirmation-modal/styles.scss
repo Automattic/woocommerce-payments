@@ -6,7 +6,7 @@
 	}
 
 	&__separator {
-		margin: 24px -24px;
+		margin: $grid-unit-30 -#{$grid-unit-30};
 	}
 
 	&__footer {
