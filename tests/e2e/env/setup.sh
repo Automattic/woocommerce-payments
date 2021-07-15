@@ -58,7 +58,7 @@ step "Setting up SERVER containers"
 $SERVER_PATH/local/bin/docker-setup.sh
 
 step "Configuring server with stripe account"
-$SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID test 1
+$SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID test 1 1
 
 cd $cwd
 
