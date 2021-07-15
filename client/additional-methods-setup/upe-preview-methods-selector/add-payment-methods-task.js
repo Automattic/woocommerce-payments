@@ -1,7 +1,13 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button, Card, CardBody, Notice } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
@@ -41,7 +47,7 @@ const usePaymentMethodsCheckboxState = () => {
 	return [ paymentMethodsState, handleChange, setPaymentMethodsState ];
 };
 
-const CurrencyInformation = ( { paymentMethodsState } ) => {
+const CurrencyInformation = ( { selectedMethods } ) => {
 	const { isLoading: isLoadingCurrencyInformation } = useCurrencies();
 	const { enabledCurrencies } = useEnabledCurrencies();
 
@@ -57,7 +63,7 @@ const CurrencyInformation = ( { paymentMethodsState } ) => {
 		return null;
 	}
 
-	const enabledMethodsRequiringEuros = Object.entries( paymentMethodsState )
+	const enabledMethodsRequiringEuros = Object.entries( selectedMethods )
 		.map( ( [ method, enabled ] ) => enabled && method )
 		.filter( Boolean )
 		.filter( ( method ) =>
@@ -100,9 +106,13 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 			const checkedPaymentMethods = Object.entries( paymentMethodsState )
 				.map( ( [ method, enabled ] ) => enabled && method )
 				.filter( Boolean );
+			const unCheckedPaymentMethods = Object.entries(
+				paymentMethodsState
+			)
+				.map( ( [ method, enabled ] ) => ! enabled && method )
+				.filter( Boolean );
 
-			// the "checked" payment methods will also include "card" (which is not displayed, but it's there)
-			if ( 2 > checkedPaymentMethods.length ) {
+			if ( 1 > checkedPaymentMethods.length ) {
 				alert(
 					__(
 						'Please select at least one method',
@@ -112,7 +122,18 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 				return;
 			}
 
-			updateEnabledPaymentMethodIds( checkedPaymentMethods );
+			updateEnabledPaymentMethodIds( [
+				// adding the newly selected payment methods and removing them from the `initialEnabledPaymentMethodIds` if unchecked
+				...new Set(
+					[
+						...initialEnabledPaymentMethodIds,
+						...checkedPaymentMethods,
+					].filter(
+						( method ) =>
+							! unCheckedPaymentMethods.includes( method )
+					)
+				),
+			] );
 
 			const isSuccess = await saveSettings();
 			if ( ! isSuccess ) {
@@ -158,17 +179,28 @@ const AddPaymentMethodsTask = () => {
 		handlePaymentMethodChange,
 		setPaymentMethodsState,
 	] = usePaymentMethodsCheckboxState();
+	const selectedMethods = useMemo(
+		() =>
+			Object.entries( paymentMethodsState )
+				.map( ( [ method, enabled ] ) => enabled && method )
+				.filter( Boolean ),
+		[ paymentMethodsState ]
+	);
 
 	useEffect( () => {
 		setPaymentMethodsState(
 			// by default, all the checkboxes should be "checked"
-			availablePaymentMethods.reduce(
-				( map, paymentMethod ) => ( {
-					...map,
-					[ paymentMethod ]: true,
-				} ),
-				{}
-			)
+			availablePaymentMethods
+				.filter( ( method ) =>
+					[ 'giropay', 'sofort', 'sepa_debit' ].includes( method )
+				)
+				.reduce(
+					( map, paymentMethod ) => ( {
+						...map,
+						[ paymentMethod ]: true,
+					} ),
+					{}
+				)
 		);
 	}, [ availablePaymentMethods, setPaymentMethodsState ] );
 
@@ -193,7 +225,7 @@ const AddPaymentMethodsTask = () => {
 						components: {
 							// TODO
 							learnMoreLink: (
-								<a href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments">
+								<a href="?TODO">
 									{ __(
 										'Learn more',
 										'woocommerce-payments'
@@ -263,9 +295,7 @@ const AddPaymentMethodsTask = () => {
 					</CardBody>
 				</Card>
 				<LoadableBlock numLines={ 3 } isLoading={ ! isActive }>
-					<CurrencyInformation
-						paymentMethodsState={ paymentMethodsState }
-					/>
+					<CurrencyInformation selectedMethods={ selectedMethods } />
 				</LoadableBlock>
 				<LoadableBlock numLines={ 10 } isLoading={ ! isActive }>
 					<ContinueButton
