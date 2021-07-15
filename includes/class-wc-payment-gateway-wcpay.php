@@ -947,7 +947,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_information->is_using_manual_capture(),
 				$save_payment_method,
 				$metadata,
-				$this->get_level3_data_from_order( $this->account->get_account_country(), $order ),
+				$this->get_level3_data_from_order( $order ),
 				$payment_information->is_merchant_initiated(),
 				$additional_api_parameters
 			);
@@ -1534,7 +1534,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = $this->payments_api_client->capture_intention(
 				$order->get_transaction_id(),
 				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
-				$this->get_level3_data_from_order( $this->account->get_account_country(), $order )
+				$this->get_level3_data_from_order( $order )
 			);
 
 			$status   = $intent->get_status();
@@ -1683,11 +1683,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Create the level 3 data array to send to Stripe when making a purchase.
 	 *
-	 * @param string   $merchant_country The merchant country.
 	 * @param WC_Order $order The order that is being paid for.
 	 * @return array          The level 3 data to send to Stripe.
 	 */
-	public function get_level3_data_from_order( string $merchant_country, WC_Order $order ): array {
+	public function get_level3_data_from_order( WC_Order $order ): array {
+		$merchant_country = $this->account->get_account_country();
 		// We do not need to send level3 data if merchant account country is non-US.
 		if ( 'US' !== $merchant_country ) {
 			return [];
@@ -1698,8 +1698,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order_items = array_values( $order->get_items( [ 'line_item', 'fee' ] ) );
 		$currency    = $order->get_currency();
 
-		$process_item  = function( $item ) use ( $currency ) {
-
+		$process_item = static function( $item ) use ( $currency ) {
 			// Check to see if it is a WC_Order_Item_Product or a WC_Order_Item_Fee.
 			if ( is_a( $item, 'WC_Order_Item_Product' ) ) {
 				$subtotal   = $item->get_subtotal();
@@ -1726,12 +1725,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'discount_amount'     => $discount_amount, // The amount an item was discounted—if there was a sale,for example, as a non-negative integer.
 			];
 		};
-		$items_to_send = array_map( $process_item, $order_items );
 
 		$level3_data = [
 			'merchant_reference' => (string) $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
 			'shipping_amount'    => WC_Payments_Utils::prepare_amount( (float) $order->get_shipping_total() + (float) $order->get_shipping_tax(), $currency ), // The shipping cost, in cents, as a non-negative integer.
-			'line_items'         => $items_to_send,
+			'line_items'         => array_map( $process_item, $order_items ),
 		];
 
 		// The customer’s U.S. shipping ZIP code.
