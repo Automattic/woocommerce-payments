@@ -65,10 +65,6 @@ class FrontendPrices {
 
 			// Order hooks.
 			add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 50, 2 );
-
-			// Subscription product hooks.
-			add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_product_price' ], 50, 2 );
-			add_filter( 'woocommerce_subscriptions_product_sign_up_fee', [ $this, 'get_product_price' ], 50, 2 );
 		}
 	}
 
@@ -81,11 +77,7 @@ class FrontendPrices {
 	 * @return mixed The converted product's price.
 	 */
 	public function get_product_price( $price, $product = null ) {
-		if ( ! $price ) {
-			return $price;
-		}
-
-		if ( ! $this->compatibility->should_convert_product_price( $product ) ) {
+		if ( ! $price || ! $this->compatibility->should_convert_product_price( $product ) ) {
 			return $price;
 		}
 

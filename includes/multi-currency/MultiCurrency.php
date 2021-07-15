@@ -125,7 +125,7 @@ class MultiCurrency {
 		$this->payments_api_client = $payments_api_client;
 		$this->locale              = new Locale();
 		$this->utils               = new Utils();
-		$this->compatibility       = new Compatibility( $this->utils );
+		$this->compatibility       = new Compatibility( $this, $this->utils );
 
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
