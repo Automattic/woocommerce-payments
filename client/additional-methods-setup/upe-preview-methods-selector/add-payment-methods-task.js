@@ -50,10 +50,10 @@ const CurrencyInformation = ( { paymentMethodsState } ) => {
 	}
 
 	// if EUR is already enabled, no need to display the info message
-	const enabledCurrencyCodes = Object.entries( enabledCurrencies ).map(
-		( currency ) => currency.code
+	const enabledCurrenciesIds = Object.values( enabledCurrencies ).map(
+		( currency ) => currency.id
 	);
-	if ( enabledCurrencyCodes.includes( 'EUR' ) ) {
+	if ( enabledCurrenciesIds.includes( 'eur' ) ) {
 		return null;
 	}
 
@@ -101,7 +101,8 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 				.map( ( [ method, enabled ] ) => enabled && method )
 				.filter( Boolean );
 
-			if ( 1 > checkedPaymentMethods.length ) {
+			// the "checked" payment methods will also include "card" (which is not displayed, but it's there)
+			if ( 2 > checkedPaymentMethods.length ) {
 				alert(
 					__(
 						'Please select at least one method',
