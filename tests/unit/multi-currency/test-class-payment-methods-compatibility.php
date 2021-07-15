@@ -49,7 +49,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 			->getMock();
 
 		$this->gateway_mock = $this
-			->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
 			->disableOriginalConstructor()
 			->setMethods(
 				[
@@ -62,35 +62,29 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 	}
 
 	public function test_it_should_not_update_available_currencies_when_enabled_payment_methods_do_not_need_it() {
-		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->will( $this->returnValue( [ 'card' ] ) );
 		$this->multi_currency_mock->expects( $this->never() )->method( $this->anything() );
+		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
 
 		$this->payment_methods_compatibility->add_missing_currencies();
 	}
 
 	public function test_it_should_not_update_available_currencies_when_not_needed() {
-		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->will(
-			$this->returnValue(
-				[
-					'card',
-					'giropay',
-				]
-			)
+		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
+			[
+				'card',
+				'giropay',
+			]
 		);
-		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->will(
-			$this->returnValue(
-				[
-					'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
-				]
-			)
+		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->willReturn(
+			[
+				'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
+			]
 		);
-		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_available_currencies' )->will(
-			$this->returnValue(
-				[
-					'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
-					'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
-				]
-			)
+		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_available_currencies' )->willReturn(
+			[
+				'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
+				'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
+			]
 		);
 		$this->multi_currency_mock->expects( $this->never() )->method( 'set_enabled_currencies' );
 
@@ -98,29 +92,23 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 	}
 
 	public function test_it_should_update_available_currencies_when_needed() {
-		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->will(
-			$this->returnValue(
-				[
-					'card',
-					'giropay',
-					'sepa_debit',
-				]
-			)
+		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
+			[
+				'card',
+				'giropay',
+				'sepa_debit',
+			]
 		);
-		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->will(
-			$this->returnValue(
-				[
-					'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
-				]
-			)
+		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->willReturn(
+			[
+				'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
+			]
 		);
-		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_available_currencies' )->will(
-			$this->returnValue(
-				[
-					'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
-					'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
-				]
-			)
+		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_available_currencies' )->willReturn(
+			[
+				'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
+				'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
+			]
 		);
 		$this->multi_currency_mock
 			->expects( $this->once() )
