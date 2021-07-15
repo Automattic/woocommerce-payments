@@ -66,24 +66,31 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function capture_terminal_payment( $request ) {
 		try {
-			$intent_id = $request['payment_intent_id'];
-			$order_id  = $request['order_id'];
-			$order     = wc_get_order( $order_id );
-			if ( ! $order ) {
+			// Do not process non-existing orders.
+			$order = wc_get_order( $request['order_id'] );
+			if ( false === $order ) {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
-			$intent = $this->api_client->get_intent( $intent_id );
-
 			// Do not process intents that can't be captured.
+			$intent = $this->api_client->get_intent( $request['payment_intent_id'] );
 			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture' ], true ) ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
-			// Set the payment method on the order.
-			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+			// Actualize the intent by supplying level 3 data.
+			$intent = $this->api_client->update_intention(
+				$intent->get_id(),
+				$intent->get_amount(),
+				$intent->get_currency(),
+				false,
+				$intent->get_customer_id(),
+				$this->gateway->get_level3_data_from_order( $order )
+			);
 
-			// Mark the order as paid for with WCPay and the intent.
+			// Update the order: set the payment method and attach intent attributes.
+			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+			$order->set_payment_method_title( __( 'WooCommerce Payments', 'woocommerce-payments' ) );
 			$this->gateway->attach_intent_info_to_order(
 				$order,
 				$intent->get_id(),
@@ -94,12 +101,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$intent->get_currency()
 			);
 
-			// Capture the intent.
+			// Capture the intent and update order status.
 			$result = $this->gateway->capture_charge( $order );
-
-			if ( 'succeeded' === $result['status'] ) {
-				$order->update_status( 'completed' );
-			} else {
+			if ( 'succeeded' !== $result['status'] ) {
 				return new WP_Error(
 					'wcpay_capture_error',
 					sprintf(
@@ -110,6 +114,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 					[ 'status' => 502 ]
 				);
 			}
+			$order->update_status( 'completed' );
 
 			return rest_ensure_response(
 				[
