@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payment_Gateway_WCPay_Subscriptions_Compat
+ * Trait WC_Payment_Gateway_WCPay_Subscriptions_Trait
  *
  * @package WooCommerce\Payments
  */
@@ -21,6 +21,8 @@ use WCPay\Constants\Payment_Initiated_By;
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
  */
 trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
+
+	use WC_Payments_Subscriptions_Utilities;
 
 	/**
 	 * Retrieve payment token from a subscription or order.
@@ -131,27 +133,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Checks if subscriptions are enabled on the site.
-	 *
-	 * @return bool Whether subscriptions is enabled or not.
-	 */
-	public function is_subscriptions_enabled() {
-		return class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' );
-	}
-
-	/**
-	 * Returns whether this user is changing the payment method for a subscription.
-	 *
-	 * @return bool
-	 */
-	protected function is_changing_payment_method_for_subscription() {
-		if ( isset( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return wcs_is_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
-		}
-		return false;
-	}
-
-	/**
 	 * Prepares the payment information object.
 	 *
 	 * @param Payment_Information $payment_information The payment information from parent gateway.
@@ -175,25 +156,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$payment_information->set_is_changing_payment_method_for_subscription( $is_changing_payment );
 
 		return $payment_information;
-	}
-
-	/**
-	 * Returns a boolean value indicating whether the save payment checkbox should be
-	 * displayed during checkout.
-	 *
-	 * Returns `false` if the cart currently has a subscriptions or if the request has a
-	 * `change_payment_method` GET parameter. Returns the value in `$display` otherwise.
-	 *
-	 * @param bool $display Bool indicating whether to show the save payment checkbox in the absence of subscriptions.
-	 *
-	 * @return bool Indicates whether the save payment method checkbox should be displayed or not.
-	 */
-	public function display_save_payment_method_checkbox( $display ) {
-		if ( WC_Subscriptions_Cart::cart_contains_subscription() || $this->is_changing_payment_method_for_subscription() ) {
-			return false;
-		}
-		// Only render the "Save payment method" checkbox if there are no subscription products in the cart.
-		return $display;
 	}
 
 	/**

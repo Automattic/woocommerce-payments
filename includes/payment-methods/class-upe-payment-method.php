@@ -15,11 +15,14 @@ use WC_Payment_Token_CC;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Subscriptions;
 use WC_Subscriptions_Cart;
+use WC_Payments_Subscriptions_Utilities;
 
 /**
  * Extendable abstract class for payment methods.
  */
 abstract class UPE_Payment_Method {
+
+	use WC_Payments_Subscriptions_Utilities;
 
 	/**
 	 * Stripe key name
@@ -120,7 +123,7 @@ abstract class UPE_Payment_Method {
 	 * @return bool
 	 */
 	public function is_subscription_item_in_cart() {
-		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
+		if ( $this->is_subscriptions_enabled() ) {
 			return WC_Subscriptions_Cart::cart_contains_subscription() || 0 < count( wcs_get_order_type_cart_items( 'renewal' ) );
 		}
 		return false;
