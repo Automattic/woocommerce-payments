@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@stripe/react-stripe-js": "1.4.1",
-    "@stripe/stripe-js": "1.12.1",
+    "@stripe/stripe-js": "1.15.1",
     "@woocommerce/explat": "^1.0.1",
     "css-loader": "^5.2.6",
     "debug": "^4.1.1",
