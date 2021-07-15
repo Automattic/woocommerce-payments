@@ -58,6 +58,13 @@ class Locale {
 	 * @return void
 	 */
 	private function load_locale_data() {
+		$transient_name = 'wcpay_multi_currency_locale_data';
+		$transient_data = get_transient( $transient_name );
+		if ( $transient_data ) {
+			$this->currency_format = $transient_data;
+			return;
+		}
+
 		$locale_info = include WC()->plugin_path() . '/i18n/locale-info.php';
 
 		if ( is_array( $locale_info ) && 0 < count( $locale_info ) ) {
@@ -85,6 +92,8 @@ class Locale {
 					'num_decimals' => $locale['num_decimals'],
 				];
 			}
+
+			set_transient( $transient_name, $this->currency_format, DAY_IN_SECONDS );
 		}
 	}
 }
