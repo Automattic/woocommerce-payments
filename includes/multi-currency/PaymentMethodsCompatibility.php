@@ -73,7 +73,7 @@ class PaymentMethodsCompatibility {
 		}
 
 		$default_currency   = $this->multi_currency->get_default_currency();
-		$enabled_currencies = get_option( $this->multi_currency->id . '_enabled_currencies', [] );
+		$enabled_currencies = array_keys( $this->multi_currency->get_enabled_currencies() );
 
 		// we have payments needing some currency being enabled, let's ensure the currency is present.
 		foreach ( $payment_methods_needing_currency as $payment_method ) {
@@ -81,7 +81,7 @@ class PaymentMethodsCompatibility {
 			if ( $default_currency->get_code() === $needed_currency ) {
 				continue;
 			}
-			if ( isset( $enabled_currencies[ $needed_currency ] ) ) {
+			if ( in_array( $enabled_currencies[ $needed_currency ], $enabled_currencies, true ) ) {
 				continue;
 			}
 
