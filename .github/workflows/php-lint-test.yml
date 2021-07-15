@@ -49,6 +49,6 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           tools:       composer
-          coverage:    none
+          coverage:    xdebug2
       # run CI checks
       - run: bash bin/run-ci-tests.bash
