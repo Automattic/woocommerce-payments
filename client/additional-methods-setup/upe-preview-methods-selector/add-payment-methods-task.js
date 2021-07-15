@@ -63,12 +63,9 @@ const CurrencyInformation = ( { selectedMethods } ) => {
 		return null;
 	}
 
-	const enabledMethodsRequiringEuros = Object.entries( selectedMethods )
-		.map( ( [ method, enabled ] ) => enabled && method )
-		.filter( Boolean )
-		.filter( ( method ) =>
-			[ 'giropay', 'sepa_debit', 'sofort' ].includes( method )
-		);
+	const enabledMethodsRequiringEuros = selectedMethods.filter( ( method ) =>
+		[ 'giropay', 'sepa_debit', 'sofort' ].includes( method )
+	);
 
 	if ( 0 === enabledMethodsRequiringEuros.length ) {
 		return null;
