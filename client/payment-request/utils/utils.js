@@ -92,6 +92,17 @@ export const getPaymentRequestAjaxURL = ( endpoint ) =>
 		.replace( '%%endpoint%%', 'wcpay_' + endpoint );
 
 /**
+ * Construct WC AJAX endpoint URL.
+ *
+ * @param {string} ajaxURL AJAX URL.
+ * @param {string} endpoint Request endpoint URL.
+ * @param {string} prefix Optional prefix for endpoint action.
+ * @return {string} URL with interpolated ednpoint.
+ */
+export const buildAjaxURL = ( ajaxURL, endpoint, prefix = 'wcpay_' ) =>
+	ajaxURL.toString().replace( '%%endpoint%%', prefix + endpoint );
+
+/**
  * Get error messages from WooCommerce notice from server response.
  *
  * @param {string} notice Error notice.
