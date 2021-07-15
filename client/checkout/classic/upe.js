@@ -112,6 +112,19 @@ jQuery( function ( $ ) {
 	let upeElement = null;
 	let paymentIntentId = null;
 	let isUPEComplete = false;
+	const hiddenBillingFields = {
+		name: 'never',
+		email: 'never',
+		phone: 'never',
+		address: {
+			country: 'never',
+			line1: 'never',
+			line2: 'never',
+			city: 'never',
+			state: 'never',
+			postalCode: 'never',
+		},
+	};
 
 	/**
 	 * Block UI to indicate processing and avoid duplicate submission.
@@ -193,6 +206,32 @@ jQuery( function ( $ ) {
 	};
 
 	/**
+	 * Converts form fields object into Stripe `billing_details` object.
+	 *
+	 * @param {Object} fields Object mapping checkout billing fields to values.
+	 * @return {Object} Stripe formatted `billing_details` object.
+	 */
+	const getBillingDetails = ( fields ) => {
+		return {
+			name: (
+				fields.billing_first_name +
+				' ' +
+				fields.billing_last_name
+			).trim(),
+			email: fields.billing_email,
+			phone: fields.billing_phone,
+			address: {
+				country: fields.billing_country,
+				line1: fields.billing_address_1,
+				line2: fields.billing_address_2,
+				city: fields.billing_city,
+				state: fields.billing_state,
+				postal_code: fields.billing_postcode,
+			},
+		};
+	};
+
+	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
 	 * @param {boolean} isSetupIntent {Boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
@@ -237,6 +276,7 @@ jQuery( function ( $ ) {
 					clientSecret,
 					appearance,
 					business: { name: businessName },
+					fields: { billingDetails: hiddenBillingFields },
 				} );
 				upeElement.mount( '#wcpay-upe-element' );
 				unblockUI( $upeContainer );
@@ -428,7 +468,6 @@ jQuery( function ( $ ) {
 			obj[ field.name ] = field.value;
 			return obj;
 		}, {} );
-
 		try {
 			const response = await api.processCheckout(
 				paymentIntentId,
@@ -439,6 +478,9 @@ jQuery( function ( $ ) {
 				element: upeElement,
 				confirmParams: {
 					return_url: redirectUrl,
+					payment_method_data: {
+						billing_details: getBillingDetails( formFields ),
+					},
 				},
 			} );
 			if ( error ) {
