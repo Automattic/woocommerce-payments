@@ -291,9 +291,7 @@ const AddPaymentMethodsTask = () => {
 						</LoadableBlock>
 					</CardBody>
 				</Card>
-				<LoadableBlock numLines={ 3 } isLoading={ ! isActive }>
-					<CurrencyInformation selectedMethods={ selectedMethods } />
-				</LoadableBlock>
+				<CurrencyInformation selectedMethods={ selectedMethods } />
 				<LoadableBlock numLines={ 10 } isLoading={ ! isActive }>
 					<ContinueButton
 						paymentMethodsState={ paymentMethodsState }
