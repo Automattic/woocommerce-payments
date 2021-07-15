@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.5
 Tested up to: 5.7
 Requires PHP: 7.0
-Stable tag: 2.6.1
+Stable tag: 2.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,10 +101,14 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.7.0 - 2021-xx-xx =
+= 2.8.0 - 2021-xx-xx =
+* Add - Use date picker for applicable dispute evidence fields.
+
+= 2.7.0 - 2021-07-14 =
 * Add - Add a link to the snackbar notice that appears after submitting or saving evidence for a dispute challenge.
 * Add - Support saving new cards and paying with previously saved cards in the WooCommerce Checkout Block.
 * Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
+* Fix - Do not overwrite admin pages when account is disconnected.
 * Update - Set a description when creating payment intents.
 
 = 2.6.1 - 2021-07-01 =

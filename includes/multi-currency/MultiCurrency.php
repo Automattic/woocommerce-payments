@@ -46,6 +46,13 @@ class MultiCurrency {
 	protected $compatibility;
 
 	/**
+	 * Locale instance.
+	 *
+	 * @var Locale
+	 */
+	protected $locale;
+
+	/**
 	 * Utils instance.
 	 *
 	 * @var Utils
@@ -116,6 +123,7 @@ class MultiCurrency {
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
+		$this->locale              = new Locale();
 		$this->utils               = new Utils();
 		$this->compatibility       = new Compatibility( $this->utils );
 
@@ -158,7 +166,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->utils );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->locale );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 
@@ -446,8 +454,15 @@ class MultiCurrency {
 	 */
 	public function set_enabled_currencies( $currencies = [] ) {
 		if ( 0 < count( $currencies ) ) {
+			// Get the currencies that were removed before they are updated.
+			$removed_currencies = array_diff( array_keys( $this->enabled_currencies ), $currencies );
+
+			// Update the enabled currencies and reinitialize.
 			update_option( $this->id . '_enabled_currencies', $currencies );
 			$this->initialize_enabled_currencies();
+
+			// Now remove the removed currencies settings.
+			$this->remove_currencies_settings( $removed_currencies );
 		}
 	}
 
@@ -729,5 +744,47 @@ class MultiCurrency {
 
 		// We have fresh currency data in the cache, so return it.
 		return $currency_cache;
+	}
+
+	/**
+	 * Accepts an array of currencies that should have their settings removed.
+	 *
+	 * @param array $currencies Array of Currency objects or 3 letter currency codes.
+	 *
+	 * @return void
+	 */
+	private function remove_currencies_settings( array $currencies ) {
+
+		foreach ( $currencies as $currency ) {
+			$this->remove_currency_settings( $currency );
+		}
+	}
+
+	/**
+	 * Will remove a currency's settings if it is not enabled.
+	 *
+	 * @param mixed $currency Currency object or 3 letter currency code.
+	 *
+	 * @return void
+	 */
+	private function remove_currency_settings( $currency ) {
+		$code = is_a( $currency, Currency::class ) ? $currency->get_code() : strtoupper( $currency );
+
+		// Bail if the currency code passed is not 3 characters, or if the currency is presently enabled.
+		if ( 3 !== strlen( $code ) || isset( $this->enabled_currencies[ $code ] ) ) {
+			return;
+		}
+
+		$settings = [
+			'price_charm',
+			'price_rounding',
+			'manual_rate',
+			'exchange_rate',
+		];
+
+		// Go through each setting and remove them.
+		foreach ( $settings as $setting ) {
+			delete_option( $this->id . '_' . $setting . '_' . strtolower( $code ) );
+		}
 	}
 }
