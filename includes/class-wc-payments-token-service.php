@@ -117,6 +117,12 @@ class WC_Payments_Token_Service {
 			return $tokens;
 		}
 
+		try {
+			$payment_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id );
+		} catch ( \WCPay\Exceptions\API_Exception $e ) {
+			return $tokens;
+		}
+
 		$stored_tokens = [];
 
 		foreach ( $tokens as $token ) {
@@ -125,10 +131,8 @@ class WC_Payments_Token_Service {
 			}
 		}
 
-		$payment_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id );
-
 		// Prevent unnecessary recursion, WC_Payment_Token::save() ends up calling 'woocommerce_get_customer_payment_tokens' in some cases.
-		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
+		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10 );
 		foreach ( $payment_methods as $payment_method ) {
 			if ( isset( $payment_method['type'] ) && 'card' === $payment_method['type'] ) {
 				if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) ) {
@@ -142,7 +146,7 @@ class WC_Payments_Token_Service {
 		add_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 
 		// Remove the payment methods that no longer exist in Stripe's side.
-		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
+		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10 );
 		foreach ( $stored_tokens as $token ) {
 			unset( $tokens[ $token->get_id() ] );
 			$token->delete();
