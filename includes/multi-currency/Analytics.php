@@ -17,6 +17,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Analytics {
 
+	const SCRIPT_NAME = 'WCPAY_MULTI_CURRENCY_ANALYTICS';
+
 	const PRIORITY_LATE = 11;
 
 	/**
@@ -63,20 +65,6 @@ class Analytics {
 		$this->data_registry  = Package::container()->get( AssetDataRegistry::class );
 
 		$this->init();
-	}
-
-	/**
-	 * Initialise all actions, filters and hooks related to analytics support.
-	 *
-	 * @return void
-	 */
-	public function init() {
-		add_action( 'init', [ $this, 'add_currency_settings' ], self::PRIORITY_LATE );
-
-		foreach ( self::ANALYTICS_PAGES as $analytics_page ) {
-			add_filter( "woocommerce_analytics_{$analytics_page}_query_args", [ $this, 'filter_stats_by_currency' ] );
-			add_filter( "woocommerce_analytics_{$analytics_page}_stats_query_args", [ $this, 'filter_stats_by_currency' ] );
-		}
 	}
 
 	/**
@@ -136,5 +124,63 @@ class Analytics {
 	public function filter_stats_by_currency( $args ): array {
 		$args['currency'] = $this->get_active_currency();
 		return $args;
+	}
+
+
+	/**
+	 * Initialise all actions, filters and hooks related to analytics support.
+	 *
+	 * @return void
+	 */
+	private function init() {
+		add_action( 'init', [ $this, 'add_currency_settings' ], self::PRIORITY_LATE );
+		add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+
+		foreach ( self::ANALYTICS_PAGES as $analytics_page ) {
+			add_filter( "woocommerce_analytics_{$analytics_page}_query_args", [ $this, 'filter_stats_by_currency' ] );
+			add_filter( "woocommerce_analytics_{$analytics_page}_stats_query_args", [ $this, 'filter_stats_by_currency' ] );
+		}
+
+		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ] );
+		add_filter( 'woocommerce_analytics_clauses_where', [ $this, 'filter_where_clauses' ] );
+		add_filter( 'woocommerce_analytics_clauses_select', [ $this, 'filter_select_clauses' ] );
+	}
+
+	/**
+	 * Register the CSS and JS scripts.
+	 *
+	 * @return void
+	 */
+	private function register_admin_scripts() {
+		$script_src_url    = plugins_url( 'dist/multi-currency-analytics.js', WCPAY_PLUGIN_FILE );
+		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency-analytics.asset.php';
+		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+
+		wp_register_script(
+			self::SCRIPT_NAME,
+			$script_src_url,
+			$script_asset['dependencies'],
+			\WC_Payments::get_file_version( 'dist/multi-currency-analytics.js' ),
+			true
+		);
+
+		wp_register_style(
+			self::SCRIPT_NAME,
+			plugins_url( 'dist/multi-currency-analytics.css', WCPAY_PLUGIN_FILE ),
+			[ 'wc-components' ],
+			\WC_Payments::get_file_version( 'dist/multi-currency-analytics.css' )
+		);
+	}
+
+	/**
+	 * Enqueue scripts used on the analytics WP Admin pages.
+	 *
+	 * @return void
+	 */
+	private function enqueue_admin_scripts() {
+		$this->register_admin_scripts();
+
+		wp_enqueue_script( self::SCRIPT_NAME );
+		wp_enqueue_style( self::SCRIPT_NAME );
 	}
 }
