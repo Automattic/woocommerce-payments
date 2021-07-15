@@ -64,6 +64,43 @@ class Compatibility {
 	}
 
 	/**
+	 * Checks to see if the coupon's amount should be converted.
+	 *
+	 * @param object $coupon Coupon object to test.
+	 *
+	 * @return bool True if it should be converted.
+	 */
+	public function should_convert_coupon_amount( $coupon = null ): bool {
+		if ( ! $coupon ) {
+			return true;
+		}
+
+		// We do not need to convert percentage coupons.
+		if ( $this->is_coupon_type( $coupon, 'subscription_percent' ) ) {
+			return false;
+		}
+
+		// If there's not a renewal in the cart, we can convert.
+		$subscription_renewal = $this->cart_contains_renewal();
+		if ( ! $subscription_renewal ) {
+			return true;
+		}
+
+		/**
+		 * We need to allow the early renewal to convert the cost, as it pulls the original value of the coupon.
+		 * Subsequent queries for the amount use the first converted amount.
+		 * This also works for normal manual renewals.
+		 */
+		if ( ! $this->utils->is_call_in_backtrace( [ 'WCS_Cart_Early_Renewal->setup_cart' ] )
+			&& $this->utils->is_call_in_backtrace( [ 'WC_Discounts->apply_coupon' ] )
+			&& $this->is_coupon_type( $coupon, 'subscription_recurring' ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Checks to see if the product's price should be converted.
 	 *
 	 * @param object $product Product object to test.
@@ -144,6 +181,32 @@ class Compatibility {
 			}
 		}
 
+		return false;
+	}
+
+	/**
+	 * Checks to see if the coupon passed is of a specified type.
+	 *
+	 * @param \WC_Coupon $coupon Coupon to test.
+	 * @param string     $type   Type of coupon to test for.
+	 *
+	 * @return bool True on match.
+	 */
+	private function is_coupon_type( $coupon, string $type ) {
+
+		switch ( $type ) {
+			case 'subscription_percent':
+				$types = [ 'recurring_percent', 'sign_up_fee_percent', 'renewal_percent' ];
+				break;
+
+			case 'subscription_recurring':
+				$types = [ 'recurring_fee', 'recurring_percent', 'renewal_fee', 'renewal_percent', 'renewal_cart' ];
+				break;
+		}
+
+		if ( in_array( $coupon->get_discount_type(), $types, true ) ) {
+			return true;
+		}
 		return false;
 	}
 }

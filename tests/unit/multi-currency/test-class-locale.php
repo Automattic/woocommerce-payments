@@ -83,9 +83,9 @@ class WCPay_Multi_Currency_Locale_Tests extends WP_UnitTestCase {
 					'num_decimals' => 2,
 				],
 				'GG' => [
-					'currency_pos' => 'left_space',
-					'thousand_sep' => '.',
-					'decimal_sep'  => ',',
+					'currency_pos' => 'left',
+					'thousand_sep' => ',',
+					'decimal_sep'  => '.',
 					'num_decimals' => 2,
 				],
 				'IM' => [
