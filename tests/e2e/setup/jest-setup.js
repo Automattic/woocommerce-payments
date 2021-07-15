@@ -8,6 +8,10 @@ import {
 	enablePageDialogAccept,
 	isOfflineMode,
 	setBrowserViewport,
+	withRestApi,
+	trashExistingPosts,
+	clearLocalStorage,
+	WP_ADMIN_LOGIN,
 } from '@wordpress/e2e-test-utils';
 
 /**
@@ -188,6 +192,12 @@ async function removeGuestUser() {
 // other posts/comments/etc. aren't dirtying tests and tests don't depend on
 // each other's side-effects.
 beforeAll( async () => {
+	await trashExistingPosts();
+	await withRestApi.deleteAllProducts();
+	await withRestApi.deleteAllCoupons();
+	await page.goto( WP_ADMIN_LOGIN );
+	await clearLocalStorage();
+	await setBrowserViewport( 'large' );
 	capturePageEventsForTearDown();
 	enablePageDialogAccept();
 	observeConsoleLogging();
@@ -201,6 +211,11 @@ afterEach( async () => {
 	await setupBrowser();
 } );
 
-afterAll( () => {
+afterAll( async () => {
 	removePageEvents();
+	// Clear browser cookies and cache using DevTools.
+	// This is to ensure that each test ends with no user logged in.
+	const client = await page.target().createCDPSession();
+	await client.send( 'Network.clearBrowserCookies' );
+	await client.send( 'Network.clearBrowserCache' );
 } );
