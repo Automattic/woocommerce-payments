@@ -21,7 +21,7 @@ class PaymentMethodsCompatibility {
 	private $multi_currency;
 
 	/**
-	 * The WCPay gateway class instance
+	 * The WCPay gateway class instance.
 	 *
 	 * @var \WC_Payment_Gateway_WCPay
 	 */
