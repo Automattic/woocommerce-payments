@@ -30,7 +30,25 @@ import LoadableSettingsSection from '../../settings/loadable-settings-section';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 
 const usePaymentMethodsCheckboxState = () => {
+	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
 	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {} );
+
+	useEffect( () => {
+		setPaymentMethodsState(
+			// by default, all the checkboxes should be "checked"
+			availablePaymentMethods
+				.filter( ( method ) =>
+					[ 'giropay', 'sofort', 'sepa_debit' ].includes( method )
+				)
+				.reduce(
+					( map, paymentMethod ) => ( {
+						...map,
+						[ paymentMethod ]: true,
+					} ),
+					{}
+				)
+		);
+	}, [ availablePaymentMethods, setPaymentMethodsState ] );
 
 	const handleChange = useCallback(
 		( paymentMethodName, enabled ) => {
@@ -42,7 +60,7 @@ const usePaymentMethodsCheckboxState = () => {
 		[ setPaymentMethodsState ]
 	);
 
-	return [ paymentMethodsState, handleChange, setPaymentMethodsState ];
+	return [ paymentMethodsState, handleChange ];
 };
 
 const ContinueButton = ( { paymentMethodsState } ) => {
@@ -132,7 +150,6 @@ const AddPaymentMethodsTask = () => {
 	const [
 		paymentMethodsState,
 		handlePaymentMethodChange,
-		setPaymentMethodsState,
 	] = usePaymentMethodsCheckboxState();
 	const selectedMethods = useMemo(
 		() =>
@@ -141,23 +158,6 @@ const AddPaymentMethodsTask = () => {
 				.filter( Boolean ),
 		[ paymentMethodsState ]
 	);
-
-	useEffect( () => {
-		setPaymentMethodsState(
-			// by default, all the checkboxes should be "checked"
-			availablePaymentMethods
-				.filter( ( method ) =>
-					[ 'giropay', 'sofort', 'sepa_debit' ].includes( method )
-				)
-				.reduce(
-					( map, paymentMethod ) => ( {
-						...map,
-						[ paymentMethod ]: true,
-					} ),
-					{}
-				)
-		);
-	}, [ availablePaymentMethods, setPaymentMethodsState ] );
 
 	return (
 		<WizardTaskItem
