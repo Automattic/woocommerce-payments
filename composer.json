@@ -15,7 +15,7 @@
       "php": "7.*",
       "automattic/jetpack-connection": "1.20.0",
       "automattic/jetpack-config": "1.4.3",
-      "automattic/jetpack-autoloader": "2.8.0",
+      "automattic/jetpack-autoloader": "2.10.3",
       "myclabs/php-enum": "1.7.7",
       "ext-json": "*"
     },
