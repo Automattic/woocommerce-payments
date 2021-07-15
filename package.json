@@ -65,7 +65,7 @@
     "debug": "^4.1.1",
     "interpolate-components": "^1.1.1",
     "lodash": "^4.17.14",
-    "wordpress-element": "npm:@wordpress/element@2.11.0"
+    "wordpress-element": "npm:@wordpress/element@2.20.3"
   },
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",
