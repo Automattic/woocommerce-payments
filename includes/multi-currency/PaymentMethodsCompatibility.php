@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Payment_Gateway_WCPay;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -23,7 +25,7 @@ class PaymentMethodsCompatibility {
 	/**
 	 * The WCPay gateway class instance.
 	 *
-	 * @var \WC_Payment_Gateway_WCPay
+	 * @var WC_Payment_Gateway_WCPay
 	 */
 	private $gateway;
 
@@ -41,10 +43,10 @@ class PaymentMethodsCompatibility {
 	/**
 	 * Constructor
 	 *
-	 * @param MultiCurrency             $multi_currency The multi currency class instance.
-	 * @param \WC_Payment_Gateway_WCPay $gateway The WCPay gateway class instance.
+	 * @param MultiCurrency            $multi_currency The multi currency class instance.
+	 * @param WC_Payment_Gateway_WCPay $gateway The WCPay gateway class instance.
 	 */
-	public function __construct( MultiCurrency $multi_currency, \WC_Payment_Gateway_WCPay $gateway ) {
+	public function __construct( MultiCurrency $multi_currency, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->multi_currency = $multi_currency;
 		$this->gateway        = $gateway;
 
