@@ -449,7 +449,7 @@ class MultiCurrency {
 	/**
 	 * Sets the enabled currencies for the store.
 	 *
-	 * @param array $currencies Array of currency codes to be enabled.
+	 * @param string[] $currencies Array of currency codes to be enabled.
 	 *
 	 * @return void
 	 */

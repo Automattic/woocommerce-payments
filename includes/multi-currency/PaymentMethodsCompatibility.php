@@ -72,22 +72,30 @@ class PaymentMethodsCompatibility {
 			return;
 		}
 
-		$default_currency   = $this->multi_currency->get_default_currency();
-		$enabled_currencies = array_keys( $this->multi_currency->get_enabled_currencies() );
+		$enabled_currencies   = $this->multi_currency->get_enabled_currencies();
+		$available_currencies = $this->multi_currency->get_available_currencies();
+
+		$missing_currency_codes = [];
 
 		// we have payments needing some currency being enabled, let's ensure the currency is present.
 		foreach ( $payment_methods_needing_currency as $payment_method ) {
-			$needed_currency = $this->payment_method_currency_map[ $payment_method ];
-			if ( $default_currency->get_code() === $needed_currency ) {
+			$needed_currency_code = $this->payment_method_currency_map[ $payment_method ];
+			if ( ! isset( $available_currencies[ $needed_currency_code ] ) ) {
 				continue;
 			}
-			if ( in_array( $enabled_currencies[ $needed_currency ], $enabled_currencies, true ) ) {
+			if ( isset( $enabled_currencies[ $needed_currency_code ] ) ) {
 				continue;
 			}
 
-			$enabled_currencies[] = $needed_currency;
+			$missing_currency_codes[] = $needed_currency_code;
 		}
 
-		update_option( $this->multi_currency->id . '_enabled_currencies', $enabled_currencies );
+		$missing_currency_codes = array_unique( $missing_currency_codes );
+
+		if ( empty( $missing_currency_codes ) ) {
+			return;
+		}
+
+		$this->multi_currency->set_enabled_currencies( array_merge( array_keys( $enabled_currencies ), $missing_currency_codes ) );
 	}
 }
