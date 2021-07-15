@@ -3,7 +3,7 @@
  */
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, Card, CardBody } from '@wordpress/components';
+import { Button, Card, CardBody, Notice } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
 /**
@@ -17,14 +17,13 @@ import {
 	useGetAvailablePaymentMethodIds,
 	useSettings,
 	useCurrencies,
-	useDefaultCurrency,
 	useEnabledCurrencies,
 } from '../../data';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import { LoadableBlock } from '../../components/loadable';
 import LoadableSettingsSection from '../../settings/loadable-settings-section';
-import Chip from '../../components/chip';
+import './add-payment-methods-task.scss';
 
 const usePaymentMethodsCheckboxState = () => {
 	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {} );
@@ -44,21 +43,45 @@ const usePaymentMethodsCheckboxState = () => {
 
 const CurrencyInformation = ( { paymentMethodsState } ) => {
 	const { isLoading: isLoadingCurrencyInformation } = useCurrencies();
-	const defaultCurrency = useDefaultCurrency();
 	const { enabledCurrencies } = useEnabledCurrencies();
 
-	// eslint-disable-next-line no-console
-	console.log( '###', {
-		isLoadingCurrencyInformation,
-		enabledCurrencies,
-		defaultCurrency,
-	} );
+	if ( isLoadingCurrencyInformation ) {
+		return null;
+	}
 
-	const enabledPaymentMethods = Object.entries( paymentMethodsState )
+	// if EUR is already enabled, no need to display the info message
+	const enabledCurrencyCodes = Object.entries( enabledCurrencies ).map(
+		( currency ) => currency.code
+	);
+	if ( enabledCurrencyCodes.includes( 'EUR' ) ) {
+		return null;
+	}
+
+	const enabledMethodsRequiringEuros = Object.entries( paymentMethodsState )
 		.map( ( [ method, enabled ] ) => enabled && method )
-		.filter( Boolean );
+		.filter( Boolean )
+		.filter( ( method ) =>
+			[ 'giropay', 'sepa_debit', 'sofort' ].includes( method )
+		);
 
-	return <Chip message={ enabledPaymentMethods.join( ', ' ) } />;
+	if ( 0 === enabledMethodsRequiringEuros.length ) {
+		return null;
+	}
+
+	return (
+		<Notice isDismissible={ false } className="currency-notice">
+			{ interpolateComponents( {
+				mixedString: __(
+					"The selected methods require an additional currency, so {{strong}}we'll add Euro (€) to your store{{/strong}}. " +
+						'You can view & manage currencies later in settings.',
+					'woocommerce-payments'
+				),
+				components: {
+					strong: <strong />,
+				},
+			} ) }
+		</Notice>
+	);
 };
 
 const ContinueButton = ( { paymentMethodsState } ) => {
@@ -124,8 +147,6 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 const AddPaymentMethodsTask = () => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
 	const { isActive } = useContext( WizardTaskContext );
-	useCurrencies();
-	const defaultCurrency = useDefaultCurrency();
 
 	// I am using internal state in this component
 	// and committing the changes on `initialEnabledPaymentMethodIds` only when the "continue" button is clicked.
@@ -240,13 +261,11 @@ const AddPaymentMethodsTask = () => {
 						</LoadableBlock>
 					</CardBody>
 				</Card>
-				{ defaultCurrency?.code && (
-					<LoadableBlock numLines={ 3 } isLoading={ ! isActive }>
-						<CurrencyInformation
-							paymentMethodsState={ paymentMethodsState }
-						/>
-					</LoadableBlock>
-				) }
+				<LoadableBlock numLines={ 3 } isLoading={ ! isActive }>
+					<CurrencyInformation
+						paymentMethodsState={ paymentMethodsState }
+					/>
+				</LoadableBlock>
 				<LoadableBlock numLines={ 10 } isLoading={ ! isActive }>
 					<ContinueButton
 						paymentMethodsState={ paymentMethodsState }
