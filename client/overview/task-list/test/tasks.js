@@ -135,7 +135,7 @@ describe( 'getTasks()', () => {
 			);
 		} );
 
-		it( 'does not render task if `showTask` is true', () => {
+		it( 'does not render task if `showTask` is false', () => {
 			createAdditionalMethodsSetupTask.mockReturnValue( {
 				key: 'woocommerce-payments--additional-payment-methods',
 			} );

@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { updateQueryString } from '@woocommerce/navigation';
+import { getPath, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -50,9 +50,14 @@ const createAdditionalMethodsSetupTask = ( {
 			'woocommerce-payments'
 		),
 		isDismissable: true,
-		action: () => {
-			updateQueryString( { task: key }, '' );
-		},
+
+		...( '/payments/overview' === getPath()
+			? {
+					onClick: () => {
+						updateQueryString( { task: key }, '' );
+					},
+			  }
+			: {} ),
 
 		// overwriting the default values, while the test is running
 		// using object spread to override the attributes makes things a bit easier when it'll be time to clean up

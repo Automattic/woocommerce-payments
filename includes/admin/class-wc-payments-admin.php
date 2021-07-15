@@ -653,7 +653,7 @@ class WC_Payments_Admin {
 	/**
 	 * Checks whether the current page should be eligible to enqueue the task.
 	 */
-	private function is_page_eligible_for_additional_methods_setup_task() {
+	public function is_page_eligible_for_additional_methods_setup_task() {
 		if ( ! wc_admin_is_registered_page() ) {
 			return false;
 		}

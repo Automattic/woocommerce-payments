@@ -6,6 +6,7 @@
 import { render, screen } from '@testing-library/react';
 import MethodSelector from '../methods-selector';
 import UpePreviewMethodSelector from '../upe-preview-methods-selector';
+import { getPath, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -14,6 +15,10 @@ import createAdditionalMethodsSetupTask from '../task';
 
 jest.mock( '../methods-selector', () => jest.fn() );
 jest.mock( '../upe-preview-methods-selector', () => jest.fn() );
+jest.mock( '@woocommerce/navigation', () => ( {
+	getPath: jest.fn(),
+	updateQueryString: jest.fn(),
+} ) );
 
 describe( 'createAdditionalMethodsSetupTask()', () => {
 	beforeEach( () => {
@@ -100,5 +105,26 @@ describe( 'createAdditionalMethodsSetupTask()', () => {
 				);
 			}
 		);
+	} );
+
+	it( 'adds onClick redirect on WCPay > Overview page', () => {
+		getPath.mockReturnValue( '/payments/overview' );
+
+		const result = createAdditionalMethodsSetupTask( {} );
+
+		expect( result ).toHaveProperty( 'onClick' );
+		result.onClick();
+		expect( updateQueryString ).toHaveBeenCalledWith(
+			{ task: 'woocommerce-payments--additional-payment-methods' },
+			''
+		);
+	} );
+
+	it( 'does not add onClick redirect on WC > Home page', () => {
+		getPath.mockReturnValue( '/' );
+
+		const result = createAdditionalMethodsSetupTask( {} );
+
+		expect( result ).not.toHaveProperty( 'onClick' );
 	} );
 } );

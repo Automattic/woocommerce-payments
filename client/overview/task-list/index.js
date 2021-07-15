@@ -43,8 +43,7 @@ const TaskList = ( { tasks } ) => {
 							completed={ task.completed }
 							content={ task.content || task.additionalInfo }
 							expanded
-							onClick={ task.onClick }
-							action={ task.action }
+							action={ task.onClick }
 							time={ task.time }
 							level={ task.level }
 						/>
