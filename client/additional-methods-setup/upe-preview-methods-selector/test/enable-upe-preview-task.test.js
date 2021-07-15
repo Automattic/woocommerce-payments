@@ -43,8 +43,7 @@ describe( 'EnableUpePreviewTask', () => {
 		await waitFor( () => expect( setIsUpeEnabledMock ).toHaveReturned() );
 		expect( setCompletedMock ).toHaveBeenCalledWith(
 			true,
-			// change this to the second step's ID, once implemented
-			'setup-complete'
+			'add-payment-methods'
 		);
 	} );
 } );
