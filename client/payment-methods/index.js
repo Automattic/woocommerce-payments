@@ -27,6 +27,7 @@ import {
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
 import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
+import SurveyModal from '../settings/survey-modal';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
@@ -75,7 +76,7 @@ const methodsConfiguration = {
 };
 
 // @todo - remove once #2174 is merged and use real banner instead.
-function UpeSetupBanner() {
+const UpeSetupBanner = () => {
 	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
 	return (
 		<>
@@ -89,9 +90,9 @@ function UpeSetupBanner() {
 			</Button>
 		</>
 	);
-}
+};
 
-function PaymentMethodsDropdownMenu() {
+const PaymentMethodsDropdownMenu = () => {
 	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
 	return (
 		<DropdownMenu
@@ -111,7 +112,7 @@ function PaymentMethodsDropdownMenu() {
 			] }
 		/>
 	);
-}
+};
 
 const UpeDisableError = () => {
 	return (
@@ -149,6 +150,7 @@ const PaymentMethods = () => {
 
 	return (
 		<>
+			<SurveyModal enabledMethods={ enabledMethods } />
 			{ 'error' === status && <UpeDisableError /> }
 			<Card
 				className={ classNames( 'payment-methods', {
@@ -160,6 +162,9 @@ const PaymentMethods = () => {
 						size={ null }
 						className="payment-methods-header"
 					>
+						<p>
+							<strong>Payment Methods</strong>
+						</p>
 						<PaymentMethodsDropdownMenu />
 					</CardHeader>
 				) }
