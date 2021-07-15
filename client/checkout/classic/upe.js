@@ -244,6 +244,7 @@ jQuery( function ( $ ) {
 
 		// If paying from order, we need to create Payment Intent from order not cart.
 		const isOrderPay = getConfig( 'isOrderPay' );
+		const isCheckout = getConfig( 'isCheckout' );
 		let orderId;
 		if ( isOrderPay ) {
 			orderId = getConfig( 'orderId' );
@@ -271,13 +272,18 @@ jQuery( function ( $ ) {
 				const appearance = getAppearance();
 				hiddenElementsForUPE.cleanup();
 				const businessName = getConfig( 'accountDescriptor' );
-
-				upeElement = elements.create( 'payment', {
+				const upeSettings = {
 					clientSecret,
 					appearance,
 					business: { name: businessName },
-					fields: { billingDetails: hiddenBillingFields },
-				} );
+				};
+				if ( isCheckout && ! isOrderPay ) {
+					upeSettings.fields = {
+						billingDetails: hiddenBillingFields,
+					};
+				}
+
+				upeElement = elements.create( 'payment', upeSettings );
 				upeElement.mount( '#wcpay-upe-element' );
 				unblockUI( $upeContainer );
 				upeElement.on( 'change', ( event ) => {
