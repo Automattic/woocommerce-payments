@@ -4,8 +4,17 @@
 	align-items: center;
 	width: 100%;
 
+	margin-bottom: $grid-unit-20;
+	&:last-child {
+		margin-bottom: 0;
+	}
+
 	& > * {
 		margin: 0 3px;
+	}
+
+	.components-base-control__field {
+		margin-bottom: 0;
 	}
 
 	&__fees {
