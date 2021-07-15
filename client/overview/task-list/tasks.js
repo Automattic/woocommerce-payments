@@ -7,9 +7,15 @@ import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
+/**
+ * Internal dependencies
+ */
+import createAdditionalMethodsSetupTask from '../../additional-methods-setup/task';
+
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
+	additionalMethodsSetup: initialAdditionalMethodsSetup,
 	wpcomReconnectUrl,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
@@ -37,6 +43,18 @@ export const getTasks = ( {
 				'woocommerce-payments'
 			);
 	}
+
+	const additionalMethodsSetup = {
+		...initialAdditionalMethodsSetup,
+		setSetupCompleted: () => {
+			window.wcpaySettings.additionalMethodsSetup.isSetupCompleted =
+				'yes';
+		},
+		setUpeEnabled: () => {
+			window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = true;
+		},
+	};
+
 	return [
 		'yes' === showUpdateDetailsTask && {
 			key: 'update-business-details',
@@ -73,5 +91,7 @@ export const getTasks = ( {
 				window.location.href = wpcomReconnectUrl;
 			},
 		},
+		additionalMethodsSetup.showTask &&
+			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
 	].filter( Boolean );
 };

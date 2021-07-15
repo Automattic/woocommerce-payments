@@ -44,6 +44,7 @@ const TaskList = ( { tasks } ) => {
 							content={ task.content || task.additionalInfo }
 							expanded
 							onClick={ task.onClick }
+							action={ task.action }
 							time={ task.time }
 							level={ task.level }
 						/>
