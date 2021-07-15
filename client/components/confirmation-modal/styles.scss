@@ -5,6 +5,11 @@
 		min-width: 400px;
 	}
 
+	// to ensure that the separator extends all the way, even with different versions of Gutenberg
+	.components-modal__content {
+		padding: 0 $grid-unit-30 $grid-unit-30;
+	}
+
 	&__separator {
 		margin: $grid-unit-30 -#{$grid-unit-30};
 	}
