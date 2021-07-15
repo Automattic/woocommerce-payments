@@ -12,8 +12,6 @@ describe( 'Onboarding > WooCommerce Setup Wizard', () => {
 		await merchant.login();
 		await withRestApi.resetOnboarding();
 		await withRestApi.deleteAllShippingZones();
-		await withRestApi.resetSettingsGroupToDefault( 'general' );
-		await withRestApi.resetSettingsGroupToDefault( 'products' );
 	} );
 
 	it( 'can complete onboarding when visiting the first time', async () => {
