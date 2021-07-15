@@ -107,7 +107,7 @@
     "babel-loader": "8.2.2",
     "classnames": "^2.3.1",
     "colors": "1.4.0",
-    "config": "3.3.3",
+    "config": "3.3.6",
     "core-js": "3.9.0",
     "dotenv": "8.2.0",
     "eslint": "7.30.0",
