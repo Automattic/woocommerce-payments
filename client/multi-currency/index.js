@@ -60,6 +60,10 @@ const automaticRate = document.querySelector(
 	'[name=wcpay_multi_currency_automatic_exchange_rate]'
 );
 
+const numDecimals = document.querySelector(
+	'[name=wcpay_multi_currency_num_decimals]'
+);
+
 const manualRate = document.querySelector(
 	'[name^=wcpay_multi_currency_manual_rate_]'
 );
@@ -86,12 +90,11 @@ function updatePreview() {
 	let total = previewAmount.value * rate;
 
 	if ( 'none' !== rounding.value ) {
-		const precision = Math.pow( 10, rounding.value );
-		total = Math.ceil( total * precision ) / precision;
+		total = Math.ceil( total / rounding.value ) * rounding.value;
 	}
 
 	total += parseFloat( charm.value );
-	total = total.toFixed( 2 );
+	total = total.toFixed( parseInt( numDecimals.value, 10 ) );
 	total = isNaN( total )
 		? __( 'Please enter a valid number', 'woocommerce-payments' )
 		: total;

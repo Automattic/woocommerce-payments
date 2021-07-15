@@ -9,7 +9,6 @@ import interpolateComponents from 'interpolate-components';
 /**
  * Internal dependencies
  */
-import './style.scss';
 import { useDevMode, useIsWCPayEnabled, useTestMode } from 'data';
 import CardBody from '../card-body';
 
@@ -19,7 +18,7 @@ const GeneralSettings = () => {
 	const isDevModeEnabled = useDevMode();
 
 	return (
-		<Card className="general-settings">
+		<Card>
 			<CardBody>
 				<CheckboxControl
 					checked={ isWCPayEnabled }

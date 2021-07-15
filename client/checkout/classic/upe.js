@@ -18,6 +18,7 @@ jQuery( function ( $ ) {
 
 	const publishableKey = getConfig( 'publishableKey' );
 	const isUPEEnabled = getConfig( 'isUPEEnabled' );
+	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -127,6 +128,15 @@ jQuery( function ( $ ) {
 		} );
 	};
 
+	/**
+	 * Unblock UI to remove overlay and loading icon
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 */
+	const unblockUI = ( $form ) => {
+		$form.removeClass( 'processing' ).unblock();
+	};
+
 	// Show error notice at top of checkout form.
 	const showError = ( errorMessage ) => {
 		let messageWrapper = '';
@@ -169,6 +179,19 @@ jQuery( function ( $ ) {
 		$( document.body ).trigger( 'checkout_error' );
 	};
 
+	// Show or hide save payment information checkbox
+	const showNewPaymentMethodCheckbox = ( show = true ) => {
+		if ( show ) {
+			$( '.woocommerce-SavedPaymentMethods-saveNew' ).show();
+		} else {
+			$( '.woocommerce-SavedPaymentMethods-saveNew' ).hide();
+			$( 'input#wc-woocommerce_payments-new-payment-method' ).prop(
+				'checked',
+				false
+			);
+		}
+	};
+
 	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
@@ -179,14 +202,26 @@ jQuery( function ( $ ) {
 		if ( upeElement || paymentIntentId ) {
 			return;
 		}
+
+		// If paying from order, we need to create Payment Intent from order not cart.
+		const isOrderPay = getConfig( 'isOrderPay' );
+		let orderId;
+		if ( isOrderPay ) {
+			orderId = getConfig( 'orderId' );
+		}
+
 		const intentAction = isSetupIntent
 			? api.initSetupIntent()
-			: api.createIntent();
+			: api.createIntent( orderId );
+
+		const $upeContainer = $( '#wcpay-upe-element' );
+		blockUI( $upeContainer );
 
 		intentAction
 			.then( ( response ) => {
 				// I repeat, do NOT mount UPE twice.
 				if ( upeElement || paymentIntentId ) {
+					unblockUI( $upeContainer );
 					return;
 				}
 
@@ -204,11 +239,16 @@ jQuery( function ( $ ) {
 					business: { name: businessName },
 				} );
 				upeElement.mount( '#wcpay-upe-element' );
+				unblockUI( $upeContainer );
 				upeElement.on( 'change', ( event ) => {
+					const isPaymentMethodReusable =
+						paymentMethodsConfig[ event.value.type ].isReusable;
+					showNewPaymentMethodCheckbox( isPaymentMethodReusable );
 					isUPEComplete = event.complete;
 				} );
 			} )
 			.catch( ( error ) => {
+				unblockUI( $upeContainer );
 				showError( error.message );
 				const gatewayErrorMessage =
 					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
@@ -244,10 +284,97 @@ jQuery( function ( $ ) {
 			isUPEEnabled &&
 			! upeElement
 		) {
-			const useSetUpIntent = $( 'form#add_payment_method' ).length;
+			const isChangingPayment = getConfig( 'isChangingPayment' );
+
+			// We use a setup intent if we are on the screens to add a new payment method or to change a subscription payment.
+			const useSetUpIntent =
+				$( 'form#add_payment_method' ).length || isChangingPayment;
+
+			if ( isChangingPayment && getConfig( 'newTokenFormId' ) ) {
+				// Changing the method for a subscription takes two steps:
+				// 1. Create the new payment method that will redirect back.
+				// 2. Select the new payment method and resubmit the form to update the subscription.
+				const token = getConfig( 'newTokenFormId' );
+				$( token ).prop( 'selected', true ).trigger( 'click' );
+				$( 'form#order_review' ).submit();
+			}
 			mountUPEElement( useSetUpIntent );
 		}
 	}
+
+	/**
+	 * Checks if UPE form is filled out. Displays errors if not.
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 * @return {boolean} false if incomplete.
+	 */
+	const checkUPEForm = async ( $form ) => {
+		if ( ! upeElement ) {
+			showError( 'Your payment information is incomplete.' );
+			return false;
+		}
+
+		if ( ! isUPEComplete ) {
+			// If UPE fields are not filled, confirm payment to trigger validation errors
+			const { error } = await api.getStripe().confirmPayment( {
+				element: upeElement,
+				confirmParams: {
+					return_url: '',
+				},
+			} );
+			$form.removeClass( 'processing' ).unblock();
+			showError( error.message );
+			return false;
+		}
+		return true;
+	};
+	/**
+	 * Submits the confirmation of the intent to Stripe on Pay for Order page.
+	 * Stripe redirects to Order Thank you page on sucess.
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 * @return {boolean} A flag for the event handler.
+	 */
+	const handleUPEOrderPay = async ( $form ) => {
+		const isUPEFormValid = await checkUPEForm( $( '#order_review' ) );
+		if ( ! isUPEFormValid ) {
+			return;
+		}
+		blockUI( $form );
+
+		try {
+			const isSavingPaymentMethod = $(
+				'#wc-woocommerce_payments-new-payment-method'
+			).is( ':checked' );
+			const savePaymentMethod = isSavingPaymentMethod ? 'yes' : 'no';
+
+			const returnUrl =
+				getConfig( 'orderReturnURL' ) +
+				`&save_payment_method=${ savePaymentMethod }`;
+
+			const orderId = getConfig( 'orderId' );
+
+			// Update payment intent with level3 data, customer and maybe setup for future use.
+			await api.updateIntent(
+				paymentIntentId,
+				orderId,
+				savePaymentMethod
+			);
+
+			const { error } = await api.getStripe().confirmPayment( {
+				element: upeElement,
+				confirmParams: {
+					return_url: returnUrl,
+				},
+			} );
+			if ( error ) {
+				throw error;
+			}
+		} catch ( error ) {
+			$form.removeClass( 'processing' ).unblock();
+			showError( error.message );
+		}
+	};
 
 	/**
 	 * Submits the confirmation of the setup intent to Stripe on Add Payment Method page.
@@ -257,33 +384,19 @@ jQuery( function ( $ ) {
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handleUPEAddPayment = async ( $form ) => {
-		if ( ! upeElement ) {
-			showError( 'Your payment information is incomplete.' );
-			return;
-		}
-
-		const returnUrl = getConfig( 'paymentMethodsURL' );
-		if ( ! isUPEComplete ) {
-			// If UPE fields are not filled, confirm setup to trigger validation errors
-			const { error } = await api.getStripe().confirmSetup( {
-				element: upeElement,
-				confirmParams: {
-					// eslint-disable-next-line camelcase
-					return_url: returnUrl,
-				},
-			} );
-			$form.removeClass( 'processing' ).unblock();
-			showError( error.message );
+		const isUPEFormValid = await checkUPEForm( $form );
+		if ( ! isUPEFormValid ) {
 			return;
 		}
 
 		blockUI( $form );
 
 		try {
+			const returnUrl = getConfig( 'addPaymentReturnURL' );
+
 			const { error } = await api.getStripe().confirmSetup( {
 				element: upeElement,
 				confirmParams: {
-					// eslint-disable-next-line camelcase
 					return_url: returnUrl,
 				},
 			} );
@@ -304,21 +417,8 @@ jQuery( function ( $ ) {
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handleUPECheckout = async ( $form ) => {
-		if ( ! upeElement ) {
-			showError( 'Your payment information is incomplete.' );
-			return;
-		}
-
-		if ( ! isUPEComplete ) {
-			// If UPE fields are not filled, confirm payment to trigger validation errors
-			const { error } = await api.getStripe().confirmPayment( {
-				element: upeElement,
-				confirmParams: {
-					// eslint-disable-next-line camelcase
-					return_url: '',
-				},
-			} );
-			showError( error.message );
+		const isUPEFormValid = await checkUPEForm( $form );
+		if ( ! isUPEFormValid ) {
 			return;
 		}
 
@@ -338,7 +438,6 @@ jQuery( function ( $ ) {
 			const { error } = await api.getStripe().confirmPayment( {
 				element: upeElement,
 				confirmParams: {
-					// eslint-disable-next-line camelcase
 					return_url: redirectUrl,
 				},
 			} );
@@ -442,6 +541,18 @@ jQuery( function ( $ ) {
 				handleUPEAddPayment( $( this ) );
 				return false;
 			}
+		}
+	} );
+
+	// Handle the Pay for Order form if WooCommerce Payments is chosen.
+	$( '#order_review' ).on( 'submit', () => {
+		if ( ! isUsingSavedPaymentMethod() ) {
+			if ( getConfig( 'isChangingPayment' ) ) {
+				handleUPEAddPayment( $( '#order_review' ) );
+				return false;
+			}
+			handleUPEOrderPay( $( '#order_review' ) );
+			return false;
 		}
 	} );
 

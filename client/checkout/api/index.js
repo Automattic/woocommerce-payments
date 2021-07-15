@@ -96,7 +96,6 @@ export default class WCPayAPI {
 			constructor() {
 				this.args = {
 					...elements,
-					// eslint-disable-next-line camelcase
 					billing_details: {
 						address: {},
 					},
@@ -233,15 +232,11 @@ export default class WCPayAPI {
 
 				const ajaxCall = this.request( ajaxUrl, {
 					action: 'update_order_status',
-					// eslint-disable-next-line camelcase
 					order_id: orderId,
 					// Update the current order status nonce with the new one to ensure that the update
 					// order status call works when a guest user creates an account during checkout.
-					// eslint-disable-next-line camelcase
 					_ajax_nonce: nonce,
-					// eslint-disable-next-line camelcase
 					intent_id: intentId,
-					// eslint-disable-next-line camelcase
 					payment_method_id: paymentMethodToSave || null,
 				} );
 
@@ -280,7 +275,6 @@ export default class WCPayAPI {
 	initSetupIntent() {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			action: 'init_setup_intent',
-			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
 		} ).then( ( response ) => {
 			if ( ! response.success ) {
@@ -300,7 +294,6 @@ export default class WCPayAPI {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			action: 'create_setup_intent',
 			'wcpay-payment-method': paymentMethodId,
-			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
 		} ).then( ( response ) => {
 			if ( ! response.success ) {
@@ -312,31 +305,30 @@ export default class WCPayAPI {
 				return response.data;
 			}
 
-			return (
-				this.getStripe()
-					// eslint-disable-next-line camelcase
-					.confirmCardSetup( response.data.client_secret )
-					.then( ( confirmedSetupIntent ) => {
-						const { setupIntent, error } = confirmedSetupIntent;
-						if ( error ) {
-							throw error;
-						}
+			return this.getStripe()
+				.confirmCardSetup( response.data.client_secret )
+				.then( ( confirmedSetupIntent ) => {
+					const { setupIntent, error } = confirmedSetupIntent;
+					if ( error ) {
+						throw error;
+					}
 
-						return setupIntent;
-					} )
-			);
+					return setupIntent;
+				} );
 		} );
 	}
 
 	/**
 	 * Creates an intent based on a payment method.
 	 *
+	 * @param {int} orderId The id of the order if creating the intent on Order Pay page.
+	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	createIntent() {
+	createIntent( orderId ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			action: 'create_payment_intent',
-			// eslint-disable-next-line camelcase
+			wcpay_order_id: orderId,
 			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
 		} )
 			.then( ( response ) => {
@@ -356,6 +348,42 @@ export default class WCPayAPI {
 	}
 
 	/**
+	 * Updates a payment intent with data from order: customer, level3 data and and maybe sets the payment for future use.
+	 *
+	 * @param {string} paymentIntentId The id of the payment intent.
+	 * @param {int} orderId The id of the order.
+	 * @param {string} savePaymentMethod 'yes' if saving.
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	updateIntent( paymentIntentId, orderId, savePaymentMethod ) {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			// eslint-disable-next-line camelcase
+			wcpay_order_id: orderId,
+			// eslint-disable-next-line camelcase
+			wc_payment_intent_id: paymentIntentId,
+			// eslint-disable-next-line camelcase
+			save_payment_method: savePaymentMethod,
+			action: 'update_payment_intent',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
+		} )
+			.then( ( response ) => {
+				if ( 'failure' === response.result ) {
+					throw new Error( response.messages );
+				}
+				return response;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajaxrequest.
+					throw new Error( error.statusText );
+				}
+			} );
+	}
+	/**
 	 * Process checkout and update payment intent via AJAX.
 	 *
 	 * @param {string} paymentIntentId ID of payment intent to be updated.
@@ -365,7 +393,6 @@ export default class WCPayAPI {
 	processCheckout( paymentIntentId, fields ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			...fields,
-			// eslint-disable-next-line camelcase
 			wc_payment_intent_id: paymentIntentId,
 			action: 'woocommerce_checkout',
 		} )
@@ -397,7 +424,6 @@ export default class WCPayAPI {
 			getPaymentRequestAjaxURL( 'get_shipping_options' ),
 			{
 				security: getPaymentRequestData( 'nonce' )?.shipping,
-				// eslint-disable-next-line camelcase
 				is_product_page: getPaymentRequestData( 'is_product_page' ),
 				...shippingAddress,
 			}
@@ -415,10 +441,8 @@ export default class WCPayAPI {
 			getPaymentRequestAjaxURL( 'update_shipping_method' ),
 			{
 				security: getPaymentRequestData( 'nonce' )?.update_shipping,
-				/* eslint-disable camelcase */
 				shipping_method: [ shippingOption.id ],
 				is_product_page: getPaymentRequestData( 'is_product_page' ),
-				/* eslint-enable camelcase */
 			}
 		);
 	}
