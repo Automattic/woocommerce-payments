@@ -292,13 +292,11 @@ export default class WCPayAPI {
 	 * @return {Promise} The final promise for the request to the server.
 	 */
 	setupIntent( paymentMethodId ) {
-		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'create_setup_intent' ),
-			{
-				'wcpay-payment-method': paymentMethodId,
-				_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
-			}
-		).then( ( response ) => {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			action: 'create_setup_intent',
+			'wcpay-payment-method': paymentMethodId,
+			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+		} ).then( ( response ) => {
 			if ( ! response.success ) {
 				throw response.data.error;
 			}
