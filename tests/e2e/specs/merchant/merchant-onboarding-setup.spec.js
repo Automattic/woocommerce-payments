@@ -5,24 +5,40 @@ const {
 	merchant,
 	completeOnboardingWizard,
 	withRestApi,
+	IS_RETEST_MODE,
 } = require( '@woocommerce/e2e-utils' );
 
 describe( 'Onboarding > WooCommerce Setup Wizard & Task List', () => {
 	beforeAll( async () => {
 		await merchant.login();
-		await withRestApi.resetOnboarding();
-		await withRestApi.deleteAllShippingZones();
 	} );
 
 	afterAll( async () => {
 		await merchant.logout();
 	} );
 
+	if ( IS_RETEST_MODE ) {
+		it( 'can reset onboarding to default settings', async () => {
+			await withRestApi.resetOnboarding();
+		} );
+
+		it( 'can reset shipping zones to default settings', async () => {
+			await withRestApi.deleteAllShippingZones();
+		} );
+
+		it( 'can reset to default settings', async () => {
+			await withRestApi.resetSettingsGroupToDefault( 'general' );
+			await withRestApi.resetSettingsGroupToDefault( 'products' );
+			await withRestApi.resetSettingsGroupToDefault( 'tax' );
+		} );
+	}
+
 	it( 'can complete onboarding when visiting the first time', async () => {
 		await completeOnboardingWizard();
 	} );
 
 	it( 'can dismiss tax setup', async () => {
+		await merchant.runSetupWizard();
 		await page.evaluate( () => {
 			document
 				.querySelector( '.woocommerce-list__item-title' )
