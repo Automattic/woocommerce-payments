@@ -3,6 +3,7 @@ import React, { useContext, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Button,
+	Icon,
 	Notice,
 	RadioControl,
 	TextareaControl,
@@ -47,8 +48,8 @@ const FirstPageBody = ( { enabledMethods } ) => {
 				) }
 			</p>
 			<ul>
-				{ enabledMethods.map( ( { id, label, Icon } ) => (
-					<PaymentMethod key={ id } Icon={ Icon } label={ label } />
+				{ enabledMethods.map( ( { id, label, icon } ) => (
+					<PaymentMethod key={ id } Icon={ icon } label={ label } />
 				) ) }
 			</ul>
 		</>
@@ -69,6 +70,15 @@ const SecondPageBody = () => {
 	const [ comments, setComments ] = useState( '' );
 	return (
 		<>
+			<div className="disable-success-notice">
+				<Icon className="disable-success-icon" icon="yes-alt" />
+				<p>
+					{ __(
+						"You've disabled the new payments experience in your store.",
+						'woocommerce-payments'
+					) }
+				</p>
+			</div>
 			<p>
 				<strong>
 					{ __(
@@ -98,36 +108,66 @@ const SecondPageBody = () => {
 	);
 };
 
-const SurveyModal = ( { enabledMethods } ) => {
-	const [ isUpeEnabled, setIsUpeEnabled ] = useIsUpeEnabled();
+const DisableSubmitButton = () => {
+	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
 	const { status } = useContext( WcPayUpeContext );
+	return (
+		<Button
+			isBusy={ 'pending' === status }
+			isDestructive
+			isPrimary
+			onClick={ () => setIsUpeEnabled( false ) }
+		>
+			{ __( 'Disable', 'woocommerce-payments' ) }
+		</Button>
+	);
+};
+
+const SurveySubmitButton = () => {
+	// @todo - set up a custom hook here like status above so we can use isBusy?
+	return (
+		<Button
+			// isBusy={ 'pending' === status }
+			isPrimary
+			onClick={ () => console.log( 'Submitting' ) }
+		>
+			{ __( 'Send Feedback', 'woocommerce-payments' ) }
+		</Button>
+	);
+};
+
+const SubmissionErrorNotice = () => {
+	const { status } = useContext( WcPayUpeContext );
+	return 'error' === status ? (
+		<Notice>
+			{ __(
+				'There was an error during submission.',
+				'woocommerce-payments'
+			) }
+		</Notice>
+	) : null;
+};
+
+const SurveyModal = ( { enabledMethods } ) => {
+	const [ isUpeEnabled ] = useIsUpeEnabled();
+	//const { status } = useContext( WcPayUpeContext );
 
 	return (
 		<>
-			{ 'error' === status && (
-				<Notice>
-					{ __(
-						'There was an error during submission.',
-						'woocommerce-payments'
-					) }{ ' ' }
-				</Notice>
-			) }
+			<SubmissionErrorNotice />
 			<ConfirmationModal
 				className="survey-section"
 				title={ __(
 					'Disable the new payments experience',
 					'woocommerce-payments'
 				) }
-				isDismissible={ false }
-				onRequestClose={ console.log( 'closing modal' ) }
+				onRequestClose={ () => console.log( 'closing modal' ) }
 				actions={
-					<Button
-						isDestructive
-						isPrimary
-						onClick={ () => setIsUpeEnabled( false ) }
-					>
-						{ __( 'Disable', 'woocommerce-payments' ) }
-					</Button>
+					isUpeEnabled ? (
+						<DisableSubmitButton />
+					) : (
+						<SurveySubmitButton />
+					)
 				}
 			>
 				{ isUpeEnabled ? (
