@@ -156,37 +156,41 @@ const PaymentMethods = () => {
 				} ) }
 			>
 				{ isUpeEnabled && (
-					<CardHeader
-						size={ null }
-						className="payment-methods-header"
-					>
+					<CardHeader className="payment-methods__header">
+						<h4 className="payment-methods__header__heading">
+							Payment methods
+						</h4>
 						<PaymentMethodsDropdownMenu />
 					</CardHeader>
 				) }
-				<CardBody>
-					{ isUpeEnabled ? (
-						<PaymentMethodsList className="payment-methods__enabled-methods">
-							{ enabledMethods.map(
-								( { id, label, description, Icon } ) => (
-									<PaymentMethod
-										key={ id }
-										Icon={ Icon }
-										onDeleteClick={
-											1 < enabledMethods.length
-												? handleDeleteClick
-												: undefined
-										}
-										id={ id }
-										label={ label }
-										description={ description }
-									/>
-								)
-							) }
-						</PaymentMethodsList>
-					) : (
-						<UpeSetupBanner />
-					) }
+				<CardBody size={ null }>
+					<PaymentMethodsList className="payment-methods__enabled-methods">
+						{ enabledMethods.map(
+							( { id, label, description, Icon } ) => (
+								<PaymentMethod
+									key={ id }
+									Icon={ Icon }
+									onDeleteClick={
+										1 < enabledMethods.length
+											? handleDeleteClick
+											: undefined
+									}
+									id={ id }
+									label={ label }
+									description={ description }
+								/>
+							)
+						) }
+					</PaymentMethodsList>
 				</CardBody>
+				{ ! isUpeEnabled && (
+					<>
+						<CardDivider />
+						<CardBody>
+							<UpeSetupBanner />
+						</CardBody>
+					</>
+				) }
 				{ isUpeEnabled && 1 < availablePaymentMethodIds.length ? (
 					<>
 						<CardDivider />

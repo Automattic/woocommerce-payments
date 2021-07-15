@@ -1,4 +1,18 @@
 .payment-methods {
+	&__header {
+		justify-content: space-between;
+
+		.components-dropdown-menu__toggle.has-icon {
+			padding: 0;
+			min-width: unset;
+		}
+	}
+
+	&__header__heading {
+		margin: 0;
+		font-size: 16px;
+	}
+
 	&__available-methods-container {
 		@include modal-footer-buttons-left;
 		align-items: center;
@@ -26,10 +40,6 @@
 		&:last-child {
 			margin-right: 1px; // 1px to accommodate for box-shadow
 		}
-	}
-
-	.payment-methods-header {
-		justify-content: flex-end;
 	}
 
 	&.loading-placeholder {
