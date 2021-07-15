@@ -95,21 +95,6 @@
 		margin: -24px -24px 0;
 		padding: 16px;
 	}
-
-	&__footer {
-		@include modal-footer-buttons;
-		border-top: 1px solid $studio-gray-5;
-		margin: 0 -24px -24px;
-		padding: 16px;
-	}
-}
-
-.enabled-currency-delete-modal {
-	&__footer {
-		@include modal-footer-buttons;
-		border-top: 1px solid $studio-gray-5;
-		padding: 15px 0 0;
-	}
 }
 
 @media screen and ( max-width: 600px ) {
