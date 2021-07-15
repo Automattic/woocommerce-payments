@@ -549,6 +549,7 @@ class WC_Payments_Account {
 			],
 			[
 				'site_username' => $current_user->user_login,
+				'site_locale'   => get_locale(),
 			],
 			$this->get_actioned_notes()
 		);
