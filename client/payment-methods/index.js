@@ -18,6 +18,7 @@ import {
 } from '@wordpress/components';
 import { moreVertical, trash } from '@wordpress/icons';
 import classNames from 'classnames';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -78,23 +79,6 @@ const methodsConfiguration = {
 	},
 };
 
-// @todo - remove once #2174 is merged and use real banner instead.
-function UpeSetupBanner() {
-	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
-	return (
-		<>
-			<p>UPE IS DISABLED!!!</p>
-			<Button
-				label="Enable UPE"
-				isPrimary
-				onClick={ () => setIsUpeEnabled( true ) }
-			>
-				{ __( 'Enable UPE', 'woocommerce-payments' ) }
-			</Button>
-		</>
-	);
-}
-
 function PaymentMethodsDropdownMenu() {
 	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
 	return (
@@ -125,6 +109,56 @@ const UpeDisableError = () => {
 				'woocommerce-payments'
 			) }
 		</Notice>
+	);
+};
+
+const UpeSetupBanner = () => {
+	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
+
+	const handleEnableUpeClick = () => {
+		setIsUpeEnabled( true ).then( () => {
+			window.location.href = addQueryArgs( 'admin.php', {
+				page: 'wc-admin',
+				task: 'woocommerce-payments--additional-payment-methods',
+			} );
+		} );
+	};
+
+	return (
+		<>
+			<CardDivider />
+			<CardBody className="payment-methods__express-checkouts">
+				<span className="payment-methods__pill">
+					{ __( 'Early access', 'woocommerce-payments' ) }
+				</span>
+				<h3>
+					{ __(
+						'Enable the new WooCommerce Payments checkout experience',
+						'woocommerce-payments'
+					) }
+				</h3>
+				<p>
+					{ __(
+						'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.',
+						'woocommerce-payments'
+					) }
+				</p>
+
+				<div className="payment-methods__express-checkouts-actions">
+					<span className="payment-methods__express-checkouts-get-started">
+						<Button isPrimary onClick={ handleEnableUpeClick }>
+							{ __(
+								'Enable in your store',
+								'woocommerce-payments'
+							) }
+						</Button>
+					</span>
+					<ExternalLink href="https://docs.woocommerce.com/document/payments/">
+						{ __( 'Learn more', 'woocommerce-payments' ) }
+					</ExternalLink>
+				</div>
+			</CardBody>
+		</>
 	);
 };
 
@@ -175,7 +209,7 @@ const PaymentMethods = () => {
 					</CardHeader>
 				) }
 				<CardBody>
-					{ isUpeEnabled ? (
+					{ isUpeEnabled && (
 						<PaymentMethodsList className="payment-methods__enabled-methods">
 							{ enabledMethods.map(
 								( { id, label, description, Icon } ) => (
@@ -194,49 +228,11 @@ const PaymentMethods = () => {
 								)
 							) }
 						</PaymentMethodsList>
-					) : (
-						<UpeSetupBanner />
 					) }
 				</CardBody>
 
 				{ isUpeSettingsPreviewEnabled && ! isUpeFeatureEnabled && (
-					<>
-						<CardDivider />
-						<CardBody className="payment-methods__express-checkouts">
-							<span className="payment-methods__pill">
-								{ __( 'Early access', 'woocommerce-payments' ) }
-							</span>
-							<h3>
-								{ __(
-									'Enable the new WooCommerce Payments checkout experience',
-									'woocommerce-payments'
-								) }
-							</h3>
-							<p>
-								{ __(
-									'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.',
-									'woocommerce-payments'
-								) }
-							</p>
-
-							<div className="payment-methods__express-checkouts-actions">
-								<span className="payment-methods__express-checkouts-get-started">
-									<Button isPrimary href="">
-										{ __(
-											'Get started',
-											'woocommerce-payments'
-										) }
-									</Button>
-								</span>
-								<ExternalLink href="https://docs.woocommerce.com/document/payments/">
-									{ __(
-										'Learn more',
-										'woocommerce-payments'
-									) }
-								</ExternalLink>
-							</div>
-						</CardBody>
-					</>
+					<UpeSetupBanner />
 				) }
 
 				{ isUpeEnabled && 1 < availablePaymentMethodIds.length ? (
