@@ -55,6 +55,13 @@ class MultiCurrency {
 	protected $geolocation;
 
 	/**
+	 * The Currency Switcher Widget instance.
+	 *
+	 * @var null|CurrencySwitcherWidget
+	 */
+	protected $currency_switcher_widget;
+
+	/**
 	 * Utils instance.
 	 *
 	 * @var Utils
@@ -194,8 +201,11 @@ class MultiCurrency {
 
 		// Check for Storefront being active and load the integration if it is.
 		$theme = wp_get_theme();
-		if ( 'storefront' === $theme->stylesheet || 'storefront' === $theme->parent ) {
-			new StorefrontIntegration( $this );
+		if ( 'storefront' === $theme->stylesheet || 'storefront' === $theme->template ) {
+			// The Hotel child theme has no easy place to add the widget except the widget area in the sidebar.
+			if ( 'hotel' !== $theme->stylesheet ) {
+				new StorefrontIntegration( $this, $theme );
+			}
 		}
 
 		if ( is_admin() ) {
@@ -220,7 +230,8 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init_widgets() {
-		register_widget( new CurrencySwitcherWidget( $this, $this->compatibility ) );
+		$this->currency_switcher_widget = new CurrencySwitcherWidget( $this, $this->compatibility );
+		register_widget( $this->currency_switcher_widget );
 	}
 
 	/**
@@ -340,6 +351,15 @@ class MultiCurrency {
 	 */
 	public function get_compatibility() {
 		return $this->compatibility;
+	}
+
+	/**
+	 * Returns the Currency Switcher Widget instance.
+	 *
+	 * @return CurrencySwitcherWidget
+	 */
+	public function get_currency_switcher_widget() {
+		return $this->currency_switcher_widget;
 	}
 
 	/**
