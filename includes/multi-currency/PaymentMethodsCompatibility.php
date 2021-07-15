@@ -28,6 +28,17 @@ class PaymentMethodsCompatibility {
 	private $gateway;
 
 	/**
+	 * A map between payment methods and the currency code they require.
+	 *
+	 * @var string[]
+	 */
+	private $payment_method_currency_map = [
+		'giropay'    => 'EUR',
+		'sepa_debit' => 'EUR',
+		'sofort'     => 'EUR',
+	];
+
+	/**
 	 * Constructor
 	 *
 	 * @param MultiCurrency             $multi_currency The multi currency class instance.
@@ -50,30 +61,33 @@ class PaymentMethodsCompatibility {
 	 * Ensures that when a payment method is added from the settings, the needed currency is also added.
 	 */
 	public function add_missing_currencies() {
-		$enabled_payment_method_ids   = $this->gateway->get_upe_enabled_payment_method_ids();
-		$payment_methods_needing_euro = array_filter(
+		$enabled_payment_method_ids       = $this->gateway->get_upe_enabled_payment_method_ids();
+		$payment_methods_needing_currency = array_filter(
 			$enabled_payment_method_ids,
 			function ( $method ) {
-				return in_array( $method, [ 'giropay', 'sepa_debit', 'sofort' ], true );
+				return isset( $this->payment_method_currency_map[ $method ] );
 			}
 		);
-		if ( empty( $payment_methods_needing_euro ) ) {
+		if ( empty( $payment_methods_needing_currency ) ) {
 			return;
 		}
 
-		// we have payments needing eur
-		// is eur added as a currency?
-		$default_currency = $this->multi_currency->get_default_currency();
-		if ( $default_currency->get_id() === 'eur' ) {
-			return;
-		}
+		$default_currency   = $this->multi_currency->get_default_currency();
 		$enabled_currencies = get_option( $this->multi_currency->id . '_enabled_currencies', [] );
-		if ( isset( $enabled_currencies['EUR'] ) ) {
-			return;
+
+		// we have payments needing some currency being enabled, let's ensure the currency is present.
+		foreach ( $payment_methods_needing_currency as $payment_method ) {
+			$needed_currency = $this->payment_method_currency_map[ $payment_method ];
+			if ( $default_currency->get_code() === $needed_currency ) {
+				continue;
+			}
+			if ( isset( $enabled_currencies[ $needed_currency ] ) ) {
+				continue;
+			}
+
+			$enabled_currencies[] = $needed_currency;
 		}
 
-		// Euro is not the default currency nor it is added - enabling it now.
-		$enabled_currencies[] = 'EUR';
 		update_option( $this->multi_currency->id . '_enabled_currencies', $enabled_currencies );
 	}
 }
