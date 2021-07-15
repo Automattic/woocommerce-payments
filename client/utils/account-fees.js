@@ -18,13 +18,26 @@ export const getCurrentFee = ( accountFees ) => {
 		: accountFees.base;
 };
 
-export const formatAccountFeesDescription = ( accountFees ) => {
+export const formatAccountFeesDescription = (
+	accountFees,
+	format,
+	discountFormat
+) => {
 	const baseFee = accountFees.base;
 	const currentFee = getCurrentFee( accountFees );
 
-	let feeDescription = sprintf(
+	if ( undefined === format ) {
 		/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
-		__( '%1$f%% + %2$s per transaction', 'woocommerce-payments' ),
+		format = __( '%1$f%% + %2$s per transaction', 'woocommerce-payments' );
+	}
+
+	if ( undefined === discountFormat ) {
+		/* translators: %f percentage discount to apply */
+		discountFormat = __( '(%f%% discount)', 'woocommerce-payments' );
+	}
+
+	let feeDescription = sprintf(
+		format,
 		formatFee( baseFee.percentage_rate ),
 		formatCurrency( baseFee.fixed_rate, baseFee.currency )
 	);
@@ -44,24 +57,21 @@ export const formatAccountFeesDescription = ( accountFees ) => {
 		}
 
 		let descriptionString = sprintf(
-			/* translators: %1 Base fee (that don't apply to this account at this moment), %2 and %3: Current fee (e.g: 2.9% + $.30) */
-			__(
-				'<s>%1$s</s> %2$f%% + %3$s per transaction',
-				'woocommerce-payments'
-			),
+			// eslint-disable-next-line max-len
+			/* translators: %1 Base fee (that don't apply to this account at this moment), %2: Current fee (e.g: "2.9% + $.30 per transaction") */
+			__( '<s>%1$s</s> %2$s', 'woocommerce-payments' ),
 			feeDescription,
-			formatFee( percentage ),
-			formatCurrency( fixed, baseFee.currency )
+			sprintf(
+				format,
+				formatFee( percentage ),
+				formatCurrency( fixed, baseFee.currency )
+			)
 		);
 
-		if ( currentFee.discount ) {
+		if ( currentFee.discount && 0 < discountFormat.length ) {
 			descriptionString +=
 				' ' +
-				sprintf(
-					/* translators: %f percentage discount to apply */
-					__( '(%f%% discount)', 'woocommerce-payments' ),
-					formatFee( currentFee.discount )
-				);
+				sprintf( discountFormat, formatFee( currentFee.discount ) );
 		}
 
 		feeDescription = createInterpolateElement( descriptionString, {
