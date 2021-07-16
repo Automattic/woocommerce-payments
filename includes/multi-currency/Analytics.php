@@ -19,8 +19,6 @@ class Analytics {
 
 	const SCRIPT_NAME = 'WCPAY_MULTI_CURRENCY_ANALYTICS';
 
-	const PRIORITY_LATE = 11;
-
 	/**
 	 * A list of all the pages in the WC Admin analytics section that
 	 * we want to add multi-currency filters to.
@@ -44,13 +42,6 @@ class Analytics {
 	private $multi_currency;
 
 	/**
-	 * Instance of AssetDataRegistry
-	 *
-	 * @var AssetDataRegistry $data_registry
-	 */
-	private $data_registry;
-
-	/**
 	 * Constructor
 	 *
 	 * @param MultiCurrency $multi_currency Instance of MultiCurrency.
@@ -62,83 +53,33 @@ class Analytics {
 		}
 
 		$this->multi_currency = $multi_currency;
-		$this->data_registry  = Package::container()->get( AssetDataRegistry::class );
 
 		$this->init();
 	}
-
-	/**
-	 * Undocumented function
-	 *
-	 * @return void
-	 */
-	public function add_currency_settings() {
-		$enabled_currencies = $this->multi_currency->get_enabled_currencies();
-		$currency_names     = get_woocommerce_currencies();
-		$currencies         = [];
-
-		foreach ( $enabled_currencies as $enabled_currency ) {
-			$code = $enabled_currency->get_code();
-
-			$currencies[] = [
-				'label' => $currency_names[ $code ] . '(' . $enabled_currency->get_symbol() . ' ' . $code . ')',
-				'value' => $code,
-			];
-		}
-
-		if ( method_exists( $this->data_registry, 'exists' ) ) {
-			$this->data_registry->add(
-				'WooMC',
-				[
-					'il8n'       => [
-						'Currency' => __( 'Currency', 'woocommerce-payments' ),
-					],
-					'currencies' => $currencies,
-				]
-			);
-		}
-	}
-
-	/**
-	 * Return the currently selected currency from _GET, or the store default currency.
-	 *
-	 * @return string
-	 */
-	public function get_active_currency(): string {
-		0 && wp_verify_nonce( '' );
-
-		if ( ! empty( $_GET['currency'] ) ) {
-			return strtoupper( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) );
-		} else {
-			return $this->multi_currency->get_default_currency()->get_code();
-		}
-	}
-
-	/**
-	 * Applied when loading a stats page to filter stats by the selected currency.
-	 *
-	 * @param array $args Arguments passed in from the filter.
-	 *
-	 * @return array
-	 */
-	public function filter_stats_by_currency( $args ): array {
-		$args['currency'] = $this->get_active_currency();
-		return $args;
-	}
-
 
 	/**
 	 * Initialise all actions, filters and hooks related to analytics support.
 	 *
 	 * @return void
 	 */
-	private function init() {
-		add_action( 'init', [ $this, 'add_currency_settings' ], self::PRIORITY_LATE );
+	public function init() {
 		add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 
 		foreach ( self::ANALYTICS_PAGES as $analytics_page ) {
 			add_filter( "woocommerce_analytics_{$analytics_page}_query_args", [ $this, 'filter_stats_by_currency' ] );
 			add_filter( "woocommerce_analytics_{$analytics_page}_stats_query_args", [ $this, 'filter_stats_by_currency' ] );
+
+			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_subquery", [ $this, 'filter_join_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_stats_total", [ $this, 'filter_join_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_stats_interval", [ $this, 'filter_join_clauses' ] );
+
+			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_subquery", [ $this, 'filter_where_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_stats_total", [ $this, 'filter_where_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_stats_interval", [ $this, 'filter_where_clauses' ] );
+
+			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_subquery", [ $this, 'filter_select_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_stats_total", [ $this, 'filter_select_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_stats_interval", [ $this, 'filter_select_clauses' ] );
 		}
 
 		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ] );
@@ -151,7 +92,7 @@ class Analytics {
 	 *
 	 * @return void
 	 */
-	private function register_admin_scripts() {
+	public function register_admin_scripts() {
 		$script_src_url    = plugins_url( 'dist/multi-currency-analytics.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency-analytics.asset.php';
 		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
@@ -177,10 +118,91 @@ class Analytics {
 	 *
 	 * @return void
 	 */
-	private function enqueue_admin_scripts() {
+	public function enqueue_admin_scripts() {
 		$this->register_admin_scripts();
 
 		wp_enqueue_script( self::SCRIPT_NAME );
 		wp_enqueue_style( self::SCRIPT_NAME );
+	}
+
+	/**
+	 * Return the currently selected currency from _GET, or the store default currency.
+	 *
+	 * @return string|null
+	 */
+	public function get_active_currency() {
+		0 && wp_verify_nonce( '' );
+
+		// Only return a currency if there is a GET param - if no currency is set, we want to fetch all orders.
+		if ( ! empty( $_GET['currency'] ) ) {
+			return strtoupper( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) );
+		}
+
+		return null;
+	}
+
+	/**
+	 * Add columns to get the order currency and converted amount (if required).
+	 *
+	 * @param string[] $clauses - An array containing the SELECT clauses to be applied.
+	 *
+	 * @return array
+	 */
+	public function filter_select_clauses( $clauses ): array {
+		$clauses[] = ', currency_postmeta.meta_value AS order_currency';
+		$clauses[] = ', default_currency_postmeta.meta_value AS order_default_currency';
+		$clauses[] = ', exchange_rate_postmeta.meta_value AS exchange_rate';
+
+		return $clauses;
+	}
+
+	/**
+	 * Add a JOIN so that we can get the currency.
+	 *
+	 * @param string[] $clauses - An array containing the JOIN clauses to be applied.
+	 *
+	 * @return array
+	 */
+	public function filter_join_clauses( $clauses ): array {
+		global $wpdb;
+
+		$clauses[] = "JOIN {$wpdb->postmeta} currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = currency_postmeta.post_id";
+		$clauses[] = "JOIN {$wpdb->postmeta} default_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = default_currency_postmeta.post_id";
+		$clauses[] = "JOIN {$wpdb->postmeta} exchange_rate_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = exchange_rate_postmeta.post_id";
+
+		return $clauses;
+	}
+
+	/**
+	 * Filter by currency (if required).
+	 *
+	 * @param string[] $clauses - An array containing the WHERE clauses to be applied.
+	 *
+	 * @return array
+	 */
+	public function filter_where_clauses( $clauses ): array {
+		$currency = $this->get_active_currency();
+
+		$clauses[] = "AND currency_postmeta.meta_key = '_order_currency'";
+		$clauses[] = "AND default_currency_postmeta.meta_key = '_wcpay_multi_currency_order_default_currency'";
+		$clauses[] = "AND exchange_rate_postmeta.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
+
+		if ( ! is_null( $currency ) ) {
+			$clauses[] = "AND currency_postmeta.meta_value = '{$currency}'";
+		}
+
+		return $clauses;
+	}
+
+	/**
+	 * Applied when loading a stats page to filter stats by the selected currency.
+	 *
+	 * @param array $args Arguments passed in from the filter.
+	 *
+	 * @return array
+	 */
+	public function filter_stats_by_currency( $args ): array {
+		$args['currency'] = $this->get_active_currency();
+		return $args;
 	}
 }
