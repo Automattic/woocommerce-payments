@@ -99,7 +99,7 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 	);
 };
 
-const PaymentMethodsSelector = ( { className } ) => {
+const PaymentMethodsSelector = () => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
 	const [ enabledPaymentMethods ] = useEnabledPaymentMethodIds();
 
@@ -120,7 +120,6 @@ const PaymentMethodsSelector = ( { className } ) => {
 			) }
 			<Button
 				isSecondary
-				className={ className }
 				onClick={ handleModalOpen }
 				disabled={
 					enabledPaymentMethods.length ===
