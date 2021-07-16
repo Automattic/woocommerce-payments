@@ -17,7 +17,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Analytics {
 
-	const SCRIPT_NAME = 'WCPAY_MULTI_CURRENCY_ANALYTICS';
+	const PRIORITY_EARLY = 1;
+	const SCRIPT_NAME    = 'WCPAY_MULTI_CURRENCY_ANALYTICS';
 
 	/**
 	 * A list of all the pages in the WC Admin analytics section that
@@ -47,13 +48,7 @@ class Analytics {
 	 * @param MultiCurrency $multi_currency Instance of MultiCurrency.
 	 */
 	public function __construct( MultiCurrency $multi_currency ) {
-		// If we aren't in the context of WC Admin, just return false.
-		if ( ! is_admin() ) {
-			return;
-		}
-
 		$this->multi_currency = $multi_currency;
-
 		$this->init();
 	}
 
@@ -63,23 +58,18 @@ class Analytics {
 	 * @return void
 	 */
 	public function init() {
-		add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+		if ( is_admin() ) {
+			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+		}
+
+		// If we aren't making a REST request, return before adding these filters.
+		if ( ! WC()->is_rest_api_request() ) {
+			return;
+		}
 
 		foreach ( self::ANALYTICS_PAGES as $analytics_page ) {
-			add_filter( "woocommerce_analytics_{$analytics_page}_query_args", [ $this, 'filter_stats_by_currency' ] );
-			add_filter( "woocommerce_analytics_{$analytics_page}_stats_query_args", [ $this, 'filter_stats_by_currency' ] );
-
-			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_subquery", [ $this, 'filter_join_clauses' ] );
-			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_stats_total", [ $this, 'filter_join_clauses' ] );
-			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_stats_interval", [ $this, 'filter_join_clauses' ] );
-
-			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_subquery", [ $this, 'filter_where_clauses' ] );
-			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_stats_total", [ $this, 'filter_where_clauses' ] );
-			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_stats_interval", [ $this, 'filter_where_clauses' ] );
-
-			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_subquery", [ $this, 'filter_select_clauses' ] );
-			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_stats_total", [ $this, 'filter_select_clauses' ] );
-			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_stats_interval", [ $this, 'filter_select_clauses' ] );
+			add_filter( "woocommerce_analytics_{$analytics_page}_query_args", [ $this, 'filter_stats_by_currency' ], self::PRIORITY_EARLY );
+			add_filter( "woocommerce_analytics_{$analytics_page}_stats_query_args", [ $this, 'filter_stats_by_currency' ], self::PRIORITY_EARLY );
 		}
 
 		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ] );
@@ -148,10 +138,10 @@ class Analytics {
 	 *
 	 * @return array
 	 */
-	public function filter_select_clauses( $clauses ): array {
-		$clauses[] = ', currency_postmeta.meta_value AS order_currency';
-		$clauses[] = ', default_currency_postmeta.meta_value AS order_default_currency';
-		$clauses[] = ', exchange_rate_postmeta.meta_value AS exchange_rate';
+	public function filter_select_clauses( array $clauses ): array {
+		$clauses[] = ', wcpay_multicurrency_currency_postmeta.meta_value AS order_currency';
+		$clauses[] = ', wcpay_multicurrency_default_currency_postmeta.meta_value AS order_default_currency';
+		$clauses[] = ', wcpay_multicurrency_exchange_rate_postmeta.meta_value AS exchange_rate';
 
 		return $clauses;
 	}
@@ -163,12 +153,14 @@ class Analytics {
 	 *
 	 * @return array
 	 */
-	public function filter_join_clauses( $clauses ): array {
+	public function filter_join_clauses( array $clauses ): array {
 		global $wpdb;
 
-		$clauses[] = "JOIN {$wpdb->postmeta} currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = currency_postmeta.post_id";
-		$clauses[] = "JOIN {$wpdb->postmeta} default_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = default_currency_postmeta.post_id";
-		$clauses[] = "JOIN {$wpdb->postmeta} exchange_rate_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = exchange_rate_postmeta.post_id";
+		$prefix = 'wcpay_multicurrency_';
+
+		$clauses[] = "JOIN {$wpdb->postmeta} {$prefix}currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = {$prefix}currency_postmeta.post_id";
+		$clauses[] = "JOIN {$wpdb->postmeta} {$prefix}default_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = {$prefix}default_currency_postmeta.post_id";
+		$clauses[] = "JOIN {$wpdb->postmeta} {$prefix}exchange_rate_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = {$prefix}exchange_rate_postmeta.post_id";
 
 		return $clauses;
 	}
@@ -180,15 +172,15 @@ class Analytics {
 	 *
 	 * @return array
 	 */
-	public function filter_where_clauses( $clauses ): array {
+	public function filter_where_clauses( array $clauses ): array {
 		$currency = $this->get_active_currency();
 
-		$clauses[] = "AND currency_postmeta.meta_key = '_order_currency'";
-		$clauses[] = "AND default_currency_postmeta.meta_key = '_wcpay_multi_currency_order_default_currency'";
-		$clauses[] = "AND exchange_rate_postmeta.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
+		$clauses[] = "AND wcpay_multicurrency_currency_postmeta.meta_key = '_order_currency'";
+		$clauses[] = "AND wcpay_multicurrency_default_currency_postmeta.meta_key = '_wcpay_multi_currency_order_default_currency'";
+		$clauses[] = "AND wcpay_multicurrency_exchange_rate_postmeta.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
 
 		if ( ! is_null( $currency ) ) {
-			$clauses[] = "AND currency_postmeta.meta_value = '{$currency}'";
+			$clauses[] = "AND wcpay_multicurrency_currency_postmeta.meta_value = '{$currency}'";
 		}
 
 		return $clauses;
