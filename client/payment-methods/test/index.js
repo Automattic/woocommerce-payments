@@ -16,8 +16,8 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 } from 'data';
-
 import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
+import WcPayUpeContext from '../../settings/wcpay-upe-toggle/context';
 
 jest.mock( '../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
@@ -243,5 +243,44 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		expect( disableUPEButton ).not.toBeInTheDocument();
+	} );
+
+	test( 'clicking "Enable in your store" in express payments enable UPE and redirects', () => {
+		Object.defineProperty( window, 'location', {
+			get() {
+				return {
+					href: 'example.com/',
+				};
+			},
+		} );
+
+		const setIsUpeEnabledMock = jest.fn().mockResolvedValue( true );
+		const featureFlagContext = {
+			featureFlags: { upeSettingsPreview: true, upe: false },
+		};
+
+		render(
+			<WCPaySettingsContext.Provider value={ featureFlagContext }>
+				<WcPayUpeContext.Provider
+					value={ {
+						setIsUpeEnabled: setIsUpeEnabledMock,
+						status: 'resolved',
+						isUpeEnabled: false,
+					} }
+				>
+					<PaymentMethods />
+				</WcPayUpeContext.Provider>
+			</WCPaySettingsContext.Provider>
+		);
+
+		const enableInYourStoreButton = screen.queryByRole( 'button', {
+			name: 'Enable in your store',
+		} );
+
+		expect( enableInYourStoreButton ).toBeInTheDocument();
+
+		expect( setIsUpeEnabledMock ).not.toHaveBeenCalled();
+		user.click( enableInYourStoreButton );
+		expect( setIsUpeEnabledMock ).toHaveBeenCalledWith( true );
 	} );
 } );
