@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Button,
@@ -27,7 +27,12 @@ import {
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
 import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
+
+// Survey modal impots
+import WcPaySurveyContextProvider from '../settings/survey-modal/provider';
 import SurveyModal from '../settings/survey-modal';
+import DisableUPEModal from '../settings/disable-upe-modal';
+
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
@@ -92,8 +97,10 @@ const UpeSetupBanner = () => {
 	);
 };
 
-const PaymentMethodsDropdownMenu = () => {
-	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
+const PaymentMethodsDropdownMenu = ( {
+	setIsSurveyModalOpen,
+	setIsDisableModalOpen,
+} ) => {
 	return (
 		<DropdownMenu
 			icon={ moreVertical }
@@ -102,18 +109,19 @@ const PaymentMethodsDropdownMenu = () => {
 				{
 					title: __( 'Provide Feedback', 'woocommerce-payments' ),
 					icon: 'megaphone',
-					onClick: () => console.log( 'Provide Feedback' ),
+					onClick: () => setIsSurveyModalOpen( true ),
 				},
 				{
 					title: 'Disable',
 					icon: trash,
-					onClick: () => setIsUpeEnabled( false ),
+					onClick: () => setIsDisableModalOpen( true ),
 				},
 			] }
 		/>
 	);
 };
 
+// @todo - move to child component(disable upe modal).
 const UpeDisableError = () => {
 	return (
 		<Notice status="error" isDismissible={ true }>
@@ -124,6 +132,8 @@ const UpeDisableError = () => {
 		</Notice>
 	);
 };
+
+// @todo - Figure out how to go from UPE Disable Modal to Survey Modal. Show after UPE is disabled? But only once.
 
 const PaymentMethods = () => {
 	const [
@@ -147,10 +157,23 @@ const PaymentMethods = () => {
 	};
 
 	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
+	const [ useIsSurveyModalOpen, setIsSurveyModalOpen ] = useState( false );
+	const [ useIsDisableModalOpen, setIsDisableModalOpen ] = useState( false );
 
 	return (
 		<>
-			<SurveyModal enabledMethods={ enabledMethods } />
+			<WcPaySurveyContextProvider>
+				{ useIsDisableModalOpen ? (
+					<DisableUPEModal
+						enabledMethods={ enabledMethods }
+						setIsModalOpen={ setIsDisableModalOpen }
+					/>
+				) : null }
+				{ useIsSurveyModalOpen ? (
+					<SurveyModal setIsModalOpen={ setIsSurveyModalOpen } />
+				) : null }
+			</WcPaySurveyContextProvider>
+
 			{ 'error' === status && <UpeDisableError /> }
 			<Card
 				className={ classNames( 'payment-methods', {
@@ -161,11 +184,12 @@ const PaymentMethods = () => {
 					<CardHeader
 						size={ null }
 						className="payment-methods-header"
+						label="Payment Methods"
 					>
-						<p>
-							<strong>Payment Methods</strong>
-						</p>
-						<PaymentMethodsDropdownMenu />
+						<PaymentMethodsDropdownMenu
+							setIsSurveyModalOpen={ setIsSurveyModalOpen }
+							setIsDisableModalOpen={ setIsDisableModalOpen }
+						/>
 					</CardHeader>
 				) }
 				<CardBody>
