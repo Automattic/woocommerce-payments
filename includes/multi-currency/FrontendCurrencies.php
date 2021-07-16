@@ -146,14 +146,14 @@ class FrontendCurrencies {
 			'num_decimals' => 2,
 		];
 
-		$country = $this->locale->get_user_locale_country();
+		$locale = $this->locale->get_user_locale();
 
-		if ( $this->locale->get_currency_format( $currency_code ) ) {
-			$currency_options = $this->locale->get_currency_format( $currency_code );
-			// If there's no country-specific formatting, default to the first entry in the array.
-			$currency_format = $currency_options[ $country ] ?? reset( $currency_options );
+		$currency_options = $this->locale->get_currency_format( $currency_code );
+		if ( $currency_options ) {
+			// If there's no locale-specific formatting, default to the 'default' entry in the array.
+			$currency_format = $currency_options[ $locale ] ?? $currency_options['default'] ?? $currency_format;
 		}
 
-		return apply_filters( 'wcpay_multi_currency_' . strtolower( $currency_code ) . '_format', $currency_format, $country );
+		return apply_filters( 'wcpay_multi_currency_' . strtolower( $currency_code ) . '_format', $currency_format, $locale );
 	}
 }
