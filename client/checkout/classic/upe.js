@@ -287,7 +287,6 @@ jQuery( function ( $ ) {
 						paymentMethodsConfig[ event.value.type ].isReusable;
 					showNewPaymentMethodCheckbox( isPaymentMethodReusable );
 					isUPEComplete = event.complete;
-					console.log( isUPEComplete );
 				} );
 			} )
 			.catch( ( error ) => {
