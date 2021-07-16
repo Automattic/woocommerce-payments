@@ -70,31 +70,23 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 		updateEnabledPaymentMethodIds,
 	] = useEnabledPaymentMethodIds();
 
-	// TODO: add test to ensure `useSettings` is not called when task is not active
 	const { saveSettings, isSaving } = useSettings();
+
+	const checkedPaymentMethods = useMemo(
+		() =>
+			Object.entries( paymentMethodsState )
+				.map( ( [ method, enabled ] ) => enabled && method )
+				.filter( Boolean ),
+		[ paymentMethodsState ]
+	);
+
+	const unCheckedPaymentMethods = Object.entries( paymentMethodsState )
+		.map( ( [ method, enabled ] ) => ! enabled && method )
+		.filter( Boolean );
 
 	const handleContinueClick = useCallback( () => {
 		// creating a separate callback, so that the main thread isn't blocked on click of the button
 		const callback = async () => {
-			const checkedPaymentMethods = Object.entries( paymentMethodsState )
-				.map( ( [ method, enabled ] ) => enabled && method )
-				.filter( Boolean );
-			const unCheckedPaymentMethods = Object.entries(
-				paymentMethodsState
-			)
-				.map( ( [ method, enabled ] ) => ! enabled && method )
-				.filter( Boolean );
-
-			if ( 1 > checkedPaymentMethods.length ) {
-				alert(
-					__(
-						'Please select at least one method',
-						'woocommerce-payments'
-					)
-				);
-				return;
-			}
-
 			updateEnabledPaymentMethodIds( [
 				// adding the newly selected payment methods and removing them from the `initialEnabledPaymentMethodIds` if unchecked
 				...new Set(
@@ -120,8 +112,9 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 
 		callback();
 	}, [
+		unCheckedPaymentMethods,
+		checkedPaymentMethods,
 		updateEnabledPaymentMethodIds,
-		paymentMethodsState,
 		saveSettings,
 		setCompleted,
 		initialEnabledPaymentMethodIds,
@@ -130,7 +123,7 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 	return (
 		<Button
 			isBusy={ isSaving }
-			disabled={ isSaving }
+			disabled={ isSaving || 1 > checkedPaymentMethods.length }
 			onClick={ handleContinueClick }
 			isPrimary
 		>

@@ -37,7 +37,11 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 	}
 
 	return (
-		<Notice isDismissible={ false } className="wcpay-currency-notice">
+		<Notice
+			spokenMessage=""
+			isDismissible={ false }
+			className="wcpay-currency-notice"
+		>
 			{ interpolateComponents( {
 				mixedString: __(
 					"The selected methods require an additional currency, so {{strong}}we'll add Euro (€) to your store{{/strong}}. " +
