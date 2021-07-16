@@ -28,6 +28,10 @@
 #wcpay-upe-element {
 	padding: 7px 7px;
 	margin-bottom: 0.5em;
+
+	&.processing {
+		min-height: 70px;
+	}
 }
 
 .wcpay-card-mounted,

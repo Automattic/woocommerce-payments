@@ -21,7 +21,7 @@ export const TransactionsPage = (): JSX.Element => {
 	return (
 		<Page>
 			<Experiment
-				name="wcpay_empty_state_preview_mode"
+				name="wcpay_empty_state_preview_mode_v1"
 				treatmentExperience={
 					<EmptyStateTable
 						headers={ EmptyStateTableHeaders }

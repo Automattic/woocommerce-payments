@@ -197,3 +197,11 @@ export const usePaymentRequestButtonTheme = () => {
 		];
 	} );
 };
+
+export const useGetSavingError = () => {
+	return useSelect( ( select ) => {
+		const { getSavingError } = select( STORE_NAME );
+
+		return getSavingError();
+	}, [] );
+};
