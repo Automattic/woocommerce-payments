@@ -15,6 +15,7 @@ import Actions from './actions';
 import Info from '../info';
 import Paragraphs from 'components/paragraphs';
 import Page from 'components/page';
+import DisputeStatusChip from 'components/dispute-status-chip';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import '../style.scss';
@@ -60,14 +61,11 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 		<Page isNarrow className="wcpay-dispute-details">
 			{ testModeNotice }
 			<Card size="large">
-				<CardHeader>
-					<Loadable
-						isLoading={ isLoading }
-						value={ __(
-							'Dispute overview',
-							'woocommerce-payments'
-						) }
-					/>
+				<CardHeader className="header-dispute-overview">
+					<LoadableBlock isLoading={ isLoading } numLines={ 1 }>
+						{ __( 'Dispute overview', 'woocommerce-payments' ) }
+						<DisputeStatusChip status={ dispute.status } />
+					</LoadableBlock>
 				</CardHeader>
 				<CardBody>
 					<Info dispute={ dispute } isLoading={ isLoading } />
