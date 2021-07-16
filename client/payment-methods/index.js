@@ -197,7 +197,7 @@ const PaymentMethods = () => {
 			{ 'error' === status && <UpeDisableError /> }
 			<Card
 				className={ classNames( 'payment-methods', {
-					'loading-placeholder': 'pending' === status,
+					'is-loading': 'pending' === status,
 				} ) }
 			>
 				{ isUpeEnabled && (
