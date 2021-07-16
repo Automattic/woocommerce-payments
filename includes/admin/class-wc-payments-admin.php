@@ -607,7 +607,7 @@ class WC_Payments_Admin {
 			'yes' === get_option( 'woocommerce_allow_tracking' )
 		);
 
-		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode' );
+		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode_v1' );
 	}
 
 	/**

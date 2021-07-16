@@ -21,6 +21,7 @@ import SaveSettingsSection from '../save-settings-section';
 import TransactionsAndDeposits from '../transactions-and-deposits';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
+import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -91,7 +92,10 @@ const TransactionsAndDepositsDescription = () => (
 
 const SettingsManager = () => {
 	const {
-		featureFlags: { upeSettingsPreview: isUPESettingsPreviewEnabled },
+		featureFlags: {
+			upeSettingsPreview: isUPESettingsPreviewEnabled,
+			upe: isUpeEnabled,
+		},
 	} = useContext( WCPaySettingsContext );
 
 	return (
@@ -104,7 +108,11 @@ const SettingsManager = () => {
 			{ isUPESettingsPreviewEnabled && (
 				<SettingsSection Description={ PaymentMethodsDescription }>
 					<LoadableSettingsSection numLines={ 20 }>
-						<PaymentMethods />
+						<WcPayUpeContextProvider
+							defaultIsUpeEnabled={ isUpeEnabled }
+						>
+							<PaymentMethods />
+						</WcPayUpeContextProvider>
 					</LoadableSettingsSection>
 				</SettingsSection>
 			) }

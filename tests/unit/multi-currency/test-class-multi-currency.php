@@ -24,6 +24,11 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	private $mock_enabled_currencies = [ 'USD', 'CAD', 'GBP', 'BIF' ];
 
 	/**
+	 * @var int
+	 */
+	private $timestamp_for_testing;
+
+	/**
 	 * Mock available currencies with their rates.
 	 *
 	 * @var array
@@ -70,10 +75,12 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			]
 		);
 
+		$this->timestamp_for_testing = strtotime( 'today midnight' );
+
 		$this->mock_cached_currencies = [
 			'currencies' => $this->mock_available_currencies,
-			'updated'    => strtotime( 'today midnight' ),
-			'expires'    => strtotime( 'today midnight' ) + DAY_IN_SECONDS,
+			'updated'    => $this->timestamp_for_testing,
+			'expires'    => $this->timestamp_for_testing + DAY_IN_SECONDS,
 		];
 
 		update_option( self::CACHED_CURRENCIES_OPTION, $this->mock_cached_currencies );
@@ -139,8 +146,10 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			$currency = new WCPay\MultiCurrency\Currency( $code, $rate );
 			$currency->set_charm( 0.00 );
 			$currency->set_rounding( '1.00' );
+			$currency->set_last_updated( $this->timestamp_for_testing );
 			$expected[ $currency->get_code() ] = $currency;
 		}
+
 		$expected['GBP']->set_charm( '-0.1' );
 		$expected['GBP']->set_rounding( '0.50' );
 		// Zero-decimal currencies should default to rounding = 100.
@@ -158,6 +167,19 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$currencies = [ 'USD', 'EUR', 'GBP', 'CLP' ];
 		$this->multi_currency->set_enabled_currencies( $currencies );
 		$this->assertSame( $currencies, get_option( self::ENABLED_CURRENCIES_OPTION ) );
+	}
+
+	public function test_set_enabled_currencies_triggers_removing_currency_settings() {
+		update_option( 'wcpay_multi_currency_exchange_rate_bif', 'manual' );
+		update_option( 'wcpay_multi_currency_manual_rate_bif', '2' );
+		update_option( 'wcpay_multi_currency_price_rounding_bif', '10.00' );
+		update_option( 'wcpay_multi_currency_price_charm_bif', '-0.05' );
+		$currencies = [ 'USD', 'CAD', 'GBP' ];
+		$this->multi_currency->set_enabled_currencies( $currencies );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_exchange_rate_bif' ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_manual_rate_bif' ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_price_rounding_bif' ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_price_charm_bif' ) );
 	}
 
 	public function test_enabled_but_unavailable_currencies_are_skipped() {
