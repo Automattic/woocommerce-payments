@@ -257,6 +257,39 @@ describe( 'Transactions list', () => {
 
 			expect( tableSummary ).toHaveLength( 1 );
 		} );
+
+		test( 'renders table summary only when the transactions summary data is available with a single transaction', () => {
+			mockUseTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {},
+				isLoading: true,
+			} );
+
+			( { container } = render( <TransactionsList /> ) );
+			let tableSummary = container.querySelectorAll(
+				'.woocommerce-table__summary'
+			);
+			expect( tableSummary ).toHaveLength( 0 );
+
+			mockUseTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 1,
+					currency: 'usd',
+					store_currencies: [ 'usd' ],
+					fees: 100,
+					total: 1000,
+					net: 900,
+				},
+				isLoading: false,
+			} );
+
+			( { container } = render( <TransactionsList /> ) );
+			tableSummary = container.querySelectorAll(
+				'.woocommerce-table__summary'
+			);
+
+			expect( tableSummary ).toHaveLength( 1 );
+			expect( container ).toMatchSnapshot();
+		} );
 	} );
 
 	test( 'subscription column renders correctly', () => {
