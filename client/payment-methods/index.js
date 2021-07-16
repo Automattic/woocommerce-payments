@@ -34,6 +34,7 @@ import CreditCardIcon from '../gateway-icons/credit-card';
 import GiropayIcon from '../gateway-icons/giropay';
 import SofortIcon from '../gateway-icons/sofort';
 import SepaIcon from '../gateway-icons/sepa';
+import Pill from '../components/pill';
 
 const methodsConfiguration = {
 	card: {
@@ -158,7 +159,7 @@ const PaymentMethods = () => {
 				{ isUpeEnabled && (
 					<CardHeader className="payment-methods__header">
 						<h4 className="payment-methods__header__heading">
-							Payment methods
+							Payment methods <Pill>Early access</Pill>
 						</h4>
 						<PaymentMethodsDropdownMenu />
 					</CardHeader>
