@@ -1,4 +1,7 @@
 .wcpay-currency-notice {
-	margin: 0;
-	margin-bottom: $grid-unit-30;
+	// increasing the specificity of the styles
+	&#{&} {
+		margin: 0;
+		margin-bottom: $grid-unit-30;
+	}
 }
