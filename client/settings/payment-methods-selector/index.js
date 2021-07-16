@@ -21,8 +21,6 @@ import CurrencyInformationForMethods from '../../components/currency-information
 
 const AddPaymentMethodsModal = ( { onClose } ) => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
-	// ensures that the currency data is present before the modal is opened
-	useCurrencies();
 
 	const [
 		enabledPaymentMethods,
@@ -107,6 +105,8 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 };
 
 const PaymentMethodsSelector = () => {
+	// ensures that the currency data is present before the modal is opened
+	useCurrencies();
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
 	const [ enabledPaymentMethods ] = useEnabledPaymentMethodIds();
 
