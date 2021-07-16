@@ -52,7 +52,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		} );
 	} );
 
-	it( 'should should not call the useSettings hook if the task is not active', () => {
+	it( 'should not call the useSettings hook if the task is not active', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [] );
 		render(
 			<WizardTaskContext.Provider
