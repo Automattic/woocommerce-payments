@@ -21,10 +21,28 @@ class Locale {
 	protected $currency_format = [];
 
 	/**
+	 * Multi-Currency currency locale info.
+	 *
+	 * @var array
+	 */
+	protected $locale_info = [];
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
 		$this->load_locale_data();
+	}
+
+	/**
+	 * Gets the customer's currency based on their location.
+	 *
+	 * @return string|null Currency code or null if not found.
+	 */
+	public function get_currency_by_customer_location() {
+		$location = wc_get_customer_default_location();
+
+		return $this->locale_info[ $location['country'] ]['currency_code'] ?? null;
 	}
 
 	/**
@@ -57,10 +75,15 @@ class Locale {
 	 * @return void
 	 */
 	private function load_locale_data() {
-		$transient_name = 'wcpay_multi_currency_locale_data';
-		$transient_data = get_transient( $transient_name );
-		if ( $transient_data ) {
-			$this->currency_format = $transient_data;
+		// Define transient names, get their data, and return that data if it exists.
+		$transient_currency_format_name = 'wcpay_multi_currency_currency_format';
+		$transient_currency_format_data = get_transient( $transient_currency_format_name );
+		$transient_locale_info_name     = 'wcpay_multi_currency_locale_info';
+		$transient_locale_info_data     = get_transient( $transient_locale_info_name );
+
+		if ( $transient_currency_format_data && $transient_locale_info_data ) {
+			$this->currency_format = $transient_currency_format_data;
+			$this->locale_info     = $transient_locale_info_data;
 			return;
 		}
 
@@ -72,11 +95,11 @@ class Locale {
 			$locale_info_path = WCPAY_ABSPATH . 'i18n/locale-info.php';
 		}
 
-		$locale_info = include $locale_info_path;
+		$this->locale_info = include $locale_info_path;
 
-		if ( is_array( $locale_info ) && 0 < count( $locale_info ) ) {
+		if ( is_array( $this->locale_info ) && 0 < count( $this->locale_info ) ) {
 			// Extract the currency formatting options from the locale info.
-			foreach ( $locale_info as $country_data ) {
+			foreach ( $this->locale_info as $country_data ) {
 				$currency_code = $country_data['currency_code'];
 
 				foreach ( $country_data['locales'] as $locale => $locale_data ) {
@@ -93,7 +116,8 @@ class Locale {
 				}
 			}
 
-			set_transient( $transient_name, $this->currency_format, DAY_IN_SECONDS );
+			set_transient( $transient_currency_format_name, $this->currency_format, DAY_IN_SECONDS );
+			set_transient( $transient_locale_info_name, $this->locale_info, DAY_IN_SECONDS );
 		}
 	}
 }

@@ -222,6 +222,21 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertSame( 'GBP', $this->multi_currency->get_selected_currency()->get_code() );
 	}
 
+	public function test_get_selected_currency_returns_currency_from_user_location() {
+		// Enable the option for auto currency switching, enable geolocation.
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		update_option( 'woocommerce_default_customer_address', 'geolocation' );
+
+		// Filter the results of wc_get_customer_default_location since we cannot mock Locale.
+		add_filter(
+			'woocommerce_customer_default_location_array',
+			function() {
+				return [ 'country' => 'CA' ];
+			}
+		);
+		$this->assertSame( 'CAD', $this->multi_currency->get_selected_currency()->get_code() );
+	}
+
 	public function test_update_selected_currency_does_not_set_invalid_session_currency() {
 		$this->multi_currency->update_selected_currency( 'UNSUPPORTED_CURRENCY' );
 
