@@ -102,6 +102,7 @@ class Compatibility {
 					return $price;
 				}
 
+				// Check to see if it's currently determining prorated prices.
 				if ( $this->utils->is_call_in_backtrace( [ 'WC_Subscriptions_Product::get_sign_up_fee' ] )
 					&& $this->utils->is_call_in_backtrace( [ 'WC_Cart->calculate_totals' ] )
 					&& $item['key'] === $switch_cart_item
