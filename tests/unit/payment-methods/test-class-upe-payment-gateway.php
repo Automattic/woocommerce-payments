@@ -708,11 +708,11 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			$sofort_details,
 		];
 		$expected_payment_method_titles = [
-			'Visa credit card (WooCommerce Payments)',
-			'Visa debit card (WooCommerce Payments)',
-			'Mastercard credit card (WooCommerce Payments)',
-			'Giropay (WooCommerce Payments)',
-			'Sofort (WooCommerce Payments)',
+			'Visa credit card',
+			'Visa debit card',
+			'Mastercard credit card',
+			'Giropay',
+			'Sofort',
 		];
 
 		foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
@@ -776,8 +776,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Sofort', $sofort_method->get_title() );
 		$this->assertEquals( 'Sofort', $sofort_method->get_title( $mock_sofort_details ) );
 		$this->assertTrue( $sofort_method->is_enabled_at_checkout() );
-		$this->assertTrue( $sofort_method->is_reusable() );
-		$this->assertEquals( $mock_token, $sofort_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
+		$this->assertFalse( $sofort_method->is_reusable() );
 	}
 
 	public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
@@ -788,7 +787,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 
 		$this->assertTrue( $card_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_enabled_at_checkout() );
-		$this->assertTrue( $sofort_method->is_enabled_at_checkout() );
+		$this->assertFalse( $sofort_method->is_enabled_at_checkout() );
 	}
 
 	public function test_create_token_from_setup_intent_adds_token() {
