@@ -3,7 +3,7 @@
 exports[`Multi Currency enabled currencies list Available currencies modal renders correctly 1`] = `
 <div
   aria-labelledby="components-modal-header-0"
-  class="components-modal__frame add-enabled-currencies-modal"
+  class="components-modal__frame wcpay-confirmation-modal add-enabled-currencies-modal"
   role="dialog"
   tabindex="-1"
 >
@@ -539,8 +539,11 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
         </li>
       </ul>
     </div>
+    <hr
+      class="wcpay-confirmation-modal__separator"
+    />
     <div
-      class="add-enabled-currencies-modal__footer"
+      class="wcpay-confirmation-modal__footer"
     >
       <button
         class="components-button is-secondary"
@@ -814,7 +817,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
 exports[`Multi Currency enabled currencies list Remove currency modal renders correctly 1`] = `
 <div
   aria-labelledby="components-modal-header-1"
-  class="components-modal__frame enabled-currency-delete-modal"
+  class="components-modal__frame wcpay-confirmation-modal enabled-currency-delete-modal"
   role="dialog"
   tabindex="-1"
 >
@@ -861,8 +864,11 @@ exports[`Multi Currency enabled currencies list Remove currency modal renders co
       </strong>
        as an enabled currency in your store.
     </p>
+    <hr
+      class="wcpay-confirmation-modal__separator"
+    />
     <div
-      class="enabled-currency-delete-modal__footer"
+      class="wcpay-confirmation-modal__footer"
     >
       <button
         class="components-button is-secondary"
