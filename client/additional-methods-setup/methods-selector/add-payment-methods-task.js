@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
@@ -28,16 +28,17 @@ import {
 	usePaymentRequestEnabledSettings,
 } from '../../data';
 import './add-payment-methods-task.scss';
+import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 
 const useGetCountryName = () => {
-	const baseLocation = useSelect(
+	const storeCountry = useSelect(
 		( select ) =>
-			select( 'wc/admin/settings' ).getSetting(
-				'wc_admin',
-				'baseLocation'
-			),
+			select( 'wc/admin/settings' ).getSettings( 'general' )?.general
+				?.woocommerce_default_country || '',
 		[]
 	);
+
+	const [ countryCode ] = storeCountry.split( ':' );
 
 	const countries = useSelect(
 		( select ) =>
@@ -45,7 +46,7 @@ const useGetCountryName = () => {
 		[]
 	);
 
-	return countries[ baseLocation.country ];
+	return countries[ countryCode ];
 };
 
 const usePaymentMethodsCheckboxState = ( initialValue ) => {
@@ -99,13 +100,17 @@ const AddPaymentMethodsTask = () => {
 
 	const { setCompleted } = useContext( WizardTaskContext );
 
+	const checkedPaymentMethods = useMemo(
+		() =>
+			Object.entries( paymentMethodsState )
+				.map( ( [ method, enabled ] ) => enabled && method )
+				.filter( Boolean ),
+		[ paymentMethodsState ]
+	);
+
 	const handleContinueClick = useCallback( () => {
 		// creating a separate callback, so that the main thread isn't blocked on click of the button
 		const callback = async () => {
-			const checkedPaymentMethods = Object.entries( paymentMethodsState )
-				.map( ( [ method, enabled ] ) => enabled && method )
-				.filter( Boolean );
-
 			if ( 1 > checkedPaymentMethods.length ) {
 				alert(
 					__(
@@ -132,8 +137,8 @@ const AddPaymentMethodsTask = () => {
 
 		callback();
 	}, [
+		checkedPaymentMethods,
 		updateEnabledPaymentMethodIds,
-		paymentMethodsState,
 		saveSettings,
 		setCompleted,
 		initialEnabledPaymentMethodIds,
@@ -232,6 +237,9 @@ const AddPaymentMethodsTask = () => {
 						</PaymentMethodCheckboxes>
 					</CardBody>
 				</Card>
+				<CurrencyInformationForMethods
+					selectedMethods={ checkedPaymentMethods }
+				/>
 				<div className="wcpay-wizard-task__description-element">
 					<CheckboxControl
 						checked={ isPaymentRequestChecked }
