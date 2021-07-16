@@ -3,9 +3,10 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Modal, Button, Icon } from '@wordpress/components';
+import { Button, Icon } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 import { useCallback, useState } from '@wordpress/element';
+import ConfirmationModal from '../../components/confirmation-modal';
 
 // TODO: Delete button and modal should be separated.
 // TODO: This removes the item, but the list does not refresh.
@@ -30,7 +31,7 @@ const DeleteButton = ( { code, label, onClick, className } ) => {
 	return (
 		<>
 			{ isConfirmationModalOpen && (
-				<Modal
+				<ConfirmationModal
 					title={ sprintf(
 						__(
 							/* translators: %1: Name of the currency being removed */
@@ -41,6 +42,26 @@ const DeleteButton = ( { code, label, onClick, className } ) => {
 					) }
 					onRequestClose={ handleDeleteCancelClick }
 					className="enabled-currency-delete-modal"
+					actions={
+						<>
+							<Button
+								onClick={ handleDeleteCancelClick }
+								isSecondary
+							>
+								{ __( 'Cancel', 'woocommerce-payments' ) }
+							</Button>
+							<Button
+								onClick={ handleDeleteConfirmationClick }
+								isPrimary
+								isDestructive
+							>
+								{ __(
+									'Remove currency',
+									'woocommerce-payments'
+								) }
+							</Button>
+						</>
+					}
 				>
 					<p>
 						{ interpolateComponents( {
@@ -53,19 +74,7 @@ const DeleteButton = ( { code, label, onClick, className } ) => {
 							},
 						} ) }
 					</p>
-					<div className="enabled-currency-delete-modal__footer">
-						<Button onClick={ handleDeleteCancelClick } isSecondary>
-							{ __( 'Cancel', 'woocommerce-payments' ) }
-						</Button>
-						<Button
-							onClick={ handleDeleteConfirmationClick }
-							isPrimary
-							isDestructive
-						>
-							{ __( 'Remove currency', 'woocommerce-payments' ) }
-						</Button>
-					</div>
-				</Modal>
+				</ConfirmationModal>
 			) }
 			<Button
 				isLink
