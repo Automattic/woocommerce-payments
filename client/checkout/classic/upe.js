@@ -214,9 +214,7 @@ jQuery( function ( $ ) {
 	const getBillingDetails = ( fields ) => {
 		return {
 			name: (
-				fields.billing_first_name +
-				' ' +
-				fields.billing_last_name
+				`${fields.billing_first_name} ${fields.billing_last_name}`
 			).trim(),
 			email: fields.billing_email,
 			phone: fields.billing_phone,
