@@ -310,15 +310,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$order               = wc_get_order( $order_id );
 		$amount              = $order->get_total();
 		$currency            = $order->get_currency();
-		$payment_needed      = true;
+		$converted_amount    = WC_Payments_Utils::prepare_amount( $amount, $currency );
+		$payment_needed      = 0 < $converted_amount;
 		$save_payment_method = ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$token               = Payment_Information::get_token_from_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
-			$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );
-			$payment_needed   = 0 < $converted_amount;
 			if ( $payment_needed ) {
 				$this->payments_api_client->update_intention(
 					$payment_intent_id,
