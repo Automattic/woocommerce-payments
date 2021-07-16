@@ -810,6 +810,173 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test a successful call to update_intention.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_update_intention_with_default_parameters_success() {
+		$intention_id    = 'test_intention_id';
+		$currency_code   = 'usd';
+		$expected_amount = 123;
+		$expected_status = 'succeeded';
+
+		// Mock the HTTP client manually to assert we are sending the correct args.
+		$this->mock_http_client
+		->expects( $this->once() )
+		->method( 'remote_request' )
+		->with(
+			[
+				'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id,
+				'method'          => 'POST',
+				'headers'         => [
+					'Content-Type' => 'application/json; charset=utf-8',
+					'User-Agent'   => 'Unit Test Agent/0.1.0',
+				],
+				'timeout'         => 70,
+				'connect_timeout' => 70,
+			],
+			wp_json_encode(
+				[
+					'test_mode' => false,
+					'amount'    => $expected_amount,
+					'currency'  => $currency_code,
+					'level3'    => [],
+				]
+			),
+			true,
+			false
+		)
+		->will(
+			$this->returnValue(
+				[
+					'body'     => wp_json_encode(
+						[
+							'id'            => 'test_intention_id',
+							'amount'        => $expected_amount,
+							'created'       => 1557224304,
+							'status'        => $expected_status,
+							'charges'       => [
+								'total_count' => 0,
+								'data'        => [],
+							],
+							'client_secret' => 'test_client_secret',
+							'currency'      => 'usd',
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			)
+		);
+
+		$result = $this->payments_api_client->update_intention(
+			'test_intention_id',
+			$expected_amount,
+			'usd'
+		);
+
+		$this->assertEquals( $expected_amount, $result->get_amount() );
+		$this->assertEquals( $expected_status, $result->get_status() );
+	}
+
+	/**
+	 * Test a successful call to update_intention.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_update_intention_with_all_parameters_success() {
+		$intention_id            = 'test_intention_id';
+		$currency_code           = 'eur';
+		$customer_id             = 'cus_123abc';
+		$expected_amount         = 123;
+		$expected_status         = 'succeeded';
+		$selected_payment_method = 'giropay';
+		$save_payment_method     = true;
+		$level3_data             = [
+			'merchant_reference' => 'abc123',
+			'line_items'         => [
+				[
+					'discount_amount'     => 0,
+					'product_code'        => 'free-hug',
+					'product_description' => 'Free hug',
+					'quantity'            => 1,
+					'tax_amount'          => 0,
+					'unit_cost'           => 0,
+				],
+			],
+		];
+
+		// Mock the HTTP client manually to assert we are sending the correct args.
+		$this->mock_http_client
+		->expects( $this->once() )
+		->method( 'remote_request' )
+		->with(
+			[
+				'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id,
+				'method'          => 'POST',
+				'headers'         => [
+					'Content-Type' => 'application/json; charset=utf-8',
+					'User-Agent'   => 'Unit Test Agent/0.1.0',
+				],
+				'timeout'         => 70,
+				'connect_timeout' => 70,
+			],
+			wp_json_encode(
+				[
+					'test_mode'            => false,
+					'amount'               => $expected_amount,
+					'currency'             => $currency_code,
+					'level3'               => $level3_data,
+					'payment_method_types' => [ 'giropay' ],
+					'customer'             => $customer_id,
+					'setup_future_usage'   => 'off_session',
+				]
+			),
+			true,
+			false
+		)
+		->will(
+			$this->returnValue(
+				[
+					'body'     => wp_json_encode(
+						[
+							'id'            => $intention_id,
+							'amount'        => $expected_amount,
+							'created'       => 1557224304,
+							'status'        => $expected_status,
+							'client_secret' => 'test_client_secret',
+							'currency'      => $currency_code,
+							'charges'       => [
+								'total_count' => 0,
+								'data'        => [],
+							],
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			)
+		);
+
+		$result = $this->payments_api_client->update_intention(
+			$intention_id,
+			$expected_amount,
+			$currency_code,
+			$save_payment_method,
+			$customer_id,
+			$level3_data,
+			$selected_payment_method
+		);
+
+		$this->assertEquals( $expected_amount, $result->get_amount() );
+		$this->assertEquals( $expected_status, $result->get_status() );
+	}
+
+	/**
 	 * @dataProvider data_request_with_level3_data
 	 */
 	public function test_request_with_level3_data( $input_args, $expected_level3_args ) {

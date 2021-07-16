@@ -353,10 +353,16 @@ export default class WCPayAPI {
 	 * @param {string} paymentIntentId The id of the payment intent.
 	 * @param {int} orderId The id of the order.
 	 * @param {string} savePaymentMethod 'yes' if saving.
+	 * @param {string} selectedUPEPaymentType The name of the selected UPE payment type or empty string.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	updateIntent( paymentIntentId, orderId, savePaymentMethod ) {
+	updateIntent(
+		paymentIntentId,
+		orderId,
+		savePaymentMethod,
+		selectedUPEPaymentType
+	) {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			// eslint-disable-next-line camelcase
 			wcpay_order_id: orderId,
@@ -364,6 +370,7 @@ export default class WCPayAPI {
 			wc_payment_intent_id: paymentIntentId,
 			// eslint-disable-next-line camelcase
 			save_payment_method: savePaymentMethod,
+			wcpay_selected_upe_payment_type: selectedUPEPaymentType,
 			action: 'update_payment_intent',
 			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),

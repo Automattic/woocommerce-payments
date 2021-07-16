@@ -192,6 +192,11 @@ jQuery( function ( $ ) {
 		}
 	};
 
+	// Set the selected UPE payment type field
+	const setSelectedUPEPaymentType = ( paymentType ) => {
+		$( '#wcpay_selected_upe_payment_type' ).val( paymentType );
+	};
+
 	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
@@ -241,9 +246,12 @@ jQuery( function ( $ ) {
 				upeElement.mount( '#wcpay-upe-element' );
 				unblockUI( $upeContainer );
 				upeElement.on( 'change', ( event ) => {
+					const selectedUPEPaymentType = event.value.type;
 					const isPaymentMethodReusable =
-						paymentMethodsConfig[ event.value.type ].isReusable;
+						paymentMethodsConfig[ selectedUPEPaymentType ]
+							.isReusable;
 					showNewPaymentMethodCheckbox( isPaymentMethodReusable );
+					setSelectedUPEPaymentType( selectedUPEPaymentType );
 					isUPEComplete = event.complete;
 				} );
 			} )
@@ -358,7 +366,8 @@ jQuery( function ( $ ) {
 			await api.updateIntent(
 				paymentIntentId,
 				orderId,
-				savePaymentMethod
+				savePaymentMethod,
+				$( '#wcpay_selected_upe_payment_type' ).val()
 			);
 
 			const { error } = await api.getStripe().confirmPayment( {
