@@ -1,6 +1,6 @@
 .wcpay-multi-currency__enabled-currencies-header {
 	display: flex;
-	margin-right: 60px;
+	margin-right: 100px;
 
 	div {
 		flex: 1;
@@ -51,7 +51,7 @@
 		&__actions {
 			text-align: right;
 			display: flex;
-			min-width: 80px;
+			min-width: 100px;
 			color: $studio-gray-20;
 
 			.components-button {
@@ -60,7 +60,7 @@
 			}
 
 			.delete {
-				margin: 0 0 0 5px;
+				margin: 0 0 0 24px;
 				padding: 0 0 0 5px;
 			}
 		}
