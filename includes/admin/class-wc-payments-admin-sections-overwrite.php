@@ -19,10 +19,22 @@ class WC_Payments_Admin_Sections_Overwrite {
 	private $previous_current_section;
 
 	/**
-	 * WC_Payments_Admin_Sections_Overwrite constructor.
+	 * WC_Payments_Account instance to get information about the account.
+	 *
+	 * @var WC_Payments_Account
 	 */
-	public function __construct() {
+	private $account;
+
+	/**
+	 * WC_Payments_Admin_Sections_Overwrite constructor.
+	 *
+	 * @param WC_Payments_Account $account WC_Payments_Account instance.
+	 */
+	public function __construct( WC_Payments_Account $account ) {
+		$this->account = $account;
+
 		add_filter( 'woocommerce_get_sections_checkout', [ $this, 'add_checkout_sections' ] );
+
 		add_action( 'woocommerce_sections_checkout', [ $this, 'overwrite_current_section_global' ], 5 );
 		add_action( 'woocommerce_sections_checkout', [ $this, 'restore_current_section_global' ], 15 );
 
@@ -31,6 +43,15 @@ class WC_Payments_Admin_Sections_Overwrite {
 
 		// After outputting tabs on the "Settings" page.
 		add_action( 'woocommerce_settings_tabs', [ $this, 'remove_overwrite_payments_tab_url_filter' ] );
+	}
+
+	/**
+	 * Determines whether the account is connected or not.
+	 *
+	 * @return bool
+	 */
+	public function is_account_disconnected() {
+		return empty( $this->account->get_cached_account_data() );
 	}
 
 	/**
@@ -57,6 +78,10 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 * Payments" section as active on payment method settings pages.
 	 */
 	public function overwrite_current_section_global() {
+		if ( $this->is_account_disconnected() ) {
+			return;
+		}
+
 		global $current_section;
 
 		$this->previous_current_section = $current_section;
@@ -69,6 +94,10 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 * Resets `$current_section` to its original value.
 	 */
 	public function restore_current_section_global() {
+		if ( $this->is_account_disconnected() ) {
+			return;
+		}
+
 		global $current_section;
 
 		$current_section = $this->previous_current_section;
@@ -78,6 +107,10 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 * Add the callback to overwrite the Payments tab URL to the `admin_url` filter.
 	 */
 	public function add_overwrite_payments_tab_url_filter() {
+		if ( $this->is_account_disconnected() ) {
+			return;
+		}
+
 		add_filter( 'admin_url', [ $this, 'overwrite_payments_tab_url' ], 100, 2 );
 	}
 
@@ -85,6 +118,10 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 * Remove the callback to overwrite the Payments tab URL from the `admin_url` filter.
 	 */
 	public function remove_overwrite_payments_tab_url_filter() {
+		if ( $this->is_account_disconnected() ) {
+			return;
+		}
+
 		remove_filter( 'admin_url', [ $this, 'overwrite_payments_tab_url' ], 100 );
 	}
 
