@@ -9,9 +9,14 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -166,6 +171,177 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
 </div>
 `;
 
+exports[`Dispute details screen renders correctly for charge_refunded dispute status 1`] = `
+<div>
+  <div
+    class="wcpay-dispute-details woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute overview
+        <span
+          class="chip chip-light is-compact"
+        >
+          Charge refunded
+        </span>
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="wcpay-dispute-info"
+        >
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Dispute date: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 1, 2019
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Disputed amount: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              $10.00
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Respond by: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 8, 2019 - 2:46AM
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Reason: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Fraudulent
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Order: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="external"
+                href="http://test.local/order/1"
+              >
+                1
+              </a>
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Transaction ID: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
+              />
+            </span>
+          </div>
+        </div>
+        <p>
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
+        </p>
+        <p>
+          If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      />
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute: Fraudulent
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <p>
+          This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
+        </p>
+        <h3>
+           
+          Required to overturn dispute
+           
+        </h3>
+        <p>
+          Provide adequate payment and order details so that a legitimate customer recognizes it, or proves to the card issuer that their cardholder authorized the transaction.
+        </p>
+        <h3>
+          How to respond
+        </h3>
+        <p>
+          Try to get in touch with your customer. Sometimes people forget about payments they make or don’t recognize the way they appear on their card statement. If this is the case, ask them to contact their card issuer and let them know they no longer dispute the transaction.
+        </p>
+        <p>
+          Even if your customer agrees to withdraw the dispute, you must still submit appropriate evidence using the forms on the next screen. Simply saying that your customer is going to withdraw the dispute is not sufficient evidence.
+        </p>
+        <p>
+          It may be more efficient—and provide a better customer experience—to accept an accidental dispute and charge the customer again, if appropriate. Even when a dispute is withdrawn, it usually takes approximately 75 days to be finalized. Remember, it doesn’t matter to the card networks whether you win or lose a dispute; what matters is how many disputes a business receives, regardless of how many disputes are won.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      />
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Dispute details screen renders correctly for check_returned dispute 1`] = `
 <div>
   <div
@@ -175,9 +351,14 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -341,9 +522,14 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -534,9 +720,14 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -700,9 +891,14 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -866,9 +1062,14 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -1065,9 +1266,14 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -1261,9 +1467,14 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -1434,9 +1645,14 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -1600,9 +1816,14 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -1757,6 +1978,378 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
 </div>
 `;
 
+exports[`Dispute details screen renders correctly for lost dispute status 1`] = `
+<div>
+  <div
+    class="wcpay-dispute-details woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute overview
+        <span
+          class="chip chip-light is-compact"
+        >
+          Lost
+        </span>
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="wcpay-dispute-info"
+        >
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Dispute date: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 1, 2019
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Disputed amount: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              $10.00
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Respond by: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 8, 2019 - 2:46AM
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Reason: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Fraudulent
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Order: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="external"
+                href="http://test.local/order/1"
+              >
+                1
+              </a>
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Transaction ID: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
+              />
+            </span>
+          </div>
+        </div>
+        <p>
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
+        </p>
+        <p>
+          If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      />
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute: Fraudulent
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <p>
+          This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
+        </p>
+        <h3>
+           
+          Required to overturn dispute
+           
+        </h3>
+        <p>
+          Provide adequate payment and order details so that a legitimate customer recognizes it, or proves to the card issuer that their cardholder authorized the transaction.
+        </p>
+        <h3>
+          How to respond
+        </h3>
+        <p>
+          Try to get in touch with your customer. Sometimes people forget about payments they make or don’t recognize the way they appear on their card statement. If this is the case, ask them to contact their card issuer and let them know they no longer dispute the transaction.
+        </p>
+        <p>
+          Even if your customer agrees to withdraw the dispute, you must still submit appropriate evidence using the forms on the next screen. Simply saying that your customer is going to withdraw the dispute is not sufficient evidence.
+        </p>
+        <p>
+          It may be more efficient—and provide a better customer experience—to accept an accidental dispute and charge the customer again, if appropriate. Even when a dispute is withdrawn, it usually takes approximately 75 days to be finalized. Remember, it doesn’t matter to the card networks whether you win or lose a dispute; what matters is how many disputes a business receives, regardless of how many disputes are won.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Dispute details screen renders correctly for needs_response dispute status 1`] = `
+<div>
+  <div
+    class="wcpay-dispute-details woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="wcpay-dispute-info"
+        >
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Dispute date: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 1, 2019
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Disputed amount: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              $10.00
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Respond by: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 8, 2019 - 2:46AM
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Reason: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Fraudulent
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Order: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="external"
+                href="http://test.local/order/1"
+              >
+                1
+              </a>
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Transaction ID: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
+              />
+            </span>
+          </div>
+        </div>
+        <p>
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
+        </p>
+        <p>
+          If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      >
+        <div>
+          <a
+            class="components-button is-primary"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
+          >
+            Challenge dispute
+          </a>
+          <button
+            class="components-button is-secondary"
+            type="button"
+          >
+            Accept dispute
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute: Fraudulent
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <p>
+          This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
+        </p>
+        <h3>
+           
+          Required to overturn dispute
+           
+        </h3>
+        <p>
+          Provide adequate payment and order details so that a legitimate customer recognizes it, or proves to the card issuer that their cardholder authorized the transaction.
+        </p>
+        <h3>
+          How to respond
+        </h3>
+        <p>
+          Try to get in touch with your customer. Sometimes people forget about payments they make or don’t recognize the way they appear on their card statement. If this is the case, ask them to contact their card issuer and let them know they no longer dispute the transaction.
+        </p>
+        <p>
+          Even if your customer agrees to withdraw the dispute, you must still submit appropriate evidence using the forms on the next screen. Simply saying that your customer is going to withdraw the dispute is not sufficient evidence.
+        </p>
+        <p>
+          It may be more efficient—and provide a better customer experience—to accept an accidental dispute and charge the customer again, if appropriate. Even when a dispute is withdrawn, it usually takes approximately 75 days to be finalized. Remember, it doesn’t matter to the card networks whether you win or lose a dispute; what matters is how many disputes a business receives, regardless of how many disputes are won.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      >
+        <div>
+          <a
+            class="components-button is-primary"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
+          >
+            Challenge dispute
+          </a>
+          <button
+            class="components-button is-secondary"
+            type="button"
+          >
+            Accept dispute
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Dispute details screen renders correctly for product_not_received dispute 1`] = `
 <div>
   <div
@@ -1766,9 +2359,14 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -1959,9 +2557,14 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -2161,9 +2764,14 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -2348,6 +2956,177 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
 </div>
 `;
 
+exports[`Dispute details screen renders correctly for under_review dispute status 1`] = `
+<div>
+  <div
+    class="wcpay-dispute-details woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute overview
+        <span
+          class="chip chip-light is-compact"
+        >
+          Under review
+        </span>
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="wcpay-dispute-info"
+        >
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Dispute date: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 1, 2019
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Disputed amount: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              $10.00
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Respond by: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 8, 2019 - 2:46AM
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Reason: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Fraudulent
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Order: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="external"
+                href="http://test.local/order/1"
+              >
+                1
+              </a>
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Transaction ID: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
+              />
+            </span>
+          </div>
+        </div>
+        <p>
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
+        </p>
+        <p>
+          If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      />
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute: Fraudulent
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <p>
+          This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
+        </p>
+        <h3>
+           
+          Required to overturn dispute
+           
+        </h3>
+        <p>
+          Provide adequate payment and order details so that a legitimate customer recognizes it, or proves to the card issuer that their cardholder authorized the transaction.
+        </p>
+        <h3>
+          How to respond
+        </h3>
+        <p>
+          Try to get in touch with your customer. Sometimes people forget about payments they make or don’t recognize the way they appear on their card statement. If this is the case, ask them to contact their card issuer and let them know they no longer dispute the transaction.
+        </p>
+        <p>
+          Even if your customer agrees to withdraw the dispute, you must still submit appropriate evidence using the forms on the next screen. Simply saying that your customer is going to withdraw the dispute is not sufficient evidence.
+        </p>
+        <p>
+          It may be more efficient—and provide a better customer experience—to accept an accidental dispute and charge the customer again, if appropriate. Even when a dispute is withdrawn, it usually takes approximately 75 days to be finalized. Remember, it doesn’t matter to the card networks whether you win or lose a dispute; what matters is how many disputes a business receives, regardless of how many disputes are won.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      />
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Dispute details screen renders correctly for unrecognized dispute 1`] = `
 <div>
   <div
@@ -2357,9 +3136,14 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Needs response
+        </span>
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -2536,6 +3320,720 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
           </button>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Dispute details screen renders correctly for warning_closed dispute status 1`] = `
+<div>
+  <div
+    class="wcpay-dispute-details woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute overview
+        <span
+          class="chip chip-light is-compact"
+        >
+          Inquiry: Closed
+        </span>
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="wcpay-dispute-info"
+        >
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Dispute date: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 1, 2019
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Disputed amount: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              $10.00
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Respond by: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 8, 2019 - 2:46AM
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Reason: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Fraudulent
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Order: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="external"
+                href="http://test.local/order/1"
+              >
+                1
+              </a>
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Transaction ID: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
+              />
+            </span>
+          </div>
+        </div>
+        <p>
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
+        </p>
+        <p>
+          If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      />
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute: Fraudulent
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <p>
+          This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
+        </p>
+        <h3>
+           
+          Required to overturn dispute
+           
+        </h3>
+        <p>
+          Provide adequate payment and order details so that a legitimate customer recognizes it, or proves to the card issuer that their cardholder authorized the transaction.
+        </p>
+        <h3>
+          How to respond
+        </h3>
+        <p>
+          Try to get in touch with your customer. Sometimes people forget about payments they make or don’t recognize the way they appear on their card statement. If this is the case, ask them to contact their card issuer and let them know they no longer dispute the transaction.
+        </p>
+        <p>
+          Even if your customer agrees to withdraw the dispute, you must still submit appropriate evidence using the forms on the next screen. Simply saying that your customer is going to withdraw the dispute is not sufficient evidence.
+        </p>
+        <p>
+          It may be more efficient—and provide a better customer experience—to accept an accidental dispute and charge the customer again, if appropriate. Even when a dispute is withdrawn, it usually takes approximately 75 days to be finalized. Remember, it doesn’t matter to the card networks whether you win or lose a dispute; what matters is how many disputes a business receives, regardless of how many disputes are won.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Dispute details screen renders correctly for warning_needs_response dispute status 1`] = `
+<div>
+  <div
+    class="wcpay-dispute-details woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute overview
+        <span
+          class="chip chip-primary is-compact"
+        >
+          Inquiry: Needs response
+        </span>
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="wcpay-dispute-info"
+        >
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Dispute date: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 1, 2019
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Disputed amount: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              $10.00
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Respond by: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 8, 2019 - 2:46AM
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Reason: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Fraudulent
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Order: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="external"
+                href="http://test.local/order/1"
+              >
+                1
+              </a>
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Transaction ID: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
+              />
+            </span>
+          </div>
+        </div>
+        <p>
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
+        </p>
+        <p>
+          If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      >
+        <div>
+          <a
+            class="components-button is-primary"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
+          >
+            Challenge dispute
+          </a>
+          <button
+            class="components-button is-secondary"
+            type="button"
+          >
+            Accept dispute
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute: Fraudulent
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <p>
+          This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
+        </p>
+        <h3>
+           
+          Required to overturn dispute
+           
+        </h3>
+        <p>
+          Provide adequate payment and order details so that a legitimate customer recognizes it, or proves to the card issuer that their cardholder authorized the transaction.
+        </p>
+        <h3>
+          How to respond
+        </h3>
+        <p>
+          Try to get in touch with your customer. Sometimes people forget about payments they make or don’t recognize the way they appear on their card statement. If this is the case, ask them to contact their card issuer and let them know they no longer dispute the transaction.
+        </p>
+        <p>
+          Even if your customer agrees to withdraw the dispute, you must still submit appropriate evidence using the forms on the next screen. Simply saying that your customer is going to withdraw the dispute is not sufficient evidence.
+        </p>
+        <p>
+          It may be more efficient—and provide a better customer experience—to accept an accidental dispute and charge the customer again, if appropriate. Even when a dispute is withdrawn, it usually takes approximately 75 days to be finalized. Remember, it doesn’t matter to the card networks whether you win or lose a dispute; what matters is how many disputes a business receives, regardless of how many disputes are won.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      >
+        <div>
+          <a
+            class="components-button is-primary"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
+          >
+            Challenge dispute
+          </a>
+          <button
+            class="components-button is-secondary"
+            type="button"
+          >
+            Accept dispute
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Dispute details screen renders correctly for warning_under_review dispute status 1`] = `
+<div>
+  <div
+    class="wcpay-dispute-details woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute overview
+        <span
+          class="chip chip-light is-compact"
+        >
+          Inquiry: Under review
+        </span>
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="wcpay-dispute-info"
+        >
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Dispute date: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 1, 2019
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Disputed amount: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              $10.00
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Respond by: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 8, 2019 - 2:46AM
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Reason: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Fraudulent
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Order: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="external"
+                href="http://test.local/order/1"
+              >
+                1
+              </a>
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Transaction ID: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
+              />
+            </span>
+          </div>
+        </div>
+        <p>
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
+        </p>
+        <p>
+          If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      />
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute: Fraudulent
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <p>
+          This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
+        </p>
+        <h3>
+           
+          Required to overturn dispute
+           
+        </h3>
+        <p>
+          Provide adequate payment and order details so that a legitimate customer recognizes it, or proves to the card issuer that their cardholder authorized the transaction.
+        </p>
+        <h3>
+          How to respond
+        </h3>
+        <p>
+          Try to get in touch with your customer. Sometimes people forget about payments they make or don’t recognize the way they appear on their card statement. If this is the case, ask them to contact their card issuer and let them know they no longer dispute the transaction.
+        </p>
+        <p>
+          Even if your customer agrees to withdraw the dispute, you must still submit appropriate evidence using the forms on the next screen. Simply saying that your customer is going to withdraw the dispute is not sufficient evidence.
+        </p>
+        <p>
+          It may be more efficient—and provide a better customer experience—to accept an accidental dispute and charge the customer again, if appropriate. Even when a dispute is withdrawn, it usually takes approximately 75 days to be finalized. Remember, it doesn’t matter to the card networks whether you win or lose a dispute; what matters is how many disputes a business receives, regardless of how many disputes are won.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Dispute details screen renders correctly for won dispute status 1`] = `
+<div>
+  <div
+    class="wcpay-dispute-details woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large header-dispute-overview e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute overview
+        <span
+          class="chip chip-light is-compact"
+        >
+          Won
+        </span>
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="wcpay-dispute-info"
+        >
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Dispute date: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 1, 2019
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Disputed amount: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              $10.00
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Respond by: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 8, 2019 - 2:46AM
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Reason: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Fraudulent
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Order: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="external"
+                href="http://test.local/order/1"
+              >
+                1
+              </a>
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Transaction ID: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
+              />
+            </span>
+          </div>
+        </div>
+        <p>
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
+        </p>
+        <p>
+          If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      />
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Dispute: Fraudulent
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <p>
+          This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
+        </p>
+        <h3>
+           
+          Required to overturn dispute
+           
+        </h3>
+        <p>
+          Provide adequate payment and order details so that a legitimate customer recognizes it, or proves to the card issuer that their cardholder authorized the transaction.
+        </p>
+        <h3>
+          How to respond
+        </h3>
+        <p>
+          Try to get in touch with your customer. Sometimes people forget about payments they make or don’t recognize the way they appear on their card statement. If this is the case, ask them to contact their card issuer and let them know they no longer dispute the transaction.
+        </p>
+        <p>
+          Even if your customer agrees to withdraw the dispute, you must still submit appropriate evidence using the forms on the next screen. Simply saying that your customer is going to withdraw the dispute is not sufficient evidence.
+        </p>
+        <p>
+          It may be more efficient—and provide a better customer experience—to accept an accidental dispute and charge the customer again, if appropriate. Even when a dispute is withdrawn, it usually takes approximately 75 days to be finalized. Remember, it doesn’t matter to the card networks whether you win or lose a dispute; what matters is how many disputes a business receives, regardless of how many disputes are won.
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      />
     </div>
   </div>
 </div>

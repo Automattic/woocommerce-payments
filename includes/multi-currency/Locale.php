@@ -42,13 +42,12 @@ class Locale {
 	}
 
 	/**
-	 * Returns the user locale country.
+	 * Returns the user locale.
 	 *
-	 * @return string The country code.
+	 * @return string The locale.
 	 */
-	public function get_user_locale_country(): string {
-		$locale = explode( '_', get_user_locale() );
-		return end( $locale );
+	public function get_user_locale(): string {
+		return get_user_locale();
 	}
 
 	/**
@@ -65,32 +64,33 @@ class Locale {
 			return;
 		}
 
-		$locale_info = include WC()->plugin_path() . '/i18n/locale-info.php';
+		$locale_info_path = WC()->plugin_path() . '/i18n/locale-info.php';
+
+		// The full locale data was introduced in the currency-info.php file.
+		// If it doesn't exist we have to use the fallback.
+		if ( ! file_exists( WC()->plugin_path() . '/i18n/currency-info.php' ) ) {
+			$locale_info_path = WCPAY_ABSPATH . 'i18n/locale-info.php';
+		}
+
+		$locale_info = include $locale_info_path;
 
 		if ( is_array( $locale_info ) && 0 < count( $locale_info ) ) {
-			$countries          = array_keys( $locale_info );
-			$first_country_data = $locale_info[ $countries[0] ];
-
-			// If the loaded locale_info doesn't contain the locales keys, load the fallback file.
-			if ( is_array( $first_country_data ) && ! array_key_exists( 'locales', $first_country_data ) ) {
-				$locale_info = include WCPAY_ABSPATH . 'i18n/locale-info.php';
-			}
-
 			// Extract the currency formatting options from the locale info.
-			foreach ( $locale_info as $country => $locale ) {
-				$currency_code = $locale['currency_code'];
+			foreach ( $locale_info as $country_data ) {
+				$currency_code = $country_data['currency_code'];
 
-				// Convert Norwegian Krone symbol to its ISO 4217 currency code.
-				if ( 'Kr' === $currency_code ) {
-					$currency_code = 'NOK';
+				foreach ( $country_data['locales'] as $locale => $locale_data ) {
+					if ( empty( $locale_data ) ) {
+						continue;
+					}
+
+					$this->currency_format[ $currency_code ][ $locale ] = [
+						'currency_pos' => $locale_data['currency_pos'],
+						'thousand_sep' => $locale_data['thousand_sep'],
+						'decimal_sep'  => $locale_data['decimal_sep'],
+						'num_decimals' => $country_data['num_decimals'],
+					];
 				}
-
-				$this->currency_format[ $currency_code ][ $country ] = [
-					'currency_pos' => $locale['currency_pos'],
-					'thousand_sep' => $locale['thousand_sep'],
-					'decimal_sep'  => $locale['decimal_sep'],
-					'num_decimals' => $locale['num_decimals'],
-				];
 			}
 
 			set_transient( $transient_name, $this->currency_format, DAY_IN_SECONDS );
