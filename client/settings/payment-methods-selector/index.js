@@ -18,7 +18,7 @@ import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import ConfirmationModal from '../../components/confirmation-modal';
 import WCPaySettingsContext from '../wcpay-settings-context';
-import { formatAccountFeesDescription } from '../../utils/account-fees';
+import { formatMethodFeesDescription } from '../../utils/account-fees';
 
 const PaymentMethodsSelector = ( { className } ) => {
 	const { accountFees } = useContext( WCPaySettingsContext );
@@ -79,19 +79,6 @@ const PaymentMethodsSelector = ( { className } ) => {
 		addSelectedPaymentMethods( selectedPaymentMethods );
 	};
 
-	const getMethodFee = ( methodId ) => {
-		const methodFees = accountFees[ methodId ];
-
-		if ( ! methodFees ) {
-			return __( 'missing fees', 'woocommerce-payments' );
-		}
-
-		/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
-		const format = __( '%1$f%% + %2$s', 'woocommerce-payments' );
-
-		return formatAccountFeesDescription( methodFees, format, '' );
-	};
-
 	return (
 		<>
 			{ isPaymentMethodsSelectorModalOpen && (
@@ -137,7 +124,9 @@ const PaymentMethodsSelector = ( { className } ) => {
 									key={ key }
 									checked={ enabled }
 									onChange={ handleChange }
-									fees={ getMethodFee( key ) }
+									fees={ formatMethodFeesDescription(
+										accountFees[ key ]
+									) }
 									name={ key }
 								/>
 							)

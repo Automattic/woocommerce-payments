@@ -18,23 +18,23 @@ export const getCurrentFee = ( accountFees ) => {
 		: accountFees.base;
 };
 
+const getDefaultFeeFormat = () => {
+	/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
+	return __( '%1$f%% + %2$s per transaction', 'woocommerce-payments' );
+};
+
+const getDefaultDiscountFormat = () => {
+	/* translators: %f percentage discount to apply */
+	return __( '(%f%% discount)', 'woocommerce-payments' );
+};
+
 export const formatAccountFeesDescription = (
 	accountFees,
-	format,
-	discountFormat
+	format = getDefaultFeeFormat(),
+	discountFormat = getDefaultDiscountFormat()
 ) => {
 	const baseFee = accountFees.base;
 	const currentFee = getCurrentFee( accountFees );
-
-	if ( undefined === format ) {
-		/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
-		format = __( '%1$f%% + %2$s per transaction', 'woocommerce-payments' );
-	}
-
-	if ( undefined === discountFormat ) {
-		/* translators: %f percentage discount to apply */
-		discountFormat = __( '(%f%% discount)', 'woocommerce-payments' );
-	}
 
 	let feeDescription = sprintf(
 		format,
@@ -80,4 +80,15 @@ export const formatAccountFeesDescription = (
 	}
 
 	return feeDescription;
+};
+
+export const formatMethodFeesDescription = ( methodFees ) => {
+	if ( ! methodFees ) {
+		return __( 'missing fees', 'woocommerce-payments' );
+	}
+
+	/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
+	const format = __( '%1$f%% + %2$s', 'woocommerce-payments' );
+
+	return formatAccountFeesDescription( methodFees, format, '' );
 };

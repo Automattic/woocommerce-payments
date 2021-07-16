@@ -29,7 +29,7 @@ import {
 	usePaymentRequestEnabledSettings,
 } from '../../data';
 import './add-payment-methods-task.scss';
-import { formatAccountFeesDescription } from '../../utils/account-fees';
+import { formatMethodFeesDescription } from '../../utils/account-fees';
 
 const useGetCountryName = () => {
 	const baseLocation = useSelect(
@@ -148,19 +148,6 @@ const AddPaymentMethodsTask = () => {
 
 	const countryName = useGetCountryName();
 
-	const getMethodFee = ( methodId ) => {
-		const methodFees = accountFees[ methodId ];
-
-		if ( ! methodFees ) {
-			return __( 'missing fees', 'woocommerce-payments' );
-		}
-
-		/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
-		const format = __( '%1$f%% + %2$s', 'woocommerce-payments' );
-
-		return formatAccountFeesDescription( methodFees, format, '' );
-	};
-
 	return (
 		<WizardTaskItem
 			className="add-payment-methods-task"
@@ -205,7 +192,9 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.card }
 									onChange={ handlePaymentMethodChange }
-									fees={ getMethodFee( 'card' ) }
+									fees={ formatMethodFeesDescription(
+										accountFees.card
+									) }
 									name="card"
 								/>
 							) }
@@ -224,7 +213,9 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.giropay }
 									onChange={ handlePaymentMethodChange }
-									fees={ getMethodFee( 'giropay' ) }
+									fees={ formatMethodFeesDescription(
+										accountFees.giropay
+									) }
 									name="giropay"
 								/>
 							) }
@@ -232,7 +223,9 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.sofort }
 									onChange={ handlePaymentMethodChange }
-									fees={ getMethodFee( 'sofort' ) }
+									fees={ formatMethodFeesDescription(
+										accountFees.sofort
+									) }
 									name="sofort"
 								/>
 							) }
@@ -242,7 +235,9 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.sepa_debit }
 									onChange={ handlePaymentMethodChange }
-									fees={ getMethodFee( 'sepa_debit' ) }
+									fees={ formatMethodFeesDescription(
+										accountFees.sepa_debit
+									) }
 									name="sepa_debit"
 								/>
 							) }
