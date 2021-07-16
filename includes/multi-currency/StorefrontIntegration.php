@@ -28,13 +28,6 @@ class StorefrontIntegration {
 	protected $multi_currency;
 
 	/**
-	 * WP_Theme instance.
-	 *
-	 * @var \WP_Theme
-	 */
-	protected $theme;
-
-	/**
 	 * Themes where we need to add a wrapper around the breadcrumbs before adding the widget.
 	 *
 	 * @var array
@@ -45,12 +38,10 @@ class StorefrontIntegration {
 	 * Constructor.
 	 *
 	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
-	 * @param \WP_Theme     $theme          The instance of the theme in use.
 	 */
-	public function __construct( MultiCurrency $multi_currency, \WP_Theme $theme ) {
+	public function __construct( MultiCurrency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
 		$this->id             = $this->multi_currency->id;
-		$this->theme          = $theme;
 		$this->wrapper_themes = [ 'arcade', 'boutique', 'homestore', 'stationery' ];
 		$this->init_actions_and_filters();
 	}
@@ -190,7 +181,7 @@ class StorefrontIntegration {
 			}
 		';
 
-		switch ( $this->theme->stylesheet ) {
+		switch ( $this->multi_currency->get_theme_stylesheet() ) {
 			case 'arcade':
 			case 'boutique':
 				$css = '
@@ -316,6 +307,6 @@ class StorefrontIntegration {
 	 * @return bool
 	 */
 	private function is_wrapper_theme(): bool {
-		return in_array( $this->theme->stylesheet, $this->wrapper_themes, true );
+		return in_array( $this->multi_currency->get_theme_stylesheet(), $this->wrapper_themes, true );
 	}
 }

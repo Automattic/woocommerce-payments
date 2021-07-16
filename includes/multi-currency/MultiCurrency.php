@@ -104,6 +104,13 @@ class MultiCurrency {
 	protected $enabled_currencies;
 
 	/**
+	 * The theme's stylesheet name.
+	 *
+	 * @var string
+	 */
+	protected $theme_stylesheet;
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -200,11 +207,12 @@ class MultiCurrency {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 
 		// Check for Storefront being active and load the integration if it is.
-		$theme = wp_get_theme();
-		if ( 'storefront' === $theme->stylesheet || 'storefront' === $theme->template ) {
+		$theme                  = wp_get_theme();
+		$this->theme_stylesheet = $theme->get_stylesheet();
+		if ( 'storefront' === $this->theme_stylesheet || 'storefront' === $theme->get_template() ) {
 			// The Hotel child theme has no easy place to add the widget except the widget area in the sidebar.
-			if ( 'hotel' !== $theme->stylesheet ) {
-				new StorefrontIntegration( $this, $theme );
+			if ( 'hotel' !== $this->theme_stylesheet ) {
+				new StorefrontIntegration( $this );
 			}
 		}
 
@@ -378,6 +386,15 @@ class MultiCurrency {
 	 */
 	public function get_frontend_currencies(): FrontendCurrencies {
 		return $this->frontend_currencies;
+	}
+
+	/**
+	 * Returns the theme stylesheet name.
+	 *
+	 * @return string
+	 */
+	public function get_theme_stylesheet(): string {
+		return $this->theme_stylesheet;
 	}
 
 	/**
