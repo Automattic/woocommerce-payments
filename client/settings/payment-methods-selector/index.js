@@ -16,6 +16,7 @@ import {
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import ConfirmationModal from '../../components/confirmation-modal';
+import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 
 const AddPaymentMethodsModal = ( { onClose } ) => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
@@ -95,6 +96,9 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 					/>
 				) ) }
 			</PaymentMethodCheckboxes>
+			<CurrencyInformationForMethods
+				selectedMethods={ selectedPaymentMethods }
+			/>
 		</ConfirmationModal>
 	);
 };
