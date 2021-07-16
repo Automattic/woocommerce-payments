@@ -66,7 +66,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_upe_settings_preview_enabled() {
-		return '1' === get_option( '_wcpay_feature_upe_settings_preview', '0' );
+		return '1' === get_option( '_wcpay_feature_upe_settings_preview', '1' );
 	}
 
 	/**
