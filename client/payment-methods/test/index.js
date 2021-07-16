@@ -245,12 +245,10 @@ describe( 'PaymentMethods', () => {
 		expect( disableUPEButton ).not.toBeInTheDocument();
 	} );
 
-	test( 'clicking "Enable in your store" in express payments enable UPE and redirects', () => {
+	test( 'clicking "Enable in your store" in express payments enable UPE and redirects', async () => {
 		Object.defineProperty( window, 'location', {
-			get() {
-				return {
-					href: 'example.com/',
-				};
+			value: {
+				href: 'example.com/',
 			},
 		} );
 
@@ -280,7 +278,10 @@ describe( 'PaymentMethods', () => {
 		expect( enableInYourStoreButton ).toBeInTheDocument();
 
 		expect( setIsUpeEnabledMock ).not.toHaveBeenCalled();
-		user.click( enableInYourStoreButton );
+		await user.click( enableInYourStoreButton );
 		expect( setIsUpeEnabledMock ).toHaveBeenCalledWith( true );
+		expect( window.location.href ).toEqual(
+			'admin.php?page=wc-admin&task=woocommerce-payments--additional-payment-methods'
+		);
 	} );
 } );
