@@ -694,8 +694,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Sofort', $sofort_method->get_title() );
 		$this->assertEquals( 'Sofort', $sofort_method->get_title( $mock_sofort_details ) );
 		$this->assertTrue( $sofort_method->is_enabled_at_checkout() );
-		$this->assertTrue( $sofort_method->is_reusable() );
-		$this->assertEquals( $mock_token, $sofort_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
+		$this->assertFalse( $sofort_method->is_reusable() );
 	}
 
 	public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
@@ -706,7 +705,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 
 		$this->assertTrue( $card_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_enabled_at_checkout() );
-		$this->assertTrue( $sofort_method->is_enabled_at_checkout() );
+		$this->assertFalse( $sofort_method->is_enabled_at_checkout() );
 	}
 
 	public function test_create_token_from_setup_intent_adds_token() {
