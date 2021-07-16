@@ -91,7 +91,7 @@
 	background-size: contain;
 }
 
-.payment-method__icon {
+.wc_gateways tr[data-gateway_id='woocommerce_payments'] .payment-method__icon {
 	border: 1px solid #ddd;
 	border-radius: 2px;
 }
