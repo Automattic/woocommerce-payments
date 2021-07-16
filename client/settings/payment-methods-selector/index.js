@@ -10,9 +10,10 @@ import { useState, useCallback } from '@wordpress/element';
  * Internal dependencies
  */
 import {
+	useCurrencies,
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
-} from 'data';
+} from '../../data';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import ConfirmationModal from '../../components/confirmation-modal';
@@ -20,6 +21,8 @@ import CurrencyInformationForMethods from '../../components/currency-information
 
 const AddPaymentMethodsModal = ( { onClose } ) => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
+	// ensures that the currency data is present before the modal is opened
+	useCurrencies();
 
 	const [
 		enabledPaymentMethods,
