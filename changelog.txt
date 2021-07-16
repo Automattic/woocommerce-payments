@@ -1,7 +1,7 @@
 *** WooCommerce Payments Changelog ***
 
 = 2.8.0 - 2021-xx-xx =
-* Add - *Early access*: allow your store to collect payments with giropay and SEPA. Enable the feature in settings!
+* Add - *Early access*: allow your store to collect payments with Giropay and Sofort. Enable the feature in settings!
 * Add - Use date picker for applicable dispute evidence fields.
 
 = 2.7.0 - 2021-07-14 =
