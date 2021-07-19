@@ -38,7 +38,7 @@ class WC_Payments_API_Client {
 	const TRANSACTIONS_API       = 'transactions';
 	const DISPUTES_API           = 'disputes';
 	const FILES_API              = 'files';
-	const OAUTH_API              = 'oauth';
+	const ONBOARDING_API         = 'onboarding';
 	const TIMELINE_API           = 'timeline';
 	const PAYMENT_METHODS_API    = 'payment_methods';
 	const SETUP_INTENTS_API      = 'setup_intents';
@@ -903,7 +903,7 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		return $this->request( $request_args, self::OAUTH_API . '/init', self::POST, true, true );
+		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
 	}
 
 	/**

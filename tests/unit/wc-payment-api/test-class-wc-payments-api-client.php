@@ -579,7 +579,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->method( 'remote_request' )
 			->with(
 				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/oauth/init',
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/init',
 					'method'          => 'POST',
 					'headers'         => [
 						'Content-Type' => 'application/json; charset=utf-8',
