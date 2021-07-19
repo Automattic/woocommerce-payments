@@ -25,6 +25,7 @@ const OverviewPage = () => {
 	const {
 		accountStatus,
 		showUpdateDetailsTask,
+		additionalMethodsSetup,
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 		isSSLCheckoutEnforced,
@@ -33,6 +34,7 @@ const OverviewPage = () => {
 	const tasks = getTasks( {
 		accountStatus,
 		showUpdateDetailsTask,
+		additionalMethodsSetup,
 		wpcomReconnectUrl,
 		isSSLCheckoutEnforced,
 	} );

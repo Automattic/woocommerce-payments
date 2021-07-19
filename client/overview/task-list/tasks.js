@@ -8,9 +8,15 @@ import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { isInTestMode, isSiteUsingHttps } from 'utils';
 
+/**
+ * Internal dependencies
+ */
+import createAdditionalMethodsSetupTask from '../../additional-methods-setup/task';
+
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
+	additionalMethodsSetup = {},
 	wpcomReconnectUrl,
 	isSSLCheckoutEnforced,
 } ) => {
@@ -39,6 +45,7 @@ export const getTasks = ( {
 				'woocommerce-payments'
 			);
 	}
+
 	return [
 		'yes' === showUpdateDetailsTask && {
 			key: 'update-business-details',
@@ -84,7 +91,7 @@ export const getTasks = ( {
 					'woocommerce-payments'
 				),
 				completed: false,
-				action: () => {
+				onClick: () => {
 					window.open(
 						'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
 						'_blank'
@@ -92,5 +99,7 @@ export const getTasks = ( {
 				},
 				actionLabel: __( 'Read more', 'woocommerce-payments' ),
 			},
+		additionalMethodsSetup.isTaskVisible &&
+			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
 	].filter( Boolean );
 };
