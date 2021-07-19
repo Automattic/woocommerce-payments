@@ -7,9 +7,6 @@
 
 namespace WCPay\MultiCurrency;
 
-use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
-use Automattic\WooCommerce\Blocks\Package;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -158,9 +155,9 @@ class Analytics {
 
 		$prefix = 'wcpay_multicurrency_';
 
-		$clauses[] = "JOIN {$wpdb->postmeta} {$prefix}currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = {$prefix}currency_postmeta.post_id";
-		$clauses[] = "JOIN {$wpdb->postmeta} {$prefix}default_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = {$prefix}default_currency_postmeta.post_id";
-		$clauses[] = "JOIN {$wpdb->postmeta} {$prefix}exchange_rate_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = {$prefix}exchange_rate_postmeta.post_id";
+		$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$prefix}currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = {$prefix}currency_postmeta.post_id";
+		$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$prefix}default_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = {$prefix}default_currency_postmeta.post_id";
+		$clauses[] = "LEFt JOIN {$wpdb->postmeta} {$prefix}exchange_rate_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = {$prefix}exchange_rate_postmeta.post_id";
 
 		return $clauses;
 	}
@@ -175,9 +172,11 @@ class Analytics {
 	public function filter_where_clauses( array $clauses ): array {
 		$currency = $this->get_active_currency();
 
-		$clauses[] = "AND wcpay_multicurrency_currency_postmeta.meta_key = '_order_currency'";
-		$clauses[] = "AND wcpay_multicurrency_default_currency_postmeta.meta_key = '_wcpay_multi_currency_order_default_currency'";
-		$clauses[] = "AND wcpay_multicurrency_exchange_rate_postmeta.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
+		$prefix = 'wcpay_multicurrency_';
+
+		$clauses[] = "AND ({$prefix}currency_postmeta.meta_key = '_order_currency' OR {$prefix}currency_postmeta.meta_key IS NULL)";
+		$clauses[] = "AND ({$prefix}default_currency_postmeta.meta_key = '_wcpay_multi_currency_order_default_currency' OR {$prefix}default_currency_postmeta.meta_key IS NULL)";
+		$clauses[] = "AND ({$prefix}exchange_rate_postmeta.meta_key = '_wcpay_multi_currency_order_exchange_rate' OR {$prefix}exchange_rate_postmeta.meta_key IS NULL)";
 
 		if ( ! is_null( $currency ) ) {
 			$clauses[] = "AND wcpay_multicurrency_currency_postmeta.meta_value = '{$currency}'";

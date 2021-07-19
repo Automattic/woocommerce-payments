@@ -41,6 +41,8 @@ addFilter(
 			return tableData;
 		}
 
+		// debugger;
+
 		const newHeaders = [
 			{
 				isNumeric: false,
@@ -58,17 +60,14 @@ addFilter(
 
 		const newRows = tableData.rows.map( ( row, index ) => {
 			const item = tableData.items.data[ index ];
-			const currency =
-				'revenue' === tableData.endpoint
-					? item.subtotals.currency
-					: item.currency;
+			const currency = item.order_currency;
 
 			return [
-				...row,
 				{
 					display: currency,
 					value: currency,
 				},
+				...row,
 			];
 		} );
 
