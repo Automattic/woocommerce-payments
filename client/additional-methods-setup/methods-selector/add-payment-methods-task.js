@@ -31,14 +31,15 @@ import './add-payment-methods-task.scss';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 
 const useGetCountryName = () => {
-	const storeCountry = useSelect(
+	const generalSettings = useSelect(
 		( select ) =>
-			select( 'wc/admin/settings' ).getSettings( 'general' )?.general
-				?.woocommerce_default_country || '',
+			select( 'wc/admin/settings' ).getSettings( 'general' )?.general,
 		[]
 	);
 
-	const [ countryCode ] = storeCountry.split( ':' );
+	const [ countryCode ] = (
+		generalSettings?.woocommerce_default_country || ''
+	).split( ':' );
 
 	const countries = useSelect(
 		( select ) =>
