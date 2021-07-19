@@ -620,17 +620,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
           </div>
           <div
             class="enabled-currency__actions"
-          >
-            <a
-              aria-label="Edit United States (US) dollar"
-              class="components-button enabled-currency__action edit is-link"
-              href="admin.php?page=wc-settings&tab=wcpay_multi_currency&section=usd"
-            >
-              <span
-                class="dashicon dashicons dashicons-edit"
-              />
-            </a>
-          </div>
+          />
         </li>
         <li
           class="enabled-currency cad"
@@ -671,9 +661,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="components-button enabled-currency__action edit is-link"
               href="admin.php?page=wc-settings&tab=wcpay_multi_currency&section=cad"
             >
-              <span
-                class="dashicon dashicons dashicons-edit"
-              />
+              manage
             </a>
             <button
               aria-label="Remove Canadian dollar as an enabled currency"
@@ -725,9 +713,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="components-button enabled-currency__action edit is-link"
               href="admin.php?page=wc-settings&tab=wcpay_multi_currency&section=gbp"
             >
-              <span
-                class="dashicon dashicons dashicons-edit"
-              />
+              manage
             </a>
             <button
               aria-label="Remove Pound sterling as an enabled currency"
@@ -779,9 +765,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="components-button enabled-currency__action edit is-link"
               href="admin.php?page=wc-settings&tab=wcpay_multi_currency&section=eur"
             >
-              <span
-                class="dashicon dashicons dashicons-edit"
-              />
+              manage
             </a>
             <button
               aria-label="Remove Euro as an enabled currency"

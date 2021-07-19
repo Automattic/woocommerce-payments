@@ -4,7 +4,7 @@
  */
 import classNames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button, Icon } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -50,21 +50,23 @@ const EnabledCurrenciesListItem = ( {
 				{ formatCurrencyRate() }
 			</div>
 			<div className="enabled-currency__actions">
-				<Button
-					isLink
-					href={ getEditUrl( id ) }
-					aria-label={ sprintf(
-						__(
-							/* translators: %1: Currency to be edited. */
-							'Edit %1$s',
-							'woocommerce-payments'
-						),
-						name
-					) }
-					className="enabled-currency__action edit"
-				>
-					<Icon icon="edit" />
-				</Button>
+				{ ! isDefault && (
+					<Button
+						isLink
+						href={ getEditUrl( id ) }
+						aria-label={ sprintf(
+							__(
+								/* translators: %1: Currency to be edited. */
+								'Edit %1$s',
+								'woocommerce-payments'
+							),
+							name
+						) }
+						className="enabled-currency__action edit"
+					>
+						{ __( 'manage', 'woocommerce-payments' ) }
+					</Button>
+				) }
 				{ onDeleteClick && (
 					<DeleteButton
 						className="enabled-currency__action delete"

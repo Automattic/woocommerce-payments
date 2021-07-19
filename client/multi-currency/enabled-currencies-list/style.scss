@@ -1,6 +1,6 @@
 .wcpay-multi-currency__enabled-currencies-header {
 	display: flex;
-	margin-right: 60px;
+	margin-right: 100px;
 
 	div {
 		flex: 1;
@@ -12,10 +12,16 @@
 
 	.enabled-currency {
 		display: flex;
+		flex-wrap: wrap;
 		padding: 7px 24px;
 		margin: 0;
-		border-top: 1px solid #e2e4e7;
+		border-top: 1px solid $studio-gray-5;
 		line-height: 45px;
+
+		&:first-child {
+			border-top: none;
+			background-color: $studio-gray-0;
+		}
 
 		&__container {
 			display: flex;
@@ -25,10 +31,11 @@
 		&__container,
 		&__rate {
 			flex: 1;
+			min-width: 300px;
 		}
 
 		&__flag {
-			font-size: 45px;
+			font-size: 24px;
 			padding: 0 10px 0 0;
 		}
 
@@ -42,19 +49,19 @@
 		}
 
 		&__actions {
-			line-height: 35px;
-			padding: 10px 0 0;
-			width: 60px;
 			text-align: right;
+			display: flex;
+			min-width: 100px;
+			color: $studio-gray-20;
 
 			.components-button {
 				text-decoration: none;
+				color: $studio-gray-20;
 			}
 
 			.delete {
-				margin: 0 0 0 5px;
+				margin: 0 0 0 24px;
 				padding: 0 0 0 5px;
-				border-left: 1px solid $studio-gray-5;
 			}
 		}
 	}
