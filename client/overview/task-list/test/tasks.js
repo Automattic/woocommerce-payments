@@ -153,33 +153,5 @@ describe( 'getTasks()', () => {
 				] )
 			);
 		} );
-
-		it( 'receives callback updating window.~.isSetupCompleted as setSetupCompleted()', () => {
-			getTasks( {
-				additionalMethodsSetup: { isTaskVisible: true },
-				accountStatus: {},
-			} );
-
-			window.wcpaySettings.additionalMethodsSetup.isSetupCompleted = 'no';
-			createAdditionalMethodsSetupTask.mock.calls[ 0 ][ 0 ].setSetupCompleted();
-
-			expect(
-				window.wcpaySettings.additionalMethodsSetup.isSetupCompleted
-			).toEqual( 'yes' );
-		} );
-
-		it( 'receives callback updating window.~.isUpeEnabled as setUpeEnabled()', () => {
-			getTasks( {
-				additionalMethodsSetup: { isTaskVisible: true },
-				accountStatus: {},
-			} );
-
-			window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = false;
-			createAdditionalMethodsSetupTask.mock.calls[ 0 ][ 0 ].setUpeEnabled();
-
-			expect(
-				window.wcpaySettings.additionalMethodsSetup.isUpeEnabled
-			).toEqual( true );
-		} );
 	} );
 } );

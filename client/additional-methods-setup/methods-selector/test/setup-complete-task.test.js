@@ -6,7 +6,6 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import AdditionalMethodsSetupContext from '../../context';
 import WizardTaskContext from '../../wizard/task/context';
 import SetupComplete from '../setup-complete-task';
 
@@ -15,35 +14,35 @@ jest.mock( '@wordpress/data', () => ( {
 } ) );
 
 describe( 'SetupComplete', () => {
-	it( 'calls setSetupCompleted() if isActive', () => {
-		const setSetupCompleted = jest.fn();
-
-		render(
-			<AdditionalMethodsSetupContext.Provider
-				value={ { setSetupCompleted } }
-			>
-				<WizardTaskContext.Provider value={ { isActive: true } }>
-					<SetupComplete />
-				</WizardTaskContext.Provider>
-			</AdditionalMethodsSetupContext.Provider>
-		);
-
-		expect( setSetupCompleted ).toHaveBeenCalledTimes( 1 );
+	beforeEach( () => {
+		window.wcpaySettings = {
+			additionalMethodsSetup: {
+				isSetupCompleted: 'no',
+			},
+		};
 	} );
 
-	it( 'does not call setSetupCompleted() if not isActive', () => {
-		const setSetupCompleted = jest.fn();
-
+	it( 'sets `isSetupCompleted = "yes"` if isActive', () => {
 		render(
-			<AdditionalMethodsSetupContext.Provider
-				value={ { setSetupCompleted } }
-			>
-				<WizardTaskContext.Provider value={ { isActive: false } }>
-					<SetupComplete />
-				</WizardTaskContext.Provider>
-			</AdditionalMethodsSetupContext.Provider>
+			<WizardTaskContext.Provider value={ { isActive: true } }>
+				<SetupComplete />
+			</WizardTaskContext.Provider>
 		);
 
-		expect( setSetupCompleted ).not.toHaveBeenCalled();
+		expect(
+			window.wcpaySettings.additionalMethodsSetup.isSetupCompleted
+		).toEqual( 'yes' );
+	} );
+
+	it( 'does not set `isSetupCompleted = "yes"` if not isActive', () => {
+		render(
+			<WizardTaskContext.Provider value={ { isActive: false } }>
+				<SetupComplete />
+			</WizardTaskContext.Provider>
+		);
+
+		expect(
+			window.wcpaySettings.additionalMethodsSetup.isSetupCompleted
+		).toEqual( 'no' );
 	} );
 } );

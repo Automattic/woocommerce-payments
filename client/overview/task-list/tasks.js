@@ -15,7 +15,7 @@ import createAdditionalMethodsSetupTask from '../../additional-methods-setup/tas
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
-	additionalMethodsSetup: initialAdditionalMethodsSetup,
+	additionalMethodsSetup = {},
 	wpcomReconnectUrl,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
@@ -43,17 +43,6 @@ export const getTasks = ( {
 				'woocommerce-payments'
 			);
 	}
-
-	const additionalMethodsSetup = {
-		...initialAdditionalMethodsSetup,
-		setSetupCompleted: () => {
-			window.wcpaySettings.additionalMethodsSetup.isSetupCompleted =
-				'yes';
-		},
-		setUpeEnabled: () => {
-			window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = true;
-		},
-	};
 
 	return [
 		'yes' === showUpdateDetailsTask && {

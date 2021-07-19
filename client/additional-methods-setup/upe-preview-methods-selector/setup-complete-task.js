@@ -13,13 +13,9 @@ import { useDispatch } from '@wordpress/data';
 import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
 import WizardTaskContext from '../wizard/task/context';
-import AdditionalMethodsSetupContext from '../context';
 
 const SetupComplete = () => {
 	const { isActive } = useContext( WizardTaskContext );
-	const { setSetupCompleted, setUpeEnabled } = useContext(
-		AdditionalMethodsSetupContext
-	);
 
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
@@ -35,9 +31,9 @@ const SetupComplete = () => {
 
 		// Set the local `isSetupCompleted` to `yes` so that task appears completed on the list.
 		// Please note that marking an item as "completed" is different from "dismissing" it.
-		setSetupCompleted();
-		setUpeEnabled();
-	}, [ isActive, setSetupCompleted, setUpeEnabled, updateOptions ] );
+		window.wcpaySettings.additionalMethodsSetup.isSetupCompleted = 'yes';
+		window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = true;
+	}, [ isActive, updateOptions ] );
 
 	return (
 		<WizardTaskItem

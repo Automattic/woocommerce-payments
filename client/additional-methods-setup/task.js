@@ -12,20 +12,12 @@ import { getPath, updateQueryString } from '@woocommerce/navigation';
 import MethodSelector from './methods-selector';
 import UpePreviewMethodSelector from './upe-preview-methods-selector';
 import WcPayUpeContextProvider from '../settings/wcpay-upe-toggle/provider';
-import AdditionalMethodsSetupContext from './context';
 
 const createAdditionalMethodsSetupTask = ( {
 	isSetupCompleted,
 	isUpeEnabled,
 	isUpeSettingsPreviewEnabled,
-	setSetupCompleted,
-	setUpeEnabled,
 } ) => {
-	const contextValue = {
-		setSetupCompleted,
-		setUpeEnabled,
-	};
-
 	const key = 'woocommerce-payments--additional-payment-methods';
 
 	return {
@@ -37,11 +29,7 @@ const createAdditionalMethodsSetupTask = ( {
 		// it might be worth exploring how to use Suspense
 		// to lazily load the JS that might not be necessary if the action is not taken.
 		// It might also be worth exploring adding an error boundary to prevent the whole page to be blank in case of error?
-		container: (
-			<AdditionalMethodsSetupContext.Provider value={ contextValue }>
-				<MethodSelector />
-			</AdditionalMethodsSetupContext.Provider>
-		),
+		container: <MethodSelector />,
 		// please note: marking an item as "dismissed" does not mean it's "completed" - they are considered 2 different things
 		completed: 'yes' === isSetupCompleted,
 		visible: true,
@@ -72,15 +60,11 @@ const createAdditionalMethodsSetupTask = ( {
 						'woocommerce-payments'
 					),
 					container: (
-						<AdditionalMethodsSetupContext.Provider
-							value={ contextValue }
+						<WcPayUpeContextProvider
+							defaultIsUpeEnabled={ isUpeEnabled }
 						>
-							<WcPayUpeContextProvider
-								defaultIsUpeEnabled={ isUpeEnabled }
-							>
-								<UpePreviewMethodSelector />
-							</WcPayUpeContextProvider>
-						</AdditionalMethodsSetupContext.Provider>
+							<UpePreviewMethodSelector />
+						</WcPayUpeContextProvider>
 					),
 					completed:
 						// eslint-disable-next-line max-len
