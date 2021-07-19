@@ -1698,7 +1698,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order_items = array_values( $order->get_items( [ 'line_item', 'fee' ] ) );
 		$currency    = $order->get_currency();
 
-		$process_item = static function( $item ) use ( $currency ) {
+		$process_item  = static function( $item ) use ( $currency ) {
 			// Check to see if it is a WC_Order_Item_Product or a WC_Order_Item_Fee.
 			if ( is_a( $item, 'WC_Order_Item_Product' ) ) {
 				$subtotal   = $item->get_subtotal();
@@ -1725,12 +1725,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'discount_amount'     => $discount_amount, // The amount an item was discounted—if there was a sale,for example, as a non-negative integer.
 			];
 		};
+		$items_to_send = array_map( $process_item, $order_items );
 
 		$level3_data = [
 			'merchant_reference' => (string) $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
 			'customer_reference' => (string) $order->get_id(),
 			'shipping_amount'    => WC_Payments_Utils::prepare_amount( (float) $order->get_shipping_total() + (float) $order->get_shipping_tax(), $currency ), // The shipping cost, in cents, as a non-negative integer.
-			'line_items'         => array_map( $process_item, $order_items ),
+			'line_items'         => $items_to_send,
 		];
 
 		// The customer’s U.S. shipping ZIP code.

@@ -66,14 +66,17 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function capture_terminal_payment( $request ) {
 		try {
+			$intent_id = $request['payment_intent_id'];
+			$order_id  = $request['order_id'];
+
 			// Do not process non-existing orders.
-			$order = wc_get_order( $request['order_id'] );
+			$order = wc_get_order( $order_id );
 			if ( false === $order ) {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
 			// Do not process intents that can't be captured.
-			$intent = $this->api_client->get_intent( $request['payment_intent_id'] );
+			$intent = $this->api_client->get_intent( $intent_id );
 			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture' ], true ) ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
