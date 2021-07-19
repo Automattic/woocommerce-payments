@@ -10,11 +10,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
+use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Gateway;
+use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Gateway;
+use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Gateway;
-use WCPay\Payment_Methods\Digital_Wallets_Payment_Gateway;
+use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 
 /**
@@ -49,13 +53,6 @@ class WC_Payments {
 	 * @var Sofort_Payment_Gateway
 	 */
 	private static $sofort_gateway;
-
-	/**
-	 * Instance of Digital Wallets payment gateway, created in init function.
-	 *
-	 * @var Digital_Wallets_Payment_Gateway
-	 */
-	private static $digital_wallets_gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -149,7 +146,7 @@ class WC_Payments {
 		}
 
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
-		add_action( 'admin_init', [ __CLASS__, 'install_actions' ] );
+		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
@@ -163,6 +160,7 @@ class WC_Payments {
 
 		self::$api_client = self::create_api_client();
 
+		include_once __DIR__ . '/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
@@ -171,8 +169,11 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-sepa-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-digital-wallets-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
+		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-giropay-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
@@ -186,11 +187,16 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/constants/class-payment-method.php';
-		include_once __DIR__ . '/constants/class-digital-wallets-locations.php';
 		include_once __DIR__ . '/class-payment-information.php';
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
+		include_once __DIR__ . '/class-experimental-abtest.php';
+
+		// Load customer multi-currency if feature is enabled.
+		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
+			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
+		}
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
@@ -202,21 +208,28 @@ class WC_Payments {
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
 
-		$gateway_class         = CC_Payment_Gateway::class;
-		$giropay_class         = Giropay_Payment_Gateway::class;
-		$sepa_class            = Sepa_Payment_Gateway::class;
-		$sofort_class          = Sofort_Payment_Gateway::class;
-		$digital_wallets_class = Digital_Wallets_Payment_Gateway::class;
+		$card_class    = CC_Payment_Gateway::class;
+		$upe_class     = UPE_Payment_Gateway::class;
+		$giropay_class = Giropay_Payment_Gateway::class;
+		$sepa_class    = Sepa_Payment_Gateway::class;
+		$sofort_class  = Sofort_Payment_Gateway::class;
 
-		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
-		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
-			include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
-			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
-		} elseif ( WC_Payments_Features::is_upe_enabled() ) {
-			$gateway_class = UPE_Payment_Gateway::class;
+		if ( WC_Payments_Features::is_upe_enabled() ) {
+			$payment_methods        = [];
+			$payment_method_classes = [
+				CC_Payment_Method::class,
+				Giropay_Payment_Method::class,
+				Sofort_Payment_Method::class,
+			];
+			foreach ( $payment_method_classes as $payment_method_class ) {
+				$payment_method                               = new $payment_method_class( self::$token_service );
+				$payment_methods[ $payment_method->get_id() ] = $payment_method;
+			}
+			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods );
+		} else {
+			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 
-		self::$card_gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		if ( WC_Payments_Features::is_giropay_enabled() ) {
 			self::$giropay_gateway = new $giropay_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
@@ -226,21 +239,26 @@ class WC_Payments {
 		if ( WC_Payments_Features::is_sofort_enabled() ) {
 			self::$sofort_gateway = new $sofort_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
-		if ( WC_Payments_Features::is_grouped_settings_enabled() || ( defined( 'WCPAY_TEST_ENV' ) && WCPAY_TEST_ENV ) ) {
-			self::$digital_wallets_gateway = new $digital_wallets_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
-		}
 
 		// Payment Request and Apple Pay.
-		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
-		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account );
+		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::$card_gateway );
+		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 4 );
+		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
+
+		// Add note query support for source.
+		add_filter( 'woocommerce_rest_notes_object_query', [ __CLASS__, 'possibly_add_source_to_notes_query' ], 10, 2 );
+		add_filter( 'woocommerce_note_where_clauses', [ __CLASS__, 'possibly_add_note_source_where_clause' ], 10, 2 );
 
 		// Priority 5 so we can manipulate the registered gateways before they are shown.
 		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
+
+		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-translations-loader.php';
 		WC_Payments_Translations_Loader::init();
@@ -255,14 +273,12 @@ class WC_Payments {
 
 			if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
 				include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
-				new WC_Payments_Admin_Sections_Overwrite();
-
-				include_once __DIR__ . '/admin/class-wc-payments-admin-additional-methods-setup.php';
-				new WC_Payments_Admin_Additional_Methods_Setup( self::$card_gateway );
+				new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 			}
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 	}
 
 	/**
@@ -485,9 +501,6 @@ class WC_Payments {
 		if ( WC_Payments_Features::is_sofort_enabled() ) {
 			$gateways[] = self::$sofort_gateway;
 		}
-		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
-			$gateways[] = self::$digital_wallets_gateway;
-		}
 
 		return $gateways;
 	}
@@ -557,6 +570,65 @@ class WC_Payments {
 
 		array_splice( $ordering, $wcpay_index, 1, $method_order );
 		return array_flip( $ordering );
+	}
+
+	/**
+	 * Adds fields so that we can store inbox notifications last read and open times.
+	 *
+	 * @param array $user_data_fields User data fields.
+	 * @return array
+	 */
+	public static function add_user_data_fields( $user_data_fields ) {
+		return array_merge(
+			$user_data_fields,
+			[ 'wc_payments_overview_inbox_last_read' ]
+		);
+	}
+
+	/**
+	 * By default, new payment gateways are put at the bottom of the list on the admin "Payments" settings screen.
+	 * For visibility, we want WooCommerce Payments to be at the top of the list.
+	 * NOTE: this can be removed after WC version 5.6, when the api supports the use of source.
+	 * https://github.com/woocommerce/woocommerce-admin/pull/6979
+	 *
+	 * @param array           $args Existing ordering of the payment gateways.
+	 * @param WP_REST_Request $request Full details about the request.
+	 *
+	 * @return array Modified ordering.
+	 */
+	public static function possibly_add_source_to_notes_query( $args, $request ) {
+		if ( isset( $request['source'] ) && ! isset( $args['source'] ) ) {
+			return array_merge(
+				$args,
+				[
+					'source' => wp_parse_list( $request['source'] ),
+				]
+			);
+		}
+		return $args;
+	}
+
+	/**
+	 * Adds source where clause to note query.
+	 * NOTE: this can be removed after WC version 5.6, when the api supports the use of source.
+	 * https://github.com/woocommerce/woocommerce-admin/pull/6979
+	 *
+	 * @param string $where_clauses Existing ordering of the payment gateways.
+	 * @param array  $args Full details about the request.
+	 *
+	 * @return string Modified where clause.
+	 */
+	public static function possibly_add_note_source_where_clause( $where_clauses, $args ) {
+		if ( ! empty( $args['source'] ) && false === strpos( $where_clauses, 'AND source IN' ) ) {
+			$where_source_array = [];
+			foreach ( $args['source'] as $args_type ) {
+				$args_type            = trim( $args_type );
+				$where_source_array[] = "'" . esc_sql( $args_type ) . "'";
+			}
+			$escaped_where_source = implode( ',', $where_source_array );
+			$where_clauses       .= " AND source IN ($escaped_where_source)";
+		}
+		return $where_clauses;
 	}
 
 	/**
@@ -649,9 +721,21 @@ class WC_Payments {
 		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$tos_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway, self::$digital_wallets_gateway );
-		$settings_controller->register_routes();
+		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
+			$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
+			$settings_controller->register_routes();
+		}
+
+		if ( WC_Payments_Features::is_grouped_settings_enabled() && WC_Payments_Features::is_upe_settings_preview_enabled() ) {
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
+			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
+			$upe_flag_toggle_controller->register_routes();
+
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+			$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
+			$survey_controller->register_routes();
+		}
 	}
 
 	/**
@@ -687,6 +771,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_API_Client
+	 *
+	 * @return WC_Payments_API_Client API Client instance
+	 */
+	public static function get_payments_api_client() {
+		return self::$api_client;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
@@ -715,10 +808,19 @@ class WC_Payments {
 	}
 
 	/**
+	 * Sets the plugin activation timestamp.
+	 *
+	 * Use add_option so that we don't overwrite the value.
+	 */
+	public static function set_plugin_activation_timestamp() {
+		add_option( 'wcpay_activation_timestamp', time() );
+	}
+
+	/**
 	 * Adds WCPay notes to the WC-Admin inbox.
 	 */
 	public static function add_woo_admin_notes() {
-		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
 			WC_Payments_Notes_Qualitative_Feedback::possibly_add_note();
@@ -726,6 +828,10 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
+			WC_Payments_Notes_Additional_Payment_Methods::possibly_add_note();
+			WC_Payments_Notes_Additional_Payment_Methods::maybe_enable_upe_feature_flag();
 		}
 	}
 
@@ -733,9 +839,8 @@ class WC_Payments {
 	 * Removes WCPay notes from the WC-Admin inbox.
 	 */
 	public static function remove_woo_admin_notes() {
-		self::$remote_note_service->delete_notes();
-
-		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			self::$remote_note_service->delete_notes();
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
 			WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();
@@ -746,6 +851,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 			WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
+			WC_Payments_Notes_Additional_Payment_Methods::possibly_delete_note();
 		}
 	}
 
@@ -760,5 +868,4 @@ class WC_Payments {
 	public static function is_network_saved_cards_enabled() {
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
 	}
-
 }

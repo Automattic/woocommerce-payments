@@ -1,10 +1,8 @@
-/** @format **/
-
 /**
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card } from '@woocommerce/components';
+import { Card, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -12,9 +10,7 @@ import { Card } from '@woocommerce/components';
 import { useCharge } from '../data';
 import PaymentDetailsSummary from './summary';
 import PaymentDetailsTimeline from './timeline';
-import PaymentDetailsPayment from './payment';
 import PaymentDetailsPaymentMethod from './payment-method';
-import PaymentDetailsSession from './session';
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 
@@ -29,12 +25,12 @@ const PaymentDetails = ( props ) => {
 			<Page maxWidth={ 1032 } className="wcpay-payment-details">
 				{ testModeNotice }
 				<Card>
-					<div>
+					<CardBody>
 						{ __(
 							'Payment details not loaded',
 							'woocommerce-payments'
 						) }
-					</div>
+					</CardBody>
 				</Card>
 			</Page>
 		);
@@ -47,18 +43,10 @@ const PaymentDetails = ( props ) => {
 			{ wcpaySettings.featureFlags.paymentTimeline && (
 				<PaymentDetailsTimeline chargeId={ chargeId } />
 			) }
-			{
-				// Hidden for the beta.
-				false && <PaymentDetailsPayment charge={ charge } />
-			}
 			<PaymentDetailsPaymentMethod
 				charge={ charge }
 				isLoading={ isLoading }
 			/>
-			{
-				// Hidden for the beta.
-				false && <PaymentDetailsSession charge={ charge } />
-			}
 		</Page>
 	);
 };

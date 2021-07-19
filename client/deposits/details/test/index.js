@@ -24,7 +24,7 @@ const mockDeposit = {
 	bankAccount: 'MOCK BANK •••• 1234 (USD)',
 	automatic: true,
 	fee: 30,
-	fee_percetange: 1.5, // eslint-disable-line camelcase
+	fee_percetange: 1.5,
 };
 
 describe( 'Deposit overview', () => {
@@ -35,9 +35,21 @@ describe( 'Deposit overview', () => {
 		};
 	} );
 
-	test( 'renders correctly', () => {
+	test( 'renders automatic deposit correctly', () => {
 		useDeposit.mockReturnValue( {
 			deposit: mockDeposit,
+			isLoading: false,
+		} );
+
+		const { container: overview } = render(
+			<DepositOverview depositId="po_mock" />
+		);
+		expect( overview ).toMatchSnapshot();
+	} );
+
+	test( 'renders instant deposit correctly', () => {
+		useDeposit.mockReturnValue( {
+			deposit: { ...mockDeposit, automatic: false },
 			isLoading: false,
 		} );
 

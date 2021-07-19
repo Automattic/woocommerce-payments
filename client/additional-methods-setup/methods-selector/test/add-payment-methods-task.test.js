@@ -13,14 +13,14 @@ import WizardTaskContext from '../../wizard/task/context';
 import AddPaymentMethodsTask from '../add-payment-methods-task';
 import {
 	useEnabledPaymentMethodIds,
-	useDigitalWalletsEnabledSettings,
+	usePaymentRequestEnabledSettings,
 	useGetAvailablePaymentMethodIds,
 	useSettings,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
-	useDigitalWalletsEnabledSettings: jest.fn(),
+	usePaymentRequestEnabledSettings: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useSettings: jest.fn(),
 } ) );
@@ -31,19 +31,19 @@ jest.mock( '@wordpress/data', () => ( {
 describe( 'AddPaymentMethodsTask', () => {
 	beforeEach( () => {
 		useSelect.mockReturnValue( {} );
-		useDigitalWalletsEnabledSettings.mockReturnValue( [
+		usePaymentRequestEnabledSettings.mockReturnValue( [
 			false,
 			jest.fn(),
 		] );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'woocommerce_payments', 'woocommerce_payments_giropay' ],
+			[ 'card', 'giropay' ],
 			jest.fn(),
 		] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
-			'woocommerce_payments',
-			'woocommerce_payments_giropay',
-			'woocommerce_payments_sofort',
-			'woocommerce_payments_sepa',
+			'card',
+			'giropay',
+			'sofort',
+			'sepa_debit',
 		] );
 		useSettings.mockReturnValue( {
 			saveSettings: jest.fn().mockResolvedValue( true ),
@@ -83,8 +83,8 @@ describe( 'AddPaymentMethodsTask', () => {
 
 	it( 'should not render the checkboxes that are not available', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
-			'woocommerce_payments',
-			'woocommerce_payments_giropay',
+			'card',
+			'giropay',
 		] );
 
 		render(
@@ -110,14 +110,14 @@ describe( 'AddPaymentMethodsTask', () => {
 	} );
 
 	it( 'should save the checkboxes state on "continue" click', async () => {
-		const updateDigitalWalletsEnabledMock = jest.fn();
-		useDigitalWalletsEnabledSettings.mockReturnValue( [
+		const updatePaymentRequestEnabledMock = jest.fn();
+		usePaymentRequestEnabledSettings.mockReturnValue( [
 			false,
-			updateDigitalWalletsEnabledMock,
+			updatePaymentRequestEnabledMock,
 		] );
 		const updateEnabledPaymentMethodIdsMock = jest.fn();
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'woocommerce_payments' ],
+			[ 'card' ],
 			updateEnabledPaymentMethodIdsMock,
 		] );
 		const setCompletedMock = jest.fn();
@@ -151,7 +151,7 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		expect( setCompletedMock ).not.toHaveBeenCalled();
 		expect( updateEnabledPaymentMethodIdsMock ).not.toHaveBeenCalled();
-		expect( updateDigitalWalletsEnabledMock ).not.toHaveBeenCalled();
+		expect( updatePaymentRequestEnabledMock ).not.toHaveBeenCalled();
 
 		userEvent.click( screen.getByText( 'Continue' ) );
 
@@ -162,8 +162,8 @@ describe( 'AddPaymentMethodsTask', () => {
 			'setup-complete'
 		);
 		expect( updateEnabledPaymentMethodIdsMock ).toHaveBeenCalledWith( [
-			'woocommerce_payments_giropay',
+			'giropay',
 		] );
-		expect( updateDigitalWalletsEnabledMock ).toHaveBeenCalledWith( true );
+		expect( updatePaymentRequestEnabledMock ).toHaveBeenCalledWith( true );
 	} );
 } );

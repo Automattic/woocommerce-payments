@@ -1,4 +1,6 @@
 .payment-methods {
+	position: relative;
+
 	&__available-methods-container {
 		@include modal-footer-buttons-left;
 		align-items: center;
@@ -25,6 +27,28 @@
 
 		&:last-child {
 			margin-right: 1px; // 1px to accommodate for box-shadow
+		}
+	}
+
+	.payment-methods-header {
+		justify-content: flex-end;
+	}
+
+	&.is-loading {
+		&::after {
+			content: ' ';
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 100%;
+			height: 100%;
+			animation: loading-fade 1.6s ease-in-out infinite;
+			// same color as $light-gray-500, but in rgb format
+			background-color: rgba( 226, 228, 231, 0.65 );
+
+			@media screen and ( prefers-reduced-motion: reduce ) {
+				animation: none;
+			}
 		}
 	}
 }

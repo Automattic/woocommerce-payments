@@ -1,0 +1,120 @@
+.wcpay-multi-currency__enabled-currencies-header {
+	display: flex;
+	margin-right: 100px;
+
+	div {
+		flex: 1;
+	}
+}
+
+.enabled-currencies-list {
+	margin: 0;
+
+	.enabled-currency {
+		display: flex;
+		flex-wrap: wrap;
+		padding: 7px 24px;
+		margin: 0;
+		border-top: 1px solid $studio-gray-5;
+		line-height: 45px;
+
+		&:first-child {
+			border-top: none;
+			background-color: $studio-gray-0;
+		}
+
+		&__container {
+			display: flex;
+			flex-wrap: wrap;
+		}
+
+		&__container,
+		&__rate {
+			flex: 1;
+			min-width: 300px;
+		}
+
+		&__flag {
+			font-size: 24px;
+			padding: 0 10px 0 0;
+		}
+
+		&__label {
+			padding: 0 5px 0 0;
+		}
+
+		&__code,
+		&__rate {
+			color: $studio-gray-30;
+		}
+
+		&__actions {
+			text-align: right;
+			display: flex;
+			min-width: 100px;
+			color: $studio-gray-20;
+
+			.components-button {
+				text-decoration: none;
+				color: $studio-gray-20;
+			}
+
+			.delete {
+				margin: 0 0 0 24px;
+				padding: 0 0 0 5px;
+			}
+		}
+	}
+}
+
+.add-enabled-currencies-modal {
+	max-width: 500px;
+
+	.enabled-currency-checkbox {
+		&__flag {
+			font-size: 20px;
+			padding: 0 5px 0 0;
+		}
+
+		&__code {
+			color: $studio-gray-30;
+		}
+	}
+
+	.components-checkbox-control__label {
+		font-size: 15px;
+	}
+
+	&__content {
+		overflow-y: scroll;
+		min-height: 350px;
+		max-height: 350px;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		padding-right: 16px;
+		padding-left: 5px;
+		margin-left: -5px;
+	}
+
+	&__search {
+		border-bottom: 1px solid $studio-gray-5;
+		margin: -24px -24px 0;
+		padding: 16px;
+	}
+}
+
+@media screen and ( max-width: 600px ) {
+	.add-enabled-currencies-modal {
+		.components-modal__content {
+			display: flex;
+			flex-direction: column;
+		}
+
+		&__content {
+			max-height: none;
+			min-height: 0;
+			flex: 1;
+		}
+	}
+}

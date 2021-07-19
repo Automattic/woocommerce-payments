@@ -13,6 +13,13 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_Admin {
 
 	/**
+	 * Badge with number "1" displayed next to a menu item when there is something important to communicate on a page.
+	 *
+	 * @var string
+	 */
+	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
 	 * @var WC_Payments_API_Client
@@ -34,6 +41,13 @@ class WC_Payments_Admin {
 	private $account;
 
 	/**
+	 * WCPay admin child pages.
+	 *
+	 * @var array
+	 */
+	private $admin_child_pages;
+
+	/**
 	 * Hook in admin menu items.
 	 *
 	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
@@ -51,8 +65,52 @@ class WC_Payments_Admin {
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
+		add_action( 'admin_menu', [ $this, 'maybe_redirect_to_onboarding' ], 1 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
+
+		$this->admin_child_pages = [
+			'wc-payments-overview'     => [
+				'id'       => 'wc-payments-overview',
+				'title'    => __( 'Overview', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/overview',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 10,
+				],
+			],
+			'wc-payments-deposits'     => [
+				'id'       => 'wc-payments-deposits',
+				'title'    => __( 'Deposits', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/deposits',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 20,
+				],
+			],
+			'wc-payments-transactions' => [
+				'id'       => 'wc-payments-transactions',
+				'title'    => __( 'Transactions', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/transactions',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 30,
+				],
+			],
+			'wc-payments-disputes'     => [
+				'id'       => 'wc-payments-disputes',
+				'title'    => __( 'Disputes', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/disputes',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 40,
+				],
+			],
+		];
 	}
 
 	/**
@@ -66,6 +124,11 @@ class WC_Payments_Admin {
 		} catch ( Exception $e ) {
 			// There is an issue with connection but render full menu anyways to provide access to settings.
 			$should_render_full_menu = true;
+		}
+
+		// When the account is not connected, see if the user is in an A/B test treatment mode.
+		if ( false === $should_render_full_menu ) {
+			$should_render_full_menu = $this->is_in_treatment_mode();
 		}
 
 		$top_level_link = $should_render_full_menu ? '/payments/overview' : '/payments/connect';
@@ -94,57 +157,9 @@ class WC_Payments_Admin {
 			 * wc_admin_register_page to duplicate "Payments" menu item as a
 			 * first item in the sub-menu.
 			 */
-			wc_admin_register_page(
-				[
-					'id'       => 'wc-payments-overview',
-					'title'    => __( 'Overview', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/overview',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 10,
-					],
-				]
-			);
-
-			wc_admin_register_page(
-				[
-					'id'       => 'wc-payments-deposits',
-					'title'    => __( 'Deposits', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/deposits',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 20,
-					],
-				]
-			);
-
-			wc_admin_register_page(
-				[
-					'id'       => 'wc-payments-transactions',
-					'title'    => __( 'Transactions', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/transactions',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 30,
-					],
-				]
-			);
-
-			wc_admin_register_page(
-				[
-					'id'       => 'wc-payments-disputes',
-					'title'    => __( 'Disputes', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/disputes',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 40,
-					],
-				]
-			);
+			foreach ( $this->admin_child_pages as $admin_child_page ) {
+				wc_admin_register_page( $admin_child_page );
+			}
 
 			wc_admin_connect_page(
 				[
@@ -164,7 +179,7 @@ class WC_Payments_Admin {
 			$submenu_keys                   = array_keys( $submenu );
 			$last_submenu_key               = $submenu_keys[ count( $submenu ) - 1 ];
 			$submenu[ $last_submenu_key ][] = [ // PHPCS:Ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-				__( 'Settings', 'woocommerce' ), // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
+				$this->get_settings_menu_item_name(),
 				'manage_woocommerce',
 				WC_Payment_Gateway_WCPay::get_settings_url(),
 			];
@@ -239,20 +254,31 @@ class WC_Payments_Admin {
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
 		$wcpay_settings = [
-			'connectUrl'            => WC_Payments_Account::get_connect_url(),
-			'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
+			'connectUrl'             => WC_Payments_Account::get_connect_url(),
+			'connect'                => [
+				'country'            => WC()->countries->get_base_country(),
+				'availableCountries' => WC_Payments_Utils::supported_countries(),
+			],
+			'testMode'               => $this->wcpay_gateway->is_in_test_mode(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
-			'onBoardingDisabled'    => WC_Payments_Account::is_on_boarding_disabled(),
-			'errorMessage'          => $error_message,
-			'featureFlags'          => $this->get_frontend_feature_flags(),
-			'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
+			'onBoardingDisabled'     => WC_Payments_Account::is_on_boarding_disabled(),
+			'errorMessage'           => $error_message,
+			'featureFlags'           => $this->get_frontend_feature_flags(),
+			'isSubscriptionsActive'  => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
 			// used in the settings page by the AccountFees component.
-			'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
-			'fraudServices'         => $this->account->get_fraud_services_config(),
-			'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
-			'accountStatus'         => $this->account->get_account_status_data(),
-			'accountFees'           => $this->account->get_fees(),
-			'showUpdateDetailsTask' => get_option( 'wcpay_show_update_business_details_task', 'no' ),
+			'zeroDecimalCurrencies'  => WC_Payments_Utils::zero_decimal_currencies(),
+			'fraudServices'          => $this->account->get_fraud_services_config(),
+			'isJetpackConnected'     => $this->payments_api_client->is_server_connected(),
+			'accountStatus'          => $this->account->get_account_status_data(),
+			'accountFees'            => $this->account->get_fees(),
+			'showUpdateDetailsTask'  => get_option( 'wcpay_show_update_business_details_task', 'no' ),
+			'wpcomReconnectUrl'      => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
+			'additionalMethodsSetup' => [
+				'isTaskVisible'               => $this->is_page_eligible_for_additional_methods_setup_task(),
+				'isSetupCompleted'            => get_option( 'wcpay_additional_methods_setup_completed', 'no' ),
+				'isUpeSettingsPreviewEnabled' => WC_Payments_Features::is_upe_settings_preview_enabled(),
+				'isUpeEnabled'                => WC_Payments_Features::is_upe_enabled(),
+			],
 		];
 
 		wp_localize_script(
@@ -288,6 +314,14 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/tos.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'dist/tos.css' )
+		);
+
+		wp_register_script(
+			'WCPAY_ADMIN_ORDER_ACTIONS',
+			plugins_url( 'dist/order.js', WCPAY_PLUGIN_FILE ),
+			[ 'jquery-tiptip' ],
+			WC_Payments::get_file_version( 'dist/order.js' ),
+			true
 		);
 
 		$settings_script_src_url    = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
@@ -402,6 +436,23 @@ class WC_Payments_Admin {
 			wp_enqueue_script( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
 			wp_enqueue_style( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
 		}
+
+		$screen = get_current_screen();
+		if ( 'shop_order' === $screen->id ) {
+			$order = wc_get_order();
+
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
+				wp_localize_script(
+					'WCPAY_ADMIN_ORDER_ACTIONS',
+					'wcpay_order_config',
+					[
+						'disableManualRefunds' => ! $this->wcpay_gateway->has_refund_failed( $order ),
+						'manualRefundsTip'     => __( 'Refunding manually requires reimbursing your customer offline via cash, check, etc. The refund amounts entered here will only be used to balance your analytics.', 'woocommerce-payments' ),
+					]
+				);
+				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
+			}
+		}
 	}
 
 	/**
@@ -410,12 +461,14 @@ class WC_Payments_Admin {
 	 * @return array An associative array containing the flags as booleans.
 	 */
 	private function get_frontend_feature_flags() {
-		return [
-			'paymentTimeline'         => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
-			'customSearch'            => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
-			'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
-			'groupedSettings'         => WC_Payments_Features::is_grouped_settings_enabled(),
-		];
+		return array_merge(
+			[
+				'paymentTimeline'         => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
+				'customSearch'            => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
+				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
+			],
+			WC_Payments_Features::to_array()
+		);
 	}
 
 	/**
@@ -432,8 +485,8 @@ class WC_Payments_Admin {
 		$version_regex = '/^([\d\.]+)(-.*)?$/';
 		if ( ! preg_match( $version_regex, $version1, $matches1 )
 			|| ! preg_match( $version_regex, $version2, $matches2 ) ) {
-				// Fall back to comparing the two versions as they are.
-				return version_compare( $version1, $version2, $operator );
+			// Fall back to comparing the two versions as they are.
+			return version_compare( $version1, $version2, $operator );
 		}
 		// Only compare the numeric parts of the versions, ignore the bit after the dash.
 		$version1 = $matches1[1];
@@ -481,6 +534,12 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		// If plugin activation date is less than 7 days, do not show the badge.
+		$past_7_days = time() - get_option( 'wcpay_activation_timestamp', 0 ) >= WEEK_IN_SECONDS;
+		if ( false === $past_7_days ) {
+			return;
+		}
+
 		if ( $this->account->is_stripe_connected() ) {
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 			return;
@@ -488,7 +547,7 @@ class WC_Payments_Admin {
 
 		foreach ( $menu as $index => $menu_item ) {
 			if ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) {
-				$menu[ $index ][0] .= ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				$menu[ $index ][0] .= self::MENU_NOTIFICATION_BADGE; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				break;
 			}
 		}
@@ -519,5 +578,99 @@ class WC_Payments_Admin {
 	public function payment_gateways_container() {
 		?><div id="wcpay-payment-gateways-container" />
 		<?php
+	}
+
+	/**
+	 * Returns the name to display for the "Payments > Settings" submenu item.
+	 *
+	 * The name will also contain a notification badge if the UPE settings preview is enabled but UPE is not.
+	 *
+	 * @return string
+	 */
+	private function get_settings_menu_item_name() {
+		$label = __( 'Settings', 'woocommerce' ); // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
+
+		if ( WC_Payments_Features::is_upe_settings_preview_enabled() && ! WC_Payments_Features::is_upe_enabled() ) {
+			$label .= self::MENU_NOTIFICATION_BADGE;
+		}
+
+		return $label;
+	}
+
+	/**
+	 * Check to see if the current user is in an A/B test treatment mode.
+	 *
+	 * @return bool
+	 */
+	private function is_in_treatment_mode() {
+		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
+			return false;
+		}
+
+		$abtest = new \WCPay\Experimental_Abtest(
+			esc_url_raw( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			'woocommerce',
+			'yes' === get_option( 'woocommerce_allow_tracking' )
+		);
+
+		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode_v1' );
+	}
+
+	/**
+	 * Checks if Stripe account is connected and redirects to the onboarding page
+	 * if it is not and the user is attempting to view a WCPay admin page.
+	 */
+	public function maybe_redirect_to_onboarding() {
+		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page'] ) {
+			return;
+		}
+
+		$current_path = ! empty( $url_params['path'] ) ? $url_params['path'] : '';
+
+		if ( empty( $current_path ) ) {
+			return;
+		}
+
+		$page_paths = [];
+
+		foreach ( $this->admin_child_pages as $payments_child_page ) {
+			$page_paths[] = preg_quote( $payments_child_page['path'], '/' );
+		}
+
+		if ( ! preg_match( '/^(' . implode( '|', $page_paths ) . ')/', $current_path ) ) {
+			return;
+		}
+
+		if ( $this->account->is_stripe_connected() ) {
+			return;
+		}
+
+		$this->account->redirect_to_onboarding_page();
+	}
+
+	/**
+	 * Checks whether the current page should be eligible to enqueue the task.
+	 */
+	public function is_page_eligible_for_additional_methods_setup_task() {
+		if ( ! wc_admin_is_registered_page() ) {
+			return false;
+		}
+
+		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
+			return true;
+		}
+
+		$available_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
+		if ( empty( $available_methods ) ) {
+			return false;
+		}
+
+		if ( 1 >= count( $available_methods ) ) {
+			return false;
+		}
+
+		return true;
 	}
 }

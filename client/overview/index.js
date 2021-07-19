@@ -17,6 +17,7 @@ import AccountStatus from 'components/account-status';
 import DepositsInformation from 'components/deposits-information';
 import TaskList from './task-list';
 import { getTasks } from './task-list/tasks';
+import InboxNotifications from './inbox-notifications';
 
 import './style.scss';
 
@@ -24,10 +25,17 @@ const OverviewPage = () => {
 	const {
 		accountStatus,
 		showUpdateDetailsTask,
+		additionalMethodsSetup,
+		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 	} = wcpaySettings;
 
-	const tasks = getTasks( { accountStatus, showUpdateDetailsTask } );
+	const tasks = getTasks( {
+		accountStatus,
+		showUpdateDetailsTask,
+		additionalMethodsSetup,
+		wpcomReconnectUrl,
+	} );
 	const queryParams = getQuery();
 
 	const showKycSuccessNotice =
@@ -52,6 +60,7 @@ const OverviewPage = () => {
 			{ !! accountOverviewTaskList && 0 < tasks.length && (
 				<TaskList tasks={ tasks } />
 			) }
+			<InboxNotifications />
 		</Page>
 	);
 };

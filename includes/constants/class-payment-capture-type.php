@@ -16,6 +16,8 @@ use MyCLabs\Enum\Enum;
 /**
  * Enum used in WCPay\Payment_Information to determine whether a payment was
  * initated by a merchant or a customer.
+ *
+ * @psalm-immutable
  */
 class Payment_Capture_Type extends Enum {
 	const AUTOMATIC = 'automatic_capture';

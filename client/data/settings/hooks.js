@@ -139,22 +139,69 @@ export const useSettings = () => {
 	);
 };
 
-export const useDigitalWalletsEnabledSettings = () => {
-	const { updateIsDigitalWalletsEnabled } = useDispatch( STORE_NAME );
+export const usePaymentRequestEnabledSettings = () => {
+	const { updateIsPaymentRequestEnabled } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getIsDigitalWalletsEnabled } = select( STORE_NAME );
+		const { getIsPaymentRequestEnabled } = select( STORE_NAME );
 
-		return [ getIsDigitalWalletsEnabled(), updateIsDigitalWalletsEnabled ];
+		return [ getIsPaymentRequestEnabled(), updateIsPaymentRequestEnabled ];
 	} );
 };
 
-export const useDigitalWalletsLocations = () => {
-	const { updateDigitalWalletsLocations } = useDispatch( STORE_NAME );
+export const usePaymentRequestLocations = () => {
+	const { updatePaymentRequestLocations } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getDigitalWalletsLocations } = select( STORE_NAME );
+		const { getPaymentRequestLocations } = select( STORE_NAME );
 
-		return [ getDigitalWalletsLocations(), updateDigitalWalletsLocations ];
+		return [ getPaymentRequestLocations(), updatePaymentRequestLocations ];
 	} );
+};
+
+export const usePaymentRequestButtonType = () => {
+	const { updatePaymentRequestButtonType } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getPaymentRequestButtonType } = select( STORE_NAME );
+
+		return [
+			getPaymentRequestButtonType(),
+			updatePaymentRequestButtonType,
+		];
+	} );
+};
+
+export const usePaymentRequestButtonSize = () => {
+	const { updatePaymentRequestButtonSize } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getPaymentRequestButtonSize } = select( STORE_NAME );
+
+		return [
+			getPaymentRequestButtonSize(),
+			updatePaymentRequestButtonSize,
+		];
+	} );
+};
+
+export const usePaymentRequestButtonTheme = () => {
+	const { updatePaymentRequestButtonTheme } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getPaymentRequestButtonTheme } = select( STORE_NAME );
+
+		return [
+			getPaymentRequestButtonTheme(),
+			updatePaymentRequestButtonTheme,
+		];
+	} );
+};
+
+export const useGetSavingError = () => {
+	return useSelect( ( select ) => {
+		const { getSavingError } = select( STORE_NAME );
+
+		return getSavingError();
+	}, [] );
 };

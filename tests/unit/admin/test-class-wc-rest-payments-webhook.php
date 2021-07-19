@@ -156,6 +156,79 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
 	}
 
+	public function test_valid_failed_refund_webhook_sets_failed_meta() {
+		// Setup test request data.
+		$this->request_body['type']           = 'charge.refund.updated';
+		$this->request_body['data']['object'] = [
+			'status'   => 'failed',
+			'charge'   => 'test_charge_id',
+			'id'       => 'test_refund_id',
+			'amount'   => 999,
+			'currency' => 'gbp',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->getMockBuilder( WC_Order::class )
+			->disableOriginalConstructor()
+			->setMethods( [ 'add_order_note', 'update_meta_data' ] )
+			->getMock();
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'~^A refund of <span class="woocommerce-Price-amount amount">(<bdi>)?<span class="woocommerce-Price-currencySymbol">&pound;</span>9.99(</bdi>)?</span> was <strong>unsuccessful</strong> using WooCommerce Payments \(<code>test_refund_id</code>\).$~'
+				)
+			);
+
+		// The expects condition here is the real test; we expect that the 'update_meta_data' function
+		// is called with the appropriate values.
+		$mock_order
+			->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with( '_wcpay_refund_status', 'failed' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$this->controller->handle_webhook( $this->request );
+	}
+
+	public function test_non_failed_refund_update_webhook_does_not_set_failed_meta() {
+		// Setup test request data.
+		$this->request_body['type']           = 'charge.refund.updated';
+		$this->request_body['data']['object'] = [
+			'status' => 'success',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->getMockBuilder( WC_Order::class )
+			->disableOriginalConstructor()
+			->setMethods( [ 'update_meta_data' ] )
+			->getMock();
+
+		$this->mock_db_wrapper
+			->expects( $this->never() )
+			->method( 'order_from_charge_id' );
+
+		// The expects condition here is the real test; we expect that the 'update_meta_data' function
+		// is never called to update the meta data.
+		$mock_order
+			->expects( $this->never() )
+			->method( 'update_meta_data' );
+
+		// Run the test.
+		$this->controller->handle_webhook( $this->request );
+
+	}
+
 	/**
 	 * Test a valid failed refund update webhook.
 	 */

@@ -7,7 +7,17 @@ import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
-export const getTasks = ( { accountStatus, showUpdateDetailsTask } ) => {
+/**
+ * Internal dependencies
+ */
+import createAdditionalMethodsSetupTask from '../../additional-methods-setup/task';
+
+export const getTasks = ( {
+	accountStatus,
+	showUpdateDetailsTask,
+	additionalMethodsSetup = {},
+	wpcomReconnectUrl,
+} ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
@@ -33,6 +43,7 @@ export const getTasks = ( { accountStatus, showUpdateDetailsTask } ) => {
 				'woocommerce-payments'
 			);
 	}
+
 	return [
 		'yes' === showUpdateDetailsTask && {
 			key: 'update-business-details',
@@ -41,7 +52,7 @@ export const getTasks = ( { accountStatus, showUpdateDetailsTask } ) => {
 				'Update WooCommerce Payments business details',
 				'woocommerce-payments'
 			),
-			content: accountDetailsTaskDescription,
+			additionalInfo: accountDetailsTaskDescription,
 			completed: 'complete' === status,
 			onClick:
 				'complete' === status
@@ -49,6 +60,27 @@ export const getTasks = ( { accountStatus, showUpdateDetailsTask } ) => {
 					: () => {
 							window.open( accountLink, '_blank' );
 					  },
+			visible: true,
+			type: 'extension',
 		},
+		wpcomReconnectUrl && {
+			key: 'reconnect-wpcom-user',
+			level: 1,
+			title: __(
+				'Reconnect WooCommerce Payments',
+				'woocommerce-payments'
+			),
+			content: __(
+				'WooCommerce Payments is missing a connected WordPress.com account. ' +
+					'Some functionality will be limited without a connected account.',
+				'woocommerce-payments'
+			),
+			completed: false,
+			onClick: () => {
+				window.location.href = wpcomReconnectUrl;
+			},
+		},
+		additionalMethodsSetup.isTaskVisible &&
+			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
 	].filter( Boolean );
 };

@@ -2,9 +2,18 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, CardDivider } from '@wordpress/components';
+import {
+	Button,
+	Card,
+	CardBody,
+	CardDivider,
+	CardHeader,
+	DropdownMenu,
+	Notice,
+} from '@wordpress/components';
+import { moreVertical, trash } from '@wordpress/icons';
 import classNames from 'classnames';
 
 /**
@@ -15,6 +24,9 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 } from 'data';
+
+import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
+import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
@@ -24,9 +36,8 @@ import SofortIcon from '../gateway-icons/sofort';
 import SepaIcon from '../gateway-icons/sepa';
 
 const methodsConfiguration = {
-	// eslint-disable-next-line camelcase
-	woocommerce_payments: {
-		id: 'woocommerce_payments',
+	card: {
+		id: 'card',
 		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
 		description: __(
 			'Let your customers pay with major credit and debit cards without leaving your store.',
@@ -34,9 +45,8 @@ const methodsConfiguration = {
 		),
 		Icon: CreditCardIcon,
 	},
-	// eslint-disable-next-line camelcase
-	woocommerce_payments_giropay: {
-		id: 'woocommerce_payments_giropay',
+	giropay: {
+		id: 'giropay',
 		label: __( 'giropay', 'woocommerce-payments' ),
 		description: __(
 			'Expand your business with giropay — Germany’s second most popular payment system.',
@@ -44,9 +54,8 @@ const methodsConfiguration = {
 		),
 		Icon: GiropayIcon,
 	},
-	// eslint-disable-next-line camelcase
-	woocommerce_payments_sofort: {
-		id: 'woocommerce_payments_sofort',
+	sofort: {
+		id: 'sofort',
 		label: __( 'Sofort', 'woocommerce-payments' ),
 		description: __(
 			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, and Netherlands.',
@@ -54,9 +63,8 @@ const methodsConfiguration = {
 		),
 		Icon: SofortIcon,
 	},
-	// eslint-disable-next-line camelcase
-	woocommerce_payments_sepa: {
-		id: 'woocommerce_payments_sepa',
+	sepa_debit: {
+		id: 'sepa_debit',
 		label: __( 'Direct debit payment', 'woocommerce-payments' ),
 		description: __(
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
@@ -64,6 +72,56 @@ const methodsConfiguration = {
 		),
 		Icon: SepaIcon,
 	},
+};
+
+// @todo - remove once #2174 is merged and use real banner instead.
+function UpeSetupBanner() {
+	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
+	return (
+		<>
+			<p>UPE IS DISABLED!!!</p>
+			<Button
+				label="Enable UPE"
+				isPrimary
+				onClick={ () => setIsUpeEnabled( true ) }
+			>
+				{ __( 'Enable UPE', 'woocommerce-payments' ) }
+			</Button>
+		</>
+	);
+}
+
+function PaymentMethodsDropdownMenu() {
+	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
+	return (
+		<DropdownMenu
+			icon={ moreVertical }
+			label={ __( 'Add Feedback or Disable', 'woocommerce-payments' ) }
+			controls={ [
+				{
+					title: __( 'Provide Feedback', 'woocommerce-payments' ),
+					icon: 'megaphone',
+					onClick: () => console.log( 'Provide Feedback' ),
+				},
+				{
+					title: 'Disable',
+					icon: trash,
+					onClick: () => setIsUpeEnabled( false ),
+				},
+			] }
+		/>
+	);
+}
+
+const UpeDisableError = () => {
+	return (
+		<Notice status="error" isDismissible={ true }>
+			{ __(
+				'Error disabling payment methods. Please try again.',
+				'woocommerce-payments'
+			) }
+		</Notice>
+	);
 };
 
 const PaymentMethods = () => {
@@ -87,30 +145,49 @@ const PaymentMethods = () => {
 		);
 	};
 
+	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
+
 	return (
 		<>
-			<Card className="payment-methods">
-				<CardBody size={ null }>
-					<PaymentMethodsList className="payment-methods__enabled-methods">
-						{ enabledMethods.map(
-							( { id, label, description, Icon } ) => (
-								<PaymentMethod
-									key={ id }
-									Icon={ Icon }
-									onDeleteClick={
-										1 < enabledMethods.length
-											? handleDeleteClick
-											: undefined
-									}
-									id={ id }
-									label={ label }
-									description={ description }
-								/>
-							)
-						) }
-					</PaymentMethodsList>
+			{ 'error' === status && <UpeDisableError /> }
+			<Card
+				className={ classNames( 'payment-methods', {
+					'is-loading': 'pending' === status,
+				} ) }
+			>
+				{ isUpeEnabled && (
+					<CardHeader
+						size={ null }
+						className="payment-methods-header"
+					>
+						<PaymentMethodsDropdownMenu />
+					</CardHeader>
+				) }
+				<CardBody>
+					{ isUpeEnabled ? (
+						<PaymentMethodsList className="payment-methods__enabled-methods">
+							{ enabledMethods.map(
+								( { id, label, description, Icon } ) => (
+									<PaymentMethod
+										key={ id }
+										Icon={ Icon }
+										onDeleteClick={
+											1 < enabledMethods.length
+												? handleDeleteClick
+												: undefined
+										}
+										id={ id }
+										label={ label }
+										description={ description }
+									/>
+								)
+							) }
+						</PaymentMethodsList>
+					) : (
+						<UpeSetupBanner />
+					) }
 				</CardBody>
-				{ 1 < availablePaymentMethodIds.length ? (
+				{ isUpeEnabled && 1 < availablePaymentMethodIds.length ? (
 					<>
 						<CardDivider />
 						<CardBody className="payment-methods__available-methods-container">
@@ -124,8 +201,7 @@ const PaymentMethods = () => {
 												'payment-methods__available-method',
 												{
 													'has-icon-border':
-														'woocommerce_payments' !==
-														id,
+														'card' !== id,
 												}
 											) }
 											aria-label={ label }

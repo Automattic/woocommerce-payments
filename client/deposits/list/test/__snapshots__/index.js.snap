@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Deposits list renders correctly with multiple currencies 1`] = `
+exports[`Deposits list renders correctly a single deposit 1`] = `
 <div>
   <div
     class=" woocommerce-payments-page"
@@ -38,6 +38,33 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
               >
                 <span>
                   All
+                </span>
+              </div>
+            </button>
+          </div>
+        </div>
+        <div
+          class="woocommerce-filters-filter"
+        >
+          <span
+            class="woocommerce-filters-label"
+          >
+            Show
+            :
+          </span>
+          <div
+            class="components-dropdown"
+          >
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-dropdown-button"
+              type="button"
+            >
+              <div
+                class="woocommerce-dropdown-button__labels"
+              >
+                <span>
+                  All deposits
                 </span>
               </div>
             </button>
@@ -445,12 +472,26 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
             <span
               class="woocommerce-table__summary-value"
             >
-              2
+              1
             </span>
             <span
               class="woocommerce-table__summary-label"
             >
-              deposits
+              deposit
+            </span>
+          </li>
+          <li
+            class="woocommerce-table__summary-item"
+          >
+            <span
+              class="woocommerce-table__summary-value"
+            >
+              $50.00
+            </span>
+            <span
+              class="woocommerce-table__summary-label"
+            >
+              total
             </span>
           </li>
         </ul>
@@ -460,7 +501,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
 </div>
 `;
 
-exports[`Deposits list renders correctly with single currency 1`] = `
+exports[`Deposits list renders correctly with multiple currencies 1`] = `
 <div>
   <div
     class=" woocommerce-payments-page"
@@ -475,7 +516,62 @@ exports[`Deposits list renders correctly with single currency 1`] = `
     >
       <div
         class="woocommerce-filters__basic-filters"
-      />
+      >
+        <div
+          class="woocommerce-filters-filter"
+        >
+          <span
+            class="woocommerce-filters-label"
+          >
+            Deposit currency
+            :
+          </span>
+          <div
+            class="components-dropdown"
+          >
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-dropdown-button"
+              type="button"
+            >
+              <div
+                class="woocommerce-dropdown-button__labels"
+              >
+                <span>
+                  All
+                </span>
+              </div>
+            </button>
+          </div>
+        </div>
+        <div
+          class="woocommerce-filters-filter"
+        >
+          <span
+            class="woocommerce-filters-label"
+          >
+            Show
+            :
+          </span>
+          <div
+            class="components-dropdown"
+          >
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-dropdown-button"
+              type="button"
+            >
+              <div
+                class="woocommerce-dropdown-button__labels"
+              >
+                <span>
+                  All deposits
+                </span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
     <div
       class="woocommerce-card woocommerce-table woocommerce-analytics__card wcpay-deposits-list woocommerce-report-table has-menu"
@@ -883,20 +979,6 @@ exports[`Deposits list renders correctly with single currency 1`] = `
               class="woocommerce-table__summary-label"
             >
               deposits
-            </span>
-          </li>
-          <li
-            class="woocommerce-table__summary-item"
-          >
-            <span
-              class="woocommerce-table__summary-value"
-            >
-              $50.00
-            </span>
-            <span
-              class="woocommerce-table__summary-label"
-            >
-              total
             </span>
           </li>
         </ul>

@@ -5,7 +5,7 @@
  */
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
-import { __ } from '@wordpress/i18n';
+import { __, _n } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
@@ -71,7 +71,7 @@ const getColumns = ( sortByDate ) => [
 ];
 
 export const DepositsList = () => {
-	const { deposits, depositsCount, isLoading } = useDeposits( getQuery() );
+	const { deposits, isLoading } = useDeposits( getQuery() );
 	const { depositsSummary, isLoading: isSummaryLoading } = useDepositsSummary(
 		getQuery()
 	);
@@ -144,7 +144,12 @@ export const DepositsList = () => {
 	if ( isDespositsSummaryDataLoaded ) {
 		summary = [
 			{
-				label: __( 'deposits', 'woocommerce-payments' ),
+				label: _n(
+					'deposit',
+					'deposits',
+					depositsSummary.count,
+					'woocommerce-payments'
+				),
 				value: `${ depositsSummary.count }`,
 			},
 		];
@@ -172,7 +177,7 @@ export const DepositsList = () => {
 				title={ __( 'Deposit history', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ getQuery().per_page || 25 }
-				totalRows={ depositsCount }
+				totalRows={ depositsSummary.count }
 				headers={ columns }
 				rows={ rows }
 				summary={ summary }

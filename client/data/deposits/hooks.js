@@ -4,6 +4,11 @@
  * External dependencies
  */
 import { useSelect, useDispatch } from '@wordpress/data';
+import moment from 'moment';
+
+/**
+ * Internal dependencies
+ */
 import { STORE_NAME } from '../constants';
 
 export const useDeposit = ( id ) =>
@@ -49,13 +54,18 @@ export const useAllDeposistsOverviews = () =>
 		};
 	} );
 
-// eslint-disable-next-line camelcase
 export const useDeposits = ( {
 	paged,
 	per_page: perPage,
 	orderby = 'date',
 	order = 'desc',
 	store_currency_is: storeCurrencyIs,
+	match,
+	date_before: dateBefore,
+	date_after: dateAfter,
+	date_between: dateBetween,
+	status_is: statusIs,
+	status_is_not: statusIsNot,
 } ) =>
 	useSelect(
 		( select ) => {
@@ -74,6 +84,16 @@ export const useDeposits = ( {
 				orderby,
 				order,
 				storeCurrencyIs,
+				match,
+				dateBefore,
+				dateAfter,
+				dateBetween:
+					dateBetween &&
+					dateBetween.sort( ( a, b ) =>
+						moment( a ).diff( moment( b ) )
+					),
+				statusIs,
+				statusIsNot,
 			};
 			return {
 				deposits: getDeposits( query ),
@@ -82,12 +102,29 @@ export const useDeposits = ( {
 				isLoading: isResolving( 'getDeposits', [ query ] ),
 			};
 		},
-		[ paged, perPage, orderby, order, storeCurrencyIs ]
+		[
+			paged,
+			perPage,
+			orderby,
+			order,
+			storeCurrencyIs,
+			match,
+			dateBefore,
+			dateAfter,
+			JSON.stringify( dateBetween ),
+			statusIs,
+			statusIsNot,
+		]
 	);
 
 export const useDepositsSummary = ( {
 	match,
 	store_currency_is: storeCurrencyIs,
+	date_before: dateBefore,
+	date_after: dateAfter,
+	date_between: dateBetween,
+	status_is: statusIs,
+	status_is_not: statusIsNot,
 } ) =>
 	useSelect(
 		( select ) => {
@@ -96,6 +133,11 @@ export const useDepositsSummary = ( {
 			const query = {
 				match,
 				storeCurrencyIs,
+				dateBefore,
+				dateAfter,
+				dateBetween,
+				statusIs,
+				statusIsNot,
 			};
 
 			return {
@@ -103,7 +145,15 @@ export const useDepositsSummary = ( {
 				isLoading: isResolving( 'getDepositsSummary', [ query ] ),
 			};
 		},
-		[ storeCurrencyIs ]
+		[
+			storeCurrencyIs,
+			match,
+			dateBefore,
+			dateAfter,
+			JSON.stringify( dateBetween ),
+			statusIs,
+			statusIsNot,
+		]
 	);
 
 export const useInstantDeposit = ( transactionIds ) => {

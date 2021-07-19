@@ -32,13 +32,12 @@ const SetupComplete = () => {
 		}
 
 		updateOptions( {
-			// eslint-disable-next-line camelcase
 			wcpay_additional_methods_setup_completed: 'yes',
 		} );
 
 		// Set the local `isSetupCompleted` to `yes` so that task appears completed on the list.
 		// Please note that marking an item as "completed" is different from "dismissing" it.
-		window.wcpayAdditionalMethodsSetup.isSetupCompleted = 'yes';
+		window.wcpaySettings.additionalMethodsSetup.isSetupCompleted = 'yes';
 	}, [ isActive, updateOptions ] );
 
 	return (
@@ -50,30 +49,21 @@ const SetupComplete = () => {
 			<CollapsibleBody>
 				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ __(
-						"You're ready to begin accepting payments with the new methods!.",
+						"You're ready to begin accepting payments with the new methods!",
 						'woocommerce-payments'
 					) }
 				</p>
 				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ interpolateComponents( {
 						mixedString: __(
-							'{{vatInformationLink /}} and {{setupTaxesLink /}} ' +
-								'to ensure smooth transactions if you plan to sell to customers in Europe.',
+							'{{setupTaxesLink /}} to ensure smooth transactions if you plan to sell to customers in Europe.',
 							'woocommerce-payments'
 						),
 						components: {
-							vatInformationLink: (
-								<a href="admin.php?page=wc-settings">
-									{ __(
-										'Enter your VAT account information',
-										'woocommerce-payments'
-									) }
-								</a>
-							),
 							setupTaxesLink: (
 								<a href="admin.php?page=wc-settings&tab=tax">
 									{ __(
-										'set up taxes',
+										'Set up taxes',
 										'woocommerce-payments'
 									) }
 								</a>

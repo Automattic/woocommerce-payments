@@ -30,7 +30,6 @@ const uncategorized = {
 };
 
 // Dispute fields per each dispute category and product type combination.
-/* eslint-disable camelcase */
 const sectionsByReasonAndProductType = {
 	credit_not_processed: {
 		physical_product: [
@@ -248,7 +247,6 @@ const sectionsByReasonAndProductType = {
 		offline_service: [],
 	},
 };
-/* eslint-enable camelcase */
 
 // Convert hierarchical structure into set of tuples accepted by test runner.
 const combinations = flatMap(

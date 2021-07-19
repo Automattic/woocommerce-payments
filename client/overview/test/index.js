@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 /** @format */
 
 /**
@@ -13,6 +12,17 @@ import OverviewPage from '../';
 import { getTasks } from '../task-list/tasks';
 
 jest.mock( '../task-list/tasks', () => ( { getTasks: jest.fn() } ) );
+jest.mock( '../inbox-notifications', () =>
+	jest.fn().mockImplementation( () => '[inbox-notifications]' )
+);
+jest.mock( '@woocommerce/experimental', () => {
+	return {
+		CollapsibleList: () => (
+			<div className="woocommerce-experimental-list"></div>
+		),
+		Text: () => <div>text</div>,
+	};
+} );
 
 describe( 'Overview page', () => {
 	beforeEach( () => {

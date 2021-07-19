@@ -20,6 +20,7 @@ import {
 	SelectControl,
 } from '@wordpress/components';
 import { merge, some, flatten, isMatchWith } from 'lodash';
+import moment from 'moment';
 
 /**
  * Internal dependencies.
@@ -107,6 +108,15 @@ export const DisputeEvidenceForm = ( props ) => {
 				return (
 					<TextControl
 						key={ field.key }
+						{ ...composeDefaultControlProps( field ) }
+					/>
+				);
+			case 'date':
+				return (
+					<TextControl
+						key={ field.key }
+						type={ 'date' }
+						max={ moment().format( 'YYYY-MM-DD' ) }
 						{ ...composeDefaultControlProps( field ) }
 					/>
 				);
@@ -407,11 +417,37 @@ export default ( { query } ) => {
 		updateDispute( {
 			metadata: { [ key ]: '' },
 			uploadingErrors: { [ key ]: '' },
+			fileSize: { [ key ]: 0 },
 		} );
+	};
+
+	const fileSizeExceeded = ( latestFileSize ) => {
+		const fileSizeLimitInBytes = 4500000;
+		const fileSizes = dispute.fileSize
+			? Object.values( dispute.fileSize )
+			: [];
+		const totalFileSize =
+			fileSizes.reduce( ( acc, fileSize ) => acc + fileSize, 0 ) +
+			latestFileSize;
+		if ( fileSizeLimitInBytes < totalFileSize ) {
+			createInfoNotice(
+				__(
+					"The files you've attached to this dispute as evidence will exceed the limit for a " +
+						"dispute's total size. Try using smaller files as evidence. Hint: if you've attached " +
+						'images, you might want to try providing them in lower resolutions.',
+					'woocommerce-payments'
+				)
+			);
+			return true;
+		}
 	};
 
 	const doUploadFile = async ( key, file ) => {
 		if ( ! file ) {
+			return;
+		}
+
+		if ( fileSizeExceeded( file.size ) ) {
 			return;
 		}
 
@@ -443,6 +479,7 @@ export default ( { query } ) => {
 			updateDispute( {
 				metadata: { [ key ]: uploadedFile.filename },
 				isUploading: { [ key ]: false },
+				fileSize: { [ key ]: uploadedFile.size },
 			} );
 			updateEvidence( key, uploadedFile.id );
 
@@ -483,7 +520,26 @@ export default ( { query } ) => {
 			We rely on WC-Admin Transient notices to display success message.
 			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
 		*/
-		createSuccessNotice( message );
+		createSuccessNotice( message, {
+			actions: [
+				{
+					label: submit
+						? __(
+								'View submitted evidence',
+								'woocommerce-payments'
+						  )
+						: __(
+								'Return to evidence submission',
+								'woocommerce-payments'
+						  ),
+					url: addQueryArgs( 'admin.php', {
+						page: 'wc-admin',
+						path: '/payments/disputes/challenge',
+						id: query.id,
+					} ),
+				},
+			],
+		} );
 
 		getHistory().push( href );
 	};

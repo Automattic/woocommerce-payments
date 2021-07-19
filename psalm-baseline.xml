@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="4.8.1@f73f2299dbc59a3e6c4d66cff4605176e728ee69">
+  <file src="includes/class-wc-payments-payment-request-button-handler.php">
+    <UndefinedClass occurrences="3">
+      <code>WC_Pre_Orders_Product</code>
+      <code>WC_Subscriptions_Product</code>
+      <code>WC_Subscriptions_Product</code>
+    </UndefinedClass>
+  </file>
+  <file src="includes/class-wc-payments.php">
+    <UndefinedClass occurrences="1"/>
+  </file>
+  <file src="includes/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php">
+    <UndefinedClass occurrences="2">
+      <code>WC_Subscriptions</code>
+      <code>WC_Subscriptions_Cart</code>
+    </UndefinedClass>
+    <UndefinedDocblockClass occurrences="8">
+      <code>WC_Subscription</code>
+      <code>WC_Subscription</code>
+      <code>WC_Subscription</code>
+      <code>WC_Subscription</code>
+      <code>WC_Subscription</code>
+      <code>WC_Subscription</code>
+      <code>WC_Subscription</code>
+      <code>WC_Subscription</code>
+    </UndefinedDocblockClass>
+    <UndefinedFunction occurrences="4">
+      <code>wcs_get_subscriptions_for_order( $order-&gt;get_id() )</code>
+      <code>wcs_is_subscription( $order )</code>
+      <code>wcs_is_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) )</code>
+      <code>wcs_order_contains_subscription( $order_id )</code>
+    </UndefinedFunction>
+  </file>
+  <file src="includes/payment-methods/class-upe-payment-method.php">
+    <UndefinedClass occurrences="1">
+      <code>WC_Subscriptions_Cart</code>
+    </UndefinedClass>
+  </file>
+  <file src="includes/wc-payment-api/class-wc-payments-http.php">
+    <UndefinedDocblockClass occurrences="3">
+      <code>$response</code>
+      <code>$this-&gt;connection_manager-&gt;is_active()</code>
+      <code>Automattic\Jetpack\Connection\Client::remote_request( $args, $body )</code>
+    </UndefinedDocblockClass>
+  </file>
+</files>

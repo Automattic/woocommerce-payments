@@ -54,7 +54,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	/**
 	 * WC_Payments_Account instance.
 	 *
-	 * @var WC_Payments_Account
+	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_wcpay_account;
 
@@ -257,6 +257,66 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'uncaptured-payment', $result->get_error_code() );
 	}
 
+	public function test_process_refund_success_does_not_set_refund_failed_meta() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
+			$this->returnValue(
+				[
+					'id'                       => 're_123456789',
+					'object'                   => 'refund',
+					'amount'                   => 19.99,
+					'balance_transaction'      => 'txn_987654321',
+					'charge'                   => 'ch_121212121212',
+					'created'                  => 1610123467,
+					'payment_intent'           => 'pi_1234567890',
+					'reason'                   => null,
+					'receipt_number'           => null,
+					'source_transfer_reversal' => null,
+					'status'                   => 'succeeded',
+					'transfer_reversal'        => null,
+					'currency'                 => 'usd',
+				]
+			)
+		);
+
+		$this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
+
+		// Reload the order information to get the new meta.
+		$order = wc_get_order( $order->get_id() );
+		$this->assertFalse( $this->wcpay_gateway->has_refund_failed( $order ) );
+	}
+
+	public function test_process_refund_failure_sets_refund_failed_meta() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_status( 'processing' );
+		$order->save();
+
+		$order_id = $order->get_id();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'refund_charge' )
+			->willThrowException( new \Exception( 'Test message' ) );
+
+		$this->wcpay_gateway->process_refund( $order_id, 19.99 );
+
+		// Reload the order information to get the new meta.
+		$order = wc_get_order( $order_id );
+		$this->assertTrue( $this->wcpay_gateway->has_refund_failed( $order ) );
+	}
+
 	public function test_process_refund_on_api_error() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
@@ -437,6 +497,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	public function test_full_level3_data() {
 		$expected_data = [
 			'merchant_reference'   => '210',
+			'customer_reference'   => '210',
 			'shipping_amount'      => 3800,
 			'line_items'           => [
 				(object) [
@@ -454,8 +515,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		update_option( 'woocommerce_store_postcode', '94110' );
 
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 		$mock_order   = $this->mock_level_3_order( '98012' );
-		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( 'US', $mock_order );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
 		$this->assertEquals( $expected_data, $level_3_data );
 	}
@@ -463,6 +525,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	public function test_full_level3_data_with_fee() {
 		$expected_data = [
 			'merchant_reference'   => '210',
+			'customer_reference'   => '210',
 			'shipping_amount'      => 3800,
 			'line_items'           => [
 				(object) [
@@ -488,16 +551,18 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		update_option( 'woocommerce_store_postcode', '94110' );
 
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 		$mock_order   = $this->mock_level_3_order( '98012', true );
-		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( 'US', $mock_order );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
 		$this->assertEquals( $expected_data, $level_3_data );
 	}
 
 	public function test_us_store_level_3_data() {
 		// Use a non-us customer postcode to ensure it's not included in the level3 data.
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 		$mock_order   = $this->mock_level_3_order( '9000' );
-		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( 'US', $mock_order );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
 		$this->assertArrayNotHasKey( 'shipping_address_zip', $level_3_data );
 	}
@@ -505,6 +570,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	public function test_us_customer_level_3_data() {
 		$expected_data = [
 			'merchant_reference'   => '210',
+			'customer_reference'   => '210',
 			'shipping_amount'      => 3800,
 			'line_items'           => [
 				(object) [
@@ -522,8 +588,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Use a non-US postcode.
 		update_option( 'woocommerce_store_postcode', '9000' );
 
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 		$mock_order   = $this->mock_level_3_order( '98012' );
-		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( 'US', $mock_order );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
 		$this->assertEquals( $expected_data, $level_3_data );
 	}
@@ -531,8 +598,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	public function test_non_us_customer_level_3_data() {
 		$expected_data = [];
 
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'CA' );
 		$mock_order   = $this->mock_level_3_order( 'K0A' );
-		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( 'CA', $mock_order );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
 		$this->assertEquals( $expected_data, $level_3_data );
 	}
@@ -1259,14 +1327,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_outputs_payment_method_settings_screen() {
-		$gateway     = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
-			->disableOriginalConstructor()
-			->setMethods( null )
-			->getMock();
-		$gateway->id = 'foo';
-
+		$_GET['method'] = 'foo';
 		ob_start();
-		$gateway->output_payments_settings_screen();
+		$this->wcpay_gateway->output_payments_settings_screen();
 		$output = ob_get_clean();
 		$this->assertStringMatchesFormat( '%aid="wcpay-payment-method-settings-container"%a', $output );
 		$this->assertStringMatchesFormat( '%adata-method-id="foo"%a', $output );
@@ -1311,7 +1374,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		];
 	}
 
-	public function test_payment_request_button_locations_defaults() {
+	public function test_payment_request_form_field_defaults_with_grouped_settings_disabled() {
 		// when the "grouped settings" flag is disabled, the default values for the `payment_request_button_locations` option should not include "checkout".
 		update_option( '_wcpay_feature_grouped_settings', '0' );
 
@@ -1333,9 +1396,23 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$this->wcpay_gateway->get_option( 'payment_request_button_locations' )
 		);
+
+		$form_fields = $this->wcpay_gateway->get_form_fields();
+
+		$this->assertEquals(
+			[
+				'default',
+				'buy',
+				'donate',
+				'branded',
+				'custom',
+			],
+			array_keys( $form_fields['payment_request_button_type']['options'] )
+		);
+		$this->assertEquals( [ 'dark', 'light', 'light-outline' ], array_keys( $form_fields['payment_request_button_theme']['options'] ) );
 	}
 
-	public function test_payment_request_button_locations_defaults_grouped_settings_enabled() {
+	public function test_payment_request_form_field_defaults_with_grouped_settings_enabled() {
 		// when the "grouped settings" flag is enabled, the default values for the `payment_request_button_locations` option should include "checkout".
 		update_option( '_wcpay_feature_grouped_settings', '1' );
 
@@ -1358,5 +1435,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$this->wcpay_gateway->get_option( 'payment_request_button_locations' )
 		);
+		$this->assertEquals(
+			'default',
+			$this->wcpay_gateway->get_option( 'payment_request_button_size' )
+		);
+
+		$form_fields = $this->wcpay_gateway->get_form_fields();
+
+		$this->assertEquals( [ 'default', 'buy', 'donate', 'book' ], array_keys( $form_fields['payment_request_button_type']['options'] ) );
+		$this->assertEquals( [ 'dark', 'light', 'light-outline' ], array_keys( $form_fields['payment_request_button_theme']['options'] ) );
 	}
 }

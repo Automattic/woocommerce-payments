@@ -16,6 +16,8 @@ import {
 	useGetAvailablePaymentMethodIds,
 } from 'data';
 
+import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
+
 jest.mock( '../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
@@ -25,19 +27,21 @@ describe( 'PaymentMethods', () => {
 	beforeEach( () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
-			'woocommerce_payments',
-			'woocommerce_payments_giropay',
-			'woocommerce_payments_sofort',
-			'woocommerce_payments_sepa',
+			'card',
+			'giropay',
+			'sofort',
+			'sepa_debit',
 		] );
 	} );
 
 	test( 'does not render the "Add payment method" button when there is only one payment method available', () => {
-		useGetAvailablePaymentMethodIds.mockReturnValue( [
-			'woocommerce_payments',
-		] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const addPaymentMethodButton = screen.queryByRole( 'button', {
 			name: 'Add payment method',
@@ -47,7 +51,11 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'renders the "Add payment method" button when there are at least 2 payment methods', () => {
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const addPaymentMethodButton = screen.queryByRole( 'button', {
 			name: 'Add payment method',
@@ -57,7 +65,11 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( '"Add payment method" button opens the payment methods selector modal', () => {
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const addPaymentMethodButton = screen.getByRole( 'button', {
 			name: 'Add payment method',
@@ -72,10 +84,14 @@ describe( 'PaymentMethods', () => {
 
 	test( 'payment methods are rendered in expected lists', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'woocommerce_payments', 'woocommerce_payments_sepa' ],
+			[ 'card', 'sepa_debit' ],
 		] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const cc = screen.getByText( 'Credit card / debit card' );
 		const sepa = screen.getByText( 'Direct debit payment' );
@@ -96,10 +112,14 @@ describe( 'PaymentMethods', () => {
 
 	test( 'enabled methods are rendered with "Delete" buttons', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'woocommerce_payments', 'woocommerce_payments_sepa' ],
+			[ 'card', 'sepa_debit' ],
 		] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		expect(
 			screen.queryByRole( 'button', {
@@ -109,11 +129,13 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'when only one enabled method is rendered, the "Delete" button is not visible', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'woocommerce_payments' ],
-		] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		expect(
 			screen.queryByRole( 'button', {
@@ -125,16 +147,15 @@ describe( 'PaymentMethods', () => {
 	test( 'clicking delete updates enabled method IDs', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[
-				'woocommerce_payments',
-				'woocommerce_payments_sepa',
-				'woocommerce_payments_giropay',
-				'woocommerce_payments_sofort',
-			],
+			[ 'card', 'sepa_debit', 'giropay', 'sofort' ],
 			updateEnabledMethodsMock,
 		] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const ccDeleteButton = screen.getByRole( 'button', {
 			name: 'Delete Credit card / debit card from checkout',
@@ -147,9 +168,36 @@ describe( 'PaymentMethods', () => {
 		);
 
 		expect( updateEnabledMethodsMock ).toHaveBeenCalledWith( [
-			'woocommerce_payments_sepa',
-			'woocommerce_payments_giropay',
-			'woocommerce_payments_sofort',
+			'sepa_debit',
+			'giropay',
+			'sofort',
 		] );
+	} );
+
+	test( 'renders the Feedback/Disable Header when UPE is enabled', () => {
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+		const disableUPEButton = screen.queryByRole( 'button', {
+			name: 'Add Feedback or Disable',
+		} );
+
+		expect( disableUPEButton ).toBeInTheDocument();
+	} );
+
+	test( 'Does not render the Feedback/Disable Header when UPE is disabled', () => {
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ false }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+
+		const disableUPEButton = screen.queryByRole( 'button', {
+			name: 'Add Feedback or Disable',
+		} );
+
+		expect( disableUPEButton ).not.toBeInTheDocument();
 	} );
 } );

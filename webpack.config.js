@@ -12,12 +12,13 @@ const webpackConfig = {
 		settings: './client/settings/index.js',
 		'blocks-checkout': './client/checkout/blocks/index.js',
 		checkout: './client/checkout/classic/index.js',
+		upe_checkout: './client/checkout/classic/upe.js',
 		'payment-request': './client/payment-request/index.js',
 		'subscription-edit-page': './client/subscription-edit-page.js',
 		tos: './client/tos/index.js',
-		'additional-methods-setup':
-			'./client/additional-methods-setup/index.js',
 		'payment-gateways': './client/payment-gateways/index.js',
+		'multi-currency': './client/multi-currency/index.js',
+		order: './client/order/index.js',
 	},
 	output: {
 		filename: '[name].js',

@@ -23,6 +23,7 @@ import {
 	updateAllDepositsOverviews,
 	updateErrorForAllDepositsOverviews,
 } from './actions';
+import { formatDateValue } from 'utils';
 
 /**
  * Retrieve a single deposit from the deposits API.
@@ -85,12 +86,18 @@ export function* getAllDepositsOverviews() {
 	}
 }
 
-/*eslint-disable camelcase*/
 const formatQueryFilters = ( query ) => ( {
 	match: query.match,
 	store_currency_is: query.storeCurrencyIs,
+	date_before: formatDateValue( query.dateBefore, true ),
+	date_after: formatDateValue( query.dateAfter ),
+	date_between: query.dateBetween && [
+		formatDateValue( query.dateBetween[ 0 ] ),
+		formatDateValue( query.dateBetween[ 1 ], true ),
+	],
+	status_is: query.statusIs,
+	status_is_not: query.statusIsNot,
 } );
-/*eslint-enable camelcase*/
 
 /**
  * Retrieves a series of deposits from the deposits list API.

@@ -25,7 +25,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useSettings,
-	useDigitalWalletsEnabledSettings,
+	usePaymentRequestEnabledSettings,
 } from '../../data';
 import './add-payment-methods-task.scss';
 
@@ -73,9 +73,9 @@ const AddPaymentMethodsTask = () => {
 	] = useEnabledPaymentMethodIds();
 
 	const [
-		initialIsDigitalWalletsEnabled,
-		setIsDigitalWalletsEnabled,
-	] = useDigitalWalletsEnabledSettings();
+		initialIsPaymentRequestEnabled,
+		setIsPaymentRequestEnabled,
+	] = usePaymentRequestEnabledSettings();
 
 	const { saveSettings, isSaving } = useSettings();
 
@@ -93,8 +93,8 @@ const AddPaymentMethodsTask = () => {
 		)
 	);
 
-	const [ isWalletsChecked, setWalletsChecked ] = useState(
-		initialIsDigitalWalletsEnabled
+	const [ isPaymentRequestChecked, setPaymentRequestChecked ] = useState(
+		initialIsPaymentRequestEnabled
 	);
 
 	const { setCompleted } = useContext( WizardTaskContext );
@@ -116,13 +116,13 @@ const AddPaymentMethodsTask = () => {
 				return;
 			}
 
-			setIsDigitalWalletsEnabled( isWalletsChecked );
+			setIsPaymentRequestEnabled( isPaymentRequestChecked );
 			updateEnabledPaymentMethodIds( checkedPaymentMethods );
 
 			const isSuccess = await saveSettings();
 			if ( ! isSuccess ) {
 				// restoring the state, in case of soft route
-				setIsDigitalWalletsEnabled( initialIsDigitalWalletsEnabled );
+				setIsPaymentRequestEnabled( initialIsPaymentRequestEnabled );
 				updateEnabledPaymentMethodIds( initialEnabledPaymentMethodIds );
 				return;
 			}
@@ -137,9 +137,9 @@ const AddPaymentMethodsTask = () => {
 		saveSettings,
 		setCompleted,
 		initialEnabledPaymentMethodIds,
-		initialIsDigitalWalletsEnabled,
-		isWalletsChecked,
-		setIsDigitalWalletsEnabled,
+		initialIsPaymentRequestEnabled,
+		isPaymentRequestChecked,
+		setIsPaymentRequestEnabled,
 	] );
 
 	const countryName = useGetCountryName();
@@ -163,7 +163,7 @@ const AddPaymentMethodsTask = () => {
 					),
 					components: {
 						settingsLink: (
-							<a href="admin.php?page=wc-settings">
+							<a href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments">
 								{ __( 'settings', 'woocommerce-payments' ) }
 							</a>
 						),
@@ -184,16 +184,12 @@ const AddPaymentMethodsTask = () => {
 							) }
 						</p>
 						<PaymentMethodCheckboxes>
-							{ availablePaymentMethods.includes(
-								'woocommerce_payments'
-							) && (
+							{ availablePaymentMethods.includes( 'card' ) && (
 								<PaymentMethodCheckbox
-									checked={
-										paymentMethodsState.woocommerce_payments
-									}
+									checked={ paymentMethodsState.card }
 									onChange={ handlePaymentMethodChange }
 									fees="missing fees"
-									name="woocommerce_payments"
+									name="card"
 								/>
 							) }
 						</PaymentMethodCheckboxes>
@@ -207,40 +203,30 @@ const AddPaymentMethodsTask = () => {
 							) }
 						</p>
 						<PaymentMethodCheckboxes>
-							{ availablePaymentMethods.includes(
-								'woocommerce_payments_giropay'
-							) && (
+							{ availablePaymentMethods.includes( 'giropay' ) && (
 								<PaymentMethodCheckbox
-									checked={
-										paymentMethodsState.woocommerce_payments_giropay
-									}
+									checked={ paymentMethodsState.giropay }
 									onChange={ handlePaymentMethodChange }
 									fees="missing fees"
-									name="woocommerce_payments_giropay"
+									name="giropay"
+								/>
+							) }
+							{ availablePaymentMethods.includes( 'sofort' ) && (
+								<PaymentMethodCheckbox
+									checked={ paymentMethodsState.sofort }
+									onChange={ handlePaymentMethodChange }
+									fees="missing fees"
+									name="sofort"
 								/>
 							) }
 							{ availablePaymentMethods.includes(
-								'woocommerce_payments_sofort'
+								'sepa_debit'
 							) && (
 								<PaymentMethodCheckbox
-									checked={
-										paymentMethodsState.woocommerce_payments_sofort
-									}
+									checked={ paymentMethodsState.sepa_debit }
 									onChange={ handlePaymentMethodChange }
 									fees="missing fees"
-									name="woocommerce_payments_sofort"
-								/>
-							) }
-							{ availablePaymentMethods.includes(
-								'woocommerce_payments_sepa'
-							) && (
-								<PaymentMethodCheckbox
-									checked={
-										paymentMethodsState.woocommerce_payments_sepa
-									}
-									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
-									name="woocommerce_payments_sepa"
+									name="sepa_debit"
 								/>
 							) }
 						</PaymentMethodCheckboxes>
@@ -248,8 +234,8 @@ const AddPaymentMethodsTask = () => {
 				</Card>
 				<div className="wcpay-wizard-task__description-element">
 					<CheckboxControl
-						checked={ isWalletsChecked }
-						onChange={ setWalletsChecked }
+						checked={ isPaymentRequestChecked }
+						onChange={ setPaymentRequestChecked }
 						label={ __(
 							'Enable Apple Pay & Google Pay',
 							'woocommerce-payments'
