@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { forwardRef } from 'react';
 import classNames from 'classnames';
 
 /**
@@ -9,11 +9,12 @@ import classNames from 'classnames';
  */
 import './style.scss';
 
-const Pill = ( { className, ...restProps } ) => (
+const Pill = forwardRef( ( { className, ...restProps }, ref ) => (
 	<span
 		className={ classNames( 'wcpay-pill', className ) }
 		{ ...restProps }
+		ref={ ref }
 	/>
-);
+) );
 
 export default Pill;

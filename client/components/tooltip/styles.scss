@@ -1,0 +1,45 @@
+.tippy-box[data-state='hidden'] {
+	opacity: 0;
+}
+
+[data-tippy-root] {
+	max-width: calc( 100vw - 10px );
+	// gotta do it a bit higher than the modal used in Gutenberg 😅
+	z-index: 100010 !important;
+}
+
+.tippy-box {
+	position: relative;
+	background-color: $gray-900;
+	color: $white;
+	border-radius: 4px;
+	font-size: 13px;
+	outline: 0;
+	transition-property: transform, visibility, opacity;
+	text-align: center;
+
+	> .tippy-arrow {
+		bottom: 0;
+		width: 16px;
+		height: 16px;
+		color: $gray-900;
+
+		&::before {
+			content: ' ';
+			position: absolute;
+			border-color: transparent;
+			border-style: solid;
+			bottom: -7px;
+			left: 0;
+			border-width: 8px 8px 0;
+			border-top-color: initial;
+			transform-origin: center top;
+		}
+	}
+}
+
+.tippy-content {
+	position: relative;
+	padding: 5px 9px;
+	z-index: 1;
+}
