@@ -10,6 +10,7 @@ import { useCallback, useMemo } from '@wordpress/element';
  * Internal dependencies
  */
 import PaymentMethodIcon from '../../settings/payment-method-icon';
+import Pill from '../pill';
 import './payment-method-checkbox.scss';
 
 const PaymentMethodCheckbox = ( { onChange, name, checked = false, fees } ) => {
@@ -31,7 +32,7 @@ const PaymentMethodCheckbox = ( { onChange, name, checked = false, fees } ) => {
 				onChange={ handleChange }
 				label={ label }
 			/>
-			<span className="payment-method-checkbox__fees">{ fees }</span>
+			<Pill className="payment-method-checkbox__fees">{ fees }</Pill>
 			<Icon
 				className="payment-method-checkbox__info"
 				icon="info-outline"
