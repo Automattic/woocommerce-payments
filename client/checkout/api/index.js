@@ -7,6 +7,7 @@ import { getConfig } from 'utils/checkout';
 import {
 	getPaymentRequestData,
 	getPaymentRequestAjaxURL,
+	buildAjaxURL,
 } from '../../payment-request/utils';
 
 /**
@@ -273,10 +274,10 @@ export default class WCPayAPI {
 	 * @return {Promise} The final promise for the request to the server.
 	 */
 	initSetupIntent() {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			action: 'init_setup_intent',
-			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
-		} ).then( ( response ) => {
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_setup_intent' ),
+			{ _ajax_nonce: getConfig( 'createSetupIntentNonce' ) }
+		).then( ( response ) => {
 			if ( ! response.success ) {
 				throw response.data.error;
 			}
@@ -326,11 +327,13 @@ export default class WCPayAPI {
 	 * @return {Promise} The final promise for the request to the server.
 	 */
 	createIntent( orderId ) {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			action: 'create_payment_intent',
-			wcpay_order_id: orderId,
-			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
-		} )
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'create_payment_intent' ),
+			{
+				wcpay_order_id: orderId,
+				_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
+			}
+		)
 			.then( ( response ) => {
 				if ( ! response.success ) {
 					throw response.data.error;
@@ -363,18 +366,16 @@ export default class WCPayAPI {
 		savePaymentMethod,
 		selectedUPEPaymentType
 	) {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			// eslint-disable-next-line camelcase
-			wcpay_order_id: orderId,
-			// eslint-disable-next-line camelcase
-			wc_payment_intent_id: paymentIntentId,
-			// eslint-disable-next-line camelcase
-			save_payment_method: savePaymentMethod,
-			wcpay_selected_upe_payment_type: selectedUPEPaymentType,
-			action: 'update_payment_intent',
-			// eslint-disable-next-line camelcase
-			_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
-		} )
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'update_payment_intent' ),
+			{
+				wcpay_order_id: orderId,
+				wc_payment_intent_id: paymentIntentId,
+				save_payment_method: savePaymentMethod,
+				wcpay_selected_upe_payment_type: selectedUPEPaymentType,
+				_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
+			}
+		)
 			.then( ( response ) => {
 				if ( 'failure' === response.result ) {
 					throw new Error( response.messages );
@@ -398,11 +399,13 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise containing redirect URL for UPE element.
 	 */
 	processCheckout( paymentIntentId, fields ) {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			...fields,
-			wc_payment_intent_id: paymentIntentId,
-			action: 'woocommerce_checkout',
-		} )
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'checkout', '' ),
+			{
+				...fields,
+				wc_payment_intent_id: paymentIntentId,
+			}
+		)
 			.then( ( response ) => {
 				if ( 'failure' === response.result ) {
 					throw new Error( response.messages );
