@@ -39,6 +39,8 @@ const OverviewPage = () => {
 	const showKycSuccessNotice =
 		'1' === queryParams[ 'wcpay-connection-success' ];
 
+	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
+
 	return (
 		<Page isNarrow className="wcpay-overview">
 			{ showKycSuccessNotice && (
@@ -49,6 +51,16 @@ const OverviewPage = () => {
 					) }
 				</Notice>
 			) }
+
+			{ showLoginError && (
+				<Notice status="error" isDismissible={ false }>
+					{ __(
+						'There was a problem redirecting you to the account dashboard. Please try again.',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
+
 			<TestModeNotice topic={ topics.overview } />
 			<DepositsInformation />
 			<AccountStatus

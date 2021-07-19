@@ -320,6 +320,18 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
+				// Handle the error within the WooCommerce Admin-powered app.
+				if ( self::is_overview_page() ) {
+					wp_safe_redirect(
+						add_query_arg(
+							[ 'wcpay-login-error' => '1' ],
+							self::get_overview_page_url()
+						)
+					);
+					exit;
+				}
+
+				// Display the notice in the traditional WooCommerce > Settings page.
 				$this->add_notice_to_settings_page(
 					__( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ),
 					'notice-error'
