@@ -400,7 +400,10 @@ export const TransactionsList = (
 			},
 		];
 
-		if ( transactionsSummary.currency && ( isSingleCurrency || isCurrencyFiltered ) ) {
+		if (
+			transactionsSummary.currency &&
+			( isSingleCurrency || isCurrencyFiltered )
+		) {
 			summary.push(
 				{
 					label: __( 'total', 'woocommerce-payments' ),
