@@ -87,7 +87,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 			}
 		);
 
-		// Click to accept the dispute
+		// Challenge the dispute
 		await merchantWCP.openChallengeDispute();
 
 		// Select product type
@@ -106,6 +106,13 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await expect( page ).toMatchElement( '.components-card__header', {
 			text: 'Additional details',
 		} );
+
+		// Fill Additional Details field with required text in order to win dispute
+		await expect( page ).toFill(
+			'#inspector-textarea-control-3',
+			'winning_evidence',
+			{ delay: 20 }
+		);
 
 		// Submit the evidence and accept the dialog
 		await Promise.all( [
@@ -131,6 +138,12 @@ describe( 'Disputes > Submit winning dispute', () => {
 				text: 'Evidence submitted!',
 			}
 		);
+
+		// Verify Won status in disputes view
+		await page.waitForSelector( 'span.chip-light' );
+		await expect( page ).toMatchElement( 'span.chip-light', {
+			text: 'Won',
+		} );
 	} );
 
 	it( 'should verify a dispute has been challenged properly', async () => {
@@ -153,18 +166,11 @@ describe( 'Disputes > Submit winning dispute', () => {
 		// Open the dispute details
 		await merchantWCP.openDisputeDetails( disputeDetailsLink );
 
-		// Check if buttons are not present anymore since a dispute has been challenged
-		await expect( page ).not.toMatchElement(
-			'div.components-card > .components-card__footer > a',
-			{
-				text: 'Challenge dispute',
-			}
+		// Check if a new button is present now
+		const buttonText = await page.$eval(
+			'div.components-card > div.components-flex > div > a',
+			( el ) => el.innerText
 		);
-		await expect( page ).not.toMatchElement(
-			'div.components-card > .components-card__footer > button',
-			{
-				text: 'Accept dispute',
-			}
-		);
+		await expect( page ).toMatch( buttonText, 'View submitted evidence' );
 	} );
 } );

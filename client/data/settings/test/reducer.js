@@ -4,8 +4,6 @@
 import reducer from '../reducer';
 import {
 	updateSettings,
-	updateIsWCPayEnabled,
-	updateEnabledPaymentMethodIds,
 	updateIsSavingSettings,
 	updateIsManualCaptureEnabled,
 	updateAccountStatementDescriptor,
@@ -108,91 +106,6 @@ describe( 'Settings reducer tests', () => {
 				foo: 'bar',
 				savingError: null,
 				isSaving: true,
-			} );
-		} );
-	} );
-
-	describe( 'SET_ENABLED_PAYMENT_METHOD_IDS', () => {
-		test( 'sets `data.enabled_payment_method_ids`', () => {
-			const oldState = {
-				data: {
-					enabled_payment_method_ids: [],
-				},
-				savingError: null,
-			};
-
-			const methodIds = [ 'foo', 'bar' ];
-
-			const state = reducer(
-				oldState,
-				updateEnabledPaymentMethodIds( methodIds )
-			);
-
-			expect( state.data.enabled_payment_method_ids ).toEqual(
-				methodIds
-			);
-		} );
-
-		test( 'leaves other fields unchanged', () => {
-			const oldState = {
-				baz: 'quux',
-				data: {
-					enabled_payment_method_ids: [],
-					quuz: 'corge',
-				},
-				savingError: {},
-			};
-
-			const methodIds = [ 'foo', 'bar' ];
-
-			const state = reducer(
-				oldState,
-				updateEnabledPaymentMethodIds( methodIds )
-			);
-
-			expect( state ).toEqual( {
-				baz: 'quux',
-				data: {
-					enabled_payment_method_ids: methodIds,
-					quuz: 'corge',
-				},
-				savingError: null,
-			} );
-		} );
-	} );
-
-	describe( 'SET_IS_WCPAY_ENABLED', () => {
-		test( 'toggles `data.is_wcpay_enabled`', () => {
-			const oldState = {
-				data: {
-					is_wcpay_enabled: false,
-				},
-			};
-
-			const state = reducer( oldState, updateIsWCPayEnabled( true ) );
-
-			expect( state.data.is_wcpay_enabled ).toBeTruthy();
-		} );
-
-		test( 'leaves other fields unchanged', () => {
-			const oldState = {
-				foo: 'bar',
-				data: {
-					is_wcpay_enabled: false,
-					baz: 'quux',
-				},
-				savingError: {},
-			};
-
-			const state = reducer( oldState, updateIsWCPayEnabled( true ) );
-
-			expect( state ).toEqual( {
-				foo: 'bar',
-				data: {
-					is_wcpay_enabled: true,
-					baz: 'quux',
-				},
-				savingError: null,
 			} );
 		} );
 	} );
