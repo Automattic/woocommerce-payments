@@ -76,8 +76,7 @@ export const getTasks = ( {
 			},
 		},
 		! isInTestMode() &&
-			! isSiteUsingHttps() &&
-			'yes' !== isSSLCheckoutEnforced && {
+			( ! isSiteUsingHttps() || 'yes' !== isSSLCheckoutEnforced ) && {
 				key: 'force-secure-checkout',
 				title: __( 'Force secure checkout', 'woocommerce-payments' ),
 				content: __(
