@@ -37,7 +37,7 @@ const SetupComplete = () => {
 
 		// Set the local `isSetupCompleted` to `yes` so that task appears completed on the list.
 		// Please note that marking an item as "completed" is different from "dismissing" it.
-		window.wcpayAdditionalMethodsSetup.isSetupCompleted = 'yes';
+		window.wcpaySettings.additionalMethodsSetup.isSetupCompleted = 'yes';
 	}, [ isActive, updateOptions ] );
 
 	return (
