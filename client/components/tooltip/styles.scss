@@ -9,6 +9,8 @@
 		position: fixed;
 		opacity: 0;
 		transition: opacity 150ms ease-in;
+		// gotta do it a bit higher than the modal used in Gutenberg, to ensure the tooltip appears on top 😅
+		z-index: 100010 !important;
 
 		&.is-closing {
 			opacity: 0 !important;
