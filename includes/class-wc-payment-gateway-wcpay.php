@@ -497,7 +497,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
-		return parent::is_available() && ! $this->needs_setup() && ! $this->is_in_test_mode() && ( wc_site_is_https() || 'yes' === get_option( 'woocommerce_force_ssl_checkout' ) );
+		// Disable the gateway if using live mode without HTTPS set up.
+		if ( ! $this->is_in_test_mode() && ( ! wc_site_is_https() || 'yes' !== get_option( 'woocommerce_force_ssl_checkout' ) ) ) {
+			return false;
+		}
+
+		return parent::is_available() && ! $this->needs_setup();
 	}
 
 	/**
