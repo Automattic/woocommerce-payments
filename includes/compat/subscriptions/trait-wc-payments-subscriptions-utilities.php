@@ -54,4 +54,16 @@ trait WC_Payments_Subscriptions_Utilities {
 		return $display;
 	}
 
+	/**
+	 * Checks the cart to see if it contains a subscription product renewal.
+	 *
+	 * @return mixed The cart item containing the renewal as an array, else false.
+	 */
+	public function cart_contains_renewal() {
+		if ( ! function_exists( 'wcs_cart_contains_renewal' ) ) {
+			return false;
+		}
+		return wcs_cart_contains_renewal();
+	}
+
 }

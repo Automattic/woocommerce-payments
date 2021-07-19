@@ -124,7 +124,7 @@ abstract class UPE_Payment_Method {
 	 */
 	public function is_subscription_item_in_cart() {
 		if ( $this->is_subscriptions_enabled() ) {
-			return WC_Subscriptions_Cart::cart_contains_subscription() || 0 < count( wcs_get_order_type_cart_items( 'renewal' ) );
+			return WC_Subscriptions_Cart::cart_contains_subscription() || $this->cart_contains_renewal();
 		}
 		return false;
 	}
