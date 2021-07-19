@@ -53,7 +53,7 @@ const useHideDelay = (
 			if (
 				isEventTriggeredWithin(
 					event,
-					triggerRef.current.firstChild
+					triggerRef.current?.firstChild
 				) ||
 				isEventTriggeredWithin( event, tooltipRef.current )
 			) {
@@ -122,10 +122,13 @@ const Tooltip = ( {
 			}
 
 			const tooltipElement = tooltipWrapperRef.current;
+			const wrappedElement = wrapperRef.current?.firstChild;
+			if ( ! tooltipElement || ! wrappedElement ) {
+				return;
+			}
 
 			tooltipElement.style.maxWidth = maxWidth;
 
-			const wrappedElement = wrapperRef.current.firstChild;
 			const wrappedElementRect = wrappedElement.getBoundingClientRect();
 			const tooltipElementRect = tooltipElement.getBoundingClientRect();
 
