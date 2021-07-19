@@ -1,5 +1,4 @@
 /** @format */
-/* eslint-disable max-len */
 
 /**
  * External dependencies
@@ -139,6 +138,7 @@ const UpeSetupBanner = () => {
 				</h3>
 				<p>
 					{ __(
+						/* eslint-disable-next-line max-len */
 						'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.',
 						'woocommerce-payments'
 					) }
