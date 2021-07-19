@@ -67,6 +67,26 @@ describe( 'Deposits list', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test( 'renders correctly a single deposit', () => {
+		useDeposits.mockReturnValue( {
+			deposits: mockDeposits,
+			depositsCount: 1,
+			isLoading: false,
+		} );
+
+		useDepositsSummary.mockReturnValue( {
+			depositsSummary: {
+				count: 1,
+				total: 5000,
+				store_currencies: [ 'usd' ],
+			},
+			isLoading: false,
+		} );
+
+		const { container } = render( <DepositsList /> );
+		expect( container ).toMatchSnapshot();
+	} );
+
 	test( 'renders table summary only when the deposits summary data is available', () => {
 		useDeposits.mockReturnValue( {
 			deposits: mockDeposits,
