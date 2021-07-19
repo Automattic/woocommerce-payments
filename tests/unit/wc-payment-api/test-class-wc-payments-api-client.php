@@ -569,11 +569,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test getting initial oauth data.
+	 * Test getting initial onboarding data.
 	 *
 	 * @throws API_Exception
 	 */
-	public function test_get_oauth_data() {
+	public function test_get_onboarding_data() {
 		$this->mock_http_client
 			->expects( $this->once() )
 			->method( 'remote_request' )
@@ -609,7 +609,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					]
 				),
 				true,
-				true // get_oauth_data should use user token auth.
+				true // get_onboarding_data should use user token auth.
 			)
 			->willReturn(
 				[
@@ -622,7 +622,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			);
 
 		// Call the method under test.
-		$result = $this->payments_api_client->get_oauth_data(
+		$result = $this->payments_api_client->get_onboarding_data(
 			'http://localhost',
 			[
 				'a' => 1,
