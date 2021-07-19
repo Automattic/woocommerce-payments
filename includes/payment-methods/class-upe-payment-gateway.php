@@ -325,7 +325,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					strtolower( $currency ),
 					$save_payment_method,
 					$customer_id,
-				$this->get_level3_data_from_order( $order )
+					$this->get_level3_data_from_order( $order )
 				);
 			}
 		} elseif ( $token ) {
