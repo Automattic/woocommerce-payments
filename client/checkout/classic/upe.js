@@ -355,7 +355,6 @@ jQuery( function ( $ ) {
 			showError( 'Your payment information is incomplete.' );
 			return false;
 		}
-
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
 			const { error } = await api.getStripe().confirmPayment( {
@@ -476,7 +475,7 @@ jQuery( function ( $ ) {
 				formFields
 			);
 			const redirectUrl = response.redirect_url;
-			const { error } = await api.getStripe().confirmPayment( {
+			const upeConfig = {
 				element: upeElement,
 				confirmParams: {
 					return_url: redirectUrl,
@@ -484,7 +483,15 @@ jQuery( function ( $ ) {
 						billing_details: getBillingDetails( formFields ),
 					},
 				},
-			} );
+			};
+			let error;
+			if ( response.payment_needed ) {
+				( { error } = await api
+					.getStripe()
+					.confirmPayment( upeConfig ) );
+			} else {
+				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
+			}
 			if ( error ) {
 				throw error;
 			}
