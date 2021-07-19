@@ -6,11 +6,13 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
+import { isInTestMode, isSiteUsingHttps } from 'utils';
 
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
 	wpcomReconnectUrl,
+	isSSLCheckoutEnforced,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
@@ -73,5 +75,23 @@ export const getTasks = ( {
 				window.location.href = wpcomReconnectUrl;
 			},
 		},
+		! isInTestMode() &&
+			! isSiteUsingHttps() &&
+			'yes' !== isSSLCheckoutEnforced && {
+				key: 'force-secure-checkout',
+				title: __( 'Force secure checkout', 'woocommerce-payments' ),
+				content: __(
+					'Protect your customers data and increase trustworthiness of your store by forcing HTTPS on checkout pages.',
+					'woocommerce-payments'
+				),
+				completed: false,
+				action: () => {
+					window.open(
+						'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
+						'_blank'
+					);
+				},
+				actionLabel: __( 'Read more', 'woocommerce-payments' ),
+			},
 	].filter( Boolean );
 };
