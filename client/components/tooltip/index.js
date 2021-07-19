@@ -1,15 +1,10 @@
 /**
  * External dependencies
  */
-import React, {
-	useEffect,
-	useLayoutEffect,
-	useRef,
-	useState,
-	memo,
-} from 'react';
+import React, { useEffect, useRef, useState, memo } from 'react';
 import { createPortal } from 'react-dom';
 import classNames from 'classnames';
+import { debounce } from 'lodash';
 
 /**
  * Internal dependencies
@@ -119,31 +114,48 @@ const Tooltip = ( {
 		tooltipRef: tooltipWrapperRef,
 	} );
 
-	useLayoutEffect( () => {
-		// calculate the position of the tooltip based on the wrapper's bounding rect
-		if ( ! isTooltipVisible ) {
-			return;
-		}
+	useEffect( () => {
+		const calculateTooltipPosition = () => {
+			// calculate the position of the tooltip based on the wrapper's bounding rect
+			if ( ! isTooltipVisible ) {
+				return;
+			}
 
-		tooltipWrapperRef.current.style.maxWidth = maxWidth;
+			const tooltipElement = tooltipWrapperRef.current;
 
-		const wrappedElementRect = wrapperRef.current.firstChild.getBoundingClientRect();
-		const tooltipElementRect = tooltipWrapperRef.current.getBoundingClientRect();
+			tooltipElement.style.maxWidth = maxWidth;
 
-		const tooltipHeight = tooltipElementRect.height;
-		tooltipWrapperRef.current.style.top = `${
-			wrappedElementRect.top - tooltipHeight - 8
-		}px`;
-		const elementMiddle =
-			wrappedElementRect.width / 2 + wrappedElementRect.left;
-		const tooltipWidth = tooltipElementRect.width;
-		tooltipWrapperRef.current.style.left = `${
-			elementMiddle - tooltipWidth / 2
-		}px`;
+			const wrappedElement = wrapperRef.current.firstChild;
+			const wrappedElementRect = wrappedElement.getBoundingClientRect();
+			const tooltipElementRect = tooltipElement.getBoundingClientRect();
 
-		// make it visible only after all the calculations are done.
-		tooltipWrapperRef.current.style.visibility = 'visible';
-		tooltipWrapperRef.current.style.opacity = 1;
+			const tooltipHeight = tooltipElementRect.height;
+			tooltipElement.style.top = `${
+				wrappedElementRect.top - tooltipHeight - 8
+			}px`;
+			const elementMiddle =
+				wrappedElement.offsetWidth / 2 + wrappedElementRect.left;
+			const tooltipWidth = tooltipElement.offsetWidth;
+			tooltipElement.style.left = `${
+				elementMiddle - tooltipWidth / 2
+			}px`;
+
+			// make it visible only after all the calculations are done.
+			tooltipElement.style.visibility = 'visible';
+			tooltipElement.style.opacity = 1;
+		};
+
+		calculateTooltipPosition();
+
+		const debouncedCalculation = debounce( calculateTooltipPosition, 150 );
+
+		document.addEventListener( 'resize', debouncedCalculation );
+		document.addEventListener( 'scroll', debouncedCalculation );
+
+		return () => {
+			document.removeEventListener( 'resize', debouncedCalculation );
+			document.removeEventListener( 'scroll', debouncedCalculation );
+		};
 	}, [ isTooltipVisible, maxWidth ] );
 
 	return (
