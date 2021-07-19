@@ -91,7 +91,7 @@ export const getTasks = ( {
 				window.location.href = wpcomReconnectUrl;
 			},
 		},
-		additionalMethodsSetup.showTask &&
+		additionalMethodsSetup.isTaskVisible &&
 			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
 	].filter( Boolean );
 };

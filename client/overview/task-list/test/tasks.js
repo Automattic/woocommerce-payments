@@ -116,13 +116,13 @@ describe( 'getTasks()', () => {
 			jest.restoreAllMocks();
 		} );
 
-		it( 'renders task if `showTask` is true', () => {
+		it( 'renders task if `isTaskVisible` is true', () => {
 			createAdditionalMethodsSetupTask.mockReturnValue( {
 				key: 'woocommerce-payments--additional-payment-methods',
 			} );
 
 			const actual = getTasks( {
-				additionalMethodsSetup: { showTask: true },
+				additionalMethodsSetup: { isTaskVisible: true },
 				accountStatus: {},
 			} );
 
@@ -135,13 +135,13 @@ describe( 'getTasks()', () => {
 			);
 		} );
 
-		it( 'does not render task if `showTask` is false', () => {
+		it( 'does not render task if `isTaskVisible` is false', () => {
 			createAdditionalMethodsSetupTask.mockReturnValue( {
 				key: 'woocommerce-payments--additional-payment-methods',
 			} );
 
 			const actual = getTasks( {
-				additionalMethodsSetup: { showTask: false },
+				additionalMethodsSetup: { isTaskVisible: false },
 				accountStatus: {},
 			} );
 
@@ -156,7 +156,7 @@ describe( 'getTasks()', () => {
 
 		it( 'receives callback updating window.~.isSetupCompleted as setSetupCompleted()', () => {
 			getTasks( {
-				additionalMethodsSetup: { showTask: true },
+				additionalMethodsSetup: { isTaskVisible: true },
 				accountStatus: {},
 			} );
 
@@ -170,7 +170,7 @@ describe( 'getTasks()', () => {
 
 		it( 'receives callback updating window.~.isUpeEnabled as setUpeEnabled()', () => {
 			getTasks( {
-				additionalMethodsSetup: { showTask: true },
+				additionalMethodsSetup: { isTaskVisible: true },
 				accountStatus: {},
 			} );
 
