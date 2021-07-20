@@ -218,7 +218,7 @@ describe( 'PaymentMethods', () => {
 		}
 	);
 
-	test( 'renders the Feedback/Disable Header when UPE is enabled', () => {
+	test( 'renders the feedback elements when UPE is enabled', () => {
 		render(
 			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
 				<PaymentMethods />
@@ -229,9 +229,12 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		expect( disableUPEButton ).toBeInTheDocument();
+		expect( screen.queryByText( 'Payment methods' ) ).toHaveTextContent(
+			'Payment methods Early access'
+		);
 	} );
 
-	test( 'Does not render the Feedback/Disable Header when UPE is disabled', () => {
+	test( 'Does not render the feedback elements when UPE is disabled', () => {
 		render(
 			<WcPayUpeContextProvider defaultIsUpeEnabled={ false }>
 				<PaymentMethods />
@@ -243,6 +246,9 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		expect( disableUPEButton ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Payment methods' )
+		).not.toBeInTheDocument();
 	} );
 
 	test( 'clicking "Enable in your store" in express payments enable UPE and redirects', async () => {

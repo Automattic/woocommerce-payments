@@ -38,6 +38,7 @@ import GiropayIcon from '../gateway-icons/giropay';
 import SofortIcon from '../gateway-icons/sofort';
 import SepaIcon from '../gateway-icons/sepa';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
+import Pill from '../components/pill';
 
 const methodsConfiguration = {
 	card: {
@@ -201,36 +202,34 @@ const PaymentMethods = () => {
 				} ) }
 			>
 				{ isUpeEnabled && (
-					<CardHeader
-						size={ null }
-						className="payment-methods-header"
-					>
+					<CardHeader className="payment-methods__header">
+						<h4 className="payment-methods__heading">
+							Payment methods <Pill>Early access</Pill>
+						</h4>
 						<PaymentMethodsDropdownMenu />
 					</CardHeader>
 				) }
-				<CardBody>
-					{ isUpeEnabled && (
-						<PaymentMethodsList className="payment-methods__enabled-methods">
-							{ enabledMethods.map(
-								( { id, label, description, Icon } ) => (
-									<PaymentMethod
-										key={ id }
-										Icon={ Icon }
-										onDeleteClick={
-											1 < enabledMethods.length
-												? handleDeleteClick
-												: undefined
-										}
-										id={ id }
-										label={ label }
-										description={ description }
-									/>
-								)
-							) }
-						</PaymentMethodsList>
-					) }
-				</CardBody>
 
+				<CardBody size={ null }>
+					<PaymentMethodsList className="payment-methods__enabled-methods">
+						{ enabledMethods.map(
+							( { id, label, description, Icon } ) => (
+								<PaymentMethod
+									key={ id }
+									Icon={ Icon }
+									onDeleteClick={
+										1 < enabledMethods.length
+											? handleDeleteClick
+											: undefined
+									}
+									id={ id }
+									label={ label }
+									description={ description }
+								/>
+							)
+						) }
+					</PaymentMethodsList>
+				</CardBody>
 				{ isUpeSettingsPreviewEnabled && ! isUpeFeatureEnabled && (
 					<UpeSetupBanner />
 				) }
