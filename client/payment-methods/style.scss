@@ -1,6 +1,20 @@
 .payment-methods {
 	position: relative;
 
+	&__header {
+		justify-content: space-between;
+
+		.components-dropdown-menu__toggle.has-icon {
+			padding: 0;
+			min-width: unset;
+		}
+	}
+
+	&__heading {
+		margin: 0;
+		font-size: 16px;
+	}
+
 	&__available-methods-container {
 		@include modal-footer-buttons-left;
 		align-items: center;

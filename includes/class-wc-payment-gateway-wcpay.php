@@ -589,6 +589,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'publishableKey'           => $this->account->get_publishable_key( $this->is_in_test_mode() ),
 			'accountId'                => $this->account->get_stripe_account_id(),
 			'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
+			'wcAjaxUrl'                => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'createSetupIntentNonce'   => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 			'createPaymentIntentNonce' => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
 			'updatePaymentIntentNonce' => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
