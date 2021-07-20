@@ -17,6 +17,7 @@ export const getTasks = ( {
 	showUpdateDetailsTask,
 	additionalMethodsSetup = {},
 	wpcomReconnectUrl,
+	isAccountOverviewTasksEnabled,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
@@ -45,41 +46,43 @@ export const getTasks = ( {
 	}
 
 	return [
-		'yes' === showUpdateDetailsTask && {
-			key: 'update-business-details',
-			level: 1,
-			title: __(
-				'Update WooCommerce Payments business details',
-				'woocommerce-payments'
-			),
-			additionalInfo: accountDetailsTaskDescription,
-			completed: 'complete' === status,
-			onClick:
-				'complete' === status
-					? undefined
-					: () => {
-							window.open( accountLink, '_blank' );
-					  },
-			visible: true,
-			type: 'extension',
-		},
-		wpcomReconnectUrl && {
-			key: 'reconnect-wpcom-user',
-			level: 1,
-			title: __(
-				'Reconnect WooCommerce Payments',
-				'woocommerce-payments'
-			),
-			content: __(
-				'WooCommerce Payments is missing a connected WordPress.com account. ' +
-					'Some functionality will be limited without a connected account.',
-				'woocommerce-payments'
-			),
-			completed: false,
-			onClick: () => {
-				window.location.href = wpcomReconnectUrl;
+		isAccountOverviewTasksEnabled &&
+			'yes' === showUpdateDetailsTask && {
+				key: 'update-business-details',
+				level: 1,
+				title: __(
+					'Update WooCommerce Payments business details',
+					'woocommerce-payments'
+				),
+				additionalInfo: accountDetailsTaskDescription,
+				completed: 'complete' === status,
+				onClick:
+					'complete' === status
+						? undefined
+						: () => {
+								window.open( accountLink, '_blank' );
+						  },
+				visible: true,
+				type: 'extension',
 			},
-		},
+		isAccountOverviewTasksEnabled &&
+			wpcomReconnectUrl && {
+				key: 'reconnect-wpcom-user',
+				level: 1,
+				title: __(
+					'Reconnect WooCommerce Payments',
+					'woocommerce-payments'
+				),
+				content: __(
+					'WooCommerce Payments is missing a connected WordPress.com account. ' +
+						'Some functionality will be limited without a connected account.',
+					'woocommerce-payments'
+				),
+				completed: false,
+				onClick: () => {
+					window.location.href = wpcomReconnectUrl;
+				},
+			},
 		additionalMethodsSetup.isTaskVisible &&
 			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
 	].filter( Boolean );

@@ -18,6 +18,7 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 			},
 			showUpdateDetailsTask: 'yes',
+			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -39,6 +40,7 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 			},
 			showUpdateDetailsTask: 'no',
+			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -59,6 +61,7 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 			},
 			showUpdateDetailsTask: 'yes',
+			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -77,6 +80,7 @@ describe( 'getTasks()', () => {
 				status: 'complete',
 			},
 			wpcomReconnectUrl: 'http://example.com',
+			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -95,6 +99,7 @@ describe( 'getTasks()', () => {
 				status: 'complete',
 			},
 			wpcomReconnectUrl: null,
+			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -124,6 +129,7 @@ describe( 'getTasks()', () => {
 			const actual = getTasks( {
 				additionalMethodsSetup: { isTaskVisible: true },
 				accountStatus: {},
+				isAccountOverviewTasksEnabled: true,
 			} );
 
 			expect( actual ).toEqual(
@@ -143,6 +149,7 @@ describe( 'getTasks()', () => {
 			const actual = getTasks( {
 				additionalMethodsSetup: { isTaskVisible: false },
 				accountStatus: {},
+				isAccountOverviewTasksEnabled: true,
 			} );
 
 			expect( actual ).toEqual(

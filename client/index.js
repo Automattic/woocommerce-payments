@@ -174,14 +174,11 @@ addFilter(
 			featureFlags: { accountOverviewTaskList },
 		} = wcpaySettings;
 
-		if ( ! Boolean( accountOverviewTaskList ) ) {
-			return tasks;
-		}
-
 		const wcPayTasks = getTasks( {
 			accountStatus,
 			showUpdateDetailsTask,
 			additionalMethodsSetup,
+			isAccountOverviewTasksEnabled: accountOverviewTaskList,
 		} );
 
 		return [ ...tasks, ...wcPayTasks ];
