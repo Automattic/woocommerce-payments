@@ -28,7 +28,7 @@ const OverviewPage = () => {
 		additionalMethodsSetup,
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
-		isSSLCheckoutEnforced,
+		isGatewayAvailable,
 	} = wcpaySettings;
 
 	const tasks = getTasks( {
@@ -36,7 +36,7 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		additionalMethodsSetup,
 		wpcomReconnectUrl,
-		isSSLCheckoutEnforced,
+		isGatewayAvailable,
 	} );
 	const queryParams = getQuery();
 

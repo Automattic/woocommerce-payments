@@ -94,12 +94,3 @@ export const formatDateValue = ( date, upperBound = false ) => {
 		)
 	);
 };
-
-/**
- * Returns true if the site is using https.
- *
- * @return {boolean} True if window.location.protocol is https.
- */
-export const isSiteUsingHttps = () => {
-	return 'https:' === window.location.protocol;
-};

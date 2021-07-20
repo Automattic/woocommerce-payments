@@ -498,7 +498,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function is_available() {
 		// Disable the gateway if using live mode without HTTPS set up.
-		if ( ! $this->is_in_test_mode() && ( ! wc_site_is_https() || 'yes' !== get_option( 'woocommerce_force_ssl_checkout' ) ) ) {
+		if ( ! $this->is_in_test_mode() && ! wc_checkout_is_https() ) {
 			return false;
 		}
 

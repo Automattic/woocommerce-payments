@@ -279,7 +279,7 @@ class WC_Payments_Admin {
 				'isUpeSettingsPreviewEnabled' => WC_Payments_Features::is_upe_settings_preview_enabled(),
 				'isUpeEnabled'                => WC_Payments_Features::is_upe_enabled(),
 			],
-			'isSSLCheckoutEnforced'  => get_option( 'woocommerce_force_ssl_checkout', 'no' ),
+			'isGatewayAvailable'     => $this->wcpay_gateway->is_available(),
 		];
 
 		wp_localize_script(
