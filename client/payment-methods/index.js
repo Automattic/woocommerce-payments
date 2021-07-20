@@ -238,7 +238,7 @@ const PaymentMethods = () => {
 					<>
 						<CardDivider />
 						<CardBody className="payment-methods__available-methods-container">
-							<PaymentMethodsSelector className="payment-methods__add-payment-method" />
+							<PaymentMethodsSelector />
 							<ul className="payment-methods__available-methods">
 								{ disabledMethods.map(
 									( { id, label, Icon } ) => (
