@@ -38,7 +38,6 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* United States-based business.
 * WordPress 5.5 or newer.
 * WooCommerce 5.2 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
@@ -57,11 +56,9 @@ Install and activate the WooCommerce and WooCommerce Payments plugins, if you ha
 
 = What countries and currencies are supported? =
 
-If you are an individual or business based in the United States, you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world.
+If you are an individual or business based in [one of these countries](https://docs.woocommerce.com/document/payments/countries/#section-1), you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world.
 
 We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooCommerce Payments launch next](https://woocommerce.com/payments/#request-invite).
-
-[Learn more](https://docs.woocommerce.com/document/payments/countries/).
 
 = Why is a WordPress.com account and connection required? =
 
@@ -103,6 +100,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 2.8.0 - 2021-xx-xx =
 * Add - Use date picker for applicable dispute evidence fields.
+* Fix - Avoid crash when seeing the details of an empty deposit.
 * Fix - Disabled Payment Request Buttons when order has to be split into multiple packages because Payment Requests do not support that use case.
 
 = 2.7.0 - 2021-07-14 =
