@@ -9,23 +9,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import './styles.scss';
-import { useDefaultCurrency, useEnabledCurrencies } from 'data';
-
-/**
- * List of analytics pages where currency is used.
- *
- * @return {string[]} The list of pages.
- */
-const getPages = () => {
-	return [
-		'orders',
-		'revenue',
-		'products',
-		'categories',
-		'coupons',
-		'taxes',
-	];
-};
+import { useDefaultCurrency } from 'data';
 
 addFilter(
 	'woocommerce_admin_report_table',
@@ -35,7 +19,6 @@ addFilter(
 
 		// If we don't need to or are unable to add the column, just return the table data.
 		if (
-			! getPages().includes( tableData.endpoint ) ||
 			! tableData.items ||
 			! tableData.items.data ||
 			! tableData.items.data.length
@@ -78,8 +61,10 @@ addFilter(
 					};
 				}
 
+				// Note that the exchange rate we store is for default currency => customer currency,
+				// so we need to flip it and find the inverse for this conversion.
 				const netTotal = shouldConvert
-					? item.net_total * exchangeRate
+					? item.net_total * ( 1 / exchangeRate )
 					: item.net_total;
 
 				return {
@@ -105,39 +90,8 @@ addFilter(
 	}
 );
 
-getPages.forEach( ( page ) => {
-	addFilter(
-		`woocommerce_admin_${ page }_report_filters`,
-		'woocommerce-payments',
-		( filters ) => {
-			const defaultCurrency = useDefaultCurrency();
-			const enabledCurrencies = useEnabledCurrencies();
-
-			const filterByCurrency = {
-				label: 'test', // todo: set the label in data
-				staticParams: [],
-				param: 'currency',
-				showFilters: () => true,
-				defaultValue: defaultCurrency,
-				filters: [ ...( enabledCurrencies || [] ) ],
-			};
-
-			return [ ...filters, filterByCurrency ];
-		}
-	);
-} );
-
 addFilter(
-	'woocommerce_admin_persisted_queries',
-	'woocommerce-payments',
-	( params ) => {
-		params.push( 'currency' );
-		return params;
-	}
-);
-
-addFilter(
-	'woocmmerce_admin_report_currency',
+	'woocommerce_admin_report_currency',
 	'woocommerce-payments',
 	( config, { currency } ) => {
 		// If currency is in the query string, e.g. ?currency=EUR

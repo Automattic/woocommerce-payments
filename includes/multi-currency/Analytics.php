@@ -18,21 +18,6 @@ class Analytics {
 	const SCRIPT_NAME    = 'WCPAY_MULTI_CURRENCY_ANALYTICS';
 
 	/**
-	 * A list of all the pages in the WC Admin analytics section that
-	 * we want to add multi-currency filters to.
-	 *
-	 * @var string[]
-	 */
-	const ANALYTICS_PAGES = [
-		'orders',
-		'revenue',
-		'products',
-		'categories',
-		'coupons',
-		'taxes',
-	];
-
-	/**
 	 * Instance of MultiCurrency.
 	 *
 	 * @var MultiCurrency $multi_currency
@@ -62,11 +47,6 @@ class Analytics {
 		// If we aren't making a REST request, return before adding these filters.
 		if ( ! WC()->is_rest_api_request() ) {
 			return;
-		}
-
-		foreach ( self::ANALYTICS_PAGES as $analytics_page ) {
-			add_filter( "woocommerce_analytics_{$analytics_page}_query_args", [ $this, 'filter_stats_by_currency' ], self::PRIORITY_EARLY );
-			add_filter( "woocommerce_analytics_{$analytics_page}_stats_query_args", [ $this, 'filter_stats_by_currency' ], self::PRIORITY_EARLY );
 		}
 
 		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ] );
@@ -180,17 +160,5 @@ class Analytics {
 		}
 
 		return $clauses;
-	}
-
-	/**
-	 * Applied when loading a stats page to filter stats by the selected currency.
-	 *
-	 * @param array $args Arguments passed in from the filter.
-	 *
-	 * @return array
-	 */
-	public function filter_stats_by_currency( $args ): array {
-		$args['currency'] = $this->get_active_currency();
-		return $args;
 	}
 }
