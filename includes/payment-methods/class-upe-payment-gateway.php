@@ -39,7 +39,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	const METHOD_ENABLED_KEY = 'enabled';
 
-	const UPE_APPEARANCE_TRANSIENT = 'upe_appearance';
+	const UPE_APPEARANCE_TRANSIENT = 'wcpay_upe_appearance';
 
 	/**
 	 * Array mapping payment method string IDs to classes
@@ -502,7 +502,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['addPaymentReturnURL']    = wc_get_account_endpoint_url( 'payment-methods' );
 		$payment_fields['gatewayId']              = self::GATEWAY_ID;
 		$payment_fields['paymentMethodsConfig']   = $this->get_enabled_payment_method_config();
-		$payment_fields['upeAppareance']          = get_transient( self::UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['upeAppeareance']         = get_transient( self::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['saveUPEAppearanceNonce'] = wp_create_nonce( 'wcpay_save_upe_appearance_nonce' );
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {

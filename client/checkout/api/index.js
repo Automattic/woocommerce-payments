@@ -393,7 +393,6 @@ export default class WCPayAPI {
 	 */
 	saveUPEAppearance( appearance ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
-			// eslint-disable-next-line camelcase
 			appearance,
 			action: 'save_upe_appearance',
 			// eslint-disable-next-line camelcase
