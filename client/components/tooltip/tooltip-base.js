@@ -61,13 +61,13 @@ const useHideDelay = (
 	useEffect( () => {
 		if ( ! isVisible ) return;
 
-		// immediately close this tooltip if another one opens
+		// immediately hide this tooltip if another one opens
 		const handleHideElement = () => {
 			setIsVisible( false );
 			onHideCallbackRef.current();
 		};
 
-		// do not close the tooltip if a click event has occurred and the click happened within the tooltip or within the wrapped element
+		// do not hide the tooltip if a click event has occurred and the click happened within the tooltip or within the wrapped element
 		const handleDocumentClick = ( event ) => {
 			if (
 				isEventTriggeredWithin(
@@ -128,7 +128,7 @@ const TooltipBase = ( {
 	const wrapperRef = useRef( null );
 	const tooltipWrapperRef = useRef( null );
 
-	// using a delayed close, to allow the fade-out animation to complete
+	// using a delayed hide, to allow the fade-out animation to complete
 	const isTooltipVisible = useHideDelay( isVisible, {
 		hideDelayMs,
 		triggerRef: wrapperRef,
@@ -194,7 +194,7 @@ const TooltipBase = ( {
 						ref={ tooltipWrapperRef }
 						className={ classNames(
 							'wcpay-tooltip__tooltip-wrapper',
-							{ 'is-closing': ! isVisible }
+							{ 'is-hiding': ! isVisible }
 						) }
 					>
 						<div

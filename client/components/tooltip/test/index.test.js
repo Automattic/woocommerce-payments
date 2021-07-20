@@ -14,7 +14,7 @@ import Tooltip from '..';
 jest.useFakeTimers();
 
 describe( 'Tooltip', () => {
-	it( 'does not render its content when closed', () => {
+	it( 'does not render its content when hidden', () => {
 		const handleHideMock = jest.fn();
 		render(
 			<Tooltip
@@ -81,7 +81,7 @@ describe( 'Tooltip', () => {
 		expect( handleHideMock ).toHaveBeenCalled();
 	} );
 
-	it( 'asks other Tooltips to close, when multiple are opened', () => {
+	it( 'asks other Tooltips to hide, when multiple are opened', () => {
 		const handleHide1Mock = jest.fn();
 		const handleHide2Mock = jest.fn();
 		render(
@@ -106,7 +106,7 @@ describe( 'Tooltip', () => {
 		expect( handleHide1Mock ).not.toHaveBeenCalled();
 		expect( handleHide2Mock ).not.toHaveBeenCalled();
 
-		// opening the first tooltip, no need to call any close handlers
+		// opening the first tooltip, no need to call any hide handlers
 		act( () => userEvent.click( screen.getByText( 'Open tooltip 1' ) ) );
 
 		expect( screen.queryByText( 'Tooltip 1 content' ) ).toBeInTheDocument();
