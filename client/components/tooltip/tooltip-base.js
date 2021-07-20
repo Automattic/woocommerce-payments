@@ -115,7 +115,7 @@ const TooltipBase = ( {
 	className,
 	children,
 	content,
-	closeDelay,
+	closeDelayMs,
 	isOpen,
 	onClose,
 	maxWidth = '250px',
@@ -125,7 +125,7 @@ const TooltipBase = ( {
 
 	// using a delayed close, to allow the fade-out animation to complete
 	const isTooltipVisible = useHideDelay( isOpen, {
-		hideDelay: closeDelay,
+		hideDelay: closeDelayMs,
 		triggerRef: wrapperRef,
 		tooltipRef: tooltipWrapperRef,
 		onClose,
