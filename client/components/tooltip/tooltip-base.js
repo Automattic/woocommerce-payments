@@ -24,6 +24,11 @@ const useHideDelay = (
 	const [ isVisible, setIsVisible ] = useState( isVisibleProp );
 	// not using state for this, we don't need to cause a re-render
 	const hasMountedRef = useRef( false );
+	const onHideCallbackRef = useRef( onHide );
+
+	useEffect( () => {
+		onHideCallbackRef.current = onHide;
+	}, [ onHide ] );
 
 	// hide delay
 	useEffect( () => {
@@ -44,13 +49,13 @@ const useHideDelay = (
 		// element is marked as not visible, hide it after `hideDelayMs` milliseconds
 		timer = setTimeout( () => {
 			setIsVisible( false );
-			onHide();
+			onHideCallbackRef.current();
 		}, hideDelayMs );
 
 		return () => {
 			clearTimeout( timer );
 		};
-	}, [ setIsVisible, hideDelayMs, isVisibleProp, onHide ] );
+	}, [ setIsVisible, hideDelayMs, isVisibleProp ] );
 
 	// listen to other events to hide
 	useEffect( () => {
@@ -59,7 +64,7 @@ const useHideDelay = (
 		// immediately close this tooltip if another one opens
 		const handleHideElement = () => {
 			setIsVisible( false );
-			onHide();
+			onHideCallbackRef.current();
 		};
 
 		// do not close the tooltip if a click event has occurred and the click happened within the tooltip or within the wrapped element
@@ -75,7 +80,7 @@ const useHideDelay = (
 			}
 
 			setIsVisible( false );
-			onHide();
+			onHideCallbackRef.current();
 		};
 
 		document.addEventListener( 'click', handleDocumentClick );
@@ -88,7 +93,7 @@ const useHideDelay = (
 				handleHideElement
 			);
 		};
-	}, [ isVisible, triggerRef, tooltipRef, onHide ] );
+	}, [ isVisible, triggerRef, tooltipRef ] );
 
 	return isVisible;
 };
