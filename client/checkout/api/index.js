@@ -391,6 +391,35 @@ export default class WCPayAPI {
 				}
 			} );
 	}
+
+	/**
+	 * Saves the calculated UPE appearance values in a transient.
+	 *
+	 * @param {Object} appearance The UPE appearance object with style values
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	saveUPEAppearance( appearance ) {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			appearance,
+			action: 'save_upe_appearance',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
+		} )
+			.then( ( response ) => {
+				// There is not any action to take or harm caused by a failed update, so just returning success status.
+				return response.success;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajaxrequest.
+					throw new Error( error.statusText );
+				}
+			} );
+	}
+
 	/**
 	 * Process checkout and update payment intent via AJAX.
 	 *

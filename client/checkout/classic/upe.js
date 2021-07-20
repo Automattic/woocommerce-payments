@@ -269,9 +269,15 @@ jQuery( function ( $ ) {
 				const { client_secret: clientSecret, id: id } = response;
 				paymentIntentId = id;
 
-				hiddenElementsForUPE.init();
-				const appearance = getAppearance();
-				hiddenElementsForUPE.cleanup();
+				let appearance = getConfig( 'upeAppeareance' );
+
+				if ( ! appearance ) {
+					hiddenElementsForUPE.init();
+					appearance = getAppearance();
+					hiddenElementsForUPE.cleanup();
+					api.saveUPEAppearance( appearance );
+				}
+
 				const businessName = getConfig( 'accountDescriptor' );
 				const upeSettings = {
 					clientSecret,

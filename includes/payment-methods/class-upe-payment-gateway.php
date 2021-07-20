@@ -39,6 +39,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	const METHOD_ENABLED_KEY = 'enabled';
 
+	const UPE_APPEARANCE_TRANSIENT = 'wcpay_upe_appearance';
+
 	/**
 	 * Array mapping payment method string IDs to classes
 	 *
@@ -67,6 +69,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
+
+		add_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
+		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
+		add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
 
 		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
 	}
@@ -522,12 +528,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function get_payment_fields_js_config() {
-		$payment_fields                         = parent::get_payment_fields_js_config();
-		$payment_fields['accountDescriptor']    = $this->get_account_statement_descriptor();
-		$payment_fields['addPaymentReturnURL']  = wc_get_account_endpoint_url( 'payment-methods' );
-		$payment_fields['gatewayId']            = self::GATEWAY_ID;
-		$payment_fields['paymentMethodsConfig'] = $this->get_enabled_payment_method_config();
-		$payment_fields['isCheckout']           = is_checkout();
+		$payment_fields                           = parent::get_payment_fields_js_config();
+		$payment_fields['accountDescriptor']      = $this->get_account_statement_descriptor();
+		$payment_fields['addPaymentReturnURL']    = wc_get_account_endpoint_url( 'payment-methods' );
+		$payment_fields['gatewayId']              = self::GATEWAY_ID;
+		$payment_fields['isCheckout']             = is_checkout();
+		$payment_fields['paymentMethodsConfig']   = $this->get_enabled_payment_method_config();
+		$payment_fields['saveUPEAppearanceNonce'] = wp_create_nonce( 'wcpay_save_upe_appearance_nonce' );
+		$payment_fields['upeAppeareance']         = get_transient( self::UPE_APPEARANCE_TRANSIENT );
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->is_subscriptions_enabled() && $this->is_changing_payment_method_for_subscription() ) {
@@ -720,6 +728,44 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$methods
 			)
 		);
+	}
+
+	/**
+	 * Handle AJAX request for saving UPE appearance value to transient.
+	 *
+	 * @throws Exception - If nonce or setup intent is invalid.
+	 */
+	public function save_upe_appearance_ajax() {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_save_upe_appearance_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Exception(
+					__( 'Unable to update UPE appearance values at this time.', 'woocommerce-payments' )
+				);
+			}
+
+			$appearance = isset( $_POST['appearance'] ) ? wc_clean( wp_unslash( $_POST['appearance'] ) ) : null;
+			if ( null !== $appearance ) {
+				set_transient( self::UPE_APPEARANCE_TRANSIENT, $appearance, DAY_IN_SECONDS );
+			}
+			wp_send_json_success( $appearance, 200 );
+		} catch ( Exception $e ) {
+			// Send back error so it can be displayed to the customer.
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+		}
+	}
+
+	/**
+	 * Clear the saved UPE appearance transient value.
+	 */
+	public function clear_upe_appearance_transient() {
+		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
 	}
 
 	/**
