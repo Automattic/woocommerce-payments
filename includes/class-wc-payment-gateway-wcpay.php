@@ -1462,12 +1462,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $stripe_connected ) {
 				$description = WC_Payments_Utils::esc_interpolated_html(
 					/* translators: 1) dashboard login URL */
-					'<a>' . __( 'View and edit account details', 'woocommerce-payments' ) . '</a>',
+					'<a>' . __( 'Overview account and edit details', 'woocommerce-payments' ) . '</a>',
 					[
-						'a' => '<a href="' . WC_Payments_Account::get_login_url() . '">',
+						'a' => '<a href="' . WC_Payments_Account::get_overview_page_url() . '">',
 					]
 				);
-				$description .= wp_kses_post( '<p class="description">' . __( 'You will automatically be <em>signed in to Stripe</em> with your WooCommerce Payments account.', 'woocommerce-payments' ) . '</p>' );
+				$description .= wp_kses_post( '<p class="description">' . __( 'Here you can manage your account and automatically <em>sign in to Stripe</em> with your WooCommerce Payments account.', 'woocommerce-payments' ) . '</p>' );
 			} else {
 				// This should never happen, if the account is not connected the merchant should have been redirected to the onboarding screen.
 				// @see WC_Payments_Account::maybe_redirect_to_onboarding.

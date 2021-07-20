@@ -320,22 +320,13 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
-				// Handle the error within the WooCommerce Admin-powered app.
-				if ( self::is_overview_page() ) {
-					wp_safe_redirect(
-						add_query_arg(
-							[ 'wcpay-login-error' => '1' ],
-							self::get_overview_page_url()
-						)
-					);
-					exit;
-				}
-
-				// Display the notice in the traditional WooCommerce > Settings page.
-				$this->add_notice_to_settings_page(
-					__( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ),
-					'notice-error'
+				wp_safe_redirect(
+					add_query_arg(
+						[ 'wcpay-login-error' => '1' ],
+						self::get_overview_page_url()
+					)
 				);
+				exit;
 			}
 			return;
 		}
@@ -395,7 +386,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Stripe account login url.
 	 */
-	public static function get_login_url() {
+	private function get_login_url() {
 		return add_query_arg(
 			[
 				'wcpay-login' => '1',
@@ -512,9 +503,8 @@ class WC_Payments_Account {
 	private function redirect_to_login() {
 		// Clear account transient when generating Stripe dashboard's login link.
 		$this->clear_cache();
-		$redirect_url = $this->is_overview_page() ? $this->get_overview_page_url() : WC_Payment_Gateway_WCPay::get_settings_url();
-
-		$login_data = $this->payments_api_client->get_login_data( $redirect_url );
+		$redirect_url = $this->get_overview_page_url();
+		$login_data   = $this->payments_api_client->get_login_data( $redirect_url );
 		wp_safe_redirect( $login_data['url'] );
 		exit;
 	}
@@ -747,22 +737,6 @@ class WC_Payments_Account {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Adds a notice that will be forced to be visible on the settings page, despite WcAdmin hiding other notices.
-	 *
-	 * @param string $message Notice message.
-	 * @param string $classes Classes to apply, for example notice-error, notice-success.
-	 */
-	private function add_notice_to_settings_page( $message, $classes ) {
-		$classes .= ' wcpay-settings-notice'; // add a class that will be shown on the settings page.
-		add_filter(
-			'admin_notices',
-			function () use ( $message, $classes ) {
-				WC_Payments::display_admin_notice( $message, $classes );
-			}
-		);
 	}
 
 	/**
