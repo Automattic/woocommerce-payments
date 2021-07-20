@@ -31,6 +31,8 @@ addFilter(
 	'woocommerce_admin_report_table',
 	'woocommerce-payments',
 	( tableData ) => {
+		const storeDefaultCurrency = useDefaultCurrency();
+
 		// If we don't need to or are unable to add the column, just return the table data.
 		if (
 			! getPages().includes( tableData.endpoint ) ||
@@ -41,9 +43,7 @@ addFilter(
 			return tableData;
 		}
 
-		// debugger;
-
-		const newHeaders = [
+		const updatedHeaders = [
 			{
 				isNumeric: false,
 				isSortable: true,
@@ -58,21 +58,48 @@ addFilter(
 			...tableData.headers,
 		];
 
-		const newRows = tableData.rows.map( ( row, index ) => {
+		const updatedRows = tableData.rows.map( ( rows, index ) => {
 			const item = tableData.items.data[ index ];
 			const currency = item.order_currency;
+			const defaultCurrency = item.order_default_currency
+				? item.order_default_currency
+				: storeDefaultCurrency;
+			const exchangeRate = item.exchange_rate
+				? parseFloat( item.exchange_rate )
+				: 1.0;
+			const shouldConvert = currency !== defaultCurrency;
+
+			const newRows = rows.map( ( column, columnIndex ) => {
+				const key = tableData.headers[ columnIndex ].key;
+
+				if ( 'net_total' !== key || ! shouldConvert ) {
+					return {
+						...column,
+					};
+				}
+
+				const netTotal = shouldConvert
+					? item.net_total * exchangeRate
+					: item.net_total;
+
+				return {
+					...column,
+					display: '$' + netTotal.toFixed( 2 ),
+					value: parseFloat( netTotal.toFixed( 2 ) ),
+				};
+			} );
 
 			return [
 				{
 					display: currency,
 					value: currency,
 				},
-				...row,
+				...newRows,
 			];
 		} );
 
-		tableData.headers = newHeaders;
-		tableData.rows = newRows;
+		tableData.headers = updatedHeaders;
+		tableData.rows = updatedRows;
 
 		return tableData;
 	}
