@@ -34,6 +34,7 @@ import CreditCardIcon from '../gateway-icons/credit-card';
 import GiropayIcon from '../gateway-icons/giropay';
 import SofortIcon from '../gateway-icons/sofort';
 import SepaIcon from '../gateway-icons/sepa';
+import Pill from '../components/pill';
 
 const methodsConfiguration = {
 	card: {
@@ -152,46 +153,50 @@ const PaymentMethods = () => {
 			{ 'error' === status && <UpeDisableError /> }
 			<Card
 				className={ classNames( 'payment-methods', {
-					'loading-placeholder': 'pending' === status,
+					'is-loading': 'pending' === status,
 				} ) }
 			>
 				{ isUpeEnabled && (
-					<CardHeader
-						size={ null }
-						className="payment-methods-header"
-					>
+					<CardHeader className="payment-methods__header">
+						<h4 className="payment-methods__heading">
+							Payment methods <Pill>Early access</Pill>
+						</h4>
 						<PaymentMethodsDropdownMenu />
 					</CardHeader>
 				) }
-				<CardBody>
-					{ isUpeEnabled ? (
-						<PaymentMethodsList className="payment-methods__enabled-methods">
-							{ enabledMethods.map(
-								( { id, label, description, Icon } ) => (
-									<PaymentMethod
-										key={ id }
-										Icon={ Icon }
-										onDeleteClick={
-											1 < enabledMethods.length
-												? handleDeleteClick
-												: undefined
-										}
-										id={ id }
-										label={ label }
-										description={ description }
-									/>
-								)
-							) }
-						</PaymentMethodsList>
-					) : (
-						<UpeSetupBanner />
-					) }
+				<CardBody size={ null }>
+					<PaymentMethodsList className="payment-methods__enabled-methods">
+						{ enabledMethods.map(
+							( { id, label, description, Icon } ) => (
+								<PaymentMethod
+									key={ id }
+									Icon={ Icon }
+									onDeleteClick={
+										1 < enabledMethods.length
+											? handleDeleteClick
+											: undefined
+									}
+									id={ id }
+									label={ label }
+									description={ description }
+								/>
+							)
+						) }
+					</PaymentMethodsList>
 				</CardBody>
+				{ ! isUpeEnabled && (
+					<>
+						<CardDivider />
+						<CardBody>
+							<UpeSetupBanner />
+						</CardBody>
+					</>
+				) }
 				{ isUpeEnabled && 1 < availablePaymentMethodIds.length ? (
 					<>
 						<CardDivider />
 						<CardBody className="payment-methods__available-methods-container">
-							<PaymentMethodsSelector className="payment-methods__add-payment-method" />
+							<PaymentMethodsSelector />
 							<ul className="payment-methods__available-methods">
 								{ disabledMethods.map(
 									( { id, label, Icon } ) => (
