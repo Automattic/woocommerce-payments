@@ -15,11 +15,7 @@ export default async function confirmUPEPayment(
 	billingData,
 	emitResponse
 ) {
-	const name = (
-		billingData.first_name +
-		' ' +
-		billingData.last_name
-	).trim();
+	const name = `${ billingData.first_name } ${ billingData.last_name }`.trim();
 
 	try {
 		const confirmParams = {

@@ -75,7 +75,7 @@ const WCPayUPEFields = ( {
 		[ activePaymentMethod, isUPEComplete ]
 	);
 
-	// Once the server has completed payment processing, confirm the intent of necessary.
+	// Once the server has completed payment processing, confirm the intent if necessary.
 	useEffect(
 		() =>
 			onCheckoutAfterProcessingWithSuccess(
@@ -120,9 +120,16 @@ const WCPayUPEFields = ( {
 		},
 		fields: {
 			billingDetails: {
+				name: 'never',
+				email: 'never',
+				phone: 'never',
 				address: {
-					postalCode: 'never',
 					country: 'never',
+					line1: 'never',
+					line2: 'never',
+					city: 'never',
+					state: 'never',
+					postalCode: 'never',
 				},
 			},
 		},
