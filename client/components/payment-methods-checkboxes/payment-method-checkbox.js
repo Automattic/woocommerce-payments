@@ -72,7 +72,12 @@ const PaymentMethodCheckbox = ( { onChange, name, checked = false, fees } ) => {
 				onChange={ handleChange }
 				label={ label }
 			/>
-			<Tooltip content={ __( 'Base transaction fees', 'woocommerce-payments' ) }>
+			<Tooltip
+				content={ __(
+					'Base transaction fees',
+					'woocommerce-payments'
+				) }
+			>
 				<Pill
 					className="payment-method-checkbox__fees"
 					aria-label={ sprintf(
