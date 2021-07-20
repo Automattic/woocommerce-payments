@@ -161,7 +161,21 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( paymentMethodCheckbox );
 
 		expect( paymentMethodCheckbox ).toBeChecked();
+
+		// closing the modal, to ensure that no methods have been added
+		user.click(
+			screen.getByRole( 'button', {
+				name: 'Cancel',
+			} )
+		);
+
 		expect( updateEnabledPaymentMethodIdsMock ).not.toHaveBeenCalled();
+
+		// re-opening the modal should present all the checkboxes in the un-checked state
+		user.click( addPaymentMethodButton );
+		screen.getAllByRole( 'checkbox' ).forEach( ( checkbox ) => {
+			expect( checkbox ).not.toBeChecked();
+		} );
 	} );
 
 	test( 'Disables the "Add selected" button until at least one payment method is checked', () => {
