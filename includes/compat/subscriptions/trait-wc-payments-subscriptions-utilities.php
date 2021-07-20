@@ -55,6 +55,19 @@ trait WC_Payments_Subscriptions_Utilities {
 	}
 
 	/**
+	 * Returns boolean on whether current WC_Cart or WC_Subscriptions_Cart
+	 * contains a subscription or subscription renewal item
+	 *
+	 * @return bool
+	 */
+	public function is_subscription_item_in_cart() {
+		if ( $this->is_subscriptions_enabled() ) {
+			return WC_Subscriptions_Cart::cart_contains_subscription() || $this->cart_contains_renewal();
+		}
+		return false;
+	}
+
+	/**
 	 * Checks the cart to see if it contains a subscription product renewal.
 	 *
 	 * @return mixed The cart item containing the renewal as an array, else false.

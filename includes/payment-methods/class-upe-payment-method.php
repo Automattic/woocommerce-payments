@@ -13,8 +13,6 @@ use WP_User;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payment_Token_WCPay_SEPA;
-use WC_Subscriptions;
-use WC_Subscriptions_Cart;
 use WC_Payments_Subscriptions_Utilities;
 
 /**
@@ -114,18 +112,5 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_payment_token_for_user( $user, $payment_method_id ) {
 		return $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
-	}
-
-	/**
-	 * Returns boolean on whether current WC_Cart or WC_Subscriptions_Cart
-	 * contains a subscription or subscription renewal item
-	 *
-	 * @return bool
-	 */
-	public function is_subscription_item_in_cart() {
-		if ( $this->is_subscriptions_enabled() ) {
-			return WC_Subscriptions_Cart::cart_contains_subscription() || $this->cart_contains_renewal();
-		}
-		return false;
 	}
 }
