@@ -112,6 +112,19 @@ jQuery( function ( $ ) {
 	let upeElement = null;
 	let paymentIntentId = null;
 	let isUPEComplete = false;
+	const hiddenBillingFields = {
+		name: 'never',
+		email: 'never',
+		phone: 'never',
+		address: {
+			country: 'never',
+			line1: 'never',
+			line2: 'never',
+			city: 'never',
+			state: 'never',
+			postalCode: 'never',
+		},
+	};
 
 	/**
 	 * Block UI to indicate processing and avoid duplicate submission.
@@ -126,6 +139,15 @@ jQuery( function ( $ ) {
 				opacity: 0.6,
 			},
 		} );
+	};
+
+	/**
+	 * Unblock UI to remove overlay and loading icon
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 */
+	const unblockUI = ( $form ) => {
+		$form.removeClass( 'processing' ).unblock();
 	};
 
 	// Show error notice at top of checkout form.
@@ -184,6 +206,28 @@ jQuery( function ( $ ) {
 	};
 
 	/**
+	 * Converts form fields object into Stripe `billing_details` object.
+	 *
+	 * @param {Object} fields Object mapping checkout billing fields to values.
+	 * @return {Object} Stripe formatted `billing_details` object.
+	 */
+	const getBillingDetails = ( fields ) => {
+		return {
+			name: `${ fields.billing_first_name } ${ fields.billing_last_name }`.trim(),
+			email: fields.billing_email,
+			phone: fields.billing_phone,
+			address: {
+				country: fields.billing_country,
+				line1: fields.billing_address_1,
+				line2: fields.billing_address_2,
+				city: fields.billing_city,
+				state: fields.billing_state,
+				postal_code: fields.billing_postcode,
+			},
+		};
+	};
+
+	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
 	 * @param {boolean} isSetupIntent {Boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
@@ -196,6 +240,7 @@ jQuery( function ( $ ) {
 
 		// If paying from order, we need to create Payment Intent from order not cart.
 		const isOrderPay = getConfig( 'isOrderPay' );
+		const isCheckout = getConfig( 'isCheckout' );
 		let orderId;
 		if ( isOrderPay ) {
 			orderId = getConfig( 'orderId' );
@@ -205,10 +250,14 @@ jQuery( function ( $ ) {
 			? api.initSetupIntent()
 			: api.createIntent( orderId );
 
+		const $upeContainer = $( '#wcpay-upe-element' );
+		blockUI( $upeContainer );
+
 		intentAction
 			.then( ( response ) => {
 				// I repeat, do NOT mount UPE twice.
 				if ( upeElement || paymentIntentId ) {
+					unblockUI( $upeContainer );
 					return;
 				}
 
@@ -225,13 +274,20 @@ jQuery( function ( $ ) {
 				}
 
 				const businessName = getConfig( 'accountDescriptor' );
-
-				upeElement = elements.create( 'payment', {
+				const upeSettings = {
 					clientSecret,
 					appearance,
 					business: { name: businessName },
-				} );
+				};
+				if ( isCheckout && ! isOrderPay ) {
+					upeSettings.fields = {
+						billingDetails: hiddenBillingFields,
+					};
+				}
+
+				upeElement = elements.create( 'payment', upeSettings );
 				upeElement.mount( '#wcpay-upe-element' );
+				unblockUI( $upeContainer );
 				upeElement.on( 'change', ( event ) => {
 					const isPaymentMethodReusable =
 						paymentMethodsConfig[ event.value.type ].isReusable;
@@ -240,6 +296,7 @@ jQuery( function ( $ ) {
 				} );
 			} )
 			.catch( ( error ) => {
+				unblockUI( $upeContainer );
 				showError( error.message );
 				const gatewayErrorMessage =
 					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
@@ -304,7 +361,6 @@ jQuery( function ( $ ) {
 			showError( 'Your payment information is incomplete.' );
 			return false;
 		}
-
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
 			const { error } = await api.getStripe().confirmPayment( {
@@ -419,19 +475,29 @@ jQuery( function ( $ ) {
 			obj[ field.name ] = field.value;
 			return obj;
 		}, {} );
-
 		try {
 			const response = await api.processCheckout(
 				paymentIntentId,
 				formFields
 			);
 			const redirectUrl = response.redirect_url;
-			const { error } = await api.getStripe().confirmPayment( {
+			const upeConfig = {
 				element: upeElement,
 				confirmParams: {
 					return_url: redirectUrl,
+					payment_method_data: {
+						billing_details: getBillingDetails( formFields ),
+					},
 				},
-			} );
+			};
+			let error;
+			if ( response.payment_needed ) {
+				( { error } = await api
+					.getStripe()
+					.confirmPayment( upeConfig ) );
+			} else {
+				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
+			}
 			if ( error ) {
 				throw error;
 			}

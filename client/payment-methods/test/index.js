@@ -16,6 +16,8 @@ import {
 	useGetAvailablePaymentMethodIds,
 } from 'data';
 
+import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
+
 jest.mock( '../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
@@ -35,7 +37,11 @@ describe( 'PaymentMethods', () => {
 	test( 'does not render the "Add payment method" button when there is only one payment method available', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const addPaymentMethodButton = screen.queryByRole( 'button', {
 			name: 'Add payment method',
@@ -45,7 +51,11 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'renders the "Add payment method" button when there are at least 2 payment methods', () => {
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const addPaymentMethodButton = screen.queryByRole( 'button', {
 			name: 'Add payment method',
@@ -55,7 +65,11 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( '"Add payment method" button opens the payment methods selector modal', () => {
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const addPaymentMethodButton = screen.getByRole( 'button', {
 			name: 'Add payment method',
@@ -73,7 +87,11 @@ describe( 'PaymentMethods', () => {
 			[ 'card', 'sepa_debit' ],
 		] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const cc = screen.getByText( 'Credit card / debit card' );
 		const sepa = screen.getByText( 'Direct debit payment' );
@@ -97,7 +115,11 @@ describe( 'PaymentMethods', () => {
 			[ 'card', 'sepa_debit' ],
 		] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		expect(
 			screen.queryByRole( 'button', {
@@ -109,7 +131,11 @@ describe( 'PaymentMethods', () => {
 	test( 'when only one enabled method is rendered, the "Delete" button is not visible', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		expect(
 			screen.queryByRole( 'button', {
@@ -125,7 +151,11 @@ describe( 'PaymentMethods', () => {
 			updateEnabledMethodsMock,
 		] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const ccDeleteButton = screen.getByRole( 'button', {
 			name: 'Delete Credit card / debit card from checkout',
@@ -142,5 +172,38 @@ describe( 'PaymentMethods', () => {
 			'giropay',
 			'sofort',
 		] );
+	} );
+
+	test( 'renders the feedback elements when UPE is enabled', () => {
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+		const disableUPEButton = screen.queryByRole( 'button', {
+			name: 'Add Feedback or Disable',
+		} );
+
+		expect( disableUPEButton ).toBeInTheDocument();
+		expect( screen.queryByText( 'Payment methods' ) ).toHaveTextContent(
+			'Payment methods Early access'
+		);
+	} );
+
+	test( 'Does not render the feedback elements when UPE is disabled', () => {
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ false }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+
+		const disableUPEButton = screen.queryByRole( 'button', {
+			name: 'Add Feedback or Disable',
+		} );
+
+		expect( disableUPEButton ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Payment methods' )
+		).not.toBeInTheDocument();
 	} );
 } );

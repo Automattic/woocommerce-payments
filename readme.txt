@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.5
 Tested up to: 5.7
 Requires PHP: 7.0
-Stable tag: 2.6.1
+Stable tag: 2.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,7 +38,6 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* United States-based business.
 * WordPress 5.5 or newer.
 * WooCommerce 5.2 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
@@ -57,11 +56,9 @@ Install and activate the WooCommerce and WooCommerce Payments plugins, if you ha
 
 = What countries and currencies are supported? =
 
-If you are an individual or business based in the United States, you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world.
+If you are an individual or business based in [one of these countries](https://docs.woocommerce.com/document/payments/countries/#section-1), you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world.
 
 We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooCommerce Payments launch next](https://woocommerce.com/payments/#request-invite).
-
-[Learn more](https://docs.woocommerce.com/document/payments/countries/).
 
 = Why is a WordPress.com account and connection required? =
 
@@ -101,12 +98,16 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.7.0 - 2021-xx-xx =
+= 2.8.0 - 2021-xx-xx =
+* Add - Use date picker for applicable dispute evidence fields.
+* Fix - Disabled Payment Request Buttons when order has to be split into multiple packages because Payment Requests do not support that use case.
+
+= 2.7.0 - 2021-07-14 =
 * Add - Add a link to the snackbar notice that appears after submitting or saving evidence for a dispute challenge.
 * Add - Support saving new cards and paying with previously saved cards in the WooCommerce Checkout Block.
 * Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
+* Fix - Do not overwrite admin pages when account is disconnected.
 * Update - Set a description when creating payment intents.
-* Add - Use date picker for applicable dispute evidence fields.
 
 = 2.6.1 - 2021-07-01 =
 * Fix - Updates the notes query filters to prevent breaking the WooCommerce > Home inbox.
