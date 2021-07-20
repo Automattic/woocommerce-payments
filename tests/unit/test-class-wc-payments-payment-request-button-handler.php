@@ -284,4 +284,21 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 
 		delete_option( '_wcpay_feature_grouped_settings' );
 	}
+
+	public function test_multiple_packages_in_cart_not_allowed() {
+		// Add fake packages to the cart.
+		add_filter(
+			'woocommerce_cart_shipping_packages',
+			function() {
+				return [
+					'fake_package_1',
+					'fake_package_2',
+				];
+			}
+		);
+		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
+		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
+
+		$this->assertFalse( $this->pr->has_allowed_items_in_cart() );
+	}
 }
