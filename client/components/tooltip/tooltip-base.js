@@ -9,7 +9,7 @@ import { debounce } from 'lodash';
 /**
  * Internal dependencies
  */
-import './styles.scss';
+import './style.scss';
 
 const rootElement =
 	document.getElementById( 'wpbody-content' ) || document.body;
