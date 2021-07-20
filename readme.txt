@@ -111,6 +111,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Disable payment gateway when not in test mode and not using https or ssl checkout enforcement.
 * Fix - Improved errors handling during onboarding and page overview.
 * Update - Remove Account in the old Settings page.
+* Add - REST endpoint to get customer id from an order.
 
 = 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.

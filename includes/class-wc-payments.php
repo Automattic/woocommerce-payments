@@ -718,7 +718,7 @@ class WC_Payments {
 		$conn_tokens_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
-		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway );
+		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway, self::$customer_service );
 		$orders_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';

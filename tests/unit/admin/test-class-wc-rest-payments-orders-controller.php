@@ -45,12 +45,14 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 
-		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
-		$this->mock_gateway    = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_gateway          = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 
 		$this->controller = new WC_REST_Payments_Orders_Controller(
 			$this->mock_api_client,
-			$this->mock_gateway
+			$this->mock_gateway,
+			$this->mock_customer_service
 		);
 	}
 
@@ -260,6 +262,128 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
 		$this->assertEquals( 404, $data['status'] );
+	}
+
+	public function test_create_customer_invalid_order_id() {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => 'not_an_id',
+			]
+		);
+
+		$response = $this->controller->create_customer( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 404, $data['status'] );
+	}
+
+	public function test_create_customer_from_order_guest() {
+		$order         = WC_Helper_Order::create_order( 0 );
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
+
+		$this->mock_customer_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'create_customer_for_user' )
+			->withConsecutive(
+				[
+					$this->callback(
+						function( $argument ) {
+							return ( $argument instanceof WP_User ) && ! $argument->ID;
+						}
+					),
+					$this->equalTo( $customer_data ),
+				],
+				[
+					$this->callback(
+						function( $argument ) {
+							return ( $argument instanceof WP_User ) && ! $argument->ID;
+						}
+					),
+					$this->equalTo( $customer_data ),
+				]
+			)
+			->willReturnOnConsecutiveCalls(
+				'cus_new1',
+				'cus_new2'
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		$response = $this->controller->create_customer( $request );
+		$this->assertSame( 'cus_new1', $response );
+
+		$response = $this->controller->create_customer( $request );
+		$this->assertSame( 'cus_new2', $response );
+	}
+
+	public function test_create_customer_from_order_non_guest_with_customer_id() {
+		$order         = WC_Helper_Order::create_order();
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( $order->get_user()->ID )
+			->willReturn( 'cus_exist' );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'create_customer_for_user' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'update_customer_for_user' )
+			->with( 'cus_exist', $order->get_user(), $customer_data )
+			->willReturn( 'cus_exist' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		$response = $this->controller->create_customer( $request );
+		$this->assertSame( 'cus_exist', $response );
+	}
+
+	public function test_create_customer_from_order_non_guest_without_customer_id() {
+		$order         = WC_Helper_Order::create_order();
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( $order->get_user()->ID )
+			->willReturn( null );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'update_customer_for_user' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'create_customer_for_user' )
+			->with( $order->get_user(), $customer_data )
+			->willReturn( 'cus_new' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		$response = $this->controller->create_customer( $request );
+		$this->assertSame( 'cus_new', $response );
 	}
 
 	private function create_mock_order() {
