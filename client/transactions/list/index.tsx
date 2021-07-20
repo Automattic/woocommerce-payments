@@ -400,7 +400,7 @@ export const TransactionsList = (
 			},
 		];
 
-		const hasTransactions = transactionsSummary.count as number > 0;
+		const hasTransactions = ( transactionsSummary.count as number ) > 0;
 		if ( hasTransactions && ( isSingleCurrency || isCurrencyFiltered ) ) {
 			summary.push(
 				{
