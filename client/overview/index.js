@@ -36,6 +36,7 @@ const OverviewPage = () => {
 		additionalMethodsSetup,
 		wpcomReconnectUrl,
 	} );
+	console.log( 'tasks: ', tasks );
 	const queryParams = getQuery();
 
 	const showKycSuccessNotice =

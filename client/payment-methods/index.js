@@ -166,6 +166,7 @@ const PaymentMethods = () => {
 				<DisableUPEModal
 					enabledMethods={ enabledMethods }
 					setIsModalOpen={ setIsDisableModalOpen }
+					triggerAfterDisable={ () => setIsSurveyModalOpen( true ) }
 				/>
 			) : null }
 			{ useIsSurveyModalOpen ? (

@@ -184,6 +184,8 @@ addFilter(
 			additionalMethodsSetup,
 		} );
 
+		console.log( 'wcPayTasks: ', wcPayTasks );
+
 		return [ ...tasks, ...wcPayTasks ];
 	}
 );

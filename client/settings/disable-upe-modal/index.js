@@ -1,23 +1,33 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 
 import { __ } from '@wordpress/i18n';
-import { Button, Notice } from '@wordpress/components';
+import { Button, Dashicon, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import '../survey-modal/style.scss';
+import './style.scss';
 import ConfirmationModal from 'components/confirmation-modal';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import WcPayUpeContext from 'settings/wcpay-upe-toggle/context';
 
-// create the disable modal
-// first(red) button disables UPE
-// hook up onClick to show modal
-// close modal upon successful submission of form(either button click)
-// Blue section at the bottom with Need help? text
-// write tests
+// @todo: write tests
+// @todo: add links to Need help? section below.
+
+const NeedHelpBarSection = () => {
+	return (
+		<div className="disable-modal-help-notice">
+			<Dashicon className="disable-help-icon" icon="info-outline" />
+			<p>
+				{ __(
+					'Need help? Visit WooCommerce Payments docs or contact support.',
+					'woocommerce-payments'
+				) }
+			</p>
+		</div>
+	);
+};
 
 const DisableUPEModalBody = ( { enabledMethods } ) => {
 	return (
@@ -40,6 +50,7 @@ const DisableUPEModalBody = ( { enabledMethods } ) => {
 					<PaymentMethod key={ id } Icon={ Icon } label={ label } />
 				) ) }
 			</ul>
+			<NeedHelpBarSection />
 		</>
 	);
 };
@@ -72,12 +83,23 @@ const SubmissionErrorNotice = () => {
 	) : null;
 };
 
-const DisableUPEModal = ( { enabledMethods, setIsModalOpen } ) => {
+const DisableUPEModal = ( {
+	enabledMethods,
+	setIsModalOpen,
+	triggerAfterDisable,
+} ) => {
+	const [ isUpeEnabled ] = useIsUpeEnabled();
+	useEffect( () => {
+		if ( ! isUpeEnabled ) {
+			setIsModalOpen( false );
+			triggerAfterDisable();
+		}
+	}, [ isUpeEnabled, setIsModalOpen, triggerAfterDisable ] );
 	return (
 		<>
 			<SubmissionErrorNotice />
 			<ConfirmationModal
-				className="survey-section"
+				className="disable-modal-section"
 				title={ __(
 					'Disable the new payments experience',
 					'woocommerce-payments'
