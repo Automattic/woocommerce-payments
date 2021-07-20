@@ -156,6 +156,28 @@ describe( 'mapTimelineEvents', () => {
 							percentage: 0.0195,
 							fixed: 15,
 							fixed_currency: 'USD',
+							history: [
+								{
+									type: 'base',
+									percentage_rate: 0.014,
+									fixed_rate: 20,
+									currency: 'gbp',
+								},
+								{
+									type: 'additional',
+									additional_type: 'international',
+									percentage_rate: 0.014999999999999998,
+									fixed_rate: 0,
+									currency: 'gbp',
+								},
+								{
+									type: 'additional',
+									additional_type: 'fx',
+									percentage_rate: 0.020000000000000004,
+									fixed_rate: 0,
+									currency: 'gbp',
+								},
+							],
 						},
 						type: 'captured',
 					},

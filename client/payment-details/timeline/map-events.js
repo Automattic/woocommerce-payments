@@ -230,6 +230,41 @@ const composeFXString = ( event ) => {
 	);
 };
 
+const feeBreakup = ( event ) => {
+	if ( ! event?.fee_rates?.history ) {
+		return [];
+	}
+
+	const {
+		fee_rates: { history },
+	} = event;
+
+	const feeLabelMapping = {
+		base: __( '\u00A0 • Base fee %s%%', 'woocommerce-payments' ),
+		'additional-international': __(
+			'\u00A0 • International fee %s%%',
+			'woocommerce-payments'
+		),
+		'additional-fx': __(
+			'\u00A0 • Foreign exchange fee %s%%',
+			'woocommerce-payments'
+		),
+	};
+
+	return history.map( ( fee ) => {
+		let labelKey = fee.type;
+		if ( fee.additional_type ) {
+			labelKey += `-${ fee.additional_type }`;
+		}
+
+		const { percentage_rate: percentageRate } = fee;
+		return sprintf(
+			feeLabelMapping[ labelKey ],
+			formatFee( percentageRate )
+		);
+	} );
+};
+
 /**
  * Formats an event into one or more payment timeline items
  *
@@ -337,6 +372,7 @@ const mapEventToTimelineItems = ( event ) => {
 					[
 						composeFXString( event ),
 						feeString,
+						...feeBreakup( event ),
 						sprintf(
 							/* translators: %s is a monetary amount */
 							__( 'Net deposit: %s', 'woocommerce-payments' ),

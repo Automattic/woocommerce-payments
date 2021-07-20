@@ -497,6 +497,9 @@ Array [
     "body": Array [
       undefined,
       "Fee (1.95% + $0.15): $-3.50",
+      "  • Base fee 1.4%",
+      "  • International fee 1.5%",
+      "  • Foreign exchange fee 2%",
       "Net deposit: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
