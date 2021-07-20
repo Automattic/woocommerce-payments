@@ -158,7 +158,7 @@ const PaymentMethods = () => {
 			>
 				{ isUpeEnabled && (
 					<CardHeader className="payment-methods__header">
-						<h4 className="payment-methods__header__heading">
+						<h4 className="payment-methods__heading">
 							Payment methods <Pill>Early access</Pill>
 						</h4>
 						<PaymentMethodsDropdownMenu />

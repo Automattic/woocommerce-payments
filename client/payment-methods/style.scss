@@ -10,8 +10,7 @@
 		}
 	}
 
-	// need the double specificity to ensure the styles are overwritten
-	&__header__heading {
+	&__heading {
 		margin: 0;
 		font-size: 16px;
 	}
