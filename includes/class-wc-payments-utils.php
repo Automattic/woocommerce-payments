@@ -189,7 +189,6 @@ class WC_Payments_Utils {
 			'HK' => __( 'Hong Kong', 'woocommerce-payments' ),
 			'IE' => __( 'Ireland', 'woocommerce-payments' ),
 			'IT' => __( 'Italy', 'woocommerce-payments' ),
-			'MY' => __( 'Malaysia', 'woocommerce-payments' ),
 			'NL' => __( 'Netherlands', 'woocommerce-payments' ),
 			'NZ' => __( 'New Zealand', 'woocommerce-payments' ),
 			'PL' => __( 'Poland', 'woocommerce-payments' ),
