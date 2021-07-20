@@ -128,9 +128,7 @@ const UpeSetupBanner = () => {
 		<>
 			<CardDivider />
 			<CardBody className="payment-methods__express-checkouts">
-				<span className="payment-methods__pill">
-					{ __( 'Early access', 'woocommerce-payments' ) }
-				</span>
+				<Pill>Early access</Pill>
 				<h3>
 					{ __(
 						'Enable the new WooCommerce Payments checkout experience',

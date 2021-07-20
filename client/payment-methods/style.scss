@@ -71,15 +71,6 @@
 		}
 	}
 
-	&__pill {
-		/* adapted from https://github.com/woocommerce/woocommerce-admin/blob/main/packages/components/src/pill/style.scss */
-		font-size: 12px;
-		border: 1px solid $studio-gray-70;
-		border-radius: 28px;
-		display: inline-block;
-		padding: 2px 8px;
-	}
-
 	.payment-methods-header {
 		justify-content: flex-end;
 	}
