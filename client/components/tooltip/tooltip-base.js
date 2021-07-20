@@ -169,11 +169,11 @@ const TooltipBase = ( {
 
 		const debouncedCalculation = debounce( calculateTooltipPosition, 150 );
 
-		document.addEventListener( 'resize', debouncedCalculation );
+		window.addEventListener( 'resize', debouncedCalculation );
 		document.addEventListener( 'scroll', debouncedCalculation );
 
 		return () => {
-			document.removeEventListener( 'resize', debouncedCalculation );
+			window.removeEventListener( 'resize', debouncedCalculation );
 			document.removeEventListener( 'scroll', debouncedCalculation );
 		};
 	}, [ isTooltipVisible, maxWidth ] );
