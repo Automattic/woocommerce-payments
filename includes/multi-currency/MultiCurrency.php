@@ -344,10 +344,10 @@ class MultiCurrency {
 
 		$available_currencies = [];
 
-		$wc_currencies = get_woocommerce_currencies();
-		$cache_data    = $this->get_cached_currencies();
+		$currencies = apply_filters( $this->id . '_available_currencies', array_keys( get_woocommerce_currencies() ) );
+		$cache_data = $this->get_cached_currencies();
 
-		foreach ( $wc_currencies as $currency_code => $currency_name ) {
+		foreach ( $currencies as $currency_code ) {
 			$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 1.0;
 			$update_time   = $cache_data['updated'] ?? null;
 			$new_currency  = new Currency( $currency_code, $currency_rate, $update_time );

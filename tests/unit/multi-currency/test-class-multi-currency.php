@@ -103,6 +103,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	public function tearDown() {
 		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
+		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
 		remove_all_filters( 'woocommerce_currency' );
 
 		delete_user_meta( self::LOGGED_IN_USER_ID, MultiCurrency::CURRENCY_META_KEY );
@@ -132,6 +133,29 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$this->assertSame( 'DEFAULT', $default_currency->get_code() );
 		$this->assertSame( 1.0, $default_currency->get_rate() );
+	}
+
+	public function test_available_currencies_can_be_filtered() {
+		add_filter(
+			'wcpay_multi_currency_available_currencies',
+			function ( $available_currencies ) {
+				// Remove BRL from the list of currencies.
+				return array_filter(
+					$available_currencies,
+					function ( $currency ) {
+						return 'BRL' !== $currency;
+					}
+				);
+			}
+		);
+
+		$this->assertArrayHasKey( 'BRL', $this->multi_currency->get_available_currencies() );
+
+		// Recreate MultiCurrency instance to use the recently set available currencies filter.
+		$this->multi_currency = new MultiCurrency( $this->mock_api_client );
+		$this->multi_currency->init();
+
+		$this->assertArrayNotHasKey( 'BRL', $this->multi_currency->get_available_currencies() );
 	}
 
 	public function test_get_enabled_currencies_returns_correctly() {
