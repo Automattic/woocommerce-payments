@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useState, memo } from 'react';
 import { createPortal } from 'react-dom';
 import classNames from 'classnames';
-import { debounce } from 'lodash';
+import { debounce, noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -19,7 +19,7 @@ const isEventTriggeredWithin = ( event, element ) =>
 
 const useHideDelay = (
 	isVisibleProp,
-	{ hideDelay = 1000, triggerRef, tooltipRef, onClose }
+	{ hideDelayMs = 1000, triggerRef, tooltipRef, onHide = noop }
 ) => {
 	const [ isVisible, setIsVisible ] = useState( isVisibleProp );
 	// not using state for this, we don't need to cause a re-render
@@ -41,16 +41,16 @@ const useHideDelay = (
 			return;
 		}
 
-		// element is marked as not visible, hide it after `hideDelay` milliseconds
+		// element is marked as not visible, hide it after `hideDelayMs` milliseconds
 		timer = setTimeout( () => {
 			setIsVisible( false );
-			onClose();
-		}, hideDelay );
+			onHide();
+		}, hideDelayMs );
 
 		return () => {
 			clearTimeout( timer );
 		};
-	}, [ setIsVisible, hideDelay, isVisibleProp, onClose ] );
+	}, [ setIsVisible, hideDelayMs, isVisibleProp, onHide ] );
 
 	// listen to other events to hide
 	useEffect( () => {
@@ -59,7 +59,7 @@ const useHideDelay = (
 		// immediately close this tooltip if another one opens
 		const handleHideElement = () => {
 			setIsVisible( false );
-			onClose();
+			onHide();
 		};
 
 		// do not close the tooltip if a click event has occurred and the click happened within the tooltip or within the wrapped element
@@ -75,7 +75,7 @@ const useHideDelay = (
 			}
 
 			setIsVisible( false );
-			onClose();
+			onHide();
 		};
 
 		document.addEventListener( 'click', handleDocumentClick );
@@ -88,7 +88,7 @@ const useHideDelay = (
 				handleHideElement
 			);
 		};
-	}, [ isVisible, triggerRef, tooltipRef, onClose ] );
+	}, [ isVisible, triggerRef, tooltipRef, onHide ] );
 
 	return isVisible;
 };
@@ -115,20 +115,20 @@ const TooltipBase = ( {
 	className,
 	children,
 	content,
-	closeDelayMs,
-	isOpen,
-	onClose,
+	hideDelayMs,
+	isVisible,
+	onHide,
 	maxWidth = '250px',
 } ) => {
 	const wrapperRef = useRef( null );
 	const tooltipWrapperRef = useRef( null );
 
 	// using a delayed close, to allow the fade-out animation to complete
-	const isTooltipVisible = useHideDelay( isOpen, {
-		hideDelay: closeDelayMs,
+	const isTooltipVisible = useHideDelay( isVisible, {
+		hideDelayMs,
 		triggerRef: wrapperRef,
 		tooltipRef: tooltipWrapperRef,
-		onClose,
+		onHide,
 	} );
 
 	useEffect( () => {
@@ -189,7 +189,7 @@ const TooltipBase = ( {
 						ref={ tooltipWrapperRef }
 						className={ classNames(
 							'wcpay-tooltip__tooltip-wrapper',
-							{ 'is-closing': ! isOpen }
+							{ 'is-closing': ! isVisible }
 						) }
 					>
 						<div

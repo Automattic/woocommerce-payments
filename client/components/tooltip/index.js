@@ -8,7 +8,7 @@ import React, { useState } from 'react';
  */
 import TooltipBase from './tooltip-base';
 
-const Tooltip = ( { isOpen, ...props } ) => {
+const Tooltip = ( { isVisible, ...props } ) => {
 	const [ isHovered, setIsHovered ] = useState( false );
 	const [ isClicked, setIsClicked ] = useState( false );
 
@@ -21,7 +21,7 @@ const Tooltip = ( { isOpen, ...props } ) => {
 	const handleMouseClick = () => {
 		setIsClicked( ( val ) => ! val );
 	};
-	const handleClose = () => {
+	const handleHide = () => {
 		setIsHovered( false );
 		setIsClicked( false );
 	};
@@ -39,8 +39,8 @@ const Tooltip = ( { isOpen, ...props } ) => {
 		>
 			<TooltipBase
 				{ ...props }
-				onClose={ handleClose }
-				isOpen={ isOpen || isHovered || isClicked }
+				onHide={ handleHide }
+				isVisible={ isVisible || isHovered || isClicked }
 			/>
 		</button>
 	);

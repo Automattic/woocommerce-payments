@@ -18,7 +18,7 @@ describe( 'Tooltip', () => {
 		const handleCloseMock = jest.fn();
 		render(
 			<Tooltip
-				isOpen={ false }
+				isVisible={ false }
 				content="Tooltip content"
 				onClose={ handleCloseMock }
 			>
@@ -39,7 +39,7 @@ describe( 'Tooltip', () => {
 		const handleCloseMock = jest.fn();
 		render(
 			<Tooltip
-				isOpen
+				isVisible
 				content="Tooltip content"
 				onClose={ handleCloseMock }
 			>
