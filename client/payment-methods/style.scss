@@ -1,5 +1,5 @@
 .payment-methods {
- 	position: relative;
+	position: relative;
 
 	&__header {
 		justify-content: space-between;
@@ -10,7 +10,8 @@
 		}
 	}
 
-	&__heading {
+	// need the double specificity to ensure the styles are overwritten
+	&__header__heading {
 		margin: 0;
 		font-size: 16px;
 	}
