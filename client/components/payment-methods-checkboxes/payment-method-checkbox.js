@@ -12,7 +12,7 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import PaymentMethodIcon from '../../settings/payment-method-icon';
 import Pill from '../pill';
-import Tooltip from '../tooltip/tooltip-hover';
+import Tooltip from '../tooltip';
 import './payment-method-checkbox.scss';
 
 const infoMap = {
