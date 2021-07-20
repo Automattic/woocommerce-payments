@@ -45,7 +45,7 @@ const EnabledCurrenciesListItem = ( {
 						flag
 					) : (
 						<div className="enabled-currency__flag-text">
-							{ code }
+							<span>{ code }</span>
 						</div>
 					) }
 				</div>

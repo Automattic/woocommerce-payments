@@ -43,11 +43,15 @@
 			width: 24px;
 			height: 18px;
 			line-height: 18px;
-			margin: 14px 1.68px;
+			margin: 14px 0.07em;
 			background-color: $studio-gray-5;
 			border-radius: 5px;
-			font-size: 9px;
 			text-align: center;
+
+			span {
+				font-size: 9px;
+				vertical-align: bottom;
+			}
 		}
 
 		&__label {
@@ -93,11 +97,15 @@
 			height: 15px;
 			line-height: 15px;
 			vertical-align: top;
-			margin: 0 1.4px;
+			margin: 0 0.07em;
 			background-color: $studio-gray-5;
 			border-radius: 2px;
-			font-size: 9px;
 			text-align: center;
+
+			span {
+				font-size: 9px;
+				vertical-align: bottom;
+			}
 		}
 
 		&__code {
