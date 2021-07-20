@@ -13,21 +13,22 @@ import { NAMESPACE } from '../../data/constants';
 // @todo - prepare data from form and pass to data in POST method.
 
 const WcPaySurveyContextProvider = ( { children } ) => {
-	const [ isModalOpen, setIsModalOpen ] = useState( Boolean( false ) );
 	const [ isSurveySubmitted, setSurveySubmitted ] = useState(
 		Boolean( false )
 	);
 	const [ status, setStatus ] = useState( 'resolved' );
+	const [ surveyAnswers, setSurveyAnswers ] = useState( {} );
 
 	const submitSurvey = useCallback(
 		( value ) => {
 			setStatus( 'pending' );
+			// map answers data to fit to API, where key string is the question and comments is just a string.
 
 			return apiFetch( {
 				path: `${ NAMESPACE }/upe_survey`,
 				method: 'POST',
 				// eslint-disable-next-line camelcase
-				data: { value },
+				data: value,
 			} )
 				.then( () => {
 					setSurveySubmitted( Boolean( true ) );
@@ -35,7 +36,7 @@ const WcPaySurveyContextProvider = ( { children } ) => {
 				} )
 				.catch( () => {
 					setStatus( 'error' );
-					setSurveySubmitted( Boolean( false ) );
+					setSurveySubmitted( Boolean( true ) );
 				} );
 		},
 		[ setStatus, setSurveySubmitted ]
@@ -43,13 +44,19 @@ const WcPaySurveyContextProvider = ( { children } ) => {
 
 	const contextValue = useMemo(
 		() => ( {
-			isModalOpen,
-			setIsModalOpen,
 			setSurveySubmitted: submitSurvey,
 			status,
 			isSurveySubmitted,
+			surveyAnswers,
+			setSurveyAnswers,
 		} ),
-		[ isModalOpen, submitSurvey, status, isSurveySubmitted ]
+		[
+			submitSurvey,
+			status,
+			isSurveySubmitted,
+			surveyAnswers,
+			setSurveyAnswers,
+		]
 	);
 
 	return (

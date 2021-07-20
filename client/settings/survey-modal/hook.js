@@ -8,10 +8,16 @@ import { useContext } from 'react';
  */
 import WcPaySurveyContext from './context';
 
-const useIsSurveyModalOpen = () => {
-	const { useIsModalOpen, setIsModalOpen } = useContext( WcPaySurveyContext );
-
-	return [ useIsModalOpen, setIsModalOpen ];
+export const useSurveySubmit = () => {
+	const { isSurveySubmitted, setSurveySubmitted } = useContext(
+		WcPaySurveyContext
+	);
+	return [ isSurveySubmitted, setSurveySubmitted ];
 };
 
-export default useIsSurveyModalOpen;
+export const useSurveyAnswers = () => {
+	const { surveyAnswers, setSurveyAnswers } = useContext(
+		WcPaySurveyContext
+	);
+	return [ surveyAnswers, setSurveyAnswers ];
+};

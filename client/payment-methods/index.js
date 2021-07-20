@@ -162,17 +162,17 @@ const PaymentMethods = () => {
 
 	return (
 		<>
-			<WcPaySurveyContextProvider>
-				{ useIsDisableModalOpen ? (
-					<DisableUPEModal
-						enabledMethods={ enabledMethods }
-						setIsModalOpen={ setIsDisableModalOpen }
-					/>
-				) : null }
-				{ useIsSurveyModalOpen ? (
+			{ useIsDisableModalOpen ? (
+				<DisableUPEModal
+					enabledMethods={ enabledMethods }
+					setIsModalOpen={ setIsDisableModalOpen }
+				/>
+			) : null }
+			{ useIsSurveyModalOpen ? (
+				<WcPaySurveyContextProvider>
 					<SurveyModal setIsModalOpen={ setIsSurveyModalOpen } />
-				) : null }
-			</WcPaySurveyContextProvider>
+				</WcPaySurveyContextProvider>
+			) : null }
 
 			{ 'error' === status && <UpeDisableError /> }
 			<Card

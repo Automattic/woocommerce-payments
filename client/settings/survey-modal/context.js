@@ -4,11 +4,11 @@
 import { createContext } from 'react';
 
 const WcPaySurveyContext = createContext( {
-	isModalOpen: false,
-	modalPage: 1,
-	setIsModalOpen: () => null,
-	submitSurvey: () => null,
-	submitStatus: 'resolved',
+	isSurveySubmitted: false,
+	setSurveySubmitted: () => null,
+	status: 'resolved',
+	surveyAnswers: {},
+	setSurveyAnswers: () => null,
 } );
 
 export default WcPaySurveyContext;
