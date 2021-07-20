@@ -489,6 +489,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return 'yes' === $this->get_option( 'test_mode' );
 	}
 
+
+	/**
+	 * Returns whether a store that is not in test mode needs to set https
+	 * in the checkout
+	 *
+	 * @return boolean True if needs to set up forced ssl in checkout or https
+	 */
+	public function needs_https_setup() {
+		return ! $this->is_in_test_mode() && ! wc_checkout_is_https();
+	}
+
 	/**
 	 * Checks if the gateway is enabled, and also if it's configured enough to accept payments from customers.
 	 *
@@ -498,7 +509,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function is_available() {
 		// Disable the gateway if using live mode without HTTPS set up.
-		if ( ! $this->is_in_test_mode() && ! wc_checkout_is_https() ) {
+		if ( $this->needs_https_setup() ) {
 			return false;
 		}
 

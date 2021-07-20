@@ -17,7 +17,7 @@ export const getTasks = ( {
 	showUpdateDetailsTask,
 	additionalMethodsSetup = {},
 	wpcomReconnectUrl,
-	isGatewayAvailable,
+	needsHttpsSetup,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
@@ -81,7 +81,7 @@ export const getTasks = ( {
 				window.location.href = wpcomReconnectUrl;
 			},
 		},
-		! isGatewayAvailable && {
+		needsHttpsSetup && {
 			key: 'force-secure-checkout',
 			title: __( 'Force secure checkout', 'woocommerce-payments' ),
 			content: __(

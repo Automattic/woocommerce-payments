@@ -279,7 +279,7 @@ class WC_Payments_Admin {
 				'isUpeSettingsPreviewEnabled' => WC_Payments_Features::is_upe_settings_preview_enabled(),
 				'isUpeEnabled'                => WC_Payments_Features::is_upe_enabled(),
 			],
-			'isGatewayAvailable'     => $this->wcpay_gateway->is_available(),
+			'needsHttpsSetup'        => $this->wcpay_gateway->needs_https_setup(),
 		];
 
 		wp_localize_script(
