@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 2.8.0 - 2021-xx-xx =
 * Add - Use date picker for applicable dispute evidence fields.
+* Fix - Fee discounts should use the discount currency rather than the base fee currency.
 
 = 2.7.0 - 2021-07-14 =
 * Add - Add a link to the snackbar notice that appears after submitting or saving evidence for a dispute challenge.
