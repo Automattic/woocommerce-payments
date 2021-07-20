@@ -41,7 +41,12 @@ const PaymentMethodInfo = ( { name } ) => {
 	return (
 		<Tooltip content={ info }>
 			<div className="payment-method-checkbox__info">
-				<VisuallyHidden>{ info }</VisuallyHidden>
+				<VisuallyHidden>
+					{ __(
+						'Information about the payment method',
+						'woocommerce-payments'
+					) }
+				</VisuallyHidden>
 				<Icon icon="info-outline" />
 			</div>
 		</Tooltip>
@@ -68,17 +73,17 @@ const PaymentMethodCheckbox = ( { onChange, name, checked = false, fees } ) => {
 				label={ label }
 			/>
 			<Tooltip content="Base transaction fees">
-				<Pill className="payment-method-checkbox__fees">
-					<VisuallyHidden>
-						{ sprintf(
-							__(
-								'Base transaction fees: %s',
-								'woocommerce-payments'
-							),
-							fees
-						) }
-					</VisuallyHidden>
-					<span aria-hidden="true">{ fees }</span>
+				<Pill
+					className="payment-method-checkbox__fees"
+					aria-label={ sprintf(
+						__(
+							'Base transaction fees: %s',
+							'woocommerce-payments'
+						),
+						fees
+					) }
+				>
+					<span>{ fees }</span>
 				</Pill>
 			</Tooltip>
 			<PaymentMethodInfo name={ name } />

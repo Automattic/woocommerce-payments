@@ -81,6 +81,8 @@ const PaymentMethodsSelector = ( { className } ) => {
 						'Add payment methods',
 						'woocommerce-payments'
 					) }
+					// using this because when the tooltips inside the modal are clicked, they cause the modal to close
+					shouldCloseOnClickOutside={ false }
 					onRequestClose={ handleAddSelectedCancelClick }
 					actions={
 						<>

@@ -27,8 +27,7 @@ const Tooltip = ( { isOpen, ...props } ) => {
 	};
 
 	return (
-		// eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions,jsx-a11y/click-events-have-key-events
-		<div
+		<button
 			className="wcpay-tooltip__content-wrapper"
 			// on touch devices there's no mouse enter/leave, so we need to use a separate event (click/focus)
 			// this creates 2 different (desirable) states on non-touch devices: if you hover and then click, the tooltip will persist
@@ -36,7 +35,6 @@ const Tooltip = ( { isOpen, ...props } ) => {
 			onMouseLeave={ handleMouseLeave }
 			onFocus={ handleMouseEnter }
 			onBlur={ handleMouseLeave }
-			role="tooltip"
 			onClick={ handleMouseClick }
 		>
 			<TooltipBase
@@ -44,7 +42,7 @@ const Tooltip = ( { isOpen, ...props } ) => {
 				onClose={ handleClose }
 				isOpen={ isOpen || isHovered || isClicked }
 			/>
-		</div>
+		</button>
 	);
 };
 
