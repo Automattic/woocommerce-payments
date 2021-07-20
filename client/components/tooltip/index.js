@@ -2,13 +2,14 @@
  * External dependencies
  */
 import React, { useState } from 'react';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import TooltipBase from './tooltip-base';
 
-const Tooltip = ( { isVisible, ...props } ) => {
+const Tooltip = ( { isVisible, onHide = noop, ...props } ) => {
 	const [ isHovered, setIsHovered ] = useState( false );
 	const [ isClicked, setIsClicked ] = useState( false );
 
@@ -17,13 +18,18 @@ const Tooltip = ( { isVisible, ...props } ) => {
 	};
 	const handleMouseLeave = () => {
 		setIsHovered( false );
+		onHide();
 	};
 	const handleMouseClick = () => {
 		setIsClicked( ( val ) => ! val );
+		if ( isClicked ) {
+			onHide();
+		}
 	};
 	const handleHide = () => {
 		setIsHovered( false );
 		setIsClicked( false );
+		onHide();
 	};
 
 	return (

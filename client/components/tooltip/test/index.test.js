@@ -15,12 +15,12 @@ jest.useFakeTimers();
 
 describe( 'Tooltip', () => {
 	it( 'does not render its content when closed', () => {
-		const handleCloseMock = jest.fn();
+		const handleHideMock = jest.fn();
 		render(
 			<Tooltip
 				isVisible={ false }
 				content="Tooltip content"
-				onClose={ handleCloseMock }
+				onHide={ handleHideMock }
 			>
 				<span>Trigger element</span>
 			</Tooltip>
@@ -32,16 +32,16 @@ describe( 'Tooltip', () => {
 			screen.queryByText( 'Tooltip content' )
 		).not.toBeInTheDocument();
 		expect( screen.queryByText( 'Trigger element' ) ).toBeInTheDocument();
-		expect( handleCloseMock ).not.toHaveBeenCalled();
+		expect( handleHideMock ).not.toHaveBeenCalled();
 	} );
 
 	it( 'renders its content when opened', () => {
-		const handleCloseMock = jest.fn();
+		const handleHideMock = jest.fn();
 		render(
 			<Tooltip
 				isVisible
 				content="Tooltip content"
-				onClose={ handleCloseMock }
+				onHide={ handleHideMock }
 			>
 				<span>Trigger element</span>
 			</Tooltip>
@@ -51,13 +51,13 @@ describe( 'Tooltip', () => {
 
 		expect( screen.queryByText( 'Tooltip content' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Trigger element' ) ).toBeInTheDocument();
-		expect( handleCloseMock ).not.toHaveBeenCalled();
+		expect( handleHideMock ).not.toHaveBeenCalled();
 	} );
 
 	it( 'renders its content when clicked', () => {
-		const handleCloseMock = jest.fn();
+		const handleHideMock = jest.fn();
 		render(
-			<Tooltip content="Tooltip content" onClose={ handleCloseMock }>
+			<Tooltip content="Tooltip content" onHide={ handleHideMock }>
 				<span>Trigger element</span>
 			</Tooltip>
 		);
@@ -73,24 +73,23 @@ describe( 'Tooltip', () => {
 		jest.runAllTimers();
 
 		expect( screen.queryByText( 'Tooltip content' ) ).toBeInTheDocument();
-		expect( handleCloseMock ).not.toHaveBeenCalled();
+		expect( handleHideMock ).not.toHaveBeenCalled();
+
+		userEvent.click( screen.getByText( 'Trigger element' ) );
+		jest.runAllTimers();
+
+		expect( handleHideMock ).toHaveBeenCalled();
 	} );
 
 	it( 'asks other Tooltips to close, when multiple are opened', () => {
-		const handleClose1Mock = jest.fn();
-		const handleClose2Mock = jest.fn();
+		const handleHide1Mock = jest.fn();
+		const handleHide2Mock = jest.fn();
 		render(
 			<>
-				<Tooltip
-					content="Tooltip 1 content"
-					onClose={ handleClose1Mock }
-				>
+				<Tooltip content="Tooltip 1 content" onHide={ handleHide1Mock }>
 					<span>Open tooltip 1</span>
 				</Tooltip>
-				<Tooltip
-					content="Tooltip 2 content"
-					onClose={ handleClose2Mock }
-				>
+				<Tooltip content="Tooltip 2 content" onHide={ handleHide2Mock }>
 					<span>Open tooltip 2</span>
 				</Tooltip>
 			</>
@@ -104,8 +103,8 @@ describe( 'Tooltip', () => {
 		expect(
 			screen.queryByText( 'Tooltip 2 content' )
 		).not.toBeInTheDocument();
-		expect( handleClose1Mock ).not.toHaveBeenCalled();
-		expect( handleClose2Mock ).not.toHaveBeenCalled();
+		expect( handleHide1Mock ).not.toHaveBeenCalled();
+		expect( handleHide2Mock ).not.toHaveBeenCalled();
 
 		// opening the first tooltip, no need to call any close handlers
 		act( () => userEvent.click( screen.getByText( 'Open tooltip 1' ) ) );
@@ -114,8 +113,8 @@ describe( 'Tooltip', () => {
 		expect(
 			screen.queryByText( 'Tooltip 2 content' )
 		).not.toBeInTheDocument();
-		expect( handleClose1Mock ).not.toHaveBeenCalled();
-		expect( handleClose2Mock ).not.toHaveBeenCalled();
+		expect( handleHide1Mock ).not.toHaveBeenCalled();
+		expect( handleHide2Mock ).not.toHaveBeenCalled();
 
 		jest.runAllTimers();
 
@@ -129,5 +128,7 @@ describe( 'Tooltip', () => {
 			screen.queryByText( 'Tooltip 1 content' )
 		).not.toBeInTheDocument();
 		expect( screen.queryByText( 'Tooltip 2 content' ) ).toBeInTheDocument();
+		expect( handleHide1Mock ).toHaveBeenCalled();
+		expect( handleHide2Mock ).not.toHaveBeenCalled();
 	} );
 } );
