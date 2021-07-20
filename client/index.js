@@ -178,7 +178,7 @@ addFilter(
 			accountStatus,
 			showUpdateDetailsTask,
 			additionalMethodsSetup,
-			isAccountOverviewTasksEnabled: accountOverviewTaskList,
+			isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 		} );
 
 		return [ ...tasks, ...wcPayTasks ];
