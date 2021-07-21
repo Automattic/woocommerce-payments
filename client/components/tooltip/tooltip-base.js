@@ -46,6 +46,10 @@ const useHideDelay = (
 			return;
 		}
 
+		if ( ! isVisible ) {
+			return;
+		}
+
 		// element is marked as not visible, hide it after `hideDelayMs` milliseconds
 		timer = setTimeout( () => {
 			setIsVisible( false );
@@ -55,11 +59,11 @@ const useHideDelay = (
 		return () => {
 			clearTimeout( timer );
 		};
-	}, [ setIsVisible, hideDelayMs, isVisibleProp ] );
+	}, [ setIsVisible, hideDelayMs, isVisibleProp, isVisible ] );
 
 	// listen to other events to hide
 	useEffect( () => {
-		if ( ! isVisible || ! isVisibleProp ) return;
+		if ( ! isVisible ) return;
 
 		// immediately hide this tooltip if another one opens
 		const handleHideElement = () => {
