@@ -17,6 +17,7 @@ export const getTasks = ( {
 	showUpdateDetailsTask,
 	additionalMethodsSetup = {},
 	wpcomReconnectUrl,
+	isAccountOverviewTasksEnabled,
 	needsHttpsSetup,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
@@ -46,57 +47,60 @@ export const getTasks = ( {
 	}
 
 	return [
-		'yes' === showUpdateDetailsTask && {
-			key: 'update-business-details',
-			level: 1,
-			title: __(
-				'Update WooCommerce Payments business details',
-				'woocommerce-payments'
-			),
-			additionalInfo: accountDetailsTaskDescription,
-			completed: 'complete' === status,
-			onClick:
-				'complete' === status
-					? undefined
-					: () => {
-							window.open( accountLink, '_blank' );
-					  },
-			visible: true,
-			type: 'extension',
-		},
-		wpcomReconnectUrl && {
-			key: 'reconnect-wpcom-user',
-			level: 1,
-			title: __(
-				'Reconnect WooCommerce Payments',
-				'woocommerce-payments'
-			),
-			content: __(
-				'WooCommerce Payments is missing a connected WordPress.com account. ' +
-					'Some functionality will be limited without a connected account.',
-				'woocommerce-payments'
-			),
-			completed: false,
-			onClick: () => {
-				window.location.href = wpcomReconnectUrl;
+		isAccountOverviewTasksEnabled &&
+			'yes' === showUpdateDetailsTask && {
+				key: 'update-business-details',
+				level: 1,
+				title: __(
+					'Update WooCommerce Payments business details',
+					'woocommerce-payments'
+				),
+				additionalInfo: accountDetailsTaskDescription,
+				completed: 'complete' === status,
+				onClick:
+					'complete' === status
+						? undefined
+						: () => {
+								window.open( accountLink, '_blank' );
+						  },
+				visible: true,
+				type: 'extension',
 			},
-		},
-		needsHttpsSetup && {
-			key: 'force-secure-checkout',
-			title: __( 'Force secure checkout', 'woocommerce-payments' ),
-			content: __(
-				'Protect your customers data and increase trustworthiness of your store by forcing HTTPS on checkout pages.',
-				'woocommerce-payments'
-			),
-			completed: false,
-			onClick: () => {
-				window.open(
-					'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
-					'_blank'
-				);
+		isAccountOverviewTasksEnabled &&
+			wpcomReconnectUrl && {
+				key: 'reconnect-wpcom-user',
+				level: 1,
+				title: __(
+					'Reconnect WooCommerce Payments',
+					'woocommerce-payments'
+				),
+				content: __(
+					'WooCommerce Payments is missing a connected WordPress.com account. ' +
+						'Some functionality will be limited without a connected account.',
+					'woocommerce-payments'
+				),
+				completed: false,
+				onClick: () => {
+					window.location.href = wpcomReconnectUrl;
+				},
 			},
-			actionLabel: __( 'Read more', 'woocommerce-payments' ),
-		},
+		isAccountOverviewTasksEnabled &&
+			needsHttpsSetup && {
+				key: 'force-secure-checkout',
+				title: __( 'Force secure checkout', 'woocommerce-payments' ),
+				content: __(
+					'Protect your customers data and increase trustworthiness of your store by forcing HTTPS on checkout pages.',
+					'woocommerce-payments'
+				),
+				completed: false,
+				onClick: () => {
+					window.open(
+						'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
+						'_blank'
+					);
+				},
+				actionLabel: __( 'Read more', 'woocommerce-payments' ),
+			},
 		additionalMethodsSetup.isTaskVisible &&
 			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
 	].filter( Boolean );
