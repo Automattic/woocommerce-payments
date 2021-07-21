@@ -86,7 +86,7 @@ const UpeSetupBanner = () => {
 		<>
 			<CardDivider />
 			<CardBody className="payment-methods__express-checkouts">
-				<Pill>Early access</Pill>
+				<Pill>{ __( 'Early access', 'woocommerce-payments' ) }</Pill>
 				<h3>
 					{ __(
 						'Enable the new WooCommerce Payments checkout experience',
@@ -160,7 +160,10 @@ const PaymentMethods = () => {
 				{ isUpeEnabled && (
 					<CardHeader className="payment-methods__header">
 						<h4 className="payment-methods__heading">
-							Payment methods <Pill>Early access</Pill>
+							Payment methods{ ' ' }
+							<Pill>
+								{ __( 'Early access', 'woocommerce-payments' ) }
+							</Pill>
 						</h4>
 						<PaymentMethodsDropdownMenu />
 					</CardHeader>
