@@ -54,7 +54,10 @@ const SetupComplete = () => {
 							'woocommerce-payments'
 						) }
 					</Button>
-					<Button href="?TODO" isTertiary>
+					<Button
+						href="admin.php?page=wc-settings&tab=wcpay_multi_currency"
+						isTertiary
+					>
 						{ __(
 							'Go to multi-currency settings',
 							'woocommerce-payments'
