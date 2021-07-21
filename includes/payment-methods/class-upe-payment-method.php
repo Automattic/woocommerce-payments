@@ -116,7 +116,7 @@ abstract class UPE_Payment_Method {
 	 *
 	 * @return bool
 	 */
-	public function is_valid_currency() {
+	public function is_currency_valid() {
 		return empty( $this->currencies ) || in_array( get_woocommerce_currency(), $this->currencies, true );
 	}
 

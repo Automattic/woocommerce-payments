@@ -834,6 +834,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( ! isset( $this->payment_methods[ $payment_method_id ] ) ) {
 			return false;
 		}
-		return $this->payment_methods[ $payment_method_id ]->is_valid_currency();
+		return $this->payment_methods[ $payment_method_id ]->is_currency_valid();
 	}
 }
