@@ -124,6 +124,45 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
+	public function test_available_currencies_uses_wc_currencies_when_no_stripe_account() {
+		$this->mock_account->method( 'get_cached_account_data' )->willReturn( false );
+
+		$this->init_multi_currency();
+
+		$expected_currencies  = array_keys( get_woocommerce_currencies() );
+		$available_currencies = array_keys( $this->multi_currency->get_available_currencies() );
+
+		$this->assertEquals( sort( $expected_currencies ), sort( $available_currencies ) );
+	}
+
+	public function test_available_currencies_uses_wc_currencies_when_stripe_account_has_no_presentment_currencies() {
+		$this->mock_account->method( 'get_cached_account_data' )->willReturn( [ 'id' => 'acct' ] );
+
+		$this->init_multi_currency();
+
+		$expected_currencies  = array_keys( get_woocommerce_currencies() );
+		$available_currencies = array_keys( $this->multi_currency->get_available_currencies() );
+
+		$this->assertEquals( sort( $expected_currencies ), sort( $available_currencies ) );
+	}
+
+	public function test_available_currencies_uses_only_presentment_currencies_when_enabled_in_wc() {
+		$this->mock_account
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'presentment_currencies' => [ 'USD', 'CAD', 'RANDOM', 'BRL' ],
+				]
+			);
+
+		$this->init_multi_currency();
+
+		$expected_currencies  = [ 'USD', 'CAD', 'BRL' ];
+		$available_currencies = array_keys( $this->multi_currency->get_available_currencies() );
+
+		$this->assertEquals( sort( $expected_currencies ), sort( $available_currencies ) );
+	}
+
 	public function test_get_available_currencies_adds_store_currency() {
 		add_filter(
 			'woocommerce_currency',

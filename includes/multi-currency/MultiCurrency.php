@@ -354,7 +354,7 @@ class MultiCurrency {
 
 		$available_currencies = [];
 
-		$currencies = apply_filters( $this->id . '_available_currencies', array_keys( get_woocommerce_currencies() ) );
+		$currencies = $this->get_account_available_currencies();
 		$cache_data = $this->get_cached_currencies();
 
 		foreach ( $currencies as $currency_code ) {
@@ -796,5 +796,26 @@ class MultiCurrency {
 		foreach ( $settings as $setting ) {
 			delete_option( $this->id . '_' . $setting . '_' . strtolower( $code ) );
 		}
+	}
+
+	/**
+	 * Returns the currencies enabled for the Stripe account that are
+	 * also available in WC.
+	 *
+	 * Can be filtered with the 'wcpay_multi_currency_available_currencies' hook.
+	 *
+	 * @return array Array with the available currencies' codes.
+	 */
+	private function get_account_available_currencies(): array {
+		$wc_currencies      = array_keys( get_woocommerce_currencies() );
+		$account_currencies = $wc_currencies;
+
+		$account = $this->payments_account->get_cached_account_data();
+
+		if ( $account && ! empty( $account['presentment_currencies'] ) ) {
+			$account_currencies = $account['presentment_currencies'];
+		}
+
+		return apply_filters( $this->id . '_available_currencies', array_intersect( $account_currencies, $wc_currencies ) );
 	}
 }
