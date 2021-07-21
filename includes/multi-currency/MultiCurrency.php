@@ -8,6 +8,7 @@
 namespace WCPay\MultiCurrency;
 
 use WC_Payments;
+use WC_Payments_Account;
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
@@ -102,6 +103,13 @@ class MultiCurrency {
 	private $payments_api_client;
 
 	/**
+	 * Instance of WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $payments_account;
+
+	/**
 	 * Main MultiCurrency Instance.
 	 *
 	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
@@ -111,7 +119,7 @@ class MultiCurrency {
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
-			self::$instance = new self( WC_Payments::get_payments_api_client() );
+			self::$instance = new self( WC_Payments::get_payments_api_client(), WC_Payments::get_account_service() );
 		}
 		return self::$instance;
 	}
@@ -120,9 +128,11 @@ class MultiCurrency {
 	 * Class constructor.
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
+	 * @param WC_Payments_Account    $payments_account    Payments Account instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account ) {
 		$this->payments_api_client = $payments_api_client;
+		$this->payments_account    = $payments_account;
 		$this->locale              = new Locale();
 		$this->utils               = new Utils();
 		$this->compatibility       = new Compatibility( $this, $this->utils );
