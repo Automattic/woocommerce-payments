@@ -111,6 +111,62 @@ describe( 'getTasks()', () => {
 		);
 	} );
 
+	it( 'returns the expected keys when the account overview flag is enabled', () => {
+		createAdditionalMethodsSetupTask.mockReturnValue( {
+			key: 'woocommerce-payments--additional-payment-methods',
+		} );
+
+		const tasks = getTasks( {
+			additionalMethodsSetup: { isTaskVisible: true },
+			isAccountOverviewTasksEnabled: true,
+			showUpdateDetailsTask: 'yes',
+			wpcomReconnectUrl: 'http://example.com',
+			accountStatus: {},
+			needsHttpsSetup: true,
+		} );
+
+		expect( tasks ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( { key: 'update-business-details' } ),
+				expect.objectContaining( { key: 'reconnect-wpcom-user' } ),
+				expect.objectContaining( { key: 'force-secure-checkout' } ),
+				expect.objectContaining( {
+					key: 'woocommerce-payments--additional-payment-methods',
+				} ),
+			] )
+		);
+	} );
+
+	it( 'returns the expected keys when the account overview flag is disabled', () => {
+		createAdditionalMethodsSetupTask.mockReturnValue( {
+			key: 'woocommerce-payments--additional-payment-methods',
+		} );
+
+		const tasks = getTasks( {
+			additionalMethodsSetup: { isTaskVisible: true },
+			isAccountOverviewTasksEnabled: false,
+			showUpdateDetailsTask: 'yes',
+			wpcomReconnectUrl: 'http://example.com',
+			accountStatus: {},
+			needsHttpsSetup: true,
+		} );
+
+		expect( tasks ).toEqual(
+			expect.not.arrayContaining( [
+				expect.objectContaining( { key: 'update-business-details' } ),
+				expect.objectContaining( { key: 'reconnect-wpcom-user' } ),
+				expect.objectContaining( { key: 'force-secure-checkout' } ),
+			] )
+		);
+		expect( tasks ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'woocommerce-payments--additional-payment-methods',
+				} ),
+			] )
+		);
+	} );
+
 	describe( 'additional method setup task', () => {
 		beforeEach( () => {
 			createAdditionalMethodsSetupTask.mockReturnValue( {} );
