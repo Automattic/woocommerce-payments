@@ -799,11 +799,6 @@ class MultiCurrency {
 	 * @return bool
 	 */
 	private function is_using_auto_currency_switching(): bool {
-		$default_location = get_option( 'woocommerce_default_customer_address', false );
-		if ( 'yes' === get_option( $this->id . '_enable_auto_currency', false )
-			&& ( 'geolocation' === $default_location || 'geolocation_ajax' === $default_location ) ) {
-			return true;
-		}
-		return false;
+		return 'yes' === get_option( $this->id . '_enable_auto_currency', false );
 	}
 }

@@ -40,9 +40,23 @@ class Locale {
 	 * @return string|null Currency code or null if not found.
 	 */
 	public function get_currency_by_customer_location() {
-		$location = wc_get_customer_default_location();
+		$country = $this->geolocate_customer();
 
-		return $this->locale_info[ $location['country'] ]['currency_code'] ?? null;
+		if ( $country ) {
+			// Once we have a location, ensure it's valid, otherwise fallback to the default country.
+			$allowed_country_codes = WC()->countries->get_allowed_countries();
+			if ( ! array_key_exists( $country, $allowed_country_codes ) ) {
+				$country = null;
+			}
+		}
+
+		if ( ! $country ) {
+			$default_location = get_option( 'woocommerce_default_country', '' );
+			$location         = wc_format_country_state_string( apply_filters( 'woocommerce_customer_default_location', $default_location ) );
+			$country          = $location['country'];
+		}
+
+		return $this->locale_info[ $country ]['currency_code'] ?? null;
 	}
 
 	/**
@@ -66,6 +80,22 @@ class Locale {
 	 */
 	public function get_user_locale(): string {
 		return get_user_locale();
+	}
+
+	/**
+	 * Attempts to guess the customer's country based on their IP.
+	 *
+	 * @return string|null Country code, or NULL if it couldn't be determined.
+	 */
+	private function geolocate_customer() {
+		// Exclude common bots from geolocation by user agent.
+		$ua = wc_get_user_agent();
+		if ( stristr( $ua, 'bot' ) || stristr( $ua, 'spider' ) || stristr( $ua, 'crawl' ) ) {
+			return null;
+		}
+
+		$geolocation = \WC_Geolocation::geolocate_ip( '', true, true );
+		return $geolocation['country'] ?? null;
 	}
 
 	/**
