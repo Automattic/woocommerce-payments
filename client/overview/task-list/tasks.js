@@ -18,6 +18,7 @@ export const getTasks = ( {
 	additionalMethodsSetup = {},
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
+	needsHttpsSetup,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
@@ -82,6 +83,23 @@ export const getTasks = ( {
 				onClick: () => {
 					window.location.href = wpcomReconnectUrl;
 				},
+			},
+		isAccountOverviewTasksEnabled &&
+			needsHttpsSetup && {
+				key: 'force-secure-checkout',
+				title: __( 'Force secure checkout', 'woocommerce-payments' ),
+				content: __(
+					'Protect your customers data and increase trustworthiness of your store by forcing HTTPS on checkout pages.',
+					'woocommerce-payments'
+				),
+				completed: false,
+				onClick: () => {
+					window.open(
+						'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
+						'_blank'
+					);
+				},
+				actionLabel: __( 'Read more', 'woocommerce-payments' ),
 			},
 		additionalMethodsSetup.isTaskVisible &&
 			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
