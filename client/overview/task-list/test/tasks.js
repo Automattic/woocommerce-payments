@@ -144,7 +144,6 @@ describe( 'getTasks()', () => {
 
 		const tasks = getTasks( {
 			additionalMethodsSetup: { isTaskVisible: true },
-			isAccountOverviewTasksEnabled: false,
 			showUpdateDetailsTask: 'yes',
 			wpcomReconnectUrl: 'http://example.com',
 			accountStatus: {},
