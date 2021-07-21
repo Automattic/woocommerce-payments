@@ -21,11 +21,11 @@ class FrontendCurrencies {
 	protected $multi_currency;
 
 	/**
-	 * Utils instance.
+	 * Locale instance.
 	 *
-	 * @var Utils
+	 * @var Locale
 	 */
-	protected $utils;
+	protected $locale;
 
 	/**
 	 * Multi-Currency currency formatting map.
@@ -38,13 +38,11 @@ class FrontendCurrencies {
 	 * Constructor.
 	 *
 	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
-	 * @param Utils         $utils          The Utils instance.
+	 * @param Locale        $locale          The Locale instance.
 	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
+	public function __construct( MultiCurrency $multi_currency, Locale $locale ) {
 		$this->multi_currency = $multi_currency;
-		$this->utils          = $utils;
-
-		$this->load_locale_data();
+		$this->locale         = $locale;
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 			// Currency hooks.
@@ -148,41 +146,14 @@ class FrontendCurrencies {
 			'num_decimals' => 2,
 		];
 
-		$country = $this->utils->get_user_locale_country();
+		$locale = $this->locale->get_user_locale();
 
-		if ( ! empty( $this->currency_format[ $currency_code ] ) ) {
-			$currency_options = $this->currency_format[ $currency_code ];
-			// If there's no country-specific formatting, default to the first entry in the array.
-			$currency_format = $currency_options[ $country ] ?? reset( $currency_options );
+		$currency_options = $this->locale->get_currency_format( $currency_code );
+		if ( $currency_options ) {
+			// If there's no locale-specific formatting, default to the 'default' entry in the array.
+			$currency_format = $currency_options[ $locale ] ?? $currency_options['default'] ?? $currency_format;
 		}
 
-		return apply_filters( 'wcpay_multi_currency_' . strtolower( $currency_code ) . '_format', $currency_format, $country );
-	}
-
-	/**
-	 * Loads locale data from WooCommerce core (/i18n/locale-info.php) and maps it
-	 * to be used by currency.
-	 *
-	 * @return void
-	 */
-	private function load_locale_data() {
-		$locale_info = include WC()->plugin_path() . '/i18n/locale-info.php';
-
-		// Extract the currency formatting options from the locale info.
-		foreach ( $locale_info as $country => $locale ) {
-			$currency_code = $locale['currency_code'];
-
-			// Convert Norwegian Krone symbol to its ISO 4217 currency code.
-			if ( 'Kr' === $currency_code ) {
-				$currency_code = 'NOK';
-			}
-
-			$this->currency_format[ $currency_code ][ $country ] = [
-				'currency_pos' => $locale['currency_pos'],
-				'thousand_sep' => $locale['thousand_sep'],
-				'decimal_sep'  => $locale['decimal_sep'],
-				'num_decimals' => $locale['num_decimals'],
-			];
-		}
+		return apply_filters( 'wcpay_multi_currency_' . strtolower( $currency_code ) . '_format', $currency_format, $locale );
 	}
 }
