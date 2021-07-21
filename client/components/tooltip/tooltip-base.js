@@ -19,7 +19,7 @@ const isEventTriggeredWithin = ( event, element ) =>
 
 const useHideDelay = (
 	isVisibleProp,
-	{ hideDelayMs = 1000, triggerRef, tooltipRef, onHide = noop }
+	{ hideDelayMs = 600, triggerRef, tooltipRef, onHide = noop }
 ) => {
 	const [ isVisible, setIsVisible ] = useState( isVisibleProp );
 	// not using state for this, we don't need to cause a re-render
