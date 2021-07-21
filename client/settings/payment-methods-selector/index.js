@@ -13,7 +13,7 @@ import {
 	useCurrencies,
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
-} from '../../data';
+} from 'data';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import ConfirmationModal from '../../components/confirmation-modal';
