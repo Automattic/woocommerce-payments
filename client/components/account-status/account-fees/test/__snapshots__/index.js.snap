@@ -47,6 +47,53 @@ exports[`AccountFees renders discounted base fee 1`] = `
 </div>
 `;
 
+exports[`AccountFees renders discounted fee with USD volume currency and non-USD base fee 1`] = `
+<div>
+  Pound sterling 
+  (GBP) 
+  <s>
+    1.4% + £0.20 per transaction
+  </s>
+   0.7% + £0.10 per transaction
+  <div
+    class="progressbar"
+  >
+    <div
+      class="progressbar__container"
+    >
+      <div
+        class="progressbar__inner"
+        style="width: 1.234556%;"
+      />
+      <span
+        class="progressbar__outer-progress-label"
+      >
+        $12,345.56
+      </span>
+    </div>
+    <span
+      class="progressbar__total-label"
+    >
+      $1,000,000.00
+    </span>
+  </div>
+  <p
+    class="description"
+  >
+    Discounted base fee expires after the first $1,000,000.00 of total payment volume.
+  </p>
+  <p>
+    <a
+      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      Learn more
+    </a>
+  </p>
+</div>
+`;
+
 exports[`AccountFees renders discounted fee with end date 1`] = `
 <div>
   United States (US) dollar 

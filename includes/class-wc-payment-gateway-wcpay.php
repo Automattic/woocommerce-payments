@@ -489,6 +489,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return 'yes' === $this->get_option( 'test_mode' );
 	}
 
+
+	/**
+	 * Returns whether a store that is not in test mode needs to set https
+	 * in the checkout
+	 *
+	 * @return boolean True if needs to set up forced ssl in checkout or https
+	 */
+	public function needs_https_setup() {
+		return ! $this->is_in_test_mode() && ! wc_checkout_is_https();
+	}
+
 	/**
 	 * Checks if the gateway is enabled, and also if it's configured enough to accept payments from customers.
 	 *
@@ -497,6 +508,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
+		// Disable the gateway if using live mode without HTTPS set up.
+		if ( $this->needs_https_setup() ) {
+			return false;
+		}
+
 		return parent::is_available() && ! $this->needs_setup();
 	}
 
@@ -573,6 +589,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'publishableKey'           => $this->account->get_publishable_key( $this->is_in_test_mode() ),
 			'accountId'                => $this->account->get_stripe_account_id(),
 			'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
+			'wcAjaxUrl'                => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'createSetupIntentNonce'   => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 			'createPaymentIntentNonce' => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
 			'updatePaymentIntentNonce' => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
@@ -947,7 +964,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_information->is_using_manual_capture(),
 				$save_payment_method,
 				$metadata,
-				$this->get_level3_data_from_order( $this->account->get_account_country(), $order ),
+				$this->get_level3_data_from_order( $order ),
 				$payment_information->is_merchant_initiated(),
 				$additional_api_parameters
 			);
@@ -1534,7 +1551,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = $this->payments_api_client->capture_intention(
 				$order->get_transaction_id(),
 				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
-				$this->get_level3_data_from_order( $this->account->get_account_country(), $order )
+				$this->get_level3_data_from_order( $order )
 			);
 
 			$status   = $intent->get_status();
@@ -1683,11 +1700,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Create the level 3 data array to send to Stripe when making a purchase.
 	 *
-	 * @param string   $merchant_country The merchant country.
 	 * @param WC_Order $order The order that is being paid for.
 	 * @return array          The level 3 data to send to Stripe.
 	 */
-	public function get_level3_data_from_order( string $merchant_country, WC_Order $order ): array {
+	public function get_level3_data_from_order( WC_Order $order ): array {
+		$merchant_country = $this->account->get_account_country();
 		// We do not need to send level3 data if merchant account country is non-US.
 		if ( 'US' !== $merchant_country ) {
 			return [];
@@ -1698,8 +1715,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order_items = array_values( $order->get_items( [ 'line_item', 'fee' ] ) );
 		$currency    = $order->get_currency();
 
-		$process_item  = function( $item ) use ( $currency ) {
-
+		$process_item  = static function( $item ) use ( $currency ) {
 			// Check to see if it is a WC_Order_Item_Product or a WC_Order_Item_Fee.
 			if ( is_a( $item, 'WC_Order_Item_Product' ) ) {
 				$subtotal   = $item->get_subtotal();
@@ -1730,6 +1746,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$level3_data = [
 			'merchant_reference' => (string) $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
+			'customer_reference' => (string) $order->get_id(),
 			'shipping_amount'    => WC_Payments_Utils::prepare_amount( (float) $order->get_shipping_total() + (float) $order->get_shipping_tax(), $currency ), // The shipping cost, in cents, as a non-negative integer.
 			'line_items'         => $items_to_send,
 		];

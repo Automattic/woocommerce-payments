@@ -31,8 +31,8 @@ const SetupComplete = () => {
 
 		// Set the local `isSetupCompleted` to `yes` so that task appears completed on the list.
 		// Please note that marking an item as "completed" is different from "dismissing" it.
-		window.wcpayAdditionalMethodsSetup.isSetupCompleted = 'yes';
-		window.wcpayAdditionalMethodsSetup.isUpeEnabled = true;
+		window.wcpaySettings.additionalMethodsSetup.isSetupCompleted = 'yes';
+		window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = true;
 	}, [ isActive, updateOptions ] );
 
 	return (
@@ -54,7 +54,10 @@ const SetupComplete = () => {
 							'woocommerce-payments'
 						) }
 					</Button>
-					<Button href="?TODO" isTertiary>
+					<Button
+						href="admin.php?page=wc-settings&tab=wcpay_multi_currency"
+						isTertiary
+					>
 						{ __(
 							'Go to multi-currency settings',
 							'woocommerce-payments'
