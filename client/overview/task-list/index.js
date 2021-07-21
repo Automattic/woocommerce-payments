@@ -40,6 +40,7 @@ const TaskList = ( { tasks } ) => {
 						<TaskItem
 							key={ task.key }
 							title={ task.title }
+							actionLabel={ task.actionLabel }
 							completed={ task.completed }
 							content={ task.content || task.additionalInfo }
 							expanded
