@@ -111,6 +111,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->remove_currency_settings_mock( 'GBP', [ 'price_charm', 'price_rounding', 'manual_rate', 'exchange_rate' ] );
 		delete_option( self::CACHED_CURRENCIES_OPTION );
 		delete_option( self::ENABLED_CURRENCIES_OPTION );
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'no' );
 
 		parent::tearDown();
 	}
@@ -222,21 +223,6 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertSame( 'GBP', $this->multi_currency->get_selected_currency()->get_code() );
 	}
 
-	public function test_get_selected_currency_returns_currency_from_user_location() {
-		// Enable the option for auto currency switching, enable geolocation.
-		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
-		update_option( 'woocommerce_default_customer_address', 'geolocation' );
-
-		add_filter(
-			'woocommerce_geolocate_ip',
-			function() {
-				return 'CA';
-			}
-		);
-
-		$this->assertSame( 'CAD', $this->multi_currency->get_selected_currency()->get_code() );
-	}
-
 	public function test_update_selected_currency_does_not_set_invalid_session_currency() {
 		$this->multi_currency->update_selected_currency( 'UNSUPPORTED_CURRENCY' );
 
@@ -297,6 +283,36 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->multi_currency->update_selected_currency_by_url();
 
 		$this->assertSame( 'GBP', WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
+	}
+
+	public function test_update_selected_currency_by_geolocation_does_not_set_session_when_currency_not_enabled() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'CL';
+			}
+		);
+
+		$this->multi_currency->update_selected_currency_by_geolocation();
+
+		$this->assertNull( WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
+	}
+
+	public function test_update_selected_currency_by_geolocation_updates_session_when_currency_is_enabled() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'CA';
+			}
+		);
+
+		$this->multi_currency->update_selected_currency_by_geolocation();
+
+		$this->assertSame( 'CAD', WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
 	}
 
 	public function test_get_price_returns_price_in_default_currency() {
