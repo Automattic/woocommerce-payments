@@ -315,6 +315,38 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertSame( 'CAD', WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
 	}
 
+	public function test_update_selected_currency_by_geolocation_displays_notice() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'CA';
+			}
+		);
+
+		$this->multi_currency->update_selected_currency_by_geolocation();
+
+		$this->assertNotFalse( has_filter( 'wp_footer', [ $this->multi_currency, 'display_geolocation_currency_update_notice' ] ) );
+	}
+
+	public function test_display_geolocation_currency_update_notice() {
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'CA';
+			}
+		);
+
+		$this->multi_currency->display_geolocation_currency_update_notice();
+
+		$this->expectOutputRegex( '/<p class="woocommerce-store-notice demo_store" data-notice-id="cd4c082cbdfa742c13d944c867a45cd92" style="display:none;">/' );
+		$this->expectOutputRegex( '/We noticed you&#039;re visiting from Canada. We&#039;ve updated our prices to Canadian dollar for your shopping convenience./' );
+		$this->expectOutputRegex( '/Use <a href="?currency=USD">United States (US) dollar<\/a> instead./' );
+		$this->expectOutputRegex( '/<a href="#" class="woocommerce-store-notice__dismiss-link">Dismiss<\/a><\/p>/' );
+	}
+
 	public function test_get_price_returns_price_in_default_currency() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, get_woocommerce_currency() );
 
