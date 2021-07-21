@@ -152,7 +152,7 @@ describe( 'Account fees utility functions', () => {
 			};
 
 			expect(
-				formatAccountFeesDescription( accountFees, undefined, '' )
+				formatAccountFeesDescription( accountFees, { discount: '' } )
 			).toEqual(
 				<>
 					<s>12.3% + $4.57 per transaction</s> 11.07% + $4.11 per
@@ -162,19 +162,15 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'only describes discount if it is different than base fee', () => {
+			const fee = {
+				percentage_rate: 0.123,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			};
+
 			const accountFees = {
-				base: {
-					percentage_rate: 0.123,
-					fixed_rate: 456.78,
-					currency: 'USD',
-				},
-				discount: [
-					{
-						percentage_rate: 0.123,
-						fixed_rate: 456.78,
-						currency: 'USD',
-					},
-				],
+				base: fee,
+				discount: [ fee ],
 			};
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
@@ -197,11 +193,10 @@ describe( 'Account fees utility functions', () => {
 			};
 
 			expect(
-				formatAccountFeesDescription(
-					accountFees,
-					'perc: %1$f fixed: %2$s',
-					'disc perc: %f'
-				)
+				formatAccountFeesDescription( accountFees, {
+					fee: 'perc: %1$f fixed: %2$s',
+					discount: 'disc perc: %f',
+				} )
 			).toEqual(
 				<>
 					<s>perc: 12.3 fixed: $4.57</s> perc: 11.07 fixed: $4.11 disc
@@ -227,7 +222,7 @@ describe( 'Account fees utility functions', () => {
 			);
 		} );
 
-		it( 'returns discounted fees in short format', () => {
+		it( 'returns discounted fees in short format (no discount % or base fee)', () => {
 			const methodFees = {
 				base: {
 					percentage_rate: 0.123,
@@ -242,9 +237,7 @@ describe( 'Account fees utility functions', () => {
 			};
 
 			expect( formatMethodFeesDescription( methodFees ) ).toEqual(
-				<>
-					<s>12.3% + $4.57</s> 11.07% + $4.11
-				</>
+				<>11.07% + $4.11</>
 			);
 		} );
 
