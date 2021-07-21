@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import { React } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, RadioControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
@@ -16,6 +16,7 @@ import {
 	usePaymentRequestButtonTheme,
 } from '../../data';
 import CardBody from '../card-body';
+import PaymentRequestButtonPreview from './payment-request-button-preview';
 
 const makeButtonSizeText = ( string ) =>
 	interpolateComponents( {
@@ -151,6 +152,11 @@ const PaymentRequestSettings = () => {
 					selected={ theme }
 					options={ buttonThemeOptions }
 					onChange={ setTheme }
+				/>
+				<PaymentRequestButtonPreview
+					buttonType={ buttonType }
+					size={ size }
+					theme={ theme }
 				/>
 			</CardBody>
 		</Card>
