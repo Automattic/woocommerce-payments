@@ -51,7 +51,7 @@ const EnableUpePreviewTask = () => {
 						),
 						components: {
 							learnMoreLink: (
-								<a href="?TODO">
+								<a href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#introduction">
 									{ __(
 										'Learn more',
 										'woocommerce-payments'

@@ -171,9 +171,8 @@ const AddPaymentMethodsTask = () => {
 							'woocommerce-payments'
 						),
 						components: {
-							// TODO
 							learnMoreLink: (
-								<a href="?TODO">
+								<a href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#available-methods">
 									{ __(
 										'Learn more',
 										'woocommerce-payments'
