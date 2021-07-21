@@ -205,10 +205,17 @@ describe( 'PaymentMethods', () => {
 			const featureFlagContext = {
 				featureFlags: { upeSettingsPreview, upe },
 			};
+			const upeContext = {
+				isUpeEnabled: upe,
+				setIsUpeEnabled: () => null,
+				status: 'resolved',
+			};
 
 			render(
 				<WCPaySettingsContext.Provider value={ featureFlagContext }>
-					<PaymentMethods />
+					<WcPayUpeContext.Provider value={ upeContext }>
+						<PaymentMethods />
+					</WcPayUpeContext.Provider>
 				</WCPaySettingsContext.Provider>
 			);
 
