@@ -356,16 +356,23 @@ export default class WCPayAPI {
 	 * @param {string} paymentIntentId The id of the payment intent.
 	 * @param {int} orderId The id of the order.
 	 * @param {string} savePaymentMethod 'yes' if saving.
+	 * @param {string} selectedUPEPaymentType The name of the selected UPE payment type or empty string.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	updateIntent( paymentIntentId, orderId, savePaymentMethod ) {
+	updateIntent(
+		paymentIntentId,
+		orderId,
+		savePaymentMethod,
+		selectedUPEPaymentType
+	) {
 		return this.request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'update_payment_intent' ),
 			{
 				wcpay_order_id: orderId,
 				wc_payment_intent_id: paymentIntentId,
 				save_payment_method: savePaymentMethod,
+				wcpay_selected_upe_payment_type: selectedUPEPaymentType,
 				_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
 			}
 		)
@@ -384,6 +391,35 @@ export default class WCPayAPI {
 				}
 			} );
 	}
+
+	/**
+	 * Saves the calculated UPE appearance values in a transient.
+	 *
+	 * @param {Object} appearance The UPE appearance object with style values
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	saveUPEAppearance( appearance ) {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			appearance,
+			action: 'save_upe_appearance',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
+		} )
+			.then( ( response ) => {
+				// There is not any action to take or harm caused by a failed update, so just returning success status.
+				return response.success;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajaxrequest.
+					throw new Error( error.statusText );
+				}
+			} );
+	}
+
 	/**
 	 * Process checkout and update payment intent via AJAX.
 	 *

@@ -23,6 +23,8 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useSettings: jest.fn(),
+	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
+	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 } ) );
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
