@@ -10,12 +10,15 @@ const ExpirationBar = ( {
 	feeData: {
 		volume_allowance: volumeAllowance,
 		current_volume: currentVolume,
+		...rest
 	},
-	currencyCode,
 } ) => {
 	if ( ! volumeAllowance ) {
 		return null;
 	}
+
+	const currencyCode = rest.volume_currency ?? rest.currency;
+
 	return (
 		<ProgressBar
 			progressLabel={ formatCurrency( currentVolume, currencyCode ) }
