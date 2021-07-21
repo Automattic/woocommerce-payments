@@ -227,13 +227,13 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
 		update_option( 'woocommerce_default_customer_address', 'geolocation' );
 
-		// Filter the results of wc_get_customer_default_location since we cannot mock Locale.
 		add_filter(
-			'woocommerce_customer_default_location_array',
+			'woocommerce_geolocate_ip',
 			function() {
-				return [ 'country' => 'CA' ];
+				return 'CA';
 			}
 		);
+
 		$this->assertSame( 'CAD', $this->multi_currency->get_selected_currency()->get_code() );
 	}
 

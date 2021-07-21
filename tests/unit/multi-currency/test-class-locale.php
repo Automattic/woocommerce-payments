@@ -72,21 +72,26 @@ class WCPay_Multi_Currency_Locale_Tests extends WP_UnitTestCase {
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
 		update_option( 'woocommerce_default_customer_address', 'geolocation' );
 		add_filter(
-			'woocommerce_customer_default_location_array',
+			'woocommerce_geolocate_ip',
 			function() {
-				return [ 'country' => 'CA' ];
+				return 'CA';
 			}
 		);
 		$this->assertSame( 'CAD', $this->locale->get_currency_by_customer_location() );
 	}
 
-	// If the country isn't returned, or if it's not found in the locale, null should be returned.
 	public function test_get_currency_by_customer_location_returns_null() {
 		update_option( 'woocommerce_default_customer_address', 'geolocation' );
 		add_filter(
-			'woocommerce_customer_default_location_array',
+			'woocommerce_geolocate_ip',
 			function() {
-				return [ 'country' => '' ];
+				return '';
+			}
+		);
+		add_filter(
+			'woocommerce_customer_default_location',
+			function() {
+				return '';
 			}
 		);
 		$this->assertSame( null, $this->locale->get_currency_by_customer_location() );
