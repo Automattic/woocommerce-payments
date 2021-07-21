@@ -13,9 +13,10 @@ import moment from 'moment';
 import { formatCurrency } from 'utils/currency';
 
 const ExpirationDescription = ( {
-	feeData: { volume_allowance: volumeAllowance, end_time: endTime },
-	currencyCode,
+	feeData: { volume_allowance: volumeAllowance, end_time: endTime, ...rest },
 } ) => {
+	const currencyCode = rest.volume_currency ?? rest.currency;
+
 	let description;
 	if ( volumeAllowance && endTime ) {
 		description = sprintf(
