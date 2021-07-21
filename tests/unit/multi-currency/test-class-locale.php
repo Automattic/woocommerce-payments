@@ -63,6 +63,10 @@ class WCPay_Multi_Currency_Locale_Tests extends WP_UnitTestCase {
 		$this->assertSame( 'en_GB', $this->locale->get_user_locale() );
 	}
 
+	public function test_transient_data_set() {
+		$this->assertTrue( is_array( get_transient( 'wcpay_multi_currency_locale_data' ) ) );
+	}
+
 	private function mock_locale( $locale ) {
 		add_filter(
 			'locale',

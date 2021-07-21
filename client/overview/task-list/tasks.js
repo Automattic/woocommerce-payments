@@ -7,10 +7,17 @@ import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
+/**
+ * Internal dependencies
+ */
+import createAdditionalMethodsSetupTask from '../../additional-methods-setup/task';
+
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
+	additionalMethodsSetup = {},
 	wpcomReconnectUrl,
+	needsHttpsSetup,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
@@ -37,6 +44,7 @@ export const getTasks = ( {
 				'woocommerce-payments'
 			);
 	}
+
 	return [
 		'yes' === showUpdateDetailsTask && {
 			key: 'update-business-details',
@@ -73,5 +81,23 @@ export const getTasks = ( {
 				window.location.href = wpcomReconnectUrl;
 			},
 		},
+		needsHttpsSetup && {
+			key: 'force-secure-checkout',
+			title: __( 'Force secure checkout', 'woocommerce-payments' ),
+			content: __(
+				'Protect your customers data and increase trustworthiness of your store by forcing HTTPS on checkout pages.',
+				'woocommerce-payments'
+			),
+			completed: false,
+			onClick: () => {
+				window.open(
+					'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
+					'_blank'
+				);
+			},
+			actionLabel: __( 'Read more', 'woocommerce-payments' ),
+		},
+		additionalMethodsSetup.isTaskVisible &&
+			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
 	].filter( Boolean );
 };

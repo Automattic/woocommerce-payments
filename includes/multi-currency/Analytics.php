@@ -18,6 +18,21 @@ class Analytics {
 	const SCRIPT_NAME    = 'WCPAY_MULTI_CURRENCY_ANALYTICS';
 
 	/**
+	 * A list of all the pages in the WC Admin analytics section that
+	 * we want to add multi-currency filters to.
+	 *
+	 * @var string[]
+	 */
+	const ANALYTICS_PAGES = [
+		'orders',
+		'revenue',
+		'products',
+		'categories',
+		'coupons',
+		'taxes',
+	];
+
+	/**
 	 * Instance of MultiCurrency.
 	 *
 	 * @var MultiCurrency $multi_currency
@@ -44,14 +59,26 @@ class Analytics {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		}
 
+		add_filter( 'woocommerce_analytics_update_order_stats_data', [ $this, 'filter_update_order_stats' ] );
+
 		// If we aren't making a REST request, return before adding these filters.
 		if ( ! WC()->is_rest_api_request() ) {
 			return;
 		}
 
-		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ] );
-		add_filter( 'woocommerce_analytics_clauses_where', [ $this, 'filter_where_clauses' ] );
-		add_filter( 'woocommerce_analytics_clauses_select', [ $this, 'filter_select_clauses' ] );
+		foreach ( self::ANALYTICS_PAGES as $analytics_page ) {
+			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_subquery", [ $this, 'filter_join_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_stats_total", [ $this, 'filter_join_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_stats_interval", [ $this, 'filter_join_clauses' ] );
+
+			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_subquery", [ $this, 'filter_where_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_stats_total", [ $this, 'filter_where_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_stats_interval", [ $this, 'filter_where_clauses' ] );
+
+			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_subquery", [ $this, 'filter_select_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_stats_total", [ $this, 'filter_select_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_stats_interval", [ $this, 'filter_select_clauses' ] );
+		}
 	}
 
 	/**
@@ -106,6 +133,17 @@ class Analytics {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Filter to hook into when an order's stats are updated in the DB.
+	 *
+	 * @param array $data The order data.
+	 *
+	 * @return array
+	 */
+	public function filter_update_order_stats_data( array $data ) {
+		return $data;
 	}
 
 	/**
