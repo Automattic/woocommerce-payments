@@ -30,17 +30,23 @@ class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase 
 	}
 
 	public function tearDown() {
-		remove_all_filters( 'stylesheet' );
 		remove_all_filters( 'option_wcpay_multi_currency_enable_storefront_switcher' );
 
 		parent::tearDown();
+	}
+
+	public function test_register_settings_on_init() {
+		$this->assertSame(
+			10,
+			has_filter( 'wcpay_multi_currency_enabled_currencies_settings', [ $this->storefront_integration, 'filter_store_settings' ] ),
+			"The filter 'wcpay_multi_currency_enabled_currencies_settings' with function 'filter_store_settings' was not registered with a priority of 10."
+		);
 	}
 
 	/**
 	 * @dataProvider switcher_filter_provider
 	 */
 	public function test_does_not_register_actions_when_switcher_disabled( $filter, $function_name ) {
-		$this->mock_theme( 'storefront' );
 		$this->mock_option( 'no' );
 		// Reinit class to re-evaluate conditional hooks.
 		$this->storefront_integration = new StorefrontIntegration( $this->mock_multi_currency );
@@ -55,8 +61,8 @@ class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase 
 	/**
 	 * @dataProvider switcher_filter_provider
 	 */
-	public function test_registers_default_actions_when_switcher_enabled( $filter, $function_name ) {
-		$this->mock_theme( 'storefront' );
+	public function test_registers_actions_when_switcher_default( $filter, $function_name ) {
+		$this->mock_option( '' );
 		// Reinit class to re-evaluate conditional hooks.
 		$this->storefront_integration = new StorefrontIntegration( $this->mock_multi_currency );
 
@@ -70,8 +76,8 @@ class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase 
 	/**
 	 * @dataProvider switcher_filter_provider
 	 */
-	public function test_registers_actions_when_switcher_enabled_and_storefront_theme_found( $filter, $function_name ) {
-		$this->mock_theme( 'storefront' );
+	public function test_registers_actions_when_switcher_enabled( $filter, $function_name ) {
+		$this->mock_option( 'yes' );
 		// Reinit class to re-evaluate conditional hooks.
 		$this->storefront_integration = new StorefrontIntegration( $this->mock_multi_currency );
 
@@ -87,15 +93,6 @@ class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase 
 			[ 'woocommerce_breadcrumb_defaults', 'modify_breadcrumb_defaults' ],
 			[ 'wp_enqueue_scripts', 'add_inline_css' ],
 		];
-	}
-
-	private function mock_theme( $theme ) {
-		add_filter(
-			'stylesheet',
-			function() use ( $theme ) {
-				return $theme;
-			}
-		);
 	}
 
 	private function mock_option( $value ) {

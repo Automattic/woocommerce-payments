@@ -83,6 +83,13 @@ class MultiCurrency {
 	protected $frontend_currencies;
 
 	/**
+	 * StorefrontIntegration instance.
+	 *
+	 * @var StorefrontIntegration
+	 */
+	protected $storefront_integration;
+
+	/**
 	 * The available currencies.
 	 *
 	 * @var array
@@ -202,7 +209,7 @@ class MultiCurrency {
 		// Check for Storefront being active and load the integration if it is.
 		$theme = wp_get_theme();
 		if ( 'storefront' === $theme->get_stylesheet() || 'storefront' === $theme->get_template() ) {
-			new StorefrontIntegration( $this );
+			$this->storefront_integration = new StorefrontIntegration( $this );
 		}
 
 		if ( is_admin() ) {
@@ -375,6 +382,15 @@ class MultiCurrency {
 	 */
 	public function get_frontend_currencies(): FrontendCurrencies {
 		return $this->frontend_currencies;
+	}
+
+	/**
+	 * Returns the StorefrontIntegration instance.
+	 *
+	 * @return StorefrontIntegration|null
+	 */
+	public function get_storefront_integration() {
+		return $this->storefront_integration;
 	}
 
 	/**
