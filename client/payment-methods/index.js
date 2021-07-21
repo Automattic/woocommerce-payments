@@ -1,4 +1,5 @@
 /** @format */
+
 /**
  * External dependencies
  */
@@ -12,9 +13,11 @@ import {
 	CardHeader,
 	DropdownMenu,
 	Notice,
+	ExternalLink,
 } from '@wordpress/components';
 import { moreVertical, trash } from '@wordpress/icons';
 import classNames from 'classnames';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -30,25 +33,9 @@ import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
+import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
-
-// @todo - remove once #2174 is merged and use real banner instead.
-function UpeSetupBanner() {
-	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
-	return (
-		<>
-			<p>UPE IS DISABLED!!!</p>
-			<Button
-				label="Enable UPE"
-				isPrimary
-				onClick={ () => setIsUpeEnabled( true ) }
-			>
-				{ __( 'Enable UPE', 'woocommerce-payments' ) }
-			</Button>
-		</>
-	);
-}
 
 function PaymentMethodsDropdownMenu() {
 	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
@@ -83,6 +70,55 @@ const UpeDisableError = () => {
 	);
 };
 
+const UpeSetupBanner = () => {
+	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
+
+	const handleEnableUpeClick = () => {
+		setIsUpeEnabled( true ).then( () => {
+			window.location.href = addQueryArgs( 'admin.php', {
+				page: 'wc-admin',
+				task: 'woocommerce-payments--additional-payment-methods',
+			} );
+		} );
+	};
+
+	return (
+		<>
+			<CardDivider />
+			<CardBody className="payment-methods__express-checkouts">
+				<Pill>{ __( 'Early access', 'woocommerce-payments' ) }</Pill>
+				<h3>
+					{ __(
+						'Enable the new WooCommerce Payments checkout experience',
+						'woocommerce-payments'
+					) }
+				</h3>
+				<p>
+					{ __(
+						/* eslint-disable-next-line max-len */
+						'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.',
+						'woocommerce-payments'
+					) }
+				</p>
+
+				<div className="payment-methods__express-checkouts-actions">
+					<span className="payment-methods__express-checkouts-get-started">
+						<Button isPrimary onClick={ handleEnableUpeClick }>
+							{ __(
+								'Enable in your store',
+								'woocommerce-payments'
+							) }
+						</Button>
+					</span>
+					<ExternalLink href="https://docs.woocommerce.com/document/payments/">
+						{ __( 'Learn more', 'woocommerce-payments' ) }
+					</ExternalLink>
+				</div>
+			</CardBody>
+		</>
+	);
+};
+
 const PaymentMethods = () => {
 	const [
 		enabledMethodIds,
@@ -104,6 +140,13 @@ const PaymentMethods = () => {
 		);
 	};
 
+	const {
+		featureFlags: {
+			upeSettingsPreview: isUpeSettingsPreviewEnabled,
+			upe: isUpeFeatureEnabled,
+		},
+	} = useContext( WCPaySettingsContext );
+
 	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
 
 	return (
@@ -117,11 +160,15 @@ const PaymentMethods = () => {
 				{ isUpeEnabled && (
 					<CardHeader className="payment-methods__header">
 						<h4 className="payment-methods__heading">
-							Payment methods <Pill>Early access</Pill>
+							Payment methods{ ' ' }
+							<Pill>
+								{ __( 'Early access', 'woocommerce-payments' ) }
+							</Pill>
 						</h4>
 						<PaymentMethodsDropdownMenu />
 					</CardHeader>
 				) }
+
 				<CardBody size={ null }>
 					<PaymentMethodsList className="payment-methods__enabled-methods">
 						{ enabledMethods.map(
@@ -142,14 +189,10 @@ const PaymentMethods = () => {
 						) }
 					</PaymentMethodsList>
 				</CardBody>
-				{ ! isUpeEnabled && (
-					<>
-						<CardDivider />
-						<CardBody>
-							<UpeSetupBanner />
-						</CardBody>
-					</>
+				{ isUpeSettingsPreviewEnabled && ! isUpeFeatureEnabled && (
+					<UpeSetupBanner />
 				) }
+
 				{ isUpeEnabled && 1 < availablePaymentMethodIds.length ? (
 					<>
 						<CardDivider />
