@@ -39,6 +39,39 @@ class StorefrontIntegration {
 	}
 
 	/**
+	 * Adds the checkbox to the store settings to toggle the currency switched in the Storefront breadcrumb section.
+	 *
+	 * @param array $settings The settings from the Settings class.
+	 *
+	 * @return array The modified settings array.
+	 */
+	public function filter_store_settings( array $settings ): array {
+		foreach ( $settings as $key => $value ) {
+			if ( isset( $value['id'] ) ) {
+				if ( $this->id . '_enable_auto_currency' === $value['id'] ) {
+					$settings[ $key ]['checkboxgroup'] = 'start';
+				}
+				if ( $this->id . '_store_settings_widgets_link' === $value['id'] ) {
+					$settings[ $key ] = [
+						'desc'          => __( 'Add a currency switcher to the Storefront theme on breadcrumb section. ', 'woocommerce-payments' ),
+						'desc_tip'      => sprintf(
+							/* translators: %s: url to the widgets page */
+							__( 'A currency switcher is also available in your widgets. <a href="%s">Configure now</a>', 'woocommerce-payments' ),
+							'widgets.php'
+						),
+						'id'            => $this->id . '_enable_storefront_switcher',
+						'default'       => 'yes',
+						'type'          => 'checkbox',
+						'checkboxgroup' => 'end',
+					];
+				}
+			}
+		}
+		return $settings;
+	}
+
+
+	/**
 	 * Adds the CSS to the head of the page.
 	 *
 	 * @return void
@@ -111,6 +144,7 @@ class StorefrontIntegration {
 	 * @return void
 	 */
 	private function init_actions_and_filters() {
+		add_filter( $this->id . '_enabled_currencies_settings', [ $this, 'filter_store_settings' ] );
 		// We specifically look for 'no', because we want it enabled by default.
 		if ( 'no' !== get_option( $this->id . '_enable_storefront_switcher' ) ) {
 			add_filter( 'woocommerce_breadcrumb_defaults', [ $this, 'modify_breadcrumb_defaults' ], 9999 );
