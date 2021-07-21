@@ -131,13 +131,16 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_get_settings_request_returns_test_mode_flag() {
-		$this->gateway->update_option( 'test_mode', 'yes' );
 		add_filter(
 			'wcpay_dev_mode',
 			function () {
 				return true;
 			}
 		);
+		$this->gateway->update_option( 'test_mode', 'yes' );
+		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
+
+		$this->gateway->update_option( 'test_mode', 'no' );
 		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
 
 		add_filter(
@@ -146,6 +149,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 				return false;
 			}
 		);
+		$this->gateway->update_option( 'test_mode', 'yes' );
 		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
 
 		$this->gateway->update_option( 'test_mode', 'no' );
