@@ -205,6 +205,11 @@ jQuery( function ( $ ) {
 		}
 	};
 
+	// Set the selected UPE payment type field
+	const setSelectedUPEPaymentType = ( paymentType ) => {
+		$( '#wcpay_selected_upe_payment_type' ).val( paymentType );
+	};
+
 	/**
 	 * Converts form fields object into Stripe `billing_details` object.
 	 *
@@ -264,9 +269,15 @@ jQuery( function ( $ ) {
 				const { client_secret: clientSecret, id: id } = response;
 				paymentIntentId = id;
 
-				hiddenElementsForUPE.init();
-				const appearance = getAppearance();
-				hiddenElementsForUPE.cleanup();
+				let appearance = getConfig( 'upeAppeareance' );
+
+				if ( ! appearance ) {
+					hiddenElementsForUPE.init();
+					appearance = getAppearance();
+					hiddenElementsForUPE.cleanup();
+					api.saveUPEAppearance( appearance );
+				}
+
 				const businessName = getConfig( 'accountDescriptor' );
 				const upeSettings = {
 					clientSecret,
@@ -283,9 +294,12 @@ jQuery( function ( $ ) {
 				upeElement.mount( '#wcpay-upe-element' );
 				unblockUI( $upeContainer );
 				upeElement.on( 'change', ( event ) => {
+					const selectedUPEPaymentType = event.value.type;
 					const isPaymentMethodReusable =
-						paymentMethodsConfig[ event.value.type ].isReusable;
+						paymentMethodsConfig[ selectedUPEPaymentType ]
+							.isReusable;
 					showNewPaymentMethodCheckbox( isPaymentMethodReusable );
+					setSelectedUPEPaymentType( selectedUPEPaymentType );
 					isUPEComplete = event.complete;
 				} );
 			} )
@@ -399,7 +413,8 @@ jQuery( function ( $ ) {
 			await api.updateIntent(
 				paymentIntentId,
 				orderId,
-				savePaymentMethod
+				savePaymentMethod,
+				$( '#wcpay_selected_upe_payment_type' ).val()
 			);
 
 			const { error } = await api.getStripe().confirmPayment( {
