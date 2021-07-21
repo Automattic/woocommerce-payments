@@ -13,37 +13,19 @@ import { __, sprintf } from '@wordpress/i18n';
 import PaymentMethodIcon from '../../settings/payment-method-icon';
 import Pill from '../pill';
 import Tooltip from '../tooltip';
+import paymentMethodsMap from '../../payment-methods-map';
 import './payment-method-checkbox.scss';
 
-const infoMap = {
-	card: __(
-		'Offer checkout with major credit and debit cards without leaving your store.',
-		'woocommerce-payments'
-	),
-	giropay: __(
-		'Expand your business with giropay — Germany’s second most popular payment system.',
-		'woocommerce-payments'
-	),
-	sepa_debit: __(
-		'Reach 500 million customers and over 20 million businesses across the European Union.',
-		'woocommerce-payments'
-	),
-	sofort: __(
-		'Accept secure bank transfers from Austria, Belgium, Germany, Italy, and Netherlands.',
-		'woocommerce-payments'
-	),
-};
-
-const PaymentMethodInfo = ( { name } ) => {
-	const info = infoMap[ name ];
-	if ( ! info ) return null;
+const PaymentMethodDescription = ( { name } ) => {
+	const description = paymentMethodsMap[ name ]?.description;
+	if ( ! description ) return null;
 
 	return (
-		<Tooltip content={ info }>
+		<Tooltip content={ description }>
 			<div className="payment-method-checkbox__info">
 				<VisuallyHidden>
 					{ __(
-						'Information about the payment method',
+						'Information about the payment method, click to expand',
 						'woocommerce-payments'
 					) }
 				</VisuallyHidden>
@@ -91,7 +73,7 @@ const PaymentMethodCheckbox = ( { onChange, name, checked = false, fees } ) => {
 					<span>{ fees }</span>
 				</Pill>
 			</Tooltip>
-			<PaymentMethodInfo name={ name } />
+			<PaymentMethodDescription name={ name } />
 		</li>
 	);
 };
