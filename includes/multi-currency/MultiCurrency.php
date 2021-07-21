@@ -605,6 +605,11 @@ class MultiCurrency {
 		$country          = $this->locale->get_country_by_customer_location();
 		$currencies       = get_woocommerce_currencies();
 
+		// Do not display notice if using the store's default currency.
+		if ( $store_currency === $current_currency->get_code() ) {
+			return;
+		}
+
 		$message = sprintf(
 			/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name */
 			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. Use <a>%3$s</a> instead.', 'woocommerce-payments' ),

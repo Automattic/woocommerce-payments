@@ -347,6 +347,20 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->expectOutputRegex( '/<a href="#" class="woocommerce-store-notice__dismiss-link">Dismiss<\/a><\/p>/' );
 	}
 
+	public function test_display_geolocation_currency_update_notice_does_not_display_if_using_default_currency() {
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'US' );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'US';
+			}
+		);
+
+		$this->multi_currency->display_geolocation_currency_update_notice();
+
+		$this->expectOutputString( '' );
+	}
+
 	public function test_get_price_returns_price_in_default_currency() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, get_woocommerce_currency() );
 
