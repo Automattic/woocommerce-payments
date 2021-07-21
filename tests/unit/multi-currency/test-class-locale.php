@@ -68,9 +68,35 @@ class WCPay_Multi_Currency_Locale_Tests extends WP_UnitTestCase {
 		$this->assertTrue( is_array( get_transient( 'wcpay_multi_currency_locale_info' ) ) );
 	}
 
+	public function test_get_country_by_customer_location_returns_geolocation_country() {
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'CA';
+			}
+		);
+		$this->assertSame( 'CA', $this->locale->get_country_by_customer_location() );
+	}
+
+	public function test_get_country_by_customer_location_returns_default_country_when_no_geolocation() {
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return '';
+			}
+		);
+
+		add_filter(
+			'woocommerce_customer_default_location',
+			function() {
+				return 'BR';
+			}
+		);
+
+		$this->assertSame( 'BR', $this->locale->get_country_by_customer_location() );
+	}
+
 	public function test_get_currency_by_customer_location_returns_currency_code() {
-		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
-		update_option( 'woocommerce_default_customer_address', 'geolocation' );
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function() {
@@ -81,7 +107,6 @@ class WCPay_Multi_Currency_Locale_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_currency_by_customer_location_returns_null() {
-		update_option( 'woocommerce_default_customer_address', 'geolocation' );
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function() {

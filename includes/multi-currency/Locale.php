@@ -40,6 +40,17 @@ class Locale {
 	 * @return string|null Currency code or null if not found.
 	 */
 	public function get_currency_by_customer_location() {
+		$country = $this->get_country_by_customer_location();
+
+		return $this->locale_info[ $country ]['currency_code'] ?? null;
+	}
+
+	/**
+	 * Gets the customer's country based on their location.
+	 *
+	 * @return string Country code.
+	 */
+	public function get_country_by_customer_location() {
 		$country = $this->geolocate_customer();
 
 		if ( $country ) {
@@ -56,7 +67,7 @@ class Locale {
 			$country          = $location['country'];
 		}
 
-		return $this->locale_info[ $country ]['currency_code'] ?? null;
+		return $country;
 	}
 
 	/**
