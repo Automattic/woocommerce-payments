@@ -225,10 +225,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return $this->create_setup_intent();
 		}
 
+		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] );
+		$enabled_payment_methods = array_filter( $enabled_payment_methods, [ $this, 'is_enabled_for_site_currency' ] );
+
 		$payment_intent = $this->payments_api_client->create_intention(
 			$converted_amount,
 			strtolower( $currency ),
-			array_values( array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] ) ),
+			array_values( $enabled_payment_methods ),
 			$order_id ?? 0
 		);
 		return [
@@ -279,9 +282,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		}
 
+		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );
+		$enabled_payment_methods = array_filter( $enabled_payment_methods, [ $this, 'is_enabled_for_site_currency' ] );
+
 		$setup_intent = $this->payments_api_client->create_setup_intention(
 			$customer_id,
-			array_values( array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] ) )
+			array_values( $enabled_payment_methods )
 		);
 		return [
 			'id'            => $setup_intent['id'],
@@ -814,5 +820,20 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return false;
 		}
 		return $this->payment_methods[ $payment_method_id ]->is_reusable();
+	}
+
+	/**
+	 * Function to be used with array_filter
+	 * to filter UPE payment methods that support the site/customer currency
+	 *
+	 * @param string $payment_method_id Stripe payment method.
+	 *
+	 * @return bool
+	 */
+	private function is_enabled_for_site_currency( $payment_method_id ) {
+		if ( ! isset( $this->payment_methods[ $payment_method_id ] ) ) {
+			return false;
+		}
+		return $this->payment_methods[ $payment_method_id ]->is_valid_currency();
 	}
 }
