@@ -18,6 +18,8 @@ import {
 jest.mock( 'data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
+	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
+	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 } ) );
 
 describe( 'PaymentMethodsSelector', () => {
