@@ -80,6 +80,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'is_saved_cards_enabled'            => [
+						'description'       => __( 'If WooCommerce Payments "Saved cards" should be enabled.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
 					'is_test_mode_enabled'              => [
 						'description'       => __( 'WooCommerce Payments test mode setting.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
@@ -186,6 +191,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_size'       => $this->wcpay_gateway->get_option( 'payment_request_button_size' ),
 				'payment_request_button_type'       => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
 				'payment_request_button_theme'      => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
+				'is_saved_cards_enabled'            => $this->wcpay_gateway->is_saved_cards_enabled(),
 			]
 		);
 	}
@@ -205,6 +211,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_payment_request_enabled( $request );
 		$this->update_payment_request_enabled_locations( $request );
 		$this->update_payment_request_appearance( $request );
+		$this->update_is_saved_cards_enabled( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -372,5 +379,20 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			$value = $request->get_param( $request_key );
 			$this->wcpay_gateway->update_option( $attribute, $value );
 		}
+	}
+
+	/**
+	 * Updates WooCommerce Payments "saved cards" feature.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_saved_cards_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_saved_cards_enabled' ) ) {
+			return;
+		}
+
+		$is_saved_cards_enabled = $request->get_param( 'is_saved_cards_enabled' );
+
+		$this->wcpay_gateway->update_option( 'saved_cards', $is_saved_cards_enabled ? 'yes' : 'no' );
 	}
 }
