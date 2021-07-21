@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { sprintf } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import {
@@ -6,11 +11,18 @@ import {
 	formatMethodFeesDescription,
 	getCurrentFee,
 } from '../account-fees';
+import { formatCurrency } from '../currency';
+
+jest.mock( '../currency', () => ( {
+	formatCurrency: jest.fn(),
+} ) );
 
 describe( 'Account fees utility functions', () => {
-	window.wcpaySettings = {
-		zeroDecimalCurrencies: [],
-	};
+	beforeEach( () => {
+		formatCurrency.mockImplementation( ( amount ) => {
+			return sprintf( '$%.2f', amount / 100 );
+		} );
+	} );
 
 	describe( 'getCurrentFee()', () => {
 		it( 'returns first discount regardless of amount', () => {
@@ -202,6 +214,35 @@ describe( 'Account fees utility functions', () => {
 					<s>perc: 12.3 fixed: $4.57</s> perc: 11.07 fixed: $4.11 disc
 					perc: 10
 				</>
+			);
+		} );
+
+		it( 'formats currencies using formatCurrency()', () => {
+			const accountFees = {
+				base: {
+					percentage_rate: 0.123,
+					fixed_rate: 456.78,
+					currency: 'USD',
+				},
+				discount: [
+					{
+						discount: 0.1,
+					},
+				],
+			};
+
+			formatAccountFeesDescription( accountFees );
+
+			// Base fee description
+			expect( formatCurrency ).toHaveBeenCalledWith(
+				accountFees.base.fixed_rate,
+				accountFees.base.currency
+			);
+
+			// Current fee description
+			expect( formatCurrency ).toHaveBeenCalledWith(
+				accountFees.base.fixed_rate * 0.9,
+				accountFees.base.currency
 			);
 		} );
 	} );
