@@ -130,6 +130,28 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		);
 	}
 
+	public function test_get_settings_request_returns_test_mode_flag() {
+		$this->gateway->update_option( 'test_mode', 'yes' );
+		add_filter(
+			'wcpay_dev_mode',
+			function () {
+				return true;
+			}
+		);
+		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
+
+		add_filter(
+			'wcpay_dev_mode',
+			function () {
+				return false;
+			}
+		);
+		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
+
+		$this->gateway->update_option( 'test_mode', 'no' );
+		$this->assertEquals( false, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
+	}
+
 	public function test_get_settings_returns_if_wcpay_is_enabled() {
 		$this->gateway->enable();
 		$response = $this->controller->get_settings();
