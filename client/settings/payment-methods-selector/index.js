@@ -64,6 +64,8 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 	return (
 		<ConfirmationModal
 			title={ __( 'Add payment methods', 'woocommerce-payments' ) }
+			// using this because when the tooltips inside the modal are clicked, they cause the modal to close
+			shouldCloseOnClickOutside={ false }
 			onRequestClose={ onClose }
 			actions={
 				<>
