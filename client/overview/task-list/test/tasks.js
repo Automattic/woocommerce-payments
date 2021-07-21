@@ -18,6 +18,7 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 			},
 			showUpdateDetailsTask: 'yes',
+			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -39,6 +40,7 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 			},
 			showUpdateDetailsTask: 'no',
+			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -59,6 +61,7 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 			},
 			showUpdateDetailsTask: 'yes',
+			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -77,6 +80,7 @@ describe( 'getTasks()', () => {
 				status: 'complete',
 			},
 			wpcomReconnectUrl: 'http://example.com',
+			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -95,12 +99,68 @@ describe( 'getTasks()', () => {
 				status: 'complete',
 			},
 			wpcomReconnectUrl: null,
+			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
 			expect.not.arrayContaining( [
 				expect.objectContaining( {
 					key: 'reconnect-wpcom-user',
+				} ),
+			] )
+		);
+	} );
+
+	it( 'returns the expected keys when the account overview flag is enabled', () => {
+		createAdditionalMethodsSetupTask.mockReturnValue( {
+			key: 'woocommerce-payments--additional-payment-methods',
+		} );
+
+		const tasks = getTasks( {
+			additionalMethodsSetup: { isTaskVisible: true },
+			isAccountOverviewTasksEnabled: true,
+			showUpdateDetailsTask: 'yes',
+			wpcomReconnectUrl: 'http://example.com',
+			accountStatus: {},
+			needsHttpsSetup: true,
+		} );
+
+		expect( tasks ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( { key: 'update-business-details' } ),
+				expect.objectContaining( { key: 'reconnect-wpcom-user' } ),
+				expect.objectContaining( { key: 'force-secure-checkout' } ),
+				expect.objectContaining( {
+					key: 'woocommerce-payments--additional-payment-methods',
+				} ),
+			] )
+		);
+	} );
+
+	it( 'returns the expected keys when the account overview flag is disabled', () => {
+		createAdditionalMethodsSetupTask.mockReturnValue( {
+			key: 'woocommerce-payments--additional-payment-methods',
+		} );
+
+		const tasks = getTasks( {
+			additionalMethodsSetup: { isTaskVisible: true },
+			showUpdateDetailsTask: 'yes',
+			wpcomReconnectUrl: 'http://example.com',
+			accountStatus: {},
+			needsHttpsSetup: true,
+		} );
+
+		expect( tasks ).toEqual(
+			expect.not.arrayContaining( [
+				expect.objectContaining( { key: 'update-business-details' } ),
+				expect.objectContaining( { key: 'reconnect-wpcom-user' } ),
+				expect.objectContaining( { key: 'force-secure-checkout' } ),
+			] )
+		);
+		expect( tasks ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'woocommerce-payments--additional-payment-methods',
 				} ),
 			] )
 		);
@@ -124,6 +184,7 @@ describe( 'getTasks()', () => {
 			const actual = getTasks( {
 				additionalMethodsSetup: { isTaskVisible: true },
 				accountStatus: {},
+				isAccountOverviewTasksEnabled: true,
 			} );
 
 			expect( actual ).toEqual(
@@ -143,6 +204,7 @@ describe( 'getTasks()', () => {
 			const actual = getTasks( {
 				additionalMethodsSetup: { isTaskVisible: false },
 				accountStatus: {},
+				isAccountOverviewTasksEnabled: true,
 			} );
 
 			expect( actual ).toEqual(
