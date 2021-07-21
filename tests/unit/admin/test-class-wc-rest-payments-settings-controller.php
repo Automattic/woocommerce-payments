@@ -412,6 +412,25 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->controller->update_settings( $request );
 	}
+
+	public function test_update_settings_enables_saved_cards() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_saved_cards_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'yes', $this->gateway->get_option( 'saved_cards' ) );
+	}
+
+	public function test_update_settings_disables_saved_cards() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_saved_cards_enabled', false );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'no', $this->gateway->get_option( 'saved_cards' ) );
+	}
+
 	/**
 	 * @param bool $can_manage_woocommerce
 	 *
