@@ -976,10 +976,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$currency      = $intent->get_currency();
 			$next_action   = $intent->get_next_action();
 
-			if ( 'requires_action' === $status &&
-				$payment_information->is_merchant_initiated() ) {
+			if ( 'requires_action' === $status && $payment_information->is_merchant_initiated() ) {
 				// Allow 3rd-party to trigger some action if needed.
 				do_action( 'woocommerce_woocommerce_payments_payment_requires_action', $order, $intent_id, $payment_method, $customer_id, $charge_id, $currency );
+				$order->update_status( 'failed' );
 			}
 		} else {
 			// For $0 orders, we need to save the payment method using a setup intent.
@@ -1070,7 +1070,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param string   $currency Currency code.
 	 */
 	public function attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
-		$order_id       = $order->get_id();
 		$amount         = $order->get_total();
 		$payment_needed = $amount > 0;
 
@@ -1937,8 +1936,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				if ( ! empty( $payment_method_id ) ) {
 					try {
-						// TODO: Add token to subscriptions related to this order.
-						$this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
+						$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
+						$this->add_token_to_order( $order, $token );
 					} catch ( Exception $e ) {
 						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
 						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );

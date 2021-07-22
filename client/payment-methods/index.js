@@ -141,10 +141,7 @@ const PaymentMethods = () => {
 	};
 
 	const {
-		featureFlags: {
-			upeSettingsPreview: isUpeSettingsPreviewEnabled,
-			upe: isUpeFeatureEnabled,
-		},
+		featureFlags: { upeSettingsPreview: isUpeSettingsPreviewEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
@@ -189,7 +186,7 @@ const PaymentMethods = () => {
 						) }
 					</PaymentMethodsList>
 				</CardBody>
-				{ isUpeSettingsPreviewEnabled && ! isUpeFeatureEnabled && (
+				{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
 					<UpeSetupBanner />
 				) }
 
