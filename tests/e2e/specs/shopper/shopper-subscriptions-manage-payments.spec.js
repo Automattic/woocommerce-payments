@@ -39,7 +39,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 		afterAll( async () => {
 			// Delete the user created with the subscription
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
-			await withRestApi.deleteAllProducts();
 		} );
 
 		it( 'should change a default payment method to a new one', async () => {
