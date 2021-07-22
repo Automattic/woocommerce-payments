@@ -181,8 +181,6 @@ addFilter(
 			isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 		} );
 
-		console.log( 'wcPayTasks: ', wcPayTasks );
-
 		return [ ...tasks, ...wcPayTasks ];
 	}
 );

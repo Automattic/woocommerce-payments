@@ -56,7 +56,6 @@ const SurveyPromptQuestion = () => (
 );
 
 const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
-	console.log( 'optionsArray: ', optionsArray );
 	const [ isUpeEnabled ] = useIsUpeEnabled();
 	const [ surveyAnswers, setSurveyAnswers ] = useSurveyAnswers( {
 		surveyQuestion: '',

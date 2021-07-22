@@ -38,7 +38,6 @@ const OverviewPage = () => {
 		wpcomReconnectUrl,
 		needsHttpsSetup,
 	} );
-	console.log( 'tasks: ', tasks );
 	const queryParams = getQuery();
 
 	const showKycSuccessNotice =

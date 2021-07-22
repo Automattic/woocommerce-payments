@@ -30,7 +30,7 @@ import {
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
 import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
 
-// Survey modal impots
+// Survey modal imports.
 import WcPaySurveyContextProvider from '../settings/survey-modal/provider';
 import SurveyModal from '../settings/survey-modal';
 import DisableUPEModal from '../settings/disable-upe-modal';
