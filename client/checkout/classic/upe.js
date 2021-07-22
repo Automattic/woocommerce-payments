@@ -289,7 +289,10 @@ jQuery( function ( $ ) {
 				).filter(
 					( method ) => paymentMethodsConfig[ method ].isReusable
 				);
-				if ( reusablePaymentMethods.length ) {
+				if (
+					getConfig( 'cartContainsSubscription' ) &&
+					reusablePaymentMethods.length
+				) {
 					const terms = reusablePaymentMethods.reduce(
 						( obj, method ) => {
 							obj[ method ] = 'always';
