@@ -41,7 +41,7 @@ class WC_Payments_Account {
 		$this->payments_api_client = $payments_api_client;
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard redirection logic.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
 		add_action( 'wcpay_instant_deposit_reminder', [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
