@@ -10,6 +10,16 @@ import { useSelect, useDispatch } from '@wordpress/data';
  */
 import { STORE_NAME } from '../constants';
 
+export const useSavedCards = () => {
+	const { updateIsSavedCardsEnabled } = useDispatch( STORE_NAME );
+
+	const isSavedCardsEnabled = useSelect( ( select ) => {
+		return select( STORE_NAME ).getIsSavedCardsEnabled();
+	}, [] );
+
+	return [ isSavedCardsEnabled, updateIsSavedCardsEnabled ];
+};
+
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 

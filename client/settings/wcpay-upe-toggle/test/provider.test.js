@@ -12,10 +12,18 @@ import apiFetch from '@wordpress/api-fetch';
 import WcPayUpeContextProvider from '../provider';
 import WcPayUpeContext from '../context';
 import useIsUpeEnabled from '../hook';
+import { useEnabledPaymentMethodIds } from '../../../data';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+jest.mock( '../../../data', () => ( {
+	useEnabledPaymentMethodIds: jest.fn(),
+} ) );
 
 describe( 'WcPayUpeContextProvider', () => {
+	beforeEach( () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [], () => null ] );
+	} );
+
 	afterEach( () => {
 		jest.clearAllMocks();
 
@@ -64,6 +72,11 @@ describe( 'WcPayUpeContextProvider', () => {
 
 	it( 'should call the API and resolve when setIsUpeEnabled has been called', async () => {
 		const childrenMock = jest.fn().mockReturnValue( null );
+		const setEnabledPaymentMethodIds = jest.fn();
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'card', 'giropay' ],
+			setEnabledPaymentMethodIds,
+		] );
 
 		const UpdateUpeEnabledFlagMock = () => {
 			const [ , setIsUpeEnabled ] = useIsUpeEnabled();
@@ -111,5 +124,63 @@ describe( 'WcPayUpeContextProvider', () => {
 			setIsUpeEnabled: expect.any( Function ),
 			status: 'resolved',
 		} );
+		expect( setEnabledPaymentMethodIds ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should disable non-UPE payment methods when the flag is disabled', async () => {
+		const childrenMock = jest.fn().mockReturnValue( null );
+		const setEnabledPaymentMethodIds = jest.fn();
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'card', 'giropay' ],
+			setEnabledPaymentMethodIds,
+		] );
+
+		const UpdateUpeDisabledFlagMock = () => {
+			const [ , setIsUpeEnabled ] = useIsUpeEnabled();
+			useEffect( () => {
+				setIsUpeEnabled( false );
+			}, [ setIsUpeEnabled ] );
+
+			return null;
+		};
+
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled>
+				<UpdateUpeDisabledFlagMock />
+				<WcPayUpeContext.Consumer>
+					{ childrenMock }
+				</WcPayUpeContext.Consumer>
+			</WcPayUpeContextProvider>
+		);
+
+		expect( childrenMock ).toHaveBeenCalledWith( {
+			isUpeEnabled: true,
+			setIsUpeEnabled: expect.any( Function ),
+			status: 'resolved',
+		} );
+
+		expect( childrenMock ).toHaveBeenCalledWith( {
+			isUpeEnabled: true,
+			setIsUpeEnabled: expect.any( Function ),
+			status: 'pending',
+		} );
+
+		await waitFor( () =>
+			expect( apiFetch ).toHaveBeenCalledWith( {
+				path: '/wc/v3/payments/upe_flag_toggle',
+				method: 'POST',
+				// eslint-disable-next-line camelcase
+				data: { is_upe_enabled: false },
+			} )
+		);
+
+		await waitFor( () => expect( apiFetch ).toHaveReturned() );
+
+		expect( childrenMock ).toHaveBeenCalledWith( {
+			isUpeEnabled: false,
+			setIsUpeEnabled: expect.any( Function ),
+			status: 'resolved',
+		} );
+		expect( setEnabledPaymentMethodIds ).toHaveBeenCalledWith( [ 'card' ] );
 	} );
 } );

@@ -172,6 +172,7 @@ class MultiCurrency {
 			$this->update_manual_rate_currencies_notice_option();
 		}
 
+		new PaymentMethodsCompatibility( $this, WC_Payments::get_gateway() );
 		new AdminNotices();
 		new UserSettings( $this );
 
@@ -458,7 +459,7 @@ class MultiCurrency {
 	/**
 	 * Sets the enabled currencies for the store.
 	 *
-	 * @param array $currencies Array of currency codes to be enabled.
+	 * @param string[] $currencies Array of currency codes to be enabled.
 	 *
 	 * @return void
 	 */
