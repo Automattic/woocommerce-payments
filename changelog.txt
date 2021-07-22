@@ -1,9 +1,19 @@
 *** WooCommerce Payments Changelog ***
 
-= 2.7.0 - 2021-xx-xx =
-* Add - Add a link to the snackbar notice that appears after submitting or saving evidence for a dispute challenge.
-* Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
+= 2.8.0 - 2021-xx-xx =
+* Add - Use date picker for applicable dispute evidence fields.
+* Fix - Ensure test mode setting value is correctly saved.
+* Fix - Avoid crash when seeing the details of an empty deposit.
+* Fix - Disabled Payment Request Buttons when order has to be split into multiple packages because Payment Requests do not support that use case.
+* Fix - Fee discounts should use the discount currency rather than the base fee currency.
 * Add - Allow the customer to perform SCA authentication on Subscription renewals.
+
+= 2.7.0 - 2021-07-14 =
+* Add - Add a link to the snackbar notice that appears after submitting or saving evidence for a dispute challenge.
+* Add - Support saving new cards and paying with previously saved cards in the WooCommerce Checkout Block.
+* Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
+* Fix - Do not overwrite admin pages when account is disconnected.
+* Update - Set a description when creating payment intents.
 
 = 2.6.1 - 2021-07-01 =
 * Fix - Updates the notes query filters to prevent breaking the WooCommerce > Home inbox.

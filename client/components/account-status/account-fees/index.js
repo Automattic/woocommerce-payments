@@ -49,14 +49,8 @@ const AccountFees = ( props ) => {
 			{ currencyName ? `${ currencyName } ` : null }
 			{ currencyCode ? `(${ currencyCode }) ` : null }
 			{ feeDescription }
-			<ExpirationBar
-				feeData={ currentFee }
-				currencyCode={ currencyCode }
-			/>
-			<ExpirationDescription
-				feeData={ currentFee }
-				currencyCode={ currencyCode }
-			/>
+			<ExpirationBar feeData={ currentFee } />
+			<ExpirationDescription feeData={ currentFee } />
 			<LearnMoreLink accountFees={ accountFees } />
 		</>
 	);

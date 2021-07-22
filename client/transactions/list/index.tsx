@@ -7,7 +7,7 @@ import * as React from 'react';
 import { uniq } from 'lodash';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
-import { __ } from '@wordpress/i18n';
+import { __, _n } from '@wordpress/i18n';
 import moment from 'moment';
 import {
 	TableCard,
@@ -388,12 +388,20 @@ export const TransactionsList = (
 	if ( isTransactionsSummaryDataLoaded ) {
 		summary = [
 			{
-				label: __( 'transactions', 'woocommerce-payments' ),
+				label: _n(
+					'transaction',
+					'transactions',
+					// We've already checked that `.count` is not undefined, but TypeScript doesn't detect
+					// that so we remove the `undefined` in the type manually.
+					transactionsSummary.count as number,
+					'woocommerce-payments'
+				),
 				value: `${ transactionsSummary.count }`,
 			},
 		];
 
-		if ( isSingleCurrency || isCurrencyFiltered ) {
+		const hasTransactions = ( transactionsSummary.count as number ) > 0;
+		if ( hasTransactions && ( isSingleCurrency || isCurrencyFiltered ) ) {
 			summary.push(
 				{
 					label: __( 'total', 'woocommerce-payments' ),

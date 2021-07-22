@@ -60,6 +60,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http.php';
 
 	// Load the gateway files, so subscriptions can be tested.
+	require_once $_plugin_dir . 'includes/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php';
 	require_once $_plugin_dir . 'includes/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 	require_once $_plugin_dir . 'includes/class-wc-payment-gateway-wcpay.php';
 
@@ -72,7 +73,9 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-survey-controller.php';
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
+	require_once $_plugin_dir . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );

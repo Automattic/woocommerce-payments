@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
@@ -25,19 +25,21 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useSettings,
-	useDigitalWalletsEnabledSettings,
+	usePaymentRequestEnabledSettings,
 } from '../../data';
 import './add-payment-methods-task.scss';
+import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 
 const useGetCountryName = () => {
-	const baseLocation = useSelect(
+	const generalSettings = useSelect(
 		( select ) =>
-			select( 'wc/admin/settings' ).getSetting(
-				'wc_admin',
-				'baseLocation'
-			),
+			select( 'wc/admin/settings' ).getSettings( 'general' )?.general,
 		[]
 	);
+
+	const [ countryCode ] = (
+		generalSettings?.woocommerce_default_country || ''
+	).split( ':' );
 
 	const countries = useSelect(
 		( select ) =>
@@ -45,7 +47,7 @@ const useGetCountryName = () => {
 		[]
 	);
 
-	return countries[ baseLocation.country ];
+	return countries[ countryCode ];
 };
 
 const usePaymentMethodsCheckboxState = ( initialValue ) => {
@@ -73,9 +75,9 @@ const AddPaymentMethodsTask = () => {
 	] = useEnabledPaymentMethodIds();
 
 	const [
-		initialIsDigitalWalletsEnabled,
-		setIsDigitalWalletsEnabled,
-	] = useDigitalWalletsEnabledSettings();
+		initialIsPaymentRequestEnabled,
+		setIsPaymentRequestEnabled,
+	] = usePaymentRequestEnabledSettings();
 
 	const { saveSettings, isSaving } = useSettings();
 
@@ -93,19 +95,23 @@ const AddPaymentMethodsTask = () => {
 		)
 	);
 
-	const [ isWalletsChecked, setWalletsChecked ] = useState(
-		initialIsDigitalWalletsEnabled
+	const [ isPaymentRequestChecked, setPaymentRequestChecked ] = useState(
+		initialIsPaymentRequestEnabled
 	);
 
 	const { setCompleted } = useContext( WizardTaskContext );
 
+	const checkedPaymentMethods = useMemo(
+		() =>
+			Object.entries( paymentMethodsState )
+				.map( ( [ method, enabled ] ) => enabled && method )
+				.filter( Boolean ),
+		[ paymentMethodsState ]
+	);
+
 	const handleContinueClick = useCallback( () => {
 		// creating a separate callback, so that the main thread isn't blocked on click of the button
 		const callback = async () => {
-			const checkedPaymentMethods = Object.entries( paymentMethodsState )
-				.map( ( [ method, enabled ] ) => enabled && method )
-				.filter( Boolean );
-
 			if ( 1 > checkedPaymentMethods.length ) {
 				alert(
 					__(
@@ -116,13 +122,13 @@ const AddPaymentMethodsTask = () => {
 				return;
 			}
 
-			setIsDigitalWalletsEnabled( isWalletsChecked );
+			setIsPaymentRequestEnabled( isPaymentRequestChecked );
 			updateEnabledPaymentMethodIds( checkedPaymentMethods );
 
 			const isSuccess = await saveSettings();
 			if ( ! isSuccess ) {
 				// restoring the state, in case of soft route
-				setIsDigitalWalletsEnabled( initialIsDigitalWalletsEnabled );
+				setIsPaymentRequestEnabled( initialIsPaymentRequestEnabled );
 				updateEnabledPaymentMethodIds( initialEnabledPaymentMethodIds );
 				return;
 			}
@@ -132,14 +138,14 @@ const AddPaymentMethodsTask = () => {
 
 		callback();
 	}, [
+		checkedPaymentMethods,
 		updateEnabledPaymentMethodIds,
-		paymentMethodsState,
 		saveSettings,
 		setCompleted,
 		initialEnabledPaymentMethodIds,
-		initialIsDigitalWalletsEnabled,
-		isWalletsChecked,
-		setIsDigitalWalletsEnabled,
+		initialIsPaymentRequestEnabled,
+		isPaymentRequestChecked,
+		setIsPaymentRequestEnabled,
 	] );
 
 	const countryName = useGetCountryName();
@@ -232,10 +238,13 @@ const AddPaymentMethodsTask = () => {
 						</PaymentMethodCheckboxes>
 					</CardBody>
 				</Card>
+				<CurrencyInformationForMethods
+					selectedMethods={ checkedPaymentMethods }
+				/>
 				<div className="wcpay-wizard-task__description-element">
 					<CheckboxControl
-						checked={ isWalletsChecked }
-						onChange={ setWalletsChecked }
+						checked={ isPaymentRequestChecked }
+						onChange={ setPaymentRequestChecked }
 						label={ __(
 							'Enable Apple Pay & Google Pay',
 							'woocommerce-payments'
