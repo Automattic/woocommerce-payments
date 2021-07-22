@@ -1,31 +1,46 @@
 /** @format */
+
 /**
  * External dependencies
  */
-import { React, useState, useEffect } from 'react';
+import { React } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+
+/**
+ * Internal dependencies
+ */
+import PaymentRequestDemoButton from './payment-request-demo-button';
 import {
 	getPaymentRequestData,
 	shouldUseGooglePayBrand,
 } from 'payment-request/utils';
-import {
-	Elements,
-	PaymentRequestButtonElement,
-	useStripe,
-} from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
 
+/**
+ * stripePromise is used to pass into <Elements>'s stripe props.
+ * The stripe prop in <Elements> can't be change once passed in.
+ * Keeping this outside of <PaymentRequestButtonPreview> so that
+ * re-rendering does not change it.
+ */
 const stripeSettings = getPaymentRequestData( 'stripe' );
 const stripePromise = loadStripe( stripeSettings.publishableKey, {
 	stripeAccount: stripeSettings.accountId,
 	locale: stripeSettings.locale,
 } );
 
-const PaymentRequestDemoButton = ( props ) => {
-	const stripe = useStripe();
-	const [ paymentRequest, setPaymentRequest ] = useState( null );
+const PaymentRequestButtonPreview = ( props ) => {
+	const { buttonType, size, theme } = props;
+	let browser = 'Google Chrome';
+	let paymentMethodName = 'Google Pay';
 
-	const sizeToPx = ( size ) => {
+	if ( shouldUseGooglePayBrand() ) {
+		browser = 'Safari';
+		paymentMethodName = 'Apple Pay';
+	}
+
+	// Helper function to convert UI options to pixels in height.
+	const sizeToPx = () => {
 		const sizeToPxMappings = {
 			default: 40,
 			medium: 48,
@@ -33,65 +48,6 @@ const PaymentRequestDemoButton = ( props ) => {
 		};
 		return sizeToPxMappings[ size ] + 'px';
 	};
-
-	// Since this is preview, we don't want the user to open up the browser's payment popup.
-	const disablePaymentAction = ( e ) => {
-		e.preventDefault();
-	};
-
-	useEffect( () => {
-		if ( ! stripe ) {
-			return;
-		}
-
-		const pr = stripe.paymentRequest( {
-			country: 'US',
-			currency: 'usd',
-			total: {
-				label: 'Demo total',
-				amount: 99, //99c
-			},
-			requestPayerName: true,
-			requestPayerEmail: true,
-		} );
-
-		// Check the availability of the Payment Request API.
-		pr.canMakePayment().then( ( result ) => {
-			if ( result ) {
-				setPaymentRequest( pr );
-			}
-		} );
-	}, [ stripe ] );
-
-	if ( paymentRequest ) {
-		return (
-			<PaymentRequestButtonElement
-				onClick={ disablePaymentAction }
-				options={ {
-					paymentRequest,
-					style: {
-						paymentRequestButton: {
-							type: props.buttonType,
-							theme: props.theme,
-							height: sizeToPx( props.size ),
-						},
-					},
-				} }
-			/>
-		);
-	}
-	return null;
-};
-
-const PaymentRequestButtonPreview = ( props ) => {
-	const { buttonType, size, theme } = props;
-	let browser = 'Google';
-	let paymentMethodName = 'Google Pay';
-
-	if ( shouldUseGooglePayBrand() ) {
-		browser = 'Apple';
-		paymentMethodName = 'Apple Pay';
-	}
 
 	const requestButtonHelpText = sprintf(
 		__(
@@ -110,7 +66,7 @@ const PaymentRequestButtonPreview = ( props ) => {
 				<Elements stripe={ stripePromise }>
 					<PaymentRequestDemoButton
 						buttonType={ buttonType }
-						size={ size }
+						height={ sizeToPx() }
 						theme={ theme }
 					/>
 				</Elements>

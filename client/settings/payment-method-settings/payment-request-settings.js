@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { React } from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, RadioControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
