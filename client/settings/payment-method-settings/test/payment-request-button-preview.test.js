@@ -28,7 +28,6 @@ jest.mock( '@stripe/stripe-js', () => ( {
 } ) );
 
 jest.mock( '@stripe/react-stripe-js', () => ( {
-	useStripe: jest.fn(),
 	Elements: jest.fn().mockImplementation( () => <></> ),
 } ) );
 
