@@ -317,11 +317,25 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$response = $this->controller->create_customer( $request );
-		$this->assertSame( 'cus_new1', $response );
+		$response      = $this->controller->create_customer( $request );
+		$response_data = $response->get_data();
+		$this->assertEquals( 200, $response->status );
+		$this->assertEquals(
+			[
+				'id' => 'cus_new1',
+			],
+			$response_data
+		);
 
-		$response = $this->controller->create_customer( $request );
-		$this->assertSame( 'cus_new2', $response );
+		$response      = $this->controller->create_customer( $request );
+		$response_data = $response->get_data();
+		$this->assertEquals( 200, $response->status );
+		$this->assertEquals(
+			[
+				'id' => 'cus_new2',
+			],
+			$response_data
+		);
 	}
 
 	public function test_create_customer_from_order_non_guest_with_customer_id() {
@@ -351,8 +365,15 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$response = $this->controller->create_customer( $request );
-		$this->assertSame( 'cus_exist', $response );
+		$response      = $this->controller->create_customer( $request );
+		$response_data = $response->get_data();
+		$this->assertEquals( 200, $response->status );
+		$this->assertEquals(
+			[
+				'id' => 'cus_exist',
+			],
+			$response_data
+		);
 	}
 
 	public function test_create_customer_from_order_non_guest_without_customer_id() {
@@ -382,8 +403,15 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$response = $this->controller->create_customer( $request );
-		$this->assertSame( 'cus_new', $response );
+		$response      = $this->controller->create_customer( $request );
+		$response_data = $response->get_data();
+		$this->assertEquals( 200, $response->status );
+		$this->assertEquals(
+			[
+				'id' => 'cus_new',
+			],
+			$response_data
+		);
 	}
 
 	private function create_mock_order() {
