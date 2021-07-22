@@ -9,7 +9,7 @@ import React, {
 	useState,
 } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, Card, CardBody } from '@wordpress/components';
+import { Button, Card, CardBody, ExternalLink } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
 /**
@@ -171,14 +171,14 @@ const AddPaymentMethodsTask = () => {
 							'woocommerce-payments'
 						),
 						components: {
-							// TODO
 							learnMoreLink: (
-								<a href="?TODO">
+								// eslint-disable-next-line max-len
+								<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#available-methods">
 									{ __(
 										'Learn more',
 										'woocommerce-payments'
 									) }
-								</a>
+								</ExternalLink>
 							),
 						},
 					} ) }
