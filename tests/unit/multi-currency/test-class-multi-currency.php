@@ -111,6 +111,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->remove_currency_settings_mock( 'GBP', [ 'price_charm', 'price_rounding', 'manual_rate', 'exchange_rate' ] );
 		delete_option( self::CACHED_CURRENCIES_OPTION );
 		delete_option( self::ENABLED_CURRENCIES_OPTION );
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'no' );
 
 		parent::tearDown();
 	}
@@ -282,6 +283,36 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->multi_currency->update_selected_currency_by_url();
 
 		$this->assertSame( 'GBP', WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
+	}
+
+	public function test_update_selected_currency_by_geolocation_does_not_set_session_when_currency_not_enabled() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'CL';
+			}
+		);
+
+		$this->multi_currency->update_selected_currency_by_geolocation();
+
+		$this->assertNull( WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
+	}
+
+	public function test_update_selected_currency_by_geolocation_updates_session_when_currency_is_enabled() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'CA';
+			}
+		);
+
+		$this->multi_currency->update_selected_currency_by_geolocation();
+
+		$this->assertSame( 'CAD', WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
 	}
 
 	public function test_get_price_returns_price_in_default_currency() {
