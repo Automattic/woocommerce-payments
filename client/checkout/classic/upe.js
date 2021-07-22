@@ -284,6 +284,21 @@ jQuery( function ( $ ) {
 					appearance,
 					business: { name: businessName },
 				};
+				const reusablePaymentMethods = Object.keys(
+					paymentMethodsConfig
+				).filter(
+					( method ) => paymentMethodsConfig[ method ].isReusable
+				);
+				if ( reusablePaymentMethods.length ) {
+					const terms = reusablePaymentMethods.reduce(
+						( obj, method ) => {
+							obj[ method ] = 'always';
+							return obj;
+						},
+						{}
+					);
+					upeSettings.terms = terms;
+				}
 				if ( isCheckout && ! isOrderPay ) {
 					upeSettings.fields = {
 						billingDetails: hiddenBillingFields,
