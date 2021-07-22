@@ -293,14 +293,13 @@ jQuery( function ( $ ) {
 					getConfig( 'cartContainsSubscription' ) &&
 					reusablePaymentMethods.length
 				) {
-					const terms = reusablePaymentMethods.reduce(
+					upeSettings.terms = reusablePaymentMethods.reduce(
 						( obj, method ) => {
 							obj[ method ] = 'always';
 							return obj;
 						},
 						{}
 					);
-					upeSettings.terms = terms;
 				}
 				if ( isCheckout && ! isOrderPay ) {
 					upeSettings.fields = {
