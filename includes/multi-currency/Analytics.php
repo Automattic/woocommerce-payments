@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Order;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -14,22 +16,31 @@ defined( 'ABSPATH' ) || exit;
  */
 class Analytics {
 
-	const PRIORITY_EARLY = 1;
-	const SCRIPT_NAME    = 'WCPAY_MULTI_CURRENCY_ANALYTICS';
+	const PRIORITY_EARLY   = 1;
+	const PRIORITY_DEFAULT = 10;
+	const PRIORITY_LATE    = 20;
+	const SCRIPT_NAME      = 'WCPAY_MULTI_CURRENCY_ANALYTICS';
 
 	/**
 	 * A list of all the pages in the WC Admin analytics section that
-	 * we want to add multi-currency filters to.
+	 * we want to add multi-currency filters. Note that the revenue analytics page
+	 * will use the 'orders' SQL calls to build its content.
 	 *
 	 * @var string[]
 	 */
 	const ANALYTICS_PAGES = [
 		'orders',
-		'revenue',
-		'products',
-		'categories',
 		'coupons',
 		'taxes',
+	];
+
+	/**
+	 * A list of all the product related analytics pages (we'll use different filters for these).
+	 */
+	const PRODUCT_ANALYTICS_PAGES = [
+		'products',
+		'variations',
+		'categories',
 	];
 
 	/**
@@ -59,14 +70,20 @@ class Analytics {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		}
 
-		add_filter( 'woocommerce_analytics_update_order_stats_data', [ $this, 'filter_update_order_stats' ] );
+		// TODO: Remove this or make it only apply in dev mode.
+		add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 
 		// If we aren't making a REST request, return before adding these filters.
 		if ( ! WC()->is_rest_api_request() ) {
 			return;
+
 		}
 
-		foreach ( self::ANALYTICS_PAGES as $analytics_page ) {
+		foreach ( self::PRODUCT_ANALYTICS_PAGES as $analytics_page ) {
+			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_subquery", [ $this, 'filter_product_subquery_select_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_stats_total", [ $this, 'filter_product_stats_select_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_stats_interval", [ $this, 'filter_product_stats_select_clauses' ] );
+
 			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_subquery", [ $this, 'filter_join_clauses' ] );
 			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_stats_total", [ $this, 'filter_join_clauses' ] );
 			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_stats_interval", [ $this, 'filter_join_clauses' ] );
@@ -74,10 +91,20 @@ class Analytics {
 			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_subquery", [ $this, 'filter_where_clauses' ] );
 			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_stats_total", [ $this, 'filter_where_clauses' ] );
 			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_stats_interval", [ $this, 'filter_where_clauses' ] );
+		}
 
-			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_subquery", [ $this, 'filter_select_clauses' ] );
-			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_stats_total", [ $this, 'filter_select_clauses' ] );
-			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_stats_interval", [ $this, 'filter_select_clauses' ] );
+		foreach ( self::ANALYTICS_PAGES as $analytics_page ) {
+			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_subquery", [ $this, "filter_{$analytics_page}_subquery_select_clauses" ] );
+			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_stats_total", [ $this, "filter_{$analytics_page}_stats_select_clauses" ] );
+			add_filter( "woocommerce_analytics_clauses_select_{$analytics_page}_stats_interval", [ $this, "filter_{$analytics_page}_stats_select_clauses" ] );
+
+			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_subquery", [ $this, 'filter_join_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_stats_total", [ $this, 'filter_join_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_join_{$analytics_page}_stats_interval", [ $this, 'filter_join_clauses' ] );
+
+			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_subquery", [ $this, 'filter_where_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_stats_total", [ $this, 'filter_where_clauses' ] );
+			add_filter( "woocommerce_analytics_clauses_where_{$analytics_page}_stats_interval", [ $this, 'filter_where_clauses' ] );
 		}
 	}
 
@@ -136,14 +163,304 @@ class Analytics {
 	}
 
 	/**
-	 * Filter to hook into when an order's stats are updated in the DB.
+	 * Disables report caching. Used for development testing.
 	 *
-	 * @param array $data The order data.
+	 * @param array $args Filter arguments.
+	 *
+	 * @return boolean
+	 */
+	public function disable_report_caching( $args ): bool {
+		return false;
+	}
+
+	/**
+	 * Filter the select clauses applied to a products table call.
+	 *
+	 * @param array $clauses The SELECT clauses to be executed.
 	 *
 	 * @return array
 	 */
-	public function filter_update_order_stats_data( array $data ) {
-		return $data;
+	public function filter_product_subquery_select_clauses( array $clauses ): array {
+		$new_clauses = [];
+
+		foreach ( $clauses as $clause ) {
+			if ( strpos( $clause, 'product_net_revenue' ) !== false ) {
+				$clause = str_replace(
+					'product_net_revenue',
+					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value) ELSE product_net_revenue END',
+					$clause
+				);
+			}
+
+			if ( strpos( $clause, 'product_gross_revenue' ) !== false ) {
+				$clause = str_replace(
+					'product_gross_revenue',
+					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE product_gross_revenue END',
+					$clause
+				);
+			}
+
+			$new_clauses[] = $clause;
+		}
+
+		return $new_clauses;
+	}
+
+	/**
+	 * Filter the select clauses applied to a products stats calls.
+	 *
+	 * @param array $clauses The SELECT clauses to executed.
+	 *
+	 * @return array
+	 */
+	public function filter_product_stats_select_clauses( array $clauses ): array {
+		$new_clauses = [];
+
+		foreach ( $clauses as $clause ) {
+			if ( strpos( $clause, 'product_net_revenue' ) !== false ) {
+				$clause = str_replace(
+					'product_net_revenue',
+					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE product_net_revenue END',
+					$clause
+				);
+			}
+
+			if ( strpos( $clause, 'product_gross_revenue' ) !== false ) {
+				$clause = str_replace(
+					'product_gross_revenue',
+					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE product_gross_revenue END',
+					$clause
+				);
+			}
+
+			$new_clauses[] = $clause;
+		}
+
+		return $new_clauses;
+	}
+
+	/**
+	 * Filter the select clauses applied to an order table call.
+	 *
+	 * @param array $clauses The SELECT clauses to be executed.
+	 *
+	 * @return array
+	 */
+	public function filter_orders_subquery_select_clauses( array $clauses ): array {
+		$new_clauses = [];
+
+		foreach ( $clauses as $clause ) {
+			if ( strpos( $clause, 'wp_wc_order_stats.net_total' ) !== false ) {
+				$clause = str_replace(
+					'wp_wc_order_stats.net_total',
+					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.net_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.net_total END AS net_total',
+					$clause
+				);
+			}
+
+			$new_clauses[] = $clause;
+		}
+
+		$new_clauses[] = ', wcpay_multicurrency_currency_postmeta.meta_value AS order_currency';
+		$new_clauses[] = ', wcpay_multicurrency_default_currency_postmeta.meta_value AS order_default_currency';
+		$new_clauses[] = ', wcpay_multicurrency_exchange_rate_postmeta.meta_value AS exchange_rate';
+
+		return $new_clauses;
+	}
+
+	/**
+	 * Filter the select clauses applied to an order stats calls.
+	 * Note that the revenue analytics page also uses these calls.
+	 *
+	 * @param array $clauses The SELECT clauses to executed.
+	 *
+	 * @return array
+	 */
+	public function filter_orders_stats_select_clauses( array $clauses ): array {
+		$new_clauses = [];
+
+		foreach ( $clauses as $clause ) {
+			if ( strpos( $clause, 'wp_wc_order_stats.net_total' ) !== false ) {
+				$clause = str_replace(
+					'wp_wc_order_stats.net_total',
+					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.net_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.net_total END',
+					$clause
+				);
+			}
+
+			if ( strpos( $clause, 'wp_wc_order_stats.total_sales' ) !== false ) {
+				$clause = str_replace(
+					'wp_wc_order_stats.total_sales',
+					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.total_sales * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.total_sales END',
+					$clause
+				);
+			}
+
+			if ( strpos( $clause, 'wp_wc_order_stats.tax_total' ) !== false ) {
+				$clause = str_replace(
+					'wp_wc_order_stats.tax_total',
+					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.tax_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.tax_total END',
+					$clause
+				);
+			}
+
+			if ( strpos( $clause, 'wp_wc_order_stats.shipping_total' ) !== false ) {
+				$clause = str_replace(
+					'wp_wc_order_stats.shipping_total',
+					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.shipping_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.shipping_total END',
+					$clause
+				);
+			}
+
+			if ( strpos( $clause, 'discount_amount' ) !== false ) {
+				$clause = str_replace(
+					'discount_amount',
+					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN discount_amount * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE discount_amount END',
+					$clause
+				);
+			}
+
+			$new_clauses[] = $clause;
+		}
+
+		$new_clauses[] = ', wcpay_multicurrency_currency_postmeta.meta_value AS order_currency';
+		$new_clauses[] = ', wcpay_multicurrency_default_currency_postmeta.meta_value AS order_default_currency';
+		$new_clauses[] = ', wcpay_multicurrency_exchange_rate_postmeta.meta_value AS exchange_rate';
+
+		return $new_clauses;
+	}
+
+	/**
+	 * Filter the select clauses applied to a taxes table call.
+	 *
+	 * @param array $clauses The SELECT clauses to be executed.
+	 *
+	 * @return array
+	 */
+	public function filter_taxes_subquery_select_clauses( array $clauses ): array {
+		$new_clauses = [];
+
+		foreach ( $clauses as $clause ) {
+			if ( strpos( $clause, 'SUM(total_tax) AS total_tax' ) !== false ) {
+				$clause = str_replace(
+					'SUM(total_tax) AS total_tax',
+					'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN total_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE total_tax END) as total_tax',
+					$clause
+				);
+			}
+
+			if ( strpos( $clause, 'SUM(order_tax) as order_tax' ) !== false ) {
+				$clause = str_replace(
+					'SUM(order_tax) as order_tax',
+					'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN order_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE order_tax END) as order_tax',
+					$clause
+				);
+			}
+
+			if ( strpos( $clause, 'SUM(shipping_tax) as shipping_tax' ) !== false ) {
+				$clause = str_replace(
+					'SUM(shipping_tax) as shipping_tax',
+					'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN shipping_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE shipping_tax END) as shipping_tax',
+					$clause
+				);
+			}
+
+			$new_clauses[] = $clause;
+		}
+
+		return $new_clauses;
+	}
+
+	/**
+	 * Filter the select clauses applied to a taxes table call.
+	 *
+	 * @param array $clauses The SELECT clauses to be executed.
+	 *
+	 * @return array
+	 */
+	public function filter_taxes_stats_select_clauses( array $clauses ): array {
+		$new_clauses = [];
+
+		foreach ( $clauses as $clause ) {
+			if ( strpos( $clause, 'SUM(total_tax) AS total_tax' ) !== false ) {
+				$clause = str_replace(
+					'SUM(total_tax) AS total_tax',
+					'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN total_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE total_tax END) as total_tax',
+					$clause
+				);
+			}
+
+			if ( strpos( $clause, 'SUM(order_tax) as order_tax' ) !== false ) {
+				$clause = str_replace(
+					'SUM(order_tax) as order_tax',
+					'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN order_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE order_tax END) as order_tax',
+					$clause
+				);
+			}
+
+			if ( strpos( $clause, 'SUM(shipping_tax) as shipping_tax' ) !== false ) {
+				$clause = str_replace(
+					'SUM(shipping_tax) as shipping_tax',
+					'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN shipping_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE shipping_tax END) as shipping_tax',
+					$clause
+				);
+			}
+
+			$new_clauses[] = $clause;
+		}
+
+		return $new_clauses;
+	}
+
+
+	/**
+	 * Filter the select clauses applied to a coupons table call.
+	 *
+	 * @param array $clauses The SELECT clauses to be executed.
+	 *
+	 * @return array
+	 */
+	public function filter_coupons_subquery_select_clauses( array $clauses ): array {
+		$new_clauses = [];
+
+		foreach ( $clauses as $clause ) {
+			if ( strpos( $clause, 'discount_amount' ) !== false ) {
+				$clause = str_replace(
+					'discount_amount',
+					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN discount_amount * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE discount_amount END',
+					$clause
+				);
+			}
+
+			$new_clauses[] = $clause;
+		}
+
+		return $new_clauses;
+	}
+
+	/**
+	 * Filter the select clauses applied to a coupons table call.
+	 *
+	 * @param array $clauses The SELECT clauses to be executed.
+	 *
+	 * @return array
+	 */
+	public function filter_coupons_stats_select_clauses( array $clauses ): array {
+		$new_clauses = [];
+
+		foreach ( $clauses as $clause ) {
+			if ( strpos( $clause, 'discount_amount' ) !== false ) {
+				$clause = str_replace(
+					'discount_amount',
+					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN discount_amount * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE discount_amount END',
+					$clause
+				);
+			}
+
+			$new_clauses[] = $clause;
+		}
+
+		return $new_clauses;
 	}
 
 	/**
@@ -162,7 +479,7 @@ class Analytics {
 	}
 
 	/**
-	 * Add a JOIN so that we can get the currency.
+	 * Add a JOIN so that we can get the currency information.
 	 *
 	 * @param string[] $clauses - An array containing the JOIN clauses to be applied.
 	 *
