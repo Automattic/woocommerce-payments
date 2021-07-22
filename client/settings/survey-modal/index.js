@@ -161,8 +161,17 @@ const SurveyModal = ( { setIsModalOpen, surveyOptions } ) => {
 	useEffect( () => {
 		if ( ! surveyKey || ! surveyQuestion ) surveyCannotBeLoadedNotice();
 		if ( 'error' === status ) submissionErrorNotice();
-		else if ( isSurveySubmitted ) surveySubmittedConfirmation();
-	}, [ status, isSurveySubmitted, surveyKey, surveyQuestion ] );
+		else if ( isSurveySubmitted ) {
+			surveySubmittedConfirmation();
+			setIsModalOpen( false );
+		}
+	}, [
+		status,
+		isSurveySubmitted,
+		surveyKey,
+		surveyQuestion,
+		setIsModalOpen,
+	] );
 
 	if ( 1 > optionsArray ) return null;
 

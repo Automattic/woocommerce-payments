@@ -14,9 +14,6 @@ import PaymentMethod from 'components/payment-methods-list/payment-method';
 import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import WcPayUpeContext from 'settings/wcpay-upe-toggle/context';
 
-// @todo: write tests
-// @todo: add links to Need help? section below.
-
 const NeedHelpBarSection = () => {
 	return (
 		<div className="disable-modal-help-notice">

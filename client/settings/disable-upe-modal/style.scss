@@ -20,4 +20,11 @@
 			color: #007cba;
 		}
 	}
+	.payment-method.has-icon-border {
+		padding: 16px 24px 14px 24px;
+
+		.payment-method__icon {
+			box-shadow: none;
+		}
+	}
 }
