@@ -23,6 +23,7 @@ class Giropay_Payment_Method extends UPE_Payment_Method {
 		parent::__construct( $token_service );
 		$this->stripe_id   = 'giropay';
 		$this->title       = 'Giropay';
+		$this->short_title = 'giropay';
 		$this->is_reusable = false;
 	}
 }
