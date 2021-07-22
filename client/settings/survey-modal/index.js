@@ -1,10 +1,10 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 
 import { __ } from '@wordpress/i18n';
+import { dispatch } from '@wordpress/data';
 import {
 	Button,
 	Icon,
-	Notice,
 	RadioControl,
 	TextareaControl,
 } from '@wordpress/components';
@@ -15,24 +15,9 @@ import {
 import './style.scss';
 import ConfirmationModal from 'components/confirmation-modal';
 import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
-import { wcpayDisableEarlyAccessSurvey } from './questions';
+import { wcPaySurveys } from './questions';
 import WcPaySurveyContext from './context';
 import { useSurveySubmit, useSurveyAnswers } from './hook';
-
-// create survey modal page with form elements
-// button submits survey(POST request)
-// add success notification for submission, auto-close?
-// write tests
-
-// @todo: get rid of hard-coding for re-use.
-const questionsKey = 'why-disable';
-const questions = wcpayDisableEarlyAccessSurvey.questions[ questionsKey ];
-const optionsArray = Object.keys( questions ).map( ( key ) => {
-	return {
-		label: questions[ key ],
-		value: key,
-	};
-} );
 
 const DisabledUPESuccessNotice = () => {
 	return (
@@ -70,9 +55,12 @@ const SurveyPromptQuestion = () => (
 	</p>
 );
 
-const SurveyModalBody = () => {
+const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 	const [ isUpeEnabled ] = useIsUpeEnabled();
-	const [ surveyAnswers, setSurveyAnswers ] = useSurveyAnswers();
+	const [ surveyAnswers, setSurveyAnswers ] = useSurveyAnswers( {
+		surveyQuestion: '',
+		comments: '',
+	} );
 	return (
 		<>
 			{ ! isUpeEnabled ? (
@@ -88,11 +76,10 @@ const SurveyModalBody = () => {
 				onChange={ ( value ) =>
 					setSurveyAnswers( {
 						...surveyAnswers,
-						[ questionsKey ]: value,
+						[ surveyQuestion ]: value,
 					} )
 				}
-				// @todo - can we abstract this key out and get rid of hard-coding?
-				selected={ surveyAnswers[ questionsKey ] }
+				selected={ surveyAnswers[ surveyQuestion ] }
 			/>
 			<TextareaControl
 				className="comments-text-field"
@@ -116,7 +103,6 @@ const SurveySubmitButton = () => {
 	const [ , setSurveySubmitted ] = useSurveySubmit();
 	const [ surveyAnswers ] = useSurveyAnswers();
 	const { status } = useContext( WcPaySurveyContext );
-	// @todo - can we get rid of this hard-coding for re-use?
 	return (
 		<Button
 			isBusy={ 'pending' === status }
@@ -129,75 +115,73 @@ const SurveySubmitButton = () => {
 	);
 };
 
-const SubmissionErrorNotice = () => {
-	return 'error' === status ? (
-		<Notice>
-			{ __(
-				'There was an error during submission.',
-				'woocommerce-payments'
-			) }
-		</Notice>
-	) : null;
-};
-
-const SurveySuccessMessage = () => {
-	return (
-		<div className="disable-success-notice">
-			<Icon className="disable-success-icon" icon="yes-alt" />
-			<p>
-				{ __(
-					'Thank you for submitting feedback to our developer team!',
-					'woocommerce-payments'
-				) }
-			</p>
-		</div>
+const submissionErrorNotice = () => {
+	return dispatch( 'core/notices' ).createErrorNotice(
+		__( 'There was an error during submission.', 'woocommerce-payments' )
 	);
 };
 
-const SurveySubmittedConfirmation = ( { setIsModalOpen } ) => {
-	return (
-		<ConfirmationModal
-			className="survey-section"
-			title={ __( 'Feedback submitted.', 'woocommerce-payments' ) }
-			onRequestClose={ () => setIsModalOpen( false ) }
-			actions={
-				<Button
-					variant="link"
-					onClick={ () => setIsModalOpen( false ) }
-				>
-					{ __( 'Close', 'woocommerce-payments' ) }{ ' ' }
-				</Button>
-			}
-		>
-			<SurveySuccessMessage />
-		</ConfirmationModal>
+const surveySubmittedConfirmation = () => {
+	return dispatch( 'core/notices' ).createSuccessNotice(
+		__(
+			'Thank you for submitting feedback to our developer team!',
+			'woocommerce-payments'
+		)
 	);
 };
 
-const SurveyModal = ( { setIsModalOpen } ) => {
+const surveyCannotBeLoadedNotice = () => {
+	return dispatch( 'core/notices' ).createErrorNotice(
+		__( 'The survey could not be loaded.', 'woocommerce-payments' )
+	);
+};
+
+const getOptionsArrayFromQuestions = ( surveyKey, surveyQuestion ) => {
+	const questions = wcPaySurveys.find(
+		( survey ) => ( survey.key = surveyKey )
+	).questions[ surveyQuestion ];
+	return Object.keys( questions ).map( ( key ) => {
+		return {
+			label: questions[ key ],
+			value: key,
+		};
+	} );
+};
+
+const SurveyModal = ( { setIsModalOpen, surveyOptions } ) => {
 	const { status } = useContext( WcPaySurveyContext );
 	const [ isSurveySubmitted ] = useSurveySubmit();
+	// Get the questions using key and question pair.
+	const { surveyKey, surveyQuestion } = surveyOptions;
+	const optionsArray = getOptionsArrayFromQuestions(
+		surveyKey,
+		surveyQuestion
+	);
+
+	useEffect( () => {
+		if ( ! surveyKey || ! surveyQuestion ) surveyCannotBeLoadedNotice();
+		if ( 'error' === status ) submissionErrorNotice();
+		else if ( isSurveySubmitted ) surveySubmittedConfirmation();
+	}, [ status, isSurveySubmitted, surveyKey, surveyQuestion ] );
+
+	if ( 1 > optionsArray ) return null;
 
 	return (
 		<>
-			{ 'error' === status && <SubmissionErrorNotice /> }
-			{ isSurveySubmitted ? (
-				<SurveySubmittedConfirmation
-					setIsModalOpen={ setIsModalOpen }
+			<ConfirmationModal
+				className="survey-section"
+				title={ __(
+					'Provide feedback about the new payments experience.',
+					'woocommerce-payments'
+				) }
+				onRequestClose={ () => setIsModalOpen( false ) }
+				actions={ <SurveySubmitButton /> }
+			>
+				<SurveyModalBody
+					optionsArray={ optionsArray }
+					surveyQuestion={ surveyQuestion }
 				/>
-			) : (
-				<ConfirmationModal
-					className="survey-section"
-					title={ __(
-						'Provide feedback about the new payments experience.',
-						'woocommerce-payments'
-					) }
-					onRequestClose={ () => setIsModalOpen( false ) }
-					actions={ <SurveySubmitButton /> }
-				>
-					<SurveyModalBody />
-				</ConfirmationModal>
-			) }
+			</ConfirmationModal>
 		</>
 	);
 };

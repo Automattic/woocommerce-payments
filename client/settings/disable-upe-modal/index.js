@@ -1,7 +1,8 @@
 import React, { useContext, useEffect } from 'react';
 
 import { __ } from '@wordpress/i18n';
-import { Button, Dashicon, Notice } from '@wordpress/components';
+import { dispatch } from '@wordpress/data';
+import { Button, Dashicon } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -71,33 +72,34 @@ const DisableSubmitButton = () => {
 	);
 };
 
-const SubmissionErrorNotice = () => {
-	const { status } = useContext( WcPayUpeContext );
-	return 'error' === status ? (
-		<Notice>
-			{ __(
-				'There was an error disabling the new payment methods.',
-				'woocommerce-payments'
-			) }
-		</Notice>
-	) : null;
-};
-
 const DisableUPEModal = ( {
 	enabledMethods,
 	setIsModalOpen,
 	triggerAfterDisable,
 } ) => {
 	const [ isUpeEnabled ] = useIsUpeEnabled();
+	const { status } = useContext( WcPayUpeContext );
+
 	useEffect( () => {
 		if ( ! isUpeEnabled ) {
 			setIsModalOpen( false );
 			triggerAfterDisable();
 		}
 	}, [ isUpeEnabled, setIsModalOpen, triggerAfterDisable ] );
+
+	useEffect( () => {
+		if ( 'error' === status ) {
+			dispatch( 'core/notices' ).createErrorNotice(
+				__(
+					'There was an error disabling the new payment methods.',
+					'woocommerce-payments'
+				)
+			);
+		}
+	} );
+
 	return (
 		<>
-			<SubmissionErrorNotice />
 			<ConfirmationModal
 				className="disable-modal-section"
 				title={ __(

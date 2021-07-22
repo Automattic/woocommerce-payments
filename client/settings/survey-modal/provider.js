@@ -36,7 +36,7 @@ const WcPaySurveyContextProvider = ( { children } ) => {
 				} )
 				.catch( () => {
 					setStatus( 'error' );
-					setSurveySubmitted( Boolean( true ) );
+					setSurveySubmitted( Boolean( false ) );
 				} );
 		},
 		[ setStatus, setSurveySubmitted ]

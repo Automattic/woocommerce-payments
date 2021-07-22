@@ -11,7 +11,6 @@ import {
 	CardDivider,
 	CardHeader,
 	DropdownMenu,
-	Notice,
 } from '@wordpress/components';
 import { moreVertical, trash } from '@wordpress/icons';
 import classNames from 'classnames';
@@ -121,18 +120,6 @@ const PaymentMethodsDropdownMenu = ( {
 	);
 };
 
-// @todo - move to child component(disable upe modal).
-const UpeDisableError = () => {
-	return (
-		<Notice status="error" isDismissible={ true }>
-			{ __(
-				'Error disabling payment methods. Please try again.',
-				'woocommerce-payments'
-			) }
-		</Notice>
-	);
-};
-
 // @todo - Figure out how to go from UPE Disable Modal to Survey Modal. Show after UPE is disabled? But only once.
 
 const PaymentMethods = () => {
@@ -156,6 +143,8 @@ const PaymentMethods = () => {
 		);
 	};
 
+	// @todo: could we pass surveyAnswers object to WcPaySurveyContextProvider?
+
 	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
 	const [ useIsSurveyModalOpen, setIsSurveyModalOpen ] = useState( false );
 	const [ useIsDisableModalOpen, setIsDisableModalOpen ] = useState( false );
@@ -171,11 +160,16 @@ const PaymentMethods = () => {
 			) : null }
 			{ useIsSurveyModalOpen ? (
 				<WcPaySurveyContextProvider>
-					<SurveyModal setIsModalOpen={ setIsSurveyModalOpen } />
+					<SurveyModal
+						setIsModalOpen={ setIsSurveyModalOpen }
+						surveyOptions={ {
+							surveyKey: 'wcpay-upe-disable-early-access',
+							surveyQuestion: 'why-disable',
+						} }
+					/>
 				</WcPaySurveyContextProvider>
 			) : null }
 
-			{ 'error' === status && <UpeDisableError /> }
 			<Card
 				className={ classNames( 'payment-methods', {
 					'is-loading': 'pending' === status,
