@@ -56,6 +56,7 @@ const SurveyPromptQuestion = () => (
 );
 
 const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
+	console.log( 'optionsArray: ', optionsArray );
 	const [ isUpeEnabled ] = useIsUpeEnabled();
 	const [ surveyAnswers, setSurveyAnswers ] = useSurveyAnswers( {
 		surveyQuestion: '',
@@ -79,7 +80,10 @@ const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 						[ surveyQuestion ]: value,
 					} )
 				}
-				selected={ surveyAnswers[ surveyQuestion ] }
+				selected={
+					// This checks the first option by default to signify it's required.
+					surveyAnswers[ surveyQuestion ] || optionsArray[ 0 ].value
+				}
 			/>
 			<TextareaControl
 				className="comments-text-field"
