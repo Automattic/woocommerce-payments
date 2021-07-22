@@ -75,6 +75,8 @@ const createAdditionalMethodsSetupTask = ( {
 							</WcPayUpeContextProvider>
 						</WCPaySettingsContext.Provider>
 					),
+					completed:
+						'yes' === isSetupCompleted && Boolean( isUpeEnabled ),
 			  }
 			: {} ),
 	};
