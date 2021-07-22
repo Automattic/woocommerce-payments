@@ -4,7 +4,7 @@
  */
 import classNames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button, Icon } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -40,7 +40,15 @@ const EnabledCurrenciesListItem = ( {
 	return (
 		<li className={ classNames( 'enabled-currency', id ) }>
 			<div className="enabled-currency__container">
-				<div className="enabled-currency__flag">{ flag }</div>
+				<div className="enabled-currency__flag">
+					{ '' !== flag ? (
+						flag
+					) : (
+						<div className="enabled-currency__flag-text">
+							<span>{ code }</span>
+						</div>
+					) }
+				</div>
 				<div className="enabled-currency__label">{ name }</div>
 				<div className="enabled-currency__code">
 					({ symbol } { code })
@@ -50,21 +58,23 @@ const EnabledCurrenciesListItem = ( {
 				{ formatCurrencyRate() }
 			</div>
 			<div className="enabled-currency__actions">
-				<Button
-					isLink
-					href={ getEditUrl( id ) }
-					aria-label={ sprintf(
-						__(
-							/* translators: %1: Currency to be edited. */
-							'Edit %1$s',
-							'woocommerce-payments'
-						),
-						name
-					) }
-					className="enabled-currency__action edit"
-				>
-					<Icon icon="edit" />
-				</Button>
+				{ ! isDefault && (
+					<Button
+						isLink
+						href={ getEditUrl( id ) }
+						aria-label={ sprintf(
+							__(
+								/* translators: %1: Currency to be edited. */
+								'Edit %1$s',
+								'woocommerce-payments'
+							),
+							name
+						) }
+						className="enabled-currency__action edit"
+					>
+						{ __( 'manage', 'woocommerce-payments' ) }
+					</Button>
+				) }
 				{ onDeleteClick && (
 					<DeleteButton
 						className="enabled-currency__action delete"

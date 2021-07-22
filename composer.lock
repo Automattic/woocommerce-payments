@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3d9b16712223fcd2a98d415b0de6f196",
+    "content-hash": "bb01e555fdfdf686edeb03f3bdf21a74",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1674,16 +1674,16 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v5.4.0",
+            "version": "v5.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "f0f6a806d92d8918d0dfccde5c7300ce182aec0d"
+                "reference": "b80d16b146a6858b4c53afff116c7af7d59afad5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/f0f6a806d92d8918d0dfccde5c7300ce182aec0d",
-                "reference": "f0f6a806d92d8918d0dfccde5c7300ce182aec0d",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/b80d16b146a6858b4c53afff116c7af7d59afad5",
+                "reference": "b80d16b146a6858b4c53afff116c7af7d59afad5",
                 "shasum": ""
             },
             "require": {
@@ -1712,9 +1712,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v5.4.0"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v5.5.0"
             },
-            "time": "2021-06-09T05:54:56+00:00"
+            "time": "2021-07-12T13:57:36+00:00"
         },
         {
             "name": "php-stubs/wordpress-stubs",
@@ -4014,11 +4014,12 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "7.*"
+        "php": "7.*",
+        "ext-json": "*"
     },
     "platform-dev": [],
     "platform-overrides": {
         "php": "7.1"
     },
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.1.0"
 }

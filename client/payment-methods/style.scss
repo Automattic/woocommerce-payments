@@ -1,4 +1,20 @@
 .payment-methods {
+	position: relative;
+
+	&__header {
+		justify-content: space-between;
+
+		.components-dropdown-menu__toggle.has-icon {
+			padding: 0;
+			min-width: unset;
+		}
+	}
+
+	&__heading {
+		margin: 0;
+		font-size: 16px;
+	}
+
 	&__available-methods-container {
 		@include modal-footer-buttons-left;
 		align-items: center;
@@ -28,21 +44,52 @@
 		}
 	}
 
+	&__express-checkouts {
+		background: url( '../../assets/images/upe_preview_illustration.svg' )
+			no-repeat right;
+		background-color: #f7edf7;
+		background-size: auto;
+
+		h3,
+		p {
+			padding-right: 215px;
+		}
+
+		&-get-started {
+			margin-right: 16px;
+		}
+		&-actions {
+			padding-top: 11px;
+		}
+
+		@media ( max-width: 1024px ) {
+			h3,
+			p {
+				padding-right: 0;
+			}
+			background-image: none;
+		}
+	}
+
 	.payment-methods-header {
 		justify-content: flex-end;
 	}
 
-	&.loading-placeholder {
-		animation: loading-fade 1.6s ease-in-out infinite;
-		background-color: $light-gray-500;
-		opacity: 0.5 !important;
+	&.is-loading {
+		&::after {
+			content: ' ';
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 100%;
+			height: 100%;
+			animation: loading-fade 1.6s ease-in-out infinite;
+			// same color as $light-gray-500, but in rgb format
+			background-color: rgba( 226, 228, 231, 0.65 );
 
-		@media screen and ( prefers-reduced-motion: reduce ) {
-			animation: none;
-		}
-
-		.payment-method {
-			background-color: $light-gray-500;
+			@media screen and ( prefers-reduced-motion: reduce ) {
+				animation: none;
+			}
 		}
 	}
 }
