@@ -71,7 +71,9 @@ const PaymentRequestButtonPreview = ( props ) => {
 					/>
 				</Elements>
 			</div>
-			<p>{ requestButtonHelpText }</p>
+			<p className="payment-method-settings__preview-help-text">
+				{ requestButtonHelpText }
+			</p>
 		</>
 	);
 };
