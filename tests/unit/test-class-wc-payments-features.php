@@ -11,8 +11,9 @@
 class WC_Payments_Features_Test extends WP_UnitTestCase {
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
-		'_wcpay_feature_upe'                  => 'upe',
-		'_wcpay_feature_upe_settings_preview' => 'upeSettingsPreview',
+		'_wcpay_feature_upe'                     => 'upe',
+		'_wcpay_feature_upe_settings_preview'    => 'upeSettingsPreview',
+		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
 	];
 
 	/**
