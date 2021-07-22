@@ -65,11 +65,15 @@ const createAdditionalMethodsSetupTask = ( {
 						'woocommerce-payments'
 					),
 					container: (
-						<WcPayUpeContextProvider
-							defaultIsUpeEnabled={ isUpeEnabled }
+						<WCPaySettingsContext.Provider
+							value={ window.wcpaySettings }
 						>
-							<UpePreviewMethodSelector />
-						</WcPayUpeContextProvider>
+							<WcPayUpeContextProvider
+								defaultIsUpeEnabled={ isUpeEnabled }
+							>
+								<UpePreviewMethodSelector />
+							</WcPayUpeContextProvider>
+						</WCPaySettingsContext.Provider>
 					),
 					completed:
 						// eslint-disable-next-line max-len

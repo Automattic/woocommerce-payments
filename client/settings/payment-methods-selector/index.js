@@ -2,7 +2,6 @@
 /**
  * External dependencies
  */
-import { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { useState, useCallback } from '@wordpress/element';
@@ -19,12 +18,8 @@ import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import ConfirmationModal from '../../components/confirmation-modal';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
-import WCPaySettingsContext from '../wcpay-settings-context';
-import { formatMethodFeesDescription } from '../../utils/account-fees';
 
 const AddPaymentMethodsModal = ( { onClose } ) => {
-	const { accountFees } = useContext( WCPaySettingsContext );
-
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
 
 	const [
@@ -99,9 +94,6 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 						key={ method }
 						checked={ selectedPaymentMethods.includes( method ) }
 						onChange={ handleCheckboxClick }
-						fees={ formatMethodFeesDescription(
-							accountFees[ method ]
-						) }
 						name={ method }
 					/>
 				) ) }

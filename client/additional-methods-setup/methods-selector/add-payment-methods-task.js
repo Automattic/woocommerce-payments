@@ -17,7 +17,6 @@ import interpolateComponents from 'interpolate-components';
  * Internal dependencies
  */
 import WizardTaskContext from '../wizard/task/context';
-import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
@@ -30,7 +29,6 @@ import {
 } from '../../data';
 import './add-payment-methods-task.scss';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
-import { formatMethodFeesDescription } from '../../utils/account-fees';
 
 const useGetCountryName = () => {
 	const generalSettings = useSelect(
@@ -70,8 +68,6 @@ const usePaymentMethodsCheckboxState = ( initialValue ) => {
 };
 
 const AddPaymentMethodsTask = () => {
-	const { accountFees } = useContext( WCPaySettingsContext );
-
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
 	const [
 		initialEnabledPaymentMethodIds,
@@ -198,9 +194,6 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.card }
 									onChange={ handlePaymentMethodChange }
-									fees={ formatMethodFeesDescription(
-										accountFees.card
-									) }
 									name="card"
 								/>
 							) }
@@ -219,9 +212,6 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.giropay }
 									onChange={ handlePaymentMethodChange }
-									fees={ formatMethodFeesDescription(
-										accountFees.giropay
-									) }
 									name="giropay"
 								/>
 							) }
@@ -229,9 +219,6 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.sofort }
 									onChange={ handlePaymentMethodChange }
-									fees={ formatMethodFeesDescription(
-										accountFees.sofort
-									) }
 									name="sofort"
 								/>
 							) }
@@ -241,9 +228,6 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.sepa_debit }
 									onChange={ handlePaymentMethodChange }
-									fees={ formatMethodFeesDescription(
-										accountFees.sepa_debit
-									) }
 									name="sepa_debit"
 								/>
 							) }
