@@ -180,9 +180,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return bool True if the Intent was fetched and prepared successfully, false otherwise.
 	 */
 	public function prepare_intent_for_order_pay_page(): bool {
-		if ( ! isset( $order ) || empty( $order ) ) {
-			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
-		}
+		$order  = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
 		$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
 
 		if ( ! $intent || 'requires_action' !== $intent->get_status() ) {
