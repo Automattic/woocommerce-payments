@@ -167,7 +167,11 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				}
 			}
 
-			return $customer_id;
+			return rest_ensure_response(
+				[
+					'id' => $customer_id,
+				]
+			);
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to create / update customer from order via REST API: ' . $e );
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
