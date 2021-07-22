@@ -205,7 +205,6 @@ const AddPaymentMethodsTask = () => {
 											onChange={
 												handlePaymentMethodChange
 											}
-											fees="missing fees"
 											name="giropay"
 										/>
 									) }
@@ -219,7 +218,6 @@ const AddPaymentMethodsTask = () => {
 											onChange={
 												handlePaymentMethodChange
 											}
-											fees="missing fees"
 											name="sofort"
 										/>
 									) }
@@ -233,7 +231,6 @@ const AddPaymentMethodsTask = () => {
 											onChange={
 												handlePaymentMethodChange
 											}
-											fees="missing fees"
 											name="sepa_debit"
 										/>
 									) }
