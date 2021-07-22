@@ -66,7 +66,6 @@ const PaymentMethodsDropdownMenu = ( {
 	);
 };
 
-// @todo - Figure out how to go from UPE Disable Modal to Survey Modal. Show after UPE is disabled? But only once.
 const UpeSetupBanner = () => {
 	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
 
@@ -137,7 +136,6 @@ const PaymentMethods = () => {
 		);
 	};
 
-	// @todo: could we pass surveyAnswers object to WcPaySurveyContextProvider?
 	const {
 		featureFlags: { upeSettingsPreview: isUpeSettingsPreviewEnabled },
 	} = useContext( WCPaySettingsContext );
@@ -180,7 +178,10 @@ const PaymentMethods = () => {
 								{ __( 'Early access', 'woocommerce-payments' ) }
 							</Pill>
 						</h4>
-						<PaymentMethodsDropdownMenu />
+						<PaymentMethodsDropdownMenu
+							setIsSurveyModalOpen={ setIsSurveyModalOpen }
+							setIsDisableModalOpen={ setIsDisableModalOpen }
+						/>
 					</CardHeader>
 				) }
 
