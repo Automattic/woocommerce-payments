@@ -272,6 +272,69 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$result = $this->mock_upe_gateway->update_payment_intent( $intent_id, $order_id, $save_payment_method );
 	}
 
+	public function test_update_payment_intent_with_selected_upe_payment_method() {
+		$order                     = WC_Helper_Order::create_order();
+		$order_id                  = $order->get_id();
+		$product_item              = current( $order->get_items( 'line_item' ) );
+		$intent_id                 = 'pi_mock';
+		$user                      = '';
+		$customer_id               = 'cus_12345';
+		$save_payment_method       = true;
+		$selected_upe_payment_type = 'giropay';
+
+		$this->set_cart_contains_subscription_items( false );
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'manage_customer_details_for_order' )
+			->will(
+				$this->returnValue( [ $user, $customer_id ] )
+			);
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'create_customer_for_user' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_intention' )
+			->with(
+				'pi_mock',
+				5000,
+				'usd',
+				true,
+				'cus_12345',
+				[
+					'merchant_reference' => (string) $order_id,
+					'shipping_amount'    => 1000.0,
+					'line_items'         => [
+						(object) [
+							'product_code'        => 30,
+							'product_description' => 'Beanie with Logo',
+							'unit_cost'           => 1800,
+							'quantity'            => 1,
+							'tax_amount'          => 270,
+							'discount_amount'     => 0,
+							'product_code'        => $product_item->get_product_id(),
+							'product_description' => 'Dummy Product',
+							'unit_cost'           => 1000.0,
+							'quantity'            => 4,
+							'tax_amount'          => 0.0,
+							'discount_amount'     => 0.0,
+						],
+					],
+					'customer_reference' => (string) $order_id,
+				],
+				'giropay'
+			)
+			->willReturn(
+				[
+					'sucess' => 'true',
+				]
+			);
+
+		$result = $this->mock_upe_gateway->update_payment_intent( $intent_id, $order_id, $save_payment_method, $selected_upe_payment_type );
+	}
+
 	public function test_create_payment_intent_uses_order_amount_if_order() {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
