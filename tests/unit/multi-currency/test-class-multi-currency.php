@@ -151,7 +151,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			->method( 'get_cached_account_data' )
 			->willReturn(
 				[
-					'presentment_currencies' => [ 'USD', 'CAD', 'RANDOM', 'BRL' ],
+					'presentment_currencies' => [ 'usd', 'cad', 'random', 'brl' ],
 				]
 			);
 

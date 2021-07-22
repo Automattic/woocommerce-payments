@@ -813,7 +813,7 @@ class MultiCurrency {
 		$account = $this->payments_account->get_cached_account_data();
 
 		if ( $account && ! empty( $account['presentment_currencies'] ) ) {
-			$account_currencies = $account['presentment_currencies'];
+			$account_currencies = array_map( 'strtoupper', $account['presentment_currencies'] );
 		}
 
 		return apply_filters( $this->id . '_available_currencies', array_intersect( $account_currencies, $wc_currencies ) );
