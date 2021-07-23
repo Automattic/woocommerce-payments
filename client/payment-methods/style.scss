@@ -8,6 +8,10 @@
 			padding: 0;
 			min-width: unset;
 		}
+
+		button.components-dropdown-menu__menu-item:last-of-type {
+			color: rgb( 220, 30, 30 );
+		}
 	}
 
 	&__heading {

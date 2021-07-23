@@ -1,0 +1,37 @@
+.survey-section {
+	.survey-radiocontrols > div > label {
+		font-weight: 600;
+	}
+
+	.comments-text-field {
+		margin-top: 2em;
+
+		label {
+			font-weight: 600;
+		}
+
+		textarea {
+			height: 4rem;
+		}
+	}
+
+	.disable-success-notice {
+		background: #e6f2e8;
+		padding: 16px;
+		border-radius: 4px;
+
+		p {
+			display: inline;
+			margin-left: 20px;
+		}
+
+		.disable-success-icon {
+			display: inline;
+			color: #4ab866;
+		}
+	}
+
+	.survey-bottom-disclaimer {
+		font-style: italic;
+	}
+}
