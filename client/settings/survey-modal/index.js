@@ -19,7 +19,7 @@ import { wcPaySurveys } from './questions';
 import WcPaySurveyContext from './context';
 import { useSurveySubmit, useSurveyAnswers } from './hook';
 
-const DisabledUPESuccessNotice = () => {
+const DisabledUpeSuccessNotice = () => {
 	return (
 		<div className="disable-success-notice">
 			<Icon className="disable-success-icon" icon="yes-alt" />
@@ -46,15 +46,12 @@ const SurveyPromptQuestionDisabledUPE = () => (
 
 const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 	const [ isUpeEnabled ] = useIsUpeEnabled();
-	const [ surveyAnswers, setSurveyAnswers ] = useSurveyAnswers( {
-		surveyQuestion: '',
-		comments: '',
-	} );
+	const [ surveyAnswers, setSurveyAnswers ] = useSurveyAnswers( {} );
 	return (
 		<>
 			{ ! isUpeEnabled && (
 				<>
-					<DisabledUPESuccessNotice />
+					<DisabledUpeSuccessNotice />
 					<SurveyPromptQuestionDisabledUPE />
 				</>
 			) }
@@ -72,12 +69,12 @@ const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 						  )
 				}
 				options={ optionsArray }
-				onChange={ ( value ) =>
-					setSurveyAnswers( {
-						...surveyAnswers,
+				onChange={ ( value ) => {
+					setSurveyAnswers( ( prev ) => ( {
+						...prev,
 						[ surveyQuestion ]: value,
-					} )
-				}
+					} ) );
+				} }
 				selected={
 					// This checks the first option by default to signify it's required.
 					surveyAnswers[ surveyQuestion ] || optionsArray[ 0 ].value
@@ -90,9 +87,12 @@ const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 					'woocommerce-payments'
 				) }
 				label={ __( 'Comments (optional)', 'woocommerce-payments' ) }
-				onChange={ ( text ) =>
-					setSurveyAnswers( { ...surveyAnswers, comments: text } )
-				}
+				onChange={ ( text ) => {
+					setSurveyAnswers( ( prev ) => ( {
+						...prev,
+						comments: text,
+					} ) );
+				} }
 				value={ surveyAnswers.comments }
 			/>
 		</>

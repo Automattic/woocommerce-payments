@@ -2,15 +2,19 @@
 	.survey-radiocontrols > div > label {
 		font-weight: 600;
 	}
+
 	.comments-text-field {
 		margin-top: 2em;
+
 		label {
 			font-weight: 600;
 		}
+
 		textarea {
 			height: 4rem;
 		}
 	}
+
 	.disable-success-notice {
 		background: #e6f2e8;
 		padding: 16px;
@@ -26,6 +30,7 @@
 			color: #4ab866;
 		}
 	}
+
 	.survey-bottom-disclaimer {
 		font-style: italic;
 	}

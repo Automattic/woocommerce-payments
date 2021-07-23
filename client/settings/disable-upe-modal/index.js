@@ -50,7 +50,7 @@ const NeedHelpBarSection = () => {
 	);
 };
 
-const DisableUPEModalBody = ( { enabledMethods } ) => {
+const DisableUpeModalBody = ( { enabledMethods } ) => {
 	const filteredPaymentMethods = enabledMethods.filter(
 		( method ) => 'card' !== method.id
 	);
@@ -110,7 +110,7 @@ const DisableSubmitButton = () => {
 	);
 };
 
-const DisableUPEModal = ( {
+const DisableUpeModal = ( {
 	enabledMethods,
 	setOpenModal,
 	triggerAfterDisable,
@@ -147,9 +147,9 @@ const DisableUPEModal = ( {
 				onRequestClose={ () => setOpenModal( '' ) }
 				actions={ <DisableSubmitButton /> }
 			>
-				<DisableUPEModalBody enabledMethods={ enabledMethods } />
+				<DisableUpeModalBody enabledMethods={ enabledMethods } />
 			</ConfirmationModal>
 		</>
 	);
 };
-export default DisableUPEModal;
+export default DisableUpeModal;
