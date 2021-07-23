@@ -42,7 +42,7 @@ const EnableUpePreviewTask = () => {
 			index={ 1 }
 		>
 			<CollapsibleBody className="enable-upe-preview__body">
-				<p>
+				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ interpolateComponents( {
 						mixedString: __(
 							'Get early access to additional payment methods and an improved checkout experience, ' +
