@@ -343,7 +343,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$this->expectOutputRegex( '/<p class="woocommerce-store-notice demo_store" data-notice-id="cd4c082cbdfa742c13d944c867a45cd92" style="display:none;">/' );
 		$this->expectOutputRegex( '/We noticed you&#039;re visiting from Canada. We&#039;ve updated our prices to Canadian dollar for your shopping convenience./' );
-		$this->expectOutputRegex( '/Use <a href="?currency=USD">United States (US) dollar<\/a> instead./' );
+		$this->expectOutputRegex( '/<a href="?currency=USD">Use United States (US) dollar instead.<\/a>/' );
 		$this->expectOutputRegex( '/<a href="#" class="woocommerce-store-notice__dismiss-link">Dismiss<\/a><\/p>/' );
 	}
 
