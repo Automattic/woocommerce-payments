@@ -66,11 +66,11 @@ describe( 'WcPaySurveyContextProvider', () => {
 
 	it( 'should render survey questions radio buttons and be clickable', () => {
 		// @todo: mock the setSurveySubmitted hook from useSurveySubmit to actually click Send Feedback.
-		const setIsSurveyModalOpen = jest.fn().mockReturnValue( true );
+		const setOpenModalIdentifier = jest.fn().mockReturnValue( true );
 		render(
 			<WcPaySurveyContextProvider>
 				<SurveyModal
-					setIsModalOpen={ setIsSurveyModalOpen }
+					setOpenModal={ setOpenModalIdentifier }
 					surveyOptions={ {
 						surveyKey: 'wcpay-upe-disable-early-access',
 						surveyQuestion: 'why-disable',

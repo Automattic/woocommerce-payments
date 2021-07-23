@@ -42,10 +42,7 @@ import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
 
-const PaymentMethodsDropdownMenu = ( {
-	setIsSurveyModalOpen,
-	setIsDisableModalOpen,
-} ) => {
+const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
 		<DropdownMenu
 			icon={ moreVertical }
@@ -54,12 +51,12 @@ const PaymentMethodsDropdownMenu = ( {
 				{
 					title: __( 'Provide Feedback', 'woocommerce-payments' ),
 					icon: 'megaphone',
-					onClick: () => setIsSurveyModalOpen( true ),
+					onClick: () => setOpenModal( 'survey' ),
 				},
 				{
 					title: 'Disable',
 					icon: trash,
-					onClick: () => setIsDisableModalOpen( true ),
+					onClick: () => setOpenModal( 'disable' ),
 				},
 			] }
 		/>
@@ -141,22 +138,23 @@ const PaymentMethods = () => {
 	} = useContext( WCPaySettingsContext );
 
 	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
-	const [ useIsSurveyModalOpen, setIsSurveyModalOpen ] = useState( false );
-	const [ useIsDisableModalOpen, setIsDisableModalOpen ] = useState( false );
+	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
 
 	return (
 		<>
-			{ useIsDisableModalOpen ? (
+			{ 'disable' === openModalIdentifier ? (
 				<DisableUPEModal
 					enabledMethods={ enabledMethods }
-					setIsModalOpen={ setIsDisableModalOpen }
-					triggerAfterDisable={ () => setIsSurveyModalOpen( true ) }
+					setOpenModal={ setOpenModalIdentifier }
+					triggerAfterDisable={ () =>
+						setOpenModalIdentifier( 'survey' )
+					}
 				/>
 			) : null }
-			{ useIsSurveyModalOpen ? (
+			{ 'survey' === openModalIdentifier ? (
 				<WcPaySurveyContextProvider>
 					<SurveyModal
-						setIsModalOpen={ setIsSurveyModalOpen }
+						setOpenModal={ setOpenModalIdentifier }
 						surveyOptions={ {
 							surveyKey: 'wcpay-upe-disable-early-access',
 							surveyQuestion: 'why-disable',
@@ -179,8 +177,7 @@ const PaymentMethods = () => {
 							</Pill>
 						</h4>
 						<PaymentMethodsDropdownMenu
-							setIsSurveyModalOpen={ setIsSurveyModalOpen }
-							setIsDisableModalOpen={ setIsDisableModalOpen }
+							setOpenModal={ setOpenModalIdentifier }
 						/>
 					</CardHeader>
 				) }

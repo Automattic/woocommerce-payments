@@ -94,7 +94,7 @@ const DisableSubmitButton = () => {
 
 const DisableUPEModal = ( {
 	enabledMethods,
-	setIsModalOpen,
+	setOpenModal,
 	triggerAfterDisable,
 } ) => {
 	const [ isUpeEnabled ] = useIsUpeEnabled();
@@ -102,10 +102,10 @@ const DisableUPEModal = ( {
 
 	useEffect( () => {
 		if ( ! isUpeEnabled ) {
-			setIsModalOpen( false );
+			setOpenModal( '' );
 			triggerAfterDisable();
 		}
-	}, [ isUpeEnabled, setIsModalOpen, triggerAfterDisable ] );
+	}, [ isUpeEnabled, setOpenModal, triggerAfterDisable ] );
 
 	useEffect( () => {
 		if ( 'error' === status ) {
@@ -126,7 +126,7 @@ const DisableUPEModal = ( {
 					'Disable the new payments experience',
 					'woocommerce-payments'
 				) }
-				onRequestClose={ () => setIsModalOpen( false ) }
+				onRequestClose={ () => setOpenModal( '' ) }
 				actions={ <DisableSubmitButton /> }
 			>
 				<DisableUPEModalBody enabledMethods={ enabledMethods } />

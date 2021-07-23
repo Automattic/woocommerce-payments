@@ -44,17 +44,6 @@ const SurveyPromptQuestionDisabledUPE = () => (
 	</p>
 );
 
-const SurveyPromptQuestion = () => (
-	<p>
-		<strong>
-			{ __(
-				'Do you have any feedback for the new payments experience?',
-				'woocommerce-payments'
-			) }
-		</strong>
-	</p>
-);
-
 const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 	const [ isUpeEnabled ] = useIsUpeEnabled();
 	const [ surveyAnswers, setSurveyAnswers ] = useSurveyAnswers( {
@@ -63,15 +52,25 @@ const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 	} );
 	return (
 		<>
-			{ ! isUpeEnabled ? (
+			{ ! isUpeEnabled && (
 				<>
 					<DisabledUPESuccessNotice />
 					<SurveyPromptQuestionDisabledUPE />
 				</>
-			) : (
-				<SurveyPromptQuestion />
 			) }
 			<RadioControl
+				className="survey-radiocontrols"
+				label={
+					isUpeEnabled
+						? __(
+								'Do you have any feedback for the new payments experience?',
+								'woocommerce-payments'
+						  )
+						: __(
+								'What made you disable the new payments experience?',
+								'woocommerce-payments'
+						  )
+				}
 				options={ optionsArray }
 				onChange={ ( value ) =>
 					setSurveyAnswers( {
@@ -86,18 +85,16 @@ const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 			/>
 			<TextareaControl
 				className="comments-text-field"
-				label={ __( 'Comments(optional)', 'woocommerce-payments' ) }
+				help={ __(
+					'Feedback will be sent anonymously to the WooCommerce Payments development team.',
+					'woocommerce-payments'
+				) }
+				label={ __( 'Comments (optional)', 'woocommerce-payments' ) }
 				onChange={ ( text ) =>
 					setSurveyAnswers( { ...surveyAnswers, comments: text } )
 				}
 				value={ surveyAnswers.comments }
 			/>
-			<p className="survey-bottom-disclaimer">
-				{ __(
-					'Feedback will be sent anonymously to the WooCommerce Payments development team.',
-					'woocommerce-payments'
-				) }{ ' ' }
-			</p>
 		</>
 	);
 };
@@ -151,7 +148,7 @@ const getOptionsArrayFromQuestions = ( surveyKey, surveyQuestion ) => {
 	} );
 };
 
-const SurveyModal = ( { setIsModalOpen, surveyOptions } ) => {
+const SurveyModal = ( { setOpenModal, surveyOptions } ) => {
 	const { status } = useContext( WcPaySurveyContext );
 	const [ isSurveySubmitted ] = useSurveySubmit();
 	// Get the questions using key and question pair.
@@ -162,19 +159,15 @@ const SurveyModal = ( { setIsModalOpen, surveyOptions } ) => {
 	);
 
 	useEffect( () => {
-		if ( ! surveyKey || ! surveyQuestion ) surveyCannotBeLoadedNotice();
-		if ( 'error' === status ) submissionErrorNotice();
-		else if ( isSurveySubmitted ) {
+		if ( ! surveyKey || ! surveyQuestion ) {
+			surveyCannotBeLoadedNotice();
+		} else if ( 'error' === status ) {
+			submissionErrorNotice();
+		} else if ( isSurveySubmitted ) {
 			surveySubmittedConfirmation();
-			setIsModalOpen( false );
+			setOpenModal( '' );
 		}
-	}, [
-		status,
-		isSurveySubmitted,
-		surveyKey,
-		surveyQuestion,
-		setIsModalOpen,
-	] );
+	}, [ status, isSurveySubmitted, surveyKey, surveyQuestion, setOpenModal ] );
 
 	if ( 1 > optionsArray ) return null;
 
@@ -186,7 +179,7 @@ const SurveyModal = ( { setIsModalOpen, surveyOptions } ) => {
 					'Provide feedback about the new payments experience.',
 					'woocommerce-payments'
 				) }
-				onRequestClose={ () => setIsModalOpen( false ) }
+				onRequestClose={ () => setOpenModal( '' ) }
 				actions={ <SurveySubmitButton /> }
 			>
 				<SurveyModalBody

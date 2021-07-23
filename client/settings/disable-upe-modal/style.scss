@@ -9,6 +9,11 @@
 		background: #f0f6fc;
 		padding: 16px;
 		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		align-content: center;
+		justify-content: flex-start;
+		flex-direction: row;
 
 		p {
 			display: inline;
