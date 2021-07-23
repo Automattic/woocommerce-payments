@@ -55,7 +55,11 @@ const OverviewPage = () => {
 			) }
 
 			{ showLoginError && (
-				<Notice status="error" isDismissible={ false }>
+				<Notice
+					status="error"
+					isDismissible={ false }
+					className="wcpay-login-error"
+				>
 					{ __(
 						'There was a problem redirecting you to the account dashboard. Please try again.',
 						'woocommerce-payments'
