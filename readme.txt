@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fee discounts should use the discount currency rather than the base fee currency.
 * Add - Allow the customer to perform SCA authentication on Subscription renewals.
 * Fix - Improved errors handling during onboarding and page overview.
+* Update - Allow viewing Stripe account details only in page Overview
 
 = 2.7.0 - 2021-07-14 =
 * Add - Add a link to the snackbar notice that appears after submitting or saving evidence for a dispute challenge.
