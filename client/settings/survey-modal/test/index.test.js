@@ -71,10 +71,8 @@ describe( 'WcPaySurveyContextProvider', () => {
 			<WcPaySurveyContextProvider>
 				<SurveyModal
 					setOpenModal={ setOpenModalIdentifier }
-					surveyOptions={ {
-						surveyKey: 'wcpay-upe-disable-early-access',
-						surveyQuestion: 'why-disable',
-					} }
+					surveyKey="wcpay-upe-disable-early-access"
+					surveyQuestion="why-disable"
 				/>
 			</WcPaySurveyContextProvider>
 		);

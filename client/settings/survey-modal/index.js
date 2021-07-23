@@ -148,11 +148,10 @@ const getOptionsArrayFromQuestions = ( surveyKey, surveyQuestion ) => {
 	} );
 };
 
-const SurveyModal = ( { setOpenModal, surveyOptions } ) => {
+const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
 	const { status } = useContext( WcPaySurveyContext );
 	const [ isSurveySubmitted ] = useSurveySubmit();
 	// Get the questions using key and question pair.
-	const { surveyKey, surveyQuestion } = surveyOptions;
 	const optionsArray = getOptionsArrayFromQuestions(
 		surveyKey,
 		surveyQuestion
