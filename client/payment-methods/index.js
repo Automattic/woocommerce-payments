@@ -14,7 +14,7 @@ import {
 	DropdownMenu,
 	ExternalLink,
 } from '@wordpress/components';
-import { moreVertical, trash } from '@wordpress/icons';
+import { moreVertical } from '@wordpress/icons';
 import classNames from 'classnames';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -50,12 +50,10 @@ const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 			controls={ [
 				{
 					title: __( 'Provide Feedback', 'woocommerce-payments' ),
-					icon: 'megaphone',
 					onClick: () => setOpenModal( 'survey' ),
 				},
 				{
 					title: 'Disable',
-					icon: trash,
 					onClick: () => setOpenModal( 'disable' ),
 				},
 			] }
