@@ -18,6 +18,7 @@ import {
 	useCurrencies,
 	useEnabledCurrencies,
 } from '../../../data';
+import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 
 jest.mock( '../../../data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn(),
@@ -26,6 +27,14 @@ jest.mock( '../../../data', () => ( {
 	useCurrencies: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
 } ) );
+
+const SettingsContextProvider = ( { children } ) => (
+	<WCPaySettingsContext.Provider
+		value={ { featureFlags: { multiCurrency: true }, accountFees: {} } }
+	>
+		{ children }
+	</WCPaySettingsContext.Provider>
+);
 
 describe( 'AddPaymentMethodsTask', () => {
 	beforeEach( () => {
@@ -55,11 +64,13 @@ describe( 'AddPaymentMethodsTask', () => {
 	it( 'should not call the useSettings hook if the task is not active', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [] );
 		render(
-			<WizardTaskContext.Provider
-				value={ { setCompleted: () => null, isActive: false } }
-			>
-				<AddPaymentMethodsTask />
-			</WizardTaskContext.Provider>
+			<SettingsContextProvider>
+				<WizardTaskContext.Provider
+					value={ { setCompleted: () => null, isActive: false } }
+				>
+					<AddPaymentMethodsTask />
+				</WizardTaskContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		expect(
@@ -74,11 +85,13 @@ describe( 'AddPaymentMethodsTask', () => {
 	it( 'should not allow to move forward if no payment methods are selected', () => {
 		const setCompletedMock = jest.fn();
 		render(
-			<WizardTaskContext.Provider
-				value={ { setCompleted: setCompletedMock, isActive: true } }
-			>
-				<AddPaymentMethodsTask />
-			</WizardTaskContext.Provider>
+			<SettingsContextProvider>
+				<WizardTaskContext.Provider
+					value={ { setCompleted: setCompletedMock, isActive: true } }
+				>
+					<AddPaymentMethodsTask />
+				</WizardTaskContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		expect(
@@ -118,11 +131,13 @@ describe( 'AddPaymentMethodsTask', () => {
 			updateEnabledPaymentMethodsMock,
 		] );
 		render(
-			<WizardTaskContext.Provider
-				value={ { setCompleted: setCompletedMock, isActive: true } }
-			>
-				<AddPaymentMethodsTask />
-			</WizardTaskContext.Provider>
+			<SettingsContextProvider>
+				<WizardTaskContext.Provider
+					value={ { setCompleted: setCompletedMock, isActive: true } }
+				>
+					<AddPaymentMethodsTask />
+				</WizardTaskContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		expect(
@@ -164,11 +179,13 @@ describe( 'AddPaymentMethodsTask', () => {
 			updateEnabledPaymentMethodsMock,
 		] );
 		render(
-			<WizardTaskContext.Provider
-				value={ { setCompleted: setCompletedMock, isActive: true } }
-			>
-				<AddPaymentMethodsTask />
-			</WizardTaskContext.Provider>
+			<SettingsContextProvider>
+				<WizardTaskContext.Provider
+					value={ { setCompleted: setCompletedMock, isActive: true } }
+				>
+					<AddPaymentMethodsTask />
+				</WizardTaskContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		// the payment methods should all be checked

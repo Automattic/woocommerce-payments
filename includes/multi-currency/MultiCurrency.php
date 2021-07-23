@@ -8,6 +8,7 @@
 namespace WCPay\MultiCurrency;
 
 use WC_Payments;
+use WC_Payments_Account;
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
@@ -102,6 +103,13 @@ class MultiCurrency {
 	private $payments_api_client;
 
 	/**
+	 * Instance of WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $payments_account;
+
+	/**
 	 * Main MultiCurrency Instance.
 	 *
 	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
@@ -111,7 +119,7 @@ class MultiCurrency {
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
-			self::$instance = new self( WC_Payments::get_payments_api_client() );
+			self::$instance = new self( WC_Payments::get_payments_api_client(), WC_Payments::get_account_service() );
 		}
 		return self::$instance;
 	}
@@ -120,9 +128,11 @@ class MultiCurrency {
 	 * Class constructor.
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
+	 * @param WC_Payments_Account    $payments_account    Payments Account instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account ) {
 		$this->payments_api_client = $payments_api_client;
+		$this->payments_account    = $payments_account;
 		$this->locale              = new Locale();
 		$this->utils               = new Utils();
 		$this->compatibility       = new Compatibility( $this, $this->utils );
@@ -346,10 +356,10 @@ class MultiCurrency {
 
 		$available_currencies = [];
 
-		$wc_currencies = get_woocommerce_currencies();
-		$cache_data    = $this->get_cached_currencies();
+		$currencies = $this->get_account_available_currencies();
+		$cache_data = $this->get_cached_currencies();
 
-		foreach ( $wc_currencies as $currency_code => $currency_name ) {
+		foreach ( $currencies as $currency_code ) {
 			$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 1.0;
 			$update_time   = $cache_data['updated'] ?? null;
 			$new_currency  = new Currency( $currency_code, $currency_rate, $update_time );
@@ -854,6 +864,39 @@ class MultiCurrency {
 		foreach ( $settings as $setting ) {
 			delete_option( $this->id . '_' . $setting . '_' . strtolower( $code ) );
 		}
+	}
+
+	/**
+	 * Returns the currencies enabled for the Stripe account that are
+	 * also available in WC.
+	 *
+	 * Can be filtered with the 'wcpay_multi_currency_available_currencies' hook.
+	 *
+	 * @return array Array with the available currencies' codes.
+	 */
+	private function get_account_available_currencies(): array {
+		$wc_currencies      = array_keys( get_woocommerce_currencies() );
+		$account_currencies = $wc_currencies;
+
+		$account = $this->payments_account->get_cached_account_data();
+
+		if ( $account && ! empty( $account['presentment_currencies'] ) ) {
+			$account_currencies = array_map( 'strtoupper', $account['presentment_currencies'] );
+		}
+
+		/**
+		 * Filter the available currencies for WooCommerce Multi-Currency.
+		 *
+		 * This filter can be used to modify the currencies available for WC Pay
+		 * Multi-Currency. Currencies have to be added in uppercase and should
+		 * also be available in `get_woocommerce_currencies` for them to work.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param array $available_currencies Current available currencies. Calculated based on
+		 *                                    WC Pay's account currencies and WC currencies.
+		 */
+		return apply_filters( 'wcpay_multi_currency_available_currencies', array_intersect( $account_currencies, $wc_currencies ) );
 	}
 
 	/**
