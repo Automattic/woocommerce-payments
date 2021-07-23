@@ -102,7 +102,6 @@ class Analytics {
 		}
 
 		add_filter( 'woocommerce_analytics_clauses_select', [ $this, 'filter_select_clauses' ], self::PRIORITY_DEFAULT, 2 );
-		add_filter( 'woocommerce_analytics_clauses_where', [ $this, 'filter_where_clauses' ] );
 		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ] );
 	}
 
@@ -142,22 +141,6 @@ class Analytics {
 
 		wp_enqueue_script( self::SCRIPT_NAME );
 		wp_enqueue_style( self::SCRIPT_NAME );
-	}
-
-	/**
-	 * Return the currently selected currency from _GET, or the store default currency.
-	 *
-	 * @return string|null
-	 */
-	public function get_active_currency() {
-		0 && wp_verify_nonce( '' );
-
-		// Only return a currency if there is a GET param - if no currency is set, we want to fetch all orders.
-		if ( ! empty( $_GET['currency'] ) ) {
-			return strtoupper( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) );
-		}
-
-		return null;
 	}
 
 	/**
@@ -243,23 +226,6 @@ class Analytics {
 		$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.post_id AND {$currency_tbl}.meta_key = '_order_currency'";
 		$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.post_id AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
 		$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$exchange_rate_tbl}.post_id AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
-
-		return $clauses;
-	}
-
-	/**
-	 * Filter by currency (if required).
-	 *
-	 * @param string[] $clauses - An array containing the WHERE clauses to be applied.
-	 *
-	 * @return array
-	 */
-	public function filter_where_clauses( array $clauses ): array {
-		$currency = $this->get_active_currency();
-
-		if ( ! is_null( $currency ) ) {
-			$clauses[] = "AND wcpay_multicurrency_currency_postmeta.meta_value = '{$currency}'";
-		}
 
 		return $clauses;
 	}
