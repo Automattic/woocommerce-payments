@@ -46,7 +46,7 @@ const EnableUpePreviewTask = () => {
 					{ interpolateComponents( {
 						mixedString: __(
 							'Get early access to additional payment methods and an improved checkout experience, ' +
-								'coming soon to WooCommerce payments. {{learnMoreLink /}}.',
+								'coming soon to WooCommerce payments. {{learnMoreLink /}}',
 							'woocommerce-payments'
 						),
 						components: {
