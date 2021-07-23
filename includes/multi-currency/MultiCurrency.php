@@ -10,6 +10,7 @@ namespace WCPay\MultiCurrency;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_API_Client;
+use WC_Payments_Localization_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
@@ -47,11 +48,11 @@ class MultiCurrency {
 	protected $compatibility;
 
 	/**
-	 * Locale instance.
+	 * Geolocation instance.
 	 *
-	 * @var Locale
+	 * @var Geolocation
 	 */
-	protected $locale;
+	protected $geolocation;
 
 	/**
 	 * Utils instance.
@@ -110,6 +111,13 @@ class MultiCurrency {
 	private $payments_account;
 
 	/**
+	 * Instance of WC_Payments_Localization_Service.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $localization_service;
+
+	/**
 	 * Main MultiCurrency Instance.
 	 *
 	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
@@ -119,7 +127,7 @@ class MultiCurrency {
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
-			self::$instance = new self( WC_Payments::get_payments_api_client(), WC_Payments::get_account_service() );
+			self::$instance = new self( WC_Payments::get_payments_api_client(), WC_Payments::get_account_service(), WC_Payments::get_localization_service() );
 		}
 		return self::$instance;
 	}
@@ -127,15 +135,17 @@ class MultiCurrency {
 	/**
 	 * Class constructor.
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
-	 * @param WC_Payments_Account    $payments_account    Payments Account instance.
+	 * @param WC_Payments_API_Client           $payments_api_client  Payments API client.
+	 * @param WC_Payments_Account              $payments_account     Payments Account instance.
+	 * @param WC_Payments_Localization_Service $localization_service Localization Service instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account ) {
-		$this->payments_api_client = $payments_api_client;
-		$this->payments_account    = $payments_account;
-		$this->locale              = new Locale();
-		$this->utils               = new Utils();
-		$this->compatibility       = new Compatibility( $this, $this->utils );
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service ) {
+		$this->payments_api_client  = $payments_api_client;
+		$this->payments_account     = $payments_account;
+		$this->localization_service = $localization_service;
+		$this->geolocation          = new Geolocation( $this->localization_service );
+		$this->utils                = new Utils();
+		$this->compatibility        = new Compatibility( $this, $this->utils );
 
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
@@ -178,7 +188,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->locale );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 
@@ -546,7 +556,7 @@ class MultiCurrency {
 	public function update_selected_currency_by_geolocation() {
 		// We only want to automatically set the currency if it's already not set.
 		if ( $this->is_using_auto_currency_switching() && ! $this->get_stored_currency_code() ) {
-			$currency = $this->locale->get_currency_by_customer_location();
+			$currency = $this->geolocation->get_currency_by_customer_location();
 
 			// Update currency and display notice if enabled.
 			if ( ! empty( $this->get_enabled_currencies()[ $currency ] ) ) {
@@ -612,7 +622,7 @@ class MultiCurrency {
 	public function display_geolocation_currency_update_notice() {
 		$current_currency = $this->get_selected_currency();
 		$store_currency   = get_option( 'woocommerce_currency' );
-		$country          = $this->locale->get_country_by_customer_location();
+		$country          = $this->geolocation->get_country_by_customer_location();
 		$currencies       = get_woocommerce_currencies();
 
 		// Do not display notice if using the store's default currency.
