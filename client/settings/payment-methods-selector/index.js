@@ -2,20 +2,23 @@
 /**
  * External dependencies
  */
+import React, { useContext, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import { useState, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import {
+	useCurrencies,
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 } from 'data';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import ConfirmationModal from '../../components/confirmation-modal';
+import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
 const AddPaymentMethodsModal = ( { onClose } ) => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
@@ -62,6 +65,8 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 	return (
 		<ConfirmationModal
 			title={ __( 'Add payment methods', 'woocommerce-payments' ) }
+			// using this because when the tooltips inside the modal are clicked, they cause the modal to close
+			shouldCloseOnClickOutside={ false }
 			onRequestClose={ onClose }
 			actions={
 				<>
@@ -90,16 +95,29 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 						key={ method }
 						checked={ selectedPaymentMethods.includes( method ) }
 						onChange={ handleCheckboxClick }
-						fees="missing fees"
 						name={ method }
 					/>
 				) ) }
 			</PaymentMethodCheckboxes>
+			<CurrencyInformationForMethods
+				selectedMethods={ selectedPaymentMethods }
+			/>
 		</ConfirmationModal>
 	);
 };
 
+const LoadCurrencyData = () => {
+	// ensures that the currency data is present before the modal is opened
+	useCurrencies();
+
+	return null;
+};
+
 const PaymentMethodsSelector = () => {
+	const {
+		featureFlags: { multiCurrency },
+	} = useContext( WCPaySettingsContext );
+
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
 	const [ enabledPaymentMethods ] = useEnabledPaymentMethodIds();
 
@@ -118,6 +136,7 @@ const PaymentMethodsSelector = () => {
 			{ isModalOpen && (
 				<AddPaymentMethodsModal onClose={ handleModalClose } />
 			) }
+			{ multiCurrency && <LoadCurrencyData /> }
 			<Button
 				isSecondary
 				onClick={ handleModalOpen }

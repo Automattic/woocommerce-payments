@@ -9,12 +9,14 @@ import apiFetch from '@wordpress/api-fetch';
  */
 import WcPayUpeContext from './context';
 import { NAMESPACE } from '../../data/constants';
+import { useEnabledPaymentMethodIds } from '../../data';
 
 const WcPayUpeContextProvider = ( { children, defaultIsUpeEnabled } ) => {
 	const [ isUpeEnabled, setIsUpeEnabled ] = useState(
 		Boolean( defaultIsUpeEnabled )
 	);
 	const [ status, setStatus ] = useState( 'resolved' );
+	const [ , setEnabledPaymentMethods ] = useEnabledPaymentMethodIds();
 
 	const updateFlag = useCallback(
 		( value ) => {
@@ -28,13 +30,19 @@ const WcPayUpeContextProvider = ( { children, defaultIsUpeEnabled } ) => {
 			} )
 				.then( () => {
 					setIsUpeEnabled( Boolean( value ) );
+					// the backend already takes care of this,
+					// we're just duplicating the effort
+					// to ensure that the non-UPE payment methods are removed when the flag is disabled
+					if ( ! value ) {
+						setEnabledPaymentMethods( [ 'card' ] );
+					}
 					setStatus( 'resolved' );
 				} )
 				.catch( () => {
 					setStatus( 'error' );
 				} );
 		},
-		[ setStatus, setIsUpeEnabled ]
+		[ setStatus, setIsUpeEnabled, setEnabledPaymentMethods ]
 	);
 
 	const contextValue = useMemo(

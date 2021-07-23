@@ -99,5 +99,10 @@
 		&.is-muted-color {
 			color: $gray-700;
 		}
+
+		.components-external-link svg {
+			width: 1em;
+			height: 1em;
+		}
 	}
 }
