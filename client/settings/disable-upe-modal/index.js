@@ -10,9 +10,10 @@ import interpolateComponents from 'interpolate-components';
  */
 import './style.scss';
 import ConfirmationModal from 'components/confirmation-modal';
-import PaymentMethod from 'components/payment-methods-list/payment-method';
 import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import WcPayUpeContext from 'settings/wcpay-upe-toggle/context';
+import { useEnabledPaymentMethodIds } from '../../data';
+import PaymentMethodIcon from '../payment-method-icon';
 
 const NeedHelpBarSection = () => {
 	return (
@@ -50,9 +51,10 @@ const NeedHelpBarSection = () => {
 	);
 };
 
-const DisableUpeModalBody = ( { enabledMethods } ) => {
-	const upePaymentMethods = enabledMethods.filter(
-		( method ) => 'card' !== method.id
+const DisableUpeModalBody = () => {
+	const [ enabledPaymentMethodIds ] = useEnabledPaymentMethodIds();
+	const upePaymentMethods = enabledPaymentMethodIds.filter(
+		( method ) => 'card' !== method
 	);
 
 	return (
@@ -72,13 +74,11 @@ const DisableUpeModalBody = ( { enabledMethods } ) => {
 							'woocommerce-payments'
 						) }
 					</p>
-					<ul>
-						{ upePaymentMethods.map( ( { id, label, Icon } ) => (
-							<PaymentMethod
-								key={ id }
-								Icon={ Icon }
-								label={ label }
-							/>
+					<ul className="deactivating-payment-methods-list">
+						{ upePaymentMethods.map( ( method ) => (
+							<li key={ method }>
+								<PaymentMethodIcon name={ method } showName />
+							</li>
 						) ) }
 					</ul>
 				</>
@@ -88,11 +88,7 @@ const DisableUpeModalBody = ( { enabledMethods } ) => {
 	);
 };
 
-const DisableUpeModal = ( {
-	enabledMethods,
-	setOpenModal,
-	triggerAfterDisable,
-} ) => {
+const DisableUpeModal = ( { setOpenModal, triggerAfterDisable } ) => {
 	const [ isUpeEnabled, setIsUpeEnabled ] = useIsUpeEnabled();
 	const { status } = useContext( WcPayUpeContext );
 
@@ -144,7 +140,7 @@ const DisableUpeModal = ( {
 					</>
 				}
 			>
-				<DisableUpeModalBody enabledMethods={ enabledMethods } />
+				<DisableUpeModalBody />
 			</ConfirmationModal>
 		</>
 	);
