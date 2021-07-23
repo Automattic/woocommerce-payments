@@ -11,6 +11,7 @@ import { useEffect, useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
@@ -26,12 +27,18 @@ const WCPayUPEFields = ( {
 		onCheckoutAfterProcessingWithSuccess,
 	},
 	emitResponse,
+	shouldSavePayment,
 } ) => {
 	const [ paymentIntentId, setPaymentIntentId ] = useState( null );
 	const [ clientSecret, setClientSecret ] = useState( null );
 	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
 	const [ isUPEComplete, setIsUPEComplete ] = useState( false );
+	const [ selectedUPEPaymentType, setSelectedUPEPaymentType ] = useState(
+		''
+	);
 
+	const businessName = getConfig( 'accountDescriptor' );
+	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 	const testMode = getConfig( 'testMode' );
 	const testCopy = (
 		<p>
@@ -69,10 +76,26 @@ const WCPayUPEFields = ( {
 						message: 'Your payment information is incomplete.',
 					};
 				}
+
+				if (
+					shouldSavePayment &&
+					! paymentMethodsConfig[ selectedUPEPaymentType ].isReusable
+				) {
+					return {
+						type: 'error',
+						message:
+							'This payment method can not be saved for future use.',
+					};
+				}
 			} ),
 		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[ activePaymentMethod, isUPEComplete ]
+		[
+			activePaymentMethod,
+			isUPEComplete,
+			selectedUPEPaymentType,
+			shouldSavePayment,
+		]
 	);
 
 	// Once the server has completed payment processing, confirm the intent if necessary.
@@ -84,7 +107,8 @@ const WCPayUPEFields = ( {
 						await api.updateIntent(
 							paymentIntentId,
 							orderId,
-							false
+							shouldSavePayment ? 'yes' : 'no',
+							selectedUPEPaymentType
 						);
 
 						const paymentElement = elements.getElement(
@@ -94,6 +118,7 @@ const WCPayUPEFields = ( {
 						return confirmUPEPayment(
 							api,
 							paymentDetails.redirect_url,
+							paymentDetails.payment_needed,
 							paymentElement,
 							billingData,
 							emitResponse
@@ -105,19 +130,25 @@ const WCPayUPEFields = ( {
 			),
 		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[ elements, stripe, api, paymentIntentId ]
+		[
+			elements,
+			stripe,
+			api,
+			paymentIntentId,
+			shouldSavePayment,
+			selectedUPEPaymentType,
+		]
 	);
 
 	// Checks whether there are errors within a field, and saves them for later reporting.
 	const upeOnChange = ( event ) => {
 		setIsUPEComplete( event.complete );
+		setSelectedUPEPaymentType( event.value.type );
 	};
 
 	const elementOptions = {
 		clientSecret,
-		classes: {
-			base: 'wcpay-card-mounted',
-		},
+		business: { name: businessName },
 		fields: {
 			billingDetails: {
 				name: 'never',
@@ -145,6 +176,7 @@ const WCPayUPEFields = ( {
 			<PaymentElement
 				options={ elementOptions }
 				onChange={ upeOnChange }
+				className="wcpay-payment-element"
 			/>
 		</>
 	);
