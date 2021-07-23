@@ -49,7 +49,7 @@ const GeneralSettings = () => {
 					help={ interpolateComponents( {
 						mixedString: __(
 							'Use {{testCardHelpLink}}test card numbers{{/testCardHelpLink}} to simulate various transactions. ' +
-								'{{learnMoreLink}}Learn more{{/learnMoreLink}}.',
+								'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
 							'woocommerce-payments'
 						),
 						components: {
