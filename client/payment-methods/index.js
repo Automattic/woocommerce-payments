@@ -167,7 +167,12 @@ const PaymentMethods = () => {
 				{ isUpeEnabled && (
 					<CardHeader className="payment-methods__header">
 						<h4 className="payment-methods__heading">
-							Payment methods{ ' ' }
+							<span>
+								{ __(
+									'Payment methods',
+									'woocommerce-payments'
+								) }
+							</span>{ ' ' }
 							<Pill>
 								{ __( 'Early access', 'woocommerce-payments' ) }
 							</Pill>
