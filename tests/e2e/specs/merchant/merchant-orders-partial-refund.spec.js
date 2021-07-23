@@ -8,7 +8,7 @@ const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP, takeScreenshot } from '../../utils';
+import { merchantWCP } from '../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../utils/payments';
 
 const card = config.get( 'cards.basic' );
@@ -79,7 +79,6 @@ describe.each( dataTable )(
 		} );
 
 		afterAll( async () => {
-			await takeScreenshot( `afterAll - ${ testName }` ); // mytodo remove later
 			await merchant.logout();
 		} );
 
