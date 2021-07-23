@@ -13,6 +13,10 @@
 	&__heading {
 		margin: 0;
 		font-size: 16px;
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		line-height: 2em;
 	}
 
 	&__available-methods-container {
