@@ -13,10 +13,13 @@ import { useDispatch } from '@wordpress/data';
 import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
 import WizardTaskContext from '../wizard/task/context';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 
 const SetupComplete = () => {
 	const { isActive } = useContext( WizardTaskContext );
-
+	const {
+		featureFlags: { multiCurrency },
+	} = useContext( WCPaySettingsContext );
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
 	useEffect( () => {
@@ -54,12 +57,17 @@ const SetupComplete = () => {
 							'woocommerce-payments'
 						) }
 					</Button>
-					<Button href="?TODO" isTertiary>
-						{ __(
-							'Go to multi-currency settings',
-							'woocommerce-payments'
-						) }
-					</Button>
+					{ multiCurrency && (
+						<Button
+							href="admin.php?page=wc-settings&tab=wcpay_multi_currency"
+							isTertiary
+						>
+							{ __(
+								'Go to multi-currency settings',
+								'woocommerce-payments'
+							) }
+						</Button>
+					) }
 				</div>
 			</CollapsibleBody>
 		</WizardTaskItem>

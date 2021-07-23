@@ -126,7 +126,7 @@ class Settings extends \WC_Settings_Page {
 
 					[
 						'title'         => __( 'Store settings', 'woocommerce-payments' ),
-						'desc'          => __( 'Automatically switch customers to the local currency if it is enabled above.', 'woocommerce-payments' ),
+						'desc'          => __( 'Automatically switch customers to their local currency if it is enabled above.', 'woocommerce-payments' ),
 						// TODO: Preview link, to be done on #2258.
 						'desc_tip'      => sprintf(
 							/* translators: %s: url to a preview of alert banner */
