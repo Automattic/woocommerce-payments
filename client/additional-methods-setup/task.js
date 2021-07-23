@@ -12,6 +12,7 @@ import { getPath, updateQueryString } from '@woocommerce/navigation';
 import MethodSelector from './methods-selector';
 import UpePreviewMethodSelector from './upe-preview-methods-selector';
 import WcPayUpeContextProvider from '../settings/wcpay-upe-toggle/provider';
+import WCPaySettingsContext from '../settings/wcpay-settings-context';
 
 const createAdditionalMethodsSetupTask = ( {
 	isSetupCompleted,
@@ -29,7 +30,11 @@ const createAdditionalMethodsSetupTask = ( {
 		// it might be worth exploring how to use Suspense
 		// to lazily load the JS that might not be necessary if the action is not taken.
 		// It might also be worth exploring adding an error boundary to prevent the whole page to be blank in case of error?
-		container: <MethodSelector />,
+		container: (
+			<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
+				<MethodSelector />
+			</WCPaySettingsContext.Provider>
+		),
 		// please note: marking an item as "dismissed" does not mean it's "completed" - they are considered 2 different things
 		completed: 'yes' === isSetupCompleted,
 		visible: true,
@@ -60,15 +65,18 @@ const createAdditionalMethodsSetupTask = ( {
 						'woocommerce-payments'
 					),
 					container: (
-						<WcPayUpeContextProvider
-							defaultIsUpeEnabled={ isUpeEnabled }
+						<WCPaySettingsContext.Provider
+							value={ window.wcpaySettings }
 						>
-							<UpePreviewMethodSelector />
-						</WcPayUpeContextProvider>
+							<WcPayUpeContextProvider
+								defaultIsUpeEnabled={ isUpeEnabled }
+							>
+								<UpePreviewMethodSelector />
+							</WcPayUpeContextProvider>
+						</WCPaySettingsContext.Provider>
 					),
 					completed:
-						// eslint-disable-next-line max-len
-						'yes' === isSetupCompleted || isUpeEnabled,
+						'yes' === isSetupCompleted && Boolean( isUpeEnabled ),
 			  }
 			: {} ),
 	};

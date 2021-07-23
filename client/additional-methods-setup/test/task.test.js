@@ -101,7 +101,7 @@ describe( 'createAdditionalMethodsSetupTask()', () => {
 				} );
 
 				expect( result.completed ).toEqual(
-					'yes' === isSetupCompleted || isUpeEnabled
+					'yes' === isSetupCompleted && isUpeEnabled
 				);
 			}
 		);
