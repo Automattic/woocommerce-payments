@@ -752,3 +752,51 @@ Array [
   },
 ]
 `;
+
+exports[`mapTimelineEvents single currency events should not render fee breakup when fee history is not present 1`] = `
+Array [
+  Object {
+    "body": Array [],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": "Payment status changed to Paid.",
+    "icon": <t
+      className=""
+      icon="sync"
+      size={24}
+    />,
+  },
+  Object {
+    "body": Array [],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": <React.Fragment>
+      $59.50 was added to your 
+      <Link
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        type="wc-admin"
+      >
+        Apr 2, 2020 deposit
+      </Link>
+      .
+    </React.Fragment>,
+    "icon": <t
+      className=""
+      icon="plus"
+      size={24}
+    />,
+  },
+  Object {
+    "body": Array [
+      undefined,
+      "Fee (1.95% + $0.15): $-3.50",
+      "Net deposit: $59.50",
+    ],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": "A payment of $63.00 was successfully charged.",
+    "icon": <t
+      className="is-success"
+      icon="checkmark"
+      size={24}
+    />,
+  },
+]
+`;

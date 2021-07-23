@@ -140,6 +140,29 @@ describe( 'mapTimelineEvents', () => {
 			).toMatchSnapshot();
 		} );
 
+		test( 'should not render fee breakup when fee history is not present', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 6300,
+						currency: 'USD',
+						datetime: 1585751874,
+						deposit: {
+							arrival_date: 1585838274,
+							id: 'dummy_po_5eaada696b281',
+						},
+						fee: 350,
+						fee_rates: {
+							percentage: 0.0195,
+							fixed: 15,
+							fixed_currency: 'USD',
+						},
+						type: 'captured',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
 		test( 'formats captured events with fee details', () => {
 			expect(
 				mapTimelineEvents( [
