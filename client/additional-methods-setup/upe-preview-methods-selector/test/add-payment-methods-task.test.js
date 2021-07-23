@@ -28,6 +28,11 @@ jest.mock( '../../../data', () => ( {
 	useEnabledCurrencies: jest.fn(),
 } ) );
 
+jest.mock( '@wordpress/a11y', () => ( {
+	...jest.requireActual( '@wordpress/a11y' ),
+	speak: jest.fn(),
+} ) );
+
 const SettingsContextProvider = ( { children } ) => (
 	<WCPaySettingsContext.Provider
 		value={ { featureFlags: { multiCurrency: true }, accountFees: {} } }
