@@ -18,6 +18,7 @@ class WC_Payments_Explicit_Price_Formatter {
 	 */
 	public static function init() {
 		add_filter( 'woocommerce_cart_total', [ __CLASS__, 'get_explicit_price' ], 100 );
+		add_filter( 'woocommerce_get_formatted_order_total', [ __CLASS__, 'get_explicit_price' ], 100, 2 );
 	}
 
 	/**
