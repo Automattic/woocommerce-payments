@@ -100,18 +100,11 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		update_option( self::CACHED_CURRENCIES_OPTION, $this->mock_cached_currencies );
 		update_option( self::ENABLED_CURRENCIES_OPTION, $this->mock_enabled_currencies );
 
-		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
-			->disableOriginalConstructor()
-			->setMethods( [ 'get_currency_rates', 'is_server_connected' ] )
-			->getMock();
-
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'is_server_connected' )
-			->willReturn( true );
-
+		$this->mock_api_client           = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_account              = $this->createMock( WC_Payments_Account::class );
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
+
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
 
 		$this->mock_localization_service->method( 'get_currency_format' )->willReturn(
 			[
@@ -533,15 +526,9 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	public function test_get_cached_currencies_with_no_server_connection() {
 		// Need to create a new instance of MultiCurrency with a different $mock_api_client
 		// Because the mock return value of 'is_server_connected' cannot be overridden.
-		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
-			->disableOriginalConstructor()
-			->setMethods( [ 'get_currency_rates', 'is_server_connected' ] )
-			->getMock();
+		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
-		$mock_api_client
-			->expects( $this->any() )
-			->method( 'is_server_connected' )
-			->willReturn( false );
+		$mock_api_client->method( 'is_server_connected' )->willReturn( false );
 
 		$this->multi_currency = new MultiCurrency( $mock_api_client, $this->mock_account, $this->mock_localization_service );
 		$this->multi_currency->init();
