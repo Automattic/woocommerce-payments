@@ -320,7 +320,7 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
-				// Handle the error within the WooCommerce Admin-powered app.
+				// Handle the error within the React-powered app.
 				if ( self::is_overview_page() ) {
 					wp_safe_redirect(
 						add_query_arg(
