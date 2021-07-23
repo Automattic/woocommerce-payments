@@ -1,5 +1,7 @@
+/**
+ * External dependencies
+ */
 import React, { useContext, useEffect } from 'react';
-
 import { __ } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 import { Button, Dashicon, ExternalLink } from '@wordpress/components';
