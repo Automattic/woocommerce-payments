@@ -7,63 +7,16 @@
 
 namespace WCPay\MultiCurrency;
 
-use WC_Order;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class that contains multi-currency related support for WooCommerce analytics.
  */
 class Analytics {
-
 	const PRIORITY_EARLY   = 1;
 	const PRIORITY_DEFAULT = 10;
 	const PRIORITY_LATE    = 20;
 	const SCRIPT_NAME      = 'WCPAY_MULTI_CURRENCY_ANALYTICS';
-
-	const SQL_REPLACEMENTS = [
-		'generic'    => [
-			'wp_wc_order_stats.net_total'      => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.net_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.net_total END',
-			'wp_wc_order_stats.total_sales'    => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.total_sales * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.total_sales END',
-			'wp_wc_order_stats.tax_total'      => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.tax_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.tax_total END',
-			'wp_wc_order_stats.shipping_total' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.shipping_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.shipping_total END',
-			'discount_amount'                  => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN discount_amount * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE discount_amount END',
-			'product_net_revenue'              => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value) ELSE product_net_revenue END',
-			'product_gross_revenue'            => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE product_gross_revenue END',
-		],
-		'orders'     => [
-			'subquery' => [
-				'wp_wc_order_stats.net_total' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.net_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.net_total END AS net_total',
-			],
-			'stats'    => [
-				'wp_wc_order_stats.net_total'      => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.net_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.net_total END',
-				'wp_wc_order_stats.total_sales'    => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.total_sales * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.total_sales END',
-				'wp_wc_order_stats.tax_total'      => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.tax_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.tax_total END',
-				'wp_wc_order_stats.shipping_total' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN wp_wc_order_stats.shipping_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE wp_wc_order_stats.shipping_total END',
-				'discount_amount'                  => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN discount_amount * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE discount_amount END',
-			],
-		],
-		'products'   => [
-			'product_net_revenue'   => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value) ELSE product_net_revenue END',
-			'product_gross_revenue' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE product_gross_revenue END',
-		],
-		'variations' => [
-			'product_net_revenue'   => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value) ELSE product_net_revenue END',
-			'product_gross_revenue' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE product_gross_revenue END',
-		],
-		'categories' => [
-			'product_net_revenue'   => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value) ELSE product_net_revenue END',
-			'product_gross_revenue' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE product_gross_revenue END',
-		],
-		'taxes'      => [
-			'SUM(total_tax)'    => 'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN total_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE total_tax END)',
-			'SUM(order_tax)'    => 'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN order_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE order_tax END)',
-			'SUM(shipping_tax)' => 'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN shipping_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE shipping_tax END)',
-		],
-		'coupons'    => [
-			'discount_amount' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN discount_amount * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE discount_amount END',
-		],
-	];
 
 	/**
 	 * Instance of MultiCurrency.
@@ -100,6 +53,8 @@ class Analytics {
 			return;
 
 		}
+
+		$this->set_sql_replacements();
 
 		add_filter( 'woocommerce_analytics_clauses_select', [ $this, 'filter_select_clauses' ], self::PRIORITY_DEFAULT, 2 );
 		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ] );
@@ -177,15 +132,16 @@ class Analytics {
 			return $clauses;
 		}
 
-		$new_clauses = [];
+		$new_clauses      = [];
+		$sql_replacements = $this->get_sql_replacements();
 
 		foreach ( $clauses as $clause ) {
-			if ( ! in_array( $context_page, array_keys( self::SQL_REPLACEMENTS ), true ) ) {
-				$replacements_array = self::SQL_REPLACEMENTS['generic'] ?? [];
+			if ( ! in_array( $context_page, array_keys( $sql_replacements ), true ) ) {
+				$replacements_array = $sql_replacements['generic'] ?? [];
 			} elseif ( 'orders' === $context_page ) {
-				$replacements_array = self::SQL_REPLACEMENTS[ $context_page ][ $context_type ] ?? [];
+				$replacements_array = $sql_replacements[ $context_page ][ $context_type ] ?? [];
 			} else {
-				$replacements_array = self::SQL_REPLACEMENTS[ $context_page ] ?? [];
+				$replacements_array = $sql_replacements[ $context_page ] ?? [];
 			}
 
 			foreach ( $replacements_array as $find => $replace ) {
@@ -228,5 +184,72 @@ class Analytics {
 		$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$exchange_rate_tbl}.post_id AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
 
 		return $clauses;
+	}
+
+	/**
+	 * Get the SQL replacements variable.
+	 *
+	 * @return array
+	 */
+	private function get_sql_replacements(): array {
+		return $this->sql_replacements;
+	}
+
+	/**
+	 * Set the SQL replacements variable.
+	 *
+	 * @return void
+	 */
+	private function set_sql_replacements() {
+		global $wpdb;
+
+		$net_total_column      = "{$wpdb->prefix}wc_order_stats.net_total";
+		$total_sales_column    = "{$wpdb->prefix}wc_order_stats.total_sales";
+		$tax_total_column      = "{$wpdb->prefix}wc_order_stats.tax_total";
+		$shipping_total_column = "{$wpdb->prefix}wc_order_stats.shipping_total";
+
+		$this->sql_replacements = [
+			'generic'    => [
+				$net_total_column       => "CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN {$wpdb->prefix}wc_order_stats.net_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE {$wpdb->prefix}wc_order_stats.net_total END",
+				$total_sales_column     => "CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN {$wpdb->prefix}wc_order_stats.total_sales * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE {$wpdb->prefix}wc_order_stats.total_sales END",
+				$tax_total_column       => "CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN {$wpdb->prefix}wc_order_stats.tax_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE {$wpdb->prefix}wc_order_stats.tax_total END",
+				$shipping_total_column  => "CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN {$wpdb->prefix}wc_order_stats.shipping_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE {$wpdb->prefix}wc_order_stats.shipping_total END",
+				'discount_amount'       => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN discount_amount * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE discount_amount END',
+				'product_net_revenue'   => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value) ELSE product_net_revenue END',
+				'product_gross_revenue' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE product_gross_revenue END',
+			],
+			'orders'     => [
+				'subquery' => [
+					$net_total_column => "CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN {$wpdb->prefix}wc_order_stats.net_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE {$wpdb->prefix}wc_order_stats.net_total END AS net_total",
+				],
+				'stats'    => [
+					$net_total_column      => "CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN {$wpdb->prefix}wc_order_stats.net_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE {$wpdb->prefix}wc_order_stats.net_total END",
+					$total_sales_column    => "CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN {$wpdb->prefix}wc_order_stats.total_sales * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE {$wpdb->prefix}wc_order_stats.total_sales END",
+					$tax_total_column      => "CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN {$wpdb->prefix}wc_order_stats.tax_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE {$wpdb->prefix}wc_order_stats.tax_total END",
+					$shipping_total_column => "CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN {$wpdb->prefix}wc_order_stats.shipping_total * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE {$wpdb->prefix}wc_order_stats.shipping_total END",
+					'discount_amount'      => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN discount_amount * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE discount_amount END',
+				],
+			],
+			'products'   => [
+				'product_net_revenue'   => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value) ELSE product_net_revenue END',
+				'product_gross_revenue' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE product_gross_revenue END',
+			],
+			'variations' => [
+				'product_net_revenue'   => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value) ELSE product_net_revenue END',
+				'product_gross_revenue' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE product_gross_revenue END',
+			],
+			'categories' => [
+				'product_net_revenue'   => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value) ELSE product_net_revenue END',
+				'product_gross_revenue' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE product_gross_revenue END',
+			],
+			'taxes'      => [
+				'SUM(total_tax)'    => 'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN total_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE total_tax END)',
+				'SUM(order_tax)'    => 'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN order_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE order_tax END)',
+				'SUM(shipping_tax)' => 'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN shipping_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE shipping_tax END)',
+			],
+			'coupons'    => [
+				'discount_amount' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN discount_amount * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ) ELSE discount_amount END',
+			],
+		];
 	}
 }
