@@ -17,6 +17,12 @@
 		align-items: center;
 		flex-wrap: wrap;
 		line-height: 2em;
+
+		> * {
+			&:not( :last-child ) {
+				margin-right: 4px;
+			}
+		}
 	}
 
 	&__available-methods-container {

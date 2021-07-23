@@ -39,6 +39,12 @@
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
+
+		> * {
+			&:not( :last-child ) {
+				margin-right: 4px;
+			}
+		}
 	}
 
 	&__icon-wrapper {
