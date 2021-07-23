@@ -56,7 +56,7 @@ describe( 'WcPaySurveyContextProvider', () => {
 
 		expect( childrenMock ).toHaveBeenCalledWith( {
 			isSurveySubmitted: false,
-			setSurveySubmitted: expect.any( Function ),
+			submitSurvey: expect.any( Function ),
 			status: 'resolved',
 			surveyAnswers: {},
 			setSurveyAnswers: expect.any( Function ),
