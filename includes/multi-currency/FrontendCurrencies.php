@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Payments_Localization_Service;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -21,11 +23,11 @@ class FrontendCurrencies {
 	protected $multi_currency;
 
 	/**
-	 * Locale instance.
+	 * WC_Payments_Localization_Service instance.
 	 *
-	 * @var Locale
+	 * @var WC_Payments_Localization_Service
 	 */
-	protected $locale;
+	protected $localization_service;
 
 	/**
 	 * Multi-Currency currency formatting map.
@@ -37,12 +39,12 @@ class FrontendCurrencies {
 	/**
 	 * Constructor.
 	 *
-	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
-	 * @param Locale        $locale          The Locale instance.
+	 * @param MultiCurrency                    $multi_currency       The MultiCurrency instance.
+	 * @param WC_Payments_Localization_Service $localization_service The Localization Service instance.
 	 */
-	public function __construct( MultiCurrency $multi_currency, Locale $locale ) {
-		$this->multi_currency = $multi_currency;
-		$this->locale         = $locale;
+	public function __construct( MultiCurrency $multi_currency, WC_Payments_Localization_Service $localization_service ) {
+		$this->multi_currency       = $multi_currency;
+		$this->localization_service = $localization_service;
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 			// Currency hooks.
@@ -72,7 +74,7 @@ class FrontendCurrencies {
 	 */
 	public function get_price_decimals(): int {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		return absint( $this->get_currency_format( $currency_code )['num_decimals'] );
+		return absint( $this->localization_service->get_currency_format( $currency_code )['num_decimals'] );
 	}
 
 	/**
@@ -82,7 +84,7 @@ class FrontendCurrencies {
 	 */
 	public function get_price_decimal_separator(): string {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		return $this->get_currency_format( $currency_code )['decimal_sep'];
+		return $this->localization_service->get_currency_format( $currency_code )['decimal_sep'];
 	}
 
 	/**
@@ -92,7 +94,7 @@ class FrontendCurrencies {
 	 */
 	public function get_price_thousand_separator(): string {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		return $this->get_currency_format( $currency_code )['thousand_sep'];
+		return $this->localization_service->get_currency_format( $currency_code )['thousand_sep'];
 	}
 
 	/**
@@ -102,7 +104,7 @@ class FrontendCurrencies {
 	 */
 	public function get_woocommerce_price_format(): string {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		$currency_pos  = $this->get_currency_format( $currency_code )['currency_pos'];
+		$currency_pos  = $this->localization_service->get_currency_format( $currency_code )['currency_pos'];
 
 		switch ( $currency_pos ) {
 			case 'left':
@@ -128,32 +130,5 @@ class FrontendCurrencies {
 	public function add_currency_to_cart_hash( $hash ): string {
 		$currency = $this->multi_currency->get_selected_currency();
 		return md5( $hash . $currency->get_code() . $currency->get_rate() );
-	}
-
-	/**
-	 * Retrieves the currency's format from mapped data.
-	 *
-	 * @param string $currency_code The currency code.
-	 *
-	 * @return array The currency's format.
-	 */
-	private function get_currency_format( $currency_code ): array {
-		// Default to USD settings if mapping not found.
-		$currency_format = [
-			'currency_pos' => 'left',
-			'thousand_sep' => ',',
-			'decimal_sep'  => '.',
-			'num_decimals' => 2,
-		];
-
-		$locale = $this->locale->get_user_locale();
-
-		$currency_options = $this->locale->get_currency_format( $currency_code );
-		if ( $currency_options ) {
-			// If there's no locale-specific formatting, default to the 'default' entry in the array.
-			$currency_format = $currency_options[ $locale ] ?? $currency_options['default'] ?? $currency_format;
-		}
-
-		return apply_filters( 'wcpay_multi_currency_' . strtolower( $currency_code ) . '_format', $currency_format, $locale );
 	}
 }
