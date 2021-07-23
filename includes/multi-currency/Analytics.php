@@ -66,22 +66,6 @@ class Analytics {
 	];
 
 	/**
-	 * A list of all the pages in the WC Admin analytics section that
-	 * we want to add multi-currency filters. Note that the revenue analytics page
-	 * will use the 'orders' SQL calls to build its content.
-	 *
-	 * @var string[]
-	 */
-	const ANALYTICS_PAGES = [
-		'orders',
-		'coupons',
-		'taxes',
-		'products',
-		'variations',
-		'categories',
-	];
-
-	/**
 	 * Instance of MultiCurrency.
 	 *
 	 * @var MultiCurrency $multi_currency
