@@ -76,8 +76,7 @@ const createAdditionalMethodsSetupTask = ( {
 						</WCPaySettingsContext.Provider>
 					),
 					completed:
-						// eslint-disable-next-line max-len
-						'yes' === isSetupCompleted || isUpeEnabled,
+						'yes' === isSetupCompleted && Boolean( isUpeEnabled ),
 			  }
 			: {} ),
 	};

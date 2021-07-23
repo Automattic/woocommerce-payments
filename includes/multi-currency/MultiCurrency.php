@@ -146,6 +146,7 @@ class MultiCurrency {
 		if ( $is_frontend_request ) {
 			// Make sure that this runs after the main init function.
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
+			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
 		}
 	}
 
@@ -483,14 +484,7 @@ class MultiCurrency {
 	 * @return Currency
 	 */
 	public function get_selected_currency(): Currency {
-		$user_id = get_current_user_id();
-		$code    = null;
-
-		if ( 0 === $user_id && WC()->session ) {
-			$code = WC()->session->get( self::CURRENCY_SESSION_KEY );
-		} elseif ( $user_id ) {
-			$code = get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
-		}
+		$code = $this->get_stored_currency_code();
 
 		$code = $this->compatibility->override_selected_currency() ? $this->compatibility->override_selected_currency() : $code;
 
@@ -543,6 +537,19 @@ class MultiCurrency {
 
 		$this->update_selected_currency( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
+
+	/**
+	 * Update the selected currency from the user's geolocation country.
+	 *
+	 * @return void
+	 */
+	public function update_selected_currency_by_geolocation() {
+		// We only want to automatically set the currency if it's already not set.
+		if ( $this->is_using_auto_currency_switching() && ! $this->get_stored_currency_code() ) {
+			$this->update_selected_currency( $this->locale->get_currency_by_customer_location() );
+		}
+	}
+
 
 	/**
 	 * Gets the configured value for apply charm pricing only to products.
@@ -649,6 +656,24 @@ class MultiCurrency {
 			return $price;
 		}
 		return ceil( $price / $rounding ) * $rounding;
+	}
+
+	/**
+	 * Returns the currency code stored for the user or in the session.
+	 *
+	 * @return string|null Currency code.
+	 */
+	private function get_stored_currency_code() {
+		$user_id = get_current_user_id();
+		$code    = null;
+
+		if ( 0 === $user_id && WC()->session ) {
+			$code = WC()->session->get( self::CURRENCY_SESSION_KEY );
+		} elseif ( $user_id ) {
+			$code = get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
+		}
+
+		return $code;
 	}
 
 	/**
@@ -830,5 +855,14 @@ class MultiCurrency {
 		 *                                    WC Pay's account currencies and WC currencies.
 		 */
 		return apply_filters( 'wcpay_multi_currency_available_currencies', array_intersect( $account_currencies, $wc_currencies ) );
+	}
+
+	/**
+	 * Checks if the merchant has enabled automatic currency switching and geolocation.
+	 *
+	 * @return bool
+	 */
+	private function is_using_auto_currency_switching(): bool {
+		return 'yes' === get_option( $this->id . '_enable_auto_currency', false );
 	}
 }
