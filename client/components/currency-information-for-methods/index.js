@@ -37,7 +37,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 	}
 
 	return (
-		<InlineNotice status="info" spokenMessage="" isDismissible={ false }>
+		<InlineNotice status="info" isDismissible={ false }>
 			{ interpolateComponents( {
 				mixedString: __(
 					"The selected methods require an additional currency, so {{strong}}we'll add Euro (€) to your store{{/strong}}. " +
