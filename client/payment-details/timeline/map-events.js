@@ -230,6 +230,13 @@ const composeFXString = ( event ) => {
 	);
 };
 
+/**
+ * Returns an array containing fee breakup.
+ *
+ * @param {Object} event Event object
+ *
+ * @return {Array} Array of formatted fee strings
+ */
 const feeBreakup = ( event ) => {
 	if ( ! event?.fee_rates?.history ) {
 		return [];
