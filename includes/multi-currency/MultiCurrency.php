@@ -817,6 +817,18 @@ class MultiCurrency {
 			$account_currencies = array_map( 'strtoupper', $account['presentment_currencies'] );
 		}
 
-		return apply_filters( $this->id . '_available_currencies', array_intersect( $account_currencies, $wc_currencies ) );
+		/**
+		 * Filter the available currencies for WooCommerce Multi-Currency.
+		 *
+		 * This filter can be used to modify the currencies available for WC Pay
+		 * Multi-Currency. Currencies have to be added in uppercase and should
+		 * also be available in `get_woocommerce_currencies` for them to work.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param array $available_currencies Current available currencies. Calculated based on
+		 *                                    WC Pay's account currencies and WC currencies.
+		 */
+		return apply_filters( 'wcpay_multi_currency_available_currencies', array_intersect( $account_currencies, $wc_currencies ) );
 	}
 }
