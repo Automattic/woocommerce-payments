@@ -51,44 +51,38 @@ const NeedHelpBarSection = () => {
 };
 
 const DisableUpeModalBody = ( { enabledMethods } ) => {
-	const filteredPaymentMethods = enabledMethods.filter(
+	const upePaymentMethods = enabledMethods.filter(
 		( method ) => 'card' !== method.id
 	);
-	if ( 1 > filteredPaymentMethods.length ) {
-		return (
-			<>
-				<p className="disable-modal-warning">
-					{ __(
-						// eslint-disable-next-line max-len
-						'Without the new payments experience, your customers will only be able to pay using credit card / debit card. You will not be able to add other sales-boosting payment methods anymore.',
-						'woocommerce-payments'
-					) }
-				</p>
-				<NeedHelpBarSection />
-			</>
-		);
-	}
 
 	return (
 		<>
 			<p>
 				{ __(
 					// eslint-disable-next-line max-len
-					'Without the new payments experience, your customers will no longer be able to pay using the new payment methods listed below.',
+					'Without the new payments experience, your customers will only be able to pay using credit card / debit card. You will not be able to add other sales-boosting payment methods anymore.',
 					'woocommerce-payments'
 				) }
 			</p>
-			<p>
-				{ __(
-					'Payment methods that require the new payments experience:',
-					'woocommerce-payments'
-				) }
-			</p>
-			<ul>
-				{ filteredPaymentMethods.map( ( { id, label, Icon } ) => (
-					<PaymentMethod key={ id } Icon={ Icon } label={ label } />
-				) ) }
-			</ul>
+			{ 0 < upePaymentMethods.length ? (
+				<>
+					<p>
+						{ __(
+							'Payment methods that require the new payments experience:',
+							'woocommerce-payments'
+						) }
+					</p>
+					<ul>
+						{ upePaymentMethods.map( ( { id, label, Icon } ) => (
+							<PaymentMethod
+								key={ id }
+								Icon={ Icon }
+								label={ label }
+							/>
+						) ) }
+					</ul>
+				</>
+			) : null }
 			<NeedHelpBarSection />
 		</>
 	);
@@ -134,7 +128,7 @@ const DisableUpeModal = ( {
 				)
 			);
 		}
-	} );
+	}, [ status ] );
 
 	return (
 		<>
