@@ -194,7 +194,6 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.card }
 									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
 									name="card"
 								/>
 							) }
@@ -213,7 +212,6 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.giropay }
 									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
 									name="giropay"
 								/>
 							) }
@@ -221,7 +219,6 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.sofort }
 									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
 									name="sofort"
 								/>
 							) }
@@ -231,7 +228,6 @@ const AddPaymentMethodsTask = () => {
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.sepa_debit }
 									onChange={ handlePaymentMethodChange }
-									fees="missing fees"
 									name="sepa_debit"
 								/>
 							) }

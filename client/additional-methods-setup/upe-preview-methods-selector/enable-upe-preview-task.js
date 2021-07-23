@@ -3,7 +3,7 @@
  */
 import React, { useCallback, useContext } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, Card, CardBody } from '@wordpress/components';
+import { Button, Card, CardBody, ExternalLink } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 import { Icon, store, people } from '@wordpress/icons';
 
@@ -24,7 +24,7 @@ const EnableUpePreviewTask = () => {
 
 	const handleContinueClick = useCallback( () => {
 		setIsUpeEnabled( true ).then( () => {
-			setCompleted( true, 'setup-complete' );
+			setCompleted( true, 'add-payment-methods' );
 		} );
 	}, [ setIsUpeEnabled, setCompleted ] );
 
@@ -42,7 +42,7 @@ const EnableUpePreviewTask = () => {
 			index={ 1 }
 		>
 			<CollapsibleBody className="enable-upe-preview__body">
-				<p>
+				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ interpolateComponents( {
 						mixedString: __(
 							'Get early access to additional payment methods and an improved checkout experience, ' +
@@ -51,12 +51,13 @@ const EnableUpePreviewTask = () => {
 						),
 						components: {
 							learnMoreLink: (
-								<a href="?TODO">
+								// eslint-disable-next-line max-len
+								<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#introduction">
 									{ __(
 										'Learn more',
 										'woocommerce-payments'
 									) }
-								</a>
+								</ExternalLink>
 							),
 						},
 					} ) }
