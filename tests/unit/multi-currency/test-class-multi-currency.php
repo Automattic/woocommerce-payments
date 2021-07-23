@@ -64,6 +64,13 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	 */
 	private $mock_api_client;
 
+	/**
+	 * Mock of the WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $mock_account;
+
 	public function setUp() {
 		parent::setUp();
 
@@ -96,13 +103,15 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			->method( 'is_server_connected' )
 			->willReturn( true );
 
-		$this->multi_currency = new MultiCurrency( $this->mock_api_client );
-		$this->multi_currency->init();
+		$this->mock_account = $this->createMock( WC_Payments_Account::class );
+
+		$this->init_multi_currency();
 	}
 
 	public function tearDown() {
 		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
+		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
 		remove_all_filters( 'woocommerce_currency' );
 
 		delete_user_meta( self::LOGGED_IN_USER_ID, MultiCurrency::CURRENCY_META_KEY );
@@ -116,6 +125,45 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
+	public function test_available_currencies_uses_wc_currencies_when_no_stripe_account() {
+		$this->mock_account->method( 'get_cached_account_data' )->willReturn( false );
+
+		$this->init_multi_currency();
+
+		$expected_currencies  = array_keys( get_woocommerce_currencies() );
+		$available_currencies = array_keys( $this->multi_currency->get_available_currencies() );
+
+		$this->assertEquals( sort( $expected_currencies ), sort( $available_currencies ) );
+	}
+
+	public function test_available_currencies_uses_wc_currencies_when_stripe_account_has_no_presentment_currencies() {
+		$this->mock_account->method( 'get_cached_account_data' )->willReturn( [ 'id' => 'acct' ] );
+
+		$this->init_multi_currency();
+
+		$expected_currencies  = array_keys( get_woocommerce_currencies() );
+		$available_currencies = array_keys( $this->multi_currency->get_available_currencies() );
+
+		$this->assertEquals( sort( $expected_currencies ), sort( $available_currencies ) );
+	}
+
+	public function test_available_currencies_uses_only_presentment_currencies_when_enabled_in_wc() {
+		$this->mock_account
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'presentment_currencies' => [ 'usd', 'cad', 'random', 'brl' ],
+				]
+			);
+
+		$this->init_multi_currency();
+
+		$expected_currencies  = [ 'USD', 'CAD', 'BRL' ];
+		$available_currencies = array_keys( $this->multi_currency->get_available_currencies() );
+
+		$this->assertEquals( sort( $expected_currencies ), sort( $available_currencies ) );
+	}
+
 	public function test_get_available_currencies_adds_store_currency() {
 		add_filter(
 			'woocommerce_currency',
@@ -125,14 +173,33 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			100
 		);
 
-		// Recreate MultiCurrency instance to use the recently set DEFAULT currency.
-		$this->multi_currency = new MultiCurrency( $this->mock_api_client );
-		$this->multi_currency->init();
+		$this->init_multi_currency();
 
 		$default_currency = $this->multi_currency->get_available_currencies()['DEFAULT'];
 
 		$this->assertSame( 'DEFAULT', $default_currency->get_code() );
 		$this->assertSame( 1.0, $default_currency->get_rate() );
+	}
+
+	public function test_available_currencies_can_be_filtered() {
+		add_filter(
+			'wcpay_multi_currency_available_currencies',
+			function ( $available_currencies ) {
+				// Remove BRL from the list of currencies.
+				return array_filter(
+					$available_currencies,
+					function ( $currency ) {
+						return 'BRL' !== $currency;
+					}
+				);
+			}
+		);
+
+		$this->assertArrayHasKey( 'BRL', $this->multi_currency->get_available_currencies() );
+
+		$this->init_multi_currency();
+
+		$this->assertArrayNotHasKey( 'BRL', $this->multi_currency->get_available_currencies() );
 	}
 
 	public function test_get_enabled_currencies_returns_correctly() {
@@ -186,9 +253,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	public function test_enabled_but_unavailable_currencies_are_skipped() {
 		update_option( self::ENABLED_CURRENCIES_OPTION, [ 'RANDOM_CURRENCY', 'USD' ] );
 
-		// Recreate MultiCurrency instance to use the recently set currencies.
-		$this->multi_currency = new MultiCurrency( $this->mock_api_client );
-		$this->multi_currency->init();
+		$this->init_multi_currency();
 
 		$this->assertSame( [ 'USD' ], array_keys( $this->multi_currency->get_enabled_currencies() ) );
 	}
@@ -315,6 +380,52 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertSame( 'CAD', WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
 	}
 
+	public function test_update_selected_currency_by_geolocation_displays_notice() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'CA';
+			}
+		);
+
+		$this->multi_currency->update_selected_currency_by_geolocation();
+
+		$this->assertNotFalse( has_filter( 'wp_footer', [ $this->multi_currency, 'display_geolocation_currency_update_notice' ] ) );
+	}
+
+	public function test_display_geolocation_currency_update_notice() {
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'CA';
+			}
+		);
+
+		$this->multi_currency->display_geolocation_currency_update_notice();
+
+		$this->expectOutputRegex( '/<p class="woocommerce-store-notice demo_store" data-notice-id="cd4c082cbdfa742c13d944c867a45cd92" style="display:none;">/' );
+		$this->expectOutputRegex( '/We noticed you&#039;re visiting from Canada. We&#039;ve updated our prices to Canadian dollar for your shopping convenience./' );
+		$this->expectOutputRegex( '/<a href="?currency=USD">Use United States (US) dollar instead.<\/a>/' );
+		$this->expectOutputRegex( '/<a href="#" class="woocommerce-store-notice__dismiss-link">Dismiss<\/a><\/p>/' );
+	}
+
+	public function test_display_geolocation_currency_update_notice_does_not_display_if_using_default_currency() {
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'US' );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'US';
+			}
+		);
+
+		$this->multi_currency->display_geolocation_currency_update_notice();
+
+		$this->expectOutputString( '' );
+	}
+
 	public function test_get_price_returns_price_in_default_currency() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, get_woocommerce_currency() );
 
@@ -389,9 +500,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			]
 		);
 
-		// Recreate MultiCurrency instance to use the recently set price_rounding.
-		$this->multi_currency = new MultiCurrency( $this->mock_api_client );
-		$this->multi_currency->init();
+		$this->init_multi_currency();
 
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 
@@ -411,8 +520,9 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			->method( 'is_server_connected' )
 			->willReturn( false );
 
-		$this->multi_currency = new MultiCurrency( $mock_api_client );
+		$this->multi_currency = new MultiCurrency( $mock_api_client, $this->mock_account );
 		$this->multi_currency->init();
+
 		$this->assertNull( $this->multi_currency->get_cached_currencies() );
 	}
 
@@ -520,5 +630,10 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		foreach ( $settings as $setting ) {
 			delete_option( 'wcpay_multi_currency_' . $setting . '_' . strtolower( $currency_code ) );
 		}
+	}
+
+	private function init_multi_currency() {
+		$this->multi_currency = new MultiCurrency( $this->mock_api_client, $this->mock_account );
+		$this->multi_currency->init();
 	}
 }

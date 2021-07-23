@@ -167,7 +167,7 @@ const AddPaymentMethodsTask = () => {
 						mixedString: __(
 							'For best results, we recommend adding all available payment methods. ' +
 								"We'll only show your customer the most relevant payment methods " +
-								'based on their location. {{learnMoreLink /}}.',
+								'based on their location. {{learnMoreLink /}}',
 							'woocommerce-payments'
 						),
 						components: {
