@@ -33,17 +33,6 @@ const DisabledUpeSuccessNotice = () => {
 	);
 };
 
-const SurveyPromptQuestionDisabledUPE = () => (
-	<p>
-		<strong>
-			{ __(
-				'What made you disable the new payments experience?',
-				'woocommerce-payments'
-			) }
-		</strong>
-	</p>
-);
-
 const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 	const [ isUpeEnabled ] = useIsUpeEnabled();
 	const [ surveyAnswers, setSurveyAnswers ] = useSurveyAnswers( {} );
@@ -52,7 +41,6 @@ const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 			{ ! isUpeEnabled && (
 				<>
 					<DisabledUpeSuccessNotice />
-					<SurveyPromptQuestionDisabledUPE />
 				</>
 			) }
 			<RadioControl
