@@ -127,7 +127,7 @@ const submissionErrorNotice = () => {
 const surveySubmittedConfirmation = () => {
 	return dispatch( 'core/notices' ).createSuccessNotice(
 		__(
-			'Thank you for submitting feedback to our developer team!',
+			'Thank you! Your feedback will help improve your experience in the future.',
 			'woocommerce-payments'
 		)
 	);
