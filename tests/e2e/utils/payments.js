@@ -52,45 +52,10 @@ export async function confirmCardAuthentication(
 	await button.click();
 }
 
-/**
- * Set up checkout with any number of products.
- *
- * @param {any} billingDetails Values to be entered into the 'Billing details' form in the Checkout page
- * @param {any} lineItems A 2D array of line items where each line item is an array
- * that contains the product title as the first element, and the quantity as the second.
- * For example, if you want to checkout the products x2 "Hoodie" and x3 "Belt" then you can set this `lineItems` parameter like this:
- *
- * `[ [ "Hoodie", 2 ], [ "Belt", 3 ] ]`.
- *
- * Default value is 1 piece of `config.get( 'products.simple.name' )`.
- */
-export async function setupProductCheckout(
-	billingDetails,
-	lineItems = [ [ config.get( 'products.simple.name' ), 1 ] ]
-) {
-	const cartItemsCounter = '.cart-contents .count';
-
+// Set up checkout with simple product
+export async function setupProductCheckout( billingDetails ) {
 	await shopper.goToShop();
-
-	// Get the current number of items in the cart
-	let cartSize = await page.$eval( cartItemsCounter, ( e ) =>
-		Number( e.innerText.replace( /\D/g, '' ) )
-	);
-
-	// Add items to the cart
-	for ( const line of lineItems ) {
-		let [ productTitle, qty ] = line;
-
-		while ( qty-- ) {
-			await shopper.addToCartFromShopPage( productTitle );
-
-			// Make sure that the number of items in the cart is incremented first before adding another item.
-			await expect( page ).toMatchElement( cartItemsCounter, {
-				text: new RegExp( `${ ++cartSize } items?` ),
-			} );
-		}
-	}
-
+	await shopper.addToCartFromShopPage( config.get( 'products.simple.name' ) );
 	await setupCheckout( billingDetails );
 }
 
