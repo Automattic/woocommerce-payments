@@ -54,9 +54,9 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 		$priority = has_filter( $filter, [ $this->analytics, $function_name ] );
 
 		$this->assertEquals(
-			10,
+			20,
 			$priority,
-			"Filter '$filter' was not registered with '$function_name' with the default priority."
+			"Filter '$filter' was not registered with '$function_name' with late priority."
 		);
 	}
 
@@ -149,7 +149,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 	 * @dataProvider join_clause_provider
 	 */
 	public function test_filter_join_clauses( $clauses, $expected ) {
-		$this->assertEquals( $expected, $this->analytics->filter_join_clauses( $clauses ) );
+		$this->assertEquals( $expected, $this->analytics->filter_join_clauses( $clauses, 'test' ) );
 	}
 
 	public function join_clause_provider() {

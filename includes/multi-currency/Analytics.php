@@ -56,8 +56,8 @@ class Analytics {
 
 		$this->set_sql_replacements();
 
-		add_filter( 'woocommerce_analytics_clauses_select', [ $this, 'filter_select_clauses' ], self::PRIORITY_DEFAULT, 2 );
-		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ] );
+		add_filter( 'woocommerce_analytics_clauses_select', [ $this, 'filter_select_clauses' ], self::PRIORITY_LATE, 2 );
+		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ], self::PRIORITY_LATE, 2 );
 	}
 
 	/**
@@ -168,10 +168,11 @@ class Analytics {
 	 * Add a JOIN so that we can get the currency information.
 	 *
 	 * @param string[] $clauses - An array containing the JOIN clauses to be applied.
+	 * @param string   $context - The context in which this SELECT clause is being called.
 	 *
 	 * @return array
 	 */
-	public function filter_join_clauses( array $clauses ): array {
+	public function filter_join_clauses( array $clauses, $context ): array {
 		global $wpdb;
 
 		$prefix               = 'wcpay_multicurrency_';
@@ -179,9 +180,14 @@ class Analytics {
 		$default_currency_tbl = $prefix . 'default_currency_postmeta';
 		$exchange_rate_tbl    = $prefix . 'exchange_rate_postmeta';
 
-		$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.post_id AND {$currency_tbl}.meta_key = '_order_currency'";
-		$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.post_id AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
-		$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$exchange_rate_tbl}.post_id AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
+		// If the context is 'products', we don't need to add these joins.
+		// We may also be able to just check if there is an existing clause which joins to the wc_order_stats table here,
+		// and only add these if there is - but this may cause issues in the order context?
+		if ( 'products' !== $context ) {
+			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.post_id AND {$currency_tbl}.meta_key = '_order_currency'";
+			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.post_id AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
+			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$exchange_rate_tbl}.post_id AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
+		}
 
 		return $clauses;
 	}

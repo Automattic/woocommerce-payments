@@ -18,41 +18,68 @@ addFilter(
 		if (
 			! tableData.items ||
 			! tableData.items.data ||
-			! tableData.items.data.length ||
-			! [ 'orders' ].includes( tableData.endpoint )
+			! tableData.items.data.length
 		) {
 			return tableData;
 		}
 
-		const updatedHeaders = [
-			{
-				isNumeric: false,
-				isSortable: true,
-				key: 'customer_currency',
-				label: __( 'Customer Currency', 'woocommerce-payments' ),
-				required: false,
-				screenReaderLabel: __(
-					'Customer Currency',
-					'woocommerce-payments'
-				),
-			},
-			...tableData.headers,
-		];
+		const addCurrencyColumn = 'orders' === tableData.endpoint;
+
+		if ( addCurrencyColumn ) {
+			const updatedHeaders = [
+				{
+					isNumeric: false,
+					isSortable: true,
+					key: 'customer_currency',
+					label: __( 'Customer Currency', 'woocommerce-payments' ),
+					required: false,
+					screenReaderLabel: __(
+						'Customer Currency',
+						'woocommerce-payments'
+					),
+				},
+				...tableData.headers,
+			];
+
+			tableData.headers = updatedHeaders;
+		}
 
 		const updatedRows = tableData.rows.map( ( rows, index ) => {
 			const item = tableData.items.data[ index ];
-			const currency = item.order_currency;
+			const modifiedRows = rows.map( ( column, columnIndex ) => {
+				const columnsToFormat = [ 'net_revenue' ];
+				const key = tableData.headers[ columnIndex ].key;
 
-			return [
-				{
-					display: currency,
-					value: currency,
-				},
-				...rows,
-			];
+				let returnVal = { ...column };
+
+				columnsToFormat.forEach( ( colKey ) => {
+					if ( colKey === key ) {
+						returnVal = {
+							...column,
+							display: item[ key ] * 100, // TODO: Show the currency symbol here.
+							value: item[ key ].toFixed( 2 ),
+						};
+					}
+				} );
+
+				return returnVal;
+			} );
+
+			if ( addCurrencyColumn ) {
+				const currency = item.order_currency;
+
+				return [
+					{
+						display: currency,
+						value: currency,
+					},
+					...modifiedRows,
+				];
+			}
+
+			return [ ...modifiedRows ];
 		} );
 
-		tableData.headers = updatedHeaders;
 		tableData.rows = updatedRows;
 
 		return tableData;
