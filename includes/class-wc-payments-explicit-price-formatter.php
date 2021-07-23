@@ -14,6 +14,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_Explicit_Price_Formatter {
 	/**
+	 * Inits the formatter, registering the necessary hooks.
+	 */
+	public static function init() {
+		add_filter( 'woocommerce_cart_total', [ __CLASS__, 'get_explicit_price' ], 100 );
+	}
+
+	/**
 	 * Returns the price suffixed with the appropriate currency code, if not already.
 	 *
 	 * @param string        $price The price.
