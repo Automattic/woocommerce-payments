@@ -546,7 +546,13 @@ class MultiCurrency {
 	public function update_selected_currency_by_geolocation() {
 		// We only want to automatically set the currency if it's already not set.
 		if ( $this->is_using_auto_currency_switching() && ! $this->get_stored_currency_code() ) {
-			$this->update_selected_currency( $this->locale->get_currency_by_customer_location() );
+			$currency = $this->locale->get_currency_by_customer_location();
+
+			// Update currency and display notice if enabled.
+			if ( ! empty( $this->get_enabled_currencies()[ $currency ] ) ) {
+				$this->update_selected_currency( $currency );
+				add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
+			}
 		}
 	}
 
@@ -597,6 +603,42 @@ class MultiCurrency {
 	 */
 	public function recalculate_cart() {
 		WC()->cart->calculate_totals();
+	}
+
+	/**
+	 * Displays a notice on the frontend informing the customer of the
+	 * automatic currency switch.
+	 */
+	public function display_geolocation_currency_update_notice() {
+		$current_currency = $this->get_selected_currency();
+		$store_currency   = get_option( 'woocommerce_currency' );
+		$country          = $this->locale->get_country_by_customer_location();
+		$currencies       = get_woocommerce_currencies();
+
+		// Do not display notice if using the store's default currency.
+		if ( $store_currency === $current_currency->get_code() ) {
+			return;
+		}
+
+		$message = sprintf(
+			/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name */
+			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a>Use %3$s instead.</a>', 'woocommerce-payments' ),
+			WC()->countries->countries[ $country ],
+			$current_currency->get_name(),
+			$currencies[ $store_currency ]
+		);
+
+		$notice_id = md5( $message );
+
+		echo '<p class="woocommerce-store-notice demo_store" data-notice-id="' . esc_attr( $notice_id . 2 ) . '" style="display:none;">';
+		echo \WC_Payments_Utils::esc_interpolated_html(
+			$message,
+			[
+				'a' => '<a href="?currency=' . $store_currency . '">',
+			]
+		);
+		echo ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
+
 	}
 
 	/**
