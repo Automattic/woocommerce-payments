@@ -88,28 +88,12 @@ const DisableUpeModalBody = ( { enabledMethods } ) => {
 	);
 };
 
-const DisableSubmitButton = () => {
-	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
-	const { status } = useContext( WcPayUpeContext );
-	return (
-		<Button
-			isBusy={ 'pending' === status }
-			disabled={ 'pending' === status }
-			isDestructive
-			isPrimary
-			onClick={ () => setIsUpeEnabled( false ) }
-		>
-			{ __( 'Disable', 'woocommerce-payments' ) }
-		</Button>
-	);
-};
-
 const DisableUpeModal = ( {
 	enabledMethods,
 	setOpenModal,
 	triggerAfterDisable,
 } ) => {
-	const [ isUpeEnabled ] = useIsUpeEnabled();
+	const [ isUpeEnabled, setIsUpeEnabled ] = useIsUpeEnabled();
 	const { status } = useContext( WcPayUpeContext );
 
 	useEffect( () => {
@@ -139,7 +123,26 @@ const DisableUpeModal = ( {
 					'woocommerce-payments'
 				) }
 				onRequestClose={ () => setOpenModal( '' ) }
-				actions={ <DisableSubmitButton /> }
+				actions={
+					<>
+						<Button
+							isSecondary
+							disabled={ 'pending' === status }
+							onClick={ () => setOpenModal( '' ) }
+						>
+							{ __( 'Cancel', 'woocommerce-payments' ) }
+						</Button>
+						<Button
+							isPrimary
+							isDestructive
+							isBusy={ 'pending' === status }
+							disabled={ 'pending' === status }
+							onClick={ () => setIsUpeEnabled( false ) }
+						>
+							{ __( 'Disable', 'woocommerce-payments' ) }
+						</Button>
+					</>
+				}
 			>
 				<DisableUpeModalBody enabledMethods={ enabledMethods } />
 			</ConfirmationModal>
