@@ -19,6 +19,30 @@ class WC_Payments_Explicit_Price_Formatter {
 	public static function init() {
 		add_filter( 'woocommerce_cart_total', [ __CLASS__, 'get_explicit_price' ], 100 );
 		add_filter( 'woocommerce_get_formatted_order_total', [ __CLASS__, 'get_explicit_price' ], 100, 2 );
+		add_action( 'woocommerce_admin_order_totals_after_tax', [ __CLASS__, 'register_formatted_woocommerce_price_filter' ] );
+		add_action( 'woocommerce_admin_order_totals_after_total', [ __CLASS__, 'unregister_formatted_woocommerce_price_filter' ] );
+	}
+
+	/**
+	 * Registers the get_explicit_price filter for the order details screen.
+	 *
+	 * There are no hooks that enable us to filter the output on the order details screen.
+	 * So, we need to add a filter to formatted_woocommerce_price. We use specific actions
+	 * to register and unregister the filter, so that only the appropriate prices are affected.
+	 */
+	public function register_formatted_woocommerce_price_filter() {
+		add_filter( 'formatted_woocommerce_price', [ __CLASS__, 'get_explicit_price' ] );
+	}
+
+	/**
+	 * Unregisters the get_explicit_price filter for the order details screen.
+	 *
+	 * There are no hooks that enable us to filter the output on the order details screen.
+	 * So, we need to add a filter to formatted_woocommerce_price. We use specific actions
+	 * to register and unregister the filter, so that only the appropriate prices are affected.
+	 */
+	public function unregister_formatted_woocommerce_price_filter() {
+		remove_filter( 'formatted_woocommerce_price', [ __CLASS__, 'get_explicit_price' ] );
 	}
 
 	/**
