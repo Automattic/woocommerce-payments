@@ -12,7 +12,7 @@
 
 	&__details {
 		flex: 0 1 auto;
-		margin-bottom: 12px;
+		margin-bottom: 24px;
 
 		@include breakpoint( '>800px' ) {
 			flex: 0 0 25%;
@@ -28,6 +28,10 @@
 			font-size: 13px;
 			line-height: 17.89px;
 			margin: 12px 0;
+		}
+
+		> :last-child {
+			margin-bottom: 0;
 		}
 	}
 
