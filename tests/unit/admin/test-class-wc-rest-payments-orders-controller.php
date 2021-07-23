@@ -280,35 +280,40 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 404, $data['status'] );
 	}
 
-	public function test_create_customer_from_order_guest() {
+	public function test_create_customer_from_order_guest_without_customer_id() {
 		$order         = WC_Helper_Order::create_order( 0 );
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
 
 		$this->mock_customer_service
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->once() )
 			->method( 'create_customer_for_user' )
-			->withConsecutive(
-				[
-					$this->callback(
-						function( $argument ) {
-							return ( $argument instanceof WP_User ) && ! $argument->ID;
-						}
-					),
-					$this->equalTo( $customer_data ),
-				],
-				[
-					$this->callback(
-						function( $argument ) {
-							return ( $argument instanceof WP_User ) && ! $argument->ID;
-						}
-					),
-					$this->equalTo( $customer_data ),
-				]
+			->with(
+				$this->callback(
+					function( $argument ) {
+						return ( $argument instanceof WP_User ) && ! $argument->ID;
+					}
+				),
+				$this->equalTo( $customer_data )
 			)
-			->willReturnOnConsecutiveCalls(
-				'cus_new1',
-				'cus_new2'
-			);
+			->willReturn( 'cus_new' );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'get_customer_id_by_user_id' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'update_customer_for_user' )
+			->with(
+				$this->equalTo( 'cus_new' ),
+				$this->callback(
+					function( $argument ) {
+						return ( $argument instanceof WP_User ) && ! $argument->ID;
+					}
+				),
+				$this->equalTo( $customer_data )
+			)
+			->willReturn( 'cus_new' );
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
@@ -319,23 +324,76 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 
 		$response      = $this->controller->create_customer( $request );
 		$response_data = $response->get_data();
-		$this->assertEquals( 200, $response->status );
-		$this->assertEquals(
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
 			[
-				'id' => 'cus_new1',
+				'id' => 'cus_new',
 			],
 			$response_data
 		);
 
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cus_new', $result_order->get_meta( '_stripe_customer_id' ) );
+
 		$response      = $this->controller->create_customer( $request );
 		$response_data = $response->get_data();
-		$this->assertEquals( 200, $response->status );
-		$this->assertEquals(
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
 			[
-				'id' => 'cus_new2',
+				'id' => 'cus_new',
 			],
 			$response_data
 		);
+	}
+
+	public function test_create_customer_from_order_guest_with_customer_id() {
+		$order         = WC_Helper_Order::create_order( 0 );
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
+
+		$order->update_meta_data( '_stripe_customer_id', 'cus_guest' );
+		$order->save();
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'create_customer_for_user' );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'get_customer_id_by_user_id' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'update_customer_for_user' )
+			->with(
+				$this->equalTo( 'cus_guest' ),
+				$this->callback(
+					function( $argument ) {
+						return ( $argument instanceof WP_User ) && ! $argument->ID;
+					}
+				),
+				$this->equalTo( $customer_data )
+			)
+			->willReturn( 'cus_guest' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		$response      = $this->controller->create_customer( $request );
+		$response_data = $response->get_data();
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
+			[
+				'id' => 'cus_guest',
+			],
+			$response_data
+		);
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cus_guest', $result_order->get_meta( '_stripe_customer_id' ) );
 	}
 
 	public function test_create_customer_from_order_non_guest_with_customer_id() {
@@ -367,13 +425,58 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 
 		$response      = $this->controller->create_customer( $request );
 		$response_data = $response->get_data();
-		$this->assertEquals( 200, $response->status );
-		$this->assertEquals(
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
 			[
 				'id' => 'cus_exist',
 			],
 			$response_data
 		);
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cus_exist', $result_order->get_meta( '_stripe_customer_id' ) );
+	}
+
+	public function test_create_customer_from_order_non_guest_with_customer_id_from_order_meta() {
+		$order         = WC_Helper_Order::create_order();
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
+
+		$order->update_meta_data( '_stripe_customer_id', 'cus_exist' );
+		$order->save();
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'get_customer_id_by_user_id' );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'create_customer_for_user' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'update_customer_for_user' )
+			->with( 'cus_exist', $order->get_user(), $customer_data )
+			->willReturn( 'cus_exist' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		$response      = $this->controller->create_customer( $request );
+		$response_data = $response->get_data();
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
+			[
+				'id' => 'cus_exist',
+			],
+			$response_data
+		);
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cus_exist', $result_order->get_meta( '_stripe_customer_id' ) );
 	}
 
 	public function test_create_customer_from_order_non_guest_without_customer_id() {
@@ -405,13 +508,16 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 
 		$response      = $this->controller->create_customer( $request );
 		$response_data = $response->get_data();
-		$this->assertEquals( 200, $response->status );
-		$this->assertEquals(
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
 			[
 				'id' => 'cus_new',
 			],
 			$response_data
 		);
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cus_new', $result_order->get_meta( '_stripe_customer_id' ) );
 	}
 
 	private function create_mock_order() {
