@@ -51,6 +51,24 @@ const NeedHelpBarSection = () => {
 };
 
 const DisableUPEModalBody = ( { enabledMethods } ) => {
+	const filteredPaymentMethods = enabledMethods.filter(
+		( method ) => 'card' !== method.id
+	);
+	if ( 1 > filteredPaymentMethods.length ) {
+		return (
+			<>
+				<p className="disable-modal-warning">
+					{ __(
+						// eslint-disable-next-line max-len
+						'Without the new payments experience, your customers will only be able to pay using credit card / debit card. You will not be able to add other sales-boosting payment methods anymore.',
+						'woocommerce-payments'
+					) }
+				</p>
+				<NeedHelpBarSection />
+			</>
+		);
+	}
+
 	return (
 		<>
 			<p>
@@ -67,7 +85,7 @@ const DisableUPEModalBody = ( { enabledMethods } ) => {
 				) }
 			</p>
 			<ul>
-				{ enabledMethods.map( ( { id, label, Icon } ) => (
+				{ filteredPaymentMethods.map( ( { id, label, Icon } ) => (
 					<PaymentMethod key={ id } Icon={ Icon } label={ label } />
 				) ) }
 			</ul>
