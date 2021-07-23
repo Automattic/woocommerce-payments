@@ -47,6 +47,7 @@ describe( 'Overview page', () => {
 				accountOverviewTaskList: true,
 			},
 		};
+		getQuery.mockReturnValue( {} );
 	} );
 
 	it( 'Skips rendering task list when there are no tasks', () => {
