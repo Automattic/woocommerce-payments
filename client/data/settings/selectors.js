@@ -71,6 +71,10 @@ export const getPaymentRequestButtonTheme = ( state ) => {
 	return getSettings( state ).payment_request_button_theme || '';
 };
 
+export const getIsSavedCardsEnabled = ( state ) => {
+	return getSettings( state ).is_saved_cards_enabled || false;
+};
+
 export const getSavingError = ( state ) => {
 	return getSettingsState( state ).savingError;
 };
