@@ -622,6 +622,10 @@ class WC_Payments_Admin {
 	 * if it is not and the user is attempting to view a WCPay admin page.
 	 */
 	public function maybe_redirect_to_onboarding() {
+		if ( $this->is_in_treatment_mode() ) {
+			return;
+		}
+
 		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
 
 		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page'] ) {
