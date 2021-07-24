@@ -19,27 +19,29 @@ import ListBanner from '../empty-state-table/deposits-banner.svg';
 import { Experiment } from '@woocommerce/explat';
 
 const DepositsPage = () => {
+	const defaultExperience = (
+		<>
+			<TestModeNotice topic={ topics.deposits } />
+			<DepositsList />
+		</>
+	);
+
+	const treatmentExperience = wcpaySettings.accountStatus.status ? (
+		defaultExperience
+	) : (
+		<EmptyStateTable
+			headers={ EmptyStateTableHeaders }
+			title="Deposit history"
+			content={ <EmptyStateList listBanner={ ListBanner } /> }
+		/>
+	);
+
 	return (
 		<Page>
 			<Experiment
 				name="wcpay_empty_state_preview_mode_v1"
-				treatmentExperience={
-					<>
-						<EmptyStateTable
-							headers={ EmptyStateTableHeaders }
-							title="Deposit history"
-							content={
-								<EmptyStateList listBanner={ ListBanner } />
-							}
-						/>
-					</>
-				}
-				defaultExperience={
-					<>
-						<TestModeNotice topic={ topics.deposits } />
-						<DepositsList />
-					</>
-				}
+				treatmentExperience={ treatmentExperience }
+				defaultExperience={ defaultExperience }
 			/>
 		</Page>
 	);
