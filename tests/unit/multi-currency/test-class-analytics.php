@@ -50,21 +50,16 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 	 * @group underTest
 	 * @dataProvider woocommerce_filter_provider
 	 */
-	public function test_registers_woocommerce_filters_properly( $filter, $function_name ) {
+	public function test_registers_woocommerce_filters_properly( $filter, $function_name, $expected_priority ) {
 		$priority = has_filter( $filter, [ $this->analytics, $function_name ] );
-
-		$this->assertEquals(
-			20,
-			$priority,
-			"Filter '$filter' was not registered with '$function_name' with late priority."
-		);
+		$this->assertEquals( $expected_priority, $priority );
 	}
 
 	public function woocommerce_filter_provider() {
 		return [
-			[ 'admin_enqueue_scripts', 'enqueue_admin_scripts' ],
-			[ 'woocommerce_analytics_clauses_select', 'filter_select_clauses' ],
-			[ 'woocommerce_analytics_clauses_join', 'filter_join_clauses' ],
+			'admin scripts enqueued with default priority' => [ 'admin_enqueue_scripts', 'enqueue_admin_scripts', 10 ],
+			'select clause filters added with late priority' => [ 'woocommerce_analytics_clauses_select', 'filter_select_clauses', 20 ],
+			'join clause filters added with late priority' => [ 'woocommerce_analytics_clauses_join', 'filter_join_clauses', 20 ],
 		];
 	}
 

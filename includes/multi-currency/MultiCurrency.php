@@ -177,6 +177,7 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->locale );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
@@ -587,6 +588,33 @@ class MultiCurrency {
 	 */
 	public function recalculate_cart() {
 		WC()->cart->calculate_totals();
+	}
+
+	/**
+	 * When an order is refunded, a new psuedo order is created to represent the refund.
+	 * We want to check if the original order was a multi-currency order, and if so, copy the meta data
+	 * to the new order.
+	 *
+	 * @param int $order_id The order ID.
+	 * @param int $refund_id The refund order ID.
+	 */
+	public function add_order_meta_on_refund( $order_id, $refund_id ) {
+		$default_currency = $this->get_default_currency();
+
+		$order  = wc_get_order( $order_id );
+		$refund = wc_get_order( $refund_id );
+
+		// Do not add exchange rate if order was made in the store's default currency.
+		if ( ! $order || ! $refund || $default_currency->get_code() === $order->get_currency() ) {
+			return;
+		}
+
+		$order_exchange_rate    = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+		$order_default_currency = $order->get_meta( '_wcpay_multi_currency_order_default_currency', true );
+
+		$refund->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $order_exchange_rate );
+		$refund->update_meta_data( '_wcpay_multi_currency_order_default_currency', $order_default_currency );
+		$refund->save_meta_data();
 	}
 
 	/**
