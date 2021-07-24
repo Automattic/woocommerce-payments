@@ -458,6 +458,51 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertEquals( MultiCurrency::CURRENCY_RETRIEVAL_ERROR, $cached_data['currencies'] );
 	}
 
+	/**
+	 * @group underTest
+	 */
+	public function test_add_order_meta_on_refund_skips_default_currency() {
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( 'USD' ) );
+
+		$order = wc_create_order();
+		$order->set_currency( 'USD' );
+
+		$refund = wc_create_refund();
+		$refund->set_currency( 'USD' );
+
+		$this->multi_currency->add_order_meta_on_refund( $order->get_id(), $refund->get_id() );
+
+		// Get the order from the database.
+		$refund = wc_get_order( $refund->get_id() );
+
+		$this->assertFalse( $refund->meta_exists( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertFalse( $refund->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
+	}
+
+	/**
+	 * @group underTest
+	 */
+	public function test_add_order_meta_on_refund() {
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( 'USD' ) );
+
+		$order = wc_create_order();
+		$order->set_currency( 'GBP' );
+		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', '0.71' );
+		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'USD' );
+		$order->save_meta_data();
+
+		$refund = wc_create_refund();
+		$refund->set_currency( 'GBP' );
+
+		$this->multi_currency->add_order_meta_on_refund( $order->get_id(), $refund->get_id() );
+
+		// Get the order from the database.
+		$refund = wc_get_order( $refund->get_id() );
+
+		$this->assertSame( '0.71', $refund->get_meta( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertSame( 'USD', $refund->get_meta( '_wcpay_multi_currency_order_default_currency' ) );
+	}
+
 	public function get_price_provider() {
 		return [
 			[ '5.2499', '0.00', 5.2499 ],
