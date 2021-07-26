@@ -19,13 +19,13 @@ import {
 	usePaymentRequestButtonTheme,
 } from '../../data';
 
-const PaymentRequestDemoButton = () => {
+const PaymentRequestDemoButton = ( props ) => {
 	const stripe = useStripe();
-	const [ paymentRequest, setPaymentRequest ] = useState( null );
 	const [ isLoading, setIsLoading ] = useState( true );
 	const [ buttonType ] = usePaymentRequestButtonType();
 	const [ size ] = usePaymentRequestButtonSize();
 	const [ theme ] = usePaymentRequestButtonTheme();
+	const { paymentRequest, setPaymentRequest } = props;
 
 	// Since this is preview, we don't want the user to open up the browser's payment popup.
 	const disablePaymentAction = ( e ) => {
@@ -66,7 +66,7 @@ const PaymentRequestDemoButton = () => {
 			}
 			setIsLoading( false );
 		} );
-	}, [ stripe ] );
+	}, [ stripe, setPaymentRequest ] );
 
 	if ( isLoading ) {
 		return null;
@@ -77,7 +77,7 @@ const PaymentRequestDemoButton = () => {
 			<PaymentRequestButtonElement
 				onClick={ disablePaymentAction }
 				options={ {
-					paymentRequest,
+					paymentRequest: paymentRequest,
 					style: {
 						paymentRequestButton: {
 							type: buttonType,

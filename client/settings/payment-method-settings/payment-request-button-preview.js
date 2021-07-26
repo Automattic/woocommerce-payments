@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { React } from 'react';
+import { React, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -30,6 +30,8 @@ const stripePromise = loadStripe( stripeSettings.publishableKey, {
 } );
 
 const PaymentRequestButtonPreview = () => {
+	const [ paymentRequest, setPaymentRequest ] = useState( null );
+
 	let browser = 'Google Chrome';
 	let paymentMethodName = 'Google Pay';
 
@@ -53,7 +55,10 @@ const PaymentRequestButtonPreview = () => {
 			<p>{ __( 'Preview', 'woocommerce-payments' ) }</p>
 			<div className="payment-method-settings__preview">
 				<Elements stripe={ stripePromise }>
-					<PaymentRequestDemoButton />
+					<PaymentRequestDemoButton
+						paymentRequest={ paymentRequest }
+						setPaymentRequest={ setPaymentRequest }
+					/>
 				</Elements>
 			</div>
 			<p className="payment-method-settings__preview-help-text">
