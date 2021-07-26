@@ -354,6 +354,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
+		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_not_supported_currency_notice' ] );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
@@ -508,8 +509,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
-		// Disable the gateway if using live mode without HTTPS set up.
-		if ( $this->needs_https_setup() ) {
+		// Disable the gateway if using live mode without HTTPS set up or the currency is not
+		// available in the country of the account.
+		if ( $this->needs_https_setup() || ! $this->is_available_for_current_currency() ) {
 			return false;
 		}
 
@@ -526,6 +528,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks if the account country is compatible with the current currency.
+	 *
+	 * @return bool Whether the currency is supported in the country set in the account.
+	 */
+	protected function is_available_for_current_currency() {
+		$supported_currencies = $this->account->get_account_presentment_currencies();
+		$current_currency     = strtolower( get_woocommerce_currency() );
+
+		if ( count( $supported_currencies ) === 0 ) {
+			// If we don't have info related to the supported currencies
+			// of the country, we won't disable the gateway.
+			return true;
+		}
+
+		return in_array( $current_currency, $supported_currencies, true );
+	}
+
+	/**
 	 * Add notice explaining test mode when it's enabled.
 	 */
 	public function display_test_mode_notice() {
@@ -535,6 +555,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<p>
 					<b><?php esc_html_e( 'Test mode active: ', 'woocommerce-payments' ); ?></b>
 					<?php esc_html_e( "All transactions are simulated. Customers can't make real purchases through WooCommerce Payments.", 'woocommerce-payments' ); ?>
+				</p>
+			</div>
+			<?php
+		}
+	}
+
+	/**
+	 * Add notice explaining that the selected currency is not available.
+	 */
+	public function display_not_supported_currency_notice() {
+		if ( ! $this->is_available_for_current_currency() ) {
+			?>
+			<div id="wcpay-unsupported-currency-notice" class="notice notice-warning">
+				<p>
+					<b>
+						<?php esc_html_e( 'Unsupported currency:', 'woocommerce-payments' ); ?>
+						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
+					</b>
+					<?php esc_html_e( 'The selected currency is not available for the country set in your WooCommerce Payments account.', 'woocommerce-payments' ); ?>
 				</p>
 			</div>
 			<?php
