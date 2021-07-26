@@ -27,5 +27,6 @@ class Sofort_Payment_Method extends UPE_Payment_Method {
 		$this->title       = 'Sofort';
 		$this->short_title = 'Sofort';
 		$this->is_reusable = false;
+		$this->currencies  = [ 'EUR' ];
 	}
 }

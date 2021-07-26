@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Button,
@@ -12,10 +12,9 @@ import {
 	CardDivider,
 	CardHeader,
 	DropdownMenu,
-	Notice,
 	ExternalLink,
 } from '@wordpress/components';
-import { moreVertical, trash } from '@wordpress/icons';
+import { moreVertical } from '@wordpress/icons';
 import classNames from 'classnames';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -30,6 +29,12 @@ import {
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
 import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
+
+// Survey modal imports.
+import WcPaySurveyContextProvider from '../settings/survey-modal/provider';
+import SurveyModal from '../settings/survey-modal';
+import DisableUPEModal from '../settings/disable-upe-modal';
+
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
@@ -37,8 +42,7 @@ import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
 
-function PaymentMethodsDropdownMenu() {
-	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
+const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
 		<DropdownMenu
 			icon={ moreVertical }
@@ -46,27 +50,14 @@ function PaymentMethodsDropdownMenu() {
 			controls={ [
 				{
 					title: __( 'Provide Feedback', 'woocommerce-payments' ),
-					icon: 'megaphone',
-					onClick: () => console.log( 'Provide Feedback' ),
+					onClick: () => setOpenModal( 'survey' ),
 				},
 				{
 					title: 'Disable',
-					icon: trash,
-					onClick: () => setIsUpeEnabled( false ),
+					onClick: () => setOpenModal( 'disable' ),
 				},
 			] }
 		/>
-	);
-}
-
-const UpeDisableError = () => {
-	return (
-		<Notice status="error" isDismissible={ true }>
-			{ __(
-				'Error disabling payment methods. Please try again.',
-				'woocommerce-payments'
-			) }
-		</Notice>
 	);
 };
 
@@ -145,10 +136,28 @@ const PaymentMethods = () => {
 	} = useContext( WCPaySettingsContext );
 
 	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
+	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
 
 	return (
 		<>
-			{ 'error' === status && <UpeDisableError /> }
+			{ 'disable' === openModalIdentifier ? (
+				<DisableUPEModal
+					setOpenModal={ setOpenModalIdentifier }
+					triggerAfterDisable={ () =>
+						setOpenModalIdentifier( 'survey' )
+					}
+				/>
+			) : null }
+			{ 'survey' === openModalIdentifier ? (
+				<WcPaySurveyContextProvider>
+					<SurveyModal
+						setOpenModal={ setOpenModalIdentifier }
+						surveyKey="wcpay-upe-disable-early-access"
+						surveyQuestion="why-disable"
+					/>
+				</WcPaySurveyContextProvider>
+			) : null }
+
 			<Card
 				className={ classNames( 'payment-methods', {
 					'is-loading': 'pending' === status,
@@ -157,12 +166,19 @@ const PaymentMethods = () => {
 				{ isUpeEnabled && (
 					<CardHeader className="payment-methods__header">
 						<h4 className="payment-methods__heading">
-							Payment methods{ ' ' }
+							<span>
+								{ __(
+									'Payment methods',
+									'woocommerce-payments'
+								) }
+							</span>{ ' ' }
 							<Pill>
 								{ __( 'Early access', 'woocommerce-payments' ) }
 							</Pill>
 						</h4>
-						<PaymentMethodsDropdownMenu />
+						<PaymentMethodsDropdownMenu
+							setOpenModal={ setOpenModalIdentifier }
+						/>
 					</CardHeader>
 				) }
 

@@ -25,6 +25,7 @@ class CC_Payment_Method extends UPE_Payment_Method {
 		$this->title       = 'Credit card / debit card';
 		$this->short_title = 'Card';
 		$this->is_reusable = true;
+		$this->currencies  = [];// All currencies are supported.
 	}
 
 	/**
