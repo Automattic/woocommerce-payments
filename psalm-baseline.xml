@@ -10,6 +10,87 @@
   <file src="includes/class-wc-payments.php">
     <UndefinedClass occurrences="1"/>
   </file>
+  <file src="includes/compat/subscriptions/class-wc-payments-email-failed-authentication-retry.php">
+    <UndefinedClass occurrences="1">
+      <code>WCS_Retry_Manager</code>
+    </UndefinedClass>
+  </file>
+  <file src="includes/compat/subscriptions/class-wc-payments-email-failed-renewal-authentication.php">
+    <UndefinedFunction occurrences="2">
+      <code>wcs_get_objects_property( $this-&gt;object, 'id' )</code>
+      <code>wcs_get_objects_property( $this-&gt;object, 'id' )</code>
+    </UndefinedFunction>
+  </file>
+  <file src="includes/compat/subscriptions/emails/failed-renewal-authentication-requested.php">
+    <UndefinedFunction occurrences="1">
+      <code>wcs_get_human_time_diff( $retry-&gt;get_time() )</code>
+    </UndefinedFunction>
+    <UndefinedGlobalVariable occurrences="18">
+      <code>$email</code>
+      <code>$email</code>
+      <code>$email</code>
+      <code>$email</code>
+      <code>$email</code>
+      <code>$email_heading</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$plain_text</code>
+      <code>$plain_text</code>
+      <code>$plain_text</code>
+      <code>$retry</code>
+      <code>$sent_to_admin</code>
+      <code>$sent_to_admin</code>
+      <code>$sent_to_admin</code>
+    </UndefinedGlobalVariable>
+  </file>
+  <file src="includes/compat/subscriptions/emails/failed-renewal-authentication.php">
+    <UndefinedGlobalVariable occurrences="8">
+      <code>$authorization_url</code>
+      <code>$email</code>
+      <code>$email</code>
+      <code>$email</code>
+      <code>$email_heading</code>
+      <code>$order</code>
+      <code>$plain_text</code>
+      <code>$sent_to_admin</code>
+    </UndefinedGlobalVariable>
+  </file>
+  <file src="includes/compat/subscriptions/emails/plain/failed-renewal-authentication-requested.php">
+    <UndefinedFunction occurrences="1">
+      <code>wcs_get_human_time_diff( $retry-&gt;get_time() )</code>
+    </UndefinedFunction>
+    <UndefinedGlobalVariable occurrences="16">
+      <code>$email</code>
+      <code>$email</code>
+      <code>$email</code>
+      <code>$email_heading</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$plain_text</code>
+      <code>$plain_text</code>
+      <code>$plain_text</code>
+      <code>$retry</code>
+      <code>$sent_to_admin</code>
+      <code>$sent_to_admin</code>
+      <code>$sent_to_admin</code>
+    </UndefinedGlobalVariable>
+  </file>
+  <file src="includes/compat/subscriptions/emails/plain/failed-renewal-authentication.php">
+    <UndefinedGlobalVariable occurrences="6">
+      <code>$authorization_url</code>
+      <code>$email</code>
+      <code>$email_heading</code>
+      <code>$order</code>
+      <code>$plain_text</code>
+      <code>$sent_to_admin</code>
+    </UndefinedGlobalVariable>
+  </file>
   <file src="includes/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php">
     <UndefinedClass occurrences="1">
       <code>WC_Subscriptions</code>
@@ -31,8 +112,8 @@
     </UndefinedFunction>
   </file>
   <file src="includes/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php">
-    <UndefinedClass occurrences="3">
-      <code>WC_Subscriptions</code>
+    <UndefinedClass occurrences="2">
+      <code>WC_Subscriptions_Cart</code>
       <code>WC_Subscriptions_Cart</code>
     </UndefinedClass>
     <UndefinedFunction occurrences="1">

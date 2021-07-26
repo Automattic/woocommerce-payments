@@ -1,8 +1,9 @@
 /** @format */
+
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Button,
@@ -11,10 +12,11 @@ import {
 	CardDivider,
 	CardHeader,
 	DropdownMenu,
-	Notice,
+	ExternalLink,
 } from '@wordpress/components';
-import { moreVertical, trash } from '@wordpress/icons';
+import { moreVertical } from '@wordpress/icons';
 import classNames from 'classnames';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -27,31 +29,20 @@ import {
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
 import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
+
+// Survey modal imports.
+import WcPaySurveyContextProvider from '../settings/survey-modal/provider';
+import SurveyModal from '../settings/survey-modal';
+import DisableUPEModal from '../settings/disable-upe-modal';
+
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
+import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
 
-// @todo - remove once #2174 is merged and use real banner instead.
-function UpeSetupBanner() {
-	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
-	return (
-		<>
-			<p>UPE IS DISABLED!!!</p>
-			<Button
-				label="Enable UPE"
-				isPrimary
-				onClick={ () => setIsUpeEnabled( true ) }
-			>
-				{ __( 'Enable UPE', 'woocommerce-payments' ) }
-			</Button>
-		</>
-	);
-}
-
-function PaymentMethodsDropdownMenu() {
-	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
+const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
 		<DropdownMenu
 			icon={ moreVertical }
@@ -59,27 +50,63 @@ function PaymentMethodsDropdownMenu() {
 			controls={ [
 				{
 					title: __( 'Provide Feedback', 'woocommerce-payments' ),
-					icon: 'megaphone',
-					onClick: () => console.log( 'Provide Feedback' ),
+					onClick: () => setOpenModal( 'survey' ),
 				},
 				{
 					title: 'Disable',
-					icon: trash,
-					onClick: () => setIsUpeEnabled( false ),
+					onClick: () => setOpenModal( 'disable' ),
 				},
 			] }
 		/>
 	);
-}
+};
 
-const UpeDisableError = () => {
+const UpeSetupBanner = () => {
+	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
+
+	const handleEnableUpeClick = () => {
+		setIsUpeEnabled( true ).then( () => {
+			window.location.href = addQueryArgs( 'admin.php', {
+				page: 'wc-admin',
+				task: 'woocommerce-payments--additional-payment-methods',
+			} );
+		} );
+	};
+
 	return (
-		<Notice status="error" isDismissible={ true }>
-			{ __(
-				'Error disabling payment methods. Please try again.',
-				'woocommerce-payments'
-			) }
-		</Notice>
+		<>
+			<CardDivider />
+			<CardBody className="payment-methods__express-checkouts">
+				<Pill>{ __( 'Early access', 'woocommerce-payments' ) }</Pill>
+				<h3>
+					{ __(
+						'Enable the new WooCommerce Payments checkout experience',
+						'woocommerce-payments'
+					) }
+				</h3>
+				<p>
+					{ __(
+						/* eslint-disable-next-line max-len */
+						'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.',
+						'woocommerce-payments'
+					) }
+				</p>
+
+				<div className="payment-methods__express-checkouts-actions">
+					<span className="payment-methods__express-checkouts-get-started">
+						<Button isPrimary onClick={ handleEnableUpeClick }>
+							{ __(
+								'Enable in your store',
+								'woocommerce-payments'
+							) }
+						</Button>
+					</span>
+					<ExternalLink href="https://docs.woocommerce.com/document/payments/">
+						{ __( 'Learn more', 'woocommerce-payments' ) }
+					</ExternalLink>
+				</div>
+			</CardBody>
+		</>
 	);
 };
 
@@ -104,11 +131,34 @@ const PaymentMethods = () => {
 		);
 	};
 
+	const {
+		featureFlags: { upeSettingsPreview: isUpeSettingsPreviewEnabled },
+	} = useContext( WCPaySettingsContext );
+
 	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
+	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
 
 	return (
 		<>
-			{ 'error' === status && <UpeDisableError /> }
+			{ 'disable' === openModalIdentifier ? (
+				<DisableUPEModal
+					enabledMethods={ enabledMethods }
+					setOpenModal={ setOpenModalIdentifier }
+					triggerAfterDisable={ () =>
+						setOpenModalIdentifier( 'survey' )
+					}
+				/>
+			) : null }
+			{ 'survey' === openModalIdentifier ? (
+				<WcPaySurveyContextProvider>
+					<SurveyModal
+						setOpenModal={ setOpenModalIdentifier }
+						surveyKey="wcpay-upe-disable-early-access"
+						surveyQuestion="why-disable"
+					/>
+				</WcPaySurveyContextProvider>
+			) : null }
+
 			<Card
 				className={ classNames( 'payment-methods', {
 					'is-loading': 'pending' === status,
@@ -117,11 +167,22 @@ const PaymentMethods = () => {
 				{ isUpeEnabled && (
 					<CardHeader className="payment-methods__header">
 						<h4 className="payment-methods__heading">
-							Payment methods <Pill>Early access</Pill>
+							<span>
+								{ __(
+									'Payment methods',
+									'woocommerce-payments'
+								) }
+							</span>{ ' ' }
+							<Pill>
+								{ __( 'Early access', 'woocommerce-payments' ) }
+							</Pill>
 						</h4>
-						<PaymentMethodsDropdownMenu />
+						<PaymentMethodsDropdownMenu
+							setOpenModal={ setOpenModalIdentifier }
+						/>
 					</CardHeader>
 				) }
+
 				<CardBody size={ null }>
 					<PaymentMethodsList className="payment-methods__enabled-methods">
 						{ enabledMethods.map(
@@ -142,14 +203,10 @@ const PaymentMethods = () => {
 						) }
 					</PaymentMethodsList>
 				</CardBody>
-				{ ! isUpeEnabled && (
-					<>
-						<CardDivider />
-						<CardBody>
-							<UpeSetupBanner />
-						</CardBody>
-					</>
+				{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
+					<UpeSetupBanner />
 				) }
+
 				{ isUpeEnabled && 1 < availablePaymentMethodIds.length ? (
 					<>
 						<CardDivider />

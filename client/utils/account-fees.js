@@ -18,13 +18,25 @@ export const getCurrentFee = ( accountFees ) => {
 		: accountFees.base;
 };
 
-export const formatAccountFeesDescription = ( accountFees ) => {
+export const formatAccountFeesDescription = (
+	accountFees,
+	customFormats = {}
+) => {
 	const baseFee = accountFees.base;
 	const currentFee = getCurrentFee( accountFees );
 
-	let feeDescription = sprintf(
+	// Default formats will be used if no matching field was passed in the `formats` parameter.
+	const formats = {
 		/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
-		__( '%1$f%% + %2$s per transaction', 'woocommerce-payments' ),
+		fee: __( '%1$f%% + %2$s per transaction', 'woocommerce-payments' ),
+		/* translators: %f percentage discount to apply */
+		discount: __( '(%f%% discount)', 'woocommerce-payments' ),
+		displayBaseFeeIfDifferent: true,
+		...customFormats,
+	};
+
+	let feeDescription = sprintf(
+		formats.fee,
 		formatFee( baseFee.percentage_rate ),
 		formatCurrency( baseFee.fixed_rate, baseFee.currency )
 	);
@@ -43,31 +55,47 @@ export const formatAccountFeesDescription = ( accountFees ) => {
 			fixed = currentFee.fixed_rate;
 		}
 
-		let descriptionString = sprintf(
-			/* translators: %1 Base fee (that don't apply to this account at this moment), %2 and %3: Current fee (e.g: 2.9% + $.30) */
-			__(
-				'<s>%1$s</s> %2$f%% + %3$s per transaction',
-				'woocommerce-payments'
-			),
-			feeDescription,
+		let currentFeeDescription = sprintf(
+			formats.fee,
 			formatFee( percentage ),
 			formatCurrency( fixed, baseFee.currency )
 		);
 
-		if ( currentFee.discount ) {
-			descriptionString +=
-				' ' +
-				sprintf(
-					/* translators: %f percentage discount to apply */
-					__( '(%f%% discount)', 'woocommerce-payments' ),
-					formatFee( currentFee.discount )
-				);
+		if ( formats.displayBaseFeeIfDifferent ) {
+			currentFeeDescription = sprintf(
+				// eslint-disable-next-line max-len
+				/* translators: %1 Base fee (that don't apply to this account at this moment), %2: Current fee (e.g: "2.9% + $.30 per transaction") */
+				__( '<s>%1$s</s> %2$s', 'woocommerce-payments' ),
+				feeDescription,
+				currentFeeDescription
+			);
 		}
 
-		feeDescription = createInterpolateElement( descriptionString, {
+		if ( currentFee.discount && 0 < formats.discount.length ) {
+			currentFeeDescription +=
+				' ' +
+				sprintf( formats.discount, formatFee( currentFee.discount ) );
+		}
+
+		feeDescription = createInterpolateElement( currentFeeDescription, {
 			s: <s />,
 		} );
 	}
 
 	return feeDescription;
+};
+
+export const formatMethodFeesDescription = ( methodFees ) => {
+	if ( ! methodFees ) {
+		return __( 'missing fees', 'woocommerce-payments' );
+	}
+
+	/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
+	const format = __( '%1$f%% + %2$s', 'woocommerce-payments' );
+
+	return formatAccountFeesDescription( methodFees, {
+		fee: format,
+		discount: '',
+		displayBaseFeeIfDifferent: false,
+	} );
 };
