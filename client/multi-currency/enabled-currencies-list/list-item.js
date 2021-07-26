@@ -51,8 +51,7 @@ const EnabledCurrenciesListItem = ( {
 				</div>
 				<div className="enabled-currency__label">{ name }</div>
 				<div className="enabled-currency__code">
-					({ symbol }
-					{ symbol !== code && ' ' + code })
+					({ symbol + ( symbol === code ? '' : ` ${ code }` ) })
 				</div>
 			</div>
 			<div className="enabled-currency__rate">
