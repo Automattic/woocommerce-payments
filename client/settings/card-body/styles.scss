@@ -28,14 +28,15 @@
 	// spacing adjustment on "Express checkouts > Show express checkouts on" list
 	ul > li:last-child {
 		margin-bottom: 0;
-	}
 
-	.components-radio-control__option {
-		margin-bottom: 8px;
-
-		&:last-child {
+		.components-base-control__field {
 			margin-bottom: 0;
 		}
+	}
+
+	// spacing in the "Express checkouts" settings page
+	.components-radio-control__option {
+		margin-bottom: 8px;
 	}
 
 	.components-base-control__help {
