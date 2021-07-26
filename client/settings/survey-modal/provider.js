@@ -10,41 +10,33 @@ import apiFetch from '@wordpress/api-fetch';
 import WcPaySurveyContext from './context';
 import { NAMESPACE } from '../../data/constants';
 
-// @todo - prepare data from form and pass to data in POST method.
-
 const WcPaySurveyContextProvider = ( { children } ) => {
-	const [ isSurveySubmitted, setSurveySubmitted ] = useState(
-		Boolean( false )
-	);
+	const [ isSurveySubmitted, setSurveySubmitted ] = useState( false );
 	const [ status, setStatus ] = useState( 'resolved' );
 	const [ surveyAnswers, setSurveyAnswers ] = useState( {} );
 
-	const submitSurvey = useCallback(
-		( value ) => {
-			setStatus( 'pending' );
-			// map answers data to fit to API, where key string is the question and comments is just a string.
+	const submitSurvey = useCallback( () => {
+		setStatus( 'pending' );
+		// map answers data to fit to API, where key string is the question and comments is just a string.
 
-			return apiFetch( {
-				path: `${ NAMESPACE }/upe_survey`,
-				method: 'POST',
-				// eslint-disable-next-line camelcase
-				data: value,
+		return apiFetch( {
+			path: `${ NAMESPACE }/upe_survey`,
+			method: 'POST',
+			data: surveyAnswers,
+		} )
+			.then( () => {
+				setSurveySubmitted( true );
+				setStatus( 'resolved' );
 			} )
-				.then( () => {
-					setSurveySubmitted( Boolean( true ) );
-					setStatus( 'resolved' );
-				} )
-				.catch( () => {
-					setStatus( 'error' );
-					setSurveySubmitted( Boolean( false ) );
-				} );
-		},
-		[ setStatus, setSurveySubmitted ]
-	);
+			.catch( () => {
+				setStatus( 'error' );
+				setSurveySubmitted( false );
+			} );
+	}, [ setStatus, setSurveySubmitted, surveyAnswers ] );
 
 	const contextValue = useMemo(
 		() => ( {
-			setSurveySubmitted: submitSurvey,
+			submitSurvey,
 			status,
 			isSurveySubmitted,
 			surveyAnswers,
