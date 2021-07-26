@@ -104,6 +104,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Disabled Payment Request Buttons when order has to be split into multiple packages because Payment Requests do not support that use case.
 * Fix - Fee discounts should use the discount currency rather than the base fee currency.
 * Add - Allow the customer to perform SCA authentication on Subscription renewals.
+* Update - Actualized supported countries list for onboarding.
 * Fix - Improved errors handling during onboarding and page overview.
 
 = 2.7.0 - 2021-07-14 =
