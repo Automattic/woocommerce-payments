@@ -2,9 +2,8 @@
 /**
  * External dependencies
  */
-import { React, useState, useEffect } from 'react';
+import { React, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Notice } from '@wordpress/components';
 import {
 	PaymentRequestButtonElement,
 	useStripe,
@@ -21,11 +20,10 @@ import {
 
 const PaymentRequestDemoButton = ( props ) => {
 	const stripe = useStripe();
-	const [ isLoading, setIsLoading ] = useState( true );
 	const [ buttonType ] = usePaymentRequestButtonType();
 	const [ size ] = usePaymentRequestButtonSize();
 	const [ theme ] = usePaymentRequestButtonTheme();
-	const { paymentRequest, setPaymentRequest } = props;
+	const { paymentRequest, setPaymentRequest, setIsLoading } = props;
 
 	// Since this is preview, we don't want the user to open up the browser's payment popup.
 	const disablePaymentAction = ( e ) => {
@@ -66,11 +64,7 @@ const PaymentRequestDemoButton = ( props ) => {
 			}
 			setIsLoading( false );
 		} );
-	}, [ stripe, setPaymentRequest ] );
-
-	if ( isLoading ) {
-		return null;
-	}
+	}, [ stripe, setPaymentRequest, setIsLoading ] );
 
 	if ( paymentRequest ) {
 		return (
@@ -90,13 +84,7 @@ const PaymentRequestDemoButton = ( props ) => {
 		);
 	}
 
-	return (
-		<Notice status="info" isDismissible={ false }>
-			To preview the buttons, ensure your device is configured to accept
-			Apple Pay, or Google Pay, and view this page using the Safari or
-			Chrome browsers.
-		</Notice>
-	);
+	return null;
 };
 
 export default PaymentRequestDemoButton;

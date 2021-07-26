@@ -7,6 +7,7 @@ import { React, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import { Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -31,6 +32,7 @@ const stripePromise = loadStripe( stripeSettings.publishableKey, {
 
 const PaymentRequestButtonPreview = () => {
 	const [ paymentRequest, setPaymentRequest ] = useState( null );
+	const [ isLoading, setIsLoading ] = useState( true );
 
 	let browser = 'Google Chrome';
 	let paymentMethodName = 'Google Pay';
@@ -50,20 +52,39 @@ const PaymentRequestButtonPreview = () => {
 		browser
 	);
 
+	let preview;
+	if ( ! isLoading && ! paymentRequest ) {
+		preview = (
+			<Notice status="info" isDismissible={ false }>
+				To preview the buttons, ensure your device is configured to
+				accept Apple Pay, or Google Pay, and view this page using the
+				Safari or Chrome browsers.
+			</Notice>
+		);
+	} else {
+		preview = (
+			<>
+				<div className="payment-method-settings__preview">
+					<Elements stripe={ stripePromise }>
+						<PaymentRequestDemoButton
+							paymentRequest={ paymentRequest }
+							setPaymentRequest={ setPaymentRequest }
+							isLoading={ isLoading }
+							setIsLoading={ setIsLoading }
+						/>
+					</Elements>
+				</div>
+				<p className="payment-method-settings__preview-help-text">
+					{ requestButtonHelpText }
+				</p>
+			</>
+		);
+	}
+
 	return (
 		<>
 			<p>{ __( 'Preview', 'woocommerce-payments' ) }</p>
-			<div className="payment-method-settings__preview">
-				<Elements stripe={ stripePromise }>
-					<PaymentRequestDemoButton
-						paymentRequest={ paymentRequest }
-						setPaymentRequest={ setPaymentRequest }
-					/>
-				</Elements>
-			</div>
-			<p className="payment-method-settings__preview-help-text">
-				{ requestButtonHelpText }
-			</p>
+			{ preview }
 		</>
 	);
 };
