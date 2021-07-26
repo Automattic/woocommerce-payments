@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 2.7.1 - 2021-xx-xx =
+= 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.
 * Fix - Onboarding redirection occasionally not finalizing account connection.
 
