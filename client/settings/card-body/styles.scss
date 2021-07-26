@@ -6,21 +6,28 @@
 		}
 	}
 
-	> :first-child {
+	> * {
 		margin-top: 0;
-	}
+		margin-bottom: 1em;
 
-	> :last-child {
-		margin-bottom: 0;
-
-		> .components-base-control__help {
+		// fixing the spacing on the inputs and their help text, to ensure it is consistent
+		&:last-child {
 			margin-bottom: 0;
+
+			> :last-child {
+				margin-bottom: 0;
+			}
 		}
 	}
 
 	input,
 	select {
 		margin: 0;
+	}
+
+	// spacing adjustment on "Express checkouts > Show express checkouts on" list
+	ul > li:last-child {
+		margin-bottom: 0;
 	}
 
 	.components-radio-control__option {
