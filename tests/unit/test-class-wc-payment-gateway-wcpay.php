@@ -1458,6 +1458,16 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertTrue( $this->wcpay_gateway->is_available_for_current_currency() );
 	}
 
+	public function test_payment_gateway_enabled_for_empty_supported_currency_list() {
+		// We want to avoid disabling the gateway in case the API doesn't give back any currency suppported.
+		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_presentment_currencies' )->will(
+			$this->returnValue(
+				[]
+			)
+		);
+		$this->assertTrue( $this->wcpay_gateway->is_available_for_current_currency() );
+	}
+
 	public function test_payment_gateway_disabled_for_unsupported_currency() {
 		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_presentment_currencies' )->will(
 			$this->returnValue(
