@@ -17,18 +17,22 @@ const paymentMethods = {
 	card: {
 		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
 		Icon: CreditCardIcon,
+		hasBorder: false,
 	},
 	giropay: {
 		label: __( 'GiroPay', 'woocommerce-payments' ),
 		Icon: GiropayIcon,
+		hasBorder: true,
 	},
 	sepa_debit: {
 		label: __( 'Direct Debit Payments', 'woocommerce-payments' ),
 		Icon: SepaIcon,
+		hasBorder: true,
 	},
 	sofort: {
 		label: __( 'Sofort', 'woocommerce-payments' ),
 		Icon: SofortIcon,
+		hasBorder: true,
 	},
 };
 
@@ -41,11 +45,14 @@ const PaymentMethodIcon = ( props ) => {
 		return <></>;
 	}
 
-	const { label, Icon } = paymentMethod;
+	const { label, Icon, hasBorder } = paymentMethod;
+	const iconBorderClassName = hasBorder
+		? 'woocommerce-payments__payment-method-has-icon-border'
+		: '';
 
 	return (
 		<span className="woocommerce-payments__payment-method-icon">
-			<span className="woocommerce-payments__payment-method-has-icon-border">
+			<span className={ iconBorderClassName }>
 				<Icon />
 			</span>
 			{ showName && (
