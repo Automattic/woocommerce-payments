@@ -607,9 +607,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="enabled-currency__code"
             >
               (
-              $
-               
-              USD
+              $ USD
               )
             </div>
           </div>
@@ -642,9 +640,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="enabled-currency__code"
             >
               (
-              $
-               
-              CAD
+              $ CAD
               )
             </div>
           </div>
@@ -694,9 +690,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="enabled-currency__code"
             >
               (
-              £
-               
-              GBP
+              £ GBP
               )
             </div>
           </div>
@@ -746,9 +740,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="enabled-currency__code"
             >
               (
-              €
-               
-              EUR
+              € EUR
               )
             </div>
           </div>
