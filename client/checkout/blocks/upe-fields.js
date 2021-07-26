@@ -33,6 +33,7 @@ const WCPayUPEFields = ( {
 	const [ clientSecret, setClientSecret ] = useState( null );
 	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
 	const [ isUPEComplete, setIsUPEComplete ] = useState( false );
+	const [ errorMessage, setErrorMessage ] = useState( null );
 	const [ selectedUPEPaymentType, setSelectedUPEPaymentType ] = useState(
 		''
 	);
@@ -53,14 +54,21 @@ const WCPayUPEFields = ( {
 		}
 
 		async function createIntent() {
-			const response = await api.createIntent();
-			setPaymentIntentId( response.id );
-			setClientSecret( response.client_secret );
+			try {
+				const response = await api.createIntent();
+				setPaymentIntentId( response.id );
+				setClientSecret( response.client_secret );
+			} catch ( error ) {
+				setErrorMessage(
+					error.message
+						? error.message
+						: 'There was an error loading the payment gateway.'
+				);
+			}
 		}
 		setHasRequestedIntent( true );
-
 		createIntent();
-	}, [ paymentIntentId, hasRequestedIntent, api ] );
+	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage ] );
 
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
@@ -74,6 +82,13 @@ const WCPayUPEFields = ( {
 					return {
 						type: 'error',
 						message: 'Your payment information is incomplete.',
+					};
+				}
+
+				if ( errorMessage ) {
+					return {
+						type: 'error',
+						message: errorMessage,
 					};
 				}
 
@@ -125,7 +140,7 @@ const WCPayUPEFields = ( {
 						);
 					}
 
-					updateIntent();
+					return updateIntent();
 				}
 			),
 		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
@@ -165,6 +180,10 @@ const WCPayUPEFields = ( {
 			},
 		},
 	};
+
+	if ( null !== errorMessage ) {
+		return <p>{ errorMessage }</p>;
+	}
 
 	if ( ! clientSecret ) {
 		return null;
