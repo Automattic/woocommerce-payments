@@ -36,6 +36,15 @@
 
 	&__title {
 		padding: 0 16px;
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+
+		> * {
+			&:not( :last-child ) {
+				margin-right: 4px;
+			}
+		}
 	}
 
 	&__icon-wrapper {
@@ -98,6 +107,11 @@
 
 		&.is-muted-color {
 			color: $gray-700;
+		}
+
+		.components-external-link svg {
+			width: 1em;
+			height: 1em;
 		}
 	}
 }

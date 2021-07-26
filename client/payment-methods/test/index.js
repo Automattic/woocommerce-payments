@@ -181,10 +181,17 @@ describe( 'PaymentMethods', () => {
 		const featureFlagContext = {
 			featureFlags: { upeSettingsPreview: true, upe: false },
 		};
+		const upeContext = {
+			isUpeEnabled: false,
+			setIsUpeEnabled: () => null,
+			status: 'resolved',
+		};
 
 		render(
 			<WCPaySettingsContext.Provider value={ featureFlagContext }>
-				<PaymentMethods />
+				<WcPayUpeContext.Provider value={ upeContext }>
+					<PaymentMethods />
+				</WcPayUpeContext.Provider>
 			</WCPaySettingsContext.Provider>
 		);
 
@@ -205,10 +212,17 @@ describe( 'PaymentMethods', () => {
 			const featureFlagContext = {
 				featureFlags: { upeSettingsPreview, upe },
 			};
+			const upeContext = {
+				isUpeEnabled: upe,
+				setIsUpeEnabled: () => null,
+				status: 'resolved',
+			};
 
 			render(
 				<WCPaySettingsContext.Provider value={ featureFlagContext }>
-					<PaymentMethods />
+					<WcPayUpeContext.Provider value={ upeContext }>
+						<PaymentMethods />
+					</WcPayUpeContext.Provider>
 				</WCPaySettingsContext.Provider>
 			);
 
@@ -231,9 +245,9 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		expect( disableUPEButton ).toBeInTheDocument();
-		expect( screen.queryByText( 'Payment methods' ) ).toHaveTextContent(
-			'Payment methods Early access'
-		);
+		expect(
+			screen.queryByText( 'Payment methods' ).parentElement
+		).toHaveTextContent( 'Payment methods Early access' );
 	} );
 
 	test( 'Does not render the feedback elements when UPE is disabled', () => {

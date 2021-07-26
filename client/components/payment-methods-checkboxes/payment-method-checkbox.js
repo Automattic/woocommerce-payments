@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { CheckboxControl, Icon, VisuallyHidden } from '@wordpress/components';
 import { useCallback, useMemo } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
@@ -15,6 +15,8 @@ import Pill from '../pill';
 import Tooltip from '../tooltip';
 import paymentMethodsMap from '../../payment-methods-map';
 import './payment-method-checkbox.scss';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
+import { formatMethodFeesDescription } from '../../utils/account-fees';
 
 const PaymentMethodDescription = ( { name } ) => {
 	const description = paymentMethodsMap[ name ]?.description;
@@ -36,6 +38,8 @@ const PaymentMethodDescription = ( { name } ) => {
 };
 
 const PaymentMethodCheckbox = ( { onChange, name, checked = false, fees } ) => {
+	const { accountFees } = useContext( WCPaySettingsContext );
+
 	const handleChange = useCallback(
 		( enabled ) => {
 			onChange( name, enabled );
@@ -70,7 +74,9 @@ const PaymentMethodCheckbox = ( { onChange, name, checked = false, fees } ) => {
 						fees
 					) }
 				>
-					<span>{ fees }</span>
+					<span>
+						{ formatMethodFeesDescription( accountFees[ name ] ) }
+					</span>
 				</Pill>
 			</Tooltip>
 			<PaymentMethodDescription name={ name } />
