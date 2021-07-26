@@ -531,7 +531,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$mock_api_client->method( 'is_server_connected' )->willReturn( false );
 
-		$this->init_multi_currency();
+		$this->init_multi_currency( $mock_api_client );
 		$this->assertNull( $this->multi_currency->get_cached_currencies() );
 	}
 
@@ -657,8 +657,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		}
 	}
 
-	private function init_multi_currency() {
-		$this->multi_currency = new MultiCurrency( $this->mock_api_client, $this->mock_account, $this->mock_localization_service );
+	private function init_multi_currency( $mock_api_client = null ) {
+		$this->multi_currency = new MultiCurrency( $mock_api_client ?? $this->mock_api_client, $this->mock_account, $this->mock_localization_service );
 		$this->multi_currency->init();
 	}
 
