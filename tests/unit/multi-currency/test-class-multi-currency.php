@@ -609,9 +609,6 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertEquals( MultiCurrency::CURRENCY_RETRIEVAL_ERROR, $cached_data['currencies'] );
 	}
 
-	/**
-	 * @group underTest
-	 */
 	public function test_add_order_meta_on_refund_skips_default_currency() {
 		$order = wc_create_order();
 		$order->set_currency( 'USD' );

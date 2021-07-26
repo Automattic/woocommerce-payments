@@ -22,6 +22,8 @@ class Analytics {
 	const PRIORITY_LATEST  = 99999;
 	const SCRIPT_NAME      = 'WCPAY_MULTI_CURRENCY_ANALYTICS';
 
+	const SUPPORTED_CONTEXTS = [ 'orders', 'products', 'variations', 'categories', 'coupons', 'taxes' ];
+
 	/**
 	 * Instance of MultiCurrency.
 	 *
@@ -184,9 +186,11 @@ class Analytics {
 			$new_clauses[] = $clause;
 		}
 
-		$new_clauses[] = ', wcpay_multicurrency_currency_postmeta.meta_value AS order_currency';
-		$new_clauses[] = ', wcpay_multicurrency_default_currency_postmeta.meta_value AS order_default_currency';
-		$new_clauses[] = ', wcpay_multicurrency_exchange_rate_postmeta.meta_value AS exchange_rate';
+		if ( $this->is_supported_context( $context ) && ( in_array( $context_page, self::SUPPORTED_CONTEXTS, true ) || $this->is_order_stats_table_used_in_clauses( $clauses ) ) ) {
+			$new_clauses[] = ', wcpay_multicurrency_currency_postmeta.meta_value AS order_currency';
+			$new_clauses[] = ', wcpay_multicurrency_default_currency_postmeta.meta_value AS order_default_currency';
+			$new_clauses[] = ', wcpay_multicurrency_exchange_rate_postmeta.meta_value AS exchange_rate';
+		}
 
 		return $new_clauses;
 	}
@@ -202,15 +206,16 @@ class Analytics {
 	public function filter_join_clauses( array $clauses, $context ): array {
 		global $wpdb;
 
+		$context_parts = explode( '_', $context );
+		$context_page  = $context_parts[0] ?? 'generic';
+
 		$prefix               = 'wcpay_multicurrency_';
 		$currency_tbl         = $prefix . 'currency_postmeta';
 		$default_currency_tbl = $prefix . 'default_currency_postmeta';
 		$exchange_rate_tbl    = $prefix . 'exchange_rate_postmeta';
 
-		// If the context is 'products', we don't need to add these joins.
-		// We may also be able to just check if there is an existing clause which joins to the wc_order_stats table here,
-		// and only add these if there is - but this may cause issues in the order context?
-		if ( 'products' !== $context ) {
+		// If this is a suppotted context, add the joins. If this is an unsupported context, see if we can add the joins.
+		if ( $this->is_supported_context( $context ) && ( in_array( $context_page, self::SUPPORTED_CONTEXTS, true ) || $this->is_order_stats_table_used_in_clauses( $clauses ) ) ) {
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.post_id AND {$currency_tbl}.meta_key = '_order_currency'";
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.post_id AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$exchange_rate_tbl}.post_id AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
@@ -263,6 +268,45 @@ class Analytics {
 		return number_format( $amount * ( 1 / $exchange_rate ), $dp );
 	}
 
+	/**
+	 * Check whether the order stats table is referenced in the clauses, to work out whether
+	 * to add the JOIN columns for multi currency.
+	 *
+	 * @param array $clauses The array containing the clauses used.
+	 *
+	 * @return boolean Whether the order stats table is referenced.
+	 */
+	private function is_order_stats_table_used_in_clauses( array $clauses ): bool {
+		global $wpdb;
+
+		foreach ( $clauses as $clause ) {
+			if ( strpos( $clause, "{$wpdb->prefix}wc_order_stats" ) !== false ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * There are some queries which are made in the analytics which are actually sub-queries
+	 * which are used to join on an individual item/coupon/tax code. In these cases, rather than
+	 * the context being the expected format e.g. product_stats_total, it will simply be 'product'.
+	 * In these cases, we don't want to add the join columns or select them.
+	 *
+	 * @param string $context The context the query was made in.
+	 *
+	 * @return boolean
+	 */
+	private function is_supported_context( string $context ): bool {
+		$unsupported_contexts = [ 'products', 'coupons', 'taxes' ];
+
+		if ( in_array( $context, $unsupported_contexts, true ) ) {
+			return false;
+		}
+
+		return true;
+	}
 	/**
 	 * Set the SQL replacements variable.
 	 *

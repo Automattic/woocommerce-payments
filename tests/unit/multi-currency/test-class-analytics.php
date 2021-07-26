@@ -130,7 +130,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 				[ "{$wpdb->prefix}wc_order_stats.net_total, {$wpdb->prefix}wc_order_stats.total_sales, discount_amount, product_net_revenue, product_gross_revenue" ],
 				[ "{$wpdb->prefix}wc_order_stats.net_total, {$wpdb->prefix}wc_order_stats.total_sales, discount_amount, product_net_revenue, product_gross_revenue" ],
 			],
-			'products context should modify query'     => [
+			'products subquery context should modify query' => [
 				'products_subquery',
 				[
 					", MAX({$wpdb->prefix}wc_order_stats.date_created) AS datetime_anchor",
@@ -143,6 +143,11 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 					', wcpay_multicurrency_default_currency_postmeta.meta_value AS order_default_currency',
 					', wcpay_multicurrency_exchange_rate_postmeta.meta_value AS exchange_rate',
 				],
+			],
+			'coupons context should not modify query'  => [
+				'coupons',
+				[ 'RIGHT JOIN table1 on table1.x = table2.y' ],
+				[ 'RIGHT JOIN table1 on table1.x = table2.y' ],
 			],
 		];
 	}
@@ -158,20 +163,24 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 		global $wpdb;
 
 		return [
-			'adds to empty clauses array'     => [
+			'does not add to empty clauses array' => [
 				[],
+				[],
+			],
+			'does not add to non-empty clauses array if stats table is not mentioned' => [
 				[
-					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_currency_postmeta.post_id AND wcpay_multicurrency_currency_postmeta.meta_key = '_order_currency'",
-					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_default_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_default_currency_postmeta.post_id AND wcpay_multicurrency_default_currency_postmeta.meta_key = '_wcpay_multi_currency_order_default_currency'",
-					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_exchange_rate_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_exchange_rate_postmeta.post_id AND wcpay_multicurrency_exchange_rate_postmeta.meta_key = '_wcpay_multi_currency_order_exchange_rate'",
+					'JOIN my_custom_table ON field1 = field2',
+				],
+				[
+					'JOIN my_custom_table ON field1 = field2',
 				],
 			],
-			'adds to non-empty clauses array' => [
+			'adds to clauses array if stats table is mentioned' => [
 				[
-					'JOIN my_custom_table ON field1 = field2',
+					"LEFT JOIN {$wpdb->prefix}wc_order_stats ON table1.order_id = {$wpdb->prefix}wc_order_stats.order_id",
 				],
 				[
-					'JOIN my_custom_table ON field1 = field2',
+					"LEFT JOIN {$wpdb->prefix}wc_order_stats ON table1.order_id = {$wpdb->prefix}wc_order_stats.order_id",
 					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_currency_postmeta.post_id AND wcpay_multicurrency_currency_postmeta.meta_key = '_order_currency'",
 					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_default_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_default_currency_postmeta.post_id AND wcpay_multicurrency_default_currency_postmeta.meta_key = '_wcpay_multi_currency_order_default_currency'",
 					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_exchange_rate_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_exchange_rate_postmeta.post_id AND wcpay_multicurrency_exchange_rate_postmeta.meta_key = '_wcpay_multi_currency_order_exchange_rate'",

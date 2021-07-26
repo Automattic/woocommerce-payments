@@ -18,51 +18,42 @@ addFilter(
 		if (
 			! tableData.items ||
 			! tableData.items.data ||
-			! tableData.items.data.length
+			! tableData.items.data.length ||
+			! 'orders' === tableData.endpoint
 		) {
 			return tableData;
 		}
 
-		const addCurrencyColumn = 'orders' === tableData.endpoint;
-
-		if ( addCurrencyColumn ) {
-			const updatedHeaders = [
-				{
-					isNumeric: false,
-					isSortable: true,
-					key: 'customer_currency',
-					label: __( 'Customer Currency', 'woocommerce-payments' ),
-					required: false,
-					screenReaderLabel: __(
-						'Customer Currency',
-						'woocommerce-payments'
-					),
-				},
-				...tableData.headers,
-			];
-
-			tableData.headers = updatedHeaders;
-		}
+		const updatedHeaders = [
+			{
+				isNumeric: false,
+				isSortable: true,
+				key: 'customer_currency',
+				label: __( 'Customer Currency', 'woocommerce-payments' ),
+				required: false,
+				screenReaderLabel: __(
+					'Customer Currency',
+					'woocommerce-payments'
+				),
+			},
+			...tableData.headers,
+		];
 
 		const updatedRows = tableData.rows.map( ( rows, index ) => {
 			const item = tableData.items.data[ index ];
+			const currency = item.order_currency;
 
-			if ( addCurrencyColumn ) {
-				const currency = item.order_currency;
-
-				return [
-					{
-						display: currency,
-						value: currency,
-					},
-					...rows,
-				];
-			}
-
-			return [ ...rows ];
+			return [
+				{
+					display: currency,
+					value: currency,
+				},
+				...rows,
+			];
 		} );
 
 		tableData.rows = updatedRows;
+		tableData.headers = updatedHeaders;
 
 		return tableData;
 	}
