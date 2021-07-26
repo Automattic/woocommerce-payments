@@ -1,10 +1,21 @@
 .wcpay-card-body {
+	&.is-size-medium {
+		// increasing the specificity of the styles to override the Gutenberg ones
+		&#{&} {
+			padding: $grid-unit-30;
+		}
+	}
+
 	> :first-child {
 		margin-top: 0;
 	}
 
 	> :last-child {
 		margin-bottom: 0;
+
+		> .components-base-control__help {
+			margin-bottom: 0;
+		}
 	}
 
 	input,
@@ -14,6 +25,10 @@
 
 	.components-radio-control__option {
 		margin-bottom: 8px;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
 	}
 
 	.components-base-control__help {
