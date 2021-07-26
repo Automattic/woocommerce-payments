@@ -20,12 +20,13 @@
 		}
 	}
 
-	.payment-method.has-icon-border {
-		padding: 16px 24px 14px 24px;
-		box-shadow: none;
+	.deactivating-payment-methods-list {
+		min-height: 150px;
 
-		.payment-method__icon {
-			box-shadow: none;
+		> * {
+			&:not( :last-child ) {
+				margin-bottom: $grid-unit-10;
+			}
 		}
 	}
 }
