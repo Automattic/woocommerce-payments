@@ -29,8 +29,7 @@ const stripePromise = loadStripe( stripeSettings.publishableKey, {
 	locale: stripeSettings.locale,
 } );
 
-const PaymentRequestButtonPreview = ( props ) => {
-	const { buttonType, size, theme } = props;
+const PaymentRequestButtonPreview = () => {
 	let browser = 'Google Chrome';
 	let paymentMethodName = 'Google Pay';
 
@@ -38,16 +37,6 @@ const PaymentRequestButtonPreview = ( props ) => {
 		browser = 'Safari';
 		paymentMethodName = 'Apple Pay';
 	}
-
-	// Helper function to convert UI options to pixels in height.
-	const sizeToPx = () => {
-		const sizeToPxMappings = {
-			default: 40,
-			medium: 48,
-			large: 56,
-		};
-		return sizeToPxMappings[ size ] + 'px';
-	};
 
 	const requestButtonHelpText = sprintf(
 		__(
@@ -64,11 +53,7 @@ const PaymentRequestButtonPreview = ( props ) => {
 			<p>{ __( 'Preview', 'woocommerce-payments' ) }</p>
 			<div className="payment-method-settings__preview">
 				<Elements stripe={ stripePromise }>
-					<PaymentRequestDemoButton
-						buttonType={ buttonType }
-						height={ sizeToPx() }
-						theme={ theme }
-					/>
+					<PaymentRequestDemoButton />
 				</Elements>
 			</div>
 			<p className="payment-method-settings__preview-help-text">

@@ -153,11 +153,7 @@ const PaymentRequestSettings = () => {
 					options={ buttonThemeOptions }
 					onChange={ setTheme }
 				/>
-				<PaymentRequestButtonPreview
-					buttonType={ buttonType }
-					size={ size }
-					theme={ theme }
-				/>
+				<PaymentRequestButtonPreview />
 			</CardBody>
 		</Card>
 	);

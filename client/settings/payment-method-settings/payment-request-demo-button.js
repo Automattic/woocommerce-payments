@@ -10,14 +10,36 @@ import {
 	useStripe,
 } from '@stripe/react-stripe-js';
 
-const PaymentRequestDemoButton = ( props ) => {
+/**
+ * Internal dependencies
+ */
+import {
+	usePaymentRequestButtonType,
+	usePaymentRequestButtonSize,
+	usePaymentRequestButtonTheme,
+} from '../../data';
+
+const PaymentRequestDemoButton = () => {
 	const stripe = useStripe();
 	const [ paymentRequest, setPaymentRequest ] = useState( null );
 	const [ isLoading, setIsLoading ] = useState( true );
+	const [ buttonType ] = usePaymentRequestButtonType();
+	const [ size ] = usePaymentRequestButtonSize();
+	const [ theme ] = usePaymentRequestButtonTheme();
 
 	// Since this is preview, we don't want the user to open up the browser's payment popup.
 	const disablePaymentAction = ( e ) => {
 		e.preventDefault();
+	};
+
+	// Helper function to convert UI options to pixels in height.
+	const sizeToPx = () => {
+		const sizeToPxMappings = {
+			default: 40,
+			medium: 48,
+			large: 56,
+		};
+		return sizeToPxMappings[ size ] + 'px';
 	};
 
 	useEffect( () => {
@@ -58,9 +80,9 @@ const PaymentRequestDemoButton = ( props ) => {
 					paymentRequest,
 					style: {
 						paymentRequestButton: {
-							type: props.buttonType,
-							theme: props.theme,
-							height: props.height,
+							type: buttonType,
+							theme: theme,
+							height: sizeToPx(),
 						},
 					},
 				} }
