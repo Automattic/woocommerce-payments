@@ -32,10 +32,12 @@ const EnableUpePreviewTask = () => {
 		<WizardTaskItem
 			title={ interpolateComponents( {
 				mixedString: __(
-					'Enable the new WooCommerce Payments checkout experience {{earlyAccessWrapper}}Early access{{/earlyAccessWrapper}}',
+					'{{wrapper}}Enable the new WooCommerce Payments checkout experience{{/wrapper}} ' +
+						'{{earlyAccessWrapper}}Early access{{/earlyAccessWrapper}}',
 					'woocommerce-payments'
 				),
 				components: {
+					wrapper: <span />,
 					earlyAccessWrapper: <Pill />,
 				},
 			} ) }
