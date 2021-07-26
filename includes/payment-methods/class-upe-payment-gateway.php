@@ -226,7 +226,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 
 		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] );
-		$enabled_payment_methods = array_filter( $enabled_payment_methods, [ $this, 'is_enabled_for_site_currency' ] );
 
 		$payment_intent = $this->payments_api_client->create_intention(
 			$converted_amount,
@@ -283,7 +282,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 
 		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );
-		$enabled_payment_methods = array_filter( $enabled_payment_methods, [ $this, 'is_enabled_for_site_currency' ] );
 
 		$setup_intent = $this->payments_api_client->create_setup_intention(
 			$customer_id,
@@ -804,7 +802,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( ! isset( $this->payment_methods[ $payment_method_id ] ) ) {
 			return false;
 		}
-		return $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout();
+		return $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout()
+			&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() );
 	}
 
 	/**
@@ -819,21 +818,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( ! isset( $this->payment_methods[ $payment_method_id ] ) ) {
 			return false;
 		}
-		return $this->payment_methods[ $payment_method_id ]->is_reusable();
-	}
-
-	/**
-	 * Function to be used with array_filter
-	 * to filter UPE payment methods that support the site/customer currency
-	 *
-	 * @param string $payment_method_id Stripe payment method.
-	 *
-	 * @return bool
-	 */
-	private function is_enabled_for_site_currency( $payment_method_id ) {
-		if ( ! isset( $this->payment_methods[ $payment_method_id ] ) ) {
-			return false;
-		}
-		return $this->payment_methods[ $payment_method_id ]->is_currency_valid();
+		return $this->payment_methods[ $payment_method_id ]->is_reusable()
+			&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() );
 	}
 }
