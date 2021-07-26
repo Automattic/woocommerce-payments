@@ -65,7 +65,7 @@ class WC_Payments_Admin {
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
-		add_action( 'admin_menu', [ $this, 'maybe_redirect_to_onboarding' ], 1 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 
@@ -615,6 +615,9 @@ class WC_Payments_Admin {
 	 * if it is not and the user is attempting to view a WCPay admin page.
 	 */
 	public function maybe_redirect_to_onboarding() {
+		if ( wp_doing_ajax() ) {
+			return false;
+		}
 		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
 
 		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page'] ) {

@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 2.7.1 - 2021-xx-xx =
 * Fix - Ensure test mode setting value is correctly saved.
+* Fix - Onboarding redirection occasionally not finalizing account connection.
 
 = 2.7.0 - 2021-07-14 =
 * Add - Add a link to the snackbar notice that appears after submitting or saving evidence for a dispute challenge.
