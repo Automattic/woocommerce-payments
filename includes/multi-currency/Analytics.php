@@ -84,13 +84,6 @@ class Analytics {
 			\WC_Payments::get_file_version( 'dist/multi-currency-analytics.js' ),
 			true
 		);
-
-		wp_register_style(
-			self::SCRIPT_NAME,
-			plugins_url( 'dist/multi-currency-analytics.css', WCPAY_PLUGIN_FILE ),
-			[ 'wc-components' ],
-			\WC_Payments::get_file_version( 'dist/multi-currency-analytics.css' )
-		);
 	}
 
 	/**
@@ -299,7 +292,7 @@ class Analytics {
 	 * @return boolean
 	 */
 	private function is_supported_context( string $context ): bool {
-		$unsupported_contexts = [ 'products', 'coupons', 'taxes' ];
+		$unsupported_contexts = [ 'products', 'coupons', 'taxes', 'variations', 'categories' ];
 
 		if ( in_array( $context, $unsupported_contexts, true ) ) {
 			return false;
