@@ -19,7 +19,7 @@ import HorizontalList from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
-import { formatCurrency } from 'utils/currency';
+import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
 import './style.scss';
 
@@ -110,11 +110,10 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 						<div className="payment-details-summary__breakdown">
 							{ renderStorePrice ? (
 								<p>
-									{ formatCurrency(
+									{ formatExplicitCurrency(
 										balance.amount,
 										balance.currency
-									) }{ ' ' }
-									{ balance.currency.toUpperCase() }
+									) }
 								</p>
 							) : null }
 							{ balance.refunded ? (
@@ -123,7 +122,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 										'Refunded',
 										'woocommerce-payments'
 									) }: ` }
-									{ formatCurrency(
+									{ formatExplicitCurrency(
 										-balance.refunded,
 										balance.currency
 									) }
@@ -155,7 +154,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 										'Net',
 										'woocommerce-payments'
 									) }: ` }
-									{ formatCurrency(
+									{ formatExplicitCurrency(
 										balance.net,
 										balance.currency
 									) }

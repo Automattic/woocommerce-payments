@@ -93,6 +93,42 @@ export const formatCurrency = ( amount, currencyCode = 'USD' ) => {
 };
 
 /**
+ * Appends the currency code if it's not present in the current price.
+ *
+ * @param {string} formatted Preformatted price string
+ * @param {string} currencyCode Currency code to append
+ *
+ * @return {string} formatted currency representation with the currency code suffix
+ */
+const appendCurrencyCode = ( formatted, currencyCode ) => {
+	if ( -1 === formatted.toString().indexOf( currencyCode ) ) {
+		formatted = formatted + ' ' + currencyCode;
+	}
+	return formatted;
+};
+
+/**
+ * Formats amount according to the given currency.
+ *
+ * @param {number} amount       Amount
+ * @param {string} currencyCode Currency code+
+ * @param {boolean} skipSymbol  If true, trims off the short currency symbol
+ *
+ * @return {string} formatted currency representation
+ */
+export const formatExplicitCurrency = (
+	amount,
+	currencyCode = 'USD',
+	skipSymbol = false
+) => {
+	let formatted = formatCurrency( amount, currencyCode );
+	if ( skipSymbol ) {
+		formatted = removeCurrencySymbol( formatted );
+	}
+	return appendCurrencyCode( formatted, currencyCode.toUpperCase() );
+};
+
+/**
  * Formats exchange rate string from one currency to another.
  *
  * @param {Object} from          Source currency and amount for exchange rate calculation.
@@ -111,10 +147,11 @@ export const formatFX = ( from, to ) => {
 	}
 
 	const fromAmount = isZeroDecimalCurrency( from.currency ) ? 1 : 100;
-	return `${ formatCurrency(
+	return `${ formatExplicitCurrency(
 		fromAmount,
-		from.currency
-	) } → ${ formatExchangeRate( from, to ) }: ${ formatCurrency(
+		from.currency,
+		true
+	) } → ${ formatExchangeRate( from, to ) }: ${ formatExplicitCurrency(
 		Math.abs( to.amount ),
 		to.currency
 	) }`;
@@ -144,16 +181,28 @@ function formatExchangeRate( from, to ) {
 
 	if ( ! exchangeCurrencyConfig ) {
 		sprintf(
-			isZeroDecimal ? '%s %i' : '%s %.5f',
-			to.currency.toUpperCase(),
-			exchangeRate
+			isZeroDecimal ? '%i %s' : '%.5f %s',
+			exchangeRate,
+			to.currency.toUpperCase()
 		);
 	}
 	const exchangeCurrency = new Currency( {
 		...exchangeCurrencyConfig,
 		precision,
 	} );
-	return trimEndingZeroes( exchangeCurrency.formatAmount( exchangeRate ) );
+	return appendCurrencyCode(
+		trimEndingZeroes(
+			removeCurrencySymbol(
+				exchangeCurrency.formatAmount( exchangeRate )
+			)
+		),
+		to.currency.toUpperCase()
+	);
+}
+
+function removeCurrencySymbol( formatted ) {
+	formatted = formatted.replace( /[^0-9,.' ]/g, '' ).trim();
+	return formatted;
 }
 
 function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {

@@ -30,8 +30,8 @@ class WC_Payments_Explicit_Price_Formatter {
 	 * So, we need to add a filter to formatted_woocommerce_price. We use specific actions
 	 * to register and unregister the filter, so that only the appropriate prices are affected.
 	 */
-	public function register_formatted_woocommerce_price_filter() {
-		add_filter( 'formatted_woocommerce_price', [ __CLASS__, 'get_explicit_price' ] );
+	public static function register_formatted_woocommerce_price_filter() {
+		add_filter( 'wc_price_args', [ __CLASS__, 'get_explicit_price_args' ] );
 	}
 
 	/**
@@ -41,8 +41,8 @@ class WC_Payments_Explicit_Price_Formatter {
 	 * So, we need to add a filter to formatted_woocommerce_price. We use specific actions
 	 * to register and unregister the filter, so that only the appropriate prices are affected.
 	 */
-	public function unregister_formatted_woocommerce_price_filter() {
-		remove_filter( 'formatted_woocommerce_price', [ __CLASS__, 'get_explicit_price' ] );
+	public static function unregister_formatted_woocommerce_price_filter() {
+		remove_filter( 'wc_price_args', [ __CLASS__, 'get_explicit_price_args' ] );
 	}
 
 	/**
@@ -65,5 +65,19 @@ class WC_Payments_Explicit_Price_Formatter {
 		}
 
 		return $price . ' ' . $currency_code;
+	}
+
+	/**
+	 * [get_explicit_price_args description]
+	 *
+	 * @param   [type] $args  [$args description]
+	 *
+	 * @return  [type]         [return description]
+	 */
+	public static function get_explicit_price_args( $args ) {
+		if ( strpos( $args['price_format'], $args['currency'] ) === false ) {
+			$args['price_format'] = sprintf( '%s&nbsp;%s', $args['price_format'], $args['currency'] );
+		}
+		return $args;
 	}
 }
