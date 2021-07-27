@@ -1,10 +1,28 @@
 .wcpay-card-body {
-	> :first-child {
-		margin-top: 0;
+	&.is-size-medium {
+		// increasing the specificity of the styles to override the Gutenberg ones
+		&#{&} {
+			padding: $grid-unit-30;
+		}
 	}
 
-	> :last-child {
-		margin-bottom: 0;
+	h4 {
+		margin-top: 0;
+		margin-bottom: 1em;
+	}
+
+	> * {
+		margin-top: 0;
+		margin-bottom: 1em;
+
+		// fixing the spacing on the inputs and their help text, to ensure it is consistent
+		&:last-child {
+			margin-bottom: 0;
+
+			> :last-child {
+				margin-bottom: 0;
+			}
+		}
 	}
 
 	input,
@@ -12,6 +30,16 @@
 		margin: 0;
 	}
 
+	// spacing adjustment on "Express checkouts > Show express checkouts on" list
+	ul > li:last-child {
+		margin-bottom: 0;
+
+		.components-base-control__field {
+			margin-bottom: 0;
+		}
+	}
+
+	// spacing in the "Express checkouts" settings page
 	.components-radio-control__option {
 		margin-bottom: 8px;
 	}
