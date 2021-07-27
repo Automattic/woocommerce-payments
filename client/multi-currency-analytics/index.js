@@ -14,7 +14,7 @@ addFilter(
 			! tableData.items ||
 			! tableData.items.data ||
 			! tableData.items.data.length ||
-			! 'orders' === tableData.endpoint
+			'orders' !== tableData.endpoint
 		) {
 			return tableData;
 		}
