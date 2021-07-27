@@ -24,5 +24,6 @@ class Giropay_Payment_Method extends UPE_Payment_Method {
 		$this->stripe_id   = 'giropay';
 		$this->title       = 'Giropay';
 		$this->is_reusable = false;
+		$this->currencies  = [ 'EUR' ];
 	}
 }

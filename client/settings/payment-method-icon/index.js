@@ -32,9 +32,7 @@ const paymentMethods = {
 	},
 };
 
-const PaymentMethodIcon = ( props ) => {
-	const { name, showName } = props;
-
+const PaymentMethodIcon = ( { name, showName } ) => {
 	const paymentMethod = paymentMethods[ name ];
 
 	if ( ! paymentMethod ) {
