@@ -99,7 +99,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 2.8.0 - 2021-xx-xx =
-* Add - Enable customer multi-currency.
+* Add - Allow merchants to add additional currencies to their store, allowing a store’s customers to shop and browse in the currency of their choice.
 * Add - Use date picker for applicable dispute evidence fields.
 * Fix - Avoid crash when seeing the details of an empty deposit.
 * Fix - Disabled Payment Request Buttons when order has to be split into multiple packages because Payment Requests do not support that use case.
