@@ -8,7 +8,7 @@ import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_UPE,
 } from '../constants.js';
-import { getConfig } from 'utils/checkout';
+import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
@@ -314,38 +314,10 @@ jQuery( function ( $ ) {
 			} );
 	};
 
-	const renameGatewayTitle = () => {
-		const enabledPaymentMethods = Object.keys(
-			paymentMethodsConfig
-		).sort();
-		let label = '';
-
-		if ( 1 === enabledPaymentMethods.length ) {
-			label = paymentMethodsConfig[ enabledPaymentMethods[ 0 ] ].title;
-		} else if ( 2 === enabledPaymentMethods.length ) {
-			label = enabledPaymentMethods
-				.map( ( method ) => paymentMethodsConfig[ method ].title )
-				.join( '&' );
-		} else if ( 3 === enabledPaymentMethods.length ) {
-			label =
-				enabledPaymentMethods
-					.slice( 0, 2 )
-					.map( ( method ) => paymentMethodsConfig[ method ].title )
-					.join( ', ' ) +
-				`, & ${
-					paymentMethodsConfig[ enabledPaymentMethods[ 2 ] ].title
-				}`;
-		} else {
-			label =
-				enabledPaymentMethods
-					.slice( 0, 3 )
-					.map( ( method ) => paymentMethodsConfig[ method ].title )
-					.join( ', ' ) +
-				`, & ${ enabledPaymentMethods.length - 3 } more`;
-		}
-
-		$( 'label[for=payment_method_woocommerce_payments]' ).text( label );
-	};
+	const renameGatewayTitle = () =>
+		$( 'label[for=payment_method_woocommerce_payments]' ).text(
+			getCustomGatewayTitle( paymentMethodsConfig )
+		);
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
