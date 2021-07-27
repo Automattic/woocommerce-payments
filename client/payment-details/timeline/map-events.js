@@ -247,12 +247,15 @@ const feeBreakup = ( event ) => {
 	} = event;
 
 	const feeLabelMapping = {
+		/* translators: %s is the fee amount */
 		base: __( '\u00A0 • Base fee %s%%', 'woocommerce-payments' ),
 		'additional-international': __(
+			/* translators: %s is the fee amount */
 			'\u00A0 • International fee %s%%',
 			'woocommerce-payments'
 		),
 		'additional-fx': __(
+			/* translators: %s is the fee amount */
 			'\u00A0 • Foreign exchange fee %s%%',
 			'woocommerce-payments'
 		),
