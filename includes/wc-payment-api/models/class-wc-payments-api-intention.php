@@ -111,6 +111,8 @@ class WC_Payments_API_Intention {
 	 * @param array       $next_action            - An array containing information for next action to take.
 	 * @param array       $last_payment_error     - An array containing details of any errors.
 	 * @param array       $payment_method_details - An array containing payment method details of associated charge.
+	 * @param array       $fee_history            - An array containing history of different kinds of fee applied.
+	 * @param array       $charge                 - An array containing charge information.
 	 */
 	public function __construct(
 		$id,
@@ -124,7 +126,9 @@ class WC_Payments_API_Intention {
 		$client_secret,
 		$next_action = [],
 		$last_payment_error = [],
-		$payment_method_details = []
+		$payment_method_details = [],
+		$fee_history = [],
+		$charge
 	) {
 		$this->id                     = $id;
 		$this->amount                 = $amount;
@@ -138,6 +142,8 @@ class WC_Payments_API_Intention {
 		$this->customer_id            = $customer_id;
 		$this->payment_method_id      = $payment_method_id;
 		$this->payment_method_details = $payment_method_details;
+		$this->fee_history            = $fee_history;
+		$this->charge                 = $charge;
 	}
 
 	/**
@@ -246,5 +252,26 @@ class WC_Payments_API_Intention {
 	 */
 	public function get_payment_method_details() {
 		return $this->payment_method_details;
+	}
+
+	/**
+	 * Temp
+	 */
+	public function get_charge_details() {
+		if ( isset( $this->charge ) ) {
+
+			if ( isset( $charge['balance_transaction'] ) ) {
+				$transactions_details = [
+					'customer_currency' => strtoupper( $charge['currency'] ),
+					'customer_amount'   => $charge['amount'],
+					'customer_fee'      => $charge['application_fee_amount'],
+					'store_currency'    => strtoupper( $charge['balance_transaction']['currency'] ),
+					'store_amount'      => $charge['balance_transaction']['amount'],
+					'store_fee'         => $charge['balance_transaction']['fee'],
+				];
+
+				return $transactions_details;
+			}
+		}
 	}
 }

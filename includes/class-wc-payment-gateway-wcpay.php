@@ -1042,6 +1042,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+		$this->add_fee_breakup_to_order_notes( $order, $currency );
 
 		if ( isset( $response ) ) {
 			return $response;
@@ -1056,6 +1057,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		];
+	}
+
+	/**
+	 * Given the order information and currency it forms the string to attach to order notes
+	 *
+	 * @param WC_Order $order WC Order object.
+	 * @param string   $currency Currency code.
+	 */
+	public function add_fee_breakup_to_order_notes( $order, $currency ) {
+		$amount = $order->get_total();
+		$note   = sprintf(
+			/* translators: %$1: total charged amount */
+			__(
+				'Charge details:
+			Amount: %1$s
+			GBP',
+				'woocommerce-payments'
+			),
+			wc_price( $amount, [ 'currency' => $currency ] )
+		);
+		$order->add_order_note( $note );
 	}
 
 	/**
