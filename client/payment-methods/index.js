@@ -142,7 +142,6 @@ const PaymentMethods = () => {
 		<>
 			{ 'disable' === openModalIdentifier ? (
 				<DisableUPEModal
-					enabledMethods={ enabledMethods }
 					setOpenModal={ setOpenModalIdentifier }
 					triggerAfterDisable={ () =>
 						setOpenModalIdentifier( 'survey' )
