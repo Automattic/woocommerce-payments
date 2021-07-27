@@ -28,6 +28,11 @@ jest.mock( '../../../data', () => ( {
 	useEnabledCurrencies: jest.fn(),
 } ) );
 
+jest.mock( '@wordpress/a11y', () => ( {
+	...jest.requireActual( '@wordpress/a11y' ),
+	speak: jest.fn(),
+} ) );
+
 const SettingsContextProvider = ( { children } ) => (
 	<WCPaySettingsContext.Provider
 		value={ { featureFlags: { multiCurrency: true }, accountFees: {} } }
@@ -165,7 +170,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
-				true,
+				{ initialMethods: [ 'card' ] },
 				'setup-complete'
 			)
 		);
@@ -205,5 +210,11 @@ describe( 'AddPaymentMethodsTask', () => {
 			'card',
 			'sepa_debit',
 		] );
+		await waitFor( () =>
+			expect( setCompletedMock ).toHaveBeenCalledWith(
+				{ initialMethods: [ 'card', 'giropay' ] },
+				'setup-complete'
+			)
+		);
 	} );
 } );
