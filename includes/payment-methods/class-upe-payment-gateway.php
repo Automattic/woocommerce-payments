@@ -61,7 +61,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service, array $payment_methods ) {
 		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
-		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores.<br>Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
+		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 		$this->title              = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->description        = '';
 		$this->payment_methods    = $payment_methods;

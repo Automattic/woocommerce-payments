@@ -291,16 +291,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// no longer valid options.
 			unset( $this->form_fields['payment_request_button_type']['options']['branded'] );
 			unset( $this->form_fields['payment_request_button_type']['options']['custom'] );
-
-			add_filter(
-				'woocommerce_payment_gateways_setting_columns',
-				[ $this, 'add_all_payment_methods_logos_column' ]
-			);
-
-			add_action(
-				'woocommerce_payment_gateways_setting_column_logos',
-				[ $this, 'add_all_payment_methods_icon_logos' ]
-			);
 		}
 
 		// Giropay option hidden behind feature flag.
