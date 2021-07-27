@@ -85,4 +85,17 @@ describe( 'Overview page', () => {
 			)
 		).toBeVisible();
 	} );
+
+	it( 'Displays the success message for query param wcpay-connection-success=1', () => {
+		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
+		getTasks.mockReturnValue( [] );
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector(
+				'.wcpay-connection-success.components-notice.is-success'
+			)
+		).toBeVisible();
+	} );
 } );
