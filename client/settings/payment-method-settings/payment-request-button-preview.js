@@ -7,7 +7,6 @@ import { React, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -17,6 +16,7 @@ import {
 	getPaymentRequestData,
 	shouldUseGooglePayBrand,
 } from 'payment-request/utils';
+import InlineNotice from 'components/inline-notice';
 
 /**
  * stripePromise is used to pass into <Elements>'s stripe props.
@@ -53,13 +53,19 @@ const PaymentRequestButtonPreview = () => {
 	);
 
 	let preview;
+
+	/**
+	 * If stripe is loading, then display nothing.
+	 * If stripe finished loading but payment request button failed to load (null), display info section.
+	 * If stripe finished loading and payment request button loads, display the button.
+	 */
 	if ( ! isLoading && ! paymentRequest ) {
 		preview = (
-			<Notice status="info" isDismissible={ false }>
+			<InlineNotice status="info" isDismissible={ false }>
 				To preview the buttons, ensure your device is configured to
 				accept Apple Pay, or Google Pay, and view this page using the
 				Safari or Chrome browsers.
-			</Notice>
+			</InlineNotice>
 		);
 	} else {
 		preview = (
