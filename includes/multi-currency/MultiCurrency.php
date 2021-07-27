@@ -7,6 +7,9 @@
 
 namespace WCPay\MultiCurrency;
 
+use Automattic\WooCommerce\Admin\Notes\NewSalesRecord;
+use WC_Order;
+use WC_Order_Refund;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_API_Client;
@@ -191,6 +194,7 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+		add_filter( 'woocommerce_order_query', [ $this, 'filter_woocommerce_order_query' ], 10, 2 );
 
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
@@ -649,6 +653,19 @@ class MultiCurrency {
 		);
 		echo ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
 
+	}
+
+	/**
+	 * When a request is made by the "Best Sales Day" Inbox notification, we want to hook into this and convert
+	 * the order totals to the store default currency.
+	 *
+	 * @param WC_Order[]|WC_Order_Refund[] $results The results returned by the orders query.
+	 * @param array                        $args The query args.
+	 *
+	 * @return array
+	 */
+	public function filter_woocommerce_order_query( $results, $args ): array {
+		return $results;
 	}
 
 	/**
