@@ -226,7 +226,7 @@ class Analytics {
 		if ( ! $order ||
 			$order->get_currency() === $default_currency->get_code() ||
 			! $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) ||
-			! $order->get_meta( '_wcpay_multi_currency_order_default_currency', true ) === $default_currency->get_code()
+			$order->get_meta( '_wcpay_multi_currency_order_default_currency', true ) !== $default_currency->get_code()
 		) {
 			return false;
 		}

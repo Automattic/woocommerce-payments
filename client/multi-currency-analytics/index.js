@@ -20,6 +20,7 @@ addFilter(
 		}
 
 		const updatedHeaders = [
+			...tableData.headers,
 			{
 				isNumeric: false,
 				isSortable: true,
@@ -31,7 +32,6 @@ addFilter(
 					'woocommerce-payments'
 				),
 			},
-			...tableData.headers,
 		];
 
 		const updatedRows = tableData.rows.map( ( rows, index ) => {
@@ -41,11 +41,11 @@ addFilter(
 				: '';
 
 			return [
+				...rows,
 				{
 					display: currency,
 					value: currency,
 				},
-				...rows,
 			];
 		} );
 
