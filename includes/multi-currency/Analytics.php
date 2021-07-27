@@ -51,8 +51,6 @@ class Analytics {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		}
 
-		// TODO: Remove this or make it only apply in dev mode.
-		add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 		add_filter( 'woocommerce_analytics_update_order_stats_data', [ $this, 'update_order_stats_data' ], self::PRIORITY_LATEST, 2 );
 
 		// If we aren't making a REST request, return before adding these filters.
@@ -96,17 +94,6 @@ class Analytics {
 
 		wp_enqueue_script( self::SCRIPT_NAME );
 		wp_enqueue_style( self::SCRIPT_NAME );
-	}
-
-	/**
-	 * Disables report caching. Used for development testing.
-	 *
-	 * @param array $args Filter arguments.
-	 *
-	 * @return boolean
-	 */
-	public function disable_report_caching( $args ): bool {
-		return false;
 	}
 
 	/**
