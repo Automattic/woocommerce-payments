@@ -47,24 +47,25 @@ class StorefrontIntegration {
 	 */
 	public function filter_store_settings( array $settings ): array {
 		foreach ( $settings as $key => $value ) {
-			if ( isset( $value['id'] ) ) {
-				if ( $this->id . '_enable_auto_currency' === $value['id'] ) {
-					$settings[ $key ]['checkboxgroup'] = 'start';
-				}
-				if ( $this->id . '_store_settings_widgets_link' === $value['id'] ) {
-					$settings[ $key ] = [
-						'desc'          => __( 'Add a currency switcher to the Storefront theme on breadcrumb section. ', 'woocommerce-payments' ),
-						'desc_tip'      => sprintf(
-							/* translators: %s: url to the widgets page */
-							__( 'A currency switcher is also available in your widgets. <a href="%s">Configure now</a>', 'woocommerce-payments' ),
-							'widgets.php'
-						),
-						'id'            => $this->id . '_enable_storefront_switcher',
-						'default'       => 'yes',
-						'type'          => 'checkbox',
-						'checkboxgroup' => 'end',
-					];
-				}
+			if ( ! isset( $value['id'] ) ) {
+				continue;
+			}
+			if ( $this->id . '_enable_auto_currency' === $value['id'] ) {
+				$settings[ $key ]['checkboxgroup'] = 'start';
+			}
+			if ( $this->id . '_store_settings_widgets_link' === $value['id'] ) {
+				$settings[ $key ] = [
+					'desc'          => __( 'Add a currency switcher to the Storefront theme on breadcrumb section. ', 'woocommerce-payments' ),
+					'desc_tip'      => sprintf(
+						/* translators: %s: url to the widgets page */
+						__( 'A currency switcher is also available in your widgets. <a href="%s">Configure now</a>', 'woocommerce-payments' ),
+						'widgets.php'
+					),
+					'id'            => $this->id . '_enable_storefront_switcher',
+					'default'       => 'yes',
+					'type'          => 'checkbox',
+					'checkboxgroup' => 'end',
+				];
 			}
 		}
 		return $settings;
