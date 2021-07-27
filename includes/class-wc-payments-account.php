@@ -320,6 +320,18 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
+				// Handle the error within the React-powered app.
+				if ( self::is_overview_page() ) {
+					wp_safe_redirect(
+						add_query_arg(
+							[ 'wcpay-login-error' => '1' ],
+							self::get_overview_page_url()
+						)
+					);
+					exit;
+				}
+
+				// Display the notice in the traditional WooCommerce > Settings page.
 				$this->add_notice_to_settings_page(
 					__( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ),
 					'notice-error'
@@ -360,9 +372,8 @@ class WC_Payments_Account {
 				$this->init_stripe_oauth( $wcpay_connect_param );
 			} catch ( Exception $e ) {
 				Logger::error( 'Init Stripe oauth flow failed. ' . $e );
-				$this->add_notice_to_settings_page(
-					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ),
-					'notice-error'
+				$this->redirect_to_onboarding_page(
+					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' )
 				);
 			}
 			return;
@@ -580,9 +591,8 @@ class WC_Payments_Account {
 	 */
 	private function finalize_connection( $state, $mode ) {
 		if ( get_transient( 'wcpay_stripe_oauth_state' ) !== $state ) {
-			$this->add_notice_to_settings_page(
-				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ),
-				'notice-error'
+			$this->redirect_to_onboarding_page(
+				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' )
 			);
 			return;
 		}
