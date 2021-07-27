@@ -170,7 +170,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
-				true,
+				{ initialMethods: [ 'card' ] },
 				'setup-complete'
 			)
 		);
@@ -210,5 +210,11 @@ describe( 'AddPaymentMethodsTask', () => {
 			'card',
 			'sepa_debit',
 		] );
+		await waitFor( () =>
+			expect( setCompletedMock ).toHaveBeenCalledWith(
+				{ initialMethods: [ 'card', 'giropay' ] },
+				'setup-complete'
+			)
+		);
 	} );
 } );
