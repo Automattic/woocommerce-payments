@@ -23,7 +23,7 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 1`] 
         </g>
       </svg>
     </span>
-    $1.00
+    $1.00 USD
   </div>
 </div>
 `;
@@ -80,13 +80,13 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 2`] 
         </div>
       </span>
     </span>
-    $1.00
+    $1.00 USD
   </div>
 </div>
 `;
 
 exports[`ConvertedAmount renders an amount without conversion 1`] = `
 <div>
-  $1.00
+  $1.00 USD
 </div>
 `;
