@@ -106,7 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Allow the customer to perform SCA authentication on Subscription renewals.
 * Update - Actualized supported countries list for onboarding.
 * Fix - Improved errors handling during onboarding and page overview.
-* Update - Allow viewing Stripe account details only in page Overview
+* Update - Remove Account in the old Settings page.
 
 = 2.7.0 - 2021-07-14 =
 * Add - Add a link to the snackbar notice that appears after submitting or saving evidence for a dispute challenge.
