@@ -75,7 +75,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_customer_multi_currency_enabled() {
-		return '1' === get_option( '_wcpay_feature_customer_multi_currency', '0' );
+		return '1' === get_option( '_wcpay_feature_customer_multi_currency', '1' );
 	}
 
 	/**
