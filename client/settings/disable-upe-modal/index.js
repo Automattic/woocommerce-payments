@@ -4,7 +4,7 @@
 import React, { useContext, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
-import { Button, Dashicon, ExternalLink } from '@wordpress/components';
+import { Button, ExternalLink } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
 /**
@@ -14,42 +14,37 @@ import './style.scss';
 import ConfirmationModal from 'components/confirmation-modal';
 import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import WcPayUpeContext from 'settings/wcpay-upe-toggle/context';
+import InlineNotice from '../../components/inline-notice';
 import { useEnabledPaymentMethodIds } from '../../data';
 import PaymentMethodIcon from '../payment-method-icon';
 
 const NeedHelpBarSection = () => {
 	return (
-		<div className="disable-modal-help-notice">
-			<Dashicon className="disable-help-icon" icon="info-outline" />
-			<p>
-				{ interpolateComponents( {
-					mixedString: __(
-						'Need help? Visit {{ docsLink /}} or {{supportLink /}}.',
-						'woocommerce-payments'
+		<InlineNotice status="info" isDismissible={ false }>
+			{ interpolateComponents( {
+				mixedString: __(
+					'Need help? Visit {{ docsLink /}} or {{supportLink /}}.',
+					'woocommerce-payments'
+				),
+				components: {
+					docsLink: (
+						// eslint-disable-next-line max-len
+						<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#introduction">
+							{ __(
+								'WooCommerce Payments docs',
+								'woocommerce-payments'
+							) }
+						</ExternalLink>
 					),
-					components: {
-						docsLink: (
-							// eslint-disable-next-line max-len
-							<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#introduction">
-								{ __(
-									'WooCommerce Payments docs',
-									'woocommerce-payments'
-								) }
-							</ExternalLink>
-						),
-						supportLink: (
-							// eslint-disable-next-line max-len
-							<ExternalLink href="https://woocommerce.com/contact-us/">
-								{ __(
-									'contact support',
-									'woocommerce-payments'
-								) }
-							</ExternalLink>
-						),
-					},
-				} ) }
-			</p>
-		</div>
+					supportLink: (
+						// eslint-disable-next-line max-len
+						<ExternalLink href="https://woocommerce.com/contact-us/">
+							{ __( 'contact support', 'woocommerce-payments' ) }
+						</ExternalLink>
+					),
+				},
+			} ) }
+		</InlineNotice>
 	);
 };
 
