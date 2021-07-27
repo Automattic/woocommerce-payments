@@ -79,7 +79,7 @@ const EnableUpePreviewTask = () => {
 								</li>
 								<li>
 									{ __(
-										'FREE upgrade exclusive to Stripe users.',
+										'FREE upgrade exclusive to WooCommerce Payments users.',
 										'woocommerce-payments'
 									) }
 								</li>
