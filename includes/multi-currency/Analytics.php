@@ -93,7 +93,6 @@ class Analytics {
 		$this->register_admin_scripts();
 
 		wp_enqueue_script( self::SCRIPT_NAME );
-		wp_enqueue_style( self::SCRIPT_NAME );
 	}
 
 	/**
