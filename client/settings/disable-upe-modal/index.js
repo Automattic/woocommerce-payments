@@ -1,8 +1,10 @@
+/**
+ * External dependencies
+ */
 import React, { useContext, useEffect } from 'react';
-
 import { __ } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
-import { Button, Dashicon, ExternalLink } from '@wordpress/components';
+import { Button, ExternalLink } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
 /**
@@ -10,49 +12,46 @@ import interpolateComponents from 'interpolate-components';
  */
 import './style.scss';
 import ConfirmationModal from 'components/confirmation-modal';
-import PaymentMethod from 'components/payment-methods-list/payment-method';
 import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import WcPayUpeContext from 'settings/wcpay-upe-toggle/context';
+import InlineNotice from '../../components/inline-notice';
+import { useEnabledPaymentMethodIds } from '../../data';
+import PaymentMethodIcon from '../payment-method-icon';
 
 const NeedHelpBarSection = () => {
 	return (
-		<div className="disable-modal-help-notice">
-			<Dashicon className="disable-help-icon" icon="info-outline" />
-			<p>
-				{ interpolateComponents( {
-					mixedString: __(
-						'Need help? Visit {{ docsLink /}} or {{supportLink /}}.',
-						'woocommerce-payments'
+		<InlineNotice status="info" isDismissible={ false }>
+			{ interpolateComponents( {
+				mixedString: __(
+					'Need help? Visit {{ docsLink /}} or {{supportLink /}}.',
+					'woocommerce-payments'
+				),
+				components: {
+					docsLink: (
+						// eslint-disable-next-line max-len
+						<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#introduction">
+							{ __(
+								'WooCommerce Payments docs',
+								'woocommerce-payments'
+							) }
+						</ExternalLink>
 					),
-					components: {
-						docsLink: (
-							// eslint-disable-next-line max-len
-							<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#introduction">
-								{ __(
-									'WooCommerce Payments docs',
-									'woocommerce-payments'
-								) }
-							</ExternalLink>
-						),
-						supportLink: (
-							// eslint-disable-next-line max-len
-							<ExternalLink href="https://woocommerce.com/contact-us/">
-								{ __(
-									'contact support',
-									'woocommerce-payments'
-								) }
-							</ExternalLink>
-						),
-					},
-				} ) }
-			</p>
-		</div>
+					supportLink: (
+						// eslint-disable-next-line max-len
+						<ExternalLink href="https://woocommerce.com/contact-us/">
+							{ __( 'contact support', 'woocommerce-payments' ) }
+						</ExternalLink>
+					),
+				},
+			} ) }
+		</InlineNotice>
 	);
 };
 
-const DisableUpeModalBody = ( { enabledMethods } ) => {
-	const upePaymentMethods = enabledMethods.filter(
-		( method ) => 'card' !== method.id
+const DisableUpeModalBody = () => {
+	const [ enabledPaymentMethodIds ] = useEnabledPaymentMethodIds();
+	const upePaymentMethods = enabledPaymentMethodIds.filter(
+		( method ) => 'card' !== method
 	);
 
 	return (
@@ -72,13 +71,11 @@ const DisableUpeModalBody = ( { enabledMethods } ) => {
 							'woocommerce-payments'
 						) }
 					</p>
-					<ul>
-						{ upePaymentMethods.map( ( { id, label, Icon } ) => (
-							<PaymentMethod
-								key={ id }
-								Icon={ Icon }
-								label={ label }
-							/>
+					<ul className="deactivating-payment-methods-list">
+						{ upePaymentMethods.map( ( method ) => (
+							<li key={ method }>
+								<PaymentMethodIcon name={ method } showName />
+							</li>
 						) ) }
 					</ul>
 				</>
@@ -88,28 +85,8 @@ const DisableUpeModalBody = ( { enabledMethods } ) => {
 	);
 };
 
-const DisableSubmitButton = () => {
-	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
-	const { status } = useContext( WcPayUpeContext );
-	return (
-		<Button
-			isBusy={ 'pending' === status }
-			disabled={ 'pending' === status }
-			isDestructive
-			isPrimary
-			onClick={ () => setIsUpeEnabled( false ) }
-		>
-			{ __( 'Disable', 'woocommerce-payments' ) }
-		</Button>
-	);
-};
-
-const DisableUpeModal = ( {
-	enabledMethods,
-	setOpenModal,
-	triggerAfterDisable,
-} ) => {
-	const [ isUpeEnabled ] = useIsUpeEnabled();
+const DisableUpeModal = ( { setOpenModal, triggerAfterDisable } ) => {
+	const [ isUpeEnabled, setIsUpeEnabled ] = useIsUpeEnabled();
 	const { status } = useContext( WcPayUpeContext );
 
 	useEffect( () => {
@@ -139,9 +116,28 @@ const DisableUpeModal = ( {
 					'woocommerce-payments'
 				) }
 				onRequestClose={ () => setOpenModal( '' ) }
-				actions={ <DisableSubmitButton /> }
+				actions={
+					<>
+						<Button
+							isSecondary
+							disabled={ 'pending' === status }
+							onClick={ () => setOpenModal( '' ) }
+						>
+							{ __( 'Cancel', 'woocommerce-payments' ) }
+						</Button>
+						<Button
+							isPrimary
+							isDestructive
+							isBusy={ 'pending' === status }
+							disabled={ 'pending' === status }
+							onClick={ () => setIsUpeEnabled( false ) }
+						>
+							{ __( 'Disable', 'woocommerce-payments' ) }
+						</Button>
+					</>
+				}
 			>
-				<DisableUpeModalBody enabledMethods={ enabledMethods } />
+				<DisableUpeModalBody />
 			</ConfirmationModal>
 		</>
 	);

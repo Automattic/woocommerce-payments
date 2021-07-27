@@ -1,13 +1,10 @@
+/**
+ * External dependencies
+ */
 import React, { useContext, useEffect } from 'react';
-
 import { __ } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
-import {
-	Button,
-	Icon,
-	RadioControl,
-	TextareaControl,
-} from '@wordpress/components';
+import { Button, RadioControl, TextareaControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -17,31 +14,23 @@ import ConfirmationModal from 'components/confirmation-modal';
 import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import { wcPaySurveys } from './questions';
 import WcPaySurveyContext from './context';
-import { useSurveySubmit, useSurveyAnswers } from './hook';
+import InlineNotice from '../../components/inline-notice';
 
-const DisabledUpeSuccessNotice = () => {
-	return (
-		<div className="disable-success-notice">
-			<Icon className="disable-success-icon" icon="yes-alt" />
-			<p>
-				{ __(
-					"You've disabled the new payments experience in your store.",
-					'woocommerce-payments'
-				) }
-			</p>
-		</div>
-	);
-};
-
-const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
+const SurveyModalBody = ( { options, surveyQuestion } ) => {
 	const [ isUpeEnabled ] = useIsUpeEnabled();
-	const [ surveyAnswers, setSurveyAnswers ] = useSurveyAnswers( {} );
+	const { surveyAnswers, setSurveyAnswers } = useContext(
+		WcPaySurveyContext
+	);
+
 	return (
 		<>
 			{ ! isUpeEnabled && (
-				<>
-					<DisabledUpeSuccessNotice />
-				</>
+				<InlineNotice status="success" isDismissible={ false }>
+					{ __(
+						"You've disabled the new payments experience in your store.",
+						'woocommerce-payments'
+					) }
+				</InlineNotice>
 			) }
 			<RadioControl
 				className="survey-radiocontrols"
@@ -56,7 +45,7 @@ const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 								'woocommerce-payments'
 						  )
 				}
-				options={ optionsArray }
+				options={ options }
 				onChange={ ( value ) => {
 					setSurveyAnswers( ( prev ) => ( {
 						...prev,
@@ -65,7 +54,7 @@ const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 				} }
 				selected={
 					// This checks the first option by default to signify it's required.
-					surveyAnswers[ surveyQuestion ] || optionsArray[ 0 ].value
+					surveyAnswers[ surveyQuestion ] || options[ 0 ].value
 				}
 			/>
 			<TextareaControl
@@ -84,22 +73,6 @@ const SurveyModalBody = ( { optionsArray, surveyQuestion } ) => {
 				value={ surveyAnswers.comments }
 			/>
 		</>
-	);
-};
-
-const SurveySubmitButton = () => {
-	const [ , setSurveySubmitted ] = useSurveySubmit();
-	const [ surveyAnswers ] = useSurveyAnswers();
-	const { status } = useContext( WcPaySurveyContext );
-	return (
-		<Button
-			isBusy={ 'pending' === status }
-			disabled={ 'pending' === status }
-			isPrimary
-			onClick={ () => setSurveySubmitted( surveyAnswers ) }
-		>
-			{ __( 'Send Feedback', 'woocommerce-payments' ) }
-		</Button>
 	);
 };
 
@@ -137,8 +110,9 @@ const getOptionsArrayFromQuestions = ( surveyKey, surveyQuestion ) => {
 };
 
 const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
-	const { status } = useContext( WcPaySurveyContext );
-	const [ isSurveySubmitted ] = useSurveySubmit();
+	const { isSurveySubmitted, status, submitSurvey } = useContext(
+		WcPaySurveyContext
+	);
 	// Get the questions using key and question pair.
 	const optionsArray = getOptionsArrayFromQuestions(
 		surveyKey,
@@ -167,10 +141,28 @@ const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
 					'woocommerce-payments'
 				) }
 				onRequestClose={ () => setOpenModal( '' ) }
-				actions={ <SurveySubmitButton /> }
+				actions={
+					<>
+						<Button
+							isSecondary
+							disabled={ 'pending' === status }
+							onClick={ () => setOpenModal( '' ) }
+						>
+							{ __( 'Cancel', 'woocommerce-payments' ) }
+						</Button>
+						<Button
+							isPrimary
+							isBusy={ 'pending' === status }
+							disabled={ 'pending' === status }
+							onClick={ () => submitSurvey() }
+						>
+							{ __( 'Send Feedback', 'woocommerce-payments' ) }
+						</Button>
+					</>
+				}
 			>
 				<SurveyModalBody
-					optionsArray={ optionsArray }
+					options={ optionsArray }
 					surveyQuestion={ surveyQuestion }
 				/>
 			</ConfirmationModal>
