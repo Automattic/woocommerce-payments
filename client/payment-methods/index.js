@@ -8,7 +8,6 @@ import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
-	CardBody,
 	CardDivider,
 	CardHeader,
 	DropdownMenu,
@@ -34,13 +33,13 @@ import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
 import WcPaySurveyContextProvider from '../settings/survey-modal/provider';
 import SurveyModal from '../settings/survey-modal';
 import DisableUPEModal from '../settings/disable-upe-modal';
-
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
+import CardBody from '../settings/card-body';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
