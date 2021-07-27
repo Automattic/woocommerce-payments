@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.5
 Tested up to: 5.7
 Requires PHP: 7.0
-Stable tag: 2.7.0
+Stable tag: 2.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -108,6 +108,12 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Dispute Status Chip into the header of the Dispute Details page.
 * Fix - Use a singular label in the summary of Transactions and Deposits lists.
 * Add - Disable payment gateway when not in test mode and not using https or ssl checkout enforcement.
+* Fix - Improved errors handling during onboarding and page overview.
+* Update - Remove Account in the old Settings page.
+
+= 2.7.1 - 2021-07-26 =
+* Fix - Ensure test mode setting value is correctly saved.
+* Fix - Onboarding redirection occasionally not finalizing account connection.
 
 = 2.7.0 - 2021-07-14 =
 * Add - Add a link to the snackbar notice that appears after submitting or saving evidence for a dispute challenge.
