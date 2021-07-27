@@ -36,7 +36,9 @@ addFilter(
 
 		const updatedRows = tableData.rows.map( ( rows, index ) => {
 			const item = tableData.items.data[ index ];
-			const currency = item.order_currency;
+			const currency = item.hasOwnProperty( 'order_currency' )
+				? item.order_currency
+				: '';
 
 			return [
 				{
