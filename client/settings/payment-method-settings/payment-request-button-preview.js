@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { React, useState } from 'react';
+import { React, useState, useMemo } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -24,15 +24,18 @@ import InlineNotice from 'components/inline-notice';
  * Keeping this outside of <PaymentRequestButtonPreview> so that
  * re-rendering does not change it.
  */
-const stripeSettings = getPaymentRequestData( 'stripe' );
-const stripePromise = loadStripe( stripeSettings.publishableKey, {
-	stripeAccount: stripeSettings.accountId,
-	locale: stripeSettings.locale,
-} );
 
 const PaymentRequestButtonPreview = () => {
 	const [ paymentRequest, setPaymentRequest ] = useState( null );
 	const [ isLoading, setIsLoading ] = useState( true );
+
+	const stripePromise = useMemo( () => {
+		const stripeSettings = getPaymentRequestData( 'stripe' );
+		return loadStripe( stripeSettings.publishableKey, {
+			stripeAccount: stripeSettings.accountId,
+			locale: stripeSettings.locale,
+		} );
+	}, [] );
 
 	let browser = 'Google Chrome';
 	let paymentMethodName = 'Google Pay';
