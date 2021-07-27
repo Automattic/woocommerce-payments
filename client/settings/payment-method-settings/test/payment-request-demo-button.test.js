@@ -35,9 +35,9 @@ describe( 'PaymentRequestButtonPreview', () => {
 
 		render(
 			<PaymentRequestDemoButton
-				buttonType={ 'default' }
-				size={ '48px' }
-				theme={ 'light' }
+				setIsLoading={ jest.fn() }
+				paymentRequest={ true }
+				setPaymentRequest={ jest.fn() }
 			/>
 		);
 		await waitFor( () =>
@@ -52,9 +52,9 @@ describe( 'PaymentRequestButtonPreview', () => {
 
 		render(
 			<PaymentRequestDemoButton
-				buttonType={ 'default' }
-				size={ '48px' }
-				theme={ 'light' }
+				setIsLoading={ jest.fn() }
+				paymentRequest={ false }
+				setPaymentRequest={ jest.fn() }
 			/>
 		);
 
