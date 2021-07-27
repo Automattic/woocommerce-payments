@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\MultiCurrency\Analytics;
+use WCPay\MultiCurrency\Currency;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -84,6 +85,10 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_update_order_stats_data_with_multi_currency_order() {
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_default_currency' )
+			->willReturn( new Currency( 'USD', 1.0 ) );
+
 		$args  = $this->order_args_provider( 123, 0, 1, 15.50, 1.50, 0, 14.00 );
 		$order = wc_create_order();
 		$order->set_currency( 'GBP' );
