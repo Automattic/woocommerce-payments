@@ -108,6 +108,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Dispute Status Chip into the header of the Dispute Details page.
 * Fix - Use a singular label in the summary of Transactions and Deposits lists.
 * Add - Disable payment gateway when not in test mode and not using https or ssl checkout enforcement.
+* Fix - Stop refund process when using an invalid amount
 
 = 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.
