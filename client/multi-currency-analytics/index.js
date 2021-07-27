@@ -5,11 +5,6 @@
 import { addFilter } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 
-/**
- * Internal dependencies
- */
-import './styles.scss';
-
 addFilter(
 	'woocommerce_admin_report_table',
 	'woocommerce-payments',
