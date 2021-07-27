@@ -539,6 +539,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['isCheckout']             = is_checkout();
 		$payment_fields['paymentMethodsConfig']   = $this->get_enabled_payment_method_config();
 		$payment_fields['saveUPEAppearanceNonce'] = wp_create_nonce( 'wcpay_save_upe_appearance_nonce' );
+		$payment_fields['testMode']               = $this->is_in_test_mode();
 		$payment_fields['upeAppeareance']         = get_transient( self::UPE_APPEARANCE_TRANSIENT );
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
