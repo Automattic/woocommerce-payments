@@ -181,11 +181,17 @@ const WCPayUPEFields = ( {
 		},
 	};
 
-	if ( null !== errorMessage ) {
-		return <p>{ errorMessage }</p>;
-	}
-
 	if ( ! clientSecret ) {
+		if ( errorMessage ) {
+			return (
+				<div className="woocommerce-error">
+					<div className="components-notice__content">
+						{ errorMessage }
+					</div>
+				</div>
+			);
+		}
+
 		return null;
 	}
 
