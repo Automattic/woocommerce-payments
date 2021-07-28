@@ -224,8 +224,8 @@ describe( 'Multi Currency enabled currencies list', () => {
 		expect( modal ).toMatchSnapshot();
 	} );
 
-	test( 'Modal should clear search term on cancel and update selected', () => {
-		for ( const name of [ /cancel/i, /update selected/i ] ) {
+	test( 'Modal should clear search term on cancel and add currencies', () => {
+		for ( const name of [ /cancel/i, /add currencies/i ] ) {
 			render( <EnabledCurrencies /> );
 			userEvent.click(
 				screen.getByRole( 'button', {
