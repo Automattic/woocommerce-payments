@@ -129,9 +129,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'description' => '',
 				'default'     => 'no',
 			],
-			'account_details'                     => [
-				'type' => 'account_actions',
-			],
 			'account_statement_descriptor'        => [
 				'type'        => 'account_statement_descriptor',
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
@@ -354,6 +351,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
+		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
@@ -508,8 +506,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
-		// Disable the gateway if using live mode without HTTPS set up.
-		if ( $this->needs_https_setup() ) {
+		// Disable the gateway if using live mode without HTTPS set up or the currency is not
+		// available in the country of the account.
+		if ( $this->needs_https_setup() || ! $this->is_available_for_current_currency() ) {
 			return false;
 		}
 
@@ -526,6 +525,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks if the account country is compatible with the current currency.
+	 *
+	 * @return bool Whether the currency is supported in the country set in the account.
+	 */
+	public function is_available_for_current_currency() {
+		$supported_currencies = $this->account->get_account_presentment_currencies();
+		$current_currency     = strtolower( get_woocommerce_currency() );
+
+		if ( count( $supported_currencies ) === 0 ) {
+			// If we don't have info related to the supported currencies
+			// of the country, we won't disable the gateway.
+			return true;
+		}
+
+		return in_array( $current_currency, $supported_currencies, true );
+	}
+
+	/**
 	 * Add notice explaining test mode when it's enabled.
 	 */
 	public function display_test_mode_notice() {
@@ -535,6 +552,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<p>
 					<b><?php esc_html_e( 'Test mode active: ', 'woocommerce-payments' ); ?></b>
 					<?php esc_html_e( "All transactions are simulated. Customers can't make real purchases through WooCommerce Payments.", 'woocommerce-payments' ); ?>
+				</p>
+			</div>
+			<?php
+		}
+	}
+
+	/**
+	 * Add notice explaining that the selected currency is not available.
+	 */
+	public function display_not_supported_currency_notice() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( ! $this->is_available_for_current_currency() ) {
+			?>
+			<div id="wcpay-unsupported-currency-notice" class="notice notice-warning">
+				<p>
+					<b>
+						<?php esc_html_e( 'Unsupported currency:', 'woocommerce-payments' ); ?>
+						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
+					</b>
+					<?php esc_html_e( 'The selected currency is not available for the country set in your WooCommerce Payments account.', 'woocommerce-payments' ); ?>
 				</p>
 			</div>
 			<?php
@@ -1042,6 +1082,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( isset( $response ) ) {
 			return $response;
@@ -1056,6 +1097,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		];
+	}
+
+	/**
+	 * Given the charge data, checks if there was an exchange and adds it to the given order as metadata
+	 *
+	 * @param WC_Order $order The order to update.
+	 * @param string   $charge_id ID of the charge to attach data from.
+	 */
+	public function attach_exchange_info_to_order( $order, $charge_id ) {
+		$currency_order   = $order->get_currency();
+		$currency_account = $this->account->get_account_default_currency();
+
+		if ( strtolower( $currency_order ) !== $currency_account ) {
+			// We check that the currency used in the order is different than the one set in the WC Payments account
+			// to avoid requesting the charge if not needed.
+			$charge        = $this->payments_api_client->get_charge( $charge_id );
+			$exchange_rate = $charge['balance_transaction']['exchange_rate'];
+			if ( isset( $exchange_rate ) ) {
+				$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
+				$order->save_meta_data();
+			}
+		}
 	}
 
 	/**
@@ -1475,45 +1538,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $value;
-	}
-
-	/**
-	 * Generate markup for account actions
-	 */
-	public function generate_account_actions_html() {
-		try {
-			$stripe_connected = $this->account->try_is_stripe_connected();
-			if ( $stripe_connected ) {
-				$description = WC_Payments_Utils::esc_interpolated_html(
-					/* translators: 1) dashboard login URL */
-					'<a>' . __( 'View and edit account details', 'woocommerce-payments' ) . '</a>',
-					[
-						'a' => '<a href="' . WC_Payments_Account::get_login_url() . '">',
-					]
-				);
-				$description .= wp_kses_post( '<p class="description">' . __( 'You will automatically be <em>signed in to Stripe</em> with your WooCommerce Payments account.', 'woocommerce-payments' ) . '</p>' );
-			} else {
-				// This should never happen, if the account is not connected the merchant should have been redirected to the onboarding screen.
-				// @see WC_Payments_Account::maybe_redirect_to_onboarding.
-				$description = esc_html__( 'Error determining the connection status.', 'woocommerce-payments' );
-			}
-		} catch ( Exception $e ) {
-			// do not render the actions if the server is unreachable.
-			$description = esc_html__( 'Error determining the connection status.', 'woocommerce-payments' );
-		}
-
-		ob_start();
-		?>
-		<tr valign="top">
-			<th scope="row">
-				<?php echo esc_html( __( 'Account', 'woocommerce-payments' ) ); ?>
-			</th>
-			<td>
-				<?php echo $description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			</td>
-		</tr>
-		<?php
-		return ob_get_clean();
 	}
 
 	/**
