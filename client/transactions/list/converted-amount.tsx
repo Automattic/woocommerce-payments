@@ -16,17 +16,19 @@ import { formatExplicitCurrency } from 'utils/currency';
 interface ConversionIndicatorProps {
 	amount: number;
 	currency: string;
+	baseCurrency: string;
 }
 
 const ConversionIndicator = ( {
 	amount,
 	currency,
+	baseCurrency,
 }: ConversionIndicatorProps ): React.ReactElement => (
 	<Tooltip
 		text={ sprintf(
 			/* translators: %s is a monetary amount */
 			__( 'Converted from %s', 'woocommerce-payments' ),
-			formatExplicitCurrency( amount, currency )
+			formatExplicitCurrency( amount, currency, false, baseCurrency )
 		) }
 		position="bottom center"
 	>
@@ -64,6 +66,7 @@ const ConvertedAmount = ( {
 			<ConversionIndicator
 				amount={ fromAmount }
 				currency={ fromCurrency }
+				baseCurrency={ currency }
 			/>
 			{ formattedCurrency }
 		</div>

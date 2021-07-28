@@ -39,12 +39,22 @@ export const formatCurrencyName = ( currencyCode ) => {
  * Gets wc-admin Currency for the given currency code
  *
  * @param {string} currencyCode Currency code
+ * @param {string} baseCurrencyCode Base Currency code to override decimal and thousand separators
  *
  * @return {Currency|null} Currency object
  */
-export const getCurrency = ( currencyCode ) => {
+export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
+		if ( baseCurrencyCode ) {
+			const baseCurrency = find( currencyData, {
+				code: baseCurrencyCode,
+			} );
+			if ( baseCurrency ) {
+				currency.decimalSeparator = baseCurrency.decimalSeparator;
+				currency.thousandSeparator = baseCurrency.thousandSeparator;
+			}
+		}
 		return new Currency( currency );
 	}
 	return null;
@@ -68,17 +78,22 @@ const isZeroDecimalCurrency = ( currencyCode ) => {
  *
  * @param {number} amount       Amount
  * @param {string} currencyCode Currency code
+ * @param {string} baseCurrencyCode Base Currency code to override decimal and thousand separators
  *
  * @return {string} formatted currency representation
  */
-export const formatCurrency = ( amount, currencyCode = 'USD' ) => {
+export const formatCurrency = (
+	amount,
+	currencyCode = 'USD',
+	baseCurrencyCode = null
+) => {
 	// Normalize amount with respect to zer decimal currencies and provided data formats
 	const isZeroDecimal = isZeroDecimalCurrency( currencyCode );
 	if ( ! isZeroDecimal ) {
 		amount /= 100;
 	}
 
-	const currency = getCurrency( currencyCode );
+	const currency = getCurrency( currencyCode, baseCurrencyCode );
 	if ( null === currency ) {
 		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
 	}
@@ -113,15 +128,17 @@ const appendCurrencyCode = ( formatted, currencyCode ) => {
  * @param {number} amount       Amount
  * @param {string} currencyCode Currency code+
  * @param {boolean} skipSymbol  If true, trims off the short currency symbol
+ * @param {string} baseCurrencyCode Base Currency code to override decimal and thousand separators
  *
  * @return {string} formatted currency representation
  */
 export const formatExplicitCurrency = (
 	amount,
 	currencyCode = 'USD',
-	skipSymbol = false
+	skipSymbol = false,
+	baseCurrencyCode = null
 ) => {
-	let formatted = formatCurrency( amount, currencyCode );
+	let formatted = formatCurrency( amount, currencyCode, baseCurrencyCode );
 	if ( skipSymbol ) {
 		formatted = removeCurrencySymbol( formatted );
 	}
