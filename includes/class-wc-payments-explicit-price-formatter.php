@@ -68,11 +68,11 @@ class WC_Payments_Explicit_Price_Formatter {
 	}
 
 	/**
-	 * [get_explicit_price_args description]
+	 * Alters the price formatting arguments to include explicit format
 	 *
-	 * @param   [type] $args  [$args description]
+	 * @param   array $args  Price formatting args passed through `wc_price_args` filter.
 	 *
-	 * @return  [type]         [return description]
+	 * @return  array        The modified arguments
 	 */
 	public static function get_explicit_price_args( $args ) {
 		if ( strpos( $args['price_format'], $args['currency'] ) === false ) {
