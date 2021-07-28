@@ -1,6 +1,6 @@
 @import 'node_modules/@wordpress/components/src/tooltip/style.scss';
 
-$space-header-item: 25px;
+$space-header-item: 12px;
 
 .transactions-list {
 	.date-time {
@@ -16,12 +16,6 @@ $space-header-item: 25px;
 			height: 18px;
 			fill: $studio-gray-30;
 		}
-	}
-
-	// alignment override for header items
-	.woocommerce-table__header:not( .is-left-aligned ),
-	.woocommerce-table__item:not( .is-left-aligned ) {
-		text-align: center;
 	}
 
 	// slight adjustment to align header items with sorting button to account for icon width
