@@ -1074,8 +1074,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// to avoid requesting the charge if not needed.
 			$charge        = $this->payments_api_client->get_charge( $charge_id );
 			$exchange_rate = $charge['balance_transaction']['exchange_rate'];
-			$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
-			$order->save();
+			if ( isset( $exchange_rate ) ) {
+				$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
+				$order->save_meta_data();
+			}
 		}
 	}
 
