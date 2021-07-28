@@ -1039,6 +1039,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( isset( $response ) ) {
 			return $response;
@@ -1053,6 +1054,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		];
+	}
+
+	/**
+	 * Given the charge data, checks if there was an exchange and adds it to the given order as metadata
+	 *
+	 * @param WC_Order $order The order to update.
+	 * @param string   $charge_id ID of the charge to attach data from.
+	 */
+	public function attach_exchange_info_to_order( $order, $charge_id ) {
+		$currency_order   = $order->get_currency();
+		$currency_account = $this->account->get_account_default_currency();
+
+		if ( strtolower( $currency_order ) !== $currency_account ) {
+			// We check that the currency used in the order is different than the one set in the WC Payments account
+			// to avoid requesting the charge if not needed.
+			$charge        = $this->payments_api_client->get_charge( $charge_id );
+			$exchange_rate = $charge['balance_transaction']['exchange_rate'];
+			if ( isset( $exchange_rate ) ) {
+				$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
+				$order->save_meta_data();
+			}
+		}
 	}
 
 	/**
