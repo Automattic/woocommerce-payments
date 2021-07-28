@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.5 or newer.
-* WooCommerce 5.2 or newer.
+* WooCommerce 5.3 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -111,6 +111,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Disable payment gateway when not in test mode and not using https or ssl checkout enforcement.
 * Fix - Improved errors handling during onboarding and page overview.
 * Update - Remove Account in the old Settings page.
+* Update - Bump minimum supported version of WooCommerce from 5.2 to 5.3.
 
 = 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.
