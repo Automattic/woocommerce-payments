@@ -17,7 +17,7 @@ import classNames from 'classnames';
 /**
  * Internal dependencies.
  */
-import { useDeposit } from 'data';
+import { useDeposit } from 'wcpay/data';
 import { displayStatus } from '../strings';
 import TransactionsList from 'transactions/list';
 import Page from 'components/page';
