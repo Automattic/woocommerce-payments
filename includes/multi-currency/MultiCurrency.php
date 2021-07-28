@@ -69,6 +69,13 @@ class MultiCurrency {
 	protected $utils;
 
 	/**
+	 * Analytics instance.
+	 *
+	 * @var Analytics
+	 */
+	protected $analytics;
+
+	/**
 	 * FrontendPrices instance.
 	 *
 	 * @var FrontendPrices
@@ -160,6 +167,7 @@ class MultiCurrency {
 		$this->geolocation          = new Geolocation( $this->localization_service );
 		$this->utils                = new Utils();
 		$this->compatibility        = new Compatibility( $this, $this->utils );
+		$this->analytics            = new Analytics( $this );
 
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
@@ -205,6 +213,7 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
 		// Check to make sure there are enabled currencies, then for Storefront being active, and then load the integration.
 		$theme = wp_get_theme();
@@ -655,6 +664,33 @@ class MultiCurrency {
 	}
 
 	/**
+	 * When an order is refunded, a new psuedo order is created to represent the refund.
+	 * We want to check if the original order was a multi-currency order, and if so, copy the meta data
+	 * to the new order.
+	 *
+	 * @param int $order_id The order ID.
+	 * @param int $refund_id The refund order ID.
+	 */
+	public function add_order_meta_on_refund( $order_id, $refund_id ) {
+		$default_currency = $this->get_default_currency();
+
+		$order  = wc_get_order( $order_id );
+		$refund = wc_get_order( $refund_id );
+
+		// Do not add exchange rate if order was made in the store's default currency.
+		if ( ! $order || ! $refund || $default_currency->get_code() === $order->get_currency() ) {
+			return;
+		}
+
+		$order_exchange_rate    = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+		$order_default_currency = $order->get_meta( '_wcpay_multi_currency_order_default_currency', true );
+
+		$refund->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $order_exchange_rate );
+		$refund->update_meta_data( '_wcpay_multi_currency_order_default_currency', $order_default_currency );
+		$refund->save_meta_data();
+	}
+
+	/**
 	 * Displays a notice on the frontend informing the customer of the
 	 * automatic currency switch.
 	 */
@@ -687,7 +723,6 @@ class MultiCurrency {
 			]
 		);
 		echo ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
-
 	}
 
 	/**

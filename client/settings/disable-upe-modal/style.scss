@@ -1,31 +1,11 @@
 .disable-modal-section {
-	.disable-modal-help-notice {
-		background: #f0f6fc;
-		padding: 16px;
-		border-radius: 4px;
-		display: flex;
-		align-items: center;
-		align-content: center;
-		justify-content: flex-start;
-		flex-direction: row;
+	.deactivating-payment-methods-list {
+		min-height: 150px;
 
-		p {
-			display: inline;
-			margin: 0 0 0 20px;
-		}
-
-		.disable-help-icon {
-			display: inline;
-			color: #007cba;
-		}
-	}
-
-	.payment-method.has-icon-border {
-		padding: 16px 24px 14px 24px;
-		box-shadow: none;
-
-		.payment-method__icon {
-			box-shadow: none;
+		> * {
+			&:not( :last-child ) {
+				margin-bottom: $grid-unit-10;
+			}
 		}
 	}
 }
