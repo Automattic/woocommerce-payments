@@ -200,6 +200,12 @@ describe( 'mapTimelineEvents', () => {
 									fixed_rate: 0,
 									currency: 'gbp',
 								},
+								{
+									type: 'discount',
+									percentage_rate: -0.049,
+									fixed_rate: -20,
+									currency: 'gbp',
+								},
 							],
 						},
 						type: 'captured',
