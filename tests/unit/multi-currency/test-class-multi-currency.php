@@ -622,7 +622,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$this->init_multi_currency();
 		$this->assertNull( $this->multi_currency->get_storefront_integration() );
-  }
+	}
 
 	public function test_add_order_meta_on_refund_skips_default_currency() {
 		$order = wc_create_order();
