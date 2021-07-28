@@ -119,6 +119,8 @@ export const getAppearance = () => {
 			'.Tab--selected': selectedTabRules,
 			'.TabIcon:hover': tabIconHoverRules,
 			'.TabIcon--selected': selectedTabIconRules,
+			'.Text': labelRules,
+			'.Text--redirect': labelRules,
 		},
 	};
 
