@@ -873,6 +873,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the account default currency.
+	 *
+	 * @return string Currency code in lowercase.
+	 */
+	public function get_account_default_currency() {
+		$account = $this->get_cached_account_data();
+		return $account['store_currencies']['default'] ?? 'usd';
+	}
+
+	/**
 	 * Handles adding a note if the merchant is eligible for Instant Deposits.
 	 *
 	 * @param array $account The account data.
