@@ -23,7 +23,7 @@ class CC_Payment_Method extends UPE_Payment_Method {
 		parent::__construct( $token_service );
 		$this->stripe_id   = 'card';
 		$this->title       = 'Credit card / debit card';
-		$this->short_title = 'Card';
+		$this->short_title = 'Credit Card / debit card';
 		$this->is_reusable = true;
 		$this->currencies  = [];// All currencies are supported.
 	}
