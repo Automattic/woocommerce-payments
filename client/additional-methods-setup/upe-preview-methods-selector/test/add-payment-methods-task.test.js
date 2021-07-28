@@ -106,19 +106,19 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect( useSettings ).toHaveBeenCalled();
 		// the payment methods should all be checked
 		expect(
-			screen.getByRole( 'checkbox', { name: 'GiroPay' } )
+			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
 		expect(
-			screen.getByRole( 'checkbox', { name: 'Direct Debit Payments' } )
+			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
 		).not.toBeInTheDocument();
 
 		// un-checking the checkboxes and clicking "add payment methods" should display a notice
-		userEvent.click( screen.getByRole( 'checkbox', { name: 'GiroPay' } ) );
+		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
 		userEvent.click(
-			screen.getByRole( 'checkbox', { name: 'Direct Debit Payments' } )
+			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		);
 
 		// no "euro" text when no elements are checked
@@ -152,10 +152,10 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect( useSettings ).toHaveBeenCalled();
 		// the payment methods should all be checked
 		expect(
-			screen.getByRole( 'checkbox', { name: 'GiroPay' } )
+			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
 		expect(
-			screen.getByRole( 'checkbox', { name: 'Direct Debit Payments' } )
+			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
@@ -195,14 +195,14 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		// the payment methods should all be checked
 		expect(
-			screen.getByRole( 'checkbox', { name: 'GiroPay' } )
+			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
 		expect(
-			screen.getByRole( 'checkbox', { name: 'Direct Debit Payments' } )
+			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
 
 		// un-check giropay
-		userEvent.click( screen.getByRole( 'checkbox', { name: 'GiroPay' } ) );
+		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
 		userEvent.click( screen.getByText( 'Add payment methods' ) );
 
 		// giropay is removed
