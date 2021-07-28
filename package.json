@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-2.0-or-later",
@@ -58,8 +58,8 @@
     "psalm": "./bin/run-psalm.sh"
   },
   "dependencies": {
-    "@stripe/react-stripe-js": "1.1.2",
-    "@stripe/stripe-js": "1.12.1",
+    "@stripe/react-stripe-js": "1.4.1",
+    "@stripe/stripe-js": "1.15.1",
     "@woocommerce/explat": "^1.0.1",
     "css-loader": "^5.2.6",
     "debug": "^4.1.1",

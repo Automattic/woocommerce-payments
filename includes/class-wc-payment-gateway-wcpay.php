@@ -129,9 +129,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'description' => '',
 				'default'     => 'no',
 			],
-			'account_details'                     => [
-				'type' => 'account_actions',
-			],
 			'account_statement_descriptor'        => [
 				'type'        => 'account_statement_descriptor',
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
@@ -1509,45 +1506,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $value;
-	}
-
-	/**
-	 * Generate markup for account actions
-	 */
-	public function generate_account_actions_html() {
-		try {
-			$stripe_connected = $this->account->try_is_stripe_connected();
-			if ( $stripe_connected ) {
-				$description = WC_Payments_Utils::esc_interpolated_html(
-					/* translators: 1) dashboard login URL */
-					'<a>' . __( 'View and edit account details', 'woocommerce-payments' ) . '</a>',
-					[
-						'a' => '<a href="' . WC_Payments_Account::get_login_url() . '">',
-					]
-				);
-				$description .= wp_kses_post( '<p class="description">' . __( 'You will automatically be <em>signed in to Stripe</em> with your WooCommerce Payments account.', 'woocommerce-payments' ) . '</p>' );
-			} else {
-				// This should never happen, if the account is not connected the merchant should have been redirected to the onboarding screen.
-				// @see WC_Payments_Account::maybe_redirect_to_onboarding.
-				$description = esc_html__( 'Error determining the connection status.', 'woocommerce-payments' );
-			}
-		} catch ( Exception $e ) {
-			// do not render the actions if the server is unreachable.
-			$description = esc_html__( 'Error determining the connection status.', 'woocommerce-payments' );
-		}
-
-		ob_start();
-		?>
-		<tr valign="top">
-			<th scope="row">
-				<?php echo esc_html( __( 'Account', 'woocommerce-payments' ) ); ?>
-			</th>
-			<td>
-				<?php echo $description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			</td>
-		</tr>
-		<?php
-		return ob_get_clean();
 	}
 
 	/**

@@ -51,6 +51,14 @@ abstract class UPE_Payment_Method {
 	protected $token_service;
 
 	/**
+	 * Supported presentment currencies for which charges for a payment method can be processed
+	 * Empty if all currencies are supported
+	 *
+	 * @var array
+	 */
+	protected $currencies;
+
+	/**
 	 * Create instance of payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Instance of WC_Payments_Token_Service.
@@ -100,6 +108,16 @@ abstract class UPE_Payment_Method {
 	 */
 	public function is_reusable() {
 		return $this->is_reusable;
+	}
+
+	/**
+	 * Returns boolean dependent on whether payment method will accept charges
+	 * with chosen currency
+	 *
+	 * @return bool
+	 */
+	public function is_currency_valid() {
+		return empty( $this->currencies ) || in_array( get_woocommerce_currency(), $this->currencies, true );
 	}
 
 	/**
