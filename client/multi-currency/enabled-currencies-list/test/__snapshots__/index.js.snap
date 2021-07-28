@@ -555,7 +555,7 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
         class="components-button is-primary"
         type="button"
       >
-        Update selected
+        Add currencies
       </button>
     </div>
   </div>

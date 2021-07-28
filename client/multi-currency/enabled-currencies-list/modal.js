@@ -155,7 +155,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 								onClick={ handleAddSelectedClick }
 							>
 								{ __(
-									'Update selected',
+									'Add currencies',
 									'woocommerce-payments'
 								) }
 							</Button>
