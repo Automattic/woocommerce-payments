@@ -121,6 +121,10 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 			return;
 		}
 
+		// marking the flag as "disabled", so that we can keep track that the merchant explicitly disabled it.
+		update_option( WC_Payments_Features::UPE_FLAG_NAME, 'disabled' );
+
+		// resetting a few other things:
 		// removing the UPE payment methods and _only_ leaving "card",
 		// just in case the user added additional payment method types.
 		$this->wcpay_gateway->update_option(
@@ -129,6 +133,12 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 				'card',
 			]
 		);
-		delete_option( WC_Payments_Features::UPE_FLAG_NAME );
+		// resetting the onboarding task status.
+		delete_option( 'wcpay_additional_methods_setup_completed' );
+		// removing the note from the database.
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
+			WC_Payments_Notes_Additional_Payment_Methods::possibly_delete_note();
+		}
 	}
 }
