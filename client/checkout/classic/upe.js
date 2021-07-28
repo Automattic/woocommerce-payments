@@ -86,7 +86,6 @@ jQuery( function ( $ ) {
 				'#billing_first_name',
 				'wcpay-hidden-input'
 			);
-			$( '#wcpay-hidden-input' ).trigger( 'focus' );
 
 			// Hidden invalid element.
 			const hiddenInvalidRow = this.getHiddenInvalidRow();
