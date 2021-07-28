@@ -199,6 +199,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the presentment currencies supported by Stripe available for the account.
+	 *
+	 * @return array Currencies.
+	 */
+	public function get_account_presentment_currencies() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['presentment_currencies'] ) ? $account['presentment_currencies'] : [];
+	}
+
+	/**
 	 * Gets the account live mode value.
 	 *
 	 * @return bool|null Account is_live value.
