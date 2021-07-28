@@ -26,7 +26,13 @@ import { formatCurrency } from 'utils/currency';
 import './style.scss';
 
 const headers = [
-	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
+	{
+		key: 'details',
+		label: '',
+		required: true,
+		cellClassName: 'info-button',
+		isLeftAligned: true,
+	},
 	{
 		key: 'amount',
 		label: __( 'Amount', 'woocommerce-payments' ),
@@ -36,42 +42,53 @@ const headers = [
 		key: 'status',
 		label: __( 'Status', 'woocommerce-payments' ),
 		required: true,
+		isLeftAligned: true,
 	},
 	{
 		key: 'reason',
 		label: __( 'Reason', 'woocommerce-payments' ),
 		required: true,
+		isLeftAligned: true,
 	},
 	{
 		key: 'source',
 		label: __( 'Source', 'woocommerce-payments' ),
 		required: true,
+		isLeftAligned: true,
 	},
 	{
 		key: 'order',
 		label: __( 'Order #', 'woocommerce-payments' ),
 		required: true,
 	},
-	{ key: 'customer', label: __( 'Customer', 'woocommerce-payments' ) },
+	{
+		key: 'customer',
+		label: __( 'Customer', 'woocommerce-payments' ),
+		isLeftAligned: true,
+	},
 	{
 		key: 'email',
 		label: __( 'Email', 'woocommerce-payments' ),
 		visible: false,
+		isLeftAligned: true,
 	},
 	{
 		key: 'country',
 		label: __( 'Country', 'woocommerce-payments' ),
 		visible: false,
+		isLeftAligned: true,
 	},
 	{
 		key: 'created',
 		label: __( 'Disputed on', 'woocommerce-payments' ),
 		required: true,
+		isLeftAligned: true,
 	},
 	{
 		key: 'dueBy',
 		label: __( 'Respond by', 'woocommerce-payments' ),
 		required: true,
+		isLeftAligned: true,
 	},
 ];
 

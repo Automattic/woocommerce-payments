@@ -1,11 +1,3 @@
-// dispute list table css override
-.wcpay-disputes-list {
-	.woocommerce-table__header:not( .is-left-aligned ),
-	.woocommerce-table__item:not( .is-left-aligned ) {
-		text-align: center;
-	}
-}
-
 // TODO generalize most of these styles to other WCPay views, if not WooCommerce Admin in general.
 .wcpay-dispute-details,
 .wcpay-dispute-evidence {
