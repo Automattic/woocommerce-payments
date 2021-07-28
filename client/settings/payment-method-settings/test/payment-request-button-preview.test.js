@@ -68,8 +68,8 @@ describe( 'PaymentRequestButtonPreview', () => {
 
 		expect(
 			screen.getAllByText(
-				'To preview the buttons, ensure your device is configured to accept Apple Pay, \
-			or Google Pay, and view this page using the Safari or Chrome browsers.'
+				// eslint-disable-next-line
+				'To preview the buttons, ensure your device is configured to accept Apple Pay, or Google Pay, and view this page using the Safari or Chrome browsers.'
 			)[ 0 ]
 		).toBeInTheDocument();
 	} );
