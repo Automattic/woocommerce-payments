@@ -244,7 +244,7 @@ class Analytics {
 	 * @return float The converted amount.
 	 */
 	private function convert_amount( float $amount, float $exchange_rate, int $dp = 2 ): float {
-		return number_format( $amount * ( 1 / $exchange_rate ), $dp );
+		return number_format( $amount * ( 1 / $exchange_rate ), $dp, '.', '' );
 	}
 
 	/**
