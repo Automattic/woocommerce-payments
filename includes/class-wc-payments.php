@@ -810,8 +810,13 @@ class WC_Payments {
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
+		if ( WC_Payments_Features::is_upe_enabled() ) {
+			require_once __DIR__ . '/class-wc-payments-upe-blocks-payment-method.php';
+			$payment_method_registry->register( new WC_Payments_UPE_Blocks_Payment_Method() );
+		} else {
+			$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
+		}
 
-		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
 	}
 
 	/**
