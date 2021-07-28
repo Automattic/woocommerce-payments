@@ -35,13 +35,7 @@ describe( 'PaymentRequestButtonPreview', () => {
 	it( 'displays Google Chrome and Google Pay when page is in Safari', () => {
 		shouldUseGooglePayBrand.mockReturnValue( true );
 
-		render(
-			<PaymentRequestButtonPreview
-				buttonType={ 'default' }
-				size={ 'default' }
-				theme={ 'light' }
-			/>
-		);
+		render( <PaymentRequestButtonPreview /> );
 
 		expect(
 			screen.getByText(
@@ -53,18 +47,30 @@ describe( 'PaymentRequestButtonPreview', () => {
 	it( 'displays Safari Apple Pay when page is in Google Chrome', () => {
 		shouldUseGooglePayBrand.mockReturnValue( false );
 
-		render(
-			<PaymentRequestButtonPreview
-				buttonType={ 'default' }
-				size={ 'default' }
-				theme={ 'light' }
-			/>
-		);
+		render( <PaymentRequestButtonPreview /> );
 
 		expect(
 			screen.getByText(
 				'To preview the Google Pay button, view this page in the Google Chrome browser.'
 			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'displays info notice if Stripe fails to render both Apple Pay and Google Pay', () => {
+		shouldUseGooglePayBrand.mockReturnValue( false );
+
+		render(
+			<PaymentRequestButtonPreview
+				isLoading={ false }
+				paymentRequest={ false }
+			/>
+		);
+
+		expect(
+			screen.getAllByText(
+				'To preview the buttons, ensure your device is configured to accept Apple Pay, \
+			or Google Pay, and view this page using the Safari or Chrome browsers.'
+			)[ 0 ]
 		).toBeInTheDocument();
 	} );
 } );

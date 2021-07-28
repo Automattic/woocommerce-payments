@@ -25,9 +25,11 @@ import InlineNotice from 'components/inline-notice';
  * re-rendering does not change it.
  */
 
-const PaymentRequestButtonPreview = () => {
-	const [ paymentRequest, setPaymentRequest ] = useState( null );
-	const [ isLoading, setIsLoading ] = useState( true );
+const PaymentRequestButtonPreview = ( props ) => {
+	const [ paymentRequest, setPaymentRequest ] = useState(
+		props.paymentRequest ?? null
+	);
+	const [ isLoading, setIsLoading ] = useState( props.isLoading ?? true );
 
 	const stripePromise = useMemo( () => {
 		const stripeSettings = getPaymentRequestData( 'stripe' );
