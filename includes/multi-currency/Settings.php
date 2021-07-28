@@ -127,12 +127,8 @@ class Settings extends \WC_Settings_Page {
 					[
 						'title'         => __( 'Store settings', 'woocommerce-payments' ),
 						'desc'          => __( 'Automatically switch customers to their local currency if it is enabled above.', 'woocommerce-payments' ),
-						// TODO: Preview link, to be done on #2258.
-						'desc_tip'      => sprintf(
-							/* translators: %s: url to a preview of alert banner */
-							__( 'Customers will be notified via store alert banner. <a href="%s">Preview</a>', 'woocommerce-payments' ),
-							''
-						),
+						// TODO: Preview link, to be done on #2523.
+						'desc_tip'      => __( 'Customers will be notified via store alert banner.', 'woocommerce-payments' ),
 						'id'            => $this->id . '_enable_auto_currency',
 						'default'       => 'yes',
 						'type'          => 'checkbox',
@@ -235,16 +231,11 @@ class Settings extends \WC_Settings_Page {
 			</th>
 			<td>
 				<div id="wcpay_multi_currency_preview_converted">
-					<?php echo esc_html( $currency->get_symbol() ); ?>
 					<span style="display:inline-block;"></span>
 				</div>
 				<input type="hidden"
 					name="<?php echo esc_attr( $this->id . '_automatic_exchange_rate' ); ?>"
 					value="<?php echo esc_attr( $available_currencies[ $currency->get_code() ]->get_rate() ); ?>"
-				/>
-				<input type="hidden"
-					name="<?php echo esc_attr( $this->id . '_num_decimals' ); ?>"
-					value="<?php echo esc_attr( $currency->get_is_zero_decimal() ? 0 : 2 ); ?>"
 				/>
 			</td>
 		</tr>

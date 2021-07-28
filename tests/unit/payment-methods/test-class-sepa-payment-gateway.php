@@ -86,7 +86,7 @@ class Sepa_Payment_Gateway_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'is_server_connected' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'is_server_connected', 'get_charge' ] )
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -204,7 +204,11 @@ class Sepa_Payment_Gateway_Test extends WP_UnitTestCase {
 
 		// Act: process a successful payment.
 		$payment_information = Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -278,7 +282,7 @@ class Sepa_Payment_Gateway_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 8 ) )
+			->expects( $this->exactly( 9 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
@@ -288,7 +292,8 @@ class Sepa_Payment_Gateway_Test extends WP_UnitTestCase {
 				[ '_intention_status', $status ],
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' ]
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' ],
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
 		// Assert: The order note contains all the information we want:
@@ -326,7 +331,11 @@ class Sepa_Payment_Gateway_Test extends WP_UnitTestCase {
 
 		// Act: process payment.
 		$payment_information = Payment_Information::from_payment_request( $_POST, $mock_order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), Payment_Capture_Type::MANUAL() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
