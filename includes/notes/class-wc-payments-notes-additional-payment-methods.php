@@ -31,7 +31,15 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 	 */
 	public static function get_note() {
 		// Show this notice only if UPE settings preview is disabled, and UPE flag is not enabled.
-		if ( ! WC_Payments_Features::is_upe_settings_preview_enabled() || WC_Payments_Features::is_upe_enabled() ) {
+		if ( false === WC_Payments_Features::is_upe_settings_preview_enabled() ) {
+			return;
+		}
+
+		if ( WC_Payments_Features::is_upe_enabled() ) {
+			return;
+		}
+
+		if ( WC_Payments_Features::did_merchant_disable_upe() ) {
 			return;
 		}
 
