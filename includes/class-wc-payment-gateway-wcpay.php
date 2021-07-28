@@ -354,7 +354,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
-		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_not_supported_currency_notice' ] );
+		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
@@ -565,6 +565,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Add notice explaining that the selected currency is not available.
 	 */
 	public function display_not_supported_currency_notice() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
 		if ( ! $this->is_available_for_current_currency() ) {
 			?>
 			<div id="wcpay-unsupported-currency-notice" class="notice notice-warning">
