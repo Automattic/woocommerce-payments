@@ -97,7 +97,8 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 							>
 								{ formatCurrency(
 									charge.amount,
-									charge.currency
+									charge.currency,
+									balance.currency
 								) }
 								<span className="payment-details-summary__amount-currency">
 									{ charge.currency || 'USD' }

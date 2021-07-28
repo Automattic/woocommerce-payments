@@ -46,13 +46,18 @@ export const formatCurrencyName = ( currencyCode ) => {
 export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
-		if ( baseCurrencyCode ) {
+		if (
+			null !== baseCurrencyCode &&
+			baseCurrencyCode.toUpperCase() !== currencyCode.toUpperCase()
+		) {
 			const baseCurrency = find( currencyData, {
-				code: baseCurrencyCode,
+				code: baseCurrencyCode.toUpperCase(),
 			} );
 			if ( baseCurrency ) {
 				currency.decimalSeparator = baseCurrency.decimalSeparator;
 				currency.thousandSeparator = baseCurrency.thousandSeparator;
+				currency.symbolPosition = baseCurrency.symbolPosition;
+				currency.precision = baseCurrency.precision;
 			}
 		}
 		return new Currency( currency );
