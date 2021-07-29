@@ -95,8 +95,8 @@ class MultiCurrency {
 	 * @var BackendCurrencies
 	 */
 	protected $backend_currencies;
-  
-  /*
+
+	/**
 	 * StorefrontIntegration instance.
 	 *
 	 * @var StorefrontIntegration
