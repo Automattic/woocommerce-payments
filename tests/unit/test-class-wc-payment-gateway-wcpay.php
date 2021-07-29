@@ -277,6 +277,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'invalid-amount', $result->get_error_code() );
+
+		$result = $this->wcpay_gateway->process_refund( $order_id, $order->get_total() + 1 );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertEquals( 'invalid-amount', $result->get_error_code() );
 	}
 
 	public function test_process_refund_success_does_not_set_refund_failed_meta() {

@@ -1214,7 +1214,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// If the entered amount is not valid stop without making a request.
-		if ( $amount <= 0 ) {
+		if ( $amount <= 0 || $amount > $order->get_total() ) {
 			return new WP_Error(
 				'invalid-amount',
 				__( 'The refund amount is not valid.', 'woocommerce-payments' )
