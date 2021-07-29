@@ -194,15 +194,11 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
-		add_filter( 'woocommerce_order_query', [ $this, 'filter_woocommerce_order_query' ], 10, 2 );
 
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
-
-		$notes = new NewSalesRecord();
-		$notes::sum_sales_for_date( '2021-07-26' );
 	}
 
 	/**
@@ -656,44 +652,6 @@ class MultiCurrency {
 		);
 		echo ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
 
-	}
-
-	/**
-	 * When a request is made by the "Best Sales Day" Inbox notification, we want to hook into this and convert
-	 * the order totals to the store default currency.
-	 *
-	 * @param WC_Order[]|WC_Order_Refund[] $results The results returned by the orders query.
-	 * @param array                        $args The query args.
-	 *
-	 * @return array
-	 */
-	public function filter_woocommerce_order_query( $results, $args ): array {
-		$default_currency = $this->get_default_currency()->get_code();
-
-		$backtrace_calls = [
-			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::sum_sales_for_date',
-			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::possibly_add_note',
-		];
-
-		// If the call we're expecting isn't in the backtrace, then just do nothing and return the results.
-		if ( ! $this->utils->is_call_in_backtrace( $backtrace_calls ) ) {
-			return $results;
-		}
-
-		foreach ( $results as $order ) {
-			if ( ! $order ||
-				$order->get_currency() === $default_currency ||
-				! $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) ||
-				$order->get_meta( '_wcpay_multi_currency_order_default_currency', true ) !== $default_currency
-			) {
-				continue;
-			}
-
-			$exchange_rate = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
-			$order->set_total( number_format( $order->get_total() * ( 1 / $exchange_rate ), wc_get_price_decimals() ) );
-		}
-
-		return $results;
 	}
 
 	/**

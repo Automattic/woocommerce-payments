@@ -7,6 +7,7 @@
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\MultiCurrency\MultiCurrency;
+use WCPay\MultiCurrency\Utils;
 
 /**
  * WCPay\MultiCurrency\MultiCurrency unit tests.
@@ -51,9 +52,9 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	private $mock_cached_currencies;
 
 	/**
-	 * WCPay\MultiCurrency\MultiCurrency instance.
+	 * MultiCurrency instance.
 	 *
-	 * @var WCPay\MultiCurrency\MultiCurrency
+	 * @var MultiCurrency
 	 */
 	private $multi_currency;
 

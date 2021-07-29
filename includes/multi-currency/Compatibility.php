@@ -50,6 +50,8 @@ class Compatibility {
 			add_filter( 'woocommerce_product_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
 			add_filter( 'woocommerce_product_variation_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
 		}
+
+		add_filter( 'woocommerce_order_query', [ $this, 'convert_woocommerce_order_query' ], 10, 2 );
 	}
 
 	/**
@@ -252,6 +254,45 @@ class Compatibility {
 
 		return true;
 	}
+
+	/**
+	 * When a request is made by the "Best Sales Day" Inbox notification, we want to hook into this and convert
+	 * the order totals to the store default currency.
+	 *
+	 * @param WC_Order[]|WC_Order_Refund[] $results The results returned by the orders query.
+	 * @param array                        $args The query args.
+	 *
+	 * @return array
+	 */
+	public function convert_woocommerce_order_query( $results, $args ): array {
+		$default_currency = $this->multi_currency->get_default_currency()->get_code();
+
+		$backtrace_calls = [
+			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::sum_sales_for_date',
+			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::possibly_add_note',
+		];
+
+		// If the call we're expecting isn't in the backtrace, then just do nothing and return the results.
+		if ( ! $this->utils->is_call_in_backtrace( $backtrace_calls ) ) {
+			return $results;
+		}
+
+		foreach ( $results as $order ) {
+			if ( ! $order ||
+				$order->get_currency() === $default_currency ||
+				! $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) ||
+				$order->get_meta( '_wcpay_multi_currency_order_default_currency', true ) !== $default_currency
+			) {
+				continue;
+			}
+
+			$exchange_rate = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+			$order->set_total( number_format( $order->get_total() * ( 1 / $exchange_rate ), wc_get_price_decimals() ) );
+		}
+
+		return $results;
+	}
+
 
 	/**
 	 * Checks the cart to see if it contains a subscription product renewal.
