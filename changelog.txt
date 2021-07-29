@@ -46,6 +46,7 @@
 * Add - Show fee breakdown in transaction details timeline.
 * Add - REST endpoint to get customer id from an order.
 * Fix - Explat not caching when no variation is returned.
+* Add - Add a new hook to get a list of enabled payment request methods.
 
 = 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.
