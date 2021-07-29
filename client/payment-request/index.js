@@ -638,4 +638,55 @@ jQuery( ( $ ) => {
 		};
 		testImg.src = background;
 	}
+
+	/**
+	 * Get a list of enabled payment request methods.
+	 *
+	 * @param {Function} callback A callback function to be called with the result.
+	 *
+	 */
+	function getEnabledPaymentRequestMethods( callback ) {
+		const canMakePayment = function ( paymentRequest ) {
+			paymentRequest.canMakePayment().then( ( result ) => {
+				if ( ! result ) {
+					callback( [] );
+					return;
+				}
+
+				if ( result.applePay ) {
+					callback( [ 'applePay' ] );
+				} else if ( result.googlePay ) {
+					callback( [ 'googlePay' ] );
+				} else {
+					callback( [] );
+				}
+			} );
+		};
+
+		if ( wcpayPaymentRequestParams.is_product_page ) {
+			const paymentRequest = getPaymentRequest( {
+				stripe: api.getStripe(),
+				total: wcpayPaymentRequestParams.product.total.amount,
+				requestShipping:
+					wcpayPaymentRequestParams.product.needs_shipping,
+				displayItems: wcpayPaymentRequestParams.product.displayItems,
+			} );
+			canMakePayment( paymentRequest );
+		} else {
+			// If this is the cart or checkout page, we need to request the
+			// cart details for the payment request.
+			api.paymentRequestGetCartDetails().then( ( cart ) => {
+				const paymentRequest = getPaymentRequest( {
+					stripe: api.getStripe(),
+					total: cart.total.amount,
+					requestShipping: cart.needs_shipping,
+					displayItems: cart.displayItems,
+				} );
+
+				canMakePayment( paymentRequest );
+			} );
+		}
+	}
+
+	window.getEnabledPaymentRequestMethods = getEnabledPaymentRequestMethods;
 } );
