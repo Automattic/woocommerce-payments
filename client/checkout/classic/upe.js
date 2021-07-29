@@ -12,6 +12,7 @@ import { getConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
+import { getTerms } from '../utils/upe';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -236,23 +237,6 @@ jQuery( function ( $ ) {
 	};
 
 	/**
-	 * Generates terms parameter for UPE, with value set for reusable payment methods
-	 *
-	 * @param {string} value The terms value for each available payment method.
-	 * @return {Object} Terms parameter fit for UPE.
-	 */
-	const getTerms = ( value = 'always' ) => {
-		const reusablePaymentMethods = Object.keys(
-			paymentMethodsConfig
-		).filter( ( method ) => paymentMethodsConfig[ method ].isReusable );
-
-		return reusablePaymentMethods.reduce( ( obj, method ) => {
-			obj[ method ] = value;
-			return obj;
-		}, {} );
-	};
-
-	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
 	 * @param {boolean} isSetupIntent {Boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
@@ -306,7 +290,10 @@ jQuery( function ( $ ) {
 				};
 
 				if ( getConfig( 'cartContainsSubscription' ) ) {
-					upeSettings.terms = getTerms( 'always' );
+					upeSettings.terms = getTerms(
+						paymentMethodsConfig,
+						'always'
+					);
 				}
 				if ( isCheckout && ! isOrderPay ) {
 					upeSettings.fields = {
@@ -658,7 +645,7 @@ jQuery( function ( $ ) {
 				: 'never';
 			if ( isUPEEnabled && upeElement ) {
 				upeElement.update( {
-					terms: getTerms( value ),
+					terms: getTerms( paymentMethodsConfig, value ),
 				} );
 			}
 		}
