@@ -265,7 +265,10 @@ class Compatibility {
 	 * @return array
 	 */
 	public function convert_woocommerce_order_query( $results, $args ): array {
-		$default_currency = $this->multi_currency->get_default_currency()->get_code();
+		$default_currency = $this->multi_currency->get_default_currency();
+		if ( ! $default_currency ) {
+			return $results;
+		}
 
 		$backtrace_calls = [
 			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::sum_sales_for_date',
@@ -279,9 +282,9 @@ class Compatibility {
 
 		foreach ( $results as $order ) {
 			if ( ! $order ||
-				$order->get_currency() === $default_currency ||
+				$order->get_currency() === $default_currency->get_code() ||
 				! $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) ||
-				$order->get_meta( '_wcpay_multi_currency_order_default_currency', true ) !== $default_currency
+				$order->get_meta( '_wcpay_multi_currency_order_default_currency', true ) !== $default_currency->get_code()
 			) {
 				continue;
 			}

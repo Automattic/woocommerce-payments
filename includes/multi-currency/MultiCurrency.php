@@ -457,7 +457,7 @@ class MultiCurrency {
 	 *
 	 * @return Currency The store base currency.
 	 */
-	public function get_default_currency(): Currency {
+	public function get_default_currency() {
 		return $this->default_currency;
 	}
 
