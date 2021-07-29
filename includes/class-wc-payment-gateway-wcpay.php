@@ -1276,10 +1276,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			);
 		}
 
+		// If the entered amount is not valid stop without making a request.
+		if ( $amount <= 0 || $amount > $order->get_total() ) {
+			return new WP_Error(
+				'invalid-amount',
+				__( 'The refund amount is not valid.', 'woocommerce-payments' )
+			);
+		}
+
 		$charge_id = $order->get_meta( '_charge_id', true );
 
 		try {
 			if ( is_null( $amount ) ) {
+				// If amount is null, the default is the entire charge.
 				$refund = $this->payments_api_client->refund_charge( $charge_id );
 			} else {
 				$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
