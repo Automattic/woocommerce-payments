@@ -16,7 +16,11 @@ import { Link } from '@woocommerce/components';
  * Internal dependencies
  */
 import { reasons as disputeReasons } from 'disputes/strings';
-import { formatCurrency, formatFX } from 'utils/currency';
+import {
+	formatCurrency,
+	formatFX,
+	formatExplicitCurrency,
+} from 'utils/currency';
 import { formatFee } from 'utils/fees';
 
 /**
@@ -161,10 +165,13 @@ const isFXEvent = ( event = {} ) => {
 
 const composeNetString = ( event ) => {
 	if ( ! isFXEvent( event ) ) {
-		return formatCurrency( event.amount - event.fee, event.currency );
+		return formatExplicitCurrency(
+			event.amount - event.fee,
+			event.currency
+		);
 	}
 
-	return formatCurrency(
+	return formatExplicitCurrency(
 		event.transaction_details.store_amount -
 			event.transaction_details.store_fee,
 		event.transaction_details.store_currency
@@ -233,8 +240,13 @@ const composeFXString = ( event ) => {
 const mapEventToTimelineItems = ( event ) => {
 	const { type } = event;
 
-	const stringWithAmount = ( headline, amount ) =>
-		sprintf( headline, formatCurrency( amount, event.currency ) );
+	const stringWithAmount = ( headline, amount, explicit = false ) =>
+		sprintf(
+			headline,
+			explicit
+				? formatExplicitCurrency( amount, event.currency )
+				: formatCurrency( amount, event.currency )
+		);
 
 	switch ( type ) {
 		case 'authorized':
@@ -251,7 +263,8 @@ const mapEventToTimelineItems = ( event ) => {
 							'A payment of %s was successfully authorized.',
 							'woocommerce-payments'
 						),
-						event.amount
+						event.amount,
+						true
 					),
 					'checkmark',
 					'is-warning'
@@ -271,7 +284,8 @@ const mapEventToTimelineItems = ( event ) => {
 							'Authorization for %s was voided.',
 							'woocommerce-payments'
 						),
-						event.amount
+						event.amount,
+						true
 					),
 					'checkmark',
 					'is-warning'
@@ -291,7 +305,8 @@ const mapEventToTimelineItems = ( event ) => {
 							'Authorization for %s expired.',
 							'woocommerce-payments'
 						),
-						event.amount
+						event.amount,
+						true
 					),
 					'cross',
 					'is-error'
@@ -314,7 +329,8 @@ const mapEventToTimelineItems = ( event ) => {
 							'A payment of %s was successfully charged.',
 							'woocommerce-payments'
 						),
-						event.amount
+						event.amount,
+						true
 					),
 					'checkmark',
 					'is-success',
@@ -336,7 +352,7 @@ const mapEventToTimelineItems = ( event ) => {
 				event.currency
 			);
 			const depositAmount = isFXEvent( event )
-				? formatCurrency(
+				? formatExplicitCurrency(
 						event.transaction_details.store_amount,
 						event.transaction_details.store_currency
 				  )
@@ -375,7 +391,8 @@ const mapEventToTimelineItems = ( event ) => {
 					stringWithAmount(
 						/* translators: %s is a monetary amount */
 						__( 'A payment of %s failed.', 'woocommerce-payments' ),
-						event.amount
+						event.amount,
+						true
 					),
 					'cross',
 					'is-error'

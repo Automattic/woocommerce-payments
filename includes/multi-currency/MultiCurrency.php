@@ -90,6 +90,13 @@ class MultiCurrency {
 	protected $frontend_currencies;
 
 	/**
+	 * BackendCurrencies instance.
+	 *
+	 * @var BackendCurrencies
+	 */
+	protected $backend_currencies;
+
+	/**
 	 * StorefrontIntegration instance.
 	 *
 	 * @var StorefrontIntegration
@@ -211,6 +218,7 @@ class MultiCurrency {
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
+		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
