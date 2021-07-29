@@ -124,6 +124,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
 		remove_all_filters( 'woocommerce_currency' );
+		remove_all_filters( 'stylesheet' );
 
 		delete_user_meta( self::LOGGED_IN_USER_ID, MultiCurrency::CURRENCY_META_KEY );
 		wp_set_current_user( 0 );
@@ -613,6 +614,22 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 	}
 
+	public function test_storefront_integration_init_with_compatible_themes() {
+		// Need to create a new instance of MultiCurrency to re-evaluate new theme.
+		$this->mock_theme( 'storefront' );
+
+		$this->init_multi_currency();
+		$this->assertNotNull( $this->multi_currency->get_storefront_integration() );
+	}
+
+	public function test_storefront_integration_does_not_init_with_incompatible_themes() {
+		// Need to create a new instance of MultiCurrency to re-evaluate new theme.
+		$this->mock_theme( 'not_storefront' );
+
+		$this->init_multi_currency();
+		$this->assertNull( $this->multi_currency->get_storefront_integration() );
+	}
+
 	public function test_add_order_meta_on_refund_skips_default_currency() {
 		$order = wc_create_order();
 		$order->set_currency( 'USD' );
@@ -687,5 +704,14 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	private function init_multi_currency( $mock_api_client = null ) {
 		$this->multi_currency = new MultiCurrency( $mock_api_client ?? $this->mock_api_client, $this->mock_account, $this->mock_localization_service );
 		$this->multi_currency->init();
+	}
+
+	private function mock_theme( $theme ) {
+		add_filter(
+			'stylesheet',
+			function() use ( $theme ) {
+				return $theme;
+			}
+		);
 	}
 }
