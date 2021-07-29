@@ -57,7 +57,9 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 				currency.decimalSeparator = baseCurrency.decimalSeparator;
 				currency.thousandSeparator = baseCurrency.thousandSeparator;
 				currency.symbolPosition = baseCurrency.symbolPosition;
-				currency.precision = baseCurrency.precision;
+				if ( 0 !== currency.precision ) {
+					currency.precision = baseCurrency.precision;
+				}
 			}
 		}
 		return new Currency( currency );
