@@ -7,9 +7,6 @@
 
 namespace WCPay\MultiCurrency;
 
-use Automattic\WooCommerce\Admin\Notes\NewSalesRecord;
-use WC_Order;
-use WC_Order_Refund;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_API_Client;

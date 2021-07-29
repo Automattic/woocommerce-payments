@@ -7,6 +7,9 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Order;
+use WC_Order_Refund;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
