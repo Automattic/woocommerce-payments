@@ -21,10 +21,10 @@ defined( 'ABSPATH' ) || exit;
  */
 class MultiCurrency {
 
-	const CURRENCY_SESSION_KEY     = 'wcpay_currency';
-	const CURRENCY_META_KEY        = 'wcpay_currency';
-	const CURRENCY_CACHE_OPTION    = 'wcpay_multi_currency_cached_currencies';
-	const CURRENCY_RETRIEVAL_ERROR = 'error';
+	const CURRENCY_SESSION_KEY            = 'wcpay_currency';
+	const CURRENCY_META_KEY               = 'wcpay_currency';
+	const CURRENCY_CACHE_OPTION           = 'wcpay_multi_currency_cached_currencies';
+	const CURRENCY_RETRIEVAL_ERROR_OPTION = 'wcpay_multi_currency_retrieval_error';
 
 	/**
 	 * The plugin's ID.
@@ -296,33 +296,35 @@ class MultiCurrency {
 	 * @return ?array
 	 */
 	public function get_cached_currencies() {
-		if ( ! $this->payments_api_client->is_server_connected() ) {
-			return null;
+
+		$error_expires = get_option( self::CURRENCY_RETRIEVAL_ERROR_OPTION, 0 );
+		$cache_data    = $this->read_currencies_from_cache();
+
+		// If the error has not expired, return cached data or null and do not attempt another API call.
+		if ( $error_expires > time() ) {
+			return $cache_data ?? null;
 		}
 
-		$cache_data = $this->read_currencies_from_cache();
-
-		// If the option contains the error value, return false early and do not attempt another API call.
-		if ( isset( $cache_data['currencies'] ) && self::CURRENCY_RETRIEVAL_ERROR === $cache_data['currencies'] ) {
-			return null;
-		}
-
-		// If an array of currencies was returned from the cache, return it here.
-		if ( null !== $cache_data ) {
+		// If an array of currencies was returned from the cache and has not expired, return it here.
+		if ( null !== $cache_data && $cache_data['expires'] > time() ) {
 			return $cache_data;
 		}
 
-		// If the cache was expired or something went wrong, make a call to the server to get the
-		// currency data.
+		// If connection to server cannot be established, return expired data or null.
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return $cache_data ?? null;
+		}
+
+		// If the cache was expired or something went wrong, make a call to the server to get the currency data.
 		try {
 			$currency_data = $this->payments_api_client->get_currency_rates( get_woocommerce_currency() );
 		} catch ( API_Exception $e ) {
 			// Failed to retrieve currencies from the server. Exception is logged in http client.
-			// Rate limit for a short amount of time by caching the failure.
-			$this->cache_currencies( self::CURRENCY_RETRIEVAL_ERROR, time(), 1 * MINUTE_IN_SECONDS );
+			// Rate limit for a short amount of time by persisting the failure.
+			update_option( self::CURRENCY_RETRIEVAL_ERROR_OPTION, time() + 1 * MINUTE_IN_SECONDS, 'no' );
 
-			// Return null to signal currency retrieval error.
-			return null;
+			// Return expired data or null to signal currency retrieval error.
+			return $cache_data ?? null;
 		}
 
 		$updated = time();
@@ -609,8 +611,8 @@ class MultiCurrency {
 
 		$charm_compatible_types = [ 'product', 'shipping' ];
 		$apply_charm_pricing    = $this->get_apply_charm_only_to_products()
-			? 'product' === $type
-			: in_array( $type, $charm_compatible_types, true );
+		? 'product' === $type
+		: in_array( $type, $charm_compatible_types, true );
 
 		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing, $currency );
 	}
@@ -766,9 +768,9 @@ class MultiCurrency {
 	/**
 	 * Caches currency data for a period of time.
 	 *
-	 * @param string|array $currencies - Currency data to cache.
-	 * @param int|null     $updated    - The time the data was fetched from the server.
-	 * @param int|null     $expiration - The length of time to cache the currency data, in seconds.
+	 * @param array    $currencies - Currency data to cache.
+	 * @param int|null $updated    - The time the data was fetched from the server.
+	 * @param int|null $expiration - The length of time to cache the currency data, in seconds.
 	 *
 	 * @return bool
 	 */
@@ -790,14 +792,7 @@ class MultiCurrency {
 			'updated'    => $updated,
 		];
 
-		// Create or update the currency option cache.
-		if ( false === get_option( self::CURRENCY_CACHE_OPTION ) ) {
-			$result = add_option( self::CURRENCY_CACHE_OPTION, $currency_cache, '', 'no' );
-		} else {
-			$result = update_option( self::CURRENCY_CACHE_OPTION, $currency_cache, 'no' );
-		}
-
-		return $result;
+		return update_option( self::CURRENCY_CACHE_OPTION, $currency_cache, 'no' );
 	}
 
 	/**
@@ -846,22 +841,16 @@ class MultiCurrency {
 		}
 	}
 
-
 	/**
 	 * Read the currency data from the WP option we cache it in.
 	 *
 	 * @return ?array
 	 */
 	private function read_currencies_from_cache() {
-		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION );
+		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION, [] );
 
-		if ( false === $currency_cache || ! is_array( $currency_cache ) || ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
+		if ( ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
 			// No option found or the data isn't in the format we expect.
-			return null;
-		}
-
-		// Return false if the cache has expired, triggering another fetch.
-		if ( $currency_cache['expires'] < time() ) {
 			return null;
 		}
 
