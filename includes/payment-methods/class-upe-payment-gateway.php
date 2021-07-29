@@ -782,6 +782,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$settings                = [];
 		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] );
 
+		if ( $this->is_subscriptions_enabled() && $this->is_changing_payment_method_for_subscription() ) {
+			$enabled_payment_methods = array_filter( $enabled_payment_methods, [ $this, 'is_enabled_for_saved_payments' ] );
+		}
+
 		foreach ( $enabled_payment_methods as $payment_method ) {
 			$settings[ $payment_method ] = [
 				'isReusable' => $this->payment_methods[ $payment_method ]->is_reusable(),
