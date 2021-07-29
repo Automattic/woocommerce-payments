@@ -54,7 +54,9 @@ class Compatibility {
 			add_filter( 'woocommerce_product_variation_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
 		}
 
-		add_filter( 'woocommerce_order_query', [ $this, 'convert_woocommerce_order_query' ], 10, 2 );
+		if ( defined( 'DOING_CRON' ) ) {
+			add_filter( 'woocommerce_order_query', [ $this, 'convert_woocommerce_order_query' ], 10, 2 );
+		}
 	}
 
 	/**
