@@ -152,7 +152,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Do not process non-existing orders.
 			$order = wc_get_order( $order_id );
-			if ( false === $order ) {
+			if ( false === $order || ! ( $order instanceof WC_Order ) ) {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
