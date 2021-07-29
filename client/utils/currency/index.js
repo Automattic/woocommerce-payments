@@ -133,7 +133,7 @@ const appendCurrencyCode = ( formatted, currencyCode ) => {
  * Formats amount according to the given currency.
  *
  * @param {number} amount       Amount
- * @param {string} currencyCode Currency code+
+ * @param {string} currencyCode Currency code
  * @param {boolean} skipSymbol  If true, trims off the short currency symbol
  * @param {string} baseCurrencyCode Base Currency code to override decimal and thousand separators
  *
@@ -231,11 +231,6 @@ function removeCurrencySymbol( formatted ) {
 
 function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
 	// Fallback for unsupported currencies: currency code and amount
-	/* return sprintf(
-		isZeroDecimal ? '%s %i' : '%s %.2f',
-		currencyCode.toUpperCase(),
-		amount
-	); */
 	return amount.toLocaleString( undefined, {
 		style: 'currency',
 		currency: currencyCode,
