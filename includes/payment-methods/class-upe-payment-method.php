@@ -37,13 +37,6 @@ abstract class UPE_Payment_Method {
 	protected $title;
 
 	/**
-	 * Short title for checkout
-	 *
-	 * @var string
-	 */
-	protected $short_title;
-
-	/**
 	 * Can payment method be saved or reused?
 	 *
 	 * @var bool
@@ -92,15 +85,6 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_title( $payment_details = false ) {
 		return $this->title;
-	}
-
-	/**
-	 * Returns short payment method title
-	 *
-	 * @return string
-	 */
-	public function get_short_title() {
-		return $this->short_title;
 	}
 
 	/**

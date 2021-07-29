@@ -798,7 +798,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		foreach ( $enabled_payment_methods as $payment_method ) {
 			$settings[ $payment_method ] = [
 				'isReusable' => $this->payment_methods[ $payment_method ]->is_reusable(),
-				'title'      => $this->payment_methods[ $payment_method ]->get_short_title(),
+				'title'      => $this->payment_methods[ $payment_method ]->get_title(),
 			];
 		}
 
