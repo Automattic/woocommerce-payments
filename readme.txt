@@ -99,6 +99,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 2.8.0 - 2021-xx-xx =
+* Add - Allow merchants to add additional currencies to their store, allowing a store’s customers to shop and browse in the currency of their choice.
 * Add - Use date picker for applicable dispute evidence fields.
 * Fix - Avoid crash when seeing the details of an empty deposit.
 * Fix - Disabled Payment Request Buttons when order has to be split into multiple packages because Payment Requests do not support that use case.
@@ -108,6 +109,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Dispute Status Chip into the header of the Dispute Details page.
 * Fix - Use a singular label in the summary of Transactions and Deposits lists.
 * Add - Disable payment gateway when not in test mode and not using https or ssl checkout enforcement.
+* Fix - Improved errors handling during onboarding and page overview.
+* Update - Remove Account in the old Settings page.
 
 = 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.
