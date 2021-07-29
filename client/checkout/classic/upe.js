@@ -202,6 +202,9 @@ jQuery( function ( $ ) {
 				'checked',
 				false
 			);
+			$( 'input#wc-woocommerce_payments-new-payment-method' ).trigger(
+				'change'
+			);
 		}
 	};
 
