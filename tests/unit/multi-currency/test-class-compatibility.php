@@ -458,10 +458,6 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$order->set_total( 1000 );
 		$order->set_currency( 'GBP' );
 
-		$this->mock_multi_currency->expects( $this->once() )
-			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
-
 		$this->mock_utils->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
 			->with(
