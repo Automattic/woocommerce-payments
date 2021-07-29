@@ -65,7 +65,7 @@ class WC_Payments_Admin {
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
-		add_action( 'admin_menu', [ $this, 'maybe_redirect_to_onboarding' ], 1 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 
@@ -622,6 +622,10 @@ class WC_Payments_Admin {
 	 * if it is not and the user is attempting to view a WCPay admin page.
 	 */
 	public function maybe_redirect_to_onboarding() {
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
 		if ( $this->is_in_treatment_mode() ) {
 			return;
 		}
@@ -664,7 +668,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
-			return true;
+			return false === WC_Payments_Features::did_merchant_disable_upe();
 		}
 
 		$available_methods = $this->wcpay_gateway->get_upe_available_payment_methods();

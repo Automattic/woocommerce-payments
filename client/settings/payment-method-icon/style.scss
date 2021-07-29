@@ -4,16 +4,23 @@
 	vertical-align: middle;
 	max-width: 160px;
 
-	svg {
-		width: 41px;
-		height: auto;
-	}
-
 	@include breakpoint( '>660px' ) {
 		max-width: inherit;
 	}
 
 	&__label {
 		margin-left: 4px;
+	}
+
+	svg {
+		width: 38px;
+		height: auto;
+	}
+
+	&.has-icon-border {
+		svg {
+			box-shadow: 0 0 0 1px #ddd;
+			border-radius: 2px;
+		}
 	}
 }
