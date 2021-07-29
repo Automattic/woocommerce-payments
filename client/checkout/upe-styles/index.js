@@ -1,5 +1,3 @@
-/* global jQuery */
-
 /**
  * Internal dependencies
  */
@@ -80,7 +78,6 @@ export const getAppearance = () => {
 	const upeThemeLabelSelector = '.woocommerce-checkout .form-row label';
 	const upeThemeInvalidInputSelector = '#wcpay-hidden-invalid-input';
 	const upeThemeFocusInputSelector = '#wcpay-hidden-input';
-	jQuery( upeThemeFocusInputSelector ).trigger( 'focus' );
 
 	const inputRules = getFieldStyles( upeThemeInputSelector, '.Input' );
 	const inputFocusRules = getFieldStyles(

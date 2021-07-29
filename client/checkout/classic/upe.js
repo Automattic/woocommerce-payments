@@ -98,6 +98,7 @@ jQuery( function ( $ ) {
 
 			// Remove transitions.
 			$( '#wcpay-hidden-input' ).css( 'transition', 'none' );
+			$( '#wcpay-hidden-input' ).trigger( 'focus' );
 		},
 		cleanup: function () {
 			$( '#wcpay-hidden-div' ).remove();
@@ -345,6 +346,7 @@ jQuery( function ( $ ) {
 			isUPEEnabled &&
 			! upeElement
 		) {
+			renameGatewayTitle();
 			const isChangingPayment = getConfig( 'isChangingPayment' );
 
 			// We use a setup intent if we are on the screens to add a new payment method or to change a subscription payment.
