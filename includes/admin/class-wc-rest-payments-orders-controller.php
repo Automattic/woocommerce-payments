@@ -156,17 +156,17 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
-			$order_user    = $order->get_user();
-			$customer_id   = $order->get_meta( '_stripe_customer_id' );
-			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
+			$order_user        = $order->get_user();
+			$customer_id       = $order->get_meta( '_stripe_customer_id' );
+			$customer_data     = WC_Payments_Customer_Service::map_customer_data( $order );
+			$is_guest_customer = false === $order_user;
 
-			if ( ! $customer_id && $order_user ) {
+			// If the order is created for a registered customer, try extracting it's Stripe customer ID.
+			if ( ! $customer_id && ! $is_guest_customer ) {
 				$customer_id = $this->customer_service->get_customer_id_by_user_id( $order_user->ID );
 			}
 
-			if ( ! $order_user ) {
-				$order_user = new WP_User();
-			}
+			$order_user  = $is_guest_customer ? new WP_User() : $order_user;
 			$customer_id = $customer_id
 				? $this->customer_service->update_customer_for_user( $customer_id, $order_user, $customer_data )
 				: $this->customer_service->create_customer_for_user( $order_user, $customer_data );
