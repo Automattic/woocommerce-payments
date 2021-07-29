@@ -231,11 +231,17 @@ function removeCurrencySymbol( formatted ) {
 
 function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
 	// Fallback for unsupported currencies: currency code and amount
-	return sprintf(
+	/* return sprintf(
 		isZeroDecimal ? '%s %i' : '%s %.2f',
 		currencyCode.toUpperCase(),
 		amount
-	);
+	); */
+	return amount.toLocaleString( undefined, {
+		style: 'currency',
+		currency: currencyCode,
+		currencyDisplay: 'narrowSymbol',
+		dummy: isZeroDecimal,
+	} );
 }
 
 function trimEndingZeroes( formattedCurrencyAmount = '' ) {
