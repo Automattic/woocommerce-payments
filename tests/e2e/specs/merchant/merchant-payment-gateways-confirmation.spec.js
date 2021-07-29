@@ -9,29 +9,12 @@ const WCADMIN_GATEWAYS_LIST = `${ config.get(
 	'url'
 ) }wp-admin/admin.php?page=wc-settings&tab=checkout&section`;
 
-const WCPAY_DEV_TOOLS = `${ config.get(
-	'url'
-) }wp-admin/admin.php?page=wcpaydev`;
-
 const WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE =
 	'tr[data-gateway_id="woocommerce_payments"] .wc-payment-gateway-method-toggle-enabled';
 
 describe( 'payment gateways disable confirmation', () => {
 	beforeAll( async () => {
 		await merchant.login();
-
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		// Enable the "Enable grouped settings" checkbox and save
-		await expect( page ).toClick( 'label', {
-			text: 'Enable grouped settings',
-		} );
-		await expect( page ).toClick( 'input[type="submit"]' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
 	} );
 
 	beforeEach( async () => {
@@ -41,19 +24,6 @@ describe( 'payment gateways disable confirmation', () => {
 	} );
 
 	afterAll( async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		// Disable the "Enable grouped settings" checkbox and save
-		await expect( page ).toClick( 'label', {
-			text: 'Enable grouped settings',
-		} );
-		await expect( page ).toClick( 'input[type="submit"]' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-
 		await merchant.logout();
 	} );
 
