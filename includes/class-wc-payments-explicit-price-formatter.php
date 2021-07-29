@@ -31,7 +31,7 @@ class WC_Payments_Explicit_Price_Formatter {
 	 * to register and unregister the filter, so that only the appropriate prices are affected.
 	 */
 	public static function register_formatted_woocommerce_price_filter() {
-		add_filter( 'wc_price_args', [ __CLASS__, 'get_explicit_price_args' ] );
+		add_filter( 'wc_price_args', [ __CLASS__, 'get_explicit_price_args' ], 100 );
 	}
 
 	/**
@@ -42,7 +42,7 @@ class WC_Payments_Explicit_Price_Formatter {
 	 * to register and unregister the filter, so that only the appropriate prices are affected.
 	 */
 	public static function unregister_formatted_woocommerce_price_filter() {
-		remove_filter( 'wc_price_args', [ __CLASS__, 'get_explicit_price_args' ] );
+		remove_filter( 'wc_price_args', [ __CLASS__, 'get_explicit_price_args' ], 100 );
 	}
 
 	/**

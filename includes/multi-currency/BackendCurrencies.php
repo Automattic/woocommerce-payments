@@ -52,7 +52,8 @@ class BackendCurrencies {
 
 		// Add the filter if it's an admin request or a REST request from the admin side.
 		if ( ( is_admin() || ( WC()->is_rest_api_request() && $is_backend_request ) ) && ! defined( 'DOING_CRON' ) ) {
-			// Currency hooks.
+			// Currency hooks. Be aware that this should not run after Explicit Price hook, its priority should be less
+			// than explicit price hooks to run before them.
 			add_filter( 'wc_price_args', [ $this, 'build_wc_price_args' ], 50 );
 
 		}
