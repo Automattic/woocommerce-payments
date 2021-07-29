@@ -29,7 +29,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	private $gateway;
 
 	/**
-	 * WC_Payments_Customer instance for working with customer information
+	 * WC_Payments_Customer_Service instance for working with customer information
 	 *
 	 * @var WC_Payments_Customer_Service
 	 */
@@ -38,9 +38,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * WC_Payments_REST_Controller constructor.
 	 *
-	 * @param WC_Payments_API_Client       $api_client - WooCommerce Payments API client.
-	 * @param WC_Payment_Gateway_WCPay     $gateway - WooCommerce Payments payment gateway.
-	 * @param WC_Payments_Customer_Service $customer_service - Customer class instance.
+	 * @param WC_Payments_API_Client       $api_client       WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay     $gateway          WooCommerce Payments payment gateway.
+	 * @param WC_Payments_Customer_Service $customer_service Customer class instance.
 	 */
 	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Customer_Service $customer_service ) {
 		parent::__construct( $api_client );
@@ -68,7 +68,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/(?P<order_id>\w+)/create_customer',
+			$this->rest_base . '/(?P<order_id>\d+)/create_customer',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'create_customer' ],
@@ -81,6 +81,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * Given an intent ID and an order ID, add the intent ID to the order and capture it.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function capture_terminal_payment( $request ) {
 		try {
@@ -143,6 +144,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * Returns customer id from order. Create or update customer if needed.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function create_customer( $request ) {
 		try {
