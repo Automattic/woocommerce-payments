@@ -47,7 +47,7 @@ class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase 
 	 * @dataProvider switcher_filter_provider
 	 */
 	public function test_does_not_register_actions_when_switcher_disabled( $filter, $function_name ) {
-		$this->mock_option( 'no' );
+		update_option( 'wcpay_multi_currency_enable_storefront_switcher', 'no' );
 		// Reinit class to re-evaluate conditional hooks.
 		$this->storefront_integration = new StorefrontIntegration( $this->mock_multi_currency );
 
@@ -62,7 +62,7 @@ class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase 
 	 * @dataProvider switcher_filter_provider
 	 */
 	public function test_registers_actions_when_switcher_default( $filter, $function_name ) {
-		$this->mock_option( '' );
+		delete_option( 'wcpay_multi_currency_enable_storefront_switcher' );
 		// Reinit class to re-evaluate conditional hooks.
 		$this->storefront_integration = new StorefrontIntegration( $this->mock_multi_currency );
 
@@ -77,7 +77,7 @@ class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase 
 	 * @dataProvider switcher_filter_provider
 	 */
 	public function test_registers_actions_when_switcher_enabled( $filter, $function_name ) {
-		$this->mock_option( 'yes' );
+		update_option( 'wcpay_multi_currency_enable_storefront_switcher', 'yes' );
 		// Reinit class to re-evaluate conditional hooks.
 		$this->storefront_integration = new StorefrontIntegration( $this->mock_multi_currency );
 
@@ -93,14 +93,5 @@ class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase 
 			[ 'woocommerce_breadcrumb_defaults', 'modify_breadcrumb_defaults' ],
 			[ 'wp_enqueue_scripts', 'add_inline_css' ],
 		];
-	}
-
-	private function mock_option( $value ) {
-		add_filter(
-			'pre_option_wcpay_multi_currency_enable_storefront_switcher',
-			function() use ( $value ) {
-				return $value;
-			}
-		);
 	}
 }

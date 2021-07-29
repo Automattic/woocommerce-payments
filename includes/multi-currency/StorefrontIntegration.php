@@ -146,8 +146,8 @@ class StorefrontIntegration {
 	 */
 	private function init_actions_and_filters() {
 		add_filter( $this->id . '_enabled_currencies_settings', [ $this, 'filter_store_settings' ] );
-		// We specifically look for 'no', because we want it enabled by default.
-		if ( 'no' !== get_option( $this->id . '_enable_storefront_switcher' ) ) {
+		// We want this enabled by default, so we default the option to 'yes'.
+		if ( 'yes' === get_option( $this->id . '_enable_storefront_switcher', 'yes' ) ) {
 			add_filter( 'woocommerce_breadcrumb_defaults', [ $this, 'modify_breadcrumb_defaults' ], 9999 );
 			add_action( 'wp_enqueue_scripts', [ $this, 'add_inline_css' ], 50 );
 		}
