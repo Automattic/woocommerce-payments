@@ -231,16 +231,11 @@ class Settings extends \WC_Settings_Page {
 			</th>
 			<td>
 				<div id="wcpay_multi_currency_preview_converted">
-					<?php echo esc_html( $currency->get_symbol() ); ?>
 					<span style="display:inline-block;"></span>
 				</div>
 				<input type="hidden"
 					name="<?php echo esc_attr( $this->id . '_automatic_exchange_rate' ); ?>"
 					value="<?php echo esc_attr( $available_currencies[ $currency->get_code() ]->get_rate() ); ?>"
-				/>
-				<input type="hidden"
-					name="<?php echo esc_attr( $this->id . '_num_decimals' ); ?>"
-					value="<?php echo esc_attr( $currency->get_is_zero_decimal() ? 0 : 2 ); ?>"
 				/>
 			</td>
 		</tr>

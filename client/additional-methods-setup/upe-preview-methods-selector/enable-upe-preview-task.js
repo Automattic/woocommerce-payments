@@ -32,21 +32,23 @@ const EnableUpePreviewTask = () => {
 		<WizardTaskItem
 			title={ interpolateComponents( {
 				mixedString: __(
-					'Enable the new WooCommerce Payments checkout experience {{earlyAccessWrapper}}Early access{{/earlyAccessWrapper}}',
+					'{{wrapper}}Enable the new WooCommerce Payments checkout experience{{/wrapper}} ' +
+						'{{earlyAccessWrapper}}Early access{{/earlyAccessWrapper}}',
 					'woocommerce-payments'
 				),
 				components: {
+					wrapper: <span />,
 					earlyAccessWrapper: <Pill />,
 				},
 			} ) }
 			index={ 1 }
 		>
 			<CollapsibleBody className="enable-upe-preview__body">
-				<p>
+				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ interpolateComponents( {
 						mixedString: __(
 							'Get early access to additional payment methods and an improved checkout experience, ' +
-								'coming soon to WooCommerce payments. {{learnMoreLink /}}.',
+								'coming soon to WooCommerce payments. {{learnMoreLink /}}',
 							'woocommerce-payments'
 						),
 						components: {
@@ -77,7 +79,7 @@ const EnableUpePreviewTask = () => {
 								</li>
 								<li>
 									{ __(
-										'FREE upgrade exclusive to Stripe users.',
+										'FREE upgrade exclusive to WooCommerce Payments users.',
 										'woocommerce-payments'
 									) }
 								</li>
