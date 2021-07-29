@@ -257,12 +257,12 @@ const feeBreakdown = ( event ) => {
 			0 !== fixedRate
 				? __(
 						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
-						'International fee: %1$s%% + %2$s',
+						'International card fee: %1$s%% + %2$s',
 						'woocommerce-payments'
 				  )
 				: __(
 						/* translators: %1$s% is the fee amount */
-						'International fee: %1$s%%',
+						'International card fee: %1$s%%',
 						'woocommerce-payments'
 				  ),
 		'additional-fx':
