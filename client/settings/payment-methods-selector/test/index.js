@@ -77,7 +77,7 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( paymentMethods ).toHaveLength( 3 );
 
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
-			name: 'GiroPay',
+			name: 'giropay',
 		} );
 		expect( giroPayCheckbox ).not.toBeChecked();
 
@@ -87,7 +87,7 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( sofortCheckbox ).not.toBeChecked();
 
 		const sepaCheckbox = screen.getByRole( 'checkbox', {
-			name: 'Direct Debit Payments',
+			name: 'Direct debit payment',
 		} );
 		expect( sepaCheckbox ).not.toBeChecked();
 
@@ -220,7 +220,7 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( addPaymentMethodButton );
 
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
-			name: 'GiroPay',
+			name: 'giropay',
 		} );
 		user.click( giroPayCheckbox );
 
