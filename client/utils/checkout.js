@@ -29,7 +29,7 @@ export const getCustomGatewayTitle = ( paymentMethodsConfig ) => {
 	if ( 2 > enabledPaymentMethods.length ) {
 		label = paymentMethodsConfig[ enabledPaymentMethods[ 0 ] ].title;
 	} else {
-		label = 'Popular payment methods';
+		label = getConfig( 'checkoutTitle' );
 	}
 
 	return label;

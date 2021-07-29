@@ -49,6 +49,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	protected $payment_methods = [];
 
 	/**
+	 * Generic gateway title to be displayed at checkout, if more than one payment method is enabled.
+	 *
+	 * @var string
+	 */
+	protected $checkout_title;
+
+	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
@@ -64,6 +71,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 		$this->title              = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->description        = '';
+		$this->checkout_title     = __( 'Popular payment methods', 'woocommerce-payments' );
 		$this->payment_methods    = $payment_methods;
 
 		add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
@@ -541,6 +549,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['saveUPEAppearanceNonce'] = wp_create_nonce( 'wcpay_save_upe_appearance_nonce' );
 		$payment_fields['testMode']               = $this->is_in_test_mode();
 		$payment_fields['upeAppearance']          = get_transient( self::UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['checkoutTitle']          = $this->checkout_title;
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->is_subscriptions_enabled() && $this->is_changing_payment_method_for_subscription() ) {
