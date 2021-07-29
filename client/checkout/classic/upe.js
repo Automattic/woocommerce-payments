@@ -12,6 +12,7 @@ import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
+import { getTerms } from '../utils/upe';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -202,6 +203,9 @@ jQuery( function ( $ ) {
 				'checked',
 				false
 			);
+			$( 'input#wc-woocommerce_payments-new-payment-method' ).trigger(
+				'change'
+			);
 		}
 	};
 
@@ -284,6 +288,13 @@ jQuery( function ( $ ) {
 					appearance,
 					business: { name: businessName },
 				};
+
+				if ( getConfig( 'cartContainsSubscription' ) ) {
+					upeSettings.terms = getTerms(
+						paymentMethodsConfig,
+						'always'
+					);
+				}
 				if ( isCheckout && ! isOrderPay ) {
 					upeSettings.fields = {
 						billingDetails: hiddenBillingFields,
@@ -628,6 +639,24 @@ jQuery( function ( $ ) {
 			return false;
 		}
 	} );
+
+	// Add terms parameter to UPE if save payment information checkbox is checked.
+	$( document ).on(
+		'change',
+		'#wc-woocommerce_payments-new-payment-method',
+		() => {
+			const value = $( '#wc-woocommerce_payments-new-payment-method' ).is(
+				':checked'
+			)
+				? 'always'
+				: 'never';
+			if ( isUPEEnabled && upeElement ) {
+				upeElement.update( {
+					terms: getTerms( paymentMethodsConfig, value ),
+				} );
+			}
+		}
+	);
 
 	// On every page load, check to see whether we should display the authentication
 	// modal and display it if it should be displayed.
