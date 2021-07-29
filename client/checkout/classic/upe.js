@@ -268,7 +268,7 @@ jQuery( function ( $ ) {
 				const { client_secret: clientSecret, id: id } = response;
 				paymentIntentId = id;
 
-				let appearance = getConfig( 'upeAppeareance' );
+				let appearance = getConfig( 'upeAppearance' );
 
 				if ( ! appearance ) {
 					hiddenElementsForUPE.init();
