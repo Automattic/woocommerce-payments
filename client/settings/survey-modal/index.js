@@ -4,12 +4,7 @@
 import React, { useContext, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
-import {
-	Button,
-	Icon,
-	RadioControl,
-	TextareaControl,
-} from '@wordpress/components';
+import { Button, RadioControl, TextareaControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -19,6 +14,7 @@ import ConfirmationModal from 'components/confirmation-modal';
 import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import { wcPaySurveys } from './questions';
 import WcPaySurveyContext from './context';
+import InlineNotice from '../../components/inline-notice';
 
 const SurveyModalBody = ( { options, surveyQuestion } ) => {
 	const [ isUpeEnabled ] = useIsUpeEnabled();
@@ -29,15 +25,12 @@ const SurveyModalBody = ( { options, surveyQuestion } ) => {
 	return (
 		<>
 			{ ! isUpeEnabled && (
-				<div className="disable-success-notice">
-					<Icon className="disable-success-icon" icon="yes-alt" />
-					<p>
-						{ __(
-							"You've disabled the new payments experience in your store.",
-							'woocommerce-payments'
-						) }
-					</p>
-				</div>
+				<InlineNotice status="success" isDismissible={ false }>
+					{ __(
+						"You've disabled the new payments experience in your store.",
+						'woocommerce-payments'
+					) }
+				</InlineNotice>
 			) }
 			<RadioControl
 				className="survey-radiocontrols"

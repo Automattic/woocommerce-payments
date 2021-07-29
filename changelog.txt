@@ -1,6 +1,7 @@
 *** WooCommerce Payments Changelog ***
 
 = 2.8.0 - 2021-xx-xx =
+* Add - Allow merchants to add additional currencies to their store, allowing a store’s customers to shop and browse in the currency of their choice.
 * Add - *Early access*: allow your store to collect payments with Giropay and Sofort. Enable the feature in settings!
 * Add - Use date picker for applicable dispute evidence fields.
 * Fix - Avoid crash when seeing the details of an empty deposit.
@@ -13,6 +14,9 @@
 * Add - Disable payment gateway when not in test mode and not using https or ssl checkout enforcement.
 * Fix - Improved errors handling during onboarding and page overview.
 * Update - Remove Account in the old Settings page.
+* Update - Bump minimum supported version of WooCommerce from 5.2 to 5.3.
+* Update - Bump minimum supported version of WordPress from 5.5 to 5.6.
+* Fix - Stop refund process when using an invalid amount
 
 = 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.
