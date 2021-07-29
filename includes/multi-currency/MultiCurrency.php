@@ -55,6 +55,13 @@ class MultiCurrency {
 	protected $geolocation;
 
 	/**
+	 * The Currency Switcher Widget instance.
+	 *
+	 * @var null|CurrencySwitcherWidget
+	 */
+	protected $currency_switcher_widget;
+
+	/**
 	 * Utils instance.
 	 *
 	 * @var Utils
@@ -88,6 +95,13 @@ class MultiCurrency {
 	 * @var BackendCurrencies
 	 */
 	protected $backend_currencies;
+  
+  /*
+	 * StorefrontIntegration instance.
+	 *
+	 * @var StorefrontIntegration
+	 */
+	protected $storefront_integration;
 
 	/**
 	 * The available currencies.
@@ -209,6 +223,12 @@ class MultiCurrency {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
+		// Check to make sure there are enabled currencies, then for Storefront being active, and then load the integration.
+		$theme = wp_get_theme();
+		if ( 1 < count( $this->get_enabled_currencies() ) && ( 'storefront' === $theme->get_stylesheet() || 'storefront' === $theme->get_template() ) ) {
+			$this->storefront_integration = new StorefrontIntegration( $this );
+		}
+
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
@@ -231,7 +251,8 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init_widgets() {
-		register_widget( new CurrencySwitcherWidget( $this, $this->compatibility ) );
+		$this->currency_switcher_widget = new CurrencySwitcherWidget( $this, $this->compatibility );
+		register_widget( $this->currency_switcher_widget );
 	}
 
 	/**
@@ -356,6 +377,15 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Returns the Currency Switcher Widget instance.
+	 *
+	 * @return CurrencySwitcherWidget
+	 */
+	public function get_currency_switcher_widget() {
+		return $this->currency_switcher_widget;
+	}
+
+	/**
 	 * Returns the FrontendPrices instance.
 	 *
 	 * @return FrontendPrices
@@ -371,6 +401,15 @@ class MultiCurrency {
 	 */
 	public function get_frontend_currencies(): FrontendCurrencies {
 		return $this->frontend_currencies;
+	}
+
+	/**
+	 * Returns the StorefrontIntegration instance.
+	 *
+	 * @return StorefrontIntegration|null
+	 */
+	public function get_storefront_integration() {
+		return $this->storefront_integration;
 	}
 
 	/**
