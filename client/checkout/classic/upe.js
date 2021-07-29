@@ -233,6 +233,23 @@ jQuery( function ( $ ) {
 	};
 
 	/**
+	 * Generates terms parameter for UPE, with value set for reusable payment methods
+	 *
+	 * @param {string} value The terms value for each available payment method.
+	 * @return {Object} Terms parameter fit for UPE.
+	 */
+	const getTerms = ( value = 'always' ) => {
+		const reusablePaymentMethods = Object.keys(
+			paymentMethodsConfig
+		).filter( ( method ) => paymentMethodsConfig[ method ].isReusable );
+
+		return reusablePaymentMethods.reduce( ( obj, method ) => {
+			obj[ method ] = value;
+			return obj;
+		}, {} );
+	};
+
+	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
 	 * @param {boolean} isSetupIntent {Boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
@@ -284,22 +301,9 @@ jQuery( function ( $ ) {
 					appearance,
 					business: { name: businessName },
 				};
-				const reusablePaymentMethods = Object.keys(
-					paymentMethodsConfig
-				).filter(
-					( method ) => paymentMethodsConfig[ method ].isReusable
-				);
-				if (
-					getConfig( 'cartContainsSubscription' ) &&
-					reusablePaymentMethods.length
-				) {
-					upeSettings.terms = reusablePaymentMethods.reduce(
-						( obj, method ) => {
-							obj[ method ] = 'always';
-							return obj;
-						},
-						{}
-					);
+
+				if ( getConfig( 'cartContainsSubscription' ) ) {
+					upeSettings.terms = getTerms( 'always' );
 				}
 				if ( isCheckout && ! isOrderPay ) {
 					upeSettings.fields = {
@@ -638,6 +642,24 @@ jQuery( function ( $ ) {
 			return false;
 		}
 	} );
+
+	// Add terms parameter to UPE if save payment information checkbox is checked.
+	$( document ).on(
+		'change',
+		'#wc-woocommerce_payments-new-payment-method',
+		() => {
+			const value = $( '#wc-woocommerce_payments-new-payment-method' ).is(
+				':checked'
+			)
+				? 'always'
+				: 'never';
+			if ( isUPEEnabled && upeElement ) {
+				upeElement.update( {
+					terms: getTerms( value ),
+				} );
+			}
+		}
+	);
 
 	// On every page load, check to see whether we should display the authentication
 	// modal and display it if it should be displayed.
