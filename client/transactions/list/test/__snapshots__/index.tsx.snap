@@ -508,7 +508,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
                     tabindex="-1"
                   >
-                    $10.00
+                    $10.00 USD
                   </a>
                 </td>
                 <td
@@ -532,7 +532,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
                     tabindex="-1"
                   >
-                    $9.50
+                    $9.50 USD
                   </a>
                 </td>
                 <td
@@ -629,7 +629,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                           </g>
                         </svg>
                       </span>
-                      $15.00
+                      $15.00 USD
                     </div>
                   </a>
                 </td>
@@ -654,7 +654,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
                     tabindex="-1"
                   >
-                    $14.50
+                    $14.50 USD
                   </a>
                 </td>
                 <td
@@ -1239,7 +1239,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
                     tabindex="-1"
                   >
-                    $10.00
+                    $10.00 USD
                   </a>
                 </td>
                 <td
@@ -1263,7 +1263,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
                     tabindex="-1"
                   >
-                    $9.50
+                    $9.50 USD
                   </a>
                 </td>
                 <td
@@ -1360,7 +1360,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                           </g>
                         </svg>
                       </span>
-                      $15.00
+                      $15.00 USD
                     </div>
                   </a>
                 </td>
@@ -1385,7 +1385,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
                     tabindex="-1"
                   >
-                    $14.50
+                    $14.50 USD
                   </a>
                 </td>
                 <td
@@ -1461,7 +1461,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
             <span
               class="woocommerce-table__summary-value"
             >
-              $10.00
+              $10.00 USD
             </span>
             <span
               class="woocommerce-table__summary-label"
@@ -1489,7 +1489,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
             <span
               class="woocommerce-table__summary-value"
             >
-              $9.00
+              $9.00 USD
             </span>
             <span
               class="woocommerce-table__summary-label"
@@ -1950,7 +1950,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                           </g>
                         </svg>
                       </span>
-                      $15.00
+                      $15.00 USD
                     </div>
                   </a>
                 </td>
@@ -1975,7 +1975,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
                     tabindex="-1"
                   >
-                    $14.50
+                    $14.50 USD
                   </a>
                 </td>
                 <td
@@ -2039,7 +2039,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
             <span
               class="woocommerce-table__summary-value"
             >
-              $3.00
+              $3.00 USD
             </span>
             <span
               class="woocommerce-table__summary-label"
@@ -2067,7 +2067,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
             <span
               class="woocommerce-table__summary-value"
             >
-              $2.70
+              $2.70 USD
             </span>
             <span
               class="woocommerce-table__summary-label"
@@ -2579,7 +2579,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
                     tabindex="-1"
                   >
-                    $10.00
+                    $10.00 USD
                   </a>
                 </td>
                 <td
@@ -2603,7 +2603,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
                     tabindex="-1"
                   >
-                    $9.50
+                    $9.50 USD
                   </a>
                 </td>
                 <td
@@ -2710,7 +2710,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                           </g>
                         </svg>
                       </span>
-                      $15.00
+                      $15.00 USD
                     </div>
                   </a>
                 </td>
@@ -2735,7 +2735,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
                     tabindex="-1"
                   >
-                    $14.50
+                    $14.50 USD
                   </a>
                 </td>
                 <td
@@ -2814,7 +2814,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
             <span
               class="woocommerce-table__summary-value"
             >
-              $10.00
+              $10.00 USD
             </span>
             <span
               class="woocommerce-table__summary-label"
@@ -2842,7 +2842,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
             <span
               class="woocommerce-table__summary-value"
             >
-              $9.00
+              $9.00 USD
             </span>
             <span
               class="woocommerce-table__summary-label"
@@ -3338,7 +3338,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
                     tabindex="-1"
                   >
-                    $10.00
+                    $10.00 USD
                   </a>
                 </td>
                 <td
@@ -3362,7 +3362,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
                     tabindex="-1"
                   >
-                    $9.50
+                    $9.50 USD
                   </a>
                 </td>
                 <td
@@ -3459,7 +3459,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                           </g>
                         </svg>
                       </span>
-                      $15.00
+                      $15.00 USD
                     </div>
                   </a>
                 </td>
@@ -3484,7 +3484,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
                     tabindex="-1"
                   >
-                    $14.50
+                    $14.50 USD
                   </a>
                 </td>
                 <td
@@ -3560,7 +3560,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
             <span
               class="woocommerce-table__summary-value"
             >
-              $10.00
+              $10.00 USD
             </span>
             <span
               class="woocommerce-table__summary-label"
@@ -3588,7 +3588,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
             <span
               class="woocommerce-table__summary-value"
             >
-              $9.00
+              $9.00 USD
             </span>
             <span
               class="woocommerce-table__summary-label"
@@ -4084,7 +4084,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
                     tabindex="-1"
                   >
-                    $10.00
+                    $10.00 USD
                   </a>
                 </td>
                 <td
@@ -4108,7 +4108,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
                     tabindex="-1"
                   >
-                    $9.50
+                    $9.50 USD
                   </a>
                 </td>
                 <td
@@ -4205,7 +4205,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                           </g>
                         </svg>
                       </span>
-                      $15.00
+                      $15.00 USD
                     </div>
                   </a>
                 </td>
@@ -4230,7 +4230,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
                     tabindex="-1"
                   >
-                    $14.50
+                    $14.50 USD
                   </a>
                 </td>
                 <td
@@ -4306,7 +4306,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
             <span
               class="woocommerce-table__summary-value"
             >
-              $10.00
+              $10.00 USD
             </span>
             <span
               class="woocommerce-table__summary-label"
@@ -4334,7 +4334,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
             <span
               class="woocommerce-table__summary-value"
             >
-              $9.00
+              $9.00 USD
             </span>
             <span
               class="woocommerce-table__summary-label"

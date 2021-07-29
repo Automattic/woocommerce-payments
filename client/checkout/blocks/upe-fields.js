@@ -186,6 +186,11 @@ const WCPayUPEFields = ( {
 		elementOptions.terms = getTerms( paymentMethodsConfig, 'always' );
 	}
 
+	const appearance = getConfig( 'upeAppearance' );
+	if ( appearance ) {
+		elementOptions.appearance = appearance;
+	}
+
 	if ( ! clientSecret ) {
 		if ( errorMessage ) {
 			return (

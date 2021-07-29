@@ -8,7 +8,7 @@ import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_UPE,
 } from '../constants.js';
-import { getConfig } from 'utils/checkout';
+import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
@@ -87,7 +87,6 @@ jQuery( function ( $ ) {
 				'#billing_first_name',
 				'wcpay-hidden-input'
 			);
-			$( '#wcpay-hidden-input' ).trigger( 'focus' );
 
 			// Hidden invalid element.
 			const hiddenInvalidRow = this.getHiddenInvalidRow();
@@ -100,6 +99,7 @@ jQuery( function ( $ ) {
 
 			// Remove transitions.
 			$( '#wcpay-hidden-input' ).css( 'transition', 'none' );
+			$( '#wcpay-hidden-input' ).trigger( 'focus' );
 		},
 		cleanup: function () {
 			$( '#wcpay-hidden-div' ).remove();
@@ -273,7 +273,7 @@ jQuery( function ( $ ) {
 				const { client_secret: clientSecret, id: id } = response;
 				paymentIntentId = id;
 
-				let appearance = getConfig( 'upeAppeareance' );
+				let appearance = getConfig( 'upeAppearance' );
 
 				if ( ! appearance ) {
 					hiddenElementsForUPE.init();
@@ -325,6 +325,11 @@ jQuery( function ( $ ) {
 			} );
 	};
 
+	const renameGatewayTitle = () =>
+		$( 'label[for=payment_method_woocommerce_payments]' ).text(
+			getCustomGatewayTitle( paymentMethodsConfig )
+		);
+
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
@@ -337,6 +342,7 @@ jQuery( function ( $ ) {
 			isUPEEnabled &&
 			! upeElement
 		) {
+			renameGatewayTitle();
 			mountUPEElement();
 		}
 	} );
@@ -351,6 +357,7 @@ jQuery( function ( $ ) {
 			isUPEEnabled &&
 			! upeElement
 		) {
+			renameGatewayTitle();
 			const isChangingPayment = getConfig( 'isChangingPayment' );
 
 			// We use a setup intent if we are on the screens to add a new payment method or to change a subscription payment.
