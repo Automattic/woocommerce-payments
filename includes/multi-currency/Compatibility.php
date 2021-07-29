@@ -265,11 +265,6 @@ class Compatibility {
 	 * @return array
 	 */
 	public function convert_woocommerce_order_query( $results, $args ): array {
-		$default_currency = $this->multi_currency->get_default_currency();
-		if ( ! $default_currency ) {
-			return $results;
-		}
-
 		$backtrace_calls = [
 			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::sum_sales_for_date',
 			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::possibly_add_note',
@@ -277,6 +272,11 @@ class Compatibility {
 
 		// If the call we're expecting isn't in the backtrace, then just do nothing and return the results.
 		if ( ! $this->utils->is_call_in_backtrace( $backtrace_calls ) ) {
+			return $results;
+		}
+
+		$default_currency = $this->multi_currency->get_default_currency();
+		if ( ! $default_currency ) {
 			return $results;
 		}
 
