@@ -75,7 +75,7 @@ class WC_Payments_Explicit_Price_Formatter {
 	 * @return  array        The modified arguments
 	 */
 	public static function get_explicit_price_args( $args ) {
-		if ( strpos( $args['price_format'], $args['currency'] ) === false ) {
+		if ( false === strpos( $args['price_format'], $args['currency'] ) ) {
 			$args['price_format'] = sprintf( '%s&nbsp;%s', $args['price_format'], $args['currency'] );
 		}
 		return $args;

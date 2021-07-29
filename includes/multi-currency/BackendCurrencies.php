@@ -65,7 +65,7 @@ class BackendCurrencies {
 	 * @return string The store currency code
 	 */
 	public function get_store_currency(): string {
-		return get_option( 'woocommerce_currency' );
+		return get_woocommerce_currency();
 	}
 
 	/**
