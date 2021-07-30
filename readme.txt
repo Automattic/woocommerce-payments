@@ -1,7 +1,7 @@
 === WooCommerce Payments ===
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
-Requires at least: 5.5
+Requires at least: 5.6
 Tested up to: 5.7
 Requires PHP: 7.0
 Stable tag: 2.7.1
@@ -38,8 +38,8 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* WordPress 5.5 or newer.
-* WooCommerce 5.2 or newer.
+* WordPress 5.6 or newer.
+* WooCommerce 5.3 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -104,6 +104,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Avoid crash when seeing the details of an empty deposit.
 * Fix - Disabled Payment Request Buttons when order has to be split into multiple packages because Payment Requests do not support that use case.
 * Fix - Fee discounts should use the discount currency rather than the base fee currency.
+* Fix - Do not redirect to the onboarding page when account retrieval fails.
 * Add - Allow the customer to perform SCA authentication on Subscription renewals.
 * Update - Actualized supported countries list for onboarding.
 * Add - Dispute Status Chip into the header of the Dispute Details page.
@@ -111,6 +112,10 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Disable payment gateway when not in test mode and not using https or ssl checkout enforcement.
 * Fix - Improved errors handling during onboarding and page overview.
 * Update - Remove Account in the old Settings page.
+* Update - Bump minimum supported version of WooCommerce from 5.2 to 5.3.
+* Update - Bump minimum supported version of WordPress from 5.5 to 5.6.
+* Fix - Stop refund process when using an invalid amount
+* Add - Show fee breakdown in transaction details timeline.
 * Add - REST endpoint to get customer id from an order.
 
 = 2.7.1 - 2021-07-26 =

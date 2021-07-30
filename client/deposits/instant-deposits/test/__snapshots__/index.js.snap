@@ -99,7 +99,7 @@ exports[`Instant deposit button and modal modal renders correctly 1`] = `
       >
         Net deposit amount: 
         <span>
-          $122.22
+          $122.22 USD
         </span>
       </li>
     </ul>
@@ -116,7 +116,7 @@ exports[`Instant deposit button and modal modal renders correctly 1`] = `
         class="components-button is-primary"
         type="button"
       >
-        Deposit $122.22 now
+        Deposit $122.22 USD now
       </button>
     </div>
   </div>
