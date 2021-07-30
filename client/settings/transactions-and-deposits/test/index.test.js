@@ -15,7 +15,7 @@ import {
 	useSavedCards,
 } from '../../../data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
 	useManualCapture: jest.fn(),
 	useGetSavingError: jest.fn(),

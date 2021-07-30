@@ -12,7 +12,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies.
  */
-import { useDisputes } from 'data';
+import { useDisputes } from 'wcpay/data';
 import OrderLink from 'components/order-link';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
