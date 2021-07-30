@@ -77,6 +77,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'get_setup_intent',
 					'get_payment_method',
 					'refund_charge',
+					'get_charge',
 				]
 			)
 			->getMock();
