@@ -234,12 +234,8 @@ Array [
     "body": Array [
       "1,00 EUR → 1.19944 USD: $21.59 USD",
       "Fee (2.9% + $0.30): $-0.62",
-<<<<<<< HEAD
-      "Net deposit: $20.97 USD",
-=======
       undefined,
-      "Net deposit: $20.97",
->>>>>>> 2474d4c7 (feedback changes)
+      "Net deposit: $20.97 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of €18,00 EUR was successfully charged.",
@@ -287,12 +283,8 @@ Array [
     "body": Array [
       "1,00 EUR → 1.19944 USD: $21.59 USD",
       "Fee: €0,52",
-<<<<<<< HEAD
-      "Net deposit: $20.97 USD",
-=======
       undefined,
-      "Net deposit: $20.97",
->>>>>>> 2474d4c7 (feedback changes)
+      "Net deposit: $20.97 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of €18,00 EUR was successfully charged.",
@@ -523,7 +515,7 @@ Array [
           Discount: -4.9% + £-0.20
         </li>
       </ul>,
-      "Net deposit: $59.50",
+      "Net deposit: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of $63.00 USD was successfully charged.",
@@ -571,12 +563,8 @@ Array [
     "body": Array [
       undefined,
       "Fee: $3.50",
-<<<<<<< HEAD
-      "Net deposit: $59.50 USD",
-=======
       undefined,
-      "Net deposit: $59.50",
->>>>>>> 2474d4c7 (feedback changes)
+      "Net deposit: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of $63.00 USD was successfully charged.",
@@ -797,7 +785,7 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $59.50 was added to your 
+      $59.50 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
         type="wc-admin"
@@ -817,10 +805,10 @@ Array [
       undefined,
       "Fee (1.95% + $0.15): $-3.50",
       undefined,
-      "Net deposit: $59.50",
+      "Net deposit: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "A payment of $63.00 was successfully charged.",
+    "headline": "A payment of $63.00 USD was successfully charged.",
     "icon": <t
       className="is-success"
       icon="checkmark"
