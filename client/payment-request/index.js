@@ -617,16 +617,24 @@ jQuery( ( $ ) => {
 		},
 	};
 
+	let getEnabledPaymentRequestMethodsCache = null;
+
 	wcpayPaymentRequest.init();
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
 		wcpayPaymentRequest.init();
+
+		// Expire getEnabledPaymentRequestMethods cache.
+		getEnabledPaymentRequestMethodsCache = null;
 	} );
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
 		wcpayPaymentRequest.init();
+
+		// Expire getEnabledPaymentRequestMethods cache.
+		getEnabledPaymentRequestMethodsCache = null;
 	} );
 
 	function setBackgroundImageWithFallback( element, background, fallback ) {
@@ -643,15 +651,21 @@ jQuery( ( $ ) => {
 	 * Get a list of enabled payment request methods.
 	 */
 	async function getEnabledPaymentRequestMethods() {
+		if ( getEnabledPaymentRequestMethodsCache ) {
+			return getEnabledPaymentRequestMethodsCache;
+		}
+
 		const getEnabledMethods = async function ( paymentRequest ) {
 			const result = await paymentRequest.canMakePayment();
+			let ret = [];
 			if ( result.applePay ) {
-				return [ 'applePay' ];
+				ret = [ 'applePay' ];
 			} else if ( result.googlePay ) {
-				return [ 'googlePay' ];
+				ret = [ 'googlePay' ];
 			}
 
-			return [];
+			getEnabledPaymentRequestMethodsCache = ret;
+			return ret;
 		};
 
 		if ( wcpayPaymentRequestParams.is_product_page ) {
