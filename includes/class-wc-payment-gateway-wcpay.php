@@ -1859,6 +1859,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent = $this->payments_api_client->get_intent( $intent_id );
 				$status = $intent->get_status();
 
+				$this->attach_exchange_info_to_order( $order, $intent->get_charge_id() );
+
 				switch ( $status ) {
 					case 'succeeded':
 						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
