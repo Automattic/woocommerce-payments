@@ -7,9 +7,9 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import PaymentDetailsTimeline from '../';
-import { useTimeline } from 'data';
+import { useTimeline } from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useTimeline: jest.fn(),
 } ) );
 
