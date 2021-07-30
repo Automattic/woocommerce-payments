@@ -83,6 +83,15 @@
       "cvc": "525",
       "label": "Visa ending in 3184"
     },
+    "3dsOTP": {
+      "number": "4000002500003155",
+      "expires": {
+        "month": "04",
+        "year": "36"
+      },
+      "cvc": "626",
+      "label": "Visa ending in 3155"
+    },
     "3ds2": {
       "number": "4000000000003220",
       "expires": {
