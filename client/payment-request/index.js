@@ -641,26 +641,17 @@ jQuery( ( $ ) => {
 
 	/**
 	 * Get a list of enabled payment request methods.
-	 *
-	 * @param {Function} callback A callback function to be called with the result.
-	 *
 	 */
-	function getEnabledPaymentRequestMethods( callback ) {
-		const canMakePayment = function ( paymentRequest ) {
-			paymentRequest.canMakePayment().then( ( result ) => {
-				if ( ! result ) {
-					callback( [] );
-					return;
-				}
+	async function getEnabledPaymentRequestMethods() {
+		const getEnabledMethods = async function ( paymentRequest ) {
+			const result = await paymentRequest.canMakePayment();
+			if ( result.applePay ) {
+				return [ 'applePay' ];
+			} else if ( result.googlePay ) {
+				return [ 'googlePay' ];
+			}
 
-				if ( result.applePay ) {
-					callback( [ 'applePay' ] );
-				} else if ( result.googlePay ) {
-					callback( [ 'googlePay' ] );
-				} else {
-					callback( [] );
-				}
-			} );
+			return [];
 		};
 
 		if ( wcpayPaymentRequestParams.is_product_page ) {
@@ -671,21 +662,19 @@ jQuery( ( $ ) => {
 					wcpayPaymentRequestParams.product.needs_shipping,
 				displayItems: wcpayPaymentRequestParams.product.displayItems,
 			} );
-			canMakePayment( paymentRequest );
-		} else {
-			// If this is the cart or checkout page, we need to request the
-			// cart details for the payment request.
-			api.paymentRequestGetCartDetails().then( ( cart ) => {
-				const paymentRequest = getPaymentRequest( {
-					stripe: api.getStripe(),
-					total: cart.total.amount,
-					requestShipping: cart.needs_shipping,
-					displayItems: cart.displayItems,
-				} );
 
-				canMakePayment( paymentRequest );
-			} );
+			return getEnabledMethods( paymentRequest );
 		}
+
+		const cart = await api.paymentRequestGetCartDetails();
+		const paymentRequest = getPaymentRequest( {
+			stripe: api.getStripe(),
+			total: cart.total.amount,
+			requestShipping: cart.needs_shipping,
+			displayItems: cart.displayItems,
+		} );
+
+		return getEnabledMethods( paymentRequest );
 	}
 
 	window.getEnabledPaymentRequestMethods = getEnabledPaymentRequestMethods;
