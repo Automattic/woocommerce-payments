@@ -55,7 +55,7 @@ class Compatibility {
 		}
 
 		if ( defined( 'DOING_CRON' ) ) {
-			add_filter( 'woocommerce_order_query', [ $this, 'convert_woocommerce_order_query' ], 10, 2 );
+			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
 		}
 	}
 
@@ -261,15 +261,31 @@ class Compatibility {
 	}
 
 	/**
+	 * This filter is called when the best sales day logic is called. We use it to add another filter which will
+	 * convert the order prices used in this inbox notification.
+	 *
+	 * @param bool $arg Whether or not the best sales day logic should execute. We will just return this as is to
+	 * respect the existing behaviour.
+	 *
+	 * @return bool
+	 */
+	public function attach_order_modifier( $arg ) {
+		// Attach our filter to modify the order prices.
+		add_filter( 'woocommerce_order_query', [ $this, 'convert_order_prices' ] );
+
+		// This will be a bool value indication whether the best day logic should be run. Let's just return it as is.
+		return $arg;
+	}
+
+	/**
 	 * When a request is made by the "Best Sales Day" Inbox notification, we want to hook into this and convert
 	 * the order totals to the store default currency.
 	 *
 	 * @param WC_Order[]|WC_Order_Refund[] $results The results returned by the orders query.
-	 * @param array                        $args The query args.
 	 *
 	 * @return array
 	 */
-	public function convert_woocommerce_order_query( $results, $args ): array {
+	public function convert_order_prices( $results ): array {
 		$backtrace_calls = [
 			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::sum_sales_for_date',
 			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::possibly_add_note',
