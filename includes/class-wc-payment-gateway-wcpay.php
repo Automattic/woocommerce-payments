@@ -1604,6 +1604,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		Tracker::track_admin( 'wcpay_merchant_captured_auth' );
 
+		$this->attach_exchange_info_to_order( $order, $intent->get_charge_id() );
+
 		if ( 'succeeded' === $status ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
