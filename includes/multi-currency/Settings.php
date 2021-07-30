@@ -91,7 +91,7 @@ class Settings extends \WC_Settings_Page {
 						// TODO: Learn more link needed.
 						'desc'  => sprintf(
 							/* translators: %s: url to documentation. */
-							__( 'Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules, and include conversion fees. <a href="%s">Learn more</a>', 'woocommerce-payments' ),
+							__( 'Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules. <a href="%s">Learn more</a>', 'woocommerce-payments' ),
 							''
 						),
 						'type'  => 'title',
