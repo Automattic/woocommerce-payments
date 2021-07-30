@@ -291,16 +291,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// no longer valid options.
 			unset( $this->form_fields['payment_request_button_type']['options']['branded'] );
 			unset( $this->form_fields['payment_request_button_type']['options']['custom'] );
-
-			add_filter(
-				'woocommerce_payment_gateways_setting_columns',
-				[ $this, 'add_all_payment_methods_logos_column' ]
-			);
-
-			add_action(
-				'woocommerce_payment_gateways_setting_column_logos',
-				[ $this, 'add_all_payment_methods_icon_logos' ]
-			);
 		}
 
 		// Giropay option hidden behind feature flag.
@@ -854,7 +844,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'code'   => '<code>',
 						]
 					),
-					wc_price( $order->get_total() ),
+					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
 					esc_html( rtrim( $e->getMessage(), '.' ) )
 				);
 				$order->add_order_note( $note );
@@ -1149,7 +1139,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 							]
 						),
-						wc_price( $amount, [ 'currency' => $currency ] ),
+						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
 						$intent_id
 					);
 					$order->add_order_note( $note );
@@ -1168,7 +1158,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 						]
 					),
-					wc_price( $amount, [ 'currency' => $currency ] ),
+					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
 					$intent_id
 				);
 
@@ -1187,7 +1177,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								'code'   => '<code>',
 							]
 						),
-						wc_price( $amount, [ 'currency' => $currency ] ),
+						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
 						$intent_id
 					);
 					$order->add_order_note( $note );
@@ -1276,10 +1266,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			);
 		}
 
+		// If the entered amount is not valid stop without making a request.
+		if ( $amount <= 0 || $amount > $order->get_total() ) {
+			return new WP_Error(
+				'invalid-amount',
+				__( 'The refund amount is not valid.', 'woocommerce-payments' )
+			);
+		}
+
 		$charge_id = $order->get_meta( '_charge_id', true );
 
 		try {
 			if ( is_null( $amount ) ) {
+				// If amount is null, the default is the entire charge.
 				$refund = $this->payments_api_client->refund_charge( $charge_id );
 			} else {
 				$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
@@ -1291,7 +1290,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount, %2: error message */
 				__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
-				wc_price( $amount, [ 'currency' => $currency ] ),
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
 				$e->getMessage()
 			);
 
@@ -1308,13 +1307,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount */
 				__( 'A refund of %1$s was successfully processed using WooCommerce Payments.', 'woocommerce-payments' ),
-				wc_price( $amount, [ 'currency' => $currency ] )
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order )
 			);
 		} else {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount, %2: reason */
 				__( 'A refund of %1$s was successfully processed using WooCommerce Payments. Reason: %2$s', 'woocommerce-payments' ),
-				wc_price( $amount, [ 'currency' => $currency ] ),
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
 				$reason
 			);
 		}
@@ -1611,7 +1610,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					),
 					[ 'strong' => '<strong>' ]
 				),
-				wc_price( $amount, [ 'currency' => $currency ] )
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order )
 			);
 			$order->add_order_note( $note );
 			$order->payment_complete();
@@ -1628,7 +1627,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'code'   => '<code>',
 					]
 				),
-				wc_price( $amount, [ 'currency' => $currency ] ),
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
 				esc_html( $error_message )
 			);
 			$order->add_order_note( $note );
@@ -1639,7 +1638,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				),
-				wc_price( $amount, [ 'currency' => $currency ] )
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order )
 			);
 			$order->add_order_note( $note );
 		}
@@ -1866,7 +1865,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 								]
 							),
-							wc_price( $amount ),
+							WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $order->get_currency() ] ), $order ),
 							$intent_id
 						);
 						$order->add_order_note( $note );
@@ -1888,7 +1887,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 								]
 							),
-							wc_price( $amount ),
+							WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $order->get_currency() ] ), $order ),
 							$intent_id
 						);
 						// Save the note separately because if there is no change in status
@@ -1912,7 +1911,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 								]
 							),
-							wc_price( $amount ),
+							WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $order->get_currency() ] ), $order ),
 							$intent_id
 						);
 						// Save the note separately because if there is no change in status
@@ -1940,7 +1939,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 									'code'   => '<code>',
 								]
 							),
-							wc_price( $amount ),
+							WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $order->get_currency() ] ), $order ),
 							$intent_id
 						);
 						// Save the note separately because if there is no change in status

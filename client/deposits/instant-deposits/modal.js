@@ -6,7 +6,7 @@
 import { Button, Modal } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
-import { formatCurrency } from 'utils/currency';
+import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 
 /**
  * Internal dependencies
@@ -68,7 +68,7 @@ const InstantDepositModal = ( {
 				</li>
 				<li className="wcpay-instant-deposits-modal__net">
 					{ __( 'Net deposit amount: ', 'woocommerce-payments' ) }
-					<span>{ formatCurrency( net ) }</span>
+					<span>{ formatExplicitCurrency( net ) }</span>
 				</li>
 			</ul>
 
@@ -85,7 +85,7 @@ const InstantDepositModal = ( {
 					{ sprintf(
 						/* translators: %s: Monetary amount to deposit */
 						__( 'Deposit %s now', 'woocommerce-payments' ),
-						formatCurrency( net )
+						formatExplicitCurrency( net )
 					) }
 				</Button>
 			</div>

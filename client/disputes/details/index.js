@@ -9,7 +9,7 @@ import { Card, CardBody, CardFooter, CardHeader } from '@wordpress/components';
 /**
  * Internal dependencies.
  */
-import { useDispute } from 'data';
+import { useDispute } from 'wcpay/data';
 import { reasons } from '../strings';
 import Actions from './actions';
 import Info from '../info';
