@@ -114,7 +114,7 @@ class Analytics {
 			: null;
 		$order_exchange_rate  = ( 1 / floatval( $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) ) );
 
-		$exchange_rate = ! is_null( $stripe_exchange_rate ) ? $stripe_exchange_rate : $order_exchange_rate;
+		$exchange_rate = $stripe_exchange_rate ?? $order_exchange_rate;
 
 		$dp                     = wc_get_price_decimals();
 		$args['net_total']      = round( $this->convert_amount( floatval( $args['net_total'] ), $exchange_rate ), $dp );
