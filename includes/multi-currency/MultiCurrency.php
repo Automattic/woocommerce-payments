@@ -272,7 +272,7 @@ class MultiCurrency {
 	 *
 	 * @return void
 	 */
-	public function register_admin_scripts() {
+	private function register_admin_scripts() {
 		$script_src_url    = plugins_url( 'dist/multi-currency.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency.asset.php';
 		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
@@ -298,14 +298,14 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function enqueue_admin_scripts() {
-		global $current_tab, $current_section;
+		global $current_tab;
 
-		$this->register_admin_scripts();
-
-		// TODO: Set this to only display when needed.
 		// Output the settings JS and CSS only on the settings page.
-		wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
-		wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+		if ( 'wcpay_multi_currency' === $current_tab ) {
+			$this->register_admin_scripts();
+			wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+			wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+		}
 	}
 
 	/**
