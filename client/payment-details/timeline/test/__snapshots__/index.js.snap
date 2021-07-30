@@ -848,6 +848,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span>
                     Fee: $3.50
                   </span>
+                  <span />
                   <span>
                     Net deposit: $59.50 USD
                   </span>
