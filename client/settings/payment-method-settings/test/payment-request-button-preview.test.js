@@ -3,7 +3,9 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { useStripe } from '@stripe/react-stripe-js';
 
 /**
  * Internal dependencies
@@ -11,66 +13,98 @@ import { render, screen } from '@testing-library/react';
 import PaymentRequestButtonPreview from '../payment-request-button-preview';
 import { shouldUseGooglePayBrand } from 'payment-request/utils';
 
-// Setup mocks for modules
+jest.mock( '@wordpress/a11y', () => ( {
+	...jest.requireActual( '@wordpress/a11y' ),
+	speak: jest.fn(),
+} ) );
+
 jest.mock( 'payment-request/utils', () => ( {
-	getPaymentRequestData: jest.fn().mockReturnValue( {
-		publishableKey: '123',
-		accountId: '0001',
-		locale: 'en',
-	} ),
 	shouldUseGooglePayBrand: jest.fn(),
 } ) );
 
-jest.mock( '../payment-request-demo-button' );
-
-jest.mock( '@stripe/stripe-js', () => ( {
-	loadStripe: jest.fn().mockResolvedValue( true ),
-} ) );
-
 jest.mock( '@stripe/react-stripe-js', () => ( {
-	Elements: jest.fn().mockImplementation( () => <></> ),
+	PaymentRequestButtonElement: jest
+		.fn()
+		.mockReturnValue( <button type="submit">Stripe button mock</button> ),
+	useStripe: jest.fn(),
 } ) );
 
 describe( 'PaymentRequestButtonPreview', () => {
-	it( 'displays Google Chrome and Google Pay when page is in Safari', () => {
+	const canMakePaymentMock = jest.fn();
+
+	beforeEach( () => {
+		shouldUseGooglePayBrand.mockReturnValue( true );
+		useStripe.mockReturnValue( {
+			paymentRequest: () => ( {
+				canMakePayment: canMakePaymentMock,
+			} ),
+		} );
+		canMakePaymentMock.mockResolvedValue( {} );
+	} );
+
+	afterEach( () => {
+		jest.clearAllMocks();
+	} );
+
+	it( 'displays Google Chrome and Google Pay when page is in Safari', async () => {
+		shouldUseGooglePayBrand.mockReturnValue( false );
+
+		render( <PaymentRequestButtonPreview /> );
+
+		expect(
+			await screen.findByText(
+				'To preview the Google Pay button, view this page in the Google Chrome browser.'
+			)
+		).toBeInTheDocument();
+		expect( screen.queryByText( /Safari/ ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'displays Safari Apple Pay when page is in Google Chrome', async () => {
 		shouldUseGooglePayBrand.mockReturnValue( true );
 
 		render( <PaymentRequestButtonPreview /> );
 
 		expect(
-			screen.getByText(
+			await screen.findByText(
 				'To preview the Apple Pay button, view this page in the Safari browser.'
 			)
 		).toBeInTheDocument();
+		expect( screen.queryByText( /Google Chrome/ ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'displays Safari Apple Pay when page is in Google Chrome', () => {
-		shouldUseGooglePayBrand.mockReturnValue( false );
+	it( 'does not display anything if stripe is falsy', () => {
+		useStripe.mockReturnValue( null );
 
+		const { container } = render( <PaymentRequestButtonPreview /> );
+
+		expect(
+			screen.queryByText( 'Stripe button mock' )
+		).not.toBeInTheDocument();
+		expect( container.firstChild ).toBeNull();
+	} );
+
+	it( 'displays an info notice if stripe fails to load', async () => {
+		canMakePaymentMock.mockResolvedValue( null );
 		render( <PaymentRequestButtonPreview /> );
 
 		expect(
-			screen.getByText(
-				'To preview the Google Pay button, view this page in the Google Chrome browser.'
+			await screen.findByText(
+				/To preview the buttons, ensure your device is configured/
 			)
 		).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Stripe button mock' )
+		).not.toBeInTheDocument();
 	} );
 
-	it( 'displays info notice if Stripe fails to render both Apple Pay and Google Pay', () => {
-		shouldUseGooglePayBrand.mockReturnValue( false );
-
-		render(
-			<PaymentRequestButtonPreview
-				isLoading={ false }
-				paymentRequest={ false }
-			/>
-		);
+	it( 'displays the payment button when stripe is loaded', async () => {
+		render( <PaymentRequestButtonPreview /> );
 
 		expect(
-			screen.getAllByText(
-				// eslint-disable-next-line
-				'To preview the buttons, ensure your device is configured to accept Apple Pay, or Google Pay, and view this page using the Safari or Chrome browsers.'
-			)[ 0 ]
+			await screen.findByText( 'Stripe button mock' )
 		).toBeInTheDocument();
+		expect(
+			screen.queryByText( /ensure your device is configured/ )
+		).not.toBeInTheDocument();
 	} );
 } );
