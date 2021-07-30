@@ -109,16 +109,17 @@ class Analytics {
 			return $args;
 		}
 
-		$stripe_exchange_rate = ! $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true )
+		$stripe_exchange_rate = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true )
 			? floatval( $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true ) )
 			: null;
 		$order_exchange_rate  = ( 1 / floatval( $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) ) );
 
 		$exchange_rate = ! is_null( $stripe_exchange_rate ) ? $stripe_exchange_rate : $order_exchange_rate;
 
-		$args['net_total']      = $this->convert_amount( floatval( $args['net_total'] ), $exchange_rate, wc_get_price_decimals() );
-		$args['shipping_total'] = $this->convert_amount( floatval( $args['shipping_total'] ), $exchange_rate, wc_get_price_decimals() );
-		$args['tax_total']      = $this->convert_amount( floatval( $args['tax_total'] ), $exchange_rate, wc_get_price_decimals() );
+		$dp                     = wc_get_price_decimals();
+		$args['net_total']      = round( $this->convert_amount( floatval( $args['net_total'] ), $exchange_rate ), $dp );
+		$args['shipping_total'] = round( $this->convert_amount( floatval( $args['shipping_total'] ), $exchange_rate ), $dp );
+		$args['tax_total']      = round( $this->convert_amount( floatval( $args['tax_total'] ), $exchange_rate ), $dp );
 		$args['total_sales']    = $args['net_total'] + $args['shipping_total'] + $args['tax_total'];
 
 		return $args;
@@ -245,15 +246,13 @@ class Analytics {
 	/**
 	 * Convert an amount to the store's default currency in order to store in the stats table.
 	 *
-	 * @param float   $amount The amount to convert into the store's default currency.
-	 * @param float   $exchange_rate The exchange rate to use for the conversion.
-	 * @param integer $dp How many decimal places we should use to store the converted amount.
+	 * @param float $amount The amount to convert into the store's default currency.
+	 * @param float $exchange_rate The exchange rate to use for the conversion.
 	 *
 	 * @return float The converted amount.
 	 */
-	private function convert_amount( float $amount, float $exchange_rate, int $dp = 2 ): float {
-		// Using round to follow the same rule that Stripe transactions use.
-		return round( $amount * $exchange_rate, $dp );
+	private function convert_amount( float $amount, float $exchange_rate ): float {
+		return $amount * $exchange_rate;
 	}
 
 	/**
