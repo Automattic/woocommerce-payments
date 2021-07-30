@@ -658,6 +658,11 @@ jQuery( ( $ ) => {
 		const getEnabledMethods = async function ( paymentRequest ) {
 			const result = await paymentRequest.canMakePayment();
 			let ret = [];
+
+			if ( ! result ) {
+				return ret;
+			}
+
 			if ( result.applePay ) {
 				ret = [ 'applePay' ];
 			} else if ( result.googlePay ) {
