@@ -9,9 +9,9 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import { DepositOverview } from '../';
-import { useDeposit } from 'data';
+import { useDeposit } from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useDeposit: jest.fn(),
 } ) );
 
