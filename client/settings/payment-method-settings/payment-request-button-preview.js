@@ -118,6 +118,7 @@ const PaymentRequestButtonPreview = () => {
 		<>
 			<div className="payment-method-settings__preview">
 				<PaymentRequestButtonElement
+					key={ `${ buttonType }-${ theme }-${ size }` }
 					onClick={ ( e ) => {
 						e.preventDefault();
 					} }
