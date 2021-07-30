@@ -9,7 +9,7 @@ $space-header-item: 12px;
 
 	.converted-amount {
 		display: flex; // Necessary for conversion tooltip to show.
-		justify-content: center;
+		justify-content: flex-end;
 
 		.conversion-indicator {
 			margin-right: 6px;
