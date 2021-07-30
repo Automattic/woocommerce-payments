@@ -272,6 +272,9 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 
+		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
+		WC_Payments_Explicit_Price_Formatter::init();
+
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-translations-loader.php';
 		WC_Payments_Translations_Loader::init();
 
@@ -807,8 +810,13 @@ class WC_Payments {
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
+		if ( WC_Payments_Features::is_upe_enabled() ) {
+			require_once __DIR__ . '/class-wc-payments-upe-blocks-payment-method.php';
+			$payment_method_registry->register( new WC_Payments_UPE_Blocks_Payment_Method() );
+		} else {
+			$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
+		}
 
-		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
 	}
 
 	/**

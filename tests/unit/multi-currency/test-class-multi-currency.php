@@ -12,9 +12,10 @@ use WCPay\MultiCurrency\MultiCurrency;
  * WCPay\MultiCurrency\MultiCurrency unit tests.
  */
 class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
-	const LOGGED_IN_USER_ID         = 1;
-	const ENABLED_CURRENCIES_OPTION = 'wcpay_multi_currency_enabled_currencies';
-	const CACHED_CURRENCIES_OPTION  = 'wcpay_multi_currency_cached_currencies';
+	const LOGGED_IN_USER_ID               = 1;
+	const ENABLED_CURRENCIES_OPTION       = 'wcpay_multi_currency_enabled_currencies';
+	const CACHED_CURRENCIES_OPTION        = 'wcpay_multi_currency_cached_currencies';
+	const CURRENCY_RETRIEVAL_ERROR_OPTION = 'wcpay_multi_currency_retrieval_error';
 
 	/**
 	 * Mock enabled currencies.
@@ -123,6 +124,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
 		remove_all_filters( 'woocommerce_currency' );
+		remove_all_filters( 'stylesheet' );
 
 		delete_user_meta( self::LOGGED_IN_USER_ID, MultiCurrency::CURRENCY_META_KEY );
 		wp_set_current_user( 0 );
@@ -530,25 +532,28 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$mock_api_client->method( 'is_server_connected' )->willReturn( false );
 
-		$this->multi_currency = new MultiCurrency( $mock_api_client, $this->mock_account, $this->mock_localization_service );
-		$this->multi_currency->init();
-
-		$this->assertNull( $this->multi_currency->get_cached_currencies() );
+		$this->init_multi_currency( $mock_api_client );
+		$this->assertEquals(
+			$this->mock_cached_currencies,
+			$this->multi_currency->get_cached_currencies()
+		);
 	}
 
-	public function test_get_cached_currencies_with_server_retrieval_error() {
-		$current_time = time();
+	public function test_get_expired_cached_currencies_with_server_retrieval_error() {
+		$currency_cache            = $this->mock_cached_currencies;
+		$currency_cache['expires'] = strtotime( 'yesterday' );
 
-		$currency_cache = [
-			'currencies' => MultiCurrency::CURRENCY_RETRIEVAL_ERROR,
-			'updated'    => $current_time,
-			'expires'    => $current_time + DAY_IN_SECONDS,
-		];
+		update_option( self::CACHED_CURRENCIES_OPTION, $currency_cache );
 
-		// Create or update the currency option cache.
-		update_option( MultiCurrency::CURRENCY_CACHE_OPTION, $currency_cache, 'no' );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_currency_rates' )
+			->willThrowException( new API_Exception( 'Error connecting to server', 'API_ERROR', 500 ) );
 
-		$this->assertNull( $this->multi_currency->get_cached_currencies() );
+		$this->assertEquals(
+			$currency_cache,
+			$this->multi_currency->get_cached_currencies()
+		);
 	}
 
 	public function test_get_cached_currencies_with_valid_cached_data() {
@@ -604,9 +609,63 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$this->assertNull( $this->multi_currency->get_cached_currencies() );
 
-		// Assert that the cache was correctly set with the error string.
-		$cached_data = get_option( self::CACHED_CURRENCIES_OPTION );
-		$this->assertEquals( MultiCurrency::CURRENCY_RETRIEVAL_ERROR, $cached_data['currencies'] );
+		// Assert that the cache was correctly set with the error expiration time.
+		$this->assertEquals( time() + MINUTE_IN_SECONDS, get_option( self::CURRENCY_RETRIEVAL_ERROR_OPTION ) );
+
+	}
+
+	public function test_storefront_integration_init_with_compatible_themes() {
+		// Need to create a new instance of MultiCurrency to re-evaluate new theme.
+		$this->mock_theme( 'storefront' );
+
+		$this->init_multi_currency();
+		$this->assertNotNull( $this->multi_currency->get_storefront_integration() );
+	}
+
+	public function test_storefront_integration_does_not_init_with_incompatible_themes() {
+		// Need to create a new instance of MultiCurrency to re-evaluate new theme.
+		$this->mock_theme( 'not_storefront' );
+
+		$this->init_multi_currency();
+		$this->assertNull( $this->multi_currency->get_storefront_integration() );
+	}
+
+	public function test_add_order_meta_on_refund_skips_default_currency() {
+		$order = wc_create_order();
+		$order->set_currency( 'USD' );
+
+		$refund = wc_create_refund( [ 'order_id' => $order->get_id() ] );
+		$refund->set_currency( 'USD' );
+
+		$this->multi_currency->add_order_meta_on_refund( $order->get_id(), $refund->get_id() );
+
+		// Get the order from the database.
+		$refund = wc_get_order( $refund->get_id() );
+
+		$this->assertFalse( $refund->meta_exists( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertFalse( $refund->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
+	}
+
+	public function test_add_order_meta_on_refund() {
+		$order = wc_create_order();
+		$order->set_currency( 'GBP' );
+		$order->save();
+
+		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', '0.71' );
+		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'USD' );
+		$order->save_meta_data();
+
+		$refund = wc_create_refund( [ 'order_id' => $order->get_id() ] );
+		$refund->set_currency( 'GBP' );
+		$refund->save();
+
+		$this->multi_currency->add_order_meta_on_refund( $order->get_id(), $refund->get_id() );
+
+		// Get the order from the database.
+		$refund = wc_get_order( $refund->get_id() );
+
+		$this->assertEquals( '0.71', $refund->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) );
+		$this->assertEquals( 'USD', $refund->get_meta( '_wcpay_multi_currency_order_default_currency', true ) );
 	}
 
 	public function get_price_provider() {
@@ -642,8 +701,17 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		}
 	}
 
-	private function init_multi_currency() {
-		$this->multi_currency = new MultiCurrency( $this->mock_api_client, $this->mock_account, $this->mock_localization_service );
+	private function init_multi_currency( $mock_api_client = null ) {
+		$this->multi_currency = new MultiCurrency( $mock_api_client ?? $this->mock_api_client, $this->mock_account, $this->mock_localization_service );
 		$this->multi_currency->init();
+	}
+
+	private function mock_theme( $theme ) {
+		add_filter(
+			'stylesheet',
+			function() use ( $theme ) {
+				return $theme;
+			}
+		);
 	}
 }

@@ -21,7 +21,7 @@ import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { reasons } from './strings';
 import { formatStringValue } from 'utils';
-import { formatCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'utils/currency';
 
 import './style.scss';
 
@@ -110,7 +110,7 @@ export const DisputesList = () => {
 			amount: {
 				value: dispute.amount / 100,
 				display: clickable(
-					formatCurrency(
+					formatExplicitCurrency(
 						dispute.amount || 0,
 						dispute.currency || 'USD'
 					)
