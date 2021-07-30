@@ -637,6 +637,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$payment_method_title = $this->payment_methods[ $payment_method_type ]->get_title( $payment_method_details );
 
+		$order->set_payment_method( self::GATEWAY_ID );
 		$order->set_payment_method_title( $payment_method_title );
 		$order->save();
 	}
