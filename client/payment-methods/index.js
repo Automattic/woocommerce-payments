@@ -100,7 +100,7 @@ const UpeSetupBanner = () => {
 							) }
 						</Button>
 					</span>
-					<ExternalLink href="https://docs.woocommerce.com/document/payments/">
+					<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/">
 						{ __( 'Learn more', 'woocommerce-payments' ) }
 					</ExternalLink>
 				</div>
