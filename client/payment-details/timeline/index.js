@@ -14,6 +14,8 @@ import { useTimeline } from 'data';
 import mapTimelineEvents from './map-events';
 import Loadable, { LoadableBlock } from 'components/loadable';
 
+import './style.scss';
+
 const PaymentDetailsTimeline = ( { chargeId } ) => {
 	const { timeline, timelineError, isLoading } = useTimeline( chargeId );
 

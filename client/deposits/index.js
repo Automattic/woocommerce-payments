@@ -22,7 +22,7 @@ const DepositsPage = () => {
 	return (
 		<Page>
 			<Experiment
-				name="wcpay_empty_state_preview_mode_v1"
+				name="wcpay_empty_state_preview_mode_v2"
 				treatmentExperience={
 					<>
 						<EmptyStateTable

@@ -97,8 +97,9 @@ class Settings extends \WC_Settings_Page {
 						'title' => __( 'Enabled currencies', 'woocommerce-payments' ),
 						'desc'  => sprintf(
 							/* translators: %s: url to documentation. */
-							__( 'Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules, and include conversion fees. <a href="%s" target="blank">Learn more</a>', 'woocommerce-payments' ),
+							__( 'Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules. <a href="%s">Learn more</a>', 'woocommerce-payments' ),
 							self::LEARN_MORE_URL
+
 						),
 						'type'  => 'title',
 						'id'    => $this->id . '_enabled_currencies',
@@ -130,27 +131,23 @@ class Settings extends \WC_Settings_Page {
 					],
 
 					[
-						'title'         => __( 'Store settings', 'woocommerce-payments' ),
-						'desc'          => __( 'Automatically switch customers to their local currency if it is enabled above.', 'woocommerce-payments' ),
+						'title'    => __( 'Store settings', 'woocommerce-payments' ),
+						'desc'     => __( 'Automatically switch customers to their local currency if it is enabled above.', 'woocommerce-payments' ),
 						// TODO: Preview link, to be done on #2523.
-						'desc_tip'      => __( 'Customers will be notified via store alert banner.', 'woocommerce-payments' ),
-						'id'            => $this->id . '_enable_auto_currency',
-						'default'       => 'yes',
-						'type'          => 'checkbox',
-						'checkboxgroup' => 'start',
+						'desc_tip' => __( 'Customers will be notified via store alert banner.', 'woocommerce-payments' ),
+						'id'       => $this->id . '_enable_auto_currency',
+						'default'  => 'yes',
+						'type'     => 'checkbox',
 					],
 
 					[
-						'desc'          => __( 'Add a currency switcher to the cart widget', 'woocommerce-payments' ),
-						'desc_tip'      => sprintf(
-							/* translators: %s: url to the widgets page */
-							__( 'A currency switcher is also available in your widgets. <a href="%s">Configure now</a>', 'woocommerce-payments' ),
+						'desc' => sprintf(
+						/* translators: %s: url to the widgets page */
+							__( 'A currency switcher is available in your widgets. <a href="%s">Configure now</a>', 'woocommerce-payments' ),
 							'widgets.php'
 						),
-						'id'            => $this->id . '_enable_cart_switcher',
-						'default'       => 'yes',
-						'type'          => 'checkbox',
-						'checkboxgroup' => 'end',
+						'type' => 'title',
+						'id'   => $this->id . '_store_settings_widgets_link',
 					],
 
 					[
@@ -236,16 +233,11 @@ class Settings extends \WC_Settings_Page {
 			</th>
 			<td>
 				<div id="wcpay_multi_currency_preview_converted">
-					<?php echo esc_html( $currency->get_symbol() ); ?>
 					<span style="display:inline-block;"></span>
 				</div>
 				<input type="hidden"
 					name="<?php echo esc_attr( $this->id . '_automatic_exchange_rate' ); ?>"
 					value="<?php echo esc_attr( $available_currencies[ $currency->get_code() ]->get_rate() ); ?>"
-				/>
-				<input type="hidden"
-					name="<?php echo esc_attr( $this->id . '_num_decimals' ); ?>"
-					value="<?php echo esc_attr( $currency->get_is_zero_decimal() ? 0 : 2 ); ?>"
 				/>
 			</td>
 		</tr>

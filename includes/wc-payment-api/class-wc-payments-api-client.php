@@ -211,7 +211,7 @@ class WC_Payments_API_Client {
 		$request = array_merge( $request, $additional_parameters );
 
 		if ( $off_session ) {
-			$request['off_session'] = true;
+			$request['off_session'] = 'true';
 		}
 
 		if ( $save_payment_method ) {
