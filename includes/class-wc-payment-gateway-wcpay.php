@@ -1096,6 +1096,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param string   $charge_id ID of the charge to attach data from.
 	 */
 	public function attach_exchange_info_to_order( $order, $charge_id ) {
+		if ( empty( $charge_id ) ) {
+			return;
+		}
+
 		$currency_order   = $order->get_currency();
 		$currency_account = $this->account->get_account_default_currency();
 
