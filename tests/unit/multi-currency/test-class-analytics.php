@@ -192,6 +192,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 	}
 
 	/**
+	 * @group underTest
 	 * @dataProvider join_clause_provider
 	 */
 	public function test_filter_join_clauses( $clauses, $expected ) {
@@ -223,6 +224,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_currency_postmeta.post_id AND wcpay_multicurrency_currency_postmeta.meta_key = '_order_currency'",
 					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_default_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_default_currency_postmeta.post_id AND wcpay_multicurrency_default_currency_postmeta.meta_key = '_wcpay_multi_currency_order_default_currency'",
 					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_exchange_rate_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_exchange_rate_postmeta.post_id AND wcpay_multicurrency_exchange_rate_postmeta.meta_key = '_wcpay_multi_currency_order_exchange_rate'",
+					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_stripe_exchange_rate_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_stripe_exchange_rate_postmeta.post_id AND wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'",
 				],
 			],
 		];

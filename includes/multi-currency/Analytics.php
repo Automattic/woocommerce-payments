@@ -206,7 +206,7 @@ class Analytics {
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.post_id AND {$currency_tbl}.meta_key = '_order_currency'";
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.post_id AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$exchange_rate_tbl}.post_id AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
-			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.post_id AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
+			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.post_id AND ${stripe_exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
 		}
 
 		return $clauses;
