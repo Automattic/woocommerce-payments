@@ -16,7 +16,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useDeposits, useDepositsSummary } from 'data';
 import { displayType, displayStatus } from '../strings';
 import { formatStringValue } from 'util';
-import { formatCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import Page from '../../components/page';
@@ -114,7 +114,7 @@ export const DepositsList = () => {
 			amount: {
 				value: deposit.amount / 100,
 				display: clickable(
-					formatCurrency( deposit.amount, deposit.currency )
+					formatExplicitCurrency( deposit.amount, deposit.currency )
 				),
 			},
 			status: {
@@ -161,7 +161,7 @@ export const DepositsList = () => {
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push( {
 				label: __( 'total', 'woocommerce-payments' ),
-				value: `${ formatCurrency(
+				value: `${ formatExplicitCurrency(
 					depositsSummary.total,
 					depositsSummary.currency
 				) }`,

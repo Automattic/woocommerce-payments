@@ -647,7 +647,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		if ( $this->account->is_stripe_connected() ) {
+		if ( $this->account->is_stripe_connected( true ) ) {
 			return;
 		}
 
@@ -663,7 +663,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
-			return true;
+			return false === WC_Payments_Features::did_merchant_disable_upe();
 		}
 
 		$available_methods = $this->wcpay_gateway->get_upe_available_payment_methods();

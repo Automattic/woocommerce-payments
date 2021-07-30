@@ -100,6 +100,25 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 	}
 
 	/**
+	 * @group underTest
+	 */
+	public function test_update_order_stats_data_with_large_order() {
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_default_currency' )
+			->willReturn( new Currency( 'USD', 1.0 ) );
+
+		$args  = $this->order_args_provider( 123, 0, 1, 130500.75, 20000, 10000, 100500.75 );
+		$order = wc_create_order();
+		$order->set_currency( 'GBP' );
+		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', 0.78 );
+		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'USD' );
+
+		$expected = $this->order_args_provider( 123, 0, 1, 167308.66, 25641.03, 12820.51, 128847.12 );
+		$this->assertEquals( $expected, $this->analytics->update_order_stats_data( $args, $order ) );
+	}
+
+
+	/**
 	 * @dataProvider select_clause_provider
 	 */
 	public function test_filter_select_clauses( $context, $clauses, $expected ) {

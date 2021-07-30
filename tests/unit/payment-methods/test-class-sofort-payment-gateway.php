@@ -86,7 +86,7 @@ class Sofort_Payment_Gateway_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'is_server_connected' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'is_server_connected', 'get_charge' ] )
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -210,7 +210,11 @@ class Sofort_Payment_Gateway_Test extends WP_UnitTestCase {
 
 		// Act: process a successful payment.
 		$payment_information = Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );

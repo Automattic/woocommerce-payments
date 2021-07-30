@@ -61,6 +61,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the UPE gateway is enabled
+	 *
+	 * @return bool
+	 */
+	public static function did_merchant_disable_upe() {
+		return 'disabled' === get_option( self::UPE_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Checks whether the UPE settings redesign is enabled
 	 *
 	 * @return bool
