@@ -14,6 +14,7 @@ import { useEffect, useState } from '@wordpress/element';
 import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
+import { getTerms } from '../utils/upe';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 
 const WCPayUPEFields = ( {
@@ -180,6 +181,15 @@ const WCPayUPEFields = ( {
 			},
 		},
 	};
+
+	if ( getConfig( 'cartContainsSubscription' ) ) {
+		elementOptions.terms = getTerms( paymentMethodsConfig, 'always' );
+	}
+
+	const appearance = getConfig( 'upeAppearance' );
+	if ( appearance ) {
+		elementOptions.appearance = appearance;
+	}
 
 	if ( ! clientSecret ) {
 		if ( errorMessage ) {

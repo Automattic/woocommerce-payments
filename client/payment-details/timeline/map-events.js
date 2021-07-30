@@ -16,7 +16,11 @@ import { Link } from '@woocommerce/components';
  * Internal dependencies
  */
 import { reasons as disputeReasons } from 'disputes/strings';
-import { formatCurrency, formatFX } from 'utils/currency';
+import {
+	formatCurrency,
+	formatFX,
+	formatExplicitCurrency,
+} from 'utils/currency';
 import { formatFee } from 'utils/fees';
 
 /**
@@ -161,10 +165,13 @@ const isFXEvent = ( event = {} ) => {
 
 const composeNetString = ( event ) => {
 	if ( ! isFXEvent( event ) ) {
-		return formatCurrency( event.amount - event.fee, event.currency );
+		return formatExplicitCurrency(
+			event.amount - event.fee,
+			event.currency
+		);
 	}
 
-	return formatCurrency(
+	return formatExplicitCurrency(
 		event.transaction_details.store_amount -
 			event.transaction_details.store_fee,
 		event.transaction_details.store_currency
@@ -224,6 +231,93 @@ const composeFXString = ( event ) => {
 };
 
 /**
+ * Returns an array containing fee breakdown.
+ *
+ * @param {Object} event Event object
+ *
+ * @return {Array} Array of formatted fee strings
+ */
+const feeBreakdown = ( event ) => {
+	if ( ! event?.fee_rates?.history ) {
+		return;
+	}
+
+	const {
+		fee_rates: { history },
+	} = event;
+
+	const feeLabelMapping = ( fixedRate ) => ( {
+		base:
+			0 !== fixedRate
+				? /* translators: %1$s% is the fee amount and %2$s is the fixed rate */
+				  __( 'Base fee: %1$s%% + %2$s', 'woocommerce-payments' )
+				: /* translators: %1$s% is the fee amount */
+				  __( 'Base fee: %1$s%%', 'woocommerce-payments' ),
+		'additional-international':
+			0 !== fixedRate
+				? __(
+						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
+						'International card fee: %1$s%% + %2$s',
+						'woocommerce-payments'
+				  )
+				: __(
+						/* translators: %1$s% is the fee amount */
+						'International card fee: %1$s%%',
+						'woocommerce-payments'
+				  ),
+		'additional-fx':
+			0 !== fixedRate
+				? __(
+						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
+						'Foreign exchange fee: %1$s%% + %2$s',
+						'woocommerce-payments'
+				  )
+				: __(
+						/* translators: %1$s% is the fee amount */
+						'Foreign exchange fee: %1$s%%',
+						'woocommerce-payments'
+				  ),
+		discount:
+			0 !== fixedRate
+				? __(
+						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
+						'Discount: %1$s%% + %2$s',
+						'woocommerce-payments'
+				  )
+				: __(
+						/* translators: %1$s% is the fee amount */
+						'Discount: %1$s%%',
+						'woocommerce-payments'
+				  ),
+	} );
+
+	const feeHistoryList = history.map( ( fee ) => {
+		let labelKey = fee.type;
+		if ( fee.additional_type ) {
+			labelKey += `-${ fee.additional_type }`;
+		}
+
+		const {
+			percentage_rate: percentageRate,
+			fixed_rate: fixedRate,
+			currency,
+		} = fee;
+
+		return (
+			<li key={ labelKey }>
+				{ sprintf(
+					feeLabelMapping( fixedRate )[ labelKey ],
+					formatFee( percentageRate ),
+					formatCurrency( fixedRate, currency )
+				) }
+			</li>
+		);
+	} );
+
+	return <ul className="fee-breakdown-list">{ feeHistoryList }</ul>;
+};
+
+/**
  * Formats an event into one or more payment timeline items
  *
  * @param {Object} event An event data
@@ -233,8 +327,13 @@ const composeFXString = ( event ) => {
 const mapEventToTimelineItems = ( event ) => {
 	const { type } = event;
 
-	const stringWithAmount = ( headline, amount ) =>
-		sprintf( headline, formatCurrency( amount, event.currency ) );
+	const stringWithAmount = ( headline, amount, explicit = false ) =>
+		sprintf(
+			headline,
+			explicit
+				? formatExplicitCurrency( amount, event.currency )
+				: formatCurrency( amount, event.currency )
+		);
 
 	switch ( type ) {
 		case 'authorized':
@@ -251,7 +350,8 @@ const mapEventToTimelineItems = ( event ) => {
 							'A payment of %s was successfully authorized.',
 							'woocommerce-payments'
 						),
-						event.amount
+						event.amount,
+						true
 					),
 					'checkmark',
 					'is-warning'
@@ -271,7 +371,8 @@ const mapEventToTimelineItems = ( event ) => {
 							'Authorization for %s was voided.',
 							'woocommerce-payments'
 						),
-						event.amount
+						event.amount,
+						true
 					),
 					'checkmark',
 					'is-warning'
@@ -291,7 +392,8 @@ const mapEventToTimelineItems = ( event ) => {
 							'Authorization for %s expired.',
 							'woocommerce-payments'
 						),
-						event.amount
+						event.amount,
+						true
 					),
 					'cross',
 					'is-error'
@@ -314,13 +416,15 @@ const mapEventToTimelineItems = ( event ) => {
 							'A payment of %s was successfully charged.',
 							'woocommerce-payments'
 						),
-						event.amount
+						event.amount,
+						true
 					),
 					'checkmark',
 					'is-success',
 					[
 						composeFXString( event ),
 						feeString,
+						feeBreakdown( event ),
 						sprintf(
 							/* translators: %s is a monetary amount */
 							__( 'Net deposit: %s', 'woocommerce-payments' ),
@@ -336,7 +440,7 @@ const mapEventToTimelineItems = ( event ) => {
 				event.currency
 			);
 			const depositAmount = isFXEvent( event )
-				? formatCurrency(
+				? formatExplicitCurrency(
 						event.transaction_details.store_amount,
 						event.transaction_details.store_currency
 				  )
@@ -375,7 +479,8 @@ const mapEventToTimelineItems = ( event ) => {
 					stringWithAmount(
 						/* translators: %s is a monetary amount */
 						__( 'A payment of %s failed.', 'woocommerce-payments' ),
-						event.amount
+						event.amount,
+						true
 					),
 					'cross',
 					'is-error'
