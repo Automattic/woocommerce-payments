@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WC_Payments;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Connection_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
@@ -1083,6 +1084,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
+		$this->attach_fee_breakdown_to_order( $order, $intent_id );
 
 		if ( isset( $response ) ) {
 			return $response;
@@ -1097,6 +1099,95 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		];
+	}
+
+	/**
+	 * Given the order and the intent id it forms the string to attach to order notes
+	 *
+	 * @param WC_Order $order WC Order object.
+	 * @param string   $intent_id Payment Intent Id.
+	 */
+	public function attach_fee_breakdown_to_order( $order, string $intent_id ) : void {
+
+		$events                   = $this->payments_api_client->get_timeline( $intent_id );
+		$capture_event            = current(
+			array_filter(
+				$events['data'],
+				function ( array $event ) {
+					return 'captured' === $event['type'];
+				}
+			)
+		);
+		$fee_rates                = $capture_event['fee_rates'];
+		$details                  = $capture_event['transaction_details'];
+		$fixed_currency_format    = self::get_currency_format_for_wc_price( $fee_rates['fixed_currency'] );
+		$customer_currency_format = self::get_currency_format_for_wc_price( $details['customer_currency'] );
+		$store_currency_format    = self::get_currency_format_for_wc_price( $details['store_currency'] );
+		$note                     = __( 'Charge details: <br/>', 'woocommerce-payments' );
+		$note                    .= sprintf(
+			/* translators: %1: the amount charged to the customer */
+			__( 'Amount: %1$s <br/>', 'woocommerce-payments' ),
+			wc_price( $details['customer_amount'] / 100, $customer_currency_format )
+		);
+		$note .= sprintf(
+			/* translators: %1: percentage fee charged per transaction, %2: fixed fee charged per transaction, %3: total fee charged for this transaction */
+			__( 'Fee (%1$s + %2$s): -%3$s <br/>', 'woocommerce-payments' ),
+			$fee_rates['percentage'],
+			wc_price( $fee_rates['fixed'] / 100, $fixed_currency_format ),
+			wc_price( $details['store_fee'] / 100, $store_currency_format )
+		);
+		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Transforms the cuformat returned from localization service into
+	 * the format that can be used by wc_price
+	 *
+	 * @param string $currency the currency code
+	 * @return array The currency format.
+	 */
+	private static function get_currency_format_for_wc_price( string $currency ) : array {
+		$currency_data                = WC_Payments::get_localization_service()->get_currency_format( $currency );
+		$currency_format_for_wc_price = [];
+		foreach ( $currency_data as $key => $format ) {
+			switch ( $key ) {
+				case 'thousand_sep':
+					$currency_format_for_wc_price['thousand_separator'] = $format;
+					break;
+				case 'decimal_sep':
+					$currency_format_for_wc_price['decimal_separator'] = $format;
+					break;
+				case 'num_decimals':
+					$currency_format_for_wc_price['decimals'] = $format;
+					break;
+				case 'currency_pos':
+					$currency_format_for_wc_price['price_format'] = self::get_woocommerce_price_format( $format );
+					break;
+			}
+		}
+		$currency_format_for_wc_price['currency'] = $currency;
+		return $currency_format_for_wc_price;
+	}
+
+	/**
+	 * Returns the currency format
+	 *
+	 * @param string $currency_pos currency symbol position.
+	 * @return string The currency format.
+	 */
+	private static function get_woocommerce_price_format( string $currency_pos ): string {
+		switch ( $currency_pos ) {
+			case 'left':
+				return '%1$s%2$s';
+			case 'right':
+				return '%2$s%1$s';
+			case 'left_space':
+				return '%1$s&nbsp;%2$s';
+			case 'right_space':
+				return '%2$s&nbsp;%1$s';
+			default:
+				return '%1$s%2$s';
+		}
 	}
 
 	/**
