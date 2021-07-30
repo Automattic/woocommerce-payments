@@ -21,6 +21,13 @@ jest.mock( '../../../data', () => ( {
 jest.mock( '../payment-request-button-preview' );
 PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
 
+jest.mock( '@stripe/react-stripe-js', () => ( {
+	Elements: jest.fn().mockReturnValue( null ),
+} ) );
+jest.mock( '@stripe/stripe-js', () => ( {
+	loadStripe: jest.fn().mockReturnValue( null ),
+} ) );
+
 jest.mock( 'payment-request/utils', () => ( {
 	getPaymentRequestData: jest.fn().mockReturnValue( {
 		publishableKey: '123',

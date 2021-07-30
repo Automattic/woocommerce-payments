@@ -2,10 +2,12 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, RadioControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
 /**
  * Internal dependencies
@@ -17,6 +19,7 @@ import {
 } from '../../data';
 import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
+import { getPaymentRequestData } from '../../payment-request/utils';
 
 const makeButtonSizeText = ( string ) =>
 	interpolateComponents( {
@@ -120,6 +123,14 @@ const PaymentRequestSettings = () => {
 	const [ size, setSize ] = usePaymentRequestButtonSize();
 	const [ theme, setTheme ] = usePaymentRequestButtonTheme();
 
+	const stripePromise = useMemo( () => {
+		const stripeSettings = getPaymentRequestData( 'stripe' );
+		return loadStripe( stripeSettings.publishableKey, {
+			stripeAccount: stripeSettings.accountId,
+			locale: stripeSettings.locale,
+		} );
+	}, [] );
+
 	return (
 		<Card>
 			<CardBody>
@@ -153,7 +164,10 @@ const PaymentRequestSettings = () => {
 					options={ buttonThemeOptions }
 					onChange={ setTheme }
 				/>
-				<PaymentRequestButtonPreview />
+				<p>{ __( 'Preview', 'woocommerce-payments' ) }</p>
+				<Elements stripe={ stripePromise }>
+					<PaymentRequestButtonPreview />
+				</Elements>
 			</CardBody>
 		</Card>
 	);
