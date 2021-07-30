@@ -38,6 +38,13 @@ class Settings extends \WC_Settings_Page {
 	protected $multi_currency;
 
 	/**
+	 * Link to the multi-currency documentation page.
+	 *
+	 * @var string
+	 */
+	const LEARN_MORE_URL = 'https://docs.woocommerce.com/document/payments/currencies/multi-currency-setup/';
+
+	/**
 	 * Constructor.
 	 *
 	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
@@ -88,11 +95,10 @@ class Settings extends \WC_Settings_Page {
 				[
 					[
 						'title' => __( 'Enabled currencies', 'woocommerce-payments' ),
-						// TODO: Learn more link needed.
 						'desc'  => sprintf(
 							/* translators: %s: url to documentation. */
 							__( 'Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules. <a href="%s">Learn more</a>', 'woocommerce-payments' ),
-							''
+							self::LEARN_MORE_URL
 						),
 						'type'  => 'title',
 						'id'    => $this->id . '_enabled_currencies',
@@ -113,11 +119,10 @@ class Settings extends \WC_Settings_Page {
 
 					[
 						'title' => __( 'Store settings', 'woocommerce-payments' ),
-						// TODO: Learn more documentation link, to be done on #1780.
 						'desc'  => sprintf(
 							/* translators: %s: url to documentation. */
-							__( 'Store settings allow your customers to choose which currency they would like to use when shopping at your store. <a href="%s">Learn more</a>', 'woocommerce-payments' ),
-							''
+							__( 'Store settings allow your customers to choose which currency they would like to use when shopping at your store. <a href="%s" target="blank">Learn more</a>', 'woocommerce-payments' ),
+							self::LEARN_MORE_URL
 						),
 						'type'  => 'title',
 						'id'    => $this->id . '_store_settings',
