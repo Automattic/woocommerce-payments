@@ -80,6 +80,7 @@ class WCPay_Multi_Currency_Backend_Currencies_Tests extends WP_UnitTestCase {
 	public function woocommerce_filter_provider() {
 		return [
 			[ 'wc_price_args', 'build_wc_price_args' ],
+			[ 'woocommerce_format_localized_price', 'force_decimal_places_in_value' ],
 		];
 	}
 
@@ -126,6 +127,26 @@ class WCPay_Multi_Currency_Backend_Currencies_Tests extends WP_UnitTestCase {
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'currency_pos' => 'left' ] );
 
 		$this->assertEquals( '%1$s%2$s', $this->backend_currencies->get_woocommerce_price_format( 'EUR' ) );
+	}
+
+	public function test_force_decimal_places_in_value_should_return_correct_decimal_places() {
+		// Mock wc_get_price_decimals with a filter.
+		$decimals_filter = function() {
+			return 2;
+		};
+
+		$separator_filter = function() {
+			return '.';
+		};
+
+		add_filter( 'wc_get_price_decimals', $decimals_filter );
+		add_filter( 'wc_get_price_decimal_separator', $separator_filter );
+
+		$this->assertEquals( '1.23', wc_format_localized_price( '1.23456' ) );
+		$this->assertEquals( '1,23456', wc_format_localized_price( '1,23456' ) );
+
+		remove_filter( 'wc_get_price_decimals', $decimals_filter );
+		remove_filter( 'wc_get_price_decimal_separator', $separator_filter );
 	}
 
 	/**
