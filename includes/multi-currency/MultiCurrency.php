@@ -268,31 +268,6 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Register the CSS and JS admin scripts.
-	 *
-	 * @return void
-	 */
-	private function register_admin_scripts() {
-		$script_src_url    = plugins_url( 'dist/multi-currency.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
-		wp_register_script(
-			'WCPAY_MULTI_CURRENCY_SETTINGS',
-			$script_src_url,
-			$script_asset['dependencies'],
-			\WC_Payments::get_file_version( 'dist/multi-currency.js' ),
-			true
-		);
-
-		wp_register_style(
-			'WCPAY_MULTI_CURRENCY_SETTINGS',
-			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
-			[ 'wc-components' ],
-			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
-		);
-	}
-
-	/**
 	 * Load the admin assets.
 	 *
 	 * @return void
@@ -987,5 +962,30 @@ class MultiCurrency {
 	 */
 	private function is_using_auto_currency_switching(): bool {
 		return 'yes' === get_option( $this->id . '_enable_auto_currency', false );
+	}
+
+	/**
+	 * Register the CSS and JS admin scripts.
+	 *
+	 * @return void
+	 */
+	private function register_admin_scripts() {
+		$script_src_url    = plugins_url( 'dist/multi-currency.js', WCPAY_PLUGIN_FILE );
+		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency.asset.php';
+		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+		wp_register_script(
+			'WCPAY_MULTI_CURRENCY_SETTINGS',
+			$script_src_url,
+			$script_asset['dependencies'],
+			\WC_Payments::get_file_version( 'dist/multi-currency.js' ),
+			true
+		);
+
+		wp_register_style(
+			'WCPAY_MULTI_CURRENCY_SETTINGS',
+			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
+			[ 'wc-components' ],
+			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
+		);
 	}
 }
