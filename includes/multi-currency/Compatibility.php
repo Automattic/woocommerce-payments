@@ -314,6 +314,8 @@ class Compatibility {
 			$order->set_total( number_format( $order->get_total() * ( 1 / $exchange_rate ), wc_get_price_decimals() ) );
 		}
 
+		remove_filter( 'woocommerce_order_query', [ $this, 'convert_order_prices' ] );
+
 		return $results;
 	}
 
