@@ -148,7 +148,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertEquals( sort( $expected_currencies ), sort( $available_currencies ) );
 	}
 
-	public function test_available_currencies_uses_wc_currencies_when_stripe_account_has_no_presentment_currencies() {
+	public function test_available_currencies_uses_wc_currencies_when_stripe_account_has_no_customer_supported_currencies() {
 		$this->mock_account->method( 'get_cached_account_data' )->willReturn( [ 'id' => 'acct' ] );
 
 		$this->init_multi_currency();
@@ -159,12 +159,19 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertEquals( sort( $expected_currencies ), sort( $available_currencies ) );
 	}
 
-	public function test_available_currencies_uses_only_presentment_currencies_when_enabled_in_wc() {
+	public function test_available_currencies_uses_only_customer_supported_currencies_when_enabled_in_wc() {
 		$this->mock_account
 			->method( 'get_cached_account_data' )
 			->willReturn(
 				[
-					'presentment_currencies' => [ 'usd', 'cad', 'random', 'brl' ],
+					'customer_currencies' => [
+						'supported' => [
+							'usd',
+							'cad',
+							'random',
+							'brl',
+						],
+					],
 				]
 			);
 
