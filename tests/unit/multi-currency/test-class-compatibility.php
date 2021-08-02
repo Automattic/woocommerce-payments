@@ -467,7 +467,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 				]
 			)->willReturn( false );
 
-		$this->assertEquals( [ $order ], $this->compatibility->convert_woocommerce_order_query( [ $order ], [] ) );
+		$this->assertEquals( [ $order ], $this->compatibility->convert_order_prices( [ $order ], [] ) );
 	}
 
 	public function test_filter_woocommerce_order_query_with_order_in_default_currency() {
@@ -492,7 +492,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 				]
 			)->willReturn( true );
 
-		$this->assertEquals( [ $order ], $this->compatibility->convert_woocommerce_order_query( [ $order ], [] ) );
+		$this->assertEquals( [ $order ], $this->compatibility->convert_order_prices( [ $order ], [] ) );
 	}
 
 	public function test_filter_woocommerce_order_query_with_order_with_no_exchange_rate_meta() {
@@ -516,7 +516,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 				]
 			)->willReturn( true );
 
-		$this->assertEquals( [ $order ], $this->compatibility->convert_woocommerce_order_query( [ $order ], [] ) );
+		$this->assertEquals( [ $order ], $this->compatibility->convert_order_prices( [ $order ], [] ) );
 	}
 
 	public function test_filter_woocommerce_order_query_with_no_meta() {
@@ -537,7 +537,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 				]
 			)->willReturn( true );
 
-		$this->assertEquals( [ $order ], $this->compatibility->convert_woocommerce_order_query( [ $order ], [] ) );
+		$this->assertEquals( [ $order ], $this->compatibility->convert_order_prices( [ $order ], [] ) );
 	}
 
 	public function test_filter_woocommerce_order_query() {
@@ -564,7 +564,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		/**
 		 * @var WC_Order $result
 		 */
-		$result = $this->compatibility->convert_woocommerce_order_query( [ $order ], [] )[0];
+		$result = $this->compatibility->convert_order_prices( [ $order ], [] )[0];
 		$this->assertEquals( 2000, $result->get_total() );
 
 		// Assert the actual order wasn't changed (only modified for returning from the filter).
