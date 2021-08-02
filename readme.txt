@@ -115,8 +115,10 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Bump minimum supported version of WooCommerce from 5.2 to 5.3.
 * Update - Bump minimum supported version of WordPress from 5.5 to 5.6.
 * Fix - Stop refund process when using an invalid amount
+* Fix - Improve sanitization of ExPlat cookie.
 * Add - Show fee breakdown in transaction details timeline.
 * Add - REST endpoint to get customer id from an order.
+* Fix - Explat not caching when no variation is returned.
 
 = 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.
