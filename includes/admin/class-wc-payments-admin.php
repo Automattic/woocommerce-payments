@@ -609,7 +609,7 @@ class WC_Payments_Admin {
 		}
 
 		$abtest = new \WCPay\Experimental_Abtest(
-			esc_url_raw( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
 			'woocommerce',
 			'yes' === get_option( 'woocommerce_allow_tracking' )
 		);
