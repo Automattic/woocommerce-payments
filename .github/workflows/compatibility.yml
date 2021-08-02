@@ -68,4 +68,4 @@ jobs:
           tools:       composer
           coverage:    xdebug2
       # run CI checks
-      - run: bash bin/run-ci-tests.bash
+      - run: bash bin/run-ci-tests-check-covergae.bash
