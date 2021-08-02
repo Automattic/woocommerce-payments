@@ -146,6 +146,12 @@ class StorefrontIntegration {
 	 */
 	private function init_actions_and_filters() {
 		add_filter( $this->id . '_enabled_currencies_settings', [ $this, 'filter_store_settings' ] );
+
+		// Do not enable the breadcrumb widget if there's only one currency active.
+		if ( 1 >= count( $this->multi_currency->get_enabled_currencies() ) ) {
+			return;
+		}
+
 		// We want this enabled by default, so we default the option to 'yes'.
 		if ( 'yes' === get_option( $this->id . '_enable_storefront_switcher', 'yes' ) ) {
 			add_filter( 'woocommerce_breadcrumb_defaults', [ $this, 'modify_breadcrumb_defaults' ], 9999 );
