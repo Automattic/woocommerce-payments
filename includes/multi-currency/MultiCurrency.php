@@ -934,10 +934,10 @@ class MultiCurrency {
 		$wc_currencies      = array_keys( get_woocommerce_currencies() );
 		$account_currencies = $wc_currencies;
 
-		$account = $this->payments_account->get_cached_account_data();
-
-		if ( $account && ! empty( $account['presentment_currencies'] ) ) {
-			$account_currencies = array_map( 'strtoupper', $account['presentment_currencies'] );
+		$account              = $this->payments_account->get_cached_account_data();
+		$supported_currencies = $this->payments_account->get_account_customer_supported_currencies();
+		if ( $account && ! empty( $supported_currencies ) ) {
+			$account_currencies = array_map( 'strtoupper', $supported_currencies );
 		}
 
 		/**

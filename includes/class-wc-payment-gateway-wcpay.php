@@ -520,7 +520,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the currency is supported in the country set in the account.
 	 */
 	public function is_available_for_current_currency() {
-		$supported_currencies = $this->account->get_account_presentment_currencies();
+		$supported_currencies = $this->account->get_account_customer_supported_currencies();
 		$current_currency     = strtolower( get_woocommerce_currency() );
 
 		if ( count( $supported_currencies ) === 0 ) {
