@@ -4,4 +4,7 @@ declare const wcpaySettings: {
 		customSearch: boolean;
 	};
 	fraudServices: unknown[];
+	accountStatus: {
+		status: string;
+	};
 };

@@ -635,8 +635,13 @@ class WC_Payments_Admin {
 	 */
 	public function maybe_redirect_to_onboarding() {
 		if ( wp_doing_ajax() ) {
-			return false;
+			return;
 		}
+
+		if ( $this->is_in_treatment_mode() ) {
+			return;
+		}
+
 		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
 
 		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page'] ) {
