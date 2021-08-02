@@ -668,10 +668,15 @@ class MultiCurrency {
 		}
 
 		$order_exchange_rate    = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+		$stripe_exchange_rate   = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true );
 		$order_default_currency = $order->get_meta( '_wcpay_multi_currency_order_default_currency', true );
 
 		$refund->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $order_exchange_rate );
 		$refund->update_meta_data( '_wcpay_multi_currency_order_default_currency', $order_default_currency );
+		if ( $stripe_exchange_rate ) {
+			$refund->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $stripe_exchange_rate );
+		}
+
 		$refund->save_meta_data();
 	}
 
@@ -934,10 +939,10 @@ class MultiCurrency {
 		$wc_currencies      = array_keys( get_woocommerce_currencies() );
 		$account_currencies = $wc_currencies;
 
-		$account = $this->payments_account->get_cached_account_data();
-
-		if ( $account && ! empty( $account['presentment_currencies'] ) ) {
-			$account_currencies = array_map( 'strtoupper', $account['presentment_currencies'] );
+		$account              = $this->payments_account->get_cached_account_data();
+		$supported_currencies = $this->payments_account->get_account_customer_supported_currencies();
+		if ( $account && ! empty( $supported_currencies ) ) {
+			$account_currencies = array_map( 'strtoupper', $supported_currencies );
 		}
 
 		/**
