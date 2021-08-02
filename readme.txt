@@ -118,6 +118,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Improve sanitization of ExPlat cookie.
 * Add - Show fee breakdown in transaction details timeline.
 * Add - REST endpoint to get customer id from an order.
+* Fix - Explat not caching when no variation is returned.
 
 = 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.
