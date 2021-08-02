@@ -10,9 +10,11 @@ import { Card, CardBody, CardHeader } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { useTimeline } from 'data';
+import { useTimeline } from 'wcpay/data';
 import mapTimelineEvents from './map-events';
 import Loadable, { LoadableBlock } from 'components/loadable';
+
+import './style.scss';
 
 const PaymentDetailsTimeline = ( { chargeId } ) => {
 	const { timeline, timelineError, isLoading } = useTimeline( chargeId );

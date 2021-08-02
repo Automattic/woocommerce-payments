@@ -139,6 +139,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 					'get_setup_intent',
 					'get_payment_method',
 					'is_server_connected',
+					'get_charge',
 				]
 			)
 			->getMock();
@@ -790,7 +791,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			'Visa credit card',
 			'Visa debit card',
 			'Mastercard credit card',
-			'Giropay',
+			'giropay',
 			'Sofort',
 		];
 
@@ -846,8 +847,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
 
 		$this->assertEquals( 'giropay', $giropay_method->get_id() );
-		$this->assertEquals( 'Giropay', $giropay_method->get_title() );
-		$this->assertEquals( 'Giropay', $giropay_method->get_title( $mock_giropay_details ) );
+		$this->assertEquals( 'giropay', $giropay_method->get_title() );
+		$this->assertEquals( 'giropay', $giropay_method->get_title( $mock_giropay_details ) );
 		$this->assertTrue( $giropay_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_reusable() );
 

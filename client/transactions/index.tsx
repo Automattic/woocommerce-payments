@@ -18,23 +18,29 @@ import ListBanner from '../empty-state-table/transactions-banner.svg';
 import { Experiment } from '@woocommerce/explat';
 
 export const TransactionsPage = (): JSX.Element => {
+	const defaultExperience = (
+		<>
+			<TestModeNotice topic={ topics.transactions } />
+			<TransactionsList />
+		</>
+	);
+
+	const treatmentExperience = wcpaySettings.accountStatus.status ? (
+		defaultExperience
+	) : (
+		<EmptyStateTable
+			headers={ EmptyStateTableHeaders }
+			title="Transactions"
+			content={ <EmptyStateList listBanner={ ListBanner } /> }
+		/>
+	);
+
 	return (
 		<Page>
 			<Experiment
-				name="wcpay_empty_state_preview_mode_v1"
-				treatmentExperience={
-					<EmptyStateTable
-						headers={ EmptyStateTableHeaders }
-						title="Transactions"
-						content={ <EmptyStateList listBanner={ ListBanner } /> }
-					/>
-				}
-				defaultExperience={
-					<>
-						<TestModeNotice topic={ topics.transactions } />
-						<TransactionsList />
-					</>
-				}
+				name="wcpay_empty_state_preview_mode_v2"
+				treatmentExperience={ treatmentExperience }
+				defaultExperience={ defaultExperience }
 			/>
 		</Page>
 	);
