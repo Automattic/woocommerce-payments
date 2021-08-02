@@ -77,6 +77,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'get_setup_intent',
 					'get_payment_method',
 					'refund_charge',
+					'get_charge',
 				]
 			)
 			->getMock();
@@ -1475,7 +1476,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_payment_gateway_enabled_for_supported_currency() {
 		$current_currency = strtolower( get_woocommerce_currency() );
-		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_presentment_currencies' )->will(
+		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_customer_supported_currencies' )->will(
 			$this->returnValue(
 				[
 					$current_currency,
@@ -1487,7 +1488,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_payment_gateway_enabled_for_empty_supported_currency_list() {
 		// We want to avoid disabling the gateway in case the API doesn't give back any currency suppported.
-		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_presentment_currencies' )->will(
+		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_customer_supported_currencies' )->will(
 			$this->returnValue(
 				[]
 			)
@@ -1496,7 +1497,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_payment_gateway_disabled_for_unsupported_currency() {
-		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_presentment_currencies' )->will(
+		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_customer_supported_currencies' )->will(
 			$this->returnValue(
 				[
 					'btc',

@@ -216,7 +216,7 @@ exports[`Disputes list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
-                    $10.00
+                    $10.00 USD
                   </a>
                 </td>
                 <td
@@ -341,7 +341,7 @@ exports[`Disputes list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
                     tabindex="-1"
                   >
-                    $10.50
+                    $10.50 USD
                   </a>
                 </td>
                 <td
