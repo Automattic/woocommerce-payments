@@ -225,7 +225,7 @@ class MultiCurrency {
 
 		// Check to make sure there are enabled currencies, then for Storefront being active, and then load the integration.
 		$theme = wp_get_theme();
-		if ( 1 < count( $this->get_enabled_currencies() ) && ( 'storefront' === $theme->get_stylesheet() || 'storefront' === $theme->get_template() ) ) {
+		if ( 'storefront' === $theme->get_stylesheet() || 'storefront' === $theme->get_template() ) {
 			$this->storefront_integration = new StorefrontIntegration( $this );
 		}
 
