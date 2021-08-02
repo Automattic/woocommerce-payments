@@ -21,6 +21,15 @@ export default {
 		),
 		Icon: CreditCardIcon,
 	},
+	bancontact: {
+		id: 'bancontact',
+		label: __( 'Bancontact', 'woocommerce-payments' ),
+		description: __(
+			'TODO: Need proper description.',
+			'woocommerce-payments'
+		),
+		Icon: SepaIcon, // TODO: Get the proper icon.
+	},
 	giropay: {
 		id: 'giropay',
 		label: __( 'giropay', 'woocommerce-payments' ),

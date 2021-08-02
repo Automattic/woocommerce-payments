@@ -208,6 +208,15 @@ const AddPaymentMethodsTask = () => {
 							) }
 						</p>
 						<PaymentMethodCheckboxes>
+							{ availablePaymentMethods.includes(
+								'bancontact'
+							) && (
+								<PaymentMethodCheckbox
+									checked={ paymentMethodsState.bancontact }
+									onChange={ handlePaymentMethodChange }
+									name="bancontact"
+								/>
+							) }
 							{ availablePaymentMethods.includes( 'giropay' ) && (
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.giropay }

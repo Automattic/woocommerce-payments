@@ -12,6 +12,7 @@ import { Card, CardBody, CardHeader } from '@wordpress/components';
 import Loadable from 'components/loadable';
 import CardDetails from './card';
 import CardPresentDetails from './card-present';
+import BancontactDetails from './bancontact';
 import GiropayDetails from './giropay';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
@@ -19,6 +20,7 @@ import SofortDetails from './sofort';
 const detailsComponentMap = {
 	card: CardDetails,
 	card_present: CardPresentDetails,
+	bancontact: BancontactDetails,
 	giropay: GiropayDetails,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,

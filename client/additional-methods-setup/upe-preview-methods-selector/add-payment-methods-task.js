@@ -38,7 +38,12 @@ const usePaymentMethodsCheckboxState = () => {
 			// by default, all the checkboxes should be "checked"
 			availablePaymentMethods
 				.filter( ( method ) =>
-					[ 'giropay', 'sofort', 'sepa_debit' ].includes( method )
+					[
+						'bancontact',
+						'giropay',
+						'sofort',
+						'sepa_debit',
+					].includes( method )
 				)
 				.reduce(
 					( map, paymentMethod ) => ( {
@@ -195,6 +200,19 @@ const AddPaymentMethodsTask = () => {
 						<LoadableBlock numLines={ 10 } isLoading={ ! isActive }>
 							<LoadableSettingsSection numLines={ 10 }>
 								<PaymentMethodCheckboxes>
+									{ availablePaymentMethods.includes(
+										'bancontact'
+									) && (
+										<PaymentMethodCheckbox
+											checked={
+												paymentMethodsState.bancontact
+											}
+											onChange={
+												handlePaymentMethodChange
+											}
+											name="bancontact"
+										/>
+									) }
 									{ availablePaymentMethods.includes(
 										'giropay'
 									) && (
