@@ -264,7 +264,7 @@ class WC_Payments_Admin {
 			'onBoardingDisabled'     => WC_Payments_Account::is_on_boarding_disabled(),
 			'errorMessage'           => $error_message,
 			'featureFlags'           => $this->get_frontend_feature_flags(),
-			'isSubscriptionsActive'  => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
+			'isSubscriptionsActive'  => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
 			// used in the settings page by the AccountFees component.
 			'zeroDecimalCurrencies'  => WC_Payments_Utils::zero_decimal_currencies(),
 			'fraudServices'          => $this->account->get_fraud_services_config(),
