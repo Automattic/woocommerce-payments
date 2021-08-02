@@ -668,10 +668,15 @@ class MultiCurrency {
 		}
 
 		$order_exchange_rate    = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+		$stripe_exchange_rate   = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true );
 		$order_default_currency = $order->get_meta( '_wcpay_multi_currency_order_default_currency', true );
 
 		$refund->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $order_exchange_rate );
 		$refund->update_meta_data( '_wcpay_multi_currency_order_default_currency', $order_default_currency );
+		if ( $stripe_exchange_rate ) {
+			$refund->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $stripe_exchange_rate );
+		}
+
 		$refund->save_meta_data();
 	}
 

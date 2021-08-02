@@ -653,7 +653,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertFalse( $refund->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
 	}
 
-	public function test_add_order_meta_on_refund() {
+	public function test_add_order_meta_on_refund_with_no_stripe_exchange_rate() {
 		$order = wc_create_order();
 		$order->set_currency( 'GBP' );
 		$order->save();
@@ -673,6 +673,31 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$this->assertEquals( '0.71', $refund->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) );
 		$this->assertEquals( 'USD', $refund->get_meta( '_wcpay_multi_currency_order_default_currency', true ) );
+		$this->assertFalse( $refund->meta_exists( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
+	public function test_add_order_meta_on_refund() {
+		$order = wc_create_order();
+		$order->set_currency( 'GBP' );
+		$order->save();
+
+		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', '0.71' );
+		$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', '0.724' );
+		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'USD' );
+		$order->save_meta_data();
+
+		$refund = wc_create_refund( [ 'order_id' => $order->get_id() ] );
+		$refund->set_currency( 'GBP' );
+		$refund->save();
+
+		$this->multi_currency->add_order_meta_on_refund( $order->get_id(), $refund->get_id() );
+
+		// Get the order from the database.
+		$refund = wc_get_order( $refund->get_id() );
+
+		$this->assertEquals( '0.71', $refund->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) );
+		$this->assertEquals( 'USD', $refund->get_meta( '_wcpay_multi_currency_order_default_currency', true ) );
+		$this->assertEquals( '0.724', $refund->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true ) );
 	}
 
 	public function get_price_provider() {
