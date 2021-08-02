@@ -520,7 +520,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the currency is supported in the country set in the account.
 	 */
 	public function is_available_for_current_currency() {
-		$supported_currencies = $this->account->get_account_presentment_currencies();
+		$supported_currencies = $this->account->get_account_customer_supported_currencies();
 		$current_currency     = strtolower( get_woocommerce_currency() );
 
 		if ( count( $supported_currencies ) === 0 ) {
@@ -1096,6 +1096,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param string   $charge_id ID of the charge to attach data from.
 	 */
 	public function attach_exchange_info_to_order( $order, $charge_id ) {
+		if ( empty( $charge_id ) ) {
+			return;
+		}
+
 		$currency_order   = $order->get_currency();
 		$currency_account = $this->account->get_account_default_currency();
 
@@ -1103,7 +1107,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// We check that the currency used in the order is different than the one set in the WC Payments account
 			// to avoid requesting the charge if not needed.
 			$charge        = $this->payments_api_client->get_charge( $charge_id );
-			$exchange_rate = $charge['balance_transaction']['exchange_rate'];
+			$exchange_rate = $charge['balance_transaction']['exchange_rate'] ?? null;
 			if ( isset( $exchange_rate ) ) {
 				$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
 				$order->save_meta_data();
@@ -1600,6 +1604,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		Tracker::track_admin( 'wcpay_merchant_captured_auth' );
 
+		$this->attach_exchange_info_to_order( $order, $intent->get_charge_id() );
+
 		if ( 'succeeded' === $status ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
@@ -1852,6 +1858,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// An exception is thrown if an intent can't be found for the given intent ID.
 				$intent = $this->payments_api_client->get_intent( $intent_id );
 				$status = $intent->get_status();
+
+				$this->attach_exchange_info_to_order( $order, $intent->get_charge_id() );
 
 				switch ( $status ) {
 					case 'succeeded':
