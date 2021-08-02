@@ -127,7 +127,7 @@ final class Experimental_Abtest {
 		$results = json_decode( $response['body'], true );
 
 		// Bail if there were no results or there is no test variation returned.
-		if ( ! is_array( $results ) || empty( $results['variations'] ) || empty( $results['variations'][ $test_name ] ) ) {
+		if ( ! is_array( $results ) || empty( $results['variations'] ) ) {
 			return new \WP_Error( 'unexpected_data_format', 'Data was not returned in the expected format.' );
 		}
 
