@@ -109,7 +109,6 @@ export function* submitInstantDeposit( transactionIds ) {
 			method: 'POST',
 			data: {
 				type: 'instant',
-				// eslint-disable-next-line camelcase
 				transaction_ids: transactionIds,
 			},
 		} );

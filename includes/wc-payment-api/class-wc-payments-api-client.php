@@ -193,6 +193,7 @@ class WC_Payments_API_Client {
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
+		$request['description']    = $this->get_intent_description( $metadata['order_id'] ?? 0 );
 
 		if ( WC_Payments_Features::is_sepa_enabled() ) {
 			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
@@ -210,7 +211,7 @@ class WC_Payments_API_Client {
 		$request = array_merge( $request, $additional_parameters );
 
 		if ( $off_session ) {
-			$request['off_session'] = true;
+			$request['off_session'] = 'true';
 		}
 
 		if ( $save_payment_method ) {
@@ -228,6 +229,7 @@ class WC_Payments_API_Client {
 	 * @param int    $amount          - Amount to charge.
 	 * @param string $currency_code   - Currency to charge in.
 	 * @param array  $payment_methods - Payment methods to include.
+	 * @param int    $order_id        - The order ID.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -235,11 +237,13 @@ class WC_Payments_API_Client {
 	public function create_intention(
 		$amount,
 		$currency_code,
-		$payment_methods
+		$payment_methods,
+		$order_id
 	) {
 		$request                         = [];
 		$request['amount']               = $amount;
 		$request['currency']             = $currency_code;
+		$request['description']          = $this->get_intent_description( $order_id );
 		$request['payment_method_types'] = $payment_methods;
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
@@ -250,12 +254,13 @@ class WC_Payments_API_Client {
 	/**
 	 * Updates an intention, without confirming it.
 	 *
-	 * @param string $intention_id        - The ID of the intention to update.
-	 * @param int    $amount              - Amount to charge.
-	 * @param string $currency_code       - Currency to charge in.
-	 * @param bool   $save_payment_method - Whether to setup payment intent for future usage.
-	 * @param string $customer_id         - Stripe customer to associate payment intent with.
-	 * @param array  $level3              - Level 3 data.
+	 * @param string $intention_id              - The ID of the intention to update.
+	 * @param int    $amount                    - Amount to charge.
+	 * @param string $currency_code             - Currency to charge in.
+	 * @param bool   $save_payment_method       - Whether to setup payment intent for future usage.
+	 * @param string $customer_id               - Stripe customer to associate payment intent with.
+	 * @param array  $level3                    - Level 3 data.
+	 * @param string $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -266,7 +271,8 @@ class WC_Payments_API_Client {
 		$currency_code,
 		$save_payment_method = false,
 		$customer_id = '',
-		$level3 = []
+		$level3 = [],
+		$selected_upe_payment_type = ''
 	) {
 		$request = [
 			'amount'   => $amount,
@@ -274,6 +280,10 @@ class WC_Payments_API_Client {
 			'level3'   => $level3,
 		];
 
+		if ( '' !== $selected_upe_payment_type ) {
+			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
+			$request['payment_method_types'] = [ $selected_upe_payment_type ];
+		}
 		if ( $customer_id ) {
 			$request['customer'] = $customer_id;
 		}
@@ -1344,16 +1354,14 @@ class WC_Payments_API_Client {
 			$object['order'] = [
 				'number'       => $order->get_order_number(),
 				'url'          => $order->get_edit_order_url(),
-				'customer_url' => admin_url(
-					add_query_arg(
-						[
-							'page'      => 'wc-admin',
-							'path'      => '/customers',
-							'filter'    => 'single_customer',
-							'customers' => $order->get_customer_id(),
-						],
-						'admin.php'
-					)
+				'customer_url' => add_query_arg(
+					[
+						'page'      => 'wc-admin',
+						'path'      => '/customers',
+						'filter'    => 'single_customer',
+						'customers' => $order->get_customer_id(),
+					],
+					'admin.php'
 				),
 			];
 
@@ -1432,5 +1440,24 @@ class WC_Payments_API_Client {
 		);
 
 		return $intent;
+	}
+
+	/**
+	 * Returns a formatted intention description.
+	 *
+	 * @param  int $order_id The order ID.
+	 * @return string        A formatted intention description.
+	 */
+	private function get_intent_description( int $order_id ): string {
+		$domain_name = str_replace( [ 'https://', 'http://' ], '', get_site_url() );
+		$blog_id     = $this->get_blog_id();
+
+		// Forgo i18n as this is only visible in the Stripe dashboard.
+		return sprintf(
+			'Online Payment%s for %s%s',
+			0 !== $order_id ? " for Order #$order_id" : '',
+			$domain_name,
+			null !== $blog_id ? " blog_id $blog_id" : ''
+		);
 	}
 }

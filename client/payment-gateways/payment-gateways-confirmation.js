@@ -8,7 +8,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
  * Internal dependencies
  */
 import DisableConfirmationModal from './disable-confirmation-modal';
-import { useSettings } from 'data';
+import { useSettings } from 'wcpay/data';
 
 const PaymentGatewaysConfirmation = () => {
 	// pre-fetching the settings (and available payment methods) _before_ the modal is displayed,
@@ -41,7 +41,6 @@ const PaymentGatewaysConfirmation = () => {
 				return;
 			}
 
-			// eslint-disable-next-line camelcase
 			if ( woocommerce_admin.ajax_url !== settings.url ) {
 				return;
 			}

@@ -83,6 +83,9 @@ const previewDisplay = document.querySelector(
 function updatePreview() {
 	// Get needed field values and update field.
 	const rate = 'manual' === rateType ? manualRate.value : automaticRate.value;
+	const currencyCode = new URLSearchParams( document.location.search )
+		.get( 'section' )
+		.toUpperCase();
 	let total = previewAmount.value * rate;
 
 	if ( 'none' !== rounding.value ) {
@@ -90,11 +93,22 @@ function updatePreview() {
 	}
 
 	total += parseFloat( charm.value );
-	total = total.toFixed( 2 );
-	total = isNaN( total )
-		? __( 'Please enter a valid number', 'woocommerce-payments' )
-		: total;
-	previewDisplay.innerHTML = total;
+	if ( isNaN( total ) ) {
+		previewDisplay.innerHTML = __(
+			'Please enter a valid number',
+			'woocommerce-payments'
+		);
+		return;
+	}
+
+	previewDisplay.innerHTML = total.toLocaleString(
+		undefined, // Use the default locale for the given currency.
+		{
+			style: 'currency',
+			currency: currencyCode,
+			currencyDisplay: 'narrowSymbol',
+		}
+	);
 }
 
 const hideShowManualField = ( show ) => {

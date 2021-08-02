@@ -60,7 +60,7 @@ jQuery( function ( $ ) {
 
 	// Giropay payment method details
 	const giropayPayment = {
-		type: 'giropay' /* eslint-disable camelcase */,
+		type: 'giropay',
 	};
 
 	// Create a SEPA element
@@ -71,13 +71,13 @@ jQuery( function ( $ ) {
 	} );
 
 	const sepaPayment = {
-		type: 'sepa_debit' /* eslint-disable camelcase */,
+		type: 'sepa_debit',
 		sepa_debit: sepaElement,
 	};
 
 	// Sofort payment method details
 	const sofortPayment = {
-		type: 'sofort' /* eslint-disable camelcase */,
+		type: 'sofort',
 	};
 
 	/**
@@ -366,6 +366,18 @@ jQuery( function ( $ ) {
 	 * Displays the authentication modal to the user if needed.
 	 */
 	const maybeShowAuthenticationModal = () => {
+		let url = window.location.href;
+
+		const intentSecret = getConfig( 'intentSecret' );
+		if ( intentSecret ) {
+			const hash =
+				'#wcpay-confirm-pi:0:' +
+				intentSecret +
+				':' +
+				getConfig( 'updateOrderNonce' );
+			url = window.location.pathname + window.location.search + hash;
+		}
+
 		const paymentMethodId = isWCPaySepaChosen()
 			? $( '#wcpay-payment-method-sepa' ).val()
 			: $( '#wcpay-payment-method' ).val();
@@ -374,7 +386,7 @@ jQuery( function ( $ ) {
 			'#wc-woocommerce_payments-new-payment-method'
 		).is( ':checked' );
 		const confirmation = api.confirmIntent(
-			window.location.href,
+			url,
 			savePaymentMethod ? paymentMethodId : null
 		);
 

@@ -74,7 +74,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'is_server_connected' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'create_and_confirm_setup_intent', 'get_payment_method', 'is_server_connected', 'get_charge' ] )
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -198,7 +198,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 8 ) )
+			->expects( $this->exactly( 9 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
@@ -208,7 +208,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				[ '_intention_status', $status ],
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ],
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
 		// Assert: The order note contains all the information we want:
@@ -242,7 +243,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Act: process a successful payment.
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -309,7 +314,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Act: process a successful payment.
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -383,7 +392,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 8 ) )
+			->expects( $this->exactly( 9 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
@@ -393,7 +402,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				[ '_intention_status', $status ],
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ],
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
 		// Assert: The order note contains all the information we want:
@@ -431,7 +441,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Act: process payment.
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, WCPay\Constants\Payment_Type::SINGLE(), WCPay\Constants\Payment_Initiated_By::CUSTOMER(), WCPay\Constants\Payment_Capture_Type::MANUAL() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -480,7 +494,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
 		$this->assertCount( 2, $notes );
 		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( 'A payment of &#36;50.00 failed to complete with the following message: Error: No such customer: 123.', strip_tags( $notes[0]->content, '' ) );
+		$this->assertContains( 'A payment of &#36;50.00 USD failed to complete with the following message: Error: No such customer: 123.', strip_tags( $notes[0]->content, '' ) );
 
 		// Assert: A WooCommerce notice was added.
 		$this->assertTrue( wc_has_notice( $error_message, 'error' ) );
@@ -523,7 +537,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
 		$this->assertCount( 2, $notes );
 		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( 'A payment of &#36;50.00 failed to complete with the following message: Test error.', strip_tags( $notes[0]->content, '' ) );
+		$this->assertContains( 'A payment of &#36;50.00 USD failed to complete with the following message: Test error.', strip_tags( $notes[0]->content, '' ) );
 
 		// Assert: A WooCommerce notice was added.
 		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
@@ -563,7 +577,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
 		$this->assertCount( 2, $notes );
 		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( "A payment of &#36;50.00 failed to complete with the following message: $error_message", strip_tags( $notes[0]->content, '' ) );
+		$this->assertContains( "A payment of &#36;50.00 USD failed to complete with the following message: $error_message", strip_tags( $notes[0]->content, '' ) );
 
 		// Assert: A WooCommerce notice was added.
 		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
@@ -643,7 +657,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 8 ) )
+			->expects( $this->exactly( 9 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
@@ -653,7 +667,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				[ '_intention_status', $status ],
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ],
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
 		// Assert: Order status was not updated.
@@ -693,12 +708,134 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Act: process payment.
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals(
 			'#wcpay-confirm-pi:' . $order_id . ':' . $secret . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+			$result['redirect']
+		);
+	}
+
+	/**
+	 * Test processing free order with the status "requires_action".
+	 * This is the status returned when the saved card setup requires
+	 * further authentication with 3DS.
+	 */
+	public function test_setup_intent_status_requires_action() {
+		// Arrange: Reusable data.
+		$intent_id   = 'pi_123';
+		$customer_id = 'cu_123';
+		$status      = 'requires_action';
+		$secret      = 'client_secret_123';
+		$order_id    = 123;
+		$total       = 0;
+		$currency    = 'USD';
+
+		// Arrange: Create an order to test with.
+		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a good return value for order ID.
+		$mock_order
+			->method( 'get_id' )
+			->willReturn( $order_id );
+
+		// Arrange: Set a good return value for order total.
+		$mock_order
+			->method( 'get_total' )
+			->willReturn( $total );
+
+		// Arrange: Set currency for order total.
+		$mock_order
+			->method( 'get_currency' )
+			->willReturn( $currency );
+
+		// Arrange: Set a WP_User object as a return value of order's get_user.
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( wp_get_current_user() );
+
+		// Arrange: Set a good return value for customer ID.
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'create_customer_for_user' )
+			->willReturn( $customer_id );
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		// Arrange: Return a 'requires_action' response from create_and_confirm_setup_intent().
+		$intent = [
+			'id'            => $intent_id,
+			'status'        => $status,
+			'client_secret' => $secret,
+			'next_action'   => [],
+		];
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_setup_intent' )
+			->will(
+				$this->returnValue( $intent )
+			);
+
+		// Assert: Order charge id meta data was updated with `update_meta_data()`.
+		// Assert: Order does not have intention status meta data.
+		// Assert: Order has correct intent ID.
+		// This test is a little brittle because we don't really care about the order
+		// in which the different calls are made, but it's not possible to write it
+		// otherwise for now.
+		// There's an issue open for that here:
+		// https://github.com/sebastianbergmann/phpunit/issues/4026.
+		$mock_order
+			->expects( $this->exactly( 8 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[ '_payment_method_id', 'pm_mock' ],
+				[ '_stripe_customer_id', $customer_id ],
+				[ '_intent_id', $intent_id ],
+				[ '_charge_id', '' ],
+				[ '_intention_status', $status ],
+				[ '_payment_method_id', 'pm_mock' ],
+				[ '_stripe_customer_id', $customer_id ],
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
+			);
+
+		// Assert: Order status was not updated.
+		$mock_order
+			->expects( $this->never() )
+			->method( 'set_status' );
+
+		// Assert: No order note added because payment not needed.
+		$mock_order
+			->expects( $this->never() )
+			->method( 'add_order_note' );
+
+		// Assert: Order has correct transaction ID set.
+		$mock_order
+			->expects( $this->exactly( 1 ) )
+			->method( 'set_transaction_id' )
+			->with( $intent_id );
+
+		// Assert: empty_cart() was not called.
+		$mock_cart
+			->expects( $this->never() )
+			->method( 'empty_cart' );
+
+		// Act: prepare payment information.
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information->must_save_payment_method();
+
+		// Act: process payment.
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals(
+			'#wcpay-confirm-si:' . $order_id . ':' . $secret . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce' ),
 			$result['redirect']
 		);
 	}

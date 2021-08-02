@@ -8,9 +8,9 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import InstantDepositButton from '../';
-import { useInstantDeposit } from 'data';
+import { useInstantDeposit } from 'wcpay/data';
 
-jest.mock( 'data', () => ( { useInstantDeposit: jest.fn() } ) );
+jest.mock( 'wcpay/data', () => ( { useInstantDeposit: jest.fn() } ) );
 
 useInstantDeposit.mockReturnValue( {
 	deposit: undefined,
@@ -28,9 +28,7 @@ const mockInstantBalance = {
 	amount: 12345,
 	fee: 123.45,
 	net: 12221.55,
-	// eslint-disable-next-line camelcase
 	fee_percentage: 1.5,
-	// eslint-disable-next-line camelcase
 	transaction_ids: [ 'txn_ABC123', 'txn_DEF456' ],
 };
 
@@ -38,9 +36,7 @@ const mockZeroInstantBalance = {
 	amount: 0,
 	fee: 0,
 	net: 0,
-	// eslint-disable-next-line camelcase
 	fee_percentage: 1.5,
-	// eslint-disable-next-line camelcase
 	transaction_ids: [],
 };
 

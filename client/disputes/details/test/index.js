@@ -8,9 +8,9 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import DisputeDetails from '../';
-import { useDispute } from 'data';
+import { useDispute } from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useDispute: jest.fn(),
 } ) );
 
@@ -38,15 +38,24 @@ describe( 'Dispute details screen', () => {
 		'unrecognized',
 	];
 
+	const statuses = [
+		'warning_needs_response',
+		'warning_under_review',
+		'warning_closed',
+		'needs_response',
+		'under_review',
+		'charge_refunded',
+		'won',
+		'lost',
+	];
+
 	test.each( reasons )( 'renders correctly for %s dispute', ( reason ) => {
 		const dispute = {
 			id: 'dp_asdfghjkl',
 			amount: 1000,
 			currency: 'usd',
 			created: 1572590800,
-			// eslint-disable-next-line camelcase
 			evidence_details: {
-				// eslint-disable-next-line camelcase
 				due_by: 1573199200,
 			},
 			reason,
@@ -64,4 +73,32 @@ describe( 'Dispute details screen', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
+	test.each( statuses )(
+		'renders correctly for %s dispute status',
+		( status ) => {
+			const dispute = {
+				id: 'dp_asdfghjkl',
+				amount: 1000,
+				currency: 'usd',
+				created: 1572590800,
+				evidence_details: {
+					due_by: 1573199200,
+				},
+				reason: 'fraudulent',
+				status,
+				order: {
+					number: '1',
+					url: 'http://test.local/order/1',
+				},
+			};
+
+			useDispute.mockReturnValue( { dispute, isLoading: false } );
+
+			const { container } = render(
+				<DisputeDetails query={ { id: 'dp_asdfghjkl' } } />
+			);
+			expect( container ).toMatchSnapshot();
+		}
+	);
 } );

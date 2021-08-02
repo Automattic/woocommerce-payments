@@ -109,6 +109,27 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
           </div>
         </div>
       </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-text-control-1"
+          >
+            Service date
+          </label>
+          <input
+            class="components-text-control__input"
+            id="inspector-text-control-1"
+            max="2021-06-24"
+            type="date"
+            value=""
+          />
+        </div>
+      </div>
     </div>
   </div>
   <div
@@ -195,14 +216,14 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
         >
           <label
             class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="inspector-text-control-1"
+            for="inspector-text-control-2"
           >
             Customer name
           </label>
           <input
             class="components-text-control__input"
             disabled=""
-            id="inspector-text-control-1"
+            id="inspector-text-control-2"
             type="text"
             value=""
           />
@@ -266,6 +287,28 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
           </div>
         </div>
       </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-text-control-3"
+          >
+            Service date
+          </label>
+          <input
+            class="components-text-control__input"
+            disabled=""
+            id="inspector-text-control-3"
+            max="2021-06-24"
+            type="date"
+            value=""
+          />
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -315,7 +358,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
             <span
               class="wcpay-dispute-info-value"
             >
-              $10.00
+              $10.00 USD
             </span>
           </div>
           <div

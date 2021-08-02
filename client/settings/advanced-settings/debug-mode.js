@@ -8,7 +8,7 @@ import { useEffect, useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { useDebugLog, useDevMode } from 'data';
+import { useDebugLog, useDevMode } from 'wcpay/data';
 
 const DebugMode = () => {
 	const isDevModeEnabled = useDevMode();

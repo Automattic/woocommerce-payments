@@ -10,7 +10,11 @@ import { Card, CardBody, CardDivider } from '@wordpress/components';
  * Internal dependencies
  */
 import './style.scss';
-import { useCurrencies, useDefaultCurrency, useEnabledCurrencies } from 'data';
+import {
+	useCurrencies,
+	useDefaultCurrency,
+	useEnabledCurrencies,
+} from 'wcpay/data';
 import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesModal from './modal';
@@ -54,7 +58,7 @@ const EnabledCurrencies = () => {
 								<EnabledCurrenciesListItem
 									key={ enabledCurrencies[ code ].id }
 									currency={ enabledCurrencies[ code ] }
-									defaultCurrencyCode={ defaultCurrency.code }
+									defaultCurrency={ defaultCurrency }
 									onDeleteClick={
 										enabledCurrencies[ code ].is_default
 											? undefined

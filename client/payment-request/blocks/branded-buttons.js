@@ -31,19 +31,16 @@ const useLocalizedGoogleSvg = ( type, theme, locale ) => {
 };
 
 export const GooglePayButton = ( { onClick } ) => {
-	const {
-		height,
-		locale,
-		// eslint-disable-next-line camelcase
-		branded_type,
-	} = getPaymentRequestData( 'button' );
+	const { height, locale, branded_type: brandedType } = getPaymentRequestData(
+		'button'
+	);
 	// Allowed themes for Google Pay button image are 'dark' and 'light'.
 	const theme =
 		'dark' === getPaymentRequestData( 'button' )?.theme ? 'dark' : 'light';
 
 	// Let's make sure the localized Google Pay button exists, otherwise we fall back to the
 	// english version. This test element is not used on purpose.
-	const backgroundUrl = useLocalizedGoogleSvg( branded_type, theme, locale );
+	const backgroundUrl = useLocalizedGoogleSvg( brandedType, theme, locale );
 
 	return (
 		<button
@@ -53,8 +50,7 @@ export const GooglePayButton = ( { onClick } ) => {
 			className={ `gpay-button ${
 				// For the button class, `light-outline` is also supported.
 				getPaymentRequestData( 'button' )?.theme
-				// eslint-disable-next-line camelcase
-			} ${ branded_type }` }
+			} ${ brandedType }` }
 			style={ {
 				backgroundImage: `url(${ backgroundUrl })`,
 				height: height + 'px',

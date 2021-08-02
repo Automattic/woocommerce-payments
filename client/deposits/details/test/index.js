@@ -9,9 +9,9 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import { DepositOverview } from '../';
-import { useDeposit } from 'data';
+import { useDeposit } from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useDeposit: jest.fn(),
 } ) );
 
@@ -24,7 +24,7 @@ const mockDeposit = {
 	bankAccount: 'MOCK BANK •••• 1234 (USD)',
 	automatic: true,
 	fee: 30,
-	fee_percetange: 1.5, // eslint-disable-line camelcase
+	fee_percetange: 1.5,
 };
 
 describe( 'Deposit overview', () => {

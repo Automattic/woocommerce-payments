@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Multi_Currency\Note_Multi_Currency_Available;
+use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 /**
  * Class Note_Multi_Currency_Available_Test tests.
@@ -16,7 +16,7 @@ class Note_Multi_Currency_Available_Test extends WP_UnitTestCase {
 			// Trigger WCPay extension deactivation callback.
 			wcpay_multi_currency_deactivated();
 
-			$note_id = Note_Multi_Currency_Available::NOTE_NAME;
+			$note_id = NoteMultiCurrencyAvailable::NOTE_NAME;
 			$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
 		} else {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );

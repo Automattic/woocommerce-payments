@@ -18,9 +18,9 @@ import SofortDetails from './sofort';
 
 const detailsComponentMap = {
 	card: CardDetails,
-	card_present: CardPresentDetails, // eslint-disable-line camelcase
+	card_present: CardPresentDetails,
 	giropay: GiropayDetails,
-	sepa_debit: SepaDetails, // eslint-disable-line camelcase
+	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
 };
 

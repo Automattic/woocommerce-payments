@@ -8,14 +8,21 @@ import {
 	CheckboxControl,
 	ExternalLink,
 	TextControl,
+	Notice,
 } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { useAccountStatementDescriptor, useManualCapture } from 'data';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';
+import {
+	useAccountStatementDescriptor,
+	useManualCapture,
+	useGetSavingError,
+	useSavedCards,
+} from '../../data';
+import './style.scss';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 
@@ -27,17 +34,33 @@ const TransactionsAndDeposits = () => {
 		isManualCaptureEnabled,
 		setIsManualCaptureEnabled,
 	] = useManualCapture();
+	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
 	const [
 		accountStatementDescriptor,
 		setAccountStatementDescriptor,
 	] = useAccountStatementDescriptor();
+	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
+		?.account_statement_descriptor?.message;
 
 	return (
-		<Card>
+		<Card className="transactions-and-deposits">
 			<CardBody>
 				<h4>
 					{ __( 'Transaction preferences', 'woocommerce-payments' ) }
 				</h4>
+				<CheckboxControl
+					checked={ isSavedCardsEnabled }
+					onChange={ setIsSavedCardsEnabled }
+					label={ __(
+						'Enable payments via saved cards',
+						'woocommerce-payments'
+					) }
+					help={ __(
+						'When enabled, users will be able to pay with a saved card during checkout. ' +
+							'Card details are stored in our platform, not on your store.',
+						'woocommerce-payments'
+					) }
+				/>
 				<CheckboxControl
 					checked={ isManualCaptureEnabled }
 					onChange={ setIsManualCaptureEnabled }
@@ -51,9 +74,18 @@ const TransactionsAndDeposits = () => {
 						'woocommerce-payments'
 					) }
 				/>
-				<div className="general-settings__account-statement-wrapper">
+				{ customerBankStatementErrorMessage && (
+					<Notice status="error" isDismissible={ false }>
+						<span
+							dangerouslySetInnerHTML={ {
+								__html: customerBankStatementErrorMessage,
+							} }
+						/>
+					</Notice>
+				) }
+				<div className="transactions-and-deposits__account-statement-wrapper">
 					<TextControl
-						className="general-settings__account-statement-input"
+						className="transactions-and-deposits__account-statement-input"
 						help={ __(
 							"Edit the way your store name appears on your customers' bank statements.",
 							'woocommerce-payments'
@@ -70,14 +102,14 @@ const TransactionsAndDeposits = () => {
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
 					</span>
 				</div>
-				<div className="general-settings__bank-information">
+				<div className="transactions-and-deposits__bank-information">
 					<h4>
 						{ __(
 							'Bank account information',
 							'woocommerce-payments'
 						) }
 					</h4>
-					<p className="general-settings__bank-information-help">
+					<p className="transactions-and-deposits__bank-information-help">
 						{ __(
 							'Manage and update your deposit account information to receive payments and payouts.',
 							'woocommerce-payments'

@@ -8,8 +8,8 @@ import {
 	getIsManualCaptureEnabled,
 	getAccountStatementDescriptor,
 	isSavingSettings,
-	getDigitalWalletsLocations,
-	getIsDigitalWalletsEnabled,
+	getPaymentRequestLocations,
+	getIsPaymentRequestEnabled,
 } from '../selectors';
 
 describe( 'Settings selectors tests', () => {
@@ -39,7 +39,6 @@ describe( 'Settings selectors tests', () => {
 			const state = {
 				settings: {
 					data: {
-						// eslint-disable-next-line camelcase
 						is_wcpay_enabled: true,
 					},
 				},
@@ -63,7 +62,6 @@ describe( 'Settings selectors tests', () => {
 			const state = {
 				settings: {
 					data: {
-						// eslint-disable-next-line camelcase
 						enabled_payment_method_ids: [ 'foo', 'bar' ],
 					},
 				},
@@ -109,7 +107,6 @@ describe( 'Settings selectors tests', () => {
 			const state = {
 				settings: {
 					data: {
-						// eslint-disable-next-line camelcase
 						is_manual_capture_enabled: true,
 					},
 				},
@@ -133,7 +130,6 @@ describe( 'Settings selectors tests', () => {
 			const state = {
 				settings: {
 					data: {
-						// eslint-disable-next-line camelcase
 						account_statement_descriptor: 'my account statement',
 					},
 				},
@@ -154,18 +150,17 @@ describe( 'Settings selectors tests', () => {
 		} );
 	} );
 
-	describe( 'getIsDigitalWalletsEnabled()', () => {
-		test( 'returns the value of state.settings.data.is_digital_wallets_enabled', () => {
+	describe( 'getIsPaymentRequestEnabled()', () => {
+		test( 'returns the value of state.settings.data.is_payment_request_enabled', () => {
 			const state = {
 				settings: {
 					data: {
-						// eslint-disable-next-line camelcase
-						is_digital_wallets_enabled: true,
+						is_payment_request_enabled: true,
 					},
 				},
 			};
 
-			expect( getIsDigitalWalletsEnabled( state ) ).toBeTruthy();
+			expect( getIsPaymentRequestEnabled( state ) ).toBeTruthy();
 		} );
 
 		test.each( [
@@ -174,17 +169,16 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: {} } ],
 			[ { settings: { data: {} } } ],
 		] )( 'returns false if missing (tested state: %j)', ( state ) => {
-			expect( getIsDigitalWalletsEnabled( state ) ).toBeFalsy();
+			expect( getIsPaymentRequestEnabled( state ) ).toBeFalsy();
 		} );
 	} );
 
-	describe( 'getDigitalWalletsLocations()', () => {
-		test( 'returns the value of state.settings.data.digital_wallets_enabled_locations', () => {
+	describe( 'getPaymentRequestLocations()', () => {
+		test( 'returns the value of state.settings.data.payment_request_enabled_locations', () => {
 			const state = {
 				settings: {
 					data: {
-						// eslint-disable-next-line camelcase
-						digital_wallets_enabled_locations: [
+						payment_request_enabled_locations: [
 							'product',
 							'cart',
 						],
@@ -192,7 +186,7 @@ describe( 'Settings selectors tests', () => {
 				},
 			};
 
-			expect( getDigitalWalletsLocations( state ) ).toEqual( [
+			expect( getPaymentRequestLocations( state ) ).toEqual( [
 				'product',
 				'cart',
 			] );
@@ -204,7 +198,7 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: {} } ],
 			[ { settings: { data: {} } } ],
 		] )( 'returns [] if missing (tested state: %j)', ( state ) => {
-			expect( getDigitalWalletsLocations( state ) ).toEqual( [] );
+			expect( getPaymentRequestLocations( state ) ).toEqual( [] );
 		} );
 	} );
 } );
