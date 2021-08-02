@@ -18,6 +18,7 @@ use WC_Payments_Token_Service;
 use WC_Payments;
 use WC_Payments_Utils;
 use Exception;
+use WC_Payments_Explicit_Price_Formatter;
 
 /**
  * Sofort Payment method extended from card payment method.
@@ -245,7 +246,7 @@ class Sofort_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 							'code'   => '<code>',
 						]
 					),
-					wc_price( $order->get_total() ),
+					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
 					esc_html( rtrim( $e->getMessage(), '.' ) )
 				);
 				$order->add_order_note( $note );

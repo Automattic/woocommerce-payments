@@ -97,7 +97,7 @@ describe( 'Order > Full refund', () => {
 
 			// Verify system note was added
 			expect( page ).toMatchElement( '.system-note', {
-				text: `A refund of ${ orderAmount } was successfully processed using WooCommerce Payments. Reason: No longer wanted`,
+				text: `A refund of ${ orderAmount } USD was successfully processed using WooCommerce Payments. Reason: No longer wanted`,
 			} ),
 		] );
 		await takeScreenshot( 'merchant-orders-full-refund_refunded' );

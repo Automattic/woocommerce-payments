@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import { useDebugLog, useDevMode } from 'data';
+import { useDebugLog, useDevMode } from 'wcpay/data';
 import DebugMode from '../debug-mode';
 
 jest.mock( '../../../data', () => ( {

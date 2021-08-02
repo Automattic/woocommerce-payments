@@ -13,9 +13,9 @@ import PaymentRequest from '..';
 import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
-} from 'data';
+} from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
 	usePaymentRequestLocations: jest.fn(),
 } ) );
