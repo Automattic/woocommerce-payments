@@ -617,24 +617,16 @@ jQuery( ( $ ) => {
 		},
 	};
 
-	let getEnabledPaymentRequestMethodsCache = null;
-
 	wcpayPaymentRequest.init();
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
 		wcpayPaymentRequest.init();
-
-		// Expire getEnabledPaymentRequestMethods cache.
-		getEnabledPaymentRequestMethodsCache = null;
 	} );
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
 		wcpayPaymentRequest.init();
-
-		// Expire getEnabledPaymentRequestMethods cache.
-		getEnabledPaymentRequestMethodsCache = null;
 	} );
 
 	function setBackgroundImageWithFallback( element, background, fallback ) {
@@ -646,55 +638,4 @@ jQuery( ( $ ) => {
 		};
 		testImg.src = background;
 	}
-
-	/**
-	 * Get a list of enabled payment request methods.
-	 */
-	async function getEnabledPaymentRequestMethods() {
-		if ( getEnabledPaymentRequestMethodsCache ) {
-			return getEnabledPaymentRequestMethodsCache;
-		}
-
-		const getEnabledMethods = async function ( paymentRequest ) {
-			const result = await paymentRequest.canMakePayment();
-			let ret = [];
-
-			if ( ! result ) {
-				return ret;
-			}
-
-			if ( result.applePay ) {
-				ret = [ 'applePay' ];
-			} else if ( result.googlePay ) {
-				ret = [ 'googlePay' ];
-			}
-
-			getEnabledPaymentRequestMethodsCache = ret;
-			return ret;
-		};
-
-		if ( wcpayPaymentRequestParams.is_product_page ) {
-			const paymentRequest = getPaymentRequest( {
-				stripe: api.getStripe(),
-				total: wcpayPaymentRequestParams.product.total.amount,
-				requestShipping:
-					wcpayPaymentRequestParams.product.needs_shipping,
-				displayItems: wcpayPaymentRequestParams.product.displayItems,
-			} );
-
-			return getEnabledMethods( paymentRequest );
-		}
-
-		const cart = await api.paymentRequestGetCartDetails();
-		const paymentRequest = getPaymentRequest( {
-			stripe: api.getStripe(),
-			total: cart.total.amount,
-			requestShipping: cart.needs_shipping,
-			displayItems: cart.displayItems,
-		} );
-
-		return getEnabledMethods( paymentRequest );
-	}
-
-	window.getEnabledPaymentRequestMethods = getEnabledPaymentRequestMethods;
 } );
