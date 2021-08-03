@@ -1,4 +1,8 @@
 /* global jQuery, wcpayPaymentRequestParams, wc_add_to_cart_variation_params */
+/**
+ * External dependencies
+ */
+import { defaultHooks } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -180,16 +184,25 @@ jQuery( ( $ ) => {
 		 */
 		startPaymentRequest: ( options ) => {
 			const paymentRequest = getPaymentRequest( options );
-
 			const elements = api.getStripe().elements();
 			const prButton = wcpayPaymentRequest.createPaymentRequestButton(
 				elements,
 				paymentRequest
 			);
 
+			const doActionPaymentRequestAvailability = ( args ) => {
+				defaultHooks.doAction(
+					'wcpay.payment-request.availability',
+					args
+				);
+			};
+
 			// Check the availability of the Payment Request API first.
 			paymentRequest.canMakePayment().then( ( result ) => {
 				if ( ! result ) {
+					doActionPaymentRequestAvailability( {
+						paymentRequestType: null,
+					} );
 					return;
 				}
 
@@ -202,6 +215,10 @@ jQuery( ( $ ) => {
 				} else {
 					paymentRequestType = 'payment_request_api';
 				}
+
+				doActionPaymentRequestAvailability( {
+					paymentRequestType: paymentRequestType,
+				} );
 
 				wcpayPaymentRequest.attachPaymentRequestButtonEventListeners(
 					prButton,
