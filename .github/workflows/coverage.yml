@@ -1,4 +1,4 @@
-name: Compatibility - WC, WP and PHP
+name: Code coverage
 
 on:
   pull_request
