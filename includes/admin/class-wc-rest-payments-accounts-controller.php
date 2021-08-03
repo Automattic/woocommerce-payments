@@ -42,7 +42,8 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_account_data( $request ) {
-		$account = WC_Payments::get_account_service()->with_payments_api_client( $this->api_client )->get_cached_account_data();
+		$account_service = WC_Payments::get_account_service()->with_payments_api_client( $this->api_client );
+		$account         = $account_service->get_cached_account_data();
 		if ( [] === $account ) {
 			$default_currency = get_woocommerce_currency();
 			$account          = [
