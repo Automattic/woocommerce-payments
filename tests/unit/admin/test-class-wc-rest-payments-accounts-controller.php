@@ -42,8 +42,8 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_account_data' )
 			->willReturn(
+				// We are providing only some of fields, needed for the assertions we are relying to.
 				[
-					// We are providing only some of fields, needed for the assertions we are relying to.
 					'country'          => 'DE',
 					'status'           => 'complete',
 					'store_currencies' => [ 'default' => 'EUR' ],
@@ -67,7 +67,10 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_account_data' )
-			->willReturn( [] );
+			->willReturn(
+				// Indicates that server connection is ok, but no connected accounts available.
+				[]
+			);
 
 		$response      = $this->controller->get_account_data( new WP_REST_Request( 'GET' ) );
 		$response_data = $response->get_data();
