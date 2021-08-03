@@ -53,7 +53,7 @@ export default {
 		id: 'ideal',
 		label: __( 'ideal', 'woocommerce-payments' ),
 		description: __(
-			'Expand your business with iDEAL — Netherlands’s popular payment system.',
+			'Expand your business with iDEAL — Netherlands’s most popular payment method.',
 			'woocommerce-payments'
 		),
 		Icon: IdealIcon,
