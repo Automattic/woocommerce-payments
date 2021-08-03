@@ -6,7 +6,7 @@ on:
 jobs:
   woocommerce-compatibility:
     name:    WC compatibility
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast:    false
       max-parallel: 10
@@ -43,7 +43,7 @@ jobs:
   # a dedicated job, as allowed to fail
   compatibility-woocommerce-beta:
     name:    Environment - WC beta
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast: false
       matrix:
