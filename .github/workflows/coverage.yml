@@ -14,11 +14,6 @@ jobs:
         woocommerce: [ '5.5.0' ]
         wordpress:   [ 'latest' ]
         php:         [ '7.4' ]
-        include:
-          # Edge case: oldest dependencies compatibility
-          - woocommerce: '4.0.0'
-            wordpress:   '5.4'
-            php:         '7.0'
     env:
       WP_VERSION: ${{ matrix.wordpress }}
       WC_VERSION: ${{ matrix.woocommerce }}
