@@ -13,6 +13,8 @@ use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\Bancontact_Payment_Gateway;
+use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Gateway;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Gateway;
@@ -32,6 +34,13 @@ class WC_Payments {
 	 * @var CC_Payment_Gateway
 	 */
 	private static $card_gateway;
+
+	/**
+	 * Instance of Bancontact gateway, created in init function.
+	 *
+	 * @var Bancontact_Payment_Gateway
+	 */
+	private static $bancontact_gateway;
 
 	/**
 	 * Instance of Giropay gateway, created in init function.
@@ -220,16 +229,18 @@ class WC_Payments {
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
 		self::$localization_service     = new WC_Payments_Localization_Service();
 
-		$card_class    = CC_Payment_Gateway::class;
-		$upe_class     = UPE_Payment_Gateway::class;
-		$giropay_class = Giropay_Payment_Gateway::class;
-		$sepa_class    = Sepa_Payment_Gateway::class;
-		$sofort_class  = Sofort_Payment_Gateway::class;
+		$card_class       = CC_Payment_Gateway::class;
+		$upe_class        = UPE_Payment_Gateway::class;
+		$bancontact_class = Bancontact_Payment_Gateway::class;
+		$giropay_class    = Giropay_Payment_Gateway::class;
+		$sepa_class       = Sepa_Payment_Gateway::class;
+		$sofort_class     = Sofort_Payment_Gateway::class;
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$payment_methods        = [];
 			$payment_method_classes = [
 				CC_Payment_Method::class,
+				Bancontact_Payment_Method::class,
 				Giropay_Payment_Method::class,
 				Sofort_Payment_Method::class,
 			];
@@ -242,6 +253,9 @@ class WC_Payments {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 
+		if ( WC_Payments_Features::is_bancontact_enabled() ) {
+			self::$bancontact_gateway = new $bancontact_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		}
 		if ( WC_Payments_Features::is_giropay_enabled() ) {
 			self::$giropay_gateway = new $giropay_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
@@ -509,6 +523,9 @@ class WC_Payments {
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
 
+		if ( WC_Payments_Features::is_bancontact_enabled() ) {
+			$gateways[] = self::$bancontact_gateway;
+		}
 		if ( WC_Payments_Features::is_giropay_enabled() ) {
 			$gateways[] = self::$giropay_gateway;
 		}

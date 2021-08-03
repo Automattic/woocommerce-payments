@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import CreditCardIcon from './gateway-icons/credit-card';
+import BancontactIcon from './gateway-icons/bancontact';
 import GiropayIcon from './gateway-icons/giropay';
 import SofortIcon from './gateway-icons/sofort';
 import SepaIcon from './gateway-icons/sepa';
@@ -25,10 +26,10 @@ export default {
 		id: 'bancontact',
 		label: __( 'Bancontact', 'woocommerce-payments' ),
 		description: __(
-			'TODO: Need proper description.',
+			'Bancontact is a bank redirect payment method offered by more than 80% of online businesses in Belgium.',
 			'woocommerce-payments'
 		),
-		Icon: SepaIcon, // TODO: Get the proper icon.
+		Icon: BancontactIcon,
 	},
 	giropay: {
 		id: 'giropay',

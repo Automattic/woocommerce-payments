@@ -293,6 +293,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			unset( $this->form_fields['payment_request_button_type']['options']['custom'] );
 		}
 
+		// Bancontact option hidden behind feature flag.
+		if ( WC_Payments_Features::is_bancontact_enabled() ) {
+			$this->form_fields['bancontact_enabled'] = [
+				'title'       => __( 'Enable/disable Bancontact', 'woocommerce-payments' ),
+				'label'       => __( 'Enable WooCommerce Bancontact', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			];
+		}
+
 		// Giropay option hidden behind feature flag.
 		if ( WC_Payments_Features::is_giropay_enabled() ) {
 			$this->form_fields['giropay_enabled'] = [

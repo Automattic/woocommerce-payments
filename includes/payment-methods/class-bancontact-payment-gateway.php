@@ -25,6 +25,7 @@ use WC_Payments_Explicit_Price_Formatter;
  * Loads different JS files and fields and handles a redirect payment method.
  */
 class Bancontact_Payment_Gateway extends WC_Payment_Gateway_WCPay {
+	// TODO: This was a copy of giropay, so it needs to be set up correctly.
 	/**
 	 * Internal ID of the payment gateway.
 	 *

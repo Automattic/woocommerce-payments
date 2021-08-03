@@ -21,7 +21,7 @@ const formatDetails = ( payment ) => {
 					&nbsp;&bull;&bull;&bull;&bull;&nbsp;{ paymentMethod.last4 }
 				</Fragment>
 			);
-		case 'bancontact':
+		case 'bancontact': // TODO: This return needs to return the proper info.
 			return <Fragment>{ paymentMethod.bank_code }</Fragment>;
 		case 'giropay':
 			return <Fragment>{ paymentMethod.bank_code }</Fragment>;

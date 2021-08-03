@@ -25,6 +25,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Bancontact gateway feature is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_bancontact_enabled() {
+		return '1' === get_option( '_wcpay_feature_bancontact', '0' );
+	}
+
+	/**
 	 * Checks whether the Giropay gateway feature is enabled
 	 *
 	 * @return bool

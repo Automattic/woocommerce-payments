@@ -92,7 +92,7 @@
 }
 
 .payment-method__brand--bancontact {
-	background: no-repeat url( '../images/cards/unknown.svg' );
+	background: no-repeat url( '../images/payment-methods/bancontact.svg' );
 }
 
 .wc_gateways tr[data-gateway_id='woocommerce_payments'] .payment-method__icon {
