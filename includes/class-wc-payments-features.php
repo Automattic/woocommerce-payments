@@ -52,6 +52,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the iDEAL gateway feature is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_ideal_enabled() {
+		return '1' === get_option( '_wcpay_feature_ideal', '0' );
+	}
+
+	/**
 	 * Checks whether the UPE gateway is enabled
 	 *
 	 * @return bool

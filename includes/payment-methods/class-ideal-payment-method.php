@@ -1,6 +1,6 @@
 <?php
 /**
- * Class iDEAL_Payment_Method
+ * Class Ideal_Payment_Method
  *
  * @package WCPay\Payment_Methods
  */

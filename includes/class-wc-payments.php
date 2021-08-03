@@ -19,6 +19,8 @@ use WCPay\Payment_Methods\Sepa_Payment_Gateway;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Gateway;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
+use WCPay\Payment_Methods\Ideal_Payment_Gateway;
+use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 
 /**
@@ -53,6 +55,13 @@ class WC_Payments {
 	 * @var Sofort_Payment_Gateway
 	 */
 	private static $sofort_gateway;
+
+	/**
+	 * Instance of iDEAL gateway, created in init function.
+	 *
+	 * @var Ideal_Payment_Gateway
+	 */
+	private static $ideal_gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -182,6 +191,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-ideal-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
@@ -223,6 +233,7 @@ class WC_Payments {
 		$giropay_class = Giropay_Payment_Gateway::class;
 		$sepa_class    = Sepa_Payment_Gateway::class;
 		$sofort_class  = Sofort_Payment_Gateway::class;
+		$ideal_class   = Ideal_Payment_Gateway::class;
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$payment_methods        = [];
@@ -230,6 +241,7 @@ class WC_Payments {
 				CC_Payment_Method::class,
 				Giropay_Payment_Method::class,
 				Sofort_Payment_Method::class,
+				Ideal_Payment_Method::class,
 			];
 			foreach ( $payment_method_classes as $payment_method_class ) {
 				$payment_method                               = new $payment_method_class( self::$token_service );
@@ -248,6 +260,9 @@ class WC_Payments {
 		}
 		if ( WC_Payments_Features::is_sofort_enabled() ) {
 			self::$sofort_gateway = new $sofort_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		}
+		if ( WC_Payments_Features::is_ideal_enabled() ) {
+			self::$ideal_gateway = new $ideal_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 
 		// Payment Request and Apple Pay.
@@ -515,6 +530,9 @@ class WC_Payments {
 		}
 		if ( WC_Payments_Features::is_sofort_enabled() ) {
 			$gateways[] = self::$sofort_gateway;
+		}
+		if ( WC_Payments_Features::is_ideal_enabled() ) {
+			$gateways[] = self::$ideal_gateway;
 		}
 
 		return $gateways;
