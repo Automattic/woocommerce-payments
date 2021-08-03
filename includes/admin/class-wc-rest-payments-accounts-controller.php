@@ -35,11 +35,34 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Get accounts details via API.
+	 * Get account details via API.
 	 *
-	 * @param WP_REST_Request $request Full data about the request.
+	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_account_data( $request ) {
-		return WC_Payments::get_account_service()->get_cached_account_data();
+		$account = WC_Payments::get_account_service()->with_payments_api_client( $this->api_client )->get_cached_account_data();
+		if ( [] === $account ) {
+			$default_currency = get_woocommerce_currency();
+			$account          = [
+				'card_present_eligible'    => false,
+				'country'                  => WC()->countries->get_base_country(),
+				'current_deadline'         => null,
+				'has_overdue_requirements' => false,
+				'has_pending_requirements' => false,
+				'statement_descriptor'     => '',
+				'status'                   => 'NOACCOUNT',
+				'store_currencies'         => [
+					'default'   => $default_currency,
+					'supported' => [ $default_currency ],
+				],
+				'customer_currencies'      => [
+					'supported' => [ $default_currency ],
+				],
+			];
+		}
+
+		return rest_ensure_response( $account );
 	}
 }
