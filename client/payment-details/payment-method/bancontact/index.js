@@ -20,22 +20,18 @@ const formatPaymentMethodDetails = ( charge ) => {
 	const { billing_details: billingDetails, payment_method: id } = charge;
 
 	const {
-		last4,
-		fingerprint,
-		country: countryCode,
-	} = charge.payment_method_details.sepa_debit;
+		bank_name: bankName,
+		bic,
+	} = charge.payment_method_details.bancontact;
 
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
-	// Use the full country name.
-	const country = wcSettings.countries[ countryCode ];
 
 	return {
-		last4,
-		fingerprint,
 		id,
+		bankName,
+		bic,
 		name,
 		email,
-		country,
 		formattedAddress,
 	};
 };
@@ -44,30 +40,21 @@ const formatPaymentMethodDetails = ( charge ) => {
  * Placeholders to display while loading.
  */
 const paymentMethodPlaceholders = {
-	last4: '0000',
-	fingerprint: 'fingerprint placeholder',
+	bankName: 'bank name placeholder',
+	bic: 'bic placeholder',
 	id: 'id placeholder',
 	name: 'name placeholder',
 	email: 'email placeholder',
 	formattedAddress: 'address placeholder',
 	country: 'country placeholder',
 };
-// TODO: Set this file up correctly.
-const BancontactDetails = ( { charge = {}, isLoading } ) => {
-	const details =
-		charge && charge.payment_method_details
-			? formatPaymentMethodDetails( charge )
-			: paymentMethodPlaceholders;
 
-	const {
-		last4,
-		fingerprint,
-		id,
-		name,
-		email,
-		country,
-		formattedAddress,
-	} = details;
+const BancontactDetails = ( { charge = {}, isLoading } ) => {
+	const details = charge.payment_method_details
+		? formatPaymentMethodDetails( charge )
+		: paymentMethodPlaceholders;
+
+	const { id, bankName, bic, name, email, formattedAddress } = details;
 
 	// Shorthand for more readable code.
 	const Detail = PaymentDetailsPaymentMethodDetail;
@@ -77,16 +64,16 @@ const BancontactDetails = ( { charge = {}, isLoading } ) => {
 			<div className="payment-method-details__column">
 				<Detail
 					isLoading={ isLoading }
-					label={ __( 'IBAN', 'woocommerce-payments' ) }
+					label={ __( 'Bank Name', 'woocommerce-payments' ) }
 				>
-					&bull;&bull;&bull;&bull;&nbsp;{ last4 }
+					{ bankName }
 				</Detail>
 
 				<Detail
 					isLoading={ isLoading }
-					label={ __( 'Fingerprint', 'woocommerce-payments' ) }
+					label={ __( 'BIC', 'woocommerce-payments' ) }
 				>
-					{ fingerprint }
+					{ bic }
 				</Detail>
 
 				<Detail
@@ -122,16 +109,9 @@ const BancontactDetails = ( { charge = {}, isLoading } ) => {
 						} }
 					/>
 				</Detail>
-
-				<Detail
-					isLoading={ isLoading }
-					label={ __( 'Origin', 'woocommerce-payments' ) }
-				>
-					{ country }
-				</Detail>
 			</div>
 		</div>
 	);
 };
-// TODO: Set this file up correctly.
+
 export default BancontactDetails;
