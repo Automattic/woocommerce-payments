@@ -42,8 +42,13 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_account_data( $request ) {
-		$account_service = WC_Payments::get_account_service()->with_payments_api_client( $this->api_client );
-		$account         = $account_service->get_cached_account_data();
+		// Inject the API client supplied into the controller, in order to enable testing.
+		$account_service     = WC_Payments::get_account_service();
+		$original_api_client = $account_service->set_payments_api_client( $this->api_client );
+
+		// Fetch account and restore original API client, in order to reset the core state.
+		$account = $account_service->get_cached_account_data();
+		$account_service->set_payments_api_client( $original_api_client );
 		if ( [] === $account ) {
 			$default_currency = get_woocommerce_currency();
 			$account          = [

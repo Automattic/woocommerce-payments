@@ -968,10 +968,11 @@ class WC_Payments_Account {
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client The client instance we want to inject.
 	 *
-	 * @return $this
+	 * @return WC_Payments_API_Client
 	 */
-	public function with_payments_api_client( WC_Payments_API_Client $payments_api_client ) {
+	public function set_payments_api_client( WC_Payments_API_Client $payments_api_client ): WC_Payments_API_Client {
+		$client_in_use             = $this->payments_api_client;
 		$this->payments_api_client = $payments_api_client;
-		return $this;
+		return $client_in_use;
 	}
 }
