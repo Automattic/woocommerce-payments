@@ -48,10 +48,14 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 	/**
 	 * @dataProvider woocommerce_action_provider
 	 */
-	public function test_registers_woocommerce_action_with_account( $action, $function_name ) {
+	public function test_registers_internal_actions_with_account( $action, $function_name ) {
 		$this->mock_payments_account
 			->method( 'get_stripe_account_id' )
 			->willReturn( [] );
+
+		// Init Settings again to get proper registration of hooks/filters.
+		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency, $this->mock_payments_account );
+
 		$this->assertNotFalse(
 			has_action( $action, [ $this->settings, $function_name ] ),
 			"Action '$action' was not registered with '$function_name'"
@@ -60,8 +64,7 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 
 	public function woocommerce_action_provider() {
 		return [
-			[ 'admin_print_scripts', 'enabled_currencies_list' ],
-			[ 'woocommerce_admin_field_wcpay_enabled_currencies_list', 'print_emoji_detection_script' ],
+			[ 'woocommerce_admin_field_wcpay_enabled_currencies_list', 'enabled_currencies_list' ],
 			[ 'woocommerce_admin_field_wcpay_currencies_settings_section_start', 'currencies_settings_section_start' ],
 			[ 'woocommerce_admin_field_wcpay_currencies_settings_section_end', 'currencies_settings_section_end' ],
 			[ 'woocommerce_admin_field_wcpay_single_currency_preview_helper', 'single_currency_preview_helper' ],
@@ -69,10 +72,31 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 		];
 	}
 
-	public function test_registers_woocommerce_action_without_account() {
+	public function test_registers_external_action_with_account() {
+		$this->mock_payments_account
+			->method( 'get_stripe_account_id' )
+			->willReturn( [] );
+
+		// Init Settings again to get proper registration of hooks/filters.
+		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency, $this->mock_payments_account );
+
+		$action        = 'admin_print_scripts';
+		$function_name = 'print_emoji_detection_script';
+
+		$this->assertNotFalse(
+			has_action( $action, $function_name ),
+			"Action '$action' was not registered with '$function_name'"
+		);
+	}
+
+	public function test_registers_internal_action_without_account() {
 		$this->mock_payments_account
 			->method( 'get_stripe_account_id' )
 			->willReturn( null );
+
+		// Init Settings again to get proper registration of hooks/filters.
+		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency, $this->mock_payments_account );
+
 		$action        = 'woocommerce_admin_field_wcpay_currencies_settings_onboarding_cta';
 		$function_name = 'currencies_settings_onboarding_cta';
 
