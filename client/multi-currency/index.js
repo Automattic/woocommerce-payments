@@ -51,6 +51,14 @@ if ( storeSettingsSection ) {
 	toggleSettingsSectionDisplay();
 }
 
+const enabledCurrenciesOnboarding = document.querySelector(
+	'#wcpay_enabled_currencies_onboarding_cta'
+);
+
+if ( enabledCurrenciesOnboarding ) {
+	submitButton.style.display = 'none';
+}
+
 /**
  * Single currency settings
  */

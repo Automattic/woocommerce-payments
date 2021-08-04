@@ -31,16 +31,20 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+		$this->mock_multi_currency      = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+		$this->mock_wc_payments_account = $this->createMock( WC_Payments_Account::class );
 
 		// The settings pages file is only included in woocommerce_get_settings_pages, so we need to manually include it here.
-		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency );
+		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency, $this->mock_wc_payments_account );
 	}
 
 	/**
 	 * @dataProvider woocommerce_action_provider
 	 */
 	public function test_registers_woocommerce_action( $action, $function_name ) {
+		$this->mock_wc_payments_account
+			->method( 'get_stripe_account_id' )
+			->willReturn( [] );
 		$this->assertNotFalse(
 			has_action( $action, [ $this->settings, $function_name ] ),
 			"Action '$action' was not registered with '$function_name'"
