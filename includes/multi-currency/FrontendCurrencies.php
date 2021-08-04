@@ -47,12 +47,17 @@ class FrontendCurrencies {
 		$this->localization_service = $localization_service;
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
-			// Currency hooks.
+
 			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 50 );
-			add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 50 );
-			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 50 );
-			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 50 );
-			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 50 );
+
+			// If the store currency is the same with the customer currency, disable formatting hooks.
+			if ( $this->get_woocommerce_currency() !== get_woocommerce_currency() ) {
+				// Currency hooks.
+				add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 50 );
+				add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 50 );
+				add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 50 );
+				add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 50 );
+			}
 		}
 
 		add_filter( 'woocommerce_cart_hash', [ $this, 'add_currency_to_cart_hash' ], 50 );
