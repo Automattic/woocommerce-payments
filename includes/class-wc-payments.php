@@ -232,7 +232,7 @@ class WC_Payments {
 		$card_class    = CC_Payment_Gateway::class;
 		$upe_class     = UPE_Payment_Gateway::class;
 		$giropay_class = Giropay_Payment_Gateway::class;
-		$p24_class = P24_Payment_Gateway::class;
+		$p24_class     = P24_Payment_Gateway::class;
 		$sepa_class    = Sepa_Payment_Gateway::class;
 		$sofort_class  = Sofort_Payment_Gateway::class;
 
