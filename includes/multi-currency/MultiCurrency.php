@@ -176,6 +176,16 @@ class MultiCurrency {
 		$this->compatibility        = new Compatibility( $this, $this->utils );
 		$this->analytics            = new Analytics( $this );
 
+		if ( is_admin() ) {
+			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
+			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+		}
+
+		// Check to see if the account is connected.
+		if ( null === $this->payments_account->get_stripe_account_id() ) {
+			return;
+		}
+
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
@@ -220,7 +230,6 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
 		// Check to make sure there are enabled currencies, then for Storefront being active, and then load the integration.
@@ -230,7 +239,6 @@ class MultiCurrency {
 		}
 
 		if ( is_admin() ) {
-			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
 	}
@@ -263,7 +271,7 @@ class MultiCurrency {
 	 * @return array The new settings pages.
 	 */
 	public function init_settings_pages( $settings_pages ): array {
-		$settings_pages[] = new Settings( $this );
+		$settings_pages[] = new Settings( $this, $this->payments_account );
 		return $settings_pages;
 	}
 
