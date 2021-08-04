@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-
+import p24BankList from '../p24/bank-list';
 /**
  * Internal dependencies.
  */
@@ -19,15 +19,24 @@ import PaymentDetailsPaymentMethodDetail from '../detail';
 const formatPaymentMethodDetails = ( charge ) => {
 	const { billing_details: billingDetails, payment_method: id } = charge;
 
-	const { bank_name: bankName, bic } = charge.payment_method_details.p24;
+	const {
+		bank,
+		reference,
+		verified_name: verifiedName,
+	} = charge.payment_method_details.p24;
 
-	const { name, email, formatted_address: formattedAddress } = billingDetails;
+	const {
+		name: customerName,
+		email,
+		formatted_address: formattedAddress,
+	} = billingDetails;
 
 	return {
 		id,
-		bankName,
-		bic,
-		name,
+		bank,
+		reference,
+		verifiedName,
+		customerName,
 		email,
 		formattedAddress,
 	};
@@ -37,10 +46,11 @@ const formatPaymentMethodDetails = ( charge ) => {
  * Placeholders to display while loading.
  */
 const paymentMethodPlaceholders = {
-	bankName: 'bank name placeholder',
-	bic: 'bic placeholder',
+	bank: 'bank name placeholder',
+	reference: 'reference placeholder',
 	id: 'id placeholder',
-	name: 'name placeholder',
+	verifiedName: 'verified_name placeholder',
+	customerName: 'customer_name placeholder',
 	email: 'email placeholder',
 	formattedAddress: 'address placeholder',
 	country: 'country placeholder',
@@ -51,7 +61,15 @@ const P24Details = ( { charge = {}, isLoading } ) => {
 		? formatPaymentMethodDetails( charge )
 		: paymentMethodPlaceholders;
 
-	const { id, bankName, bic, name, email, formattedAddress } = details;
+	const {
+		id,
+		bank,
+		reference,
+		verifiedName,
+		customerName,
+		email,
+		formattedAddress,
+	} = details;
 
 	// Shorthand for more readable code.
 	const Detail = PaymentDetailsPaymentMethodDetail;
@@ -63,14 +81,14 @@ const P24Details = ( { charge = {}, isLoading } ) => {
 					isLoading={ isLoading }
 					label={ __( 'Bank Name', 'woocommerce-payments' ) }
 				>
-					{ bankName }
+					{ p24BankList[ bank ] }
 				</Detail>
 
 				<Detail
 					isLoading={ isLoading }
-					label={ __( 'BIC', 'woocommerce-payments' ) }
+					label={ __( 'Reference', 'woocommerce-payments' ) }
 				>
-					{ bic }
+					{ reference }
 				</Detail>
 
 				<Detail
@@ -79,6 +97,13 @@ const P24Details = ( { charge = {}, isLoading } ) => {
 				>
 					{ id }
 				</Detail>
+
+				<Detail
+					isLoading={ isLoading }
+					label={ __( 'Verified Name', 'woocommerce-payments' ) }
+				>
+					{ verifiedName }
+				</Detail>
 			</div>
 
 			<div className="payment-method-details__column">
@@ -86,7 +111,7 @@ const P24Details = ( { charge = {}, isLoading } ) => {
 					isLoading={ isLoading }
 					label={ __( 'Owner', 'woocommerce-payments' ) }
 				>
-					{ name }
+					{ customerName }
 				</Detail>
 
 				<Detail

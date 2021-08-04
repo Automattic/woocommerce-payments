@@ -5,7 +5,7 @@
  */
 import { Fragment } from 'react';
 import './style.scss';
-
+import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 /**
  *
  * @param {Object} payment Payment charge object
@@ -21,10 +21,11 @@ const formatDetails = ( payment ) => {
 					&nbsp;&bull;&bull;&bull;&bull;&nbsp;{ paymentMethod.last4 }
 				</Fragment>
 			);
-		case 'giropay':
-			return <Fragment>{ paymentMethod.bank_code }</Fragment>;
 		case 'p24':
-			// TODO: fill this
+			return (
+				<Fragment>{ p24BankList[ paymentMethod.bank ] ?? '' }</Fragment>
+			);
+		case 'giropay':
 			return <Fragment>{ paymentMethod.bank_code }</Fragment>;
 		case 'sofort':
 			return (
@@ -33,7 +34,6 @@ const formatDetails = ( payment ) => {
 					{ paymentMethod.iban_last4 }
 				</Fragment>
 			);
-
 		default:
 			return <Fragment />;
 	}
