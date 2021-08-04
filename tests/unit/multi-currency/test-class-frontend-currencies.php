@@ -52,7 +52,26 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	/**
 	 * @dataProvider woocommerce_filter_provider
 	 */
-	public function test_registers_woocommerce_filter( $filter, $function_name ) {
+	public function test_registers_woocommerce_filter( $filter, $function_name, $load_when_same_currency ) {
+
+		// Test if the filters are assigned when store currency and the customer currency are different.
+		$current_currency = get_woocommerce_currency();
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
+
+		// Test if the filter shouldn't be hooked when the currencies are the same.
+		if ( false === $load_when_same_currency ) {
+			$this->assertFalse( has_filter( $filter, [ $this->frontend_currencies, $function_name ] ) );
+		} else {
+			$this->assertGreaterThan(
+				10,
+				has_filter( $filter, [ $this->frontend_currencies, $function_name ] ),
+				"Filter '$filter' was not registered with '$function_name' with a priority higher than the default"
+			);
+		}
+
+		// Test if the filters are assigned when store currency and the customer currency are different.
+		$different_currency = new Currency( 'JPY' );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $different_currency );
 		$this->assertGreaterThan(
 			10,
 			has_filter( $filter, [ $this->frontend_currencies, $function_name ] ),
@@ -62,12 +81,12 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 
 	public function woocommerce_filter_provider() {
 		return [
-			[ 'woocommerce_currency', 'get_woocommerce_currency' ],
-			[ 'wc_get_price_decimals', 'get_price_decimals' ],
-			[ 'wc_get_price_decimal_separator', 'get_price_decimal_separator' ],
-			[ 'wc_get_price_thousand_separator', 'get_price_thousand_separator' ],
-			[ 'woocommerce_price_format', 'get_woocommerce_price_format' ],
-			[ 'woocommerce_cart_hash', 'add_currency_to_cart_hash' ],
+			[ 'woocommerce_currency', 'get_woocommerce_currency', true ],
+			[ 'wc_get_price_decimals', 'get_price_decimals', false ],
+			[ 'wc_get_price_decimal_separator', 'get_price_decimal_separator', false ],
+			[ 'wc_get_price_thousand_separator', 'get_price_thousand_separator', false ],
+			[ 'woocommerce_price_format', 'get_woocommerce_price_format', false ],
+			[ 'woocommerce_cart_hash', 'add_currency_to_cart_hash', true ],
 		];
 	}
 
