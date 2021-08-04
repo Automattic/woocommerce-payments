@@ -19,6 +19,7 @@ jest.mock( '@woocommerce/navigation', () => ( {
 	getPath: jest.fn(),
 	updateQueryString: jest.fn(),
 } ) );
+jest.mock( '../ensure-connected-account', () => ( { children } ) => children );
 
 describe( 'createAdditionalMethodsSetupTask()', () => {
 	beforeEach( () => {
