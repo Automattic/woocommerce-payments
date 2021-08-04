@@ -7,6 +7,7 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Payments_Account;
 use WCPay\MultiCurrency\Currency;
 
 defined( 'ABSPATH' ) || exit;
@@ -38,6 +39,13 @@ class Settings extends \WC_Settings_Page {
 	protected $multi_currency;
 
 	/**
+	 * Instance of WC_Payments_Account class.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	protected $payments_account;
+
+	/**
 	 * Link to the multi-currency documentation page.
 	 *
 	 * @var string
@@ -47,22 +55,29 @@ class Settings extends \WC_Settings_Page {
 	/**
 	 * Constructor.
 	 *
-	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
+	 * @param MultiCurrency       $multi_currency The MultiCurrency instance.
+	 * @param WC_Payments_Account $payments_account The WC_Payments_Account instance.
 	 */
-	public function __construct( MultiCurrency $multi_currency ) {
-		$this->multi_currency = $multi_currency;
-		$this->id             = $this->multi_currency->id;
-		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
+	public function __construct( MultiCurrency $multi_currency, WC_Payments_Account $payments_account ) {
+		$this->multi_currency   = $multi_currency;
+		$this->payments_account = $payments_account;
+		$this->id               = $this->multi_currency->id;
+		$this->label            = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
-		// TODO: We need to re-enable it on every screen we use emoji flags. Until WC Admin decide if they will enable it too: https://github.com/woocommerce/woocommerce-admin/issues/6388.
-		add_action( 'admin_print_scripts', 'print_emoji_detection_script' );
-		add_action( 'woocommerce_admin_field_wcpay_enabled_currencies_list', [ $this, 'enabled_currencies_list' ] );
-		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_section_start', [ $this, 'currencies_settings_section_start' ] );
-		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_section_end', [ $this, 'currencies_settings_section_end' ] );
+		// If we do not have an account, then we don't need to add these actions.
+		if ( null !== $this->payments_account->get_stripe_account_id() ) {
+			// TODO: We need to re-enable it on every screen we use emoji flags. Until WC Admin decide if they will enable it too: https://github.com/woocommerce/woocommerce-admin/issues/6388.
+			add_action( 'admin_print_scripts', 'print_emoji_detection_script' );
+			add_action( 'woocommerce_admin_field_wcpay_enabled_currencies_list', [ $this, 'enabled_currencies_list' ] );
+			add_action( 'woocommerce_admin_field_wcpay_currencies_settings_section_start', [ $this, 'currencies_settings_section_start' ] );
+			add_action( 'woocommerce_admin_field_wcpay_currencies_settings_section_end', [ $this, 'currencies_settings_section_end' ] );
 
-		add_action( 'woocommerce_admin_field_wcpay_single_currency_preview_helper', [ $this, 'single_currency_preview_helper' ] );
+			add_action( 'woocommerce_admin_field_wcpay_single_currency_preview_helper', [ $this, 'single_currency_preview_helper' ] );
 
-		add_action( 'woocommerce_settings_' . $this->id, [ $this, 'render_single_currency_breadcrumbs' ] );
+			add_action( 'woocommerce_settings_' . $this->id, [ $this, 'render_single_currency_breadcrumbs' ] );
+		} else {
+			add_action( 'woocommerce_admin_field_wcpay_currencies_settings_onboarding_cta', [ $this, 'currencies_settings_onboarding_cta' ] );
+		}
 		parent::__construct();
 	}
 
@@ -88,6 +103,25 @@ class Settings extends \WC_Settings_Page {
 	 */
 	public function get_settings( $current_section = '' ) {
 		$settings = [];
+
+		// If we do not have an account, then we display a CTA to finish onboarding.
+		if ( null === $this->payments_account->get_stripe_account_id() ) {
+			return [
+				[
+					'title' => __( 'Enabled currencies', 'woocommerce-payments' ),
+					'desc'  => sprintf(
+						/* translators: %s: url to documentation. */
+						__( 'Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules. <a href="%s">Learn more</a>', 'woocommerce-payments' ),
+						self::LEARN_MORE_URL
+					),
+					'type'  => 'title',
+					'id'    => $this->id . '_enabled_currencies',
+				],
+				[
+					'type' => 'wcpay_currencies_settings_onboarding_cta',
+				],
+			];
+		}
 
 		if ( '' === $current_section ) {
 			$settings = apply_filters(
@@ -208,6 +242,27 @@ class Settings extends \WC_Settings_Page {
 	}
 
 	/**
+	 * Output the call to action button if needing to onboard.
+	 */
+	public function currencies_settings_onboarding_cta() {
+		$params = [
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+		];
+		$href   = admin_url( add_query_arg( $params, 'admin.php' ) );
+		?>
+			<div>
+				<p>
+					<?php esc_html_e( 'To add new currencies to your store, please finish setting up WooCommerce Payments.', 'woocommerce-payments' ); ?>
+				</p>
+				<a href="<?php echo esc_url( $href ); ?>" id="wcpay_enabled_currencies_onboarding_cta" type="button" class="button-primary">
+					<?php esc_html_e( 'Get started', 'woocommerce-payments' ); ?>
+				</a>
+			</div>
+		<?php
+	}
+
+	/**
 	 * Output hidden fields for preview.
 	 */
 	public function single_currency_preview_helper() {
@@ -242,8 +297,6 @@ class Settings extends \WC_Settings_Page {
 		</tr>
 		<?php
 	}
-
-
 
 	/**
 	 * Returns the settings for the single currency.
