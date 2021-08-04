@@ -53,10 +53,9 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	 * @dataProvider woocommerce_filter_provider
 	 */
 	public function test_registers_woocommerce_filter_with_same_customer_currency( $filter, $function_name, $load_when_same_currency ) {
-
-		$current_currency = new Currency( get_woocommerce_currency() );
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
+		$current_currency = new Currency( 'USD' );
 		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $current_currency );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 		$this->remove_all_multicurrency_filters();
 		$this->frontend_currencies = new FrontendCurrencies( $this->mock_multi_currency, $this->mock_localization_service );
 
@@ -75,7 +74,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	 * @dataProvider woocommerce_filter_provider
 	 */
 	public function test_registers_woocommerce_filter_with_different_customer_currency( $filter, $function_name ) {
-		$current_currency   = new Currency( get_woocommerce_currency() );
+		$current_currency   = new Currency( 'USD' );
 		$different_currency = new Currency( 'GBP' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $different_currency );
 		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $current_currency );
@@ -88,7 +87,6 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 			"Filter '$filter' was not registered with '$function_name' with a priority higher than the default"
 		);
 	}
-
 
 	public function remove_all_multicurrency_filters() {
 		$filters = $this->woocommerce_filter_provider();

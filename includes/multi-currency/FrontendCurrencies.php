@@ -45,12 +45,13 @@ class FrontendCurrencies {
 	public function __construct( MultiCurrency $multi_currency, WC_Payments_Localization_Service $localization_service ) {
 		$this->multi_currency       = $multi_currency;
 		$this->localization_service = $localization_service;
+		$store_currency             = get_option( 'woocommerce_currency' );
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
+			// Currency hooks.
 			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 50 );
 			// If the store currency is the same with the customer currency, disable formatting hooks.
-			if ( $this->multi_currency->get_default_currency() !== $this->multi_currency->get_selected_currency() ) {
-				// Currency hooks.
+			if ( $store_currency !== $this->get_woocommerce_currency() ) {
 				add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 50 );
 				add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 50 );
 				add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 50 );
