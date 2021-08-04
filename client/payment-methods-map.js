@@ -10,6 +10,7 @@ import CreditCardIcon from './gateway-icons/credit-card';
 import GiropayIcon from './gateway-icons/giropay';
 import SofortIcon from './gateway-icons/sofort';
 import SepaIcon from './gateway-icons/sepa';
+import P24Icon from './gateway-icons/p24';
 
 export default {
 	card: {
@@ -47,5 +48,14 @@ export default {
 			'woocommerce-payments'
 		),
 		Icon: SepaIcon,
+	},
+	p24: {
+		id: 'p24',
+		label: __( 'Przelewy24 (P24)', 'woocommerce-payments' ),
+		description: __(
+			'Accept payments with Przelewy24 (P24), the most popular payment method in Poland.',
+			'woocommerce-payments'
+		),
+		Icon: P24Icon,
 	},
 };

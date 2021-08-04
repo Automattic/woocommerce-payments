@@ -304,6 +304,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
+		// Przelewy24 (p24) option hidden behind feature flag.
+		if ( WC_Payments_Features::is_p24_enabled() ) {
+			$this->form_fields['p24_enabled'] = [
+				'title'       => __( 'Enable/disable Przelewy24', 'woocommerce-payments' ),
+				'label'       => __( 'Enable WooCommerce Przelewy24', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			];
+		}
+
 		// SEPA option hidden behind feature flag.
 		if ( WC_Payments_Features::is_sepa_enabled() ) {
 			$this->form_fields['sepa_enabled'] = [

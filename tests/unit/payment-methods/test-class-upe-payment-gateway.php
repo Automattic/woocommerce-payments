@@ -167,6 +167,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$payment_method_classes     = [
 			CC_Payment_Method::class,
 			Giropay_Payment_Method::class,
+			P24_Payment_Method::class,
 			Sofort_Payment_Method::class,
 		];
 		foreach ( $payment_method_classes as $payment_method_class ) {

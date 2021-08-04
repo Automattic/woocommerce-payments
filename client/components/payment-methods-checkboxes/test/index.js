@@ -33,6 +33,11 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					checked={ false }
 					name="giropay"
 				/>
+				<PaymentMethodsCheckbox
+					onChange={ handleChange }
+					checked={ false }
+					name="p24"
+				/>
 			</PaymentMethodsCheckboxes>
 		);
 
@@ -40,10 +45,12 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		const sepa = within( paymentMethods[ 0 ] );
 		const sofort = within( paymentMethods[ 1 ] );
 		const giropay = within( paymentMethods[ 2 ] );
+		const p24 = within( paymentMethods[ 3 ] );
 
 		expect( sepa.getByRole( 'checkbox' ) ).toBeChecked();
 		expect( sofort.getByRole( 'checkbox' ) ).not.toBeChecked();
 		expect( giropay.getByRole( 'checkbox' ) ).not.toBeChecked();
+		expect( p24.getByRole( 'checkbox' ) ).not.toBeChecked();
 
 		userEvent.click( sepa.getByRole( 'checkbox' ) );
 		userEvent.click( giropay.getByRole( 'checkbox' ) );

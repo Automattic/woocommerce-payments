@@ -215,6 +215,13 @@ const AddPaymentMethodsTask = () => {
 									name="giropay"
 								/>
 							) }
+							{ availablePaymentMethods.includes( 'p24' ) && (
+								<PaymentMethodCheckbox
+									checked={ paymentMethodsState.p24 }
+									onChange={ handlePaymentMethodChange }
+									name="p24"
+								/>
+							) }
 							{ availablePaymentMethods.includes( 'sofort' ) && (
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.sofort }
