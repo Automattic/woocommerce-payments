@@ -13,6 +13,7 @@ import MethodSelector from './methods-selector';
 import UpePreviewMethodSelector from './upe-preview-methods-selector';
 import WcPayUpeContextProvider from '../settings/wcpay-upe-toggle/provider';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
+import EnsureConnectedAccount from './ensure-connected-account';
 
 const createAdditionalMethodsSetupTask = ( {
 	isSetupCompleted,
@@ -32,7 +33,9 @@ const createAdditionalMethodsSetupTask = ( {
 		// It might also be worth exploring adding an error boundary to prevent the whole page to be blank in case of error?
 		container: (
 			<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
-				<MethodSelector />
+				<EnsureConnectedAccount>
+					<MethodSelector />
+				</EnsureConnectedAccount>
 			</WCPaySettingsContext.Provider>
 		),
 		// please note: marking an item as "dismissed" does not mean it's "completed" - they are considered 2 different things
@@ -68,11 +71,13 @@ const createAdditionalMethodsSetupTask = ( {
 						<WCPaySettingsContext.Provider
 							value={ window.wcpaySettings }
 						>
-							<WcPayUpeContextProvider
-								defaultIsUpeEnabled={ isUpeEnabled }
-							>
-								<UpePreviewMethodSelector />
-							</WcPayUpeContextProvider>
+							<EnsureConnectedAccount>
+								<WcPayUpeContextProvider
+									defaultIsUpeEnabled={ isUpeEnabled }
+								>
+									<UpePreviewMethodSelector />
+								</WcPayUpeContextProvider>
+							</EnsureConnectedAccount>
 						</WCPaySettingsContext.Provider>
 					),
 					completed:
