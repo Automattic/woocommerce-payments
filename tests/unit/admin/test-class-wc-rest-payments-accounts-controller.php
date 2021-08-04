@@ -77,7 +77,8 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 
 		$this->assertSame( 200, $response->status );
 		$this->assertSame( 'NOACCOUNT', $response_data['status'] );
-		$this->assertSame( 'US', $response_data['country'] );
-		$this->assertSame( 'USD', $response_data['store_currencies']['default'] );
+		// The default country and currency have changed in WC 5.3, hence multiple options in assertions.
+		$this->assertContains( $response_data['country'], [ 'US', 'GB' ] );
+		$this->assertContains( $response_data['store_currencies']['default'], [ 'USD', 'GBP' ] );
 	}
 }
