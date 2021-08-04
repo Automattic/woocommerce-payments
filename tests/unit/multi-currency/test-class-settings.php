@@ -19,6 +19,13 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 	private $mock_multi_currency;
 
 	/**
+	 * Mock WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_payments_account;
+
+	/**
 	 * WCPay\MultiCurrency\Settings instance.
 	 *
 	 * @var WCPay\MultiCurrency\Settings
@@ -31,18 +38,18 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->mock_multi_currency      = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
-		$this->mock_wc_payments_account = $this->createMock( WC_Payments_Account::class );
+		$this->mock_multi_currency   = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+		$this->mock_payments_account = $this->createMock( WC_Payments_Account::class );
 
 		// The settings pages file is only included in woocommerce_get_settings_pages, so we need to manually include it here.
-		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency, $this->mock_wc_payments_account );
+		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency, $this->mock_payments_account );
 	}
 
 	/**
 	 * @dataProvider woocommerce_action_provider
 	 */
-	public function test_registers_woocommerce_action( $action, $function_name ) {
-		$this->mock_wc_payments_account
+	public function test_registers_woocommerce_action_with_account( $action, $function_name ) {
+		$this->mock_payments_account
 			->method( 'get_stripe_account_id' )
 			->willReturn( [] );
 		$this->assertNotFalse(
@@ -53,12 +60,26 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 
 	public function woocommerce_action_provider() {
 		return [
-			[ 'woocommerce_settings_wcpay_multi_currency', 'render_single_currency_breadcrumbs' ],
-			[ 'woocommerce_admin_field_wcpay_enabled_currencies_list', 'enabled_currencies_list' ],
+			[ 'admin_print_scripts', 'enabled_currencies_list' ],
+			[ 'woocommerce_admin_field_wcpay_enabled_currencies_list', 'print_emoji_detection_script' ],
 			[ 'woocommerce_admin_field_wcpay_currencies_settings_section_start', 'currencies_settings_section_start' ],
 			[ 'woocommerce_admin_field_wcpay_currencies_settings_section_end', 'currencies_settings_section_end' ],
 			[ 'woocommerce_admin_field_wcpay_single_currency_preview_helper', 'single_currency_preview_helper' ],
+			[ 'woocommerce_settings_wcpay_multi_currency', 'render_single_currency_breadcrumbs' ],
 		];
+	}
+
+	public function test_registers_woocommerce_action_without_account() {
+		$this->mock_payments_account
+			->method( 'get_stripe_account_id' )
+			->willReturn( null );
+		$action        = 'woocommerce_admin_field_wcpay_currencies_settings_onboarding_cta';
+		$function_name = 'currencies_settings_onboarding_cta';
+
+		$this->assertNotFalse(
+			has_action( $action, [ $this->settings, $function_name ] ),
+			"Action '$action' was not registered with '$function_name'"
+		);
 	}
 
 	public function test_render_single_currency_breadcrumbs_does_not_render_when_blank_section() {
@@ -85,5 +106,15 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 		$this->expectOutputRegex( '/<a href=".*\/wp-admin\/admin\.php\?page=wc-settings&#038;tab=wcpay_multi_currency">Currencies<\/a> &gt; Pound sterling \(GBP\) 🇬🇧/' );
 
 		$this->settings->render_single_currency_breadcrumbs();
+	}
+
+	public function test_render_cta_button_when_no_account() {
+		$this->mock_payments_account
+			->method( 'get_stripe_account_id' )
+			->willReturn( null );
+
+		$this->expectOutputRegex( '/<a href=".*\/wp-admin\/admin\.php\?page=wc-admin&#038;path=\/payments\/connect" id="wcpay_enabled_currencies_onboarding_cta" type="button" class="button-primary">/' );
+
+		$this->settings->currencies_settings_onboarding_cta();
 	}
 }
