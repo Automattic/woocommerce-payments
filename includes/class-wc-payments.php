@@ -104,6 +104,13 @@ class WC_Payments {
 	private static $action_scheduler_service;
 
 	/**
+	 * Instance of WC_Payments_Localization_Service, created in init function
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private static $localization_service;
+
+	/**
 	 * Instance of WC_Payments_Fraud_Service, created in init function
 	 *
 	 * @var WC_Payments_Fraud_Service
@@ -160,6 +167,7 @@ class WC_Payments {
 
 		self::$api_client = self::create_api_client();
 
+		include_once __DIR__ . '/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php';
 		include_once __DIR__ . '/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
@@ -192,6 +200,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
 		include_once __DIR__ . '/class-experimental-abtest.php';
+		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -207,6 +216,7 @@ class WC_Payments {
 		self::$remote_note_service      = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
+		self::$localization_service     = new WC_Payments_Localization_Service();
 
 		$card_class    = CC_Payment_Gateway::class;
 		$upe_class     = UPE_Payment_Gateway::class;
@@ -258,7 +268,12 @@ class WC_Payments {
 		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
 
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
+		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
+
+		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
+		WC_Payments_Explicit_Price_Formatter::init();
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-translations-loader.php';
 		WC_Payments_Translations_Loader::init();
@@ -274,9 +289,6 @@ class WC_Payments {
 			if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
 				include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
 				new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
-
-				include_once __DIR__ . '/admin/class-wc-payments-admin-additional-methods-setup.php';
-				new WC_Payments_Admin_Additional_Methods_Setup( self::$card_gateway );
 			}
 		}
 
@@ -709,7 +721,7 @@ class WC_Payments {
 		$conn_tokens_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
-		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway );
+		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway, self::$customer_service );
 		$orders_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
@@ -734,6 +746,10 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
 			$upe_flag_toggle_controller->register_routes();
+
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+			$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
+			$survey_controller->register_routes();
 		}
 	}
 
@@ -779,14 +795,28 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Localization_Service
+	 *
+	 * @return WC_Payments_Localization_Service Localization Service instance
+	 */
+	public static function get_localization_service() {
+		return self::$localization_service;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
+		if ( WC_Payments_Features::is_upe_enabled() ) {
+			require_once __DIR__ . '/class-wc-payments-upe-blocks-payment-method.php';
+			$payment_method_registry->register( new WC_Payments_UPE_Blocks_Payment_Method() );
+		} else {
+			$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
+		}
 
-		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
 	}
 
 	/**

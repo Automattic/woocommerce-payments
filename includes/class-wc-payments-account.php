@@ -199,6 +199,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the customer currencies supported by Stripe available for the account.
+	 *
+	 * @return array Currencies.
+	 */
+	public function get_account_customer_supported_currencies() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['customer_currencies']['supported'] ) ? $account['customer_currencies']['supported'] : [];
+	}
+
+	/**
 	 * Gets the account live mode value.
 	 *
 	 * @return bool|null Account is_live value.
@@ -320,10 +330,13 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
-				$this->add_notice_to_settings_page(
-					__( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ),
-					'notice-error'
+				wp_safe_redirect(
+					add_query_arg(
+						[ 'wcpay-login-error' => '1' ],
+						self::get_overview_page_url()
+					)
 				);
+				exit;
 			}
 			return;
 		}
@@ -360,9 +373,8 @@ class WC_Payments_Account {
 				$this->init_stripe_oauth( $wcpay_connect_param );
 			} catch ( Exception $e ) {
 				Logger::error( 'Init Stripe oauth flow failed. ' . $e );
-				$this->add_notice_to_settings_page(
-					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ),
-					'notice-error'
+				$this->redirect_to_onboarding_page(
+					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' )
 				);
 			}
 			return;
@@ -384,7 +396,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Stripe account login url.
 	 */
-	public static function get_login_url() {
+	private function get_login_url() {
 		return add_query_arg(
 			[
 				'wcpay-login' => '1',
@@ -501,9 +513,8 @@ class WC_Payments_Account {
 	private function redirect_to_login() {
 		// Clear account transient when generating Stripe dashboard's login link.
 		$this->clear_cache();
-		$redirect_url = $this->is_overview_page() ? $this->get_overview_page_url() : WC_Payment_Gateway_WCPay::get_settings_url();
-
-		$login_data = $this->payments_api_client->get_login_data( $redirect_url );
+		$redirect_url = $this->get_overview_page_url();
+		$login_data   = $this->payments_api_client->get_login_data( $redirect_url );
 		wp_safe_redirect( $login_data['url'] );
 		exit;
 	}
@@ -580,9 +591,8 @@ class WC_Payments_Account {
 	 */
 	private function finalize_connection( $state, $mode ) {
 		if ( get_transient( 'wcpay_stripe_oauth_state' ) !== $state ) {
-			$this->add_notice_to_settings_page(
-				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ),
-				'notice-error'
+			$this->redirect_to_onboarding_page(
+				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' )
 			);
 			return;
 		}
@@ -740,22 +750,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Adds a notice that will be forced to be visible on the settings page, despite WcAdmin hiding other notices.
-	 *
-	 * @param string $message Notice message.
-	 * @param string $classes Classes to apply, for example notice-error, notice-success.
-	 */
-	private function add_notice_to_settings_page( $message, $classes ) {
-		$classes .= ' wcpay-settings-notice'; // add a class that will be shown on the settings page.
-		add_filter(
-			'admin_notices',
-			function () use ( $message, $classes ) {
-				WC_Payments::display_admin_notice( $message, $classes );
-			}
-		);
-	}
-
-	/**
 	 * Updates Stripe account settings.
 	 *
 	 * @param array $stripe_account_settings Settings to update.
@@ -870,6 +864,16 @@ class WC_Payments_Account {
 	public function get_account_country() {
 		$account = $this->get_cached_account_data();
 		return $account['country'] ?? 'US';
+	}
+
+	/**
+	 * Gets the account default currency.
+	 *
+	 * @return string Currency code in lowercase.
+	 */
+	public function get_account_default_currency() {
+		$account = $this->get_cached_account_data();
+		return $account['store_currencies']['default'] ?? 'usd';
 	}
 
 	/**

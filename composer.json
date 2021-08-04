@@ -16,7 +16,8 @@
       "automattic/jetpack-connection": "1.20.0",
       "automattic/jetpack-config": "1.4.3",
       "automattic/jetpack-autoloader": "2.8.0",
-      "myclabs/php-enum": "1.7.7"
+      "myclabs/php-enum": "1.7.7",
+      "ext-json": "*"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
@@ -25,8 +26,9 @@
       "woocommerce/action-scheduler": "3.1.6",
       "kalessil/production-dependencies-guard": "dev-master",
       "vimeo/psalm": "^4.8",
-	    "php-stubs/wordpress-stubs": "^5.7",
-	    "php-stubs/woocommerce-stubs": "^5.4"
+      "php-stubs/wordpress-stubs": "^5.7",
+      "php-stubs/woocommerce-stubs": "^5.4",
+      "rregeer/phpunit-coverage-check": "^0.3.1"
     },
     "scripts": {
       "test": [

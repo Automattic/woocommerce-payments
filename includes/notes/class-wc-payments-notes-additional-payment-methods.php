@@ -31,7 +31,15 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 	 */
 	public static function get_note() {
 		// Show this notice only if UPE settings preview is disabled, and UPE flag is not enabled.
-		if ( ! WC_Payments_Features::is_upe_settings_preview_enabled() || WC_Payments_Features::is_upe_enabled() ) {
+		if ( false === WC_Payments_Features::is_upe_settings_preview_enabled() ) {
+			return;
+		}
+
+		if ( WC_Payments_Features::is_upe_enabled() ) {
+			return;
+		}
+
+		if ( WC_Payments_Features::did_merchant_disable_upe() ) {
 			return;
 		}
 
@@ -39,7 +47,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		$note       = new $note_class();
 
 		$note->set_title( __( 'Boost your sales by accepting new payment methods', 'woocommerce-payments' ) );
-		$note->set_content( __( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments. <a href="https://docs.woocommerce.com/document/payments/" target="wcpay_upe_learn_more">Learn more</a>', 'woocommerce-payments' ) );
+		$note->set_content( __( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments. <a href="https://docs.woocommerce.com/document/payments/additional-payment-methods/" target="wcpay_upe_learn_more">Learn more</a>', 'woocommerce-payments' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( $note_class::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );
@@ -77,7 +85,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
 		self::possibly_delete_note();
 
-		$wcpay_settings_url = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' );
+		$wcpay_settings_url = admin_url( 'admin.php?page=wc-admin&task=woocommerce-payments--additional-payment-methods' );
 		wp_safe_redirect( $wcpay_settings_url );
 		exit;
 	}

@@ -20,12 +20,13 @@ import {
 	SelectControl,
 } from '@wordpress/components';
 import { merge, some, flatten, isMatchWith } from 'lodash';
+import moment from 'moment';
 
 /**
  * Internal dependencies.
  */
 import '../style.scss';
-import { useDisputeEvidence } from 'data';
+import { useDisputeEvidence } from 'wcpay/data';
 import evidenceFields from './fields';
 import { FileUploadControl } from './file-upload';
 import Info from '../info';
@@ -107,6 +108,15 @@ export const DisputeEvidenceForm = ( props ) => {
 				return (
 					<TextControl
 						key={ field.key }
+						{ ...composeDefaultControlProps( field ) }
+					/>
+				);
+			case 'date':
+				return (
+					<TextControl
+						key={ field.key }
+						type={ 'date' }
+						max={ moment().format( 'YYYY-MM-DD' ) }
 						{ ...composeDefaultControlProps( field ) }
 					/>
 				);

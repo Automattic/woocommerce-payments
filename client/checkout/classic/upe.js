@@ -8,10 +8,11 @@ import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_UPE,
 } from '../constants.js';
-import { getConfig } from 'utils/checkout';
+import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
+import { getTerms } from '../utils/upe';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -86,7 +87,6 @@ jQuery( function ( $ ) {
 				'#billing_first_name',
 				'wcpay-hidden-input'
 			);
-			$( '#wcpay-hidden-input' ).trigger( 'focus' );
 
 			// Hidden invalid element.
 			const hiddenInvalidRow = this.getHiddenInvalidRow();
@@ -99,6 +99,7 @@ jQuery( function ( $ ) {
 
 			// Remove transitions.
 			$( '#wcpay-hidden-input' ).css( 'transition', 'none' );
+			$( '#wcpay-hidden-input' ).trigger( 'focus' );
 		},
 		cleanup: function () {
 			$( '#wcpay-hidden-div' ).remove();
@@ -112,6 +113,19 @@ jQuery( function ( $ ) {
 	let upeElement = null;
 	let paymentIntentId = null;
 	let isUPEComplete = false;
+	const hiddenBillingFields = {
+		name: 'never',
+		email: 'never',
+		phone: 'never',
+		address: {
+			country: 'never',
+			line1: 'never',
+			line2: 'never',
+			city: 'never',
+			state: 'never',
+			postalCode: 'never',
+		},
+	};
 
 	/**
 	 * Block UI to indicate processing and avoid duplicate submission.
@@ -126,6 +140,15 @@ jQuery( function ( $ ) {
 				opacity: 0.6,
 			},
 		} );
+	};
+
+	/**
+	 * Unblock UI to remove overlay and loading icon
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 */
+	const unblockUI = ( $form ) => {
+		$form.removeClass( 'processing' ).unblock();
 	};
 
 	// Show error notice at top of checkout form.
@@ -180,7 +203,37 @@ jQuery( function ( $ ) {
 				'checked',
 				false
 			);
+			$( 'input#wc-woocommerce_payments-new-payment-method' ).trigger(
+				'change'
+			);
 		}
+	};
+
+	// Set the selected UPE payment type field
+	const setSelectedUPEPaymentType = ( paymentType ) => {
+		$( '#wcpay_selected_upe_payment_type' ).val( paymentType );
+	};
+
+	/**
+	 * Converts form fields object into Stripe `billing_details` object.
+	 *
+	 * @param {Object} fields Object mapping checkout billing fields to values.
+	 * @return {Object} Stripe formatted `billing_details` object.
+	 */
+	const getBillingDetails = ( fields ) => {
+		return {
+			name: `${ fields.billing_first_name } ${ fields.billing_last_name }`.trim(),
+			email: fields.billing_email,
+			phone: fields.billing_phone,
+			address: {
+				country: fields.billing_country,
+				line1: fields.billing_address_1,
+				line2: fields.billing_address_2,
+				city: fields.billing_city,
+				state: fields.billing_state,
+				postal_code: fields.billing_postcode,
+			},
+		};
 	};
 
 	/**
@@ -196,6 +249,7 @@ jQuery( function ( $ ) {
 
 		// If paying from order, we need to create Payment Intent from order not cart.
 		const isOrderPay = getConfig( 'isOrderPay' );
+		const isCheckout = getConfig( 'isCheckout' );
 		let orderId;
 		if ( isOrderPay ) {
 			orderId = getConfig( 'orderId' );
@@ -205,35 +259,63 @@ jQuery( function ( $ ) {
 			? api.initSetupIntent()
 			: api.createIntent( orderId );
 
+		const $upeContainer = $( '#wcpay-upe-element' );
+		blockUI( $upeContainer );
+
 		intentAction
 			.then( ( response ) => {
 				// I repeat, do NOT mount UPE twice.
 				if ( upeElement || paymentIntentId ) {
+					unblockUI( $upeContainer );
 					return;
 				}
 
 				const { client_secret: clientSecret, id: id } = response;
 				paymentIntentId = id;
 
-				hiddenElementsForUPE.init();
-				const appearance = getAppearance();
-				hiddenElementsForUPE.cleanup();
-				const businessName = getConfig( 'accountDescriptor' );
+				let appearance = getConfig( 'upeAppearance' );
 
-				upeElement = elements.create( 'payment', {
+				if ( ! appearance ) {
+					hiddenElementsForUPE.init();
+					appearance = getAppearance();
+					hiddenElementsForUPE.cleanup();
+					api.saveUPEAppearance( appearance );
+				}
+
+				const businessName = getConfig( 'accountDescriptor' );
+				const upeSettings = {
 					clientSecret,
 					appearance,
 					business: { name: businessName },
-				} );
+				};
+
+				if ( getConfig( 'cartContainsSubscription' ) ) {
+					upeSettings.terms = getTerms(
+						paymentMethodsConfig,
+						'always'
+					);
+				}
+				if ( isCheckout && ! isOrderPay ) {
+					upeSettings.fields = {
+						billingDetails: hiddenBillingFields,
+					};
+				}
+
+				upeElement = elements.create( 'payment', upeSettings );
 				upeElement.mount( '#wcpay-upe-element' );
+				unblockUI( $upeContainer );
 				upeElement.on( 'change', ( event ) => {
+					const selectedUPEPaymentType = event.value.type;
 					const isPaymentMethodReusable =
-						paymentMethodsConfig[ event.value.type ].isReusable;
+						paymentMethodsConfig[ selectedUPEPaymentType ]
+							.isReusable;
 					showNewPaymentMethodCheckbox( isPaymentMethodReusable );
+					setSelectedUPEPaymentType( selectedUPEPaymentType );
 					isUPEComplete = event.complete;
 				} );
 			} )
 			.catch( ( error ) => {
+				unblockUI( $upeContainer );
 				showError( error.message );
 				const gatewayErrorMessage =
 					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
@@ -242,6 +324,11 @@ jQuery( function ( $ ) {
 				);
 			} );
 	};
+
+	const renameGatewayTitle = () =>
+		$( 'label[for=payment_method_woocommerce_payments]' ).text(
+			getCustomGatewayTitle( paymentMethodsConfig )
+		);
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
@@ -255,6 +342,7 @@ jQuery( function ( $ ) {
 			isUPEEnabled &&
 			! upeElement
 		) {
+			renameGatewayTitle();
 			mountUPEElement();
 		}
 	} );
@@ -269,7 +357,21 @@ jQuery( function ( $ ) {
 			isUPEEnabled &&
 			! upeElement
 		) {
-			const useSetUpIntent = $( 'form#add_payment_method' ).length;
+			renameGatewayTitle();
+			const isChangingPayment = getConfig( 'isChangingPayment' );
+
+			// We use a setup intent if we are on the screens to add a new payment method or to change a subscription payment.
+			const useSetUpIntent =
+				$( 'form#add_payment_method' ).length || isChangingPayment;
+
+			if ( isChangingPayment && getConfig( 'newTokenFormId' ) ) {
+				// Changing the method for a subscription takes two steps:
+				// 1. Create the new payment method that will redirect back.
+				// 2. Select the new payment method and resubmit the form to update the subscription.
+				const token = getConfig( 'newTokenFormId' );
+				$( token ).prop( 'selected', true ).trigger( 'click' );
+				$( 'form#order_review' ).submit();
+			}
 			mountUPEElement( useSetUpIntent );
 		}
 	}
@@ -285,7 +387,6 @@ jQuery( function ( $ ) {
 			showError( 'Your payment information is incomplete.' );
 			return false;
 		}
-
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
 			const { error } = await api.getStripe().confirmPayment( {
@@ -330,7 +431,8 @@ jQuery( function ( $ ) {
 			await api.updateIntent(
 				paymentIntentId,
 				orderId,
-				savePaymentMethod
+				savePaymentMethod,
+				$( '#wcpay_selected_upe_payment_type' ).val()
 			);
 
 			const { error } = await api.getStripe().confirmPayment( {
@@ -364,7 +466,7 @@ jQuery( function ( $ ) {
 		blockUI( $form );
 
 		try {
-			const returnUrl = getConfig( 'paymentMethodsURL' );
+			const returnUrl = getConfig( 'addPaymentReturnURL' );
 
 			const { error } = await api.getStripe().confirmSetup( {
 				element: upeElement,
@@ -400,19 +502,29 @@ jQuery( function ( $ ) {
 			obj[ field.name ] = field.value;
 			return obj;
 		}, {} );
-
 		try {
 			const response = await api.processCheckout(
 				paymentIntentId,
 				formFields
 			);
 			const redirectUrl = response.redirect_url;
-			const { error } = await api.getStripe().confirmPayment( {
+			const upeConfig = {
 				element: upeElement,
 				confirmParams: {
 					return_url: redirectUrl,
+					payment_method_data: {
+						billing_details: getBillingDetails( formFields ),
+					},
 				},
-			} );
+			};
+			let error;
+			if ( response.payment_needed ) {
+				( { error } = await api
+					.getStripe()
+					.confirmPayment( upeConfig ) );
+			} else {
+				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
+			}
 			if ( error ) {
 				throw error;
 			}
@@ -519,10 +631,32 @@ jQuery( function ( $ ) {
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
 		if ( ! isUsingSavedPaymentMethod() ) {
+			if ( getConfig( 'isChangingPayment' ) ) {
+				handleUPEAddPayment( $( '#order_review' ) );
+				return false;
+			}
 			handleUPEOrderPay( $( '#order_review' ) );
 			return false;
 		}
 	} );
+
+	// Add terms parameter to UPE if save payment information checkbox is checked.
+	$( document ).on(
+		'change',
+		'#wc-woocommerce_payments-new-payment-method',
+		() => {
+			const value = $( '#wc-woocommerce_payments-new-payment-method' ).is(
+				':checked'
+			)
+				? 'always'
+				: 'never';
+			if ( isUPEEnabled && upeElement ) {
+				upeElement.update( {
+					terms: getTerms( paymentMethodsConfig, value ),
+				} );
+			}
+		}
+	);
 
 	// On every page load, check to see whether we should display the authentication
 	// modal and display it if it should be displayed.

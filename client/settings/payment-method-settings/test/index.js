@@ -9,12 +9,31 @@ import { render, screen, within } from '@testing-library/react';
  * Internal dependencies
  */
 import PaymentMethodSettings from '..';
+import PaymentRequestButtonPreview from '../payment-request-button-preview';
 
 jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {} ),
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
+} ) );
+
+jest.mock( '../payment-request-button-preview' );
+PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
+
+jest.mock( '@stripe/react-stripe-js', () => ( {
+	Elements: jest.fn().mockReturnValue( null ),
+} ) );
+jest.mock( '@stripe/stripe-js', () => ( {
+	loadStripe: jest.fn().mockReturnValue( null ),
+} ) );
+
+jest.mock( 'payment-request/utils', () => ( {
+	getPaymentRequestData: jest.fn().mockReturnValue( {
+		publishableKey: '123',
+		accountId: '0001',
+		locale: 'en',
+	} ),
 } ) );
 
 describe( 'PaymentMethodSettings', () => {

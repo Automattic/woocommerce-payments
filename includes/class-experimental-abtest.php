@@ -69,14 +69,16 @@ final class Experimental_Abtest {
 	 * @return mixed|null A/B test variation, or null on failure.
 	 */
 	public function get_variation( $test_name ) {
+		// Default to the control variation when users haven't consented to tracking.
 		if ( ! $this->consent ) {
-			return null;
+			return 'control';
 		}
+
 		$variation = $this->fetch_variation( $test_name );
 
 		// If there was an error retrieving a variation, conceal the error for the consumer.
 		if ( is_wp_error( $variation ) ) {
-			return null;
+			return 'control';
 		}
 
 		return $variation;
@@ -84,6 +86,10 @@ final class Experimental_Abtest {
 
 	/**
 	 * Fetch and cache the test variation for a provided A/B test from WP.com.
+	 *
+	 * ExPlat returns a null value when the assigned variation is control or
+	 * an assignment has not been set. In these instances, this method returns
+	 * a value of "control".
 	 *
 	 * @param string $test_name Name of the A/B test.
 	 * @return array|\WP_Error A/B test variation, or error on failure.
@@ -121,19 +127,21 @@ final class Experimental_Abtest {
 		$results = json_decode( $response['body'], true );
 
 		// Bail if there were no results or there is no test variation returned.
-		if ( ! is_array( $results ) || empty( $results['variations'] ) || empty( $results['variations'][ $test_name ] ) ) {
+		if ( ! is_array( $results ) || empty( $results['variations'] ) ) {
 			return new \WP_Error( 'unexpected_data_format', 'Data was not returned in the expected format.' );
 		}
 
 		// Store the variation in our internal cache.
 		$this->tests[ $test_name ] = $results['variations'][ $test_name ];
 
+		$variation = $results['variations'][ $test_name ] ?? 'control';
+
 		// Store the variation in our external cache.
 		if ( ! empty( $results['ttl'] ) ) {
-			set_transient( 'abtest_variation_' . $test_name, $results['variations'][ $test_name ], $results['ttl'] );
+			set_transient( 'abtest_variation_' . $test_name, $variation, $results['ttl'] );
 		}
 
-		return $results['variations'][ $test_name ];
+		return $variation;
 	}
 
 	/**
