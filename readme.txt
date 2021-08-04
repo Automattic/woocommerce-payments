@@ -98,7 +98,8 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.9.0 - 2021-xx-xx =
+= 2.8.1 - 2021-xx-xx =
+* Fix - Enable Multi-Currency only if there is a linked WooCommerce Payments account.
 
 = 2.8.0 - 2021-08-04 =
 * Add - Allow merchants to add additional currencies to their store, allowing a store’s customers to shop and browse in the currency of their choice.
