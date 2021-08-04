@@ -52,13 +52,14 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	/**
 	 * @dataProvider woocommerce_filter_provider
 	 */
-	public function test_registers_woocommerce_filter( $filter, $function_name, $load_when_same_currency ) {
+	public function test_registers_woocommerce_filter_with_same_customer_currency( $filter, $function_name, $load_when_same_currency ) {
 
-		// Test if the filters are assigned when store currency and the customer currency are different.
-		$current_currency = get_woocommerce_currency();
+		$current_currency = new Currency( get_woocommerce_currency() );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $current_currency );
+		$this->remove_all_multicurrency_filters();
+		$this->frontend_currencies = new FrontendCurrencies( $this->mock_multi_currency, $this->mock_localization_service );
 
-		// Test if the filter shouldn't be hooked when the currencies are the same.
 		if ( false === $load_when_same_currency ) {
 			$this->assertFalse( has_filter( $filter, [ $this->frontend_currencies, $function_name ] ) );
 		} else {
@@ -68,15 +69,33 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 				"Filter '$filter' was not registered with '$function_name' with a priority higher than the default"
 			);
 		}
+	}
 
-		// Test if the filters are assigned when store currency and the customer currency are different.
-		$different_currency = new Currency( 'JPY' );
+	/**
+	 * @dataProvider woocommerce_filter_provider
+	 */
+	public function test_registers_woocommerce_filter_with_different_customer_currency( $filter, $function_name ) {
+		$current_currency   = new Currency( get_woocommerce_currency() );
+		$different_currency = new Currency( 'GBP' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $different_currency );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $current_currency );
+		$this->remove_all_multicurrency_filters();
+		$this->frontend_currencies = new FrontendCurrencies( $this->mock_multi_currency, $this->mock_localization_service );
+
 		$this->assertGreaterThan(
 			10,
 			has_filter( $filter, [ $this->frontend_currencies, $function_name ] ),
 			"Filter '$filter' was not registered with '$function_name' with a priority higher than the default"
 		);
+	}
+
+
+	public function remove_all_multicurrency_filters() {
+		$filters = $this->woocommerce_filter_provider();
+		foreach ( $filters as $filter ) {
+			list($filter, $function_name) = $filter;
+			remove_filter( $filter, [ $this->frontend_currencies, $function_name ] );
+		}
 	}
 
 	public function woocommerce_filter_provider() {
