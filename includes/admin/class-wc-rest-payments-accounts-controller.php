@@ -56,10 +56,14 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 				'status'                   => 'NOACCOUNT',
 				'store_currencies'         => [
 					'default'   => $default_currency,
-					'supported' => [ $default_currency ],
+					'supported' => [
+						$default_currency,
+					],
 				],
 				'customer_currencies'      => [
-					'supported' => [ $default_currency ],
+					'supported' => [
+						$default_currency,
+					],
 				],
 			];
 		}
