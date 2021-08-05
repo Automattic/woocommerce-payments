@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use Automattic\WooCommerce\Admin\Notes\Note;
-
 /**
  * Class WC_Payments_Notes_Additional_Payment_Methods tests.
  */
@@ -25,7 +23,6 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WP_UnitTestCase 
 		delete_option( '_wcpay_feature_upe' );
 	}
 
-
 	public function test_get_note() {
 		$note = WC_Payments_Notes_Additional_Payment_Methods::get_note();
 
@@ -40,5 +37,29 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WP_UnitTestCase 
 		$this->assertSame( 'Enable on your store', $enable_upe_action->label );
 		$this->assertStringStartsWith( 'http://example.org/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&action=enable-upe', $enable_upe_action->query );
 		$this->assertSame( true, $enable_upe_action->primary );
+	}
+
+	public function test_get_note_does_not_return_note_when_account_is_not_connected() {
+		$account_mock = $this->getMockBuilder( \WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'is_stripe_connected' ] )->getMock();
+		$account_mock->expects( $this->atLeastOnce() )->method( 'is_stripe_connected' )->will( $this->returnValue( false ) );
+		WC_Payments_Notes_Additional_Payment_Methods::set_account( $account_mock );
+
+		$note = WC_Payments_Notes_Additional_Payment_Methods::get_note();
+
+		$this->assertNull( $note );
+	}
+
+	public function test_get_note_returns_note_when_account_is_connected() {
+		$account_mock = $this->getMockBuilder( \WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'is_stripe_connected' ] )->getMock();
+		$account_mock->expects( $this->atLeastOnce() )->method( 'is_stripe_connected' )->will(
+			$this->returnValue(
+				true
+			)
+		);
+		WC_Payments_Notes_Additional_Payment_Methods::set_account( $account_mock );
+
+		$note = WC_Payments_Notes_Additional_Payment_Methods::get_note();
+
+		$this->assertSame( 'Boost your sales by accepting new payment methods', $note->get_title() );
 	}
 }
