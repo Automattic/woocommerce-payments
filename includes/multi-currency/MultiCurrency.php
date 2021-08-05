@@ -176,6 +176,16 @@ class MultiCurrency {
 		$this->compatibility        = new Compatibility( $this, $this->utils );
 		$this->analytics            = new Analytics( $this );
 
+		if ( is_admin() ) {
+			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
+			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+		}
+
+		// Check to see if the account is connected.
+		if ( null === $this->payments_account->get_stripe_account_id() ) {
+			return;
+		}
+
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
@@ -220,17 +230,15 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
 		// Check to make sure there are enabled currencies, then for Storefront being active, and then load the integration.
 		$theme = wp_get_theme();
-		if ( 1 < count( $this->get_enabled_currencies() ) && ( 'storefront' === $theme->get_stylesheet() || 'storefront' === $theme->get_template() ) ) {
+		if ( 'storefront' === $theme->get_stylesheet() || 'storefront' === $theme->get_template() ) {
 			$this->storefront_integration = new StorefrontIntegration( $this );
 		}
 
 		if ( is_admin() ) {
-			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
 	}
@@ -263,33 +271,8 @@ class MultiCurrency {
 	 * @return array The new settings pages.
 	 */
 	public function init_settings_pages( $settings_pages ): array {
-		$settings_pages[] = new Settings( $this );
+		$settings_pages[] = new Settings( $this, $this->payments_account );
 		return $settings_pages;
-	}
-
-	/**
-	 * Register the CSS and JS admin scripts.
-	 *
-	 * @return void
-	 */
-	public function register_admin_scripts() {
-		$script_src_url    = plugins_url( 'dist/multi-currency.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
-		wp_register_script(
-			'WCPAY_MULTI_CURRENCY_SETTINGS',
-			$script_src_url,
-			$script_asset['dependencies'],
-			\WC_Payments::get_file_version( 'dist/multi-currency.js' ),
-			true
-		);
-
-		wp_register_style(
-			'WCPAY_MULTI_CURRENCY_SETTINGS',
-			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
-			[ 'wc-components' ],
-			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
-		);
 	}
 
 	/**
@@ -298,14 +281,14 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function enqueue_admin_scripts() {
-		global $current_tab, $current_section;
+		global $current_tab;
 
-		$this->register_admin_scripts();
-
-		// TODO: Set this to only display when needed.
 		// Output the settings JS and CSS only on the settings page.
-		wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
-		wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+		if ( 'wcpay_multi_currency' === $current_tab ) {
+			$this->register_admin_scripts();
+			wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+			wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+		}
 	}
 
 	/**
@@ -693,10 +676,15 @@ class MultiCurrency {
 		}
 
 		$order_exchange_rate    = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+		$stripe_exchange_rate   = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true );
 		$order_default_currency = $order->get_meta( '_wcpay_multi_currency_order_default_currency', true );
 
 		$refund->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $order_exchange_rate );
 		$refund->update_meta_data( '_wcpay_multi_currency_order_default_currency', $order_default_currency );
+		if ( $stripe_exchange_rate ) {
+			$refund->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $stripe_exchange_rate );
+		}
+
 		$refund->save_meta_data();
 	}
 
@@ -959,10 +947,10 @@ class MultiCurrency {
 		$wc_currencies      = array_keys( get_woocommerce_currencies() );
 		$account_currencies = $wc_currencies;
 
-		$account = $this->payments_account->get_cached_account_data();
-
-		if ( $account && ! empty( $account['presentment_currencies'] ) ) {
-			$account_currencies = array_map( 'strtoupper', $account['presentment_currencies'] );
+		$account              = $this->payments_account->get_cached_account_data();
+		$supported_currencies = $this->payments_account->get_account_customer_supported_currencies();
+		if ( $account && ! empty( $supported_currencies ) ) {
+			$account_currencies = array_map( 'strtoupper', $supported_currencies );
 		}
 
 		/**
@@ -987,5 +975,30 @@ class MultiCurrency {
 	 */
 	private function is_using_auto_currency_switching(): bool {
 		return 'yes' === get_option( $this->id . '_enable_auto_currency', false );
+	}
+
+	/**
+	 * Register the CSS and JS admin scripts.
+	 *
+	 * @return void
+	 */
+	private function register_admin_scripts() {
+		$script_src_url    = plugins_url( 'dist/multi-currency.js', WCPAY_PLUGIN_FILE );
+		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency.asset.php';
+		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+		wp_register_script(
+			'WCPAY_MULTI_CURRENCY_SETTINGS',
+			$script_src_url,
+			$script_asset['dependencies'],
+			\WC_Payments::get_file_version( 'dist/multi-currency.js' ),
+			true
+		);
+
+		wp_register_style(
+			'WCPAY_MULTI_CURRENCY_SETTINGS',
+			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
+			[ 'wc-components' ],
+			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
+		);
 	}
 }

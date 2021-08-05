@@ -109,11 +109,17 @@ class Analytics {
 			return $args;
 		}
 
-		$order_exchange_rate = floatval( $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) );
+		$stripe_exchange_rate = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true )
+			? floatval( $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true ) )
+			: null;
+		$order_exchange_rate  = ( 1 / floatval( $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) ) );
 
-		$args['net_total']      = $this->convert_amount( floatval( $args['net_total'] ), $order_exchange_rate, wc_get_price_decimals() );
-		$args['shipping_total'] = $this->convert_amount( floatval( $args['shipping_total'] ), $order_exchange_rate, wc_get_price_decimals() );
-		$args['tax_total']      = $this->convert_amount( floatval( $args['tax_total'] ), $order_exchange_rate, wc_get_price_decimals() );
+		$exchange_rate = $stripe_exchange_rate ?? $order_exchange_rate;
+
+		$dp                     = wc_get_price_decimals();
+		$args['net_total']      = round( $this->convert_amount( floatval( $args['net_total'] ), $exchange_rate ), $dp );
+		$args['shipping_total'] = round( $this->convert_amount( floatval( $args['shipping_total'] ), $exchange_rate ), $dp );
+		$args['tax_total']      = round( $this->convert_amount( floatval( $args['tax_total'] ), $exchange_rate ), $dp );
 		$args['total_sales']    = $args['net_total'] + $args['shipping_total'] + $args['tax_total'];
 
 		return $args;
@@ -169,6 +175,7 @@ class Analytics {
 			$new_clauses[] = ', wcpay_multicurrency_currency_postmeta.meta_value AS order_currency';
 			$new_clauses[] = ', wcpay_multicurrency_default_currency_postmeta.meta_value AS order_default_currency';
 			$new_clauses[] = ', wcpay_multicurrency_exchange_rate_postmeta.meta_value AS exchange_rate';
+			$new_clauses[] = ', wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value AS stripe_exchange_rate';
 		}
 
 		return $new_clauses;
@@ -188,16 +195,18 @@ class Analytics {
 		$context_parts = explode( '_', $context );
 		$context_page  = $context_parts[0] ?? 'generic';
 
-		$prefix               = 'wcpay_multicurrency_';
-		$currency_tbl         = $prefix . 'currency_postmeta';
-		$default_currency_tbl = $prefix . 'default_currency_postmeta';
-		$exchange_rate_tbl    = $prefix . 'exchange_rate_postmeta';
+		$prefix                   = 'wcpay_multicurrency_';
+		$currency_tbl             = $prefix . 'currency_postmeta';
+		$default_currency_tbl     = $prefix . 'default_currency_postmeta';
+		$exchange_rate_tbl        = $prefix . 'exchange_rate_postmeta';
+		$stripe_exchange_rate_tbl = $prefix . 'stripe_exchange_rate_postmeta';
 
 		// If this is a suppotted context, add the joins. If this is an unsupported context, see if we can add the joins.
 		if ( $this->is_supported_context( $context ) && ( in_array( $context_page, self::SUPPORTED_CONTEXTS, true ) || $this->is_order_stats_table_used_in_clauses( $clauses ) ) ) {
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.post_id AND {$currency_tbl}.meta_key = '_order_currency'";
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.post_id AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$exchange_rate_tbl}.post_id AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
+			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.post_id AND ${stripe_exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
 		}
 
 		return $clauses;
@@ -237,14 +246,13 @@ class Analytics {
 	/**
 	 * Convert an amount to the store's default currency in order to store in the stats table.
 	 *
-	 * @param float   $amount The amount to convert into the store's default currency.
-	 * @param float   $exchange_rate The exchange rate to use for the conversion.
-	 * @param integer $dp How many decimal places we should use to store the converted amount.
+	 * @param float $amount The amount to convert into the store's default currency.
+	 * @param float $exchange_rate The exchange rate to use for the conversion.
 	 *
 	 * @return float The converted amount.
 	 */
-	private function convert_amount( float $amount, float $exchange_rate, int $dp = 2 ): float {
-		return number_format( $amount * ( 1 / $exchange_rate ), $dp, '.', '' );
+	private function convert_amount( float $amount, float $exchange_rate ): float {
+		return $amount * $exchange_rate;
 	}
 
 	/**
@@ -286,40 +294,61 @@ class Analytics {
 
 		return true;
 	}
+
+	/**
+	 * Generate a case when statement using the provided variables.
+	 *
+	 * @param string $variable The SQL variable we want to check for NULL.
+	 * @param string $then     The THEN clause.
+	 * @param string $else     The ELSE clause.
+	 *
+	 * @return string
+	 */
+	private function generate_case_when( string $variable, string $then, string $else ): string {
+		return "CASE WHEN {$variable} IS NOT NULL THEN {$then} ELSE {$else} END";
+	}
 	/**
 	 * Set the SQL replacements variable.
 	 *
 	 * @return void
 	 */
 	private function set_sql_replacements() {
+		$default_currency     = 'wcpay_multicurrency_default_currency_postmeta.meta_value';
+		$exchange_rate        = 'wcpay_multicurrency_exchange_rate_postmeta.meta_value';
+		$stripe_exchange_rate = 'wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value';
+
+		$discount_amount       = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(discount_amount * {$stripe_exchange_rate}, 2)", "ROUND(discount_amount * (1 / {$exchange_rate} ), 2)" ), 'discount_amount' );
+		$product_net_revenue   = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(product_net_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_net_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_net_revenue' );
+		$product_gross_revenue = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(product_gross_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_gross_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_gross_revenue' );
+
 		$this->sql_replacements = [
 			'generic'    => [
-				'discount_amount'       => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(discount_amount * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) ELSE discount_amount END',
-				'product_net_revenue'   => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value), 2) ELSE product_net_revenue END',
-				'product_gross_revenue' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) ELSE product_gross_revenue END',
+				'discount_amount'       => $discount_amount,
+				'product_net_revenue'   => $product_net_revenue,
+				'product_gross_revenue' => $product_gross_revenue,
 			],
 			'orders'     => [
-				'discount_amount' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(discount_amount * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) ELSE discount_amount END',
+				'discount_amount' => $discount_amount,
 			],
 			'products'   => [
-				'product_net_revenue'   => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value), 2) ELSE product_net_revenue END',
-				'product_gross_revenue' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) ELSE product_gross_revenue END',
+				'product_net_revenue'   => $product_net_revenue,
+				'product_gross_revenue' => $product_gross_revenue,
 			],
 			'variations' => [
-				'product_net_revenue'   => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value), 2) ELSE product_net_revenue END',
-				'product_gross_revenue' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) ELSE product_gross_revenue END',
+				'product_net_revenue'   => $product_net_revenue,
+				'product_gross_revenue' => $product_gross_revenue,
 			],
 			'categories' => [
-				'product_net_revenue'   => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value), 2) ELSE product_net_revenue END',
-				'product_gross_revenue' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) ELSE product_gross_revenue END',
+				'product_net_revenue'   => $product_net_revenue,
+				'product_gross_revenue' => $product_gross_revenue,
 			],
 			'taxes'      => [
-				'SUM(total_tax)'    => 'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(total_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) ELSE total_tax END)',
-				'SUM(order_tax)'    => 'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(order_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) ELSE order_tax END)',
-				'SUM(shipping_tax)' => 'SUM(CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(shipping_tax * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) ELSE shipping_tax END)',
+				'SUM(total_tax)'    => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(total_tax * {$stripe_exchange_rate}, 2)", "ROUND(total_tax * (1 / {$exchange_rate} ), 2)" ), 'total_tax' ) . ')',
+				'SUM(order_tax)'    => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(order_tax * {$stripe_exchange_rate}, 2)", "ROUND(order_tax * (1 / {$exchange_rate} ), 2)" ), 'order_tax' ) . ')',
+				'SUM(shipping_tax)' => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(shipping_tax * {$stripe_exchange_rate}, 2)", "ROUND(shipping_tax * (1 / {$exchange_rate} ), 2)" ), 'shipping_tax' ) . ')',
 			],
 			'coupons'    => [
-				'discount_amount' => 'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN ROUND(discount_amount * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) ELSE discount_amount END',
+				'discount_amount' => $discount_amount,
 			],
 		];
 	}

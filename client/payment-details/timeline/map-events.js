@@ -231,6 +231,93 @@ const composeFXString = ( event ) => {
 };
 
 /**
+ * Returns an array containing fee breakdown.
+ *
+ * @param {Object} event Event object
+ *
+ * @return {Array} Array of formatted fee strings
+ */
+const feeBreakdown = ( event ) => {
+	if ( ! event?.fee_rates?.history ) {
+		return;
+	}
+
+	const {
+		fee_rates: { history },
+	} = event;
+
+	const feeLabelMapping = ( fixedRate ) => ( {
+		base:
+			0 !== fixedRate
+				? /* translators: %1$s% is the fee amount and %2$s is the fixed rate */
+				  __( 'Base fee: %1$s%% + %2$s', 'woocommerce-payments' )
+				: /* translators: %1$s% is the fee amount */
+				  __( 'Base fee: %1$s%%', 'woocommerce-payments' ),
+		'additional-international':
+			0 !== fixedRate
+				? __(
+						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
+						'International card fee: %1$s%% + %2$s',
+						'woocommerce-payments'
+				  )
+				: __(
+						/* translators: %1$s% is the fee amount */
+						'International card fee: %1$s%%',
+						'woocommerce-payments'
+				  ),
+		'additional-fx':
+			0 !== fixedRate
+				? __(
+						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
+						'Foreign exchange fee: %1$s%% + %2$s',
+						'woocommerce-payments'
+				  )
+				: __(
+						/* translators: %1$s% is the fee amount */
+						'Foreign exchange fee: %1$s%%',
+						'woocommerce-payments'
+				  ),
+		discount:
+			0 !== fixedRate
+				? __(
+						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
+						'Discount: %1$s%% + %2$s',
+						'woocommerce-payments'
+				  )
+				: __(
+						/* translators: %1$s% is the fee amount */
+						'Discount: %1$s%%',
+						'woocommerce-payments'
+				  ),
+	} );
+
+	const feeHistoryList = history.map( ( fee ) => {
+		let labelKey = fee.type;
+		if ( fee.additional_type ) {
+			labelKey += `-${ fee.additional_type }`;
+		}
+
+		const {
+			percentage_rate: percentageRate,
+			fixed_rate: fixedRate,
+			currency,
+		} = fee;
+
+		return (
+			<li key={ labelKey }>
+				{ sprintf(
+					feeLabelMapping( fixedRate )[ labelKey ],
+					formatFee( percentageRate ),
+					formatCurrency( fixedRate, currency )
+				) }
+			</li>
+		);
+	} );
+
+	return <ul className="fee-breakdown-list">{ feeHistoryList }</ul>;
+};
+
+/**
  * Formats an event into one or more payment timeline items
  *
  * @param {Object} event An event data
@@ -337,6 +424,7 @@ const mapEventToTimelineItems = ( event ) => {
 					[
 						composeFXString( event ),
 						feeString,
+						feeBreakdown( event ),
 						sprintf(
 							/* translators: %s is a monetary amount */
 							__( 'Net deposit: %s', 'woocommerce-payments' ),

@@ -2,11 +2,11 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
-Tested up to: 5.7
+Tested up to: 5.8
 Requires PHP: 7.0
-Stable tag: 2.7.1
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Stable tag: 2.8.1
+License: GPLv3 or later
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Securely accept credit and debit cards on your site. Manage transactions without leaving your WordPress dashboard. Only with WooCommerce Payments.
 
@@ -98,8 +98,15 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.8.0 - 2021-xx-xx =
+= 2.9.0 - 2021-xx-xx =
+* Fix - Align table items according correctly.
+
+= 2.8.1 - 2021-08-04 =
+* Fix - Enable Multi-Currency only if there is a linked WooCommerce Payments account.
+
+= 2.8.0 - 2021-08-04 =
 * Add - Allow merchants to add additional currencies to their store, allowing a store’s customers to shop and browse in the currency of their choice.
+* Add - *Early access*: allow your store to collect payments with Giropay and Sofort. Enable the feature in settings!
 * Add - Use date picker for applicable dispute evidence fields.
 * Fix - Avoid crash when seeing the details of an empty deposit.
 * Fix - Disabled Payment Request Buttons when order has to be split into multiple packages because Payment Requests do not support that use case.
@@ -115,7 +122,10 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Bump minimum supported version of WooCommerce from 5.2 to 5.3.
 * Update - Bump minimum supported version of WordPress from 5.5 to 5.6.
 * Fix - Stop refund process when using an invalid amount
-* Fix - Align table items according correctly.
+* Fix - Improve sanitization of ExPlat cookie.
+* Add - Show fee breakdown in transaction details timeline.
+* Add - REST endpoint to get customer id from an order.
+* Fix - Explat not caching when no variation is returned.
 
 = 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.
