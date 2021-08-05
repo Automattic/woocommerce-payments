@@ -98,7 +98,8 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.9.0 - 2021-xx-xx =
+= 2.8.2 - 2021-xx-xx =
+* Fix - Fix for the site acting as disconnected after the account cache expires.
 
 = 2.8.1 - 2021-08-04 =
 * Fix - Enable Multi-Currency only if there is a linked WooCommerce Payments account.
