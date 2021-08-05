@@ -4,9 +4,9 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
 Tested up to: 5.8
 Requires PHP: 7.0
-Stable tag: 2.8.0
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Stable tag: 2.8.1
+License: GPLv3 or later
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Securely accept credit and debit cards on your site. Manage transactions without leaving your WordPress dashboard. Only with WooCommerce Payments.
 
@@ -99,6 +99,9 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 2.9.0 - 2021-xx-xx =
+
+= 2.8.1 - 2021-08-04 =
+* Fix - Enable Multi-Currency only if there is a linked WooCommerce Payments account.
 
 = 2.8.0 - 2021-08-04 =
 * Add - Allow merchants to add additional currencies to their store, allowing a store’s customers to shop and browse in the currency of their choice.
