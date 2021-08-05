@@ -6,7 +6,6 @@
 import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
-	PAYMENT_METHOD_NAME_BANCONTACT,
 	PAYMENT_METHOD_NAME_GIROPAY,
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
@@ -57,11 +56,6 @@ jQuery( function ( $ ) {
 	const cardPayment = {
 		type: 'card',
 		card: cardElement,
-	};
-
-	// Bancontact payment method details.
-	const bancontactPayment = {
-		type: 'bancontact',
 	};
 
 	// Giropay payment method details
@@ -150,17 +144,6 @@ jQuery( function ( $ ) {
 	 */
 	const isWCPayChosen = function () {
 		return $( '#payment_method_woocommerce_payments' ).is( ':checked' );
-	};
-
-	/**
-	 * Check if Bancontact payment is being used.
-	 *
-	 * @return {boolean} Boolean indicating whether or not Bancontact payment is being used.
-	 */
-	const isWCPayBancontactChosen = function () {
-		return $( '#payment_method_woocommerce_payments_bancontact' ).is(
-			':checked'
-		);
 	};
 
 	/**
@@ -454,7 +437,6 @@ jQuery( function ( $ ) {
 	 * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
 	 */
 	function isUsingSavedPaymentMethod() {
-		// TODO: Does Bancontact have saved payment methods, does it need special handling?
 		if ( isWCPayGiropayChosen() ) {
 			// Giropay does not use saved payment methods at this time
 			return false;
@@ -477,7 +459,6 @@ jQuery( function ( $ ) {
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	const wcpayPaymentMethods = [
 		PAYMENT_METHOD_NAME_CARD,
-		PAYMENT_METHOD_NAME_BANCONTACT,
 		PAYMENT_METHOD_NAME_GIROPAY,
 		PAYMENT_METHOD_NAME_SEPA,
 		PAYMENT_METHOD_NAME_SOFORT,
@@ -490,8 +471,6 @@ jQuery( function ( $ ) {
 			let paymentMethodDetails = cardPayment;
 			if ( isWCPaySepaChosen() ) {
 				paymentMethodDetails = sepaPayment;
-			} else if ( isWCPayBancontactChosen() ) {
-				paymentMethodDetails = bancontactPayment;
 			} else if ( isWCPayGiropayChosen() ) {
 				paymentMethodDetails = giropayPayment;
 			} else if ( isWCPaySofortChosen() ) {
@@ -531,8 +510,6 @@ jQuery( function ( $ ) {
 			let paymentMethodDetails = cardPayment;
 			if ( isWCPaySepaChosen() ) {
 				paymentMethodDetails = sepaPayment;
-			} else if ( isWCPayBancontactChosen() ) {
-				paymentMethodDetails = bancontactPayment;
 			} else if ( isWCPayGiropayChosen() ) {
 				paymentMethodDetails = giropayPayment;
 			} else if ( isWCPaySofortChosen() ) {
