@@ -47,7 +47,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 					new Currency( 'USD' ),
 					new Currency( 'CAD', 1.2 ),
 					new Currency( 'EUR', 0.8 ),
-					new Currency( 'CHF', 1.1 )
+					new Currency( 'CHF', 1.1 ),
 				]
 			);
 
