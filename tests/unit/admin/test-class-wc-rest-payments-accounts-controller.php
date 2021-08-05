@@ -24,6 +24,11 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 	 */
 	private $mock_api_client;
 
+	/**
+	 * @var WC_Payments_API_Client
+	 */
+	private $original_api_client;
+
 	public function setUp() {
 		parent::setUp();
 
@@ -32,6 +37,23 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		$this->controller      = new WC_REST_Payments_Accounts_Controller( $this->mock_api_client );
+
+		// Inject the mocked client into service (happens in WCPay int, so reflection here).
+		$account_service     = WC_Payments::get_account_service();
+		$property_reflection = ( new ReflectionClass( $account_service ) )->getProperty( 'payments_api_client' );
+		$property_reflection->setAccessible( true );
+		$this->original_api_client = $property_reflection->getValue( $account_service );
+		$property_reflection->setValue( $account_service, $this->mock_api_client );
+	}
+
+	public function terDown() {
+		parent::terDown();
+
+		// Restore the original client.
+		$account_service     = WC_Payments::get_account_service();
+		$property_reflection = ( new ReflectionClass( $account_service ) )->getProperty( 'payments_api_client' );
+		$property_reflection->setAccessible( true );
+		$property_reflection->setValue( $account_service, $this->original_api_client );
 	}
 
 	public function test_get_account_data_with_connected_account() {
