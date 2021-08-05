@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
-Tested up to: 5.7
+Tested up to: 5.8
 Requires PHP: 7.0
-Stable tag: 2.7.1
+Stable tag: 2.8.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,8 +98,17 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.8.0 - 2021-xx-xx =
+= 2.8.2 - 2021-08-05 =
+* Fix - If account is disconnected or not set up do not display onboarding task and UPE inbox note.
+* Fix - Fix for the site acting as disconnected after the account cache expires.
+* Fix - Fix for failed Giropay and Sofort transactions causing an error.
+
+= 2.8.1 - 2021-08-04 =
+* Fix - Enable Multi-Currency only if there is a linked WooCommerce Payments account.
+
+= 2.8.0 - 2021-08-04 =
 * Add - Allow merchants to add additional currencies to their store, allowing a store’s customers to shop and browse in the currency of their choice.
+* Add - *Early access*: allow your store to collect payments with Giropay and Sofort. Enable the feature in settings!
 * Add - Use date picker for applicable dispute evidence fields.
 * Fix - Avoid crash when seeing the details of an empty deposit.
 * Fix - Disabled Payment Request Buttons when order has to be split into multiple packages because Payment Requests do not support that use case.
