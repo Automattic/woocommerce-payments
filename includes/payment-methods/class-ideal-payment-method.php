@@ -22,7 +22,7 @@ class Ideal_Payment_Method extends UPE_Payment_Method {
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 		$this->stripe_id   = 'ideal';
-		$this->title       = 'ideal';
+		$this->title       = 'iDEAL';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR' ];
 	}
