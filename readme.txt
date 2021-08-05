@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
 Tested up to: 5.8
 Requires PHP: 7.0
-Stable tag: 2.8.1
+Stable tag: 2.8.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.8.2 - 2021-xx-xx =
+= 2.8.2 - 2021-08-05 =
 * Fix - If account is disconnected or not set up do not display onboarding task and UPE inbox note.
 * Fix - Fix for the site acting as disconnected after the account cache expires.
 * Fix - Fix for failed Giropay and Sofort transactions causing an error.
