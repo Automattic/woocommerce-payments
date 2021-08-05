@@ -43,6 +43,7 @@ const createAdditionalMethodsSetupTask = ( {
 			'woocommerce-payments'
 		),
 		isDismissable: true,
+		actionLabel: __( 'Get started', 'woocommerce-payments' ),
 
 		...( '/payments/overview' === getPath()
 			? {

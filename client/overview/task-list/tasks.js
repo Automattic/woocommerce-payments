@@ -65,6 +65,7 @@ export const getTasks = ( {
 						  },
 				visible: true,
 				type: 'extension',
+				actionLabel: __( 'Update', 'woocommerce-payments' ),
 			},
 		isAccountOverviewTasksEnabled &&
 			wpcomReconnectUrl && {
@@ -83,6 +84,7 @@ export const getTasks = ( {
 				onClick: () => {
 					window.location.href = wpcomReconnectUrl;
 				},
+				actionLabel: __( 'Reconnect', 'woocommerce-payments' ),
 			},
 		isAccountOverviewTasksEnabled &&
 			needsHttpsSetup && {

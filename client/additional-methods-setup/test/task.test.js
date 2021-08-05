@@ -127,4 +127,15 @@ describe( 'createAdditionalMethodsSetupTask()', () => {
 
 		expect( result ).not.toHaveProperty( 'onClick' );
 	} );
+
+	it.each( [ true, false ] )(
+		'sets button label to "Get started"',
+		( isUpeSettingsPreviewEnabled ) => {
+			const result = createAdditionalMethodsSetupTask( {
+				isUpeSettingsPreviewEnabled,
+			} );
+
+			expect( result.actionLabel ).toEqual( 'Get started' );
+		}
+	);
 } );
