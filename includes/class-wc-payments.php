@@ -859,6 +859,7 @@ class WC_Payments {
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
+			WC_Payments_Notes_Additional_Payment_Methods::set_account( self::get_account_service() );
 			WC_Payments_Notes_Additional_Payment_Methods::possibly_add_note();
 			WC_Payments_Notes_Additional_Payment_Methods::maybe_enable_upe_feature_flag();
 		}
