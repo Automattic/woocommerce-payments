@@ -60,11 +60,15 @@ class WC_Payments_Explicit_Price_Formatter {
 			$currency_code = $order->get_currency();
 		}
 
-		if ( substr( $price, - strlen( $currency_code ) ) === $currency_code ) {
-			return $price;
+		if ( ! empty( $currency_code ) ) {
+			$price_to_check = html_entity_decode( wp_strip_all_tags( $price ) );
+
+			if ( false === strpos( $price_to_check, trim( $currency_code ) ) ) {
+				return $price . ' ' . $currency_code;
+			}
 		}
 
-		return $price . ' ' . $currency_code;
+		return $price;
 	}
 
 	/**
