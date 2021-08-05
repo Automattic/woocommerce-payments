@@ -49,7 +49,7 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 		// Fetch account and restore original API client, in order to reset the core state.
 		$account = $account_service->get_cached_account_data();
 		$account_service->set_payments_api_client( $original_api_client );
-		if ( [] === $account ) {
+		if ( [] === $account && ! WC_Payments_Account::is_on_boarding_disabled() ) {
 			$default_currency = get_woocommerce_currency();
 			$account          = [
 				'card_present_eligible'    => false,
