@@ -52,7 +52,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 
 		// if the user hasn't connected their account (or the account got disconnected) do not add the note.
 		if ( self::$account instanceof WC_Payments_Account ) {
-			if ( false === self::$account->is_stripe_connected() ) {
+			if ( ! self::$account->is_stripe_connected() ) {
 				return;
 			}
 		}
