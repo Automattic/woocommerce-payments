@@ -680,7 +680,7 @@ class WC_Payments_Admin {
 		}
 
 		// if the account is disconnected, just don't display the onboarding task.
-		if ( false === $this->account->is_stripe_connected() ) {
+		if ( ! $this->account->is_stripe_connected() ) {
 			return false;
 		}
 
