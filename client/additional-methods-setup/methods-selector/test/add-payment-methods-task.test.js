@@ -38,7 +38,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			jest.fn(),
 		] );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay', 'ideal' ],
+			[ 'card', 'giropay' ],
 			jest.fn(),
 		] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
@@ -46,7 +46,6 @@ describe( 'AddPaymentMethodsTask', () => {
 			'giropay',
 			'sofort',
 			'sepa_debit',
-			'ideal',
 		] );
 		useSettings.mockReturnValue( {
 			saveSettings: jest.fn().mockResolvedValue( true ),
@@ -82,18 +81,12 @@ describe( 'AddPaymentMethodsTask', () => {
 				name: 'Enable Apple Pay & Google Pay',
 			} )
 		).not.toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', {
-				name: 'iDEAL',
-			} )
-		).toBeChecked();
 	} );
 
 	it( 'should not render the checkboxes that are not available', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
 			'giropay',
-			'ideal',
 		] );
 
 		render(
@@ -109,9 +102,6 @@ describe( 'AddPaymentMethodsTask', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'giropay' } )
-		).toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'checkbox', { name: 'iDEAL' } )
 		).toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
@@ -161,13 +151,6 @@ describe( 'AddPaymentMethodsTask', () => {
 			} )
 		);
 
-		// Marks the Giropay payment method as checked
-		userEvent.click(
-			screen.getByRole( 'checkbox', {
-				name: 'iDEAL',
-			} )
-		);
-
 		expect( setCompletedMock ).not.toHaveBeenCalled();
 		expect( updateEnabledPaymentMethodIdsMock ).not.toHaveBeenCalled();
 		expect( updatePaymentRequestEnabledMock ).not.toHaveBeenCalled();
@@ -182,7 +165,6 @@ describe( 'AddPaymentMethodsTask', () => {
 		);
 		expect( updateEnabledPaymentMethodIdsMock ).toHaveBeenCalledWith( [
 			'giropay',
-			'ideal',
 		] );
 		expect( updatePaymentRequestEnabledMock ).toHaveBeenCalledWith( true );
 	} );
