@@ -13,11 +13,13 @@ import PaymentMethodsSelector from '..';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
-} from 'data';
+} from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
+	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
+	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 } ) );
 
 describe( 'PaymentMethodsSelector', () => {
@@ -75,7 +77,7 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( paymentMethods ).toHaveLength( 3 );
 
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
-			name: 'GiroPay',
+			name: 'giropay',
 		} );
 		expect( giroPayCheckbox ).not.toBeChecked();
 
@@ -85,7 +87,7 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( sofortCheckbox ).not.toBeChecked();
 
 		const sepaCheckbox = screen.getByRole( 'checkbox', {
-			name: 'Direct Debit Payments',
+			name: 'Direct debit payment',
 		} );
 		expect( sepaCheckbox ).not.toBeChecked();
 
@@ -161,7 +163,21 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( paymentMethodCheckbox );
 
 		expect( paymentMethodCheckbox ).toBeChecked();
+
+		// closing the modal, to ensure that no methods have been added
+		user.click(
+			screen.getByRole( 'button', {
+				name: 'Cancel',
+			} )
+		);
+
 		expect( updateEnabledPaymentMethodIdsMock ).not.toHaveBeenCalled();
+
+		// re-opening the modal should present all the checkboxes in the un-checked state
+		user.click( addPaymentMethodButton );
+		screen.getAllByRole( 'checkbox' ).forEach( ( checkbox ) => {
+			expect( checkbox ).not.toBeChecked();
+		} );
 	} );
 
 	test( 'Disables the "Add selected" button until at least one payment method is checked', () => {
@@ -204,7 +220,7 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( addPaymentMethodButton );
 
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
-			name: 'GiroPay',
+			name: 'giropay',
 		} );
 		user.click( giroPayCheckbox );
 

@@ -10,6 +10,16 @@ import { useSelect, useDispatch } from '@wordpress/data';
  */
 import { STORE_NAME } from '../constants';
 
+export const useSavedCards = () => {
+	const { updateIsSavedCardsEnabled } = useDispatch( STORE_NAME );
+
+	const isSavedCardsEnabled = useSelect( ( select ) => {
+		return select( STORE_NAME ).getIsSavedCardsEnabled();
+	}, [] );
+
+	return [ isSavedCardsEnabled, updateIsSavedCardsEnabled ];
+};
+
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
@@ -139,61 +149,69 @@ export const useSettings = () => {
 	);
 };
 
-export const useDigitalWalletsEnabledSettings = () => {
-	const { updateIsDigitalWalletsEnabled } = useDispatch( STORE_NAME );
+export const usePaymentRequestEnabledSettings = () => {
+	const { updateIsPaymentRequestEnabled } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getIsDigitalWalletsEnabled } = select( STORE_NAME );
+		const { getIsPaymentRequestEnabled } = select( STORE_NAME );
 
-		return [ getIsDigitalWalletsEnabled(), updateIsDigitalWalletsEnabled ];
+		return [ getIsPaymentRequestEnabled(), updateIsPaymentRequestEnabled ];
 	} );
 };
 
-export const useDigitalWalletsLocations = () => {
-	const { updateDigitalWalletsLocations } = useDispatch( STORE_NAME );
+export const usePaymentRequestLocations = () => {
+	const { updatePaymentRequestLocations } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getDigitalWalletsLocations } = select( STORE_NAME );
+		const { getPaymentRequestLocations } = select( STORE_NAME );
 
-		return [ getDigitalWalletsLocations(), updateDigitalWalletsLocations ];
+		return [ getPaymentRequestLocations(), updatePaymentRequestLocations ];
 	} );
 };
 
-export const useDigitalWalletsButtonType = () => {
-	const { updateDigitalWalletsButtonType } = useDispatch( STORE_NAME );
+export const usePaymentRequestButtonType = () => {
+	const { updatePaymentRequestButtonType } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getDigitalWalletsButtonType } = select( STORE_NAME );
+		const { getPaymentRequestButtonType } = select( STORE_NAME );
 
 		return [
-			getDigitalWalletsButtonType(),
-			updateDigitalWalletsButtonType,
+			getPaymentRequestButtonType(),
+			updatePaymentRequestButtonType,
 		];
 	} );
 };
 
-export const useDigitalWalletsButtonSize = () => {
-	const { updateDigitalWalletsButtonSize } = useDispatch( STORE_NAME );
+export const usePaymentRequestButtonSize = () => {
+	const { updatePaymentRequestButtonSize } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getDigitalWalletsButtonSize } = select( STORE_NAME );
+		const { getPaymentRequestButtonSize } = select( STORE_NAME );
 
 		return [
-			getDigitalWalletsButtonSize(),
-			updateDigitalWalletsButtonSize,
+			getPaymentRequestButtonSize(),
+			updatePaymentRequestButtonSize,
 		];
 	} );
 };
 
-export const useDigitalWalletsButtonTheme = () => {
-	const { updateDigitalWalletsButtonTheme } = useDispatch( STORE_NAME );
+export const usePaymentRequestButtonTheme = () => {
+	const { updatePaymentRequestButtonTheme } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getDigitalWalletsButtonTheme } = select( STORE_NAME );
+		const { getPaymentRequestButtonTheme } = select( STORE_NAME );
 
 		return [
-			getDigitalWalletsButtonTheme(),
-			updateDigitalWalletsButtonTheme,
+			getPaymentRequestButtonTheme(),
+			updatePaymentRequestButtonTheme,
 		];
 	} );
+};
+
+export const useGetSavingError = () => {
+	return useSelect( ( select ) => {
+		const { getSavingError } = select( STORE_NAME );
+
+		return getSavingError();
+	}, [] );
 };

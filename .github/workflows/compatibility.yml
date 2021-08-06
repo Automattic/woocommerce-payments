@@ -6,12 +6,12 @@ on:
 jobs:
   woocommerce-compatibility:
     name:    WC compatibility
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast:    false
       max-parallel: 10
       matrix:
-        woocommerce: [ '4.0.0', '4.3.0', '4.4.0', '4.5.0', '4.6.0', '4.7.0', '4.8.0', '4.9.0', '5.0.0', '5.1.0', '5.2.0', '5.3.0' ]
+        woocommerce: [ '4.0.0', '4.3.0', '4.4.0', '4.5.0', '4.6.0', '4.7.0', '4.8.0', '4.9.0', '5.0.0', '5.1.0', '5.2.0', '5.3.0', '5.4.0', '5.5.0' ]
         wordpress:   [ 'latest' ]
         php:         [ '7.4' ]
         include:
@@ -43,7 +43,7 @@ jobs:
   # a dedicated job, as allowed to fail
   compatibility-woocommerce-beta:
     name:    Environment - WC beta
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast: false
       matrix:

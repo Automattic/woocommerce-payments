@@ -21,19 +21,16 @@ describe( 'PaymentMethodsCheckboxes', () => {
 				<PaymentMethodsCheckbox
 					onChange={ handleChange }
 					checked={ true }
-					fees=""
 					name="sepa_debit"
 				/>
 				<PaymentMethodsCheckbox
 					onChange={ handleChange }
 					checked={ false }
-					fees=""
 					name="sofort"
 				/>
 				<PaymentMethodsCheckbox
 					onChange={ handleChange }
 					checked={ false }
-					fees=""
 					name="giropay"
 				/>
 			</PaymentMethodsCheckboxes>

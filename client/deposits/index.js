@@ -13,33 +13,35 @@ import DepositsList from './list';
 import {
 	EmptyStateList,
 	EmptyStateTableHeaders,
-} from '../emtpy-state-table/list';
-import EmptyStateTable from 'emtpy-state-table';
-import ListBanner from '../emtpy-state-table/deposits-banner.svg';
+} from '../empty-state-table/list';
+import EmptyStateTable from 'empty-state-table';
+import ListBanner from '../empty-state-table/deposits-banner.svg';
 import { Experiment } from '@woocommerce/explat';
 
 const DepositsPage = () => {
+	const defaultExperience = (
+		<>
+			<TestModeNotice topic={ topics.deposits } />
+			<DepositsList />
+		</>
+	);
+
+	const treatmentExperience = wcpaySettings.accountStatus.status ? (
+		defaultExperience
+	) : (
+		<EmptyStateTable
+			headers={ EmptyStateTableHeaders }
+			title="Deposit history"
+			content={ <EmptyStateList listBanner={ ListBanner } /> }
+		/>
+	);
+
 	return (
 		<Page>
 			<Experiment
-				name="wcpay_empty_state_preview_mode"
-				treatmentExperience={
-					<>
-						<EmptyStateTable
-							headers={ EmptyStateTableHeaders }
-							title="Deposit history"
-							content={
-								<EmptyStateList listBanner={ ListBanner } />
-							}
-						/>
-					</>
-				}
-				defaultExperience={
-					<>
-						<TestModeNotice topic={ topics.deposits } />
-						<DepositsList />
-					</>
-				}
+				name="wcpay_empty_state_preview_mode_v2"
+				treatmentExperience={ treatmentExperience }
+				defaultExperience={ defaultExperience }
 			/>
 		</Page>
 	);

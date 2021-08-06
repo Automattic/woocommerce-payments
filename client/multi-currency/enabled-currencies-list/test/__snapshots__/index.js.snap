@@ -3,7 +3,7 @@
 exports[`Multi Currency enabled currencies list Available currencies modal renders correctly 1`] = `
 <div
   aria-labelledby="components-modal-header-0"
-  class="components-modal__frame add-enabled-currencies-modal"
+  class="components-modal__frame wcpay-confirmation-modal add-enabled-currencies-modal"
   role="dialog"
   tabindex="-1"
 >
@@ -32,10 +32,9 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
         <svg
           aria-hidden="true"
           focusable="false"
-          height="24"
           role="img"
+          size="24"
           viewBox="0 0 24 24"
-          width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
@@ -540,8 +539,11 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
         </li>
       </ul>
     </div>
+    <hr
+      class="wcpay-confirmation-modal__separator"
+    />
     <div
-      class="add-enabled-currencies-modal__footer"
+      class="wcpay-confirmation-modal__footer"
     >
       <button
         class="components-button is-secondary"
@@ -605,9 +607,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="enabled-currency__code"
             >
               (
-              $
-               
-              USD
+              $ USD
               )
             </div>
           </div>
@@ -618,17 +618,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
           </div>
           <div
             class="enabled-currency__actions"
-          >
-            <a
-              aria-label="Edit United States (US) dollar"
-              class="components-button enabled-currency__action edit is-link"
-              href="admin.php?page=wc-settings&tab=wcpay_multi_currency&section=usd"
-            >
-              <span
-                class="dashicon dashicons dashicons-edit"
-              />
-            </a>
-          </div>
+          />
         </li>
         <li
           class="enabled-currency cad"
@@ -650,9 +640,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="enabled-currency__code"
             >
               (
-              $
-               
-              CAD
+              $ CAD
               )
             </div>
           </div>
@@ -669,9 +657,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="components-button enabled-currency__action edit is-link"
               href="admin.php?page=wc-settings&tab=wcpay_multi_currency&section=cad"
             >
-              <span
-                class="dashicon dashicons dashicons-edit"
-              />
+              manage
             </a>
             <button
               aria-label="Remove Canadian dollar as an enabled currency"
@@ -704,9 +690,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="enabled-currency__code"
             >
               (
-              £
-               
-              GBP
+              £ GBP
               )
             </div>
           </div>
@@ -723,9 +707,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="components-button enabled-currency__action edit is-link"
               href="admin.php?page=wc-settings&tab=wcpay_multi_currency&section=gbp"
             >
-              <span
-                class="dashicon dashicons dashicons-edit"
-              />
+              manage
             </a>
             <button
               aria-label="Remove Pound sterling as an enabled currency"
@@ -758,9 +740,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="enabled-currency__code"
             >
               (
-              €
-               
-              EUR
+              € EUR
               )
             </div>
           </div>
@@ -777,9 +757,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
               class="components-button enabled-currency__action edit is-link"
               href="admin.php?page=wc-settings&tab=wcpay_multi_currency&section=eur"
             >
-              <span
-                class="dashicon dashicons dashicons-edit"
-              />
+              manage
             </a>
             <button
               aria-label="Remove Euro as an enabled currency"
@@ -815,7 +793,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
 exports[`Multi Currency enabled currencies list Remove currency modal renders correctly 1`] = `
 <div
   aria-labelledby="components-modal-header-1"
-  class="components-modal__frame enabled-currency-delete-modal"
+  class="components-modal__frame wcpay-confirmation-modal enabled-currency-delete-modal"
   role="dialog"
   tabindex="-1"
 >
@@ -844,10 +822,9 @@ exports[`Multi Currency enabled currencies list Remove currency modal renders co
         <svg
           aria-hidden="true"
           focusable="false"
-          height="24"
           role="img"
+          size="24"
           viewBox="0 0 24 24"
-          width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
@@ -863,8 +840,11 @@ exports[`Multi Currency enabled currencies list Remove currency modal renders co
       </strong>
        as an enabled currency in your store.
     </p>
+    <hr
+      class="wcpay-confirmation-modal__separator"
+    />
     <div
-      class="enabled-currency-delete-modal__footer"
+      class="wcpay-confirmation-modal__footer"
     >
       <button
         class="components-button is-secondary"

@@ -5,7 +5,7 @@
  */
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
-import { __ } from '@wordpress/i18n';
+import { __, _n } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
@@ -13,10 +13,10 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies.
  */
-import { useDeposits, useDepositsSummary } from 'data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { displayType, displayStatus } from '../strings';
 import { formatStringValue } from 'util';
-import { formatCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import Page from '../../components/page';
@@ -110,7 +110,7 @@ export const DepositsList = () => {
 			amount: {
 				value: deposit.amount / 100,
 				display: clickable(
-					formatCurrency( deposit.amount, deposit.currency )
+					formatExplicitCurrency( deposit.amount, deposit.currency )
 				),
 			},
 			status: {
@@ -144,7 +144,12 @@ export const DepositsList = () => {
 	if ( isDespositsSummaryDataLoaded ) {
 		summary = [
 			{
-				label: __( 'deposits', 'woocommerce-payments' ),
+				label: _n(
+					'deposit',
+					'deposits',
+					depositsSummary.count,
+					'woocommerce-payments'
+				),
 				value: `${ depositsSummary.count }`,
 			},
 		];
@@ -152,7 +157,7 @@ export const DepositsList = () => {
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push( {
 				label: __( 'total', 'woocommerce-payments' ),
-				value: `${ formatCurrency(
+				value: `${ formatExplicitCurrency(
 					depositsSummary.total,
 					depositsSummary.currency
 				) }`,

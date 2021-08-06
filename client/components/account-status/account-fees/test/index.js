@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 /** @format */
 /**
  * External dependencies
@@ -56,6 +55,7 @@ describe( 'AccountFees', () => {
 					fixed_rate: 20,
 					volume_allowance: 100000000,
 					current_volume: 1234556,
+					volume_currency: 'usd',
 				},
 			],
 		} );
@@ -75,6 +75,27 @@ describe( 'AccountFees', () => {
 					fixed_rate: 10,
 					volume_allowance: 100000000,
 					current_volume: 1234556,
+					volume_currency: 'gbp',
+				},
+			],
+		} );
+		expect( accountFees ).toMatchSnapshot();
+	} );
+
+	test( 'renders discounted fee with USD volume currency and non-USD base fee', () => {
+		const { container: accountFees } = renderAccountFees( {
+			base: {
+				percentage_rate: 0.014,
+				fixed_rate: 20,
+				currency: 'gbp',
+			},
+			discount: [
+				{
+					percentage_rate: 0.007,
+					fixed_rate: 10,
+					volume_allowance: 100000000,
+					current_volume: 1234556,
+					volume_currency: 'usd',
 				},
 			],
 		} );
@@ -91,6 +112,7 @@ describe( 'AccountFees', () => {
 			discount: [
 				{
 					discount: 0.3,
+					volume_currency: 'usd',
 				},
 			],
 		} );
@@ -109,6 +131,7 @@ describe( 'AccountFees', () => {
 					discount: 0.3,
 					volume_allowance: 2500000,
 					current_volume: 1234556,
+					volume_currency: 'usd',
 				},
 			],
 		} );
@@ -126,6 +149,7 @@ describe( 'AccountFees', () => {
 				{
 					discount: 0.3,
 					end_time: '2025-03-31 12:00:00',
+					volume_currency: 'usd',
 				},
 			],
 		} );
@@ -145,6 +169,7 @@ describe( 'AccountFees', () => {
 					volume_allowance: 2500000,
 					current_volume: 1234556,
 					end_time: '2025-03-31 12:00:00',
+					volume_currency: 'usd',
 				},
 			],
 		} );
@@ -162,11 +187,13 @@ describe( 'AccountFees', () => {
 			discount: [
 				{
 					discount: 0.2,
+					volume_currency: 'usd',
 				},
 				{
 					discount: 0.3,
 					volume_allowance: 2500000,
 					current_volume: 1234556,
+					volume_currency: 'usd',
 				},
 			],
 		} );

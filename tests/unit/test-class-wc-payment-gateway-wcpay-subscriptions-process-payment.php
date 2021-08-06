@@ -68,6 +68,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 		'id'            => self::SETUP_INTENT_ID,
 		'status'        => 'succeeded',
 		'client_secret' => 'test_client_secret',
+		'next_action'   => [],
 	];
 
 	/**

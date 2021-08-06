@@ -23,7 +23,7 @@ env:
 jobs:
   e2e:
     name:    E2E tests
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast:     false
       matrix:
@@ -74,3 +74,7 @@ jobs:
       - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false
       - run: npm run test:e2e-setup
       - run: npm run test:e2e
+      - uses: actions/upload-artifact@v2
+        with:
+          name: screenshots
+          path: screenshots
