@@ -37,6 +37,7 @@ const OverviewPage = () => {
 		additionalMethodsSetup,
 		wpcomReconnectUrl,
 		needsHttpsSetup,
+		isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 	} );
 	const queryParams = getQuery();
 
