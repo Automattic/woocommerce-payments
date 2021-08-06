@@ -28,7 +28,6 @@ class WC_Payments_Explicit_Price_Formatter {
 	 * Inits the formatter, registering the necessary hooks.
 	 */
 	public static function init() {
-		self::$multi_currency_instance = WC_Payments_Multi_Currency();
 		add_filter( 'woocommerce_cart_total', [ __CLASS__, 'get_explicit_price' ], 100 );
 		add_filter( 'woocommerce_get_formatted_order_total', [ __CLASS__, 'get_explicit_price' ], 100, 2 );
 		add_action( 'woocommerce_admin_order_totals_after_tax', [ __CLASS__, 'register_formatted_woocommerce_price_filter' ] );
@@ -37,6 +36,7 @@ class WC_Payments_Explicit_Price_Formatter {
 
 	/**
 	 * Overrides the MultiCurrency instance that the class uses.
+	 * Mostly for testing purposes.
 	 *
 	 * @param   MultiCurrency $multi_currency  MultCurrency class.
 	 *
@@ -52,16 +52,35 @@ class WC_Payments_Explicit_Price_Formatter {
 	 * @return  bool  Whether if it should return explicit price or not
 	 */
 	private static function should_output_explicit_price() {
-		// Only check for frontend requests.
-		if ( ! is_admin() ) {
+		// As is_admin() returns false for REST requests, we need to skip those checks for REST requests for backend too.
+		$is_backend_request = (
+			// Current URL is an admın URL.
+			( 0 === strpos( strtolower( wp_get_referer() ), strtolower( admin_url() ) ) )
+			// The current request is a REST request.
+			&& WC()->is_rest_api_request()
+		);
+
+		// Only apply this for frontend.
+		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! $is_backend_request ) {
 			// If customer multi currency is disabled, don't use explicit currencies on frontend.
 			// Because it'll have only the store currency active, same as count == 1.
 			if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {
 				return false;
 			}
 
+			// If the MultiCurrency instance hasn't been defined yet, fetch the instance.
+			if ( null === self::$multi_currency_instance ) {
+				self::$multi_currency_instance = WC_Payments_Multi_Currency();
+			}
+
+			// If the instance isn't initalized yet, skip the checks.
+			if ( false === self::$multi_currency_instance->is_initialized() ) {
+				return false;
+			}
+
 			$enabled_currencies = self::$multi_currency_instance->get_enabled_currencies();
 
+			// If there isn't any enabled currency, skip it.
 			if ( empty( $enabled_currencies ) ) {
 				return false;
 			}
