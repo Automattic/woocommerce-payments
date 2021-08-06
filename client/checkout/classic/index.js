@@ -9,7 +9,6 @@ import {
 	PAYMENT_METHOD_NAME_GIROPAY,
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
-	PAYMENT_METHOD_NAME_IDEAL,
 } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
@@ -79,11 +78,6 @@ jQuery( function ( $ ) {
 	// Sofort payment method details
 	const sofortPayment = {
 		type: 'sofort',
-	};
-
-	// iDEAL payment method details
-	const idealPayment = {
-		type: 'ideal',
 	};
 
 	/**
@@ -181,17 +175,6 @@ jQuery( function ( $ ) {
 	 */
 	const isWCPaySofortChosen = function () {
 		return $( '#payment_method_woocommerce_payments_sofort' ).is(
-			':checked'
-		);
-	};
-
-	/**
-	 * Check if iDEAL payment method is being used.
-	 *
-	 * @return {boolean} Boolean indicating whether or not Sofort payment method is being used.
-	 */
-	const isWCPayIdealChosen = function () {
-		return $( '#payment_method_woocommerce_payments_ideal' ).is(
 			':checked'
 		);
 	};
@@ -479,7 +462,6 @@ jQuery( function ( $ ) {
 		PAYMENT_METHOD_NAME_GIROPAY,
 		PAYMENT_METHOD_NAME_SEPA,
 		PAYMENT_METHOD_NAME_SOFORT,
-		PAYMENT_METHOD_NAME_IDEAL,
 	];
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
@@ -496,8 +478,6 @@ jQuery( function ( $ ) {
 					country: $( '#billing_country' ).val(),
 				};
 				paymentMethodDetails = sofortPayment;
-			} else if ( isWCPayIdealChosen() ) {
-				paymentMethodDetails = idealPayment;
 			}
 
 			return handlePaymentMethodCreation(
@@ -534,8 +514,6 @@ jQuery( function ( $ ) {
 				paymentMethodDetails = giropayPayment;
 			} else if ( isWCPaySofortChosen() ) {
 				paymentMethodDetails = sofortPayment;
-			} else if ( isWCPayIdealChosen() ) {
-				paymentMethodDetails = idealPayment;
 			}
 
 			return handlePaymentMethodCreation(
