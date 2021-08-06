@@ -69,7 +69,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			screen.getByRole( 'checkbox', { name: 'Credit card / debit card' } )
 		).toBeChecked();
 		expect(
-			screen.getByRole( 'checkbox', { name: 'bancontact' } )
+			screen.getByRole( 'checkbox', { name: 'Bancontact' } )
 		).not.toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', { name: 'giropay' } )
@@ -108,7 +108,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			screen.queryByRole( 'checkbox', { name: 'giropay' } )
 		).toBeInTheDocument();
 		expect(
-			screen.queryByRole( 'checkbox', { name: 'bancontact' } )
+			screen.queryByRole( 'checkbox', { name: 'Bancontact' } )
 		).not.toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
@@ -147,7 +147,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		// Marks the Bancontact payment method as checked
 		userEvent.click(
 			screen.getByRole( 'checkbox', {
-				name: 'bancontact',
+				name: 'Bancontact',
 			} )
 		);
 		// Marks the Giropay payment method as checked
@@ -178,8 +178,6 @@ describe( 'AddPaymentMethodsTask', () => {
 		);
 		expect( updateEnabledPaymentMethodIdsMock ).toHaveBeenCalledWith( [
 			'bancontact',
-		] );
-		expect( updateEnabledPaymentMethodIdsMock ).toHaveBeenCalledWith( [
 			'giropay',
 		] );
 		expect( updatePaymentRequestEnabledMock ).toHaveBeenCalledWith( true );

@@ -28,7 +28,7 @@ describe( 'SetupComplete', () => {
 		};
 
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay', 'sofort' ],
+			[ 'card', 'bancontact', 'giropay', 'sofort' ],
 			() => null,
 		] );
 	} );
@@ -99,7 +99,12 @@ describe( 'SetupComplete', () => {
 				value={ {
 					completedTasks: {
 						'add-payment-methods': {
-							initialMethods: [ 'card', 'giropay', 'sofort' ],
+							initialMethods: [
+								'card',
+								'bancontact',
+								'giropay',
+								'sofort',
+							],
 						},
 					},
 				} }
@@ -125,7 +130,12 @@ describe( 'SetupComplete', () => {
 				value={ {
 					completedTasks: {
 						'add-payment-methods': {
-							initialMethods: [ 'card', 'giropay', 'sofort' ],
+							initialMethods: [
+								'card',
+								'bancontact',
+								'giropay',
+								'sofort',
+							],
 						},
 					},
 				} }

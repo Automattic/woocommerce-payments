@@ -56,13 +56,13 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		userEvent.click( giropay.getByRole( 'checkbox' ) );
 		userEvent.click( bancontact.getByRole( 'checkbox' ) );
 
-		expect( handleChange ).toHaveBeenCalledTimes( 2 );
+		expect( handleChange ).toHaveBeenCalledTimes( 3 );
 		expect( handleChange ).toHaveBeenNthCalledWith(
 			1,
 			'sepa_debit',
 			false
 		);
 		expect( handleChange ).toHaveBeenNthCalledWith( 2, 'giropay', true );
-		expect( handleChange ).toHaveBeenNthCalledWith( 2, 'bancontact', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 3, 'bancontact', true );
 	} );
 } );

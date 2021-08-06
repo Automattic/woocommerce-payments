@@ -31,6 +31,7 @@ describe( 'PaymentMethods', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
+			'bancontact',
 			'giropay',
 			'sofort',
 			'sepa_debit',
@@ -104,9 +105,10 @@ describe( 'PaymentMethods', () => {
 			);
 		} );
 
+		const bancontact = screen.getByLabelText( 'Bancontact' );
 		const giropay = screen.getByLabelText( 'giropay' );
 		const sofort = screen.getByLabelText( 'Sofort' );
-		[ giropay, sofort ].forEach( ( method ) => {
+		[ bancontact, giropay, sofort ].forEach( ( method ) => {
 			expect( method.closest( 'ul' ) ).toHaveClass(
 				'payment-methods__available-methods'
 			);

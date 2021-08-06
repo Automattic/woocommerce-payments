@@ -45,6 +45,7 @@ describe( 'AddPaymentMethodsTask', () => {
 	beforeEach( () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
+			'bancontact',
 			'giropay',
 			'sepa_debit',
 		] );
@@ -106,6 +107,9 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect( useSettings ).toHaveBeenCalled();
 		// the payment methods should all be checked
 		expect(
+			screen.getByRole( 'checkbox', { name: 'Bancontact' } )
+		).toBeChecked();
+		expect(
 			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
 		expect(
@@ -116,6 +120,9 @@ describe( 'AddPaymentMethodsTask', () => {
 		).not.toBeInTheDocument();
 
 		// un-checking the checkboxes and clicking "add payment methods" should display a notice
+		userEvent.click(
+			screen.getByRole( 'checkbox', { name: 'Bancontact' } )
+		);
 		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
 		userEvent.click(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
@@ -152,6 +159,9 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect( useSettings ).toHaveBeenCalled();
 		// the payment methods should all be checked
 		expect(
+			screen.getByRole( 'checkbox', { name: 'Bancontact' } )
+		).toBeChecked();
+		expect(
 			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
 		expect(
@@ -165,6 +175,7 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
+			'bancontact',
 			'giropay',
 			'sepa_debit',
 		] );
@@ -180,7 +191,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		const setCompletedMock = jest.fn();
 		const updateEnabledPaymentMethodsMock = jest.fn();
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay' ],
+			[ 'card', 'bancontact', 'giropay' ],
 			updateEnabledPaymentMethodsMock,
 		] );
 		render(
@@ -195,24 +206,30 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		// the payment methods should all be checked
 		expect(
+			screen.getByRole( 'checkbox', { name: 'Bancontact' } )
+		).toBeChecked();
+		expect(
 			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
 
-		// un-check giropay
+		// Uncheck methods.
+		userEvent.click(
+			screen.getByRole( 'checkbox', { name: 'Bancontact' } )
+		);
 		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
 		userEvent.click( screen.getByText( 'Add payment methods' ) );
 
-		// giropay is removed
+		// Methods are is removed.
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
 			'sepa_debit',
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
-				{ initialMethods: [ 'card', 'giropay' ] },
+				{ initialMethods: [ 'card', 'bancontact', 'giropay' ] },
 				'setup-complete'
 			)
 		);

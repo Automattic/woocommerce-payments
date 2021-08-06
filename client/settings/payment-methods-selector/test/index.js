@@ -27,6 +27,7 @@ describe( 'PaymentMethodsSelector', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
+			'bancontact',
 			'giropay',
 			'sofort',
 			'sepa_debit',
@@ -74,7 +75,12 @@ describe( 'PaymentMethodsSelector', () => {
 		).toBeInTheDocument();
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 3 );
+		expect( paymentMethods ).toHaveLength( 4 );
+
+		const bancontactPayCheckbox = screen.getByRole( 'checkbox', {
+			name: 'Bancontact',
+		} );
+		expect( bancontactPayCheckbox ).not.toBeChecked();
 
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
 			name: 'giropay',
@@ -136,7 +142,7 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( addPaymentMethodButton );
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 2 );
+		expect( paymentMethods ).toHaveLength( 3 );
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
 		).toBeNull();
