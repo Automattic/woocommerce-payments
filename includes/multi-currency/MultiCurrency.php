@@ -108,7 +108,7 @@ class MultiCurrency {
 	 *
 	 * @var array
 	 */
-	protected $available_currencies;
+	protected $available_currencies = [];
 
 	/**
 	 * The default currency.
@@ -122,7 +122,7 @@ class MultiCurrency {
 	 *
 	 * @var array
 	 */
-	protected $enabled_currencies;
+	protected $enabled_currencies = [];
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
