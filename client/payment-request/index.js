@@ -2,8 +2,7 @@
 /**
  * External dependencies
  */
-import { defaultHooks } from '@wordpress/hooks';
-
+import { doAction } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
@@ -191,10 +190,7 @@ jQuery( ( $ ) => {
 			);
 
 			const doActionPaymentRequestAvailability = ( args ) => {
-				defaultHooks.doAction(
-					'wcpay.payment-request.availability',
-					args
-				);
+				doAction( 'wcpay.payment-request.availability', args );
 			};
 
 			// Check the availability of the Payment Request API first.
