@@ -326,17 +326,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
-		// iDEAL option hidden behind feature flag.
-		if ( WC_Payments_Features::is_ideal_enabled() ) {
-			$this->form_fields['ideal_enabled'] = [
-				'title'       => __( 'Enable/disable iDEAL', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce iDEAL', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			];
-		}
-
 		// Load the settings.
 		$this->init_settings();
 

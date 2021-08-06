@@ -38,7 +38,6 @@ class PaymentMethodsCompatibility {
 		'giropay'    => 'EUR',
 		'sepa_debit' => 'EUR',
 		'sofort'     => 'EUR',
-		'ideal'      => 'EUR',
 	];
 
 	/**
