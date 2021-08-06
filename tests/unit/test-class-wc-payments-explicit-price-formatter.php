@@ -170,8 +170,8 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 		$order->method( 'get_currency' )->willReturn( 'CHF' );
 
 		$this->assertSame( 'CHF 10.30', WC_Payments_Explicit_Price_Formatter::get_explicit_price( 'CHF 10.30', $order ) );
-  }
-  
+	}
+
 	public function test_get_explicit_price_with_order_currency_on_frontend_with_one_enabled_currency() {
 		$this->prepare_one_enabled_currency();
 		$order = $this->createMock( WC_Order::class );
