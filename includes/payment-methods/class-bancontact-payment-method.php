@@ -13,7 +13,6 @@ use WC_Payments_Token_Service;
  * Bancontact Payment Method class extending UPE base class
  */
 class Bancontact_Payment_Method extends UPE_Payment_Method {
-	// TODO: This was a copy of giropay, so it needs to be set up correctly.
 
 	/**
 	 * Constructor for Bancontact payment method
@@ -23,8 +22,8 @@ class Bancontact_Payment_Method extends UPE_Payment_Method {
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 		$this->stripe_id   = 'bancontact';
-		$this->title       = 'bancontact';
-		$this->is_reusable = false; // TODO: Is it reusable?
+		$this->title       = 'Bancontact';
+		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR' ];
 	}
 }
