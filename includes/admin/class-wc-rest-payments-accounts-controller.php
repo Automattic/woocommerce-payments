@@ -43,8 +43,9 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function get_account_data( $request ) {
 		$account = WC_Payments::get_account_service()->get_cached_account_data();
-		if ( [] === $account && ! WC_Payments_Account::is_on_boarding_disabled() ) {
+		if ( [] === $account ) {
 			$default_currency = get_woocommerce_currency();
+			$status           = WC_Payments_Account::is_on_boarding_disabled() ? 'ONBOARDING_DISABLED' : 'NOACCOUNT';
 			$account          = [
 				'card_present_eligible'    => false,
 				'country'                  => WC()->countries->get_base_country(),
@@ -52,7 +53,7 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 				'has_overdue_requirements' => false,
 				'has_pending_requirements' => false,
 				'statement_descriptor'     => '',
-				'status'                   => 'NOACCOUNT',
+				'status'                   => $status,
 				'store_currencies'         => [
 					'default'   => $default_currency,
 					'supported' => [

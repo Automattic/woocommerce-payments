@@ -121,6 +121,9 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertSame( 200, $response->status );
-		$this->assertSame( [], $response_data );
+		$this->assertSame( 'ONBOARDING_DISABLED', $response_data['status'] );
+		// The default country and currency have changed in WC 5.3, hence multiple options in assertions.
+		$this->assertContains( $response_data['country'], [ 'US', 'GB' ] );
+		$this->assertContains( $response_data['store_currencies']['default'], [ 'USD', 'GBP' ] );
 	}
 }
