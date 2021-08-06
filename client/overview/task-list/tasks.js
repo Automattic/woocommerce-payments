@@ -99,7 +99,6 @@ export const getTasks = ( {
 						'_blank'
 					);
 				},
-				actionLabel: __( 'Read more', 'woocommerce-payments' ),
 			},
 		additionalMethodsSetup.isTaskVisible &&
 			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
