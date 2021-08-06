@@ -971,18 +971,16 @@ class WC_Payments_API_Client {
 	 *
 	 * @param array $product_data Product data.
 	 *
-	 * @return array The created product's product, price, and tax rate IDs.
+	 * @return array The created product's product and price IDs.
 	 *
 	 * @throws API_Exception Error creating the product.
 	 */
 	public function create_product( array $product_data ): array {
-		$product_array = $this->request(
+		return $this->request(
 			$product_data,
 			self::PRODUCTS_API,
 			self::POST
 		);
-
-		return $product_array;
 	}
 
 	/**
@@ -991,9 +989,11 @@ class WC_Payments_API_Client {
 	 * @param string $product_id    ID of product to update.
 	 * @param array  $product_data  Data to be updated.
 	 *
+	 * @return array The updated product's product and/or price IDs.
+	 *
 	 * @throws API_Exception Error updating product.
 	 */
-	public function update_product( $product_id, $product_data = [] ) {
+	public function update_product( string $product_id, array $product_data = [] ) : array {
 		if ( null === $product_id || '' === trim( $product_id ) ) {
 			throw new API_Exception(
 				__( 'Product ID is required', 'woocommerce-payments' ),
@@ -1002,7 +1002,7 @@ class WC_Payments_API_Client {
 			);
 		}
 
-		$this->request(
+		return $this->request(
 			$product_data,
 			self::PRODUCTS_API . '/' . $product_id,
 			self::POST
@@ -1017,7 +1017,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception Error updating price.
 	 */
-	public function update_price( $price_id, $price_data = [] ) {
+	public function update_price( string $price_id, array $price_data = [] ) {
 		if ( null === $price_id || '' === trim( $price_id ) ) {
 			throw new API_Exception(
 				__( 'Price ID is required', 'woocommerce-payments' ),

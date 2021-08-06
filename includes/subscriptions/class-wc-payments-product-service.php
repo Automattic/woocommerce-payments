@@ -221,6 +221,64 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
+	 * Archives a product in Stripe.
+	 *
+	 * @param WC_Product $product The product to archive.
+	 */
+	public function archive_product( WC_Product $product ) {
+		$stripe_product_id = $this->get_stripe_product_id( $product );
+
+		if ( ! $stripe_product_id ) {
+			return;
+		}
+
+		try {
+			$this->archive_price( $this->get_stripe_price_id( $product ) );
+			$this->payments_api_client->update_product( $stripe_product_id, [ 'active' => 'false' ] );
+		} catch ( API_Exception $e ) {
+			Logger::log( 'There was a problem archiving the product in Stripe:', $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Unarchives a product in Stripe.
+	 *
+	 * @param WC_Product $product The product unarchive.
+	 */
+	public function unarchive_product( WC_Product $product ) {
+		$stripe_product_id = $this->get_stripe_product_id( $product );
+
+		if ( ! $stripe_product_id ) {
+			return;
+		}
+
+		try {
+			$this->unarchive_price( $this->get_stripe_price_id( $product ) );
+			$this->payments_api_client->update_product( $stripe_product_id, [ 'active' => 'true' ] );
+		} catch ( API_Exception $e ) {
+			Logger::log( 'There was a problem unarchiving the product in Stripe:', $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Archives a Stripe price object.
+	 *
+	 * @param string $stripe_price_id The price object's ID to archive.
+	 */
+	public function archive_price( string $stripe_price_id ) {
+		$this->payments_api_client->update_price( $stripe_price_id, [ 'active' => 'false' ] );
+	}
+
+	/**
+	 * Unarchives a Stripe Price object.
+	 *
+	 * @param string $stripe_price_id The Price object's ID to unarchive.
+	 */
+	public function unarchive_price( string $stripe_price_id ) {
+		$this->payments_api_client->update_price( $stripe_price_id, [ 'active' => 'true' ] );
+	}
+
+	/**
 	 * Gets data relevant to Stripe from a WC product.
 	 *
 	 * @param WC_Product $product The product to get data from.
@@ -251,46 +309,6 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Archives a product in Stripe.
-	 *
-	 * @param WC_Product $product The product to archive.
-	 */
-	private function archive_product( WC_Product $product ) {
-		$stripe_product_id = $this->get_stripe_product_id( $product );
-
-		if ( ! $stripe_product_id ) {
-			return;
-		}
-
-		try {
-			$this->archive_price( $this->get_stripe_price_id( $product ) );
-			$this->payments_api_client->update_product( $stripe_product_id, [ 'active' => 'false' ] );
-		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem archiving the product in Stripe:', $e->getMessage() );
-		}
-	}
-
-	/**
-	 * Unarchives a product in Stripe.
-	 *
-	 * @param WC_Product $product The product unarchive.
-	 */
-	private function unarchive_product( WC_Product $product ) {
-		$stripe_product_id = $this->get_stripe_product_id( $product );
-
-		if ( ! $stripe_product_id ) {
-			return;
-		}
-
-		try {
-			$this->unarchive_price( $this->get_stripe_price_id( $product ) );
-			$this->payments_api_client->update_product( $stripe_product_id, [ 'active' => 'true' ] );
-		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem unarchiving the product in Stripe:', $e->getMessage() );
-		}
-	}
-
-	/**
 	 * Gets a hash of the product's name and description.
 	 * Used to compare WC changes with Stripe data.
 	 *
@@ -299,24 +317,6 @@ class WC_Payments_Product_Service {
 	 */
 	private function get_product_hash( WC_Product $product ) : string {
 		return md5( implode( $this->get_product_data( $product ) ) );
-	}
-
-	/**
-	 * Archives a Stripe price object.
-	 *
-	 * @param string $stripe_price_id The price object's ID to archive.
-	 */
-	private function archive_price( string $stripe_price_id ) {
-		$this->payments_api_client->update_price( $stripe_price_id, [ 'active' => 'false' ] );
-	}
-
-	/**
-	 * Unarchives a Stripe Price object.
-	 *
-	 * @param string $stripe_price_id The Price object's ID to unarchive.
-	 */
-	private function unarchive_price( string $stripe_price_id ) {
-		$this->payments_api_client->update_price( $stripe_price_id, [ 'active' => 'true' ] );
 	}
 
 	/**
