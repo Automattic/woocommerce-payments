@@ -50,6 +50,10 @@ describe( 'Overview page', () => {
 		getQuery.mockReturnValue( {} );
 	} );
 
+	afterEach( () => {
+		jest.clearAllMocks();
+	} );
+
 	it( 'Skips rendering task list when there are no tasks', () => {
 		getTasks.mockReturnValue( [] );
 		const { container } = render( <OverviewPage /> );
@@ -72,6 +76,24 @@ describe( 'Overview page', () => {
 			container.querySelector( '.woocommerce-experimental-list' )
 		).toBeNull();
 	} );
+
+	it.each( [ true, false ] )(
+		'Passes `accountOverviewTaskList` feature flag to getTasks() as `isAccountOverviewTasksEnabled`',
+		( accountOverviewTaskList ) => {
+			global.wcpaySettings = {
+				...global.wcpaySettings,
+				featureFlags: { accountOverviewTaskList },
+			};
+
+			render( <OverviewPage /> );
+
+			expect( getTasks ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					isAccountOverviewTasksEnabled: accountOverviewTaskList,
+				} )
+			);
+		}
+	);
 
 	it( 'Displays the login error for query param wcpay-login-error=1', () => {
 		getQuery.mockReturnValue( { 'wcpay-login-error': '1' } );
