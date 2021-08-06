@@ -679,6 +679,11 @@ class WC_Payments_Admin {
 			return false;
 		}
 
+		// if the account is disconnected, just don't display the onboarding task.
+		if ( ! $this->account->is_stripe_connected() ) {
+			return false;
+		}
+
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			return false === WC_Payments_Features::did_merchant_disable_upe();
 		}
