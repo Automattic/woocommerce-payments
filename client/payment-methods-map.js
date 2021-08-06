@@ -35,7 +35,7 @@ export default {
 		id: 'sofort',
 		label: __( 'Sofort', 'woocommerce-payments' ),
 		description: __(
-			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, and Netherlands.',
+			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, Netherlands, and Spain.',
 			'woocommerce-payments'
 		),
 		Icon: SofortIcon,
