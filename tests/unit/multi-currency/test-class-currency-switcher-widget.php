@@ -47,6 +47,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 					new Currency( 'USD' ),
 					new Currency( 'CAD', 1.2 ),
 					new Currency( 'EUR', 0.8 ),
+					new Currency( 'CHF', 1.1 ),
 				]
 			);
 
@@ -71,6 +72,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 		$this->expectOutputRegex( '/<option value="USD">&#36; USD<\/option>/' );
 		$this->expectOutputRegex( '/<option value="CAD">&#36; CAD<\/option>/' );
 		$this->expectOutputRegex( '/<option value="EUR">&euro; EUR<\/option>/' );
+		$this->expectOutputRegex( '/<option value="CHF">CHF<\/option>/' );
 	}
 
 	public function test_widget_renders_enabled_currencies_without_symbol() {
@@ -82,6 +84,8 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 		$this->expectOutputRegex( '/<option value="USD">USD<\/option>/' );
 		$this->expectOutputRegex( '/<option value="CAD">CAD<\/option>/' );
 		$this->expectOutputRegex( '/<option value="EUR">EUR<\/option>/' );
+		$this->expectOutputRegex( '/<option value="CHF">CHF<\/option>/' );
+
 	}
 
 	public function test_widget_renders_enabled_currencies_with_symbol_and_flag() {
@@ -94,6 +98,8 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 		$this->expectOutputRegex( '/<option value="USD">🇺🇸 &#36; USD<\/option>/' );
 		$this->expectOutputRegex( '/<option value="CAD">🇨🇦 &#36; CAD<\/option>/' );
 		$this->expectOutputRegex( '/<option value="EUR">🇪🇺 &euro; EUR<\/option>/' );
+		$this->expectOutputRegex( '/<option value="CHF">🇨🇭 CHF<\/option>/' );
+
 	}
 
 	public function test_widget_renders_hidden_input() {
@@ -115,6 +121,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 		$this->expectOutputRegex( '/<option value="USD">&#36; USD<\/option>/' );
 		$this->expectOutputRegex( '/<option value="CAD" selected>&#36; CAD<\/option>/' );
 		$this->expectOutputRegex( '/<option value="EUR">&euro; EUR<\/option>/' );
+		$this->expectOutputRegex( '/<option value="CHF">CHF<\/option>/' );
 	}
 
 	public function test_widget_submits_form_on_change() {
