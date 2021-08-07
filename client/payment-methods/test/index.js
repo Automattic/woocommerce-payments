@@ -34,6 +34,7 @@ describe( 'PaymentMethods', () => {
 			'giropay',
 			'sofort',
 			'sepa_debit',
+			'p24',
 		] );
 	} );
 
@@ -106,7 +107,8 @@ describe( 'PaymentMethods', () => {
 
 		const giropay = screen.getByLabelText( 'giropay' );
 		const sofort = screen.getByLabelText( 'Sofort' );
-		[ giropay, sofort ].forEach( ( method ) => {
+		const p24 = screen.getByLabelText( 'P24' );
+		[ giropay, sofort, p24 ].forEach( ( method ) => {
 			expect( method.closest( 'ul' ) ).toHaveClass(
 				'payment-methods__available-methods'
 			);
@@ -150,7 +152,7 @@ describe( 'PaymentMethods', () => {
 	test( 'clicking delete updates enabled method IDs', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'sepa_debit', 'giropay', 'sofort' ],
+			[ 'card', 'sepa_debit', 'giropay', 'sofort', 'p24' ],
 			updateEnabledMethodsMock,
 		] );
 
@@ -174,6 +176,7 @@ describe( 'PaymentMethods', () => {
 			'sepa_debit',
 			'giropay',
 			'sofort',
+			'p24',
 		] );
 	} );
 

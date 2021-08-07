@@ -30,6 +30,7 @@ describe( 'PaymentMethodsSelector', () => {
 			'giropay',
 			'sofort',
 			'sepa_debit',
+			'p24',
 		] );
 	} );
 
@@ -74,12 +75,17 @@ describe( 'PaymentMethodsSelector', () => {
 		).toBeInTheDocument();
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 3 );
+		expect( paymentMethods ).toHaveLength( 4 );
 
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
 			name: 'giropay',
 		} );
 		expect( giroPayCheckbox ).not.toBeChecked();
+
+		const p24Checkbox = screen.getByRole( 'checkbox', {
+			name: 'P24',
+		} );
+		expect( p24Checkbox ).not.toBeChecked();
 
 		const sofortCheckbox = screen.getByRole( 'checkbox', {
 			name: 'Sofort',
@@ -136,10 +142,13 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( addPaymentMethodButton );
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 2 );
+		expect( paymentMethods ).toHaveLength( 3 );
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
 		).toBeNull();
+		expect(
+			screen.queryByRole( 'checkbox', { name: 'P24' } )
+		).not.toBeNull();
 	} );
 
 	test( 'Selecting payment methods does not update enabled payment methods', () => {
@@ -224,6 +233,11 @@ describe( 'PaymentMethodsSelector', () => {
 		} );
 		user.click( giroPayCheckbox );
 
+		const p24Checkbox = screen.getByRole( 'checkbox', {
+			name: 'P24',
+		} );
+		user.click( p24Checkbox );
+
 		const addSelectedButton = screen.getByRole( 'button', {
 			name: 'Add selected',
 		} );
@@ -232,6 +246,7 @@ describe( 'PaymentMethodsSelector', () => {
 			'card',
 			'sepa_debit',
 			'giropay',
+			'p24',
 		] );
 		expect(
 			screen.queryByRole( 'button', {

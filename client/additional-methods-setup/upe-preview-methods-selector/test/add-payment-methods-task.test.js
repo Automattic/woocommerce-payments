@@ -47,6 +47,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			'card',
 			'giropay',
 			'sepa_debit',
+			'p24',
 		] );
 		useSettings.mockReturnValue( {
 			saveSettings: () => Promise.resolve( true ),
@@ -108,6 +109,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect(
 			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
+		expect( screen.getByRole( 'checkbox', { name: 'p24' } ) ).toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
@@ -117,6 +119,7 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		// un-checking the checkboxes and clicking "add payment methods" should display a notice
 		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
+		userEvent.click( screen.getByRole( 'checkbox', { name: 'p24' } ) );
 		userEvent.click(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		);
@@ -154,6 +157,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect(
 			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
+		expect( screen.getByRole( 'checkbox', { name: 'p24' } ) ).toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
@@ -167,6 +171,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			'card',
 			'giropay',
 			'sepa_debit',
+			'p24',
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
@@ -197,12 +202,14 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect(
 			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
+		expect( screen.getByRole( 'checkbox', { name: 'p24' } ) ).toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
 
 		// un-check giropay
 		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
+		userEvent.click( screen.getByRole( 'checkbox', { name: 'p24' } ) );
 		userEvent.click( screen.getByText( 'Add payment methods' ) );
 
 		// giropay is removed
@@ -212,7 +219,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
-				{ initialMethods: [ 'card', 'giropay' ] },
+				{ initialMethods: [ 'card', 'giropay', 'p24' ] },
 				'setup-complete'
 			)
 		);

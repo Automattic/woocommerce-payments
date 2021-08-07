@@ -28,7 +28,7 @@ describe( 'SetupComplete', () => {
 		};
 
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay', 'sofort' ],
+			[ 'card', 'giropay', 'sofort', 'p24' ],
 			() => null,
 		] );
 	} );
@@ -99,7 +99,12 @@ describe( 'SetupComplete', () => {
 				value={ {
 					completedTasks: {
 						'add-payment-methods': {
-							initialMethods: [ 'card', 'giropay', 'sofort' ],
+							initialMethods: [
+								'card',
+								'giropay',
+								'sofort',
+								'p24',
+							],
 						},
 					},
 				} }
@@ -169,7 +174,7 @@ describe( 'SetupComplete', () => {
 
 	it( 'renders setup complete messaging when context value says that more than one payment method has been added', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay', 'sofort', 'sepa_debit' ],
+			[ 'card', 'giropay', 'sofort', 'sepa_debit', 'p24' ],
 			() => null,
 		] );
 		render(
@@ -189,7 +194,7 @@ describe( 'SetupComplete', () => {
 		);
 
 		expect( screen.getByText( /Setup complete/ ) ).toHaveTextContent(
-			'Setup complete! 3 new payment methods are now live on your store!'
+			'Setup complete! 4 new payment methods are now live on your store!'
 		);
 	} );
 } );

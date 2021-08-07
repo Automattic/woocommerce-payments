@@ -66,7 +66,7 @@ jQuery( function ( $ ) {
 
 	// Przelewy24 payment method details
 	const p24Payment = {
-		type: 'p24pay',
+		type: 'p24',
 	};
 
 	// Create a SEPA element

@@ -36,7 +36,6 @@ class PaymentMethodsCompatibility {
 	 */
 	private $payment_method_currency_map = [
 		'giropay'    => 'EUR',
-		// TODO: P24 also supports PLN, how do we add that?
 		'p24'        => 'EUR',
 		'sepa_debit' => 'EUR',
 		'sofort'     => 'EUR',
