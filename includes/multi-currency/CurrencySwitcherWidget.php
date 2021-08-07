@@ -121,11 +121,12 @@ class CurrencySwitcherWidget extends WC_Widget {
 	 * @return void Displays HTML of currency <option>
 	 */
 	private function display_currency_option( Currency $currency, bool $with_symbol, bool $with_flag ) {
-		$code     = $currency->get_code();
-		$text     = $code;
-		$selected = $this->multi_currency->get_selected_currency()->code === $code ? ' selected' : '';
+		$code        = $currency->get_code();
+		$same_symbol = html_entity_decode( $currency->get_symbol() ) === $code;
+		$text        = $code;
+		$selected    = $this->multi_currency->get_selected_currency()->code === $code ? ' selected' : '';
 
-		if ( $with_symbol ) {
+		if ( $with_symbol && ! $same_symbol ) {
 			$text = $currency->get_symbol() . ' ' . $text;
 		}
 		if ( $with_flag ) {

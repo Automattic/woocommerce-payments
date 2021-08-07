@@ -41,6 +41,13 @@ class MultiCurrency {
 	protected static $instance = null;
 
 	/**
+	 * Static flag to show if the currencies initialization has been completed
+	 *
+	 * @var bool
+	 */
+	protected static $is_initialized = false;
+
+	/**
 	 * Compatibility instance.
 	 *
 	 * @var Compatibility
@@ -108,7 +115,7 @@ class MultiCurrency {
 	 *
 	 * @var array
 	 */
-	protected $available_currencies;
+	protected $available_currencies = [];
 
 	/**
 	 * The default currency.
@@ -122,7 +129,7 @@ class MultiCurrency {
 	 *
 	 * @var array
 	 */
-	protected $enabled_currencies;
+	protected $enabled_currencies = [];
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -176,6 +183,11 @@ class MultiCurrency {
 		$this->compatibility        = new Compatibility( $this, $this->utils );
 		$this->analytics            = new Analytics( $this );
 
+		if ( is_admin() ) {
+			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
+			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+		}
+
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
@@ -196,6 +208,10 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init() {
+		if ( ! $this->payments_account->is_stripe_connected() ) {
+			return;
+		}
+
 		$store_currency_updated = $this->check_store_currency_for_change();
 
 		// If the store currency has been updated, clear the cache to make sure we fetch fresh rates from the server.
@@ -220,7 +236,6 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
 		// Check to make sure there are enabled currencies, then for Storefront being active, and then load the integration.
@@ -230,9 +245,10 @@ class MultiCurrency {
 		}
 
 		if ( is_admin() ) {
-			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
+
+		static::$is_initialized = true;
 	}
 
 	/**
@@ -241,6 +257,10 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init_rest_api() {
+		if ( ! $this->payments_account->is_stripe_connected() ) {
+			return;
+		}
+
 		$api_controller = new RestController( \WC_Payments::create_api_client() );
 		$api_controller->register_routes();
 	}
@@ -251,6 +271,10 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init_widgets() {
+		if ( ! $this->payments_account->is_stripe_connected() ) {
+			return;
+		}
+
 		$this->currency_switcher_widget = new CurrencySwitcherWidget( $this, $this->compatibility );
 		register_widget( $this->currency_switcher_widget );
 	}
@@ -263,7 +287,12 @@ class MultiCurrency {
 	 * @return array The new settings pages.
 	 */
 	public function init_settings_pages( $settings_pages ): array {
-		$settings_pages[] = new Settings( $this );
+		if ( $this->payments_account->is_stripe_connected() ) {
+			$settings_pages[] = new Settings( $this );
+		} else {
+			$settings_pages[] = new SettingsOnboardCta( $this );
+		}
+
 		return $settings_pages;
 	}
 
@@ -574,6 +603,10 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function update_selected_currency_by_url() {
+		if ( ! $this->payments_account->is_stripe_connected() ) {
+			return;
+		}
+
 		if ( ! isset( $_GET['currency'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
@@ -587,6 +620,10 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function update_selected_currency_by_geolocation() {
+		if ( ! $this->payments_account->is_stripe_connected() ) {
+			return;
+		}
+
 		// We only want to automatically set the currency if it's already not set.
 		if ( $this->is_using_auto_currency_switching() && ! $this->get_stored_currency_code() ) {
 			$currency = $this->geolocation->get_currency_by_customer_location();
@@ -992,5 +1029,14 @@ class MultiCurrency {
 			[ 'wc-components' ],
 			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
 		);
+	}
+
+	/**
+	 * Returns if the currency initialization are completed
+	 *
+	 * @return  bool    If the initializations have been completedÎ
+	 */
+	public static function is_initialized() : bool {
+		return static::$is_initialized;
 	}
 }
