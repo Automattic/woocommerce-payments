@@ -109,7 +109,9 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect(
 			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
-		expect( screen.getByRole( 'checkbox', { name: 'p24' } ) ).toBeChecked();
+		expect(
+			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
+		).toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
@@ -119,7 +121,9 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		// un-checking the checkboxes and clicking "add payment methods" should display a notice
 		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
-		userEvent.click( screen.getByRole( 'checkbox', { name: 'p24' } ) );
+		userEvent.click(
+			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
+		);
 		userEvent.click(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		);
@@ -157,7 +161,9 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect(
 			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
-		expect( screen.getByRole( 'checkbox', { name: 'p24' } ) ).toBeChecked();
+		expect(
+			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
+		).toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
@@ -185,7 +191,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		const setCompletedMock = jest.fn();
 		const updateEnabledPaymentMethodsMock = jest.fn();
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay' ],
+			[ 'card', 'giropay', 'p24' ],
 			updateEnabledPaymentMethodsMock,
 		] );
 		render(
@@ -202,14 +208,18 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect(
 			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
-		expect( screen.getByRole( 'checkbox', { name: 'p24' } ) ).toBeChecked();
+		expect(
+			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
+		).toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
 
 		// un-check giropay
 		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
-		userEvent.click( screen.getByRole( 'checkbox', { name: 'p24' } ) );
+		userEvent.click(
+			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
+		);
 		userEvent.click( screen.getByText( 'Add payment methods' ) );
 
 		// giropay is removed

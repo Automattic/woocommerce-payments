@@ -54,7 +54,7 @@ describe( 'PaymentMethodIcon', () => {
 	test( 'renders p24 payment method icon and label', () => {
 		render( <PaymentMethodIcon name="p24" showName /> );
 
-		const label = screen.queryByText( 'P24' );
+		const label = screen.queryByText( 'Przelewy24 (P24)' );
 		expect( label ).toBeInTheDocument();
 	} );
 	test( 'renders nothing when using an invalid icon name', () => {

@@ -83,7 +83,7 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( giroPayCheckbox ).not.toBeChecked();
 
 		const p24Checkbox = screen.getByRole( 'checkbox', {
-			name: 'P24',
+			name: 'Przelewy24 (P24)',
 		} );
 		expect( p24Checkbox ).not.toBeChecked();
 
@@ -147,7 +147,7 @@ describe( 'PaymentMethodsSelector', () => {
 			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
 		).toBeNull();
 		expect(
-			screen.queryByRole( 'checkbox', { name: 'P24' } )
+			screen.queryByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
 		).not.toBeNull();
 	} );
 
@@ -234,7 +234,7 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( giroPayCheckbox );
 
 		const p24Checkbox = screen.getByRole( 'checkbox', {
-			name: 'P24',
+			name: 'Przelewy24 (P24)',
 		} );
 		user.click( p24Checkbox );
 

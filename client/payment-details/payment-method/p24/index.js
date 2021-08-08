@@ -46,14 +46,13 @@ const formatPaymentMethodDetails = ( charge ) => {
  * Placeholders to display while loading.
  */
 const paymentMethodPlaceholders = {
+	id: 'id placeholder',
 	bank: 'bank name placeholder',
 	reference: 'reference placeholder',
-	id: 'id placeholder',
 	verifiedName: 'verified_name placeholder',
 	customerName: 'customer_name placeholder',
 	email: 'email placeholder',
 	formattedAddress: 'address placeholder',
-	country: 'country placeholder',
 };
 
 const P24Details = ( { charge = {}, isLoading } ) => {

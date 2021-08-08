@@ -107,7 +107,7 @@ describe( 'PaymentMethods', () => {
 
 		const giropay = screen.getByLabelText( 'giropay' );
 		const sofort = screen.getByLabelText( 'Sofort' );
-		const p24 = screen.getByLabelText( 'P24' );
+		const p24 = screen.getByLabelText( 'Przelewy24 (P24)' );
 		[ giropay, sofort, p24 ].forEach( ( method ) => {
 			expect( method.closest( 'ul' ) ).toHaveClass(
 				'payment-methods__available-methods'

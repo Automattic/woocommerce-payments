@@ -54,13 +54,15 @@ describe( 'PaymentMethodsCheckboxes', () => {
 
 		userEvent.click( sepa.getByRole( 'checkbox' ) );
 		userEvent.click( giropay.getByRole( 'checkbox' ) );
+		userEvent.click( p24.getByRole( 'checkbox' ) );
 
-		expect( handleChange ).toHaveBeenCalledTimes( 2 );
+		expect( handleChange ).toHaveBeenCalledTimes( 3 );
 		expect( handleChange ).toHaveBeenNthCalledWith(
 			1,
 			'sepa_debit',
 			false
 		);
 		expect( handleChange ).toHaveBeenNthCalledWith( 2, 'giropay', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 3, 'p24', true );
 	} );
 } );

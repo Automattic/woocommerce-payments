@@ -130,7 +130,12 @@ describe( 'SetupComplete', () => {
 				value={ {
 					completedTasks: {
 						'add-payment-methods': {
-							initialMethods: [ 'card', 'giropay', 'sofort' ],
+							initialMethods: [
+								'card',
+								'giropay',
+								'sofort',
+								'p24',
+							],
 						},
 					},
 				} }
