@@ -68,7 +68,7 @@ const EnabledCurrencies = () => {
 								/>
 							) ) }
 						{ isLoading &&
-							[ 1, 2, 3, 4, 5, 6, 7, 8 ].map( ( i ) => (
+							[ 1, 2, 3, 4, 5 ].map( ( i ) => (
 								<EnabledCurrenciesListItemPlaceholder
 									key={ 'loadable-placeholder-' + i }
 									isLoading={ 1 }
