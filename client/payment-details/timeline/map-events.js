@@ -286,8 +286,14 @@ const feeBreakdown = ( event ) => {
 	) => {
 		return (
 			<ul className="discount-split-list">
-				<li>Variable fee: { percentageRateFormatted }%</li>
-				<li>Fixed fee: { fixedRateFormatted }</li>
+				<li>
+					{ __( 'Variable fee: ', 'woocommerce-payments' ) }
+					{ percentageRateFormatted }%
+				</li>
+				<li>
+					{ __( 'Fixed fee: ', 'woocommerce-payments' ) }
+					{ fixedRateFormatted }
+				</li>
 			</ul>
 		);
 	};
