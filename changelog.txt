@@ -1,6 +1,7 @@
 *** WooCommerce Payments Changelog ***
 
 = 2.9.0 - 2021-xx-xx =
+* Add - *Early access*: allow your store to collect payments with iDEAL. Enable the feature in settings!
 
 = 2.8.2 - 2021-08-05 =
 * Fix - If account is disconnected or not set up do not display onboarding task and UPE inbox note.
