@@ -48,13 +48,11 @@ const formatPaymentMethodDetails = ( charge ) => {
  * Placeholders to display while loading.
  */
 const paymentMethodPlaceholders = {
-	bankCode: 'bank code placeholder',
+	id: 'id placeholder',
 	bankName: 'bank name placeholder',
 	bic: 'bic placeholder',
 	last4: '0000',
 	verifiedName: 'verified name placeholder',
-	fingerprint: 'fingerprint placeholder',
-	id: 'id placeholder',
 	name: 'name placeholder',
 	email: 'email placeholder',
 	formattedAddress: 'address placeholder',
