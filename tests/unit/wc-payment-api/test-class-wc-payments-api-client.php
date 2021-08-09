@@ -840,6 +840,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					'test_mode' => false,
 					'amount'    => $expected_amount,
 					'currency'  => $currency_code,
+					'metadata'  => [],
 					'level3'    => [],
 				]
 			),
@@ -894,6 +895,14 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$expected_status         = 'succeeded';
 		$selected_payment_method = 'giropay';
 		$save_payment_method     = true;
+		$metadata                = [
+			'customer_name'  => 'Testy Testerson',
+			'customer_email' => 'test@test.com',
+			'site_url'       => 'http://example.org',
+			'order_id'       => 1,
+			'order_key'      => 'test_key',
+			'payment_type'   => 'single',
+		];
 		$level3_data             = [
 			'merchant_reference' => 'abc123',
 			'line_items'         => [
@@ -928,6 +937,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					'test_mode'            => false,
 					'amount'               => $expected_amount,
 					'currency'             => $currency_code,
+					'metadata'             => $metadata,
 					'level3'               => $level3_data,
 					'payment_method_types' => [ 'giropay' ],
 					'customer'             => $customer_id,
@@ -968,6 +978,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			$currency_code,
 			$save_payment_method,
 			$customer_id,
+			$metadata,
 			$level3_data,
 			$selected_payment_method
 		);
