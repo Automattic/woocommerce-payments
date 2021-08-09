@@ -168,6 +168,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			CC_Payment_Method::class,
 			Giropay_Payment_Method::class,
 			Sofort_Payment_Method::class,
+			Bancontact_Payment_Method::class,
 		];
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
@@ -779,6 +780,9 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$sofort_details            = [
 			'type' => 'sofort',
 		];
+		$bancontact_details        = [
+			'type' => 'bancontact',
+		];
 
 		$charge_payment_method_details  = [
 			$visa_credit_details,
@@ -786,6 +790,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			$mastercard_credit_details,
 			$giropay_details,
 			$sofort_details,
+			$bancontact_details,
 		];
 		$expected_payment_method_titles = [
 			'Visa credit card',
@@ -793,6 +798,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			'Mastercard credit card',
 			'giropay',
 			'Sofort',
+			'Bancontact',
 		];
 
 		foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
@@ -832,11 +838,15 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$mock_sofort_details     = [
 			'type' => 'sofort',
 		];
+		$mock_bancontact_details = [
+			'type' => 'bancontact',
+		];
 
 		$this->set_cart_contains_subscription_items( false );
-		$card_method    = $this->mock_payment_methods['card'];
-		$giropay_method = $this->mock_payment_methods['giropay'];
-		$sofort_method  = $this->mock_payment_methods['sofort'];
+		$card_method       = $this->mock_payment_methods['card'];
+		$giropay_method    = $this->mock_payment_methods['giropay'];
+		$sofort_method     = $this->mock_payment_methods['sofort'];
+		$bancontact_method = $this->mock_payment_methods['bancontact'];
 
 		$this->assertEquals( 'card', $card_method->get_id() );
 		$this->assertEquals( 'Credit card / debit card', $card_method->get_title() );
@@ -857,35 +867,46 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Sofort', $sofort_method->get_title( $mock_sofort_details ) );
 		$this->assertTrue( $sofort_method->is_enabled_at_checkout() );
 		$this->assertFalse( $sofort_method->is_reusable() );
+
+		$this->assertEquals( 'bancontact', $bancontact_method->get_id() );
+		$this->assertEquals( 'Bancontact', $bancontact_method->get_title() );
+		$this->assertEquals( 'Bancontact', $bancontact_method->get_title( $mock_bancontact_details ) );
+		$this->assertTrue( $bancontact_method->is_enabled_at_checkout() );
+		$this->assertFalse( $bancontact_method->is_reusable() );
 	}
 
 	public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
 		$this->set_cart_contains_subscription_items( true );
-		$card_method    = $this->mock_payment_methods['card'];
-		$giropay_method = $this->mock_payment_methods['giropay'];
-		$sofort_method  = $this->mock_payment_methods['sofort'];
+		$card_method       = $this->mock_payment_methods['card'];
+		$giropay_method    = $this->mock_payment_methods['giropay'];
+		$sofort_method     = $this->mock_payment_methods['sofort'];
+		$bancontact_method = $this->mock_payment_methods['bancontact'];
 
 		$this->assertTrue( $card_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_enabled_at_checkout() );
 		$this->assertFalse( $sofort_method->is_enabled_at_checkout() );
+		$this->assertFalse( $bancontact_method->is_enabled_at_checkout() );
 	}
 
 	public function test_only_valid_payment_methods_returned_for_currency() {
-		$card_method    = $this->mock_payment_methods['card'];
-		$giropay_method = $this->mock_payment_methods['giropay'];
-		$sofort_method  = $this->mock_payment_methods['sofort'];
+		$card_method       = $this->mock_payment_methods['card'];
+		$giropay_method    = $this->mock_payment_methods['giropay'];
+		$sofort_method     = $this->mock_payment_methods['sofort'];
+		$bancontact_method = $this->mock_payment_methods['bancontact'];
 
 		self::$mock_site_currency = 'EUR';
 
 		$this->assertTrue( $card_method->is_currency_valid() );
 		$this->assertTrue( $giropay_method->is_currency_valid() );
 		$this->assertTrue( $sofort_method->is_currency_valid() );
+		$this->assertTrue( $bancontact_method->is_currency_valid() );
 
 		self::$mock_site_currency = 'USD';
 
 		$this->assertTrue( $card_method->is_currency_valid() );
 		$this->assertFalse( $giropay_method->is_currency_valid() );
 		$this->assertFalse( $sofort_method->is_currency_valid() );
+		$this->assertFalse( $bancontact_method->is_currency_valid() );
 
 		self::$mock_site_currency = '';
 	}
