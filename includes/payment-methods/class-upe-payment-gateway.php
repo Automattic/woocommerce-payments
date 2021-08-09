@@ -463,7 +463,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$currency               = $intent->get_currency();
 				$payment_method_id      = $intent->get_payment_method_id();
 				$payment_method_details = $intent->get_payment_method_details();
-				$payment_method_type    = $payment_method_details['type'];
+				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
 				$error                  = $intent->get_last_payment_error();
 			} else {
 				$intent                 = $this->payments_api_client->get_setup_intent( $intent_id );
@@ -474,7 +474,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_method_id      = $intent['payment_method'];
 				$payment_method_details = false;
 				$payment_method_options = array_keys( $intent['payment_method_options'] );
-				$payment_method_type    = $payment_method_options[0];
+				$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
 				$error                  = $intent['last_setup_error'];
 			}
 
@@ -501,6 +501,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 
 				$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
+				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 
 				if ( 'requires_action' === $status ) {
@@ -637,6 +638,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$payment_method_title = $this->payment_methods[ $payment_method_type ]->get_title( $payment_method_details );
 
+		$order->set_payment_method( self::GATEWAY_ID );
 		$order->set_payment_method_title( $payment_method_title );
 		$order->save();
 	}
@@ -736,6 +738,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$methods[] = 'giropay';
 		$methods[] = 'sofort';
+		$methods[] = 'ideal';
 
 		return array_values(
 			apply_filters(

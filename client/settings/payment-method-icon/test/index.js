@@ -21,8 +21,13 @@ describe( 'PaymentMethodIcon', () => {
 		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
 	} );
 
-	test( 'renders giropay payment method icon', () => {
+	test( 'renders sofort payment method icon', () => {
 		const { container } = render( <PaymentMethodIcon name="sofort" /> );
+		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+	} );
+
+	test( 'renders iDEAL payment method icon', () => {
+		const { container } = render( <PaymentMethodIcon name="ideal" /> );
 		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
 	} );
 
@@ -40,12 +45,20 @@ describe( 'PaymentMethodIcon', () => {
 		expect( label ).toBeInTheDocument();
 	} );
 
-	test( 'renders giropay payment method icon and label', () => {
+	test( 'renders sofort payment method icon and label', () => {
 		render( <PaymentMethodIcon name="sofort" showName /> );
 
 		const label = screen.queryByText( 'Sofort' );
 		expect( label ).toBeInTheDocument();
 	} );
+
+	test( 'renders iDEAL payment method icon and label', () => {
+		render( <PaymentMethodIcon name="ideal" showName /> );
+
+		const label = screen.queryByText( 'iDEAL' );
+		expect( label ).toBeInTheDocument();
+	} );
+
 	test( 'renders nothing when using an invalid icon name', () => {
 		const { container } = render( <PaymentMethodIcon name="wrong" /> );
 
