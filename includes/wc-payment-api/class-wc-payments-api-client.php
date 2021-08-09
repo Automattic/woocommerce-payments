@@ -259,6 +259,7 @@ class WC_Payments_API_Client {
 	 * @param string $currency_code             - Currency to charge in.
 	 * @param bool   $save_payment_method       - Whether to setup payment intent for future usage.
 	 * @param string $customer_id               - Stripe customer to associate payment intent with.
+	 * @param array  $metadata                  - Meta data values to be sent along with payment intent creation.
 	 * @param array  $level3                    - Level 3 data.
 	 * @param string $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
 	 *
@@ -271,12 +272,14 @@ class WC_Payments_API_Client {
 		$currency_code,
 		$save_payment_method = false,
 		$customer_id = '',
+		$metadata = [],
 		$level3 = [],
 		$selected_upe_payment_type = ''
 	) {
 		$request = [
 			'amount'   => $amount,
 			'currency' => $currency_code,
+			'metadata' => $metadata,
 			'level3'   => $level3,
 		];
 

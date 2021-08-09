@@ -12,6 +12,7 @@ use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\Constants\Payment_Type;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
@@ -340,6 +341,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					strtolower( $currency ),
 					$save_payment_method,
 					$customer_id,
+					$this->get_metadata_from_order( $order, Payment_Type::SINGLE() ),
 					$this->get_level3_data_from_order( $order ),
 					$selected_upe_payment_type
 				);
