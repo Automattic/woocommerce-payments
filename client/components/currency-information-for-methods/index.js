@@ -1,16 +1,16 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Notice } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
 /**
  * Internal dependencies
  */
 import { useCurrencies, useEnabledCurrencies } from '../../data';
-import './styles.scss';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
+import InlineNotice from '../inline-notice';
 
 const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 	const { isLoading: isLoadingCurrencyInformation } = useCurrencies();
@@ -37,11 +37,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 	}
 
 	return (
-		<Notice
-			spokenMessage=""
-			isDismissible={ false }
-			className="wcpay-currency-notice"
-		>
+		<InlineNotice status="info" isDismissible={ false }>
 			{ interpolateComponents( {
 				mixedString: __(
 					"The selected methods require an additional currency, so {{strong}}we'll add Euro (€) to your store{{/strong}}. " +
@@ -52,8 +48,19 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 					strong: <strong />,
 				},
 			} ) }
-		</Notice>
+		</InlineNotice>
 	);
 };
 
-export default CurrencyInformationForMethods;
+const CurrencyInformationForMethodsWrapper = ( props ) => {
+	const {
+		featureFlags: { multiCurrency },
+	} = useContext( WCPaySettingsContext );
+
+	// prevents loading currency data when the feature flag is disabled
+	if ( ! multiCurrency ) return null;
+
+	return <CurrencyInformationForMethods { ...props } />;
+};
+
+export default CurrencyInformationForMethodsWrapper;

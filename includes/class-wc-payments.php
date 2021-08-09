@@ -104,6 +104,13 @@ class WC_Payments {
 	private static $action_scheduler_service;
 
 	/**
+	 * Instance of WC_Payments_Localization_Service, created in init function
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private static $localization_service;
+
+	/**
 	 * Instance of WC_Payments_Fraud_Service, created in init function
 	 *
 	 * @var WC_Payments_Fraud_Service
@@ -193,6 +200,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
 		include_once __DIR__ . '/class-experimental-abtest.php';
+		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -208,6 +216,7 @@ class WC_Payments {
 		self::$remote_note_service      = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
+		self::$localization_service     = new WC_Payments_Localization_Service();
 
 		$card_class    = CC_Payment_Gateway::class;
 		$upe_class     = UPE_Payment_Gateway::class;
@@ -259,7 +268,12 @@ class WC_Payments {
 		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
 
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
+		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
+
+		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
+		WC_Payments_Explicit_Price_Formatter::init();
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-translations-loader.php';
 		WC_Payments_Translations_Loader::init();
@@ -707,7 +721,7 @@ class WC_Payments {
 		$conn_tokens_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
-		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway );
+		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway, self::$customer_service );
 		$orders_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
@@ -781,14 +795,28 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Localization_Service
+	 *
+	 * @return WC_Payments_Localization_Service Localization Service instance
+	 */
+	public static function get_localization_service() {
+		return self::$localization_service;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
+		if ( WC_Payments_Features::is_upe_enabled() ) {
+			require_once __DIR__ . '/class-wc-payments-upe-blocks-payment-method.php';
+			$payment_method_registry->register( new WC_Payments_UPE_Blocks_Payment_Method() );
+		} else {
+			$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
+		}
 
-		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
 	}
 
 	/**
@@ -831,6 +859,7 @@ class WC_Payments {
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
+			WC_Payments_Notes_Additional_Payment_Methods::set_account( self::get_account_service() );
 			WC_Payments_Notes_Additional_Payment_Methods::possibly_add_note();
 			WC_Payments_Notes_Additional_Payment_Methods::maybe_enable_upe_feature_flag();
 		}

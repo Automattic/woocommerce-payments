@@ -77,6 +77,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'get_setup_intent',
 					'get_payment_method',
 					'refund_charge',
+					'get_charge',
 				]
 			)
 			->getMock();
@@ -255,6 +256,33 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'uncaptured-payment', $result->get_error_code() );
+	}
+
+	public function test_process_refund_on_invalid_amount() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		$order_id = $order->get_id();
+
+		$result = $this->wcpay_gateway->process_refund( $order_id, 0 );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertEquals( 'invalid-amount', $result->get_error_code() );
+
+		$result = $this->wcpay_gateway->process_refund( $order_id, -5 );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertEquals( 'invalid-amount', $result->get_error_code() );
+
+		$result = $this->wcpay_gateway->process_refund( $order_id, $order->get_total() + 1 );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertEquals( 'invalid-amount', $result->get_error_code() );
 	}
 
 	public function test_process_refund_success_does_not_set_refund_failed_meta() {
@@ -1444,5 +1472,38 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( [ 'default', 'buy', 'donate', 'book' ], array_keys( $form_fields['payment_request_button_type']['options'] ) );
 		$this->assertEquals( [ 'dark', 'light', 'light-outline' ], array_keys( $form_fields['payment_request_button_theme']['options'] ) );
+	}
+
+	public function test_payment_gateway_enabled_for_supported_currency() {
+		$current_currency = strtolower( get_woocommerce_currency() );
+		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_customer_supported_currencies' )->will(
+			$this->returnValue(
+				[
+					$current_currency,
+				]
+			)
+		);
+		$this->assertTrue( $this->wcpay_gateway->is_available_for_current_currency() );
+	}
+
+	public function test_payment_gateway_enabled_for_empty_supported_currency_list() {
+		// We want to avoid disabling the gateway in case the API doesn't give back any currency suppported.
+		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_customer_supported_currencies' )->will(
+			$this->returnValue(
+				[]
+			)
+		);
+		$this->assertTrue( $this->wcpay_gateway->is_available_for_current_currency() );
+	}
+
+	public function test_payment_gateway_disabled_for_unsupported_currency() {
+		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_customer_supported_currencies' )->will(
+			$this->returnValue(
+				[
+					'btc',
+				]
+			)
+		);
+		$this->assertFalse( $this->wcpay_gateway->is_available_for_current_currency() );
 	}
 }

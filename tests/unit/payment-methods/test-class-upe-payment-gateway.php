@@ -32,9 +32,24 @@ use WP_User;
 use Exception;
 
 /**
+ * Overriding global function within namespace for testing
+ */
+function get_woocommerce_currency() {
+	return UPE_Payment_Gateway_Test::$mock_site_currency ? UPE_Payment_Gateway_Test::$mock_site_currency : \get_woocommerce_currency();
+}
+
+/**
  * UPE_Payment_Gateway unit tests
  */
 class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
+
+	/**
+	 * Mock site currency string
+	 *
+	 * @var string
+	 */
+	public static $mock_site_currency = '';
+
 	/**
 	 * System under test.
 	 *
@@ -124,6 +139,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 					'get_setup_intent',
 					'get_payment_method',
 					'is_server_connected',
+					'get_charge',
 				]
 			)
 			->getMock();
@@ -775,7 +791,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			'Visa credit card',
 			'Visa debit card',
 			'Mastercard credit card',
-			'Giropay',
+			'giropay',
 			'Sofort',
 		];
 
@@ -831,8 +847,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
 
 		$this->assertEquals( 'giropay', $giropay_method->get_id() );
-		$this->assertEquals( 'Giropay', $giropay_method->get_title() );
-		$this->assertEquals( 'Giropay', $giropay_method->get_title( $mock_giropay_details ) );
+		$this->assertEquals( 'giropay', $giropay_method->get_title() );
+		$this->assertEquals( 'giropay', $giropay_method->get_title( $mock_giropay_details ) );
 		$this->assertTrue( $giropay_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_reusable() );
 
@@ -852,6 +868,26 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertTrue( $card_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_enabled_at_checkout() );
 		$this->assertFalse( $sofort_method->is_enabled_at_checkout() );
+	}
+
+	public function test_only_valid_payment_methods_returned_for_currency() {
+		$card_method    = $this->mock_payment_methods['card'];
+		$giropay_method = $this->mock_payment_methods['giropay'];
+		$sofort_method  = $this->mock_payment_methods['sofort'];
+
+		self::$mock_site_currency = 'EUR';
+
+		$this->assertTrue( $card_method->is_currency_valid() );
+		$this->assertTrue( $giropay_method->is_currency_valid() );
+		$this->assertTrue( $sofort_method->is_currency_valid() );
+
+		self::$mock_site_currency = 'USD';
+
+		$this->assertTrue( $card_method->is_currency_valid() );
+		$this->assertFalse( $giropay_method->is_currency_valid() );
+		$this->assertFalse( $sofort_method->is_currency_valid() );
+
+		self::$mock_site_currency = '';
 	}
 
 	public function test_create_token_from_setup_intent_adds_token() {

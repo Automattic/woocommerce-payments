@@ -11,6 +11,7 @@ const webpackConfig = {
 		index: './client/index.js',
 		settings: './client/settings/index.js',
 		'blocks-checkout': './client/checkout/blocks/index.js',
+		'upe-blocks-checkout': './client/checkout/blocks/upe.js',
 		checkout: './client/checkout/classic/index.js',
 		upe_checkout: './client/checkout/classic/upe.js',
 		'payment-request': './client/payment-request/index.js',
@@ -18,6 +19,8 @@ const webpackConfig = {
 		tos: './client/tos/index.js',
 		'payment-gateways': './client/payment-gateways/index.js',
 		'multi-currency': './client/multi-currency/index.js',
+		'multi-currency-analytics':
+			'./client/multi-currency-analytics/index.js',
 		order: './client/order/index.js',
 	},
 	output: {
@@ -81,6 +84,9 @@ const webpackConfig = {
 	resolve: {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
 		modules: [ path.join( __dirname, 'client' ), 'node_modules' ],
+		alias: {
+			wcpay: path.resolve( __dirname, 'client' ),
+		},
 	},
 	plugins: [
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),

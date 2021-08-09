@@ -15,7 +15,7 @@ import PaymentMethods from '..';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
-} from 'data';
+} from 'wcpay/data';
 import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
 import WcPayUpeContext from '../../settings/wcpay-upe-toggle/context';
 
@@ -245,9 +245,9 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		expect( disableUPEButton ).toBeInTheDocument();
-		expect( screen.queryByText( 'Payment methods' ) ).toHaveTextContent(
-			'Payment methods Early access'
-		);
+		expect(
+			screen.queryByText( 'Payment methods' ).parentElement
+		).toHaveTextContent( 'Payment methods Early access' );
 	} );
 
 	test( 'Does not render the feedback elements when UPE is disabled', () => {
