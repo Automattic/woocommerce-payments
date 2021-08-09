@@ -21,7 +21,7 @@ import {
 import InstantDepositButton from 'deposits/instant-deposits';
 import DepositsInformationBlock from './block';
 import { formatCurrency, formatCurrencyName } from 'utils/currency';
-import { useAllDeposistsOverviews } from 'data';
+import { useAllDeposistsOverviews } from 'wcpay/data';
 
 import './style.scss';
 

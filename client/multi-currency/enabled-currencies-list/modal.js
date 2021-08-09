@@ -3,7 +3,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Button, Modal } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { useState, useCallback, useEffect, useRef } from '@wordpress/element';
 
 /**
@@ -13,9 +13,10 @@ import {
 	useAvailableCurrencies,
 	useEnabledCurrencies,
 	useDefaultCurrency,
-} from 'data';
+} from 'wcpay/data';
 import EnabledCurrenciesModalCheckboxList from './modal-checkbox-list';
 import EnabledCurrenciesModalCheckbox from './modal-checkbox';
+import ConfirmationModal from '../../components/confirmation-modal';
 import Search from 'components/search';
 import './style.scss';
 
@@ -134,13 +135,32 @@ const EnabledCurrenciesModal = ( { className } ) => {
 	return (
 		<>
 			{ isEnabledCurrenciesModalOpen && (
-				<Modal
+				<ConfirmationModal
 					title={ __(
 						'Add enabled currencies',
 						'woocommerce-payments'
 					) }
 					onRequestClose={ handleAddSelectedCancelClick }
 					className="add-enabled-currencies-modal"
+					actions={
+						<>
+							<Button
+								isSecondary
+								onClick={ handleAddSelectedCancelClick }
+							>
+								{ __( 'Cancel', 'woocommerce-payments' ) }
+							</Button>
+							<Button
+								isPrimary
+								onClick={ handleAddSelectedClick }
+							>
+								{ __(
+									'Update selected',
+									'woocommerce-payments'
+								) }
+							</Button>
+						</>
+					}
 				>
 					<div className="add-enabled-currencies-modal__search">
 						<Search
@@ -182,18 +202,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 							) ) }
 						</EnabledCurrenciesModalCheckboxList>
 					</div>
-					<div className="add-enabled-currencies-modal__footer">
-						<Button
-							isSecondary
-							onClick={ handleAddSelectedCancelClick }
-						>
-							{ __( 'Cancel', 'woocommerce-payments' ) }
-						</Button>
-						<Button isPrimary onClick={ handleAddSelectedClick }>
-							{ __( 'Update selected', 'woocommerce-payments' ) }
-						</Button>
-					</div>
-				</Modal>
+				</ConfirmationModal>
 			) }
 			<Button
 				isSecondary

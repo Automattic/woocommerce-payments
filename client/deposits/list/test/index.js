@@ -10,9 +10,9 @@ import { updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { DepositsList } from '../';
-import { useDeposits, useDepositsSummary } from 'data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
 	useDepositsSummary: jest.fn(),
 } ) );
@@ -59,6 +59,26 @@ describe( 'Deposits list', () => {
 				count: 2,
 				total: 5000,
 				store_currencies: [ 'usd', 'eur' ],
+			},
+			isLoading: false,
+		} );
+
+		const { container } = render( <DepositsList /> );
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders correctly a single deposit', () => {
+		useDeposits.mockReturnValue( {
+			deposits: mockDeposits,
+			depositsCount: 1,
+			isLoading: false,
+		} );
+
+		useDepositsSummary.mockReturnValue( {
+			depositsSummary: {
+				count: 1,
+				total: 5000,
+				store_currencies: [ 'usd' ],
 			},
 			isLoading: false,
 		} );

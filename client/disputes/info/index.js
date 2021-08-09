@@ -15,7 +15,7 @@ import OrderLink from 'components/order-link';
 import { getDetailsURL } from 'components/details-link';
 import { reasons } from '../strings';
 import { formatStringValue } from 'utils';
-import { formatCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 import Loadable from 'components/loadable';
 
@@ -65,7 +65,7 @@ const Info = ( { dispute, isLoading } ) => {
 					'M j, Y',
 					moment( dispute.created * 1000 ).toISOString()
 				),
-				amount: formatCurrency(
+				amount: formatExplicitCurrency(
 					dispute.amount || 0,
 					dispute.currency || 'USD'
 				),

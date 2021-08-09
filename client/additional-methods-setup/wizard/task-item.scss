@@ -16,7 +16,7 @@
 	&__top-border,
 	&__body {
 		min-height: 16px;
-		border-left: 1px solid #c3c4c7;
+		border-left: 1px solid #e0e0e0;
 		margin: 0 11px;
 	}
 
@@ -36,6 +36,15 @@
 
 	&__title {
 		padding: 0 16px;
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+
+		> * {
+			&:not( :last-child ) {
+				margin-right: 4px;
+			}
+		}
 	}
 
 	&__icon-wrapper {
@@ -44,7 +53,7 @@
 		height: 24px;
 		padding: 0;
 		border-radius: 9999px;
-		border: 1px solid #c3c4c7;
+		border: 1px solid #e0e0e0;
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -98,6 +107,11 @@
 
 		&.is-muted-color {
 			color: $gray-700;
+		}
+
+		.components-external-link svg {
+			width: 1em;
+			height: 1em;
 		}
 	}
 }

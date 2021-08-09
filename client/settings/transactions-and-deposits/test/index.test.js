@@ -12,12 +12,14 @@ import {
 	useGetSavingError,
 	useAccountStatementDescriptor,
 	useManualCapture,
+	useSavedCards,
 } from '../../../data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
 	useManualCapture: jest.fn(),
 	useGetSavingError: jest.fn(),
+	useSavedCards: jest.fn(),
 } ) );
 
 describe( 'TransactionsAndDeposits', () => {
@@ -25,6 +27,7 @@ describe( 'TransactionsAndDeposits', () => {
 		useAccountStatementDescriptor.mockReturnValue( [ '', jest.fn() ] );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		useGetSavingError.mockReturnValue( null );
+		useSavedCards.mockReturnValue( [ false, jest.fn() ] );
 	} );
 
 	it( 'renders', () => {

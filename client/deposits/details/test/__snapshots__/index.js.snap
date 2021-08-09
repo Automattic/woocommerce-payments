@@ -46,7 +46,7 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
         <li
           class="wcpay-deposit-amount"
         >
-          $20.00
+          $20.00 USD
         </li>
       </ul>
     </div>
@@ -125,7 +125,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
               <div
                 class="woocommerce-summary__item-value"
               >
-                $20.30
+                $20.30 USD
               </div>
             </div>
           </div>
@@ -169,7 +169,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
               <div
                 class="woocommerce-summary__item-value wcpay-deposit-net"
               >
-                $20.00
+                $20.00 USD
               </div>
             </div>
           </div>

@@ -69,8 +69,6 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 			[ 'woocommerce_coupon_get_minimum_amount', 'get_coupon_min_max_amount' ],
 			[ 'woocommerce_coupon_get_maximum_amount', 'get_coupon_min_max_amount' ],
 			[ 'woocommerce_new_order', 'add_order_meta' ],
-			[ 'woocommerce_subscriptions_product_price', 'get_product_price' ],
-			[ 'woocommerce_subscriptions_product_sign_up_fee', 'get_product_price' ],
 		];
 	}
 
@@ -245,11 +243,25 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$this->assertSame( '10', $this->frontend_prices->get_coupon_amount( '10', $percent_coupon ) );
 	}
 
+	public function test_get_coupon_amount_skips_conversion_on_compatibility() {
+		$coupon = new WC_Coupon();
+		$this->mock_compatibility
+			->method( 'should_convert_coupon_amount' )
+			->with( $coupon )
+			->willReturn( false );
+		$this->assertSame( '10', $this->frontend_prices->get_coupon_amount( '10', $coupon ) );
+	}
+
 	public function test_get_coupon_amount_converts_fixed_cart_amount() {
 		$this->mock_multi_currency->method( 'get_price' )->with( 10.0, 'coupon' )->willReturn( 25.0 );
 
 		$fixed_cart_coupon = new WC_Coupon();
 		$fixed_cart_coupon->set_discount_type( 'fixed_cart' );
+
+		$this->mock_compatibility
+			->method( 'should_convert_coupon_amount' )
+			->with( $fixed_cart_coupon )
+			->willReturn( true );
 
 		$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', $fixed_cart_coupon ) );
 	}

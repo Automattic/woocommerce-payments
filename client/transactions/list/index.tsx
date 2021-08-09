@@ -7,7 +7,7 @@ import * as React from 'react';
 import { uniq } from 'lodash';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
-import { __ } from '@wordpress/i18n';
+import { __, _n } from '@wordpress/i18n';
 import moment from 'moment';
 import {
 	TableCard,
@@ -38,7 +38,7 @@ import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { formatStringValue } from 'utils';
-import { formatCurrency } from 'utils/currency';
+import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
 import autocompleter from 'transactions/autocompleter';
@@ -304,7 +304,9 @@ export const TransactionsList = (
 			},
 			net: {
 				value: txn.net / 100,
-				display: clickable( formatCurrency( txn.net, currency ) ),
+				display: clickable(
+					formatExplicitCurrency( txn.net, currency )
+				),
 			},
 			risk_level: {
 				value: calculateRiskMapping( txn.risk_level ),
@@ -388,16 +390,24 @@ export const TransactionsList = (
 	if ( isTransactionsSummaryDataLoaded ) {
 		summary = [
 			{
-				label: __( 'transactions', 'woocommerce-payments' ),
+				label: _n(
+					'transaction',
+					'transactions',
+					// We've already checked that `.count` is not undefined, but TypeScript doesn't detect
+					// that so we remove the `undefined` in the type manually.
+					transactionsSummary.count as number,
+					'woocommerce-payments'
+				),
 				value: `${ transactionsSummary.count }`,
 			},
 		];
 
-		if ( isSingleCurrency || isCurrencyFiltered ) {
+		const hasTransactions = ( transactionsSummary.count as number ) > 0;
+		if ( hasTransactions && ( isSingleCurrency || isCurrencyFiltered ) ) {
 			summary.push(
 				{
 					label: __( 'total', 'woocommerce-payments' ),
-					value: `${ formatCurrency(
+					value: `${ formatExplicitCurrency(
 						// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
 						// that so we remove the `undefined` in the type manually.
 						transactionsSummary.total as number,
@@ -413,7 +423,7 @@ export const TransactionsList = (
 				},
 				{
 					label: __( 'net', 'woocommerce-payments' ),
-					value: `${ formatCurrency(
+					value: `${ formatExplicitCurrency(
 						transactionsSummary.net ?? 0,
 						transactionsSummary.currency
 					) }`,
