@@ -41,6 +41,13 @@ class MultiCurrency {
 	protected static $instance = null;
 
 	/**
+	 * Static flag to show if the currencies initialization has been completed
+	 *
+	 * @var bool
+	 */
+	protected static $is_initialized = false;
+
+	/**
 	 * Compatibility instance.
 	 *
 	 * @var Compatibility
@@ -108,7 +115,7 @@ class MultiCurrency {
 	 *
 	 * @var array
 	 */
-	protected $available_currencies;
+	protected $available_currencies = [];
 
 	/**
 	 * The default currency.
@@ -122,7 +129,7 @@ class MultiCurrency {
 	 *
 	 * @var array
 	 */
-	protected $enabled_currencies;
+	protected $enabled_currencies = [];
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -240,6 +247,8 @@ class MultiCurrency {
 		if ( is_admin() ) {
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
+
+		static::$is_initialized = true;
 	}
 
 	/**
@@ -1020,5 +1029,14 @@ class MultiCurrency {
 			[ 'wc-components' ],
 			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
 		);
+	}
+
+	/**
+	 * Returns if the currency initialization are completed
+	 *
+	 * @return  bool    If the initializations have been completedÎ
+	 */
+	public static function is_initialized() : bool {
+		return static::$is_initialized;
 	}
 }
