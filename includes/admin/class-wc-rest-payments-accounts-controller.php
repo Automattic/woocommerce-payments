@@ -68,6 +68,11 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 			];
 		}
 
+		if ( false !== $account ) {
+			// Add extra properties to account if necessary.
+			$account['test_mode'] = WC_Payments::get_gateway()->is_in_test_mode();
+		}
+
 		return rest_ensure_response( $account );
 	}
 }
