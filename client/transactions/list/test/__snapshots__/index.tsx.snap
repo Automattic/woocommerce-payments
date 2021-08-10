@@ -425,7 +425,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-left-aligned"
+                  class="woocommerce-table__header payment-source"
                   role="columnheader"
                   scope="col"
                 >
@@ -546,7 +546,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item payment-source"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -668,7 +668,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item payment-source"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -1156,7 +1156,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-left-aligned"
+                  class="woocommerce-table__header payment-source"
                   role="columnheader"
                   scope="col"
                 >
@@ -1277,7 +1277,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item payment-source"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -1399,7 +1399,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item payment-source"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -1862,7 +1862,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-left-aligned"
+                  class="woocommerce-table__header payment-source"
                   role="columnheader"
                   scope="col"
                 >
@@ -1989,7 +1989,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item payment-source"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -2496,7 +2496,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-left-aligned"
+                  class="woocommerce-table__header payment-source"
                   role="columnheader"
                   scope="col"
                 >
@@ -2627,7 +2627,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item payment-source"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -2752,7 +2752,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   class="woocommerce-table__item"
                 />
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item payment-source"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -3255,7 +3255,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-left-aligned"
+                  class="woocommerce-table__header payment-source"
                   role="columnheader"
                   scope="col"
                 >
@@ -3376,7 +3376,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item payment-source"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -3498,7 +3498,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item payment-source"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -4001,7 +4001,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-left-aligned"
+                  class="woocommerce-table__header payment-source"
                   role="columnheader"
                   scope="col"
                 >
@@ -4122,7 +4122,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item payment-source"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -4244,7 +4244,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item payment-source"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
