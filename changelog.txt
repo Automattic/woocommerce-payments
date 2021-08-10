@@ -5,6 +5,8 @@
 * Add - Split discount line in timeline into variable fee and fixed fee.
 * Fix - Align table items according to design correctly.
 * Fix - Fix database connection error on account cache clear.
+* Fix - Fix fatal error logged when updating analytics data when account is not connected to Stripe.
+* Fix - Multi-Currency Compatibility fatal error with Subscriptions when account is not connected to Stripe.
 
 = 2.8.3 - 2021-08-10 =
 * Fix - Fix for payment request buttons when the new payment methods gateway is enabled.

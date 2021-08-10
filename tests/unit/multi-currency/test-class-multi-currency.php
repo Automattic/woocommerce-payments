@@ -620,7 +620,6 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		// Assert that the cache was correctly set with the error expiration time.
 		$this->assertEquals( time() + MINUTE_IN_SECONDS, get_option( self::CURRENCY_RETRIEVAL_ERROR_OPTION ) );
-
 	}
 
 	public function test_storefront_integration_init_with_compatible_themes() {
@@ -700,6 +699,22 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertEquals( '0.71', $refund->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) );
 		$this->assertEquals( 'USD', $refund->get_meta( '_wcpay_multi_currency_order_default_currency', true ) );
 		$this->assertEquals( '0.724', $refund->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true ) );
+	}
+
+	public function test_get_cached_currencies_with_no_stripe_connection() {
+		$this->init_multi_currency( null, false );
+		$this->assertEquals(
+			$this->mock_cached_currencies,
+			$this->multi_currency->get_cached_currencies()
+		);
+	}
+
+	public function test_get_available_currencies_returns_store_currency_with_no_stripe_connection() {
+		$expected = [
+			'USD' => new WCPay\MultiCurrency\Currency( 'USD', 1 ),
+		];
+		$this->init_multi_currency( null, false );
+		$this->assertEquals( $expected, $this->multi_currency->get_available_currencies() );
 	}
 
 	public function get_price_provider() {
