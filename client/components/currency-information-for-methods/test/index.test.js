@@ -46,7 +46,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		const { container } = render(
 			<FlagsContextWrapper multiCurrency={ false }>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay', 'p24' ] }
+					selectedMethods={ [ 'card', 'giropay', 'ideal', 'p24' ] }
 				/>
 			</FlagsContextWrapper>
 		);
@@ -61,7 +61,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		const { container } = render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay', 'p24' ] }
+					selectedMethods={ [ 'card', 'giropay', 'ideal', 'p24' ] }
 				/>
 			</FlagsContextWrapper>
 		);
@@ -84,7 +84,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		const { container } = render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'giropay', 'card', 'p24' ] }
+					selectedMethods={ [ 'giropay', 'card', 'ideal', 'p24' ] }
 				/>
 			</FlagsContextWrapper>
 		);
@@ -118,7 +118,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay', 'p24' ] }
+					selectedMethods={ [ 'card', 'giropay', 'ideal', 'p24' ] }
 				/>
 			</FlagsContextWrapper>
 		);

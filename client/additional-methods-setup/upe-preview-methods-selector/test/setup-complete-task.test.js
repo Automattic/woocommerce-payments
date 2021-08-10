@@ -28,7 +28,7 @@ describe( 'SetupComplete', () => {
 		};
 
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay', 'sofort', 'p24' ],
+			[ 'card', 'giropay', 'sofort', 'ideal', 'p24' ],
 			() => null,
 		] );
 	} );
@@ -104,6 +104,7 @@ describe( 'SetupComplete', () => {
 								'giropay',
 								'sofort',
 								'p24',
+								'ideal',
 							],
 						},
 					},
@@ -135,6 +136,7 @@ describe( 'SetupComplete', () => {
 								'giropay',
 								'sofort',
 								'p24',
+								'ideal',
 							],
 						},
 					},
@@ -179,7 +181,7 @@ describe( 'SetupComplete', () => {
 
 	it( 'renders setup complete messaging when context value says that more than one payment method has been added', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay', 'sofort', 'sepa_debit', 'p24' ],
+			[ 'card', 'giropay', 'sofort', 'sepa_debit', 'ideal', 'p24' ],
 			() => null,
 		] );
 		render(

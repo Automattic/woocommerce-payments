@@ -481,11 +481,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean Test mode enabled if true, disabled if false
 	 */
 	public function is_in_test_mode() {
-		if ( $this->is_in_dev_mode() ) {
-			return true;
-		}
-
-		return 'yes' === $this->get_option( 'test_mode' );
+		return $this->is_in_dev_mode() || 'yes' === $this->get_option( 'test_mode' );
 	}
 
 

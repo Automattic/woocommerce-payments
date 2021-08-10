@@ -16,6 +16,7 @@ import GiropayDetails from './giropay';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
+import IdealDetails from './ideal';
 
 const detailsComponentMap = {
 	card: CardDetails,
@@ -24,6 +25,7 @@ const detailsComponentMap = {
 	p24: P24Details,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
+	ideal: IdealDetails,
 };
 
 const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {

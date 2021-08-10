@@ -38,7 +38,7 @@ const usePaymentMethodsCheckboxState = () => {
 			// by default, all the checkboxes should be "checked"
 			availablePaymentMethods
 				.filter( ( method ) =>
-					[ 'giropay', 'sofort', 'sepa_debit', 'p24' ].includes(
+					[ 'giropay', 'sofort', 'sepa_debit', 'ideal', 'p24' ].includes(
 						method
 					)
 				)
@@ -245,6 +245,19 @@ const AddPaymentMethodsTask = () => {
 												handlePaymentMethodChange
 											}
 											name="sepa_debit"
+										/>
+									) }
+									{ availablePaymentMethods.includes(
+										'ideal'
+									) && (
+										<PaymentMethodCheckbox
+											checked={
+												paymentMethodsState.ideal
+											}
+											onChange={
+												handlePaymentMethodChange
+											}
+											name="ideal"
 										/>
 									) }
 								</PaymentMethodCheckboxes>

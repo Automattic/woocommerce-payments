@@ -39,6 +39,7 @@ class PaymentMethodsCompatibility {
 		'p24'        => 'EUR',
 		'sepa_debit' => 'EUR',
 		'sofort'     => 'EUR',
+		'ideal'      => 'EUR',
 	];
 
 	/**

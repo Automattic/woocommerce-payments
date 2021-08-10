@@ -34,6 +34,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		$this->controller      = new WC_REST_Payments_Accounts_Controller( $this->mock_api_client );
@@ -48,6 +49,8 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 
 	public function tearDown() {
 		parent::tearDown();
+
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 
 		// Restore the original client.
 		$account_service     = WC_Payments::get_account_service();
@@ -77,6 +80,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertSame( 200, $response->status );
+		$this->assertTrue( $response_data['test_mode'] );
 		$this->assertSame( 'complete', $response_data['status'] );
 		$this->assertSame( 'DE', $response_data['country'] );
 		$this->assertSame( 'EUR', $response_data['store_currencies']['default'] );
@@ -99,6 +103,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertSame( 200, $response->status );
+		$this->assertTrue( $response_data['test_mode'] );
 		$this->assertSame( 'NOACCOUNT', $response_data['status'] );
 		// The default country and currency have changed in WC 5.3, hence multiple options in assertions.
 		$this->assertContains( $response_data['country'], [ 'US', 'GB' ] );
@@ -121,6 +126,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertSame( 200, $response->status );
+		$this->assertTrue( $response_data['test_mode'] );
 		$this->assertSame( 'ONBOARDING_DISABLED', $response_data['status'] );
 		// The default country and currency have changed in WC 5.3, hence multiple options in assertions.
 		$this->assertContains( $response_data['country'], [ 'US', 'GB' ] );

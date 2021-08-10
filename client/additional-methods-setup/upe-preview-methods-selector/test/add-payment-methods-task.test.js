@@ -48,6 +48,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			'giropay',
 			'sepa_debit',
 			'p24',
+			'ideal',
 		] );
 		useSettings.mockReturnValue( {
 			saveSettings: () => Promise.resolve( true ),
@@ -111,6 +112,9 @@ describe( 'AddPaymentMethodsTask', () => {
 		).toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
+    ).toBeChecked();
+    expect(
+			screen.getByRole( 'checkbox', { name: 'iDEAL' } )
 		).toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
@@ -127,6 +131,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		userEvent.click(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		);
+		userEvent.click( screen.getByRole( 'checkbox', { name: 'iDEAL' } ) );
 
 		// no "euro" text when no elements are checked
 		expect(
@@ -168,6 +173,9 @@ describe( 'AddPaymentMethodsTask', () => {
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
 		expect(
+			screen.getByRole( 'checkbox', { name: 'iDEAL' } )
+		).toBeChecked();
+		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
 		).not.toBeInTheDocument();
 
@@ -178,6 +186,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			'giropay',
 			'sepa_debit',
 			'p24',
+			'ideal',
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
@@ -191,7 +200,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		const setCompletedMock = jest.fn();
 		const updateEnabledPaymentMethodsMock = jest.fn();
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay', 'p24' ],
+			[ 'card', 'giropay', 'ideal', 'p24' ],
 			updateEnabledPaymentMethodsMock,
 		] );
 		render(
@@ -214,22 +223,27 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
+		expect(
+			screen.getByRole( 'checkbox', { name: 'iDEAL' } )
+		).toBeChecked();
 
 		// un-check giropay
 		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
 		userEvent.click(
 			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
 		);
+		// un-check iDEAL
+		userEvent.click( screen.getByRole( 'checkbox', { name: 'iDEAL' } ) );
 		userEvent.click( screen.getByText( 'Add payment methods' ) );
 
-		// giropay is removed
+		// giropay and iDEAL are removed
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
 			'sepa_debit',
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
-				{ initialMethods: [ 'card', 'giropay', 'p24' ] },
+				{ initialMethods: [ 'card', 'giropay', 'ideal', 'p24' ] },
 				'setup-complete'
 			)
 		);

@@ -11,6 +11,7 @@ import GiropayIcon from './gateway-icons/giropay';
 import SofortIcon from './gateway-icons/sofort';
 import SepaIcon from './gateway-icons/sepa';
 import P24Icon from './gateway-icons/p24';
+import IdealIcon from './gateway-icons/ideal';
 
 export default {
 	card: {
@@ -57,5 +58,14 @@ export default {
 			'woocommerce-payments'
 		),
 		Icon: P24Icon,
+  },
+	ideal: {
+		id: 'ideal',
+		label: __( 'iDEAL', 'woocommerce-payments' ),
+		description: __(
+			'Expand your business with iDEAL — Netherlands’s most popular payment method.',
+			'woocommerce-payments'
+		),
+		Icon: IdealIcon,
 	},
 };

@@ -29,7 +29,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 	}
 
 	const enabledMethodsRequiringEuros = selectedMethods.filter( ( method ) =>
-		[ 'giropay', 'sepa_debit', 'p24', 'sofort' ].includes( method )
+		[ 'giropay', 'sepa_debit', 'p24', 'sofort', 'ideal' ].includes( method )
 	);
 
 	if ( 0 === enabledMethodsRequiringEuros.length ) {

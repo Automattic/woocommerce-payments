@@ -86,6 +86,11 @@
 	background-size: contain;
 }
 
+.payment-method__brand--ideal {
+	background: no-repeat url( '../images/payment-methods/ideal.svg' );
+	background-size: contain;
+}
+
 .payment-method__brand--google-pay {
 	background: no-repeat url( '../images/cards/google-pay.svg' );
 	background-size: contain;
