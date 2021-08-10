@@ -837,11 +837,12 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			],
 			wp_json_encode(
 				[
-					'test_mode' => false,
-					'amount'    => $expected_amount,
-					'currency'  => $currency_code,
-					'metadata'  => [],
-					'level3'    => [],
+					'test_mode'   => false,
+					'amount'      => $expected_amount,
+					'currency'    => $currency_code,
+					'metadata'    => [],
+					'level3'      => [],
+					'description' => 'Online Payment for example.org',
 				]
 			),
 			true,
@@ -939,6 +940,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					'currency'             => $currency_code,
 					'metadata'             => $metadata,
 					'level3'               => $level3_data,
+					'description'          => 'Online Payment for Order #' . strval( $metadata['order_id'] ) . ' for ' . str_replace( [ 'https://', 'http://' ], '', $metadata['site_url'] ),
 					'payment_method_types' => [ 'giropay' ],
 					'customer'             => $customer_id,
 					'setup_future_usage'   => 'off_session',

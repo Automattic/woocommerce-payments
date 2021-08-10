@@ -277,10 +277,11 @@ class WC_Payments_API_Client {
 		$selected_upe_payment_type = ''
 	) {
 		$request = [
-			'amount'   => $amount,
-			'currency' => $currency_code,
-			'metadata' => $metadata,
-			'level3'   => $level3,
+			'amount'      => $amount,
+			'currency'    => $currency_code,
+			'metadata'    => $metadata,
+			'level3'      => $level3,
+			'description' => $this->get_intent_description( $metadata['order_id'] ?? 0 ),
 		];
 
 		if ( '' !== $selected_upe_payment_type ) {
