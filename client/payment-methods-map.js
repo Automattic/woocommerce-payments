@@ -10,6 +10,7 @@ import CreditCardIcon from './gateway-icons/credit-card';
 import GiropayIcon from './gateway-icons/giropay';
 import SofortIcon from './gateway-icons/sofort';
 import SepaIcon from './gateway-icons/sepa';
+import IdealIcon from './gateway-icons/ideal';
 
 export default {
 	card: {
@@ -34,7 +35,7 @@ export default {
 		id: 'sofort',
 		label: __( 'Sofort', 'woocommerce-payments' ),
 		description: __(
-			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, and Netherlands.',
+			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, Netherlands, and Spain.',
 			'woocommerce-payments'
 		),
 		Icon: SofortIcon,
@@ -47,5 +48,14 @@ export default {
 			'woocommerce-payments'
 		),
 		Icon: SepaIcon,
+	},
+	ideal: {
+		id: 'ideal',
+		label: __( 'iDEAL', 'woocommerce-payments' ),
+		description: __(
+			'Expand your business with iDEAL — Netherlands’s most popular payment method.',
+			'woocommerce-payments'
+		),
+		Icon: IdealIcon,
 	},
 };
