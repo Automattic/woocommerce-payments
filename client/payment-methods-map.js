@@ -58,7 +58,7 @@ export default {
 			'woocommerce-payments'
 		),
 		Icon: P24Icon,
-  },
+	},
 	ideal: {
 		id: 'ideal',
 		label: __( 'iDEAL', 'woocommerce-payments' ),

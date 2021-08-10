@@ -76,7 +76,7 @@ describe( 'PaymentMethodsSelector', () => {
 		).toBeInTheDocument();
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 4 );
+		expect( paymentMethods ).toHaveLength( 5 );
 
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
 			name: 'giropay',
@@ -148,14 +148,14 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( addPaymentMethodButton );
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 3 );
+		expect( paymentMethods ).toHaveLength( 4 );
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
 		).toBeNull();
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
-    ).not.toBeNull();
-    expect(
+		).not.toBeNull();
+		expect(
 			screen.queryByRole( 'checkbox', { name: 'iDEAL' } )
 		).not.toBeNull();
 	} );

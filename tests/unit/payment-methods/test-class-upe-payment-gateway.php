@@ -898,8 +898,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertFalse( $giropay_method->is_reusable() );
 
 		$this->assertEquals( 'p24', $p24_method->get_id() );
-		$this->assertEquals( 'p24', $p24_method->get_title() );
-		$this->assertEquals( 'p24', $p24_method->get_title( $mock_p24_details ) );
+		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title() );
+		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( $mock_p24_details ) );
 		$this->assertTrue( $p24_method->is_enabled_at_checkout() );
 		$this->assertFalse( $p24_method->is_reusable() );
 

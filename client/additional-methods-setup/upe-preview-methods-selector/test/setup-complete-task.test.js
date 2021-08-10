@@ -201,7 +201,7 @@ describe( 'SetupComplete', () => {
 		);
 
 		expect( screen.getByText( /Setup complete/ ) ).toHaveTextContent(
-			'Setup complete! 4 new payment methods are now live on your store!'
+			'Setup complete! 5 new payment methods are now live on your store!'
 		);
 	} );
 } );

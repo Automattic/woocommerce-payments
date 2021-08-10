@@ -22,7 +22,7 @@ class P24_Payment_Method extends UPE_Payment_Method {
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 		$this->stripe_id   = 'p24';
-		$this->title       = 'p24';
+		$this->title       = 'Przelewy24 (P24)';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR', 'PLN' ];
 	}

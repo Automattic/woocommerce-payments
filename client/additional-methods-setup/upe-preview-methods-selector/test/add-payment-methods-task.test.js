@@ -112,8 +112,8 @@ describe( 'AddPaymentMethodsTask', () => {
 		).toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
-    ).toBeChecked();
-    expect(
+		).toBeChecked();
+		expect(
 			screen.getByRole( 'checkbox', { name: 'iDEAL' } )
 		).toBeChecked();
 		expect(

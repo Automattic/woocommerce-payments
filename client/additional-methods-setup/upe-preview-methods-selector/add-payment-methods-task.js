@@ -38,9 +38,13 @@ const usePaymentMethodsCheckboxState = () => {
 			// by default, all the checkboxes should be "checked"
 			availablePaymentMethods
 				.filter( ( method ) =>
-					[ 'giropay', 'sofort', 'sepa_debit', 'ideal', 'p24' ].includes(
-						method
-					)
+					[
+						'giropay',
+						'sofort',
+						'sepa_debit',
+						'ideal',
+						'p24',
+					].includes( method )
 				)
 				.reduce(
 					( map, paymentMethod ) => ( {

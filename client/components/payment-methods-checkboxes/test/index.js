@@ -38,7 +38,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					checked={ false }
 					name="p24"
 				/>
-        <PaymentMethodsCheckbox
+				<PaymentMethodsCheckbox
 					onChange={ handleChange }
 					checked={ false }
 					name="ideal"
