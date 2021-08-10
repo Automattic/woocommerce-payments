@@ -15,7 +15,6 @@ use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Gateway;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
-use WCPay\Payment_Methods\P24_Payment_Gateway;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Gateway;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
@@ -42,13 +41,6 @@ class WC_Payments {
 	 * @var Giropay_Payment_Gateway
 	 */
 	private static $giropay_gateway;
-
-	/**
-	 * Instance of Giropay gateway, created in init function.
-	 *
-	 * @var P24_Payment_Gateway
-	 */
-	private static $p24_gateway;
 
 	/**
 	 * Instance of SEPA gateway, created in init function.
@@ -185,7 +177,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-p24-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-sepa-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
@@ -234,7 +225,6 @@ class WC_Payments {
 		$card_class    = CC_Payment_Gateway::class;
 		$upe_class     = UPE_Payment_Gateway::class;
 		$giropay_class = Giropay_Payment_Gateway::class;
-		$p24_class     = P24_Payment_Gateway::class;
 		$sepa_class    = Sepa_Payment_Gateway::class;
 		$sofort_class  = Sofort_Payment_Gateway::class;
 
@@ -258,9 +248,6 @@ class WC_Payments {
 
 		if ( WC_Payments_Features::is_giropay_enabled() ) {
 			self::$giropay_gateway = new $giropay_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
-		}
-		if ( WC_Payments_Features::is_p24_enabled() ) {
-			self::$p24_gateway = new $p24_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 		if ( WC_Payments_Features::is_sepa_enabled() ) {
 			self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
@@ -528,9 +515,6 @@ class WC_Payments {
 
 		if ( WC_Payments_Features::is_giropay_enabled() ) {
 			$gateways[] = self::$giropay_gateway;
-		}
-		if ( WC_Payments_Features::is_p24_enabled() ) {
-			$gateways[] = self::$p24_gateway;
 		}
 		if ( WC_Payments_Features::is_sepa_enabled() ) {
 			$gateways[] = self::$sepa_gateway;

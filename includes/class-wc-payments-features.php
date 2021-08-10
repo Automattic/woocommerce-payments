@@ -34,15 +34,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the Przelewy24 (p24) gateway feature is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_p24_enabled() {
-		return '1' === get_option( '_wcpay_feature_p24', '0' );
-	}
-
-	/**
 	 * Checks whether the Sepa gateway feature is enabled
 	 *
 	 * @return bool

@@ -7,7 +7,6 @@ import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_GIROPAY,
-	PAYMENT_METHOD_NAME_P24,
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
 } from '../constants.js';
@@ -62,11 +61,6 @@ jQuery( function ( $ ) {
 	// Giropay payment method details
 	const giropayPayment = {
 		type: 'giropay',
-	};
-
-	// Przelewy24 payment method details
-	const p24Payment = {
-		type: 'p24',
 	};
 
 	// Create a SEPA element
@@ -161,15 +155,6 @@ jQuery( function ( $ ) {
 		return $( '#payment_method_woocommerce_payments_giropay' ).is(
 			':checked'
 		);
-	};
-
-	/**
-	 * Check if P24 payment is being used.
-	 *
-	 * @return {boolean} Boolean indicating whether or not Przelewy24 payment is being used.
-	 */
-	const isWCPayP24Chosen = function () {
-		return $( '#payment_method_woocommerce_payments_p24' ).is( ':checked' );
 	};
 
 	/**
@@ -457,11 +442,6 @@ jQuery( function ( $ ) {
 			return false;
 		}
 
-		if ( isWCPayP24Chosen() ) {
-			// TODO: Check P24 saved payment method
-			return false;
-		}
-
 		if ( isWCPaySepaChosen() ) {
 			return (
 				$( '#wc-woocommerce_payments_sepa-payment-token-new' ).length &&
@@ -480,7 +460,6 @@ jQuery( function ( $ ) {
 	const wcpayPaymentMethods = [
 		PAYMENT_METHOD_NAME_CARD,
 		PAYMENT_METHOD_NAME_GIROPAY,
-		PAYMENT_METHOD_NAME_P24,
 		PAYMENT_METHOD_NAME_SEPA,
 		PAYMENT_METHOD_NAME_SOFORT,
 	];
@@ -494,8 +473,6 @@ jQuery( function ( $ ) {
 				paymentMethodDetails = sepaPayment;
 			} else if ( isWCPayGiropayChosen() ) {
 				paymentMethodDetails = giropayPayment;
-			} else if ( isWCPayP24Chosen() ) {
-				paymentMethodDetails = p24Payment;
 			} else if ( isWCPaySofortChosen() ) {
 				sofortPayment.sofort = {
 					country: $( '#billing_country' ).val(),
@@ -535,8 +512,6 @@ jQuery( function ( $ ) {
 				paymentMethodDetails = sepaPayment;
 			} else if ( isWCPayGiropayChosen() ) {
 				paymentMethodDetails = giropayPayment;
-			} else if ( isWCPayP24Chosen() ) {
-				paymentMethodDetails = p24Payment;
 			} else if ( isWCPaySofortChosen() ) {
 				paymentMethodDetails = sofortPayment;
 			}

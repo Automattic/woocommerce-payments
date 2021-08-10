@@ -167,7 +167,6 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$payment_method_classes     = [
 			CC_Payment_Method::class,
 			Giropay_Payment_Method::class,
-			P24_Payment_Method::class,
 			Sofort_Payment_Method::class,
 			P24_Payment_Method::class,
 			Ideal_Payment_Method::class,
@@ -822,7 +821,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			$p24_details,
 			$ideal_details,
 		];
-    
+
 		$expected_payment_method_titles = [
 			'Visa credit card',
 			'Visa debit card',
