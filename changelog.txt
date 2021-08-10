@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 2.8.3 - 2021-xx-xx =
+= 2.8.3 - 2021-08-10 =
 * Fix - Fix for payment request buttons when the new payment methods gateway is enabled.
 
 = 2.8.2 - 2021-08-05 =
