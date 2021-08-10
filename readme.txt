@@ -102,6 +102,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - *Early access*: allow your store to collect payments with iDEAL. Enable the feature in settings!
 * Add - Split discount line in timeline into variable fee and fixed fee.
 * Fix - Align table items according to design correctly.
+* Fix - Fix database connection error on account cache clear.
 
 = 2.8.3 - 2021-08-10 =
 * Fix - Fix for payment request buttons when the new payment methods gateway is enabled.
