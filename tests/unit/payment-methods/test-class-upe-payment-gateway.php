@@ -195,7 +195,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				[
 					'get_return_url',
 					'manage_customer_details_for_order',
-					'process_payment_using_saved_method',
+					'parent_process_payment',
 				]
 			)
 			->getMock();
@@ -209,7 +209,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			);
 		$this->mock_upe_gateway
 			->expects( $this->any() )
-			->method( 'process_payment_using_saved_method' )
+			->method( 'parent_process_payment' )
 			->will(
 				$this->returnValue( $this->mock_payment_result )
 			);
@@ -430,12 +430,15 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	}
 
 	public function test_process_payment_returns_correct_redirect_url() {
-		$order    = WC_Helper_Order::create_order();
-		$order_id = $order->get_id();
+		$order                         = WC_Helper_Order::create_order();
+		$order_id                      = $order->get_id();
+		$_POST['wc_payment_intent_id'] = 'pi_abc123';
 
 		$this->set_cart_contains_subscription_items( false );
 
 		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+
+		unset( $_POST['wc_payment_intent_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals( true, $result['payment_needed'] );
@@ -448,15 +451,17 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
 
-		$gateway_id                   = UPE_Payment_Gateway::GATEWAY_ID;
-		$save_payment_param           = "wc-$gateway_id-new-payment-method";
-		$_POST[ $save_payment_param ] = 'yes';
+		$gateway_id                    = UPE_Payment_Gateway::GATEWAY_ID;
+		$save_payment_param            = "wc-$gateway_id-new-payment-method";
+		$_POST[ $save_payment_param ]  = 'yes';
+		$_POST['wc_payment_intent_id'] = 'pi_abc123';
 
 		$this->set_cart_contains_subscription_items( false );
 
 		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
 
-		unset( $_POST[ $save_payment_param ] );// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		unset( $_POST[ $save_payment_param ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		unset( $_POST['wc_payment_intent_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertRegExp( "/order_id=$order_id/", $result['redirect_url'] );
@@ -471,6 +476,25 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->set_cart_contains_subscription_items( false );
 
 		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+
+		$this->mock_upe_gateway
+			->expects( $this->never() )
+			->method( 'manage_customer_details_for_order' );
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertRegExp( '/key=mock_order_key/', $result['redirect'] );
+	}
+
+	public function test_process_payment_returns_correct_redirect_when_using_payment_request() {
+		$order                         = WC_Helper_Order::create_order();
+		$_POST['payment_request_type'] = 'google_pay';
+
+		$this->set_cart_contains_subscription_items( false );
+
+		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+
+		$this->mock_upe_gateway
+			->expects( $this->never() )
+			->method( 'manage_customer_details_for_order' );
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertRegExp( '/key=mock_order_key/', $result['redirect'] );
 	}
