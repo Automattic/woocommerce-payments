@@ -80,6 +80,7 @@ const getColumns = (
 			key: 'transaction_id',
 			label: __( 'Transaction Id', 'woocommerce-payments' ),
 			visible: false,
+			isLeftAligned: true,
 		},
 		{
 			key: 'date',
@@ -97,6 +98,7 @@ const getColumns = (
 			label: __( 'Type', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Type', 'woocommerce-payments' ),
 			required: true,
+			isLeftAligned: true,
 		},
 		{
 			key: 'amount',
@@ -138,35 +140,41 @@ const getColumns = (
 			key: 'source',
 			label: __( 'Source', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Source', 'woocommerce-payments' ),
+			cellClassName: 'is-center-aligned',
 		},
 		{
 			key: 'customer_name',
 			label: __( 'Customer', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Customer', 'woocommerce-payments' ),
+			isLeftAligned: true,
 		},
 		{
 			key: 'customer_email',
 			label: __( 'Email', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Email', 'woocommerce-payments' ),
 			visible: false,
+			isLeftAligned: true,
 		},
 		{
 			key: 'customer_country',
 			label: __( 'Country', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Country', 'woocommerce-payments' ),
 			visible: false,
+			isLeftAligned: true,
 		},
 		{
 			key: 'risk_level',
 			label: __( 'Risk level', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Risk level', 'woocommerce-payments' ),
 			visible: false,
+			isLeftAligned: true,
 		},
 		includeDeposit && {
 			key: 'deposit',
 			label: __( 'Deposit', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Deposit', 'woocommerce-payments' ),
 			cellClassName: 'deposit',
+			isLeftAligned: true,
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
