@@ -304,13 +304,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Create and confirm payment intent. Saved payment methods do not follow UPE workflow.
+	 * Create and confirm payment intent. Function used to route any payments that do not use the UPE flow through the parent process payment.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
-	public function process_payment_using_saved_method( $order_id ) {
+	public function parent_process_payment( $order_id ) {
 		return parent::process_payment( $order_id );
 	}
 
@@ -348,8 +348,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					$selected_upe_payment_type
 				);
 			}
-		} elseif ( $token ) {
-			return $this->process_payment_using_saved_method( $order_id );
+		} else {
+			return $this->parent_process_payment( $order_id );
 		}
 
 		return [
