@@ -1,3 +1,10 @@
+.wcpay-disputes-list {
+	// Override for the "Source" header
+	.woocommerce-table__header.payment-source {
+		text-align: center;
+	}
+}
+
 // TODO generalize most of these styles to other WCPay views, if not WooCommerce Admin in general.
 .wcpay-dispute-details,
 .wcpay-dispute-evidence {

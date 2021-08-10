@@ -54,7 +54,7 @@ const headers = [
 		key: 'source',
 		label: __( 'Source', 'woocommerce-payments' ),
 		required: true,
-		isLeftAligned: true,
+		cellClassName: 'payment-source',
 	},
 	{
 		key: 'order',

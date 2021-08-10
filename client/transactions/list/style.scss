@@ -22,6 +22,10 @@ $space-header-item: 12px;
 	.woocommerce-table__header.is-numeric .components-button {
 		margin-right: $space-header-item;
 	}
+
+	.woocommerce-table__header.payment-source {
+		text-align: center;
+	}
 }
 
 /**
