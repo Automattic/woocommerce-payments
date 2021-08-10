@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.8.3 - 2021-xx-xx =
+* Fix - Fix for payment request buttons when the new payment methods gateway is enabled.
+
 = 2.8.2 - 2021-08-05 =
 * Fix - If account is disconnected or not set up do not display onboarding task and UPE inbox note.
 * Fix - Fix for the site acting as disconnected after the account cache expires.
