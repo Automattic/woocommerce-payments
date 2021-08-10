@@ -332,7 +332,7 @@ class MultiCurrency {
 		}
 
 		// If connection to server cannot be established, or if Stripe is not connected, return expired data or null.
-		if ( ! $this->payments_api_client->is_server_connected() && ! $this->payments_account->is_stripe_connected() ) {
+		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_stripe_connected() ) {
 			return $cache_data ?? null;
 		}
 
