@@ -166,6 +166,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+			$payment_type               = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 
 			$this->payments_api_client->update_intention(
 				$payment_intent_id,
@@ -173,7 +174,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				strtolower( $currency ),
 				$save_payment_method,
 				$customer_id,
-				$this->get_metadata_from_order( $order, Payment_Type::SINGLE() ),
+				$this->get_metadata_from_order( $order, $payment_type ),
 				$this->get_level3_data_from_order( $order ),
 				$selected_upe_payment_type
 			);
