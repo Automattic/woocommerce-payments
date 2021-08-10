@@ -74,6 +74,15 @@
       "cvc": "424",
       "label": "Visa ending in 4242"
     },
+    "basic2": {
+      "number": "4111111111111111",
+      "expires": {
+        "month": "11",
+        "year": "25"
+      },
+      "cvc": "123",
+      "label": "Visa ending in 1111"
+    },
     "3ds": {
       "number": "4000002760003184",
       "expires": {
