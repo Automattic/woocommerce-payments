@@ -140,7 +140,7 @@ const getColumns = (
 			key: 'source',
 			label: __( 'Source', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Source', 'woocommerce-payments' ),
-			cellClassName: 'payment-source',
+			cellClassName: 'is-center-aligned',
 		},
 		{
 			key: 'customer_name',

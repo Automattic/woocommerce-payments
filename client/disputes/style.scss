@@ -1,6 +1,5 @@
 .wcpay-disputes-list {
-	// Override for the "Source" header
-	.woocommerce-table__header.payment-source {
+	.woocommerce-table__header.is-center-aligned {
 		text-align: center;
 	}
 }
