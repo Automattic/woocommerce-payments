@@ -225,6 +225,11 @@ describe( 'PaymentMethodsSelector', () => {
 		} );
 		user.click( addPaymentMethodButton );
 
+		const bancontactCheckbox = screen.getByRole( 'checkbox', {
+			name: 'Bancontact',
+		} );
+		user.click( bancontactCheckbox );
+
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
 			name: 'giropay',
 		} );
@@ -237,6 +242,7 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( updateEnabledPaymentMethodIdsMock ).toHaveBeenCalledWith( [
 			'card',
 			'sepa_debit',
+			'bancontact',
 			'giropay',
 		] );
 		expect(

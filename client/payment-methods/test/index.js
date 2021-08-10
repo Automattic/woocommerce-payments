@@ -152,7 +152,7 @@ describe( 'PaymentMethods', () => {
 	test( 'clicking delete updates enabled method IDs', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'sepa_debit', 'giropay', 'sofort' ],
+			[ 'card', 'sepa_debit', 'bancontact', 'giropay', 'sofort' ],
 			updateEnabledMethodsMock,
 		] );
 
@@ -174,6 +174,7 @@ describe( 'PaymentMethods', () => {
 
 		expect( updateEnabledMethodsMock ).toHaveBeenCalledWith( [
 			'sepa_debit',
+			'bancontact',
 			'giropay',
 			'sofort',
 		] );
