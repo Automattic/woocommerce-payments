@@ -65,7 +65,7 @@ class WC_Payments_Admin {
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
-		add_action( 'admin_menu', [ $this, 'maybe_redirect_to_onboarding' ], 1 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 
@@ -254,25 +254,32 @@ class WC_Payments_Admin {
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
 		$wcpay_settings = [
-			'connectUrl'            => WC_Payments_Account::get_connect_url(),
-			'connect'               => [
+			'connectUrl'             => WC_Payments_Account::get_connect_url(),
+			'connect'                => [
 				'country'            => WC()->countries->get_base_country(),
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 			],
-			'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
+			'testMode'               => $this->wcpay_gateway->is_in_test_mode(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
-			'onBoardingDisabled'    => WC_Payments_Account::is_on_boarding_disabled(),
-			'errorMessage'          => $error_message,
-			'featureFlags'          => $this->get_frontend_feature_flags(),
-			'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
+			'onBoardingDisabled'     => WC_Payments_Account::is_on_boarding_disabled(),
+			'errorMessage'           => $error_message,
+			'featureFlags'           => $this->get_frontend_feature_flags(),
+			'isSubscriptionsActive'  => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
 			// used in the settings page by the AccountFees component.
-			'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
-			'fraudServices'         => $this->account->get_fraud_services_config(),
-			'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
-			'accountStatus'         => $this->account->get_account_status_data(),
-			'accountFees'           => $this->account->get_fees(),
-			'showUpdateDetailsTask' => get_option( 'wcpay_show_update_business_details_task', 'no' ),
-			'wpcomReconnectUrl'     => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
+			'zeroDecimalCurrencies'  => WC_Payments_Utils::zero_decimal_currencies(),
+			'fraudServices'          => $this->account->get_fraud_services_config(),
+			'isJetpackConnected'     => $this->payments_api_client->is_server_connected(),
+			'accountStatus'          => $this->account->get_account_status_data(),
+			'accountFees'            => $this->account->get_fees(),
+			'showUpdateDetailsTask'  => get_option( 'wcpay_show_update_business_details_task', 'no' ),
+			'wpcomReconnectUrl'      => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
+			'additionalMethodsSetup' => [
+				'isTaskVisible'               => $this->is_page_eligible_for_additional_methods_setup_task(),
+				'isSetupCompleted'            => get_option( 'wcpay_additional_methods_setup_completed', 'no' ),
+				'isUpeSettingsPreviewEnabled' => WC_Payments_Features::is_upe_settings_preview_enabled(),
+				'isUpeEnabled'                => WC_Payments_Features::is_upe_enabled(),
+			],
+			'needsHttpsSetup'        => $this->wcpay_gateway->needs_https_setup(),
 		];
 
 		wp_localize_script(
@@ -327,6 +334,18 @@ class WC_Payments_Admin {
 			$settings_script_asset['dependencies'],
 			WC_Payments::get_file_version( 'dist/settings.js' ),
 			true
+		);
+
+		wp_localize_script(
+			'WCPAY_ADMIN_SETTINGS',
+			'wcpayPaymentRequestParams',
+			[
+				'stripe' => [
+					'publishableKey' => $this->account->get_publishable_key( $this->wcpay_gateway->is_in_test_mode() ),
+					'accountId'      => $this->account->get_stripe_account_id(),
+					'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+				],
+			]
 		);
 
 		wp_localize_script(
@@ -602,12 +621,12 @@ class WC_Payments_Admin {
 		}
 
 		$abtest = new \WCPay\Experimental_Abtest(
-			esc_url_raw( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
 			'woocommerce',
 			'yes' === get_option( 'woocommerce_allow_tracking' )
 		);
 
-		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode_v1' );
+		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode_v2' );
 	}
 
 	/**
@@ -615,6 +634,14 @@ class WC_Payments_Admin {
 	 * if it is not and the user is attempting to view a WCPay admin page.
 	 */
 	public function maybe_redirect_to_onboarding() {
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
+		if ( $this->is_in_treatment_mode() ) {
+			return;
+		}
+
 		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
 
 		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page'] ) {
@@ -637,10 +664,39 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		if ( $this->account->is_stripe_connected() ) {
+		if ( $this->account->is_stripe_connected( true ) ) {
 			return;
 		}
 
 		$this->account->redirect_to_onboarding_page();
+	}
+
+	/**
+	 * Checks whether the current page should be eligible to enqueue the task.
+	 */
+	public function is_page_eligible_for_additional_methods_setup_task() {
+		if ( ! wc_admin_is_registered_page() ) {
+			return false;
+		}
+
+		// if the account is disconnected, just don't display the onboarding task.
+		if ( ! $this->account->is_stripe_connected() ) {
+			return false;
+		}
+
+		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
+			return false === WC_Payments_Features::did_merchant_disable_upe();
+		}
+
+		$available_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
+		if ( empty( $available_methods ) ) {
+			return false;
+		}
+
+		if ( 1 >= count( $available_methods ) ) {
+			return false;
+		}
+
+		return true;
 	}
 }

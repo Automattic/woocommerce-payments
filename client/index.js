@@ -170,16 +170,15 @@ addFilter(
 		const {
 			accountStatus,
 			showUpdateDetailsTask,
+			additionalMethodsSetup,
 			featureFlags: { accountOverviewTaskList },
 		} = wcpaySettings;
-
-		if ( ! Boolean( accountOverviewTaskList ) ) {
-			return tasks;
-		}
 
 		const wcPayTasks = getTasks( {
 			accountStatus,
 			showUpdateDetailsTask,
+			additionalMethodsSetup,
+			isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 		} );
 
 		return [ ...tasks, ...wcPayTasks ];

@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payment_Gateway_WCPay_Subscriptions_Compat
+ * Trait WC_Payment_Gateway_WCPay_Subscriptions_Trait
  *
  * @package WooCommerce\Payments
  */
@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
@@ -21,6 +22,8 @@ use WCPay\Constants\Payment_Initiated_By;
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
  */
 trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
+
+	use WC_Payments_Subscriptions_Utilities;
 
 	/**
 	 * Retrieve payment token from a subscription or order.
@@ -105,6 +108,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			]
 		);
 
+		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
+		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'prepare_order_pay_page' ] );
+
 		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
 		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [ $this, 'update_failing_payment_method' ], 10, 2 );
 		add_filter( 'wc_payments_display_save_payment_method_checkbox', [ $this, 'display_save_payment_method_checkbox' ], 10 );
@@ -128,27 +134,75 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( version_compare( WC_Subscriptions::$version, '3.0.7', '<=' ) ) {
 			add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
 		}
+
+		/*
+		 * WC subscriptions hooks into the "template_redirect" hook with priority 100.
+		 * If the screen is "Pay for order" and the order is a subscription renewal, it redirects to the plain checkout.
+		 * See: https://github.com/woocommerce/woocommerce-subscriptions/blob/99a75687e109b64cbc07af6e5518458a6305f366/includes/class-wcs-cart-renewal.php#L165
+		 * If we are in the "You just need to authorize SCA" flow, we don't want that redirection to happen.
+		 */
+		add_action( 'template_redirect', [ $this, 'remove_order_pay_var' ], 99 );
+		add_action( 'template_redirect', [ $this, 'restore_order_pay_var' ], 101 );
 	}
 
 	/**
-	 * Checks if subscriptions are enabled on the site.
+	 * Adds the necessary hooks to modify the "Pay for order" page in order to clean
+	 * it up and prepare it for the PaymentIntents modal to confirm a payment.
 	 *
-	 * @return bool Whether subscriptions is enabled or not.
+	 * @param WC_Payment_Gateway[] $gateways A list of all available gateways.
+	 * @return WC_Payment_Gateway[]          Either the same list or an empty one in the right conditions.
 	 */
-	public function is_subscriptions_enabled() {
-		return class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' );
-	}
-
-	/**
-	 * Returns whether this user is changing the payment method for a subscription.
-	 *
-	 * @return bool
-	 */
-	private function is_changing_payment_method_for_subscription() {
-		if ( isset( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return wcs_is_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+	public function prepare_order_pay_page( $gateways ) {
+		if ( ! is_wc_endpoint_url( 'order-pay' ) || ! isset( $_GET['wcpay-confirmation'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return $gateways;
 		}
-		return false;
+
+		try {
+			if ( ! $this->prepare_intent_for_order_pay_page() ) {
+				return $gateways;
+			}
+		} catch ( Exception $e ) {
+			// Just show the full order pay page if there was a problem preparing the Payment Intent.
+			return $gateways;
+		}
+
+		add_filter( 'woocommerce_checkout_show_terms', '__return_false' );
+		add_filter( 'woocommerce_pay_order_button_html', '__return_false' );
+		add_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
+		add_filter( 'woocommerce_no_available_payment_methods_message', [ $this, 'change_no_available_methods_message' ] );
+
+		return [];
+	}
+
+	/**
+	 * Prepares the Payment Intent for it to be completed in the "Pay for Order" page.
+	 *
+	 * @return bool True if the Intent was fetched and prepared successfully, false otherwise.
+	 */
+	public function prepare_intent_for_order_pay_page(): bool {
+		$order  = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+		$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+
+		if ( ! $intent || 'requires_action' !== $intent->get_status() ) {
+			return false;
+		}
+
+		$js_config                     = $this->get_payment_fields_js_config();
+		$js_config['intentSecret']     = $intent->get_client_secret();
+		$js_config['updateOrderNonce'] = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $js_config );
+		wp_enqueue_script( 'WCPAY_CHECKOUT' );
+		return true;
+	}
+
+	/**
+	 * Changes the text of the "No available methods" message to one that indicates
+	 * the need for a PaymentIntent to be confirmed.
+	 *
+	 * @return string the new message.
+	 */
+	public function change_no_available_methods_message() {
+		return wpautop( __( "Almost there!\n\nYour order has already been created, the only thing that still needs to be done is for you to authorize the payment with your bank.", 'woocommerce-payments' ) );
 	}
 
 	/**
@@ -175,25 +229,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$payment_information->set_is_changing_payment_method_for_subscription( $is_changing_payment );
 
 		return $payment_information;
-	}
-
-	/**
-	 * Returns a boolean value indicating whether the save payment checkbox should be
-	 * displayed during checkout.
-	 *
-	 * Returns `false` if the cart currently has a subscriptions or if the request has a
-	 * `change_payment_method` GET parameter. Returns the value in `$display` otherwise.
-	 *
-	 * @param bool $display Bool indicating whether to show the save payment checkbox in the absence of subscriptions.
-	 *
-	 * @return bool Indicates whether the save payment method checkbox should be displayed or not.
-	 */
-	public function display_save_payment_method_checkbox( $display ) {
-		if ( WC_Subscriptions_Cart::cart_contains_subscription() || $this->is_changing_payment_method_for_subscription() ) {
-			return false;
-		}
-		// Only render the "Save payment method" checkbox if there are no subscription products in the cart.
-		return $display;
 	}
 
 	/**
@@ -231,7 +266,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 							'code'   => '<code>',
 						]
 					),
-					wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
+					WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+						wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
+						$renewal_order
+					),
 					esc_html( rtrim( $e->getMessage(), '.' ) )
 				);
 				$renewal_order->add_order_note( $note );
@@ -636,5 +674,41 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$order_meta_query .= " AND `meta_key` NOT IN ('_new_order_tracking_complete')";
 
 		return $order_meta_query;
+	}
+
+	/**
+	 * Adds the failed SCA auth email to WooCommerce.
+	 *
+	 * @param WC_Email[] $email_classes All existing emails.
+	 * @return WC_Email[]
+	 */
+	public function add_emails( $email_classes ) {
+		include_once __DIR__ . '/class-wc-payments-email-failed-renewal-authentication.php';
+		include_once __DIR__ . '/class-wc-payments-email-failed-authentication-retry.php';
+		$email_classes['WC_Payments_Email_Failed_Renewal_Authentication'] = new WC_Payments_Email_Failed_Renewal_Authentication( $email_classes );
+		$email_classes['WC_Payments_Email_Failed_Authentication_Retry']   = new WC_Payments_Email_Failed_Authentication_Retry();
+		return $email_classes;
+	}
+
+	/**
+	 * If this is the "Pass the SCA challenge" flow, remove a variable that is checked by WC Subscriptions
+	 * so WC Subscriptions doesn't redirect to the checkout
+	 */
+	public function remove_order_pay_var() {
+		global $wp;
+		if ( isset( $_GET['wcpay-confirmation'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$this->order_pay_var         = $wp->query_vars['order-pay'];
+			$wp->query_vars['order-pay'] = null;
+		}
+	}
+
+	/**
+	 * Restore the variable that was removed in remove_order_pay_var()
+	 */
+	public function restore_order_pay_var() {
+		global $wp;
+		if ( isset( $this->order_pay_var ) ) {
+			$wp->query_vars['order-pay'] = $this->order_pay_var;
+		}
 	}
 }

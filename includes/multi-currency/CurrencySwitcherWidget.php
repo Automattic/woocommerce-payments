@@ -7,14 +7,14 @@
 
 namespace WCPay\MultiCurrency;
 
-use WP_Widget;
+use WC_Widget;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Currency Switcher Widget Class
  */
-class CurrencySwitcherWidget extends WP_Widget {
+class CurrencySwitcherWidget extends WC_Widget {
 
 	const DEFAULT_SETTINGS = [
 		'title'  => '',
@@ -46,11 +46,28 @@ class CurrencySwitcherWidget extends WP_Widget {
 		$this->multi_currency = $multi_currency;
 		$this->compatibility  = $compatibility;
 
-		parent::__construct(
-			'currency_switcher_widget',
-			__( 'Currency Switcher', 'woocommerce-payments' ),
-			[ 'description' => __( 'Let your customers switch between your enabled currencies', 'woocommerce-payments' ) ]
-		);
+		$this->widget_id          = 'currency_switcher_widget';
+		$this->widget_name        = __( 'Currency Switcher', 'woocommerce-payments' );
+		$this->widget_description = __( 'Let your customers switch between your enabled currencies', 'woocommerce-payments' );
+		$this->settings           = [
+			'title'  => [
+				'type'  => 'text',
+				'std'   => '',
+				'label' => __( 'Title', 'woocommerce-payments' ),
+			],
+			'symbol' => [
+				'type'  => 'checkbox',
+				'std'   => true,
+				'label' => __( 'Display currency symbols', 'woocommerce-payments' ),
+			],
+			'flag'   => [
+				'type'  => 'checkbox',
+				'std'   => false,
+				'label' => __( 'Display flags in supported devices', 'woocommerce-payments' ),
+			],
+		];
+
+		parent::__construct();
 	}
 
 	/**
@@ -96,71 +113,6 @@ class CurrencySwitcherWidget extends WP_Widget {
 	}
 
 	/**
-	 * Back-end widget form.
-	 *
-	 * @param array $instance Previously saved values from database.
-	 */
-	public function form( $instance ) {
-		$instance = wp_parse_args(
-			$instance,
-			self::DEFAULT_SETTINGS
-		);
-		?>
-		<p>
-			<label for="<?php echo esc_attr( $this->get_field_name( 'title' ) ); ?>">
-				<?php esc_html_e( 'Title:', 'woocommerce-payments' ); ?>
-			</label>
-			<input
-				class="widefat"
-				id="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>"
-				name="<?php echo esc_attr( $this->get_field_name( 'title' ) ); ?>"
-				type="text"
-				value="<?php echo esc_attr( $instance['title'] ); ?>"
-			/>
-		</p>
-		<p>
-			<input
-				class="checkbox"
-				id="<?php echo esc_attr( $this->get_field_id( 'symbol' ) ); ?>"
-				name="<?php echo esc_attr( $this->get_field_name( 'symbol' ) ); ?>"
-				type="checkbox"<?php checked( $instance['symbol'] ); ?>
-			/>
-			<label for="<?php echo esc_attr( $this->get_field_id( 'symbol' ) ); ?>">
-				<?php esc_html_e( 'Display currency symbols', 'woocommerce-payments' ); ?>
-			</label>
-			<br/>
-			<input
-				class="checkbox"
-				id="<?php echo esc_attr( $this->get_field_id( 'flag' ) ); ?>"
-				name="<?php echo esc_attr( $this->get_field_name( 'flag' ) ); ?>"
-				type="checkbox"<?php checked( $instance['flag'] ); ?>
-			/>
-			<label for="<?php echo esc_attr( $this->get_field_id( 'flag' ) ); ?>">
-				<?php esc_html_e( 'Display flags in supported devices', 'woocommerce-payments' ); ?>
-			</label>
-		</p>
-		<?php
-	}
-
-	/**
-	 * Sanitize widget form values as they are saved.
-	 *
-	 * @param array $new_instance Values just sent to be saved.
-	 * @param array $old_instance Previously saved values from database.
-	 *
-	 * @return array Updated safe values to be saved.
-	 */
-	public function update( $new_instance, $old_instance ) {
-		$instance = [
-			'title'  => sanitize_text_field( $new_instance['title'] ),
-			'symbol' => isset( $new_instance['symbol'] ) ? 1 : 0,
-			'flag'   => isset( $new_instance['flag'] ) ? 1 : 0,
-		];
-
-		return $instance;
-	}
-
-	/**
 	 * Create an <option> element with provided currency. With symbol and flag if requested.
 	 *
 	 * @param Currency $currency    Currency to use for <option> element.
@@ -169,11 +121,12 @@ class CurrencySwitcherWidget extends WP_Widget {
 	 * @return void Displays HTML of currency <option>
 	 */
 	private function display_currency_option( Currency $currency, bool $with_symbol, bool $with_flag ) {
-		$code     = $currency->get_code();
-		$text     = $code;
-		$selected = $this->multi_currency->get_selected_currency()->code === $code ? ' selected' : '';
+		$code        = $currency->get_code();
+		$same_symbol = html_entity_decode( $currency->get_symbol() ) === $code;
+		$text        = $code;
+		$selected    = $this->multi_currency->get_selected_currency()->code === $code ? ' selected' : '';
 
-		if ( $with_symbol ) {
+		if ( $with_symbol && ! $same_symbol ) {
 			$text = $currency->get_symbol() . ' ' . $text;
 		}
 		if ( $with_flag ) {

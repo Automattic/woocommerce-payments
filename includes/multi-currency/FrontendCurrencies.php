@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Payments_Localization_Service;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -21,11 +23,11 @@ class FrontendCurrencies {
 	protected $multi_currency;
 
 	/**
-	 * Utils instance.
+	 * WC_Payments_Localization_Service instance.
 	 *
-	 * @var Utils
+	 * @var WC_Payments_Localization_Service
 	 */
-	protected $utils;
+	protected $localization_service;
 
 	/**
 	 * Multi-Currency currency formatting map.
@@ -37,14 +39,12 @@ class FrontendCurrencies {
 	/**
 	 * Constructor.
 	 *
-	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
-	 * @param Utils         $utils          The Utils instance.
+	 * @param MultiCurrency                    $multi_currency       The MultiCurrency instance.
+	 * @param WC_Payments_Localization_Service $localization_service The Localization Service instance.
 	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		$this->multi_currency = $multi_currency;
-		$this->utils          = $utils;
-
-		$this->load_locale_data();
+	public function __construct( MultiCurrency $multi_currency, WC_Payments_Localization_Service $localization_service ) {
+		$this->multi_currency       = $multi_currency;
+		$this->localization_service = $localization_service;
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 			// Currency hooks.
@@ -59,6 +59,15 @@ class FrontendCurrencies {
 	}
 
 	/**
+	 * Gets the store currency.
+	 *
+	 * @return  Currency  The store currency wrapped as a Currency object
+	 */
+	public function get_store_currency() {
+		return new Currency( get_option( 'woocommerce_currency' ) );
+	}
+
+	/**
 	 * Returns the currency code to be used by WooCommerce.
 	 *
 	 * @return string The code of the currency to be used.
@@ -70,54 +79,74 @@ class FrontendCurrencies {
 	/**
 	 * Returns the number of decimals to be used by WooCommerce.
 	 *
+	 * @param int $decimals The original decimal count.
+	 *
 	 * @return int The number of decimals.
 	 */
-	public function get_price_decimals(): int {
+	public function get_price_decimals( $decimals ): int {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		return absint( $this->get_currency_format( $currency_code )['num_decimals'] );
+		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
+			return absint( $this->localization_service->get_currency_format( $currency_code )['num_decimals'] );
+		}
+		return $decimals;
 	}
 
 	/**
 	 * Returns the decimal separator to be used by WooCommerce.
 	 *
+	 * @param string $separator The original separator.
+	 *
 	 * @return string The decimal separator.
 	 */
-	public function get_price_decimal_separator(): string {
+	public function get_price_decimal_separator( $separator ): string {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		return $this->get_currency_format( $currency_code )['decimal_sep'];
+		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
+			return $this->localization_service->get_currency_format( $currency_code )['decimal_sep'];
+		}
+		return $separator;
 	}
 
 	/**
 	 * Returns the thousand separator to be used by WooCommerce.
 	 *
+	 * @param string $separator The original separator.
+	 *
 	 * @return string The thousand separator.
 	 */
-	public function get_price_thousand_separator(): string {
+	public function get_price_thousand_separator( $separator ): string {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		return $this->get_currency_format( $currency_code )['thousand_sep'];
+		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
+			return $this->localization_service->get_currency_format( $currency_code )['thousand_sep'];
+		}
+		return $separator;
 	}
 
 	/**
 	 * Returns the currency format to be used by WooCommerce.
 	 *
+	 * @param string $format The original currency format.
+	 *
 	 * @return string The currency format.
 	 */
-	public function get_woocommerce_price_format(): string {
+	public function get_woocommerce_price_format( $format ): string {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		$currency_pos  = $this->get_currency_format( $currency_code )['currency_pos'];
+		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
+			$currency_pos = $this->localization_service->get_currency_format( $currency_code )['currency_pos'];
 
-		switch ( $currency_pos ) {
-			case 'left':
-				return '%1$s%2$s';
-			case 'right':
-				return '%2$s%1$s';
-			case 'left_space':
-				return '%1$s&nbsp;%2$s';
-			case 'right_space':
-				return '%2$s&nbsp;%1$s';
-			default:
-				return '%1$s%2$s';
+			switch ( $currency_pos ) {
+				case 'left':
+					return '%1$s%2$s';
+				case 'right':
+					return '%2$s%1$s';
+				case 'left_space':
+					return '%1$s&nbsp;%2$s';
+				case 'right_space':
+					return '%2$s&nbsp;%1$s';
+				default:
+					return '%1$s%2$s';
+			}
 		}
+		return $format;
 	}
 
 	/**
@@ -130,59 +159,5 @@ class FrontendCurrencies {
 	public function add_currency_to_cart_hash( $hash ): string {
 		$currency = $this->multi_currency->get_selected_currency();
 		return md5( $hash . $currency->get_code() . $currency->get_rate() );
-	}
-
-	/**
-	 * Retrieves the currency's format from mapped data.
-	 *
-	 * @param string $currency_code The currency code.
-	 *
-	 * @return array The currency's format.
-	 */
-	private function get_currency_format( $currency_code ): array {
-		// Default to USD settings if mapping not found.
-		$currency_format = [
-			'currency_pos' => 'left',
-			'thousand_sep' => ',',
-			'decimal_sep'  => '.',
-			'num_decimals' => 2,
-		];
-
-		$country = $this->utils->get_user_locale_country();
-
-		if ( ! empty( $this->currency_format[ $currency_code ] ) ) {
-			$currency_options = $this->currency_format[ $currency_code ];
-			// If there's no country-specific formatting, default to the first entry in the array.
-			$currency_format = $currency_options[ $country ] ?? reset( $currency_options );
-		}
-
-		return apply_filters( 'wcpay_multi_currency_' . strtolower( $currency_code ) . '_format', $currency_format, $country );
-	}
-
-	/**
-	 * Loads locale data from WooCommerce core (/i18n/locale-info.php) and maps it
-	 * to be used by currency.
-	 *
-	 * @return void
-	 */
-	private function load_locale_data() {
-		$locale_info = include WC()->plugin_path() . '/i18n/locale-info.php';
-
-		// Extract the currency formatting options from the locale info.
-		foreach ( $locale_info as $country => $locale ) {
-			$currency_code = $locale['currency_code'];
-
-			// Convert Norwegian Krone symbol to its ISO 4217 currency code.
-			if ( 'Kr' === $currency_code ) {
-				$currency_code = 'NOK';
-			}
-
-			$this->currency_format[ $currency_code ][ $country ] = [
-				'currency_pos' => $locale['currency_pos'],
-				'thousand_sep' => $locale['thousand_sep'],
-				'decimal_sep'  => $locale['decimal_sep'],
-				'num_decimals' => $locale['num_decimals'],
-			];
-		}
 	}
 }

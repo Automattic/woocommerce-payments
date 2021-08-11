@@ -23,6 +23,8 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useSettings: jest.fn(),
+	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
+	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 } ) );
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
@@ -66,13 +68,13 @@ describe( 'AddPaymentMethodsTask', () => {
 			screen.getByRole( 'checkbox', { name: 'Credit card / debit card' } )
 		).toBeChecked();
 		expect(
-			screen.getByRole( 'checkbox', { name: 'GiroPay' } )
+			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Sofort' } )
 		).not.toBeChecked();
 		expect(
-			screen.getByRole( 'checkbox', { name: 'Direct Debit Payments' } )
+			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).not.toBeChecked();
 		expect(
 			screen.getByRole( 'checkbox', {
@@ -99,13 +101,13 @@ describe( 'AddPaymentMethodsTask', () => {
 			} )
 		).toBeInTheDocument();
 		expect(
-			screen.queryByRole( 'checkbox', { name: 'GiroPay' } )
+			screen.queryByRole( 'checkbox', { name: 'giropay' } )
 		).toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
 		).not.toBeInTheDocument();
 		expect(
-			screen.queryByRole( 'checkbox', { name: 'Direct Debit Payments' } )
+			screen.queryByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).not.toBeInTheDocument();
 	} );
 
@@ -138,7 +140,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		// Marks the Giropay payment method as checked
 		userEvent.click(
 			screen.getByRole( 'checkbox', {
-				name: 'GiroPay',
+				name: 'giropay',
 			} )
 		);
 
