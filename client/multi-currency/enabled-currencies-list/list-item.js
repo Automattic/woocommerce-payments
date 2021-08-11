@@ -40,10 +40,18 @@ const EnabledCurrenciesListItem = ( {
 	return (
 		<li className={ classNames( 'enabled-currency', id ) }>
 			<div className="enabled-currency__container">
-				<div className="enabled-currency__flag">{ flag }</div>
+				<div className="enabled-currency__flag">
+					{ '' !== flag ? (
+						flag
+					) : (
+						<div className="enabled-currency__flag-text">
+							<span>{ code }</span>
+						</div>
+					) }
+				</div>
 				<div className="enabled-currency__label">{ name }</div>
 				<div className="enabled-currency__code">
-					({ symbol } { code })
+					({ symbol + ( symbol === code ? '' : ` ${ code }` ) })
 				</div>
 			</div>
 			<div className="enabled-currency__rate">

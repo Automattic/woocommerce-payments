@@ -40,7 +40,10 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 	/**
 	 * @dataProvider woocommerce_action_provider
 	 */
-	public function test_registers_woocommerce_action( $action, $function_name ) {
+	public function test_registers_internal_actions_with_account( $action, $function_name ) {
+		// Init Settings again to get proper registration of hooks/filters.
+		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency );
+
 		$this->assertNotFalse(
 			has_action( $action, [ $this->settings, $function_name ] ),
 			"Action '$action' was not registered with '$function_name'"
@@ -49,12 +52,26 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 
 	public function woocommerce_action_provider() {
 		return [
-			[ 'woocommerce_settings_wcpay_multi_currency', 'render_single_currency_breadcrumbs' ],
 			[ 'woocommerce_admin_field_wcpay_enabled_currencies_list', 'enabled_currencies_list' ],
 			[ 'woocommerce_admin_field_wcpay_currencies_settings_section_start', 'currencies_settings_section_start' ],
 			[ 'woocommerce_admin_field_wcpay_currencies_settings_section_end', 'currencies_settings_section_end' ],
 			[ 'woocommerce_admin_field_wcpay_single_currency_preview_helper', 'single_currency_preview_helper' ],
+			[ 'woocommerce_settings_wcpay_multi_currency', 'render_single_currency_breadcrumbs' ],
 		];
+	}
+
+	public function test_registers_external_action_with_account() {
+
+		// Init Settings again to get proper registration of hooks/filters.
+		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency );
+
+		$action        = 'admin_print_scripts';
+		$function_name = 'print_emoji_detection_script';
+
+		$this->assertNotFalse(
+			has_action( $action, $function_name ),
+			"Action '$action' was not registered with '$function_name'"
+		);
 	}
 
 	public function test_render_single_currency_breadcrumbs_does_not_render_when_blank_section() {

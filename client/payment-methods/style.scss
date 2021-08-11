@@ -1,6 +1,34 @@
 .payment-methods {
 	position: relative;
 
+	&__header {
+		justify-content: space-between;
+
+		.components-dropdown-menu__toggle.has-icon {
+			padding: 0;
+			min-width: unset;
+		}
+
+		button.components-dropdown-menu__menu-item:last-of-type {
+			color: rgb( 220, 30, 30 );
+		}
+	}
+
+	&__heading {
+		margin: 0;
+		font-size: 16px;
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		line-height: 2em;
+
+		> * {
+			&:not( :last-child ) {
+				margin-right: 4px;
+			}
+		}
+	}
+
 	&__available-methods-container {
 		@include modal-footer-buttons-left;
 		align-items: center;
@@ -27,6 +55,33 @@
 
 		&:last-child {
 			margin-right: 1px; // 1px to accommodate for box-shadow
+		}
+	}
+
+	&__express-checkouts {
+		background: url( '../../assets/images/upe_preview_illustration.svg' )
+			no-repeat right;
+		background-color: #f7edf7;
+		background-size: auto;
+
+		h3,
+		p {
+			padding-right: 215px;
+		}
+
+		&-get-started {
+			margin-right: 16px;
+		}
+		&-actions {
+			padding-top: 11px;
+		}
+
+		@media ( max-width: 1024px ) {
+			h3,
+			p {
+				padding-right: 0;
+			}
+			background-image: none;
 		}
 	}
 

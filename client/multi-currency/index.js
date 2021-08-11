@@ -51,6 +51,14 @@ if ( storeSettingsSection ) {
 	toggleSettingsSectionDisplay();
 }
 
+const enabledCurrenciesOnboarding = document.querySelector(
+	'#wcpay_enabled_currencies_onboarding_cta'
+);
+
+if ( enabledCurrenciesOnboarding ) {
+	submitButton.style.display = 'none';
+}
+
 /**
  * Single currency settings
  */
@@ -58,10 +66,6 @@ let rateType = 'automatic';
 
 const automaticRate = document.querySelector(
 	'[name=wcpay_multi_currency_automatic_exchange_rate]'
-);
-
-const numDecimals = document.querySelector(
-	'[name=wcpay_multi_currency_num_decimals]'
 );
 
 const manualRate = document.querySelector(
@@ -87,6 +91,9 @@ const previewDisplay = document.querySelector(
 function updatePreview() {
 	// Get needed field values and update field.
 	const rate = 'manual' === rateType ? manualRate.value : automaticRate.value;
+	const currencyCode = new URLSearchParams( document.location.search )
+		.get( 'section' )
+		.toUpperCase();
 	let total = previewAmount.value * rate;
 
 	if ( 'none' !== rounding.value ) {
@@ -94,11 +101,22 @@ function updatePreview() {
 	}
 
 	total += parseFloat( charm.value );
-	total = total.toFixed( parseInt( numDecimals.value, 10 ) );
-	total = isNaN( total )
-		? __( 'Please enter a valid number', 'woocommerce-payments' )
-		: total;
-	previewDisplay.innerHTML = total;
+	if ( isNaN( total ) ) {
+		previewDisplay.innerHTML = __(
+			'Please enter a valid number',
+			'woocommerce-payments'
+		);
+		return;
+	}
+
+	previewDisplay.innerHTML = total.toLocaleString(
+		undefined, // Use the default locale for the given currency.
+		{
+			style: 'currency',
+			currency: currencyCode,
+			currencyDisplay: 'narrowSymbol',
+		}
+	);
 }
 
 const hideShowManualField = ( show ) => {

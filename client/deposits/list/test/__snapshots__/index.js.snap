@@ -153,7 +153,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
             <tbody>
               <tr>
                 <th
-                  class="woocommerce-table__header info-button is-sorted"
+                  class="woocommerce-table__header info-button is-sorted is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -204,7 +204,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -262,7 +262,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -278,7 +278,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -296,7 +296,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
               </tr>
               <tr>
                 <th
-                  class="woocommerce-table__item info-button is-sorted"
+                  class="woocommerce-table__item info-button is-sorted is-left-aligned"
                   scope="row"
                 >
                   <a
@@ -329,7 +329,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -349,11 +349,11 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
                     tabindex="-1"
                   >
-                    $20.00
+                    $20.00 USD
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -365,7 +365,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -379,7 +379,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
               </tr>
               <tr>
                 <th
-                  class="woocommerce-table__item info-button is-sorted"
+                  class="woocommerce-table__item info-button is-sorted is-left-aligned"
                   scope="row"
                 >
                   <a
@@ -412,7 +412,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -432,11 +432,11 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
                     tabindex="-1"
                   >
-                    $30.00
+                    $30.00 USD
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -448,7 +448,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -486,7 +486,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
             <span
               class="woocommerce-table__summary-value"
             >
-              $50.00
+              $50.00 USD
             </span>
             <span
               class="woocommerce-table__summary-label"
@@ -654,7 +654,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
             <tbody>
               <tr>
                 <th
-                  class="woocommerce-table__header info-button is-sorted"
+                  class="woocommerce-table__header info-button is-sorted is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -705,7 +705,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -763,7 +763,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -779,7 +779,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -797,7 +797,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
               </tr>
               <tr>
                 <th
-                  class="woocommerce-table__item info-button is-sorted"
+                  class="woocommerce-table__item info-button is-sorted is-left-aligned"
                   scope="row"
                 >
                   <a
@@ -830,7 +830,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -850,11 +850,11 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
                     tabindex="-1"
                   >
-                    $20.00
+                    $20.00 USD
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -866,7 +866,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -880,7 +880,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
               </tr>
               <tr>
                 <th
-                  class="woocommerce-table__item info-button is-sorted"
+                  class="woocommerce-table__item info-button is-sorted is-left-aligned"
                   scope="row"
                 >
                   <a
@@ -913,7 +913,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -933,11 +933,11 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
                     tabindex="-1"
                   >
-                    $30.00
+                    $30.00 USD
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -949,7 +949,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"

@@ -13,11 +13,13 @@ import PaymentMethodsSelector from '..';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
-} from 'data';
+} from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
+	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
+	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 } ) );
 
 describe( 'PaymentMethodsSelector', () => {
@@ -28,6 +30,7 @@ describe( 'PaymentMethodsSelector', () => {
 			'giropay',
 			'sofort',
 			'sepa_debit',
+			'ideal',
 		] );
 	} );
 
@@ -72,10 +75,10 @@ describe( 'PaymentMethodsSelector', () => {
 		).toBeInTheDocument();
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 3 );
+		expect( paymentMethods ).toHaveLength( 4 );
 
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
-			name: 'GiroPay',
+			name: 'giropay',
 		} );
 		expect( giroPayCheckbox ).not.toBeChecked();
 
@@ -85,9 +88,14 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( sofortCheckbox ).not.toBeChecked();
 
 		const sepaCheckbox = screen.getByRole( 'checkbox', {
-			name: 'Direct Debit Payments',
+			name: 'Direct debit payment',
 		} );
 		expect( sepaCheckbox ).not.toBeChecked();
+
+		const idealCheckbox = screen.getByRole( 'checkbox', {
+			name: 'iDEAL',
+		} );
+		expect( idealCheckbox ).not.toBeChecked();
 
 		expect(
 			screen.getByRole( 'button', {
@@ -134,10 +142,13 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( addPaymentMethodButton );
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 2 );
+		expect( paymentMethods ).toHaveLength( 3 );
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
 		).toBeNull();
+		expect(
+			screen.queryByRole( 'checkbox', { name: 'iDEAL' } )
+		).not.toBeNull();
 	} );
 
 	test( 'Selecting payment methods does not update enabled payment methods', () => {
@@ -161,7 +172,21 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( paymentMethodCheckbox );
 
 		expect( paymentMethodCheckbox ).toBeChecked();
+
+		// closing the modal, to ensure that no methods have been added
+		user.click(
+			screen.getByRole( 'button', {
+				name: 'Cancel',
+			} )
+		);
+
 		expect( updateEnabledPaymentMethodIdsMock ).not.toHaveBeenCalled();
+
+		// re-opening the modal should present all the checkboxes in the un-checked state
+		user.click( addPaymentMethodButton );
+		screen.getAllByRole( 'checkbox' ).forEach( ( checkbox ) => {
+			expect( checkbox ).not.toBeChecked();
+		} );
 	} );
 
 	test( 'Disables the "Add selected" button until at least one payment method is checked', () => {
@@ -204,9 +229,14 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( addPaymentMethodButton );
 
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
-			name: 'GiroPay',
+			name: 'giropay',
 		} );
 		user.click( giroPayCheckbox );
+
+		const idealCheckbox = screen.getByRole( 'checkbox', {
+			name: 'iDEAL',
+		} );
+		user.click( idealCheckbox );
 
 		const addSelectedButton = screen.getByRole( 'button', {
 			name: 'Add selected',
@@ -216,6 +246,7 @@ describe( 'PaymentMethodsSelector', () => {
 			'card',
 			'sepa_debit',
 			'giropay',
+			'ideal',
 		] );
 		expect(
 			screen.queryByRole( 'button', {

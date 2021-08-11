@@ -28,6 +28,7 @@ const OverviewPage = () => {
 		additionalMethodsSetup,
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
+		needsHttpsSetup,
 	} = wcpaySettings;
 
 	const tasks = getTasks( {
@@ -35,22 +36,43 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		additionalMethodsSetup,
 		wpcomReconnectUrl,
+		needsHttpsSetup,
 	} );
 	const queryParams = getQuery();
 
 	const showKycSuccessNotice =
 		'1' === queryParams[ 'wcpay-connection-success' ];
 
+	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
+
 	return (
 		<Page isNarrow className="wcpay-overview">
 			{ showKycSuccessNotice && (
-				<Notice status="success" isDismissible={ false }>
+				<Notice
+					status="success"
+					isDismissible={ false }
+					className="wcpay-connection-success"
+				>
 					{ __(
 						"Thanks for verifying your business details. You're ready to start taking payments!",
 						'woocommerce-payments'
 					) }
 				</Notice>
 			) }
+
+			{ showLoginError && (
+				<Notice
+					status="error"
+					isDismissible={ false }
+					className="wcpay-login-error"
+				>
+					{ __(
+						'There was a problem redirecting you to the account dashboard. Please try again.',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
+
 			<TestModeNotice topic={ topics.overview } />
 			<DepositsInformation />
 			<AccountStatus
