@@ -914,7 +914,10 @@ class MultiCurrency {
 	private function read_currencies_from_cache() {
 		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION, [] );
 
-		if ( ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
+		if ( ! is_array( $currency_cache )
+			|| ! isset( $currency_cache['currencies'] )
+			|| ! isset( $currency_cache['expires'] )
+			|| ! isset( $currency_cache['updated'] ) ) {
 			// No option found or the data isn't in the format we expect.
 			return null;
 		}
