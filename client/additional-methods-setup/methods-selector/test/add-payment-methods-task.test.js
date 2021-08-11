@@ -65,26 +65,26 @@ describe( 'AddPaymentMethodsTask', () => {
 			</WizardTaskContext.Provider>
 		);
 
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Credit card / debit card' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Bancontact' } )
-		).not.toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'giropay' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Sofort' } )
-		).not.toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
-		).not.toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', {
-				name: 'Enable Apple Pay & Google Pay',
-			} )
-		).not.toBeChecked();
+		const expectedToBeChecked = [ 'Credit card / debit card', 'giropay' ];
+
+		expectedToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).toBeChecked();
+		} );
+
+		const expectedNotToBeChecked = [
+			'Bancontact',
+			'Sofort',
+			'Direct debit payment',
+			'Enable Apple Pay & Google Pay',
+		];
+
+		expectedNotToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).not.toBeChecked();
+		} );
 	} );
 
 	it( 'should not render the checkboxes that are not available', () => {
@@ -99,23 +99,25 @@ describe( 'AddPaymentMethodsTask', () => {
 			</WizardTaskContext.Provider>
 		);
 
-		expect(
-			screen.queryByRole( 'checkbox', {
-				name: 'Credit card / debit card',
-			} )
-		).toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'checkbox', { name: 'giropay' } )
-		).toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'checkbox', { name: 'Bancontact' } )
-		).not.toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
-		).not.toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'checkbox', { name: 'Direct debit payment' } )
-		).not.toBeInTheDocument();
+		const expectedInDocument = [ 'Credit card / debit card', 'giropay' ];
+
+		expectedInDocument.forEach( function ( checkboxName ) {
+			expect(
+				screen.queryByRole( 'checkbox', { name: checkboxName } )
+			).toBeInTheDocument();
+		} );
+
+		const expectedNotInDocument = [
+			'Bancontact',
+			'Sofort',
+			'Direct debit payment',
+		];
+
+		expectedNotInDocument.forEach( function ( checkboxName ) {
+			expect(
+				screen.queryByRole( 'checkbox', { name: checkboxName } )
+			).not.toBeInTheDocument();
+		} );
 	} );
 
 	it( 'should save the checkboxes state on "continue" click', async () => {
@@ -138,31 +140,20 @@ describe( 'AddPaymentMethodsTask', () => {
 			</WizardTaskContext.Provider>
 		);
 
-		// Marks the CC payment method as un-checked
-		userEvent.click(
-			screen.getByRole( 'checkbox', {
-				name: 'Credit card / debit card',
-			} )
-		);
-		// Marks the Bancontact payment method as checked
-		userEvent.click(
-			screen.getByRole( 'checkbox', {
-				name: 'Bancontact',
-			} )
-		);
-		// Marks the Giropay payment method as checked
-		userEvent.click(
-			screen.getByRole( 'checkbox', {
-				name: 'giropay',
-			} )
-		);
+		const checkboxesToClick = [
+			'Credit card / debit card', // Marks the CC payment method as un-checked.
+			'Bancontact', // Marks the Bancontact payment method as checked.
+			'giropay', // Marks the Giropay payment method as checked.
+			'Enable Apple Pay & Google Pay', // Enable 1-click checkouts.
+		];
 
-		// enable 1-click checkouts
-		userEvent.click(
-			screen.getByRole( 'checkbox', {
-				name: 'Enable Apple Pay & Google Pay',
-			} )
-		);
+		checkboxesToClick.forEach( function ( checkboxName ) {
+			userEvent.click(
+				screen.getByRole( 'checkbox', {
+					name: checkboxName,
+				} )
+			);
+		} );
 
 		expect( setCompletedMock ).not.toHaveBeenCalled();
 		expect( updateEnabledPaymentMethodIdsMock ).not.toHaveBeenCalled();
