@@ -39,14 +39,9 @@ function _manually_load_plugin() {
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
 	require_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 
-	// Enable and set a default currency to be used for the multi-currency tests because the default
+	// Set a default currency to be used for the multi-currency tests because the default
 	// is not loaded even though it's set during the tests setup.
-	update_option( '_wcpay_feature_customer_multi_currency', '1' );
 	update_option( 'woocommerce_currency', 'USD' );
-
-	// Set the 'wcpaydev_dev_mode' option to enable more currencies for now.
-	// TODO: Remove dev mode option here.
-	update_option( 'wcpaydev_dev_mode', true );
 
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
@@ -60,6 +55,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http.php';
 
 	// Load the gateway files, so subscriptions can be tested.
+	require_once $_plugin_dir . 'includes/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php';
 	require_once $_plugin_dir . 'includes/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 	require_once $_plugin_dir . 'includes/class-wc-payment-gateway-wcpay.php';
 
@@ -67,6 +63,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-sections-overwrite.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-rest-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-orders-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-tos-controller.php';

@@ -6,6 +6,7 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 
 /**
  * Internal dependencies
@@ -14,13 +15,15 @@ import PaymentMethods from '..';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
-} from 'data';
-
+} from 'wcpay/data';
 import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
+import WcPayUpeContext from '../../settings/wcpay-upe-toggle/context';
 
 jest.mock( '../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
+	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
+	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 } ) );
 
 describe( 'PaymentMethods', () => {
@@ -31,6 +34,7 @@ describe( 'PaymentMethods', () => {
 			'giropay',
 			'sofort',
 			'sepa_debit',
+			'ideal',
 		] );
 	} );
 
@@ -103,7 +107,8 @@ describe( 'PaymentMethods', () => {
 
 		const giropay = screen.getByLabelText( 'giropay' );
 		const sofort = screen.getByLabelText( 'Sofort' );
-		[ giropay, sofort ].forEach( ( method ) => {
+		const ideal = screen.getByLabelText( 'iDEAL' );
+		[ giropay, sofort, ideal ].forEach( ( method ) => {
 			expect( method.closest( 'ul' ) ).toHaveClass(
 				'payment-methods__available-methods'
 			);
@@ -147,7 +152,7 @@ describe( 'PaymentMethods', () => {
 	test( 'clicking delete updates enabled method IDs', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'sepa_debit', 'giropay', 'sofort' ],
+			[ 'card', 'sepa_debit', 'giropay', 'sofort', 'ideal' ],
 			updateEnabledMethodsMock,
 		] );
 
@@ -171,10 +176,68 @@ describe( 'PaymentMethods', () => {
 			'sepa_debit',
 			'giropay',
 			'sofort',
+			'ideal',
 		] );
 	} );
 
-	test( 'renders the Feedback/Disable Header when UPE is enabled', () => {
+	test( 'express payments rendered when UPE preview feture flag is enabled', () => {
+		const featureFlagContext = {
+			featureFlags: { upeSettingsPreview: true, upe: false },
+		};
+		const upeContext = {
+			isUpeEnabled: false,
+			setIsUpeEnabled: () => null,
+			status: 'resolved',
+		};
+
+		render(
+			<WCPaySettingsContext.Provider value={ featureFlagContext }>
+				<WcPayUpeContext.Provider value={ upeContext }>
+					<PaymentMethods />
+				</WcPayUpeContext.Provider>
+			</WCPaySettingsContext.Provider>
+		);
+
+		const enableWooCommercePaymentText = screen.getByText(
+			'Enable the new WooCommerce Payments checkout experience'
+		);
+
+		expect( enableWooCommercePaymentText ).toBeInTheDocument();
+	} );
+
+	test.each( [
+		[ false, false ],
+		[ false, true ],
+		[ true, true ],
+	] )(
+		'express payments should not rendered when UPE preview = %s and UPE = %s',
+		( upeSettingsPreview, upe ) => {
+			const featureFlagContext = {
+				featureFlags: { upeSettingsPreview, upe },
+			};
+			const upeContext = {
+				isUpeEnabled: upe,
+				setIsUpeEnabled: () => null,
+				status: 'resolved',
+			};
+
+			render(
+				<WCPaySettingsContext.Provider value={ featureFlagContext }>
+					<WcPayUpeContext.Provider value={ upeContext }>
+						<PaymentMethods />
+					</WcPayUpeContext.Provider>
+				</WCPaySettingsContext.Provider>
+			);
+
+			const enableWooCommercePaymentText = screen.queryByText(
+				'Enable the new WooCommerce Payments checkout experience'
+			);
+
+			expect( enableWooCommercePaymentText ).toBeNull();
+		}
+	);
+
+	test( 'renders the feedback elements when UPE is enabled', () => {
 		render(
 			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
 				<PaymentMethods />
@@ -185,9 +248,12 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		expect( disableUPEButton ).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Payment methods' ).parentElement
+		).toHaveTextContent( 'Payment methods Early access' );
 	} );
 
-	test( 'Does not render the Feedback/Disable Header when UPE is disabled', () => {
+	test( 'Does not render the feedback elements when UPE is disabled', () => {
 		render(
 			<WcPayUpeContextProvider defaultIsUpeEnabled={ false }>
 				<PaymentMethods />
@@ -199,5 +265,48 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		expect( disableUPEButton ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Payment methods' )
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'clicking "Enable in your store" in express payments enable UPE and redirects', async () => {
+		Object.defineProperty( window, 'location', {
+			value: {
+				href: 'example.com/',
+			},
+		} );
+
+		const setIsUpeEnabledMock = jest.fn().mockResolvedValue( true );
+		const featureFlagContext = {
+			featureFlags: { upeSettingsPreview: true, upe: false },
+		};
+
+		render(
+			<WCPaySettingsContext.Provider value={ featureFlagContext }>
+				<WcPayUpeContext.Provider
+					value={ {
+						setIsUpeEnabled: setIsUpeEnabledMock,
+						status: 'resolved',
+						isUpeEnabled: false,
+					} }
+				>
+					<PaymentMethods />
+				</WcPayUpeContext.Provider>
+			</WCPaySettingsContext.Provider>
+		);
+
+		const enableInYourStoreButton = screen.queryByRole( 'button', {
+			name: 'Enable in your store',
+		} );
+
+		expect( enableInYourStoreButton ).toBeInTheDocument();
+
+		expect( setIsUpeEnabledMock ).not.toHaveBeenCalled();
+		await user.click( enableInYourStoreButton );
+		expect( setIsUpeEnabledMock ).toHaveBeenCalledWith( true );
+		expect( window.location.href ).toEqual(
+			'admin.php?page=wc-admin&task=woocommerce-payments--additional-payment-methods'
+		);
 	} );
 } );

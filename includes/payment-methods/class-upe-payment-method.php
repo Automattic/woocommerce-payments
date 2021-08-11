@@ -13,13 +13,14 @@ use WP_User;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payment_Token_WCPay_SEPA;
-use WC_Subscriptions;
-use WC_Subscriptions_Cart;
+use WC_Payments_Subscriptions_Utilities;
 
 /**
  * Extendable abstract class for payment methods.
  */
 abstract class UPE_Payment_Method {
+
+	use WC_Payments_Subscriptions_Utilities;
 
 	/**
 	 * Stripe key name
@@ -48,6 +49,14 @@ abstract class UPE_Payment_Method {
 	 * @var WC_Payments_Token_Service
 	 */
 	protected $token_service;
+
+	/**
+	 * Supported presentment currencies for which charges for a payment method can be processed
+	 * Empty if all currencies are supported
+	 *
+	 * @var array
+	 */
+	protected $currencies;
 
 	/**
 	 * Create instance of payment method
@@ -102,6 +111,16 @@ abstract class UPE_Payment_Method {
 	}
 
 	/**
+	 * Returns boolean dependent on whether payment method will accept charges
+	 * with chosen currency
+	 *
+	 * @return bool
+	 */
+	public function is_currency_valid() {
+		return empty( $this->currencies ) || in_array( get_woocommerce_currency(), $this->currencies, true );
+	}
+
+	/**
 	 * Add payment method to user and return WC payment token
 	 *
 	 * @param WP_User $user User to get payment token from.
@@ -111,18 +130,5 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_payment_token_for_user( $user, $payment_method_id ) {
 		return $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
-	}
-
-	/**
-	 * Returns boolean on whether current WC_Cart or WC_Subscriptions_Cart
-	 * contains a subscription or subscription renewal item
-	 *
-	 * @return bool
-	 */
-	public function is_subscription_item_in_cart() {
-		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
-			return WC_Subscriptions_Cart::cart_contains_subscription() || 0 < count( wcs_get_order_type_cart_items( 'renewal' ) );
-		}
-		return false;
 	}
 }

@@ -16,8 +16,6 @@ let orderAmount;
 
 describe( 'Order > Full refund', () => {
 	beforeAll( async () => {
-		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
-
 		// Place an order to refund later
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
@@ -65,7 +63,7 @@ describe( 'Order > Full refund', () => {
 		await page.waitForSelector( 'button.do-api-refund' );
 
 		// Initiate a refund
-		await expect( page ).toFill( '.refund_order_item_qty', '1' );
+		await expect( page ).toFill( '.refund_line_total', orderAmount );
 		await expect( page ).toFill( '#refund_reason', 'No longer wanted' );
 
 		await expect( page ).toMatchElement( '.do-api-refund', {
@@ -97,7 +95,7 @@ describe( 'Order > Full refund', () => {
 
 			// Verify system note was added
 			expect( page ).toMatchElement( '.system-note', {
-				text: `A refund of ${ orderAmount } was successfully processed using WooCommerce Payments. Reason: No longer wanted`,
+				text: `A refund of ${ orderAmount } USD was successfully processed using WooCommerce Payments. Reason: No longer wanted`,
 			} ),
 		] );
 		await takeScreenshot( 'merchant-orders-full-refund_refunded' );

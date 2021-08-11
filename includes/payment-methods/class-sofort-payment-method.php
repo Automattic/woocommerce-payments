@@ -25,20 +25,7 @@ class Sofort_Payment_Method extends UPE_Payment_Method {
 		parent::__construct( $token_service );
 		$this->stripe_id   = 'sofort';
 		$this->title       = 'Sofort';
-		$this->is_reusable = true;
+		$this->is_reusable = false;
+		$this->currencies  = [ 'EUR' ];
 	}
-
-	/**
-	 * Add payment method to user and return WC payment token
-	 *
-	 * @param WP_User     $user User to get payment token from.
-	 * @param string|bool $payment_method_id Stripe payment method ID string.
-	 *
-	 * @return WC_Payment_Token_WCPay_SEPA WC object for payment token.
-	 */
-	public function get_payment_token_for_user( $user, $payment_method_id = false ) {
-		// TODO: This function will need to work a little differently...
-		return $this->token_service->add_payment_method_to_user( $user, $payment_method_id );
-	}
-
 }

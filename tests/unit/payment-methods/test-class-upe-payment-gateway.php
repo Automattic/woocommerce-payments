@@ -32,9 +32,24 @@ use WP_User;
 use Exception;
 
 /**
+ * Overriding global function within namespace for testing
+ */
+function get_woocommerce_currency() {
+	return UPE_Payment_Gateway_Test::$mock_site_currency ? UPE_Payment_Gateway_Test::$mock_site_currency : \get_woocommerce_currency();
+}
+
+/**
  * UPE_Payment_Gateway unit tests
  */
 class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
+
+	/**
+	 * Mock site currency string
+	 *
+	 * @var string
+	 */
+	public static $mock_site_currency = '';
+
 	/**
 	 * System under test.
 	 *
@@ -99,8 +114,9 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	 * @var array
 	 */
 	private $mock_payment_result = [
-		'result'   => 'success',
-		'redirect' => 'testURL/key=mock_order_key',
+		'result'         => 'success',
+		'payment_needed' => true,
+		'redirect'       => 'testURL/key=mock_order_key',
 	];
 
 	/**
@@ -114,7 +130,18 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_intention', 'create_setup_intention', 'update_intention', 'get_intent', 'get_setup_intent', 'get_payment_method', 'is_server_connected' ] )
+			->setMethods(
+				[
+					'create_intention',
+					'create_setup_intention',
+					'update_intention',
+					'get_intent',
+					'get_setup_intent',
+					'get_payment_method',
+					'is_server_connected',
+					'get_charge',
+				]
+			)
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -141,6 +168,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			CC_Payment_Method::class,
 			Giropay_Payment_Method::class,
 			Sofort_Payment_Method::class,
+			Ideal_Payment_Method::class,
 		];
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
@@ -167,7 +195,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				[
 					'get_return_url',
 					'manage_customer_details_for_order',
-					'process_payment_using_saved_method',
+					'parent_process_payment',
 				]
 			)
 			->getMock();
@@ -181,7 +209,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			);
 		$this->mock_upe_gateway
 			->expects( $this->any() )
-			->method( 'process_payment_using_saved_method' )
+			->method( 'parent_process_payment' )
 			->will(
 				$this->returnValue( $this->mock_payment_result )
 			);
@@ -232,6 +260,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				'cus_12345',
 				[
 					'merchant_reference' => (string) $order_id,
+					'customer_reference' => (string) $order_id,
 					'shipping_amount'    => 1000.0,
 					'line_items'         => [
 						(object) [
@@ -258,6 +287,69 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			);
 
 		$result = $this->mock_upe_gateway->update_payment_intent( $intent_id, $order_id, $save_payment_method );
+	}
+
+	public function test_update_payment_intent_with_selected_upe_payment_method() {
+		$order                     = WC_Helper_Order::create_order();
+		$order_id                  = $order->get_id();
+		$product_item              = current( $order->get_items( 'line_item' ) );
+		$intent_id                 = 'pi_mock';
+		$user                      = '';
+		$customer_id               = 'cus_12345';
+		$save_payment_method       = true;
+		$selected_upe_payment_type = 'giropay';
+
+		$this->set_cart_contains_subscription_items( false );
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'manage_customer_details_for_order' )
+			->will(
+				$this->returnValue( [ $user, $customer_id ] )
+			);
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'create_customer_for_user' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_intention' )
+			->with(
+				'pi_mock',
+				5000,
+				'usd',
+				true,
+				'cus_12345',
+				[
+					'merchant_reference' => (string) $order_id,
+					'shipping_amount'    => 1000.0,
+					'line_items'         => [
+						(object) [
+							'product_code'        => 30,
+							'product_description' => 'Beanie with Logo',
+							'unit_cost'           => 1800,
+							'quantity'            => 1,
+							'tax_amount'          => 270,
+							'discount_amount'     => 0,
+							'product_code'        => $product_item->get_product_id(),
+							'product_description' => 'Dummy Product',
+							'unit_cost'           => 1000.0,
+							'quantity'            => 4,
+							'tax_amount'          => 0.0,
+							'discount_amount'     => 0.0,
+						],
+					],
+					'customer_reference' => (string) $order_id,
+				],
+				'giropay'
+			)
+			->willReturn(
+				[
+					'sucess' => 'true',
+				]
+			);
+
+		$result = $this->mock_upe_gateway->update_payment_intent( $intent_id, $order_id, $save_payment_method, $selected_upe_payment_type );
 	}
 
 	public function test_create_payment_intent_uses_order_amount_if_order() {
@@ -338,14 +430,18 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	}
 
 	public function test_process_payment_returns_correct_redirect_url() {
-		$order    = WC_Helper_Order::create_order();
-		$order_id = $order->get_id();
+		$order                         = WC_Helper_Order::create_order();
+		$order_id                      = $order->get_id();
+		$_POST['wc_payment_intent_id'] = 'pi_abc123';
 
 		$this->set_cart_contains_subscription_items( false );
 
 		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
 
+		unset( $_POST['wc_payment_intent_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
 		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( true, $result['payment_needed'] );
 		$this->assertRegExp( "/order_id=$order_id/", $result['redirect_url'] );
 		$this->assertRegExp( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
 		$this->assertRegExp( '/save_payment_method=no/', $result['redirect_url'] );
@@ -355,15 +451,17 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
 
-		$gateway_id                   = UPE_Payment_Gateway::GATEWAY_ID;
-		$save_payment_param           = "wc-$gateway_id-new-payment-method";
-		$_POST[ $save_payment_param ] = 'yes';
+		$gateway_id                    = UPE_Payment_Gateway::GATEWAY_ID;
+		$save_payment_param            = "wc-$gateway_id-new-payment-method";
+		$_POST[ $save_payment_param ]  = 'yes';
+		$_POST['wc_payment_intent_id'] = 'pi_abc123';
 
 		$this->set_cart_contains_subscription_items( false );
 
 		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
 
-		unset( $_POST[ $save_payment_param ] );// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		unset( $_POST[ $save_payment_param ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		unset( $_POST['wc_payment_intent_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertRegExp( "/order_id=$order_id/", $result['redirect_url'] );
@@ -378,6 +476,25 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->set_cart_contains_subscription_items( false );
 
 		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+
+		$this->mock_upe_gateway
+			->expects( $this->never() )
+			->method( 'manage_customer_details_for_order' );
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertRegExp( '/key=mock_order_key/', $result['redirect'] );
+	}
+
+	public function test_process_payment_returns_correct_redirect_when_using_payment_request() {
+		$order                         = WC_Helper_Order::create_order();
+		$_POST['payment_request_type'] = 'google_pay';
+
+		$this->set_cart_contains_subscription_items( false );
+
+		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+
+		$this->mock_upe_gateway
+			->expects( $this->never() )
+			->method( 'manage_customer_details_for_order' );
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertRegExp( '/key=mock_order_key/', $result['redirect'] );
 	}
@@ -511,9 +628,78 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'processing', $result_order->get_status() );
 	}
 
+	public function test_process_redirect_setup_intent_succeded() {
+		$order                  = WC_Helper_Order::create_order();
+		$order_id               = $order->get_id();
+		$save_payment_method    = true;
+		$user                   = wp_get_current_user();
+		$intent_status          = 'succeeded';
+		$client_secret          = 'cs_mock';
+		$customer_id            = 'cus_mock';
+		$intent_id              = 'si_mock';
+		$payment_method_id      = 'pm_mock';
+		$token                  = WC_Helper_Token::create_token( $payment_method_id );
+		$payment_method_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'credit',
+			],
+		];
+
+		$order->set_shipping_total( 0 );
+		$order->set_shipping_tax( 0 );
+		$order->set_cart_tax( 0 );
+		$order->set_total( 0 );
+		$order->save();
+
+		$setup_intent = [
+			'client_secret'          => $client_secret,
+			'status'                 => $intent_status,
+			'payment_method'         => $payment_method_id,
+			'payment_method_options' => [
+				'card' => [
+					'request_three_d_secure' => 'automatic',
+				],
+			],
+			'last_setup_error'       => [],
+		];
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'manage_customer_details_for_order' )
+			->will(
+				$this->returnValue( [ $user, $customer_id ] )
+			);
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'get_setup_intent' )
+			->with( $intent_id )
+			->will(
+				$this->returnValue( $setup_intent )
+			);
+
+		$this->mock_token_service->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->will(
+				$this->returnValue( $token )
+			);
+
+		$this->set_cart_contains_subscription_items( true );
+
+		$this->mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+
+		$result_order = wc_get_order( $order_id );
+
+		$this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
+		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
+		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
+		$this->assertEquals( 'processing', $result_order->get_status() );
+		$this->assertEquals( 1, count( $result_order->get_payment_tokens() ) );
+	}
+
 	public function test_process_redirect_payment_save_payment_token() {
 		$order                  = WC_Helper_Order::create_order();
-		$token                  = WC_Helper_Token::create_token( 'pm_mock' );
 		$order_id               = $order->get_id();
 		$save_payment_method    = true;
 		$user                   = wp_get_current_user();
@@ -523,6 +709,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$customer_id            = 'cus_mock';
 		$intent_id              = 'pi_mock';
 		$payment_method_id      = 'pm_mock';
+		$token                  = WC_Helper_Token::create_token( $payment_method_id );
 		$payment_method_details = [
 			'type' => 'card',
 			'card' => [
@@ -617,6 +804,9 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$sofort_details            = [
 			'type' => 'sofort',
 		];
+		$ideal_details             = [
+			'type' => 'ideal',
+		];
 
 		$charge_payment_method_details  = [
 			$visa_credit_details,
@@ -624,17 +814,19 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			$mastercard_credit_details,
 			$giropay_details,
 			$sofort_details,
+			$ideal_details,
 		];
 		$expected_payment_method_titles = [
-			'Visa credit card (WooCommerce Payments)',
-			'Visa debit card (WooCommerce Payments)',
-			'Mastercard credit card (WooCommerce Payments)',
-			'Giropay (WooCommerce Payments)',
-			'Sofort (WooCommerce Payments)',
+			'Visa credit card',
+			'Visa debit card',
+			'Mastercard credit card',
+			'giropay',
+			'Sofort',
+			'iDEAL',
 		];
 
 		foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
-			$this->mock_upe_gateway->set_payment_method_title_for_order( $order, $payment_method_details );
+			$this->mock_upe_gateway->set_payment_method_title_for_order( $order, $payment_method_details['type'], $payment_method_details );
 			$this->assertEquals( $expected_payment_method_titles[ $i ], $order->get_payment_method_title() );
 		}
 	}
@@ -670,11 +862,15 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$mock_sofort_details     = [
 			'type' => 'sofort',
 		];
+		$mock_ideal_details      = [
+			'type' => 'ideal',
+		];
 
 		$this->set_cart_contains_subscription_items( false );
 		$card_method    = $this->mock_payment_methods['card'];
 		$giropay_method = $this->mock_payment_methods['giropay'];
 		$sofort_method  = $this->mock_payment_methods['sofort'];
+		$ideal_method   = $this->mock_payment_methods['ideal'];
 
 		$this->assertEquals( 'card', $card_method->get_id() );
 		$this->assertEquals( 'Credit card / debit card', $card_method->get_title() );
@@ -685,8 +881,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
 
 		$this->assertEquals( 'giropay', $giropay_method->get_id() );
-		$this->assertEquals( 'Giropay', $giropay_method->get_title() );
-		$this->assertEquals( 'Giropay', $giropay_method->get_title( $mock_giropay_details ) );
+		$this->assertEquals( 'giropay', $giropay_method->get_title() );
+		$this->assertEquals( 'giropay', $giropay_method->get_title( $mock_giropay_details ) );
 		$this->assertTrue( $giropay_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_reusable() );
 
@@ -694,8 +890,13 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Sofort', $sofort_method->get_title() );
 		$this->assertEquals( 'Sofort', $sofort_method->get_title( $mock_sofort_details ) );
 		$this->assertTrue( $sofort_method->is_enabled_at_checkout() );
-		$this->assertTrue( $sofort_method->is_reusable() );
-		$this->assertEquals( $mock_token, $sofort_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
+		$this->assertFalse( $sofort_method->is_reusable() );
+
+		$this->assertEquals( 'ideal', $ideal_method->get_id() );
+		$this->assertEquals( 'iDEAL', $ideal_method->get_title() );
+		$this->assertEquals( 'iDEAL', $ideal_method->get_title( $mock_ideal_details ) );
+		$this->assertTrue( $ideal_method->is_enabled_at_checkout() );
+		$this->assertFalse( $ideal_method->is_reusable() );
 	}
 
 	public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
@@ -703,10 +904,35 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$card_method    = $this->mock_payment_methods['card'];
 		$giropay_method = $this->mock_payment_methods['giropay'];
 		$sofort_method  = $this->mock_payment_methods['sofort'];
+		$ideal_method   = $this->mock_payment_methods['ideal'];
 
 		$this->assertTrue( $card_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_enabled_at_checkout() );
-		$this->assertTrue( $sofort_method->is_enabled_at_checkout() );
+		$this->assertFalse( $sofort_method->is_enabled_at_checkout() );
+		$this->assertFalse( $ideal_method->is_enabled_at_checkout() );
+	}
+
+	public function test_only_valid_payment_methods_returned_for_currency() {
+		$card_method    = $this->mock_payment_methods['card'];
+		$giropay_method = $this->mock_payment_methods['giropay'];
+		$sofort_method  = $this->mock_payment_methods['sofort'];
+		$ideal_method   = $this->mock_payment_methods['ideal'];
+
+		self::$mock_site_currency = 'EUR';
+
+		$this->assertTrue( $card_method->is_currency_valid() );
+		$this->assertTrue( $giropay_method->is_currency_valid() );
+		$this->assertTrue( $sofort_method->is_currency_valid() );
+		$this->assertTrue( $ideal_method->is_currency_valid() );
+
+		self::$mock_site_currency = 'USD';
+
+		$this->assertTrue( $card_method->is_currency_valid() );
+		$this->assertFalse( $giropay_method->is_currency_valid() );
+		$this->assertFalse( $sofort_method->is_currency_valid() );
+		$this->assertFalse( $ideal_method->is_currency_valid() );
+
+		self::$mock_site_currency = '';
 	}
 
 	public function test_create_token_from_setup_intent_adds_token() {

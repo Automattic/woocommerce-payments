@@ -20,6 +20,7 @@ import {
 	useAccountStatementDescriptor,
 	useManualCapture,
 	useGetSavingError,
+	useSavedCards,
 } from '../../data';
 import './style.scss';
 
@@ -33,6 +34,7 @@ const TransactionsAndDeposits = () => {
 		isManualCaptureEnabled,
 		setIsManualCaptureEnabled,
 	] = useManualCapture();
+	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
 	const [
 		accountStatementDescriptor,
 		setAccountStatementDescriptor,
@@ -46,6 +48,19 @@ const TransactionsAndDeposits = () => {
 				<h4>
 					{ __( 'Transaction preferences', 'woocommerce-payments' ) }
 				</h4>
+				<CheckboxControl
+					checked={ isSavedCardsEnabled }
+					onChange={ setIsSavedCardsEnabled }
+					label={ __(
+						'Enable payments via saved cards',
+						'woocommerce-payments'
+					) }
+					help={ __(
+						'When enabled, users will be able to pay with a saved card during checkout. ' +
+							'Card details are stored in our platform, not on your store.',
+						'woocommerce-payments'
+					) }
+				/>
 				<CheckboxControl
 					checked={ isManualCaptureEnabled }
 					onChange={ setIsManualCaptureEnabled }
