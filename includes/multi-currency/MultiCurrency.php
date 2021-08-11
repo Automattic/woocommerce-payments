@@ -455,6 +455,7 @@ class MultiCurrency {
 	private function initialize_enabled_currencies() {
 		$available_currencies     = $this->get_available_currencies();
 		$enabled_currency_codes   = get_option( $this->id . '_enabled_currencies', [] );
+		$enabled_currency_codes   = is_array( $enabled_currency_codes ) ? $enabled_currency_codes : [];
 		$default_code             = $this->get_default_currency()->get_code();
 		$default                  = [];
 		$enabled_currency_codes[] = $default_code;
