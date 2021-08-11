@@ -130,7 +130,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'should display a notice when one of the enabled methods is a PLN method', () => {
+	it( 'should display a notice when one of the enabled methods is both EUR and PLN method', () => {
 		render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
@@ -140,7 +140,15 @@ describe( 'CurrencyInformationForMethods', () => {
 		);
 
 		expect(
-			screen.queryByText( /we\'ll add Polish złoty \(zł\) to your store/ )
+			screen.queryByText(
+				/(we\'ll add|and) Euro \(€\) (and|to your store)/
+			)
+		).toBeInTheDocument();
+
+		expect(
+			screen.queryByText(
+				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
+			)
 		).toBeInTheDocument();
 	} );
 } );

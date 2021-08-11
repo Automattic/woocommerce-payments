@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
+import _ from 'lodash';
 import { sprintf, __ } from '@wordpress/i18n';
 import interpolateComponents from 'interpolate-components';
 
@@ -12,6 +13,22 @@ import { useCurrencies, useEnabledCurrencies } from '../../data';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import InlineNotice from '../inline-notice';
 import PaymentMethodsMap from '../../payment-methods-map';
+
+const ListToCommaSeparatedSentencePartConverter = ( items ) => {
+	if ( 1 === items.length ) {
+		return items[ 0 ];
+	} else if ( 2 === items.length ) {
+		return items.join( ' ' + __( 'and', 'woocommerce-payments' ) + ' ' );
+	}
+	const lastItem = items.pop();
+	return (
+		items.join( ', ' ) +
+		' ' +
+		__( 'and', 'woocommerce-payments' ) +
+		' ' +
+		lastItem
+	);
+};
 
 const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 	const {
@@ -28,62 +45,36 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		( currency ) => currency.id
 	);
 
-	const notices = [];
+	const paymentMethodsWithMissingCurrencies = [];
 	const missingCurrencies = [];
+	const missingCurrencyLabels = [];
 
 	selectedMethods.map( ( paymentMethod ) => {
 		if ( 'undefined' !== typeof PaymentMethodsMap[ paymentMethod ] ) {
 			PaymentMethodsMap[ paymentMethod ].currencies.map( ( currency ) => {
 				if (
-					! enabledCurrenciesIds.includes( currency.toLowerCase() ) &&
-					! missingCurrencies.includes( currency )
+					! enabledCurrenciesIds.includes( currency.toLowerCase() )
 				) {
 					missingCurrencies.push( currency );
 
-					const paymentMethodsUsingCurrency = selectedMethods
-						.map( ( pm ) => {
-							return 0 <
-								PaymentMethodsMap[ pm ].currencies.filter(
-									( c ) => currency === c
-								).length
-								? PaymentMethodsMap[ pm ].label
-								: false;
-						} )
-						.filter( ( _ ) => _ );
+					paymentMethodsWithMissingCurrencies.push(
+						PaymentMethodsMap[ paymentMethod ].label
+					);
 
-					const missingCurrency =
+					const missingCurrencyInfo =
 						currencyInfo.available[ currency ] || null;
 
-					notices.push(
-						<InlineNotice
-							key={ currency }
-							status="info"
-							isDismissible={ false }
-						>
-							{ interpolateComponents( {
-								mixedString: sprintf(
-									__(
-										"%s requires an additional currency, so {{strong}}we'll add %s to your store{{/strong}}. " +
-											'You can view & manage currencies later in settings.',
-										'woocommerce-payments'
-									),
-									paymentMethodsUsingCurrency.join( ', ' ),
-									null != missingCurrency
-										? missingCurrency.name +
-												' (' +
-												( undefined !==
-												missingCurrency.symbol
-													? missingCurrency.symbol
-													: currency.toUpperCase() ) +
-												')'
-										: currency.toUpperCase()
-								),
-								components: {
-									strong: <strong />,
-								},
-							} ) }
-						</InlineNotice>
-					);
+					const missingCurrencyLabel =
+						null != missingCurrencyInfo
+							? missingCurrencyInfo.name +
+							  ' (' +
+							  ( undefined !== missingCurrencyInfo.symbol
+									? missingCurrencyInfo.symbol
+									: currency.toUpperCase() ) +
+							  ')'
+							: currency.toUpperCase();
+
+					missingCurrencyLabels.push( missingCurrencyLabel );
 				}
 				return currency;
 			} );
@@ -91,8 +82,29 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		return paymentMethod;
 	} );
 
-	if ( 0 < notices.length ) {
-		return <div style={ { marginTop: '24px' } }>{ notices }</div>;
+	if ( 0 < missingCurrencies.length ) {
+		return (
+			<InlineNotice status="info" isDismissible={ false }>
+				{ interpolateComponents( {
+					mixedString: sprintf(
+						__(
+							"%s require additional currencies, so {{strong}}we'll add %s to your store{{/strong}}. " +
+								'You can view & manage currencies later in settings.',
+							'woocommerce-payments'
+						),
+						ListToCommaSeparatedSentencePartConverter(
+							_.uniq( paymentMethodsWithMissingCurrencies )
+						),
+						ListToCommaSeparatedSentencePartConverter(
+							_.uniq( missingCurrencyLabels )
+						)
+					),
+					components: {
+						strong: <strong />,
+					},
+				} ) }
+			</InlineNotice>
+		);
 	}
 	return null;
 };
