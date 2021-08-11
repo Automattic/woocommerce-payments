@@ -14,6 +14,7 @@ import { useEffect, useState } from '@wordpress/element';
 import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
+import { getTerms } from '../utils/upe';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 
 const WCPayUPEFields = ( {
@@ -102,6 +103,16 @@ const WCPayUPEFields = ( {
 							'This payment method can not be saved for future use.',
 					};
 				}
+
+				return {
+					type: 'success',
+					meta: {
+						paymentMethodData: {
+							paymentMethod: PAYMENT_METHOD_NAME_CARD,
+							wc_payment_intent_id: paymentIntentId,
+						},
+					},
+				};
 			} ),
 		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -180,6 +191,15 @@ const WCPayUPEFields = ( {
 			},
 		},
 	};
+
+	if ( getConfig( 'cartContainsSubscription' ) ) {
+		elementOptions.terms = getTerms( paymentMethodsConfig, 'always' );
+	}
+
+	const appearance = getConfig( 'upeAppearance' );
+	if ( appearance ) {
+		elementOptions.appearance = appearance;
+	}
 
 	if ( ! clientSecret ) {
 		if ( errorMessage ) {

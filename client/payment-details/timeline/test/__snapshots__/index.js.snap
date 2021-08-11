@@ -786,7 +786,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      $59.50 was added to your 
+                      $59.50 USD was added to your 
                       <a
                         data-link-type="wc-admin"
                         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
@@ -832,7 +832,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      A payment of $63.00 was successfully charged.
+                      A payment of $63.00 USD was successfully charged.
                     </span>
                   </div>
                   <span
@@ -848,8 +848,9 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span>
                     Fee: $3.50
                   </span>
+                  <span />
                   <span>
-                    Net deposit: $59.50
+                    Net deposit: $59.50 USD
                   </span>
                 </div>
               </li>
@@ -930,7 +931,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      A payment of $77.00 failed.
+                      A payment of $77.00 USD failed.
                     </span>
                   </div>
                   <span
@@ -1008,7 +1009,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Authorization for $86.00 expired.
+                      Authorization for $86.00 USD expired.
                     </span>
                   </div>
                   <span
@@ -1086,7 +1087,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Authorization for $59.00 was voided.
+                      Authorization for $59.00 USD was voided.
                     </span>
                   </div>
                   <span
@@ -1176,7 +1177,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      A payment of $79.00 was successfully authorized.
+                      A payment of $79.00 USD was successfully authorized.
                     </span>
                   </div>
                   <span

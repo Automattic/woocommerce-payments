@@ -231,6 +231,13 @@ const AddPaymentMethodsTask = () => {
 									name="sepa_debit"
 								/>
 							) }
+							{ availablePaymentMethods.includes( 'ideal' ) && (
+								<PaymentMethodCheckbox
+									checked={ paymentMethodsState.ideal }
+									onChange={ handlePaymentMethodChange }
+									name="ideal"
+								/>
+							) }
 						</PaymentMethodCheckboxes>
 					</CardBody>
 				</Card>

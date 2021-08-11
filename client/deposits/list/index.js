@@ -13,10 +13,10 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies.
  */
-import { useDeposits, useDepositsSummary } from 'data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { displayType, displayStatus } from '../strings';
 import { formatStringValue } from 'util';
-import { formatCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import Page from '../../components/page';
@@ -30,6 +30,7 @@ const getColumns = ( sortByDate ) => [
 		label: '',
 		required: true,
 		cellClassName: 'info-button ' + ( sortByDate ? 'is-sorted' : '' ),
+		isLeftAligned: true,
 	},
 	{
 		key: 'date',
@@ -47,6 +48,7 @@ const getColumns = ( sortByDate ) => [
 		label: __( 'Type', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Type', 'woocommerce-payments' ),
 		required: true,
+		isLeftAligned: true,
 	},
 	{
 		key: 'amount',
@@ -61,12 +63,14 @@ const getColumns = ( sortByDate ) => [
 		label: __( 'Status', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Status', 'woocommerce-payments' ),
 		required: true,
+		isLeftAligned: true,
 	},
 	// TODO { key: 'transactions', label: __( 'Transactions', 'woocommerce-payments' ), isNumeric: true },
 	{
 		key: 'bankAccount',
 		label: __( 'Bank account', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Bank account', 'woocommerce-payments' ),
+		isLeftAligned: true,
 	},
 ];
 
@@ -110,7 +114,7 @@ export const DepositsList = () => {
 			amount: {
 				value: deposit.amount / 100,
 				display: clickable(
-					formatCurrency( deposit.amount, deposit.currency )
+					formatExplicitCurrency( deposit.amount, deposit.currency )
 				),
 			},
 			status: {
@@ -157,7 +161,7 @@ export const DepositsList = () => {
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push( {
 				label: __( 'total', 'woocommerce-payments' ),
-				value: `${ formatCurrency(
+				value: `${ formatExplicitCurrency(
 					depositsSummary.total,
 					depositsSummary.currency
 				) }`,

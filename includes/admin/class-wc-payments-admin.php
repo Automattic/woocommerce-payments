@@ -264,7 +264,7 @@ class WC_Payments_Admin {
 			'onBoardingDisabled'     => WC_Payments_Account::is_on_boarding_disabled(),
 			'errorMessage'           => $error_message,
 			'featureFlags'           => $this->get_frontend_feature_flags(),
-			'isSubscriptionsActive'  => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
+			'isSubscriptionsActive'  => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
 			// used in the settings page by the AccountFees component.
 			'zeroDecimalCurrencies'  => WC_Payments_Utils::zero_decimal_currencies(),
 			'fraudServices'          => $this->account->get_fraud_services_config(),
@@ -334,6 +334,18 @@ class WC_Payments_Admin {
 			$settings_script_asset['dependencies'],
 			WC_Payments::get_file_version( 'dist/settings.js' ),
 			true
+		);
+
+		wp_localize_script(
+			'WCPAY_ADMIN_SETTINGS',
+			'wcpayPaymentRequestParams',
+			[
+				'stripe' => [
+					'publishableKey' => $this->account->get_publishable_key( $this->wcpay_gateway->is_in_test_mode() ),
+					'accountId'      => $this->account->get_stripe_account_id(),
+					'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+				],
+			]
 		);
 
 		wp_localize_script(
@@ -608,12 +620,12 @@ class WC_Payments_Admin {
 		}
 
 		$abtest = new \WCPay\Experimental_Abtest(
-			esc_url_raw( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
 			'woocommerce',
 			'yes' === get_option( 'woocommerce_allow_tracking' )
 		);
 
-		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode_v1' );
+		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode_v2' );
 	}
 
 	/**
@@ -622,8 +634,13 @@ class WC_Payments_Admin {
 	 */
 	public function maybe_redirect_to_onboarding() {
 		if ( wp_doing_ajax() ) {
-			return false;
+			return;
 		}
+
+		if ( $this->is_in_treatment_mode() ) {
+			return;
+		}
+
 		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
 
 		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page'] ) {
@@ -646,7 +663,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		if ( $this->account->is_stripe_connected() ) {
+		if ( $this->account->is_stripe_connected( true ) ) {
 			return;
 		}
 
@@ -658,6 +675,11 @@ class WC_Payments_Admin {
 	 */
 	public function is_page_eligible_for_additional_methods_setup_task() {
 		if ( ! wc_admin_is_registered_page() ) {
+			return false;
+		}
+
+		// if the account is disconnected, just don't display the onboarding task.
+		if ( ! $this->account->is_stripe_connected() ) {
 			return false;
 		}
 
