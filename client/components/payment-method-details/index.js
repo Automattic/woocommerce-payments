@@ -24,6 +24,7 @@ const formatDetails = ( payment ) => {
 		case 'giropay':
 			return <Fragment>{ paymentMethod.bank_code }</Fragment>;
 		case 'sofort':
+		case 'ideal':
 			return (
 				<Fragment>
 					&nbsp;&bull;&bull;&bull;&bull;&nbsp;

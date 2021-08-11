@@ -17,6 +17,11 @@ jest.mock( '../../../data', () => ( {
 	useEnabledCurrencies: jest.fn(),
 } ) );
 
+jest.mock( '@wordpress/a11y', () => ( {
+	...jest.requireActual( '@wordpress/a11y' ),
+	speak: jest.fn(),
+} ) );
+
 const FlagsContextWrapper = ( { children, multiCurrency = true } ) => (
 	<WCPaySettingsContext.Provider
 		value={ { featureFlags: { multiCurrency } } }
@@ -41,7 +46,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		const { container } = render(
 			<FlagsContextWrapper multiCurrency={ false }>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay' ] }
+					selectedMethods={ [ 'card', 'giropay', 'ideal' ] }
 				/>
 			</FlagsContextWrapper>
 		);
@@ -56,7 +61,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		const { container } = render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay' ] }
+					selectedMethods={ [ 'card', 'giropay', 'ideal' ] }
 				/>
 			</FlagsContextWrapper>
 		);
@@ -79,7 +84,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		const { container } = render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'giropay', 'card' ] }
+					selectedMethods={ [ 'giropay', 'card', 'ideal' ] }
 				/>
 			</FlagsContextWrapper>
 		);
@@ -113,7 +118,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay' ] }
+					selectedMethods={ [ 'card', 'giropay', 'ideal' ] }
 				/>
 			</FlagsContextWrapper>
 		);

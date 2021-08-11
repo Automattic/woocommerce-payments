@@ -7,6 +7,9 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Order;
+use WC_Order_Refund;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -49,6 +52,10 @@ class Compatibility {
 			add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
 			add_filter( 'woocommerce_product_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
 			add_filter( 'woocommerce_product_variation_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
+		}
+
+		if ( defined( 'DOING_CRON' ) ) {
+			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
 		}
 	}
 
@@ -252,6 +259,66 @@ class Compatibility {
 
 		return true;
 	}
+
+	/**
+	 * This filter is called when the best sales day logic is called. We use it to add another filter which will
+	 * convert the order prices used in this inbox notification.
+	 *
+	 * @param bool $arg Whether or not the best sales day logic should execute. We will just return this as is to
+	 * respect the existing behaviour.
+	 *
+	 * @return bool
+	 */
+	public function attach_order_modifier( $arg ) {
+		// Attach our filter to modify the order prices.
+		add_filter( 'woocommerce_order_query', [ $this, 'convert_order_prices' ] );
+
+		// This will be a bool value indication whether the best day logic should be run. Let's just return it as is.
+		return $arg;
+	}
+
+	/**
+	 * When a request is made by the "Best Sales Day" Inbox notification, we want to hook into this and convert
+	 * the order totals to the store default currency.
+	 *
+	 * @param WC_Order[]|WC_Order_Refund[] $results The results returned by the orders query.
+	 *
+	 * @return array
+	 */
+	public function convert_order_prices( $results ): array {
+		$backtrace_calls = [
+			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::sum_sales_for_date',
+			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::possibly_add_note',
+		];
+
+		// If the call we're expecting isn't in the backtrace, then just do nothing and return the results.
+		if ( ! $this->utils->is_call_in_backtrace( $backtrace_calls ) ) {
+			return $results;
+		}
+
+		$default_currency = $this->multi_currency->get_default_currency();
+		if ( ! $default_currency ) {
+			return $results;
+		}
+
+		foreach ( $results as $order ) {
+			if ( ! $order ||
+				$order->get_currency() === $default_currency->get_code() ||
+				! $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) ||
+				$order->get_meta( '_wcpay_multi_currency_order_default_currency', true ) !== $default_currency->get_code()
+			) {
+				continue;
+			}
+
+			$exchange_rate = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+			$order->set_total( number_format( $order->get_total() * ( 1 / $exchange_rate ), wc_get_price_decimals() ) );
+		}
+
+		remove_filter( 'woocommerce_order_query', [ $this, 'convert_order_prices' ] );
+
+		return $results;
+	}
+
 
 	/**
 	 * Checks the cart to see if it contains a subscription product renewal.

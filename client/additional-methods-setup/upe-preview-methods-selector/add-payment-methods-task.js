@@ -38,7 +38,9 @@ const usePaymentMethodsCheckboxState = () => {
 			// by default, all the checkboxes should be "checked"
 			availablePaymentMethods
 				.filter( ( method ) =>
-					[ 'giropay', 'sofort', 'sepa_debit' ].includes( method )
+					[ 'giropay', 'sofort', 'sepa_debit', 'ideal' ].includes(
+						method
+					)
 				)
 				.reduce(
 					( map, paymentMethod ) => ( {
@@ -107,7 +109,12 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 				return;
 			}
 
-			setCompleted( true, 'setup-complete' );
+			setCompleted(
+				{
+					initialMethods: initialEnabledPaymentMethodIds,
+				},
+				'setup-complete'
+			);
 		};
 
 		callback();
@@ -167,18 +174,13 @@ const AddPaymentMethodsTask = () => {
 						mixedString: __(
 							'For best results, we recommend adding all available payment methods. ' +
 								"We'll only show your customer the most relevant payment methods " +
-								'based on their location. {{learnMoreLink /}}.',
+								'based on their location. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 							'woocommerce-payments'
 						),
 						components: {
 							learnMoreLink: (
 								// eslint-disable-next-line max-len
-								<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#available-methods">
-									{ __(
-										'Learn more',
-										'woocommerce-payments'
-									) }
-								</ExternalLink>
+								<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
 							),
 						},
 					} ) }
@@ -232,6 +234,19 @@ const AddPaymentMethodsTask = () => {
 												handlePaymentMethodChange
 											}
 											name="sepa_debit"
+										/>
+									) }
+									{ availablePaymentMethods.includes(
+										'ideal'
+									) && (
+										<PaymentMethodCheckbox
+											checked={
+												paymentMethodsState.ideal
+											}
+											onChange={
+												handlePaymentMethodChange
+											}
+											name="ideal"
 										/>
 									) }
 								</PaymentMethodCheckboxes>

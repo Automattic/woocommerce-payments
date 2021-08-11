@@ -15,7 +15,7 @@ import PaymentMethods from '..';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
-} from 'data';
+} from 'wcpay/data';
 import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
 import WcPayUpeContext from '../../settings/wcpay-upe-toggle/context';
 
@@ -34,6 +34,7 @@ describe( 'PaymentMethods', () => {
 			'giropay',
 			'sofort',
 			'sepa_debit',
+			'ideal',
 		] );
 	} );
 
@@ -106,7 +107,8 @@ describe( 'PaymentMethods', () => {
 
 		const giropay = screen.getByLabelText( 'giropay' );
 		const sofort = screen.getByLabelText( 'Sofort' );
-		[ giropay, sofort ].forEach( ( method ) => {
+		const ideal = screen.getByLabelText( 'iDEAL' );
+		[ giropay, sofort, ideal ].forEach( ( method ) => {
 			expect( method.closest( 'ul' ) ).toHaveClass(
 				'payment-methods__available-methods'
 			);
@@ -150,7 +152,7 @@ describe( 'PaymentMethods', () => {
 	test( 'clicking delete updates enabled method IDs', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'sepa_debit', 'giropay', 'sofort' ],
+			[ 'card', 'sepa_debit', 'giropay', 'sofort', 'ideal' ],
 			updateEnabledMethodsMock,
 		] );
 
@@ -174,6 +176,7 @@ describe( 'PaymentMethods', () => {
 			'sepa_debit',
 			'giropay',
 			'sofort',
+			'ideal',
 		] );
 	} );
 
@@ -245,9 +248,9 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		expect( disableUPEButton ).toBeInTheDocument();
-		expect( screen.queryByText( 'Payment methods' ) ).toHaveTextContent(
-			'Payment methods Early access'
-		);
+		expect(
+			screen.queryByText( 'Payment methods' ).parentElement
+		).toHaveTextContent( 'Payment methods Early access' );
 	} );
 
 	test( 'Does not render the feedback elements when UPE is disabled', () => {

@@ -13,7 +13,7 @@ import {
 	useAvailableCurrencies,
 	useEnabledCurrencies,
 	useDefaultCurrency,
-} from 'data';
+} from 'wcpay/data';
 import EnabledCurrenciesModalCheckboxList from './modal-checkbox-list';
 import EnabledCurrenciesModalCheckbox from './modal-checkbox';
 import ConfirmationModal from '../../components/confirmation-modal';
