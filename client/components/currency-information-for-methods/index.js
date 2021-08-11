@@ -14,7 +14,10 @@ import InlineNotice from '../inline-notice';
 import PaymentMethodsMap from '../../payment-methods-map';
 
 const CurrencyInformationForMethods = ( { selectedMethods } ) => {
-	const { isLoading: isLoadingCurrencyInformation } = useCurrencies();
+	const {
+		isLoading: isLoadingCurrencyInformation,
+		currencies: currencyInfo,
+	} = useCurrencies();
 	const { enabledCurrencies } = useEnabledCurrencies();
 
 	if ( isLoadingCurrencyInformation ) {
@@ -48,6 +51,9 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 						} )
 						.filter( ( _ ) => _ );
 
+					const missingCurrency =
+						currencyInfo.available[ currency ] || null;
+
 					notices.push(
 						<InlineNotice
 							key={ currency }
@@ -62,7 +68,15 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 										'woocommerce-payments'
 									),
 									paymentMethodsUsingCurrency.join( ', ' ),
-									currency.toUpperCase()
+									null != missingCurrency
+										? missingCurrency.name +
+												' (' +
+												( undefined !==
+												missingCurrency.symbol
+													? missingCurrency.symbol
+													: currency.toUpperCase() ) +
+												')'
+										: currency.toUpperCase()
 								),
 								components: {
 									strong: <strong />,

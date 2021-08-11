@@ -34,6 +34,13 @@ describe( 'CurrencyInformationForMethods', () => {
 	beforeEach( () => {
 		useCurrencies.mockReturnValue( {
 			isLoading: false,
+			currencies: {
+				available: {
+					EUR: { name: 'Euro', symbol: '€' },
+					USD: { name: 'US Dollar', symbol: '$' },
+					PLN: { name: 'Polish złoty', symbol: 'zł' },
+				},
+			},
 		} );
 		useEnabledCurrencies.mockReturnValue( {
 			enabledCurrencies: {
@@ -119,7 +126,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		);
 
 		expect(
-			screen.queryByText( /we\'ll add EUR to your store/ )
+			screen.queryByText( /we\'ll add Euro \(€\) to your store/ )
 		).toBeInTheDocument();
 	} );
 
@@ -133,7 +140,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		);
 
 		expect(
-			screen.queryByText( /we\'ll add PLN to your store/ )
+			screen.queryByText( /we\'ll add Polish złoty \(zł\) to your store/ )
 		).toBeInTheDocument();
 	} );
 } );

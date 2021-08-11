@@ -60,6 +60,13 @@ describe( 'AddPaymentMethodsTask', () => {
 		] );
 		useCurrencies.mockReturnValue( {
 			isLoading: false,
+			currencies: {
+				available: {
+					EUR: { name: 'Euro', symbol: '€' },
+					USD: { name: 'US Dollar', symbol: '$' },
+					PLN: { name: 'Polish złoty', symbol: 'zł' },
+				},
+			},
 		} );
 		useEnabledCurrencies.mockReturnValue( {
 			enabledCurrencies: {
@@ -102,10 +109,10 @@ describe( 'AddPaymentMethodsTask', () => {
 		);
 
 		expect(
-			screen.queryByText( /we\'ll add EUR to your store/ )
+			screen.queryByText( /we\'ll add Euro \(€\) to your store/ )
 		).toBeInTheDocument();
 		expect(
-			screen.queryByText( /we\'ll add PLN to your store/ )
+			screen.queryByText( /we\'ll add Polish złoty \(zł\) to your store/ )
 		).toBeInTheDocument();
 		expect( screen.getByText( 'Add payment methods' ) ).toBeEnabled();
 		expect( useSettings ).toHaveBeenCalled();
@@ -138,10 +145,10 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		// no "euro" text when no elements are checked
 		expect(
-			screen.queryByText( /so we\'ll add EUR to your store/ )
+			screen.queryByText( /we\'ll add Euro \(€\) to your store/ )
 		).not.toBeInTheDocument();
 		expect(
-			screen.queryByText( /so we\'ll add PLN to your store/ )
+			screen.queryByText( /we\'ll add Polish złoty \(zł\) to your store/ )
 		).not.toBeInTheDocument();
 		expect( screen.getByText( 'Add payment methods' ) ).not.toBeEnabled();
 	} );
@@ -164,7 +171,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		);
 
 		expect(
-			screen.queryByText( /we\'ll add EUR to your store/ )
+			screen.queryByText( /we\'ll add Euro \(€\) to your store/ )
 		).toBeInTheDocument();
 		expect( screen.getByText( 'Add payment methods' ) ).toBeEnabled();
 		expect( useSettings ).toHaveBeenCalled();
