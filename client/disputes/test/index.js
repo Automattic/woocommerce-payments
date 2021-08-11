@@ -8,9 +8,9 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import DisputesList from '../';
-import { useDisputes } from 'data';
+import { useDisputes } from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useDisputes: jest.fn(),
 } ) );
 

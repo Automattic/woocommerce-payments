@@ -63,6 +63,7 @@ class Settings extends \WC_Settings_Page {
 		add_action( 'woocommerce_admin_field_wcpay_single_currency_preview_helper', [ $this, 'single_currency_preview_helper' ] );
 
 		add_action( 'woocommerce_settings_' . $this->id, [ $this, 'render_single_currency_breadcrumbs' ] );
+
 		parent::__construct();
 	}
 
@@ -242,8 +243,6 @@ class Settings extends \WC_Settings_Page {
 		</tr>
 		<?php
 	}
-
-
 
 	/**
 	 * Returns the settings for the single currency.

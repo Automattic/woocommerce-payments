@@ -84,6 +84,9 @@ const webpackConfig = {
 	resolve: {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
 		modules: [ path.join( __dirname, 'client' ), 'node_modules' ],
+		alias: {
+			wcpay: path.resolve( __dirname, 'client' ),
+		},
 	},
 	plugins: [
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
