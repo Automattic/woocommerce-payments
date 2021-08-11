@@ -812,7 +812,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			'type' => 'ideal',
 		];
 
-		$charge_payment_method_details  = [
+		$charge_payment_method_details = [
 			$visa_credit_details,
 			$visa_debit_details,
 			$mastercard_credit_details,

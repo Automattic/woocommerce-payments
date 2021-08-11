@@ -35,11 +35,11 @@ class PaymentMethodsCompatibility {
 	 * @var string[]
 	 */
 	private $payment_method_currency_map = [
-		'giropay'    => 'EUR',
-		'p24'        => 'EUR',
-		'sepa_debit' => 'EUR',
-		'sofort'     => 'EUR',
-		'ideal'      => 'EUR',
+		'giropay'    => [ 'EUR' ],
+		'p24'        => [ 'EUR', 'PLN' ],
+		'sepa_debit' => [ 'EUR' ],
+		'sofort'     => [ 'EUR' ],
+		'ideal'      => [ 'EUR' ],
 	];
 
 	/**
@@ -83,15 +83,17 @@ class PaymentMethodsCompatibility {
 
 		// we have payments needing some currency being enabled, let's ensure the currency is present.
 		foreach ( $payment_methods_needing_currency as $payment_method ) {
-			$needed_currency_code = $this->payment_method_currency_map[ $payment_method ];
-			if ( ! isset( $available_currencies[ $needed_currency_code ] ) ) {
-				continue;
-			}
-			if ( isset( $enabled_currencies[ $needed_currency_code ] ) ) {
-				continue;
-			}
+			$needed_currency_codes = $this->payment_method_currency_map[ $payment_method ];
+			foreach ( $needed_currency_codes as $needed_currency_code ) {
+				if ( ! isset( $available_currencies[ $needed_currency_code ] ) ) {
+					continue;
+				}
+				if ( isset( $enabled_currencies[ $needed_currency_code ] ) ) {
+					continue;
+				}
 
-			$missing_currency_codes[] = $needed_currency_code;
+				$missing_currency_codes[] = $needed_currency_code;
+			}
 		}
 
 		$missing_currency_codes = array_unique( $missing_currency_codes );

@@ -67,9 +67,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		);
 
 		expect(
-			screen.queryByText(
-				/The selected methods require an additional currency/
-			)
+			screen.queryByText( /requires an additional currency/ )
 		).not.toBeInTheDocument();
 		expect( container.firstChild ).toBeNull();
 	} );
@@ -79,6 +77,7 @@ describe( 'CurrencyInformationForMethods', () => {
 			enabledCurrencies: {
 				USD: { id: 'usd', code: 'USD' },
 				EUR: { id: 'eur', code: 'EUR' },
+				PLN: { id: 'pln', code: 'PLN' },
 			},
 		} );
 		const { container } = render(
@@ -90,9 +89,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		);
 
 		expect(
-			screen.queryByText(
-				/The selected methods require an additional currency/
-			)
+			screen.queryByText( /requires an additional currency/ )
 		).not.toBeInTheDocument();
 		expect( container.firstChild ).toBeNull();
 	} );
@@ -107,9 +104,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		);
 
 		expect(
-			screen.queryByText(
-				/The selected methods require an additional currency/
-			)
+			screen.queryByText( /requires an additional currency/ )
 		).not.toBeInTheDocument();
 		expect( container.firstChild ).toBeNull();
 	} );
@@ -118,15 +113,27 @@ describe( 'CurrencyInformationForMethods', () => {
 		render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay', 'ideal', 'p24' ] }
+					selectedMethods={ [ 'card', 'giropay', 'ideal' ] }
 				/>
 			</FlagsContextWrapper>
 		);
 
 		expect(
-			screen.queryByText(
-				/The selected methods require an additional currency/
-			)
+			screen.queryByText( /we\'ll add EUR to your store/ )
+		).toBeInTheDocument();
+	} );
+
+	it( 'should display a notice when one of the enabled methods is a PLN method', () => {
+		render(
+			<FlagsContextWrapper>
+				<CurrencyInformationForMethods
+					selectedMethods={ [ 'card', 'p24' ] }
+				/>
+			</FlagsContextWrapper>
+		);
+
+		expect(
+			screen.queryByText( /we\'ll add PLN to your store/ )
 		).toBeInTheDocument();
 	} );
 } );
