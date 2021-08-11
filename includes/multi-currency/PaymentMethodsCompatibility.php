@@ -81,6 +81,10 @@ class PaymentMethodsCompatibility {
 
 		$missing_currency_codes = [];
 
+		// TODO: we need to find something about having a currency not available for the method in case of having disabled currencies in the future.
+		// First option, not do display it if the available currency is blocked by something else (Stripe, merchant, WCPay etc.)
+		// Second option, showing a notice that it can't be selected because the currency is not available to use.
+
 		// we have payments needing some currency being enabled, let's ensure the currency is present.
 		foreach ( $payment_methods_needing_currency as $payment_method ) {
 			$needed_currency_codes = $this->payment_method_currency_map[ $payment_method ];

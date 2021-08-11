@@ -104,6 +104,9 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect(
 			screen.queryByText( /we\'ll add EUR to your store/ )
 		).toBeInTheDocument();
+		expect(
+			screen.queryByText( /we\'ll add PLN to your store/ )
+		).toBeInTheDocument();
 		expect( screen.getByText( 'Add payment methods' ) ).toBeEnabled();
 		expect( useSettings ).toHaveBeenCalled();
 		// the payment methods should all be checked
@@ -136,6 +139,9 @@ describe( 'AddPaymentMethodsTask', () => {
 		// no "euro" text when no elements are checked
 		expect(
 			screen.queryByText( /so we\'ll add EUR to your store/ )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( /so we\'ll add PLN to your store/ )
 		).not.toBeInTheDocument();
 		expect( screen.getByText( 'Add payment methods' ) ).not.toBeEnabled();
 	} );
