@@ -87,6 +87,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $action_scheduler_service;
 
 	/**
+	 * Name of the cookie used by rate-limiter.ts to keep track of failed transactions.
+	 *
+	 * @var string
+	 */
+	protected $rate_limiter_cookie_name = 'wc_payments_failed_transactions';
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
@@ -357,6 +364,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+
+		// Clear the rate limiter cookie set in the client after a successful payment.
+		add_action( 'woocommerce_payment_complete', [ $this, 'clear_rate_limiter_client_cookie' ] );
 	}
 
 	/**
@@ -2281,5 +2291,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return [
 			'card',
 		];
+	}
+
+	/**
+	 * Clears the RateLimiter cookie.
+	 * See client/utils/rate-limiter.
+	 *
+	 * @return void
+	 */
+	public function clear_rate_limiter_client_cookie() {
+		if ( isset( $_COOKIE[ $this->rate_limiter_cookie_name ] ) ) {
+			unset( $_COOKIE[ $this->rate_limiter_cookie_name ] );
+			setcookie( $this->rate_limiter_cookie_name, '', time() - 3600, '/' ); // empty value and old timestamp.
+		}
 	}
 }

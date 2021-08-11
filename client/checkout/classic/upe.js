@@ -13,6 +13,7 @@ import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import { getTerms } from '../utils/upe';
+import RateLimiter from '../../utils/rate-limiter';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -497,6 +498,7 @@ jQuery( function ( $ ) {
 		}
 
 		blockUI( $form );
+		await RateLimiter.getInstance().waitIfNeeded();
 		// Create object where keys are form field names and keys are form field values
 		const formFields = $form.serializeArray().reduce( ( obj, field ) => {
 			obj[ field.name ] = field.value;
@@ -531,6 +533,12 @@ jQuery( function ( $ ) {
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
 			showError( error.message );
+			if ( 'card_declined' === error.code ) {
+				RateLimiter.getInstance().addFailedTransaction( {
+					timestamp: Date.now(),
+					code: error.code,
+				} );
+			}
 		}
 	};
 
