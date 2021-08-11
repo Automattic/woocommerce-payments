@@ -512,7 +512,20 @@ Array [
           Foreign exchange fee: 2%
         </li>
         <li>
-          Discount: -4.9% + £-0.20
+          Discount
+          <ul
+            className="discount-split-list"
+          >
+            <li>
+              Variable fee: 
+              -4.9
+              %
+            </li>
+            <li>
+              Fixed fee: 
+              £-0.20
+            </li>
+          </ul>
         </li>
       </ul>,
       "Net deposit: $59.50 USD",
