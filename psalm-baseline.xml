@@ -127,4 +127,9 @@
       <code>Automattic\Jetpack\Connection\Client::remote_request( $args, $body )</code>
     </UndefinedDocblockClass>
   </file>
+  <file src="woocommerce-payments.php">
+    <UndefinedClass occurrences="1">
+      <code>WC_Subscriptions_Base_Plugin</code>
+    </UndefinedClass>
+  </file>
 </files>
