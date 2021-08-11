@@ -7,7 +7,7 @@ class RateLimiter {
 
 	private cookieName = 'wc_payments_failed_transactions';
 
-	private secondsPerFailure = 1;
+	private secondsPerFailure = 10;
 
 	private numberTransactionsThreshold = 3;
 
