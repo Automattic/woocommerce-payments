@@ -20,7 +20,7 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return bool Whether subscriptions is enabled or not.
 	 */
 	public function is_subscriptions_enabled() {
-		return class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' );
+		return version_compare( $this->get_subscriptions_version(), '2.2.0', '>=' );
 	}
 
 	/**
