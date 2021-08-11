@@ -320,7 +320,7 @@ export const TransactionsList = (
 				value: calculateRiskMapping( txn.risk_level ),
 				display: clickable( riskLevel ),
 			},
-			deposit: { value: txn.deposit_id, display: deposit },
+			deposit: { value: txn.available_on, display: deposit },
 		};
 
 		return columnsToDisplay.map(
