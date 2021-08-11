@@ -171,8 +171,8 @@ const getColumns = (
 		},
 		includeDeposit && {
 			key: 'deposit',
-			label: __( 'Deposit', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Deposit', 'woocommerce-payments' ),
+			label: __( 'Deposit date', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Deposit date', 'woocommerce-payments' ),
 			cellClassName: 'deposit',
 			isLeftAligned: true,
 		},
