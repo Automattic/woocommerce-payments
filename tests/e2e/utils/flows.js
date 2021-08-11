@@ -12,6 +12,10 @@ const {
 	evalAndClick,
 	uiUnblocked,
 } = require( '@woocommerce/e2e-utils' );
+const {
+	fillCardDetails,
+	confirmCardAuthentication,
+} = require( '../utils/payments' );
 
 const config = require( 'config' );
 const baseUrl = config.get( 'url' );
@@ -99,6 +103,37 @@ export const shopperWCP = {
 			waitUntil: 'networkidle0',
 		} );
 	},
+
+	/**
+	 * Happy path for adding a new payment method in 'My Account > Payment methods' page.
+	 * It can handle 3DS and 3DS2 flows.
+	 *
+	 * @param {*} cardType Card type as defined in the `test.json` file. Examples: `basic`, `3ds2`, `declined`.
+	 * @param {*} card Card object that you want to add as the new payment method.
+	 */
+	addNewPaymentMethod: async ( cardType, card ) => {
+		const cardIs3DS =
+			cardType.toUpperCase().includes( '3DS' ) &&
+			! cardType.toLowerCase().includes( 'declined' );
+
+		await expect( page ).toClick( 'a', {
+			text: 'Add payment method',
+		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+		await fillCardDetails( page, card );
+		await expect( page ).toClick( 'button', {
+			text: 'Add payment method',
+		} );
+
+		if ( cardIs3DS ) {
+			await confirmCardAuthentication( page, cardType );
+		}
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
 };
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
@@ -155,7 +190,8 @@ export const merchantWCP = {
 	// Create a subscription product with an optional signup fee
 	createSubscriptionProduct: async (
 		productName,
-		includeSignupFee = false
+		includeSignupFee = false,
+		includeFreeTrial = false
 	) => {
 		// Go to "add product" page
 		await merchant.openNewProduct();
@@ -168,6 +204,10 @@ export const merchantWCP = {
 
 		if ( includeSignupFee ) {
 			await expect( page ).toFill( '#_subscription_sign_up_fee', '1.99' );
+		}
+
+		if ( includeFreeTrial ) {
+			await expect( page ).toFill( '#_subscription_trial_length', '14' );
 		}
 
 		await verifyAndPublish();

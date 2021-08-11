@@ -17,6 +17,7 @@ import {
 } from 'wcpay/data';
 import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';
+import EnabledCurrenciesListItemPlaceholder from './list-item-placeholder';
 import EnabledCurrenciesModal from './modal';
 
 const EnabledCurrencies = () => {
@@ -65,6 +66,13 @@ const EnabledCurrencies = () => {
 											: handleDeleteClick
 									}
 								/>
+							) ) }
+						{ isLoading &&
+							[ 1, 2, 3, 4, 5 ].map( ( i ) => (
+								<EnabledCurrenciesListItemPlaceholder
+									key={ 'loadable-placeholder-' + i }
+									isLoading={ 1 }
+								></EnabledCurrenciesListItemPlaceholder>
 							) ) }
 					</EnabledCurrenciesList>
 				</CardBody>
