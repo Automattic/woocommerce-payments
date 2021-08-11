@@ -38,7 +38,7 @@ import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { formatStringValue } from 'utils';
-import { formatCurrency } from 'utils/currency';
+import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
 import autocompleter from 'transactions/autocompleter';
@@ -80,6 +80,7 @@ const getColumns = (
 			key: 'transaction_id',
 			label: __( 'Transaction Id', 'woocommerce-payments' ),
 			visible: false,
+			isLeftAligned: true,
 		},
 		{
 			key: 'date',
@@ -97,6 +98,7 @@ const getColumns = (
 			label: __( 'Type', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Type', 'woocommerce-payments' ),
 			required: true,
+			isLeftAligned: true,
 		},
 		{
 			key: 'amount',
@@ -138,35 +140,41 @@ const getColumns = (
 			key: 'source',
 			label: __( 'Source', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Source', 'woocommerce-payments' ),
+			cellClassName: 'is-center-aligned',
 		},
 		{
 			key: 'customer_name',
 			label: __( 'Customer', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Customer', 'woocommerce-payments' ),
+			isLeftAligned: true,
 		},
 		{
 			key: 'customer_email',
 			label: __( 'Email', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Email', 'woocommerce-payments' ),
 			visible: false,
+			isLeftAligned: true,
 		},
 		{
 			key: 'customer_country',
 			label: __( 'Country', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Country', 'woocommerce-payments' ),
 			visible: false,
+			isLeftAligned: true,
 		},
 		{
 			key: 'risk_level',
 			label: __( 'Risk level', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Risk level', 'woocommerce-payments' ),
 			visible: false,
+			isLeftAligned: true,
 		},
 		includeDeposit && {
 			key: 'deposit',
 			label: __( 'Deposit', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Deposit', 'woocommerce-payments' ),
 			cellClassName: 'deposit',
+			isLeftAligned: true,
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
@@ -304,7 +312,9 @@ export const TransactionsList = (
 			},
 			net: {
 				value: txn.net / 100,
-				display: clickable( formatCurrency( txn.net, currency ) ),
+				display: clickable(
+					formatExplicitCurrency( txn.net, currency )
+				),
 			},
 			risk_level: {
 				value: calculateRiskMapping( txn.risk_level ),
@@ -405,7 +415,7 @@ export const TransactionsList = (
 			summary.push(
 				{
 					label: __( 'total', 'woocommerce-payments' ),
-					value: `${ formatCurrency(
+					value: `${ formatExplicitCurrency(
 						// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
 						// that so we remove the `undefined` in the type manually.
 						transactionsSummary.total as number,
@@ -421,7 +431,7 @@ export const TransactionsList = (
 				},
 				{
 					label: __( 'net', 'woocommerce-payments' ),
-					value: `${ formatCurrency(
+					value: `${ formatExplicitCurrency(
 						transactionsSummary.net ?? 0,
 						transactionsSummary.currency
 					) }`,

@@ -86,7 +86,7 @@ exports[`Disputes list renders correctly 1`] = `
             <tbody>
               <tr>
                 <th
-                  class="woocommerce-table__header info-button"
+                  class="woocommerce-table__header info-button is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -106,7 +106,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -117,7 +117,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -128,7 +128,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-center-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -150,7 +150,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -161,7 +161,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -172,7 +172,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -185,7 +185,7 @@ exports[`Disputes list renders correctly 1`] = `
               </tr>
               <tr>
                 <th
-                  class="woocommerce-table__item info-button"
+                  class="woocommerce-table__item info-button is-left-aligned"
                   scope="row"
                 >
                   <a
@@ -216,11 +216,11 @@ exports[`Disputes list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
-                    $10.00
+                    $10.00 USD
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -236,7 +236,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -248,7 +248,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-center-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -272,7 +272,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -284,7 +284,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -296,7 +296,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -310,7 +310,7 @@ exports[`Disputes list renders correctly 1`] = `
               </tr>
               <tr>
                 <th
-                  class="woocommerce-table__item info-button"
+                  class="woocommerce-table__item info-button is-left-aligned"
                   scope="row"
                 >
                   <a
@@ -341,11 +341,11 @@ exports[`Disputes list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
                     tabindex="-1"
                   >
-                    $10.50
+                    $10.50 USD
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -361,7 +361,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -373,7 +373,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-center-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -390,7 +390,7 @@ exports[`Disputes list renders correctly 1`] = `
                   class="woocommerce-table__item"
                 />
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -400,7 +400,7 @@ exports[`Disputes list renders correctly 1`] = `
                   />
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -412,7 +412,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"

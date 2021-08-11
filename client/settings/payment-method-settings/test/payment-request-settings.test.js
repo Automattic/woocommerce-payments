@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import PaymentRequestSettings from '../payment-request-settings';
+import PaymentRequestButtonPreview from '../payment-request-button-preview';
 import {
 	usePaymentRequestButtonType,
 	usePaymentRequestButtonSize,
@@ -20,6 +21,17 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
+} ) );
+
+jest.mock( '../payment-request-button-preview' );
+PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
+
+jest.mock( 'payment-request/utils', () => ( {
+	getPaymentRequestData: jest.fn().mockReturnValue( {
+		publishableKey: '123',
+		accountId: '0001',
+		locale: 'en',
+	} ),
 } ) );
 
 describe( 'PaymentRequestSettings', () => {

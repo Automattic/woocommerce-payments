@@ -168,25 +168,36 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 	}
 
 	public function test_it_should_show_apm_setup_if_on_wc_admin_page_and_upe_settings_preview_is_enabled() {
+		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
 		$this->set_up_show_apm_task_test( true, true, [ 'foo' ] );
 
 		$this->assertTrue( $this->payments_admin->is_page_eligible_for_additional_methods_setup_task() );
 	}
 
 	public function test_it_should_show_apm_setup_if_on_wc_admin_page_and_has_multiple_available_methods() {
+		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
 		$this->set_up_show_apm_task_test( true, false, [ 'foo', 'bar' ] );
 
 		$this->assertTrue( $this->payments_admin->is_page_eligible_for_additional_methods_setup_task() );
 	}
 
 	public function test_it_should_not_show_apm_setup_if_not_on_wc_admin_page() {
+		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
 		$this->set_up_show_apm_task_test( false, true, [ 'foo', 'bar' ] );
 
 		$this->assertFalse( $this->payments_admin->is_page_eligible_for_additional_methods_setup_task() );
 	}
 
 	public function test_it_should_not_show_apm_setup_if_single_method_is_available() {
+		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
 		$this->set_up_show_apm_task_test( true, false, [ 'foo' ] );
+
+		$this->assertFalse( $this->payments_admin->is_page_eligible_for_additional_methods_setup_task() );
+	}
+
+	public function test_it_should_not_show_apm_setup_if_account_is_disconnected() {
+		$this->mock_account->method( 'is_stripe_connected' )->willReturn( false );
+		$this->set_up_show_apm_task_test( true, true, [ 'foo' ] );
 
 		$this->assertFalse( $this->payments_admin->is_page_eligible_for_additional_methods_setup_task() );
 	}

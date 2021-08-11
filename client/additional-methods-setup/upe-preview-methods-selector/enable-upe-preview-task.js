@@ -3,7 +3,7 @@
  */
 import React, { useCallback, useContext } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, Card, CardBody } from '@wordpress/components';
+import { Button, Card, CardBody, ExternalLink } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 import { Icon, store, people } from '@wordpress/icons';
 
@@ -32,17 +32,19 @@ const EnableUpePreviewTask = () => {
 		<WizardTaskItem
 			title={ interpolateComponents( {
 				mixedString: __(
-					'Enable the new WooCommerce Payments checkout experience {{earlyAccessWrapper}}Early access{{/earlyAccessWrapper}}',
+					'{{wrapper}}Enable the new WooCommerce Payments checkout experience{{/wrapper}} ' +
+						'{{earlyAccessWrapper}}Early access{{/earlyAccessWrapper}}',
 					'woocommerce-payments'
 				),
 				components: {
+					wrapper: <span />,
 					earlyAccessWrapper: <Pill />,
 				},
 			} ) }
 			index={ 1 }
 		>
 			<CollapsibleBody className="enable-upe-preview__body">
-				<p>
+				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ interpolateComponents( {
 						mixedString: __(
 							'Get early access to additional payment methods and an improved checkout experience, ' +
@@ -51,12 +53,13 @@ const EnableUpePreviewTask = () => {
 						),
 						components: {
 							learnMoreLink: (
-								<a href="?TODO">
+								// eslint-disable-next-line max-len
+								<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#introduction">
 									{ __(
 										'Learn more',
 										'woocommerce-payments'
 									) }
-								</a>
+								</ExternalLink>
 							),
 						},
 					} ) }
@@ -76,7 +79,7 @@ const EnableUpePreviewTask = () => {
 								</li>
 								<li>
 									{ __(
-										'FREE upgrade exclusive to Stripe users.',
+										'FREE upgrade exclusive to WooCommerce Payments users.',
 										'woocommerce-payments'
 									) }
 								</li>

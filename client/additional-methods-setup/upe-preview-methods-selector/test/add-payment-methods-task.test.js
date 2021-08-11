@@ -18,6 +18,7 @@ import {
 	useCurrencies,
 	useEnabledCurrencies,
 } from '../../../data';
+import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 
 jest.mock( '../../../data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn(),
@@ -27,12 +28,26 @@ jest.mock( '../../../data', () => ( {
 	useEnabledCurrencies: jest.fn(),
 } ) );
 
+jest.mock( '@wordpress/a11y', () => ( {
+	...jest.requireActual( '@wordpress/a11y' ),
+	speak: jest.fn(),
+} ) );
+
+const SettingsContextProvider = ( { children } ) => (
+	<WCPaySettingsContext.Provider
+		value={ { featureFlags: { multiCurrency: true }, accountFees: {} } }
+	>
+		{ children }
+	</WCPaySettingsContext.Provider>
+);
+
 describe( 'AddPaymentMethodsTask', () => {
 	beforeEach( () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
 			'giropay',
 			'sepa_debit',
+			'ideal',
 		] );
 		useSettings.mockReturnValue( {
 			saveSettings: () => Promise.resolve( true ),
@@ -55,11 +70,13 @@ describe( 'AddPaymentMethodsTask', () => {
 	it( 'should not call the useSettings hook if the task is not active', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [] );
 		render(
-			<WizardTaskContext.Provider
-				value={ { setCompleted: () => null, isActive: false } }
-			>
-				<AddPaymentMethodsTask />
-			</WizardTaskContext.Provider>
+			<SettingsContextProvider>
+				<WizardTaskContext.Provider
+					value={ { setCompleted: () => null, isActive: false } }
+				>
+					<AddPaymentMethodsTask />
+				</WizardTaskContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		expect(
@@ -74,11 +91,13 @@ describe( 'AddPaymentMethodsTask', () => {
 	it( 'should not allow to move forward if no payment methods are selected', () => {
 		const setCompletedMock = jest.fn();
 		render(
-			<WizardTaskContext.Provider
-				value={ { setCompleted: setCompletedMock, isActive: true } }
-			>
-				<AddPaymentMethodsTask />
-			</WizardTaskContext.Provider>
+			<SettingsContextProvider>
+				<WizardTaskContext.Provider
+					value={ { setCompleted: setCompletedMock, isActive: true } }
+				>
+					<AddPaymentMethodsTask />
+				</WizardTaskContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		expect(
@@ -88,20 +107,24 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect( useSettings ).toHaveBeenCalled();
 		// the payment methods should all be checked
 		expect(
-			screen.getByRole( 'checkbox', { name: 'GiroPay' } )
+			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
 		expect(
-			screen.getByRole( 'checkbox', { name: 'Direct Debit Payments' } )
+			screen.getByRole( 'checkbox', { name: 'iDEAL' } )
+		).toBeChecked();
+		expect(
+			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		).toBeChecked();
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
 		).not.toBeInTheDocument();
 
 		// un-checking the checkboxes and clicking "add payment methods" should display a notice
-		userEvent.click( screen.getByRole( 'checkbox', { name: 'GiroPay' } ) );
+		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
 		userEvent.click(
-			screen.getByRole( 'checkbox', { name: 'Direct Debit Payments' } )
+			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
 		);
+		userEvent.click( screen.getByRole( 'checkbox', { name: 'iDEAL' } ) );
 
 		// no "euro" text when no elements are checked
 		expect(
@@ -118,11 +141,13 @@ describe( 'AddPaymentMethodsTask', () => {
 			updateEnabledPaymentMethodsMock,
 		] );
 		render(
-			<WizardTaskContext.Provider
-				value={ { setCompleted: setCompletedMock, isActive: true } }
-			>
-				<AddPaymentMethodsTask />
-			</WizardTaskContext.Provider>
+			<SettingsContextProvider>
+				<WizardTaskContext.Provider
+					value={ { setCompleted: setCompletedMock, isActive: true } }
+				>
+					<AddPaymentMethodsTask />
+				</WizardTaskContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		expect(
@@ -132,10 +157,13 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect( useSettings ).toHaveBeenCalled();
 		// the payment methods should all be checked
 		expect(
-			screen.getByRole( 'checkbox', { name: 'GiroPay' } )
+			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
 		expect(
-			screen.getByRole( 'checkbox', { name: 'Direct Debit Payments' } )
+			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
+		).toBeChecked();
+		expect(
+			screen.getByRole( 'checkbox', { name: 'iDEAL' } )
 		).toBeChecked();
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
@@ -147,10 +175,11 @@ describe( 'AddPaymentMethodsTask', () => {
 			'card',
 			'giropay',
 			'sepa_debit',
+			'ideal',
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
-				true,
+				{ initialMethods: [ 'card' ] },
 				'setup-complete'
 			)
 		);
@@ -160,33 +189,46 @@ describe( 'AddPaymentMethodsTask', () => {
 		const setCompletedMock = jest.fn();
 		const updateEnabledPaymentMethodsMock = jest.fn();
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay' ],
+			[ 'card', 'giropay', 'ideal' ],
 			updateEnabledPaymentMethodsMock,
 		] );
 		render(
-			<WizardTaskContext.Provider
-				value={ { setCompleted: setCompletedMock, isActive: true } }
-			>
-				<AddPaymentMethodsTask />
-			</WizardTaskContext.Provider>
+			<SettingsContextProvider>
+				<WizardTaskContext.Provider
+					value={ { setCompleted: setCompletedMock, isActive: true } }
+				>
+					<AddPaymentMethodsTask />
+				</WizardTaskContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		// the payment methods should all be checked
 		expect(
-			screen.getByRole( 'checkbox', { name: 'GiroPay' } )
+			screen.getByRole( 'checkbox', { name: 'giropay' } )
 		).toBeChecked();
 		expect(
-			screen.getByRole( 'checkbox', { name: 'Direct Debit Payments' } )
+			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
+		).toBeChecked();
+		expect(
+			screen.getByRole( 'checkbox', { name: 'iDEAL' } )
 		).toBeChecked();
 
 		// un-check giropay
-		userEvent.click( screen.getByRole( 'checkbox', { name: 'GiroPay' } ) );
+		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
+		// un-check iDEAL
+		userEvent.click( screen.getByRole( 'checkbox', { name: 'iDEAL' } ) );
 		userEvent.click( screen.getByText( 'Add payment methods' ) );
 
-		// giropay is removed
+		// giropay and iDEAL are removed
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
 			'sepa_debit',
 		] );
+		await waitFor( () =>
+			expect( setCompletedMock ).toHaveBeenCalledWith(
+				{ initialMethods: [ 'card', 'giropay', 'ideal' ] },
+				'setup-complete'
+			)
+		);
 	} );
 } );

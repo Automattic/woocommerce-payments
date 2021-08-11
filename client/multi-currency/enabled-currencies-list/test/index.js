@@ -14,9 +14,9 @@ import {
 	useAvailableCurrencies,
 	useDefaultCurrency,
 	useEnabledCurrencies,
-} from 'data';
+} from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useCurrencies: jest.fn(),
 	useAvailableCurrencies: jest.fn(),
 	useDefaultCurrency: jest.fn(),
