@@ -79,4 +79,22 @@ trait WC_Payments_Subscriptions_Utilities {
 		return wcs_cart_contains_renewal();
 	}
 
+	/**
+	 * Get the version of WooCommerce Subscriptions that is active. Returns null when
+	 * Subscriptions is not active/loaded.
+	 *
+	 * @return null|string
+	 */
+	public function get_subscriptions_version() {
+		$version = null;
+
+		if ( class_exists( 'WC_Subscriptions' ) ) {
+			$version = WC_Subscriptions::$version;
+		} elseif ( class_exists( 'WC_Subscriptions_Base_Plugin' ) ) {
+			$version = WC_Subscriptions_Base_Plugin::instance()->get_plugin_version();
+		}
+
+		return $version;
+	}
+
 }
