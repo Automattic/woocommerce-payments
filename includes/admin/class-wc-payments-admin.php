@@ -476,9 +476,8 @@ class WC_Payments_Admin {
 	private function get_frontend_feature_flags() {
 		return array_merge(
 			[
-				'paymentTimeline'         => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
-				'customSearch'            => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
-				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
+				'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
+				'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
 			],
 			WC_Payments_Features::to_array()
 		);
@@ -526,15 +525,6 @@ class WC_Payments_Admin {
 		}
 
 		return ! $agreement['is_current_version'];
-	}
-
-	/**
-	 * Checks whether Account Overview page is enabled
-	 *
-	 * @return bool
-	 */
-	private static function is_account_overview_task_list_enabled() {
-		return get_option( '_wcpay_feature_account_overview_task_list' );
 	}
 
 	/**
