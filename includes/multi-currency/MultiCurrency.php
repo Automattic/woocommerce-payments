@@ -441,6 +441,10 @@ class MultiCurrency {
 		foreach ( $available_currencies as $currency ) {
 			$this->available_currencies[ $currency->get_code() ] = $currency;
 		}
+
+		if ( is_admin() && 1 < count( $this->available_currencies ) ) {
+			add_action( 'admin_head', [ $this, 'set_client_rounding_precision' ] );
+		}
 	}
 
 	/**
@@ -987,5 +991,19 @@ class MultiCurrency {
 	 */
 	private function is_using_auto_currency_switching(): bool {
 		return 'yes' === get_option( $this->id . '_enable_auto_currency', false );
+	}
+
+	/**
+	 * Reduces the client rounding precision to 2
+	 *
+	 * @return  void
+	 */
+	public function set_client_rounding_precision() {
+		$screen = get_current_screen();
+		if ( 'post' === $screen->base && 'shop_order' === $screen->id ) :
+			?>
+		<script>woocommerce_admin_meta_boxes.rounding_precision = 2;</script>
+			<?php
+		endif;
 	}
 }
