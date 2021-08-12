@@ -193,29 +193,6 @@ class WC_Payments_Fraud_Service {
 	}
 
 	/**
-	 * Get the session ID used until now for the current browsing session.
-	 *
-	 * @return string|NULL Session ID, or NULL if unknown.
-	 */
-	private function get_cookie_session_id() {
-		$wpcom_blog_id = $this->payments_api_client->get_blog_id();
-		if ( ! $wpcom_blog_id ) {
-			return null;
-		}
-
-		$session_handler = WC()->session;
-		if ( ! $session_handler ) {
-			return null;
-		}
-		$cookie = $session_handler->get_session_cookie();
-		if ( ! $cookie ) {
-			return null;
-		}
-		$cookie_customer_id = $cookie[0];
-		return $wpcom_blog_id . '_' . $cookie_customer_id;
-	}
-
-	/**
 	 * If a "forterToken" cookie is present or $token param received, send it to the WCPay server so the
 	 * current browsing session can be linked to the account. It will only be sent once.
 	 *
@@ -243,5 +220,28 @@ class WC_Payments_Fraud_Service {
 				Logger::log( '[Tracking] Error when sending Forter token: ' . $e->getMessage() );
 			}
 		}
+	}
+
+	/**
+	 * Get the session ID used until now for the current browsing session.
+	 *
+	 * @return string|NULL Session ID, or NULL if unknown.
+	 */
+	private function get_cookie_session_id() {
+		$wpcom_blog_id = $this->payments_api_client->get_blog_id();
+		if ( ! $wpcom_blog_id ) {
+			return null;
+		}
+
+		$session_handler = WC()->session;
+		if ( ! $session_handler ) {
+			return null;
+		}
+		$cookie = $session_handler->get_session_cookie();
+		if ( ! $cookie ) {
+			return null;
+		}
+		$cookie_customer_id = $cookie[0];
+		return $wpcom_blog_id . '_' . $cookie_customer_id;
 	}
 }
