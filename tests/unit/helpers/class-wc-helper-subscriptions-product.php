@@ -44,6 +44,24 @@ class WC_Subscriptions_Product {
 	}
 
 	/**
+	 * Mock for static get_sign_up_fee.
+	 *
+	 * @param Product $product WC Product.
+	 */
+	public static function get_sign_up_fee( $product ) {
+		return 0;
+	}
+
+	/**
+	 * Mock for static get_trial_length.
+	 *
+	 * @param Product $product WC Product.
+	 */
+	public static function get_trial_length( $product ) {
+		return 0;
+	}
+
+	/**
 	 * Mock for static is_subscription.
 	 *
 	 * @param Product $product WC Product.
