@@ -14,7 +14,7 @@ export default ( props ) => {
 			xmlns="http://www.w3.org/2000/svg"
 			{ ...props }
 		>
-			<g clipPath="url(#prefix__clip0)">
+			<g clipPath="url(#prefix__clip-ideal)">
 				<path
 					d="M60.322 0h-56.9A3.397 3.397 0 00.025 3.397v33.206A3.397 3.397 0 003.422 40h56.9a3.397 3.397 0 003.397-3.397V3.397A3.397 3.397 0 0060.322 0z"
 					fill="#fff"
@@ -29,7 +29,7 @@ export default ( props ) => {
 				/>
 			</g>
 			<defs>
-				<clipPath id="prefix__clip0">
+				<clipPath id="prefix__clip-ideal">
 					<path
 						fill="#fff"
 						transform="translate(.025)"
