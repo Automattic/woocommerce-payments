@@ -92,7 +92,7 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return bool Whether the plugin is active or not.
 	 */
 	public function is_subscriptions_plugin_active() {
-		return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( 'woocommerce-subscriptions/woocommerce-subscriptions.php' );
+		return class_exists( 'WC_Subscriptions' );
 	}
 
 	/**
