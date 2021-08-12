@@ -98,6 +98,11 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.8.4 - 2021-xx-xx =
+* Fix - Align table items according to design correctly.
+* Fix - Fix database connection error on account cache clear.
+* Fix - Fix fatal error logged when updating analytics data when account is not connected to Stripe.
+
 = 2.8.3 - 2021-08-10 =
 * Fix - Fix for payment request buttons when the new payment methods gateway is enabled.
 
