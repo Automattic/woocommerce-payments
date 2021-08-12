@@ -27,7 +27,7 @@ class WC_REST_Payments_Fraud_Controller extends WC_Payments_REST_Controller {
 			'/' . $this->rest_base . '/forter_token',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'send_foter_token' ],
+				'callback'            => [ $this, 'send_forter_token' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
 					'token' => [
@@ -43,7 +43,7 @@ class WC_REST_Payments_Fraud_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function send_foter_token( $request ) {
+	public function send_forter_token( $request ) {
 		$token = $request['token'];
 		WC_Payments::get_fraud_service()->send_forter_token( $token );
 	}
