@@ -55,7 +55,7 @@ class BackendCurrencies {
 			// Currency hooks. Be aware that this should not run after Explicit Price hook, its priority should be less
 			// than explicit price hooks to run before them.
 			add_filter( 'wc_price_args', [ $this, 'build_wc_price_args' ], 50 );
-			add_filter( 'woocommerce_format_localized_price', [ $this, 'force_decimal_places_in_value' ], 50 );
+
 		}
 	}
 
@@ -167,29 +167,5 @@ class BackendCurrencies {
 			],
 			$args
 		);
-	}
-
-	/**
-	 * Enforces the decimal places to a string representation of a price
-	 *
-	 * @param   string $value   String representation of a price.
-	 *
-	 * @return  string          Value with fixed decimal places.
-	 */
-	public function force_decimal_places_in_value( $value ) {
-
-		// Get the settings.
-		$decimal_separator = wc_get_price_decimal_separator();
-		$decimals          = wc_get_price_decimals();
-
-		// If the decimal point isn't included in the price, skip it.
-		if ( false !== strpos( $value, $decimal_separator ) ) {
-			$value                    = strval( $value );
-			list($wholes, $fractions) = explode( $decimal_separator, $value );
-			$new_value                = $wholes . $decimal_separator . substr( str_pad( $fractions, $decimals, '0', STR_PAD_RIGHT ), 0, 2 );
-			return $new_value;
-		}
-		return $value;
-
 	}
 }
