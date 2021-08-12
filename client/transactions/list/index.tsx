@@ -171,8 +171,8 @@ const getColumns = (
 		},
 		includeDeposit && {
 			key: 'deposit',
-			label: __( 'Deposit', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Deposit', 'woocommerce-payments' ),
+			label: __( 'Deposit date', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Deposit date', 'woocommerce-payments' ),
 			cellClassName: 'deposit',
 			isLeftAligned: true,
 		},
@@ -320,7 +320,7 @@ export const TransactionsList = (
 				value: calculateRiskMapping( txn.risk_level ),
 				display: clickable( riskLevel ),
 			},
-			deposit: { value: txn.deposit_id, display: deposit },
+			deposit: { value: txn.available_on, display: deposit },
 		};
 
 		return columnsToDisplay.map(

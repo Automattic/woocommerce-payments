@@ -190,7 +190,8 @@ export const merchantWCP = {
 	// Create a subscription product with an optional signup fee
 	createSubscriptionProduct: async (
 		productName,
-		includeSignupFee = false
+		includeSignupFee = false,
+		includeFreeTrial = false
 	) => {
 		// Go to "add product" page
 		await merchant.openNewProduct();
@@ -203,6 +204,10 @@ export const merchantWCP = {
 
 		if ( includeSignupFee ) {
 			await expect( page ).toFill( '#_subscription_sign_up_fee', '1.99' );
+		}
+
+		if ( includeFreeTrial ) {
+			await expect( page ).toFill( '#_subscription_trial_length', '14' );
 		}
 
 		await verifyAndPublish();
