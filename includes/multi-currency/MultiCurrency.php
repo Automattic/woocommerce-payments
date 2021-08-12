@@ -1022,9 +1022,9 @@ class MultiCurrency {
 		<script>woocommerce_admin_meta_boxes.rounding_precision = 2;</script>
 			<?php
 		endif;
-  }
-  
-  /**
+	}
+
+	/**
 	 * Register the CSS and JS admin scripts.
 	 *
 	 * @return void
