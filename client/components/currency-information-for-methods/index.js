@@ -3,7 +3,7 @@
  */
 import React, { useContext } from 'react';
 import _ from 'lodash';
-import { sprintf, __ } from '@wordpress/i18n';
+import { sprintf, __, _n } from '@wordpress/i18n';
 import interpolateComponents from 'interpolate-components';
 
 /**
@@ -24,7 +24,7 @@ const ListToCommaSeparatedSentencePartConverter = ( items ) => {
 	return (
 		items.join( ', ' ) +
 		' ' +
-		__( 'and', 'woocommerce-payments' ) +
+		__( ', and', 'woocommerce-payments' ) +
 		' ' +
 		lastItem
 	);
@@ -45,9 +45,9 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		( currency ) => currency.id
 	);
 
-	const paymentMethodsWithMissingCurrencies = [];
+	let paymentMethodsWithMissingCurrencies = [];
+	let missingCurrencyLabels = [];
 	const missingCurrencies = [];
-	const missingCurrencyLabels = [];
 
 	selectedMethods.map( ( paymentMethod ) => {
 		if ( 'undefined' !== typeof PaymentMethodsMap[ paymentMethod ] ) {
@@ -82,21 +82,39 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		return paymentMethod;
 	} );
 
-	if ( 0 < missingCurrencies.length ) {
+	missingCurrencyLabels = _.uniq( missingCurrencyLabels );
+	paymentMethodsWithMissingCurrencies = _.uniq(
+		paymentMethodsWithMissingCurrencies
+	);
+
+	if ( 0 < missingCurrencyLabels.length ) {
 		return (
 			<InlineNotice status="info" isDismissible={ false }>
 				{ interpolateComponents( {
 					mixedString: sprintf(
 						__(
-							"%s require additional currencies, so {{strong}}we'll add %s to your store{{/strong}}. " +
+							"%s %s %s additional %s, so {{strong}}we'll add %s to your store{{/strong}}. " +
 								'You can view & manage currencies later in settings.',
 							'woocommerce-payments'
 						),
 						ListToCommaSeparatedSentencePartConverter(
-							_.uniq( paymentMethodsWithMissingCurrencies )
+							paymentMethodsWithMissingCurrencies
+						),
+						_n(
+							'requires',
+							'require',
+							paymentMethodsWithMissingCurrencies.length,
+							'woocommerce-payments'
+						),
+						1 === missingCurrencyLabels.length ? 'an' : '',
+						_n(
+							'currency',
+							'currencies',
+							missingCurrencyLabels.length,
+							'woocommerce-payments'
 						),
 						ListToCommaSeparatedSentencePartConverter(
-							_.uniq( missingCurrencyLabels )
+							missingCurrencyLabels
 						)
 					),
 					components: {
