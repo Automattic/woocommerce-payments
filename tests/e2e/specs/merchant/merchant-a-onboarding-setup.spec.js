@@ -10,11 +10,6 @@ const {
 describe( 'Onboarding > WooCommerce Setup Wizard & Task List', () => {
 	beforeAll( async () => {
 		await merchant.login();
-		await withRestApi.resetOnboarding();
-		await withRestApi.deleteAllShippingZones();
-		await withRestApi.resetSettingsGroupToDefault( 'general' );
-		await withRestApi.resetSettingsGroupToDefault( 'products' );
-		await withRestApi.resetSettingsGroupToDefault( 'tax' );
 	} );
 
 	afterAll( async () => {
@@ -22,6 +17,7 @@ describe( 'Onboarding > WooCommerce Setup Wizard & Task List', () => {
 	} );
 
 	it( 'can complete onboarding when visiting the first time', async () => {
+		await withRestApi.resetOnboarding();
 		await completeOnboardingWizard();
 	} );
 
