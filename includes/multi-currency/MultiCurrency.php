@@ -209,10 +209,6 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init() {
-		if ( ! $this->payments_account->is_stripe_connected() ) {
-			return;
-		}
-
 		$store_currency_updated = $this->check_store_currency_for_change();
 
 		// If the store currency has been updated, clear the cache to make sure we fetch fresh rates from the server.
@@ -258,10 +254,6 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init_rest_api() {
-		if ( ! $this->payments_account->is_stripe_connected() ) {
-			return;
-		}
-
 		$api_controller = new RestController( \WC_Payments::create_api_client() );
 		$api_controller->register_routes();
 	}
@@ -272,10 +264,6 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init_widgets() {
-		if ( ! $this->payments_account->is_stripe_connected() ) {
-			return;
-		}
-
 		$this->currency_switcher_widget = new CurrencySwitcherWidget( $this, $this->compatibility );
 		register_widget( $this->currency_switcher_widget );
 	}
@@ -344,8 +332,8 @@ class MultiCurrency {
 			return $cache_data;
 		}
 
-		// If connection to server cannot be established, return expired data or null.
-		if ( ! $this->payments_api_client->is_server_connected() ) {
+		// If connection to server cannot be established, or if Stripe is not connected, return expired data or null.
+		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_stripe_connected() ) {
 			return $cache_data ?? null;
 		}
 
@@ -456,6 +444,7 @@ class MultiCurrency {
 	private function initialize_enabled_currencies() {
 		$available_currencies     = $this->get_available_currencies();
 		$enabled_currency_codes   = get_option( $this->id . '_enabled_currencies', [] );
+		$enabled_currency_codes   = is_array( $enabled_currency_codes ) ? $enabled_currency_codes : [];
 		$default_code             = $this->get_default_currency()->get_code();
 		$default                  = [];
 		$enabled_currency_codes[] = $default_code;
@@ -604,10 +593,6 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function update_selected_currency_by_url() {
-		if ( ! $this->payments_account->is_stripe_connected() ) {
-			return;
-		}
-
 		if ( ! isset( $_GET['currency'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
@@ -621,10 +606,6 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function update_selected_currency_by_geolocation() {
-		if ( ! $this->payments_account->is_stripe_connected() ) {
-			return;
-		}
-
 		// We only want to automatically set the currency if it's already not set.
 		if ( $this->is_using_auto_currency_switching() && ! $this->get_stored_currency_code() ) {
 			$currency = $this->geolocation->get_currency_by_customer_location();
@@ -914,7 +895,10 @@ class MultiCurrency {
 	private function read_currencies_from_cache() {
 		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION, [] );
 
-		if ( ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
+		if ( ! is_array( $currency_cache )
+			|| ! isset( $currency_cache['currencies'] )
+			|| ! isset( $currency_cache['expires'] )
+			|| ! isset( $currency_cache['updated'] ) ) {
 			// No option found or the data isn't in the format we expect.
 			return null;
 		}
@@ -974,6 +958,11 @@ class MultiCurrency {
 	 * @return array Array with the available currencies' codes.
 	 */
 	private function get_account_available_currencies(): array {
+		// If Stripe is not connected, return an empty array. This prevents using MC without being connected to Stripe.
+		if ( ! $this->payments_account->is_stripe_connected() ) {
+			return [];
+		}
+
 		$wc_currencies      = array_keys( get_woocommerce_currencies() );
 		$account_currencies = $wc_currencies;
 
