@@ -15,6 +15,7 @@ export default ( { site_id: siteId } ) => {
 			apiFetch( {
 				path: `${ NAMESPACE }/fraud/forter_token`,
 				method: 'POST',
+				parse: false,
 				data: { token: evt.detail },
 			} );
 		} );
