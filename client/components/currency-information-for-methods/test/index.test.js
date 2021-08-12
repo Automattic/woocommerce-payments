@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/react';
  */
 import { useCurrencies, useEnabledCurrencies } from '../../../data';
 import CurrencyInformationForMethods from '..';
+import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 
 jest.mock( '../../../data', () => ( {
 	useCurrencies: jest.fn(),
@@ -19,6 +20,14 @@ jest.mock( '@wordpress/a11y', () => ( {
 	...jest.requireActual( '@wordpress/a11y' ),
 	speak: jest.fn(),
 } ) );
+
+const FlagsContextWrapper = ( { children, multiCurrency = true } ) => (
+	<WCPaySettingsContext.Provider
+		value={ { featureFlags: { multiCurrency } } }
+	>
+		{ children }
+	</WCPaySettingsContext.Provider>
+);
 
 describe( 'CurrencyInformationForMethods', () => {
 	beforeEach( () => {
@@ -41,15 +50,17 @@ describe( 'CurrencyInformationForMethods', () => {
 
 	it( 'should not display content when the feature flag is disabled', () => {
 		const { container } = render(
-			<CurrencyInformationForMethods
-				selectedMethods={ [
-					'card',
-					'bancontact',
-					'giropay',
-					'ideal',
-					'p24',
-				] }
-			/>
+			<FlagsContextWrapper multiCurrency={ false }>
+				<CurrencyInformationForMethods
+					selectedMethods={ [
+						'card',
+						'giropay',
+						'bancontact',
+						'ideal',
+						'p24',
+					] }
+				/>
+			</FlagsContextWrapper>
 		);
 
 		expect( container.firstChild ).toBeNull();
@@ -60,15 +71,17 @@ describe( 'CurrencyInformationForMethods', () => {
 			isLoading: true,
 		} );
 		const { container } = render(
-			<CurrencyInformationForMethods
-				selectedMethods={ [
-					'card',
-					'bancontact',
-					'giropay',
-					'ideal',
-					'p24',
-				] }
-			/>
+			<FlagsContextWrapper>
+				<CurrencyInformationForMethods
+					selectedMethods={ [
+						'card',
+						'giropay',
+						'bancontact',
+						'ideal',
+						'p24',
+					] }
+				/>
+			</FlagsContextWrapper>
 		);
 
 		expect(
@@ -86,15 +99,17 @@ describe( 'CurrencyInformationForMethods', () => {
 			},
 		} );
 		const { container } = render(
-			<CurrencyInformationForMethods
-				selectedMethods={ [
-					'giropay',
-					'bancontact',
-					'card',
-					'ideal',
-					'p24',
-				] }
-			/>
+			<FlagsContextWrapper>
+				<CurrencyInformationForMethods
+					selectedMethods={ [
+						'giropay',
+						'card',
+						'bancontact',
+						'ideal',
+						'p24',
+					] }
+				/>
+			</FlagsContextWrapper>
 		);
 
 		expect(
@@ -105,9 +120,11 @@ describe( 'CurrencyInformationForMethods', () => {
 
 	it( 'should not display content when all the enabled method are not Euro methods', () => {
 		const { container } = render(
-			<CurrencyInformationForMethods
-				selectedMethods={ [ 'card', 'dummy' ] }
-			/>
+			<FlagsContextWrapper>
+				<CurrencyInformationForMethods
+					selectedMethods={ [ 'card', 'dummy' ] }
+				/>
+			</FlagsContextWrapper>
 		);
 
 		expect(
@@ -118,9 +135,11 @@ describe( 'CurrencyInformationForMethods', () => {
 
 	it( 'should display a notice when one of the enabled methods is a Euro method', () => {
 		render(
-			<CurrencyInformationForMethods
-				selectedMethods={ [ 'card', 'giropay' ] }
-			/>
+			<FlagsContextWrapper>
+				<CurrencyInformationForMethods
+					selectedMethods={ [ 'card', 'giropay' ] }
+				/>
+			</FlagsContextWrapper>
 		);
 
 		expect(
@@ -130,9 +149,11 @@ describe( 'CurrencyInformationForMethods', () => {
 
 	it( 'should display a notice when one of the enabled methods is both EUR and PLN method', () => {
 		render(
-			<CurrencyInformationForMethods
-				selectedMethods={ [ 'card', 'p24' ] }
-			/>
+			<FlagsContextWrapper>
+				<CurrencyInformationForMethods
+					selectedMethods={ [ 'card', 'p24' ] }
+				/>
+			</FlagsContextWrapper>
 		);
 
 		expect(

@@ -33,6 +33,7 @@ export default {
 			'woocommerce-payments'
 		),
 		Icon: BancontactIcon,
+		currencies: [ 'EUR' ],
 	},
 	giropay: {
 		id: 'giropay',

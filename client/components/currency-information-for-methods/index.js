@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import _ from 'lodash';
 import { sprintf, __ } from '@wordpress/i18n';
 import interpolateComponents from 'interpolate-components';
@@ -10,6 +10,7 @@ import interpolateComponents from 'interpolate-components';
  * Internal dependencies
  */
 import { useCurrencies, useEnabledCurrencies } from '../../data';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import InlineNotice from '../inline-notice';
 import PaymentMethodsMap from '../../payment-methods-map';
 
@@ -109,6 +110,13 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 };
 
 const CurrencyInformationForMethodsWrapper = ( props ) => {
+	const {
+		featureFlags: { multiCurrency },
+	} = useContext( WCPaySettingsContext );
+
+	// Prevents loading currency data when the feature flag is disabled.
+	if ( ! multiCurrency ) return null;
+
 	return <CurrencyInformationForMethods { ...props } />;
 };
 
