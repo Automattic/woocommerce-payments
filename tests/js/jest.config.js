@@ -11,6 +11,7 @@ module.exports = {
 		'^wcpay(.*)$': '<rootDir>/client$1',
 	},
 	globalSetup: '<rootDir>/tests/js/jest-global-setup.js',
+	testSequencer: '<rootDir>/tests/e2e/config/jest-custom-sequencer.js',
 	setupFiles: [
 		require.resolve(
 			'@wordpress/jest-preset-default/scripts/setup-globals.js'

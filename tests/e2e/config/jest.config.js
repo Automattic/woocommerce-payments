@@ -9,8 +9,8 @@ module.exports = {
 	...jestConfig,
 	rootDir: path.resolve( __dirname, '../../../' ),
 	roots: [
-		path.resolve( __dirname, '../specs/shopper' ),
 		path.resolve( __dirname, '../specs/merchant' ),
+		path.resolve( __dirname, '../specs/shopper' ),
 	],
 	setupFilesAfterEnv: [
 		path.resolve( __dirname, '../setup/jest-setup.js' ),
