@@ -191,6 +191,24 @@
       },
       "cvc": "626",
       "label": "Visa ending in 1629"
+    },
+    "invalid-exp-date": {
+      "number": "4242424242424242",
+      "expires": {
+        "month": "11",
+        "year": "12"
+      },
+      "cvc": "123",
+      "label": "Visa ending in 4242"
+    },
+    "invalid-cvv-number": {
+      "number": "4242424242424242",
+      "expires": {
+        "month": "06",
+        "year": "24"
+      },
+      "cvc": "11",
+      "label": "Visa ending in 4242"
     }
   },
   "onboardingwizard": {
