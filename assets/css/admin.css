@@ -71,6 +71,11 @@
 	background-size: contain;
 }
 
+.payment-method__brand--p24 {
+	background: no-repeat url( '../images/payment-methods/przelewy24.svg' );
+	background-size: contain;
+}
+
 .payment-method__brand--sepa_debit {
 	background: no-repeat url( '../images/cards/sepa.svg' );
 	background-size: contain;
