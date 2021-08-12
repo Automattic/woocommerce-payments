@@ -443,6 +443,7 @@ class MultiCurrency {
 	private function initialize_enabled_currencies() {
 		$available_currencies     = $this->get_available_currencies();
 		$enabled_currency_codes   = get_option( $this->id . '_enabled_currencies', [] );
+		$enabled_currency_codes   = is_array( $enabled_currency_codes ) ? $enabled_currency_codes : [];
 		$default_code             = $this->get_default_currency()->get_code();
 		$default                  = [];
 		$enabled_currency_codes[] = $default_code;
@@ -893,7 +894,10 @@ class MultiCurrency {
 	private function read_currencies_from_cache() {
 		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION, [] );
 
-		if ( ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
+		if ( ! is_array( $currency_cache )
+			|| ! isset( $currency_cache['currencies'] )
+			|| ! isset( $currency_cache['expires'] )
+			|| ! isset( $currency_cache['updated'] ) ) {
 			// No option found or the data isn't in the format we expect.
 			return null;
 		}
