@@ -29,6 +29,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 	afterEach( async () => {
 		// Reload the page after every test so there are no messages
 		await page.reload();
+		await uiUnblocked();
 	} );
 
 	afterAll( async () => {
@@ -46,6 +47,38 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		).toMatchElement(
 			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
 			{ text: 'Error: Your card was declined.' }
+		);
+	} );
+
+	it( 'should throw an error that the card expiration date is in the past', async () => {
+		const cardInvalidExpDate = config.get( 'cards.invalid-exp-date' );
+		await fillCardDetails( page, cardInvalidExpDate );
+		await expect( page ).toMatchElement(
+			'div#wcpay-errors > ul.woocommerce-error > li',
+			{
+				text: "Your card's expiration year is in the past.",
+			}
+		);
+		await expect( page ).toClick( '#place_order' );
+		await uiUnblocked();
+		await expect(
+			page
+		).toMatchElement(
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
+			{ text: "Your card's expiration year is in the past." }
+		);
+	} );
+
+	it( 'should throw an error that the card CVV number is invalid', async () => {
+		const cardInvalidCVV = config.get( 'cards.invalid-cvv-number' );
+		await fillCardDetails( page, cardInvalidCVV );
+		await expect( page ).toClick( '#place_order' );
+		await uiUnblocked();
+		await expect(
+			page
+		).toMatchElement(
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
+			{ text: "Your card's security code is incomplete." }
 		);
 	} );
 
@@ -126,6 +159,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 
 	it( 'should throw an error that the card was declined due to invalid 3DS card', async () => {
 		const declinedCard = config.get( 'cards.declined-3ds' );
+		await uiUnblocked();
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await confirmCardAuthentication( page, '3DS' );
