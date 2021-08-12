@@ -64,6 +64,16 @@ class WC_Payments_Fraud_Service_Test extends WP_UnitTestCase {
 		$this->assertNull( $this->fraud_service->prepare_fraud_config( [], 'forter' ) );
 	}
 
+	public function test_prepare_fraud_config_foter_returns_null_when_token_already_sent() {
+		update_option( 'wcpay_forter_token_sent', 'acct_id' );
+
+		$this->mock_account
+			->method( 'get_stripe_account_id' )
+			->willReturn( 'acct_id' );
+
+		$this->assertNull( $this->fraud_service->prepare_fraud_config( [], 'forter' ) );
+	}
+
 	public function test_prepare_fraud_config_foter_returns_config_when_is_admin() {
 		$this->set_is_admin();
 		$this->assertSame( [], $this->fraud_service->prepare_fraud_config( [], 'forter' ) );

@@ -129,8 +129,9 @@ class WC_Payments_Fraud_Service {
 	 * @return array|NULL Assoc array, ready for the client to consume, or NULL if the client shouldn't enqueue this script.
 	 */
 	private function prepare_forter_config( $config ) {
-		if ( ! is_admin() ) {
-			// Only include Forter in admin pages.
+		$account_id = $this->account->get_stripe_account_id();
+		if ( ! is_admin() || get_option( 'wcpay_forter_token_sent' ) === $account_id ) {
+			// Only include Forter in admin pages and if the token has not been sent.
 			return null;
 		}
 
