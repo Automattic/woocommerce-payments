@@ -103,6 +103,16 @@ const WCPayUPEFields = ( {
 							'This payment method can not be saved for future use.',
 					};
 				}
+
+				return {
+					type: 'success',
+					meta: {
+						paymentMethodData: {
+							paymentMethod: PAYMENT_METHOD_NAME_CARD,
+							wc_payment_intent_id: paymentIntentId,
+						},
+					},
+				};
 			} ),
 		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
 		// eslint-disable-next-line react-hooks/exhaustive-deps

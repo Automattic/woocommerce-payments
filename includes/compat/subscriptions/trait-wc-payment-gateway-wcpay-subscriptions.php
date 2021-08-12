@@ -266,7 +266,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 							'code'   => '<code>',
 						]
 					),
-					wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
+					WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+						wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
+						$renewal_order
+					),
 					esc_html( rtrim( $e->getMessage(), '.' ) )
 				);
 				$renewal_order->add_order_note( $note );

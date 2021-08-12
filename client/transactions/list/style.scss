@@ -1,6 +1,6 @@
 @import 'node_modules/@wordpress/components/src/tooltip/style.scss';
 
-$space-header-item: 25px;
+$space-header-item: 12px;
 
 .transactions-list {
 	.date-time {
@@ -9,7 +9,7 @@ $space-header-item: 25px;
 
 	.converted-amount {
 		display: flex; // Necessary for conversion tooltip to show.
-		justify-content: center;
+		justify-content: flex-end;
 
 		.conversion-indicator {
 			margin-right: 6px;
@@ -18,15 +18,13 @@ $space-header-item: 25px;
 		}
 	}
 
-	// alignment override for header items
-	.woocommerce-table__header:not( .is-left-aligned ),
-	.woocommerce-table__item:not( .is-left-aligned ) {
-		text-align: center;
-	}
-
 	// slight adjustment to align header items with sorting button to account for icon width
 	.woocommerce-table__header.is-numeric .components-button {
 		margin-right: $space-header-item;
+	}
+
+	.woocommerce-table__header.is-center-aligned {
+		text-align: center;
 	}
 }
 

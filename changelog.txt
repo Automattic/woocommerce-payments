@@ -1,6 +1,23 @@
 *** WooCommerce Payments Changelog ***
 
-= 2.8.0 - 2021-xx-xx =
+= 2.9.0 - 2021-xx-xx =
+* Add - *Early access*: allow your store to collect payments with iDEAL. Enable the feature in settings!
+* Add - Split discount line in timeline into variable fee and fixed fee.
+* Fix - Align table items according to design correctly.
+* Fix - Show the estimated deposit date in the transactions CSV export rather than the deposit ID.
+
+= 2.8.3 - 2021-08-10 =
+* Fix - Fix for payment request buttons when the new payment methods gateway is enabled.
+
+= 2.8.2 - 2021-08-05 =
+* Fix - If account is disconnected or not set up do not display onboarding task and UPE inbox note.
+* Fix - Fix for the site acting as disconnected after the account cache expires.
+* Fix - Fix for failed Giropay and Sofort transactions causing an error.
+
+= 2.8.1 - 2021-08-04 =
+* Fix - Enable Multi-Currency only if there is a linked WooCommerce Payments account.
+
+= 2.8.0 - 2021-08-04 =
 * Add - Allow merchants to add additional currencies to their store, allowing a store’s customers to shop and browse in the currency of their choice.
 * Add - *Early access*: allow your store to collect payments with Giropay and Sofort. Enable the feature in settings!
 * Add - Use date picker for applicable dispute evidence fields.
@@ -18,7 +35,10 @@
 * Update - Bump minimum supported version of WooCommerce from 5.2 to 5.3.
 * Update - Bump minimum supported version of WordPress from 5.5 to 5.6.
 * Fix - Stop refund process when using an invalid amount
+* Fix - Improve sanitization of ExPlat cookie.
 * Add - Show fee breakdown in transaction details timeline.
+* Add - REST endpoint to get customer id from an order.
+* Fix - Explat not caching when no variation is returned.
 
 = 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.

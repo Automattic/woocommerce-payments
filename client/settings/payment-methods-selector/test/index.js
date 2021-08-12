@@ -13,9 +13,9 @@ import PaymentMethodsSelector from '..';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
-} from 'data';
+} from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
@@ -30,6 +30,7 @@ describe( 'PaymentMethodsSelector', () => {
 			'giropay',
 			'sofort',
 			'sepa_debit',
+			'ideal',
 		] );
 	} );
 
@@ -74,7 +75,7 @@ describe( 'PaymentMethodsSelector', () => {
 		).toBeInTheDocument();
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 3 );
+		expect( paymentMethods ).toHaveLength( 4 );
 
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
 			name: 'giropay',
@@ -90,6 +91,11 @@ describe( 'PaymentMethodsSelector', () => {
 			name: 'Direct debit payment',
 		} );
 		expect( sepaCheckbox ).not.toBeChecked();
+
+		const idealCheckbox = screen.getByRole( 'checkbox', {
+			name: 'iDEAL',
+		} );
+		expect( idealCheckbox ).not.toBeChecked();
 
 		expect(
 			screen.getByRole( 'button', {
@@ -136,10 +142,13 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( addPaymentMethodButton );
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 2 );
+		expect( paymentMethods ).toHaveLength( 3 );
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
 		).toBeNull();
+		expect(
+			screen.queryByRole( 'checkbox', { name: 'iDEAL' } )
+		).not.toBeNull();
 	} );
 
 	test( 'Selecting payment methods does not update enabled payment methods', () => {
@@ -224,6 +233,11 @@ describe( 'PaymentMethodsSelector', () => {
 		} );
 		user.click( giroPayCheckbox );
 
+		const idealCheckbox = screen.getByRole( 'checkbox', {
+			name: 'iDEAL',
+		} );
+		user.click( idealCheckbox );
+
 		const addSelectedButton = screen.getByRole( 'button', {
 			name: 'Add selected',
 		} );
@@ -232,6 +246,7 @@ describe( 'PaymentMethodsSelector', () => {
 			'card',
 			'sepa_debit',
 			'giropay',
+			'ideal',
 		] );
 		expect(
 			screen.queryByRole( 'button', {
