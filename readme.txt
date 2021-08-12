@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Split discount line in timeline into variable fee and fixed fee.
 * Fix - Align table items according to design correctly.
 * Fix - Show the estimated deposit date in the transactions CSV export rather than the deposit ID.
+* Fix - Keep track of customer id in non logged in users.
 
 = 2.8.3 - 2021-08-10 =
 * Fix - Fix for payment request buttons when the new payment methods gateway is enabled.
