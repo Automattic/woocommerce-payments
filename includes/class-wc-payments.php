@@ -739,6 +739,10 @@ class WC_Payments {
 		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$tos_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-fraud-controller.php';
+		$fraud_controller = new WC_REST_Payments_Fraud_Controller( self::$api_client );
+		$fraud_controller->register_routes();
+
 		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 			$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
@@ -804,6 +808,15 @@ class WC_Payments {
 	 */
 	public static function get_localization_service() {
 		return self::$localization_service;
+	}
+
+	/**
+	 * Returns the WC_Payments_Fraud_Service instance
+	 *
+	 * @return WC_Payments_Fraud_Service Fraud Service instance
+	 */
+	public static function get_fraud_service() {
+		return self::$fraud_service;
 	}
 
 	/**

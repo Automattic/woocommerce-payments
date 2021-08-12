@@ -1,6 +1,24 @@
+/**
+ * External dependencies
+ */
+import apiFetch from '@wordpress/api-fetch';
+
+/**
+ * Internal Dependencies
+ */
+import { NAMESPACE } from 'data/constants';
+
 export default ( { site_id: siteId } ) => {
 	// IDs in HTML can't start with a number, so calling querySelector('script#123456') breaks.
 	if ( ! document.querySelector( 'script[id="' + siteId + '"]' ) ) {
+		document.addEventListener( 'ftr:tokenReady', ( evt ) => {
+			apiFetch( {
+				path: `${ NAMESPACE }/fraud/forter_token`,
+				method: 'POST',
+				data: { token: evt.detail },
+			} );
+		} );
+
 		const script = document.createElement( 'script' );
 		// Add the ID in case the Forter script looks for it in the page.
 		script.id = siteId;

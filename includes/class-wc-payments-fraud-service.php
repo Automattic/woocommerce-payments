@@ -54,7 +54,7 @@ class WC_Payments_Fraud_Service {
 		add_filter( 'wcpay_prepare_fraud_config', [ $this, 'prepare_fraud_config' ], 10, 2 );
 		add_filter( 'wcpay_current_session_id', [ $this, 'get_session_id' ] );
 		add_action( 'init', [ $this, 'link_session_if_user_just_logged_in' ] );
-		add_action( 'admin_init', [ $this, 'send_forter_cookie_token' ] );
+		add_action( 'admin_init', [ $this, 'send_forter_token' ] );
 	}
 
 	/**
@@ -216,11 +216,16 @@ class WC_Payments_Fraud_Service {
 	}
 
 	/**
-	 * If a "forterToken" cookie is present, send it to the WCPay server so the
+	 * If a "forterToken" cookie is present or $token param received, send it to the WCPay server so the
 	 * current browsing session can be linked to the account. It will only be sent once.
+	 *
+	 * @param string|null $token Forter token received from the client.
 	 */
-	public function send_forter_cookie_token() {
-		if ( ! $this->account->is_stripe_connected() || ! isset( $_COOKIE['forterToken'] ) || ! isset( $this->account->get_fraud_services_config()['forter'] ) ) {
+	public function send_forter_token( string $token = null ) {
+		// The cookie contents are opaque to us, so it's better to not sanitize them.
+		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$token = $_COOKIE['forterToken'] ?? $token;
+		if ( ! $this->account->is_stripe_connected() || ! $token || ! isset( $this->account->get_fraud_services_config()['forter'] ) ) {
 			return;
 		}
 
@@ -229,9 +234,7 @@ class WC_Payments_Fraud_Service {
 			// Optimistically set the "Forter token already sent" database option, so it's not sent twice if there are several admin requests in parallel.
 			update_option( 'wcpay_forter_token_sent', $account_id );
 			try {
-				// The cookie contents are opaque to us, so it's better to not sanitize them.
-				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-				$response = $this->payments_api_client->send_forter_token( $_COOKIE['forterToken'] );
+				$response = $this->payments_api_client->send_forter_token( $token );
 				if ( ! isset( $response['result'] ) || 'success' !== $response['result'] ) {
 					delete_option( 'wcpay_forter_token_sent' );
 				}
