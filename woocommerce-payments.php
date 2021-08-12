@@ -99,26 +99,29 @@ function wcpay_init() {
 // If you change the priority of this action, you'll need to change it in the wcpay_check_old_jetpack_version function too.
 add_action( 'plugins_loaded', 'wcpay_init', 11 );
 
-/**
- * Initialise subscriptions-base if WC Subscriptions (the plugin) isn't loaded
- */
-function wcpay_init_subscriptions_base() {
-	$wc_subscriptions_plugin_slug = 'woocommerce-subscriptions/woocommerce-subscriptions.php';
-	$wcs_is_being_activated       = isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $wc_subscriptions_plugin_slug === $_GET['plugin']; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+if ( ! function_exists( 'wcpay_init_subscriptions_base' ) ) {
 
 	/**
-	* If the current request is to activate subscriptions, don't load our subscriptions base plugin.
-	*
-	* WP loads the newly activated plugin's base file later than `plugins_loaded`, and so there's no opportunity for us to not load our base feature set on a consistent hook.
-	* We also cannot init the base plugin too late, because if we do, we miss hooks that register the subscription post types etc.
-	*/
-	if ( $wcs_is_being_activated ) {
-		return;
-	}
+	 * Initialise subscriptions-base if WC Subscriptions (the plugin) isn't loaded
+	 */
+	function wcpay_init_subscriptions_base() {
+		$wc_subscriptions_plugin_slug = 'woocommerce-subscriptions/woocommerce-subscriptions.php';
+		$wcs_is_being_activated       = isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $wc_subscriptions_plugin_slug === $_GET['plugin']; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-	if ( ! Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $wc_subscriptions_plugin_slug ) ) {
-		require_once WCPAY_SUBSCRIPTIONS_ABSPATH . 'includes/class-wc-subscriptions-base-plugin.php';
-		new WC_Subscriptions_Base_Plugin();
+		/**
+		* If the current request is to activate subscriptions, don't load our subscriptions base plugin.
+		*
+		* WP loads the newly activated plugin's base file later than `plugins_loaded`, and so there's no opportunity for us to not load our base feature set on a consistent hook.
+		* We also cannot init the base plugin too late, because if we do, we miss hooks that register the subscription post types etc.
+		*/
+		if ( $wcs_is_being_activated ) {
+			return;
+		}
+
+		if ( ! Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $wc_subscriptions_plugin_slug ) ) {
+			require_once WCPAY_SUBSCRIPTIONS_ABSPATH . 'includes/class-wc-subscriptions-base-plugin.php';
+			new WC_Subscriptions_Base_Plugin();
+		}
 	}
 }
 wcpay_init_subscriptions_base();
