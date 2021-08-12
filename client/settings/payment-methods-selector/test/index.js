@@ -31,6 +31,8 @@ describe( 'PaymentMethodsSelector', () => {
 			'giropay',
 			'sofort',
 			'sepa_debit',
+			'p24',
+			'ideal',
 		] );
 	} );
 
@@ -75,7 +77,7 @@ describe( 'PaymentMethodsSelector', () => {
 		).toBeInTheDocument();
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 4 );
+		expect( paymentMethods ).toHaveLength( 6 );
 
 		const bancontactPayCheckbox = screen.getByRole( 'checkbox', {
 			name: 'Bancontact',
@@ -87,6 +89,11 @@ describe( 'PaymentMethodsSelector', () => {
 		} );
 		expect( giroPayCheckbox ).not.toBeChecked();
 
+		const p24Checkbox = screen.getByRole( 'checkbox', {
+			name: 'Przelewy24 (P24)',
+		} );
+		expect( p24Checkbox ).not.toBeChecked();
+
 		const sofortCheckbox = screen.getByRole( 'checkbox', {
 			name: 'Sofort',
 		} );
@@ -96,6 +103,11 @@ describe( 'PaymentMethodsSelector', () => {
 			name: 'Direct debit payment',
 		} );
 		expect( sepaCheckbox ).not.toBeChecked();
+
+		const idealCheckbox = screen.getByRole( 'checkbox', {
+			name: 'iDEAL',
+		} );
+		expect( idealCheckbox ).not.toBeChecked();
 
 		expect(
 			screen.getByRole( 'button', {
@@ -142,10 +154,19 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( addPaymentMethodButton );
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 3 );
+		expect( paymentMethods ).toHaveLength( 5 );
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
 		).toBeNull();
+		expect(
+			screen.queryByRole( 'checkbox', { name: 'Bancontact' } )
+		).not.toBeNull();
+		expect(
+			screen.queryByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
+		).not.toBeNull();
+		expect(
+			screen.queryByRole( 'checkbox', { name: 'iDEAL' } )
+		).not.toBeNull();
 	} );
 
 	test( 'Selecting payment methods does not update enabled payment methods', () => {
@@ -235,6 +256,14 @@ describe( 'PaymentMethodsSelector', () => {
 		} );
 		user.click( giroPayCheckbox );
 
+		const p24Checkbox = screen.getByRole( 'checkbox', {
+			name: 'Przelewy24 (P24)',
+		} );
+		user.click( p24Checkbox );
+		const idealCheckbox = screen.getByRole( 'checkbox', {
+			name: 'iDEAL',
+		} );
+		user.click( idealCheckbox );
 		const addSelectedButton = screen.getByRole( 'button', {
 			name: 'Add selected',
 		} );
@@ -244,6 +273,8 @@ describe( 'PaymentMethodsSelector', () => {
 			'sepa_debit',
 			'bancontact',
 			'giropay',
+			'p24',
+			'ideal',
 		] );
 		expect(
 			screen.queryByRole( 'button', {

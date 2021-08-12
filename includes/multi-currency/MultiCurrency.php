@@ -41,6 +41,13 @@ class MultiCurrency {
 	protected static $instance = null;
 
 	/**
+	 * Static flag to show if the currencies initialization has been completed
+	 *
+	 * @var bool
+	 */
+	protected static $is_initialized = false;
+
+	/**
 	 * Compatibility instance.
 	 *
 	 * @var Compatibility
@@ -108,7 +115,7 @@ class MultiCurrency {
 	 *
 	 * @var array
 	 */
-	protected $available_currencies;
+	protected $available_currencies = [];
 
 	/**
 	 * The default currency.
@@ -122,7 +129,7 @@ class MultiCurrency {
 	 *
 	 * @var array
 	 */
-	protected $enabled_currencies;
+	protected $enabled_currencies = [];
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -176,6 +183,11 @@ class MultiCurrency {
 		$this->compatibility        = new Compatibility( $this, $this->utils );
 		$this->analytics            = new Analytics( $this );
 
+		if ( is_admin() ) {
+			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
+			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+		}
+
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
@@ -220,19 +232,19 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
 		// Check to make sure there are enabled currencies, then for Storefront being active, and then load the integration.
 		$theme = wp_get_theme();
-		if ( 1 < count( $this->get_enabled_currencies() ) && ( 'storefront' === $theme->get_stylesheet() || 'storefront' === $theme->get_template() ) ) {
+		if ( 'storefront' === $theme->get_stylesheet() || 'storefront' === $theme->get_template() ) {
 			$this->storefront_integration = new StorefrontIntegration( $this );
 		}
 
 		if ( is_admin() ) {
-			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
+
+		static::$is_initialized = true;
 	}
 
 	/**
@@ -263,7 +275,12 @@ class MultiCurrency {
 	 * @return array The new settings pages.
 	 */
 	public function init_settings_pages( $settings_pages ): array {
-		$settings_pages[] = new Settings( $this );
+		if ( $this->payments_account->is_stripe_connected() ) {
+			$settings_pages[] = new Settings( $this );
+		} else {
+			$settings_pages[] = new SettingsOnboardCta( $this );
+		}
+
 		return $settings_pages;
 	}
 
@@ -314,8 +331,8 @@ class MultiCurrency {
 			return $cache_data;
 		}
 
-		// If connection to server cannot be established, return expired data or null.
-		if ( ! $this->payments_api_client->is_server_connected() ) {
+		// If connection to server cannot be established, or if Stripe is not connected, return expired data or null.
+		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_stripe_connected() ) {
 			return $cache_data ?? null;
 		}
 
@@ -426,6 +443,7 @@ class MultiCurrency {
 	private function initialize_enabled_currencies() {
 		$available_currencies     = $this->get_available_currencies();
 		$enabled_currency_codes   = get_option( $this->id . '_enabled_currencies', [] );
+		$enabled_currency_codes   = is_array( $enabled_currency_codes ) ? $enabled_currency_codes : [];
 		$default_code             = $this->get_default_currency()->get_code();
 		$default                  = [];
 		$enabled_currency_codes[] = $default_code;
@@ -668,10 +686,15 @@ class MultiCurrency {
 		}
 
 		$order_exchange_rate    = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+		$stripe_exchange_rate   = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true );
 		$order_default_currency = $order->get_meta( '_wcpay_multi_currency_order_default_currency', true );
 
 		$refund->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $order_exchange_rate );
 		$refund->update_meta_data( '_wcpay_multi_currency_order_default_currency', $order_default_currency );
+		if ( $stripe_exchange_rate ) {
+			$refund->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $stripe_exchange_rate );
+		}
+
 		$refund->save_meta_data();
 	}
 
@@ -871,7 +894,10 @@ class MultiCurrency {
 	private function read_currencies_from_cache() {
 		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION, [] );
 
-		if ( ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
+		if ( ! is_array( $currency_cache )
+			|| ! isset( $currency_cache['currencies'] )
+			|| ! isset( $currency_cache['expires'] )
+			|| ! isset( $currency_cache['updated'] ) ) {
 			// No option found or the data isn't in the format we expect.
 			return null;
 		}
@@ -931,13 +957,18 @@ class MultiCurrency {
 	 * @return array Array with the available currencies' codes.
 	 */
 	private function get_account_available_currencies(): array {
+		// If Stripe is not connected, return an empty array. This prevents using MC without being connected to Stripe.
+		if ( ! $this->payments_account->is_stripe_connected() ) {
+			return [];
+		}
+
 		$wc_currencies      = array_keys( get_woocommerce_currencies() );
 		$account_currencies = $wc_currencies;
 
-		$account = $this->payments_account->get_cached_account_data();
-
-		if ( $account && ! empty( $account['presentment_currencies'] ) ) {
-			$account_currencies = array_map( 'strtoupper', $account['presentment_currencies'] );
+		$account              = $this->payments_account->get_cached_account_data();
+		$supported_currencies = $this->payments_account->get_account_customer_supported_currencies();
+		if ( $account && ! empty( $supported_currencies ) ) {
+			$account_currencies = array_map( 'strtoupper', $supported_currencies );
 		}
 
 		/**
@@ -987,5 +1018,14 @@ class MultiCurrency {
 			[ 'wc-components' ],
 			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
 		);
+	}
+
+	/**
+	 * Returns if the currency initialization are completed
+	 *
+	 * @return  bool    If the initializations have been completedÎ
+	 */
+	public static function is_initialized() : bool {
+		return static::$is_initialized;
 	}
 }

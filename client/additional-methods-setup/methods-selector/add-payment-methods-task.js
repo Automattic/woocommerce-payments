@@ -224,6 +224,13 @@ const AddPaymentMethodsTask = () => {
 									name="giropay"
 								/>
 							) }
+							{ availablePaymentMethods.includes( 'p24' ) && (
+								<PaymentMethodCheckbox
+									checked={ paymentMethodsState.p24 }
+									onChange={ handlePaymentMethodChange }
+									name="p24"
+								/>
+							) }
 							{ availablePaymentMethods.includes( 'sofort' ) && (
 								<PaymentMethodCheckbox
 									checked={ paymentMethodsState.sofort }
@@ -238,6 +245,13 @@ const AddPaymentMethodsTask = () => {
 									checked={ paymentMethodsState.sepa_debit }
 									onChange={ handlePaymentMethodChange }
 									name="sepa_debit"
+								/>
+							) }
+							{ availablePaymentMethods.includes( 'ideal' ) && (
+								<PaymentMethodCheckbox
+									checked={ paymentMethodsState.ideal }
+									onChange={ handlePaymentMethodChange }
+									name="ideal"
 								/>
 							) }
 						</PaymentMethodCheckboxes>

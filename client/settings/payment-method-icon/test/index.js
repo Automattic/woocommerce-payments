@@ -31,6 +31,16 @@ describe( 'PaymentMethodIcon', () => {
 		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
 	} );
 
+	test( 'renders p24 payment method icon', () => {
+		const { container } = render( <PaymentMethodIcon name="p24" /> );
+		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+	} );
+
+	test( 'renders iDEAL payment method icon', () => {
+		const { container } = render( <PaymentMethodIcon name="ideal" /> );
+		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+	} );
+
 	test( 'renders Bancontact payment method icon and label', () => {
 		render( <PaymentMethodIcon name="bancontact" showName /> );
 
@@ -56,6 +66,20 @@ describe( 'PaymentMethodIcon', () => {
 		render( <PaymentMethodIcon name="sofort" showName /> );
 
 		const label = screen.queryByText( 'Sofort' );
+		expect( label ).toBeInTheDocument();
+	} );
+
+	test( 'renders p24 payment method icon and label', () => {
+		render( <PaymentMethodIcon name="p24" showName /> );
+
+		const label = screen.queryByText( 'Przelewy24 (P24)' );
+		expect( label ).toBeInTheDocument();
+	} );
+
+	test( 'renders iDEAL payment method icon and label', () => {
+		render( <PaymentMethodIcon name="ideal" showName /> );
+
+		const label = screen.queryByText( 'iDEAL' );
 		expect( label ).toBeInTheDocument();
 	} );
 

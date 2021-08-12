@@ -71,6 +71,11 @@
 	background-size: contain;
 }
 
+.payment-method__brand--p24 {
+	background: no-repeat url( '../images/payment-methods/przelewy24.svg' );
+	background-size: contain;
+}
+
 .payment-method__brand--sepa_debit {
 	background: no-repeat url( '../images/cards/sepa.svg' );
 	background-size: contain;
@@ -78,6 +83,11 @@
 
 .payment-method__brand--sofort {
 	background: no-repeat url( '../images/payment-methods/sofort.svg' );
+	background-size: contain;
+}
+
+.payment-method__brand--ideal {
+	background: no-repeat url( '../images/payment-methods/ideal.svg' );
 	background-size: contain;
 }
 
