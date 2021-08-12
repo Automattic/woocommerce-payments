@@ -743,6 +743,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$methods[] = 'giropay';
 		$methods[] = 'sofort';
+		$methods[] = 'p24';
 		$methods[] = 'ideal';
 
 		return array_values(
