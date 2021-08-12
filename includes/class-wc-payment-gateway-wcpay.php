@@ -892,6 +892,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( null === $customer_id ) {
 			// Create a new customer.
 			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
+			// Save the customer id in the session for non logged in users to reuse it in payments.
+			WC()->session->set( 'customer_id', $customer_id );
 		} else {
 			// Update the existing customer with the current details. In the event the old customer can't be
 			// found a new one is created, so we update the customer ID here as well.
