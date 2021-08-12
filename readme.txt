@@ -102,6 +102,9 @@ Please note that our support for the checkout block is still experimental and th
 * Add - *Early access*: allow your store to collect payments with iDEAL. Enable the feature in settings!
 * Add - Split discount line in timeline into variable fee and fixed fee.
 * Fix - Align table items according to design correctly.
+* Fix - Fix database connection error on account cache clear.
+* Fix - Fix fatal error logged when updating analytics data when account is not connected to Stripe.
+* Fix - Multi-Currency Compatibility fatal error with Subscriptions when account is not connected to Stripe.
 * Fix - Show the estimated deposit date in the transactions CSV export rather than the deposit ID.
 
 = 2.8.3 - 2021-08-10 =
