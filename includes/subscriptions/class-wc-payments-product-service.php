@@ -291,7 +291,7 @@ class WC_Payments_Product_Service {
 			'name'           => $product->get_name(),
 			'interval'       => WC_Subscriptions_Product::get_period( $product ),
 			'interval_count' => WC_Subscriptions_Product::get_interval( $product ),
-			'unit_amount'    => floatval( $product->get_price() ) * 100,
+			'unit_amount'    => $product->get_price() * 100,
 		];
 	}
 

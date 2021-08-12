@@ -37,22 +37,18 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
+		$this->mock_product    = $this->get_mock_product();
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		$this->product_service = new WC_Payments_Product_Service( $this->mock_api_client );
 	}
 
 	/**
 	 * Test create product.
-	 *
-	 * @throws API_Exception
 	 */
 	public function test_create_product() {
-		$mock_product      = $this->get_mock_product();
-		$mock_product_data = $this->get_mock_product_data();
-
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_product' )
-			->with( $mock_product_data )
+			->with( $this->get_mock_product_data() )
 			->willReturn(
 				[
 					'stripe_product_id' => 'prod_test123',
@@ -60,27 +56,25 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$this->product_service->create_product( $mock_product );
-		$this->assertEquals( 'prod_test123', $mock_product->get_meta( self::PRODUCT_ID_KEY, true ) );
-		$this->assertEquals( 'price_test123', $mock_product->get_meta( self::PRICE_ID_KEY, true ) );
+		$this->mock_get_period( 'month' );
+		$this->mock_get_interval( 3 );
+		$this->product_service->create_product( $this->mock_product );
+		$this->assertEquals( 'prod_test123', $this->mock_product->get_meta( self::PRODUCT_ID_KEY, true ) );
+		$this->assertEquals( 'price_test123', $this->mock_product->get_meta( self::PRICE_ID_KEY, true ) );
 	}
 
 	/**
 	 * Test update product.
-	 *
-	 * @throws API_Exception
 	 */
 	public function test_update_product() {
-		$mock_product      = $this->get_mock_product();
-		$mock_product_data = $this->get_mock_product_data();
-
-		$mock_product->update_meta_data( self::PRODUCT_ID_KEY, 'prod_test123' );
+		$this->mock_product->update_meta_data( self::PRODUCT_ID_KEY, 'prod_test123' );
+		$this->mock_product->save();
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_product' )
 			->with(
 				'prod_test123',
-				$mock_product_data
+				$this->get_mock_product_data()
 			)
 			->willReturn(
 				[
@@ -89,27 +83,26 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$this->product_service->update_product( $mock_product );
-		$this->assertEquals( 'price_test123', $mock_product->get_meta( self::PRICE_ID_KEY, true ) );
+		$this->mock_get_period( 'month' );
+		$this->mock_get_interval( 3 );
+		$this->product_service->update_product( $this->mock_product );
 	}
 
 	/**
 	 * Test archive product.
 	 *
 	 * Note: This also tests unarchive_product
-	 *
-	 * @throws API_Exception
 	 */
 	public function test_archive_product() {
-		$mock_product = $this->get_mock_product();
-
-		$mock_product->update_meta_data( self::PRODUCT_ID_KEY, 'prod_test123' );
+		$this->mock_product->update_meta_data( self::PRODUCT_ID_KEY, 'prod_test123' );
+		$this->mock_product->update_meta_data( self::PRICE_ID_KEY, 'price_test123' );
+		$this->mock_product->save();
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_price' )
 			->with(
 				'price_test123',
-				[ 'active' => 'false' ],
+				[ 'active' => 'false' ]
 			)
 			->willReturn(
 				[
@@ -122,23 +115,22 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 			->method( 'update_product' )
 			->with(
 				'prod_test123',
-				[ 'active' => 'false' ],
+				[ 'active' => 'false' ]
 			)
 			->willReturn(
 				[
 					'stripe_product_id' => 'prod_test123',
+					'object'            => 'product',
 				]
 			);
 
-		$this->product_service->archive_product( $mock_product );
+		$this->product_service->archive_product( $this->mock_product );
 	}
 
 	/**
 	 * Test archive product price.
 	 *
 	 * Note: This also tests unarchive_price
-	 *
-	 * @throws API_Exception
 	 */
 	public function test_archive_price() {
 		$this->mock_api_client->expects( $this->once() )
@@ -157,23 +149,29 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$this->product_service->archive_price( 'price_test123' );
 	}
 
+	/**
+	 * Get a mock product.
+	 */
 	private function get_mock_product() {
 		$product = new WC_Product();
 
 		$product->set_name( 'Test product' );
 		$product->set_description( 'Test product description' );
 		$product->set_price( 100 );
-		$product->update_meta_data( 'subscription_period', 'month' );
-		$product->update_meta_data( 'subscription_period_interval', 3 );
 		$product->save();
 
 		return $product;
 	}
 
+	/**
+	 * Get mock product data.
+	 *
+	 * @param array $overrides Product data to include.
+	 */
 	private function get_mock_product_data( $overrides = [] ) {
 		return array_merge(
 			[
-				'currency'       => 'usd',
+				'currency'       => 'USD',
 				'description'    => 'Test product description',
 				'name'           => 'Test product',
 				'interval'       => 'month',
@@ -182,5 +180,23 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 			],
 			$overrides
 		);
+	}
+
+	/**
+	 * Mock get_period static method.
+	 *
+	 * @param string $period Subscription period.
+	 */
+	private function mock_get_period( $period ) {
+		WC_Subscriptions_Product::set_period( $period );
+	}
+
+	/**
+	 * Mock get_interval static method.
+	 *
+	 * @param int $interval Subscription interval.
+	 */
+	private function mock_get_interval( $interval ) {
+		WC_Subscriptions_Product::set_interval( $interval );
 	}
 }
