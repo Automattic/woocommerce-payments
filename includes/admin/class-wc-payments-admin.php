@@ -528,15 +528,6 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Checks whether Account Overview page is enabled
-	 *
-	 * @return bool
-	 */
-	private static function is_account_overview_task_list_enabled() {
-		return get_option( '_wcpay_feature_account_overview_task_list' );
-	}
-
-	/**
 	 * Attempts to add a notification badge on WordPress menu next to Payments menu item
 	 * to remind user that setup is required.
 	 */
