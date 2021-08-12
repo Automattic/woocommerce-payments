@@ -186,6 +186,7 @@ class MultiCurrency {
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+			add_action( 'admin_head', [ $this, 'set_client_rounding_precision' ] );
 		}
 
 		add_action( 'init', [ $this, 'init' ] );
@@ -993,6 +994,21 @@ class MultiCurrency {
 	 */
 	private function is_using_auto_currency_switching(): bool {
 		return 'yes' === get_option( $this->id . '_enable_auto_currency', false );
+	}
+
+	/**
+	 * Reduces the client rounding precision to 2
+	 *
+	 * @return  void
+	 */
+	public function set_client_rounding_precision() {
+		$screen = get_current_screen();
+		if ( 'post' === $screen->base && 'shop_order' === $screen->post_type ) :
+			$rounding_precision = wc_get_price_decimals() ?? wc_get_rounding_precision();
+			?>
+		<script>woocommerce_admin_meta_boxes.rounding_precision = <?php echo intval( $rounding_precision ); ?>;</script>
+			<?php
+		endif;
 	}
 
 	/**
