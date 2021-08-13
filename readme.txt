@@ -108,6 +108,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fix fatal error logged when updating analytics data when account is not connected to Stripe.
 * Fix - Multi-Currency Compatibility fatal error with Subscriptions when account is not connected to Stripe.
 * Fix - Show the estimated deposit date in the transactions CSV export rather than the deposit ID.
+* Fix - Keep track of customer id in non logged in users.
 
 = 2.8.3 - 2021-08-10 =
 * Fix - Fix for payment request buttons when the new payment methods gateway is enabled.
