@@ -57,11 +57,11 @@ class WC_Payments_Product_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
 
-		add_action( 'woocommerce_update_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
-		add_action( 'woocommerce_update_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
 		add_action( 'shutdown', [ $this, 'create_or_update_products' ] );
 		add_action( 'wp_trash_post', [ $this, 'maybe_archive_product' ] );
 		add_action( 'untrashed_post', [ $this, 'maybe_unarchive_product' ] );
+
+		$this->add_product_update_listeners();
 	}
 
 	/**
@@ -95,6 +95,16 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
+	 * Gets the Stripe product ID associated with a WC product.
+	 *
+	 * @param WC_Product $product The product to get the Stripe ID for.
+	 * @return string             The Stripe product ID or an empty string.
+	 */
+	public static function has_stripe_product_id( WC_Product $product ) : string {
+		return (bool) self::get_stripe_product_id( $product );
+	}
+
+	/**
 	 * Creates or updates a subscription product in Stripe.
 	 *
 	 * @since x.x.x
@@ -103,10 +113,14 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product    The product object to handle. Only subscription products will be created or updated in Stripe.
 	 */
 	public function maybe_schedule_product_create_or_update( int $product_id, WC_Product $product ) {
+		if ( isset( $this->products_to_update[ $product_id ] ) ) {
+			return;
+		}
+
 		// We're only interested in subscription products. The variable products aren't tracked in Stripe so skip them.
 		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! $product->is_type( 'variable-subscription' ) ) {
-			foreach ( $this->get_products_to_update( $product ) as $product_to_update ) {
-				$this->products_to_update[ $product_to_update->get_id() ] = $product_to_update->get_id();
+			if ( ! self::has_stripe_product_id( $product ) || $this->product_needs_update( $product ) ) {
+				$this->products_to_update[ $product_id ] = $product_id;
 			}
 		}
 	}
@@ -127,7 +141,7 @@ class WC_Payments_Product_Service {
 			}
 
 			// If this product already has a Stripe ID update it, otherwise create a new one.
-			if ( $this->get_stripe_product_id( $product ) ) {
+			if ( self::has_stripe_product_id( $product ) ) {
 				$this->update_product( $product );
 			} else {
 				$this->create_product( $product );
@@ -145,9 +159,11 @@ class WC_Payments_Product_Service {
 			$product_data   = $this->get_product_data( $product );
 			$stripe_product = $this->payments_api_client->create_product( $product_data );
 
+			$this->remove_product_update_listeners();
 			$this->set_stripe_product_hash( $product, $this->get_product_hash( $product ) );
 			$this->set_stripe_product_id( $product, $stripe_product['stripe_product_id'] );
 			$this->set_stripe_price_id( $product, $stripe_product['stripe_price_id'] );
+			$this->add_product_update_listeners();
 		} catch ( API_Exception $e ) {
 			Logger::log( 'There was a problem creating the product in Stripe:', $e->getMessage() );
 		}
@@ -168,10 +184,11 @@ class WC_Payments_Product_Service {
 		}
 
 		// If the product has changed since our last update, update it. Uses a hash of product data at the time of last update to determine if it has changed.
-		if ( $this->get_product_hash( $product ) !== $this->get_stripe_product_hash( $product ) ) {
+		if ( $this->product_needs_update( $product ) ) {
 			try {
 				$stripe_product = $this->payments_api_client->update_product( $stripe_product_id, $this->get_product_data( $product ) );
 
+				$this->remove_product_update_listeners();
 				$this->set_stripe_product_hash( $product, $this->get_product_hash( $product ) );
 
 				if ( isset( $stripe_product['stripe_price_id'] ) ) {
@@ -180,6 +197,8 @@ class WC_Payments_Product_Service {
 					$this->set_stripe_price_id( $product, $stripe_product['stripe_price_id'] );
 					$this->archive_price( $old_stripe_price_id );
 				}
+
+				$this->add_product_update_listeners();
 			} catch ( API_Exception $e ) {
 				Logger::log( 'There was a problem updating the product in Stripe:', $e->getMessage() );
 			}
@@ -279,6 +298,22 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
+	 * Attaches the callbacks used to update product changes in Stripe.
+	 */
+	private function add_product_update_listeners() {
+		add_action( 'woocommerce_update_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
+		add_action( 'woocommerce_update_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
+	}
+
+	/**
+	 * Removes the callbacks used to update product changes in Stripe.
+	 */
+	private function remove_product_update_listeners() {
+		remove_action( 'woocommerce_update_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 10 );
+		remove_action( 'woocommerce_update_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10 );
+	}
+
+	/**
 	 * Gets data relevant to Stripe from a WC product.
 	 *
 	 * @param WC_Product $product The product to get data from.
@@ -317,6 +352,17 @@ class WC_Payments_Product_Service {
 	 */
 	private function get_product_hash( WC_Product $product ) : string {
 		return md5( implode( $this->get_product_data( $product ) ) );
+	}
+
+	/**
+	 * Checks if a prouduct needs to be updated in Stripe.
+	 *
+	 * @param WC_Product $product The product to check updates for.
+	 *
+	 * @return bool Whether the product needs to be update in Stripe.
+	 */
+	private function product_needs_update( WC_Product $product ) : bool {
+		return $this->get_product_hash( $product ) !== $this->get_stripe_product_hash( $product );
 	}
 
 	/**
