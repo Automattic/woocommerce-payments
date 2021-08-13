@@ -437,6 +437,38 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 'cus_exist', $result_order->get_meta( '_stripe_customer_id' ) );
 	}
 
+	public function test_create_customer_from_order_with_invalid_status() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'wc-completed' );
+		$order->save();
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'get_customer_id_by_user_id' );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'create_customer_for_user' );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'update_customer_for_user' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		$response = $this->controller->create_customer( $request );
+		$this->assertInstanceOf( 'WP_Error', $response );
+
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 400, $data['status'] );
+	}
+
 	public function test_create_customer_from_order_non_guest_with_customer_id_from_order_meta() {
 		$order         = WC_Helper_Order::create_order();
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
