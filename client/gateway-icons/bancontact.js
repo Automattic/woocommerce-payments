@@ -7,8 +7,8 @@ import React from 'react';
 export default ( props ) => (
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
-		width="780"
-		height="480"
+		width="65"
+		height="40"
 		viewBox="0 0 780 480"
 		{ ...props }
 	>
