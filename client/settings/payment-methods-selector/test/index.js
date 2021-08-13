@@ -29,10 +29,10 @@ describe( 'PaymentMethodsSelector', () => {
 			'card',
 			'bancontact',
 			'giropay',
-			'sofort',
-			'sepa_debit',
-			'p24',
 			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
 		] );
 	} );
 

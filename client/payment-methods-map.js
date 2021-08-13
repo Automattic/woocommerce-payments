@@ -45,24 +45,14 @@ export default {
 		Icon: GiropayIcon,
 		currencies: [ 'EUR' ],
 	},
-	sofort: {
-		id: 'sofort',
-		label: __( 'Sofort', 'woocommerce-payments' ),
+	ideal: {
+		id: 'ideal',
+		label: __( 'iDEAL', 'woocommerce-payments' ),
 		description: __(
-			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, Netherlands, and Spain.',
+			'Expand your business with iDEAL — Netherlands’s most popular payment method.',
 			'woocommerce-payments'
 		),
-		Icon: SofortIcon,
-		currencies: [ 'EUR' ],
-	},
-	sepa_debit: {
-		id: 'sepa_debit',
-		label: __( 'Direct debit payment', 'woocommerce-payments' ),
-		description: __(
-			'Reach 500 million customers and over 20 million businesses across the European Union.',
-			'woocommerce-payments'
-		),
-		Icon: SepaIcon,
+		Icon: IdealIcon,
 		currencies: [ 'EUR' ],
 	},
 	p24: {
@@ -75,14 +65,24 @@ export default {
 		Icon: P24Icon,
 		currencies: [ 'EUR', 'PLN' ],
 	},
-	ideal: {
-		id: 'ideal',
-		label: __( 'iDEAL', 'woocommerce-payments' ),
+	sepa_debit: {
+		id: 'sepa_debit',
+		label: __( 'Direct debit payment', 'woocommerce-payments' ),
 		description: __(
-			'Expand your business with iDEAL — Netherlands’s most popular payment method.',
+			'Reach 500 million customers and over 20 million businesses across the European Union.',
 			'woocommerce-payments'
 		),
-		Icon: IdealIcon,
+		Icon: SepaIcon,
+		currencies: [ 'EUR' ],
+	},
+	sofort: {
+		id: 'sofort',
+		label: __( 'Sofort', 'woocommerce-payments' ),
+		description: __(
+			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, Netherlands, and Spain.',
+			'woocommerce-payments'
+		),
+		Icon: SofortIcon,
 		currencies: [ 'EUR' ],
 	},
 };

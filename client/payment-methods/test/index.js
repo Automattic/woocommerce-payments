@@ -33,10 +33,10 @@ describe( 'PaymentMethods', () => {
 			'card',
 			'bancontact',
 			'giropay',
-			'sofort',
-			'sepa_debit',
-			'p24',
 			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
 		] );
 	} );
 
@@ -159,12 +159,12 @@ describe( 'PaymentMethods', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[
 				'card',
-				'sepa_debit',
 				'bancontact',
 				'giropay',
-				'sofort',
 				'ideal',
 				'p24',
+				'sepa_debit',
+				'sofort',
 			],
 			updateEnabledMethodsMock,
 		] );
@@ -186,12 +186,12 @@ describe( 'PaymentMethods', () => {
 		);
 
 		expect( updateEnabledMethodsMock ).toHaveBeenCalledWith( [
-			'sepa_debit',
 			'bancontact',
 			'giropay',
-			'sofort',
 			'ideal',
 			'p24',
+			'sepa_debit',
+			'sofort',
 		] );
 	} );
 

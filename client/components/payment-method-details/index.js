@@ -21,21 +21,16 @@ const formatDetails = ( payment ) => {
 					&nbsp;&bull;&bull;&bull;&bull;&nbsp;{ paymentMethod.last4 }
 				</Fragment>
 			);
-		case 'bancontact':
-			return (
-				<Fragment>
-					&nbsp;&bull;&bull;&bull;&bull;&nbsp;
-					{ paymentMethod.iban_last4 }
-				</Fragment>
-			);
+
 		case 'p24':
 			return (
 				<Fragment>{ p24BankList[ paymentMethod.bank ] ?? '' }</Fragment>
 			);
 		case 'giropay':
 			return <Fragment>{ paymentMethod.bank_code }</Fragment>;
-		case 'sofort':
+		case 'bancontact':
 		case 'ideal':
+		case 'sofort':
 			return (
 				<Fragment>
 					&nbsp;&bull;&bull;&bull;&bull;&nbsp;

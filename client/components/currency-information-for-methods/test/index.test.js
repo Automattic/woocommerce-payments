@@ -54,10 +54,11 @@ describe( 'CurrencyInformationForMethods', () => {
 				<CurrencyInformationForMethods
 					selectedMethods={ [
 						'card',
-						'giropay',
 						'bancontact',
+						'giropay',
 						'ideal',
 						'p24',
+						'sofort',
 					] }
 				/>
 			</FlagsContextWrapper>
@@ -75,10 +76,11 @@ describe( 'CurrencyInformationForMethods', () => {
 				<CurrencyInformationForMethods
 					selectedMethods={ [
 						'card',
-						'giropay',
 						'bancontact',
+						'giropay',
 						'ideal',
 						'p24',
+						'sofort',
 					] }
 				/>
 			</FlagsContextWrapper>
@@ -102,11 +104,12 @@ describe( 'CurrencyInformationForMethods', () => {
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
 					selectedMethods={ [
-						'giropay',
 						'card',
 						'bancontact',
+						'giropay',
 						'ideal',
 						'p24',
+						'sofort',
 					] }
 				/>
 			</FlagsContextWrapper>

@@ -45,8 +45,10 @@ describe( 'AddPaymentMethodsTask', () => {
 			'card',
 			'bancontact',
 			'giropay',
-			'sofort',
+			'ideal',
+			'p24',
 			'sepa_debit',
+			'sofort',
 		] );
 		useSettings.mockReturnValue( {
 			saveSettings: jest.fn().mockResolvedValue( true ),
@@ -75,8 +77,10 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		const expectedNotToBeChecked = [
 			'Bancontact',
-			'Sofort',
+			'iDEAL',
+			'Przelewy24 (P24)',
 			'Direct debit payment',
+			'Sofort',
 			'Enable Apple Pay & Google Pay',
 		];
 
@@ -109,8 +113,10 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		const expectedNotInDocument = [
 			'Bancontact',
-			'Sofort',
+			'iDEAL',
+			'Przelewy24 (P24)',
 			'Direct debit payment',
+			'Sofort',
 		];
 
 		expectedNotInDocument.forEach( function ( checkboxName ) {
@@ -141,9 +147,11 @@ describe( 'AddPaymentMethodsTask', () => {
 		);
 
 		const checkboxesToClick = [
-			'Credit card / debit card', // Marks the CC payment method as un-checked.
-			'Bancontact', // Marks the Bancontact payment method as checked.
-			'giropay', // Marks the Giropay payment method as checked.
+			'Credit card / debit card', // Mark the CC payment method as un-checked.
+			'Bancontact', // Mark as checked.
+			'giropay', // Mark as checked.
+			'iDEAL', // Mark as checked.
+			'Przelewy24 (P24)', // Mark as checked.
 			'Enable Apple Pay & Google Pay', // Enable 1-click checkouts.
 		];
 
@@ -170,6 +178,8 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect( updateEnabledPaymentMethodIdsMock ).toHaveBeenCalledWith( [
 			'bancontact',
 			'giropay',
+			'ideal',
+			'p24',
 		] );
 		expect( updatePaymentRequestEnabledMock ).toHaveBeenCalledWith( true );
 	} );
