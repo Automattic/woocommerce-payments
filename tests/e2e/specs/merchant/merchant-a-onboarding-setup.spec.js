@@ -26,11 +26,8 @@ describe( 'Onboarding > WooCommerce Setup Wizard & Task List', () => {
 	} );
 
 	it( 'can dismiss tax setup', async () => {
-		await page.evaluate( () => {
-			document
-				.querySelector( '.woocommerce-list__item-title' )
-				.scrollIntoView();
-		} );
+		await merchant.runSetupWizard();
+		await page.waitForSelector( 'div.woocommerce-homescreen' );
 
 		// Click on "Set up tax" task to move to the next step
 		const [ setUpTax ] = await page.$x(
@@ -48,11 +45,8 @@ describe( 'Onboarding > WooCommerce Setup Wizard & Task List', () => {
 	} );
 
 	it( 'can setup shipping', async () => {
-		await page.evaluate( () => {
-			document
-				.querySelector( '.woocommerce-list__item-title' )
-				.scrollIntoView();
-		} );
+		await merchant.runSetupWizard();
+		await page.waitForSelector( 'div.woocommerce-homescreen' );
 
 		// Click on "Set up shipping" task to move to the next step
 		const [ setUpShipping ] = await page.$x(
