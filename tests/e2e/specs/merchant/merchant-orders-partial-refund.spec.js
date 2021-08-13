@@ -155,7 +155,7 @@ describe.each( dataTable )(
 
 			// Verify system note was added
 			await expect( page ).toMatchElement( '.system-note', {
-				text: `A refund of $${ refundTotalString } was successfully processed using WooCommerce Payments.`,
+				text: `refund of $${ refundTotalString }`,
 			} );
 			await expect( page ).toMatchElement( '.system-note', {
 				text: `Reason: ${ refundReason }`,
