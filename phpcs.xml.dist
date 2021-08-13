@@ -10,6 +10,7 @@
 	<exclude-pattern>./release/*</exclude-pattern>
 	<exclude-pattern>./docker/*</exclude-pattern>
 	<exclude-pattern>./node_modules/*</exclude-pattern>
+	<exclude-pattern>./includes/subscriptions/subscriptions-base/*</exclude-pattern>
 	<exclude-pattern>./vendor/*</exclude-pattern>
 	<exclude-pattern>*\.(?!php$)</exclude-pattern>
 
