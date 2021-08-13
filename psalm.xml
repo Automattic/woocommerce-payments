@@ -14,6 +14,7 @@
 			<directory name="client" />
 			<directory name="docker" />
             <directory name="vendor" />
+            <directory name="includes/subscriptions/subscriptions-base" />
         </ignoreFiles>
     </projectFiles>
 

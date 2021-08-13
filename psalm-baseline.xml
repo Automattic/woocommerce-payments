@@ -112,9 +112,10 @@
     </UndefinedFunction>
   </file>
   <file src="includes/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php">
-    <UndefinedClass occurrences="2">
+    <UndefinedClass occurrences="3">
       <code>WC_Subscriptions_Cart</code>
       <code>WC_Subscriptions_Cart</code>
+      <code>WC_Subscriptions_Base_Plugin</code>
     </UndefinedClass>
     <UndefinedFunction occurrences="1">
       <code>wcs_is_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) )</code>
@@ -126,5 +127,10 @@
       <code>$this-&gt;connection_manager-&gt;is_active()</code>
       <code>Automattic\Jetpack\Connection\Client::remote_request( $args, $body )</code>
     </UndefinedDocblockClass>
+  </file>
+  <file src="woocommerce-payments.php">
+    <UndefinedClass occurrences="1">
+      <code>WC_Subscriptions_Base_Plugin</code>
+    </UndefinedClass>
   </file>
 </files>

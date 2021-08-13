@@ -83,3 +83,12 @@ require $_tests_dir . '/includes/bootstrap.php';
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
 	error_reporting( error_reporting() ^ E_DEPRECATED ); // phpcs:ignore
 }
+
+/**
+ * Don't init the subscriptions-base when running WCPAY unit tests.
+ *
+ * Init'ing the subscriptions-base loads all subscriptions class and hooks, which breaks existing WCPAY unit tests.
+ * WCPAY already mocks the WC Subscriptions classes/functions it needs so there's no need to load them anyway.
+ */
+function wcpay_init_subscriptions_base() {
+}
