@@ -201,11 +201,6 @@ afterEach( async () => {
 	await setupBrowser();
 } );
 
-// Clear browser cookies and cache using DevTools.
-// This is to ensure that each test ends with no user logged in.
-afterAll( async () => {
+afterAll( () => {
 	removePageEvents();
-	const client = await page.target().createCDPSession();
-	await client.send( 'Network.clearBrowserCookies' );
-	await client.send( 'Network.clearBrowserCache' );
 } );
