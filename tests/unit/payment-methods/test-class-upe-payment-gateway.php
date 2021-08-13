@@ -168,6 +168,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			CC_Payment_Method::class,
 			Giropay_Payment_Method::class,
 			Sofort_Payment_Method::class,
+			P24_Payment_Method::class,
 			Ideal_Payment_Method::class,
 		];
 		foreach ( $payment_method_classes as $payment_method_class ) {
@@ -801,6 +802,9 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$giropay_details           = [
 			'type' => 'giropay',
 		];
+		$p24_details               = [
+			'type' => 'p24',
+		];
 		$sofort_details            = [
 			'type' => 'sofort',
 		];
@@ -808,20 +812,23 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			'type' => 'ideal',
 		];
 
-		$charge_payment_method_details  = [
+		$charge_payment_method_details = [
 			$visa_credit_details,
 			$visa_debit_details,
 			$mastercard_credit_details,
 			$giropay_details,
 			$sofort_details,
+			$p24_details,
 			$ideal_details,
 		];
+
 		$expected_payment_method_titles = [
 			'Visa credit card',
 			'Visa debit card',
 			'Mastercard credit card',
 			'giropay',
 			'Sofort',
+			'Przelewy24 (P24)',
 			'iDEAL',
 		];
 
@@ -859,6 +866,9 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$mock_giropay_details    = [
 			'type' => 'giropay',
 		];
+		$mock_p24_details        = [
+			'type' => 'p24',
+		];
 		$mock_sofort_details     = [
 			'type' => 'sofort',
 		];
@@ -869,6 +879,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->set_cart_contains_subscription_items( false );
 		$card_method    = $this->mock_payment_methods['card'];
 		$giropay_method = $this->mock_payment_methods['giropay'];
+		$p24_method     = $this->mock_payment_methods['p24'];
 		$sofort_method  = $this->mock_payment_methods['sofort'];
 		$ideal_method   = $this->mock_payment_methods['ideal'];
 
@@ -885,6 +896,12 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'giropay', $giropay_method->get_title( $mock_giropay_details ) );
 		$this->assertTrue( $giropay_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_reusable() );
+
+		$this->assertEquals( 'p24', $p24_method->get_id() );
+		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title() );
+		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( $mock_p24_details ) );
+		$this->assertTrue( $p24_method->is_enabled_at_checkout() );
+		$this->assertFalse( $p24_method->is_reusable() );
 
 		$this->assertEquals( 'sofort', $sofort_method->get_id() );
 		$this->assertEquals( 'Sofort', $sofort_method->get_title() );
@@ -904,11 +921,13 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$card_method    = $this->mock_payment_methods['card'];
 		$giropay_method = $this->mock_payment_methods['giropay'];
 		$sofort_method  = $this->mock_payment_methods['sofort'];
+		$p24_method     = $this->mock_payment_methods['p24'];
 		$ideal_method   = $this->mock_payment_methods['ideal'];
 
 		$this->assertTrue( $card_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_enabled_at_checkout() );
 		$this->assertFalse( $sofort_method->is_enabled_at_checkout() );
+		$this->assertFalse( $p24_method->is_enabled_at_checkout() );
 		$this->assertFalse( $ideal_method->is_enabled_at_checkout() );
 	}
 
@@ -916,6 +935,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$card_method    = $this->mock_payment_methods['card'];
 		$giropay_method = $this->mock_payment_methods['giropay'];
 		$sofort_method  = $this->mock_payment_methods['sofort'];
+		$p24_method     = $this->mock_payment_methods['p24'];
 		$ideal_method   = $this->mock_payment_methods['ideal'];
 
 		self::$mock_site_currency = 'EUR';
@@ -923,6 +943,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertTrue( $card_method->is_currency_valid() );
 		$this->assertTrue( $giropay_method->is_currency_valid() );
 		$this->assertTrue( $sofort_method->is_currency_valid() );
+		$this->assertTrue( $p24_method->is_currency_valid() );
 		$this->assertTrue( $ideal_method->is_currency_valid() );
 
 		self::$mock_site_currency = 'USD';
@@ -930,6 +951,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertTrue( $card_method->is_currency_valid() );
 		$this->assertFalse( $giropay_method->is_currency_valid() );
 		$this->assertFalse( $sofort_method->is_currency_valid() );
+		$this->assertFalse( $p24_method->is_currency_valid() );
 		$this->assertFalse( $ideal_method->is_currency_valid() );
 
 		self::$mock_site_currency = '';

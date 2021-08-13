@@ -10,6 +10,7 @@ import CreditCardIcon from './gateway-icons/credit-card';
 import GiropayIcon from './gateway-icons/giropay';
 import SofortIcon from './gateway-icons/sofort';
 import SepaIcon from './gateway-icons/sepa';
+import P24Icon from './gateway-icons/p24';
 import IdealIcon from './gateway-icons/ideal';
 
 export default {
@@ -21,6 +22,7 @@ export default {
 			'woocommerce-payments'
 		),
 		Icon: CreditCardIcon,
+		currencies: [],
 	},
 	giropay: {
 		id: 'giropay',
@@ -30,6 +32,7 @@ export default {
 			'woocommerce-payments'
 		),
 		Icon: GiropayIcon,
+		currencies: [ 'EUR' ],
 	},
 	sofort: {
 		id: 'sofort',
@@ -39,6 +42,7 @@ export default {
 			'woocommerce-payments'
 		),
 		Icon: SofortIcon,
+		currencies: [ 'EUR' ],
 	},
 	sepa_debit: {
 		id: 'sepa_debit',
@@ -48,6 +52,17 @@ export default {
 			'woocommerce-payments'
 		),
 		Icon: SepaIcon,
+		currencies: [ 'EUR' ],
+	},
+	p24: {
+		id: 'p24',
+		label: __( 'Przelewy24 (P24)', 'woocommerce-payments' ),
+		description: __(
+			'Accept payments with Przelewy24 (P24), the most popular payment method in Poland.',
+			'woocommerce-payments'
+		),
+		Icon: P24Icon,
+		currencies: [ 'EUR', 'PLN' ],
 	},
 	ideal: {
 		id: 'ideal',
@@ -57,5 +72,6 @@ export default {
 			'woocommerce-payments'
 		),
 		Icon: IdealIcon,
+		currencies: [ 'EUR' ],
 	},
 };
