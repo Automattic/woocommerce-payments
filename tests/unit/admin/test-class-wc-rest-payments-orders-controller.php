@@ -439,7 +439,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 
 	public function test_create_customer_from_order_with_invalid_status() {
 		$order = WC_Helper_Order::create_order();
-		$order->set_status( 'wc-completed' );
+		$order->set_status( 'completed' );
 		$order->save();
 
 		$this->mock_customer_service
