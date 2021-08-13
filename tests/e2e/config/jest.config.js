@@ -16,4 +16,8 @@ module.exports = {
 		path.resolve( __dirname, '../setup/jest-setup.js' ),
 		...jestConfig.setupFilesAfterEnv,
 	],
+	testSequencer: path.resolve(
+		__dirname,
+		'../config/jest-custom-sequencer.js'
+	),
 };
