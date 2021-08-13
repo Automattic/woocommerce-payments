@@ -34,6 +34,13 @@ describe( 'CurrencyInformationForMethods', () => {
 	beforeEach( () => {
 		useCurrencies.mockReturnValue( {
 			isLoading: false,
+			currencies: {
+				available: {
+					EUR: { name: 'Euro', symbol: '€' },
+					USD: { name: 'US Dollar', symbol: '$' },
+					PLN: { name: 'Polish złoty', symbol: 'zł' },
+				},
+			},
 		} );
 		useEnabledCurrencies.mockReturnValue( {
 			enabledCurrencies: {
@@ -46,7 +53,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		const { container } = render(
 			<FlagsContextWrapper multiCurrency={ false }>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay', 'ideal' ] }
+					selectedMethods={ [ 'card', 'giropay', 'ideal', 'p24' ] }
 				/>
 			</FlagsContextWrapper>
 		);
@@ -61,15 +68,13 @@ describe( 'CurrencyInformationForMethods', () => {
 		const { container } = render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay', 'ideal' ] }
+					selectedMethods={ [ 'card', 'giropay', 'ideal', 'p24' ] }
 				/>
 			</FlagsContextWrapper>
 		);
 
 		expect(
-			screen.queryByText(
-				/The selected methods require an additional currency/
-			)
+			screen.queryByText( /requires an additional currency/ )
 		).not.toBeInTheDocument();
 		expect( container.firstChild ).toBeNull();
 	} );
@@ -79,20 +84,19 @@ describe( 'CurrencyInformationForMethods', () => {
 			enabledCurrencies: {
 				USD: { id: 'usd', code: 'USD' },
 				EUR: { id: 'eur', code: 'EUR' },
+				PLN: { id: 'pln', code: 'PLN' },
 			},
 		} );
 		const { container } = render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'giropay', 'card', 'ideal' ] }
+					selectedMethods={ [ 'giropay', 'card', 'ideal', 'p24' ] }
 				/>
 			</FlagsContextWrapper>
 		);
 
 		expect(
-			screen.queryByText(
-				/The selected methods require an additional currency/
-			)
+			screen.queryByText( /requires an additional currency/ )
 		).not.toBeInTheDocument();
 		expect( container.firstChild ).toBeNull();
 	} );
@@ -107,9 +111,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		);
 
 		expect(
-			screen.queryByText(
-				/The selected methods require an additional currency/
-			)
+			screen.queryByText( /requires an additional currency/ )
 		).not.toBeInTheDocument();
 		expect( container.firstChild ).toBeNull();
 	} );
@@ -124,8 +126,28 @@ describe( 'CurrencyInformationForMethods', () => {
 		);
 
 		expect(
+			screen.queryByText( /we\'ll add Euro \(€\) to your store/ )
+		).toBeInTheDocument();
+	} );
+
+	it( 'should display a notice when one of the enabled methods is both EUR and PLN method', () => {
+		render(
+			<FlagsContextWrapper>
+				<CurrencyInformationForMethods
+					selectedMethods={ [ 'card', 'p24' ] }
+				/>
+			</FlagsContextWrapper>
+		);
+
+		expect(
 			screen.queryByText(
-				/The selected methods require an additional currency/
+				/(we\'ll add|and) Euro \(€\) (and|to your store)/
+			)
+		).toBeInTheDocument();
+
+		expect(
+			screen.queryByText(
+				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
 			)
 		).toBeInTheDocument();
 	} );
