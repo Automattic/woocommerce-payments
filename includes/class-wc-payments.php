@@ -133,13 +133,6 @@ class WC_Payments {
 	private static $apple_pay_registration;
 
 	/**
-	 * Instance of WC_Payments_Product_Service, created in init function.
-	 *
-	 * @var WC_Payments_Product_Service
-	 */
-	private static $product_service;
-
-	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -191,7 +184,6 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-ideal-payment-method.php';
-		include_once __DIR__ . '/subscriptions/class-wc-payments-product-service.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
@@ -222,7 +214,6 @@ class WC_Payments {
 
 		self::$account                  = new WC_Payments_Account( self::$api_client );
 		self::$customer_service         = new WC_Payments_Customer_Service( self::$api_client, self::$account );
-		self::$product_service          = new WC_Payments_Product_Service( self::$api_client );
 		self::$token_service            = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service      = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
@@ -303,6 +294,10 @@ class WC_Payments {
 				new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 			}
 		}
+
+		// Load subscriptions (Stripe Billing).
+		include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
+		WC_Payments_Subscriptions::init( self::$api_client );
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
