@@ -499,8 +499,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
-		// Disable the gateway if using live mode without HTTPS set up or the currency is not
-		// available in the country of the account.
+		// Disable the gateway if using live mode without HTTPS set up, the currency is not
+		// available in the country of the account or the rate limiter is enabled.
 		if ( $this->needs_https_setup() || ! $this->is_available_for_current_currency() || $this->is_rate_limiter_enabled() ) {
 			return false;
 		}
@@ -2311,8 +2311,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * The registry of declined card attemps is cleaned after the cooldown period ends.
 	 *
-	 * @param  number $threshold_failed_transaction   Number of failed card declined transactions before cooldown happens.
-	 * @param  number $cooldown_period_minutes        Minutes for cooldown period after threshold is reached.
+	 * @param int $threshold_failed_transaction   Number of failed card declined transactions before cooldown happens.
+	 * @param int $cooldown_period_minutes        Minutes for cooldown period after threshold is reached.
 	 */
 	public function is_rate_limiter_enabled( $threshold_failed_transaction = 5, $cooldown_period_minutes = 10 ) {
 		$registry = WC()->session->get( self::SESSION_KEY_DECLINED_CARD_REGISTRY ) ?? [];
