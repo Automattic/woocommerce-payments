@@ -22,7 +22,6 @@ describe( 'Onboarding > WooCommerce Setup Wizard & Task List', () => {
 	} );
 
 	it( 'can dismiss tax setup', async () => {
-		await merchant.runSetupWizard();
 		await page.evaluate( () => {
 			document
 				.querySelector( '.woocommerce-list__item-title' )
