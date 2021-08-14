@@ -76,13 +76,6 @@ const AccountStatusDetails = ( props ) => {
 
 	return (
 		<AccountStatusCard title={ cardTitle }>
-			{ accountStatus.email && (
-				<AccountStatusItem
-					label={ __( 'Connected email:', 'woocommerce-payments' ) }
-				>
-					{ accountStatus.email }
-				</AccountStatusItem>
-			) }
 			<AccountStatusItem
 				label={ __( 'Payments:', 'woocommerce-payments' ) }
 			>
