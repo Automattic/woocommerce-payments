@@ -24,25 +24,27 @@ class WC_Payments_API_Client {
 	const GET  = 'GET';
 
 	const API_TIMEOUT_SECONDS = 70;
-
-	const ACCOUNTS_API           = 'accounts';
-	const APPLE_PAY_API          = 'apple_pay';
-	const CHARGES_API            = 'charges';
-	const CONN_TOKENS_API        = 'terminal/connection_tokens';
-	const TERMINAL_LOCATIONS_API = 'terminal/locations';
-	const CUSTOMERS_API          = 'customers';
-	const CURRENCY_API           = 'currency';
-	const INTENTIONS_API         = 'intentions';
-	const REFUNDS_API            = 'refunds';
-	const DEPOSITS_API           = 'deposits';
-	const TRANSACTIONS_API       = 'transactions';
-	const DISPUTES_API           = 'disputes';
-	const FILES_API              = 'files';
-	const OAUTH_API              = 'oauth';
-	const TIMELINE_API           = 'timeline';
-	const PAYMENT_METHODS_API    = 'payment_methods';
-	const SETUP_INTENTS_API      = 'setup_intents';
-	const TRACKING_API           = 'tracking';
+	const ACCOUNTS_API        = 'accounts';
+	const APPLE_PAY_API       = 'apple_pay';
+	const CHARGES_API         = 'charges';
+	const CONN_TOKENS_API     = 'terminal/connection_tokens';
+	const CUSTOMERS_API       = 'customers';
+	const CURRENCY_API        = 'currency';
+	const INTENTIONS_API      = 'intentions';
+	const REFUNDS_API         = 'refunds';
+	const DEPOSITS_API        = 'deposits';
+	const TRANSACTIONS_API    = 'transactions';
+	const DISPUTES_API        = 'disputes';
+	const FILES_API           = 'files';
+	const OAUTH_API           = 'oauth';
+	const TIMELINE_API        = 'timeline';
+	const PAYMENT_METHODS_API = 'payment_methods';
+	const SETUP_INTENTS_API   = 'setup_intents';
+	const TRACKING_API        = 'tracking';
+	const PRODUCTS_API        = 'products';
+	const PRICES_API          = 'products/prices';
+	const SUBSCRIPTIONS_API   = 'subscriptions';
+	const INVOICES_API        = 'invoices';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -965,6 +967,73 @@ class WC_Payments_API_Client {
 		$this->request(
 			$customer_data,
 			self::CUSTOMERS_API . '/' . $customer_id,
+			self::POST
+		);
+	}
+
+	/**
+	 * Create a product.
+	 *
+	 * @param array $product_data Product data.
+	 *
+	 * @return array The created product's product and price IDs.
+	 *
+	 * @throws API_Exception Error creating the product.
+	 */
+	public function create_product( array $product_data ): array {
+		return $this->request(
+			$product_data,
+			self::PRODUCTS_API,
+			self::POST
+		);
+	}
+
+	/**
+	 * Update a product.
+	 *
+	 * @param string $product_id    ID of product to update.
+	 * @param array  $product_data  Data to be updated.
+	 *
+	 * @return array The updated product's product and/or price IDs.
+	 *
+	 * @throws API_Exception Error updating product.
+	 */
+	public function update_product( string $product_id, array $product_data = [] ) : array {
+		if ( null === $product_id || '' === trim( $product_id ) ) {
+			throw new API_Exception(
+				__( 'Product ID is required', 'woocommerce-payments' ),
+				'wcpay_mandatory_product_id_missing',
+				400
+			);
+		}
+
+		return $this->request(
+			$product_data,
+			self::PRODUCTS_API . '/' . $product_id,
+			self::POST
+		);
+	}
+
+	/**
+	 * Update a price.
+	 *
+	 * @param string $price_id    ID of price to update.
+	 * @param array  $price_data  Data to be updated.
+	 *
+	 * @throws API_Exception Error updating price.
+	 */
+	public function update_price( string $price_id, array $price_data = [] ) {
+		if ( null === $price_id || '' === trim( $price_id ) ) {
+			throw new API_Exception(
+				__( 'Price ID is required', 'woocommerce-payments' ),
+				'wcpay_mandatory_price_id_missing',
+				400
+			);
+		}
+
+		$this->request(
+			$price_data,
+			self::PRICES_API . '/' . $price_id,
 			self::POST
 		);
 	}
