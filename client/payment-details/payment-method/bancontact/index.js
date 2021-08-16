@@ -22,6 +22,7 @@ const formatPaymentMethodDetails = ( charge ) => {
 	const {
 		bank_name: bankName,
 		bic,
+		verified_name: verifiedName,
 	} = charge.payment_method_details.bancontact;
 
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
@@ -30,6 +31,7 @@ const formatPaymentMethodDetails = ( charge ) => {
 		id,
 		bankName,
 		bic,
+		verifiedName,
 		name,
 		email,
 		formattedAddress,
@@ -43,6 +45,7 @@ const paymentMethodPlaceholders = {
 	bankName: 'bank name placeholder',
 	bic: 'bic placeholder',
 	id: 'id placeholder',
+	verifiedName: 'verified name placeholder',
 	name: 'name placeholder',
 	email: 'email placeholder',
 	formattedAddress: 'address placeholder',
@@ -54,7 +57,15 @@ const BancontactDetails = ( { charge = {}, isLoading } ) => {
 		? formatPaymentMethodDetails( charge )
 		: paymentMethodPlaceholders;
 
-	const { id, bankName, bic, name, email, formattedAddress } = details;
+	const {
+		id,
+		bankName,
+		bic,
+		verifiedName,
+		name,
+		email,
+		formattedAddress,
+	} = details;
 
 	// Shorthand for more readable code.
 	const Detail = PaymentDetailsPaymentMethodDetail;
@@ -85,6 +96,13 @@ const BancontactDetails = ( { charge = {}, isLoading } ) => {
 			</div>
 
 			<div className="payment-method-details__column">
+				<Detail
+					isLoading={ isLoading }
+					label={ __( 'Verified name', 'woocommerce-payments' ) }
+				>
+					{ verifiedName }
+				</Detail>
+
 				<Detail
 					isLoading={ isLoading }
 					label={ __( 'Owner', 'woocommerce-payments' ) }
