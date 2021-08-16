@@ -121,6 +121,11 @@
       <code>wcs_is_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) )</code>
     </UndefinedFunction>
   </file>
+  <file src="includes/subscriptions/class-wc-payments-product-service.php">
+    <UndefinedClass occurrences="5">
+      <code>WC_Subscriptions_Product</code>
+    </UndefinedClass>
+  </file>
   <file src="includes/wc-payment-api/class-wc-payments-http.php">
     <UndefinedDocblockClass occurrences="3">
       <code>$response</code>
