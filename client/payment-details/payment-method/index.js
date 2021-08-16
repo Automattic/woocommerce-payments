@@ -12,20 +12,22 @@ import { Card, CardBody, CardHeader } from '@wordpress/components';
 import Loadable from 'components/loadable';
 import CardDetails from './card';
 import CardPresentDetails from './card-present';
+import BancontactDetails from './bancontact';
 import GiropayDetails from './giropay';
+import IdealDetails from './ideal';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
-import IdealDetails from './ideal';
 
 const detailsComponentMap = {
 	card: CardDetails,
 	card_present: CardPresentDetails,
+	bancontact: BancontactDetails,
 	giropay: GiropayDetails,
+	ideal: IdealDetails,
 	p24: P24Details,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
-	ideal: IdealDetails,
 };
 
 const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
