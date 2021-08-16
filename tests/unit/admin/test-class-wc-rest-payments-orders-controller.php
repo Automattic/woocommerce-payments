@@ -462,7 +462,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		);
 
 		$response = $this->controller->create_customer( $request );
-		$this->assertInstanceOf( 'WP_Error', $response );
+		$this->assertInstanceOf( WP_Error::class, $response );
 
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
