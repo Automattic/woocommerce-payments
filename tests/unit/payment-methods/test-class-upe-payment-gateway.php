@@ -168,6 +168,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			CC_Payment_Method::class,
 			Giropay_Payment_Method::class,
 			Sofort_Payment_Method::class,
+			Bancontact_Payment_Method::class,
 			P24_Payment_Method::class,
 			Ideal_Payment_Method::class,
 		];
@@ -808,6 +809,9 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$sofort_details            = [
 			'type' => 'sofort',
 		];
+		$bancontact_details        = [
+			'type' => 'bancontact',
+		];
 		$ideal_details             = [
 			'type' => 'ideal',
 		];
@@ -818,6 +822,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			$mastercard_credit_details,
 			$giropay_details,
 			$sofort_details,
+			$bancontact_details,
 			$p24_details,
 			$ideal_details,
 		];
@@ -828,6 +833,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			'Mastercard credit card',
 			'giropay',
 			'Sofort',
+			'Bancontact',
 			'Przelewy24 (P24)',
 			'iDEAL',
 		];
@@ -872,16 +878,20 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$mock_sofort_details     = [
 			'type' => 'sofort',
 		];
+		$mock_bancontact_details = [
+			'type' => 'bancontact',
+		];
 		$mock_ideal_details      = [
 			'type' => 'ideal',
 		];
 
 		$this->set_cart_contains_subscription_items( false );
-		$card_method    = $this->mock_payment_methods['card'];
-		$giropay_method = $this->mock_payment_methods['giropay'];
-		$p24_method     = $this->mock_payment_methods['p24'];
-		$sofort_method  = $this->mock_payment_methods['sofort'];
-		$ideal_method   = $this->mock_payment_methods['ideal'];
+		$card_method       = $this->mock_payment_methods['card'];
+		$giropay_method    = $this->mock_payment_methods['giropay'];
+		$p24_method        = $this->mock_payment_methods['p24'];
+		$sofort_method     = $this->mock_payment_methods['sofort'];
+		$bancontact_method = $this->mock_payment_methods['bancontact'];
+		$ideal_method      = $this->mock_payment_methods['ideal'];
 
 		$this->assertEquals( 'card', $card_method->get_id() );
 		$this->assertEquals( 'Credit card / debit card', $card_method->get_title() );
@@ -909,6 +919,12 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertTrue( $sofort_method->is_enabled_at_checkout() );
 		$this->assertFalse( $sofort_method->is_reusable() );
 
+		$this->assertEquals( 'bancontact', $bancontact_method->get_id() );
+		$this->assertEquals( 'Bancontact', $bancontact_method->get_title() );
+		$this->assertEquals( 'Bancontact', $bancontact_method->get_title( $mock_bancontact_details ) );
+		$this->assertTrue( $bancontact_method->is_enabled_at_checkout() );
+		$this->assertFalse( $bancontact_method->is_reusable() );
+
 		$this->assertEquals( 'ideal', $ideal_method->get_id() );
 		$this->assertEquals( 'iDEAL', $ideal_method->get_title() );
 		$this->assertEquals( 'iDEAL', $ideal_method->get_title( $mock_ideal_details ) );
@@ -918,31 +934,36 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 
 	public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
 		$this->set_cart_contains_subscription_items( true );
-		$card_method    = $this->mock_payment_methods['card'];
-		$giropay_method = $this->mock_payment_methods['giropay'];
-		$sofort_method  = $this->mock_payment_methods['sofort'];
-		$p24_method     = $this->mock_payment_methods['p24'];
-		$ideal_method   = $this->mock_payment_methods['ideal'];
+
+		$card_method       = $this->mock_payment_methods['card'];
+		$giropay_method    = $this->mock_payment_methods['giropay'];
+		$sofort_method     = $this->mock_payment_methods['sofort'];
+		$bancontact_method = $this->mock_payment_methods['bancontact'];
+		$p24_method        = $this->mock_payment_methods['p24'];
+		$ideal_method      = $this->mock_payment_methods['ideal'];
 
 		$this->assertTrue( $card_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_enabled_at_checkout() );
 		$this->assertFalse( $sofort_method->is_enabled_at_checkout() );
+		$this->assertFalse( $bancontact_method->is_enabled_at_checkout() );
 		$this->assertFalse( $p24_method->is_enabled_at_checkout() );
 		$this->assertFalse( $ideal_method->is_enabled_at_checkout() );
 	}
 
 	public function test_only_valid_payment_methods_returned_for_currency() {
-		$card_method    = $this->mock_payment_methods['card'];
-		$giropay_method = $this->mock_payment_methods['giropay'];
-		$sofort_method  = $this->mock_payment_methods['sofort'];
-		$p24_method     = $this->mock_payment_methods['p24'];
-		$ideal_method   = $this->mock_payment_methods['ideal'];
+		$card_method       = $this->mock_payment_methods['card'];
+		$giropay_method    = $this->mock_payment_methods['giropay'];
+		$sofort_method     = $this->mock_payment_methods['sofort'];
+		$bancontact_method = $this->mock_payment_methods['bancontact'];
+		$p24_method        = $this->mock_payment_methods['p24'];
+		$ideal_method      = $this->mock_payment_methods['ideal'];
 
 		self::$mock_site_currency = 'EUR';
 
 		$this->assertTrue( $card_method->is_currency_valid() );
 		$this->assertTrue( $giropay_method->is_currency_valid() );
 		$this->assertTrue( $sofort_method->is_currency_valid() );
+		$this->assertTrue( $bancontact_method->is_currency_valid() );
 		$this->assertTrue( $p24_method->is_currency_valid() );
 		$this->assertTrue( $ideal_method->is_currency_valid() );
 
@@ -951,6 +972,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertTrue( $card_method->is_currency_valid() );
 		$this->assertFalse( $giropay_method->is_currency_valid() );
 		$this->assertFalse( $sofort_method->is_currency_valid() );
+		$this->assertFalse( $bancontact_method->is_currency_valid() );
 		$this->assertFalse( $p24_method->is_currency_valid() );
 		$this->assertFalse( $ideal_method->is_currency_valid() );
 

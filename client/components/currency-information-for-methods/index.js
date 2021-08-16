@@ -131,7 +131,7 @@ const CurrencyInformationForMethodsWrapper = ( props ) => {
 		featureFlags: { multiCurrency },
 	} = useContext( WCPaySettingsContext );
 
-	// prevents loading currency data when the feature flag is disabled
+	// Prevents loading currency data when the feature flag is disabled.
 	if ( ! multiCurrency ) return null;
 
 	return <CurrencyInformationForMethods { ...props } />;
