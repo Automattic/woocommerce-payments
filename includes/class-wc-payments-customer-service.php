@@ -42,6 +42,11 @@ class WC_Payments_Customer_Service {
 	const PAYMENT_METHODS_TRANSIENT = 'wcpay_payment_methods_';
 
 	/**
+	 * Key used to store customer id for non logged in users in WooCommerce Session.
+	 */
+	const CUSTOMER_ID_SESSION_KEY = 'wcpay_customer_id';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -76,7 +81,9 @@ class WC_Payments_Customer_Service {
 	public function get_customer_id_by_user_id( $user_id ) {
 		// User ID might be 0 if fetched from a WP_User instance for a user who isn't logged in.
 		if ( null === $user_id || 0 === $user_id ) {
-			return null;
+			// Try to retrieve the customer id from the session if stored previously.
+			$customer_id = WC()->session->get( self::CUSTOMER_ID_SESSION_KEY );
+			return $customer_id;
 		}
 
 		$customer_id = get_user_option( $this->get_customer_id_option(), $user_id );
@@ -117,6 +124,9 @@ class WC_Payments_Customer_Service {
 				Logger::error( 'Failed to store new customer ID for user ' . $user->ID );
 			}
 		}
+
+		// Save the customer id in the session for non logged in users to reuse it in payments.
+		WC()->session->set( self::CUSTOMER_ID_SESSION_KEY, $customer_id );
 
 		return $customer_id;
 	}
