@@ -23,7 +23,6 @@ const ListToCommaSeparatedSentencePartConverter = ( items ) => {
 	const lastItem = items.pop();
 	return (
 		items.join( ', ' ) +
-		' ' +
 		__( ', and', 'woocommerce-payments' ) +
 		' ' +
 		lastItem
