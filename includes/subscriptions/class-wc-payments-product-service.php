@@ -29,6 +29,13 @@ class WC_Payments_Product_Service {
 	const PRODUCT_ID_KEY = '_wcpay_product_id';
 
 	/**
+	 * The product price meta key used to store the price data we last sent to Stripe as a hash. Used to compare current WC product price data with Stripe data.
+	 *
+	 * @const string
+	 */
+	const PRICE_HASH_KEY = '_wcpay_product_price_hash';
+
+	/**
 	 * The product meta key used to store the product's Stripe Price object ID.
 	 *
 	 * @const string
@@ -85,6 +92,16 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
+	 * Gets the Stripe price hash associated with a WC product.
+	 *
+	 * @param WC_Product $product The product to get the hash for.
+	 * @return string             The product's price hash or an empty string.
+	 */
+	public static function get_stripe_price_hash( WC_Product $product ) : string {
+		return $product->get_meta( self::PRICE_HASH_KEY, true );
+	}
+
+	/**
 	 * Gets the Stripe price ID associated with a WC product.
 	 *
 	 * @param WC_Product $product The product to get the Stripe price ID for.
@@ -119,7 +136,7 @@ class WC_Payments_Product_Service {
 
 		// We're only interested in subscription products. The variable products aren't tracked in Stripe so skip them.
 		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! $product->is_type( 'variable-subscription' ) ) {
-			if ( ! self::has_stripe_product_id( $product ) || $this->product_needs_update( $product ) ) {
+			if ( ! self::has_stripe_product_id( $product ) || $this->product_needs_update( $product ) || $this->price_needs_update( $product ) ) {
 				$this->products_to_update[ $product_id ] = $product_id;
 			}
 		}
@@ -156,12 +173,13 @@ class WC_Payments_Product_Service {
 	 */
 	public function create_product( WC_Product $product ) {
 		try {
-			$product_data   = $this->get_product_data( $product );
+			$product_data   = array_merge( $this->get_product_data( $product ), $this->get_price_data( $product ) );
 			$stripe_product = $this->payments_api_client->create_product( $product_data );
 
 			$this->remove_product_update_listeners();
 			$this->set_stripe_product_hash( $product, $this->get_product_hash( $product ) );
 			$this->set_stripe_product_id( $product, $stripe_product['stripe_product_id'] );
+			$this->set_stripe_price_hash( $product, $this->get_price_hash( $product ) );
 			$this->set_stripe_price_id( $product, $stripe_product['stripe_price_id'] );
 			$this->add_product_update_listeners();
 		} catch ( API_Exception $e ) {
@@ -183,17 +201,30 @@ class WC_Payments_Product_Service {
 			return;
 		}
 
-		// If the product has changed since our last update, update it. Uses a hash of product data at the time of last update to determine if it has changed.
+		$data = [];
+
 		if ( $this->product_needs_update( $product ) ) {
+			$data = array_merge( $data, $this->get_product_data( $product ) );
+		}
+
+		if ( $this->price_needs_update( $product ) ) {
+			$data = array_merge( $data, $this->get_price_data( $product ) );
+		}
+
+		if ( ! empty( $data ) ) {
 			try {
-				$stripe_product = $this->payments_api_client->update_product( $stripe_product_id, $this->get_product_data( $product ) );
+				$stripe_product = $this->payments_api_client->update_product( $stripe_product_id, $data );
 
 				$this->remove_product_update_listeners();
-				$this->set_stripe_product_hash( $product, $this->get_product_hash( $product ) );
+
+				if ( isset( $stripe_product['stripe_product_id'] ) ) {
+					$this->set_stripe_product_hash( $product, $this->get_product_hash( $product ) );
+				}
 
 				if ( isset( $stripe_product['stripe_price_id'] ) ) {
 					$old_stripe_price_id = $this->get_stripe_price_id( $product );
 
+					$this->set_stripe_price_hash( $product, $this->get_price_hash( $product ) );
 					$this->set_stripe_price_id( $product, $stripe_product['stripe_price_id'] );
 					$this->archive_price( $old_stripe_price_id );
 				}
@@ -314,16 +345,27 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Gets data relevant to Stripe from a WC product.
+	 * Gets product data relevant to Stripe from a WC product.
 	 *
 	 * @param WC_Product $product The product to get data from.
 	 * @return array
 	 */
 	private function get_product_data( WC_Product $product ) : array {
 		return [
+			'description' => $product->get_description() ? $product->get_description() : 'N/A',
+			'name'        => $product->get_name(),
+		];
+	}
+
+	/**
+	 * Gets price data relevant to Stripe from a WC product.
+	 *
+	 * @param WC_Product $product The product to get data from.
+	 * @return array
+	 */
+	private function get_price_data( WC_Product $product ) : array {
+		return [
 			'currency'       => get_woocommerce_currency(),
-			'description'    => $product->get_description() ? $product->get_description() : 'N/A',
-			'name'           => $product->get_name(),
 			'interval'       => WC_Subscriptions_Product::get_period( $product ),
 			'interval_count' => WC_Subscriptions_Product::get_interval( $product ),
 			'unit_amount'    => $product->get_price() * 100,
@@ -355,6 +397,17 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
+	 * Gets a hash of the product's price, period, and inverval.
+	 * Used to compare WC changes with Stripe data.
+	 *
+	 * @param WC_Product $product The product to generate the hash for.
+	 * @return string             The product's price hash.
+	 */
+	private function get_price_hash( WC_Product $product ) : string {
+		return md5( implode( $this->get_price_data( $product ) ) );
+	}
+
+	/**
 	 * Checks if a prouduct needs to be updated in Stripe.
 	 *
 	 * @param WC_Product $product The product to check updates for.
@@ -366,9 +419,21 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
+	 * Checks if a prouduct price needs to be updated in Stripe.
+	 *
+	 * @param WC_Product $product The product to check updates for.
+	 *
+	 * @return bool Whether the product price needs to be update in Stripe.
+	 */
+	private function price_needs_update( WC_Product $product ) : bool {
+		return $this->get_price_hash( $product ) !== $this->get_stripe_price_hash( $product );
+	}
+
+
+	/**
 	 * Sets a Stripe product hash on a WC product.
 	 *
-	 * @param WC_Product $product The product to set the Stripe price hash for.
+	 * @param WC_Product $product The product to set the Stripe product hash for.
 	 * @param string     $value   The Stripe product hash.
 	 */
 	private function set_stripe_product_hash( WC_Product $product, string $value ) {
@@ -384,6 +449,17 @@ class WC_Payments_Product_Service {
 	 */
 	private function set_stripe_product_id( WC_Product $product, string $value ) {
 		$product->update_meta_data( self::PRODUCT_ID_KEY, $value );
+		$product->save();
+	}
+
+	/**
+	 * Sets a Stripe price hash on a WC product.
+	 *
+	 * @param WC_Product $product The product to set the Stripe price hash for.
+	 * @param string     $value   The Stripe product hash.
+	 */
+	private function set_stripe_price_hash( WC_Product $product, string $value ) {
+		$product->update_meta_data( self::PRICE_HASH_KEY, $value );
 		$product->save();
 	}
 
