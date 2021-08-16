@@ -605,4 +605,28 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [ 'result' => 'success' ], $response_data );
 	}
+
+	/**
+	 * Tests that an invoice upoming event creates invoice items for subscription.
+	 */
+	public function test_invoice_upcoming_webhook() {
+		// Stub.
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Tests that an invoice paid event renews a subscription.
+	 */
+	public function test_invoice_paid_webhook() {
+		// Stub.
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Tests that an invoice payment failed event places a subscription on-hold.
+	 */
+	public function test_invoice_payment_failed_webhook() {
+		// Stub.
+		$this->assertTrue( true );
+	}
 }

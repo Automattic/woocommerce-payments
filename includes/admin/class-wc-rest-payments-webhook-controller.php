@@ -130,6 +130,15 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				case 'payment_intent.succeeded':
 					$this->process_webhook_payment_intent_succeeded( $body );
 					break;
+				case 'invoice.upcoming':
+					$this->handle_invoice_upcoming( $body );
+					break;
+				case 'invoice.paid':
+					$this->handle_invoice_paid( $body );
+					break;
+				case 'invoice.payment_failed':
+					$this->handle_invoice_payment_failed( $body );
+					break;
 			}
 
 			try {
@@ -289,5 +298,41 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 		return $array[ $key ];
+	}
+
+	/**
+	 * Adds fee, discount, and shipping related invoice items to Stripe subscription.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Rest_Request_Exception Required parameters not found.
+	 */
+	private function handle_invoice_upcoming( array $event_body ) {
+		// Stub.
+		Logger::debug( 'Invoice upcoming!' );
+	}
+
+	/**
+	 * Renews a subscription associated with paid invoice.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Rest_Request_Exception Required parameters not found.
+	 */
+	private function handle_invoice_paid( array $event_body ) {
+		// Stub.
+		Logger::debug( 'Invoice paid!' );
+	}
+
+	/**
+	 * Marks a subscription payment associated with invoice as failed.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Rest_Request_Exception Required parameters not found.
+	 */
+	private function handle_invoice_payment_failed( array $event_body ) {
+		// Stub.
+		Logger::debug( 'Invoice payment failed :(' );
 	}
 }
