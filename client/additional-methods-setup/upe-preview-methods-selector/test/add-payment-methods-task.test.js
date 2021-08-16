@@ -45,10 +45,12 @@ describe( 'AddPaymentMethodsTask', () => {
 	beforeEach( () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
+			'bancontact',
 			'giropay',
-			'sepa_debit',
 			'p24',
 			'ideal',
+			'sepa_debit',
+			'sofort',
 		] );
 		useSettings.mockReturnValue( {
 			saveSettings: () => Promise.resolve( true ),
@@ -89,6 +91,11 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		expect(
 			screen.queryByText(
+				/(we\'ll add|and) Euro \(€\) (and|to your store)/
+			)
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByText(
 				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
 			)
 		).not.toBeInTheDocument();
@@ -122,34 +129,35 @@ describe( 'AddPaymentMethodsTask', () => {
 		).toBeInTheDocument();
 		expect( screen.getByText( 'Add payment methods' ) ).toBeEnabled();
 		expect( useSettings ).toHaveBeenCalled();
-		// the payment methods should all be checked
-		expect(
-			screen.getByRole( 'checkbox', { name: 'giropay' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'iDEAL' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
-		).toBeChecked();
+
+		// The payment methods should all be checked.
+		const expectedToBeChecked = [
+			'Bancontact',
+			'giropay',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'Direct debit payment',
+			'Sofort',
+		];
+
+		expectedToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).toBeChecked();
+		} );
+
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
 		).not.toBeInTheDocument();
 
-		// un-checking the checkboxes and clicking "add payment methods" should display a notice
-		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
-		userEvent.click(
-			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
-		);
-		userEvent.click(
-			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
-		);
-		userEvent.click( screen.getByRole( 'checkbox', { name: 'iDEAL' } ) );
+		// Unchecking the checkboxes and clicking "add payment methods" should display a notice.
+		expectedToBeChecked.forEach( function ( checkboxName ) {
+			userEvent.click(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			);
+		} );
 
-		// no "euro" text when no elements are checked
+		// No add currency text when no elements are checked.
 		expect(
 			screen.queryByText(
 				/(we\'ll add|and) Euro \(€\) (and|to your store)/
@@ -187,19 +195,22 @@ describe( 'AddPaymentMethodsTask', () => {
 		).toBeInTheDocument();
 		expect( screen.getByText( 'Add payment methods' ) ).toBeEnabled();
 		expect( useSettings ).toHaveBeenCalled();
-		// the payment methods should all be checked
-		expect(
-			screen.getByRole( 'checkbox', { name: 'giropay' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'iDEAL' } )
-		).toBeChecked();
+
+		// The payment methods should all be checked.
+		const expectedToBeChecked = [
+			'Bancontact',
+			'giropay',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'Direct debit payment',
+			'Sofort',
+		];
+
+		expectedToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).toBeChecked();
+		} );
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
 		).not.toBeInTheDocument();
@@ -208,10 +219,12 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
+			'bancontact',
 			'giropay',
-			'sepa_debit',
 			'p24',
 			'ideal',
+			'sepa_debit',
+			'sofort',
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
@@ -224,8 +237,16 @@ describe( 'AddPaymentMethodsTask', () => {
 	it( 'should remove the un-checked payment methods, if they were present before', async () => {
 		const setCompletedMock = jest.fn();
 		const updateEnabledPaymentMethodsMock = jest.fn();
+		const initialMethods = [
+			'card',
+			'bancontact',
+			'giropay',
+			'ideal',
+			'p24',
+			'sofort',
+		];
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay', 'ideal', 'p24' ],
+			initialMethods,
 			updateEnabledPaymentMethodsMock,
 		] );
 		render(
@@ -238,37 +259,48 @@ describe( 'AddPaymentMethodsTask', () => {
 			</SettingsContextProvider>
 		);
 
-		// the payment methods should all be checked
-		expect(
-			screen.getByRole( 'checkbox', { name: 'giropay' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'iDEAL' } )
-		).toBeChecked();
+		// The payment methods should all be checked.
+		const expectedToBeChecked = [
+			'Bancontact',
+			'giropay',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'Direct debit payment',
+			'Sofort',
+		];
 
-		// un-check giropay
-		userEvent.click( screen.getByRole( 'checkbox', { name: 'giropay' } ) );
-		userEvent.click(
-			screen.getByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
-		);
-		// un-check iDEAL
-		userEvent.click( screen.getByRole( 'checkbox', { name: 'iDEAL' } ) );
+		expectedToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).toBeChecked();
+		} );
+
+		// Uncheck methods.
+		const methodsToUncheck = [
+			'Bancontact',
+			'giropay',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'Sofort',
+		];
+		methodsToUncheck.forEach( function ( checkboxName ) {
+			userEvent.click(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			);
+		} );
+
 		userEvent.click( screen.getByText( 'Add payment methods' ) );
 
-		// giropay and iDEAL are removed
+		// Methods are removed.
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
 			'sepa_debit',
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
-				{ initialMethods: [ 'card', 'giropay', 'ideal', 'p24' ] },
+				{
+					initialMethods: initialMethods,
+				},
 				'setup-complete'
 			)
 		);

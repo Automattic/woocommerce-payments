@@ -8,7 +8,6 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import { useCurrencies, useEnabledCurrencies } from '../../../data';
-
 import CurrencyInformationForMethods from '..';
 import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 
@@ -53,7 +52,14 @@ describe( 'CurrencyInformationForMethods', () => {
 		const { container } = render(
 			<FlagsContextWrapper multiCurrency={ false }>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay', 'ideal', 'p24' ] }
+					selectedMethods={ [
+						'card',
+						'bancontact',
+						'giropay',
+						'ideal',
+						'p24',
+						'sofort',
+					] }
 				/>
 			</FlagsContextWrapper>
 		);
@@ -68,7 +74,14 @@ describe( 'CurrencyInformationForMethods', () => {
 		const { container } = render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay', 'ideal', 'p24' ] }
+					selectedMethods={ [
+						'card',
+						'bancontact',
+						'giropay',
+						'ideal',
+						'p24',
+						'sofort',
+					] }
 				/>
 			</FlagsContextWrapper>
 		);
@@ -90,7 +103,14 @@ describe( 'CurrencyInformationForMethods', () => {
 		const { container } = render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'giropay', 'card', 'ideal', 'p24' ] }
+					selectedMethods={ [
+						'card',
+						'bancontact',
+						'giropay',
+						'ideal',
+						'p24',
+						'sofort',
+					] }
 				/>
 			</FlagsContextWrapper>
 		);
@@ -120,7 +140,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay', 'ideal' ] }
+					selectedMethods={ [ 'card', 'giropay' ] }
 				/>
 			</FlagsContextWrapper>
 		);

@@ -150,6 +150,15 @@ const AddPaymentMethodsTask = () => {
 
 	const countryName = useGetCountryName();
 
+	const upeMethods = [
+		'bancontact',
+		'giropay',
+		'ideal',
+		'p24',
+		'sepa_debit',
+		'sofort',
+	];
+
 	return (
 		<WizardTaskItem
 			className="add-payment-methods-task"
@@ -208,42 +217,20 @@ const AddPaymentMethodsTask = () => {
 							) }
 						</p>
 						<PaymentMethodCheckboxes>
-							{ availablePaymentMethods.includes( 'giropay' ) && (
-								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.giropay }
-									onChange={ handlePaymentMethodChange }
-									name="giropay"
-								/>
-							) }
-							{ availablePaymentMethods.includes( 'p24' ) && (
-								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.p24 }
-									onChange={ handlePaymentMethodChange }
-									name="p24"
-								/>
-							) }
-							{ availablePaymentMethods.includes( 'sofort' ) && (
-								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.sofort }
-									onChange={ handlePaymentMethodChange }
-									name="sofort"
-								/>
-							) }
-							{ availablePaymentMethods.includes(
-								'sepa_debit'
-							) && (
-								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.sepa_debit }
-									onChange={ handlePaymentMethodChange }
-									name="sepa_debit"
-								/>
-							) }
-							{ availablePaymentMethods.includes( 'ideal' ) && (
-								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.ideal }
-									onChange={ handlePaymentMethodChange }
-									name="ideal"
-								/>
+							{ upeMethods.map(
+								( key ) =>
+									availablePaymentMethods.includes( key ) && (
+										<PaymentMethodCheckbox
+											key={ key }
+											checked={
+												paymentMethodsState[ key ]
+											}
+											onChange={
+												handlePaymentMethodChange
+											}
+											name={ key }
+										/>
+									)
 							) }
 						</PaymentMethodCheckboxes>
 					</CardBody>

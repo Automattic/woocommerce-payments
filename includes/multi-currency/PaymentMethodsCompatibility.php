@@ -35,11 +35,12 @@ class PaymentMethodsCompatibility {
 	 * @var string[]
 	 */
 	private $payment_method_currency_map = [
+		'bancontact' => [ 'EUR' ],
 		'giropay'    => [ 'EUR' ],
+		'ideal'      => [ 'EUR' ],
 		'p24'        => [ 'EUR', 'PLN' ],
 		'sepa_debit' => [ 'EUR' ],
 		'sofort'     => [ 'EUR' ],
-		'ideal'      => [ 'EUR' ],
 	];
 
 	/**
