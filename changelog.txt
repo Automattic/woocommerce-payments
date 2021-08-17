@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 2.8.4 - 2021-xx-xx =
+= 2.8.4 - 2021-08-17 =
 * Fix - Fix database connection error on account cache clear.
 * Fix - Fix fatal error logged when updating analytics data when account is not connected to Stripe.
 * Fix - Multi-Currency Compatibility fatal error with Subscriptions when account is not connected to Stripe.
