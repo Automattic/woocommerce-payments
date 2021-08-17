@@ -189,7 +189,7 @@ class WC_Payments_Product_Service {
 			$this->set_stripe_price_id( $product, $stripe_product['stripe_price_id'] );
 			$this->add_product_update_listeners();
 		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem creating the product in Stripe:', $e->getMessage() );
+			Logger::log( 'There was a problem creating the product in Stripe: ' . $e->getMessage() );
 		}
 	}
 
@@ -237,7 +237,7 @@ class WC_Payments_Product_Service {
 
 				$this->add_product_update_listeners();
 			} catch ( API_Exception $e ) {
-				Logger::log( 'There was a problem updating the product in Stripe:', $e->getMessage() );
+				Logger::log( 'There was a problem updating the product in Stripe: ' . $e->getMessage() );
 			}
 		}
 	}
@@ -292,7 +292,7 @@ class WC_Payments_Product_Service {
 			$this->archive_price( $this->get_stripe_price_id( $product ) );
 			$this->payments_api_client->update_product( $stripe_product_id, [ 'active' => 'false' ] );
 		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem archiving the product in Stripe:', $e->getMessage() );
+			Logger::log( 'There was a problem archiving the product in Stripe: ' . $e->getMessage() );
 		}
 	}
 
@@ -312,7 +312,7 @@ class WC_Payments_Product_Service {
 			$this->unarchive_price( $this->get_stripe_price_id( $product ) );
 			$this->payments_api_client->update_product( $stripe_product_id, [ 'active' => 'true' ] );
 		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem unarchiving the product in Stripe:', $e->getMessage() );
+			Logger::log( 'There was a problem unarchiving the product in Stripe: ' . $e->getMessage() );
 		}
 	}
 
