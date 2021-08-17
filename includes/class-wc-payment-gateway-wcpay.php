@@ -16,6 +16,7 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Tracker;
+use WCPay\WC_Payments_Rate_Limiter;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -39,13 +40,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @type array
 	 */
 	const SUCCESSFUL_INTENT_STATUS = [ 'succeeded', 'requires_capture', 'processing' ];
-
-	/**
-	 * Key used in the session to store card declined transactions.
-	 *
-	 * @type string
-	 */
-	const SESSION_KEY_DECLINED_CARD_REGISTRY = 'wcpay_card_declined_registry';
 
 	/**
 	 * Set of parameters to build the URL to the gateway's settings page.
@@ -870,7 +864,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					WC_Payments_Utils::esc_interpolated_html(
 						/* translators: %1: the failed payment amount */
 						__(
-							'A payment of %1$s <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts.',
+							'A payment of %1$s <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.',
 							'woocommerce-payments'
 						),
 						[
@@ -2324,14 +2318,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * in order to calculate if a user is under a cooldown.
 	 */
 	public function save_card_declined_transaction_time_in_session() {
-		if ( ! isset( WC()->session ) ) {
-			return;
-		}
-
-		$registry = WC()->session->get( self::SESSION_KEY_DECLINED_CARD_REGISTRY ) ?? [];
-		$now      = new DateTime();
-		array_push( $registry, $now );
-		WC()->session->set( self::SESSION_KEY_DECLINED_CARD_REGISTRY, $registry );
+		WC_Payments_Rate_Limiter::save_datetime_in_key( WC_Payments_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * 60 );
 	}
 
 	/**
@@ -2339,29 +2326,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * are over a threshold to decide if a user is under a cooldown period.
 	 *
 	 * The registry of declined card attemps is cleaned after the cooldown period ends.
-	 *
-	 * @param int $threshold_failed_transaction   Number of failed card declined transactions before cooldown happens.
-	 * @param int $cooldown_period_minutes        Minutes for cooldown period after threshold is reached.
 	 */
-	public function is_rate_limiter_enabled( $threshold_failed_transaction = 5, $cooldown_period_minutes = 10 ) {
-		if ( ! isset( WC()->session ) ) {
-			return false;
-		}
-
-		$registry = WC()->session->get( self::SESSION_KEY_DECLINED_CARD_REGISTRY ) ?? [];
-		if ( count( $registry ) >= $threshold_failed_transaction ) {
-			$last_transaction_datetime = end( $registry );
-			$now                       = new DateTime();
-			$diff_in_minutes           = $last_transaction_datetime->diff( $now )->i;
-			// If the difference in minutes between now and the last failed transaction
-			// is less than the cooldown period.
-			if ( $diff_in_minutes < $cooldown_period_minutes ) {
-				return true;
-			} else {
-				WC()->session->set( self::SESSION_KEY_DECLINED_CARD_REGISTRY, [] );
-			}
-		}
-
-		return false;
+	public function is_rate_limiter_enabled() {
+		return WC_Payments_Rate_Limiter::is_rate_limiter_enabled( WC_Payments_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY );
 	}
 }
