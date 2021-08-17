@@ -2299,6 +2299,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * in order to calculate if a user is under a cooldown.
 	 */
 	public function save_card_declined_transaction_time_in_session() {
+		if ( ! isset( WC()->session ) ) {
+			return;
+		}
+
 		$registry = WC()->session->get( self::SESSION_KEY_DECLINED_CARD_REGISTRY ) ?? [];
 		$now      = new DateTime();
 		array_push( $registry, $now );
@@ -2315,6 +2319,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param int $cooldown_period_minutes        Minutes for cooldown period after threshold is reached.
 	 */
 	public function is_rate_limiter_enabled( $threshold_failed_transaction = 5, $cooldown_period_minutes = 10 ) {
+		if ( ! isset( WC()->session ) ) {
+			return false;
+		}
+
 		$registry = WC()->session->get( self::SESSION_KEY_DECLINED_CARD_REGISTRY ) ?? [];
 		if ( count( $registry ) >= $threshold_failed_transaction ) {
 			$last_transaction_datetime = end( $registry );
