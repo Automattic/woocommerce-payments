@@ -500,8 +500,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function is_available() {
 		// Disable the gateway if using live mode without HTTPS set up, the currency is not
-		// available in the country of the account or the rate limiter is enabled.
-		if ( $this->needs_https_setup() || ! $this->is_available_for_current_currency() || $this->is_rate_limiter_enabled() ) {
+		// available in the country of the account.
+		if ( $this->needs_https_setup() || ! $this->is_available_for_current_currency() ) {
 			return false;
 		}
 
@@ -814,11 +814,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param int $order_id Order ID to process the payment for.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 * @throws Process_Payment_Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 
 		try {
+			if ( $this->is_rate_limiter_enabled() ) {
+				throw new Process_Payment_Exception(
+					__( 'Your payment was not processed.', 'woocommerce-payments' ),
+					'rate_limiter_enabled'
+				);
+			}
+
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
@@ -853,6 +861,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					),
 					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
 					esc_html( rtrim( $e->getMessage(), '.' ) )
+				);
+				$order->add_order_note( $note );
+			}
+
+			if ( $e instanceof Process_Payment_Exception && 'rate_limiter_enabled' === $e->get_error_code() ) {
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the failed payment amount */
+						__(
+							'A payment of %1$s <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts.',
+							'woocommerce-payments'
+						),
+						[
+							'strong' => '<strong>',
+						]
+					),
+					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order )
 				);
 				$order->add_order_note( $note );
 			}
