@@ -122,7 +122,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Creates or updates a subscription product in Stripe.
+	 * Schedules a subscription product to be created or updated in Stripe on shutdown.
 	 *
 	 * @since x.x.x
 	 *
@@ -130,14 +130,20 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product    The product object to handle. Only subscription products will be created or updated in Stripe.
 	 */
 	public function maybe_schedule_product_create_or_update( int $product_id, WC_Product $product ) {
-		if ( isset( $this->products_to_update[ $product_id ] ) ) {
+
+		// Skip products which have already been scheduled or aren't subscriptions.
+		if ( isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return;
 		}
 
-		// We're only interested in subscription products. The variable products aren't tracked in Stripe so skip them.
-		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! $product->is_type( 'variable-subscription' ) ) {
-			if ( ! self::has_stripe_product_id( $product ) || $this->product_needs_update( $product ) || $this->price_needs_update( $product ) ) {
-				$this->products_to_update[ $product_id ] = $product_id;
+		foreach ( $this->get_products_to_update( $product ) as $product_to_update ) {
+			// Skip products already scheduled.
+			if ( isset( $this->products_to_update[ $product_to_update->get_id() ] ) ) {
+				continue;
+			}
+
+			if ( ! self::has_stripe_product_id( $product_to_update ) || $this->product_needs_update( $product_to_update ) || $this->price_needs_update( $product_to_update ) ) {
+				$this->products_to_update[ $product_to_update->get_id() ] = $product_to_update->get_id();
 			}
 		}
 	}
@@ -183,7 +189,7 @@ class WC_Payments_Product_Service {
 			$this->set_stripe_price_id( $product, $stripe_product['stripe_price_id'] );
 			$this->add_product_update_listeners();
 		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem creating the product in Stripe:', $e->getMessage() );
+			Logger::log( 'There was a problem creating the product in Stripe: ' . $e->getMessage() );
 		}
 	}
 
@@ -231,7 +237,7 @@ class WC_Payments_Product_Service {
 
 				$this->add_product_update_listeners();
 			} catch ( API_Exception $e ) {
-				Logger::log( 'There was a problem updating the product in Stripe:', $e->getMessage() );
+				Logger::log( 'There was a problem updating the product in Stripe: ' . $e->getMessage() );
 			}
 		}
 	}
@@ -286,7 +292,7 @@ class WC_Payments_Product_Service {
 			$this->archive_price( $this->get_stripe_price_id( $product ) );
 			$this->payments_api_client->update_product( $stripe_product_id, [ 'active' => 'false' ] );
 		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem archiving the product in Stripe:', $e->getMessage() );
+			Logger::log( 'There was a problem archiving the product in Stripe: ' . $e->getMessage() );
 		}
 	}
 
@@ -306,7 +312,7 @@ class WC_Payments_Product_Service {
 			$this->unarchive_price( $this->get_stripe_price_id( $product ) );
 			$this->payments_api_client->update_product( $stripe_product_id, [ 'active' => 'true' ] );
 		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem unarchiving the product in Stripe:', $e->getMessage() );
+			Logger::log( 'There was a problem unarchiving the product in Stripe: ' . $e->getMessage() );
 		}
 	}
 
