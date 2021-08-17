@@ -205,10 +205,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return string
 	 */
 	public function get_button_height() {
-		if ( ! WC_Payments_Features::is_grouped_settings_enabled() ) {
-			return str_replace( 'px', '', $this->gateway->get_option( 'payment_request_button_height' ) );
-		}
-
 		$height = $this->gateway->get_option( 'payment_request_button_size' );
 		if ( 'medium' === $height ) {
 			return '48';
@@ -1478,36 +1474,19 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return array
 	 */
 	public function get_button_settings() {
-		// it would be DRYer to use `array_merge`,
-		// but I thought that this approach might be more straightforward to clean up when we remove the feature flag code.
 		$button_type = $this->gateway->get_option( 'payment_request_button_type' );
-		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
-			return [
-				'type'         => $button_type,
-				'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
-				'height'       => $this->get_button_height(),
-				// Default format is en_US.
-				'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
-				'branded_type' => 'default' === $button_type ? 'short' : 'long',
-				// these values are no longer applicable.
-				'css_selector' => '',
-				'label'        => '',
-				'is_custom'    => false,
-				'is_branded'   => false,
-			];
-		}
-
 		return [
 			'type'         => $button_type,
 			'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
 			'height'       => $this->get_button_height(),
-			'label'        => $this->gateway->get_option( 'payment_request_button_label' ),
 			// Default format is en_US.
 			'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
-			'is_custom'    => $this->is_custom_button(),
-			'is_branded'   => $this->is_branded_button(),
-			'css_selector' => $this->custom_button_selector(),
-			'branded_type' => $this->gateway->get_option( 'payment_request_button_branded_type' ),
+			'branded_type' => 'default' === $button_type ? 'short' : 'long',
+			// these values are no longer applicable.
+			'css_selector' => '',
+			'label'        => '',
+			'is_custom'    => false,
+			'is_branded'   => false,
 		];
 	}
 

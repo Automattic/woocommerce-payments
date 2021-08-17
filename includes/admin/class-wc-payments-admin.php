@@ -445,7 +445,7 @@ class WC_Payments_Admin {
 			&& 'checkout' === $current_tab
 		);
 
-		if ( WC_Payments_Features::is_grouped_settings_enabled() && $is_payment_methods_page ) {
+		if ( $is_payment_methods_page ) {
 			wp_enqueue_script( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
 			wp_enqueue_style( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
 		}
