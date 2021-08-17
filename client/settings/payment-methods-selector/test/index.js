@@ -27,11 +27,12 @@ describe( 'PaymentMethodsSelector', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
+			'bancontact',
 			'giropay',
-			'sofort',
-			'sepa_debit',
-			'p24',
 			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
 		] );
 	} );
 
@@ -76,7 +77,12 @@ describe( 'PaymentMethodsSelector', () => {
 		).toBeInTheDocument();
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 5 );
+		expect( paymentMethods ).toHaveLength( 6 );
+
+		const bancontactPayCheckbox = screen.getByRole( 'checkbox', {
+			name: 'Bancontact',
+		} );
+		expect( bancontactPayCheckbox ).not.toBeChecked();
 
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
 			name: 'giropay',
@@ -148,10 +154,13 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( addPaymentMethodButton );
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 4 );
+		expect( paymentMethods ).toHaveLength( 5 );
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
 		).toBeNull();
+		expect(
+			screen.queryByRole( 'checkbox', { name: 'Bancontact' } )
+		).not.toBeNull();
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
 		).not.toBeNull();
@@ -237,6 +246,11 @@ describe( 'PaymentMethodsSelector', () => {
 		} );
 		user.click( addPaymentMethodButton );
 
+		const bancontactCheckbox = screen.getByRole( 'checkbox', {
+			name: 'Bancontact',
+		} );
+		user.click( bancontactCheckbox );
+
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
 			name: 'giropay',
 		} );
@@ -257,6 +271,7 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( updateEnabledPaymentMethodIdsMock ).toHaveBeenCalledWith( [
 			'card',
 			'sepa_debit',
+			'bancontact',
 			'giropay',
 			'p24',
 			'ideal',
