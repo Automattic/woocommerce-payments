@@ -78,7 +78,9 @@ class WC_Payments_Rate_Limiter {
 	 * @param  int    $delay Delay in seconds to apply in the new rate limiter.
 	 */
 	public static function enable_rate_limiter( $action_id, $delay ) {
-		WC_Rate_Limiter::set_rate_limit( $action_id, $delay );
+		if ( isset( $action_id ) ) {
+			WC_Rate_Limiter::set_rate_limit( $action_id, $delay );
+		}
 	}
 
 	/**
@@ -89,11 +91,12 @@ class WC_Payments_Rate_Limiter {
 	 * @param  string $key Key for the registry.
 	 * @return string|null The id of the action if the session and the customer_id exist.
 	 */
-	private static function get_action_id( $key ) {
+	public static function get_action_id( $key ) {
 		if ( ! isset( WC()->session ) ) {
 			return null;
 		}
-		$customer_id = WC()->session->get_session_data()['wcpay_customer_id'];
+		$session_data = WC()->session->get_session_data();
+		$customer_id  = $session_data['wcpay_customer_id'] ?? null;
 		if ( ! isset( $customer_id ) ) {
 			return null;
 		}

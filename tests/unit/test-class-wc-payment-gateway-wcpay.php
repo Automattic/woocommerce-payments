@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\API_Exception;
+use WCPay\WC_Payments_Rate_Limiter;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -114,7 +115,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->update_option( 'saved_cards', 'yes' );
 
 		delete_option( '_wcpay_feature_grouped_settings' );
-		WC()->session->set( WC_Payment_Gateway_WCPay::SESSION_KEY_DECLINED_CARD_REGISTRY, [] );
+		$rate_limiter_action_id = WC_Payments_Rate_Limiter::get_action_id( WC_Payments_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY );
+		WC_Payments_Rate_Limiter::enable_rate_limiter( $rate_limiter_action_id, -10 );
 	}
 
 	public function test_process_refund() {
@@ -1506,26 +1508,5 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			)
 		);
 		$this->assertFalse( $this->wcpay_gateway->is_available_for_current_currency() );
-	}
-
-	public function test_rate_limiter_cooldown_is_enabled_and_disabled() {
-		$first_card_declined_datetime  = date_create()->sub( new DateInterval( 'PT2M' ) );
-		$second_card_declined_datetime = date_create()->sub( new DateInterval( 'PT1M' ) );
-		$registry                      = [ $first_card_declined_datetime, $second_card_declined_datetime ];
-		$threshold_failed_transactions = 2;
-		$minutes_cooldown              = 10;
-		WC()->session->set( WC_Payment_Gateway_WCPay::SESSION_KEY_DECLINED_CARD_REGISTRY, $registry );
-		$this->assertTrue(
-			$this->wcpay_gateway->is_rate_limiter_enabled( $threshold_failed_transactions, $minutes_cooldown )
-		);
-
-		// If cooldown was only one minute it would be disabled and the registry cleaned up.
-		$this->assertFalse(
-			$this->wcpay_gateway->is_rate_limiter_enabled( $threshold_failed_transactions, 1 )
-		);
-		$this->assertEquals(
-			WC()->session->get( WC_Payment_Gateway_WCPay::SESSION_KEY_DECLINED_CARD_REGISTRY ),
-			[]
-		);
 	}
 }
