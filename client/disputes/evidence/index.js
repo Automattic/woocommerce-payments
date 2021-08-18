@@ -230,7 +230,8 @@ export default ( { query } ) => {
 
 	return (
 		<DisputeEvidencePage
-			isLoading={ isLoading || isSavingEvidence }
+			isLoading={ isLoading }
+			isSavingEvidence={ isSavingEvidence }
 			dispute={ dispute }
 			evidence={
 				dispute

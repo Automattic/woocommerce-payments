@@ -38,6 +38,7 @@ export const DisputeEvidenceForm = ( props ) => {
 		onFileRemove,
 		onSave,
 		readOnly,
+		isSavingEvidence,
 	} = props;
 
 	if ( ! fields || ! fields.length ) {
@@ -175,6 +176,7 @@ export const DisputeEvidenceForm = ( props ) => {
 							<Button
 								isSecondary
 								onClick={ () => onSave( false ) }
+								isBusy={ isSavingEvidence }
 							>
 								{ __(
 									'Save for later',
