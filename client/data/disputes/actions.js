@@ -165,11 +165,11 @@ export function* saveDispute( id, submit, evidence, setEvidence ) {
 				submit,
 			},
 		} );
-		handleSaveSuccess( id, submit );
 		setEvidence( {} );
+		yield handleSaveSuccess( id, submit );
 		yield updateDispute( updatedDispute );
 	} catch ( err ) {
-		handleSaveError( err, submit );
+		yield handleSaveError( err, submit );
 	} finally {
 		yield updateIsSavingEvidenceForDispute( id, false );
 	}
