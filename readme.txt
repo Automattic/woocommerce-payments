@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fatal error if wcpay_multi_currency_enabled_currencies is a string.
 * Fix - Show the estimated deposit date in the transactions CSV export rather than the deposit ID.
 * Fix - Keep track of customer id in non logged in users.
+* Add - Order status validation for payments/orders/{order_id}/create_customer API.
 
 = 2.8.4 - 2021-08-17 =
 * Fix - Fix database connection error on account cache clear.
