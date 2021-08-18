@@ -8,12 +8,6 @@ import createAdditionalMethodsSetupTask from '../../../additional-methods-setup/
 
 jest.mock( '../../../additional-methods-setup/task', () => jest.fn() );
 
-// jest.mock( 'utils/currency', () => {
-// 	return {
-// 		formatCurrency: jest.fn().mockReturnValue( () => '10 USD' ),
-// 	};
-// } );
-
 describe( 'getTasks()', () => {
 	it( 'should include business details when flag is set', () => {
 		const actual = getTasks( {
