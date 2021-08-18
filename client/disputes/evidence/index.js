@@ -19,14 +19,14 @@ import {
 	TextareaControl,
 	SelectControl,
 } from '@wordpress/components';
-import { merge, some, flatten, isMatchWith } from 'lodash';
+import { some, flatten, isMatchWith } from 'lodash';
 import moment from 'moment';
 
 /**
  * Internal dependencies.
  */
 import '../style.scss';
-import { useDisputeEvidence } from 'wcpay/data';
+import { useDisputeEvidence, useDispute } from 'wcpay/data';
 import evidenceFields from './fields';
 import { FileUploadControl } from './file-upload';
 import Info from '../info';
@@ -355,8 +355,11 @@ const getDisputeProductType = ( dispute ) => {
 export default ( { query } ) => {
 	const path = `/wc/v3/payments/disputes/${ query.id }`;
 
-	const [ dispute, setDispute ] = useState();
-	const [ loading, setLoading ] = useState( false );
+	const { id: disputeId } = query;
+	const { dispute, isLoading } = useDispute( disputeId );
+
+	const { updateDispute } = useDisputeEvidence();
+
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
 	const {
 		createSuccessNotice,
@@ -393,31 +396,17 @@ export default ( { query } ) => {
 		confirmationNavigationCallback,
 	] );
 
-	useEffect( () => {
-		const fetchDispute = async () => {
-			setLoading( true );
-			try {
-				setDispute( await apiFetch( { path } ) );
-			} finally {
-				setLoading( false );
-			}
-		};
-
-		fetchDispute();
-	}, [ setLoading, setDispute, path ] );
-
 	const updateEvidence = ( key, value ) =>
 		setEvidence( ( e ) => ( { ...e, [ key ]: value } ) );
-	const updateDispute = ( updates = {} ) =>
-		setDispute( ( d ) => merge( {}, d, updates ) );
 	const isUploadingEvidence = () => some( dispute.isUploading );
 
 	const doRemoveFile = ( key ) => {
 		updateEvidence( key, '' );
 		updateDispute( {
-			metadata: { [ key ]: '' },
-			uploadingErrors: { [ key ]: '' },
-			fileSize: { [ key ]: 0 },
+			...dispute,
+			metadata: { ...dispute.metadata, [ key ]: '' },
+			uploadingErrors: { ...dispute.uploadingErrors, [ key ]: '' },
+			fileSize: { ...dispute.fileSize, [ key ]: 0 },
 		} );
 	};
 
@@ -461,9 +450,10 @@ export default ( { query } ) => {
 
 		// Set request status for UI.
 		updateDispute( {
-			metadata: { [ key ]: '' },
-			isUploading: { [ key ]: true },
-			uploadingErrors: { [ key ]: '' },
+			...dispute,
+			metadata: { ...dispute.metadata, [ key ]: '' },
+			isUploading: { ...dispute.isUploading, [ key ]: true },
+			uploadingErrors: { ...dispute.uploadingErrors, [ key ]: '' },
 		} );
 
 		// Force reload evidence components.
@@ -477,9 +467,13 @@ export default ( { query } ) => {
 			} );
 			// Store uploaded file name in metadata to display in submitted evidence or saved for later form.
 			updateDispute( {
-				metadata: { [ key ]: uploadedFile.filename },
-				isUploading: { [ key ]: false },
-				fileSize: { [ key ]: uploadedFile.size },
+				...dispute,
+				metadata: {
+					...dispute.metadata,
+					[ key ]: uploadedFile.filename,
+				},
+				isUploading: { ...dispute.isUploading, [ key ]: false },
+				fileSize: { ...dispute.fileSize, [ key ]: uploadedFile.size },
 			} );
 			updateEvidence( key, uploadedFile.id );
 
@@ -492,9 +486,13 @@ export default ( { query } ) => {
 			} );
 
 			updateDispute( {
-				metadata: { [ key ]: '' },
-				isUploading: { [ key ]: false },
-				uploadingErrors: { [ key ]: err.message },
+				...dispute,
+				metadata: { ...dispute.metadata, [ key ]: '' },
+				isUploading: { ...dispute.isUploading, [ key ]: false },
+				uploadingErrors: {
+					...dispute.uploadingErrors,
+					[ key ]: err.message,
+				},
 			} );
 
 			// Force reload evidence components.
@@ -557,8 +555,6 @@ export default ( { query } ) => {
 		createErrorNotice( sprintf( message, err.message ) );
 	};
 
-	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
-
 	const doSave = async ( submit ) => {
 		// Prevent submit if upload is in progress.
 		if ( isUploadingEvidence() ) {
@@ -571,7 +567,7 @@ export default ( { query } ) => {
 			return;
 		}
 
-		setLoading( true );
+		// setLoading( true );
 
 		try {
 			wcpayTracks.recordEvent(
@@ -591,14 +587,13 @@ export default ( { query } ) => {
 					submit,
 				},
 			} );
-			setDispute( updatedDispute );
 			handleSaveSuccess( submit );
 			setEvidence( {} );
-			updateDisputeInStore( updatedDispute );
+			updateDispute( updatedDispute );
 		} catch ( err ) {
 			handleSaveError( err, submit );
 		} finally {
-			setLoading( false );
+			// setLoading( false );
 		}
 	};
 
@@ -609,7 +604,11 @@ export default ( { query } ) => {
 		};
 		wcpayTracks.recordEvent( 'wcpay_dispute_product_selected', properties );
 		updateDispute( {
-			metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType },
+			...dispute,
+			metadata: {
+				...dispute.metadata,
+				[ PRODUCT_TYPE_META_KEY ]: newProductType,
+			},
 		} );
 	};
 
@@ -621,7 +620,7 @@ export default ( { query } ) => {
 
 	return (
 		<DisputeEvidencePage
-			isLoading={ loading }
+			isLoading={ isLoading }
 			dispute={ dispute }
 			evidence={
 				dispute
