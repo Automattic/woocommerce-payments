@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import { resolveSelect } from '@wordpress/data';
 import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
@@ -69,5 +70,95 @@ export function* acceptDispute( id ) {
 		);
 		wcpayTracks.recordEvent( 'wcpay_dispute_accept_failed' );
 		yield dispatch( 'core/notices', 'createErrorNotice', message );
+	}
+}
+
+function* handleSaveSuccess( id, submit ) {
+	const message = submit
+		? __( 'Evidence submitted!', 'woocommerce-payments' )
+		: __( 'Evidence saved!', 'woocommerce-payments' );
+	const href = addQueryArgs( 'admin.php', {
+		page: 'wc-admin',
+		path: '/payments/disputes',
+	} );
+
+	wcpayTracks.recordEvent(
+		submit
+			? 'wcpay_dispute_submit_evidence_success'
+			: 'wcpay_dispute_save_evidence_success'
+	);
+	/*
+			We rely on WC-Admin Transient notices to display success message.
+			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
+		*/
+	yield dispatch( 'core/notices', 'createSuccessNotice', message, {
+		actions: [
+			{
+				label: submit
+					? __( 'View submitted evidence', 'woocommerce-payments' )
+					: __(
+							'Return to evidence submission',
+							'woocommerce-payments'
+					  ),
+				url: addQueryArgs( 'admin.php', {
+					page: 'wc-admin',
+					path: '/payments/disputes/challenge',
+					id: id,
+				} ),
+			},
+		],
+	} );
+
+	getHistory().push( href );
+}
+
+function* handleSaveError( err, submit ) {
+	wcpayTracks.recordEvent(
+		submit
+			? 'wcpay_dispute_submit_evidence_failed'
+			: 'wcpay_dispute_save_evidence_failed'
+	);
+
+	const message = submit
+		? __( 'Failed to submit evidence. (%s)', 'woocommerce-payments' )
+		: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
+	yield dispatch(
+		'core/notices',
+		'createErrorNotice',
+		sprintf( message, err.message )
+	);
+}
+
+export function* saveDispute( id, submit, evidence, setEvidence ) {
+	const dispute = yield resolveSelect( STORE_NAME, 'getDispute', id );
+
+	// setLoading( true );
+	// updateDispute( { ...dispute, isLoading: true } );
+
+	try {
+		wcpayTracks.recordEvent(
+			submit
+				? 'wcpay_dispute_submit_evidence_clicked'
+				: 'wcpay_dispute_save_evidence_clicked'
+		);
+
+		const { metadata } = dispute;
+		const updatedDispute = yield apiFetch( {
+			path: `${ NAMESPACE }/disputes/${ id }`,
+			method: 'post',
+			data: {
+				// Send full evidence, as submission does not appear to work without new evidence despite being optional.
+				evidence: { ...dispute.evidence, ...evidence },
+				metadata,
+				submit,
+			},
+		} );
+		handleSaveSuccess( id, submit );
+		setEvidence( {} );
+		updateDispute( updatedDispute );
+	} catch ( err ) {
+		handleSaveError( err, submit );
+	} finally {
+		// setLoading( false );
 	}
 }

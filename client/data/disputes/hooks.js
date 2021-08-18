@@ -19,10 +19,10 @@ export const useDispute = ( id ) => {
 		[ id ]
 	);
 
-	const { acceptDispute } = useDispatch( STORE_NAME );
+	const { acceptDispute, saveDispute } = useDispatch( STORE_NAME );
 	const doAccept = () => acceptDispute( id );
 
-	return { dispute, isLoading, doAccept };
+	return { dispute, isLoading, doAccept, saveDispute };
 };
 
 export const useDisputeEvidence = () => {
