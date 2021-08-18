@@ -129,11 +129,16 @@ function* handleSaveError( err, submit ) {
 	);
 }
 
-export function* saveDispute( id, submit, evidence, setEvidence ) {
+export function* saveDispute(
+	id,
+	submit,
+	evidence,
+	setEvidence,
+	setIsDisputeSaving
+) {
 	const dispute = yield resolveSelect( STORE_NAME, 'getDispute', id );
 
-	// setLoading( true );
-	// updateDispute( { ...dispute, isLoading: true } );
+	setIsDisputeSaving( true );
 
 	try {
 		wcpayTracks.recordEvent(
@@ -155,10 +160,10 @@ export function* saveDispute( id, submit, evidence, setEvidence ) {
 		} );
 		handleSaveSuccess( id, submit );
 		setEvidence( {} );
-		updateDispute( updatedDispute );
+		yield updateDispute( updatedDispute );
 	} catch ( err ) {
 		handleSaveError( err, submit );
 	} finally {
-		// setLoading( false );
+		setIsDisputeSaving( false );
 	}
 }
