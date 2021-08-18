@@ -61,6 +61,7 @@ export default ( { query } ) => {
 
 	const pristine =
 		! dispute ||
+		! evidence || // Empty evidence transient means no local updates.
 		isMatchWith(
 			dispute.evidence,
 			evidence,
