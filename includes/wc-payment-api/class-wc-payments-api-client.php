@@ -1085,6 +1085,75 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch a WCPay subscription.
+	 *
+	 * @param string $wcpay_subscription_id Data used to create subscription.
+	 *
+	 * @return array The WCPay subscription.
+	 *
+	 * @throws API_Exception If fetching the subscription fails.
+	 */
+	public function get_subscription( string $wcpay_subscription_id ) {
+		return $this->request(
+			[],
+			self::SUBSCRIPTIONS_API . '/' . $wcpay_subscription_id,
+			self::GET
+		);
+	}
+
+	/**
+	 * Create a WCPay subscription.
+	 *
+	 * @param array $data Data used to create subscription.
+	 *
+	 * @return array New WCPay subscription.
+	 *
+	 * @throws API_Exception If creating the subscription fails.
+	 */
+	public function create_subscription( array $data = [] ) {
+		return $this->request(
+			$data,
+			self::SUBSCRIPTIONS_API,
+			self::POST
+		);
+	}
+
+	/**
+	 * Update a WCPay subscription.
+	 *
+	 * @param string $wcpay_subscription_id WCPay subscription ID.
+	 * @param array  $data                  Update subscription data.
+	 *
+	 * @return array Updated WCPay subscription response from server.
+	 *
+	 * @throws API_Exception If updating the WCPay subscription fails.
+	 */
+	public function update_subscription( $wcpay_subscription_id, $data ) {
+		return $this->request(
+			$data,
+			self::SUBSCRIPTIONS_API . '/' . $wcpay_subscription_id,
+			self::POST
+		);
+	}
+
+	/**
+	 * Cancel a WC Pay subscription.
+	 *
+	 * @param string $wcpay_subscription_id WCPay subscription ID.
+	 *
+	 * @return array Canceled subscription.
+	 *
+	 * @throws API_Exception If canceling the subscription fails.
+	 */
+	public function cancel_subscription( string $wcpay_subscription_id ) {
+		return $this->request(
+			[],
+			self::SUBSCRIPTIONS_API . '/' . $wcpay_subscription_id,
+			self::DELETE
+		);
+	}
+
+	/**
 	 * Get payment method details.
 	 *
 	 * @param string $payment_method_id Payment method ID.
