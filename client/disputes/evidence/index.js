@@ -3,11 +3,9 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
-import { addQueryArgs } from '@wordpress/url';
-import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 
 import { some, isMatchWith } from 'lodash';
@@ -51,19 +49,13 @@ const getDisputeProductType = ( dispute ) => {
 
 // Temporary MVP data wrapper
 export default ( { query } ) => {
-	const path = `/wc/v3/payments/disputes/${ query.id }`;
-
 	const { id: disputeId } = query;
-	const { dispute, isLoading } = useDispute( disputeId );
+	const { dispute, isLoading, saveDispute } = useDispute( disputeId );
 
 	const { updateDispute } = useDisputeEvidence();
 
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
-	const {
-		createSuccessNotice,
-		createErrorNotice,
-		createInfoNotice,
-	} = useDispatch( 'core/notices' );
+	const { createInfoNotice } = useDispatch( 'core/notices' );
 
 	const pristine =
 		! dispute ||
@@ -198,61 +190,6 @@ export default ( { query } ) => {
 		}
 	};
 
-	const handleSaveSuccess = ( submit ) => {
-		const message = submit
-			? __( 'Evidence submitted!', 'woocommerce-payments' )
-			: __( 'Evidence saved!', 'woocommerce-payments' );
-		const href = addQueryArgs( 'admin.php', {
-			page: 'wc-admin',
-			path: '/payments/disputes',
-		} );
-
-		wcpayTracks.recordEvent(
-			submit
-				? 'wcpay_dispute_submit_evidence_success'
-				: 'wcpay_dispute_save_evidence_success'
-		);
-		/*
-			We rely on WC-Admin Transient notices to display success message.
-			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
-		*/
-		createSuccessNotice( message, {
-			actions: [
-				{
-					label: submit
-						? __(
-								'View submitted evidence',
-								'woocommerce-payments'
-						  )
-						: __(
-								'Return to evidence submission',
-								'woocommerce-payments'
-						  ),
-					url: addQueryArgs( 'admin.php', {
-						page: 'wc-admin',
-						path: '/payments/disputes/challenge',
-						id: query.id,
-					} ),
-				},
-			],
-		} );
-
-		getHistory().push( href );
-	};
-
-	const handleSaveError = ( err, submit ) => {
-		wcpayTracks.recordEvent(
-			submit
-				? 'wcpay_dispute_submit_evidence_failed'
-				: 'wcpay_dispute_save_evidence_failed'
-		);
-
-		const message = submit
-			? __( 'Failed to submit evidence. (%s)', 'woocommerce-payments' )
-			: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
-		createErrorNotice( sprintf( message, err.message ) );
-	};
-
 	const doSave = async ( submit ) => {
 		// Prevent submit if upload is in progress.
 		if ( isUploadingEvidence() ) {
@@ -265,34 +202,7 @@ export default ( { query } ) => {
 			return;
 		}
 
-		// setLoading( true );
-
-		try {
-			wcpayTracks.recordEvent(
-				submit
-					? 'wcpay_dispute_submit_evidence_clicked'
-					: 'wcpay_dispute_save_evidence_clicked'
-			);
-
-			const { metadata } = dispute;
-			const updatedDispute = await apiFetch( {
-				path,
-				method: 'post',
-				data: {
-					// Send full evidence, as submission does not appear to work without new evidence despite being optional.
-					evidence: { ...dispute.evidence, ...evidence },
-					metadata,
-					submit,
-				},
-			} );
-			handleSaveSuccess( submit );
-			setEvidence( {} );
-			updateDispute( updatedDispute );
-		} catch ( err ) {
-			handleSaveError( err, submit );
-		} finally {
-			// setLoading( false );
-		}
+		saveDispute( dispute.id, submit, evidence, setEvidence );
 	};
 
 	const productType = getDisputeProductType( dispute );
