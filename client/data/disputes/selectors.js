@@ -45,3 +45,9 @@ export const getDisputes = ( state, query ) => {
 	const ids = getDisputesForQuery( state, query ).data || [];
 	return ids.map( getDispute.bind( this, state ) );
 };
+
+export const getIsSavingEvidenceForDispute = ( state, id ) => {
+	return (
+		getDisputesState( state )?.isSavingEvidenceForDispute?.[ id ] ?? false
+	);
+};

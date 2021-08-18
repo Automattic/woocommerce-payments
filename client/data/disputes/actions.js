@@ -31,6 +31,19 @@ export function updateDisputes( query, data ) {
 	};
 }
 
+export function updateIsSavingEvidenceForDispute(
+	disputeId,
+	isSavingEvidence
+) {
+	return {
+		type: TYPES.SET_IS_SAVING_EVIDENCE_FOR_DISPUTE,
+		data: {
+			isSavingEvidence,
+			id: disputeId,
+		},
+	};
+}
+
 export function* acceptDispute( id ) {
 	try {
 		yield dispatch( STORE_NAME, 'startResolution', 'getDispute', [ id ] );
@@ -129,16 +142,10 @@ function* handleSaveError( err, submit ) {
 	);
 }
 
-export function* saveDispute(
-	id,
-	submit,
-	evidence,
-	setEvidence,
-	setIsDisputeSaving
-) {
+export function* saveDispute( id, submit, evidence, setEvidence ) {
 	const dispute = yield resolveSelect( STORE_NAME, 'getDispute', id );
 
-	setIsDisputeSaving( true );
+	yield updateIsSavingEvidenceForDispute( id, true );
 
 	try {
 		wcpayTracks.recordEvent(
@@ -164,6 +171,6 @@ export function* saveDispute(
 	} catch ( err ) {
 		handleSaveError( err, submit );
 	} finally {
-		setIsDisputeSaving( false );
+		yield updateIsSavingEvidenceForDispute( id, false );
 	}
 }

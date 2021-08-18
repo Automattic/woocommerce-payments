@@ -50,12 +50,13 @@ const getDisputeProductType = ( dispute ) => {
 // Temporary MVP data wrapper
 export default ( { query } ) => {
 	const { id: disputeId } = query;
-	const { dispute, isLoading, saveDispute } = useDispute( disputeId );
+	const { dispute, isLoading, isSavingEvidence, saveDispute } = useDispute(
+		disputeId
+	);
 
 	const { updateDispute } = useDisputeEvidence();
 
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
-	const [ isDisputeSaving, setIsDisputeSaving ] = useState( false );
 	const { createInfoNotice } = useDispatch( 'core/notices' );
 
 	const pristine =
@@ -203,13 +204,7 @@ export default ( { query } ) => {
 			return;
 		}
 
-		saveDispute(
-			dispute.id,
-			submit,
-			evidence,
-			setEvidence,
-			setIsDisputeSaving
-		);
+		saveDispute( dispute.id, submit, evidence, setEvidence );
 	};
 
 	const productType = getDisputeProductType( dispute );
@@ -235,7 +230,7 @@ export default ( { query } ) => {
 
 	return (
 		<DisputeEvidencePage
-			isLoading={ isLoading || isDisputeSaving }
+			isLoading={ isLoading || isSavingEvidence }
 			dispute={ dispute }
 			evidence={
 				dispute
