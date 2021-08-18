@@ -156,8 +156,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
-			$allowed_order_statuses = [ 'pending', 'processing', 'on-hold' ];
-			if ( ! $order->has_status( $allowed_order_statuses ) ) {
+			$disallowed_order_statuses = apply_filters( 'wcpay_create_customer_disallowed_order_statuses', [ 'completed', 'cancelled', 'refunded', 'failed' ] );
+			if ( $order->has_status( $disallowed_order_statuses ) ) {
 				return new WP_Error( 'wcpay_invalid_order_status', __( 'Invalid order status', 'woocommerce-payments' ), [ 'status' => 400 ] );
 			}
 
