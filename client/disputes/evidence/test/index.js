@@ -8,7 +8,8 @@ import { render, fireEvent } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { DisputeEvidenceForm, DisputeEvidencePage } from '../';
+import { DisputeEvidenceForm } from '../dispute-evidence-form';
+import { DisputeEvidencePage } from '../dispute-evidence-page';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDisputeEvidence: jest.fn(),
