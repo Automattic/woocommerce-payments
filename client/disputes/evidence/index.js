@@ -55,6 +55,7 @@ export default ( { query } ) => {
 	const { updateDispute } = useDisputeEvidence();
 
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
+	const [ isDisputeSaving, setIsDisputeSaving ] = useState( false );
 	const { createInfoNotice } = useDispatch( 'core/notices' );
 
 	const pristine =
@@ -202,7 +203,13 @@ export default ( { query } ) => {
 			return;
 		}
 
-		saveDispute( dispute.id, submit, evidence, setEvidence );
+		saveDispute(
+			dispute.id,
+			submit,
+			evidence,
+			setEvidence,
+			setIsDisputeSaving
+		);
 	};
 
 	const productType = getDisputeProductType( dispute );
@@ -228,7 +235,7 @@ export default ( { query } ) => {
 
 	return (
 		<DisputeEvidencePage
-			isLoading={ isLoading }
+			isLoading={ isLoading || isDisputeSaving }
 			dispute={ dispute }
 			evidence={
 				dispute
