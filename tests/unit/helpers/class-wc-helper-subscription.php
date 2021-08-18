@@ -14,6 +14,14 @@ require_once dirname( __FILE__ ) . '/class-wc-mock-wc-data.php';
  * This helper class should ONLY be used for unit tests!.
  */
 class WC_Subscription extends WC_Mock_WC_Data {
+
+	/**
+	 * Helper variable for mocking the subscription's parent order.
+	 *
+	 * @var WC_Order
+	 */
+	public $parent_order;
+
 	/**
 	 * Helper variable for mocking get_related_orders.
 	 *
@@ -41,6 +49,42 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	 * @var string
 	 */
 	public $payment_method_title;
+
+	/**
+	 * A helper function for handling function calls not yet implimented on this helper.
+	 *
+	 * Attempts to get the value by checking if it has been set as an object property.
+	 * Otherwise calls the parent order's function equalivent, if it exists.
+	 *
+	 * @param string $name
+	 * @param array $arguments
+	 *
+	 * @throws Exception when the function or matching object property doesn't exist.
+	 */
+	public function __call( $name, $arguments = [] ) {
+		$property = str_replace( 'get_', '', $name );
+
+		// If the property has been set manually, return that. Otherwise return the parent order's result if that is callable.
+		if ( isset( $this->$property ) ) {
+			return $this->$property;
+		} elseif ( $this->parent_order && is_callable( [ $this->parent_order, $name ] ) ) {
+			return call_user_func_array( [ $this->parent_order, $name ], $arguments );
+		}
+
+		throw new Exception( "Call to undefined method WC_Subscription::{$name}()" );
+	}
+
+	public function set_parent( $parent_order ) {
+		$this->parent_order = $parent_order;
+	}
+
+	public function get_parent_id() {
+		return ! empty( $this->parent_order ) ? $this->parent_order->get_id() : 0;
+	}
+
+	public function get_parent() {
+		return ! empty( $this->parent_order ) ? $this->parent_order : false;
+	}
 
 	public function get_related_orders( $type ) {
 		return $this->related_orders;
