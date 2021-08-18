@@ -8,11 +8,11 @@ import createAdditionalMethodsSetupTask from '../../../additional-methods-setup/
 
 jest.mock( '../../../additional-methods-setup/task', () => jest.fn() );
 
-jest.mock( 'utils/currency', () => {
-	return {
-		formatCurrency: jest.fn().mockReturnValue( () => '10 USD' ),
-	};
-} );
+// jest.mock( 'utils/currency', () => {
+// 	return {
+// 		formatCurrency: jest.fn().mockReturnValue( () => '10 USD' ),
+// 	};
+// } );
 
 describe( 'getTasks()', () => {
 	it( 'should include business details when flag is set', () => {
@@ -222,7 +222,21 @@ describe( 'getTasks()', () => {
 			);
 		} );
 	} );
-	it( 'should include a dispute resolution task', () => {
+	it( 'should not include the dispute resolution task', () => {
+		const disputes = [];
+		const actual = getTasks( {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+			},
+			disputes,
+		} );
+
+		expect( actual ).toEqual( [] );
+	} );
+	it( 'should include the dispute resolution task', () => {
 		const disputes = [
 			{
 				id: 123,
@@ -245,21 +259,21 @@ describe( 'getTasks()', () => {
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
 				expect.objectContaining( {
-					key: 'dispute-resolution-123',
+					key: 'dispute-resolution-task',
 					completed: false,
 					level: 3,
 				} ),
 			] )
 		);
 	} );
-	it( 'should include two different dispute resolution tasks', () => {
+	it( 'should include the dispute resolution task as completed', () => {
 		const disputes = [
 			{
 				id: 456,
 				amount: 10,
 				currency: 'USD',
 				evidence_details: { due_by: 1624147199 },
-				status: 'needs_response',
+				status: 'another_status',
 			},
 			{
 				id: 789,
@@ -282,14 +296,10 @@ describe( 'getTasks()', () => {
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
 				expect.objectContaining( {
-					key: 'dispute-resolution-456',
-					completed: false,
-					level: 3,
-				} ),
-				expect.objectContaining( {
-					key: 'dispute-resolution-789',
+					key: 'dispute-resolution-task',
 					completed: true,
 					level: 3,
+					title: '2 disputed payments needs your response',
 				} ),
 			] )
 		);
@@ -298,6 +308,11 @@ describe( 'getTasks()', () => {
 
 describe( 'taskSort()', () => {
 	it( 'should sort the tasks', () => {
+		createAdditionalMethodsSetupTask.mockReturnValue( {
+			key: 'test-element',
+			completed: true,
+			level: 3,
+		} );
 		/*eslint-disable camelcase*/
 		const disputes = [
 			{
@@ -323,11 +338,13 @@ describe( 'taskSort()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
+			additionalMethodsSetup: { isTaskVisible: true },
+			isAccountOverviewTasksEnabled: true,
 			disputes,
 		} );
 		expect( unsortedTasks[ 0 ] ).toEqual(
 			expect.objectContaining( {
-				key: 'dispute-resolution-123',
+				key: 'test-element',
 				completed: true,
 				level: 3,
 			} )
@@ -335,7 +352,7 @@ describe( 'taskSort()', () => {
 		const sortedTasks = unsortedTasks.sort( taskSort );
 		expect( sortedTasks[ 0 ] ).toEqual(
 			expect.objectContaining( {
-				key: 'dispute-resolution-456',
+				key: 'dispute-resolution-task',
 				completed: false,
 				level: 3,
 			} )

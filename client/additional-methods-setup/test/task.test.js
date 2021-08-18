@@ -112,8 +112,8 @@ describe( 'createAdditionalMethodsSetupTask()', () => {
 
 		const result = createAdditionalMethodsSetupTask( {} );
 
-		expect( result ).toHaveProperty( 'onClick' );
-		result.onClick();
+		expect( result ).toHaveProperty( 'action' );
+		result.action();
 		expect( updateQueryString ).toHaveBeenCalledWith(
 			{ task: 'woocommerce-payments--additional-payment-methods' },
 			''
