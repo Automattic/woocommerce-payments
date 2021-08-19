@@ -139,7 +139,7 @@ class WC_Payments {
 	 *
 	 * @var Session_Rate_Limiter
 	 */
-	private static $rate_limiter;
+	private static $failed_transaction_rate_limiter;
 
 	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
@@ -224,14 +224,14 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$account                  = new WC_Payments_Account( self::$api_client );
-		self::$customer_service         = new WC_Payments_Customer_Service( self::$api_client, self::$account );
-		self::$token_service            = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
-		self::$remote_note_service      = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
-		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
-		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
-		self::$localization_service     = new WC_Payments_Localization_Service();
-		self::$rate_limiter             = new Session_Rate_Limiter();
+		self::$account                         = new WC_Payments_Account( self::$api_client );
+		self::$customer_service                = new WC_Payments_Customer_Service( self::$api_client, self::$account );
+		self::$token_service                   = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$remote_note_service             = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+		self::$action_scheduler_service        = new WC_Payments_Action_Scheduler_Service( self::$api_client );
+		self::$fraud_service                   = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
+		self::$localization_service            = new WC_Payments_Localization_Service();
+		self::$failed_transaction_rate_limiter = new Session_Rate_Limiter();
 
 		$card_class    = CC_Payment_Gateway::class;
 		$upe_class     = UPE_Payment_Gateway::class;
@@ -253,9 +253,9 @@ class WC_Payments {
 				$payment_method                               = new $payment_method_class( self::$token_service );
 				$payment_methods[ $payment_method->get_id() ] = $payment_method;
 			}
-			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$rate_limiter );
+			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter );
 		} else {
-			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$rate_limiter );
+			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter );
 		}
 
 		if ( WC_Payments_Features::is_giropay_enabled() ) {

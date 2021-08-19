@@ -91,7 +91,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var Session_Rate_Limiter
 	 */
-	private $rate_limiter;
+	private $failed_transaction_rate_limiter;
 
 	/**
 	 * WC_Payment_Gateway_WCPay constructor.
@@ -101,7 +101,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
 	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
-	 * @param Session_Rate_Limiter                 $rate_limiter             - Rate Limiter for failed transactions.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter             - Rate Limiter for failed transactions.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -109,14 +109,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Customer_Service $customer_service,
 		WC_Payments_Token_Service $token_service,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
-		Session_Rate_Limiter $rate_limiter = null
+		Session_Rate_Limiter $failed_transaction_rate_limiter = null
 	) {
 		$this->payments_api_client      = $payments_api_client;
 		$this->account                  = $account;
 		$this->customer_service         = $customer_service;
 		$this->token_service            = $token_service;
 		$this->action_scheduler_service = $action_scheduler_service;
-		$this->rate_limiter             = $rate_limiter;
+		$this->rate_limiter             = $failed_transaction_rate_limiter;
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
