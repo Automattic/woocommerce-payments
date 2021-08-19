@@ -53,6 +53,7 @@ class WC_Payments_Subscriptions {
 		include_once __DIR__ . '/class-wc-payments-product-service.php';
 		include_once __DIR__ . '/class-wc-payments-invoice-service.php';
 		include_once __DIR__ . '/class-wc-payments-subscription-service.php';
+		include_once __DIR__ . '/class-wc-payments-subscription-change-payment-method-handler.php';
 
 		self::$product_service      = new WC_Payments_Product_Service( $api_client );
 		self::$invoice_service      = new WC_Payments_Invoice_Service( $api_client, self::$product_service );
@@ -61,6 +62,8 @@ class WC_Payments_Subscriptions {
 		// Load the subscription and invoice incoming event handler.
 		include_once __DIR__ . '/class-wc-payments-subscriptions-event-handler.php';
 		self::$event_handler = new WC_Payments_Subscriptions_Event_Handler( self::$invoice_service, self::$subscription_service );
+
+		new WC_Payments_Subscription_Change_Payment_Method_Handler();
 	}
 
 	/**
