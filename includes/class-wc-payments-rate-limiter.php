@@ -7,13 +7,12 @@
 
 namespace WCPay;
 
-use WC_Rate_Limiter;
 use DateTime;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**
- * A wrapper class for interacting with WC_Rate_Limiter using a registry of events.
+ * A wrapper class for keeping track of events in registries, and to trigger a rate limiter after a threshold.
  */
 class WC_Payments_Rate_Limiter {
 
@@ -56,7 +55,7 @@ class WC_Payments_Rate_Limiter {
 
 
 	/**
-	 * Checks in WC_Rate_Limiter if the ratelimiter for a given key of a registry is enabled.
+	 * Checks if the ratelimiter for a given key of a registry is enabled.
 	 *
 	 * Returns a boolean.
 	 *
@@ -64,7 +63,24 @@ class WC_Payments_Rate_Limiter {
 	 * @return bool   The rate limiter is in use.
 	 */
 	public static function is_rate_limiter_enabled( $key ) {
-		return WC_Rate_Limiter::retried_too_soon( self::get_action_id( ( $key ) ) );
+		if ( ! isset( WC()->session ) ) {
+			return;
+		}
+
+		$next_try_allowed_at = WC()->session->get( self::get_action_id( ( $key ) ) );
+
+		// No record of action running, so action is allowed to run.
+		if ( false === $next_try_allowed_at ) {
+			return false;
+		}
+
+		// Before the next run is allowed, retry forbidden.
+		if ( time() <= $next_try_allowed_at ) {
+			return true;
+		}
+
+		// After the next run is allowed, retry allowed.
+		return false;
 	}
 
 	/**
@@ -74,17 +90,18 @@ class WC_Payments_Rate_Limiter {
 	 *
 	 * The registry of declined card attemps is cleaned after a new rate limiter is enabled.
 	 *
-	 * @param  string $action_id ID that WC_Rate_Limiter uses to identify a rate limiter.
+	 * @param  string $action_id ID that WC_Payments_Rate_Limiter uses to identify a rate limiter.
 	 * @param  int    $delay Delay in seconds to apply in the new rate limiter.
 	 */
 	public static function enable_rate_limiter( $action_id, $delay ) {
 		if ( isset( $action_id ) ) {
-			WC_Rate_Limiter::set_rate_limit( $action_id, $delay );
+			$next_try_allowed_at = time() + $delay;
+			WC()->session->set( $action_id, $next_try_allowed_at );
 		}
 	}
 
 	/**
-	 * Checks in WC_Rate_Limiter if the ratelimiter for a given key of a registry is enabled.
+	 * Checks if the rate limiter for a given key of a registry is enabled.
 	 *
 	 * Returns a boolean.
 	 *
