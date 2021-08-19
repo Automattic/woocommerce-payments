@@ -32,7 +32,7 @@ class Session_Rate_Limiter {
 	 * @param  int    $threshold Number of eleements needed in the registry to enable a rate limiter.
 	 * @param  int    $delay Delay in seconds to apply in the new rate limiter, if created.
 	 */
-	public function save_datetime_in_key( $key, $threshold, $delay ) {
+	public function bump( $key, $threshold, $delay ) {
 		if ( ! isset( WC()->session ) ) {
 			return;
 		}
@@ -60,7 +60,7 @@ class Session_Rate_Limiter {
 	 * @param  string $key Key for the registry.
 	 * @return bool   The rate limiter is in use.
 	 */
-	public function is_rate_limiter_enabled( $key ) {
+	public function is_limited( $key ) {
 		if ( ! isset( WC()->session ) ) {
 			return;
 		}

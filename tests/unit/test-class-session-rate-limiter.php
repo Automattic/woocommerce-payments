@@ -45,23 +45,23 @@ class Session_Rate_Limiter_Test extends WP_UnitTestCase {
 	}
 
 	public function test_rate_limiter_stores_element_in_registry() {
-		$this->rate_limiter->save_datetime_in_key( $this->key, 5, 1000 );
+		$this->rate_limiter->bump( $this->key, 5, 1000 );
 		$registry = WC()->session->get( $this->key );
 		$this->assertEquals( count( $registry ), 1 );
 	}
 
 	public function test_rate_limiter_is_enabled_when_threshold_is_reached() {
-		$this->rate_limiter->save_datetime_in_key( $this->key, 2, 10 * 60 );
+		$this->rate_limiter->bump( $this->key, 2, 10 * 60 );
 
 		// It will give false as the threshold of 2 is not reached.
-		$this->assertFalse( $this->rate_limiter->is_rate_limiter_enabled( $this->key ) );
+		$this->assertFalse( $this->rate_limiter->is_limited( $this->key ) );
 
 		// Saving another event in the registry will reach the threshold.
-		$this->rate_limiter->save_datetime_in_key( $this->key, 2, 10 * 60 );
-		$this->assertTrue( $this->rate_limiter->is_rate_limiter_enabled( $this->key ) );
+		$this->rate_limiter->bump( $this->key, 2, 10 * 60 );
+		$this->assertTrue( $this->rate_limiter->is_limited( $this->key ) );
 
 		// Modify the stored rate limiter to the past to see the rate limiter disabled.
 		WC()->session->set( $this->rate_limiter->get_action_id( ( $this->key ) ), time() - 60 );
-		$this->assertFalse( $this->rate_limiter->is_rate_limiter_enabled( $this->key ) );
+		$this->assertFalse( $this->rate_limiter->is_limited( $this->key ) );
 	}
 }

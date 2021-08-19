@@ -824,7 +824,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
-			if ( $this->is_rate_limiter_enabled() ) {
+			if ( $this->is_limited() ) {
 				throw new Process_Payment_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
@@ -2329,7 +2329,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function save_card_declined_transaction_time_in_session() {
 		if ( isset( $this->rate_limiter ) ) {
-			$this->rate_limiter->save_datetime_in_key( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * 60 );
+			$this->rate_limiter->bump( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * 60 );
 		}
 	}
 
@@ -2339,7 +2339,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * The registry of declined card attemps is cleaned after the cooldown period ends.
 	 */
-	public function is_rate_limiter_enabled() {
-		return isset( $this->rate_limiter ) ? $this->rate_limiter->is_rate_limiter_enabled( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY ) : false;
+	public function is_limited() {
+		return isset( $this->rate_limiter ) ? $this->rate_limiter->is_limited( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY ) : false;
 	}
 }
