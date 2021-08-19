@@ -60,6 +60,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	private $mock_wcpay_account;
 
 	/**
+	 * WC_Payments_Rate_Limiter instance.
+	 *
+	 * @var WC_Payments_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_rate_limiter;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
@@ -92,12 +99,15 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 
+		$this->mock_rate_limiter = $this->createMock( WC_Payments_Rate_Limiter::class );
+
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service,
 			$this->mock_token_service,
-			$this->mock_action_scheduler_service
+			$this->mock_action_scheduler_service,
+			$this->mock_rate_limiter
 		);
 	}
 
@@ -115,8 +125,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->update_option( 'saved_cards', 'yes' );
 
 		delete_option( '_wcpay_feature_grouped_settings' );
-		$rate_limiter_action_id = WC_Payments_Rate_Limiter::get_action_id( WC_Payments_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY );
-		WC_Payments_Rate_Limiter::enable_rate_limiter( $rate_limiter_action_id, -10 );
 	}
 
 	public function test_process_refund() {
@@ -1508,5 +1516,28 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			)
 		);
 		$this->assertFalse( $this->wcpay_gateway->is_available_for_current_currency() );
+	}
+
+	public function test_rate_limiter_gives_payment_exception_when_enabled() {
+		$this->mock_rate_limiter->expects( $this->once() )->method( 'is_rate_limiter_enabled' )->will(
+			$this->returnValue(
+				true
+			)
+		);
+		$this->assertTrue( $this->wcpay_gateway->is_rate_limiter_enabled() );
+	}
+
+	public function test_rate_limiter_gives_payment_exception_when_disabled() {
+		$this->mock_rate_limiter->expects( $this->once() )->method( 'is_rate_limiter_enabled' )->will(
+			$this->returnValue(
+				false
+			)
+		);
+		$this->assertFalse( $this->wcpay_gateway->is_rate_limiter_enabled() );
+	}
+
+	public function test_rate_limiter_adds_failed_transaction_to_session() {
+		$this->mock_rate_limiter->expects( $this->once() )->method( 'save_datetime_in_key' );
+		$this->wcpay_gateway->save_card_declined_transaction_time_in_session();
 	}
 }

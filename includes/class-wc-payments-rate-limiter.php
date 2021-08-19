@@ -34,7 +34,7 @@ class WC_Payments_Rate_Limiter {
 	 * @param  int    $threshold Number of eleements needed in the registry to enable a rate limiter.
 	 * @param  int    $delay Delay in seconds to apply in the new rate limiter, if created.
 	 */
-	public static function save_datetime_in_key( $key, $threshold, $delay ) {
+	public function save_datetime_in_key( $key, $threshold, $delay ) {
 		if ( ! isset( WC()->session ) ) {
 			return;
 		}
@@ -45,9 +45,9 @@ class WC_Payments_Rate_Limiter {
 		WC()->session->set( $key, $registry );
 
 		if ( count( $registry ) >= $threshold ) {
-			$action_id = self::get_action_id( $key );
+			$action_id = $this->get_action_id( $key );
 			if ( isset( $action_id ) ) {
-				self::enable_rate_limiter( $action_id, $delay );
+				$this->enable_rate_limiter( $action_id, $delay );
 				WC()->session->set( $key, [] );
 			}
 		}
@@ -62,12 +62,12 @@ class WC_Payments_Rate_Limiter {
 	 * @param  string $key Key for the registry.
 	 * @return bool   The rate limiter is in use.
 	 */
-	public static function is_rate_limiter_enabled( $key ) {
+	public function is_rate_limiter_enabled( $key ) {
 		if ( ! isset( WC()->session ) ) {
 			return;
 		}
 
-		$next_try_allowed_at = WC()->session->get( self::get_action_id( ( $key ) ) );
+		$next_try_allowed_at = WC()->session->get( $this->get_action_id( ( $key ) ) );
 
 		// No record of action running, so action is allowed to run.
 		if ( false === $next_try_allowed_at ) {
@@ -93,7 +93,7 @@ class WC_Payments_Rate_Limiter {
 	 * @param  string $action_id ID that WC_Payments_Rate_Limiter uses to identify a rate limiter.
 	 * @param  int    $delay Delay in seconds to apply in the new rate limiter.
 	 */
-	public static function enable_rate_limiter( $action_id, $delay ) {
+	public function enable_rate_limiter( $action_id, $delay ) {
 		if ( isset( $action_id ) ) {
 			$next_try_allowed_at = time() + $delay;
 			WC()->session->set( $action_id, $next_try_allowed_at );
@@ -108,7 +108,7 @@ class WC_Payments_Rate_Limiter {
 	 * @param  string $key Key for the registry.
 	 * @return string|null The id of the action if the session and the customer_id exist.
 	 */
-	public static function get_action_id( $key ) {
+	public function get_action_id( $key ) {
 		if ( ! isset( WC()->session ) ) {
 			return null;
 		}
