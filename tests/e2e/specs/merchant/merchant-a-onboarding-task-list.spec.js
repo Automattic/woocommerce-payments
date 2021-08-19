@@ -32,6 +32,7 @@ describe( 'Onboarding > WooCommerce Setup Wizard & Task List', () => {
 		await setUpTax.click();
 
 		// Click to dismiss setting up taxes
+		await page.waitForSelector( 'button.components-button.is-tertiary' );
 		await expect( page ).toClick( 'button.components-button.is-tertiary', {
 			text: "I don't charge sales tax",
 		} );
