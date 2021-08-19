@@ -118,7 +118,7 @@ describe( 'TaskList', () => {
 		);
 		expect( screen.queryByText( /Task Title 1/ ) ).not.toBeInTheDocument();
 	} );
-	it( 'shows delayed tasks after one day', () => {
+	it( 'shows snoozed tasks after one day', () => {
 		const overviewTasksVisibility = getOverviewTasksVisibilityMock();
 		const DAY_IN_MS = 24 * 60 * 60 * 1000;
 		const dismissTime = Date.now() - DAY_IN_MS;
