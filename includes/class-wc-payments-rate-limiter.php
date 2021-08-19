@@ -85,10 +85,6 @@ class WC_Payments_Rate_Limiter {
 
 	/**
 	 * Saves an event in an specified registry using a key.
-	 * If the number of events in the registry match the threshold,
-	 * a new rate limiter is enabled with the given delay.
-	 *
-	 * The registry of declined card attemps is cleaned after a new rate limiter is enabled.
 	 *
 	 * @param  string $action_id ID that WC_Payments_Rate_Limiter uses to identify a rate limiter.
 	 * @param  int    $delay Delay in seconds to apply in the new rate limiter.
