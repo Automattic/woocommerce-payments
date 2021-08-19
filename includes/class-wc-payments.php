@@ -13,6 +13,7 @@ use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Gateway;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
@@ -190,6 +191,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-p24-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
@@ -241,6 +243,7 @@ class WC_Payments {
 			$payment_methods        = [];
 			$payment_method_classes = [
 				CC_Payment_Method::class,
+				Bancontact_Payment_Method::class,
 				Giropay_Payment_Method::class,
 				Sofort_Payment_Method::class,
 				P24_Payment_Method::class,

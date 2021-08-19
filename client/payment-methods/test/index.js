@@ -31,11 +31,12 @@ describe( 'PaymentMethods', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
+			'bancontact',
 			'giropay',
-			'sofort',
-			'sepa_debit',
-			'p24',
 			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
 		] );
 	} );
 
@@ -106,11 +107,13 @@ describe( 'PaymentMethods', () => {
 			);
 		} );
 
+		const bancontact = screen.getByLabelText( 'Bancontact' );
 		const giropay = screen.getByLabelText( 'giropay' );
 		const sofort = screen.getByLabelText( 'Sofort' );
 		const p24 = screen.getByLabelText( 'Przelewy24 (P24)' );
 		const ideal = screen.getByLabelText( 'iDEAL' );
-		[ giropay, sofort, ideal, p24 ].forEach( ( method ) => {
+
+		[ bancontact, giropay, sofort, ideal, p24 ].forEach( ( method ) => {
 			expect( method.closest( 'ul' ) ).toHaveClass(
 				'payment-methods__available-methods'
 			);
@@ -154,7 +157,15 @@ describe( 'PaymentMethods', () => {
 	test( 'clicking delete updates enabled method IDs', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'sepa_debit', 'giropay', 'sofort', 'ideal', 'p24' ],
+			[
+				'card',
+				'bancontact',
+				'giropay',
+				'ideal',
+				'p24',
+				'sepa_debit',
+				'sofort',
+			],
 			updateEnabledMethodsMock,
 		] );
 
@@ -175,11 +186,12 @@ describe( 'PaymentMethods', () => {
 		);
 
 		expect( updateEnabledMethodsMock ).toHaveBeenCalledWith( [
-			'sepa_debit',
+			'bancontact',
 			'giropay',
-			'sofort',
 			'ideal',
 			'p24',
+			'sepa_debit',
+			'sofort',
 		] );
 	} );
 
