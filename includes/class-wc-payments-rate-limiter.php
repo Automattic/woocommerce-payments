@@ -112,8 +112,7 @@ class WC_Payments_Rate_Limiter {
 		if ( ! isset( WC()->session ) ) {
 			return null;
 		}
-		$session_data = WC()->session->get_session_data();
-		$customer_id  = $session_data['wcpay_customer_id'] ?? null;
+		$customer_id = WC()->session->get_customer_id();
 		if ( ! isset( $customer_id ) ) {
 			return null;
 		}
