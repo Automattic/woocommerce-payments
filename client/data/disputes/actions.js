@@ -3,8 +3,8 @@
 /**
  * External dependencies
  */
-import { resolveSelect } from '@wordpress/data';
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { resolveSelect, dispatch } from '@wordpress/data';
+import { apiFetch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
