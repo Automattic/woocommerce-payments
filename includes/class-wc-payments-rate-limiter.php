@@ -7,8 +7,6 @@
 
 namespace WCPay;
 
-use DateTime;
-
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**
@@ -40,7 +38,7 @@ class WC_Payments_Rate_Limiter {
 		}
 
 		$registry = WC()->session->get( $key ) ?? [];
-		$now      = new DateTime();
+		$now      = time();
 		array_push( $registry, $now );
 		WC()->session->set( $key, $registry );
 
