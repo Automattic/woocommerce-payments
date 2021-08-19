@@ -36,6 +36,21 @@ trait WC_Payments_Subscriptions_Utilities {
 	}
 
 	/**
+	 * Returns boolean value indicating whether payment for an order will be recurring,
+	 * as opposed to single.
+	 *
+	 * @param int $order_id ID for corresponding WC_Order in process.
+	 *
+	 * @return bool
+	 */
+	public function is_payment_recurring( $order_id ) {
+		if ( ! $this->is_subscriptions_enabled() ) {
+			return false;
+		}
+		return $this->is_changing_payment_method_for_subscription() || wcs_order_contains_subscription( $order_id );
+	}
+
+	/**
 	 * Returns a boolean value indicating whether the save payment checkbox should be
 	 * displayed during checkout.
 	 *

@@ -919,16 +919,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
-		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
-		$email    = sanitize_email( $order->get_billing_email() );
-		$metadata = [
-			'customer_name'  => $name,
-			'customer_email' => $email,
-			'site_url'       => esc_url( get_site_url() ),
-			'order_id'       => $order_id,
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => $payment_information->get_payment_type(),
-		];
+		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
@@ -1082,6 +1073,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return [
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
+		];
+	}
+
+	/**
+	 * Prepares Stripe metadata for a given order.
+	 *
+	 * @param WC_Order     $order        Order being processed.
+	 * @param Payment_Type $payment_type Enum stating whether payment is single or recurring.
+	 *
+	 * @return array Array of keyed metadata values.
+	 */
+	protected function get_metadata_from_order( $order, $payment_type ) {
+		$name  = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+		$email = sanitize_email( $order->get_billing_email() );
+
+		return [
+			'customer_name'  => $name,
+			'customer_email' => $email,
+			'site_url'       => esc_url( get_site_url() ),
+			'order_id'       => $order->get_id(),
+			'order_key'      => $order->get_order_key(),
+			'payment_type'   => $payment_type,
 		];
 	}
 
