@@ -7,7 +7,6 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\API_Exception;
-use WCPay\Session_Rate_Limiter;
 
 /**
  * WC_Payments_Fraud_Service unit tests.

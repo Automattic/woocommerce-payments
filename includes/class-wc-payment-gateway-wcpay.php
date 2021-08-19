@@ -16,7 +16,6 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Tracker;
-use WCPay\Session_Rate_Limiter;
 
 /**
  * Gateway class for WooCommerce Payments
