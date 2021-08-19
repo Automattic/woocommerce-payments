@@ -22,7 +22,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Gateway;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
-use WCPay\WC_Payments_Rate_Limiter;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -135,9 +135,9 @@ class WC_Payments {
 	private static $apple_pay_registration;
 
 	/**
-	 * Instance of WC_Payments_Rate_Limiter to limit failed transactions
+	 * Instance of Session_Rate_Limiter to limit failed transactions
 	 *
-	 * @var WC_Payments_Rate_Limiter
+	 * @var Session_Rate_Limiter
 	 */
 	private static $rate_limiter;
 
@@ -182,7 +182,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
-		include_once __DIR__ . '/class-wc-payments-rate-limiter.php';
+		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-gateway.php';
@@ -230,7 +230,7 @@ class WC_Payments {
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
 		self::$localization_service     = new WC_Payments_Localization_Service();
-		self::$rate_limiter             = new WC_Payments_Rate_Limiter();
+		self::$rate_limiter             = new Session_Rate_Limiter();
 
 		$card_class    = CC_Payment_Gateway::class;
 		$upe_class     = UPE_Payment_Gateway::class;

@@ -16,7 +16,7 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Tracker;
-use WCPay\WC_Payments_Rate_Limiter;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -88,9 +88,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $action_scheduler_service;
 
 	/**
-	 * WC_Payments_Rate_Limiter instance for limiting failed transactions.
+	 * Session_Rate_Limiter instance for limiting failed transactions.
 	 *
-	 * @var WC_Payments_Rate_Limiter
+	 * @var Session_Rate_Limiter
 	 */
 	private $rate_limiter;
 
@@ -102,7 +102,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
 	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
-	 * @param WC_Payments_Rate_Limiter             $rate_limiter             - Rate Limiter for failed transactions.
+	 * @param Session_Rate_Limiter                 $rate_limiter             - Rate Limiter for failed transactions.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -110,7 +110,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Customer_Service $customer_service,
 		WC_Payments_Token_Service $token_service,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
-		WC_Payments_Rate_Limiter $rate_limiter = null
+		Session_Rate_Limiter $rate_limiter = null
 	) {
 		$this->payments_api_client      = $payments_api_client;
 		$this->account                  = $account;
@@ -2329,7 +2329,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function save_card_declined_transaction_time_in_session() {
 		if ( isset( $this->rate_limiter ) ) {
-			$this->rate_limiter->save_datetime_in_key( WC_Payments_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * 60 );
+			$this->rate_limiter->save_datetime_in_key( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * 60 );
 		}
 	}
 
@@ -2340,6 +2340,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * The registry of declined card attemps is cleaned after the cooldown period ends.
 	 */
 	public function is_rate_limiter_enabled() {
-		return isset( $this->rate_limiter ) ? $this->rate_limiter->is_rate_limiter_enabled( WC_Payments_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY ) : false;
+		return isset( $this->rate_limiter ) ? $this->rate_limiter->is_rate_limiter_enabled( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY ) : false;
 	}
 }

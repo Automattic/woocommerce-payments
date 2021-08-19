@@ -7,7 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\API_Exception;
-use WCPay\WC_Payments_Rate_Limiter;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -60,9 +60,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	private $mock_wcpay_account;
 
 	/**
-	 * WC_Payments_Rate_Limiter instance.
+	 * Session_Rate_Limiter instance.
 	 *
-	 * @var WC_Payments_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
+	 * @var Session_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_rate_limiter;
 
@@ -99,7 +99,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 
-		$this->mock_rate_limiter = $this->createMock( WC_Payments_Rate_Limiter::class );
+		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

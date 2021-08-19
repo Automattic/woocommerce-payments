@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_Rate_Limiter
+ * Class Session_Rate_Limiter
  *
  * @package WooCommerce\Payments
  */
@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit; // block direct access.
 /**
  * A wrapper class for keeping track of events in registries, and to trigger a rate limiter after a threshold.
  */
-class WC_Payments_Rate_Limiter {
+class Session_Rate_Limiter {
 
 	/**
 	 * Key used in the session to store card declined transactions.
@@ -84,7 +84,7 @@ class WC_Payments_Rate_Limiter {
 	/**
 	 * Saves an event in an specified registry using a key.
 	 *
-	 * @param  string $action_id ID that WC_Payments_Rate_Limiter uses to identify a rate limiter.
+	 * @param  string $action_id ID that Session_Rate_Limiter uses to identify a rate limiter.
 	 * @param  int    $delay Delay in seconds to apply in the new rate limiter.
 	 */
 	public function enable_rate_limiter( $action_id, $delay ) {
