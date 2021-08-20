@@ -1400,10 +1400,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		];
 	}
 
-	public function test_payment_request_form_field_defaults_with_grouped_settings_enabled() {
-		// when the "grouped settings" flag is enabled, the default values for the `payment_request_button_locations` option should include "checkout".
-		update_option( '_wcpay_feature_grouped_settings', '1' );
-
+	public function test_payment_request_form_field_defaults() {
 		// need to delete the existing options to ensure nothing is in the DB from the `setUp` phase, where the method is instantiated.
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
 

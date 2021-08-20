@@ -9,9 +9,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import enqueueFraudScripts from 'fraud-scripts';
-import SettingsManager from 'settings/settings-manager';
 import PaymentMethodSettings from './payment-method-settings';
-import WCPaySettingsContext from './wcpay-settings-context';
 
 const settingsForm = document.querySelector( 'form#mainform' );
 const manualCaptureCheckbox = document.getElementById(
@@ -42,18 +40,6 @@ authorization and order will be canceled. Are you sure you want to enable it?',
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( wcpaySettings.fraudServices );
 } );
-
-const settingsContainer = document.getElementById(
-	'wcpay-account-settings-container'
-);
-if ( settingsContainer ) {
-	ReactDOM.render(
-		<WCPaySettingsContext.Provider value={ wcpaySettings }>
-			<SettingsManager />
-		</WCPaySettingsContext.Provider>,
-		settingsContainer
-	);
-}
 
 const paymentMethodSettingsContainer = document.getElementById(
 	'wcpay-payment-method-settings-container'

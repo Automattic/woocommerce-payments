@@ -1447,11 +1447,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			// Default format is en_US.
 			'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
 			'branded_type' => 'default' === $button_type ? 'short' : 'long',
-			// these values are no longer applicable.
-			'css_selector' => '',
-			'label'        => '',
-			'is_custom'    => false,
-			'is_branded'   => false,
 		];
 	}
 

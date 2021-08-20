@@ -6,7 +6,6 @@ import { doAction } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import './style.scss';
 import WCPayAPI from '../checkout/api';
 
 import {
@@ -319,49 +318,6 @@ jQuery( ( $ ) => {
 			} );
 		},
 
-		/**
-		 * Checks if button is custom payment request button.
-		 *
-		 * @param {Object} prButton Stripe paymentRequest element or custom jQuery element.
-		 *
-		 * @return {boolean} True when prButton is custom button jQuery element.
-		 */
-		createGooglePayButton: () => {
-			const type = wcpayPaymentRequestParams.button.branded_type;
-			const locale = wcpayPaymentRequestParams.button.locale;
-			const height = wcpayPaymentRequestParams.button.height;
-			// Allowed themes for Google Pay button image are 'dark' and 'light'.
-			const theme =
-				'dark' === wcpayPaymentRequestParams.button.theme
-					? 'dark'
-					: 'light';
-
-			const button = $(
-				'<button type="button" id="wcpay-branded-button" aria-label="Google Pay" class="gpay-button"></button>'
-			);
-			button.css( 'height', height + 'px' );
-			// For the button class, `light-outline` is also supported.
-			button.addClass(
-				wcpayPaymentRequestParams.button.theme + ' ' + type
-			);
-			if ( 'long' === type ) {
-				const url =
-					'https://www.gstatic.com/instantbuy/svg/' +
-					theme +
-					'/' +
-					locale +
-					'.svg';
-				const fallbackUrl =
-					'https://www.gstatic.com/instantbuy/svg/' +
-					theme +
-					'/en.svg';
-				// Check if locale GPay button exists, default to en if not
-				setBackgroundImageWithFallback( button, url, fallbackUrl );
-			}
-
-			return button;
-		},
-
 		attachPaymentRequestButtonEventListeners: (
 			prButton,
 			paymentRequest
@@ -541,14 +497,4 @@ jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_checkout', () => {
 		wcpayPaymentRequest.init();
 	} );
-
-	function setBackgroundImageWithFallback( element, background, fallback ) {
-		element.css( 'background-image', 'url(' + background + ')' );
-		// Need to use an img element to avoid CORS issues
-		const testImg = document.createElement( 'img' );
-		testImg.onerror = () => {
-			element.css( 'background-image', 'url(' + fallback + ')' );
-		};
-		testImg.src = background;
-	}
 } );

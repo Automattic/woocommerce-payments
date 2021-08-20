@@ -248,10 +248,6 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 				'height'       => '40',
 				'locale'       => 'en',
 				'branded_type' => 'long',
-				'css_selector' => '',
-				'label'        => '',
-				'is_custom'    => false,
-				'is_branded'   => false,
 			],
 			$this->pr->get_button_settings()
 		);
