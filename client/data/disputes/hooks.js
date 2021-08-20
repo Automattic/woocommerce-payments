@@ -7,55 +7,60 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
 export const useDispute = ( id ) => {
-	const {
-		dispute,
-		isLoading,
-		isSavingEvidence,
-		evidenceTransient,
-	} = useSelect(
+	const { dispute, isLoading } = useSelect(
 		( select ) => {
-			const {
-				getDispute,
-				isResolving,
-				getIsSavingEvidenceForDispute,
-				getEvidenceTransientForDispute,
-			} = select( STORE_NAME );
+			const { getDispute, isResolving } = select( STORE_NAME );
 
 			return {
 				dispute: getDispute( id ),
 				isLoading: isResolving( 'getDispute', [ id ] ),
-				isSavingEvidence: getIsSavingEvidenceForDispute( id ),
-				evidenceTransient: getEvidenceTransientForDispute( id ),
 			};
 		},
 		[ id ]
 	);
 
-	const {
-		acceptDispute,
-		saveEvidence,
-		submitEvidence,
-		updateEvidenceTransientForDispute,
-		uploadFile,
-	} = useDispatch( STORE_NAME );
+	const { acceptDispute, updateDispute } = useDispatch( STORE_NAME );
 	const doAccept = () => acceptDispute( id );
 
 	return {
 		dispute,
 		isLoading,
-		isSavingEvidence,
-		evidenceTransient,
 		doAccept,
-		saveEvidence,
-		submitEvidence,
-		updateEvidenceTransientForDispute,
-		uploadFile,
+		updateDispute,
 	};
 };
 
-export const useDisputeEvidence = () => {
-	const { updateDispute } = useDispatch( STORE_NAME );
-	return { updateDispute };
+export const useDisputeEvidence = ( disputeId ) => {
+	const { isSavingEvidence, evidenceTransient } = useSelect(
+		( select ) => {
+			const {
+				getIsSavingEvidenceForDispute,
+				getEvidenceTransientForDispute,
+			} = select( STORE_NAME );
+
+			return {
+				isSavingEvidence: getIsSavingEvidenceForDispute( disputeId ),
+				evidenceTransient: getEvidenceTransientForDispute( disputeId ),
+			};
+		},
+		[ disputeId ]
+	);
+
+	const {
+		saveEvidence,
+		submitEvidence,
+		updateEvidenceTransientForDispute,
+		uploadFileEvidenceForDispute,
+	} = useDispatch( STORE_NAME );
+
+	return {
+		isSavingEvidence,
+		evidenceTransient,
+		saveEvidence,
+		submitEvidence,
+		updateEvidenceTransientForDispute,
+		uploadFileEvidenceForDispute,
+	};
 };
 
 export const useDisputes = ( { paged, per_page: perPage } ) =>

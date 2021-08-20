@@ -235,7 +235,7 @@ const fileSizeExceeded = ( dispute, latestFileSize ) => {
 	}
 };
 
-export function* uploadFile( disputeId, key, file ) {
+export function* uploadFileEvidenceForDispute( disputeId, key, file ) {
 	if ( ! file ) {
 		return;
 	}
