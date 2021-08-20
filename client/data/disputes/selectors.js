@@ -71,6 +71,6 @@ export const getEvidenceUploadErrorsForDispute = ( state, disputeId ) => {
 	return (
 		getDisputesState( state )?.evidenceUploadErrorsForDispute?.[
 			disputeId
-		] ?? ''
+		] ?? {}
 	);
 };
