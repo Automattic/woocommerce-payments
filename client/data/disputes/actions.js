@@ -55,6 +55,28 @@ export function updateEvidenceTransientForDispute(
 	};
 }
 
+export function updateIsUploadingEvidenceForDispute(
+	disputeId,
+	key,
+	isUploadingEvidenceForDispute
+) {
+	return {
+		type: TYPES.SET_IS_UPLOADING_EVIDENCE_FOR_DISPUTE,
+		data: { id: disputeId, key, isUploadingEvidenceForDispute },
+	};
+}
+
+export function updateEvidenceUploadErrorsForDispute(
+	disputeId,
+	key,
+	errorMessage
+) {
+	return {
+		type: TYPES.SET_EVIDENCE_UPLOAD_ERROR_FOR_DISPUTE,
+		data: { id: disputeId, key, errorMessage },
+	};
+}
+
 export function* acceptDispute( id ) {
 	try {
 		yield dispatch( STORE_NAME ).startResolution( 'getDispute', [ id ] );

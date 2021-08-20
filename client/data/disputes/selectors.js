@@ -58,3 +58,19 @@ export const getEvidenceTransientForDispute = ( state, disputeId ) => {
 		{}
 	);
 };
+
+export const getIsUploadingEvidenceForDispute = ( state, disputeId ) => {
+	return (
+		getDisputesState( state )?.isUploadingEvidenceForDispute?.[
+			disputeId
+		] ?? {}
+	);
+};
+
+export const getEvidenceUploadErrorsForDispute = ( state, disputeId ) => {
+	return (
+		getDisputesState( state )?.evidenceUploadErrorsForDispute?.[
+			disputeId
+		] ?? ''
+	);
+};
