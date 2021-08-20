@@ -31,16 +31,29 @@ export const useDispute = ( id ) => {
 };
 
 export const useDisputeEvidence = ( disputeId ) => {
-	const { isSavingEvidence, evidenceTransient } = useSelect(
+	const {
+		isSavingEvidence,
+		isUploadingEvidence,
+		evidenceTransient,
+		evidenceUploadErrors,
+	} = useSelect(
 		( select ) => {
 			const {
 				getIsSavingEvidenceForDispute,
+				getIsUploadingEvidenceForDispute,
 				getEvidenceTransientForDispute,
+				getEvidenceUploadErrorsForDispute,
 			} = select( STORE_NAME );
 
 			return {
 				isSavingEvidence: getIsSavingEvidenceForDispute( disputeId ),
+				isUploadingEvidence: getIsUploadingEvidenceForDispute(
+					disputeId
+				),
 				evidenceTransient: getEvidenceTransientForDispute( disputeId ),
+				evidenceUploadErrors: getEvidenceUploadErrorsForDispute(
+					disputeId
+				),
 			};
 		},
 		[ disputeId ]
@@ -50,15 +63,21 @@ export const useDisputeEvidence = ( disputeId ) => {
 		saveEvidence,
 		submitEvidence,
 		updateEvidenceTransientForDispute,
+		updateIsUploadingEvidenceForDispute,
+		updateEvidenceUploadErrorsForDispute,
 		uploadFileEvidenceForDispute,
 	} = useDispatch( STORE_NAME );
 
 	return {
 		isSavingEvidence,
+		isUploadingEvidence,
 		evidenceTransient,
+		evidenceUploadErrors,
 		saveEvidence,
 		submitEvidence,
 		updateEvidenceTransientForDispute,
+		updateIsUploadingEvidenceForDispute,
+		updateEvidenceUploadErrorsForDispute,
 		uploadFileEvidenceForDispute,
 	};
 };
