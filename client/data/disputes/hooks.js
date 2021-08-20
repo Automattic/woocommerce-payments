@@ -36,6 +36,7 @@ export const useDispute = ( id ) => {
 		saveEvidence,
 		submitEvidence,
 		updateEvidenceTransientForDispute,
+		uploadFile,
 	} = useDispatch( STORE_NAME );
 	const doAccept = () => acceptDispute( id );
 
@@ -48,6 +49,7 @@ export const useDispute = ( id ) => {
 		saveEvidence,
 		submitEvidence,
 		updateEvidenceTransientForDispute,
+		uploadFile,
 	};
 };
 
