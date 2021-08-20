@@ -13,13 +13,16 @@ use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Gateway;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
+use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Gateway;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Gateway;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WCPay\Payment_Methods\Ideal_Payment_Method;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -180,8 +183,11 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-p24-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-ideal-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
@@ -228,8 +234,11 @@ class WC_Payments {
 			$payment_methods        = [];
 			$payment_method_classes = [
 				CC_Payment_Method::class,
+				Bancontact_Payment_Method::class,
 				Giropay_Payment_Method::class,
 				Sofort_Payment_Method::class,
+				P24_Payment_Method::class,
+				Ideal_Payment_Method::class,
 			];
 			foreach ( $payment_method_classes as $payment_method_class ) {
 				$payment_method                               = new $payment_method_class( self::$token_service );
@@ -721,7 +730,7 @@ class WC_Payments {
 		$conn_tokens_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
-		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway );
+		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway, self::$customer_service );
 		$orders_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
@@ -735,6 +744,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$tos_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-fraud-controller.php';
+		$fraud_controller = new WC_REST_Payments_Fraud_Controller( self::$api_client );
+		$fraud_controller->register_routes();
 
 		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
@@ -804,6 +817,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Fraud_Service instance
+	 *
+	 * @return WC_Payments_Fraud_Service Fraud Service instance
+	 */
+	public static function get_fraud_service() {
+		return self::$fraud_service;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
@@ -859,6 +881,7 @@ class WC_Payments {
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
+			WC_Payments_Notes_Additional_Payment_Methods::set_account( self::get_account_service() );
 			WC_Payments_Notes_Additional_Payment_Methods::possibly_add_note();
 			WC_Payments_Notes_Additional_Payment_Methods::maybe_enable_upe_feature_flag();
 		}

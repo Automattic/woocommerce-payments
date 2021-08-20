@@ -16,44 +16,61 @@ describe( 'PaymentMethodsCheckboxes', () => {
 	it( 'triggers the onChange when clicking the checkbox', () => {
 		const handleChange = jest.fn();
 
+		const upeMethods = [
+			[ 'bancontact', true ],
+			[ 'giropay', false ],
+			[ 'ideal', false ],
+			[ 'p24', false ],
+			[ 'sepa_debit', false ],
+			[ 'sofort', false ],
+		];
+
 		render(
 			<PaymentMethodsCheckboxes>
-				<PaymentMethodsCheckbox
-					onChange={ handleChange }
-					checked={ true }
-					name="sepa_debit"
-				/>
-				<PaymentMethodsCheckbox
-					onChange={ handleChange }
-					checked={ false }
-					name="sofort"
-				/>
-				<PaymentMethodsCheckbox
-					onChange={ handleChange }
-					checked={ false }
-					name="giropay"
-				/>
+				{ upeMethods.map( ( key ) => (
+					<PaymentMethodsCheckbox
+						key={ key[ 0 ] }
+						onChange={ handleChange }
+						checked={ key[ 1 ] }
+						name={ key[ 0 ] }
+					/>
+				) ) }
 			</PaymentMethodsCheckboxes>
 		);
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		const sepa = within( paymentMethods[ 0 ] );
-		const sofort = within( paymentMethods[ 1 ] );
-		const giropay = within( paymentMethods[ 2 ] );
+		const bancontact = within( paymentMethods[ 0 ] );
+		const giropay = within( paymentMethods[ 1 ] );
+		const ideal = within( paymentMethods[ 2 ] );
+		const p24 = within( paymentMethods[ 3 ] );
+		const sepa = within( paymentMethods[ 4 ] );
+		const sofort = within( paymentMethods[ 5 ] );
 
-		expect( sepa.getByRole( 'checkbox' ) ).toBeChecked();
-		expect( sofort.getByRole( 'checkbox' ) ).not.toBeChecked();
+		expect( bancontact.getByRole( 'checkbox' ) ).toBeChecked();
 		expect( giropay.getByRole( 'checkbox' ) ).not.toBeChecked();
+		expect( ideal.getByRole( 'checkbox' ) ).not.toBeChecked();
+		expect( p24.getByRole( 'checkbox' ) ).not.toBeChecked();
+		expect( sepa.getByRole( 'checkbox' ) ).not.toBeChecked();
+		expect( sofort.getByRole( 'checkbox' ) ).not.toBeChecked();
 
-		userEvent.click( sepa.getByRole( 'checkbox' ) );
+		userEvent.click( bancontact.getByRole( 'checkbox' ) );
 		userEvent.click( giropay.getByRole( 'checkbox' ) );
+		userEvent.click( ideal.getByRole( 'checkbox' ) );
+		userEvent.click( p24.getByRole( 'checkbox' ) );
+		userEvent.click( sepa.getByRole( 'checkbox' ) );
+		userEvent.click( sofort.getByRole( 'checkbox' ) );
 
-		expect( handleChange ).toHaveBeenCalledTimes( 2 );
+		expect( handleChange ).toHaveBeenCalledTimes( upeMethods.length );
+
 		expect( handleChange ).toHaveBeenNthCalledWith(
 			1,
-			'sepa_debit',
+			'bancontact',
 			false
 		);
 		expect( handleChange ).toHaveBeenNthCalledWith( 2, 'giropay', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 3, 'ideal', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 4, 'p24', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 5, 'sepa_debit', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 6, 'sofort', true );
 	} );
 } );

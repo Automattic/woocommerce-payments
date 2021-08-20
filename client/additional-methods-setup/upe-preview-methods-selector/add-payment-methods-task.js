@@ -29,6 +29,15 @@ import { LoadableBlock } from '../../components/loadable';
 import LoadableSettingsSection from '../../settings/loadable-settings-section';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 
+const upeMethods = [
+	'bancontact',
+	'giropay',
+	'ideal',
+	'p24',
+	'sepa_debit',
+	'sofort',
+];
+
 const usePaymentMethodsCheckboxState = () => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
 	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {} );
@@ -37,9 +46,7 @@ const usePaymentMethodsCheckboxState = () => {
 		setPaymentMethodsState(
 			// by default, all the checkboxes should be "checked"
 			availablePaymentMethods
-				.filter( ( method ) =>
-					[ 'giropay', 'sofort', 'sepa_debit' ].includes( method )
-				)
+				.filter( ( method ) => upeMethods.includes( method ) )
 				.reduce(
 					( map, paymentMethod ) => ( {
 						...map,
@@ -195,44 +202,24 @@ const AddPaymentMethodsTask = () => {
 						<LoadableBlock numLines={ 10 } isLoading={ ! isActive }>
 							<LoadableSettingsSection numLines={ 10 }>
 								<PaymentMethodCheckboxes>
-									{ availablePaymentMethods.includes(
-										'giropay'
-									) && (
-										<PaymentMethodCheckbox
-											checked={
-												paymentMethodsState.giropay
-											}
-											onChange={
-												handlePaymentMethodChange
-											}
-											name="giropay"
-										/>
-									) }
-									{ availablePaymentMethods.includes(
-										'sofort'
-									) && (
-										<PaymentMethodCheckbox
-											checked={
-												paymentMethodsState.sofort
-											}
-											onChange={
-												handlePaymentMethodChange
-											}
-											name="sofort"
-										/>
-									) }
-									{ availablePaymentMethods.includes(
-										'sepa_debit'
-									) && (
-										<PaymentMethodCheckbox
-											checked={
-												paymentMethodsState.sepa_debit
-											}
-											onChange={
-												handlePaymentMethodChange
-											}
-											name="sepa_debit"
-										/>
+									{ upeMethods.map(
+										( key ) =>
+											availablePaymentMethods.includes(
+												key
+											) && (
+												<PaymentMethodCheckbox
+													key={ key }
+													checked={
+														paymentMethodsState[
+															key
+														]
+													}
+													onChange={
+														handlePaymentMethodChange
+													}
+													name={ key }
+												/>
+											)
 									) }
 								</PaymentMethodCheckboxes>
 							</LoadableSettingsSection>

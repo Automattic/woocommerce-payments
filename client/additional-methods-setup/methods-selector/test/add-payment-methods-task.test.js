@@ -43,9 +43,12 @@ describe( 'AddPaymentMethodsTask', () => {
 		] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
+			'bancontact',
 			'giropay',
-			'sofort',
+			'ideal',
+			'p24',
 			'sepa_debit',
+			'sofort',
 		] );
 		useSettings.mockReturnValue( {
 			saveSettings: jest.fn().mockResolvedValue( true ),
@@ -64,23 +67,28 @@ describe( 'AddPaymentMethodsTask', () => {
 			</WizardTaskContext.Provider>
 		);
 
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Credit card / debit card' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'giropay' } )
-		).toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Sofort' } )
-		).not.toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', { name: 'Direct debit payment' } )
-		).not.toBeChecked();
-		expect(
-			screen.getByRole( 'checkbox', {
-				name: 'Enable Apple Pay & Google Pay',
-			} )
-		).not.toBeChecked();
+		const expectedToBeChecked = [ 'Credit card / debit card', 'giropay' ];
+
+		expectedToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).toBeChecked();
+		} );
+
+		const expectedNotToBeChecked = [
+			'Bancontact',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'Direct debit payment',
+			'Sofort',
+			'Enable Apple Pay & Google Pay',
+		];
+
+		expectedNotToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).not.toBeChecked();
+		} );
 	} );
 
 	it( 'should not render the checkboxes that are not available', () => {
@@ -95,20 +103,27 @@ describe( 'AddPaymentMethodsTask', () => {
 			</WizardTaskContext.Provider>
 		);
 
-		expect(
-			screen.queryByRole( 'checkbox', {
-				name: 'Credit card / debit card',
-			} )
-		).toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'checkbox', { name: 'giropay' } )
-		).toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
-		).not.toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'checkbox', { name: 'Direct debit payment' } )
-		).not.toBeInTheDocument();
+		const expectedInDocument = [ 'Credit card / debit card', 'giropay' ];
+
+		expectedInDocument.forEach( function ( checkboxName ) {
+			expect(
+				screen.queryByRole( 'checkbox', { name: checkboxName } )
+			).toBeInTheDocument();
+		} );
+
+		const expectedNotInDocument = [
+			'Bancontact',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'Direct debit payment',
+			'Sofort',
+		];
+
+		expectedNotInDocument.forEach( function ( checkboxName ) {
+			expect(
+				screen.queryByRole( 'checkbox', { name: checkboxName } )
+			).not.toBeInTheDocument();
+		} );
 	} );
 
 	it( 'should save the checkboxes state on "continue" click', async () => {
@@ -131,25 +146,22 @@ describe( 'AddPaymentMethodsTask', () => {
 			</WizardTaskContext.Provider>
 		);
 
-		// Marks the CC payment method as un-checked
-		userEvent.click(
-			screen.getByRole( 'checkbox', {
-				name: 'Credit card / debit card',
-			} )
-		);
-		// Marks the Giropay payment method as checked
-		userEvent.click(
-			screen.getByRole( 'checkbox', {
-				name: 'giropay',
-			} )
-		);
+		const checkboxesToClick = [
+			'Credit card / debit card', // Mark the CC payment method as un-checked.
+			'Bancontact', // Mark as checked.
+			'giropay', // Mark as checked.
+			'iDEAL', // Mark as checked.
+			'Przelewy24 (P24)', // Mark as checked.
+			'Enable Apple Pay & Google Pay', // Enable 1-click checkouts.
+		];
 
-		// enable 1-click checkouts
-		userEvent.click(
-			screen.getByRole( 'checkbox', {
-				name: 'Enable Apple Pay & Google Pay',
-			} )
-		);
+		checkboxesToClick.forEach( function ( checkboxName ) {
+			userEvent.click(
+				screen.getByRole( 'checkbox', {
+					name: checkboxName,
+				} )
+			);
+		} );
 
 		expect( setCompletedMock ).not.toHaveBeenCalled();
 		expect( updateEnabledPaymentMethodIdsMock ).not.toHaveBeenCalled();
@@ -164,7 +176,10 @@ describe( 'AddPaymentMethodsTask', () => {
 			'setup-complete'
 		);
 		expect( updateEnabledPaymentMethodIdsMock ).toHaveBeenCalledWith( [
+			'bancontact',
 			'giropay',
+			'ideal',
+			'p24',
 		] );
 		expect( updatePaymentRequestEnabledMock ).toHaveBeenCalledWith( true );
 	} );

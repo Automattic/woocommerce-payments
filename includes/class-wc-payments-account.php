@@ -199,13 +199,13 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Gets the presentment currencies supported by Stripe available for the account.
+	 * Gets the customer currencies supported by Stripe available for the account.
 	 *
 	 * @return array Currencies.
 	 */
-	public function get_account_presentment_currencies() {
+	public function get_account_customer_supported_currencies() {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['presentment_currencies'] ) ? $account['presentment_currencies'] : [];
+		return ! empty( $account ) && isset( $account['customer_currencies']['supported'] ) ? $account['customer_currencies']['supported'] : [];
 	}
 
 	/**

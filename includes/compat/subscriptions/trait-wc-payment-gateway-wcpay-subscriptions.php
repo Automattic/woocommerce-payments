@@ -213,12 +213,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return Payment_Information An object, which describes the payment.
 	 */
 	protected function maybe_prepare_subscription_payment_information( $payment_information, $order_id ) {
-		if ( ! $this->is_subscriptions_enabled() ) {
-			return $payment_information;
-		}
-
-		$is_changing_payment = $this->is_changing_payment_method_for_subscription();
-		if ( ! $is_changing_payment && ! wcs_order_contains_subscription( $order_id ) ) {
+		if ( ! $this->is_payment_recurring( $order_id ) ) {
 			return $payment_information;
 		}
 
@@ -226,7 +221,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$payment_information->set_payment_type( Payment_Type::RECURRING() );
 		// The payment method is always saved for subscriptions.
 		$payment_information->must_save_payment_method();
-		$payment_information->set_is_changing_payment_method_for_subscription( $is_changing_payment );
+		$payment_information->set_is_changing_payment_method_for_subscription( $this->is_changing_payment_method_for_subscription() );
 
 		return $payment_information;
 	}
@@ -266,7 +261,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 							'code'   => '<code>',
 						]
 					),
-					wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
+					WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+						wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
+						$renewal_order
+					),
 					esc_html( rtrim( $e->getMessage(), '.' ) )
 				);
 				$renewal_order->add_order_note( $note );

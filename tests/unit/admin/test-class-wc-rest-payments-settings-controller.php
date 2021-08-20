@@ -9,8 +9,11 @@ use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
+use WCPay\Payment_Methods\P24_Payment_Method;
+use WCPay\Payment_Methods\Ideal_Payment_Method;
 
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
@@ -83,8 +86,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$mock_payment_methods   = [];
 		$payment_method_classes = [
 			CC_Payment_Method::class,
+			Bancontact_Payment_Method::class,
 			Giropay_Payment_Method::class,
 			Sofort_Payment_Method::class,
+			P24_Payment_Method::class,
+			Ideal_Payment_Method::class,
 		];
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )

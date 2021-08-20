@@ -80,6 +80,43 @@
 			}
 		}
 	}
+
+	.enabled-currency-placeholder {
+		align-items: center;
+		p {
+			white-space: nowrap;
+			overflow: hidden;
+		}
+		.is-block {
+			margin: 10px 0 10px !important;
+		}
+		.enabled-currency__container {
+			align-items: center;
+			.enabled-currency__flag {
+				width: 28px;
+				p {
+					font-size: 24px;
+				}
+			}
+			.enabled-currency__label {
+				width: 120px;
+			}
+			.enabled-currency__code {
+				width: 40px;
+			}
+		}
+		.enabled-currency__rate {
+			.is-block {
+				width: 150px;
+			}
+		}
+		.enabled-currency__actions {
+			justify-content: end;
+			p {
+				width: 100px;
+			}
+		}
+	}
 }
 
 .add-enabled-currencies-modal {
