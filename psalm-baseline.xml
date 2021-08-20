@@ -138,4 +138,17 @@
       <code>WC_Subscriptions_Base_Plugin</code>
     </UndefinedClass>
   </file>
+  <file src="includes/subscriptions/class-wc-payments-invoice-service.php">
+    <UndefinedClass occurrences="6">
+      <code>WC_Subscription</code>
+      <code>WC_Subscription</code>
+      <code>WC_Subscription</code>
+      <code>WC_Subscription</code>
+      <code>WC_Subscription</code>
+      <code>WC_Subscription</code>
+    </UndefinedClass>
+    <UndefinedFunction occurrences="1">
+      <code>wcs_order_contains_subscription( $order, 'parent' )</code>
+    </UndefinedFunction>
+  </file>
 </files>

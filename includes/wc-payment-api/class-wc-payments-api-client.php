@@ -20,8 +20,9 @@ class WC_Payments_API_Client {
 	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';
 	const ENDPOINT_REST_BASE     = 'wcpay';
 
-	const POST = 'POST';
-	const GET  = 'GET';
+	const POST   = 'POST';
+	const GET    = 'GET';
+	const DELETE = 'DELETE';
 
 	const API_TIMEOUT_SECONDS = 70;
 
@@ -46,6 +47,7 @@ class WC_Payments_API_Client {
 	const PRICES_API          = 'products/prices';
 	const SUBSCRIPTIONS_API   = 'subscriptions';
 	const INVOICES_API        = 'invoices';
+	const INVOICE_ITEMS_API   = '/invoice/items';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1030,6 +1032,55 @@ class WC_Payments_API_Client {
 			$price_data,
 			self::PRICES_API . '/' . $price_id,
 			self::POST
+		);
+	}
+
+	/**
+	 * Charges an invoice.
+	 *
+	 * Calling this function charges the customer. Pass the param 'paid_out_of_band' => true to mark the invoice as paid without charging the customer.
+	 *
+	 * @param string $invoice_id ID of the invoice to charge.
+	 * @param array  $data       Parameters to send to the invoice /pay endpoint. Optional. Default is an empty array.
+	 * @return array
+	 *
+	 * @throws API_Exception Error charging the invoice.
+	 */
+	public function charge_invoice( string $invoice_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::INVOICES_API . '/' . $invoice_id . '/pay',
+			self::POST
+		);
+	}
+
+	/**
+	 * Creates an invoice item.
+	 *
+	 * @param array $invoice_item_data The invoice item data.
+	 *
+	 * @throws API_Exception Error creating the invoice item.
+	 */
+	public function create_invoice_item( $invoice_item_data ) {
+		return $this->request(
+			$invoice_item_data,
+			self::INVOICE_ITEMS_API,
+			self::POST
+		);
+	}
+
+	/**
+	 * Deletes an invoice item.
+	 *
+	 * @param string $invoice_item_id ID of the invoice item to delete.
+	 *
+	 * @throws API_Exception Error deleting the invoice item.
+	 */
+	public function delete_invoice_item( $invoice_item_id ) {
+		return $this->request(
+			[],
+			self::INVOICE_ITEMS_API . '/' . $invoice_item_id,
+			self::DELETE
 		);
 	}
 
