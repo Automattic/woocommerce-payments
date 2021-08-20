@@ -58,7 +58,7 @@ class WC_Payments_Subscription_Service {
 	/**
 	 * Invoice Service
 	 *
-	 * @var null (Not yet implemented)
+	 * @var WC_Payments_Invoice_Service
 	 */
 	private $invoice_service;
 
@@ -89,7 +89,7 @@ class WC_Payments_Subscription_Service {
 	 * @param WC_Payments_Customer_Service $customer_service WC payments customer serivce.
 	 * @param null                         $tax_service      WC payments tax service.
 	 * @param WC_Payments_Product_Service  $product_service  WC payments Products service.
-	 * @param null                         $invoice_service  WC payments Invoice service.
+	 * @param WC_Payments_Invoice_Service  $invoice_service  WC payments Invoice service.
 	 *
 	 * @return void
 	 */
@@ -98,7 +98,7 @@ class WC_Payments_Subscription_Service {
 		WC_Payments_Customer_Service $customer_service,
 		$tax_service,
 		WC_Payments_Product_Service $product_service,
-		$invoice_service
+		WC_Payments_Invoice_Service $invoice_service
 	) {
 		$this->payments_api_client = $api_client;
 		$this->customer_service    = $customer_service;
@@ -164,8 +164,7 @@ class WC_Payments_Subscription_Service {
 			$response = $this->payments_api_client->create_subscription( $subscription_data );
 
 			$this->set_wcpay_subscription_id( $subscription, $response['id'] );
-			// TODO: Uncomment this line once invoice service has been added.
-			/*$this->invoice_service->set_order_invoice_id( $subscription->get_parent(), $result['latest_invoice'] );*/ // PHPCS:ignore Squiz.PHP.CommentedOutCode.Found
+			$this->invoice_service->set_order_invoice_id( $subscription->get_parent(), $response['latest_invoice'] );
 		} catch ( API_Exception $e ) {
 			Logger::log( sprintf( 'There was a problem creating the subscription on WCPay server: %s', $e->getMessage() ) );
 			throw new Exception( $checkout_error_message );
@@ -369,10 +368,10 @@ class WC_Payments_Subscription_Service {
 	 * @return void
 	 */
 	private function maybe_attempt_payment_for_subscription( WC_Subscription $subscription ) {
-		$wcpay_invoice_id = WC_Payments_Invoice_Service::get_wcpay_pending_invoice_id( $subscription );
+		$wcpay_invoice_id = WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription );
 
 		if ( $wcpay_invoice_id ) {
-			$this->invoice_service->pay_invoice( $wcpay_invoice_id );
+			$this->payments_api_client->charge_invoice( $wcpay_invoice_id );
 		}
 	}
 
