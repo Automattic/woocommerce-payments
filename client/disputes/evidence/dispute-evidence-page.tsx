@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Card,
@@ -16,21 +17,45 @@ import Info from '../info';
 import Page from 'components/page';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
-import { DisputeEvidenceForm } from './dispute-evidence-form';
+import { DisputeEvidenceForm, FormProps } from './dispute-evidence-form';
 
-export const DisputeEvidencePage = ( props ) => {
+// Fix SelectControl option type since it's incomplete in DefinitelyTyped.
+declare module '@wordpress/components' {
+	// eslint-disable-next-line @typescript-eslint/no-namespace, no-shadow
+	namespace SelectControl {
+		interface Option {
+			label: string;
+			value: string;
+			disabled?: boolean;
+		}
+	}
+}
+
+type Dispute = {
+	status: string;
+	id: string;
+};
+
+interface Props extends FormProps {
+	isLoading: boolean;
+	dispute?: Dispute;
+	productType: string;
+	onChangeProductType: ( arg0: string ) => void;
+}
+
+export const DisputeEvidencePage = ( props: Props ): JSX.Element => {
 	const {
 		isLoading,
-		dispute = {},
+		dispute = null,
 		productType,
 		onChangeProductType,
 		...evidenceFormProps
 	} = props;
 	const readOnly =
-		dispute &&
+		null !== dispute &&
 		'needs_response' !== dispute.status &&
 		'warning_needs_response' !== dispute.status;
-	const disputeIsAvailable = ! isLoading && dispute.id;
+	const disputeIsAvailable = ! isLoading && dispute?.id;
 	const testModeNotice = <TestModeNotice topic={ topics.disputeDetails } />;
 
 	if ( ! isLoading && ! disputeIsAvailable ) {
@@ -118,7 +143,7 @@ export const DisputeEvidencePage = ( props ) => {
 									value: 'multiple',
 								},
 							] }
-							disabled={ readOnly }
+							disabled={ readOnly ?? false }
 						/>
 					</LoadableBlock>
 				</CardBody>

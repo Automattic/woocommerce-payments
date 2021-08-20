@@ -41,7 +41,7 @@ type Evidence = {
 	uploadingErrors: Record< string, string >;
 };
 
-type Props = {
+export type FormProps = {
 	fields: Section[];
 	evidence: Evidence;
 	onChange: ( arg0: string, arg1: unknown ) => void;
@@ -52,7 +52,7 @@ type Props = {
 	isSavingEvidence: boolean;
 };
 
-export const DisputeEvidenceForm = ( props: Props ): JSX.Element | null => {
+export const DisputeEvidenceForm = ( props: FormProps ): JSX.Element | null => {
 	const {
 		fields,
 		evidence,
