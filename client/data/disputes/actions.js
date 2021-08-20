@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { resolveSelect, dispatch } from '@wordpress/data';
+import { select, dispatch } from '@wordpress/data';
 import { apiFetch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
@@ -152,7 +152,7 @@ function* handleSaveError( err, submit ) {
 
 export function* submitEvidence( disputeId, evidence ) {
 	let error = null;
-	const dispute = yield resolveSelect( STORE_NAME, 'getDispute', disputeId );
+	const dispute = yield select( STORE_NAME ).getDispute( disputeId );
 
 	yield updateIsSavingEvidenceForDispute( disputeId, true );
 
@@ -185,7 +185,7 @@ export function* submitEvidence( disputeId, evidence ) {
 
 export function* saveEvidence( disputeId, evidence ) {
 	let error = null;
-	const dispute = yield resolveSelect( STORE_NAME, 'getDispute', disputeId );
+	const dispute = yield select( STORE_NAME ).getDispute( disputeId );
 
 	yield updateIsSavingEvidenceForDispute( disputeId, true );
 
