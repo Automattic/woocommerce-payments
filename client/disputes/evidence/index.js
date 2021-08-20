@@ -52,10 +52,13 @@ export default ( { query } ) => {
 
 	const {
 		isSavingEvidence,
+		isUploadingEvidence,
 		evidenceTransient,
+		evidenceUploadErrors,
 		saveEvidence,
 		submitEvidence,
 		updateEvidenceTransientForDispute,
+		updateEvidenceUploadErrorsForDispute,
 		uploadFileEvidenceForDispute,
 	} = useDisputeEvidence( disputeId );
 
@@ -106,8 +109,11 @@ export default ( { query } ) => {
 		updateDispute( {
 			...dispute,
 			metadata: { ...dispute.metadata, [ key ]: '' },
-			uploadingErrors: { ...dispute.uploadingErrors, [ key ]: '' },
 			fileSize: { ...dispute.fileSize, [ key ]: 0 },
+		} );
+		updateEvidenceUploadErrorsForDispute( disputeId, {
+			...evidenceUploadErrors,
+			[ key ]: '',
 		} );
 	};
 
@@ -155,8 +161,8 @@ export default ( { query } ) => {
 							...dispute.evidence,
 							...evidenceTransient,
 							metadata: dispute.metadata || {},
-							isUploading: dispute.isUploading || {},
-							uploadingErrors: dispute.uploadingErrors || {},
+							isUploading: isUploadingEvidence,
+							uploadingErrors: evidenceUploadErrors,
 					  }
 					: {}
 			}

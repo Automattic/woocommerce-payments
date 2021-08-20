@@ -176,9 +176,12 @@ function* handleSaveError( err, submit ) {
 export function* submitEvidence( disputeId, evidence ) {
 	let error = null;
 	const dispute = yield select( STORE_NAME ).getDispute( disputeId );
+	const isUploading = yield select(
+		STORE_NAME
+	).getIsUploadingEvidenceForDispute( disputeId );
 
 	// Prevent submit if upload is in progress.
-	if ( some( dispute.isUploading ) ) {
+	if ( some( isUploading ) ) {
 		dispatch( 'core/notices' ).createInfoNotice(
 			__(
 				'Please wait until file upload is finished',
@@ -220,9 +223,12 @@ export function* submitEvidence( disputeId, evidence ) {
 export function* saveEvidence( disputeId, evidence ) {
 	let error = null;
 	const dispute = yield select( STORE_NAME ).getDispute( disputeId );
+	const isUploading = yield select(
+		STORE_NAME
+	).getIsUploadingEvidenceForDispute( disputeId );
 
 	// Prevent submit if upload is in progress.
-	if ( some( dispute.isUploading ) ) {
+	if ( some( isUploading ) ) {
 		dispatch( 'core/notices' ).createInfoNotice(
 			__(
 				'Please wait until file upload is finished',
@@ -289,6 +295,9 @@ export function* uploadFileEvidenceForDispute( disputeId, key, file ) {
 	const evidenceTransient = yield select(
 		STORE_NAME
 	).getEvidenceTransientForDispute( disputeId );
+	const evidenceUploadErrors = yield select(
+		STORE_NAME
+	).getEvidenceUploadErrorsForDispute( disputeId );
 
 	if ( fileSizeExceeded( dispute, file.size ) ) {
 		return;
@@ -306,12 +315,11 @@ export function* uploadFileEvidenceForDispute( disputeId, key, file ) {
 	yield updateDispute( {
 		...dispute,
 		metadata: { ...dispute.metadata, [ key ]: '' },
-		isUploading: { ...dispute.isUploading, [ key ]: true },
-		uploadingErrors: { ...dispute.uploadingErrors, [ key ]: '' },
 	} );
+	yield updateIsUploadingEvidenceForDispute( disputeId, key, true );
+	yield updateEvidenceUploadErrorsForDispute( disputeId, key, '' );
 
 	// Force reload evidence components.
-	// updateEvidence( key, '' );
 	yield updateEvidenceTransientForDispute( disputeId, {
 		...evidenceTransient,
 		[ key ]: '',
@@ -330,10 +338,9 @@ export function* uploadFileEvidenceForDispute( disputeId, key, file ) {
 				...dispute.metadata,
 				[ key ]: uploadedFile.filename,
 			},
-			isUploading: { ...dispute.isUploading, [ key ]: false },
 			fileSize: { ...dispute.fileSize, [ key ]: uploadedFile.size },
 		} );
-		// updateEvidence( key, uploadedFile.id );
+		yield updateIsUploadingEvidenceForDispute( disputeId, false );
 		yield updateEvidenceTransientForDispute( disputeId, {
 			[ key ]: uploadedFile.id,
 		} );
@@ -349,15 +356,14 @@ export function* uploadFileEvidenceForDispute( disputeId, key, file ) {
 		yield updateDispute( {
 			...dispute,
 			metadata: { ...dispute.metadata, [ key ]: '' },
-			isUploading: { ...dispute.isUploading, [ key ]: false },
-			uploadingErrors: {
-				...dispute.uploadingErrors,
-				[ key ]: err.message,
-			},
+		} );
+		yield updateIsUploadingEvidenceForDispute( disputeId, false );
+		yield updateEvidenceUploadErrorsForDispute( disputeId, {
+			...evidenceUploadErrors,
+			[ key ]: err.message,
 		} );
 
 		// Force reload evidence components.
-		// updateEvidence( key, '' );
 		yield updateEvidenceTransientForDispute( disputeId, {
 			...evidenceTransient,
 			[ key ]: '',
