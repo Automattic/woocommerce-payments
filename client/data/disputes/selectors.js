@@ -51,3 +51,10 @@ export const getIsSavingEvidenceForDispute = ( state, id ) => {
 		getDisputesState( state )?.isSavingEvidenceForDispute?.[ id ] ?? false
 	);
 };
+
+export const getEvidenceTransientForDispute = ( state, disputeId ) => {
+	return (
+		getDisputesState( state )?.evidenceTransientForDispute?.[ disputeId ] ??
+		{}
+	);
+};

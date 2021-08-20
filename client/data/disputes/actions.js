@@ -44,6 +44,16 @@ export function updateIsSavingEvidenceForDispute(
 	};
 }
 
+export function updateEvidenceTransientForDispute(
+	disputeId,
+	evidenceTransient
+) {
+	return {
+		type: TYPES.SET_EVIDENCE_TRANSIENT_FOR_DISPUTE,
+		data: { id: disputeId, evidenceTransient },
+	};
+}
+
 export function* acceptDispute( id ) {
 	try {
 		yield dispatch( STORE_NAME, 'startResolution', 'getDispute', [ id ] );

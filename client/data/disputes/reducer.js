@@ -11,7 +11,12 @@ import { map, keyBy } from 'lodash';
 import TYPES from './action-types';
 import { getResourceId } from 'utils/data';
 
-const defaultState = { byId: {}, queries: {}, isSavingEvidenceForDispute: {} };
+const defaultState = {
+	byId: {},
+	queries: {},
+	isSavingEvidenceForDispute: {},
+	evidenceTransientForDispute: {},
+};
 
 const receiveDisputes = (
 	state = defaultState,
@@ -42,6 +47,14 @@ const receiveDisputes = (
 				isSavingEvidenceForDispute: {
 					...state.isSavingEvidence,
 					[ data.id ]: data.isSavingEvidence,
+				},
+			};
+		case TYPES.SET_EVIDENCE_TRANSIENT_FOR_DISPUTE:
+			return {
+				...state,
+				evidenceTransientForDispute: {
+					...state.evidenceTransientForDispute,
+					[ data.id ]: data.evidenceTransient,
 				},
 			};
 	}
