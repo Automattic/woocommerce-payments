@@ -51,6 +51,20 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $payment_method_title;
 
 	/**
+	 * Trial End timestamp
+	 *
+	 * @var int
+	 */
+	public $trial_end;
+
+	/**
+	 * Next Payment timestamp
+	 *
+	 * @var int
+	 */
+	public $next_payment;
+
+	/**
 	 * A helper function for handling function calls not yet implimented on this helper.
 	 *
 	 * Attempts to get the value by checking if it has been set as an object property.
@@ -116,5 +130,15 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function get_payment_method_title() {
 		return $this->payment_method_title;
+	}
+
+	public function get_time( $time ) {
+		return $this->{$time};
+	}
+
+	public function update_dates( $dates = [] ) {
+		foreach ( $dates as $date_type => $date_string ) {
+			$this->{$date_type} = strtotime( $date_string );
+		}
 	}
 }

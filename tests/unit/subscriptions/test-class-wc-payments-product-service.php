@@ -199,4 +199,45 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 	private function mock_get_interval( $interval ) {
 		WC_Subscriptions_Product::set_interval( $interval );
 	}
+
+	/**
+	 * Test $product_service->get_product_data_for_subscription().
+	 */
+	public function test_get_product_data_for_subscription() {
+		// test a subscription with no items/products.
+		$empty_subscription = $this->getMockBuilder( WC_Subscription::class )
+			->disableOriginalConstructor()
+			->setMethods( [ 'get_items' ] )
+			->getMock();
+
+		$empty_subscription
+			->method( 'get_items' )
+			->will( $this->returnValue( [] ) );
+
+		$this->assertEquals( $this->product_service->get_product_data_for_subscription( $empty_subscription ), [] );
+
+		// test getting product data for a non subscription product.
+		$order        = WC_Helper_Order::create_order();
+		$subscription = new WC_Subscription();
+
+		$subscription->set_parent( $order );
+		WC_Subscriptions_Product::$is_subscription = false; // sets the result of WC_Subscriptions_Product::is_subscription().
+		$this->assertEquals( $this->product_service->get_product_data_for_subscription( $subscription ), [] );
+
+		// test getting product data for a subscription product.
+		$mock_price_id = 'wcpay_test_price_id';
+
+		foreach ( $order->get_items() as $item ) {
+			$product = $item->get_product();
+			update_post_meta( $product->get_id(), WC_Payments_Product_Service::PRICE_ID_KEY, $mock_price_id );
+		}
+
+		WC_Subscriptions_Product::$is_subscription = true; // resets the result of WC_Subscriptions_Product::is_subscription().
+		$expected_result[]                         = [
+			'price'     => 'wcpay_test_price_id',
+			'quantity'  => 4,
+			'tax_rates' => [],
+		];
+		$this->assertEquals( $this->product_service->get_product_data_for_subscription( $subscription ), $expected_result );
+	}
 }
