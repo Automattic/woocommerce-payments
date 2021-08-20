@@ -49,18 +49,16 @@ const getDisputeProductType = ( dispute ) => {
 // Temporary MVP data wrapper
 export default ( { query } ) => {
 	const { id: disputeId } = query;
+	const { dispute, isLoading, updateDispute } = useDispute( disputeId );
+
 	const {
-		dispute,
-		isLoading,
 		isSavingEvidence,
 		evidenceTransient,
 		saveEvidence,
 		submitEvidence,
 		updateEvidenceTransientForDispute,
-		uploadFile,
-	} = useDispute( disputeId );
-
-	const { updateDispute } = useDisputeEvidence();
+		uploadFileEvidenceForDispute,
+	} = useDisputeEvidence( disputeId );
 
 	const { createInfoNotice } = useDispatch( 'core/notices' );
 
@@ -118,7 +116,7 @@ export default ( { query } ) => {
 	};
 
 	const doUploadFile = async ( key, file ) => {
-		uploadFile( disputeId, key, file );
+		uploadFileEvidenceForDispute( disputeId, key, file );
 	};
 
 	const doSave = async ( submit ) => {
