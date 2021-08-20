@@ -219,33 +219,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Checks if the button is branded.
-	 *
-	 * @return  boolean
-	 */
-	public function is_branded_button() {
-		return 'branded' === $this->gateway->get_option( 'payment_request_button_type' );
-	}
-
-	/**
-	 * Checks if the button is custom.
-	 *
-	 * @return boolean
-	 */
-	public function is_custom_button() {
-		return 'custom' === $this->gateway->get_option( 'payment_request_button_type' );
-	}
-
-	/**
-	 * Returns custom button css selector.
-	 *
-	 * @return string
-	 */
-	public function custom_button_selector() {
-		return $this->is_custom_button() ? '#wcpay-custom-button' : '';
-	}
-
-	/**
 	 * Gets the product total price.
 	 *
 	 * @param object $product WC_Product_* object.
@@ -716,14 +689,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
 			<div id="wcpay-payment-request-button">
-				<?php
-				if ( $this->is_custom_button() ) {
-					$label      = esc_html( $this->gateway->get_option( 'payment_request_button_label' ) );
-					$class_name = esc_attr( 'button ' . $this->gateway->get_option( 'payment_request_button_theme' ) );
-					$style      = esc_attr( 'height:' . $this->get_button_height() . 'px;' );
-					echo '<button id="wcpay-custom-button" class="' . esc_attr( $class_name ) . '" style="' . esc_attr( $style ) . '">' . esc_html( $label ) . '</button>';
-				}
-				?>
 				<!-- A Stripe Element will be inserted here. -->
 			</div>
 		</div>

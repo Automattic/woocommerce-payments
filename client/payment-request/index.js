@@ -15,11 +15,7 @@ import {
 	paymentMethodHandler,
 } from './event-handlers.js';
 
-import {
-	shouldUseGooglePayBrand,
-	getPaymentRequest,
-	displayLoginConfirmation,
-} from './utils';
+import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -311,34 +307,6 @@ jQuery( ( $ ) => {
 		 * @return {Object} Stripe paymentRequest element or custom button jQuery element.
 		 */
 		createPaymentRequestButton: ( elements, paymentRequest ) => {
-			let button;
-			if ( wcpayPaymentRequestParams.button.is_custom ) {
-				button = $( wcpayPaymentRequestParams.button.css_selector );
-				if ( button.length ) {
-					// We fallback to default paymentRequest button if no custom button is found in the UI.
-					// Add flag to be sure that created button is custom button rather than fallback element.
-					button.data( 'isCustom', true );
-					return button;
-				}
-			}
-
-			if ( wcpayPaymentRequestParams.button.is_branded ) {
-				if ( shouldUseGooglePayBrand() ) {
-					button = wcpayPaymentRequest.createGooglePayButton();
-					// Add flag to be sure that created button is branded rather than fallback element.
-					button.data( 'isBranded', true );
-					return button;
-				}
-
-				// Not implemented branded buttons default to Stripe's button
-				// Apple Pay buttons can also fall back to Stripe's button, as it's already branded
-				// Set button type to default or buy, depending on branded type, to avoid issues with Stripe
-				wcpayPaymentRequestParams.button.type =
-					'long' === wcpayPaymentRequestParams.button.branded_type
-						? 'buy'
-						: 'default';
-			}
-
 			return elements.create( 'paymentRequestButton', {
 				paymentRequest: paymentRequest,
 				style: {
@@ -358,16 +326,6 @@ jQuery( ( $ ) => {
 		 *
 		 * @return {boolean} True when prButton is custom button jQuery element.
 		 */
-		isCustomPaymentRequestButton: ( prButton ) =>
-			prButton &&
-			'function' === typeof prButton.data &&
-			prButton.data( 'isCustom' ),
-
-		isBrandedPaymentRequestButton: ( prButton ) =>
-			prButton &&
-			'function' === typeof prButton.data &&
-			prButton.data( 'isBranded' ),
-
 		createGooglePayButton: () => {
 			const type = wcpayPaymentRequestParams.button.branded_type;
 			const locale = wcpayPaymentRequestParams.button.locale;
@@ -414,10 +372,7 @@ jQuery( ( $ ) => {
 					paymentRequest
 				);
 			} else {
-				wcpayPaymentRequest.attachCartPageEventListeners(
-					prButton,
-					paymentRequest
-				);
+				wcpayPaymentRequest.attachCartPageEventListeners( prButton );
 			}
 		},
 
@@ -459,22 +414,10 @@ jQuery( ( $ ) => {
 				}
 
 				wcpayPaymentRequest.addToCart();
-
-				if (
-					wcpayPaymentRequest.isCustomPaymentRequestButton(
-						prButton
-					) ||
-					wcpayPaymentRequest.isBrandedPaymentRequestButton(
-						prButton
-					)
-				) {
-					evt.preventDefault();
-					paymentRequest.show();
-				}
 			} );
 
 			$( document.body ).on( 'woocommerce_variation_has_changed', () => {
-				wcpayPaymentRequest.blockPaymentRequestButton( prButton );
+				wcpayPaymentRequest.blockPaymentRequestButton();
 
 				$.when( wcpayPaymentRequest.getSelectedProductData() ).then(
 					( response ) => {
@@ -484,9 +427,7 @@ jQuery( ( $ ) => {
 								displayItems: response.displayItems,
 							} )
 						).then( () => {
-							wcpayPaymentRequest.unblockPaymentRequestButton(
-								prButton
-							);
+							wcpayPaymentRequest.unblockPaymentRequestButton();
 						} );
 					}
 				);
@@ -495,23 +436,21 @@ jQuery( ( $ ) => {
 			// Block the payment request button as soon as an "input" event is fired, to avoid sync issues
 			// when the customer clicks on the button before the debounced event is processed.
 			$( '.quantity' ).on( 'input', '.qty', () => {
-				wcpayPaymentRequest.blockPaymentRequestButton( prButton );
+				wcpayPaymentRequest.blockPaymentRequestButton();
 			} );
 
 			$( '.quantity' ).on(
 				'input',
 				'.qty',
 				wcpayPaymentRequest.debounce( 250, () => {
-					wcpayPaymentRequest.blockPaymentRequestButton( prButton );
+					wcpayPaymentRequest.blockPaymentRequestButton();
 					paymentRequestError = [];
 
 					$.when( wcpayPaymentRequest.getSelectedProductData() ).then(
 						( response ) => {
 							if ( response.error ) {
 								paymentRequestError = [ response.error ];
-								wcpayPaymentRequest.unblockPaymentRequestButton(
-									prButton
-								);
+								wcpayPaymentRequest.unblockPaymentRequestButton();
 							} else {
 								$.when(
 									paymentRequest.update( {
@@ -519,9 +458,7 @@ jQuery( ( $ ) => {
 										displayItems: response.displayItems,
 									} )
 								).then( () => {
-									wcpayPaymentRequest.unblockPaymentRequestButton(
-										prButton
-									);
+									wcpayPaymentRequest.unblockPaymentRequestButton();
 								} );
 							}
 						}
@@ -530,45 +467,18 @@ jQuery( ( $ ) => {
 			);
 		},
 
-		attachCartPageEventListeners: ( prButton, paymentRequest ) => {
+		attachCartPageEventListeners: ( prButton ) => {
 			prButton.on( 'click', ( evt ) => {
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( wcpayPaymentRequestParams.login_confirmation ) {
 					evt.preventDefault();
 					displayLoginConfirmation( paymentRequestType );
-					return;
-				}
-
-				if (
-					wcpayPaymentRequest.isCustomPaymentRequestButton(
-						prButton
-					) ||
-					wcpayPaymentRequest.isBrandedPaymentRequestButton(
-						prButton
-					)
-				) {
-					evt.preventDefault();
-					paymentRequest.show();
 				}
 			} );
 		},
 
 		showPaymentRequestButton: ( prButton ) => {
-			if (
-				wcpayPaymentRequest.isCustomPaymentRequestButton( prButton )
-			) {
-				prButton.addClass( 'is-active' );
-				$(
-					'#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator'
-				).show();
-			} else if (
-				wcpayPaymentRequest.isBrandedPaymentRequestButton( prButton )
-			) {
-				$(
-					'#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator'
-				).show();
-				$( '#wcpay-payment-request-button' ).html( prButton );
-			} else if ( $( '#wcpay-payment-request-button' ).length ) {
+			if ( $( '#wcpay-payment-request-button' ).length ) {
 				$(
 					'#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator'
 				).show();
@@ -576,7 +486,7 @@ jQuery( ( $ ) => {
 			}
 		},
 
-		blockPaymentRequestButton: ( prButton ) => {
+		blockPaymentRequestButton: () => {
 			// check if element isn't already blocked before calling block() to avoid blinking overlay issues
 			// blockUI.isBlocked is either undefined or 0 when element is not blocked
 			if (
@@ -586,20 +496,10 @@ jQuery( ( $ ) => {
 			}
 
 			$( '#wcpay-payment-request-button' ).block( { message: null } );
-			if (
-				wcpayPaymentRequest.isCustomPaymentRequestButton( prButton )
-			) {
-				prButton.addClass( 'is-blocked' );
-			}
 		},
 
-		unblockPaymentRequestButton: ( prButton ) => {
+		unblockPaymentRequestButton: () => {
 			$( '#wcpay-payment-request-button' ).unblock();
-			if (
-				wcpayPaymentRequest.isCustomPaymentRequestButton( prButton )
-			) {
-				prButton.removeClass( 'is-blocked' );
-			}
 		},
 
 		/**
