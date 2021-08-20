@@ -148,7 +148,7 @@
       <code>WC_Subscription</code>
     </UndefinedClass>
     <UndefinedFunction occurrences="1">
-      <code>wcs_order_contains_subscription( $order_id, 'parent' )</code>
+      <code>wcs_order_contains_subscription( $order, 'parent' )</code>
     </UndefinedFunction>
   </file>
 </files>

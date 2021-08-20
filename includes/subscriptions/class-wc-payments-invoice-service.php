@@ -86,22 +86,24 @@ class WC_Payments_Invoice_Service {
 	 * @param string $new_status The order's new status.
 	 */
 	public function maybe_record_first_invoice_payment( int $order_id, string $old_status, string $new_status ) {
-		if ( wcs_order_contains_subscription( $order_id, 'parent' ) ) {
-			$order = wc_get_order( $order_id );
+		$order = wc_get_order( $order_id );
 
-			if ( ! $order ) {
-				return;
-			}
+		if ( ! $order ) {
+			return;
+		}
 
-			$needed_payment  = in_array( $old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', [ 'pending', 'on-hold', 'failed' ], $order ), true );
-			$order_completed = in_array( $new_status, [ apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ], true );
-			$invoice_id      = self::get_order_invoice_id( $order );
+		$invoice_id = self::get_order_invoice_id( $order );
 
-			if ( $invoice_id && $needed_payment && $order_completed ) {
-				// TODO: Maybe get the invoice first and check if it's not already completed
-				// update the status of the invoice to paid but don't charge the customer by using paid_out_of_band parameter.
-				$this->payments_api_client->charge_invoice( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
-			}
+		if ( ! $invoice_id || ! wcs_order_contains_subscription( $order, 'parent' ) ) {
+			return;
+		}
+
+		$needed_payment  = in_array( $old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', [ 'pending', 'on-hold', 'failed' ], $order ), true );
+		$order_completed = in_array( $new_status, [ apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ], true );
+
+		if ( $needed_payment && $order_completed ) {
+			// Update the status of the invoice to paid but don't charge the customer by using paid_out_of_band parameter.
+			$this->payments_api_client->charge_invoice( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
 		}
 	}
 
