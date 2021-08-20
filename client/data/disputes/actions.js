@@ -56,7 +56,7 @@ export function updateEvidenceTransientForDispute(
 
 export function* acceptDispute( id ) {
 	try {
-		yield dispatch( STORE_NAME, 'startResolution', 'getDispute', [ id ] );
+		yield dispatch( STORE_NAME ).startResolution( 'getDispute', [ id ] );
 
 		const dispute = yield apiFetch( {
 			path: `${ NAMESPACE }/disputes/${ id }/close`,
@@ -64,7 +64,7 @@ export function* acceptDispute( id ) {
 		} );
 
 		yield updateDispute( dispute );
-		yield dispatch( STORE_NAME, 'finishResolution', 'getDispute', [ id ] );
+		yield dispatch( STORE_NAME ).finishResolution( 'getDispute', [ id ] );
 
 		// Redirect to Disputes list.
 		getHistory().push(
@@ -85,14 +85,14 @@ export function* acceptDispute( id ) {
 					dispute.order.number
 			  )
 			: __( 'You have accepted the dispute.', 'woocommerce-payments' );
-		yield dispatch( 'core/notices', 'createSuccessNotice', message );
+		yield dispatch( 'core/notices' ).createSuccessNotice( message );
 	} catch ( e ) {
 		const message = __(
 			'There has been an error accepting the dispute. Please try again later.',
 			'woocommerce-payments'
 		);
 		wcpayTracks.recordEvent( 'wcpay_dispute_accept_failed' );
-		yield dispatch( 'core/notices', 'createErrorNotice', message );
+		yield dispatch( 'core/notices' ).createErrorNotice( message );
 	}
 }
 
@@ -114,7 +114,7 @@ function* handleSaveSuccess( id, submit ) {
 			We rely on WC-Admin Transient notices to display success message.
 			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
 		*/
-	yield dispatch( 'core/notices', 'createSuccessNotice', message, {
+	yield dispatch( 'core/notices' ).createSuccessNotice( message, {
 		actions: [
 			{
 				label: submit
@@ -145,9 +145,7 @@ function* handleSaveError( err, submit ) {
 	const message = submit
 		? __( 'Failed to submit evidence. (%s)', 'woocommerce-payments' )
 		: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
-	yield dispatch(
-		'core/notices',
-		'createErrorNotice',
+	yield dispatch( 'core/notices' ).createErrorNotice(
 		sprintf( message, err.message )
 	);
 }
