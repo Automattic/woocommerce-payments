@@ -8,6 +8,7 @@ import { apiFetch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
+import { some } from 'lodash';
 
 /**
  * Internal dependencies
@@ -154,6 +155,17 @@ export function* submitEvidence( disputeId, evidence ) {
 	let error = null;
 	const dispute = yield select( STORE_NAME ).getDispute( disputeId );
 
+	// Prevent submit if upload is in progress.
+	if ( some( dispute.isUploading ) ) {
+		dispatch( 'core/notices' ).createInfoNotice(
+			__(
+				'Please wait until file upload is finished',
+				'woocommerce-payments'
+			)
+		);
+		return;
+	}
+
 	yield updateIsSavingEvidenceForDispute( disputeId, true );
 
 	try {
@@ -186,6 +198,17 @@ export function* submitEvidence( disputeId, evidence ) {
 export function* saveEvidence( disputeId, evidence ) {
 	let error = null;
 	const dispute = yield select( STORE_NAME ).getDispute( disputeId );
+
+	// Prevent submit if upload is in progress.
+	if ( some( dispute.isUploading ) ) {
+		dispatch( 'core/notices' ).createInfoNotice(
+			__(
+				'Please wait until file upload is finished',
+				'woocommerce-payments'
+			)
+		);
+		return;
+	}
 
 	yield updateIsSavingEvidenceForDispute( disputeId, true );
 

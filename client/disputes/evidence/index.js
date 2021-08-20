@@ -5,7 +5,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useEffect, useMemo } from '@wordpress/element';
-import { useDispatch } from '@wordpress/data';
 
 import { some, isMatchWith } from 'lodash';
 
@@ -60,8 +59,6 @@ export default ( { query } ) => {
 		uploadFileEvidenceForDispute,
 	} = useDisputeEvidence( disputeId );
 
-	const { createInfoNotice } = useDispatch( 'core/notices' );
-
 	const { setMessage: setNavigationMessage } = useConfirmNavigation();
 
 	useEffect( () => {
@@ -103,7 +100,6 @@ export default ( { query } ) => {
 			[ key ]: value,
 		} );
 	};
-	const isUploadingEvidence = () => some( dispute.isUploading );
 
 	const doRemoveFile = ( key ) => {
 		updateEvidence( key, '' );
@@ -120,17 +116,6 @@ export default ( { query } ) => {
 	};
 
 	const doSave = async ( submit ) => {
-		// Prevent submit if upload is in progress.
-		if ( isUploadingEvidence() ) {
-			createInfoNotice(
-				__(
-					'Please wait until file upload is finished',
-					'woocommerce-payments'
-				)
-			);
-			return;
-		}
-
 		if ( submit ) {
 			submitEvidence( dispute.id, evidenceTransient );
 		} else {
