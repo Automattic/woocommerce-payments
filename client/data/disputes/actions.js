@@ -150,35 +150,68 @@ function* handleSaveError( err, submit ) {
 	);
 }
 
-export function* saveDispute( id, submit, evidence, setEvidence ) {
-	const dispute = yield resolveSelect( STORE_NAME, 'getDispute', id );
+export function* submitEvidence( disputeId, evidence ) {
+	let error = null;
+	const dispute = yield resolveSelect( STORE_NAME, 'getDispute', disputeId );
 
-	yield updateIsSavingEvidenceForDispute( id, true );
+	yield updateIsSavingEvidenceForDispute( disputeId, true );
 
 	try {
-		wcpayTracks.recordEvent(
-			submit
-				? 'wcpay_dispute_submit_evidence_clicked'
-				: 'wcpay_dispute_save_evidence_clicked'
-		);
+		wcpayTracks.recordEvent( 'wcpay_dispute_submit_evidence_clicked' );
 
-		const { metadata } = dispute;
 		const updatedDispute = yield apiFetch( {
-			path: `${ NAMESPACE }/disputes/${ id }`,
+			path: `${ NAMESPACE }/disputes/${ disputeId }`,
 			method: 'post',
 			data: {
 				// Send full evidence, as submission does not appear to work without new evidence despite being optional.
 				evidence: { ...dispute.evidence, ...evidence },
-				metadata,
-				submit,
+				metadata: dispute.metadata,
+				submit: true,
 			},
 		} );
-		setEvidence( {} );
-		yield handleSaveSuccess( id, submit );
+
+		yield updateEvidenceTransientForDispute( disputeId, {} );
+		yield handleSaveSuccess( disputeId, true );
 		yield updateDispute( updatedDispute );
 	} catch ( err ) {
-		yield handleSaveError( err, submit );
+		yield handleSaveError( err, true );
+		error = err;
 	} finally {
-		yield updateIsSavingEvidenceForDispute( id, false );
+		yield updateIsSavingEvidenceForDispute( disputeId, false );
 	}
+
+	return null === error;
+}
+
+export function* saveEvidence( disputeId, evidence ) {
+	let error = null;
+	const dispute = yield resolveSelect( STORE_NAME, 'getDispute', disputeId );
+
+	yield updateIsSavingEvidenceForDispute( disputeId, true );
+
+	try {
+		wcpayTracks.recordEvent( 'wcpay_dispute_save_evidence_clicked' );
+
+		const updatedDispute = yield apiFetch( {
+			path: `${ NAMESPACE }/disputes/${ disputeId }`,
+			method: 'post',
+			data: {
+				// Send full evidence, as submission does not appear to work without new evidence despite being optional.
+				evidence: { ...dispute.evidence, ...evidence },
+				metadata: dispute.metadata,
+				submit: false,
+			},
+		} );
+
+		yield updateEvidenceTransientForDispute( disputeId, {} );
+		yield handleSaveSuccess( disputeId, false );
+		yield updateDispute( updatedDispute );
+	} catch ( err ) {
+		yield handleSaveError( err, false );
+		error = err;
+	} finally {
+		yield updateIsSavingEvidenceForDispute( disputeId, false );
+	}
+
+	return null === error;
 }

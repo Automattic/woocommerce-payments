@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useEffect, useMemo } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
 
@@ -50,47 +50,61 @@ const getDisputeProductType = ( dispute ) => {
 // Temporary MVP data wrapper
 export default ( { query } ) => {
 	const { id: disputeId } = query;
-	const { dispute, isLoading, isSavingEvidence, saveDispute } = useDispute(
-		disputeId
-	);
+	const {
+		dispute,
+		isLoading,
+		isSavingEvidence,
+		evidenceTransient,
+		saveEvidence,
+		submitEvidence,
+		updateEvidenceTransientForDispute,
+	} = useDispute( disputeId );
 
 	const { updateDispute } = useDisputeEvidence();
 
-	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
 	const { createInfoNotice } = useDispatch( 'core/notices' );
 
-	const pristine =
-		! dispute ||
-		! evidence || // Empty evidence transient means no local updates.
-		isMatchWith(
-			dispute.evidence,
-			evidence,
-			( disputeValue, formValue ) => {
-				// Treat null and '' as equal values.
-				if ( null === disputeValue && ! formValue ) {
-					return true;
+	const { setMessage: setNavigationMessage } = useConfirmNavigation();
+
+	useEffect( () => {
+		const isPristine =
+			! dispute ||
+			! evidenceTransient || // Empty evidence transient means no local updates.
+			isMatchWith(
+				dispute.evidence,
+				evidenceTransient,
+				( disputeValue, formValue ) => {
+					// Treat null and '' as equal values.
+					if ( null === disputeValue && ! formValue ) {
+						return true;
+					}
 				}
-			}
-		);
+			);
 
-	const confirmationNavigationCallback = useConfirmNavigation( () => {
-		if ( pristine ) {
-			return;
+		if ( isPristine ) {
+			setNavigationMessage( '' );
+		} else if ( isSavingEvidence ) {
+			// We don't want to show the confirmation message while saving evidence.
+			setNavigationMessage( '' );
+		} else if ( some( dispute.isUploading ) ) {
+			// We don't want to show the confirmation message while submitting evidence.
+			setNavigationMessage( '' );
+		} else {
+			setNavigationMessage(
+				__(
+					'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
+					'woocommerce-payments'
+				)
+			);
 		}
+	}, [ dispute, evidenceTransient, setNavigationMessage, isSavingEvidence ] );
 
-		return __(
-			'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
-			'woocommerce-payments'
-		);
-	} );
-
-	useEffect( confirmationNavigationCallback, [
-		pristine,
-		confirmationNavigationCallback,
-	] );
-
-	const updateEvidence = ( key, value ) =>
-		setEvidence( ( e ) => ( { ...e, [ key ]: value } ) );
+	const updateEvidence = ( key, value ) => {
+		updateEvidenceTransientForDispute( disputeId, {
+			...evidenceTransient,
+			[ key ]: value,
+		} );
+	};
 	const isUploadingEvidence = () => some( dispute.isUploading );
 
 	const doRemoveFile = ( key ) => {
@@ -205,7 +219,11 @@ export default ( { query } ) => {
 			return;
 		}
 
-		saveDispute( dispute.id, submit, evidence, setEvidence );
+		if ( submit ) {
+			submitEvidence( dispute.id, evidenceTransient );
+		} else {
+			saveEvidence( dispute.id, evidenceTransient );
+		}
 	};
 
 	const productType = getDisputeProductType( dispute );
@@ -238,7 +256,7 @@ export default ( { query } ) => {
 				dispute
 					? {
 							...dispute.evidence,
-							...evidence,
+							...evidenceTransient,
 							metadata: dispute.metadata || {},
 							isUploading: dispute.isUploading || {},
 							uploadingErrors: dispute.uploadingErrors || {},

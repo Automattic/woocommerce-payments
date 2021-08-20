@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useCallback, useRef } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -13,18 +13,13 @@ import { getHistory } from '@woocommerce/navigation';
  * - const callback = useConfirmNavigation( () => 'Are you sure you want to leave?' );
  *   useEffect( callback , [ callback, otherDependency ] );
  *
- * @param {Function} getMessage returns confirmation message string if one should appear
- * @return {Function} The callback to execute
+ * @param {string} message the confirmation message string if one should appear
+ * @return {Function} A setter for the navigation message
  */
-const useConfirmNavigation = ( getMessage ) => {
-	const savedCallback = useRef();
+const useConfirmNavigation = () => {
+	const [ message, setMessage ] = useState( '' );
 
 	useEffect( () => {
-		savedCallback.current = getMessage;
-	} );
-
-	return useCallback( () => {
-		const message = savedCallback.current();
 		if ( ! message ) {
 			return;
 		}
@@ -40,7 +35,9 @@ const useConfirmNavigation = ( getMessage ) => {
 			window.removeEventListener( 'beforeunload', handler );
 			unblock();
 		};
-	}, [] );
+	}, [ message ] );
+
+	return { setMessage };
 };
 
 export default useConfirmNavigation;
