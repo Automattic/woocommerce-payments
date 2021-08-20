@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Button,
@@ -19,9 +20,10 @@ import moment from 'moment';
  * Internal dependencies.
  */
 import { FileUploadControl } from './file-upload';
+import type { Section, Field } from './fields';
 
 /* If description is an array, separate with newline elements. */
-const expandHelp = ( description ) => {
+const expandHelp = ( description: string | string[] ) => {
 	return Array.isArray( description )
 		? flatten(
 				description.map( ( line, i ) => [ line, <br key={ i } /> ] )
@@ -29,7 +31,28 @@ const expandHelp = ( description ) => {
 		: description;
 };
 
-export const DisputeEvidenceForm = ( props ) => {
+type Evidence = {
+	[ key: string ]:
+		| string
+		| Record< string, boolean >
+		| Record< string, string >;
+	isUploading: Record< string, boolean >;
+	metadata: Record< string, string >;
+	uploadingErrors: Record< string, string >;
+};
+
+type Props = {
+	fields: Section[];
+	evidence: Evidence;
+	onChange: ( arg0: string, arg1: unknown ) => void;
+	onFileChange: unknown;
+	onFileRemove: unknown;
+	onSave: ( arg0: boolean ) => void;
+	readOnly: boolean;
+	isSavingEvidence: boolean;
+};
+
+export const DisputeEvidenceForm = ( props: Props ): JSX.Element | null => {
 	const {
 		fields,
 		evidence,
@@ -45,15 +68,19 @@ export const DisputeEvidenceForm = ( props ) => {
 		return null;
 	}
 
-	const composeDefaultControlProps = ( field ) => ( {
+	const composeDefaultControlProps = ( field: Field ) => ( {
 		label: field.label,
-		value: evidence[ field.key ] || '',
-		onChange: ( value ) => onChange( field.key, value ),
+		value:
+			( evidence[
+				field.key
+			] as string ) /* we know this will be a string, but it's difficult to represent in types */ ||
+			'',
+		onChange: ( value: unknown ) => onChange( field.key, value ),
 		disabled: readOnly,
-		help: expandHelp( field.description ),
+		help: expandHelp( field.description ?? '' ),
 	} );
 
-	const composeFileUploadProps = ( field ) => {
+	const composeFileUploadProps = ( field: Field ) => {
 		const fileName =
 			( evidence.metadata && evidence.metadata[ field.key ] ) || '';
 		const isLoading =
@@ -74,11 +101,11 @@ export const DisputeEvidenceForm = ( props ) => {
 			isLoading,
 			isDone,
 			error,
-			help: expandHelp( field.description ),
+			help: expandHelp( field.description ?? '' ),
 		};
 	};
 
-	const composeFieldControl = ( field ) => {
+	const composeFieldControl = ( field: Field ) => {
 		switch ( field.type ) {
 			case 'file':
 				return (

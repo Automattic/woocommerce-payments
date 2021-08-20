@@ -6,7 +6,7 @@
 import { __ } from '@wordpress/i18n';
 import { includes } from 'lodash';
 
-type Field = {
+export type Field = {
 	key: string;
 	label?: string;
 	type: string;
@@ -15,7 +15,7 @@ type Field = {
 	productType?: string;
 };
 
-type Section = {
+export type Section = {
 	key: string;
 	title: string;
 	description?: string;
