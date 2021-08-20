@@ -8,6 +8,7 @@
 * Fix - Keep track of customer id in non logged in users.
 * Add - Order status validation for payments/orders/{order_id}/create_customer API.
 * Add - Add country code paramater to ExPlat API requests.
+* Update - Bump minimum supported version of WooCommerce from 5.3 to 5.4.
 
 = 2.8.4 - 2021-08-17 =
 * Fix - Fix database connection error on account cache clear.
