@@ -45,8 +45,8 @@ export type FormProps = {
 	fields: Section[];
 	evidence: Evidence;
 	onChange: ( arg0: string, arg1: unknown ) => void;
-	onFileChange: unknown;
-	onFileRemove: unknown;
+	onFileChange: ( key: string, file?: Blob ) => void;
+	onFileRemove: ( key: string ) => void;
 	onSave: ( arg0: boolean ) => void;
 	readOnly: boolean;
 	isSavingEvidence: boolean;
