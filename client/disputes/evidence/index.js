@@ -6,7 +6,6 @@
 import { __ } from '@wordpress/i18n';
 import { useEffect, useMemo } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
-import apiFetch from '@wordpress/api-fetch';
 
 import { some, isMatchWith } from 'lodash';
 
@@ -58,6 +57,7 @@ export default ( { query } ) => {
 		saveEvidence,
 		submitEvidence,
 		updateEvidenceTransientForDispute,
+		uploadFile,
 	} = useDispute( disputeId );
 
 	const { updateDispute } = useDisputeEvidence();
@@ -117,94 +117,8 @@ export default ( { query } ) => {
 		} );
 	};
 
-	const fileSizeExceeded = ( latestFileSize ) => {
-		const fileSizeLimitInBytes = 4500000;
-		const fileSizes = dispute.fileSize
-			? Object.values( dispute.fileSize )
-			: [];
-		const totalFileSize =
-			fileSizes.reduce( ( acc, fileSize ) => acc + fileSize, 0 ) +
-			latestFileSize;
-		if ( fileSizeLimitInBytes < totalFileSize ) {
-			createInfoNotice(
-				__(
-					"The files you've attached to this dispute as evidence will exceed the limit for a " +
-						"dispute's total size. Try using smaller files as evidence. Hint: if you've attached " +
-						'images, you might want to try providing them in lower resolutions.',
-					'woocommerce-payments'
-				)
-			);
-			return true;
-		}
-	};
-
 	const doUploadFile = async ( key, file ) => {
-		if ( ! file ) {
-			return;
-		}
-
-		if ( fileSizeExceeded( file.size ) ) {
-			return;
-		}
-
-		wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_started', {
-			type: key,
-		} );
-
-		const body = new FormData();
-		body.append( 'file', file );
-		body.append( 'purpose', 'dispute_evidence' );
-
-		// Set request status for UI.
-		updateDispute( {
-			...dispute,
-			metadata: { ...dispute.metadata, [ key ]: '' },
-			isUploading: { ...dispute.isUploading, [ key ]: true },
-			uploadingErrors: { ...dispute.uploadingErrors, [ key ]: '' },
-		} );
-
-		// Force reload evidence components.
-		updateEvidence( key, '' );
-
-		try {
-			const uploadedFile = await apiFetch( {
-				path: '/wc/v3/payments/file',
-				method: 'post',
-				body,
-			} );
-			// Store uploaded file name in metadata to display in submitted evidence or saved for later form.
-			updateDispute( {
-				...dispute,
-				metadata: {
-					...dispute.metadata,
-					[ key ]: uploadedFile.filename,
-				},
-				isUploading: { ...dispute.isUploading, [ key ]: false },
-				fileSize: { ...dispute.fileSize, [ key ]: uploadedFile.size },
-			} );
-			updateEvidence( key, uploadedFile.id );
-
-			wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_success', {
-				type: key,
-			} );
-		} catch ( err ) {
-			wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_failed', {
-				message: err.message,
-			} );
-
-			updateDispute( {
-				...dispute,
-				metadata: { ...dispute.metadata, [ key ]: '' },
-				isUploading: { ...dispute.isUploading, [ key ]: false },
-				uploadingErrors: {
-					...dispute.uploadingErrors,
-					[ key ]: err.message,
-				},
-			} );
-
-			// Force reload evidence components.
-			updateEvidence( key, '' );
-		}
+		uploadFile( disputeId, key, file );
 	};
 
 	const doSave = async ( submit ) => {

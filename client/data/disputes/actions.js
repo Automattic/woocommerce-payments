@@ -215,3 +215,107 @@ export function* saveEvidence( disputeId, evidence ) {
 
 	return null === error;
 }
+
+const fileSizeExceeded = ( dispute, latestFileSize ) => {
+	const fileSizeLimitInBytes = 4500000;
+	const fileSizes = dispute.fileSize ? Object.values( dispute.fileSize ) : [];
+	const totalFileSize =
+		fileSizes.reduce( ( acc, fileSize ) => acc + fileSize, 0 ) +
+		latestFileSize;
+	if ( fileSizeLimitInBytes < totalFileSize ) {
+		dispatch( 'core/notices' ).createInfoNotice(
+			__(
+				"The files you've attached to this dispute as evidence will exceed the limit for a " +
+					"dispute's total size. Try using smaller files as evidence. Hint: if you've attached " +
+					'images, you might want to try providing them in lower resolutions.',
+				'woocommerce-payments'
+			)
+		);
+		return true;
+	}
+};
+
+export function* uploadFile( disputeId, key, file ) {
+	if ( ! file ) {
+		return;
+	}
+
+	const dispute = yield select( STORE_NAME ).getDispute( disputeId );
+	const evidenceTransient = yield select(
+		STORE_NAME
+	).getEvidenceTransientForDispute( disputeId );
+
+	if ( fileSizeExceeded( dispute, file.size ) ) {
+		return;
+	}
+
+	wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_started', {
+		type: key,
+	} );
+
+	const body = new FormData();
+	body.append( 'file', file );
+	body.append( 'purpose', 'dispute_evidence' );
+
+	// Set request status for UI.
+	yield updateDispute( {
+		...dispute,
+		metadata: { ...dispute.metadata, [ key ]: '' },
+		isUploading: { ...dispute.isUploading, [ key ]: true },
+		uploadingErrors: { ...dispute.uploadingErrors, [ key ]: '' },
+	} );
+
+	// Force reload evidence components.
+	// updateEvidence( key, '' );
+	yield updateEvidenceTransientForDispute( disputeId, {
+		...evidenceTransient,
+		[ key ]: '',
+	} );
+
+	try {
+		const uploadedFile = yield apiFetch( {
+			path: '/wc/v3/payments/file',
+			method: 'post',
+			body,
+		} );
+		// Store uploaded file name in metadata to display in submitted evidence or saved for later form.
+		yield updateDispute( {
+			...dispute,
+			metadata: {
+				...dispute.metadata,
+				[ key ]: uploadedFile.filename,
+			},
+			isUploading: { ...dispute.isUploading, [ key ]: false },
+			fileSize: { ...dispute.fileSize, [ key ]: uploadedFile.size },
+		} );
+		// updateEvidence( key, uploadedFile.id );
+		yield updateEvidenceTransientForDispute( disputeId, {
+			[ key ]: uploadedFile.id,
+		} );
+
+		wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_success', {
+			type: key,
+		} );
+	} catch ( err ) {
+		wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_failed', {
+			message: err.message,
+		} );
+
+		yield updateDispute( {
+			...dispute,
+			metadata: { ...dispute.metadata, [ key ]: '' },
+			isUploading: { ...dispute.isUploading, [ key ]: false },
+			uploadingErrors: {
+				...dispute.uploadingErrors,
+				[ key ]: err.message,
+			},
+		} );
+
+		// Force reload evidence components.
+		// updateEvidence( key, '' );
+		yield updateEvidenceTransientForDispute( disputeId, {
+			...evidenceTransient,
+			[ key ]: '',
+		} );
+	}
+}
