@@ -6,8 +6,27 @@
 import { __ } from '@wordpress/i18n';
 import { includes } from 'lodash';
 
+type Field = {
+	key: string;
+	label?: string;
+	type: string;
+	description?: string | string[];
+	denormalized?: boolean;
+	productType?: string;
+};
+
+type Section = {
+	key: string;
+	title: string;
+	description?: string;
+	fields: Field[];
+	reason?: string | string[];
+	productType?: string;
+	denormalized?: boolean;
+};
+
 /* eslint-disable max-len */
-const sections = [
+const sections: Section[] = [
 	{
 		key: 'general',
 		title: __( 'General evidence', 'woocommerce-payments' ),
@@ -399,7 +418,10 @@ const sections = [
  *
  * @return {Array} Sections of fields.
  */
-export default ( reason, productType ) => {
+export default (
+	reason: string,
+	productType: string
+): ( Section | null )[] => {
 	if ( ! reason || ! productType ) {
 		return [];
 	}
