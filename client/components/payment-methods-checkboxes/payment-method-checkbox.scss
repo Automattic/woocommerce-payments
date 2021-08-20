@@ -30,3 +30,11 @@
 		}
 	}
 }
+
+.woocommerce-payments__payment-method-icon {
+	@include breakpoint( '<660px' ) {
+		svg {
+			display: none;
+		}
+	}
+}
