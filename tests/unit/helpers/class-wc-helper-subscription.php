@@ -65,11 +65,19 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $next_payment;
 
 	/**
+<<<<<<< HEAD
 	 * End timestamp
 	 *
 	 * @var int
 	 */
 	public $end;
+=======
+	 * Helper variable for mocking the subscription's status.
+	 *
+	 * @var string
+	 */
+	public $status;
+>>>>>>> 3968beb8 (Add unit tests for the WC_Payments_Subscription_Change_Payment_Method_Handler class)
 
 	/**
 	 * Taxes.
@@ -162,5 +170,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function add_order_note( $note = '' ) {
 		// do nothing.
+	}
+
+	public function get_status() {
+		return $this->status;
+	}
+
+	public function has_status( $status ) {
+		return ( is_array( $status ) && in_array( $this->get_status(), $status, true ) ) || $this->get_status() === $status;
 	}
 }
