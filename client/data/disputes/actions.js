@@ -72,7 +72,7 @@ export function updateEvidenceUploadErrorsForDispute(
 	errorMessage
 ) {
 	return {
-		type: TYPES.SET_EVIDENCE_UPLOAD_ERROR_FOR_DISPUTE,
+		type: TYPES.SET_EVIDENCE_UPLOAD_ERRORS_FOR_DISPUTE,
 		data: { id: disputeId, key, errorMessage },
 	};
 }
