@@ -7,27 +7,48 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
 export const useDispute = ( id ) => {
-	const { dispute, isLoading, isSavingEvidence } = useSelect(
+	const {
+		dispute,
+		isLoading,
+		isSavingEvidence,
+		evidenceTransient,
+	} = useSelect(
 		( select ) => {
 			const {
 				getDispute,
 				isResolving,
 				getIsSavingEvidenceForDispute,
+				getEvidenceTransientForDispute,
 			} = select( STORE_NAME );
 
 			return {
 				dispute: getDispute( id ),
 				isLoading: isResolving( 'getDispute', [ id ] ),
 				isSavingEvidence: getIsSavingEvidenceForDispute( id ),
+				evidenceTransient: getEvidenceTransientForDispute( id ),
 			};
 		},
 		[ id ]
 	);
 
-	const { acceptDispute, saveDispute } = useDispatch( STORE_NAME );
+	const {
+		acceptDispute,
+		saveEvidence,
+		submitEvidence,
+		updateEvidenceTransientForDispute,
+	} = useDispatch( STORE_NAME );
 	const doAccept = () => acceptDispute( id );
 
-	return { dispute, isLoading, isSavingEvidence, doAccept, saveDispute };
+	return {
+		dispute,
+		isLoading,
+		isSavingEvidence,
+		evidenceTransient,
+		doAccept,
+		saveEvidence,
+		submitEvidence,
+		updateEvidenceTransientForDispute,
+	};
 };
 
 export const useDisputeEvidence = () => {
