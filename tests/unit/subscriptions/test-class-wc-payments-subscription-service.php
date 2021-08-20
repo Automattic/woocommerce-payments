@@ -95,6 +95,9 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$this->assertTrue( true );
 		$mock_subscription            = new WC_Subscription();
 		$mock_subscription->trial_end = 0;
+		$order                        = WC_Helper_Order::create_order();
+
+		$mock_subscription->set_parent( $order );
 
 		WC_Subscriptions_Synchroniser::$is_syncing_enabled = false;
 
