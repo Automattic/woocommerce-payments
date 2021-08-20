@@ -34,6 +34,10 @@ describe( 'Disputes reducer tests', () => {
 				dp_mock1: mockDisputes[ 0 ],
 			},
 			queries: {},
+			evidenceTransientForDispute: {},
+			evidenceUploadErrorsForDispute: {},
+			isSavingEvidenceForDispute: {},
+			isUploadingEvidenceForDispute: {},
 		} );
 
 		const stateAfterTwo = reducer( stateAfterOne, {
@@ -47,6 +51,10 @@ describe( 'Disputes reducer tests', () => {
 				dp_mock2: mockDisputes[ 1 ],
 			},
 			queries: {},
+			evidenceTransientForDispute: {},
+			evidenceUploadErrorsForDispute: {},
+			isSavingEvidenceForDispute: {},
+			isUploadingEvidenceForDispute: {},
 		} );
 	} );
 
@@ -70,6 +78,10 @@ describe( 'Disputes reducer tests', () => {
 					data: [ 'dp_mock1', 'dp_mock2' ],
 				},
 			},
+			evidenceTransientForDispute: {},
+			evidenceUploadErrorsForDispute: {},
+			isSavingEvidenceForDispute: {},
+			isUploadingEvidenceForDispute: {},
 		};
 
 		expect( reduced ).toStrictEqual( after );
