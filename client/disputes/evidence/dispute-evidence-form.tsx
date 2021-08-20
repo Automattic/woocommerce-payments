@@ -42,7 +42,7 @@ type Evidence = {
 };
 
 export type FormProps = {
-	fields: Section[];
+	fields: ( Section | null )[];
 	evidence: Evidence;
 	onChange: ( arg0: string, arg1: unknown ) => void;
 	onFileChange: ( key: string, file?: Blob ) => void;
@@ -142,11 +142,11 @@ export const DisputeEvidenceForm = ( props: FormProps ): JSX.Element | null => {
 
 	const evidenceSections = fields.map( ( section ) => {
 		return (
-			<Card size="large" key={ section.key }>
-				<CardHeader>{ section.title }</CardHeader>
+			<Card size="large" key={ section?.key }>
+				<CardHeader>{ section?.title }</CardHeader>
 				<CardBody>
-					{ section.description && <p>{ section.description }</p> }
-					{ section.fields.map( composeFieldControl ) }
+					{ section?.description && <p>{ section.description }</p> }
+					{ section?.fields?.map( composeFieldControl ) }
 				</CardBody>
 			</Card>
 		);

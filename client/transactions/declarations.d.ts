@@ -124,6 +124,10 @@ declare module '@woocommerce/navigation' {
 		path?: string,
 		currentQuery?: Query
 	) => void;
+
+	const getHistory: () => {
+		block: ( arg0: string ) => () => void;
+	};
 }
 
 declare module '@woocommerce/csv-export' {

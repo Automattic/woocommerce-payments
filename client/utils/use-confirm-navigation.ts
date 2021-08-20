@@ -12,10 +12,8 @@ import { getHistory } from '@woocommerce/navigation';
  * Usage:
  * - const callback = useConfirmNavigation( () => 'Are you sure you want to leave?' );
  *   useEffect( callback , [ callback, otherDependency ] );
- *
- * @param {string} message the confirmation message string if one should appear
- * @return {Function} A setter for the navigation message
  */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 const useConfirmNavigation = () => {
 	const [ message, setMessage ] = useState( '' );
 
@@ -24,9 +22,9 @@ const useConfirmNavigation = () => {
 			return;
 		}
 
-		const handler = ( event ) => {
+		const handler = ( event: Event ) => {
 			event.preventDefault();
-			event.returnValue = '';
+			event.returnValue = false;
 		};
 		window.addEventListener( 'beforeunload', handler );
 		const unblock = getHistory().block( message );

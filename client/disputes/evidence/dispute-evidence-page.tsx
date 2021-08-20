@@ -36,7 +36,7 @@ type Dispute = {
 	id: string;
 };
 
-interface Props extends FormProps {
+interface Props extends Omit< FormProps, 'readOnly' > {
 	isLoading: boolean;
 	dispute?: Dispute;
 	productType: string;

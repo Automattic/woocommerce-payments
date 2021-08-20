@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { __ } from '@wordpress/i18n';
 import { useEffect, useMemo } from '@wordpress/element';
 
@@ -12,13 +13,22 @@ import { some, isMatchWith } from 'lodash';
  * Internal dependencies.
  */
 import '../style.scss';
-import { useDisputeEvidence, useDispute } from 'wcpay/data';
+import { useDisputeEvidence, useDispute } from 'data';
 import evidenceFields from './fields';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import wcpayTracks from 'tracks';
 import { DisputeEvidencePage } from './dispute-evidence-page';
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const PRODUCT_TYPE_META_KEY = '__product_type';
+
+type Dispute = {
+	evidence_details?: {
+		has_evidence: boolean;
+	};
+	metadata: Record< string, string >;
+	productType: string;
+};
 
 /**
  * Retrieves product type from the dispute.
@@ -26,7 +36,7 @@ const PRODUCT_TYPE_META_KEY = '__product_type';
  * @param {Object?} dispute Dispute object
  * @return {string} dispute product type
  */
-const getDisputeProductType = ( dispute ) => {
+const getDisputeProductType = ( dispute?: Dispute ) => {
 	if ( ! dispute ) {
 		return '';
 	}
@@ -46,7 +56,7 @@ const getDisputeProductType = ( dispute ) => {
 };
 
 // Temporary MVP data wrapper
-export default ( { query } ) => {
+export default ( { query }: { query: { id: string } } ): JSX.Element => {
 	const { id: disputeId } = query;
 	const { dispute, isLoading, updateDispute } = useDispute( disputeId );
 
@@ -97,14 +107,14 @@ export default ( { query } ) => {
 		}
 	}, [ dispute, evidenceTransient, setNavigationMessage, isSavingEvidence ] );
 
-	const updateEvidence = ( key, value ) => {
+	const updateEvidence = ( key: string, value: unknown ) => {
 		updateEvidenceTransientForDispute( disputeId, {
 			...evidenceTransient,
 			[ key ]: value,
 		} );
 	};
 
-	const doRemoveFile = ( key ) => {
+	const doRemoveFile = ( key: string ) => {
 		updateEvidence( key, '' );
 		updateDispute( {
 			...dispute,
@@ -117,11 +127,11 @@ export default ( { query } ) => {
 		} );
 	};
 
-	const doUploadFile = async ( key, file ) => {
+	const doUploadFile = async ( key: string, file?: Blob ) => {
 		uploadFileEvidenceForDispute( disputeId, key, file );
 	};
 
-	const doSave = async ( submit ) => {
+	const doSave = async ( submit: boolean ) => {
 		if ( submit ) {
 			submitEvidence( dispute.id, evidenceTransient );
 		} else {
@@ -130,7 +140,7 @@ export default ( { query } ) => {
 	};
 
 	const productType = getDisputeProductType( dispute );
-	const updateProductType = ( newProductType ) => {
+	const updateProductType = ( newProductType: string ) => {
 		const properties = {
 			selection: newProductType,
 		};
