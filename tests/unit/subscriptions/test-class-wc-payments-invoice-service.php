@@ -216,15 +216,42 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 		$invoice_id = 'in_foo123';
 		$mock_order = WC_Helper_Order::create_order();
 
-		$this->mock_wcs_order_contains_subscription( true );
-		$mock_order->update_meta_data( self::ORDER_INVOICE_ID_KEY, $invoice_id );
-		$mock_order->save();
-
-		$this->mock_api_client->expects( $this->once() )
+		// With the following calls to `maybe_record_first_invoice_payment()`, we only expect 2 calls (see Positive Cases) to result in an API call.
+		$this->mock_api_client->expects( $this->exactly( 6 ) )
 			->method( 'charge_invoice' )
 			->with( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
 
+		// Negative Cases.
+		// Order isn't related to a subscription.
 		$this->invoice_service->maybe_record_first_invoice_payment( $mock_order->get_id(), 'pending', 'processing' );
+
+		// Mock the order contains a subscrition call.
+		$this->mock_wcs_order_contains_subscription( true );
+
+		// Order doesn't have a pending invoice.
+		$this->invoice_service->maybe_record_first_invoice_payment( $mock_order->get_id(), 'pending', 'processing' );
+
+		// Mock the order having a invoice ID stored in meta.
+		$mock_order->update_meta_data( self::ORDER_INVOICE_ID_KEY, $invoice_id );
+		$mock_order->save();
+
+		// Invalid order ID.
+		$this->invoice_service->maybe_record_first_invoice_payment( 0, 'pending', 'processing' );
+
+		// An already completed order.
+		$this->invoice_service->maybe_record_first_invoice_payment( $mock_order->get_id(), 'processing', 'completed' );
+
+		// A failed order.
+		$this->invoice_service->maybe_record_first_invoice_payment( $mock_order->get_id(), 'pending', 'failed' );
+
+		// Positive Cases.
+		// Successful calls - Subscription parent order, with an invoice, transitioning to a paid status (processing or completed) from an unpaid status (pending, on-hold, failed).
+		$this->invoice_service->maybe_record_first_invoice_payment( $mock_order->get_id(), 'pending', 'processing' );
+		$this->invoice_service->maybe_record_first_invoice_payment( $mock_order->get_id(), 'on-hold', 'processing' );
+		$this->invoice_service->maybe_record_first_invoice_payment( $mock_order->get_id(), 'failed', 'processing' );
+		$this->invoice_service->maybe_record_first_invoice_payment( $mock_order->get_id(), 'pending', 'completed' );
+		$this->invoice_service->maybe_record_first_invoice_payment( $mock_order->get_id(), 'on-hold', 'completed' );
+		$this->invoice_service->maybe_record_first_invoice_payment( $mock_order->get_id(), 'failed', 'completed' );
 	}
 
 	/**
