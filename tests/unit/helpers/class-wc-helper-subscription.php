@@ -72,6 +72,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $end;
 
 	/**
+	 * Helper variable for mocking the subscription's status.
+	 *
+	 * @var string
+	 */
+	public $status;
+
+	/**
 	 * Taxes.
 	 *
 	 * @var array
@@ -164,7 +171,16 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		// do nothing.
 	}
 
+<<<<<<< HEAD
 	public function payment_failed( $new_status = 'on-hold' ) {
 		$this->set_status( $new_status );
+=======
+	public function get_status() {
+		return $this->status;
+	}
+
+	public function has_status( $status ) {
+		return ( is_array( $status ) && in_array( $this->get_status(), $status, true ) ) || $this->get_status() === $status;
+>>>>>>> b9af3f7c (Add unit tests for the WC_Payments_Subscription_Change_Payment_Method_Handler class)
 	}
 }
