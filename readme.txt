@@ -99,12 +99,13 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 2.9.0 - 2021-xx-xx =
-* Add - *Early access*: allow your store to collect payments with Bancontact, iDEAL, and Przelewy24 (P24). Enable the feature in settings!
 * Add - Split discount line in timeline into variable fee and fixed fee.
 * Fix - Align table items according to design correctly.
-* Fix - Fatal error if wcpay_multi_currency_enabled_currencies is a string..
+* Fix - Fatal error if wcpay_multi_currency_enabled_currencies is a string.
 * Fix - Show the estimated deposit date in the transactions CSV export rather than the deposit ID.
 * Fix - Keep track of customer id in non logged in users.
+* Add - Order status validation for payments/orders/{order_id}/create_customer API.
+* Add - Add country code paramater to ExPlat API requests.
 
 = 2.8.4 - 2021-08-17 =
 * Fix - Fix database connection error on account cache clear.
@@ -144,6 +145,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Show fee breakdown in transaction details timeline.
 * Add - REST endpoint to get customer id from an order.
 * Fix - Explat not caching when no variation is returned.
+* Add - Add a new hook to get a list of enabled payment request methods.
 
 = 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.
