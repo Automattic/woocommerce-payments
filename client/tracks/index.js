@@ -16,7 +16,7 @@ function isEnabled() {
  * Records site event.
  *
  * @param {string}  eventName       Name of the event.
- * @param {Object?} eventProperties Event properties.
+ * @param {Object?} [eventProperties] Event properties.
  */
 function recordEvent( eventName, eventProperties ) {
 	// Wc-admin track script is enqueued after ours, wrap in domReady

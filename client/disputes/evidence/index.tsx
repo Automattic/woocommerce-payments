@@ -7,7 +7,7 @@ import * as React from 'react';
 import { __ } from '@wordpress/i18n';
 import { useEffect, useMemo } from '@wordpress/element';
 
-import { some, isMatchWith } from 'lodash';
+import { isMatchWith } from 'lodash';
 
 /**
  * Internal dependencies.
@@ -21,14 +21,6 @@ import { DisputeEvidencePage } from './dispute-evidence-page';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const PRODUCT_TYPE_META_KEY = '__product_type';
-
-type Dispute = {
-	evidence_details?: {
-		has_evidence: boolean;
-	};
-	metadata: Record< string, string >;
-	productType: string;
-};
 
 /**
  * Retrieves product type from the dispute.
@@ -92,10 +84,7 @@ export default ( { query }: { query: { id: string } } ): JSX.Element => {
 		if ( isPristine ) {
 			setNavigationMessage( '' );
 		} else if ( isSavingEvidence ) {
-			// We don't want to show the confirmation message while saving evidence.
-			setNavigationMessage( '' );
-		} else if ( some( dispute.isUploading ) ) {
-			// We don't want to show the confirmation message while submitting evidence.
+			// We don't want to show the confirmation message while saving or submitting evidence.
 			setNavigationMessage( '' );
 		} else {
 			setNavigationMessage(

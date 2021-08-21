@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /** @format */
 
 /**
@@ -14,30 +15,33 @@ import { some } from 'lodash';
  * Internal dependencies
  */
 import { NAMESPACE, STORE_NAME } from '../constants';
-import TYPES from './action-types';
 import wcpayTracks from 'tracks';
 
-export function updateDispute( data ) {
+export function updateDispute( data: Dispute ) {
 	return {
-		type: TYPES.SET_DISPUTE,
+		type: 'SET_DISPUTE' as const,
+		query: undefined, // here to fit the reducer type.
 		data,
 	};
 }
 
-export function updateDisputes( query, data ) {
+export function updateDisputes(
+	query: Record< string, string >,
+	data: Dispute[]
+) {
 	return {
-		type: TYPES.SET_DISPUTES,
+		type: 'SET_DISPUTES' as const,
 		query,
 		data,
 	};
 }
 
 export function updateIsSavingEvidenceForDispute(
-	disputeId,
-	isSavingEvidence
+	disputeId: string,
+	isSavingEvidence: boolean
 ) {
 	return {
-		type: TYPES.SET_IS_SAVING_EVIDENCE_FOR_DISPUTE,
+		type: 'SET_IS_SAVING_EVIDENCE_FOR_DISPUTE' as const,
 		data: {
 			isSavingEvidence,
 			id: disputeId,
@@ -46,42 +50,42 @@ export function updateIsSavingEvidenceForDispute(
 }
 
 export function updateEvidenceTransientForDispute(
-	disputeId,
-	evidenceTransient
+	disputeId: string,
+	evidenceTransient: Partial< Evidence >
 ) {
 	return {
-		type: TYPES.SET_EVIDENCE_TRANSIENT_FOR_DISPUTE,
+		type: 'SET_EVIDENCE_TRANSIENT_FOR_DISPUTE' as const,
 		data: { id: disputeId, evidenceTransient },
 	};
 }
 
 export function updateIsUploadingEvidenceForDispute(
-	disputeId,
-	key,
-	isUploadingEvidenceForDispute
+	disputeId: string,
+	key: string,
+	isUploadingEvidenceForDispute: boolean
 ) {
 	return {
-		type: TYPES.SET_IS_UPLOADING_EVIDENCE_FOR_DISPUTE,
+		type: 'SET_IS_UPLOADING_EVIDENCE_FOR_DISPUTE' as const,
 		data: { id: disputeId, key, isUploadingEvidenceForDispute },
 	};
 }
 
 export function updateEvidenceUploadErrorsForDispute(
-	disputeId,
-	key,
-	errorMessage
+	disputeId: string,
+	key: string,
+	errorMessage: string
 ) {
 	return {
-		type: TYPES.SET_EVIDENCE_UPLOAD_ERRORS_FOR_DISPUTE,
+		type: 'SET_EVIDENCE_UPLOAD_ERRORS_FOR_DISPUTE' as const,
 		data: { id: disputeId, key, errorMessage },
 	};
 }
 
-export function* acceptDispute( id ) {
+export function* acceptDispute( id: string ) {
 	try {
 		yield dispatch( STORE_NAME ).startResolution( 'getDispute', [ id ] );
 
-		const dispute = yield apiFetch( {
+		const dispute: Dispute = yield apiFetch( {
 			path: `${ NAMESPACE }/disputes/${ id }/close`,
 			method: 'post',
 		} );
@@ -119,7 +123,7 @@ export function* acceptDispute( id ) {
 	}
 }
 
-function* handleSaveSuccess( id, submit ) {
+function* handleSaveSuccess( id: string, submit: boolean ) {
 	const message = submit
 		? __( 'Evidence submitted!', 'woocommerce-payments' )
 		: __( 'Evidence saved!', 'woocommerce-payments' );
@@ -158,7 +162,7 @@ function* handleSaveSuccess( id, submit ) {
 	getHistory().push( href );
 }
 
-function* handleSaveError( err, submit ) {
+function* handleSaveError( err: { message: string }, submit: boolean ) {
 	wcpayTracks.recordEvent(
 		submit
 			? 'wcpay_dispute_submit_evidence_failed'
@@ -173,10 +177,10 @@ function* handleSaveError( err, submit ) {
 	);
 }
 
-export function* submitEvidence( disputeId, evidence ) {
+export function* submitEvidence( disputeId: string, evidence: Evidence ) {
 	let error = null;
-	const dispute = yield select( STORE_NAME ).getDispute( disputeId );
-	const isUploading = yield select(
+	const dispute: Dispute = yield select( STORE_NAME ).getDispute( disputeId );
+	const isUploading: Record< string, boolean > = yield select(
 		STORE_NAME
 	).getIsUploadingEvidenceForDispute( disputeId );
 
@@ -196,7 +200,7 @@ export function* submitEvidence( disputeId, evidence ) {
 	try {
 		wcpayTracks.recordEvent( 'wcpay_dispute_submit_evidence_clicked' );
 
-		const updatedDispute = yield apiFetch( {
+		const updatedDispute: Dispute = yield apiFetch( {
 			path: `${ NAMESPACE }/disputes/${ disputeId }`,
 			method: 'post',
 			data: {
@@ -220,10 +224,10 @@ export function* submitEvidence( disputeId, evidence ) {
 	return null === error;
 }
 
-export function* saveEvidence( disputeId, evidence ) {
+export function* saveEvidence( disputeId: string, evidence: Evidence ) {
 	let error = null;
-	const dispute = yield select( STORE_NAME ).getDispute( disputeId );
-	const isUploading = yield select(
+	const dispute: Dispute = yield select( STORE_NAME ).getDispute( disputeId );
+	const isUploading: Record< string, boolean > = yield select(
 		STORE_NAME
 	).getIsUploadingEvidenceForDispute( disputeId );
 
@@ -243,7 +247,7 @@ export function* saveEvidence( disputeId, evidence ) {
 	try {
 		wcpayTracks.recordEvent( 'wcpay_dispute_save_evidence_clicked' );
 
-		const updatedDispute = yield apiFetch( {
+		const updatedDispute: Dispute = yield apiFetch( {
 			path: `${ NAMESPACE }/disputes/${ disputeId }`,
 			method: 'post',
 			data: {
@@ -267,7 +271,7 @@ export function* saveEvidence( disputeId, evidence ) {
 	return null === error;
 }
 
-const fileSizeExceeded = ( dispute, latestFileSize ) => {
+const fileSizeExceeded = ( dispute: Dispute, latestFileSize: number ) => {
 	const fileSizeLimitInBytes = 4500000;
 	const fileSizes = dispute.fileSize ? Object.values( dispute.fileSize ) : [];
 	const totalFileSize =
@@ -286,18 +290,19 @@ const fileSizeExceeded = ( dispute, latestFileSize ) => {
 	}
 };
 
-export function* uploadFileEvidenceForDispute( disputeId, key, file ) {
+export function* uploadFileEvidenceForDispute(
+	disputeId: string,
+	key: string,
+	file: Blob
+) {
 	if ( ! file ) {
 		return;
 	}
 
-	const dispute = yield select( STORE_NAME ).getDispute( disputeId );
-	const evidenceTransient = yield select(
+	const dispute: Dispute = yield select( STORE_NAME ).getDispute( disputeId );
+	const evidenceTransient: Evidence = yield select(
 		STORE_NAME
 	).getEvidenceTransientForDispute( disputeId );
-	const evidenceUploadErrors = yield select(
-		STORE_NAME
-	).getEvidenceUploadErrorsForDispute( disputeId );
 
 	if ( fileSizeExceeded( dispute, file.size ) ) {
 		return;
@@ -326,7 +331,11 @@ export function* uploadFileEvidenceForDispute( disputeId, key, file ) {
 	} );
 
 	try {
-		const uploadedFile = yield apiFetch( {
+		const uploadedFile: {
+			filename: string;
+			size: number;
+			id: string;
+		} = yield apiFetch( {
 			path: '/wc/v3/payments/file',
 			method: 'post',
 			body,
@@ -340,8 +349,9 @@ export function* uploadFileEvidenceForDispute( disputeId, key, file ) {
 			},
 			fileSize: { ...dispute.fileSize, [ key ]: uploadedFile.size },
 		} );
-		yield updateIsUploadingEvidenceForDispute( disputeId, false );
+		yield updateIsUploadingEvidenceForDispute( disputeId, key, false );
 		yield updateEvidenceTransientForDispute( disputeId, {
+			...evidenceTransient,
 			[ key ]: uploadedFile.id,
 		} );
 
@@ -357,11 +367,12 @@ export function* uploadFileEvidenceForDispute( disputeId, key, file ) {
 			...dispute,
 			metadata: { ...dispute.metadata, [ key ]: '' },
 		} );
-		yield updateIsUploadingEvidenceForDispute( disputeId, false );
-		yield updateEvidenceUploadErrorsForDispute( disputeId, {
-			...evidenceUploadErrors,
-			[ key ]: err.message,
-		} );
+		yield updateIsUploadingEvidenceForDispute( disputeId, key, false );
+		yield updateEvidenceUploadErrorsForDispute(
+			disputeId,
+			key,
+			err.message
+		);
 
 		// Force reload evidence components.
 		yield updateEvidenceTransientForDispute( disputeId, {
@@ -370,3 +381,19 @@ export function* uploadFileEvidenceForDispute( disputeId, key, file ) {
 		} );
 	}
 }
+
+export type DisputesAction = ReturnType<
+	typeof updateDisputes | typeof updateDispute
+>;
+export type EvidenceAction = ReturnType<
+	typeof updateEvidenceTransientForDispute
+>;
+export type EvidenceUploadErrorAction = ReturnType<
+	typeof updateEvidenceUploadErrorsForDispute
+>;
+export type SavingEvidenceStatusAction = ReturnType<
+	typeof updateIsSavingEvidenceForDispute
+>;
+export type EvidenceUploadStatusAction = ReturnType<
+	typeof updateIsUploadingEvidenceForDispute
+>;

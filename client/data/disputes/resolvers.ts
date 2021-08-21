@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /** @format */
 
 /**
@@ -19,16 +20,14 @@ import { updateDispute, updateDisputes } from './actions';
  *
  * @param {string} id Identifier for specified dispute to retrieve.
  */
-export function* getDispute( id ) {
+export function* getDispute( id: string ) {
 	const path = addQueryArgs( `${ NAMESPACE }/disputes/${ id }` );
 
 	try {
-		const result = yield apiFetch( { path } );
+		const result: Dispute = yield apiFetch( { path } );
 		yield updateDispute( result );
 	} catch ( e ) {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
+		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error retrieving dispute.', 'woocommerce-payments' )
 		);
 	}
@@ -39,26 +38,26 @@ export function* getDispute( id ) {
  *
  * @param {string} query Data on which to parameterize the selection.
  */
-export function* getDisputes( query ) {
+export function* getDisputes( query: Record< string, string > ) {
 	const path = addQueryArgs( `${ NAMESPACE }/disputes`, {
 		page: query.paged,
 		pagesize: query.perPage,
 	} );
 
 	try {
-		const results = yield apiFetch( { path } ) || {};
-		yield updateDisputes( query, results.data );
+		const results: { data?: Dispute[] } = yield apiFetch( { path } );
+
+		yield updateDisputes( query, results?.data ?? [] );
 
 		// Update resolution state on getDispute selector for each result.
-		for ( const i in results.data ) {
-			yield dispatch( STORE_NAME, 'finishResolution', 'getDispute', [
-				results.data[ i ].id,
+		const data = results?.data ?? [];
+		for ( const i in data ) {
+			yield dispatch( STORE_NAME ).finishResolution( 'getDispute', [
+				data[ i ].id,
 			] );
 		}
 	} catch ( e ) {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
+		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error retrieving disputes.', 'woocommerce-payments' )
 		);
 	}

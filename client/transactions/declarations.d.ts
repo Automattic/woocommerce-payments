@@ -127,6 +127,7 @@ declare module '@woocommerce/navigation' {
 
 	const getHistory: () => {
 		block: ( arg0: string ) => () => void;
+		push: ( arg0: string ) => void;
 	};
 }
 

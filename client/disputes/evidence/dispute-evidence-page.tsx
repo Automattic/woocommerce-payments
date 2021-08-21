@@ -31,11 +31,6 @@ declare module '@wordpress/components' {
 	}
 }
 
-type Dispute = {
-	status: string;
-	id: string;
-};
-
 interface Props extends Omit< FormProps, 'readOnly' > {
 	isLoading: boolean;
 	dispute?: Dispute;

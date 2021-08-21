@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /** @format */
 
 /**
@@ -6,14 +7,14 @@
 import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
-export const useDispute = ( id ) => {
+export const useDispute = ( id: string ) => {
 	const { dispute, isLoading } = useSelect(
 		( select ) => {
 			const { getDispute, isResolving } = select( STORE_NAME );
 
 			return {
-				dispute: getDispute( id ),
-				isLoading: isResolving( 'getDispute', [ id ] ),
+				dispute: getDispute< Dispute >( id ),
+				isLoading: isResolving< boolean >( 'getDispute', [ id ] ),
 			};
 		},
 		[ id ]
@@ -30,7 +31,7 @@ export const useDispute = ( id ) => {
 	};
 };
 
-export const useDisputeEvidence = ( disputeId ) => {
+export const useDisputeEvidence = ( disputeId: string ) => {
 	const {
 		isSavingEvidence,
 		isUploadingEvidence,
@@ -46,14 +47,18 @@ export const useDisputeEvidence = ( disputeId ) => {
 			} = select( STORE_NAME );
 
 			return {
-				isSavingEvidence: getIsSavingEvidenceForDispute( disputeId ),
-				isUploadingEvidence: getIsUploadingEvidenceForDispute(
+				isSavingEvidence: getIsSavingEvidenceForDispute< boolean >(
 					disputeId
 				),
-				evidenceTransient: getEvidenceTransientForDispute( disputeId ),
-				evidenceUploadErrors: getEvidenceUploadErrorsForDispute(
+				isUploadingEvidence: getIsUploadingEvidenceForDispute< {
+					[ key: string ]: boolean;
+				} >( disputeId ),
+				evidenceTransient: getEvidenceTransientForDispute< Evidence >(
 					disputeId
 				),
+				evidenceUploadErrors: getEvidenceUploadErrorsForDispute< {
+					[ key: string ]: string;
+				} >( disputeId ),
 			};
 		},
 		[ disputeId ]
@@ -82,7 +87,13 @@ export const useDisputeEvidence = ( disputeId ) => {
 	};
 };
 
-export const useDisputes = ( { paged, per_page: perPage } ) =>
+export const useDisputes = ( {
+	paged,
+	per_page: perPage,
+}: {
+	paged: string;
+	per_page: string;
+} ) =>
 	useSelect(
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );
@@ -94,8 +105,10 @@ export const useDisputes = ( { paged, per_page: perPage } ) =>
 					: perPage,
 			};
 
-			const disputes = getDisputes( query );
-			const isLoading = isResolving( 'getDisputes', [ query ] );
+			const disputes = getDisputes< Dispute[] >( query );
+			const isLoading = isResolving< boolean >( 'getDisputes', [
+				query,
+			] );
 
 			return { disputes, isLoading };
 		},

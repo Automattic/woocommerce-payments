@@ -31,19 +31,9 @@ const expandHelp = ( description: string | string[] ) => {
 		: description;
 };
 
-type Evidence = {
-	[ key: string ]:
-		| string
-		| Record< string, boolean >
-		| Record< string, string >;
-	isUploading: Record< string, boolean >;
-	metadata: Record< string, string >;
-	uploadingErrors: Record< string, string >;
-};
-
 export type FormProps = {
 	fields: ( Section | null )[];
-	evidence: Evidence;
+	evidence: Partial< Evidence >;
 	onChange: ( arg0: string, arg1: unknown ) => void;
 	onFileChange: ( key: string, file?: Blob ) => void;
 	onFileRemove: ( key: string ) => void;
@@ -81,16 +71,12 @@ export const DisputeEvidenceForm = ( props: FormProps ): JSX.Element | null => {
 	} );
 
 	const composeFileUploadProps = ( field: Field ) => {
-		const fileName =
-			( evidence.metadata && evidence.metadata[ field.key ] ) || '';
-		const isLoading =
-			evidence.isUploading &&
-			( evidence.isUploading[ field.key ] || false );
-		const error =
-			evidence.uploadingErrors &&
-			( evidence.uploadingErrors[ field.key ] || '' );
+		const fileName = evidence?.metadata?.[ field.key ] ?? '';
+		const isLoading = evidence?.isUploading?.[ field.key ] ?? false;
+		const error = evidence?.uploadingErrors?.[ field.key ] ?? '';
 		const isDone = ! isLoading && 0 < fileName.length;
 		const accept = '.pdf, image/png, image/jpeg';
+
 		return {
 			field,
 			fileName,
