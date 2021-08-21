@@ -8,7 +8,14 @@ import { dateI18n } from '@wordpress/date';
 import { __, _n } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
+import { Button } from '@wordpress/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import {
+	downloadCSVFile,
+	generateCSVDataFromTable,
+	generateCSVFileName,
+} from '@woocommerce/csv-export';
+import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies.
@@ -173,6 +180,26 @@ export const DepositsList = () => {
 		depositsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ] : [] );
 
+	const title = __( 'Deposits', 'woocommerce-payments' );
+
+	const downloadable = !! rows.length;
+
+	const onDownload = () => {
+		const { page, path, ...params } = getQuery();
+
+		downloadCSVFile(
+			generateCSVFileName( title, params ),
+			generateCSVDataFromTable( columns, rows )
+		);
+
+		window.wcTracks.recordEvent( 'wcpay_deposits_download', {
+			// eslint-disable-next-line camelcase
+			exported_deposits: rows.length,
+			// eslint-disable-next-line camelcase
+			total_deposits: depositsSummary.count,
+		} );
+	};
+
 	return (
 		<Page>
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
@@ -187,6 +214,21 @@ export const DepositsList = () => {
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				actions={ [
+					downloadable && (
+						<Button
+							key="download"
+							className="woocommerce-table__download-button"
+							disabled={ isLoading }
+							onClick={ onDownload }
+						>
+							<Gridicon icon={ 'cloud-download' } />
+							<span className="woocommerce-table__download-button__label">
+								{ __( 'Download', 'woocommerce-payments' ) }
+							</span>
+						</Button>
+					),
+				] }
 			/>
 		</Page>
 	);
