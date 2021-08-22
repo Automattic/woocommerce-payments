@@ -21,7 +21,7 @@ let orderId;
 
 describe( 'Order > Manual Capture', () => {
 	beforeAll( async () => {
-		// As the merchant, Enable the "Issue an authorization on checkout, and capture later" option in the Payment Settings page
+		// As the merchant, enable the "Issue an authorization on checkout, and capture later" option in the Payment Settings page
 		await merchant.login();
 		await merchantWCP.openWCPSettings();
 		await setCheckbox( chkboxCaptureLaterOption );
@@ -41,6 +41,14 @@ describe( 'Order > Manual Capture', () => {
 			'.woocommerce-order-overview__order.order > strong'
 		);
 		orderId = await orderIdField.evaluate( ( el ) => el.innerText );
+	} );
+
+	afterAll( async () => {
+		// Disable the "Issue an authorization on checkout, and capture later" option
+		await merchantWCP.openWCPSettings();
+		await unsetCheckbox( chkboxCaptureLaterOption );
+		await merchantWCP.wcpSettingsSaveChanges();
+		await merchant.logout();
 	} );
 
 	it( 'should create an order with status "On Hold"', async () => {
@@ -72,11 +80,5 @@ describe( 'Order > Manual Capture', () => {
 		await expect( page ).toMatchElement( '.system-note', {
 			text: /A payment of \$\d+\.\d{2}.* was successfully captured/,
 		} );
-	} );
-
-	afterAll( async () => {
-		await merchantWCP.openWCPSettings();
-		await unsetCheckbox( chkboxCaptureLaterOption );
-		await merchantWCP.wcpSettingsSaveChanges();
 	} );
 } );
