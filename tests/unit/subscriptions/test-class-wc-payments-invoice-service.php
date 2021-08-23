@@ -169,7 +169,7 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 			[ $mock_subscription ]
 		);
 
-		$this->assertIsArray( $result );
+		$this->assertTrue( is_array( $result ) );
 		$this->assertContainsOnly( 'array', $result );
 		$this->assertEquals( 2, count( $result ) );
 
