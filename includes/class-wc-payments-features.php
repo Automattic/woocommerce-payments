@@ -16,15 +16,6 @@ class WC_Payments_Features {
 	const UPE_FLAG_NAME = '_wcpay_feature_upe';
 
 	/**
-	 * Checks whether the grouped settings feature is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_grouped_settings_enabled() {
-		return '1' === get_option( '_wcpay_feature_grouped_settings', '1' );
-	}
-
-	/**
 	 * Checks whether the Giropay gateway feature is enabled
 	 *
 	 * @return bool
