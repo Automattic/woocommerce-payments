@@ -237,33 +237,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected_shipping_options, $data['shipping_options'], 'Shipping options mismatch' );
 	}
 
-	public function test_get_button_settings_grouped_settings_disabled() {
-		update_option( '_wcpay_feature_grouped_settings', '0' );
-
-		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
-		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
-
-		$this->assertEquals(
-			[
-				'type'         => 'buy',
-				'theme'        => 'dark',
-				'height'       => '44',
-				'locale'       => 'en',
-				'branded_type' => 'long',
-				'css_selector' => '',
-				'label'        => 'Buy now',
-				'is_custom'    => false,
-				'is_branded'   => false,
-			],
-			$this->pr->get_button_settings()
-		);
-
-		delete_option( '_wcpay_feature_grouped_settings' );
-	}
-
-	public function test_get_button_settings_grouped_settings_enabled() {
-		// with grouped settings enabled, some settings are just set to "false".
-		update_option( '_wcpay_feature_grouped_settings', '1' );
+	public function test_get_button_settings() {
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
 
@@ -274,15 +248,9 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 				'height'       => '40',
 				'locale'       => 'en',
 				'branded_type' => 'long',
-				'css_selector' => '',
-				'label'        => '',
-				'is_custom'    => false,
-				'is_branded'   => false,
 			],
 			$this->pr->get_button_settings()
 		);
-
-		delete_option( '_wcpay_feature_grouped_settings' );
 	}
 
 	public function test_multiple_packages_in_cart_not_allowed() {

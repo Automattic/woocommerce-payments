@@ -69,7 +69,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
-		update_option( '_wcpay_feature_grouped_settings', '1' );
 
 		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()

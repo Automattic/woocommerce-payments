@@ -295,10 +295,8 @@ class WC_Payments {
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 
-			if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
-				include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
-				new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
-			}
+			include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
+			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
@@ -749,13 +747,11 @@ class WC_Payments {
 		$fraud_controller = new WC_REST_Payments_Fraud_Controller( self::$api_client );
 		$fraud_controller->register_routes();
 
-		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-			$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
-			$settings_controller->register_routes();
-		}
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
+		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
+		$settings_controller->register_routes();
 
-		if ( WC_Payments_Features::is_grouped_settings_enabled() && WC_Payments_Features::is_upe_settings_preview_enabled() ) {
+		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
 			$upe_flag_toggle_controller->register_routes();
