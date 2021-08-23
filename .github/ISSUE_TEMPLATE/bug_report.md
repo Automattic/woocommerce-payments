@@ -11,14 +11,14 @@ assignees: ''
 <!-- A clear and concise description of what the bug is. Please be as descriptive as possible. -->
 
 ### To Reproduce
-<!-- Describe the steps to reproduce the behavior.-->
+<!-- Describe the steps to reproduce the behavior. -->
 
 1. Go to '…'
 2. Click on '…'
 3. Scroll down to …'
 4. See error
 
-### Actual behavior:
+### Actual behavior
 <!-- A clear and concise description of what actually happens. -->
 
 ### Screenshots
@@ -41,5 +41,5 @@ assignees: ''
 * Version [e.g. 22]
 
 ### Additional context
-<!--Any additional context or details you think might be helpful.-->
-<!--Ticket numbers/links, plugin versions, system statuses etc.-->
+<!-- Any additional context or details you think might be helpful. -->
+<!-- Ticket numbers/links, plugin versions, system statuses etc. -->
