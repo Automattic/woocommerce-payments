@@ -92,7 +92,6 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	 * Test WC_Payments_Subscription_Service->create_subscription()
 	 */
 	public function test_create_subscription() {
-		$this->assertTrue( true );
 		$mock_subscription            = new WC_Subscription();
 		$mock_subscription->trial_end = 0;
 		$order                        = WC_Helper_Order::create_order();
@@ -112,8 +111,8 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$this->assertNotEquals( $mock_subscription->get_meta( self::SUBSCRIPTION_ID_META_KEY ), $mock_wcpay_subscription_id );
 
 		$this->mock_customer_service->expects( $this->once() )
-			->method( 'get_customer_id_for_order' )
-			->with( $mock_subscription )
+			->method( 'get_customer_id_by_user_id' )
+			->with( '1' )
 			->willReturn( 1 );
 
 		$this->mock_product_service->expects( $this->once() )

@@ -286,6 +286,17 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
+	 * Sets the subscription's last invoice ID meta for WC subscription.
+	 *
+	 * @param WC_Subscription $subscription      The subscription.
+	 * @param string          $parent_invoice_id The parent order invoice ID.
+	 */
+	public function set_subscription_invoice_id( WC_Subscription $subscription, string $parent_invoice_id ) {
+		$subscription->update_meta_data( self::ORDER_INVOICE_ID_KEY, $parent_invoice_id );
+		$subscription->save();
+	}
+
+	/**
 	 * Gets the WC order ID from the invoice ID.
 	 *
 	 * @param string $invoice_id The invoice ID.

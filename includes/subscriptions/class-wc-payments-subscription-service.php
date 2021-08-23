@@ -106,7 +106,7 @@ class WC_Payments_Subscription_Service {
 		$this->product_service     = $product_service;
 		$this->invoice_service     = $invoice_service;
 
-		add_action( 'woocommerce_checkout_create_subscription', [ $this, 'create_subscription' ] );
+		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'create_subscription' ] );
 		add_action( 'woocommerce_subscription_status_cancelled', [ $this, 'cancel_subscription' ] );
 		add_action( 'woocommerce_subscription_status_expired', [ $this, 'cancel_subscription' ] );
 		add_action( 'woocommerce_subscription_status_on-hold', [ $this, 'suspend_subscription' ] );
@@ -144,29 +144,30 @@ class WC_Payments_Subscription_Service {
 	/**
 	 * Creates a WCPay subscription.
 	 *
-	 * @param WC_Subscription $subscription The WC subscription used to create a subscription on server.
+	 * @param WC_Subscription $subscription The WC order used to create a wcpay subscription on server.
 	 *
 	 * @return void
 	 *
 	 * @throws Exception Throws an exception to stop checkout processing and display message to customer.
 	 */
 	public function create_subscription( WC_Subscription $subscription ) {
-		$wcpay_customer_id      = $this->customer_service->get_customer_id_for_order( $subscription );
-		$subscription_data      = $this->prepare_wcpay_subscription_data( $wcpay_customer_id, $subscription );
 		$checkout_error_message = __( 'There was a problem creating your subscription. Please try again or use an alternative payment method.', 'woocommerce-payments' );
+		$user                   = $subscription->get_user();
+		$wcpay_customer_id      = $user instanceof WP_User ? $this->customer_service->get_customer_id_by_user_id( $user->ID ) : null;
 
-		if ( ! $wcpay_customer_id || ! $subscription_data ) {
-			Logger::error( sprintf( 'There was a problem creating the subscription on WCPay server. Invalid customer ID: %s', $wcpay_customer_id ) );
+		if ( ! $wcpay_customer_id ) {
+			Logger::error( 'There was a problem creating the WCPay subscription. WCPay customer ID missing.' );
 			throw new Exception( $checkout_error_message );
 		}
 
 		try {
-			$response = $this->payments_api_client->create_subscription( $subscription_data );
+			$subscription_data = $this->prepare_wcpay_subscription_data( $wcpay_customer_id, $subscription );
+			$response          = $this->payments_api_client->create_subscription( $subscription_data );
 
 			$this->set_wcpay_subscription_id( $subscription, $response['id'] );
-			$this->invoice_service->set_order_invoice_id( $subscription->get_parent(), $response['latest_invoice'] );
+			$this->invoice_service->set_subscription_invoice_id( $subscription, $response['latest_invoice'] );
 		} catch ( API_Exception $e ) {
-			Logger::log( sprintf( 'There was a problem creating the subscription on WCPay server: %s', $e->getMessage() ) );
+			Logger::log( sprintf( 'There was a problem creating the WCPay subscription %s', $e->getMessage() ) );
 			throw new Exception( $checkout_error_message );
 		}
 	}
