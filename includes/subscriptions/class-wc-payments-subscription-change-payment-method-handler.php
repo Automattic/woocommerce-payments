@@ -157,7 +157,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 */
 	public function change_payment_method_page_notice( string $message, WC_Subscription $subscription ) {
 		if ( $this->does_subscription_need_payment_updated( $subscription ) ) {
-			$message = __( "Your subscription's latest renewal failed payment. Please update your payment details so we can reattempt payment.", 'woocommerce-payments' );
+			$message = __( "Your subscription's last renewal failed payment. Please update your payment details so we can reattempt payment.", 'woocommerce-payments' );
 		}
 
 		return $message;
