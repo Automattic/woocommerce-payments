@@ -146,15 +146,8 @@
   <file src="includes/subscriptions/class-wc-payments-invoice-service.php">
     <UndefinedDocblockClass occurrences="2">
       <code>WC_Payments_Tax_Service</code>
-      <code>WC_Payments_Tax_Service</code>
     </UndefinedDocblockClass>
-    <UndefinedClass occurrences="8">
-      <code>WC_Subscription</code>
-      <code>WC_Subscription</code>
-      <code>WC_Subscription</code>
-      <code>WC_Subscription</code>
-      <code>WC_Subscription</code>
-      <code>WC_Subscription</code>
+    <UndefinedClass occurrences="9">
       <code>WC_Subscription</code>
     </UndefinedClass>
     <UndefinedFunction occurrences="1">
@@ -180,4 +173,16 @@
       <code>wcs_create_renewal_order( $subscription )</code>
     </UndefinedFunction>
   </file>
+  <file src="includes/subscriptions/class-wc-payments-subscription-change-payment-method-handler.php">
+    <UndefinedDocblockClass occurrences="3">
+      <code>WC_Subscription</code>
+    </UndefinedDocblockClass>
+    <UndefinedClass occurrences="3">
+      <code>WC_Subscription</code>
+    </UndefinedClass>
+    <UndefinedFunction occurrences="2">
+      <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] )</code>
+    </UndefinedFunction>
+  </file>
 </files>
+
