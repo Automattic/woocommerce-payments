@@ -7,20 +7,20 @@ on:
 jobs:
     weekly-18n-tag:
         name: Push i18n pre-release tag
-    runs-on: ubuntu-20.04
+        runs-on: ubuntu-20.04
 
-    steps:
-        # clone the repository
-        - uses: actions/checkout@v2
-          with:
-              ref: 'develop'
+        steps:
+            # clone the repository
+            - uses: actions/checkout@v2
+              with:
+                  ref: 'develop'
 
-        - name: Push pre-release-tag
-          run: |
-              TAG="i18n-$(date +%Y%m%d)-test"
-              MESSAGE="Version for internationalization testing $TAG."
-              MESSAGE+=" Not for production."
+            - name: Push pre-release-tag
+              run: |
+                  TAG="i18n-$(date +%Y%m%d)-test"
+                  MESSAGE="Version for internationalization testing $TAG."
+                  MESSAGE+=" Not for production."
 
-              echo "Pushing tag '$TAG' to repository..."
-              git tag -a $TAG -m "$MESSAGE"
-              git push origin $TAG
+                  echo "Pushing tag '$TAG' to repository..."
+                  git tag -a $TAG -m "$MESSAGE"
+                  git push origin $TAG
