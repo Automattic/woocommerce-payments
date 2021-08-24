@@ -43,11 +43,10 @@ const createAdditionalMethodsSetupTask = ( {
 			'woocommerce-payments'
 		),
 		isDismissable: true,
-		showActionButton: true,
 
 		...( '/payments/overview' === getPath()
 			? {
-					action: () => {
+					onClick: () => {
 						updateQueryString( { task: key }, '' );
 					},
 			  }

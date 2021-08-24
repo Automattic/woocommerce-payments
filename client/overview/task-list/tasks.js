@@ -77,7 +77,7 @@ export const getTasks = ( {
 				),
 				additionalInfo: accountDetailsTaskDescription,
 				completed: 'complete' === status,
-				action:
+				onClick:
 					'complete' === status
 						? undefined
 						: () => {
@@ -100,7 +100,7 @@ export const getTasks = ( {
 					'woocommerce-payments'
 				),
 				completed: false,
-				action: () => {
+				onClick: () => {
 					window.location.href = wpcomReconnectUrl;
 				},
 			},
@@ -113,7 +113,7 @@ export const getTasks = ( {
 					'woocommerce-payments'
 				),
 				completed: false,
-				action: () => {
+				onClick: () => {
 					window.open(
 						'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
 						'_blank'
@@ -144,7 +144,6 @@ export const getTasks = ( {
 			isDeletable: true,
 			isDismissable: true,
 			allowRemindMeLater: true,
-			showActionButton: false,
 			onClick: () => {
 				wcpayTracks.recordEvent( 'wcpay_overview_task', {
 					task: 'dispute-resolution-task',
