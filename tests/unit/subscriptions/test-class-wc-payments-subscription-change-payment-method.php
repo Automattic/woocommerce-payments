@@ -73,7 +73,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 		$this->assertArrayHasKey( 'name', $result['change_payment_method'] );
 
 		// Confirm the function changed the button name and URL.
-		$this->assertEquals( 'Update Card', $result['change_payment_method']['name'] );
+		$this->assertEquals( 'Update card', $result['change_payment_method']['name'] );
 		$this->assertStringContainsString( 'change_payment_method=', $result['change_payment_method']['url'] );
 		$this->assertStringContainsString( '_wpnonce=', $result['change_payment_method']['url'] );
 	}
@@ -174,7 +174,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 		// Set up the positive case - last order is failed.
 		$mock_order->set_status( 'failed' );
 		$mock_order->save();
-		$this->assertEquals( 'Update Card Details', $this->change_payment_method_handler->change_payment_method_page_title( $default_title, $mock_subscription ) );
+		$this->assertEquals( 'Update payment details', $this->change_payment_method_handler->change_payment_method_page_title( $default_title, $mock_subscription ) );
 	}
 
 	/**
