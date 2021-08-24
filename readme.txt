@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.6 or newer.
-* WooCommerce 5.3 or newer.
+* WooCommerce 5.4 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -99,13 +99,14 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 2.9.0 - 2021-xx-xx =
-* Add - *Early access*: allow your store to collect payments with Bancontact, iDEAL, and Przelewy24 (P24). Enable the feature in settings!
 * Add - Split discount line in timeline into variable fee and fixed fee.
+* Add - Order status validation for payments/orders/{order_id}/create_customer API.
+* Add - Add country code parameter to ExPlat API requests.
 * Fix - Align table items according to design correctly.
 * Fix - Fatal error if wcpay_multi_currency_enabled_currencies is a string.
 * Fix - Show the estimated deposit date in the transactions CSV export rather than the deposit ID.
 * Fix - Keep track of customer id in non logged in users.
-* Add - Order status validation for payments/orders/{order_id}/create_customer API.
+* Update - Bump minimum supported version of WooCommerce from 5.3 to 5.4.
 
 = 2.8.4 - 2021-08-17 =
 * Fix - Fix database connection error on account cache clear.
