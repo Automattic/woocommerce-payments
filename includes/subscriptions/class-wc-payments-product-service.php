@@ -351,6 +351,40 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
+	 * Gets product data from a subscription needed to create a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription to fetch product data from.
+	 *
+	 * @return array|null WCPay Product data or null on error.
+	 */
+	public function get_product_data_for_subscription( WC_Subscription $subscription ) {
+		$product_data = [];
+
+		foreach ( $subscription->get_items() as $item ) {
+			$product = $item->get_product();
+
+			if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+				continue;
+			}
+
+			try {
+				// TODO: Use the tax service get_tax_rates_for_item() once implemented.
+				$tax_rates = [];
+			} catch ( API_Exception $e ) {
+				return null;
+			}
+
+			$product_data[] = [
+				'price'     => $this->get_stripe_price_id( $product ),
+				'quantity'  => $item->get_quantity(),
+				'tax_rates' => $tax_rates,
+			];
+		}
+
+		return $product_data;
+	}
+
+	/**
 	 * Gets product data relevant to Stripe from a WC product.
 	 *
 	 * @param WC_Product $product The product to get data from.
