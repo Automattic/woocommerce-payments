@@ -13,6 +13,8 @@ use WCPay\Logger;
  */
 class WC_Payments_Subscription_Service {
 
+	use WC_Payments_Subscriptions_Utilities;
+
 	/**
 	 * WCPay subscriptions endpoint on server.
 	 *
@@ -106,7 +108,10 @@ class WC_Payments_Subscription_Service {
 		$this->product_service     = $product_service;
 		$this->invoice_service     = $invoice_service;
 
-		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'create_subscription' ] );
+		if ( ! $this->is_subscriptions_plugin_active() ) {
+			add_action( 'woocommerce_checkout_subscription_created', [ $this, 'create_subscription' ] );
+		}
+
 		add_action( 'woocommerce_subscription_status_cancelled', [ $this, 'cancel_subscription' ] );
 		add_action( 'woocommerce_subscription_status_expired', [ $this, 'cancel_subscription' ] );
 		add_action( 'woocommerce_subscription_status_on-hold', [ $this, 'suspend_subscription' ] );
