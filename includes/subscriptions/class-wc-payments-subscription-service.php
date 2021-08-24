@@ -310,10 +310,6 @@ class WC_Payments_Subscription_Service {
 	private function prepare_wcpay_subscription_data( string $wcpay_customer_id, WC_Subscription $subscription ) {
 		$items = $this->product_service->get_product_data_for_subscription( $subscription );
 
-		if ( is_wp_error( $items ) ) {
-			return [];
-		}
-
 		$data = [
 			'customer'           => $wcpay_customer_id,
 			'items'              => $items,

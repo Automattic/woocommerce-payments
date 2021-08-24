@@ -39,19 +39,19 @@ class WC_Payments_Invoice_Service {
 	/**
 	 * Tax Service.
 	 *
-	 * @var WC_Payments_Tax_Service Add the tax service class.
+	 * @var WC_Payments_Product_Service Add the tax service class.
 	 */
-	private $tax_service;
+	private $product_service;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payments_API_Client  $payments_api_client WooCommerce Payments API client.
-	 * @param WC_Payments_Tax_Service $tax_service         The Tax service.
+	 * @param WC_Payments_API_Client      $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payments_Product_Service $product_service     The Product service.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, $tax_service ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Product_Service $product_service ) {
 		$this->payments_api_client = $payments_api_client;
-		$this->tax_service         = $tax_service;
+		$this->product_service     = $product_service;
 
 		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_record_first_invoice_payment' ], 10, 3 );
 	}
@@ -169,57 +169,25 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @param WC_Subscription $subscription The subscription.
 	 *
-	 * @return array|WP_Error Invoice item data or WP_Error.
+	 * @return array Invoice item data.
 	 */
 	private function prepare_invoice_item_data( WC_Subscription $subscription ) {
-		$data       = [];
-		$items      = [];
-		$is_delayed = false;
-		$is_new     = $subscription->get_parent()->needs_payment();
-
-		// We need to get the discount from the parent order to check for signup fee coupon when subscription is new.
-		$discount = $is_new ? $subscription->get_parent()->get_total_discount( false ) : $subscription->get_total_discount( false );
+		$data     = [];
+		$discount = $subscription->get_total_discount( false );
+		$currency = $subscription->get_currency();
 
 		if ( $discount ) {
-			$data[] = $this->format_invoice_item_data( -$discount, $subscription->get_currency(), __( 'Discount', 'woocommerce-payments' ) );
+			$data[] = $this->format_invoice_item_data( -$discount, $currency, __( 'Discount', 'woocommerce-payments' ) );
 		}
 
-		if ( $is_new ) {
-			// TODO: replace the line below once the subscription service has been copied over.
-			// $is_delayed = WCS_Stripe_Billing_Subscription_Service::has_delayed_payment( $subscription );.
-			$is_delayed = false;
-			$items      = $subscription->get_items();
-		}
-
-		if ( ! $is_delayed ) {
-			$items = array_merge(
-				$items,
-				$subscription->get_fees(),
-				// Similarly, we need to get shipping methods from parent order to check for one-time shipping when subscription is new.
-				( $is_new ? $subscription->get_parent()->get_shipping_methods() : $subscription->get_shipping_methods() )
-			);
-		}
+		$items = array_merge( $subscription->get_fees(), $subscription->get_shipping_methods() );
 
 		foreach ( $items as $item ) {
-			if ( $item->is_type( 'line_item' ) ) {
-				$amount      = floatval( WC_Subscriptions_Product::get_sign_up_fee( $item->get_product() ) );
-				$description = __( 'Sign-up Fee', 'woocommerce-payments' );
-			} else {
-				$amount      = $item->get_total();
-				$description = ucfirst( $item->get_name() );
-			}
+			$amount      = $item->get_total();
+			$description = ucfirst( $item->get_name() );
+			$tax_rates   = $this->product_service->get_tax_rates_for_item( $item, $subscription );
 
-			if ( $amount ) {
-				// TODO: Replace the line below once the tax rates service is copied over.
-				// $tax_rates = $this->tax_service->get_tax_rates_for_item( $item, $subscription );.
-				$tax_rates = [];
-
-				if ( is_wp_error( $tax_rates ) ) {
-					return $tax_rates;
-				}
-
-				$data[] = $this->format_invoice_item_data( $amount, $subscription->get_currency(), $description, $tax_rates );
-			}
+			$data[] = $this->format_invoice_item_data( $amount, $currency, $description, $tax_rates );
 		}
 
 		return $data;
