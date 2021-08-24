@@ -1,6 +1,7 @@
 ---
 name: (pre-release) Weekly i18n tag
 on:
+    workflow_dispatch: []
     schedule:
         - cron: '0 20 * * 1'
 
