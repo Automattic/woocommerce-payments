@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class handling any WCPay subscription change payment method functionality
+ * Class handling any WCPay subscription change payment method functionality.
  */
 class WC_Payments_Subscription_Change_Payment_Method_Handler {
 
@@ -16,18 +16,18 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 * Constructor.
 	 */
 	public function __construct() {
-		// Add an "Update card" action to all stripe billing subscriptions with a failed renewal order.
+		// Add an "Update card" action to all WCPay billing subscriptions with a failed renewal order.
 		add_filter( 'wcs_view_subscription_actions', [ $this, 'update_subscription_change_payment_button' ], 15, 2 );
 		add_filter( 'woocommerce_can_subscription_be_updated_to_new-payment-method', [ $this, 'can_update_payment_method' ], 15, 2 );
 
 		// Override the pay for order link on the order to redirect to a change payment method page.
 		add_filter( 'woocommerce_my_account_my_orders_actions', [ $this, 'update_order_pay_button' ], 15, 2 );
 
-		// Filter elements/messaging on the "Change payment method" page to reflect updating a Stripe billing card.
+		// Filter elements/messaging on the "Change payment method" page to reflect updating a WCPay billing card.
 		add_filter( 'woocommerce_subscriptions_change_payment_method_page_title', [ $this, 'change_payment_method_page_title' ], 10, 2 );
 		add_filter( 'woocommerce_subscriptions_change_payment_method_page_notice_message', [ $this, 'change_payment_method_page_notice' ], 10, 2 );
 
-		// Fallback to redirecting all pay for order pages for stripe billing invoices to the update card page.
+		// Fallback to redirecting all pay for order pages for WCPay billing invoices to the update card page.
 		add_action( 'template_redirect', [ $this, 'redirect_pay_for_order_to_update_payment_method' ] );
 	}
 
@@ -44,7 +44,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 			// Override any existing button on $actions['change_payment_method'] to show "Update Card" button.
 			$actions['change_payment_method'] = [
 				'url'  => $this->get_subscription_update_payment_url( $subscription ),
-				'name' => __( 'Update Card', 'woocommerce-payments' ),
+				'name' => __( 'Update card', 'woocommerce-payments' ),
 			];
 		}
 
@@ -107,15 +107,15 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	public function redirect_pay_for_order_to_update_payment_method() {
 		global $wp;
 
-		if ( isset( $_GET['pay_for_order'], $_GET['key'], $_GET['order_id'], $wp->query_vars['order-pay'] ) && empty( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			// Check if the order is linked to a stripe billing invoice.
+		if ( isset( $_GET['pay_for_order'], $_GET['key'] ) && empty( $_GET['change_payment_method'] ) && ( isset( $_GET['order_id'] ) || isset( $wp->query_vars['order-pay'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			// Check if the order is linked to a billing invoice.
 			$order_id = ( isset( $wp->query_vars['order-pay'] ) ) ? absint( $wp->query_vars['order-pay'] ) : absint( $_GET['order_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$order    = wc_get_order( $order_id );
 
 			if ( $order && $order instanceof WC_Order ) {
-				$stripe_invoice_id = WC_Payments_Invoice_Service::get_order_invoice_id( $order );
+				$invoice_id = WC_Payments_Invoice_Service::get_order_invoice_id( $order );
 
-				if ( $stripe_invoice_id ) {
+				if ( $invoice_id ) {
 					$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
 
 					if ( ! empty( $subscriptions ) ) {
@@ -141,10 +141,26 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 */
 	public function change_payment_method_page_title( string $title, WC_Subscription $subscription ) {
 		if ( $this->does_subscription_need_payment_updated( $subscription ) ) {
-			$title = __( 'Update Card Details', 'woocommerce-payments' );
+			$title = __( 'Update payment details', 'woocommerce-payments' );
 		}
 
 		return $title;
+	}
+
+	/**
+	 * Modifies the message shown on the change payment method page.
+	 *
+	 * @param string          $message      The default customer notice shown on the change payment method page.
+	 * @param WC_Subscription $subscription The Subscription.
+	 *
+	 * @return string The customer notice shown on the change payment method page.
+	 */
+	public function change_payment_method_page_notice( string $message, WC_Subscription $subscription ) {
+		if ( $this->does_subscription_need_payment_updated( $subscription ) ) {
+			$message = __( "Your subscription's latest renewal failed payment. Please update your payment details so we can reattempt payment.", 'woocommerce-payments' );
+		}
+
+		return $message;
 	}
 
 	/**
@@ -171,6 +187,12 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 * @return string The update payment method
 	 */
 	private function get_subscription_update_payment_url( $subscription ) {
-		return wp_nonce_url( add_query_arg( [ 'change_payment_method' => $subscription->get_id() ], $subscription->get_checkout_payment_url() ) );
+		return add_query_arg(
+			[
+				'change_payment_method' => $subscription->get_id(),
+				'_wpnonce'              => wp_create_nonce(),
+			],
+			$subscription->get_checkout_payment_url()
+		);
 	}
 }
