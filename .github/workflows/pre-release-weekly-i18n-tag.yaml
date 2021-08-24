@@ -1,9 +1,12 @@
 ---
 name: (pre-release) Weekly i18n tag
 on:
-  workflow_dispatch: []
+  push:
+    paths:
+      - '.github/workflows'
   schedule:
     - cron: '0 20 * * 1'
+  workflow_dispatch: []
 
 jobs:
   weekly-18n-tag:
