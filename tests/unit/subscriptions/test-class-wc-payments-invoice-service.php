@@ -213,27 +213,33 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 	 * Tests for WC_Payments_Invoice_Service::maybe_record_first_invoice_payment()
 	 */
 	public function test_maybe_record_first_invoice_payment() {
-		$invoice_id = 'in_foo123';
-		$mock_order = WC_Helper_Order::create_order();
+		$invoice_id        = 'in_foo123';
+		$mock_order        = WC_Helper_Order::create_order();
+		$mock_subscription = new WC_Subscription();
 
 		// With the following calls to `maybe_record_first_invoice_payment()`, we only expect 2 calls (see Positive Cases) to result in an API call.
 		$this->mock_api_client->expects( $this->exactly( 6 ) )
 			->method( 'charge_invoice' )
 			->with( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
 
+		// Mock an empty list of subscriptions.
+		$this->mock_wcs_get_subscriptions_for_order( [] );
+
 		// Negative Cases.
 		// Order isn't related to a subscription.
 		$this->invoice_service->maybe_record_first_invoice_payment( $mock_order->get_id(), 'pending', 'processing' );
 
-		// Mock the order contains a subscrition call.
-		$this->mock_wcs_order_contains_subscription( true );
+		$subscriptions = [ $mock_subscription ];
+
+		// Mock the get subscriptions from order call.
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
 
 		// Order doesn't have a pending invoice.
 		$this->invoice_service->maybe_record_first_invoice_payment( $mock_order->get_id(), 'pending', 'processing' );
 
 		// Mock the order having a invoice ID stored in meta.
-		$mock_order->update_meta_data( self::ORDER_INVOICE_ID_KEY, $invoice_id );
-		$mock_order->save();
+		$mock_subscription->update_meta_data( self::ORDER_INVOICE_ID_KEY, $invoice_id );
+		$mock_subscription->save();
 
 		// Invalid order ID.
 		$this->invoice_service->maybe_record_first_invoice_payment( 0, 'pending', 'processing' );
@@ -259,8 +265,8 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 	 *
 	 * @param bool The value to return to wcs_order_contains_subscription() calls.
 	 */
-	private function mock_wcs_order_contains_subscription( $value ) {
-		WC_Subscriptions::set_wcs_order_contains_subscription(
+	private function mock_wcs_get_subscriptions_for_order( $value ) {
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
 			function ( $order ) use ( $value ) {
 				return $value;
 			}

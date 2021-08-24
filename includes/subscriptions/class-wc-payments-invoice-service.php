@@ -97,7 +97,7 @@ class WC_Payments_Invoice_Service {
 
 		if ( $needed_payment && $order_completed ) {
 			foreach ( wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'parent' ] ) as $subscription ) {
-				$invoice_id = self::get_order_invoice_id( $subscription );
+				$invoice_id = self::get_subscription_invoice_id( $subscription );
 
 				if ( ! $invoice_id ) {
 					continue;
@@ -285,6 +285,17 @@ class WC_Payments_Invoice_Service {
 	public function set_order_invoice_id( WC_Order $order, string $invoice_id ) {
 		$order->update_meta_data( self::ORDER_INVOICE_ID_KEY, $invoice_id );
 		$order->save();
+	}
+
+	/**
+	 * Gets the invoice ID from a WC subscription.
+	 *
+	 * @param WC_Subscription $subscription The subscription.
+	 *
+	 * @return string Invoice ID.
+	 */
+	public static function get_subscription_invoice_id( WC_Subscription $subscription ) {
+		return $subscription->get_meta( self::ORDER_INVOICE_ID_KEY, true );
 	}
 
 	/**

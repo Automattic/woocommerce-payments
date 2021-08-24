@@ -158,7 +158,7 @@
       <code>WC_Subscription</code>
     </UndefinedClass>
     <UndefinedFunction occurrences="1">
-      <code>wcs_order_contains_subscription( $order, 'parent' )</code>
+      <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' =&gt; 'parent' ] )</code>
     </UndefinedFunction>
   </file>
   <file src="includes/subscriptions/class-wc-payments-subscription-service.php">
