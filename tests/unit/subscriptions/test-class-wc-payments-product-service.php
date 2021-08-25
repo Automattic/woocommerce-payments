@@ -240,4 +240,20 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		];
 		$this->assertEquals( $this->product_service->get_product_data_for_subscription( $subscription ), $expected_result );
 	}
+
+	/**
+	 * Test $product_service->get_tax_rates_for_item().
+	 */
+	public function test_get_tax_rates_for_item() {
+		$mock_order        = WC_Helper_Order::create_order();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->get_parent( $mock_order );
+
+		$mock_items      = $mock_order->get_shipping_methods();
+		$mock_order_item = array_pop( $mock_items );
+
+		update_option( 'woocommerce_calc_taxes', 'no' );
+
+		$this->assertEquals( [], $this->product_service->get_tax_rates_for_item( $mock_order_item, $mock_subscription ) );
+	}
 }

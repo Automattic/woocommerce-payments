@@ -24,13 +24,21 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Product_Service.
+	 *
+	 * @var WC_Payments_Product_Service|MockObject
+	 */
+	private $mock_product_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
 		parent::setUp();
 
-		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
-		$this->invoice_service = new WC_Payments_Invoice_Service( $this->mock_api_client, null );
+		$this->mock_api_client      = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_product_service = $this->createMock( WC_Payments_Product_Service::class );
+		$this->invoice_service      = new WC_Payments_Invoice_Service( $this->mock_api_client, $this->mock_product_service );
 	}
 
 	/**
@@ -159,9 +167,16 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 	public function test_prepare_invoice_item_data() {
 		$mock_order        = WC_Helper_Order::create_order();
 		$mock_subscription = new WC_Subscription();
+		$mock_items        = $mock_order->get_shipping_methods();
+		$mock_order_item   = array_pop( $mock_items );
 
 		$mock_subscription->set_parent( $mock_order );
 		$mock_order->set_discount_total( 20 );
+
+		$this->mock_product_service->expects( $this->once() )
+			->method( 'get_tax_rates_for_item' )
+			->with( $mock_order_item, $mock_subscription )
+			->willReturn( [] );
 
 		$result = PHPUnit_Utils::call_method(
 			$this->invoice_service,
@@ -189,8 +204,15 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 
 		$mock_order        = WC_Helper_Order::create_order();
 		$mock_subscription = new WC_Subscription();
+		$mock_items        = $mock_order->get_shipping_methods();
+		$mock_order_item   = array_pop( $mock_items );
 
 		$mock_subscription->set_parent( $mock_order );
+
+		$this->mock_product_service->expects( $this->once() )
+			->method( 'get_tax_rates_for_item' )
+			->with( $mock_order_item, $mock_subscription )
+			->willReturn( [] );
 
 		// The mock order comes with a $10 flat rate shipping so the expected invoice items are the following.
 		$expected_args = [
