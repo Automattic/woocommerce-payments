@@ -22,6 +22,7 @@ import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
 
 import {
+	useCurrencies,
 	useAvailableCurrencies,
 	useEnabledCurrencies,
 	useDefaultCurrency,
@@ -126,6 +127,7 @@ const ContinueButton = ( { currencyState } ) => {
 };
 
 const AddCurrenciesTask = () => {
+	useCurrencies();
 	const availableCurrencies = useAvailableCurrencies();
 	const availableCurrencyCodes = Object.keys( availableCurrencies );
 	const enabledCurrenciesList = useRef( null );
