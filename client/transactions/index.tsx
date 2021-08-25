@@ -38,7 +38,7 @@ export const TransactionsPage = (): JSX.Element => {
 	return (
 		<Page>
 			<Experiment
-				name="wcpay_empty_state_preview_mode_v2"
+				name="wcpay_empty_state_preview_mode_v4"
 				treatmentExperience={ treatmentExperience }
 				defaultExperience={ defaultExperience }
 			/>

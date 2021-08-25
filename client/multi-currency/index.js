@@ -35,7 +35,9 @@ const submitButton = document.querySelector( 'p.submit' );
 if ( storeSettingsSection ) {
 	const toggleSettingsSectionDisplay = () => {
 		const display =
-			1 >= enabledCurrenciesList.children.length ? 'none' : 'block';
+			1 >= enabledCurrenciesListItemsExceptPlaceholders().length
+				? 'none'
+				: 'block';
 		storeSettingsSection.style.display = display;
 		submitButton.style.display = display;
 	};
@@ -49,6 +51,14 @@ if ( storeSettingsSection ) {
 	} );
 
 	toggleSettingsSectionDisplay();
+}
+
+function enabledCurrenciesListItemsExceptPlaceholders() {
+	return Array.from( enabledCurrenciesList.children ).filter( ( item ) => {
+		return (
+			false === item.classList.contains( 'enabled-currency-placeholder' )
+		);
+	} );
 }
 
 const enabledCurrenciesOnboarding = document.querySelector(

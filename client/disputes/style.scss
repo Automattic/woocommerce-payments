@@ -1,7 +1,5 @@
-// dispute list table css override
 .wcpay-disputes-list {
-	.woocommerce-table__header:not( .is-left-aligned ),
-	.woocommerce-table__item:not( .is-left-aligned ) {
+	.woocommerce-table__header.is-center-aligned {
 		text-align: center;
 	}
 }

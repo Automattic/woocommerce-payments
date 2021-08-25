@@ -2,7 +2,8 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import { __ } from '@wordpress/i18n';
+import _ from 'lodash';
+import { sprintf, __, _n } from '@wordpress/i18n';
 import interpolateComponents from 'interpolate-components';
 
 /**
@@ -11,45 +12,118 @@ import interpolateComponents from 'interpolate-components';
 import { useCurrencies, useEnabledCurrencies } from '../../data';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import InlineNotice from '../inline-notice';
+import PaymentMethodsMap from '../../payment-methods-map';
+
+const ListToCommaSeparatedSentencePartConverter = ( items ) => {
+	if ( 1 === items.length ) {
+		return items[ 0 ];
+	} else if ( 2 === items.length ) {
+		return items.join( ' ' + __( 'and', 'woocommerce-payments' ) + ' ' );
+	}
+	const lastItem = items.pop();
+	return (
+		items.join( ', ' ) +
+		__( ', and', 'woocommerce-payments' ) +
+		' ' +
+		lastItem
+	);
+};
 
 const CurrencyInformationForMethods = ( { selectedMethods } ) => {
-	const { isLoading: isLoadingCurrencyInformation } = useCurrencies();
+	const {
+		isLoading: isLoadingCurrencyInformation,
+		currencies: currencyInfo,
+	} = useCurrencies();
 	const { enabledCurrencies } = useEnabledCurrencies();
 
 	if ( isLoadingCurrencyInformation ) {
 		return null;
 	}
 
-	// if EUR is already enabled, no need to display the info message
 	const enabledCurrenciesIds = Object.values( enabledCurrencies ).map(
 		( currency ) => currency.id
 	);
-	if ( enabledCurrenciesIds.includes( 'eur' ) ) {
-		return null;
-	}
 
-	const enabledMethodsRequiringEuros = selectedMethods.filter( ( method ) =>
-		[ 'giropay', 'sepa_debit', 'sofort' ].includes( method )
+	let paymentMethodsWithMissingCurrencies = [];
+	let missingCurrencyLabels = [];
+	const missingCurrencies = [];
+
+	selectedMethods.map( ( paymentMethod ) => {
+		if ( 'undefined' !== typeof PaymentMethodsMap[ paymentMethod ] ) {
+			PaymentMethodsMap[ paymentMethod ].currencies.map( ( currency ) => {
+				if (
+					! enabledCurrenciesIds.includes( currency.toLowerCase() )
+				) {
+					missingCurrencies.push( currency );
+
+					paymentMethodsWithMissingCurrencies.push(
+						PaymentMethodsMap[ paymentMethod ].label
+					);
+
+					const missingCurrencyInfo =
+						currencyInfo.available[ currency ] || null;
+
+					const missingCurrencyLabel =
+						null != missingCurrencyInfo
+							? missingCurrencyInfo.name +
+							  ' (' +
+							  ( undefined !== missingCurrencyInfo.symbol
+									? missingCurrencyInfo.symbol
+									: currency.toUpperCase() ) +
+							  ')'
+							: currency.toUpperCase();
+
+					missingCurrencyLabels.push( missingCurrencyLabel );
+				}
+				return currency;
+			} );
+		}
+		return paymentMethod;
+	} );
+
+	missingCurrencyLabels = _.uniq( missingCurrencyLabels );
+	paymentMethodsWithMissingCurrencies = _.uniq(
+		paymentMethodsWithMissingCurrencies
 	);
 
-	if ( 0 === enabledMethodsRequiringEuros.length ) {
-		return null;
+	if ( 0 < missingCurrencyLabels.length ) {
+		return (
+			<InlineNotice status="info" isDismissible={ false }>
+				{ interpolateComponents( {
+					mixedString: sprintf(
+						__(
+							"%s %s %s additional %s, so {{strong}}we'll add %s to your store{{/strong}}. " +
+								'You can view & manage currencies later in settings.',
+							'woocommerce-payments'
+						),
+						ListToCommaSeparatedSentencePartConverter(
+							paymentMethodsWithMissingCurrencies
+						),
+						_n(
+							'requires',
+							'require',
+							paymentMethodsWithMissingCurrencies.length,
+							'woocommerce-payments'
+						),
+						1 === missingCurrencyLabels.length ? 'an' : '',
+						_n(
+							'currency',
+							'currencies',
+							missingCurrencyLabels.length,
+							'woocommerce-payments'
+						),
+						ListToCommaSeparatedSentencePartConverter(
+							missingCurrencyLabels
+						)
+					),
+					components: {
+						strong: <strong />,
+					},
+				} ) }
+			</InlineNotice>
+		);
 	}
-
-	return (
-		<InlineNotice status="info" isDismissible={ false }>
-			{ interpolateComponents( {
-				mixedString: __(
-					"The selected methods require an additional currency, so {{strong}}we'll add Euro (€) to your store{{/strong}}. " +
-						'You can view & manage currencies later in settings.',
-					'woocommerce-payments'
-				),
-				components: {
-					strong: <strong />,
-				},
-			} ) }
-		</InlineNotice>
-	);
+	return null;
 };
 
 const CurrencyInformationForMethodsWrapper = ( props ) => {
@@ -57,7 +131,7 @@ const CurrencyInformationForMethodsWrapper = ( props ) => {
 		featureFlags: { multiCurrency },
 	} = useContext( WCPaySettingsContext );
 
-	// prevents loading currency data when the feature flag is disabled
+	// Prevents loading currency data when the feature flag is disabled.
 	if ( ! multiCurrency ) return null;
 
 	return <CurrencyInformationForMethods { ...props } />;

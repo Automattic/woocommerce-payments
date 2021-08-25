@@ -10,7 +10,6 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
  */
 import { shopperWCP } from '../../utils/flows';
 import {
-	fillCardDetails,
 	confirmCardAuthentication,
 	setupProductCheckout,
 } from '../../utils/payments';
@@ -34,24 +33,7 @@ describe( 'Saved cards ', () => {
 
 			it( 'should save the card', async () => {
 				await shopperWCP.goToPaymentMethods();
-				await expect( page ).toClick( 'a', {
-					text: 'Add payment method',
-				} );
-				await page.waitForNavigation( {
-					waitUntil: 'networkidle0',
-				} );
-				await fillCardDetails( page, card );
-				await expect( page ).toClick( 'button', {
-					text: 'Add payment method',
-				} );
-
-				if ( 'basic' !== cardType ) {
-					await confirmCardAuthentication( page, cardType );
-				}
-				await page.waitForNavigation( {
-					waitUntil: 'networkidle0',
-				} );
-
+				await shopperWCP.addNewPaymentMethod( cardType, card );
 				await expect( page ).toMatch(
 					'Payment method successfully added'
 				);

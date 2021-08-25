@@ -114,6 +114,41 @@ class WC_Payments_Admin {
 	}
 
 	/**
+	 * Add deposits and transactions menus for wcpay_empty_state_preview_mode_v1 experiment's treatment group.
+	 * This code can be removed once we're done with the experiment.
+	 */
+	public function add_payments_menu_for_treatment() {
+		wc_admin_register_page(
+			[
+				'id'         => 'wc-payments',
+				'title'      => __( 'Payments', 'woocommerce-payments' ),
+				'capability' => 'manage_woocommerce',
+				'path'       => '/payments/deposits',
+				'position'   => '55.7', // After WooCommerce & Product menu items.
+				'nav_args'   => [
+					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'is_category'  => true,
+					'menuId'       => 'plugins',
+					'is_top_level' => true,
+				],
+			]
+		);
+
+		wc_admin_register_page( $this->admin_child_pages['wc-payments-deposits'] );
+		wc_admin_register_page( $this->admin_child_pages['wc-payments-transactions'] );
+
+		wp_enqueue_style(
+			'wcpay-admin-css',
+			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'assets/css/admin.css' )
+		);
+
+		$this->add_menu_notification_badge();
+		$this->add_update_business_details_task();
+	}
+
+	/**
 	 * Add payments menu items.
 	 */
 	public function add_payments_menu() {
@@ -127,8 +162,9 @@ class WC_Payments_Admin {
 		}
 
 		// When the account is not connected, see if the user is in an A/B test treatment mode.
-		if ( false === $should_render_full_menu ) {
-			$should_render_full_menu = $this->is_in_treatment_mode();
+		if ( false === $should_render_full_menu && $this->is_in_treatment_mode() ) {
+			$this->add_payments_menu_for_treatment();
+			return;
 		}
 
 		$top_level_link = $should_render_full_menu ? '/payments/overview' : '/payments/connect';
@@ -445,7 +481,7 @@ class WC_Payments_Admin {
 			&& 'checkout' === $current_tab
 		);
 
-		if ( WC_Payments_Features::is_grouped_settings_enabled() && $is_payment_methods_page ) {
+		if ( $is_payment_methods_page ) {
 			wp_enqueue_script( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
 			wp_enqueue_style( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
 		}
@@ -476,9 +512,8 @@ class WC_Payments_Admin {
 	private function get_frontend_feature_flags() {
 		return array_merge(
 			[
-				'paymentTimeline'         => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
-				'customSearch'            => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
-				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
+				'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
+				'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
 			],
 			WC_Payments_Features::to_array()
 		);
@@ -526,15 +561,6 @@ class WC_Payments_Admin {
 		}
 
 		return ! $agreement['is_current_version'];
-	}
-
-	/**
-	 * Checks whether Account Overview page is enabled
-	 *
-	 * @return bool
-	 */
-	private static function is_account_overview_task_list_enabled() {
-		return get_option( '_wcpay_feature_account_overview_task_list' );
 	}
 
 	/**
@@ -626,7 +652,7 @@ class WC_Payments_Admin {
 			'yes' === get_option( 'woocommerce_allow_tracking' )
 		);
 
-		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode_v2' );
+		return 'treatment' === $abtest->get_variation( 'wcpay_empty_state_preview_mode_v4' );
 	}
 
 	/**

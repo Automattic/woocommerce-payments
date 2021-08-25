@@ -35,9 +35,12 @@ class PaymentMethodsCompatibility {
 	 * @var string[]
 	 */
 	private $payment_method_currency_map = [
-		'giropay'    => 'EUR',
-		'sepa_debit' => 'EUR',
-		'sofort'     => 'EUR',
+		'bancontact' => [ 'EUR' ],
+		'giropay'    => [ 'EUR' ],
+		'ideal'      => [ 'EUR' ],
+		'p24'        => [ 'EUR', 'PLN' ],
+		'sepa_debit' => [ 'EUR' ],
+		'sofort'     => [ 'EUR' ],
 	];
 
 	/**
@@ -79,17 +82,23 @@ class PaymentMethodsCompatibility {
 
 		$missing_currency_codes = [];
 
+		// TODO: we need to find something about having a currency not available for the method in case of having disabled currencies in the future.
+		// First option, not do display it if the available currency is blocked by something else (Stripe, merchant, WCPay etc.)
+		// Second option, showing a notice that it can't be selected because the currency is not available to use.
+
 		// we have payments needing some currency being enabled, let's ensure the currency is present.
 		foreach ( $payment_methods_needing_currency as $payment_method ) {
-			$needed_currency_code = $this->payment_method_currency_map[ $payment_method ];
-			if ( ! isset( $available_currencies[ $needed_currency_code ] ) ) {
-				continue;
-			}
-			if ( isset( $enabled_currencies[ $needed_currency_code ] ) ) {
-				continue;
-			}
+			$needed_currency_codes = $this->payment_method_currency_map[ $payment_method ];
+			foreach ( $needed_currency_codes as $needed_currency_code ) {
+				if ( ! isset( $available_currencies[ $needed_currency_code ] ) ) {
+					continue;
+				}
+				if ( isset( $enabled_currencies[ $needed_currency_code ] ) ) {
+					continue;
+				}
 
-			$missing_currency_codes[] = $needed_currency_code;
+				$missing_currency_codes[] = $needed_currency_code;
+			}
 		}
 
 		$missing_currency_codes = array_unique( $missing_currency_codes );

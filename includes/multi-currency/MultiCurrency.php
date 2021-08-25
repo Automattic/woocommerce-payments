@@ -41,6 +41,13 @@ class MultiCurrency {
 	protected static $instance = null;
 
 	/**
+	 * Static flag to show if the currencies initialization has been completed
+	 *
+	 * @var bool
+	 */
+	protected static $is_initialized = false;
+
+	/**
 	 * Compatibility instance.
 	 *
 	 * @var Compatibility
@@ -108,7 +115,7 @@ class MultiCurrency {
 	 *
 	 * @var array
 	 */
-	protected $available_currencies;
+	protected $available_currencies = [];
 
 	/**
 	 * The default currency.
@@ -122,7 +129,7 @@ class MultiCurrency {
 	 *
 	 * @var array
 	 */
-	protected $enabled_currencies;
+	protected $enabled_currencies = [];
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -179,6 +186,7 @@ class MultiCurrency {
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+			add_action( 'admin_head', [ $this, 'set_client_rounding_precision' ] );
 		}
 
 		add_action( 'init', [ $this, 'init' ] );
@@ -236,6 +244,8 @@ class MultiCurrency {
 		if ( is_admin() ) {
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
+
+		static::$is_initialized = true;
 	}
 
 	/**
@@ -434,6 +444,7 @@ class MultiCurrency {
 	private function initialize_enabled_currencies() {
 		$available_currencies     = $this->get_available_currencies();
 		$enabled_currency_codes   = get_option( $this->id . '_enabled_currencies', [] );
+		$enabled_currency_codes   = is_array( $enabled_currency_codes ) ? $enabled_currency_codes : [];
 		$default_code             = $this->get_default_currency()->get_code();
 		$default                  = [];
 		$enabled_currency_codes[] = $default_code;
@@ -884,7 +895,10 @@ class MultiCurrency {
 	private function read_currencies_from_cache() {
 		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION, [] );
 
-		if ( ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
+		if ( ! is_array( $currency_cache )
+			|| ! isset( $currency_cache['currencies'] )
+			|| ! isset( $currency_cache['expires'] )
+			|| ! isset( $currency_cache['updated'] ) ) {
 			// No option found or the data isn't in the format we expect.
 			return null;
 		}
@@ -983,6 +997,21 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Reduces the client rounding precision to 2
+	 *
+	 * @return  void
+	 */
+	public function set_client_rounding_precision() {
+		$screen = get_current_screen();
+		if ( 'post' === $screen->base && 'shop_order' === $screen->post_type ) :
+			$rounding_precision = wc_get_price_decimals() ?? wc_get_rounding_precision();
+			?>
+		<script>woocommerce_admin_meta_boxes.rounding_precision = <?php echo intval( $rounding_precision ); ?>;</script>
+			<?php
+		endif;
+	}
+
+	/**
 	 * Register the CSS and JS admin scripts.
 	 *
 	 * @return void
@@ -1005,5 +1034,14 @@ class MultiCurrency {
 			[ 'wc-components' ],
 			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
 		);
+	}
+
+	/**
+	 * Returns if the currency initialization are completed
+	 *
+	 * @return  bool    If the initializations have been completedÎ
+	 */
+	public static function is_initialized() : bool {
+		return static::$is_initialized;
 	}
 }

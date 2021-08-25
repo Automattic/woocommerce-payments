@@ -3,7 +3,7 @@
   "version": "2.8.4",
   "main": "webpack.config.js",
   "author": "Automattic",
-  "license": "GPL-2.0-or-later",
+  "license": "GPL-3.0-or-later",
   "repository": "github:Automattic/woocommerce-payments",
   "engines": {
     "node": ">=12.16.0",
@@ -99,6 +99,7 @@
     "@wordpress/dependency-extraction-webpack-plugin": "3.0.1",
     "@wordpress/e2e-test-utils": "4.11.0",
     "@wordpress/element": "^2.20.3",
+    "@wordpress/hooks": "^3.2.0",
     "@wordpress/i18n": "^4.1.1",
     "@wordpress/icons": "^2.10.3",
     "@wordpress/jest-preset-default": "4.0.0",

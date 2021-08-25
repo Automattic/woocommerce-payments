@@ -122,14 +122,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Define setting fields.
 		$this->form_fields = [
-			'enabled'                             => [
+			'enabled'                          => [
 				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
 				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
 			],
-			'account_statement_descriptor'        => [
+			'account_statement_descriptor'     => [
 				'type'        => 'account_statement_descriptor',
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
 				'description' => WC_Payments_Utils::esc_interpolated_html(
@@ -137,14 +137,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					[ 'a' => '<a href="https://docs.woocommerce.com/document/payments/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
 				),
 			],
-			'manual_capture'                      => [
+			'manual_capture'                   => [
 				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
 				'label'       => __( 'Issue an authorization on checkout, and capture later.', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
 				'default'     => 'no',
 			],
-			'saved_cards'                         => [
+			'saved_cards'                      => [
 				'title'       => __( 'Saved Cards', 'woocommerce-payments' ),
 				'label'       => __( 'Enable Payment via Saved Cards', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
@@ -152,7 +152,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'yes',
 				'desc_tip'    => true,
 			],
-			'test_mode'                           => [
+			'test_mode'                        => [
 				'title'       => __( 'Test mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
@@ -160,19 +160,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 				'desc_tip'    => true,
 			],
-			'enable_logging'                      => [
+			'enable_logging'                   => [
 				'title'       => __( 'Debug log', 'woocommerce-payments' ),
 				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
 			],
-			'payment_request_details'             => [
+			'payment_request_details'          => [
 				'title'       => __( 'Payment request buttons', 'woocommerce-payments' ),
 				'type'        => 'title',
 				'description' => '',
 			],
-			'payment_request'                     => [
+			'payment_request'                  => [
 				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
 				'label'       => sprintf(
 					/* translators: 1) br tag 2) Stripe anchor tag 3) Apple anchor tag */
@@ -186,21 +186,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => empty( get_option( 'woocommerce_woocommerce_payments_settings' ) ) ? 'yes' : 'no', // Enable by default for new installations only.
 				'desc_tip'    => true,
 			],
-			'payment_request_button_type'         => [
+			'payment_request_button_type'      => [
 				'title'       => __( 'Button type', 'woocommerce-payments' ),
 				'type'        => 'select',
 				'description' => __( 'Select the button type you would like to show.', 'woocommerce-payments' ),
 				'default'     => 'buy',
 				'desc_tip'    => true,
 				'options'     => [
-					'default' => __( 'Default', 'woocommerce-payments' ),
+					'default' => __( 'Only icon', 'woocommerce-payments' ),
 					'buy'     => __( 'Buy', 'woocommerce-payments' ),
 					'donate'  => __( 'Donate', 'woocommerce-payments' ),
-					'branded' => __( 'Branded', 'woocommerce-payments' ),
-					'custom'  => __( 'Custom', 'woocommerce-payments' ),
+					'book'    => __( 'Book', 'woocommerce-payments' ),
 				],
 			],
-			'payment_request_button_theme'        => [
+			'payment_request_button_theme'     => [
 				'title'       => __( 'Button theme', 'woocommerce-payments' ),
 				'type'        => 'select',
 				'description' => __( 'Select the button theme you would like to show.', 'woocommerce-payments' ),
@@ -212,38 +211,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'light-outline' => __( 'Light-Outline', 'woocommerce-payments' ),
 				],
 			],
-			'payment_request_button_height'       => [
+			'payment_request_button_height'    => [
 				'title'       => __( 'Button height', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'Enter the height you would like the button to be in pixels. Width will always be 100%.', 'woocommerce-payments' ),
 				'default'     => '44',
 				'desc_tip'    => true,
 			],
-			'payment_request_button_label'        => [
+			'payment_request_button_label'     => [
 				'title'       => __( 'Custom button label', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'Enter the custom text you would like the button to have.', 'woocommerce-payments' ),
 				'default'     => __( 'Buy now', 'woocommerce-payments' ),
 				'desc_tip'    => true,
 			],
-			'payment_request_button_branded_type' => [
-				'title'       => __( 'Branded button format', 'woocommerce-payments' ),
-				'type'        => 'select',
-				'description' => __( 'Select the branded button label format.', 'woocommerce-payments' ),
-				'default'     => 'long',
-				'desc_tip'    => true,
-				'options'     => [
-					'short' => __( 'Logo only', 'woocommerce-payments' ),
-					'long'  => __( 'Text and logo', 'woocommerce-payments' ),
-				],
-			],
-			'payment_request_button_locations'    => [
+			'payment_request_button_locations' => [
 				'title'             => __( 'Button locations', 'woocommerce-payments' ),
 				'type'              => 'multiselect',
 				'description'       => __( 'Select where you would like to display the button.', 'woocommerce-payments' ),
 				'default'           => [
 					'product',
 					'cart',
+					'checkout',
 				],
 				'class'             => 'wc-enhanced-select',
 				'desc_tip'          => true,
@@ -256,18 +245,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'data-placeholder' => __( 'Select pages', 'woocommerce-payments' ),
 				],
 			],
-		];
-
-		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
-			// previously called `enabled_payment_method_ids` - some developers might have the old setting still saved in their DB.
-			$this->form_fields['upe_enabled_payment_method_ids'] = [
+			'upe_enabled_payment_method_ids'   => [
 				'title'   => __( 'Payments accepted on checkout', 'woocommerce-payments' ),
 				'type'    => 'multiselect',
 				'default' => [ 'card' ],
 				'options' => [],
-			];
-
-			$this->form_fields['payment_request_button_size'] = [
+			],
+			'payment_request_button_size'      => [
 				'title'       => __( 'Size of the button displayed for Express Checkouts', 'woocommerce-payments' ),
 				'type'        => 'select',
 				'description' => __( 'Select the size of the button.', 'woocommerce-payments' ),
@@ -278,20 +262,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'medium'  => __( 'Medium', 'woocommerce-payments' ),
 					'large'   => __( 'Large', 'woocommerce-payments' ),
 				],
-			];
-
-			// in the new settings, "checkout" is going to be enabled by default (if it is a new WCPay installation).
-			$this->form_fields['payment_request_button_locations']['default'][] = 'checkout';
-
-			// no longer needed in the new settings.
-			unset( $this->form_fields['payment_request_button_branded_type'] );
-			// injecting some of the new options.
-			$this->form_fields['payment_request_button_type']['options']['default'] = __( 'Only icon', 'woocommerce-payments' );
-			$this->form_fields['payment_request_button_type']['options']['book']    = __( 'Book', 'woocommerce-payments' );
-			// no longer valid options.
-			unset( $this->form_fields['payment_request_button_type']['options']['branded'] );
-			unset( $this->form_fields['payment_request_button_type']['options']['custom'] );
-		}
+			],
+		];
 
 		// Giropay option hidden behind feature flag.
 		if ( WC_Payments_Features::is_giropay_enabled() ) {
@@ -470,11 +442,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean Test mode enabled if true, disabled if false
 	 */
 	public function is_in_test_mode() {
-		if ( $this->is_in_dev_mode() ) {
-			return true;
-		}
-
-		return 'yes' === $this->get_option( 'test_mode' );
+		return $this->is_in_dev_mode() || 'yes' === $this->get_option( 'test_mode' );
 	}
 
 
@@ -577,11 +545,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function admin_options() {
 		// Add notices to the WooCommerce Payments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
-
-		if ( ! WC_Payments_Features::is_grouped_settings_enabled() ) {
-			parent::admin_options();
-			return;
-		}
 
 		$this->output_payments_settings_screen();
 	}
@@ -923,16 +886,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
-		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
-		$email    = sanitize_email( $order->get_billing_email() );
-		$metadata = [
-			'customer_name'  => $name,
-			'customer_email' => $email,
-			'site_url'       => esc_url( get_site_url() ),
-			'order_id'       => $order_id,
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => $payment_information->get_payment_type(),
-		];
+		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
@@ -1086,6 +1040,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return [
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
+		];
+	}
+
+	/**
+	 * Prepares Stripe metadata for a given order.
+	 *
+	 * @param WC_Order     $order        Order being processed.
+	 * @param Payment_Type $payment_type Enum stating whether payment is single or recurring.
+	 *
+	 * @return array Array of keyed metadata values.
+	 */
+	protected function get_metadata_from_order( $order, $payment_type ) {
+		$name  = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+		$email = sanitize_email( $order->get_billing_email() );
+
+		return [
+			'customer_name'  => $name,
+			'customer_email' => $email,
+			'site_url'       => esc_url( get_site_url() ),
+			'order_id'       => $order->get_id(),
+			'order_key'      => $order->get_order_key(),
+			'payment_type'   => $payment_type,
 		];
 	}
 

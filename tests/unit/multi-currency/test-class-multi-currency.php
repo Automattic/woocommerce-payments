@@ -706,6 +706,12 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertEquals( '0.724', $refund->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true ) );
 	}
 
+	public function test_enabled_currencies_option_as_string_does_not_fatal() {
+		update_option( 'wcpay_multi_currency_enabled_currencies', '' );
+		$this->multi_currency->init();
+		$this->assertEquals( '', get_option( 'wcpay_multi_currency_enabled_currencies', false ) );
+	}
+
 	public function test_get_cached_currencies_with_no_stripe_connection() {
 		$this->init_multi_currency( null, false );
 		$this->assertEquals(
