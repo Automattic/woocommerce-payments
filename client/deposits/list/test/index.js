@@ -122,4 +122,34 @@ describe( 'Deposits list', () => {
 
 		expect( tableSummary ).toHaveLength( 1 );
 	} );
+
+	describe( 'Download button', () => {
+		test( 'renders when there are one or more deposits', () => {
+			useDeposits.mockReturnValue( {
+				deposits: mockDeposits,
+				isLoading: false,
+			} );
+
+			const { container } = render( <DepositsList /> );
+			const downloadButton = container.querySelectorAll(
+				'.woocommerce-table__download-button'
+			);
+
+			expect( downloadButton ).toHaveLength( 1 );
+		} );
+
+		test( 'does not render when there are no deposits', () => {
+			useDeposits.mockReturnValue( {
+				deposits: [],
+				isLoading: false,
+			} );
+
+			const { container } = render( <DepositsList /> );
+			const downloadButton = container.querySelectorAll(
+				'.woocommerce-table__download-button'
+			);
+
+			expect( downloadButton ).toHaveLength( 0 );
+		} );
+	} );
 } );
