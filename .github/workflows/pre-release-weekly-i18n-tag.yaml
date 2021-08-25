@@ -3,7 +3,7 @@ name: (pre-release) Weekly i18n tag
 on:
   push:
     paths:
-      - '.github/workflows'
+      - '.github/workflows/**'
   schedule:
     - cron: '0 20 * * 1'
   workflow_dispatch: []
