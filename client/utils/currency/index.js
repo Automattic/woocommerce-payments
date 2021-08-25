@@ -230,13 +230,20 @@ function removeCurrencySymbol( formatted ) {
 }
 
 function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
-	// Fallback for unsupported currencies: currency code and amount
-	return amount.toLocaleString( undefined, {
-		style: 'currency',
-		currency: currencyCode,
-		currencyDisplay: 'narrowSymbol',
-		dummy: isZeroDecimal,
-	} );
+	try {
+		// Fallback for unsupported currencies: currency code and amount
+		return amount.toLocaleString( undefined, {
+			style: 'currency',
+			currency: currencyCode,
+			currencyDisplay: 'narrowSymbol',
+			dummy: isZeroDecimal,
+		} );
+	} catch ( error ) {
+		if ( ! isZeroDecimal ) {
+			return sprintf( '%.02f %s', amount, currencyCode );
+		}
+		return sprintf( '%s %s', amount, currencyCode );
+	}
 }
 
 function trimEndingZeroes( formattedCurrencyAmount = '' ) {
