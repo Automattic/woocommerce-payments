@@ -98,6 +98,8 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.0.0 - 2021-xx-xx =
+
 = 2.9.0 - 2021-08-25 =
 * Add - Split discount line in timeline into variable fee and fixed fee.
 * Add - Order status validation for payments/orders/{order_id}/create_customer API.
