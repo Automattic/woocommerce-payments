@@ -28,8 +28,6 @@ import {
 	useDefaultCurrency,
 } from 'wcpay/data';
 
-import { useSettings } from '../../data';
-
 import EnabledCurrenciesModalCheckboxList from '../../multi-currency/enabled-currencies-list/modal-checkbox-list';
 import EnabledCurrenciesModalCheckbox from '../../multi-currency/enabled-currencies-list/modal-checkbox';
 import Search from 'components/search';
@@ -62,7 +60,7 @@ const ContinueButton = ( { currencyState } ) => {
 	const defaultCurrency = useDefaultCurrency();
 	const defaultCurrencyCode = defaultCurrency.code;
 
-	const { isSaving } = useSettings();
+	const [ status, setStatus ] = useState( 'resolved' );
 
 	const checkedCurrencies = useMemo(
 		() =>
@@ -73,10 +71,11 @@ const ContinueButton = ( { currencyState } ) => {
 	);
 
 	const handleContinueClick = useCallback( () => {
+		setStatus( 'pending' );
 		checkedCurrencies.push( defaultCurrencyCode );
 		checkedCurrencies.sort();
 		submitEnabledCurrenciesUpdate( checkedCurrencies );
-
+		setStatus( 'resolved' );
 		setCompleted(
 			{
 				initialCurrencies: enabledCurrencies,
@@ -89,6 +88,7 @@ const ContinueButton = ( { currencyState } ) => {
 		submitEnabledCurrenciesUpdate,
 		setCompleted,
 		enabledCurrencies,
+		setStatus,
 	] );
 
 	const currencyChange =
@@ -98,8 +98,8 @@ const ContinueButton = ( { currencyState } ) => {
 
 	return (
 		<Button
-			isBusy={ isSaving }
-			disabled={ isSaving || 1 > checkedCurrencies.length }
+			isBusy={ 'pending' === status }
+			disabled={ 'pending' === status || 1 > checkedCurrencies.length }
 			onClick={ handleContinueClick }
 			isPrimary
 		>

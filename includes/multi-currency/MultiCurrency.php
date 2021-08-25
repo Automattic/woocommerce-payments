@@ -997,6 +997,48 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Checks if the merchant has enabled the currency switcher widget.
+	 *
+	 * @return  bool
+	 */
+	private function is_using_store_settings_widgets_link(): bool {
+		return 'yes' === get_option( $this->id . '_store_settings_widgets_link', false );
+	}
+
+	/**
+	 * Gets the store settings.
+	 *
+	 * @return  array  The store settings.
+	 */
+	public function get_settings() {
+		return [
+			$this->id . '_enable_auto_currency'        => $this->is_using_auto_currency_switching(),
+			$this->id . '_store_settings_widgets_link' => $this->is_using_store_settings_widgets_link(),
+		];
+	}
+
+	/**
+	 * Updates the store settings
+	 *
+	 * @param   array $params  Update requested values
+	 *
+	 * @return  void
+	 */
+	public function update_settings( $params ) {
+		$updateable_options = [
+			'_enable_auto_currency'        => [ 'yes', 'no' ],
+			'_store_settings_widgets_link' => [ 'yes', 'no' ],
+		];
+		foreach ( $updateable_options as $key => $acceptable_values ) {
+			if ( isset( $params[ $key ] ) ) {
+				if ( in_array( $params[ $key ], $acceptable_values, true ) ) {
+					update_option( $key, $params[ $key ] );
+				}
+			}
+		}
+	}
+
+	/**
 	 * Reduces the client rounding precision to 2
 	 *
 	 * @return  void

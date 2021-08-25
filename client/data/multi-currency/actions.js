@@ -62,3 +62,27 @@ export function* submitEnabledCurrenciesUpdate( currencies ) {
 		);
 	}
 }
+
+export function* submitSettingsUpdate(
+	isAutomaticSwitchEnabled,
+	willAddCurrencySelectorToCartWidget
+) {
+	try {
+		yield apiFetch( {
+			path: `${ NAMESPACE }/multi-currency/update-settings`,
+			method: 'POST',
+			data: {
+				wcpay_multi_currency_enable_auto_switch: isAutomaticSwitchEnabled,
+				wcpay_multi_currency_store_settings_widgets_link: willAddCurrencySelectorToCartWidget,
+			},
+		} );
+
+		yield dispatch( 'core/notices' ).createSuccessNotice(
+			__( 'Settings saved.', 'woocommerce-payments' )
+		);
+	} catch ( e ) {
+		yield dispatch( 'core/notices' ).createErrorNotice(
+			__( 'Error saving settings.', 'woocommerce-payments' )
+		);
+	}
+}

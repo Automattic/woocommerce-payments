@@ -7,6 +7,9 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Payments;
+use WP_REST_Response;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -44,6 +47,16 @@ class RestController extends \WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/update-settings',
+			[
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'update_settings' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -66,5 +79,16 @@ class RestController extends \WC_Payments_REST_Controller {
 		$params = $request->get_params();
 		WC_Payments_Multi_Currency()->set_enabled_currencies( $params['enabled'] );
 		return $this->get_store_currencies();
+	}
+
+	/**
+	 * Updates multi currency store settings parameters.
+	 *
+	 * @param   \WP_REST_Request $request  Full data about the request.
+	 */
+	public function update_settings( $request ) {
+		$params = $request->get_params();
+		WC_Payments_Multi_Currency()->update_settings( $params );
+		return WC_Payments_Multi_Currency()->get_settings();
 	}
 }

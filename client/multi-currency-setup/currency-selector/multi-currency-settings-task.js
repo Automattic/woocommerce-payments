@@ -12,19 +12,13 @@ import { Link } from '@woocommerce/components';
 import WizardTaskContext from '../wizard/task/context';
 import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
-import WcPayMultiCurrencyContext from '../../settings/multi-currency-settings/context';
 import './multi-currency-settings-task.scss';
-import { saveSettings } from 'wcpay/data/settings/actions';
+import { submitSettingsUpdate } from 'wcpay/data/multi-currency/actions';
 
 const MultiCurrencySettingsTask = () => {
-	const {
-		isAutomaticSwitchEnabled: initialIsAutomaticSwitchEnabled,
-		setIsAutomaticSwitchEnabled,
-		willAddCurrencySelectorToCartWidget: initialWillAddCurrencySelectorToCartWidget,
-		setWillAddCurrencySelectorToCartWidget,
-		status,
-	} = useContext( WcPayMultiCurrencyContext );
-
+	const initialIsAutomaticSwitchEnabled = true;
+	const initialWillAddCurrencySelectorToCartWidget = true;
+	const [ status, setStatus ] = useState( 'resolved' );
 	const [
 		isAutomaticSwitchEnabledValue,
 		setIsAutomaticSwitchEnabledValue,
@@ -37,43 +31,19 @@ const MultiCurrencySettingsTask = () => {
 	const { setCompleted } = useContext( WizardTaskContext );
 
 	const handleContinueClick = useCallback( () => {
-		// creating a separate callback, so that the main thread isn't blocked on click of the button
-		const callback = async () => {
-			setIsAutomaticSwitchEnabled( isAutomaticSwitchEnabledValue );
-			setWillAddCurrencySelectorToCartWidget(
-				willAddCurrencySelectorToCartWidgetValue
-			);
-
-			const isSuccess = await saveSettings();
-			if ( ! isSuccess ) {
-				setIsAutomaticSwitchEnabled( initialIsAutomaticSwitchEnabled );
-				setWillAddCurrencySelectorToCartWidget(
-					initialWillAddCurrencySelectorToCartWidget
-				);
-				return;
-			}
-
-			setCompleted( true, 'setup-complete' );
-		};
-
-		callback();
+		setStatus( 'pending' );
+		submitSettingsUpdate(
+			isAutomaticSwitchEnabledValue,
+			willAddCurrencySelectorToCartWidgetValue
+		);
+		setStatus( 'resolved' );
+		setCompleted( true, 'setup-complete' );
 	}, [
-		setIsAutomaticSwitchEnabled,
-		setWillAddCurrencySelectorToCartWidget,
 		setCompleted,
 		isAutomaticSwitchEnabledValue,
 		willAddCurrencySelectorToCartWidgetValue,
-		initialIsAutomaticSwitchEnabled,
-		initialWillAddCurrencySelectorToCartWidget,
+		setStatus,
 	] );
-
-	const handleAutomaticSwitchEnabledChange = ( value ) => {
-		setIsAutomaticSwitchEnabledValue( value );
-	};
-
-	const handleWillAddCurrencySelectorToCartWidgetChange = ( value ) => {
-		setWillAddCurrencySelectorToCartWidgetValue( value );
-	};
 
 	return (
 		<WizardTaskItem
@@ -103,7 +73,7 @@ const MultiCurrencySettingsTask = () => {
 					<CardBody>
 						<CheckboxControl
 							checked={ isAutomaticSwitchEnabledValue }
-							onChange={ handleAutomaticSwitchEnabledChange }
+							onChange={ setIsAutomaticSwitchEnabledValue }
 							label={ __(
 								'Automatically switch customers to their local currency if it has been enabled',
 								'woocommerce-payments'
@@ -115,7 +85,7 @@ const MultiCurrencySettingsTask = () => {
 						<CheckboxControl
 							checked={ willAddCurrencySelectorToCartWidgetValue }
 							onChange={
-								handleWillAddCurrencySelectorToCartWidgetChange
+								setWillAddCurrencySelectorToCartWidgetValue
 							}
 							label={ __(
 								'Add a currency switcher to the cart widget',
