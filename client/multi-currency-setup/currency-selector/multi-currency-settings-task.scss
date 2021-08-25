@@ -1,0 +1,28 @@
+.multi-currency-settings-task {
+	&__wrapper {
+		margin-top: 24px;
+		& > .components-card__body {
+			&.is-size-medium {
+				padding: 24px;
+			}
+			.components-base-control {
+				.components-base-control__field {
+					margin-bottom: 0;
+				}
+			}
+		}
+	}
+	&__body {
+		a {
+			display: inline-block;
+			padding: 6px 12px;
+		}
+	}
+	&__description {
+		font-size: 12px;
+		font-style: italic;
+		padding: 0 0 0 32px;
+		margin: 4px 0 12px;
+		color: #757575;
+	}
+}

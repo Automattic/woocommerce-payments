@@ -315,6 +315,10 @@ class WC_Payments_Admin {
 				'isUpeSettingsPreviewEnabled' => WC_Payments_Features::is_upe_settings_preview_enabled(),
 				'isUpeEnabled'                => WC_Payments_Features::is_upe_enabled(),
 			],
+			'multiCurrencySetup'     => [
+				'isTaskVisible'    => $this->is_page_eligible_for_multi_currency_setup_task(),
+				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
+			],
 			'needsHttpsSetup'        => $this->wcpay_gateway->needs_https_setup(),
 		];
 
@@ -720,6 +724,26 @@ class WC_Payments_Admin {
 		}
 
 		if ( 1 >= count( $available_methods ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Checks whether the current page should be eligible to enqueue the task.
+	 */
+	public function is_page_eligible_for_multi_currency_setup_task() {
+		if ( ! wc_admin_is_registered_page() ) {
+			return false;
+		}
+
+		// if the account is disconnected, just don't display the onboarding task.
+		if ( ! $this->account->is_stripe_connected() ) {
+			return false;
+		}
+
+		if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {
 			return false;
 		}
 

@@ -1,0 +1,68 @@
+.add-currencies-task__currency-selector-wrapper {
+	&.components-card {
+		.components-card__body {
+			padding-left: 0;
+			padding-right: 0;
+			.add-currencies-task__content h4,
+			.add-currencies-task__content .enabled-currency-checkbox,
+			.add-currencies-task__search {
+				padding-left: 16px;
+				padding-right: 16px;
+			}
+			.is-loadable-placeholder {
+				margin-left: 16px;
+				margin-right: 16px;
+			}
+		}
+	}
+}
+
+.add-currencies-task__separator {
+	border-bottom: 1px solid $studio-gray-5;
+	font-size: 0.1px;
+	width: 100%;
+	background-color: #fff;
+	height: 1px;
+	padding: 16px 0 0 0;
+	margin: 0;
+}
+
+.add-currencies-task__content {
+	max-height: 400px;
+	min-height: 400px;
+	overflow-y: auto;
+
+	.enabled-currency-checkbox {
+		margin-top: -5px;
+		padding-top: 5px;
+		&__flag {
+			font-size: 20px;
+			margin: 0 5px 0 0;
+		}
+
+		&__flag-text {
+			display: inline-block;
+			width: 20px;
+			height: 15px;
+			line-height: 15px;
+			vertical-align: top;
+			margin: 0 0.07em;
+			background-color: $studio-gray-5;
+			border-radius: 2px;
+			text-align: center;
+
+			span {
+				font-size: 9px;
+				vertical-align: bottom;
+			}
+		}
+
+		&__code {
+			color: $studio-gray-30;
+		}
+	}
+
+	.components-checkbox-control__label {
+		font-size: 15px;
+	}
+}

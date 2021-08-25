@@ -11,11 +11,13 @@ import moment from 'moment';
  * Internal dependencies
  */
 import createAdditionalMethodsSetupTask from '../../additional-methods-setup/task';
+import createMultiCurrencySetupTask from '../../multi-currency-setup/task';
 
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
 	additionalMethodsSetup = {},
+	multiCurrencySetup = {},
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
 	needsHttpsSetup,
@@ -103,5 +105,7 @@ export const getTasks = ( {
 			},
 		additionalMethodsSetup.isTaskVisible &&
 			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
+		/*multiCurrencySetup.isTaskVisible*/ true &&
+			createMultiCurrencySetupTask( multiCurrencySetup ),
 	].filter( Boolean );
 };
