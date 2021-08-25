@@ -22,9 +22,13 @@ jobs:
       - name: Push pre-release-tag
         run: |
           TAG="i18n-$(date +%Y%m%d)-test"
-          MESSAGE="Version for internationalization testing $TAG."
-          MESSAGE+=" Not for production."
+          MESSAGE="Version for internationalization testing $TAG. Not for production."
+          REF=$(git rev-parse HEAD)
 
-          echo "Pushing tag '$TAG' to repository..."
-          git tag -a $TAG -m "$MESSAGE"
-          git push origin $TAG
+          echo "Pushing tag '$TAG' marking commit $REF to repository..."
+          curl --request POST \
+            --url https://api.github.com/repos/${{ github.repository }}/git/tags \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'content-type: application/json' \
+            --data "{ \"tag\": \"$TAG\", \"message\": \"$MESSAGE\", \"type\": \"commit\", \"object\": \"$REF\" }" \
+            --fail
