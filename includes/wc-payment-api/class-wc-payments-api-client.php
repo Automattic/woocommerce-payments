@@ -1049,7 +1049,7 @@ class WC_Payments_API_Client {
 	public function charge_invoice( string $invoice_id, array $data = [] ) {
 		return $this->request(
 			$data,
-			self::INVOICES_API . '/pay/' . $invoice_id,
+			self::INVOICES_API . '/' . $invoice_id . '/pay',
 			self::POST
 		);
 	}
