@@ -9,7 +9,7 @@ on:
       - '**'
 
 jobs:
-  i18n-release:
+  publish-pre-release:
     name: Publish pre-release
     runs-on: ubuntu-20.04
 
@@ -61,7 +61,7 @@ jobs:
           TAG: ${{ steps.get_tag.outputs.TAG_REF }}
           TAG_MESSAGE: ${{ fromJson( steps.get_tag_object.outputs.RAW_TAG_OBJECT ).message }}
         run: |
-          NAME=$( echo ${TAG_MESSAGE:=$TAG} | jq -aRs '.' )
+          NAME=$( echo -n ${TAG_MESSAGE:=$TAG} | jq -aRs '.' )
           echo "Will build a release for tag '$TAG' with the name '$NAME'..."
 
           # pick anything before the first dash as a version number
@@ -80,11 +80,11 @@ jobs:
 
           CREATE_RELEASE_OUT=$(mktemp)
 
-          echo "Creating i18n release..."
+          echo "Creating pre-release..."
           http_code=$(curl --request POST \
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
               --header 'Content-Type: application/json' \
-              --data "{\"tag_name\":\"$TAG\",\"target_commitish\":\"develop\",\"name\":\"$NAME\",\"body\":\"$CHANGELOG\",\"prerelease\":true}" \
+              --data "{\"tag_name\":\"$TAG\",\"target_commitish\":\"develop\",\"name\":$NAME,\"body\":$CHANGELOG,\"prerelease\":true}" \
               --silent \
               --output "$CREATE_RELEASE_OUT" \
               --write-out "%{http_code}" \
@@ -101,7 +101,7 @@ jobs:
 
           echo "Release created."
 
-          echo "Uploading i18n assets to GitHub Release..."
+          echo "Uploading release assets to GitHub Release..."
 
           upload_url=$(echo $response | grep 'upload_url' | sed 's|.*"upload_url": "\([^{]*\).*|\1|')
 
