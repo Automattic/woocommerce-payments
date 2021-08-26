@@ -36,12 +36,20 @@ class WC_Payments_Subscriptions {
 	private static $subscription_service;
 
 	/**
+	 * Instance of WC_Payments_Subscriptions_Event_Handler, created in init function.
+	 *
+	 * @var WC_Payments_Subscriptions_Event_Handler
+	 */
+	private static $event_handler;
+
+	/**
 	 * Initialize WooCommerce Payments subscriptions. (Stripe Billing)
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WCPay API client.
 	 * @param WC_Payments_Customer_Service $customer_service WCPay Customer Service.
 	 */
 	public static function init( WC_Payments_API_Client $api_client, WC_Payments_Customer_Service $customer_service ) {
+		// Load Services.
 		include_once __DIR__ . '/class-wc-payments-product-service.php';
 		include_once __DIR__ . '/class-wc-payments-invoice-service.php';
 		include_once __DIR__ . '/class-wc-payments-subscription-service.php';
@@ -49,6 +57,19 @@ class WC_Payments_Subscriptions {
 		self::$product_service      = new WC_Payments_Product_Service( $api_client );
 		self::$invoice_service      = new WC_Payments_Invoice_Service( $api_client, self::$product_service );
 		self::$subscription_service = new WC_Payments_Subscription_Service( $api_client, $customer_service, self::$product_service, self::$invoice_service );
+
+		// Load the subscription and invoice incoming event handler.
+		include_once __DIR__ . '/class-wc-payments-subscriptions-event-handler.php';
+		self::$event_handler = new WC_Payments_Subscriptions_Event_Handler( self::$invoice_service, self::$subscription_service );
+	}
+
+	/**
+	 * Get the Event Handler class instance.
+	 *
+	 * @return WC_Payments_Subscriptions_Event_Handler
+	 */
+	public static function get_event_handler() {
+		return self::$event_handler;
 	}
 
 	/**
