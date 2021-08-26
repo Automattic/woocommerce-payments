@@ -32,13 +32,20 @@ jobs:
           tools:       composer
           coverage:    none
 
+      - name: Dump context
+        env:
+          GITHUB_CONTEXT: ${{ toJson( github ) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
+          exit 1
+
       - name: Get the tag name
         id: get_tag
         run: echo ::set-output name=TAG_REF::${GITHUB_REF#refs/tags/}
 
       - name: Retrive tag information
         id: get_tag_info
-        run: echo ::set-output name=RAW_TAG_DATA::$(curl https://api.github.com/repos/${{ github.repository }}/git/tags/${{ steps.get_tag.outputs.TAG_REF }})
+        run: echo ::set-output name=RAW_TAG_DATA::$(curl https://api.github.com/repos/${{ github.repository }}/git/tags/${{ github.sha }})
 
       - name: Build release
         run: |
