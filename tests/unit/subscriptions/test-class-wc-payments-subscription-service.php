@@ -65,7 +65,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$this->mock_product_service  = $this->createMock( WC_Payments_Product_Service::class );
 		$this->mock_invoice_service  = $this->createMock( WC_Payments_Invoice_Service::class );
 
-		$this->subscription_service = new WC_Payments_Subscription_Service( $this->mock_api_client, $this->mock_customer_service, null, $this->mock_product_service, $this->mock_invoice_service );
+		$this->subscription_service = new WC_Payments_Subscription_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_product_service, $this->mock_invoice_service );
 	}
 
 	/**
