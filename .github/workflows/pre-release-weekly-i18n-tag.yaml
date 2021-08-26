@@ -1,4 +1,9 @@
 ---
+#
+# NOTE: This workflow uses Deploy Key to publish a new tag
+# to overcome GitHub design limitation that actions done with action token
+# cannot trigger other workflows.
+#
 name: (pre-release) Weekly i18n tag
 on:
   push:
@@ -17,37 +22,22 @@ jobs:
       # clone the repository
       - uses: actions/checkout@v2
         with:
+          ssh-key: "${{ secrets.COMMIT_KEY }}"
           # for testing
           ref: 'feature/1118-split-translations-workflow'
           # ref: 'develop'
+      - name: Set GitHub actions as commit author
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Create tag object
+      - name: Create annotated tag
         id: create_tag_object
         run: |
           TAG="i18n-$(date +%Y%m%d)-test-$RANDOM"
           MESSAGE="Version for internationalization testing $TAG. Not for production."
           REF=$(git rev-parse HEAD)
 
-          echo "Pushing tag object '$TAG' marking commit $REF to repository..."
-          echo ::set-output name=RAW_TAG_OBJECT::$( curl --request POST \
-            --url https://api.github.com/repos/${{ github.repository }}/git/tags \
-            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'content-type: application/json' \
-            --data "{ \"tag\": \"$TAG\", \"message\": \"$MESSAGE\", \"type\": \"commit\", \"object\": \"$REF\" }" \
-            --fail
-            )
-          echo ::set-output name=TAG::$TAG
-
-      - name: Create tag reference
-        id: create_tag_reference
-        env:
-          TAG_OBJECT_SHA: ${{ fromJson( steps.create_tag_object.outputs.RAW_TAG_OBJECT ).sha }}
-          TAG: ${{ steps.create_tag_object.outputs.TAG }}
-        run: |
-          echo "Creating tag reference /refs/tags/$TAG pointing to tag object $TAG_OBJECT_SHA..."
-          curl --request POST \
-            --url https://api.github.com/repos/${{ github.repository }}/git/refs \
-            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'content-type: application/json' \
-            --data "{\"ref\": \"refs/tags/$TAG\", \"sha\": \"$TAG_OBJECT_SHA\"}" \
-            --fail
+          git tag -a -m "$MESSAGE" $TAG
+          git push origin $TAG
