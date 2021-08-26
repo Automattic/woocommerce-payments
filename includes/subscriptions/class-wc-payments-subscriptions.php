@@ -22,13 +22,6 @@ class WC_Payments_Subscriptions {
 	private static $product_service;
 
 	/**
-	 * Instance of WC_Payments_Tax_Service, created in init function.
-	 *
-	 * @var WC_Payments_Tax_Service
-	 */
-	private static $tax_service;
-
-	/**
 	 * Instance of WC_Payments_Invoice_Service, created in init function.
 	 *
 	 * @var WC_Payments_Invoice_Service
@@ -55,7 +48,7 @@ class WC_Payments_Subscriptions {
 
 		self::$product_service      = new WC_Payments_Product_Service( $api_client );
 		self::$invoice_service      = new WC_Payments_Invoice_Service( $api_client, self::$product_service );
-		self::$subscription_service = new WC_Payments_Subscription_Service( $api_client, $customer_service, self::$tax_service, self::$product_service, self::$invoice_service );
+		self::$subscription_service = new WC_Payments_Subscription_Service( $api_client, $customer_service, self::$product_service, self::$invoice_service );
 	}
 
 	/**
