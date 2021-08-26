@@ -36,7 +36,7 @@ jobs:
             --fail
             )
 
-          TAG_OBJECT_SHA=${{ fromJson( RAW_TAG_OBJECT ).sha }}
+          TAG_OBJECT_SHA=${{ fromJson( $RAW_TAG_OBJECT ).sha }}
 
           echo "Creating tag reference /refs/tags/$TAG pointing to tag object $TAG_OBJECT_SHA..."
           curl --request POST \
