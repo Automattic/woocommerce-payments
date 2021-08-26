@@ -47,7 +47,7 @@ class WC_Payments_API_Client {
 	const PRICES_API          = 'products/prices';
 	const SUBSCRIPTIONS_API   = 'subscriptions';
 	const INVOICES_API        = 'invoices';
-	const INVOICE_ITEMS_API   = '/invoice/items';
+	const INVOICE_ITEMS_API   = 'invoice/items';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
