@@ -236,6 +236,10 @@ class Settings extends \WC_Settings_Page {
 					<span style="display:inline-block;"></span>
 				</div>
 				<input type="hidden"
+					name="<?php echo esc_attr( $this->id . '_is_zero_decimal' ); ?>"
+					value="<?php echo esc_attr( $available_currencies[ $currency->get_code() ]->get_is_zero_decimal() ); ?>"
+				/>
+				<input type="hidden"
 					name="<?php echo esc_attr( $this->id . '_automatic_exchange_rate' ); ?>"
 					value="<?php echo esc_attr( $available_currencies[ $currency->get_code() ]->get_rate() ); ?>"
 				/>
