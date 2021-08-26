@@ -491,11 +491,11 @@ class WC_Payments_Utils {
 	 *
 	 * @return string
 	 */
-	public static function get_redacted_error_message( Exception $e ) {
+	public static function get_filtered_error_message( Exception $e ) {
 		$error_message = method_exists( $e, 'getLocalizedMessage' ) ? $e->getLocalizedMessage() : $e->getMessage();
 
-		// These notices can be shown when placing an order or adding a new payment method,
-		// so we aim for more generic error messages when the API Exception is redacted.
+		// These notices can be shown when placing an order or adding a new payment method, so we aim for
+		// more generic messages instead of specific order/payment messages when the API Exception is redacted.
 		if ( $e instanceof Connection_Exception ) {
 			$error_message = __( 'There was an error while processing this request. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {

@@ -116,7 +116,7 @@ class Sofort_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			/* translators: localized exception message */
 			$order->update_status( 'failed', sprintf( __( 'Sofort payment failed: %s', 'woocommerce-payments' ), $e->getLocalizedMessage() ) );
 
-			wc_add_notice( WC_Payments_Utils::get_redacted_error_message( $e ), 'error' );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
 			exit;
 		}
@@ -223,7 +223,7 @@ class Sofort_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			return $this->process_payment_for_order( WC()->cart, $payment_information, $intent_api_parameters );
 		} catch ( Exception $e ) {
-			wc_add_notice( WC_Payments_Utils::get_redacted_error_message( $e ), 'error' );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 
 			$order->update_status( 'failed' );
 

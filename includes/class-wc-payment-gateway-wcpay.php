@@ -801,7 +801,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
 
-			wc_add_notice( WC_Payments_Utils::get_redacted_error_message( $e ), 'error' );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
 				$order->update_status( 'failed' );
@@ -2080,7 +2080,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
 			];
 		} catch ( Exception $e ) {
-			wc_add_notice( WC_Payments_Utils::get_redacted_error_message( $e ), 'error', [ 'icon' => 'error' ] );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
 			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
 			return [
 				'result' => 'error',
@@ -2178,7 +2178,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => WC_Payments_Utils::get_redacted_error_message( $e ),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				]
 			);
