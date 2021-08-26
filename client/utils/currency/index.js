@@ -239,10 +239,11 @@ function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
 			dummy: isZeroDecimal,
 		} );
 	} catch ( error ) {
-		if ( ! isZeroDecimal ) {
-			return sprintf( '%.02f %s', amount, currencyCode );
-		}
-		return sprintf( '%s %s', amount, currencyCode );
+	return sprintf(
+		isZeroDecimal ? '%s %i' : '%s %.2f',
+		currencyCode.toUpperCase(),
+		amount
+	);
 	}
 }
 
