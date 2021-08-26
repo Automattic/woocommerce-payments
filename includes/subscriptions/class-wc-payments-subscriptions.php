@@ -58,4 +58,31 @@ class WC_Payments_Subscriptions {
 		self::$invoice_service      = new WC_Payments_Invoice_Service( $api_client, self::$tax_service );
 		self::$subscription_service = new WC_Payments_Subscription_Service( $api_client, $customer_service, self::$tax_service, self::$product_service, self::$invoice_service );
 	}
+
+	/**
+	 * Returns the the product service instance.
+	 *
+	 * @return WC_Payments_Product_Service The product service object.
+	 */
+	public static function get_product_service() {
+		return self::$product_service;
+	}
+
+	/**
+	 * Returns the the invoice service instance.
+	 *
+	 * @return WC_Payments_Invoice_Service
+	 */
+	public static function get_invoice_service() {
+		return self::$invoice_service;
+	}
+
+	/**
+	 * Returns the the subscription service instance.
+	 *
+	 * @return WC_Payments_Subscription_Service
+	 */
+	public static function get_subscription_service() {
+		return self::$subscription_service;
+	}
 }
