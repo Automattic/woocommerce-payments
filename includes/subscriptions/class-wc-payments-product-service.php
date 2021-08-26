@@ -398,7 +398,7 @@ class WC_Payments_Product_Service {
 			return $tax_rates;
 		}
 
-		$tax_inclusive = wc_prices_include_tax() ? 'true' : 'false';
+		$tax_inclusive = wc_prices_include_tax();
 
 		foreach ( $subscription->get_taxes() as $tax ) {
 			if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) ) {
