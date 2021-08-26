@@ -14,9 +14,135 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
+      # clone the repository
+      - uses: actions/checkout@v2
+      # enable dependencies caching (vendor and node_modules are wiped during build so they are ignored here)
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer/
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm/
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+      # setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools:       composer
+          coverage:    none
+
+      - name: Get the tag name
+        id: get_tag
+        run: echo ::set-output name=TAG_REF::${GITHUB_REF#refs/tags/}
+
+      - name: Retrive tag information
+        id: get_tag_info
+        run: echo ::set-output name=RAW_TAG_DATA::$(curl https://api.github.com/repos/${{ github.repository }}/git/tags/${{ steps.get_tag.TAG_REF }})
+
+      - name: Build release
         run: |
-          echo "$GITHUB_CONTEXT"
-          exit 1
+          npm ci
+          npm run build
+
+          if [[ ! -f woocommerce-payments.zip ]]; then
+            echo "Failed to create release zip"
+            exit 1
+          fi
+
+      - name: Upload release
+        env:
+          TAG: ${{ steps.get_tag.TAG_REF }}
+          TAG_DATA: ${{ fromJson( steps.get_tag_info.RAW_TAG_DATA ) }}
+          TAG_MESSAGE: TAG_DATA.message
+        run: |
+          NAME=${TAG_MESSAGE:=$TAG}
+          echo "Will build a release for tag '$TAG' with the name '$NAME'..."
+
+          # right-trim everything until the first '-' in the tag to identify version
+          VERSION=${TAG%%-}
+
+          echo "Picking up changelog for version '$VERSION'..."
+          if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]];
+          then
+            # Tag starts with SemVer, pick changelog for this version
+            CHANGELOG=$(awk -v ver="$VERSION" '/^= / { if (p) { exit }; if ($2 == ver) { p=1 } } p && NF' changelog.txt)
+          else
+            # Otherwise use the first changelog section
+            CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1 } p && NF' changelog.txt)
+          fi
+
+          CREATE_RELEASE_OUT=$(mktemp)
+
+          echo "Creating i18n release..."
+          http_code=$(curl --request POST \
+              --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
+              --header 'Content-Type: application/json' \
+              --data "{\"tag_name\":\"$TAG\",\"target_commitish\":\"develop\",\"name\":\"$NAME\",\"body\":\"$CHANGELOG\",\"prerelease\":true}" \
+              --silent \
+              --output "$CREATE_RELEASE_OUT" \
+              --write-out "%{http_code}" \
+              https://api.github.com/repos/Automattic/woocommerce-payments/releases)
+
+          response=$(cat "$CREATE_RELEASE_OUT")
+          rm "$CREATE_RELEASE_OUT"
+
+          if [[ ${http_code} -lt 200 || ${http_code} -gt 299 ]]; then
+            echo "Could not create release:"
+            echo "$response"
+            exit 1
+          fi
+
+          echo "Release created."
+
+          echo "Uploading i18n assets to GitHub Release..."
+
+          upload_url=$(echo $response | grep 'upload_url' | sed 's|.*"upload_url": "\([^{]*\).*|\1|')
+
+          if [[ -z $upload_url ]]; then
+            echo "No upload URL found in response:"
+            echo "$response"
+            exit 1
+          fi
+
+          UPLOAD_RELEASE_OUT=$(mktemp)
+
+          http_code=$(curl --request POST \
+              --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
+              --header 'Content-Type: application/zip' \
+              --data-binary @woocommerce-payments.zip \
+              --silent \
+              --output "$UPLOAD_RELEASE_OUT" \
+              --write-out "%{http_code}" \
+              "${upload_url}?name=woocommerce-payments.zip")
+
+          response=$(cat "$UPLOAD_RELEASE_OUT")
+          rm "$UPLOAD_RELEASE_OUT"
+
+          if [[ ${http_code} -lt 200 || ${http_code} -gt 299 ]]; then
+            echo "Could not upload plugin zip to GitHub release:"
+            echo "$response"
+            exit 1
+          fi
+          echo "Assets uploaded."
+
+          echo "Triggering translations update on GlotPress..."
+
+          TRIGGER_UPLOAD_OUT=$(mktemp)
+
+          http_code=$(curl --request POST \
+              --silent \
+              --output "$TRIGGER_UPLOAD_OUT" \
+              --write-out "%{http_code}" \
+              ${{ secrets.GLOTPRESS_IMPORT_URL }}/$TAG)
+
+          response=$(cat "$TRIGGER_UPLOAD_OUT")
+          rm "$TRIGGER_UPLOAD_OUT"
+
+          if [[ ${http_code} -lt 200 || ${http_code} -gt 299 ]]; then
+            echo "Could not trigger translations:"
+            echo "$response"
+            exit 1
+          fi
+
+          echo "Translations update triggered."
