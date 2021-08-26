@@ -1152,6 +1152,21 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Link current account to existing Stripe account.
+	 *
+	 * @param string $blog_id Blog ID of the existing Stripe Account.
+	 */
+	public function link_to_existing_account( $blog_id ) {
+		return $this->request(
+			[
+				'blog_id' => $blog_id,
+			],
+			self::ACCOUNTS_API . '/link_to_existing_account',
+			self::POST
+		);
+	}
+
+	/**
 	 * Retrieves a store's terminal locations.
 	 *
 	 * @return array[] Stripe terminal location objects.
