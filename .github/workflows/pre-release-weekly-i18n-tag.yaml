@@ -21,7 +21,7 @@ jobs:
 
       - name: Push pre-release-tag
         run: |
-          TAG="i18n-$(date +%Y%m%d)-test"
+          TAG="i18n-$(date +%Y%m%d)-test-$RANDOM"
           MESSAGE="Version for internationalization testing $TAG. Not for production."
           REF=$(git rev-parse HEAD)
 
