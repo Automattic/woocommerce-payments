@@ -27,10 +27,21 @@ jobs:
           MESSAGE="Version for internationalization testing $TAG. Not for production."
           REF=$(git rev-parse HEAD)
 
-          echo "Pushing tag '$TAG' marking commit $REF to repository..."
-          curl --request POST \
+          echo "Pushing tag object '$TAG' marking commit $REF to repository..."
+          RAW_TAG_OBJECT=$( curl --request POST \
             --url https://api.github.com/repos/${{ github.repository }}/git/tags \
             --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             --header 'content-type: application/json' \
             --data "{ \"tag\": \"$TAG\", \"message\": \"$MESSAGE\", \"type\": \"commit\", \"object\": \"$REF\" }" \
+            --fail
+            )
+
+          TAG_OBJECT_SHA=${{ fromJson( RAW_TAG_OBJECT ).sha }}
+
+          echo "Creating tag reference /refs/tags/$TAG pointing to tag object $TAG_OBJECT_SHA..."
+          curl --request POST \
+            --url https://api.github.com/repos/${{ github.repository }}/git/refs/tags/$TAG \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'content-type: application/json' \
+            --data "{\"ref\": \"refs/tags/$TAG\", \"sha\": \"$TAG_OBJECT_SHA\"}"
             --fail
