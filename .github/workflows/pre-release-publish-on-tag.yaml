@@ -38,7 +38,7 @@ jobs:
 
       - name: Retrive tag information
         id: get_tag_info
-        run: echo ::set-output name=RAW_TAG_DATA::$(curl https://api.github.com/repos/${{ github.repository }}/git/tags/${{ steps.get_tag.TAG_REF }})
+        run: echo ::set-output name=RAW_TAG_DATA::$(curl https://api.github.com/repos/${{ github.repository }}/git/tags/${{ steps.get_tag.outputs.TAG_REF }})
 
       - name: Build release
         run: |
@@ -52,8 +52,8 @@ jobs:
 
       - name: Upload release
         env:
-          TAG: ${{ steps.get_tag.TAG_REF }}
-          TAG_DATA: ${{ fromJson( steps.get_tag_info.RAW_TAG_DATA ) }}
+          TAG: ${{ steps.get_tag.outputs.TAG_REF }}
+          TAG_DATA: ${{ fromJson( steps.get_tag_info.outputs.RAW_TAG_DATA ) }}
           TAG_MESSAGE: TAG_DATA.message
         run: |
           NAME=${TAG_MESSAGE:=$TAG}
