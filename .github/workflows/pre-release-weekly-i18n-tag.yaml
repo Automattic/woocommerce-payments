@@ -49,5 +49,5 @@ jobs:
             --url https://api.github.com/repos/${{ github.repository }}/git/refs \
             --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             --header 'content-type: application/json' \
-            --data "{\"ref\": \"refs/tags/$TAG\", \"sha\": \"$TAG_OBJECT_SHA\"}"
+            --data "{\"ref\": \"refs/tags/$TAG\", \"sha\": \"$TAG_OBJECT_SHA\"}" \
             --fail
