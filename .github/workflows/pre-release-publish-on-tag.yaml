@@ -76,6 +76,7 @@ jobs:
             # Otherwise use the first changelog section
             CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1 } p && NF' changelog.txt)
           fi
+          echo $CHANGELOG
 
           CREATE_RELEASE_OUT=$(mktemp)
 
