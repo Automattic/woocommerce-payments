@@ -61,20 +61,20 @@ jobs:
           TAG: ${{ steps.get_tag.outputs.TAG_REF }}
           TAG_MESSAGE: ${{ fromJson( steps.get_tag_object.outputs.RAW_TAG_OBJECT ).message }}
         run: |
-          NAME=${TAG_MESSAGE:=$TAG}
+          NAME=$( echo ${TAG_MESSAGE:=$TAG} | jq -aRs '.' )
           echo "Will build a release for tag '$TAG' with the name '$NAME'..."
 
-          # right-trim everything until the first '-' in the tag to identify version
-          VERSION=${TAG%%-}
+          # pick anything before the first dash as a version number
+          VERSION=$(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG)
 
           echo "Picking up changelog for version '$VERSION'..."
           if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]];
           then
             # Tag starts with SemVer, pick changelog for this version
-            CHANGELOG=$(awk -v ver="$VERSION" '/^= / { if (p) { exit }; if ($2 == ver) { p=1 } } p && NF' changelog.txt)
+            CHANGELOG=$(awk -v ver="$VERSION" '/^= / { if (p) { exit }; if ($2 == ver) { p=1 } } p && NF' changelog.txt | jq -aRs '.')
           else
             # Otherwise use the first changelog section
-            CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1 } p && NF' changelog.txt)
+            CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1 } p && NF' changelog.txt | jq -aRs '.')
           fi
           echo $CHANGELOG
 
