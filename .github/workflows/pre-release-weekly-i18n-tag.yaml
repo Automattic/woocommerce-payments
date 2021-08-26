@@ -17,7 +17,9 @@ jobs:
       # clone the repository
       - uses: actions/checkout@v2
         with:
-          ref: 'develop'
+          # for testing
+          ref: 'feature/1118-split-translations-workflow'
+          # ref: 'develop'
 
       - name: Push pre-release-tag
         run: |
