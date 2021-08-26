@@ -7,7 +7,6 @@
 
 namespace WCPay\Payment_Methods;
 
-use WCPay\Exceptions\Connection_Exception;
 use WCPay\Logger;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
