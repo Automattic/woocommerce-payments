@@ -35,6 +35,8 @@ const WCPAY_TRANSACTIONS =
 const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
 const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
+const WP_ADMIN_PAGES = baseUrl + 'wp-admin/edit.php?post_type=page';
+const WCB_CHECKOUT = baseUrl + 'checkout-wcb/';
 
 export const RUN_SUBSCRIPTIONS_TESTS =
 	'1' !== process.env.SKIP_WC_SUBSCRIPTIONS_TESTS;
@@ -131,6 +133,12 @@ export const shopperWCP = {
 			await confirmCardAuthentication( page, cardType );
 		}
 		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	openCheckoutWCB: async () => {
+		await page.goto( WCB_CHECKOUT, {
 			waitUntil: 'networkidle0',
 		} );
 	},
@@ -238,5 +246,44 @@ export const merchantWCP = {
 		await page.goto( ACTION_SCHEDULER, {
 			waitUntil: 'networkidle0',
 		} );
+	},
+
+	addNewPageCheckoutWCB: async () => {
+		await page.goto( WP_ADMIN_PAGES, {
+			waitUntil: 'networkidle0',
+		} );
+
+		// Add a new page called "Checkout WCB"
+		await page.click( '.page-title-action', { waitUntil: 'networkidle0' } );
+		await page.waitForSelector( '.wp-block > .editor-post-title__input' );
+		await page.type(
+			'.wp-block > .editor-post-title__input',
+			'Checkout WCB'
+		);
+
+		// Insert new checkout by WCB
+		// (workaround since it is not possible to add the block naturally)
+		await page.type(
+			'.editor-post-text-editor',
+			'<!-- wp:woocommerce/checkout -->'
+		);
+		await page.keyboard.press( 'Enter' );
+		await page.type(
+			'.editor-post-text-editor',
+			'<div class="wp-block-woocommerce-checkout is-loading">'
+		);
+		await page.keyboard.press( 'Enter' );
+		await page.type(
+			'.editor-post-text-editor',
+			'<!-- /wp:woocommerce/checkout -->'
+		);
+
+		// Publish the page
+		await page.click( 'button.editor-post-publish-panel__toggle' );
+		await page.click( 'button.editor-post-publish-button' );
+		await page.waitForSelector(
+			'.components-snackbar__content',
+			'Page updated.'
+		);
 	},
 };
