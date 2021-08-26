@@ -1001,8 +1001,8 @@ class MultiCurrency {
 	 *
 	 * @return  bool
 	 */
-	private function is_using_store_settings_widgets_link(): bool {
-		return 'yes' === get_option( $this->id . '_store_settings_widgets_link', false );
+	private function is_using_storefront_switcher(): bool {
+		return 'yes' === get_option( $this->id . '_enable_storefront_switcher', false );
 	}
 
 	/**
@@ -1012,8 +1012,8 @@ class MultiCurrency {
 	 */
 	public function get_settings() {
 		return [
-			$this->id . '_enable_auto_currency'        => $this->is_using_auto_currency_switching(),
-			$this->id . '_store_settings_widgets_link' => $this->is_using_store_settings_widgets_link(),
+			$this->id . '_enable_auto_currency'       => $this->is_using_auto_currency_switching(),
+			$this->id . '_enable_storefront_switcher' => $this->is_using_storefront_switcher(),
 		];
 	}
 
@@ -1026,14 +1026,13 @@ class MultiCurrency {
 	 */
 	public function update_settings( $params ) {
 		$updateable_options = [
-			'_enable_auto_currency'        => [ 'yes', 'no' ],
-			'_store_settings_widgets_link' => [ 'yes', 'no' ],
+			'wcpay_multi_currency_enable_auto_currency',
+			'wcpay_multi_currency_enable_storefront_switcher',
 		];
-		foreach ( $updateable_options as $key => $acceptable_values ) {
+
+		foreach ( $updateable_options as $key ) {
 			if ( isset( $params[ $key ] ) ) {
-				if ( in_array( $params[ $key ], $acceptable_values, true ) ) {
-					update_option( $key, $params[ $key ] );
-				}
+				update_option( $key, sanitize_text_field( $params[ $key ] ) );
 			}
 		}
 	}

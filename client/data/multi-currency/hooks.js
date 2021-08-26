@@ -30,7 +30,20 @@ export const useEnabledCurrencies = () => {
 		return getEnabledCurrencies();
 	} );
 	const { submitEnabledCurrenciesUpdate } = useDispatch( STORE_NAME );
-	return { enabledCurrencies, submitEnabledCurrenciesUpdate };
+	return {
+		enabledCurrencies,
+		submitEnabledCurrenciesUpdate,
+	};
+};
+
+export const useStoreSettings = () => {
+	const storeSettings = useSelect( ( select ) => {
+		const { getStoreSettings } = select( STORE_NAME );
+
+		return getStoreSettings();
+	} );
+	const { submitStoreSettingsUpdate } = useDispatch( STORE_NAME );
+	return { storeSettings, submitStoreSettingsUpdate };
 };
 
 export const useDefaultCurrency = () =>

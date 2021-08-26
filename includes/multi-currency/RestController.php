@@ -50,6 +50,16 @@ class RestController extends \WC_Payments_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/get-settings',
+			[
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_settings' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/update-settings',
 			[
 				'methods'             => \WP_REST_Server::CREATABLE,
@@ -79,6 +89,15 @@ class RestController extends \WC_Payments_REST_Controller {
 		$params = $request->get_params();
 		WC_Payments_Multi_Currency()->set_enabled_currencies( $params['enabled'] );
 		return $this->get_store_currencies();
+	}
+
+	/**
+	 * Gets the store settings for Multi Currency.
+	 *
+	 * @return  array  The store settings.
+	 */
+	public function get_settings() {
+		return WC_Payments_Multi_Currency()->get_settings();
 	}
 
 	/**

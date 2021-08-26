@@ -19,6 +19,7 @@ const receiveMultiCurrencies = (
 				available: data.available,
 				enabled: data.enabled,
 				default: data.default,
+				settings: {},
 			};
 		case TYPES.SET_AVAILABLE_CURRENCIES:
 			return {
@@ -46,6 +47,16 @@ const receiveMultiCurrencies = (
 					default: data.default,
 				},
 				default: data.default,
+			};
+		case TYPES.SET_STORE_SETTINGS:
+			return {
+				...state,
+				settings: {
+					enable_auto_currency:
+						data.wcpay_multi_currency_enable_auto_currency,
+					enable_storefront_switcher:
+						data.wcpay_multi_currency_enable_storefront_switcher,
+				},
 			};
 	}
 

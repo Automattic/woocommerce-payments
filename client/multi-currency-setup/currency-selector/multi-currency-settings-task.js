@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useState, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
@@ -13,36 +13,69 @@ import WizardTaskContext from '../wizard/task/context';
 import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
 import './multi-currency-settings-task.scss';
-import { submitSettingsUpdate } from 'wcpay/data/multi-currency/actions';
+
+import { useStoreSettings } from 'wcpay/data';
 
 const MultiCurrencySettingsTask = () => {
-	const initialIsAutomaticSwitchEnabled = true;
-	const initialWillAddCurrencySelectorToCartWidget = true;
+	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();
+
 	const [ status, setStatus ] = useState( 'resolved' );
+
 	const [
 		isAutomaticSwitchEnabledValue,
 		setIsAutomaticSwitchEnabledValue,
-	] = useState( initialIsAutomaticSwitchEnabled );
+	] = useState( false );
+
 	const [
-		willAddCurrencySelectorToCartWidgetValue,
-		setWillAddCurrencySelectorToCartWidgetValue,
-	] = useState( initialWillAddCurrencySelectorToCartWidget );
+		isStorefrontSwitcherEnabledValue,
+		setIsStorefrontSwitcherEnabledValue,
+	] = useState( false );
+
+	useEffect( () => {
+		if ( Object.keys( storeSettings ).length ) {
+			setIsStorefrontSwitcherEnabledValue(
+				storeSettings.enable_storefront_switcher
+			);
+			setIsAutomaticSwitchEnabledValue(
+				storeSettings.enable_auto_currency
+			);
+		}
+	}, [
+		setIsAutomaticSwitchEnabledValue,
+		setIsStorefrontSwitcherEnabledValue,
+		storeSettings,
+	] );
 
 	const { setCompleted } = useContext( WizardTaskContext );
 
+	const handleIsAutomaticSwitchEnabledClick = useCallback(
+		( value ) => {
+			setIsAutomaticSwitchEnabledValue( value );
+		},
+		[ setIsAutomaticSwitchEnabledValue ]
+	);
+
+	const handleIsStorefrontSwitcherEnabledClick = useCallback(
+		( value ) => {
+			setIsStorefrontSwitcherEnabledValue( value );
+		},
+		[ setIsStorefrontSwitcherEnabledValue ]
+	);
+
 	const handleContinueClick = useCallback( () => {
 		setStatus( 'pending' );
-		submitSettingsUpdate(
+		submitStoreSettingsUpdate(
 			isAutomaticSwitchEnabledValue,
-			willAddCurrencySelectorToCartWidgetValue
+			isStorefrontSwitcherEnabledValue
 		);
 		setStatus( 'resolved' );
 		setCompleted( true, 'setup-complete' );
 	}, [
 		setCompleted,
 		isAutomaticSwitchEnabledValue,
-		willAddCurrencySelectorToCartWidgetValue,
+		isStorefrontSwitcherEnabledValue,
 		setStatus,
+		submitStoreSettingsUpdate,
 	] );
 
 	return (
@@ -73,7 +106,7 @@ const MultiCurrencySettingsTask = () => {
 					<CardBody>
 						<CheckboxControl
 							checked={ isAutomaticSwitchEnabledValue }
-							onChange={ setIsAutomaticSwitchEnabledValue }
+							onChange={ handleIsAutomaticSwitchEnabledClick }
 							label={ __(
 								'Automatically switch customers to their local currency if it has been enabled',
 								'woocommerce-payments'
@@ -83,10 +116,8 @@ const MultiCurrencySettingsTask = () => {
 							Customers will be notified via store alert banner.
 						</div>
 						<CheckboxControl
-							checked={ willAddCurrencySelectorToCartWidgetValue }
-							onChange={
-								setWillAddCurrencySelectorToCartWidgetValue
-							}
+							checked={ isStorefrontSwitcherEnabledValue }
+							onChange={ handleIsStorefrontSwitcherEnabledClick }
 							label={ __(
 								'Add a currency switcher to the cart widget',
 								'woocommerce-payments'
