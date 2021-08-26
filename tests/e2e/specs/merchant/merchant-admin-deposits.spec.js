@@ -41,8 +41,9 @@ describe( 'Admin deposits', () => {
 
 	it( 'exported data should match the visible rows in Deposit History', async () => {
 		await merchantWCP.openDeposits();
+		await page.waitFor( 30000 );
 		await page.click( '.woocommerce-table__download-button' );
-		await page.waitFor( 5000 );
+		await page.waitFor( 30000 );
 
 		const fileNames = fs.readdirSync( DOWNLOADS_PATH );
 		const csvFilePath = `${ DOWNLOADS_PATH }/${ fileNames[ 0 ] }`;
@@ -80,13 +81,14 @@ describe( 'Admin deposits', () => {
 
 	it( 'exported data should match the visible rows in Deposit Transactions', async () => {
 		await merchantWCP.openDeposits();
+		await page.waitFor( 30000 );
 		await page.click(
 			'.woocommerce-table__table tr:nth-child(2) .woocommerce-table__item.info-button a'
 		); // info button of the first deposit
-		await page.waitFor( 5000 );
+		await page.waitFor( 30000 );
 
 		await page.click( '.woocommerce-table__download-button' );
-		await page.waitFor( 5000 );
+		await page.waitFor( 30000 );
 
 		const fileNames = fs.readdirSync( DOWNLOADS_PATH );
 		const csvFilePath = `${ DOWNLOADS_PATH }/${ fileNames[ 0 ] }`;
