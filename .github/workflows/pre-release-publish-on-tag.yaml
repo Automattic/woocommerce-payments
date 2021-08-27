@@ -94,29 +94,25 @@ jobs:
           NAME=$( echo -n ${TAG_MESSAGE:=$TAG} | jq -aRs '.' )
           echo "Will build a release for tag '$TAG' with the name '$NAME'..."
 
-          CREATE_RELEASE_OUT=$(mktemp)
-
           echo "Creating pre-release..."
-          http_code=$(curl --request POST \
+          CURL_RESPONSE=$(curl --request POST \
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
               --header 'Content-Type: application/json' \
               --data "{\"tag_name\":\"$TAG\",\"target_commitish\":\"develop\",\"name\":$NAME,\"body\":$CHANGELOG,\"prerelease\":true}" \
               --silent \
+              --fail \
               --output "$CREATE_RELEASE_OUT" \
               --write-out "%{http_code}" \
               --url "https://api.github.com/repos/${{ github.repository }}/releases")
 
-          response=$(cat "$CREATE_RELEASE_OUT")
-          rm "$CREATE_RELEASE_OUT"
-
-          if [[ ${http_code} -lt 200 || ${http_code} -gt 299 ]]; then
+          if [ $? -ne 0 ]; then
             echo "Could not create release:"
-            echo "$response"
+            echo "$CURL_RESPONSE"
             exit 1
           fi
 
           echo "Release created."
-          echo ::set-output name=RELEASE_JSON::$response
+          echo ::set-output name=RELEASE_JSON::$CURL_RESPONSE
 
       - name: Upload release assets
         id: upload_release_assets
@@ -135,25 +131,22 @@ jobs:
             exit 1
           fi
 
-          UPLOAD_RELEASE_OUT=$(mktemp)
-
-          http_code=$(curl --request POST \
+          CURL_RESPONSE=$(curl --request POST \
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
               --header 'Content-Type: application/zip' \
               --data-binary "@$RELEASE_FILENAME" \
               --silent \
+              --fail \
               --output "$UPLOAD_RELEASE_OUT" \
               --write-out "%{http_code}" \
               --url "${upload_url}?name=$RELEASE_FILENAME")
 
-          response=$(cat "$UPLOAD_RELEASE_OUT")
-          rm "$UPLOAD_RELEASE_OUT"
-
-          if [[ ${http_code} -lt 200 || ${http_code} -gt 299 ]]; then
+          if [ $? -ne 0 ]; then
             echo "Could not upload plugin archive $RELEASE_FILENAME to GitHub release:"
-            echo "$response"
+            echo "$CURL_RESPONSE"
             exit 1
           fi
+
           echo "Assets uploaded."
 
       - name: Trigger translations update on GlotPress
@@ -165,20 +158,16 @@ jobs:
         run: |
           echo "Triggering translations update on GlotPress..."
 
-          TRIGGER_UPLOAD_OUT=$(mktemp)
-
-          http_code=$(curl --request POST \
+          CURL_RESPONSE=$(curl --request POST \
               --silent \
+              --fail \
               --output "$TRIGGER_UPLOAD_OUT" \
               --write-out "%{http_code}" \
               --url "$GLOTPRESS_IMPORT_URL/$TAG")
 
-          response=$(cat "$TRIGGER_UPLOAD_OUT")
-          rm "$TRIGGER_UPLOAD_OUT"
-
-          if [[ ${http_code} -lt 200 || ${http_code} -gt 299 ]]; then
+          if [ $? -ne 0 ]; then
             echo "Could not trigger translations:"
-            echo "$response"
+            echo "$CURL_RESPONSE"
             exit 1
           fi
 
