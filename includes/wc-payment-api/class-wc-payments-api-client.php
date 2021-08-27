@@ -827,6 +827,8 @@ class WC_Payments_API_Client {
 	 * @param ?array $currencies_to - An array of the currencies we want to convert into. If left empty, will get all supported currencies.
 	 *
 	 * @return array
+	 *
+	 * @throws API_Exception - Error contacting the API.
 	 */
 	public function get_currency_rates( string $currency_from, $currencies_to = null ) {
 		$query_body = [ 'currency_from' => $currency_from ];
