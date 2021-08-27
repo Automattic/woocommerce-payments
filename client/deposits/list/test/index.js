@@ -5,6 +5,10 @@
  */
 import { render } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
+import { downloadCSVFile } from '@woocommerce/csv-export';
+import { dateI18n } from '@wordpress/date';
+import moment from 'moment';
+import os from 'os';
 
 /**
  * Internal dependencies
@@ -16,6 +20,15 @@ jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
 	useDepositsSummary: jest.fn(),
 } ) );
+
+jest.mock( '@woocommerce/csv-export', () => {
+	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
+
+	return {
+		...actualModule,
+		downloadCSVFile: jest.fn(),
+	};
+} );
 
 const mockDeposits = [
 	{
@@ -150,6 +163,75 @@ describe( 'Deposits list', () => {
 			);
 
 			expect( downloadButton ).toHaveLength( 0 );
+		} );
+	} );
+
+	describe( 'CSV download', () => {
+		beforeEach( () => {
+			useDeposits.mockReturnValue( {
+				deposits: mockDeposits,
+				depositsCount: 2,
+				isLoading: false,
+			} );
+			useDepositsSummary.mockReturnValue( {
+				depositsSummary: {
+					count: 2,
+					total: 5000,
+				},
+				isLoading: false,
+			} );
+		} );
+
+		afterEach( () => {
+			jest.resetAllMocks();
+		} );
+
+		afterAll( () => {
+			jest.restoreAllMocks();
+		} );
+
+		test( 'should render expected columns in CSV when the download button is clicked', () => {
+			const { getByRole } = render( <DepositsList /> );
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			const expected = [
+				'',
+				'Date',
+				'Type',
+				'Amount',
+				'Status',
+				'"Bank account"',
+			];
+
+			const csvContent = downloadCSVFile.mock.calls[ 0 ][ 1 ];
+			const csvHeaderRow = csvContent.split( os.EOL )[ 0 ].split( ',' );
+			expect( csvHeaderRow ).toEqual( expected );
+		} );
+
+		test( 'should match the visible rows', () => {
+			const { getByRole, getAllByRole } = render( <DepositsList /> );
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			const csvContent = downloadCSVFile.mock.calls[ 0 ][ 1 ];
+			const csvLines = csvContent.split( os.EOL );
+			const cptRows = getAllByRole( 'row' );
+
+			expect( csvLines.length ).toEqual( cptRows.length );
+
+			const cptFirstDepositDate = cptRows[ 1 ].querySelector( 'td' )
+				.textContent;
+			const csvFirstDeposit = csvLines[ 1 ].split( ',' );
+			const csvFirstDepositDate = csvFirstDeposit[ 1 ];
+			const date = new Date( JSON.parse( csvFirstDepositDate ) );
+			const csvFirstDepositFormattedDate = dateI18n(
+				'M j, Y',
+				moment.utc( date.getTime() ).toISOString(),
+				true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+			);
+
+			expect( csvFirstDepositFormattedDate ).toEqual(
+				cptFirstDepositDate
+			);
 		} );
 	} );
 } );
