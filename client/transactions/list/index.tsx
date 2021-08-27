@@ -15,7 +15,6 @@ import {
 	Link,
 	TableCardColumn,
 } from '@woocommerce/components';
-import { Button } from '@wordpress/components';
 import {
 	onQueryChange,
 	getQuery,
@@ -26,7 +25,6 @@ import {
 	generateCSVDataFromTable,
 	generateCSVFileName,
 } from '@woocommerce/csv-export';
-import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies
@@ -46,6 +44,7 @@ import './style.scss';
 import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
+import DownloadButton from '../../components/download-button';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -482,17 +481,10 @@ export const TransactionsList = (
 						autocompleter={ autocompleter }
 					/>,
 					downloadable && (
-						<Button
-							key="download"
-							className="woocommerce-table__download-button"
-							disabled={ isLoading }
+						<DownloadButton
+							isDisabled={ isLoading }
 							onClick={ onDownload }
-						>
-							<Gridicon icon={ 'cloud-download' } />
-							<span className="woocommerce-table__download-button__label">
-								{ __( 'Download', 'woocommerce-payments' ) }
-							</span>
-						</Button>
+						/>
 					),
 				] }
 			/>
