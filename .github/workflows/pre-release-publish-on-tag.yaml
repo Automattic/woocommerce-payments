@@ -101,8 +101,6 @@ jobs:
               --data "{\"tag_name\":\"$TAG\",\"target_commitish\":\"develop\",\"name\":$NAME,\"body\":$CHANGELOG,\"prerelease\":true}" \
               --silent \
               --fail \
-              --output "$CREATE_RELEASE_OUT" \
-              --write-out "%{http_code}" \
               --url "https://api.github.com/repos/${{ github.repository }}/releases")
 
           if [ $? -ne 0 ]; then
@@ -137,8 +135,6 @@ jobs:
               --data-binary "@$RELEASE_FILENAME" \
               --silent \
               --fail \
-              --output "$UPLOAD_RELEASE_OUT" \
-              --write-out "%{http_code}" \
               --url "${upload_url}?name=$RELEASE_FILENAME")
 
           if [ $? -ne 0 ]; then
@@ -161,8 +157,6 @@ jobs:
           CURL_RESPONSE=$(curl --request POST \
               --silent \
               --fail \
-              --output "$TRIGGER_UPLOAD_OUT" \
-              --write-out "%{http_code}" \
               --url "$GLOTPRESS_IMPORT_URL/$TAG")
 
           if [ $? -ne 0 ]; then
