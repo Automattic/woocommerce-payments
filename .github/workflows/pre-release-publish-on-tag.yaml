@@ -81,7 +81,7 @@ jobs:
             CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
           fi
           echo "$CHANGELOG"
-          echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG" | jq -aRS '.')
+          echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG" | jq -aRs '.')
 
       - name: Create release
         id: create_release
