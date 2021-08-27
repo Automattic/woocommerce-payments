@@ -66,6 +66,7 @@ jobs:
         env:
           TAG: ${{ steps.get_tag.outputs.TAG_REF }}
         id: get_changelog
+        shell: bash
         run: |
           # pick anything before the first dash as a version number
           VERSION=$(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG)
@@ -79,8 +80,8 @@ jobs:
             # Otherwise use the first changelog section
             CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
           fi
-          echo $CHANGELOG
-          echo ::set-output name=CHANGELOG_JSON::$(echo $CHANGELOG | jq -aRS '.')
+          echo "$CHANGELOG"
+          echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG" | jq -aRS '.')
 
       - name: Create release
         id: create_release
