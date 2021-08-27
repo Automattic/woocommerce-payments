@@ -7,6 +7,8 @@ on:
       - '![0-9]+.[0-9]+.[0-9]+'
       # run for all other tags
       - '**'
+env:
+  RELEASE_FILENAME: 'woocommerce-payments.zip'
 
 jobs:
   publish-pre-release:
@@ -34,36 +36,37 @@ jobs:
 
       - name: Get the tag name
         id: get_tag
+        shell: bash
         run: echo ::set-output name=TAG_REF::${GITHUB_REF#refs/tags/}
 
       - name: Retrive tag information
         id: get_tag_info
+        shell: bash
         run: echo ::set-output name=RAW_TAG_DATA::$(curl https://api.github.com/repos/${{ github.repository }}/git/refs/tags/${{ steps.get_tag.outputs.TAG_REF }} )
 
       - name: Retrive tag object
         id: get_tag_object
+        shell: bash
         env:
           TAG_OBJECT_URL: ${{ fromJson( steps.get_tag_info.outputs.RAW_TAG_DATA ).object.url }}
         run: echo ::set-output name=RAW_TAG_OBJECT::$(curl "$TAG_OBJECT_URL" )
 
       - name: Build release
+        shell: bash
         run: |
           npm ci
           npm run build
 
-          if [[ ! -f woocommerce-payments.zip ]]; then
-            echo "Failed to create release zip"
+          if [[ ! -f $RELEASE_FILENAME ]]; then
+            echo "Failed to create release archive $RELEASE_FILENAME"
             exit 1
           fi
 
-      - name: Upload release
+      - name: Extract changelog
         env:
           TAG: ${{ steps.get_tag.outputs.TAG_REF }}
-          TAG_MESSAGE: ${{ fromJson( steps.get_tag_object.outputs.RAW_TAG_OBJECT ).message }}
+        id: get_changelog
         run: |
-          NAME=$( echo -n ${TAG_MESSAGE:=$TAG} | jq -aRs '.' )
-          echo "Will build a release for tag '$TAG' with the name '$NAME'..."
-
           # pick anything before the first dash as a version number
           VERSION=$(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG)
 
@@ -71,12 +74,24 @@ jobs:
           if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]];
           then
             # Tag starts with SemVer, pick changelog for this version
-            CHANGELOG=$(awk -v ver="$VERSION" '/^= / { if (p) { exit }; if ($2 == ver) { p=1 } } p && NF' changelog.txt | jq -aRs '.')
+            CHANGELOG=$(awk -v ver="$VERSION" '/^= / { if (p) { exit }; if ($2 == ver) { p=1; next } } p && NF' changelog.txt)
           else
             # Otherwise use the first changelog section
-            CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1 } p && NF' changelog.txt | jq -aRs '.')
+            CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
           fi
           echo $CHANGELOG
+          echo ::set-output name=CHANGELOG_JSON::$(echo $CHANGELOG | jq -aRS '.')
+
+      - name: Create release
+        id: create_release
+        shell: bash
+        env:
+          TAG: ${{ steps.get_tag.outputs.TAG_REF }}
+          TAG_MESSAGE: ${{ fromJson( steps.get_tag_object.outputs.RAW_TAG_OBJECT ).message }}
+          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
+        run: |
+          NAME=$( echo -n ${TAG_MESSAGE:=$TAG} | jq -aRs '.' )
+          echo "Will build a release for tag '$TAG' with the name '$NAME'..."
 
           CREATE_RELEASE_OUT=$(mktemp)
 
@@ -88,7 +103,7 @@ jobs:
               --silent \
               --output "$CREATE_RELEASE_OUT" \
               --write-out "%{http_code}" \
-              https://api.github.com/repos/Automattic/woocommerce-payments/releases)
+              --url "https://api.github.com/repos/${{ github.repository }}/releases")
 
           response=$(cat "$CREATE_RELEASE_OUT")
           rm "$CREATE_RELEASE_OUT"
@@ -100,10 +115,18 @@ jobs:
           fi
 
           echo "Release created."
+          echo ::set-output name=RELEASE_JSON::$response
 
-          echo "Uploading release assets to GitHub Release..."
+      - name: Upload release assets
+        id: upload_release_assets
+        env:
+          UPLOAD_URL: ${{ fromJson( steps.create_release.outputs.RELEASE_JSON ).upload_url }}
+        shell: bash
+        run: |
+          echo "Uploading release assets to GitHub release..."
 
-          upload_url=$(echo $response | grep 'upload_url' | sed 's|.*"upload_url": "\([^{]*\).*|\1|')
+          # remove trailing attributes from upload_url
+          upload_url=$(echo $UPLOAD_URL | sed -E 's/([^{]*).*$/\1/')
 
           if [[ -z $upload_url ]]; then
             echo "No upload URL found in response:"
@@ -116,22 +139,29 @@ jobs:
           http_code=$(curl --request POST \
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
               --header 'Content-Type: application/zip' \
-              --data-binary @woocommerce-payments.zip \
+              --data-binary "@$RELEASE_FILENAME" \
               --silent \
               --output "$UPLOAD_RELEASE_OUT" \
               --write-out "%{http_code}" \
-              "${upload_url}?name=woocommerce-payments.zip")
+              --url "${upload_url}?name=$RELEASE_FILENAME")
 
           response=$(cat "$UPLOAD_RELEASE_OUT")
           rm "$UPLOAD_RELEASE_OUT"
 
           if [[ ${http_code} -lt 200 || ${http_code} -gt 299 ]]; then
-            echo "Could not upload plugin zip to GitHub release:"
+            echo "Could not upload plugin archive $RELEASE_FILENAME to GitHub release:"
             echo "$response"
             exit 1
           fi
           echo "Assets uploaded."
 
+      - name: Trigger translations update on GlotPress
+        id: trigger_translations
+        env:
+          TAG: ${{ steps.get_tag.outputs.TAG_REF }}
+          GLOTPRESS_IMPORT_URL: ${{ secrets.GLOTPRESS_IMPORT_URL }}
+        shell: bash
+        run: |
           echo "Triggering translations update on GlotPress..."
 
           TRIGGER_UPLOAD_OUT=$(mktemp)
@@ -140,7 +170,7 @@ jobs:
               --silent \
               --output "$TRIGGER_UPLOAD_OUT" \
               --write-out "%{http_code}" \
-              ${{ secrets.GLOTPRESS_IMPORT_URL }}/$TAG)
+              --url "$GLOTPRESS_IMPORT_URL/$TAG")
 
           response=$(cat "$TRIGGER_UPLOAD_OUT")
           rm "$TRIGGER_UPLOAD_OUT"
