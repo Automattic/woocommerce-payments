@@ -3,7 +3,7 @@
  */
 import config from 'config';
 
-const { shopper, merchant, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -34,40 +34,36 @@ describe( 'WooCommerce Blocks > Successful purchase', () => {
 		await shopper.login();
 		await shopper.goToShop();
 		await shopper.addToCartFromShopPage( simpleProductName );
-		await shopper.goToCheckout();
-		await uiUnblocked();
-		await shopper.fillBillingDetails( billingDetails );
 		await shopperWCP.openCheckoutWCB();
-
-		// Fill the required first and last name fields
-		await page.type( '#shipping-first_name', 'I am' );
-		await page.type( '#shipping-last_name', 'Customer' );
+		await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
 		// Fill CC details and purchase the product
 		const card = config.get( 'cards.basic' );
 		await fillCardDetailsWCB( page, card );
-		await expect( page ).toClick( 'button.components-button' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
+		await expect( page ).toClick( 'button', { text: 'Place Order' } );
+		await page.waitForSelector( 'div.woocommerce-order' );
+		await expect( page ).toMatch( 'p', {
+			text: 'Thank you. Your order has been received.',
 		} );
-		await expect( page ).toMatch( 'Order received' );
 	} );
 
 	it( 'using a 3DS card', async () => {
 		await shopper.goToShop();
 		await shopper.addToCartFromShopPage( simpleProductName );
-		await shopper.goToCheckout();
-		await uiUnblocked();
 		await shopperWCP.openCheckoutWCB();
+		await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
 		// Fill CC details and purchase the product
 		const card = config.get( 'cards.3ds' );
 		await fillCardDetailsWCB( page, card );
-		await expect( page ).toClick( 'button.components-button' );
+		await expect( page ).toClick( 'button', { text: 'Place Order' } );
 		await confirmCardAuthentication( page, '3DS' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
-		await expect( page ).toMatch( 'Order received' );
+		await page.waitForSelector( 'div.woocommerce-order' );
+		await expect( page ).toMatch( 'p', {
+			text: 'Thank you. Your order has been received.',
+		} );
 	} );
 } );

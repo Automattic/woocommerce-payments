@@ -142,6 +142,26 @@ export const shopperWCP = {
 			waitUntil: 'networkidle0',
 		} );
 	},
+
+	fillBillingDetailsWCB: async ( customerBillingDetails ) => {
+		await page.type(
+			'#shipping-first_name',
+			customerBillingDetails.firstname
+		);
+		await page.type(
+			'#shipping-last_name',
+			customerBillingDetails.lastname
+		);
+		await page.type(
+			'#shipping-address_1',
+			customerBillingDetails.addressfirstline
+		);
+		await page.type( '#shipping-city', customerBillingDetails.city );
+		await page.type(
+			'#shipping-postcode',
+			customerBillingDetails.postcode
+		);
+	},
 };
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
@@ -254,7 +274,9 @@ export const merchantWCP = {
 		} );
 
 		// Add a new page called "Checkout WCB"
-		await page.click( '.page-title-action', { waitUntil: 'networkidle0' } );
+		await expect( page ).toClick( '.page-title-action', {
+			waitUntil: 'networkidle0',
+		} );
 		await page.waitForSelector( '.wp-block > .editor-post-title__input' );
 		await page.type(
 			'.wp-block > .editor-post-title__input',
@@ -262,25 +284,20 @@ export const merchantWCP = {
 		);
 
 		// Insert new checkout by WCB
-		// (workaround since it is not possible to add the block naturally)
-		await page.type(
-			'.editor-post-text-editor',
-			'<!-- wp:woocommerce/checkout -->'
+		await expect( page ).toClick(
+			'.edit-post-header-toolbar__inserter-toggle'
 		);
-		await page.keyboard.press( 'Enter' );
-		await page.type(
-			'.editor-post-text-editor',
-			'<div class="wp-block-woocommerce-checkout is-loading">'
+		await expect( page ).toFill(
+			'.components-search-control__input',
+			'Checkout'
 		);
-		await page.keyboard.press( 'Enter' );
-		await page.type(
-			'.editor-post-text-editor',
-			'<!-- /wp:woocommerce/checkout -->'
-		);
+		await expect( page ).toClick( '.block-editor-block-types-list__item' );
 
 		// Publish the page
-		await page.click( 'button.editor-post-publish-panel__toggle' );
-		await page.click( 'button.editor-post-publish-button' );
+		await expect( page ).toClick(
+			'button.editor-post-publish-panel__toggle'
+		);
+		await expect( page ).toClick( 'button.editor-post-publish-button' );
 		await page.waitForSelector(
 			'.components-snackbar__content',
 			'Page updated.'
