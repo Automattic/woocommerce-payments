@@ -4,6 +4,8 @@
 # to overcome GitHub design limitation that actions done with action token
 # cannot trigger other workflows.
 #
+# Do not enable it to run on `push` event as it my run into infinite recursion!
+#
 name: (pre-release) Weekly i18n tag
 on:
   schedule:
@@ -34,7 +36,6 @@ jobs:
         run: |
           TAG="i18n-$(date +%Y%m%d)-test"
           MESSAGE="Version for internationalization testing $TAG. Not for production."
-          REF=$(git rev-parse HEAD)
 
           git tag -a -m "$MESSAGE" $TAG
           git push origin $TAG
