@@ -482,6 +482,7 @@ export const TransactionsList = (
 					/>,
 					downloadable && (
 						<DownloadButton
+							key="download"
 							isDisabled={ isLoading }
 							onClick={ onDownload }
 						/>

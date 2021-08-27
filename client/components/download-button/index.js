@@ -15,7 +15,6 @@ import './style.scss';
 
 const DownloadButton = ( { isDisabled, onClick } ) => (
 	<Button
-		key="download"
 		className="woocommerce-table__download-button"
 		disabled={ isDisabled }
 		onClick={ onClick }
