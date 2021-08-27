@@ -1,5 +1,3 @@
-const os = require( 'os' );
-
 /**
  * Wait for UI placeholders to finish and UI content is loaded.
  *
@@ -20,29 +18,4 @@ export const takeScreenshot = ( name ) => {
 		path: `./screenshots/${ name }.png`,
 		fullPage: true,
 	} );
-};
-
-/**
- * Returns the number of lines in a given string
- * based on OS-specific newline character.
- *
- * @param {string} str The string
- * @return {number} Number of lines in string
- */
-export const countLines = ( str ) => {
-	const lines = str.split( os.EOL );
-	const numLines = lines.length;
-	return numLines;
-};
-
-/**
- * Returns the line on given position in a string.
- *
- * @param {string} str The string
- * @param {number} lineNum Line number
- * @return {string} The text at given line number
- */
-export const getTextAtLine = ( str, lineNum ) => {
-	const lines = str.split( os.EOL );
-	return lines[ lineNum - 1 ];
 };
