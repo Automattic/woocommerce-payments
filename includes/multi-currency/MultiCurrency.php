@@ -199,6 +199,13 @@ class MultiCurrency {
 			// Make sure that this runs after the main init function.
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
 			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
+
+			// This is required in the MC onboarding simulation iframe.
+			$simulation_params = $this->get_multi_currency_onboarding_simulation_variables();
+			if ( 0 < count( $simulation_params ) ) {
+				// Modify the page links to deliver required params in the simulation.
+				$this->add_simulation_params_to_preview_urls( $simulation_params );
+			}
 		}
 	}
 
@@ -606,13 +613,41 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function update_selected_currency_by_geolocation() {
-		// We only want to automatically set the currency if it's already not set.
-		if ( $this->is_using_auto_currency_switching() && ! $this->get_stored_currency_code() ) {
-			$currency = $this->geolocation->get_currency_by_customer_location();
 
+		// Simulation overrides for multi currency onboarding preview.
+		$simulation_variables   = $this->get_multi_currency_onboarding_simulation_variables();
+		$simulation_enabled     = false;
+		$simulation_hide_notice = false;
+
+		if ( isset( $simulation_variables['enable_auto_currency'] ) ) {
+			$simulation_enabled     = true;
+			$enable_auto_currency   = boolval( $simulation_variables['enable_auto_currency'] );
+			$simulation_hide_notice = ! $enable_auto_currency;
+		}
+
+		// We only want to automatically set the currency if it's already not set.
+		if ( (
+				$simulation_enabled
+				|| $this->is_using_auto_currency_switching()
+			)
+			&& ! $simulation_hide_notice
+			&& (
+				$simulation_enabled
+				|| ! $this->get_stored_currency_code()
+			) ) {
+			$currency = $this->geolocation->get_currency_by_customer_location();
 			// Update currency and display notice if enabled.
 			if ( ! empty( $this->get_enabled_currencies()[ $currency ] ) ) {
-				$this->update_selected_currency( $currency );
+				if ( ! $simulation_enabled ) {
+					$this->update_selected_currency( $currency );
+				} else {
+					add_filter(
+						'woocommerce_get_stored_currency_code',
+						function( $code ) use ( $currency ) {
+							return $currency;
+						}
+					);
+				}
 				add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
 			}
 		}
@@ -807,6 +842,8 @@ class MultiCurrency {
 		} elseif ( $user_id ) {
 			$code = get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
 		}
+
+		$code = apply_filters( 'woocommerce_get_stored_currency_code', $code );
 
 		return $code;
 	}
@@ -1074,6 +1111,89 @@ class MultiCurrency {
 			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components' ],
 			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
+		);
+	}
+
+	/**
+	 * Gets the multi currency onboarding preview overrides from the querystring.
+	 *
+	 * @return  array  Override variables
+	 */
+	public function get_multi_currency_onboarding_simulation_variables() {
+		// Check if we are in a preview session, don't interfere with the main session.
+		if ( ! isset( $_GET['is_mc_onboarding_simulation'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return [];
+		}
+
+		// Define variables which can be overridden inside the preview session, with their sanitization methods.
+		$possible_variables = [
+			'enable_storefront_switcher' => 'wp_validate_boolean',
+			'enable_auto_currency'       => 'wp_validate_boolean',
+		];
+
+		// Define the defaults if the parameter is missing in the request.
+		$defaults = [
+			'enable_storefront_switcher' => false,
+			'enable_auto_currency'       => false,
+		];
+
+		// Prepare the params array.
+		$values = [];
+
+		// Walk throught the querystring parameter possibilities, and prepare the params.
+		foreach ( $possible_variables as $possible_variable => $sanitization_callback ) {
+			// phpcs:disable WordPress.Security.NonceVerification
+			if ( isset( $_GET[ $possible_variable ] ) ) {
+				$values[ $possible_variable ] = call_user_func(
+					$sanitization_callback,
+					wp_unslash(
+						$_GET[ $possible_variable ] // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+					)
+				);
+				// phpcs:enable WordPress.Security.NonceVerification
+			} else {
+				// Append the default, the param is missing in the querystring.
+				$values [ $possible_variable ] = $defaults[ $possible_variable ];
+			}
+		}
+
+		return $values;
+	}
+
+	/**
+	 * Adds the required querystring parameters to all urls in preview pages.
+	 *
+	 * @param   array $params  The parameters which will be appended.
+	 *
+	 * @return  void
+	 */
+	private function add_simulation_params_to_preview_urls( $params ) {
+		add_filter(
+			'wp_footer',
+			function() use ( $params ) {
+				?>
+			<script type="text/javascript" id="wcpay_multi_currency-simulation-script">
+				// Add simulation overrides to all links.
+				document.querySelectorAll('a').forEach((link) => {
+					const parsedURL = new URL(link.href);
+					if (
+						false === parsedURL.searchParams.has( 'is_mc_onboarding_simulation' )
+					) {
+						parsedURL.searchParams.set('is_mc_onboarding_simulation', true);
+						parsedURL.searchParams.set('enable_auto_currency', <?php echo esc_attr( $params['enable_auto_currency'] ? 'true' : 'false' ); ?>);
+						parsedURL.searchParams.set('enable_storefront_switcher', <?php echo esc_attr( $params['enable_storefront_switcher'] ? 'true' : 'false' ); ?>);
+						link.href = parsedURL.toString();
+					}
+				});
+
+				// Unhide the store notice in simulation mode.
+				document.addEventListener('DOMContentLoaded', () => {
+					const notice_id = document.querySelector('.woocommerce-store-notice.demo_store').getAttribute('data-notice-id');
+					cookieStore.delete('store_notice' + notice_id);
+				});
+			</script>
+				<?php
+			}
 		);
 	}
 

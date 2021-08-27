@@ -2,10 +2,16 @@
  * External dependencies
  */
 import React, { useCallback, useContext, useState, useEffect } from 'react';
+import {
+	Button,
+	Card,
+	CardBody,
+	CheckboxControl,
+	Modal,
+} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
-import { Link } from '@woocommerce/components';
+
 /**
  * Internal dependencies
  */
@@ -31,6 +37,8 @@ const MultiCurrencySettingsTask = () => {
 		setIsStorefrontSwitcherEnabledValue,
 	] = useState( false );
 
+	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
+
 	useEffect( () => {
 		if ( Object.keys( storeSettings ).length ) {
 			setIsStorefrontSwitcherEnabledValue(
@@ -47,6 +55,14 @@ const MultiCurrencySettingsTask = () => {
 	] );
 
 	const { setCompleted } = useContext( WizardTaskContext );
+
+	const handlePreviewModalOpenClick = useCallback( () => {
+		setPreviewModalOpen( true );
+	}, [ setPreviewModalOpen ] );
+
+	const handlePreviewModalCloseClick = useCallback( () => {
+		setPreviewModalOpen( false );
+	}, [ setPreviewModalOpen ] );
 
 	const handleIsAutomaticSwitchEnabledClick = useCallback(
 		( value ) => {
@@ -133,7 +149,35 @@ const MultiCurrencySettingsTask = () => {
 				>
 					{ __( 'Continue', 'woocommerce-payments' ) }
 				</Button>
-				<Link>Preview</Link>
+				<Button
+					isBusy={ 'pending' === status }
+					disabled={ 'pending' === status }
+					onClick={ handlePreviewModalOpenClick }
+					className={ 'multi-currency-setup-preview-button' }
+					isTertiary
+				>
+					{ __( 'Preview', 'woocommerce-payments' ) }
+				</Button>
+				{ isPreviewModalOpen && (
+					<Modal
+						title={ __( 'Preview', 'woocommerce-payments' ) }
+						isDismissible={ true }
+						className="multi-currency-setup-preview-modal"
+						shouldCloseOnClickOutside={ false }
+						onRequestClose={ handlePreviewModalCloseClick }
+					>
+						<iframe
+							title={ __( 'Preview', 'woocommerce-payments' ) }
+							className={ 'multi-currency-setup-preview-iframe' }
+							src={
+								'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=' +
+								isStorefrontSwitcherEnabledValue +
+								'&enable_auto_currency=' +
+								isAutomaticSwitchEnabledValue
+							}
+						></iframe>
+					</Modal>
+				) }
 			</CollapsibleBody>
 		</WizardTaskItem>
 	);
