@@ -183,10 +183,10 @@ describe.each( dataTable )(
 			// Verify the transaction timeline reflects the refund events
 			await Promise.all( [
 				expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-					text: `A payment of $${ refundTotalString } was successfully refunded.`,
+					text: `A payment of $${ refundTotalString } USD was successfully refunded.`,
 				} ),
 				expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-					text: `$${ refundTotalString } will be deducted from a future deposit.`,
+					text: `$${ refundTotalString } USD will be deducted from a future deposit.`,
 				} ),
 				expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
 					text: 'Payment status changed to Partial Refund.',
