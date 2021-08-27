@@ -143,12 +143,10 @@ describe( 'Deposits list', () => {
 				isLoading: false,
 			} );
 
-			const { container } = render( <DepositsList /> );
-			const downloadButton = container.querySelectorAll(
-				'.woocommerce-table__download-button'
-			);
+			const { queryByRole } = render( <DepositsList /> );
+			const button = queryByRole( 'button', { name: 'Download' } );
 
-			expect( downloadButton ).toHaveLength( 1 );
+			expect( button ).not.toBeNull();
 		} );
 
 		test( 'does not render when there are no deposits', () => {
@@ -157,12 +155,10 @@ describe( 'Deposits list', () => {
 				isLoading: false,
 			} );
 
-			const { container } = render( <DepositsList /> );
-			const downloadButton = container.querySelectorAll(
-				'.woocommerce-table__download-button'
-			);
+			const { queryByRole } = render( <DepositsList /> );
+			const button = queryByRole( 'button', { name: 'Download' } );
 
-			expect( downloadButton ).toHaveLength( 0 );
+			expect( button ).toBeNull();
 		} );
 	} );
 
