@@ -1,0 +1,58 @@
+---
+#
+# NOTE: This workflow uses Deploy Key to publish a new tag
+# to overcome GitHub design limitation that actions done with action token
+# cannot trigger other workflows.
+#
+# Do not enable it to run on `push` event as it my run into infinite recursion!
+#
+name: (pre-release) Weekly testing tag
+on:
+  schedule:
+    - cron: '0 20 * * 1'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Override version for test build'
+        required: false
+        default: ''
+
+jobs:
+  weekly-testing-tag:
+    name: Push testing pre-release tag
+    runs-on: ubuntu-20.04
+
+    steps:
+      # clone the repository
+      - uses: actions/checkout@v2
+        with:
+          ssh-key: "${{ secrets.COMMIT_KEY }}"
+          # for testing
+          ref: 'feature/1118-split-translations-workflow'
+          # ref: 'develop'
+      - name: Set GitHub actions as commit author
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create annotated tag
+        id: create_tag_object
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          # Either use a latest version from changelog or one provided
+          # manually
+          LATEST_CHANGELOG_VERSION=$(awk '/^= / { print $2; exit }' changelog.txt)
+          VERSION=${INPUT_VERSION:=$LATEST_CHANGELOG_VERSION}
+
+          # retrive lates tag of the $VERSION-test-X format and increase X by
+          # 1
+          LATEST_TEST_NUMBER=$(git tag -l "$VERSION-test-*" | sort -r | sed -E 's/.*-([0-9]+)$/\1/' | awk 'FNR == 1')
+          TEST_NUMBER=$(expr $LATEST_TEST_NUMBER + 1)
+
+          TAG="$VERSION-test-$TEST_NUMBER"
+          MESSAGE="Version for testing $TAG. Not for production."
+
+          git tag -a -m "$MESSAGE" $TAG
+          git push origin $TAG
