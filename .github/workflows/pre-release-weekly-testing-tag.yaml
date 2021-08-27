@@ -9,7 +9,7 @@
 name: (pre-release) Weekly testing tag
 on:
   schedule:
-    - cron: '0 20 * * 1'
+    - cron: '6 20 * * 1'
   workflow_dispatch:
     inputs:
       version:
