@@ -32,7 +32,7 @@ jobs:
       - name: Create annotated tag
         id: create_tag_object
         run: |
-          TAG="i18n-$(date +%Y%m%d)-test"
+          TAG="i18n-$(date +%Y%m%d)"
           MESSAGE="Version for internationalization testing $TAG. Not for production."
 
           git tag -a -m "$MESSAGE" $TAG
