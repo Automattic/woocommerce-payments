@@ -59,6 +59,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 
 		// Suspend or cancel subscription if we didn't expect a next payment.
 		if ( 0 === $subscription->get_time( 'next_payment' ) ) {
+			// TODO: Add error handling to these {cancel/suspend}_subscription calls i.e. add a subscription order note if the WCPay subscription wasn't cancelled.
 			if ( ! $subscription->has_status( 'on-hold' ) && 0 !== $subscription->get_time( 'end' ) ) {
 				$this->subscription_service->cancel_subscription( $subscription );
 				$subscription->add_order_note( __( 'There was an upcoming payment event however the subscription is due to end in WooCommerce. The subscription has been cancelled.', 'woocommerce-payments' ) );
@@ -107,7 +108,6 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$order    = $order_id ? wc_get_order( $order_id ) : false;
 
 		if ( ! $order ) {
-			$subscription->update_status( 'on-hold', __( 'Processing WCPay subscription renewal', 'woocommerce-payments' ) );
 			$order = wcs_create_renewal_order( $subscription );
 
 			if ( is_wp_error( $order ) ) {
@@ -158,7 +158,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$subscription->add_order_note( sprintf( __( 'WCPay subscription renewal attempt %d failed.', 'woocommerce-payments' ), $attempts ) );
 
 		if ( 4 > $attempts ) {
+			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
 			$subscription->payment_failed();
+			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
 		} else {
 			$subscription->payment_failed( 'cancelled' );
 		}
