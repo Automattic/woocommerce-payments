@@ -2,307 +2,254 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render } from '@testing-library/react';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
+import AddCurrenciesTask from '../add-currencies-task';
+import {
+	useCurrencies,
+	useAvailableCurrencies,
+	useDefaultCurrency,
+	useEnabledCurrencies,
+	useSettings,
+} from 'wcpay/data';
+
 import WizardTaskContext from '../../wizard/task/context';
 
-import AddPaymentMethodsTask from '../add-currencies-task';
-import {
-	useGetAvailablePaymentMethodIds,
-	useEnabledPaymentMethodIds,
-	useSettings,
-	useCurrencies,
-	useEnabledCurrencies,
-} from '../../../data';
-import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
-
-jest.mock( '../../../data', () => ( {
-	useGetAvailablePaymentMethodIds: jest.fn(),
-	useEnabledPaymentMethodIds: jest.fn(),
-	useSettings: jest.fn(),
+jest.mock( 'wcpay/data', () => ( {
 	useCurrencies: jest.fn(),
+	useAvailableCurrencies: jest.fn(),
+	useDefaultCurrency: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
+	useSettings: jest.fn(),
 } ) );
 
-jest.mock( '@wordpress/a11y', () => ( {
-	...jest.requireActual( '@wordpress/a11y' ),
-	speak: jest.fn(),
+jest.mock( '@wordpress/data', () => ( {
+	useSelect: jest.fn(),
 } ) );
 
-const SettingsContextProvider = ( { children } ) => (
-	<WCPaySettingsContext.Provider
-		value={ { featureFlags: { multiCurrency: true }, accountFees: {} } }
-	>
-		{ children }
-	</WCPaySettingsContext.Provider>
-);
+const availableCurrencies = {
+	USD: {
+		code: 'USD',
+		rate: 1,
+		name: 'United States (US) dollar',
+		id: 'usd',
+		is_default: true,
+		flag: '🇺🇸',
+		symbol: '$',
+	},
+	CAD: {
+		code: 'CAD',
+		rate: '1.206823',
+		name: 'Canadian dollar',
+		id: 'cad',
+		is_default: false,
+		flag: '🇨🇦',
+		symbol: '$',
+	},
+	GBP: {
+		code: 'GBP',
+		rate: '0.708099',
+		name: 'Pound sterling',
+		id: 'gbp',
+		is_default: false,
+		flag: '🇬🇧',
+		symbol: '£',
+	},
+	EUR: {
+		code: 'EUR',
+		rate: '0.826381',
+		name: 'Euro',
+		id: 'eur',
+		is_default: false,
+		flag: '🇪🇺',
+		symbol: '€',
+	},
+	AED: {
+		code: 'AED',
+		rate: '3.6732',
+		name: 'United Arab Emirates dirham',
+		id: 'aed',
+		is_default: false,
+		flag: '🇦🇪',
+		symbol: 'د.إ',
+	},
+	CDF: {
+		code: 'CDF',
+		rate: '2000',
+		name: 'Congolese franc',
+		id: 'cdf',
+		is_default: false,
+		flag: '🇨🇩',
+		symbol: 'Fr',
+	},
+	AUD: {
+		code: 'AUD',
+		rate: 1.79,
+		name: 'Australian dollar',
+		id: 'aud',
+		is_default: false,
+		flag: '🇦🇺',
+		symbol: '$',
+	},
+	JPY: {
+		code: 'JPY',
+		rate: 1,
+		name: 'Japanese yen',
+		id: 'jpy',
+		is_default: false,
+		flag: '🇯🇵',
+		symbol: '¥',
+	},
+	INR: {
+		code: 'INR',
+		rate: 1,
+		name: 'Indian rupee',
+		id: 'inr',
+		is_default: false,
+		flag: '🇮🇳',
+		symbol: '₹',
+		is_zero_decimal: false,
+		last_updated: 1630070442,
+	},
+	DKK: {
+		code: 'DKK',
+		rate: '6.144615',
+		name: 'Danish krone',
+		id: 'dkk',
+		is_default: false,
+		flag: '🇩🇰',
+		symbol: 'DKK',
+	},
+	BIF: {
+		code: 'BIF',
+		rate: '1974',
+		name: 'Burundian franc',
+		id: 'bif',
+		is_default: false,
+		flag: '🇧🇮',
+		symbol: 'Fr',
+	},
+	CLP: {
+		code: 'CLP',
+		rate: '706.8',
+		name: 'Chilean peso',
+		id: 'clp',
+		is_default: false,
+		flag: '🇨🇱',
+		symbol: '$',
+	},
+};
 
-describe( 'AddPaymentMethodsTask', () => {
+const enabledCurrencies = {
+	USD: {
+		code: 'USD',
+		rate: 1,
+		name: 'United States (US) dollar',
+		id: 'usd',
+		is_default: true,
+		flag: '🇺🇸',
+		symbol: '$',
+	},
+	CAD: {
+		code: 'CAD',
+		rate: '1.42',
+		name: 'Canadian dollar',
+		id: 'cad',
+		is_default: false,
+		flag: '🇨🇦',
+		symbol: '$',
+	},
+	GBP: {
+		code: 'GBP',
+		rate: '0.708099',
+		name: 'Pound sterling',
+		id: 'gbp',
+		is_default: false,
+		flag: '🇬🇧',
+		symbol: '£',
+	},
+	EUR: {
+		code: 'EUR',
+		rate: '0.826381',
+		name: 'Euro',
+		id: 'eur',
+		is_default: false,
+		flag: '🇪🇺',
+		symbol: '€',
+	},
+};
+
+const defaultCurrency = {
+	code: 'USD',
+	rate: 1,
+	name: 'United States (US) dollar',
+	id: 'usd',
+	is_default: true,
+	flag: '🇺🇸',
+	symbol: '$',
+};
+
+useCurrencies.mockReturnValue( {
+	currencies: {
+		available: availableCurrencies,
+		enabled: enabledCurrencies,
+		default: defaultCurrency,
+	},
+	isLoading: false,
+} );
+
+useAvailableCurrencies.mockReturnValue( availableCurrencies );
+
+useDefaultCurrency.mockReturnValue( defaultCurrency );
+
+useEnabledCurrencies.mockReturnValue( {
+	enabledCurrencies: enabledCurrencies,
+	submitEnabledCurrenciesUpdate: jest.fn(),
+} );
+
+useSelect.mockReturnValue( {} );
+
+useSettings.mockReturnValue( {
+	saveSettings: jest.fn().mockResolvedValue( true ),
+	isSaving: false,
+} );
+
+const createContainer = () => {
+	const { container } = render(
+		<WizardTaskContext.Provider value={ { isActive: true } }>
+			<AddCurrenciesTask />
+		</WizardTaskContext.Provider>
+	);
+	return container;
+};
+
+describe( 'Multi Currency enabled currencies list', () => {
 	beforeEach( () => {
-		useGetAvailablePaymentMethodIds.mockReturnValue( [
-			'card',
-			'bancontact',
-			'giropay',
-			'p24',
-			'ideal',
-			'sepa_debit',
-			'sofort',
-		] );
-		useSettings.mockReturnValue( {
-			saveSettings: () => Promise.resolve( true ),
-			isSaving: false,
-		} );
-		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card' ],
-			() => null,
-		] );
-		useCurrencies.mockReturnValue( {
-			isLoading: false,
-			currencies: {
-				available: {
-					EUR: { name: 'Euro', symbol: '€' },
-					USD: { name: 'US Dollar', symbol: '$' },
-					PLN: { name: 'Polish złoty', symbol: 'zł' },
-				},
-			},
-		} );
-		useEnabledCurrencies.mockReturnValue( {
-			enabledCurrencies: {
-				USD: { id: 'usd', code: 'USD' },
-			},
-		} );
+		global.wcpaySettings = { zeroDecimalCurrencies: [] };
 	} );
 
-	it( 'should not call the useSettings hook if the task is not active', () => {
-		useGetAvailablePaymentMethodIds.mockReturnValue( [] );
-		render(
-			<SettingsContextProvider>
-				<WizardTaskContext.Provider
-					value={ { setCompleted: () => null, isActive: false } }
-				>
-					<AddPaymentMethodsTask />
-				</WizardTaskContext.Provider>
-			</SettingsContextProvider>
-		);
-
-		expect(
-			screen.queryByText(
-				/(we\'ll add|and) Euro \(€\) (and|to your store)/
-			)
-		).not.toBeInTheDocument();
-		expect(
-			screen.queryByText(
-				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
-			)
-		).not.toBeInTheDocument();
-		expect(
-			screen.queryByText( 'Add payment methods' )
-		).not.toBeInTheDocument();
-		expect( useSettings ).not.toHaveBeenCalled();
+	afterEach( () => {
+		jest.clearAllMocks();
 	} );
 
-	it( 'should not allow to move forward if no payment methods are selected', () => {
-		const setCompletedMock = jest.fn();
-		render(
-			<SettingsContextProvider>
-				<WizardTaskContext.Provider
-					value={ { setCompleted: setCompletedMock, isActive: true } }
-				>
-					<AddPaymentMethodsTask />
-				</WizardTaskContext.Provider>
-			</SettingsContextProvider>
-		);
-
-		expect(
-			screen.queryByText(
-				/(we\'ll add|and) Euro \(€\) (and|to your store)/
-			)
-		).toBeInTheDocument();
-		expect(
-			screen.queryByText(
-				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
-			)
-		).toBeInTheDocument();
-		expect( screen.getByText( 'Add payment methods' ) ).toBeEnabled();
-		expect( useSettings ).toHaveBeenCalled();
-
-		// The payment methods should all be checked.
-		const expectedToBeChecked = [
-			'Bancontact',
-			'giropay',
-			'iDEAL',
-			'Przelewy24 (P24)',
-			'Direct debit payment',
-			'Sofort',
-		];
-
-		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
-		} );
-
-		expect(
-			screen.queryByRole( 'checkbox', { name: /Credit/ } )
-		).not.toBeInTheDocument();
-
-		// Unchecking the checkboxes and clicking "add payment methods" should display a notice.
-		expectedToBeChecked.forEach( function ( checkboxName ) {
-			userEvent.click(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			);
-		} );
-
-		// No add currency text when no elements are checked.
-		expect(
-			screen.queryByText(
-				/(we\'ll add|and) Euro \(€\) (and|to your store)/
-			)
-		).not.toBeInTheDocument();
-		expect(
-			screen.queryByText(
-				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
-			)
-		).not.toBeInTheDocument();
-		expect( screen.getByText( 'Add payment methods' ) ).not.toBeEnabled();
+	test( 'Add currencies task renders correctly', () => {
+		const container = createContainer();
+		expect( container ).toMatchSnapshot();
 	} );
 
-	it( 'should move forward when the payment methods are selected', async () => {
-		const setCompletedMock = jest.fn();
-		const updateEnabledPaymentMethodsMock = jest.fn();
-		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card' ],
-			updateEnabledPaymentMethodsMock,
-		] );
-		render(
-			<SettingsContextProvider>
-				<WizardTaskContext.Provider
-					value={ { setCompleted: setCompletedMock, isActive: true } }
-				>
-					<AddPaymentMethodsTask />
-				</WizardTaskContext.Provider>
-			</SettingsContextProvider>
-		);
+	test( 'Recommended currencies are checked by default', () => {} );
 
-		expect(
-			screen.queryByText(
-				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
-			)
-		).toBeInTheDocument();
-		expect( screen.getByText( 'Add payment methods' ) ).toBeEnabled();
-		expect( useSettings ).toHaveBeenCalled();
+	test( 'Currency search works with currency name', () => {} );
 
-		// The payment methods should all be checked.
-		const expectedToBeChecked = [
-			'Bancontact',
-			'giropay',
-			'iDEAL',
-			'Przelewy24 (P24)',
-			'Direct debit payment',
-			'Sofort',
-		];
+	test( 'Currency search works with currency code', () => {} );
 
-		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
-		} );
-		expect(
-			screen.queryByRole( 'checkbox', { name: /Credit/ } )
-		).not.toBeInTheDocument();
+	test( 'Currency search works with currency symbol', () => {} );
 
-		userEvent.click( screen.getByText( 'Add payment methods' ) );
+	test( "Shouldn't proceed with no selected currency", () => {} );
 
-		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
-			'card',
-			'bancontact',
-			'giropay',
-			'p24',
-			'ideal',
-			'sepa_debit',
-			'sofort',
-		] );
-		await waitFor( () =>
-			expect( setCompletedMock ).toHaveBeenCalledWith(
-				{ initialMethods: [ 'card' ] },
-				'setup-complete'
-			)
-		);
-	} );
-
-	it( 'should remove the un-checked payment methods, if they were present before', async () => {
-		const setCompletedMock = jest.fn();
-		const updateEnabledPaymentMethodsMock = jest.fn();
-		const initialMethods = [
-			'card',
-			'bancontact',
-			'giropay',
-			'ideal',
-			'p24',
-			'sofort',
-		];
-		useEnabledPaymentMethodIds.mockReturnValue( [
-			initialMethods,
-			updateEnabledPaymentMethodsMock,
-		] );
-		render(
-			<SettingsContextProvider>
-				<WizardTaskContext.Provider
-					value={ { setCompleted: setCompletedMock, isActive: true } }
-				>
-					<AddPaymentMethodsTask />
-				</WizardTaskContext.Provider>
-			</SettingsContextProvider>
-		);
-
-		// The payment methods should all be checked.
-		const expectedToBeChecked = [
-			'Bancontact',
-			'giropay',
-			'iDEAL',
-			'Przelewy24 (P24)',
-			'Direct debit payment',
-			'Sofort',
-		];
-
-		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
-		} );
-
-		// Uncheck methods.
-		const methodsToUncheck = [
-			'Bancontact',
-			'giropay',
-			'iDEAL',
-			'Przelewy24 (P24)',
-			'Sofort',
-		];
-		methodsToUncheck.forEach( function ( checkboxName ) {
-			userEvent.click(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			);
-		} );
-
-		userEvent.click( screen.getByText( 'Add payment methods' ) );
-
-		// Methods are removed.
-		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
-			'card',
-			'sepa_debit',
-		] );
-		await waitFor( () =>
-			expect( setCompletedMock ).toHaveBeenCalledWith(
-				{
-					initialMethods: initialMethods,
-				},
-				'setup-complete'
-			)
-		);
-	} );
+	test( 'Should proceed with at least one selected currency', () => {} );
 } );

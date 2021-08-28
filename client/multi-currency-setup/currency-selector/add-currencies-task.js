@@ -164,6 +164,13 @@ const AddCurrenciesTask = () => {
 		);
 	}
 
+	// initially select recommended currencies
+	recommendedCurrencyCodes.map( ( code ) => {
+		if ( ! enabledCurrencyCodes.includes( code ) )
+			enabledCurrencyCodes.push( code );
+		return code;
+	} );
+
 	const [ searchText, setSearchText ] = useState( '' );
 	const [ selectedCurrencies, setSelectedCurrencies ] = useState( {} );
 

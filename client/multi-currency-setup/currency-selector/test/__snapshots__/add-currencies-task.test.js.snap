@@ -1,0 +1,725 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Multi Currency enabled currencies list Add currencies task renders correctly 1`] = `
+<div>
+  <li
+    class="wcpay-wizard-task add-currencies-task is-active"
+  >
+    <div
+      class="wcpay-wizard-task__top-border"
+    />
+    <div
+      class="wcpay-wizard-task__headline"
+      tabindex="-1"
+    >
+      <div
+        class="wcpay-wizard-task__icon-wrapper"
+      >
+        <div
+          class="wcpay-wizard-task__icon-text"
+        >
+          1
+        </div>
+        <svg
+          aria-hidden="true"
+          class="wcpay-wizard-task__icon-checkmark"
+          focusable="false"
+          height="24"
+          role="img"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+          />
+        </svg>
+      </div>
+      <span
+        class="wcpay-wizard-task__title"
+      >
+        <span>
+          Add Currencies
+        </span>
+      </span>
+    </div>
+    <div
+      class="wcpay-wizard-task__body"
+    >
+      <div
+        class="task-collapsible-body is-active"
+      >
+        <p
+          class="wcpay-wizard-task__description-element is-muted-color"
+        >
+          Add currencies so international customers can shop and pay in their local currency. Your store's default currency is 
+          <span>
+            United States (US) dollar (USD)
+          </span>
+          .
+        </p>
+        <div
+          class="components-card is-size-medium add-currencies-task__currency-selector-wrapper css-1xs3c37-CardUI e1q7k77g0"
+        >
+          <div
+            class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+          >
+            <div
+              class="add-currencies-task__search"
+            >
+              <div
+                class="search"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="search__icon"
+                  focusable="false"
+                  height="24"
+                  role="img"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                  />
+                </svg>
+                <input
+                  class="components-text-control__input"
+                  placeholder="Search currencies"
+                  type="text"
+                  value=""
+                />
+              </div>
+            </div>
+            <div
+              class="add-currencies-task__separator"
+            >
+               
+            </div>
+            
+            <div
+              class="add-currencies-task__content"
+            >
+              <ul>
+                <li>
+                  <h4>
+                    Recommended Currencies
+                  </h4>
+                </li>
+                <li
+                  class="enabled-currency-checkbox"
+                >
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          class="components-checkbox-control__input"
+                          code="EUR"
+                          id="inspector-checkbox-control-0"
+                          type="checkbox"
+                          value="1"
+                        />
+                        <svg
+                          aria-hidden="true"
+                          class="components-checkbox-control__checked"
+                          focusable="false"
+                          height="24"
+                          role="img"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                          />
+                        </svg>
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-0"
+                      >
+                        <span
+                          class="enabled-currency-checkbox__flag"
+                        >
+                          🇪🇺
+                        </span>
+                         
+                        <span>
+                          Euro
+                        </span>
+                         
+                        <span
+                          class="enabled-currency-checkbox__code"
+                        >
+                          (
+                          €
+                           EUR
+                          )
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </li>
+                <li
+                  class="enabled-currency-checkbox"
+                >
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          class="components-checkbox-control__input"
+                          code="JPY"
+                          id="inspector-checkbox-control-1"
+                          type="checkbox"
+                          value="1"
+                        />
+                        <svg
+                          aria-hidden="true"
+                          class="components-checkbox-control__checked"
+                          focusable="false"
+                          height="24"
+                          role="img"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                          />
+                        </svg>
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-1"
+                      >
+                        <span
+                          class="enabled-currency-checkbox__flag"
+                        >
+                          🇯🇵
+                        </span>
+                         
+                        <span>
+                          Japanese yen
+                        </span>
+                         
+                        <span
+                          class="enabled-currency-checkbox__code"
+                        >
+                          (
+                          ¥
+                           JPY
+                          )
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </li>
+                <li
+                  class="enabled-currency-checkbox"
+                >
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          class="components-checkbox-control__input"
+                          code="GBP"
+                          id="inspector-checkbox-control-2"
+                          type="checkbox"
+                          value="1"
+                        />
+                        <svg
+                          aria-hidden="true"
+                          class="components-checkbox-control__checked"
+                          focusable="false"
+                          height="24"
+                          role="img"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                          />
+                        </svg>
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-2"
+                      >
+                        <span
+                          class="enabled-currency-checkbox__flag"
+                        >
+                          🇬🇧
+                        </span>
+                         
+                        <span>
+                          Pound sterling
+                        </span>
+                         
+                        <span
+                          class="enabled-currency-checkbox__code"
+                        >
+                          (
+                          £
+                           GBP
+                          )
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </li>
+                <li
+                  class="enabled-currency-checkbox"
+                >
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          class="components-checkbox-control__input"
+                          code="AUD"
+                          id="inspector-checkbox-control-3"
+                          type="checkbox"
+                          value="1"
+                        />
+                        <svg
+                          aria-hidden="true"
+                          class="components-checkbox-control__checked"
+                          focusable="false"
+                          height="24"
+                          role="img"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                          />
+                        </svg>
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-3"
+                      >
+                        <span
+                          class="enabled-currency-checkbox__flag"
+                        >
+                          🇦🇺
+                        </span>
+                         
+                        <span>
+                          Australian dollar
+                        </span>
+                         
+                        <span
+                          class="enabled-currency-checkbox__code"
+                        >
+                          (
+                          $
+                           AUD
+                          )
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </li>
+                <li
+                  class="enabled-currency-checkbox"
+                >
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          class="components-checkbox-control__input"
+                          code="CAD"
+                          id="inspector-checkbox-control-4"
+                          type="checkbox"
+                          value="1"
+                        />
+                        <svg
+                          aria-hidden="true"
+                          class="components-checkbox-control__checked"
+                          focusable="false"
+                          height="24"
+                          role="img"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                          />
+                        </svg>
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-4"
+                      >
+                        <span
+                          class="enabled-currency-checkbox__flag"
+                        >
+                          🇨🇦
+                        </span>
+                         
+                        <span>
+                          Canadian dollar
+                        </span>
+                         
+                        <span
+                          class="enabled-currency-checkbox__code"
+                        >
+                          (
+                          $
+                           CAD
+                          )
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </li>
+                <li
+                  class="enabled-currency-checkbox"
+                >
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          class="components-checkbox-control__input"
+                          code="INR"
+                          id="inspector-checkbox-control-5"
+                          type="checkbox"
+                          value="1"
+                        />
+                        <svg
+                          aria-hidden="true"
+                          class="components-checkbox-control__checked"
+                          focusable="false"
+                          height="24"
+                          role="img"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                          />
+                        </svg>
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-5"
+                      >
+                        <span
+                          class="enabled-currency-checkbox__flag"
+                        >
+                          🇮🇳
+                        </span>
+                         
+                        <span>
+                          Indian rupee
+                        </span>
+                         
+                        <span
+                          class="enabled-currency-checkbox__code"
+                        >
+                          (
+                          ₹
+                           INR
+                          )
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </li>
+                <div
+                  class="add-currencies-task__separator"
+                >
+                   
+                </div>
+                <li
+                  class="add-currencies-task__available-currencies"
+                >
+                  <h4>
+                    All Currencies
+                  </h4>
+                </li>
+                <li
+                  class="enabled-currency-checkbox"
+                >
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          class="components-checkbox-control__input"
+                          code="AED"
+                          id="inspector-checkbox-control-6"
+                          type="checkbox"
+                          value="1"
+                        />
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-6"
+                      >
+                        <span
+                          class="enabled-currency-checkbox__flag"
+                        >
+                          🇦🇪
+                        </span>
+                         
+                        <span>
+                          United Arab Emirates dirham
+                        </span>
+                         
+                        <span
+                          class="enabled-currency-checkbox__code"
+                        >
+                          (
+                          د.إ
+                           AED
+                          )
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </li>
+                <li
+                  class="enabled-currency-checkbox"
+                >
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          class="components-checkbox-control__input"
+                          code="CDF"
+                          id="inspector-checkbox-control-7"
+                          type="checkbox"
+                          value="1"
+                        />
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-7"
+                      >
+                        <span
+                          class="enabled-currency-checkbox__flag"
+                        >
+                          🇨🇩
+                        </span>
+                         
+                        <span>
+                          Congolese franc
+                        </span>
+                         
+                        <span
+                          class="enabled-currency-checkbox__code"
+                        >
+                          (
+                          Fr
+                           CDF
+                          )
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </li>
+                <li
+                  class="enabled-currency-checkbox"
+                >
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          class="components-checkbox-control__input"
+                          code="DKK"
+                          id="inspector-checkbox-control-8"
+                          type="checkbox"
+                          value="1"
+                        />
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-8"
+                      >
+                        <span
+                          class="enabled-currency-checkbox__flag"
+                        >
+                          🇩🇰
+                        </span>
+                         
+                        <span>
+                          Danish krone
+                        </span>
+                         
+                        <span
+                          class="enabled-currency-checkbox__code"
+                        >
+                          (
+                          DKK
+                          )
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </li>
+                <li
+                  class="enabled-currency-checkbox"
+                >
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          class="components-checkbox-control__input"
+                          code="BIF"
+                          id="inspector-checkbox-control-9"
+                          type="checkbox"
+                          value="1"
+                        />
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-9"
+                      >
+                        <span
+                          class="enabled-currency-checkbox__flag"
+                        >
+                          🇧🇮
+                        </span>
+                         
+                        <span>
+                          Burundian franc
+                        </span>
+                         
+                        <span
+                          class="enabled-currency-checkbox__code"
+                        >
+                          (
+                          Fr
+                           BIF
+                          )
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </li>
+                <li
+                  class="enabled-currency-checkbox"
+                >
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          class="components-checkbox-control__input"
+                          code="CLP"
+                          id="inspector-checkbox-control-10"
+                          type="checkbox"
+                          value="1"
+                        />
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-10"
+                      >
+                        <span
+                          class="enabled-currency-checkbox__flag"
+                        >
+                          🇨🇱
+                        </span>
+                         
+                        <span>
+                          Chilean peso
+                        </span>
+                         
+                        <span
+                          class="enabled-currency-checkbox__code"
+                        >
+                          (
+                          $
+                           CLP
+                          )
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Add three currencies
+        </button>
+      </div>
+    </div>
+  </li>
+</div>
+`;
