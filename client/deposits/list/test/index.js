@@ -191,7 +191,7 @@ describe( 'Deposits list', () => {
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			const expected = [
-				'',
+				'"Deposit Id"',
 				'Date',
 				'Type',
 				'Amount',
@@ -209,25 +209,51 @@ describe( 'Deposits list', () => {
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			const csvContent = downloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvLines = csvContent.split( os.EOL );
-			const cptRows = getAllByRole( 'row' );
+			const csvRows = csvContent.split( os.EOL );
+			const displayRows = getAllByRole( 'row' );
 
-			expect( csvLines.length ).toEqual( cptRows.length );
+			expect( csvRows.length ).toEqual( displayRows.length );
 
-			const cptFirstDepositDate = cptRows[ 1 ].querySelector( 'td' )
-				.textContent;
-			const csvFirstDeposit = csvLines[ 1 ].split( ',' );
-			const csvFirstDepositDate = csvFirstDeposit[ 1 ];
-			const date = new Date( JSON.parse( csvFirstDepositDate ) );
-			const csvFirstDepositFormattedDate = dateI18n(
-				'M j, Y',
-				moment.utc( date.getTime() ).toISOString(),
-				true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-			);
+			const csvFirstDeposit = csvRows[ 1 ].split( ',' );
+			const displayFirstDeposit = Array.from(
+				displayRows[ 1 ].querySelectorAll( 'td' )
+			).map( ( td ) => td.textContent );
 
-			expect( csvFirstDepositFormattedDate ).toEqual(
-				cptFirstDepositDate
-			);
+			// Note:
+			//
+			// 1. CSV and display indexes are off by 1 because the first field in CSV is deposit id,
+			//    which is missing in display.
+			//
+			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
+			//    trailing zeros as in the display amount.
+			//
+			expect( formatDate( csvFirstDeposit[ 1 ] ) ).toBe(
+				displayFirstDeposit[ 0 ]
+			); // date
+			expect( csvFirstDeposit[ 2 ] ).toBe(
+				displayFirstDeposit[ 1 ].toLowerCase()
+			); // type
+			expect(
+				getUnformattedAmount( displayFirstDeposit[ 2 ] ).indexOf(
+					csvFirstDeposit[ 3 ]
+				)
+			).not.toBe( -1 ); // amount
+			expect( csvFirstDeposit[ 4 ] ).toBe(
+				displayFirstDeposit[ 3 ].toLowerCase()
+			); // status
+			expect( csvFirstDeposit[ 5 ] ).toBe(
+				`"${ displayFirstDeposit[ 4 ] }"`
+			); // bank account
 		} );
 	} );
 } );
+
+function getUnformattedAmount( formattedAmount ) {
+	let amount = formattedAmount.replace( /[^0-9,.' ]/g, '' ).trim();
+	amount = amount.replace( ',', '.' ); // Euro fix
+	return amount;
+}
+
+function formatDate( date ) {
+	return dateI18n( 'M j, Y', moment.utc( date ).toISOString(), true );
+}
