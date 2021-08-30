@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import './style.scss';
+import './upe.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_UPE,
@@ -326,9 +326,9 @@ jQuery( function ( $ ) {
 	};
 
 	const renameGatewayTitle = () =>
-		$( 'label[for=payment_method_woocommerce_payments]' ).text(
-			getCustomGatewayTitle( paymentMethodsConfig )
-		);
+		$( 'label[for=payment_method_woocommerce_payments]' )
+			.text( getCustomGatewayTitle( paymentMethodsConfig ) )
+			.addClass( 'visible' );
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount

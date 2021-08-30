@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import './style.scss';
+import './upe.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_GIROPAY,
