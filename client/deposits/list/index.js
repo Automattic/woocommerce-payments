@@ -187,9 +187,17 @@ export const DepositsList = () => {
 	const onDownload = () => {
 		const { page, path, ...params } = getQuery();
 
+		const csvColumns = [
+			{
+				...columns[ 0 ],
+				label: __( 'Deposit Id', 'woocommerce-payments' ),
+			},
+			...columns.slice( 1 ),
+		];
+
 		downloadCSVFile(
 			generateCSVFileName( title, params ),
-			generateCSVDataFromTable( columns, rows )
+			generateCSVDataFromTable( csvColumns, rows )
 		);
 
 		window.wcTracks.recordEvent( 'wcpay_deposits_download', {
