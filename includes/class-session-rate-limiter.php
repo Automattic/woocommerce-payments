@@ -73,19 +73,11 @@ class Session_Rate_Limiter {
 		$now      = time();
 		array_push( $registry, $now );
 		WC()->session->set( $this->key, $registry );
-
-		if ( count( $registry ) >= $this->threshold ) {
-			$action_id = $this->get_action_id( $this->key );
-			if ( isset( $action_id ) ) {
-				$this->enable_rate_limiter( $action_id, $this->delay );
-				WC()->session->set( $this->key, [] );
-			}
-		}
 	}
 
 
 	/**
-	 * Checks if the ratelimiter for a given key of a registry is enabled.
+	 * Checks if the rate limiter is enabled.
 	 *
 	 * Returns a boolean.
 	 *
@@ -96,51 +88,19 @@ class Session_Rate_Limiter {
 			return;
 		}
 
-		$next_try_allowed_at = WC()->session->get( $this->get_action_id( ( $this->key ) ) );
+		$registry = WC()->session->get( $this->key ) ?? [];
 
-		// No record of action running, so action is allowed to run.
-		if ( false === $next_try_allowed_at ) {
-			return false;
+		if ( count( $registry ) >= $this->threshold ) {
+			$start_time_limiter  = end( $registry );
+			$next_try_allowed_at = $start_time_limiter + $this->delay;
+			$is_limited          = time() <= $next_try_allowed_at;
+			if ( ! $is_limited ) {
+				WC()->session->set( $this->key, [] );
+			}
+
+			return $is_limited;
 		}
 
-		// Before the next run is allowed, retry forbidden.
-		if ( time() <= $next_try_allowed_at ) {
-			return true;
-		}
-
-		// After the next run is allowed, retry allowed.
 		return false;
-	}
-
-	/**
-	 * Saves an event in an specified registry using a key.
-	 *
-	 * @param  string $action_id ID that Session_Rate_Limiter uses to identify a rate limiter.
-	 * @param  int    $delay Delay in seconds to apply in the new rate limiter.
-	 */
-	public function enable_rate_limiter( $action_id, $delay ) {
-		if ( isset( $action_id ) ) {
-			$next_try_allowed_at = time() + $delay;
-			WC()->session->set( $action_id, $next_try_allowed_at );
-		}
-	}
-
-	/**
-	 * Checks if the rate limiter for a given key of a registry is enabled.
-	 *
-	 * Returns a boolean.
-	 *
-	 * @return string|null The id of the action if the session and the customer_id exist.
-	 */
-	public function get_action_id() {
-		if ( ! isset( WC()->session ) ) {
-			return null;
-		}
-		$customer_id = WC()->session->get_customer_id();
-		if ( ! isset( $customer_id ) ) {
-			return null;
-		}
-
-		return "{$this->key}_{$customer_id}";
 	}
 }

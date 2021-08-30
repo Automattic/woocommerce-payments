@@ -1516,27 +1516,4 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		);
 		$this->assertFalse( $this->wcpay_gateway->is_available_for_current_currency() );
 	}
-
-	public function test_rate_limiter_gives_payment_exception_when_enabled() {
-		$this->mock_rate_limiter->expects( $this->once() )->method( 'is_limited' )->will(
-			$this->returnValue(
-				true
-			)
-		);
-		$this->assertTrue( $this->wcpay_gateway->is_limited() );
-	}
-
-	public function test_rate_limiter_gives_payment_exception_when_disabled() {
-		$this->mock_rate_limiter->expects( $this->once() )->method( 'is_limited' )->will(
-			$this->returnValue(
-				false
-			)
-		);
-		$this->assertFalse( $this->wcpay_gateway->is_limited() );
-	}
-
-	public function test_rate_limiter_adds_failed_transaction_to_session() {
-		$this->mock_rate_limiter->expects( $this->once() )->method( 'bump' );
-		$this->wcpay_gateway->save_card_declined_transaction_time_in_session();
-	}
 }
