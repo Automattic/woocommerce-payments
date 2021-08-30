@@ -96,7 +96,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$subscription          = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
 
 		if ( ! $subscription ) {
-			throw new Rest_Request_Exception( __( 'Cannot find subscription for the incoming "invoice.upcoming" event.', 'woocommerce-payments' ) );
+			throw new Rest_Request_Exception( __( 'Cannot find subscription for the incoming "invoice.paid" event.', 'woocommerce-payments' ) );
 		}
 
 		// This incoming invoice.paid event is linked to the subscription parent invoice and can be ignored.
