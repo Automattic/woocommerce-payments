@@ -30,4 +30,11 @@ class WC_Payments_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_get_subscription_service() {
 		$this->assertInstanceOf( 'WC_Payments_Subscription_Service', WC_Payments_Subscriptions::get_subscription_service() );
 	}
+
+	/**
+	 * Tests WC_Payments_Subscriptions::get_subscription_service().
+	 */
+	public function test_get_event_handler() {
+		$this->assertInstanceOf( 'WC_Payments_Subscriptions_Event_Handler', WC_Payments_Subscriptions::get_event_handler() );
+	}
 }

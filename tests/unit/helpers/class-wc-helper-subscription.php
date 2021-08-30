@@ -65,6 +65,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $next_payment;
 
 	/**
+	 * End timestamp
+	 *
+	 * @var int
+	 */
+	public $end;
+
+	/**
 	 * A helper function for handling function calls not yet implimented on this helper.
 	 *
 	 * Attempts to get the value by checking if it has been set as an object property.
@@ -140,5 +147,9 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		foreach ( $dates as $date_type => $date_string ) {
 			$this->{$date_type} = strtotime( $date_string );
 		}
+	}
+
+	public function add_order_note( $note = '' ) {
+		// do nothing.
 	}
 }
