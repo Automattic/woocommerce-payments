@@ -95,17 +95,6 @@ class Settings extends \WC_Settings_Page {
 				$this->id . '_enabled_currencies_settings',
 				[
 					[
-						'title' => __( 'Enabled currencies', 'woocommerce-payments' ),
-						'desc'  => sprintf(
-							/* translators: %s: url to documentation. */
-							__( 'Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules. <a href="%s">Learn more</a>', 'woocommerce-payments' ),
-							self::LEARN_MORE_URL
-						),
-						'type'  => 'title',
-						'id'    => $this->id . '_enabled_currencies',
-					],
-
-					[
 						'type' => 'wcpay_enabled_currencies_list',
 					],
 

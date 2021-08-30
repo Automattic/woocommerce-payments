@@ -3,8 +3,9 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Card, CardBody, CardDivider } from '@wordpress/components';
+import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 
 /**
  * Internal dependencies
@@ -19,6 +20,32 @@ import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesListItemPlaceholder from './list-item-placeholder';
 import EnabledCurrenciesModal from './modal';
+import SettingsSection from '../../settings/settings-section';
+
+const EnabledCurrenciesSettingsDescription = () => {
+	const LEARN_MORE_URL =
+		'https://docs.woocommerce.com/document/payments/currencies/multi-currency-setup/';
+
+	return (
+		<>
+			<h2>{ __( 'Enabled currencies', 'woocommerce-payments' ) }</h2>
+			<p>
+				{ createInterpolateElement(
+					sprintf(
+						__(
+							// eslint-disable-next-line max-len
+							'Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules. <a>Learn more</a>',
+							'woocommerce-payments'
+						),
+						LEARN_MORE_URL
+					),
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					{ a: <a href={ LEARN_MORE_URL } /> }
+				) }
+			</p>
+		</>
+	);
+};
 
 const EnabledCurrencies = () => {
 	const { isLoading } = useCurrencies();
@@ -40,7 +67,7 @@ const EnabledCurrencies = () => {
 		: [];
 
 	return (
-		<>
+		<SettingsSection Description={ EnabledCurrenciesSettingsDescription }>
 			<Card className={ `${ classBase }__enabled-currencies` }>
 				<CardBody
 					className={ `${ classBase }__enabled-currencies-header` }
@@ -87,7 +114,7 @@ const EnabledCurrencies = () => {
 					) }
 				</CardBody>
 			</Card>
-		</>
+		</SettingsSection>
 	);
 };
 
