@@ -195,9 +195,22 @@ export const DepositsList = () => {
 			...columns.slice( 1 ),
 		];
 
+		const csvRows = rows.map( ( row ) => [
+			row[ 0 ],
+			{
+				...row[ 1 ],
+				value: dateI18n(
+					'Y-m-d',
+					moment.utc( row[ 1 ].value ).toISOString(),
+					true
+				),
+			},
+			...row.slice( 2 ),
+		] );
+
 		downloadCSVFile(
 			generateCSVFileName( title, params ),
-			generateCSVDataFromTable( csvColumns, rows )
+			generateCSVDataFromTable( csvColumns, csvRows )
 		);
 
 		window.wcTracks.recordEvent( 'wcpay_deposits_download', {
