@@ -46,7 +46,10 @@ class FrontendCurrencies {
 		$this->multi_currency       = $multi_currency;
 		$this->localization_service = $localization_service;
 
-		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
+		// We should avoid affecting admin API requests.
+		$is_admin_request = 0 === stripos( wp_get_referer(), admin_url() );
+
+		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! $is_admin_request ) {
 			// Currency hooks.
 			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 50 );
 			add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 50 );
