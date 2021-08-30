@@ -201,9 +201,7 @@ export const DepositsList = () => {
 		);
 
 		window.wcTracks.recordEvent( 'wcpay_deposits_download', {
-			// eslint-disable-next-line camelcase
 			exported_deposits: rows.length,
-			// eslint-disable-next-line camelcase
 			total_deposits: depositsSummary.count,
 		} );
 	};
