@@ -348,7 +348,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
 				if ( in_array( $last_payment_error_code, [ 'card_declined', 'incorrect_cvc', 'expired_card', 'incorrect_number' ], true ) ) {
 					// UPE method gives us the error of the previous payment attempt, so we use that for the Rate Limiter.
-					parent::save_card_declined_transaction_time_in_session();
+					$this->rate_limiter->bump();
 				}
 			}
 		} else {

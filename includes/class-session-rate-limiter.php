@@ -20,31 +20,65 @@ class Session_Rate_Limiter {
 	const SESSION_KEY_DECLINED_CARD_REGISTRY = 'wcpay_card_declined_registry';
 
 	/**
+	 * Key used to store the registry in the session
+	 *
+	 * @var string
+	 */
+	protected $key;
+
+	/**
+	 * Number of elements in the registry needed to enable the rate limiter
+	 *
+	 * @var int
+	 */
+	protected $threshold;
+
+	/**
+	 * Number of seconds the limiter is enabled for after the threshold is reached
+	 *
+	 * @var int
+	 */
+	protected $delay;
+
+	/**
+	 * Session_Rate_Limiter constructor.
+	 *
+	 * @param string $key        - Key for the registry.
+	 * @param int    $threshold  - Number of elements in the registry before enabling the limiter.
+	 * @param int    $delay      - Number of seconds the limiter will be in use after threshold is reached.
+	 */
+	public function __construct(
+		$key,
+		$threshold,
+		$delay
+	) {
+		$this->key       = $key;
+		$this->threshold = $threshold;
+		$this->delay     = $delay;
+	}
+
+	/**
 	 * Saves an event in an specified registry using a key.
 	 * If the number of events in the registry match the threshold,
 	 * a new rate limiter is enabled with the given delay.
 	 *
 	 * The registry of declined card attemps is cleaned after a new rate limiter is enabled.
-	 *
-	 * @param  string $key Key for the registry.
-	 * @param  int    $threshold Number of eleements needed in the registry to enable a rate limiter.
-	 * @param  int    $delay Delay in seconds to apply in the new rate limiter, if created.
 	 */
-	public function bump( $key, $threshold, $delay ) {
+	public function bump() {
 		if ( ! isset( WC()->session ) ) {
 			return;
 		}
 
-		$registry = WC()->session->get( $key ) ?? [];
+		$registry = WC()->session->get( $this->key ) ?? [];
 		$now      = time();
 		array_push( $registry, $now );
-		WC()->session->set( $key, $registry );
+		WC()->session->set( $this->key, $registry );
 
-		if ( count( $registry ) >= $threshold ) {
-			$action_id = $this->get_action_id( $key );
+		if ( count( $registry ) >= $this->threshold ) {
+			$action_id = $this->get_action_id( $this->key );
 			if ( isset( $action_id ) ) {
-				$this->enable_rate_limiter( $action_id, $delay );
-				WC()->session->set( $key, [] );
+				$this->enable_rate_limiter( $action_id, $this->delay );
+				WC()->session->set( $this->key, [] );
 			}
 		}
 	}
@@ -55,15 +89,14 @@ class Session_Rate_Limiter {
 	 *
 	 * Returns a boolean.
 	 *
-	 * @param  string $key Key for the registry.
 	 * @return bool   The rate limiter is in use.
 	 */
-	public function is_limited( $key ) {
+	public function is_limited() {
 		if ( ! isset( WC()->session ) ) {
 			return;
 		}
 
-		$next_try_allowed_at = WC()->session->get( $this->get_action_id( ( $key ) ) );
+		$next_try_allowed_at = WC()->session->get( $this->get_action_id( ( $this->key ) ) );
 
 		// No record of action running, so action is allowed to run.
 		if ( false === $next_try_allowed_at ) {
@@ -97,10 +130,9 @@ class Session_Rate_Limiter {
 	 *
 	 * Returns a boolean.
 	 *
-	 * @param  string $key Key for the registry.
 	 * @return string|null The id of the action if the session and the customer_id exist.
 	 */
-	public function get_action_id( $key ) {
+	public function get_action_id() {
 		if ( ! isset( WC()->session ) ) {
 			return null;
 		}
@@ -109,6 +141,6 @@ class Session_Rate_Limiter {
 			return null;
 		}
 
-		return "{$key}_{$customer_id}";
+		return "{$this->key}_{$customer_id}";
 	}
 }

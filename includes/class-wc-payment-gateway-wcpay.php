@@ -823,7 +823,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
-			if ( $this->is_limited() ) {
+			if ( isset( $this->rate_limiter ) && $this->rate_limiter->is_limited() ) {
 				throw new Process_Payment_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
@@ -845,8 +845,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$order->update_status( 'failed' );
 
-			if ( $e instanceof API_Exception && in_array( $e->get_error_code(), [ 'card_declined', 'incorrect_cvc', 'expired_card', 'incorrect_number' ], true ) ) {
-				$this->save_card_declined_transaction_time_in_session();
+			if ( $e instanceof API_Exception && in_array( $e->get_error_code(), [ 'card_declined', 'incorrect_cvc', 'expired_card', 'incorrect_number' ], true ) && isset( $this->rate_limiter ) ) {
+				$this->rate_limiter->bump();
 			}
 
 			if ( ! empty( $payment_information ) ) {
@@ -2320,25 +2320,5 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return [
 			'card',
 		];
-	}
-
-	/**
-	 * Saves the time of a card declined transaction. The time is stored in the Session
-	 * in order to calculate if a user is under a cooldown.
-	 */
-	public function save_card_declined_transaction_time_in_session() {
-		if ( isset( $this->rate_limiter ) ) {
-			$this->rate_limiter->bump( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * 60 );
-		}
-	}
-
-	/**
-	 * Checks if the number of card declined transactions inside of the registry
-	 * are over a threshold to decide if a user is under a cooldown period.
-	 *
-	 * The registry of declined card attemps is cleaned after the cooldown period ends.
-	 */
-	public function is_limited() {
-		return isset( $this->rate_limiter ) ? $this->rate_limiter->is_limited( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY ) : false;
 	}
 }
