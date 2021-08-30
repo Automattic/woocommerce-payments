@@ -9,7 +9,7 @@
 name: (pre-release) Weekly testing tag
 on:
   push:
-    - paths:
+    paths:
       - '.github/workflows'
   schedule:
     - cron: '6 20 * * 1'
