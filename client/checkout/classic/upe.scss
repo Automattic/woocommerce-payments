@@ -40,9 +40,11 @@
 	background-color: #fff;
 }
 
-li.payment_method_woocommerce_payments label {
+li.payment_method_woocommerce_payments
+	label[for='payment_method_woocommerce_payments'] {
 	opacity: 0;
 }
-li.payment_method_woocommerce_payments label.visible {
+li.payment_method_woocommerce_payments
+	label[for='payment_method_woocommerce_payments'].visible {
 	opacity: 1;
 }
