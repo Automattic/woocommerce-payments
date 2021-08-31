@@ -73,7 +73,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
       </div>
     </div>
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card wcpay-deposits-list woocommerce-report-table has-menu"
+      class="woocommerce-card woocommerce-table woocommerce-analytics__card wcpay-deposits-list woocommerce-report-table has-menu has-action"
     >
       <div
         class="woocommerce-card__header"
@@ -86,6 +86,33 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
           >
             Deposit history
           </h2>
+        </div>
+        <div
+          class="woocommerce-card__action woocommerce-card__header-item"
+        >
+          <button
+            class="components-button woocommerce-table__download-button"
+            type="button"
+          >
+            <svg
+              class="gridicon gridicons-cloud-download"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M18 9c-.01 0-.017.002-.025.003C17.72 5.646 14.922 3 11.5 3 7.91 3 5 5.91 5 9.5c0 .524.07 1.03.186 1.52C5.123 11.015 5.064 11 5 11c-2.21 0-4 1.79-4 4 0 1.202.54 2.267 1.38 3h18.593C22.196 17.09 23 15.643 23 14c0-2.76-2.24-5-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
+                />
+              </g>
+            </svg>
+            <span
+              class="woocommerce-table__download-button__label"
+            >
+              Download
+            </span>
+          </button>
         </div>
         <div
           class="woocommerce-card__menu woocommerce-card__header-item"
@@ -574,7 +601,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
       </div>
     </div>
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card wcpay-deposits-list woocommerce-report-table has-menu"
+      class="woocommerce-card woocommerce-table woocommerce-analytics__card wcpay-deposits-list woocommerce-report-table has-menu has-action"
     >
       <div
         class="woocommerce-card__header"
@@ -587,6 +614,33 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
           >
             Deposit history
           </h2>
+        </div>
+        <div
+          class="woocommerce-card__action woocommerce-card__header-item"
+        >
+          <button
+            class="components-button woocommerce-table__download-button"
+            type="button"
+          >
+            <svg
+              class="gridicon gridicons-cloud-download"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M18 9c-.01 0-.017.002-.025.003C17.72 5.646 14.922 3 11.5 3 7.91 3 5 5.91 5 9.5c0 .524.07 1.03.186 1.52C5.123 11.015 5.064 11 5 11c-2.21 0-4 1.79-4 4 0 1.202.54 2.267 1.38 3h18.593C22.196 17.09 23 15.643 23 14c0-2.76-2.24-5-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
+                />
+              </g>
+            </svg>
+            <span
+              class="woocommerce-table__download-button__label"
+            >
+              Download
+            </span>
+          </button>
         </div>
         <div
           class="woocommerce-card__menu woocommerce-card__header-item"

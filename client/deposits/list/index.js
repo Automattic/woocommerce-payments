@@ -8,7 +8,14 @@ import { dateI18n } from '@wordpress/date';
 import { __, _n } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
+import { Button } from '@wordpress/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import {
+	downloadCSVFile,
+	generateCSVDataFromTable,
+	generateCSVFileName,
+} from '@woocommerce/csv-export';
+import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies.
@@ -173,6 +180,45 @@ export const DepositsList = () => {
 		depositsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ] : [] );
 
+	const title = __( 'Deposits', 'woocommerce-payments' );
+
+	const downloadable = !! rows.length;
+
+	const onDownload = () => {
+		const { page, path, ...params } = getQuery();
+
+		const csvColumns = [
+			{
+				...columns[ 0 ],
+				label: __( 'Deposit Id', 'woocommerce-payments' ),
+			},
+			...columns.slice( 1 ),
+		];
+
+		const csvRows = rows.map( ( row ) => [
+			row[ 0 ],
+			{
+				...row[ 1 ],
+				value: dateI18n(
+					'Y-m-d',
+					moment.utc( row[ 1 ].value ).toISOString(),
+					true
+				),
+			},
+			...row.slice( 2 ),
+		] );
+
+		downloadCSVFile(
+			generateCSVFileName( title, params ),
+			generateCSVDataFromTable( csvColumns, csvRows )
+		);
+
+		window.wcTracks.recordEvent( 'wcpay_deposits_download', {
+			exported_deposits: rows.length,
+			total_deposits: depositsSummary.count,
+		} );
+	};
+
 	return (
 		<Page>
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
@@ -187,6 +233,21 @@ export const DepositsList = () => {
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				actions={ [
+					downloadable && (
+						<Button
+							key="download"
+							className="woocommerce-table__download-button"
+							disabled={ isLoading }
+							onClick={ onDownload }
+						>
+							<Gridicon icon={ 'cloud-download' } />
+							<span className="woocommerce-table__download-button__label">
+								{ __( 'Download', 'woocommerce-payments' ) }
+							</span>
+						</Button>
+					),
+				] }
 			/>
 		</Page>
 	);
