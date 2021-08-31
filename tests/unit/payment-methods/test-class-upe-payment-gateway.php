@@ -181,7 +181,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			Ideal_Payment_Method::class,
 		];
 
-		$this->mock_rate_limiter = $this->getMockBuilder( 'Session_Rate_Limiter' )->setConstructorArgs( [ Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * 60 ] )->getMock();
+		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
 				->setConstructorArgs( [ $this->mock_token_service ] )

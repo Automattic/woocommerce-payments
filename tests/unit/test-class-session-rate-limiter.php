@@ -56,13 +56,13 @@ class Session_Rate_Limiter_Test extends WP_UnitTestCase {
 
 		// Saving another event in the registry will reach the threshold.
 		$this->rate_limiter->bump();
-		$this->assertTrue( $this->rate_limiter->is_limited( $this->key ) );
+		$this->assertTrue( $this->rate_limiter->is_limited() );
 
 		// Modify the last element of the registry to an earlier time to see the rate limiter disables.
 		$registry    = WC()->session->get( $this->key );
 		$registry[1] = $registry[1] - 5000;
 		WC()->session->set( $this->key, $registry );
 
-		$this->assertFalse( $this->rate_limiter->is_limited( $this->key ) );
+		$this->assertFalse( $this->rate_limiter->is_limited() );
 	}
 }
