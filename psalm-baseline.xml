@@ -172,4 +172,12 @@
       <code>wcs_get_subscription</code>
     </UndefinedFunction>
   </file>
+  <file src="includes/subscriptions/class-wc-payments-subscriptions-event-handler.php">
+    <UndefinedDocblockClass occurrences="9">
+      <code>WC_Subscription</code>
+    </UndefinedDocblockClass>
+    <UndefinedFunction occurrences="2">
+      <code>wcs_create_renewal_order( $subscription )</code>
+    </UndefinedFunction>
+  </file>
 </files>
