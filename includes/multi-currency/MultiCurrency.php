@@ -489,7 +489,7 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function set_default_currency() {
-		$this->default_currency = $this->get_available_currencies()[ get_woocommerce_currency() ] ?? null;
+		$this->default_currency = $this->available_currencies[ get_woocommerce_currency() ] ?? null;
 	}
 
 	/**
