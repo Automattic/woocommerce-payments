@@ -97,10 +97,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 	} );
 
 	it( 'should throw an error that the card was declined due to expired card', async () => {
-		await shopper.login();
 		const cardExpired = config.get( 'cards.declined-expired' );
-		await shopper.goToCheckout();
-		await uiUnblocked();
 		await fillCardDetails( page, cardExpired );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
