@@ -235,6 +235,7 @@ export const DepositsList = () => {
 				actions={ [
 					downloadable && (
 						<DownloadButton
+							key="download"
 							isDisabled={ isLoading }
 							onClick={ onDownload }
 						/>
