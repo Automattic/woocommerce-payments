@@ -340,6 +340,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
 			if ( $payment_needed ) {
+				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+					wc_add_notice( __( 'Your payment was not processed.', 'woocommerce-payments' ), 'error' );
+					return [
+						'result'       => 'fail',
+						'redirect_url' => '',
+					];
+				}
+
 				$updated_payment_intent  = $this->payments_api_client->update_intention(
 					$payment_intent_id,
 					$converted_amount,
