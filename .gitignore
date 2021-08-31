@@ -67,6 +67,9 @@ docker/data
 docker/wordpress
 docker/logs
 
+# Local machine docker override
+docker-compose.override.yml
+
 # Tunneling scripts
 /docker/bin/jt
 
