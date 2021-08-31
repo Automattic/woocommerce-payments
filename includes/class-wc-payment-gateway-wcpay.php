@@ -91,7 +91,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var Session_Rate_Limiter
 	 */
-	private $failed_transaction_rate_limiter;
+	protected $failed_transaction_rate_limiter;
 
 	/**
 	 * WC_Payment_Gateway_WCPay constructor.
