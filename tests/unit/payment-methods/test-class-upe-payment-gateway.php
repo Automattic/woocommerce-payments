@@ -13,6 +13,7 @@ use WCPay\Exceptions\Connection_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 
 use WCPay\Logger;
+use WCPay\Constants\Payment_Type;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
@@ -272,6 +273,14 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				true,
 				'cus_12345',
 				[
+					'customer_name'  => 'Jeroen Sormani',
+					'customer_email' => 'admin@example.org',
+					'site_url'       => 'http://example.org',
+					'order_id'       => $order_id,
+					'order_key'      => $order->get_order_key(),
+					'payment_type'   => Payment_Type::SINGLE(),
+				],
+				[
 					'merchant_reference' => (string) $order_id,
 					'customer_reference' => (string) $order_id,
 					'shipping_amount'    => 1000.0,
@@ -333,6 +342,14 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				'usd',
 				true,
 				'cus_12345',
+				[
+					'customer_name'  => 'Jeroen Sormani',
+					'customer_email' => 'admin@example.org',
+					'site_url'       => 'http://example.org',
+					'order_id'       => $order_id,
+					'order_key'      => $order->get_order_key(),
+					'payment_type'   => Payment_Type::SINGLE(),
+				],
 				[
 					'merchant_reference' => (string) $order_id,
 					'shipping_amount'    => 1000.0,
