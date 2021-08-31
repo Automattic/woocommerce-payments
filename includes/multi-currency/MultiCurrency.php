@@ -489,7 +489,8 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function set_default_currency() {
-		$this->default_currency = $this->available_currencies[ get_woocommerce_currency() ] ?? null;
+		$available_currencies   = $this->get_available_currencies();
+		$this->default_currency = $available_currencies[ get_woocommerce_currency() ] ?? null;
 	}
 
 	/**
@@ -498,6 +499,9 @@ class MultiCurrency {
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_available_currencies(): array {
+		if ( ! self::is_initialized() ) {
+			$this->initialize_available_currencies();
+		}
 		return $this->available_currencies;
 	}
 
@@ -507,6 +511,9 @@ class MultiCurrency {
 	 * @return Currency The store base currency.
 	 */
 	public function get_default_currency(): Currency {
+		if ( ! self::is_initialized() ) {
+			$this->set_default_currency();
+		}
 		return $this->default_currency;
 	}
 
@@ -516,6 +523,9 @@ class MultiCurrency {
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_enabled_currencies(): array {
+		if ( ! self::is_initialized() ) {
+			$this->initialize_enabled_currencies();
+		}
 		return $this->enabled_currencies;
 	}
 
