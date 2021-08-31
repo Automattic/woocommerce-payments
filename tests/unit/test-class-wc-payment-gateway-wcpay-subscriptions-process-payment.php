@@ -145,7 +145,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 					'get_return_url',
 					'mark_payment_complete_for_order',
 					'get_level3_data_from_order', // To avoid needing to mock the order items.
-					'add_token_to_order',
 				]
 			)
 			->getMock();
@@ -173,6 +172,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_wcs_order_contains_subscription( true );
 
+		$subscriptions = [ WC_Helper_Order::create_order( self::USER_ID ) ];
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
@@ -185,20 +187,20 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->with( self::PAYMENT_METHOD_ID, $order->get_user() )
 			->willReturn( $this->token );
 
-		// Expect add token to order to be called, so it can be reused in renewals.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'add_token_to_order' )
-			->with(
-				$this->callback( $this->match_order_id( $order->get_id() ) ),
-				$this->token
-			);
-
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
 		$this->assertEquals( 'processing', $result_order->get_status() );
 		$this->assertEquals( 'success', $result['result'] );
+
+		// Expect add token to order to be called, so it can be reused in renewals.
+		// This is an integration test, different scenarios for add_token_to_order method
+		// are tested in WC_Payment_Gateway_WCPay_Subscriptions_Test.
+		$orders = array_merge( [ $order ], $subscriptions );
+		foreach ( $orders as $order ) {
+			$payment_tokens = $order->get_payment_tokens();
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+		}
 	}
 
 	public function test_new_card_zero_dollar_subscription() {
@@ -206,6 +208,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_wcs_order_contains_subscription( true );
 
+		$subscriptions = [ WC_Helper_Order::create_order( self::USER_ID ) ];
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_setup_intent' )
@@ -218,20 +223,20 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->with( self::PAYMENT_METHOD_ID, $order->get_user() )
 			->willReturn( $this->token );
 
-		// Expect add token to order to be called, so it can be reused in renewals.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'add_token_to_order' )
-			->with(
-				$this->callback( $this->match_order_id( $order->get_id() ) ),
-				$this->token
-			);
-
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
 		$this->assertEquals( 'processing', $result_order->get_status() );
 		$this->assertEquals( 'success', $result['result'] );
+
+		// Expect add token to order to be called, so it can be reused in renewals.
+		// This is an integration test, different scenarios for add_token_to_order method
+		// are tested in WC_Payment_Gateway_WCPay_Subscriptions_Test.
+		$orders = array_merge( [ $order ], $subscriptions );
+		foreach ( $orders as $order ) {
+			$payment_tokens = $order->get_payment_tokens();
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+		}
 	}
 
 	public function test_new_card_is_added_before_status_update() {
@@ -239,6 +244,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_wcs_order_contains_subscription( true );
 
+		$subscriptions = [ WC_Helper_Order::create_order( self::USER_ID ) ];
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_setup_intent' )
@@ -251,19 +259,16 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->with( self::PAYMENT_METHOD_ID, $order->get_user() )
 			->willReturn( $this->token );
 
-		// Expect add token to order to be called, so it can be reused in renewals.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'add_token_to_order' )
-			->with(
-				$this->logicalAnd(
-					$this->callback( $this->match_order_id( $order->get_id() ) ),
-					$this->callback( $this->match_order_status( 'pending' ) )
-				),
-				$this->token
-			);
-
 		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		// Expect add token to order to be called, so it can be reused in renewals.
+		// This is an integration test, different scenarios for add_token_to_order method
+		// are tested in WC_Payment_Gateway_WCPay_Subscriptions_Test.
+		$orders = array_merge( [ $order ], $subscriptions );
+		foreach ( $orders as $order ) {
+			$payment_tokens = $order->get_payment_tokens();
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+		}
 	}
 
 	public function test_saved_card_subscription() {
@@ -276,6 +281,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_wcs_order_contains_subscription( true );
 
+		$subscriptions = [ WC_Helper_Order::create_order( self::USER_ID ) ];
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
@@ -286,20 +294,20 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->expects( $this->never() )
 			->method( 'add_payment_method_to_user' );
 
-		// Expect add token to order to be called, so it can be reused in renewals.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'add_token_to_order' )
-			->with(
-				$this->callback( $this->match_order_id( $order->get_id() ) ),
-				$this->token
-			);
-
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
 		$this->assertEquals( 'processing', $result_order->get_status() );
 		$this->assertEquals( 'success', $result['result'] );
+
+		// Expect add token to order to be called, so it can be reused in renewals.
+		// This is an integration test, different scenarios for add_token_to_order method
+		// are tested in WC_Payment_Gateway_WCPay_Subscriptions_Test.
+		$orders = array_merge( [ $order ], $subscriptions );
+		foreach ( $orders as $order ) {
+			$payment_tokens = $order->get_payment_tokens();
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+		}
 	}
 
 	public function test_saved_card_zero_dollar_subscription() {
@@ -323,17 +331,25 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->expects( $this->never() )
 			->method( 'add_payment_method_to_user' );
 
-		// We do need to add the payment method to the order so we can charge it when it's time to
-		// renew the order or when the free trial is over.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'add_token_to_order' );
+		$subscriptions = [ WC_Helper_Order::create_order( self::USER_ID ) ];
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
 
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
 		$this->assertEquals( 'processing', $result_order->get_status() );
 		$this->assertEquals( 'success', $result['result'] );
+
+		// We do need to add the payment method to the order so we can charge it when it's time to
+		// renew the order or when the free trial is over.
+		// This is an integration test, different scenarios for add_token_to_order method
+		// are tested in WC_Payment_Gateway_WCPay_Subscriptions_Test.
+		$orders = array_merge( [ $order ], $subscriptions );
+		foreach ( $orders as $order ) {
+			$payment_tokens = $order->get_payment_tokens();
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+		}
+
 	}
 
 	public function test_card_is_saved_when_updating_subscription_payment_method() {
@@ -349,6 +365,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			}
 		);
 
+		$this->mock_wcs_get_subscriptions_for_order( [] );
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_setup_intent' )
@@ -361,20 +378,16 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->with( self::PAYMENT_METHOD_ID, $order->get_user() )
 			->willReturn( $this->token );
 
-		// Expect add token to order to be called, so it can be reused in renewals.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'add_token_to_order' )
-			->with(
-				$this->callback( $this->match_order_id( $order->get_id() ) ),
-				$this->token
-			);
-
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
 		$this->assertEquals( 'processing', $result_order->get_status() );
 		$this->assertEquals( 'success', $result['result'] );
+		// Expect add token to order to be called, so it can be reused in renewals.
+		// This is an integration test, different scenarios for add_token_to_order method
+		// are tested in WC_Payment_Gateway_WCPay_Subscriptions_Test.
+		$payment_tokens = $order->get_payment_tokens();
+		$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 	}
 
 	public function test_card_is_saved_when_updating_subscription_using_saved_payment_method() {
@@ -393,6 +406,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 				return true;
 			}
 		);
+		$this->mock_wcs_get_subscriptions_for_order( [] );
 
 		$this->mock_api_client
 			->expects( $this->never() )
@@ -402,26 +416,30 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->expects( $this->never() )
 			->method( 'add_payment_method_to_user' );
 
-		// Expect add token to order to be called, so it can be reused in renewals.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'add_token_to_order' )
-			->with(
-				$this->callback( $this->match_order_id( $order->get_id() ) ),
-				$this->token
-			);
-
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
 		$this->assertEquals( 'processing', $result_order->get_status() );
 		$this->assertEquals( 'success', $result['result'] );
+		// Expect add token to order to be called, so it can be reused in renewals.
+		// This is an integration test, different scenarios for add_token_to_order method
+		// are tested in WC_Payment_Gateway_WCPay_Subscriptions_Test.
+		$payment_tokens = $order->get_payment_tokens();
+		$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 	}
 
 	private function mock_wcs_order_contains_subscription( $value ) {
 		WC_Subscriptions::set_wcs_order_contains_subscription(
 			function ( $order ) use ( $value ) {
 				return $value;
+			}
+		);
+	}
+
+	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order ) use ( $subscriptions ) {
+				return $subscriptions;
 			}
 		);
 	}
