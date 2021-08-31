@@ -790,7 +790,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
-			if ( isset( $this->failed_transaction_rate_limiter ) && $this->failed_transaction_rate_limiter->is_limited() ) {
+			if ( $this->failed_transaction_rate_limiter->is_limited() ) {
 				throw new Process_Payment_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
@@ -812,7 +812,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$order->update_status( 'failed' );
 
-			if ( $e instanceof API_Exception && in_array( $e->get_error_code(), [ 'card_declined' ], true ) && isset( $this->failed_transaction_rate_limiter ) ) {
+			if ( $e instanceof API_Exception && $e->get_error_code() === 'card_declined' ) {
 				$this->failed_transaction_rate_limiter->bump();
 			}
 
