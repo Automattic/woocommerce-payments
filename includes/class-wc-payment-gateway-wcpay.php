@@ -845,7 +845,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$order->update_status( 'failed' );
 
-			if ( $e instanceof API_Exception && in_array( $e->get_error_code(), [ 'card_declined', 'incorrect_cvc', 'expired_card', 'incorrect_number' ], true ) && isset( $this->failed_transaction_rate_limiter ) ) {
+			if ( $e instanceof API_Exception && in_array( $e->get_error_code(), [ 'card_declined' ], true ) && isset( $this->failed_transaction_rate_limiter ) ) {
 				$this->failed_transaction_rate_limiter->bump();
 			}
 
