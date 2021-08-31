@@ -231,7 +231,7 @@ class WC_Payments {
 		self::$action_scheduler_service        = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service                   = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
 		self::$localization_service            = new WC_Payments_Localization_Service();
-		self::$failed_transaction_rate_limiter = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * 60 );
+		self::$failed_transaction_rate_limiter = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 
 		$card_class    = CC_Payment_Gateway::class;
 		$upe_class     = UPE_Payment_Gateway::class;
