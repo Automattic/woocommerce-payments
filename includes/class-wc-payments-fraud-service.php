@@ -54,7 +54,7 @@ class WC_Payments_Fraud_Service {
 		add_filter( 'wcpay_prepare_fraud_config', [ $this, 'prepare_fraud_config' ], 10, 2 );
 		add_filter( 'wcpay_current_session_id', [ $this, 'get_session_id' ] );
 		add_action( 'init', [ $this, 'link_session_if_user_just_logged_in' ] );
-		add_action( 'admin_init', [ $this, 'send_forter_token' ] );
+		add_action( 'admin_init', [ $this, 'send_forter_cookie_token' ] );
 	}
 
 	/**
@@ -194,16 +194,13 @@ class WC_Payments_Fraud_Service {
 	}
 
 	/**
-	 * If a "forterToken" cookie is present or $token param received, send it to the WCPay server so the
-	 * current browsing session can be linked to the account. It will only be sent once.
+	 * Send $token param received to the WCPay server so the current browsing session
+	 * can be linked to the account. It will only be sent once.
 	 *
 	 * @param string|null $token Forter token received from the client.
 	 */
 	public function send_forter_token( string $token = null ) {
-		// The cookie contents are opaque to us, so it's better to not sanitize them.
-		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-		$token = $_COOKIE['forterToken'] ?? $token;
-		if ( ! $this->account->is_stripe_connected() || ! $token || ! isset( $this->account->get_fraud_services_config()['forter'] ) ) {
+		if ( ! $this->account->is_stripe_connected() || empty( $token ) || ! isset( $this->account->get_fraud_services_config()['forter'] ) ) {
 			return;
 		}
 
@@ -220,6 +217,17 @@ class WC_Payments_Fraud_Service {
 				delete_option( 'wcpay_forter_token_sent' );
 				Logger::log( '[Tracking] Error when sending Forter token: ' . $e->getMessage() );
 			}
+		}
+	}
+
+	/**
+	 * If a "forterToken" cookie is present call `send_forter_token` with it.
+	 */
+	public function send_forter_cookie_token() {
+		if ( isset( $_COOKIE['forterToken'] ) ) {
+			// The cookie contents are opaque to us, so it's better to not sanitize them.
+			//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			$this->send_forter_token( $_COOKIE['forterToken'] );
 		}
 	}
 

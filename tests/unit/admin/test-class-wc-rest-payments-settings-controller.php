@@ -69,7 +69,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
-		update_option( '_wcpay_feature_grouped_settings', '1' );
 
 		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
@@ -133,7 +132,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'card', 'bancontact', 'giropay', 'ideal', 'p24', 'sofort' ],
+			[ 'card', 'giropay', 'sofort' ],
 			$enabled_method_ids
 		);
 	}
