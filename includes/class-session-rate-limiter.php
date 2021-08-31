@@ -88,6 +88,10 @@ class Session_Rate_Limiter {
 			return;
 		}
 
+		if ( 'yes' === get_option( 'wcpay_session_rate_limiter_disabled_' . $this->key ) ) {
+			return false;
+		}
+
 		$registry = WC()->session->get( $this->key ) ?? [];
 
 		if ( count( $registry ) >= $this->threshold ) {
