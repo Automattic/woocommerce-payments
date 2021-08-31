@@ -65,10 +65,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
 	 * @param array                                $payment_methods          - Array of UPE payment methods.
-	 * @param Session_Rate_Limiter                 $rate_limiter             - Session Rate Limiter instance.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter             - Session Rate Limiter instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service, array $payment_methods, Session_Rate_Limiter $rate_limiter ) {
-		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $rate_limiter );
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service, array $payment_methods, Session_Rate_Limiter $failed_transaction_rate_limiter ) {
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter );
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 		$this->title              = __( 'WooCommerce Payments', 'woocommerce-payments' );
@@ -348,7 +348,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
 				if ( in_array( $last_payment_error_code, [ 'card_declined', 'incorrect_cvc', 'expired_card', 'incorrect_number' ], true ) ) {
 					// UPE method gives us the error of the previous payment attempt, so we use that for the Rate Limiter.
-					$this->rate_limiter->bump();
+					$this->failed_transaction_rate_limiter->bump();
 				}
 			}
 		} else {

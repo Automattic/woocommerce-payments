@@ -111,12 +111,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
 		Session_Rate_Limiter $failed_transaction_rate_limiter = null
 	) {
-		$this->payments_api_client      = $payments_api_client;
-		$this->account                  = $account;
-		$this->customer_service         = $customer_service;
-		$this->token_service            = $token_service;
-		$this->action_scheduler_service = $action_scheduler_service;
-		$this->rate_limiter             = $failed_transaction_rate_limiter;
+		$this->payments_api_client             = $payments_api_client;
+		$this->account                         = $account;
+		$this->customer_service                = $customer_service;
+		$this->token_service                   = $token_service;
+		$this->action_scheduler_service        = $action_scheduler_service;
+		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -823,7 +823,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
-			if ( isset( $this->rate_limiter ) && $this->rate_limiter->is_limited() ) {
+			if ( isset( $this->failed_transaction_rate_limiter ) && $this->failed_transaction_rate_limiter->is_limited() ) {
 				throw new Process_Payment_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
@@ -845,8 +845,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$order->update_status( 'failed' );
 
-			if ( $e instanceof API_Exception && in_array( $e->get_error_code(), [ 'card_declined', 'incorrect_cvc', 'expired_card', 'incorrect_number' ], true ) && isset( $this->rate_limiter ) ) {
-				$this->rate_limiter->bump();
+			if ( $e instanceof API_Exception && in_array( $e->get_error_code(), [ 'card_declined', 'incorrect_cvc', 'expired_card', 'incorrect_number' ], true ) && isset( $this->failed_transaction_rate_limiter ) ) {
+				$this->failed_transaction_rate_limiter->bump();
 			}
 
 			if ( ! empty( $payment_information ) ) {
