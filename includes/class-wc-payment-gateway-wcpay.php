@@ -87,6 +87,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $action_scheduler_service;
 
 	/**
+	 * Session_Rate_Limiter instance for limiting failed transactions.
+	 *
+	 * @var Session_Rate_Limiter
+	 */
+	protected $failed_transaction_rate_limiter;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
@@ -94,19 +101,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
 	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter             - Rate Limiter for failed transactions.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service,
 		WC_Payments_Token_Service $token_service,
-		WC_Payments_Action_Scheduler_Service $action_scheduler_service
+		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
+		Session_Rate_Limiter $failed_transaction_rate_limiter = null
 	) {
-		$this->payments_api_client      = $payments_api_client;
-		$this->account                  = $account;
-		$this->customer_service         = $customer_service;
-		$this->token_service            = $token_service;
-		$this->action_scheduler_service = $action_scheduler_service;
+		$this->payments_api_client             = $payments_api_client;
+		$this->account                         = $account;
+		$this->customer_service                = $customer_service;
+		$this->token_service                   = $token_service;
+		$this->action_scheduler_service        = $action_scheduler_service;
+		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -774,11 +784,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param int $order_id Order ID to process the payment for.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 * @throws Process_Payment_Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 
 		try {
+			if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+				throw new Process_Payment_Exception(
+					__( 'Your payment was not processed.', 'woocommerce-payments' ),
+					'rate_limiter_enabled'
+				);
+			}
+
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
@@ -793,6 +811,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wc_add_notice( $error_message, 'error' );
 
 			$order->update_status( 'failed' );
+
+			if ( $e instanceof API_Exception && $e->get_error_code() === 'card_declined' ) {
+				$this->failed_transaction_rate_limiter->bump();
+			}
 
 			if ( ! empty( $payment_information ) ) {
 				$note = sprintf(
@@ -809,6 +831,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					),
 					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
 					esc_html( rtrim( $e->getMessage(), '.' ) )
+				);
+				$order->add_order_note( $note );
+			}
+
+			if ( $e instanceof Process_Payment_Exception && 'rate_limiter_enabled' === $e->get_error_code() ) {
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the failed payment amount */
+						__(
+							'A payment of %1$s <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.',
+							'woocommerce-payments'
+						),
+						[
+							'strong' => '<strong>',
+						]
+					),
+					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order )
 				);
 				$order->add_order_note( $note );
 			}

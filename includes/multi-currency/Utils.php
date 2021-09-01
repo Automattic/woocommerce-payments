@@ -29,4 +29,13 @@ class Utils {
 		}
 		return false;
 	}
+
+	/**
+	 * Checks if HTTP referer matches admin url.
+	 *
+	 * @return boolean
+	 */
+	public static function is_admin_request(): bool {
+		return 0 === stripos( wp_get_referer(), admin_url() );
+	}
 }
