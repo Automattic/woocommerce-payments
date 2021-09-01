@@ -432,9 +432,6 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function initialize_available_currencies() {
-		if ( ! $this->are_available_currencies_initialized ) {
-			return;
-		}
 		// Add default store currency with a rate of 1.0.
 		$woocommerce_currency                                = get_woocommerce_currency();
 		$this->available_currencies[ $woocommerce_currency ] = new Currency( $woocommerce_currency, 1.0 );
@@ -468,10 +465,6 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function initialize_enabled_currencies() {
-		if ( ! $this->are_enabled_currencies_initialized ) {
-			return;
-		}
-
 		$available_currencies     = $this->get_available_currencies();
 		$enabled_currency_codes   = get_option( $this->id . '_enabled_currencies', [] );
 		$enabled_currency_codes   = is_array( $enabled_currency_codes ) ? $enabled_currency_codes : [];
@@ -521,9 +514,6 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function set_default_currency() {
-		if ( ! $this->is_default_currency_initialized ) {
-			return;
-		}
 		$available_currencies   = $this->get_available_currencies();
 		$this->default_currency = $available_currencies[ get_woocommerce_currency() ] ?? null;
 
