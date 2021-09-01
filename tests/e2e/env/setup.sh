@@ -222,14 +222,14 @@ if [[ ! ${SKIP_WC_BLOCKS_TESTS} ]]; then
 	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_BLOCKS_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
 	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_BLOCKS_REPO/archive/$LATEST_RELEASE.zip"
 
-	unzip -qq woocommerce-gutenberg-products-block-v$LATEST_RELEASE.zip
+	unzip -qq woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}.zip
 
 	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv woocommerce-gutenberg-products-block-v$LATEST_RELEASE/* $E2E_ROOT/deps/woocommerce-gutenberg-products-block
+	sudo mv woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}/* $E2E_ROOT/deps/woocommerce-gutenberg-products-block
 
 	cli wp plugin activate woocommerce-gutenberg-products-block
 
-	rm -rf woocommerce-gutenberg-products-block-v$LATEST_RELEASE
+	rm -rf woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}
 else
 	echo "Skipping install of WooCommerce Blocks"
 fi
