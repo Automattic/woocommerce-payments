@@ -39,7 +39,7 @@ class WC_Payments_Invoice_Service {
 	/**
 	 * Tax Service.
 	 *
-	 * @var WC_Payments_Product_Service Add the tax service class.
+	 * @var WC_Payments_Product_Service Add the product service class
 	 */
 	private $product_service;
 
@@ -171,7 +171,7 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @return array Invoice item data.
 	 */
-	private function prepare_invoice_item_data( WC_Subscription $subscription ) {
+	private function prepare_invoice_item_data( WC_Subscription $subscription ) : array {
 		$data     = [];
 		$discount = $subscription->get_total_discount( false );
 		$currency = $subscription->get_currency();
