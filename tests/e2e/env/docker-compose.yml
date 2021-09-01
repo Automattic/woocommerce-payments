@@ -20,7 +20,7 @@ services:
       - ${E2E_ROOT}/deps/${DEV_TOOLS_DIR}:/var/www/html/wp-content/plugins/${DEV_TOOLS_DIR}
       - ${E2E_ROOT}/deps/woocommerce-subscriptions:/var/www/html/wp-content/plugins/woocommerce-subscriptions
       - ${E2E_ROOT}/deps/action-scheduler:/var/www/html/wp-content/plugins/action-scheduler
-      - ${E2E_ROOT}/deps/woocommerce-blocks:/var/www/html/wp-content/plugins/woo-gutenberg-products-block
+      - ${E2E_ROOT}/deps/woocommerce-gutenberg-products-block:/var/www/html/wp-content/plugins/woo-gutenberg-products-block
   db:
     container_name: wcp_e2e_mysql
     image: mariadb:10.5.8
