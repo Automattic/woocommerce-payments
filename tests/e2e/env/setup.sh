@@ -216,6 +216,24 @@ else
 	echo "Skipping install of Action Scheduler"
 fi
 
+if [[ ! ${SKIP_WC_BLOCKS_TESTS} ]]; then
+	echo "Install and activate the latest release of WooCommerce Blocks"
+	cd $E2E_ROOT/deps
+	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_BLOCKS_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
+	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_BLOCKS_REPO/archive/$LATEST_RELEASE.zip"
+
+	unzip -qq woocommerce-blocks-$LATEST_RELEASE.zip
+
+	echo "Moving the unzipped plugin files. This may require your admin password"
+	sudo mv woocommerce-blocks-$LATEST_RELEASE/* $E2E_ROOT/deps/woocommerce-blocks
+
+	cli wp plugin activate woocommerce-blocks
+
+	rm -rf woocommerce-blocks-$LATEST_RELEASE
+else
+	echo "Skipping install of WooCommerce Blocks"
+fi
+
 echo "Installing basic auth plugin for interfacing with the API"
 cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
 

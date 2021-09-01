@@ -44,6 +44,8 @@ export const RUN_SUBSCRIPTIONS_TESTS =
 export const RUN_ACTION_SCHEDULER_TESTS =
 	'1' !== process.env.SKIP_WC_ACTION_SCHEDULER_TESTS;
 
+export const RUN_WC_BLOCKS_TESTS = '1' !== process.env.SKIP_WC_BLOCKS_TESTS;
+
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
 export const shopperWCP = {
