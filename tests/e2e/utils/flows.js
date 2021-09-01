@@ -283,15 +283,23 @@ export const merchantWCP = {
 			'Checkout WCB'
 		);
 
-		// Insert new checkout by WCB
+		// Insert new checkout by WCB (searching for Checkout block and pressing Enter)
 		await expect( page ).toClick(
-			'.edit-post-header-toolbar__inserter-toggle'
+			'button.edit-post-header-toolbar__inserter-toggle'
 		);
 		await expect( page ).toFill(
-			'.components-search-control__input',
+			'div.components-search-control__input-wrapper > input.components-search-control__input',
 			'Checkout'
 		);
-		await expect( page ).toClick( '.block-editor-block-types-list__item' );
+		await page.keyboard.press( 'Tab' );
+		await page.keyboard.press( 'Tab' );
+		await page.keyboard.press( 'Enter' );
+
+		// Dismiss dialog about potentially compatibility issues
+		await expect( page ).toClick(
+			'div.components-guide__footer > button.components-guide__finish-button'
+		);
+		await page.screenshot( { path: 'test1.png' } );
 
 		// Publish the page
 		await expect( page ).toClick(
@@ -302,5 +310,6 @@ export const merchantWCP = {
 			'.components-snackbar__content',
 			'Page updated.'
 		);
+		await page.screenshot( { path: 'test2.png' } );
 	},
 };

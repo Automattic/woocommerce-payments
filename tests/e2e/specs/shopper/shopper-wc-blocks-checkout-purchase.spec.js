@@ -51,7 +51,6 @@ describe( 'WooCommerce Blocks > Successful purchase', () => {
 		await shopper.goToShop();
 		await shopper.addToCartFromShopPage( simpleProductName );
 		await shopperWCP.openCheckoutWCB();
-		await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
 		// Fill CC details and purchase the product
 		const card = config.get( 'cards.3ds' );
