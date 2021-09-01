@@ -65,19 +65,18 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $next_payment;
 
 	/**
-<<<<<<< HEAD
 	 * End timestamp
 	 *
 	 * @var int
 	 */
 	public $end;
-=======
+
+	/**
 	 * Helper variable for mocking the subscription's status.
 	 *
 	 * @var string
 	 */
 	public $status;
->>>>>>> 3968beb8 (Add unit tests for the WC_Payments_Subscription_Change_Payment_Method_Handler class)
 
 	/**
 	 * Taxes.
