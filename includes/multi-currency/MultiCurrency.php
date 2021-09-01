@@ -122,7 +122,7 @@ class MultiCurrency {
 	 *
 	 * @var bool
 	 */
-	protected $available_currencies_initialized = false;
+	protected $are_available_currencies_initialized = false;
 
 	/**
 	 * The default currency.
@@ -136,7 +136,7 @@ class MultiCurrency {
 	 *
 	 * @var bool
 	 */
-	protected $default_currency_initialized = false;
+	protected $is_default_currency_initialized = false;
 
 	/**
 	 * The enabled currencies.
@@ -150,7 +150,7 @@ class MultiCurrency {
 	 *
 	 * @var bool
 	 */
-	protected $enabled_currencies_initialized = false;
+	protected $are_enabled_currencies_initialized = false;
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -427,38 +427,14 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Return if available currencies are initialized.
-	 *
-	 * @return bool
-	 */
-	private function is_available_currencies_initialized(): bool {
-		return $this->available_currencies_initialized;
-	}
-
-	/**
-	 * Return whether the default currency is initialized.
-	 *
-	 * @return bool
-	 */
-	private function is_default_currency_initialized(): bool {
-		return $this->default_currency_initialized;
-	}
-
-	/**
-	 * Return if enabled currencies are initialized.
-	 *
-	 * @return bool
-	 */
-	private function is_enabled_currencies_initialized(): bool {
-		return $this->enabled_currencies_initialized;
-	}
-
-	/**
 	 * Sets up the available currencies, which are alphabetical by name.
 	 *
 	 * @return void
 	 */
 	private function initialize_available_currencies() {
+		if ( ! $this->are_available_currencies_initialized ) {
+			return;
+		}
 		// Add default store currency with a rate of 1.0.
 		$woocommerce_currency                                = get_woocommerce_currency();
 		$this->available_currencies[ $woocommerce_currency ] = new Currency( $woocommerce_currency, 1.0 );
@@ -483,7 +459,7 @@ class MultiCurrency {
 			$this->available_currencies[ $currency->get_code() ] = $currency;
 		}
 
-		$this->available_currencies_initialized = true;
+		$this->are_available_currencies_initialized = true;
 	}
 
 	/**
@@ -492,6 +468,10 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function initialize_enabled_currencies() {
+		if ( ! $this->are_enabled_currencies_initialized ) {
+			return;
+		}
+
 		$available_currencies     = $this->get_available_currencies();
 		$enabled_currency_codes   = get_option( $this->id . '_enabled_currencies', [] );
 		$enabled_currency_codes   = is_array( $enabled_currency_codes ) ? $enabled_currency_codes : [];
@@ -532,7 +512,7 @@ class MultiCurrency {
 		unset( $this->enabled_currencies[ $default_code ] );
 		$this->enabled_currencies = array_merge( $default, $this->enabled_currencies );
 
-		$this->enabled_currencies_initialized = true;
+		$this->are_enabled_currencies_initialized = true;
 	}
 
 	/**
@@ -541,10 +521,13 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function set_default_currency() {
+		if ( ! $this->is_default_currency_initialized ) {
+			return;
+		}
 		$available_currencies   = $this->get_available_currencies();
 		$this->default_currency = $available_currencies[ get_woocommerce_currency() ] ?? null;
 
-		$this->default_currency_initialized = true;
+		$this->is_default_currency_initialized = true;
 	}
 
 	/**
@@ -553,7 +536,7 @@ class MultiCurrency {
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_available_currencies(): array {
-		if ( ! $this->is_available_currencies_initialized() ) {
+		if ( ! $this->are_available_currencies_initialized ) {
 			$this->initialize_available_currencies();
 		}
 		return $this->available_currencies;
@@ -565,7 +548,7 @@ class MultiCurrency {
 	 * @return Currency The store base currency.
 	 */
 	public function get_default_currency(): Currency {
-		if ( ! $this->is_default_currency_initialized() ) {
+		if ( ! $this->is_default_currency_initialized ) {
 			$this->set_default_currency();
 		}
 		return $this->default_currency;
@@ -577,7 +560,7 @@ class MultiCurrency {
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_enabled_currencies(): array {
-		if ( ! $this->is_enabled_currencies_initialized() ) {
+		if ( ! $this->are_enabled_currencies_initialized ) {
 			$this->initialize_enabled_currencies();
 		}
 		return $this->enabled_currencies;
