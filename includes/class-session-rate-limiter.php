@@ -83,9 +83,9 @@ class Session_Rate_Limiter {
 	 *
 	 * @return bool   The rate limiter is in use.
 	 */
-	public function is_limited() {
+	public function is_limited(): bool {
 		if ( ! isset( WC()->session ) ) {
-			return;
+			return false;
 		}
 
 		if ( 'yes' === get_option( 'wcpay_session_rate_limiter_disabled_' . $this->key ) ) {
