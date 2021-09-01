@@ -26,7 +26,7 @@ import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import Page from '../../components/page';
 import DepositsFilters from '../filters';
-import DownloadButton from '../../components/download-button';
+import DownloadButton from 'components/download-button';
 
 import './style.scss';
 

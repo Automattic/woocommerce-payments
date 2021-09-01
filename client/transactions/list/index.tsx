@@ -44,7 +44,7 @@ import './style.scss';
 import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
-import DownloadButton from '../../components/download-button';
+import DownloadButton from 'components/download-button';
 
 interface TransactionsListProps {
 	depositId?: string;
