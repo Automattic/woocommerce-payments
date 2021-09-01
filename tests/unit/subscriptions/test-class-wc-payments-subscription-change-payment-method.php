@@ -36,7 +36,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 		$mock_subscription = new WC_Subscription();
 
 		// Test the false case - no change to input.
-		$this->assertEquals( [], $this->change_payment_method_handler->update_subscription_change_payment_button( [], $mock_subscription ) );
+		$this->assertSame( [], $this->change_payment_method_handler->update_subscription_change_payment_button( [], $mock_subscription ) );
 
 		// Set up a subscriotion with a failed last payment to test the positive/true case.
 		$mock_subscription->status     = 'on-hold';
@@ -61,19 +61,19 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 
 		$result = $this->change_payment_method_handler->update_subscription_change_payment_button( $default_actions, $mock_subscription );
 
-		$this->assertTrue( is_array( $result ) );
+		$this->assertIsArray( $result );
 		$this->assertContainsOnly( 'array', $result );
-		$this->assertEquals( 2, count( $result ) );
+		$this->assertCount( 2, $result );
 
 		$this->assertArrayHasKey( 'change_payment_method', $result );
 
 		// Confirm the change payment method element format.
-		$this->assertEquals( 2, count( $result['change_payment_method'] ) );
+		$this->assertCount( 2, $result['change_payment_method'] );
 		$this->assertArrayHasKey( 'url', $result['change_payment_method'] );
 		$this->assertArrayHasKey( 'name', $result['change_payment_method'] );
 
 		// Confirm the function changed the button name and URL.
-		$this->assertEquals( 'Update card', $result['change_payment_method']['name'] );
+		$this->assertSame( 'Update card', $result['change_payment_method']['name'] );
 		$this->assertRegExp( '/change_payment_method=/', $result['change_payment_method']['url'] );
 		$this->assertRegExp( '/_wpnonce=/', $result['change_payment_method']['url'] );
 	}
@@ -93,12 +93,12 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 		$mock_subscription->set_parent( $mock_order );
 
 		// Without a 'pay' key element, the array input should remain unchanged.
-		$this->assertEquals( [], $this->change_payment_method_handler->update_order_pay_button( [], $mock_order ) );
-		$this->assertEquals( $test_actions, $this->change_payment_method_handler->update_order_pay_button( $test_actions, $mock_order ) );
+		$this->assertSame( [], $this->change_payment_method_handler->update_order_pay_button( [], $mock_order ) );
+		$this->assertSame( $test_actions, $this->change_payment_method_handler->update_order_pay_button( $test_actions, $mock_order ) );
 
 		// Add the 'pay' element.
 		$test_actions['pay']['url'] = 'example.com?pay=123';
-		$this->assertEquals( $test_actions, $this->change_payment_method_handler->update_order_pay_button( $test_actions, $mock_order ) );
+		$this->assertSame( $test_actions, $this->change_payment_method_handler->update_order_pay_button( $test_actions, $mock_order ) );
 
 		// Set up the positive/true case.
 		$mock_order->update_meta_data( WC_Payments_Invoice_Service::ORDER_INVOICE_ID_KEY, 'in_test123' );
@@ -112,7 +112,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 
 		// Confirm the order actions format.
 		$this->assertContainsOnly( 'array', $result );
-		$this->assertEquals( count( $test_actions ), count( $result ) );
+		$this->assertSame( count( $test_actions ), count( $result ) );
 
 		$this->assertArrayHasKey( 'cancel', $test_actions );
 		$this->assertArrayHasKey( 'pay', $test_actions );
@@ -159,22 +159,22 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 		$default_title     = 'Test Title';
 
 		// Confirm the input is unchanged on the negative case.
-		$this->assertEquals( $default_title, $this->change_payment_method_handler->change_payment_method_page_title( $default_title, $mock_subscription ) );
+		$this->assertSame( $default_title, $this->change_payment_method_handler->change_payment_method_page_title( $default_title, $mock_subscription ) );
 
 		$mock_subscription->last_order = $mock_order;
 		$mock_subscription->update_meta_data( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
 		$mock_subscription->save();
 
 		// Confirm the input is unchanged on the negative case.
-		$this->assertEquals( $default_title, $this->change_payment_method_handler->change_payment_method_page_title( $default_title, $mock_subscription ) );
+		$this->assertSame( $default_title, $this->change_payment_method_handler->change_payment_method_page_title( $default_title, $mock_subscription ) );
 
 		$mock_subscription->status = 'on-hold';
-		$this->assertEquals( $default_title, $this->change_payment_method_handler->change_payment_method_page_title( $default_title, $mock_subscription ) );
+		$this->assertSame( $default_title, $this->change_payment_method_handler->change_payment_method_page_title( $default_title, $mock_subscription ) );
 
 		// Set up the positive case - last order is failed.
 		$mock_order->set_status( 'failed' );
 		$mock_order->save();
-		$this->assertEquals( 'Update payment details', $this->change_payment_method_handler->change_payment_method_page_title( $default_title, $mock_subscription ) );
+		$this->assertSame( 'Update payment details', $this->change_payment_method_handler->change_payment_method_page_title( $default_title, $mock_subscription ) );
 	}
 
 	/**
