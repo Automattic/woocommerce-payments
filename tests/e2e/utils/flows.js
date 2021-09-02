@@ -253,4 +253,15 @@ export const merchantWCP = {
 			waitUntil: 'networkidle0',
 		} );
 	},
+
+	openWCPSettings: async () => {
+		await merchant.openSettings( 'checkout', 'woocommerce_payments' );
+	},
+
+	wcpSettingsSaveChanges: async () => {
+		await expect( page ).toClick( '.save-settings-section button' );
+		await expect( page ).toClick( '.components-snackbar', {
+			timeout: 30000,
+		} );
+	},
 };
