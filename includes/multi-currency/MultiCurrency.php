@@ -115,44 +115,23 @@ class MultiCurrency {
 	/**
 	 * The available currencies.
 	 *
-	 * @var Currency[]
+	 * @var Currency[]|null
 	 */
-	protected $available_currencies = [];
-
-	/**
-	 * Flag whether the available currencies initialized.
-	 *
-	 * @var bool
-	 */
-	protected $are_available_currencies_initialized = false;
+	protected $available_currencies = null;
 
 	/**
 	 * The default currency.
 	 *
-	 * @var Currency
+	 * @var Currency|null
 	 */
-	protected $default_currency;
-
-	/**
-	 * Flag whether the default currency is initialized.
-	 *
-	 * @var bool
-	 */
-	protected $is_default_currency_initialized = false;
+	protected $default_currency = null;
 
 	/**
 	 * The enabled currencies.
 	 *
-	 * @var Currency[]
+	 * @var Currency[]|null
 	 */
-	protected $enabled_currencies = [];
-
-	/**
-	 * Flag whether the enabled currencies initialized.
-	 *
-	 * @var bool
-	 */
-	protected $are_enabled_currencies_initialized = false;
+	protected $enabled_currencies = null;
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -458,8 +437,6 @@ class MultiCurrency {
 		foreach ( $available_currencies as $currency ) {
 			$this->available_currencies[ $currency->get_code() ] = $currency;
 		}
-
-		$this->are_available_currencies_initialized = true;
 	}
 
 	/**
@@ -507,8 +484,6 @@ class MultiCurrency {
 		$default[ $default_code ] = $this->enabled_currencies[ $default_code ];
 		unset( $this->enabled_currencies[ $default_code ] );
 		$this->enabled_currencies = array_merge( $default, $this->enabled_currencies );
-
-		$this->are_enabled_currencies_initialized = true;
 	}
 
 	/**
@@ -519,8 +494,6 @@ class MultiCurrency {
 	private function set_default_currency() {
 		$available_currencies   = $this->get_available_currencies();
 		$this->default_currency = $available_currencies[ get_woocommerce_currency() ] ?? null;
-
-		$this->is_default_currency_initialized = true;
 	}
 
 	/**
@@ -529,9 +502,10 @@ class MultiCurrency {
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_available_currencies(): array {
-		if ( ! $this->are_available_currencies_initialized ) {
-			$this->initialize_available_currencies();
+		if ( $this->available_currencies ) {
+			return $this->available_currencies;
 		}
+		$this->initialize_available_currencies();
 		return $this->available_currencies;
 	}
 
@@ -541,9 +515,10 @@ class MultiCurrency {
 	 * @return Currency The store base currency.
 	 */
 	public function get_default_currency(): Currency {
-		if ( ! $this->is_default_currency_initialized ) {
-			$this->set_default_currency();
+		if ( $this->default_currency ) {
+			return $this->default_currency;
 		}
+		$this->set_default_currency();
 		return $this->default_currency;
 	}
 
@@ -553,9 +528,10 @@ class MultiCurrency {
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_enabled_currencies(): array {
-		if ( ! $this->are_enabled_currencies_initialized ) {
-			$this->initialize_enabled_currencies();
+		if ( $this->enabled_currencies ) {
+			return $this->enabled_currencies;
 		}
+		$this->initialize_enabled_currencies();
 		return $this->enabled_currencies;
 	}
 
@@ -569,7 +545,7 @@ class MultiCurrency {
 	public function set_enabled_currencies( $currencies = [] ) {
 		if ( 0 < count( $currencies ) ) {
 			// Get the currencies that were removed before they are updated.
-			$removed_currencies = array_diff( array_keys( $this->enabled_currencies ), $currencies );
+			$removed_currencies = array_diff( array_keys( $this->get_enabled_currencies() ), $currencies );
 
 			// Update the enabled currencies and reinitialize.
 			update_option( $this->id . '_enabled_currencies', $currencies );
@@ -595,7 +571,7 @@ class MultiCurrency {
 
 		$code = $this->compatibility->override_selected_currency() ? $this->compatibility->override_selected_currency() : $code;
 
-		return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
+		return $this->get_enabled_currencies()[ $code ] ?? $this->get_default_currency();
 	}
 
 	/**
@@ -978,7 +954,7 @@ class MultiCurrency {
 		$code = is_a( $currency, Currency::class ) ? $currency->get_code() : strtoupper( $currency );
 
 		// Bail if the currency code passed is not 3 characters, or if the currency is presently enabled.
-		if ( 3 !== strlen( $code ) || isset( $this->enabled_currencies[ $code ] ) ) {
+		if ( 3 !== strlen( $code ) || isset( $this->get_enabled_currencies()[ $code ] ) ) {
 			return;
 		}
 
