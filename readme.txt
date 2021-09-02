@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
 Tested up to: 5.8
 Requires PHP: 7.0
-Stable tag: 2.8.4
+Stable tag: 2.9.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.6 or newer.
-* WooCommerce 5.3 or newer.
+* WooCommerce 5.4 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -98,14 +98,20 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.9.0 - 2021-xx-xx =
+= 3.0.0 - 2021-xx-xx =
+* Add - Download deposits report in CSV.
+* Fix - Use store currency on analytics leaderboard when Multi-Currency is enabled.
+
+= 2.9.0 - 2021-08-25 =
 * Add - Split discount line in timeline into variable fee and fixed fee.
+* Add - Order status validation for payments/orders/{order_id}/create_customer API.
+* Add - Add country code parameter to ExPlat API requests.
+* Add - Add a new hook to get a list of enabled payment request methods.
 * Fix - Align table items according to design correctly.
 * Fix - Fatal error if wcpay_multi_currency_enabled_currencies is a string.
 * Fix - Show the estimated deposit date in the transactions CSV export rather than the deposit ID.
 * Fix - Keep track of customer id in non logged in users.
-* Add - Order status validation for payments/orders/{order_id}/create_customer API.
-* Add - Add country code paramater to ExPlat API requests.
+* Update - Bump minimum supported version of WooCommerce from 5.3 to 5.4.
 
 = 2.8.4 - 2021-08-17 =
 * Fix - Fix database connection error on account cache clear.
@@ -145,7 +151,6 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Show fee breakdown in transaction details timeline.
 * Add - REST endpoint to get customer id from an order.
 * Fix - Explat not caching when no variation is returned.
-* Add - Add a new hook to get a list of enabled payment request methods.
 
 = 2.7.1 - 2021-07-26 =
 * Fix - Ensure test mode setting value is correctly saved.
