@@ -9,16 +9,34 @@ import ReactDOM from 'react-dom';
  * Internal dependencies
  */
 import EnabledCurrencies from './enabled-currencies-list';
+import StoreSettings from './store-settings';
 
 /**
- * Mount React Component
+ * Mount React Components
  */
 const currencyContainer = document.getElementById(
 	'wcpay_enabled_currencies_list'
 );
 
+let storeSettingsContainer;
+
 if ( currencyContainer ) {
 	ReactDOM.render( <EnabledCurrencies />, currencyContainer );
+
+	// Create the Store Settings container
+	storeSettingsContainer = document.createElement( 'div' );
+	storeSettingsContainer.classList.add( 'wcpay_currencies_store_settings' );
+
+	// Add it after currencyContainer
+	currencyContainer.parentNode.insertBefore(
+		storeSettingsContainer,
+		currencyContainer.nextSibling
+	);
+
+	// Set by default to display none, will be displayed in toggleSettingsSectionDisplay if needed
+	storeSettingsContainer.style.display = 'none';
+
+	ReactDOM.render( <StoreSettings />, storeSettingsContainer );
 }
 
 /**
@@ -38,7 +56,7 @@ if ( storeSettingsSection ) {
 			1 >= enabledCurrenciesListItemsExceptPlaceholders().length
 				? 'none'
 				: 'block';
-		storeSettingsSection.style.display = display;
+		storeSettingsContainer.style.display = display;
 		submitButton.style.display = display;
 	};
 
@@ -49,6 +67,17 @@ if ( storeSettingsSection ) {
 	enabledCurrenciesObserver.observe( enabledCurrenciesList, {
 		childList: true,
 	} );
+
+	// Place the Store Settings element inside of storeSettingsContainer
+	const storeSettingsContent = storeSettingsSection.getElementsByTagName(
+		'td'
+	)[ 0 ];
+
+	// Obtain the container inside of StoreSettings component
+	const storeSettingsContentContainer = storeSettingsContainer.getElementsByClassName(
+		'settings-section__controls'
+	)[ 0 ];
+	storeSettingsContentContainer.appendChild( storeSettingsContent );
 
 	toggleSettingsSectionDisplay();
 }
