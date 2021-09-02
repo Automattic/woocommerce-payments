@@ -156,6 +156,8 @@ class WC_Payments_Subscription_Service {
 		}
 
 		try {
+			$this->invoice_service->create_invoice_items_for_subscription( $subscription, $wcpay_customer_id );
+
 			$subscription_data = $this->prepare_wcpay_subscription_data( $wcpay_customer_id, $subscription );
 			$response          = $this->payments_api_client->create_subscription( $subscription_data );
 

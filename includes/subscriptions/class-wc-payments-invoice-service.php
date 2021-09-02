@@ -155,22 +155,33 @@ class WC_Payments_Invoice_Service {
 	 * @return array Invoice item data.
 	 */
 	private function prepare_invoice_item_data( WC_Subscription $subscription ) : array {
-		$data     = [];
-		$discount = $subscription->get_total_discount( false );
-		$currency = $subscription->get_currency();
+		$data       = [];
+		$currency   = $subscription->get_currency();
+		$is_new     = $subscription->get_parent()->needs_payment();
+		$is_delayed = $is_new ? WC_Payments_Subscription_Service::has_delayed_payment( $subscription ) : false;
+		$discount   = $is_new ? $subscription->get_parent()->get_total_discount( false ) : $subscription->get_total_discount( false );
 
 		if ( $discount ) {
 			$data[] = $this->format_invoice_item_data( -$discount, $currency, __( 'Discount', 'woocommerce-payments' ) );
 		}
 
-		$items = array_merge( $subscription->get_fees(), $subscription->get_shipping_methods() );
+		$items = $is_new ? $subscription->get_items() : [];
+
+		if ( ! $is_delayed ) {
+			$shipping_items = $is_new ? $subscription->get_parent()->get_shipping_methods() : $subscription->get_shipping_methods();
+			$items          = array_merge( $items, $subscription->get_fees(), $shipping_items );
+		}
 
 		foreach ( $items as $item ) {
-			$amount      = $item->get_total();
-			$description = ucfirst( $item->get_name() );
-			$tax_rates   = $this->product_service->get_tax_rates_for_item( $item, $subscription );
+			$is_line_item = $item->is_type( 'line_item' );
+			$amount       = $is_line_item ? floatval( WC_Subscriptions_Product::get_sign_up_fee( $item->get_product() ) ) : $item->get_total();
 
-			$data[] = $this->format_invoice_item_data( $amount, $currency, $description, $tax_rates );
+			if ( $amount ) {
+				$description = $is_line_item ? __( 'Sign-up Fee', 'woocommerce-payments' ) : ucfirst( $item->get_name() );
+				$tax_rates   = $this->product_service->get_tax_rates_for_item( $item, $subscription );
+
+				$data[] = $this->format_invoice_item_data( $amount, $currency, $description, $tax_rates );
+			}
 		}
 
 		return $data;
