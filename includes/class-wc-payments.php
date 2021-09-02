@@ -716,6 +716,10 @@ class WC_Payments {
 		$accounts_controller = new WC_REST_Payments_Accounts_Controller( self::$api_client );
 		$accounts_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-locations-controller.php';
+		$locations_controller = new WC_REST_Payments_Locations_Controller( self::$api_client );
+		$locations_controller->register_routes();		
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
 		$deposits_controller = new WC_REST_Payments_Deposits_Controller( self::$api_client );
 		$deposits_controller->register_routes();
