@@ -77,9 +77,7 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 			->expects( $this->once() )
 			->method( 'create_terminal_location' )
 			->with( $this->location['display_name'], $this->location['address'] )
-			->willReturn(
-				$this->location,
-			);
+			->willReturn( $this->location );
 
 		$result = $this->controller->get_store_location( $this->request );
 
@@ -110,9 +108,7 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 			->expects( $this->once() )
 			->method( 'create_terminal_location' )
 			->with( $this->location['display_name'], $this->location['address'] )
-			->willReturn(
-				$this->location,
-			);
+			->willReturn( $this->location );
 
 		$result = $this->controller->get_store_location( $this->request );
 
