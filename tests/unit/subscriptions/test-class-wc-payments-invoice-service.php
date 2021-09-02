@@ -216,16 +216,20 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 
 		// The mock order comes with a $10 flat rate shipping so the expected invoice items are the following.
 		$expected_args = [
-			'amount'       => 1000,
-			'currency'     => 'USD',
-			'description'  => 'Flat rate shipping',
-			'tax_rates'    => [],
-			'customer'     => $wcpay_customer_id,
-			'subscription' => $wcpay_subscription_id,
+			'invoiceitems' => [
+				[
+					'amount'       => 1000,
+					'currency'     => 'USD',
+					'description'  => 'Flat rate shipping',
+					'tax_rates'    => [],
+					'customer'     => $wcpay_customer_id,
+					'subscription' => $wcpay_subscription_id,
+				],
+			],
 		];
 
 		$this->mock_api_client->expects( $this->once() )
-			->method( 'create_invoice_item' )
+			->method( 'create_invoice_items' )
 			->with( $expected_args );
 
 		$this->invoice_service->create_invoice_items_for_subscription( $mock_subscription, $wcpay_customer_id, $wcpay_subscription_id );
