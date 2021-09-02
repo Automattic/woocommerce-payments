@@ -1025,6 +1025,65 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		);
 	}
 
+	public function test_create_terminal_location_validation_array() {
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessageRegExp( '~address.*required~i' );
+		$this->payments_api_client->create_terminal_location( 'Example', '' );
+	}
+
+	public function test_create_terminal_location_validation_values() {
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessageRegExp( '~address.*required~i' );
+		$this->payments_api_client->create_terminal_location(
+			'Example',
+			[
+				'country' => 'US',
+			]
+		);
+	}
+
+	public function test_create_terminal_location_success() {
+		$location = [
+			'display_name' => 'Example',
+			'address'      => [
+				'country' => 'US',
+				'line1'   => 'Some Str. 2',
+			],
+		];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function( $request ) {
+						return 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations' === $request['url']
+							&& 'POST' === $request['method'];
+					}
+				),
+				$this->callback(
+					function( $body ) use ( $location ) {
+						$flags = [ 'test_mode' => false ];
+						return wp_json_encode( array_merge( $flags, $location ) ) === $body;
+					}
+				)
+			)
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode( $location ),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
+
+		$result = $this->payments_api_client->create_terminal_location( $location['display_name'], $location['address'] );
+		$this->assertSame( $location, $result );
+	}
+
 	/**
 	 * Data provider for test_request_with_level3_data
 	 */
