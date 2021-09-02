@@ -43,9 +43,8 @@ class WC_REST_Payments_Locations_Controller extends WC_Payments_REST_Controller 
 	 */
 	public function get_location_data( $request ) {
 		$location = [
-					'id' => 'tml_ESCNWwpwlfv5JB',
-					'object'     => 'terminal.location',
-					'display_name'=> 'Hotel Plaza',
+					'id' 			=> 'tml_ESCNWwpwlfv5JB',
+					'display_name'	=> 'Hotel Plaza',
 					];
 
 		return rest_ensure_response( $location );
