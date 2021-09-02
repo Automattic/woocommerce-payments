@@ -3,11 +3,7 @@
  */
 import config from 'config';
 
-const {
-	shopper,
-	merchant,
-	createSimpleProduct,
-} = require( '@woocommerce/e2e-utils' );
+const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -31,7 +27,6 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 	() => {
 		beforeAll( async () => {
 			await merchant.login();
-			await createSimpleProduct();
 			await merchantWCP.addNewPageCheckoutWCB();
 			await merchant.logout();
 		} );
