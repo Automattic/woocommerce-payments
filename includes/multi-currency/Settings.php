@@ -7,6 +7,7 @@
 
 namespace WCPay\MultiCurrency;
 
+use WCPay\Logger;
 use WCPay\MultiCurrency\Currency;
 
 defined( 'ABSPATH' ) || exit;
