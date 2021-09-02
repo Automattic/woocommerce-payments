@@ -116,41 +116,24 @@ class WC_Payments_Invoice_Service {
 	 * @param string          $customer_id            The WCPay Customer ID.
 	 * @param string          $wcpay_subscription_id  The WCPay Billing subscription ID.
 	 *
-	 * @throws \Exception When there's an error preparing the invoice item data.
+	 * @throws API_Exception When there's an error creating the invoice items on server.
 	 *
-	 * @return string[]|WP_Error Invoice item ids.
+	 * @return string[] Invoice item ids.
 	 */
 	public function create_invoice_items_for_subscription( WC_Subscription $subscription, string $customer_id, string $wcpay_subscription_id = '' ) {
-		$invoice_item_ids = [];
+		$invoice_item_data = $this->prepare_invoice_item_data( $subscription );
+		$request_data      = [];
 
-		try {
-			$invoice_item_data = $this->prepare_invoice_item_data( $subscription );
-
-			if ( is_wp_error( $invoice_item_data ) ) {
-				throw new \Exception( 'There was a problem preparing invoice item data: ' . wp_json_encode( $invoice_item_data ) );
+		foreach ( $invoice_item_data as $data ) {
+			if ( $wcpay_subscription_id ) {
+				$data['subscription'] = $wcpay_subscription_id;
 			}
 
-			foreach ( $invoice_item_data as $data ) {
-				if ( $wcpay_subscription_id ) {
-					$data['subscription'] = $wcpay_subscription_id;
-				}
-
-				$data['customer'] = $customer_id;
-				$result           = $this->payments_api_client->create_invoice_item( $data );
-
-				if ( is_wp_error( $result ) ) {
-					throw new \Exception( "There was a problem creating the {$data['description']} invoice item: " . wp_json_encode( $result ) );
-				}
-
-				$invoice_item_ids[] = $result['id'];
-			}
-		} catch ( \Exception $e ) {
-			$this->delete_invoice_items( $invoice_item_ids );
-
-			return new WP_Error( $e->getMessage() );
+			$data['customer'] = $customer_id;
+			$request_data[]   = $data;
 		}
 
-		return $invoice_item_ids;
+		return $this->payments_api_client->create_invoice_items( [ 'invoiceitems' => $request_data ] );
 	}
 
 	/**
