@@ -740,10 +740,6 @@ class WC_Payments {
 		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway, self::$customer_service );
 		$orders_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-locations-controller.php';
-		$locations_controller = new WC_REST_Payments_Locations_Controller( self::$api_client );
-		$locations_controller->register_routes();
-
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
 		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
 		$timeline_controller->register_routes();
