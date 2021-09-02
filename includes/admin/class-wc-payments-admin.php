@@ -136,7 +136,18 @@ class WC_Payments_Admin {
 
 		wc_admin_register_page( $this->admin_child_pages['wc-payments-deposits'] );
 		wc_admin_register_page( $this->admin_child_pages['wc-payments-transactions'] );
-
+		wc_admin_register_page(
+			[
+				'id'       => 'wc-payments-connect',
+				'title'    => __( 'Connect', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/connect',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 10,
+				],
+			]
+		);
 		wp_enqueue_style(
 			'wcpay-admin-css',
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
