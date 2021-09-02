@@ -505,7 +505,7 @@ class MultiCurrency {
 		if ( $this->available_currencies ) {
 			return $this->available_currencies;
 		}
-		$this->initialize_available_currencies();
+		$this->init();
 		return $this->available_currencies;
 	}
 
@@ -518,7 +518,7 @@ class MultiCurrency {
 		if ( $this->default_currency ) {
 			return $this->default_currency;
 		}
-		$this->set_default_currency();
+		$this->init();
 		return $this->default_currency;
 	}
 
@@ -531,7 +531,7 @@ class MultiCurrency {
 		if ( $this->enabled_currencies ) {
 			return $this->enabled_currencies;
 		}
-		$this->initialize_enabled_currencies();
+		$this->init();
 		return $this->enabled_currencies;
 	}
 
