@@ -11,6 +11,7 @@ const {
 	verifyAndPublish,
 	evalAndClick,
 	uiUnblocked,
+	clearAndFillInput,
 } = require( '@woocommerce/e2e-utils' );
 const {
 	fillCardDetails,
@@ -146,21 +147,22 @@ export const shopperWCP = {
 	},
 
 	fillBillingDetailsWCB: async ( customerBillingDetails ) => {
-		await page.type(
-			'#shipping-first_name',
+		await clearAndFillInput( '#email', customerBillingDetails.email );
+		await clearAndFillInput(
+			'#billing-first_name',
 			customerBillingDetails.firstname
 		);
-		await page.type(
-			'#shipping-last_name',
+		await clearAndFillInput(
+			'#billing-last_name',
 			customerBillingDetails.lastname
 		);
-		await page.type(
-			'#shipping-address_1',
+		await clearAndFillInput(
+			'#billing-address_1',
 			customerBillingDetails.addressfirstline
 		);
-		await page.type( '#shipping-city', customerBillingDetails.city );
-		await page.type(
-			'#shipping-postcode',
+		await clearAndFillInput( '#billing-city', customerBillingDetails.city );
+		await clearAndFillInput(
+			'#billing-postcode',
 			customerBillingDetails.postcode
 		);
 	},
@@ -270,20 +272,29 @@ export const merchantWCP = {
 		} );
 	},
 
+	openWCPSettings: async () => {
+		await merchant.openSettings( 'checkout', 'woocommerce_payments' );
+	},
+
+	wcpSettingsSaveChanges: async () => {
+		await expect( page ).toClick( '.save-settings-section button' );
+		await expect( page ).toClick( '.components-snackbar', {
+			timeout: 30000,
+		} );
+	},
+
 	addNewPageCheckoutWCB: async () => {
 		await page.goto( WP_ADMIN_PAGES, {
 			waitUntil: 'networkidle0',
 		} );
 
 		// Add a new page called "Checkout WCB"
+		await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
 		await expect( page ).toClick( '.page-title-action', {
 			waitUntil: 'networkidle0',
 		} );
-		await page.waitForSelector( '.wp-block > .editor-post-title__input' );
-		await page.type(
-			'.wp-block > .editor-post-title__input',
-			'Checkout WCB'
-		);
+		await page.waitForSelector( 'h1.editor-post-title__input' );
+		await page.type( 'h1.editor-post-title__input', 'Checkout WCB' );
 
 		// Insert new checkout by WCB (searching for Checkout block and pressing Enter)
 		await expect( page ).toClick(
@@ -298,10 +309,7 @@ export const merchantWCP = {
 		await page.keyboard.press( 'Enter' );
 
 		// Dismiss dialog about potentially compatibility issues
-		await expect( page ).toClick(
-			'div.components-guide__footer > button.components-guide__finish-button'
-		);
-		await page.screenshot( { path: 'test1.png' } );
+		await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
 
 		// Publish the page
 		await expect( page ).toClick(
@@ -312,6 +320,5 @@ export const merchantWCP = {
 			'.components-snackbar__content',
 			'Page updated.'
 		);
-		await page.screenshot( { path: 'test2.png' } );
 	},
 };

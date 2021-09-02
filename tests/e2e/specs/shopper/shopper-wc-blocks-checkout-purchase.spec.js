@@ -3,7 +3,11 @@
  */
 import config from 'config';
 
-const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
+const {
+	shopper,
+	merchant,
+	createSimpleProduct,
+} = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -16,7 +20,7 @@ import {
 } from '../../utils';
 
 const billingDetails = config.get( 'addresses.customer.billing' );
-const simpleProductName = config.get( 'products.simple.name' );
+const productName = 'Shirt';
 
 import {
 	fillCardDetailsWCB,
@@ -28,6 +32,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 	() => {
 		beforeAll( async () => {
 			await merchant.login();
+			await createSimpleProduct( productName );
 			await merchantWCP.addNewPageCheckoutWCB();
 			await merchant.logout();
 		} );
@@ -39,7 +44,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 		it( 'using a basic card', async () => {
 			await shopper.login();
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage( simpleProductName );
+			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
 			await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
@@ -55,8 +60,9 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		it( 'using a 3DS card', async () => {
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage( simpleProductName );
+			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
+			await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
 			// Fill CC details and purchase the product
 			const card = config.get( 'cards.3ds' );
