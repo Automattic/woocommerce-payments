@@ -101,6 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 = 3.0.0 - 2021-xx-xx =
 * Add - Download deposits report in CSV.
 * Fix - Use store currency on analytics leaderboard when Multi-Currency is enabled.
+* Add - Update layout of the Multi-currency settings screen.
 
 = 2.9.0 - 2021-08-25 =
 * Add - Split discount line in timeline into variable fee and fixed fee.
