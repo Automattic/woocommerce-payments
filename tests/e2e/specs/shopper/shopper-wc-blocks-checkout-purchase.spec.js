@@ -16,6 +16,7 @@ import {
 } from '../../utils';
 
 const billingDetails = config.get( 'addresses.customer.billing' );
+const productName = config.get( 'products.simple.name' );
 
 import {
 	fillCardDetailsWCB,
@@ -38,7 +39,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 		it( 'using a basic card', async () => {
 			await shopper.login();
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage();
+			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
 			await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
@@ -54,7 +55,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		it( 'using a 3DS card', async () => {
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage();
+			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
 			await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
