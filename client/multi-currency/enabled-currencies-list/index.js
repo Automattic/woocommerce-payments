@@ -20,6 +20,7 @@ import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesListItemPlaceholder from './list-item-placeholder';
 import EnabledCurrenciesModal from './modal';
+import SettingsLayout from '../../settings/settings-layout';
 import SettingsSection from '../../settings/settings-section';
 
 const EnabledCurrenciesSettingsDescription = () => {
@@ -67,54 +68,63 @@ const EnabledCurrencies = () => {
 		: [];
 
 	return (
-		<SettingsSection Description={ EnabledCurrenciesSettingsDescription }>
-			<Card className={ `${ classBase }__enabled-currencies` }>
-				<CardBody
-					className={ `${ classBase }__enabled-currencies-header` }
-				>
-					<div>
-						{ __( 'Enabled Currencies', 'woocommerce-payments' ) }
-					</div>
-					<div>{ __( 'Exchange rate', 'woocommerce-payments' ) }</div>
-				</CardBody>
-				<CardDivider />
-				<CardBody size={ null }>
-					<EnabledCurrenciesList className="enabled-currencies-list">
-						{ ! isLoading &&
-							enabledCurrencies &&
-							enabledKeys.map( ( code ) => (
-								<EnabledCurrenciesListItem
-									key={ enabledCurrencies[ code ].id }
-									currency={ enabledCurrencies[ code ] }
-									defaultCurrency={ defaultCurrency }
-									onDeleteClick={
-										enabledCurrencies[ code ].is_default
-											? undefined
-											: handleDeleteClick
-									}
-								/>
-							) ) }
-						{ isLoading &&
-							[ 1, 2, 3, 4, 5 ].map( ( i ) => (
-								<EnabledCurrenciesListItemPlaceholder
-									key={ 'loadable-placeholder-' + i }
-									isLoading={ 1 }
-								></EnabledCurrenciesListItemPlaceholder>
-							) ) }
-					</EnabledCurrenciesList>
-				</CardBody>
-				<CardDivider />
-				<CardBody
-					className={ `${ classBase }__available-currencies-container` }
-				>
-					{ enabledCurrencies && (
-						<EnabledCurrenciesModal
-							className={ `${ classBase }__available-currencies-modal` }
-						/>
-					) }
-				</CardBody>
-			</Card>
-		</SettingsSection>
+		<SettingsLayout>
+			<SettingsSection
+				Description={ EnabledCurrenciesSettingsDescription }
+			>
+				<Card className={ `${ classBase }__enabled-currencies` }>
+					<CardBody
+						className={ `${ classBase }__enabled-currencies-header` }
+					>
+						<div>
+							{ __(
+								'Enabled Currencies',
+								'woocommerce-payments'
+							) }
+						</div>
+						<div>
+							{ __( 'Exchange rate', 'woocommerce-payments' ) }
+						</div>
+					</CardBody>
+					<CardDivider />
+					<CardBody size={ null }>
+						<EnabledCurrenciesList className="enabled-currencies-list">
+							{ ! isLoading &&
+								enabledCurrencies &&
+								enabledKeys.map( ( code ) => (
+									<EnabledCurrenciesListItem
+										key={ enabledCurrencies[ code ].id }
+										currency={ enabledCurrencies[ code ] }
+										defaultCurrency={ defaultCurrency }
+										onDeleteClick={
+											enabledCurrencies[ code ].is_default
+												? undefined
+												: handleDeleteClick
+										}
+									/>
+								) ) }
+							{ isLoading &&
+								[ 1, 2, 3, 4, 5 ].map( ( i ) => (
+									<EnabledCurrenciesListItemPlaceholder
+										key={ 'loadable-placeholder-' + i }
+										isLoading={ 1 }
+									></EnabledCurrenciesListItemPlaceholder>
+								) ) }
+						</EnabledCurrenciesList>
+					</CardBody>
+					<CardDivider />
+					<CardBody
+						className={ `${ classBase }__available-currencies-container` }
+					>
+						{ enabledCurrencies && (
+							<EnabledCurrenciesModal
+								className={ `${ classBase }__available-currencies-modal` }
+							/>
+						) }
+					</CardBody>
+				</Card>
+			</SettingsSection>
+		</SettingsLayout>
 	);
 };
 

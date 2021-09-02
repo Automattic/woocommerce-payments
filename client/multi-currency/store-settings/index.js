@@ -5,12 +5,13 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { Card, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import SettingsSection from '../../settings/settings-section';
-import './style.scss';
+import SettingsLayout from '../../settings/settings-layout';
 
 const StoreSettingsDescription = () => {
 	const LEARN_MORE_URL =
@@ -39,10 +40,16 @@ const StoreSettingsDescription = () => {
 
 const StoreSettings = () => {
 	return (
-		<SettingsSection
-			Description={ StoreSettingsDescription }
-			className="store-settings-section"
-		></SettingsSection>
+		<SettingsLayout displayBanner={ false }>
+			<SettingsSection
+				Description={ StoreSettingsDescription }
+				className="store-settings-section"
+			>
+				<Card>
+					<CardBody className="store-settings__card-body" />
+				</Card>
+			</SettingsSection>
+		</SettingsLayout>
 	);
 };
 

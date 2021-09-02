@@ -75,9 +75,12 @@ if ( storeSettingsSection ) {
 
 	// Obtain the container inside of StoreSettings component
 	const storeSettingsContentContainer = storeSettingsContainer.getElementsByClassName(
-		'settings-section__controls'
+		'store-settings__card-body'
 	)[ 0 ];
 	storeSettingsContentContainer.appendChild( storeSettingsContent );
+
+	// Position Submit button
+	submitButton.style.textAlign = 'center';
 
 	toggleSettingsSectionDisplay();
 }
