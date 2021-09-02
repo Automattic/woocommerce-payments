@@ -25,23 +25,24 @@ class WC_Payments_API_Client {
 
 	const API_TIMEOUT_SECONDS = 70;
 
-	const ACCOUNTS_API        = 'accounts';
-	const APPLE_PAY_API       = 'apple_pay';
-	const CHARGES_API         = 'charges';
-	const CONN_TOKENS_API     = 'terminal/connection_tokens';
-	const CUSTOMERS_API       = 'customers';
-	const CURRENCY_API        = 'currency';
-	const INTENTIONS_API      = 'intentions';
-	const REFUNDS_API         = 'refunds';
-	const DEPOSITS_API        = 'deposits';
-	const TRANSACTIONS_API    = 'transactions';
-	const DISPUTES_API        = 'disputes';
-	const FILES_API           = 'files';
-	const OAUTH_API           = 'oauth';
-	const TIMELINE_API        = 'timeline';
-	const PAYMENT_METHODS_API = 'payment_methods';
-	const SETUP_INTENTS_API   = 'setup_intents';
-	const TRACKING_API        = 'tracking';
+	const ACCOUNTS_API           = 'accounts';
+	const APPLE_PAY_API          = 'apple_pay';
+	const CHARGES_API            = 'charges';
+	const CONN_TOKENS_API        = 'terminal/connection_tokens';
+	const TERMINAL_LOCATIONS_API = 'terminal/locations';
+	const CUSTOMERS_API          = 'customers';
+	const CURRENCY_API           = 'currency';
+	const INTENTIONS_API         = 'intentions';
+	const REFUNDS_API            = 'refunds';
+	const DEPOSITS_API           = 'deposits';
+	const TRANSACTIONS_API       = 'transactions';
+	const DISPUTES_API           = 'disputes';
+	const FILES_API              = 'files';
+	const OAUTH_API              = 'oauth';
+	const TIMELINE_API           = 'timeline';
+	const PAYMENT_METHODS_API    = 'payment_methods';
+	const SETUP_INTENTS_API      = 'setup_intents';
+	const TRACKING_API           = 'tracking';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1144,6 +1145,60 @@ class WC_Payments_API_Client {
 				'domain_name' => $domain_name,
 			],
 			self::APPLE_PAY_API . '/domains',
+			self::POST
+		);
+	}
+
+	/**
+	 * Retrieves a store's terminal locations.
+	 *
+	 * @return array[] Stripe terminal location objects.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_terminal_locations() {
+		return $this->request( [], self::TERMINAL_LOCATIONS_API, self::GET );
+	}
+
+	/**
+	 * Creates a new terminal location.
+	 *
+	 * @param string  $display_name The display name of the terminal location.
+	 * @param array   $address {
+	 *     Address partials.
+	 *
+	 *     @type string $country     Two-letter country code.
+	 *     @type string $line1       Address line 1.
+	 *     @type string $line2       Optional. Address line 2.
+	 *     @type string $city        Optional. City, district, suburb, town, or village.
+	 *     @type int    $postal_code Optional. ZIP or postal code.
+	 *     @type string $state       Optional. State, county, province, or region.
+	 * }
+	 * @param mixed[] $metadata Optional. Metadata for the location.
+	 *
+	 * @return array A Stripe terminal location object.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function create_terminal_location( $display_name, $address, $metadata = null ) {
+		if ( ! is_array( $address ) || ! isset( $address['country'] ) || ! isset( $address['line1'] ) ) {
+			throw new API_Exception(
+				__( 'Address country and line 1 are required.', 'woocommerce-payments' ),
+				'wcpay_invalid_terminal_location_request',
+				0
+			);
+		}
+
+		$request = [
+			'display_name' => $display_name,
+			'address'      => $address,
+		];
+
+		return $this->request(
+			$request,
+			self::TERMINAL_LOCATIONS_API,
 			self::POST
 		);
 	}
