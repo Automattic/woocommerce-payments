@@ -144,6 +144,12 @@
 				vertical-align: bottom;
 			}
 		}
+		.components-checkbox-control__input {
+			margin: 0 4px 0 4px;
+		}
+		.components-checkbox-control__checked {
+			left: 2px;
+		}
 
 		&__code {
 			color: $studio-gray-30;
