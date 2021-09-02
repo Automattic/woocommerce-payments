@@ -20,7 +20,6 @@ import {
 } from '../../utils';
 
 const billingDetails = config.get( 'addresses.customer.billing' );
-const productName = 'Shirt';
 
 import {
 	fillCardDetailsWCB,
@@ -32,7 +31,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 	() => {
 		beforeAll( async () => {
 			await merchant.login();
-			await createSimpleProduct( productName );
+			await createSimpleProduct();
 			await merchantWCP.addNewPageCheckoutWCB();
 			await merchant.logout();
 		} );
@@ -44,7 +43,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 		it( 'using a basic card', async () => {
 			await shopper.login();
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage( productName );
+			await shopper.addToCartFromShopPage();
 			await shopperWCP.openCheckoutWCB();
 			await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
@@ -60,7 +59,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		it( 'using a 3DS card', async () => {
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage( productName );
+			await shopper.addToCartFromShopPage();
 			await shopperWCP.openCheckoutWCB();
 			await shopperWCP.fillBillingDetailsWCB( billingDetails );
 

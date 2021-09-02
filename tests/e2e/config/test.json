@@ -17,7 +17,7 @@
   },
   "products": {
     "simple": {
-      "name": "Beanie"
+      "name": "Simple product"
     },
     "variable": {
       "name": "Variable Product with Three Variations"
