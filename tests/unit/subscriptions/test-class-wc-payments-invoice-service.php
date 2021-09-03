@@ -164,11 +164,13 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Tests for WC_Payments_Invoice_Service::prepare_invoice_item_data()
 	 */
-	public function test_prepare_invoice_item_data() {
-		$mock_order        = WC_Helper_Order::create_order();
-		$mock_subscription = new WC_Subscription();
-		$mock_items        = $mock_order->get_shipping_methods();
-		$mock_order_item   = array_pop( $mock_items );
+	public function test_prepare_invoice_item_data_with_subscription_id() {
+		$mock_order                 = WC_Helper_Order::create_order();
+		$mock_subscription          = new WC_Subscription();
+		$mock_items                 = $mock_order->get_shipping_methods();
+		$mock_order_item            = array_pop( $mock_items );
+		$mock_wcpay_subscription_id = 'si_testSubscriptionID';
+		$mock_wcpay_customer_id     = 'cust_testCustomerID';
 
 		$mock_subscription->set_parent( $mock_order );
 		$mock_order->set_discount_total( 20 );
@@ -181,7 +183,7 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 		$result = PHPUnit_Utils::call_method(
 			$this->invoice_service,
 			'prepare_invoice_item_data',
-			[ $mock_subscription ]
+			[ $mock_subscription, $mock_wcpay_customer_id, $mock_wcpay_subscription_id ]
 		);
 
 		$this->assertTrue( is_array( $result ) );
@@ -189,9 +191,46 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( 2, count( $result ) );
 
 		foreach ( $result as $item_data ) {
-			foreach ( [ 'amount', 'currency', 'description', 'tax_rates' ] as $key ) {
+			foreach ( [ 'amount', 'currency', 'description', 'tax_rates', 'customer', 'subscription' ] as $key ) {
 				$this->assertArrayHasKey( $key, $item_data );
 			}
+		}
+	}
+
+	/**
+	 * Tests for WC_Payments_Invoice_Service::prepare_invoice_item_data()
+	 */
+	public function test_prepare_invoice_item_data_without_subscription_id() {
+		$mock_order             = WC_Helper_Order::create_order();
+		$mock_subscription      = new WC_Subscription();
+		$mock_items             = $mock_order->get_shipping_methods();
+		$mock_order_item        = array_pop( $mock_items );
+		$mock_wcpay_customer_id = 'cust_testCustomerID';
+
+		$mock_subscription->set_parent( $mock_order );
+		$mock_order->set_discount_total( 20 );
+
+		$this->mock_product_service->expects( $this->once() )
+			->method( 'get_tax_rates_for_item' )
+			->with( $mock_order_item, $mock_subscription )
+			->willReturn( [] );
+
+		$result = PHPUnit_Utils::call_method(
+			$this->invoice_service,
+			'prepare_invoice_item_data',
+			[ $mock_subscription, $mock_wcpay_customer_id, '' ]
+		);
+
+		$this->assertTrue( is_array( $result ) );
+		$this->assertContainsOnly( 'array', $result );
+		$this->assertEquals( 2, count( $result ) );
+
+		foreach ( $result as $item_data ) {
+			foreach ( [ 'amount', 'currency', 'description', 'tax_rates', 'customer' ] as $key ) {
+				$this->assertArrayHasKey( $key, $item_data );
+			}
+
+			$this->assertArrayNotHasKey( 'subscription', $item_data );
 		}
 	}
 
@@ -216,21 +255,20 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 
 		// The mock order comes with a $10 flat rate shipping so the expected invoice items are the following.
 		$expected_args = [
-			'invoiceitems' => [
-				[
-					'amount'       => 1000,
-					'currency'     => 'USD',
-					'description'  => 'Flat rate shipping',
-					'tax_rates'    => [],
-					'customer'     => $wcpay_customer_id,
-					'subscription' => $wcpay_subscription_id,
-				],
+			[
+				'amount'       => 1000,
+				'currency'     => 'USD',
+				'description'  => 'Flat rate shipping',
+				'tax_rates'    => [],
+				'customer'     => $wcpay_customer_id,
+				'subscription' => $wcpay_subscription_id,
 			],
 		];
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_invoice_items' )
-			->with( $expected_args );
+			->with( $expected_args )
+			->willReturn( [ 'mockNewInvoiceID' ] );
 
 		$this->invoice_service->create_invoice_items_for_subscription( $mock_subscription, $wcpay_customer_id, $wcpay_subscription_id );
 	}

@@ -242,20 +242,10 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test $product_service->get_tax_rates_for_item().
+	 * Test $product_service->get_tax_rates_for_item() with tax data attached to subscription items.
 	 */
-	public function test_get_tax_rates_for_item() {
-		$mock_order        = WC_Helper_Order::create_order();
+	public function test_get_tax_rates_for_items_with_tax_data() {
 		$mock_subscription = new WC_Subscription();
-		$mock_subscription->get_parent( $mock_order );
-
-		$mock_items      = $mock_order->get_shipping_methods();
-		$mock_order_item = array_pop( $mock_items );
-
-		update_option( 'woocommerce_calc_taxes', 'no' );
-
-		$this->assertSame( [], $this->product_service->get_tax_rates_for_item( $mock_order_item, $mock_subscription ) );
-
 		// Setup the tax item.
 		$mock_tax_item = $this->getMockBuilder( WC_Order_Item_Tax::class )
 			->disableOriginalConstructor()
@@ -291,7 +281,9 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 			->will( $this->returnValue( $mock_line_item_taxes ) );
 
 		$mock_subscription->taxes = $mock_order_taxes;
+
 		update_option( 'woocommerce_calc_taxes', 'yes' );
+
 		$expected_result = [
 			[
 				'display_name' => 'Test Tax Rate',
@@ -301,5 +293,28 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		];
 
 		$this->assertSame( $expected_result, $this->product_service->get_tax_rates_for_item( $mock_item, $mock_subscription ) );
+
+		update_option( 'woocommerce_calc_taxes', 'no' );
+		$this->assertSame( [], $this->product_service->get_tax_rates_for_item( $mock_item, $mock_subscription ) );
+	}
+
+	/**
+	 * Test $product_service->get_tax_rates_for_item() without any tax data on the subscription.
+	 */
+	public function test_get_tax_rates_for_items_with_no_tax_data() {
+		$mock_order        = WC_Helper_Order::create_order();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->get_parent( $mock_order );
+
+		$mock_items      = $mock_order->get_shipping_methods();
+		$mock_order_item = array_pop( $mock_items );
+
+		update_option( 'woocommerce_calc_taxes', 'no' );
+
+		$this->assertSame( [], $this->product_service->get_tax_rates_for_item( $mock_order_item, $mock_subscription ) );
+
+		update_option( 'woocommerce_calc_taxes', 'yes' );
+
+		$this->assertSame( [], $this->product_service->get_tax_rates_for_item( $mock_order_item, $mock_subscription ) );
 	}
 }
