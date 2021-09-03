@@ -795,8 +795,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		);
 
 		$this->multi_currency = new MultiCurrency( $mock_api_client ?? $this->mock_api_client, $this->mock_account, $this->mock_localization_service );
-		$this->multi_currency->init();
 		$this->multi_currency->init_widgets();
+		$this->multi_currency->init();
 	}
 
 	private function mock_theme( $theme ) {
