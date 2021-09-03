@@ -177,10 +177,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	public function test_reactivate_subscription() {
 		$mock_subscription          = new WC_Subscription();
 		$mock_wcpay_subscription_id = 'wcpay_activated_test12345';
-		$input_data                 = [
-			'cancel_at_period_end' => 'false',
-			'pause_collection'     => '',
-		];
+		$input_data                 = [ 'pause_collection' => '' ];
 
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $mock_wcpay_subscription_id );
 
