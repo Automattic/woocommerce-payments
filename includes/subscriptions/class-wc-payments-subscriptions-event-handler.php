@@ -117,7 +117,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 			}
 		}
 
-		$order->payment_complete();
+		if ( $order->needs_payment() ) {
+			$order->payment_complete();
+		}
 
 		// Remove pending invoice ID in case one was recorded for previous failed renewal attempts.
 		$this->invoice_service->mark_pending_invoice_paid_for_subscription( $subscription );
