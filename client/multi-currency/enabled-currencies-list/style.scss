@@ -189,5 +189,10 @@
 			min-height: 0;
 			flex: 1;
 		}
+		.enabled-currency-checkbox {
+			.components-checkbox-control__checked {
+				left: 4px;
+			}
+		}
 	}
 }
