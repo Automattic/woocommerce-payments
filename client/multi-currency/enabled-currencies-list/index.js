@@ -68,7 +68,7 @@ const EnabledCurrencies = () => {
 		: [];
 
 	return (
-		<SettingsLayout>
+		<SettingsLayout displayBanner={ false }>
 			<SettingsSection
 				Description={ EnabledCurrenciesSettingsDescription }
 			>
@@ -76,15 +76,11 @@ const EnabledCurrencies = () => {
 					<CardBody
 						className={ `${ classBase }__enabled-currencies-header` }
 					>
-						<div>
-							{ __(
-								'Enabled Currencies',
-								'woocommerce-payments'
-							) }
-						</div>
+						<div>{ __( 'Name', 'woocommerce-payments' ) }</div>
 						<div>
 							{ __( 'Exchange rate', 'woocommerce-payments' ) }
 						</div>
+						<div />
 					</CardBody>
 					<CardDivider />
 					<CardBody size={ null }>

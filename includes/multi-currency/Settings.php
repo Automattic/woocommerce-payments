@@ -121,6 +121,7 @@ class Settings extends \WC_Settings_Page {
 						'id'       => $this->id . '_enable_auto_currency',
 						'default'  => 'yes',
 						'type'     => 'checkbox',
+						'class'    => 'components-checkbox-control__input',
 					],
 
 					[

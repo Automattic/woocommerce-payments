@@ -79,8 +79,11 @@ if ( storeSettingsSection ) {
 	)[ 0 ];
 	storeSettingsContentContainer.appendChild( storeSettingsContent );
 
-	// Position Submit button
-	submitButton.style.textAlign = 'center';
+	// Position and style Submit button
+	submitButton.style.textAlign = 'right';
+	submitButton.style.display = 'flex';
+	submitButton.classList.add( 'wcpay-settings-layout' );
+	submitButton.classList.remove( 'submit' );
 
 	toggleSettingsSectionDisplay();
 }

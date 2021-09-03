@@ -65,6 +65,7 @@ class StorefrontIntegration {
 					'default'       => 'yes',
 					'type'          => 'checkbox',
 					'checkboxgroup' => 'end',
+					'class'         => 'components-checkbox-control__input',
 				];
 			}
 		}

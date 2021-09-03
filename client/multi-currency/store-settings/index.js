@@ -12,6 +12,7 @@ import { Card, CardBody } from '@wordpress/components';
  */
 import SettingsSection from '../../settings/settings-section';
 import SettingsLayout from '../../settings/settings-layout';
+import './style.scss';
 
 const StoreSettingsDescription = () => {
 	const LEARN_MORE_URL =
