@@ -1063,7 +1063,7 @@ class WC_Payments_API_Client {
 	 */
 	public function create_invoice_items( $invoice_item_data ) {
 		return $this->request(
-			$invoice_item_data,
+			[ 'invoiceitems' => $invoice_item_data ],
 			self::INVOICE_ITEMS_API,
 			self::POST
 		);

@@ -120,20 +120,8 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @return string[] Invoice item ids.
 	 */
-	public function create_invoice_items_for_subscription( WC_Subscription $subscription, string $customer_id, string $wcpay_subscription_id = '' ) {
-		$invoice_item_data = $this->prepare_invoice_item_data( $subscription );
-		$request_data      = [];
-
-		foreach ( $invoice_item_data as $data ) {
-			if ( $wcpay_subscription_id ) {
-				$data['subscription'] = $wcpay_subscription_id;
-			}
-
-			$data['customer'] = $customer_id;
-			$request_data[]   = $data;
-		}
-
-		return $this->payments_api_client->create_invoice_items( [ 'invoiceitems' => $request_data ] );
+	public function create_invoice_items_for_subscription( WC_Subscription $subscription, string $customer_id, string $wcpay_subscription_id = '' ) : array {
+		return $this->payments_api_client->create_invoice_items( $this->prepare_invoice_item_data( $subscription, $customer_id, $wcpay_subscription_id ) );
 	}
 
 	/**
@@ -150,11 +138,13 @@ class WC_Payments_Invoice_Service {
 	/**
 	 * Prepares fee, shipping, and discount subscription item data.
 	 *
-	 * @param WC_Subscription $subscription The subscription.
+	 * @param WC_Subscription $subscription          The subscription.
+	 * @param string          $wcpay_customer_id     The WCPay Customer ID.
+	 * @param string          $wcpay_subscription_id The WCPay Billing subscription ID.
 	 *
 	 * @return array Invoice item data.
 	 */
-	private function prepare_invoice_item_data( WC_Subscription $subscription ) : array {
+	private function prepare_invoice_item_data( WC_Subscription $subscription, string $wcpay_customer_id, string $wcpay_subscription_id = '' ) : array {
 		$data       = [];
 		$currency   = $subscription->get_currency();
 		$is_new     = $subscription->get_parent()->needs_payment();
@@ -162,7 +152,14 @@ class WC_Payments_Invoice_Service {
 		$discount   = $is_new ? $subscription->get_parent()->get_total_discount( false ) : $subscription->get_total_discount( false );
 
 		if ( $discount ) {
-			$data[] = $this->format_invoice_item_data( -$discount, $currency, __( 'Discount', 'woocommerce-payments' ) );
+			$discount_data             = $this->format_invoice_item_data( -$discount, $currency, __( 'Discount', 'woocommerce-payments' ) );
+			$discount_data['customer'] = $wcpay_customer_id;
+
+			if ( ! empty( $wcpay_subscription_id ) ) {
+				$discount_data['subscription'] = $wcpay_subscription_id;
+			}
+
+			$data[] = $discount_data;
 		}
 
 		$items = $is_new ? $subscription->get_items() : [];
@@ -180,7 +177,14 @@ class WC_Payments_Invoice_Service {
 				$description = $is_line_item ? __( 'Sign-up Fee', 'woocommerce-payments' ) : ucfirst( $item->get_name() );
 				$tax_rates   = $this->product_service->get_tax_rates_for_item( $item, $subscription );
 
-				$data[] = $this->format_invoice_item_data( $amount, $currency, $description, $tax_rates );
+				$item_data             = $this->format_invoice_item_data( $amount, $currency, $description, $tax_rates );
+				$item_data['customer'] = $wcpay_customer_id;
+
+				if ( ! empty( $wcpay_subscription_id ) ) {
+					$item_data['subscription'] = $wcpay_subscription_id;
+				}
+
+				$data[] = $item_data;
 			}
 		}
 
