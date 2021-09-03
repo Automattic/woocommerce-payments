@@ -188,7 +188,7 @@ class MultiCurrency {
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
-			add_action( 'admin_head', [ $this, 'set_client_rounding_precision' ] );
+			add_action( 'admin_head', [ $this, 'set_client_format_and_rounding_precision' ] );
 		}
 
 		add_action( 'init', [ $this, 'init' ] );
@@ -1019,16 +1019,29 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Reduces the client rounding precision to 2
+	 * Apply client order currency format and reduces the rounding precision to 2.
 	 *
 	 * @return  void
 	 */
-	public function set_client_rounding_precision() {
+	public function set_client_format_and_rounding_precision() {
 		$screen = get_current_screen();
 		if ( 'post' === $screen->base && 'shop_order' === $screen->post_type ) :
+			global $post;
+			$currency                     = wc_get_order( $post->ID )->get_currency();
+			$currency_format_num_decimals = $this->backend_currencies->get_price_decimals( $currency );
+			$currency_format_decimal_sep  = $this->backend_currencies->get_price_decimal_separator( $currency );
+			$currency_format_thousand_sep = $this->backend_currencies->get_price_thousand_separator( $currency );
+			$currency_format              = str_replace( [ '%1$s', '%2$s', '&nbsp;' ], [ '%s', '%v', ' ' ], $this->backend_currencies->get_woocommerce_price_format( $currency ) );
+
 			$rounding_precision = wc_get_price_decimals() ?? wc_get_rounding_precision();
 			?>
-		<script>woocommerce_admin_meta_boxes.rounding_precision = <?php echo intval( $rounding_precision ); ?>;</script>
+		<script>
+		woocommerce_admin_meta_boxes.currency_format_num_decimals = <?php echo intval( $currency_format_num_decimals ); ?>;
+		woocommerce_admin_meta_boxes.currency_format_decimal_sep = '<?php echo esc_attr( $currency_format_decimal_sep ); ?>';
+		woocommerce_admin_meta_boxes.currency_format_thousand_sep = '<?php echo esc_attr( $currency_format_thousand_sep ); ?>';
+		woocommerce_admin_meta_boxes.currency_format = '<?php echo esc_attr( $currency_format ); ?>';
+		woocommerce_admin_meta_boxes.rounding_precision = <?php echo intval( $rounding_precision ); ?>;
+		</script>
 			<?php
 		endif;
 	}
