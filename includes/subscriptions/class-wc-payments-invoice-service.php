@@ -112,9 +112,9 @@ class WC_Payments_Invoice_Service {
 	/**
 	 * Creates invoice items for discounts, fees, and shipping if applicable.
 	 *
-	 * @param WC_Subscription $subscription           The WC Subscription object.
-	 * @param string          $customer_id            The WCPay Customer ID.
-	 * @param string          $wcpay_subscription_id  The WCPay Billing subscription ID.
+	 * @param WC_Subscription $subscription          The WC Subscription object.
+	 * @param string          $customer_id           The WCPay Customer ID.
+	 * @param string          $wcpay_subscription_id The WCPay Billing subscription ID.
 	 *
 	 * @throws API_Exception When there's an error creating the invoice items on server.
 	 *
