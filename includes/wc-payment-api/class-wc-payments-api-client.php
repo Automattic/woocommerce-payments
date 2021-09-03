@@ -47,7 +47,7 @@ class WC_Payments_API_Client {
 	const PRICES_API          = 'products/prices';
 	const SUBSCRIPTIONS_API   = 'subscriptions';
 	const INVOICES_API        = 'invoices';
-	const INVOICE_ITEMS_API   = '/invoice/items';
+	const INVOICE_ITEMS_API   = 'invoices/items';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1055,15 +1055,15 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Creates an invoice item.
+	 * Creates invoice items.
 	 *
 	 * @param array $invoice_item_data The invoice item data.
 	 *
 	 * @throws API_Exception Error creating the invoice item.
 	 */
-	public function create_invoice_item( $invoice_item_data ) {
+	public function create_invoice_items( $invoice_item_data ) {
 		return $this->request(
-			$invoice_item_data,
+			[ 'invoiceitems' => $invoice_item_data ],
 			self::INVOICE_ITEMS_API,
 			self::POST
 		);

@@ -127,7 +127,7 @@
     </UndefinedDocblockClass>
   </file>
   <file src="includes/subscriptions/class-wc-payments-product-service.php">
-    <UndefinedClass occurrences="6">
+    <UndefinedClass occurrences="7">
       <code>WC_Subscriptions_Product</code>
     </UndefinedClass>
   </file>

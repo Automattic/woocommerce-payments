@@ -44,13 +44,6 @@ class WC_Payments_Subscription_Service {
 	private $customer_service;
 
 	/**
-	 * Tax Service
-	 *
-	 * @var null (Not yet implemented)
-	 */
-	private $tax_service;
-
-	/**
 	 * Product Service
 	 *
 	 * @var WC_Payments_Product_Service
@@ -89,7 +82,6 @@ class WC_Payments_Subscription_Service {
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WC payments API Client.
 	 * @param WC_Payments_Customer_Service $customer_service WC payments customer serivce.
-	 * @param null                         $tax_service      WC payments tax service.
 	 * @param WC_Payments_Product_Service  $product_service  WC payments Products service.
 	 * @param WC_Payments_Invoice_Service  $invoice_service  WC payments Invoice service.
 	 *
@@ -98,13 +90,11 @@ class WC_Payments_Subscription_Service {
 	public function __construct(
 		WC_Payments_API_Client $api_client,
 		WC_Payments_Customer_Service $customer_service,
-		$tax_service,
 		WC_Payments_Product_Service $product_service,
 		WC_Payments_Invoice_Service $invoice_service
 	) {
 		$this->payments_api_client = $api_client;
 		$this->customer_service    = $customer_service;
-		$this->tax_service         = $tax_service;
 		$this->product_service     = $product_service;
 		$this->invoice_service     = $invoice_service;
 
@@ -166,6 +156,8 @@ class WC_Payments_Subscription_Service {
 		}
 
 		try {
+			$this->invoice_service->create_invoice_items_for_subscription( $subscription, $wcpay_customer_id );
+
 			$subscription_data = $this->prepare_wcpay_subscription_data( $wcpay_customer_id, $subscription );
 			$response          = $this->payments_api_client->create_subscription( $subscription_data );
 
@@ -309,10 +301,6 @@ class WC_Payments_Subscription_Service {
 	 */
 	private function prepare_wcpay_subscription_data( string $wcpay_customer_id, WC_Subscription $subscription ) {
 		$items = $this->product_service->get_product_data_for_subscription( $subscription );
-
-		if ( is_wp_error( $items ) ) {
-			return [];
-		}
 
 		$data = [
 			'customer'           => $wcpay_customer_id,
