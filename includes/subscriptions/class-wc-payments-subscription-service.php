@@ -201,20 +201,14 @@ class WC_Payments_Subscription_Service {
 
 	/**
 	 * Reactivates the WCPay subscription when the WC subscription is activated.
-	 * This is done by making a request to server to unset the "cancellation at end of period" value for the WCPay subscription.
+	 * This is done by making a request to server to unset the "pause_collection" value for the WCPay subscription.
 	 *
 	 * @param WC_Subscription $subscription The WC subscription that was activated.
 	 *
 	 * @return void
 	 */
 	public function reactivate_subscription( WC_Subscription $subscription ) {
-		$this->update_subscription(
-			$subscription,
-			[
-				'cancel_at_period_end' => 'false',
-				'pause_collection'     => '',
-			]
-		);
+		$this->update_subscription( $subscription, [ 'pause_collection' => '' ] );
 	}
 
 	/**
