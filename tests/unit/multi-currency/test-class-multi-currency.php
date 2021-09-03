@@ -728,6 +728,20 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $this->multi_currency->get_available_currencies() );
 	}
 
+	public function test_get_switcher_widget_markup() {
+		$expected = '<div class="widget ">		<form>
+						<select
+				name="currency"
+				aria-label=""
+				onchange="this.form.submit()"
+			>
+				<option value="USD" selected>&#36; USD</option><option value="BIF">Fr BIF</option><option value="CAD">&#36; CAD</option><option value="GBP">&pound; GBP</option>			</select>
+		</form>
+		</div>';
+
+		$this->assertEquals( $expected, $this->multi_currency->get_switcher_widget_markup() );
+	}
+
 	public function get_price_provider() {
 		return [
 			[ '5.2499', '0.00', 5.2499 ],
@@ -782,6 +796,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$this->multi_currency = new MultiCurrency( $mock_api_client ?? $this->mock_api_client, $this->mock_account, $this->mock_localization_service );
 		$this->multi_currency->init();
+		$this->multi_currency->init_widgets();
 	}
 
 	private function mock_theme( $theme ) {

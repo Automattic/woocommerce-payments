@@ -409,6 +409,30 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Generates the switcher widget markup.
+	 *
+	 * @param array $instance The widget's instance settings.
+	 * @param array $args     The widget's arguments.
+	 *
+	 * @return string The widget markup.
+	 */
+	public function get_switcher_widget_markup( array $instance = [], array $args = [] ): string {
+		/**
+		 * The spl_object_hash function is used here due to we register the widget with an instance of the widget and
+		 * not the class name of the widget. WordPress core takes the instance and passes it through spl_object_hash
+		 * to get a hash and adds that as the widget's name in the $wp_widget_factory->widgets[] array. In order to
+		 * call the_widget, you need to have the name of the widget, so we get the instance and hash to use.
+		 */
+		ob_start();
+		the_widget(
+			spl_object_hash( $this->get_currency_switcher_widget() ),
+			apply_filters( $this->id . '_theme_widget_instance', $instance ),
+			apply_filters( $this->id . '_theme_widget_args', $args )
+		);
+		return ob_get_clean();
+	}
+
+	/**
 	 * Sets up the available currencies, which are alphabetical by name.
 	 *
 	 * @return void
