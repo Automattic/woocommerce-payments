@@ -36,5 +36,5 @@ function wcpay_multi_currency_deactivated() {
  * @return string The widget markup.
  */
 function get_wcpay_multi_currency_widget_markup( array $instance = [], array $args = [] ): string {
-	return WC_Payments_Multi_Currency()->switcher_widget_markup( $instance, $args );
+	return WC_Payments_Multi_Currency()->get_switcher_widget_markup( $instance, $args );
 }
