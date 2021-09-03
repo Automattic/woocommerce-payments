@@ -371,12 +371,8 @@ class WC_Payments_Subscription_Service {
 
 		$response = $this->payments_api_client->charge_invoice( $wcpay_invoice_id );
 
-		if ( ! $response ) {
-			return;
-		}
-
 		// Rather than wait for the Stripe webhook to be received, complete the order now if it was successfully paid.
-		if ( isset( $response['status'] ) && 'paid' === $response['status'] ) {
+		if ( $response && isset( $response['status'] ) && 'paid' === $response['status'] ) {
 			$order_id = WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id );
 			$order    = $order_id ? wc_get_order( $order_id ) : false;
 
