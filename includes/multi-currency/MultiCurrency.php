@@ -497,12 +497,12 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Gets the currencies available.
+	 * Gets the currencies available. Initializes it if needed.
 	 *
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_available_currencies(): array {
-		if ( $this->available_currencies ) {
+		if ( null !== $this->available_currencies ) {
 			return $this->available_currencies;
 		}
 		$this->init();
@@ -510,12 +510,12 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Gets the store base currency.
+	 * Gets the store base currency. Initializes it if needed.
 	 *
 	 * @return Currency The store base currency.
 	 */
 	public function get_default_currency(): Currency {
-		if ( $this->default_currency ) {
+		if ( null !== $this->default_currency ) {
 			return $this->default_currency;
 		}
 		$this->init();
@@ -523,12 +523,12 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Gets the currently enabled currencies.
+	 * Gets the currently enabled currencies. Initializes it if needed.
 	 *
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_enabled_currencies(): array {
-		if ( $this->enabled_currencies ) {
+		if ( null !== $this->enabled_currencies ) {
 			return $this->enabled_currencies;
 		}
 		$this->init();
