@@ -3,7 +3,7 @@
 = 3.0.0 - 2021-xx-xx =
 * Add - Download deposits report in CSV.
 * Fix - Use store currency on analytics leaderboard when Multi-Currency is enabled.
-* Fix - Add enabled currencies modal UI.
+* Fix - Enabled currencies modal UI.
 
 = 2.9.0 - 2021-08-25 =
 * Add - Split discount line in timeline into variable fee and fixed fee.
