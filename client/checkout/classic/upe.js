@@ -116,11 +116,9 @@ jQuery( function ( $ ) {
 	const hiddenBillingFields = {
 		name: 'never',
 		email: 'never',
-		phone: 'never',
 		address: {
 			country: 'never',
 			line1: 'never',
-			line2: 'never',
 			city: 'never',
 			state: 'never',
 			postalCode: 'never',
