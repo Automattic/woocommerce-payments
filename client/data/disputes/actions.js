@@ -98,7 +98,7 @@ export function* acceptDispute( id ) {
 		);
 
 		wcpayTracks.recordEvent( 'wcpay_dispute_accept_success' );
-		const message = dispute.order
+		const message = dispute?.order
 			? sprintf(
 					/* translators: #%s is an order number, e.g. 15 */
 					__(
