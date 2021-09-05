@@ -23,7 +23,7 @@ const card = config.get( 'cards.basic' );
 const productIds = [];
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
-	'Subscriptions > Purchase subscription product',
+	'Subscriptions > Purchase multiple subscriptions',
 	() => {
 		// Setup 2 subscription products.
 		// Remember their product id's.
@@ -45,7 +45,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
 
-		it( 'should be able to purchase the subscription product', async () => {
+		it( 'should be able to purchase multiple subscriptions', async () => {
 			// As a Shopper, purchase the subscription products.
 			for ( const productId of productIds ) {
 				await shopper.goToProduct( productId );
@@ -55,12 +55,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await setupCheckout( customerBilling );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-
-			// Take note of the the order ID and subscription ID
-			await page.$eval(
-				'.woocommerce-order-overview__order.order > strong',
-				( el ) => el.innerText
-			);
 
 			// Navigate to 'My account -> Subscriptions'.
 			await shopperWCP.goToSubscriptions();
