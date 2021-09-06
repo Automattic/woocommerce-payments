@@ -116,9 +116,11 @@ jQuery( function ( $ ) {
 	const hiddenBillingFields = {
 		name: 'never',
 		email: 'never',
+		phone: 'never',
 		address: {
 			country: 'never',
 			line1: 'never',
+			line2: 'never',
 			city: 'never',
 			state: 'never',
 			postalCode: 'never',
@@ -220,16 +222,18 @@ jQuery( function ( $ ) {
 	 */
 	const getBillingDetails = ( fields ) => {
 		return {
-			name: `${ fields.billing_first_name } ${ fields.billing_last_name }`.trim(),
+			name:
+				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
+				'-',
 			email: fields.billing_email,
-			phone: fields.billing_phone,
+			phone: fields.billing_phone || '-',
 			address: {
 				country: fields.billing_country,
 				line1: fields.billing_address_1,
-				line2: fields.billing_address_2,
-				city: fields.billing_city,
-				state: fields.billing_state,
-				postal_code: fields.billing_postcode,
+				line2: fields.billing_address_2 || '-',
+				city: fields.billing_city || '-',
+				state: fields.billing_state || '-',
+				postal_code: fields.billing_postcode || '-',
 			},
 		};
 	};
@@ -497,9 +501,7 @@ jQuery( function ( $ ) {
 		blockUI( $form );
 		// Create object where keys are form field names and keys are form field values
 		const formFields = $form.serializeArray().reduce( ( obj, field ) => {
-			if ( '' !== field.value ) {
-				obj[ field.name ] = field.value;
-			}
+			obj[ field.name ] = field.value;
 			return obj;
 		}, {} );
 		try {
