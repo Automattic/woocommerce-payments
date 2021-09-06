@@ -65,7 +65,7 @@
       }
     }
   },
-  "cards" : {
+  "cards": {
     "basic": {
       "number": "4242424242424242",
       "expires": {
@@ -83,6 +83,15 @@
       },
       "cvc": "123",
       "label": "Visa ending in 1111"
+    },
+    "basic3": {
+      "number": "378282246310005",
+      "expires": {
+        "month": "11",
+        "year": "30"
+      },
+      "cvc": "1234",
+      "label": "Amex ending in 0005"
     },
     "3ds": {
       "number": "4000002760003184",
@@ -224,4 +233,3 @@
     }
   }
 }
-
