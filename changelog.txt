@@ -3,6 +3,7 @@
 = 3.0.0 - 2021-xx-xx =
 * Add - Download deposits report in CSV.
 * Fix - Use store currency on analytics leaderboard when Multi-Currency is enabled.
+* Fix - Enabled currencies modal UI.
 * Fix - Clear the list of selected currencies after closing the modal for adding currencies.
 
 = 2.9.0 - 2021-08-25 =
