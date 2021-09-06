@@ -73,6 +73,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 				$this->subscription_service->suspend_subscription( $subscription );
 			}
 		} else {
+			// Translators: %s Scheduled/upcoming payment date in Y-m-d H:i:s format.
+			$subscription->add_order_note( sprintf( __( 'Next automatic payment scheduled for %s.', 'woocommerce-payments' ), get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $wcpay_subscription['current_period_end'] ), wc_date_format() . ' ' . wc_time_format() ) ) );
+
 			// Update the subscription in WC to match the WCPay Subscription's next payment date.
 			$this->subscription_service->update_dates_to_match_wcpay_subscription( $wcpay_subscription, $subscription );
 
