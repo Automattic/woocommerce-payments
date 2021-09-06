@@ -57,7 +57,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 
 			// As a Shopper, navigate to 'My account -> Subscriptions' and open the newly created subscription entry.
 			await page.goto( subscriptionUrl, { waitUntil: 'networkidle0' } );
-		} );
+		}, 180000 );
 
 		afterAll( async () => {
 			// mytodo remove this
@@ -67,7 +67,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
 
-		it( `should be able to change to a new card`, async () => {
+		it( 'should be able to change to a new card', async () => {
 			// Observe 3 buttons for 'Actions'.
 			await expect( page ).toMatchElement( '.button.cancel', {
 				text: 'Cancel',

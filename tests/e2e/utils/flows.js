@@ -130,7 +130,9 @@ export const shopperWCP = {
 		if ( cardIs3DS ) {
 			await confirmCardAuthentication( page, cardType );
 		}
-		await page.waitForSelector( '.woocommerce-message', { visible: true } );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
 	},
 };
 
