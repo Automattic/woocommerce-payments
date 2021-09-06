@@ -190,6 +190,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 							content={ task.content }
 							additionalInfo={ task.additionalInfo }
 							showActionButton={ task.showActionButton }
+							expandable={ task.expandable }
 							expanded={ task.expanded }
 							action={ task.action }
 							onClick={ task.onClick }
