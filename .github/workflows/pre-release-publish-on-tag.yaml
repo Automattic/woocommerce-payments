@@ -32,7 +32,7 @@ jobs:
       - name: Retrieve tag information
         id: get_tag_info
         env:
-          GITHUB_TAG_URL: ${{ format( 'https://api.github.com/repos/{0}/git/refs/tags/{1}', github.repository, steps.get_tag.outputs.TAG_REF) }}
+          GITHUB_TAG_URL: ${{ format( 'https://api.github.com/repos/{0}/git/refs/tags/tag-{1}', github.repository, steps.get_tag.outputs.TAG_REF) }}
         run: |
           CURL_RESPONSE=$(curl --request GET \
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
@@ -42,11 +42,12 @@ jobs:
           HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -n 1)
           CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
+          echo "$CURL_RESPONSE"
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
             echo "::error::Could not retrieve tag information from GitHub:\n$CURL_RESPONSE"
             exit 1
           fi
-          echo "::set-output name=RAW_TAG_DATA::$CURL_RESPONSE"
+          echo "::set-output name=RAW_TAG_DATA::$(echo $CURL_RESPONSE)"
 
       - name: Retrieve tag object
         id: get_tag_object
@@ -65,7 +66,7 @@ jobs:
             echo "::error::Could not retrieve tag object from GitHub:\n$CURL_RESPONSE"
             exit 1
           fi
-          echo "::set-output name=RAW_TAG_OBJECT::$CURL_RESPONSE"
+          echo "::set-output name=RAW_TAG_OBJECT::$(echo $CURL_RESPONSE)"
 
       - name: Enable composer dependencies caching
         uses: actions/cache@v2
@@ -144,7 +145,7 @@ jobs:
           fi
 
           echo "Release created."
-          echo ::set-output name=RELEASE_JSON::$CURL_RESPONSE
+          echo "::set-output name=RELEASE_JSON::$(echo $CURL_RESPONSE)"
 
       - name: Upload release assets
         id: upload_release_assets
