@@ -44,7 +44,24 @@ jobs:
       - name: Retrive tag information
         id: get_tag_info
         shell: bash
-        run: echo ::set-output name=RAW_TAG_DATA::$(curl https://api.github.com/repos/${{ github.repository }}/git/refs/tags/${{ steps.get_tag.outputs.TAG_REF }} )
+        env:
+          GITHUB_TAG_URL: ${{ format( 'https://api.github.com/foo/repos/{0}/git/refs/tags/{1}', github.repository, steps.get_tag.outputs.TAG_REF) }}
+        run: |
+          CURL_RESPONSE=$(curl --request GET \
+              --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
+              --url "$GITHUB_TAG_URL" \
+              --silent \
+              --output - \
+              --write-out "\n%{http_code}\n" )
+          HTTP_CODE=$(echo $CURL_RESPONSE | tail -n 1)
+          CURL_RESPONSE=$(echo $CURL_RESPONSE | head -n -1)
+
+          if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
+            echo "Could not upload plugin archive $RELEASE_FILENAME to GitHub release:" >&2
+            echo "$CURL_RESPONSE" >&2
+            exit 1
+          fi
+          echo ::set-output name=RAW_TAG_DATA::$CURL_RESPONSE
 
       - name: Retrive tag object
         id: get_tag_object
@@ -126,22 +143,24 @@ jobs:
           upload_url=$(echo $UPLOAD_URL | sed -E 's/([^{]*).*$/\1/')
 
           if [[ -z $upload_url ]]; then
-            echo "No upload URL found in response:"
-            echo "$response"
+            echo "No upload URL found in response:" >&2
+            echo "$response" >&2
             exit 1
           fi
 
           CURL_RESPONSE=$(curl --request POST \
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
               --header 'Content-Type: application/zip' \
+              --url "${upload_url}?name=$RELEASE_FILENAME" \
               --data-binary "@$RELEASE_FILENAME" \
               --silent \
-              --fail \
-              --url "${upload_url}?name=$RELEASE_FILENAME")
+              --output - \
+              --write-out "\n%{http_code}\n" )
+          HTTP_CODE=$(echo $CURL_RESPONSE | tail -n 1)
 
-          if [ $? -ne 0 ]; then
-            echo "Could not upload plugin archive $RELEASE_FILENAME to GitHub release:"
-            echo "$CURL_RESPONSE"
+          if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
+            echo "Could not upload plugin archive $RELEASE_FILENAME to GitHub release:" >&2
+            echo "$CURL_RESPONSE" | head -n -1 >&2
             exit 1
           fi
 
