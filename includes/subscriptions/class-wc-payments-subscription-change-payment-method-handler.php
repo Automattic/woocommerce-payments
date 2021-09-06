@@ -44,7 +44,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 			// Override any existing button on $actions['change_payment_method'] to show "Update Card" button.
 			$actions['change_payment_method'] = [
 				'url'  => $this->get_subscription_update_payment_url( $subscription ),
-				'name' => __( 'Update card', 'woocommerce-payments' ),
+				'name' => __( 'Update payment method', 'woocommerce-payments' ),
 			];
 		}
 
