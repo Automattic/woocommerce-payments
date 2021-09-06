@@ -56,7 +56,7 @@ class API_Exception extends Base_Exception {
 	/**
 	 * Returns the error type attribute from the server.
 	 *
-	 * @return string Error type, for example 'api_error' or 'card_error'.
+	 * @return string|null Error type, for example 'api_error' or 'card_error'.
 	 */
 	public function get_error_type() {
 		return $this->error_type;
