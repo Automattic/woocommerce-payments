@@ -16,34 +16,21 @@ jobs:
   publish-pre-release:
     name: Publish pre-release
     runs-on: ubuntu-20.04
+    defaults:
+      shell: bash
+      continue-on-error: false
 
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
-      # enable dependencies caching (vendor and node_modules are wiped during build so they are ignored here)
-      - uses: actions/cache@v2
-        with:
-          path: ~/.cache/composer/
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      - uses: actions/cache@v2
-        with:
-          path: ~/.npm/
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
-      # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '7.4'
-          tools:       composer
-          coverage:    none
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Get the tag name
         id: get_tag
-        shell: bash
         run: echo ::set-output name=TAG_REF::${GITHUB_REF#refs/tags/}
 
       - name: Retrive tag information
         id: get_tag_info
-        shell: bash
         env:
           GITHUB_TAG_URL: ${{ format( 'https://api.github.com/repos/{0}/git/refs/tags/tag-{1}', github.repository, steps.get_tag.outputs.TAG_REF) }}
         run: |
@@ -57,18 +44,36 @@ jobs:
           CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
-            echo "Could not retrieve tag information from GitHub:" >&2
-            echo "$CURL_RESPONSE" >&2
+            echo "::error::Could not retrieve tag information from GitHub:"
+            echo "::error::$CURL_RESPONSE" >&2
             exit 1
           fi
-          echo ::set-output name=RAW_TAG_DATA::$CURL_RESPONSE
+          echo "::set-output name=RAW_TAG_DATA::$CURL_RESPONSE"
 
       - name: Retrive tag object
         id: get_tag_object
-        shell: bash
         env:
           TAG_OBJECT_URL: ${{ fromJson( steps.get_tag_info.outputs.RAW_TAG_DATA ).object.url }}
         run: echo ::set-output name=RAW_TAG_OBJECT::$(curl "$TAG_OBJECT_URL" )
+
+      - name: Enable composer dependencies caching
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer/
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+
+      - name: Enable npm dependencies caching
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm/
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+
+      - name: Setup PHP environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools: composer
+          coverage: none
 
       - name: Build release
         shell: bash
