@@ -17,8 +17,9 @@ jobs:
     name: Publish pre-release
     runs-on: ubuntu-20.04
     defaults:
-      shell: bash
       continue-on-error: false
+      run:
+        shell: bash
 
     steps:
       # clone the repository
