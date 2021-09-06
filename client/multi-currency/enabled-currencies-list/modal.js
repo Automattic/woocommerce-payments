@@ -57,13 +57,17 @@ const EnabledCurrenciesModal = ( { className } ) => {
 				);
 		  } );
 
-	useEffect( () => {
+	const setInitialSelectedCurrencies = useCallback( () => {
 		setSelectedCurrencies(
 			availableCurrencyCodes.reduce( ( acc, value ) => {
 				acc[ value ] = enabledCurrencyCodes.includes( value );
 				return acc;
 			}, {} )
 		);
+	}, [ enabledCurrencyCodes, availableCurrencyCodes ] );
+
+	useEffect( () => {
+		setInitialSelectedCurrencies();
 		/* eslint-disable react-hooks/exhaustive-deps */
 	}, [
 		JSON.stringify( availableCurrencyCodes ),
@@ -99,7 +103,8 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		setIsEnabledCurrenciesModalOpen( false );
 		setCurrenciesListWidth( false );
 		setSearchText( '' );
-	}, [ setIsEnabledCurrenciesModalOpen ] );
+		setInitialSelectedCurrencies();
+	}, [ setIsEnabledCurrenciesModalOpen, setInitialSelectedCurrencies ] );
 
 	const handleAddSelectedClick = () => {
 		setIsEnabledCurrenciesModalOpen( false );
