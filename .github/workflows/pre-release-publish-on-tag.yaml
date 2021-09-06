@@ -153,7 +153,7 @@ jobs:
         id: upload_release_assets
         env:
           RELEASE_JSON: ${{ steps.create_release.outputs.RELEASE_JSON }}
-          UPLOAD_URL: ${{ fromJson( steps.create_release.outputs.RELEASE_JSON ).[0].upload_url }}
+          UPLOAD_URL: ${{ fromJson( steps.create_release.outputs.RELEASE_JSON ).0.upload_url }}
         run: |
           echo "Uploading release assets to GitHub release..."
 
