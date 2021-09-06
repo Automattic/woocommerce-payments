@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React from 'react';
-// import { render } from '@testing-library/react';
 import { render, screen } from '@testing-library/react';
 import { CollapsibleList, TaskItem, Text } from '@woocommerce/experimental';
 import { Badge } from '@woocommerce/components';
@@ -46,16 +45,17 @@ describe( 'TaskList', () => {
 	const getOverviewTasksVisibilityMock = () => ( {
 		deletedTodoTasks: [],
 		dismissedTodoTasks: [],
-		remindMeLaterTodoTasks: [],
+		remindMeLaterTodoTasks: {},
 	} );
 
 	beforeEach( () => {
-		const renderChildren = ( { children } ) => <div>{ children }</div>;
 		const renderNothing = () => null;
 
 		Badge.mockImplementation( renderNothing );
-		CollapsibleList.mockImplementation( renderChildren );
-		TaskItem.mockImplementation( renderChildren );
+		CollapsibleList.mockImplementation( ( { children } ) => (
+			<div>{ children }</div>
+		) );
+		TaskItem.mockImplementation( ( { title } ) => <div>{ title }</div> );
 		Text.mockImplementation( renderNothing );
 		const createNotice = jest.fn();
 		useDispatch.mockReturnValue( {
@@ -71,13 +71,7 @@ describe( 'TaskList', () => {
 			/>
 		);
 
-		expect( TaskItem ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				title: 'Task Title',
-				completed: false,
-			} ),
-			expect.anything()
-		);
+		expect( screen.queryByText( /Task Title/ ) ).toBeInTheDocument();
 	} );
 	it( 'does not show deleted tasks', () => {
 		const overviewTasksVisibility = getOverviewTasksVisibilityMock();
@@ -88,7 +82,7 @@ describe( 'TaskList', () => {
 				overviewTasksVisibility={ overviewTasksVisibility }
 			/>
 		);
-		expect( screen.queryByText( /Task Title 1/ ) ).not.toBeInTheDocument();
+		expect( screen.queryByText( /Task Title/ ) ).not.toBeInTheDocument();
 	} );
 	it( 'does not show dismissed tasks', () => {
 		const overviewTasksVisibility = getOverviewTasksVisibilityMock();
@@ -99,16 +93,16 @@ describe( 'TaskList', () => {
 				overviewTasksVisibility={ overviewTasksVisibility }
 			/>
 		);
-		expect( screen.queryByText( /Task Title 1/ ) ).not.toBeInTheDocument();
+		expect( screen.queryByText( /Task Title/ ) ).not.toBeInTheDocument();
 	} );
 	it( 'does not show tasks before time', () => {
 		const overviewTasksVisibility = getOverviewTasksVisibilityMock();
 		const DAY_IN_MS = 24 * 60 * 60 * 1000;
 		const dismissTime = Date.now() + DAY_IN_MS;
 
-		overviewTasksVisibility.remindMeLaterTodoTasks.push( {
+		overviewTasksVisibility.remindMeLaterTodoTasks = {
 			'task-key': dismissTime,
-		} );
+		};
 
 		render(
 			<TaskList
@@ -116,16 +110,16 @@ describe( 'TaskList', () => {
 				overviewTasksVisibility={ overviewTasksVisibility }
 			/>
 		);
-		expect( screen.queryByText( /Task Title 1/ ) ).not.toBeInTheDocument();
+		expect( screen.queryByText( /Task Title/ ) ).not.toBeInTheDocument();
 	} );
 	it( 'shows snoozed tasks after one day', () => {
 		const overviewTasksVisibility = getOverviewTasksVisibilityMock();
 		const DAY_IN_MS = 24 * 60 * 60 * 1000;
 		const dismissTime = Date.now() - DAY_IN_MS;
 
-		overviewTasksVisibility.remindMeLaterTodoTasks.push( {
+		overviewTasksVisibility.remindMeLaterTodoTasks = {
 			'task-key': dismissTime,
-		} );
+		};
 
 		render(
 			<TaskList
@@ -133,12 +127,6 @@ describe( 'TaskList', () => {
 				overviewTasksVisibility={ overviewTasksVisibility }
 			/>
 		);
-		expect( TaskItem ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				title: 'Task Title',
-				completed: false,
-			} ),
-			expect.anything()
-		);
+		expect( screen.queryByText( /Task Title/ ) ).toBeInTheDocument();
 	} );
 } );
