@@ -189,4 +189,41 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 			}
 		);
 	}
+
+	/**
+	 * Tests for WC_Payments_Subscription_Change_Payment_Method_Handler::change_payment_method_form_submit_text().
+	 */
+	public function test_change_payment_method_form_submit_text() {
+		$mock_subscription = new WC_Subscription();
+		$mock_order        = WC_Helper_Order::create_order();
+		$default_text      = 'Change payment';
+
+		// Confirm the input is unchanged on the negative case.
+		$this->assertSame( $default_text, $this->change_payment_method_handler->change_payment_method_form_submit_text( $default_text ) );
+
+		// Simulate the change payment method request.
+		$_GET['change_payment_method'] = 10;
+
+		// Mock the wcs_get_subscription function to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		$mock_subscription->last_order = $mock_order;
+		$mock_subscription->update_meta_data( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
+		$mock_subscription->save();
+
+		// Confirm the input is unchanged on the negative case.
+		$this->assertSame( $default_text, $this->change_payment_method_handler->change_payment_method_form_submit_text( $default_text ) );
+
+		$mock_subscription->status = 'on-hold';
+		$this->assertSame( $default_text, $this->change_payment_method_handler->change_payment_method_form_submit_text( $default_text ) );
+
+		// Set up the positive case - last order is failed.
+		$mock_order->set_status( 'failed' );
+		$mock_order->save();
+		$this->assertSame( 'Update and retry payment', $this->change_payment_method_handler->change_payment_method_form_submit_text( $default_text ) );
+	}
 }
