@@ -73,7 +73,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 		$this->assertArrayHasKey( 'name', $result['change_payment_method'] );
 
 		// Confirm the function changed the button name and URL.
-		$this->assertSame( 'Update card', $result['change_payment_method']['name'] );
+		$this->assertSame( 'Update payment method', $result['change_payment_method']['name'] );
 		$this->assertRegExp( '/change_payment_method=/', $result['change_payment_method']['url'] );
 		$this->assertRegExp( '/_wpnonce=/', $result['change_payment_method']['url'] );
 	}
