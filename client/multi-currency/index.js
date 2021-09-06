@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { sprintf, __ } from '@wordpress/i18n';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -86,6 +86,10 @@ const rounding = document.querySelector(
 	'[name^=wcpay_multi_currency_price_rounding_]'
 );
 
+const isZeroDecimal = document.querySelector(
+	'[name^=wcpay_multi_currency_is_zero_decimal_]'
+);
+
 const charm = document.querySelector(
 	'[name^=wcpay_multi_currency_price_charm_]'
 );
@@ -119,14 +123,22 @@ function updatePreview() {
 		return;
 	}
 
-	previewDisplay.innerHTML = total.toLocaleString(
-		undefined, // Use the default locale for the given currency.
-		{
-			style: 'currency',
-			currency: currencyCode,
-			currencyDisplay: 'narrowSymbol',
-		}
-	);
+	try {
+		previewDisplay.innerHTML = total.toLocaleString(
+			undefined, // Use the default locale for the given currency.
+			{
+				style: 'currency',
+				currency: currencyCode,
+				currencyDisplay: 'narrowSymbol',
+			}
+		);
+	} catch ( error ) {
+		return sprintf(
+			isZeroDecimal ? '%s %i' : '%s %.2f',
+			currencyCode.toUpperCase(),
+			total
+		);
+	}
 }
 
 const hideShowManualField = ( show ) => {
