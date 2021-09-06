@@ -486,6 +486,9 @@ class WC_Payments_Subscription_Service {
 		$next_payment_date = gmdate( 'Y-m-d H:i:s', $wcpay_subscription['current_period_end'] );
 		$subscription->update_dates( [ 'next_payment' => $next_payment_date ] );
 
+		// Translators: %s Scheduled/upcoming payment date in Y-m-d H:i:s format.
+		$subscription->add_order_note( sprintf( __( 'Next automatic payment scheduled for %s. Subscription dates have been updated to match.', 'woocommerce-payments' ), get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $wcpay_subscription['current_period_end'] ), wc_date_format() . ' ' . wc_time_format() ) ) );
+
 		// Remove the 'subscription_date_changes' exception.
 		$this->clear_feature_support_exception( $subscription, 'subscription_date_changes' );
 	}
