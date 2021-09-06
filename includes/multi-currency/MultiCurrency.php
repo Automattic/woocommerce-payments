@@ -9,9 +9,11 @@ namespace WCPay\MultiCurrency;
 
 use WC_Payments;
 use WC_Payments_Account;
+use WC_Payments_Utils;
 use WC_Payments_API_Client;
 use WC_Payments_Localization_Service;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Logger;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
@@ -113,7 +115,7 @@ class MultiCurrency {
 	/**
 	 * The available currencies.
 	 *
-	 * @var array
+	 * @var Currency[]
 	 */
 	protected $available_currencies = [];
 
@@ -127,7 +129,7 @@ class MultiCurrency {
 	/**
 	 * The enabled currencies.
 	 *
-	 * @var array
+	 * @var Currency[]
 	 */
 	protected $enabled_currencies = [];
 
@@ -314,6 +316,7 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function clear_cache() {
+		Logger::debug( 'Clearing the cache to force new rates to be fetched from the server.' );
 		delete_option( self::CURRENCY_CACHE_OPTION );
 	}
 
@@ -541,6 +544,11 @@ class MultiCurrency {
 			// Update the enabled currencies and reinitialize.
 			update_option( $this->id . '_enabled_currencies', $currencies );
 			$this->initialize_enabled_currencies();
+
+			Logger::debug(
+				'Enabled currencies updated: '
+				. var_export( $currencies, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			);
 
 			// Now remove the removed currencies settings.
 			$this->remove_currencies_settings( $removed_currencies );
@@ -875,6 +883,7 @@ class MultiCurrency {
 			'updated'    => $updated,
 		];
 
+		Logger::debug( 'Saved currencies fetched from the server to the cache. Expiry: ' . gmdate( 'Y-m-d H:i:s', time() + $expiration ) );
 		return update_option( self::CURRENCY_CACHE_OPTION, $currency_cache, 'no' );
 	}
 
