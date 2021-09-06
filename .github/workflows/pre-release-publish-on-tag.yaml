@@ -45,7 +45,7 @@ jobs:
         id: get_tag_info
         shell: bash
         env:
-          GITHUB_TAG_URL: ${{ format( 'https://api.github.com/foo/repos/{0}/git/refs/tags/{1}', github.repository, steps.get_tag.outputs.TAG_REF) }}
+          GITHUB_TAG_URL: ${{ format( 'https://api.github.com/repos/{0}/git/refs/tags/tag-{1}', github.repository, steps.get_tag.outputs.TAG_REF) }}
         run: |
           CURL_RESPONSE=$(curl --request GET \
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
@@ -57,7 +57,7 @@ jobs:
           CURL_RESPONSE=$(echo $CURL_RESPONSE | head -n -1)
 
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
-            echo "Could not upload plugin archive $RELEASE_FILENAME to GitHub release:" >&2
+            echo "Could not retrieve tag information from GitHub:" >&2
             echo "$CURL_RESPONSE" >&2
             exit 1
           fi
