@@ -163,4 +163,8 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public function add_order_note( $note = '' ) {
 		// do nothing.
 	}
+
+	public function payment_failed( $new_status = 'on-hold' ) {
+		$this->set_status( $new_status );
+	}
 }

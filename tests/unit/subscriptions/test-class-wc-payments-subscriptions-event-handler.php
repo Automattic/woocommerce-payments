@@ -278,4 +278,122 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 
 		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
 	}
+
+	/**
+	 * Test handle_invoice_payment_failed() when invalid data is given
+	 */
+	public function test_invoice_payment_failed_missing_attempts_data() {
+		$test_body = [
+			'data' => [
+				'object' => [
+					'subscription' => 'sub_test1234',
+					'customer'     => 'cust_test1234',
+					'id'           => 'ii_test1234',
+				],
+			],
+		];
+
+		$this->expectException( Rest_Request_Exception::class );
+		$this->expectExceptionMessage( 'attempt_count not found in array' );
+
+		$this->subscriptions_event_handler->handle_invoice_payment_failed( $test_body );
+	}
+
+	/**
+	 * Test handle_invoice_payment_failed() first attempt
+	 */
+	public function test_invoice_payment_failed() {
+		$wcpay_subscription_id = 'sub_invoiceFailed';
+		$wcpay_customer_id     = 'cus_failed1234';
+		$wcpay_invoice_id      = 'ii_failedInvoiceID';
+		$test_body             = [
+			'data' => [
+				'object' => [
+					'subscription'  => $wcpay_subscription_id,
+					'customer'      => $wcpay_customer_id,
+					'id'            => $wcpay_invoice_id,
+					'attempt_count' => 1,
+				],
+			],
+		];
+
+		$mock_order        = WC_Helper_Order::create_order();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $mock_order );
+
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		WC_Subscriptions::wcs_create_renewal_order(
+			function ( $subscription ) use ( $mock_order ) {
+				return $mock_order;
+			}
+		);
+
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'set_order_invoice_id' )
+			->with( $mock_order, $wcpay_invoice_id )
+			->willReturn( null );
+
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'mark_pending_invoice_for_subscription' )
+			->with( $mock_subscription, $wcpay_invoice_id )
+			->willReturn( null );
+
+		$this->subscriptions_event_handler->handle_invoice_payment_failed( $test_body );
+
+		$this->assertTrue( $mock_subscription->has_status( 'on-hold' ) );
+	}
+
+	/**
+	 * Test handle_invoice_payment_failed() when max attempts have been reached
+	 */
+	public function test_invoice_payment_failed_max_attempts() {
+		$wcpay_subscription_id = 'sub_invoiceFailed';
+		$wcpay_customer_id     = 'cus_failed1234';
+		$wcpay_invoice_id      = 'ii_failedInvoiceID';
+		$test_body             = [
+			'data' => [
+				'object' => [
+					'subscription'  => $wcpay_subscription_id,
+					'customer'      => $wcpay_customer_id,
+					'id'            => $wcpay_invoice_id,
+					'attempt_count' => 4,
+				],
+			],
+		];
+
+		$mock_order        = WC_Helper_Order::create_order();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $mock_order );
+
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		WC_Subscriptions::wcs_create_renewal_order(
+			function ( $subscription ) use ( $mock_order ) {
+				return $mock_order;
+			}
+		);
+
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'set_order_invoice_id' )
+			->with( $mock_order, $wcpay_invoice_id )
+			->willReturn( null );
+
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'mark_pending_invoice_for_subscription' )
+			->with( $mock_subscription, $wcpay_invoice_id )
+			->willReturn( null );
+
+		$this->subscriptions_event_handler->handle_invoice_payment_failed( $test_body );
+
+		$this->assertTrue( $mock_subscription->has_status( 'cancelled' ) );
+	}
 }
