@@ -69,10 +69,8 @@ class WC_Payments_Subscriptions_Event_Handler {
 			// TODO: Add error handling to these {cancel/suspend}_subscription calls i.e. add a subscription order note if the WCPay subscription wasn't cancelled.
 			if ( ! $subscription->has_status( 'on-hold' ) && 0 !== $subscription->get_time( 'end' ) ) {
 				$this->subscription_service->cancel_subscription( $subscription );
-				$subscription->add_order_note( __( 'There was an upcoming payment event however the subscription is due to end in WooCommerce. The subscription has been cancelled.', 'woocommerce-payments' ) );
 			} else {
 				$this->subscription_service->suspend_subscription( $subscription );
-				$subscription->add_order_note( __( 'There was an upcoming payment event however the subscription is on-hold. The subscription has been suspended.', 'woocommerce-payments' ) );
 			}
 		} else {
 			// Update the subscription in WC to match the WCPay Subscription's next payment date.
@@ -109,8 +107,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 			return;
 		}
 
-		$order_id = WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id );
-		$order    = $order_id ? wc_get_order( $order_id ) : false;
+		$order = wc_get_order( WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id ) );
 
 		if ( ! $order ) {
 			$order = wcs_create_renewal_order( $subscription );
@@ -146,8 +143,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 			throw new Rest_Request_Exception( __( 'Cannot find subscription for the incoming "invoice.upcoming" event.', 'woocommerce-payments' ) );
 		}
 
-		$order_id = WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id );
-		$order    = $order_id ? wc_get_order( $order_id ) : false;
+		$order = wc_get_order( WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id ) );
 
 		if ( ! $order ) {
 			$order = wcs_create_renewal_order( $subscription );
