@@ -13,6 +13,13 @@ use WCPay\Exceptions\Rest_Request_Exception;
 class WC_Payments_Subscriptions_Event_Handler {
 
 	/**
+	 * Maximum amount of payment retries to handle before cancelling the subscription.
+	 *
+	 * @var int
+	 */
+	const MAX_RETRIES = 4;
+
+	/**
 	 * Invoice Service.
 	 *
 	 * @var WC_Payments_Invoice_Service
@@ -155,7 +162,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		// Translators: %d Number of failed renewal attempts.
 		$subscription->add_order_note( sprintf( __( 'WCPay subscription renewal attempt %d failed.', 'woocommerce-payments' ), $attempts ) );
 
-		if ( 4 > $attempts ) {
+		if ( self::MAX_RETRIES > $attempts ) {
 			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
 			$subscription->payment_failed();
 			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
