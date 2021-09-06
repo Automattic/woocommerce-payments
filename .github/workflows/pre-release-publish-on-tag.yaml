@@ -38,7 +38,6 @@ jobs:
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
               --url "$GITHUB_TAG_URL" \
               --silent \
-              --output - \
               --write-out "\n%{http_code}\n" )
           HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -n 1)
           CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
@@ -58,7 +57,6 @@ jobs:
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
               --url "$TAG_OBJECT_URL" \
               --silent \
-              --output - \
               --write-out "\n%{http_code}\n" )
           HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -n 1)
           CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
@@ -136,7 +134,6 @@ jobs:
               --header 'Content-Type: application/json' \
               --data "{\"tag_name\":\"$TAG\",\"target_commitish\":\"develop\",\"name\":$NAME,\"body\":$CHANGELOG,\"prerelease\":true}" \
               --silent \
-              --output - \
               --write-out "\n%{http_code}\n" )
           HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -n 1)
           CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
@@ -170,7 +167,6 @@ jobs:
               --url "${upload_url}?name=$RELEASE_FILENAME" \
               --data-binary "@$RELEASE_FILENAME" \
               --silent \
-              --output - \
               --write-out "\n%{http_code}\n" )
           HTTP_CODE=$(echo $CURL_RESPONSE | tail -n 1)
           CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
@@ -192,7 +188,6 @@ jobs:
           CURL_RESPONSE=$(curl --request POST \
               --url "$GLOTPRESS_IMPORT_URL/$TAG" \
               --silent \
-              --output - \
               --write-out "\n%{http_code}\n" )
           HTTP_CODE=$(echo $CURL_RESPONSE | tail -n 1)
           CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
