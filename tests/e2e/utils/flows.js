@@ -146,24 +146,27 @@ export const shopperWCP = {
 		} );
 	},
 
-	fillBillingDetailsWCB: async ( customerBillingDetails ) => {
-		await clearAndFillInput( '#email', customerBillingDetails.email );
+	fillShippingDetailsWCB: async ( customerShippingDetails ) => {
+		await clearAndFillInput( '#email', customerShippingDetails.email );
 		await clearAndFillInput(
-			'#billing-first_name',
-			customerBillingDetails.firstname
+			'#shipping-first_name',
+			customerShippingDetails.firstname
 		);
 		await clearAndFillInput(
-			'#billing-last_name',
-			customerBillingDetails.lastname
+			'#shipping-last_name',
+			customerShippingDetails.lastname
 		);
 		await clearAndFillInput(
-			'#billing-address_1',
-			customerBillingDetails.addressfirstline
+			'#shipping-address_1',
+			customerShippingDetails.addressfirstline
 		);
-		await clearAndFillInput( '#billing-city', customerBillingDetails.city );
 		await clearAndFillInput(
-			'#billing-postcode',
-			customerBillingDetails.postcode
+			'#shipping-city',
+			customerShippingDetails.city
+		);
+		await clearAndFillInput(
+			'#shipping-postcode',
+			customerShippingDetails.postcode
 		);
 	},
 };
