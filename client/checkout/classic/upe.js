@@ -497,7 +497,9 @@ jQuery( function ( $ ) {
 		blockUI( $form );
 		// Create object where keys are form field names and keys are form field values
 		const formFields = $form.serializeArray().reduce( ( obj, field ) => {
-			obj[ field.name ] = field.value;
+			if ( '' !== field.value ) {
+				obj[ field.name ] = field.value;
+			}
 			return obj;
 		}, {} );
 		try {
