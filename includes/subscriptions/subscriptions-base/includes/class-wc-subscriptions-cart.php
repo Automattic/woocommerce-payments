@@ -442,8 +442,12 @@ class WC_Subscriptions_Cart {
 	 * @return boolean
 	 */
 	public static function cart_needs_shipping_address( $needs_shipping_address ) {
-		if ( self::cart_contains_subscription() ) {
-			$needs_shipping_address = $needs_shipping_address || self::cart_contains_subscriptions_needing_shipping();
+		if ( $needs_shipping_address ) {
+			return $needs_shipping_address;
+		}
+
+		if ( ! wc_ship_to_billing_address_only() && self::cart_contains_subscription() ) {
+			$needs_shipping_address = self::cart_contains_subscriptions_needing_shipping();
 		}
 
 		return $needs_shipping_address;
