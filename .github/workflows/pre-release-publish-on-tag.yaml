@@ -53,8 +53,8 @@ jobs:
               --silent \
               --output - \
               --write-out "\n%{http_code}\n" )
-          HTTP_CODE=$(echo $CURL_RESPONSE | tail -n 1)
-          CURL_RESPONSE=$(echo $CURL_RESPONSE | head -n -1)
+          HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -n 1)
+          CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
             echo "Could not retrieve tag information from GitHub:" >&2
