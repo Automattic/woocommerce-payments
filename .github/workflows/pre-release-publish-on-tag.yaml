@@ -32,7 +32,7 @@ jobs:
       - name: Retrieve tag information
         id: get_tag_info
         env:
-          GITHUB_TAG_URL: ${{ format( 'https://api.github.com/repos/{0}/git/refs/tags/tag-{1}', github.repository, steps.get_tag.outputs.TAG_REF) }}
+          GITHUB_TAG_URL: ${{ format( 'https://api.github.com/repos/{0}/git/refs/tags/{1}', github.repository, steps.get_tag.outputs.TAG_REF) }}
         run: |
           CURL_RESPONSE=$(curl --request GET \
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
@@ -42,9 +42,9 @@ jobs:
           HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -n 1)
           CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
-          echo "$CURL_RESPONSE"
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
-            echo "::error::Could not retrieve tag information from GitHub:\n$CURL_RESPONSE"
+            echo "$CURL_RESPONSE"
+            echo "::error::Could not retrieve tag information from GitHub."
             exit 1
           fi
           echo "::set-output name=RAW_TAG_DATA::$(echo $CURL_RESPONSE)"
@@ -63,7 +63,8 @@ jobs:
           CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
-            echo "::error::Could not retrieve tag object from GitHub:\n$CURL_RESPONSE"
+            echo "$CURL_RESPONSE"
+            echo "::error::Could not retrieve tag object from GitHub."
             exit 1
           fi
           echo "::set-output name=RAW_TAG_OBJECT::$(echo $CURL_RESPONSE)"
@@ -93,7 +94,7 @@ jobs:
           npm run build
 
           if [[ ! -f $RELEASE_FILENAME ]]; then
-            echo "::error::Failed to create release archive $RELEASE_FILENAME"
+            echo "::error::Failed to create release archive $RELEASE_FILENAME."
             exit 1
           fi
 
@@ -140,7 +141,8 @@ jobs:
           CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
-            echo "::error::Couldn't create GitHub pre-release:\n$CURL_RESPONSE"
+            echo "$CURL_RESPONSE"
+            echo "::error::Couldn't create GitHub pre-release."
             exit 1
           fi
 
@@ -150,6 +152,7 @@ jobs:
       - name: Upload release assets
         id: upload_release_assets
         env:
+          RELEASE_JSON: ${{ steps.create_release.outputs.RELEASE_JSON }}
           UPLOAD_URL: ${{ fromJson( steps.create_release.outputs.RELEASE_JSON ).upload_url }}
         run: |
           echo "Uploading release assets to GitHub release..."
@@ -158,7 +161,8 @@ jobs:
           upload_url=$(echo "$UPLOAD_URL" | sed -E 's/([^{]*).*$/\1/')
 
           if [[ -z $upload_url ]]; then
-            echo "::error::Asset upload URL is missing in response:\n{{ steps.create_release.outputs.RELEASE_JSON }}"
+            echo "::error::Asset upload URL is missing in response."
+            echo "$RELEASE_JSON""
             exit 1
           fi
 
@@ -173,7 +177,8 @@ jobs:
           CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
-            echo "::error::Couldn't upload plugin archive $RELEASE_FILENAME to GitHub release:\n$CURL_RESPONSE"
+            echo "$CURL_RESPONSE"
+            echo "::error::Couldn't upload plugin archive $RELEASE_FILENAME to GitHub release."
             exit 1
           fi
           echo "Assets uploaded."
@@ -194,7 +199,8 @@ jobs:
           CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
-            echo "::error::Couldn't trigger translations:\n$CURL_RESPONSE"
+            echo "$CURL_RESPONSE"
+            echo "::error::Couldn't trigger translations."
             exit 1
           fi
           echo "Translations update triggered."
