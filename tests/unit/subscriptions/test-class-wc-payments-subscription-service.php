@@ -353,11 +353,11 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->with( $mock_pending_invoice_id )
 			->willReturn( [ 'invoice_paid' ] );
 
-			PHPUnit_Utils::call_method(
-				$this->subscription_service,
-				'maybe_attempt_payment_for_subscription',
-				[ $mock_subscription ]
-			);
+		PHPUnit_Utils::call_method(
+			$this->subscription_service,
+			'maybe_attempt_payment_for_subscription',
+			[ $mock_subscription, new WC_Payment_Token_CC() ]
+		);
 	}
 
 	/**

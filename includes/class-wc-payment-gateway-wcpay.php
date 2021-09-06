@@ -972,6 +972,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_information->get_payment_token()->get_last4()
 				);
 				$order->add_order_note( $note );
+
+				do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $payment_information->get_payment_token() );
 			}
 
 			return [

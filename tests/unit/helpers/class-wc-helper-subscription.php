@@ -171,6 +171,10 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		// do nothing.
 	}
 
+	public function payment_failed( $new_status = 'on-hold' ) {
+		$this->status = $new_status;
+	}
+
 	public function get_status() {
 		return $this->status;
 	}

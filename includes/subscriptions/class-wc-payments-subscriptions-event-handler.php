@@ -13,6 +13,13 @@ use WCPay\Exceptions\Rest_Request_Exception;
 class WC_Payments_Subscriptions_Event_Handler {
 
 	/**
+	 * Maximum amount of payment retries to handle before cancelling the subscription.
+	 *
+	 * @var int
+	 */
+	const MAX_RETRIES = 4;
+
+	/**
 	 * Invoice Service.
 	 *
 	 * @var WC_Payments_Invoice_Service
@@ -62,16 +69,15 @@ class WC_Payments_Subscriptions_Event_Handler {
 			// TODO: Add error handling to these {cancel/suspend}_subscription calls i.e. add a subscription order note if the WCPay subscription wasn't cancelled.
 			if ( ! $subscription->has_status( 'on-hold' ) && 0 !== $subscription->get_time( 'end' ) ) {
 				$this->subscription_service->cancel_subscription( $subscription );
-				$subscription->add_order_note( __( 'There was an upcoming payment event however the subscription is due to end in WooCommerce. The subscription has been cancelled.', 'woocommerce-payments' ) );
 			} else {
 				$this->subscription_service->suspend_subscription( $subscription );
-				$subscription->add_order_note( __( 'There was an upcoming payment event however the subscription is on-hold. The subscription has been suspended.', 'woocommerce-payments' ) );
 			}
 		} else {
+			// Translators: %s Scheduled/upcoming payment date in Y-m-d H:i:s format.
+			$subscription->add_order_note( sprintf( __( 'Next automatic payment scheduled for %s.', 'woocommerce-payments' ), get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $wcpay_subscription['current_period_end'] ), wc_date_format() . ' ' . wc_time_format() ) ) );
+
 			// Update the subscription in WC to match the WCPay Subscription's next payment date.
 			$this->subscription_service->update_dates_to_match_wcpay_subscription( $wcpay_subscription, $subscription );
-			// Translators: %s Scheduled/upcoming payment date in Y-m-d H:i:s format.
-			$subscription->add_order_note( sprintf( __( "There's an upcoming invoice which will automatically attempt payment on %s. The subscription's next payment date has been updated to match.", 'woocommerce-payments' ), get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $wcpay_subscription['current_period_end'] ), wc_date_format() . ' ' . wc_time_format() ) ) );
 
 			$response = $this->invoice_service->create_invoice_items_for_subscription( $subscription, $wcpay_customer_id, $wcpay_subscription_id );
 
@@ -104,8 +110,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 			return;
 		}
 
-		$order_id = WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id );
-		$order    = $order_id ? wc_get_order( $order_id ) : false;
+		$order = wc_get_order( WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id ) );
 
 		if ( ! $order ) {
 			$order = wcs_create_renewal_order( $subscription );
@@ -144,8 +149,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 			throw new Rest_Request_Exception( __( 'Cannot find subscription for the incoming "invoice.upcoming" event.', 'woocommerce-payments' ) );
 		}
 
-		$order_id = WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id );
-		$order    = $order_id ? wc_get_order( $order_id ) : false;
+		$order = wc_get_order( WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id ) );
 
 		if ( ! $order ) {
 			$order = wcs_create_renewal_order( $subscription );
@@ -160,7 +164,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		// Translators: %d Number of failed renewal attempts.
 		$subscription->add_order_note( sprintf( __( 'WCPay subscription renewal attempt %d failed.', 'woocommerce-payments' ), $attempts ) );
 
-		if ( 4 > $attempts ) {
+		if ( self::MAX_RETRIES > $attempts ) {
 			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
 			$subscription->payment_failed();
 			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
