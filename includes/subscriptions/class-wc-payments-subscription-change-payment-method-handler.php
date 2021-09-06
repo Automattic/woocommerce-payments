@@ -29,6 +29,8 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 
 		// Fallback to redirecting all pay for order pages for WCPay billing invoices to the update card page.
 		add_action( 'template_redirect', [ $this, 'redirect_pay_for_order_to_update_payment_method' ] );
+
+		add_filter( 'woocommerce_change_payment_button_text', [ $this, 'change_payment_method_form_submit_text' ] );
 	}
 
 	/**
@@ -194,5 +196,24 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 			],
 			$subscription->get_checkout_payment_url()
 		);
+	}
+
+	/**
+	 * Modifies the change payment method form submit button to include language about retrying payment if there's a failed order.
+	 *
+	 * @param string $button_text The change subscription payment method button text.
+	 * @return string The change subscription payment method button text.
+	 */
+	public function change_payment_method_form_submit_text( $button_text ) {
+
+		if ( isset( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$subscription = wcs_get_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+			if ( $subscription && $this->does_subscription_need_payment_updated( $subscription ) ) {
+				$button_text = __( 'Update and retry payment', 'woocommerce-payments' );
+			}
+		}
+
+		return $button_text;
 	}
 }
