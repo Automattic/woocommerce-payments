@@ -39,8 +39,8 @@ jobs:
               --url "$GITHUB_TAG_URL" \
               --silent \
               --write-out "\n%{http_code}\n" )
-          HTTP_CODE=$(echo $CURL_RESPONSE | tail -n 1)
-          CURL_RESPONSE=$(echo $CURL_RESPONSE | head -n -1)
+          HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -n 1)
+          CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
             echo "$CURL_RESPONSE"
@@ -59,8 +59,8 @@ jobs:
               --url "$TAG_OBJECT_URL" \
               --silent \
               --write-out "\n%{http_code}\n" )
-          HTTP_CODE=$(echo $CURL_RESPONSE | tail -n 1)
-          CURL_RESPONSE=$(echo $CURL_RESPONSE | head -n -1)
+          HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -n 1)
+          CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
             echo "$CURL_RESPONSE"
@@ -137,8 +137,8 @@ jobs:
               --data "{\"tag_name\":\"$TAG\",\"target_commitish\":\"develop\",\"name\":$NAME,\"body\":$CHANGELOG,\"prerelease\":true}" \
               --silent \
               --write-out "\n%{http_code}\n" )
-          HTTP_CODE=$(echo $CURL_RESPONSE | tail -n 1)
-          CURL_RESPONSE=$(echo $CURL_RESPONSE | head -n -1)
+          HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -n 1)
+          CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
             echo "$CURL_RESPONSE"
@@ -173,8 +173,8 @@ jobs:
               --data-binary "@$RELEASE_FILENAME" \
               --silent \
               --write-out "\n%{http_code}\n" )
-          HTTP_CODE=$(echo $CURL_RESPONSE | tail -n 1)
-          CURL_RESPONSE=$(echo $CURL_RESPONSE | head -n -1)
+          HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -n 1)
+          CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
             echo "$CURL_RESPONSE"
@@ -195,8 +195,8 @@ jobs:
               --url "$GLOTPRESS_IMPORT_URL/$TAG" \
               --silent \
               --write-out "\n%{http_code}\n" )
-          HTTP_CODE=$(echo $CURL_RESPONSE | tail -n 1)
-          CURL_RESPONSE=$(echo $CURL_RESPONSE | head -n -1)
+          HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -n 1)
+          CURL_RESPONSE=$(echo "$CURL_RESPONSE" | head -n -1)
 
           if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]]; then
             echo "$CURL_RESPONSE"
