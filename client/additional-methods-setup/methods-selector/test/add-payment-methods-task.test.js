@@ -38,7 +38,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			jest.fn(),
 		] );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay' ],
+			[ 'card', 'giropay', 'sepa_debit' ],
 			jest.fn(),
 		] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
@@ -67,7 +67,11 @@ describe( 'AddPaymentMethodsTask', () => {
 			</WizardTaskContext.Provider>
 		);
 
-		const expectedToBeChecked = [ 'Credit card / debit card', 'giropay' ];
+		const expectedToBeChecked = [
+			'Credit card / debit card',
+			'giropay',
+			'SEPA Direct Debit',
+		];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
 			expect(
@@ -79,7 +83,6 @@ describe( 'AddPaymentMethodsTask', () => {
 			'Bancontact',
 			'iDEAL',
 			'Przelewy24 (P24)',
-			'Direct debit payment',
 			'Sofort',
 			'Enable Apple Pay & Google Pay',
 		];
@@ -115,7 +118,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			'Bancontact',
 			'iDEAL',
 			'Przelewy24 (P24)',
-			'Direct debit payment',
+			'SEPA Direct Debit',
 			'Sofort',
 		];
 
@@ -151,6 +154,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			'Bancontact', // Mark as checked.
 			'giropay', // Mark as checked.
 			'iDEAL', // Mark as checked.
+			'SEPA Direct Debit',
 			'Przelewy24 (P24)', // Mark as checked.
 			'Enable Apple Pay & Google Pay', // Enable 1-click checkouts.
 		];
@@ -179,6 +183,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			'bancontact',
 			'giropay',
 			'ideal',
+			'sepa_debit',
 			'p24',
 		] );
 		expect( updatePaymentRequestEnabledMock ).toHaveBeenCalledWith( true );

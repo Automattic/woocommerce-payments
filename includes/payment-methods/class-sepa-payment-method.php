@@ -22,7 +22,7 @@ class Sepa_Payment_Method extends UPE_Payment_Method {
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 		$this->stripe_id   = 'sepa_debit';
-		$this->title       = 'SEPA Debit';
+		$this->title       = 'SEPA Direct Debit';
 		$this->is_reusable = true;
 		$this->currencies  = [ 'EUR' ];
 	}
