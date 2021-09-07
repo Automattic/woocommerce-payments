@@ -23,7 +23,7 @@ class WC_Payments_Account {
 	const ACCOUNT_OPTION                 = 'wcpay_account_data';
 	const ACCOUNT_RETRIEVAL_ERROR        = 'ERROR';
 	const ON_BOARDING_DISABLED_TRANSIENT = 'wcpay_on_boarding_disabled';
-	const ON_BOARDING_STATUS_TRANSIENT   = 'wcpay_on_boarding_status';
+	const ON_BOARDING_STARTED_TRANSIENT  = 'wcpay_on_boarding_started';
 	const ERROR_MESSAGE_TRANSIENT        = 'wcpay_error_message';
 
 	/**
@@ -540,7 +540,7 @@ class WC_Payments_Account {
 	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
 	 */
 	private function init_stripe_oauth( $wcpay_connect_from ) {
-		if ( get_transient( self::ON_BOARDING_STATUS_TRANSIENT ) ) {
+		if ( get_transient( self::ON_BOARDING_STARTED_TRANSIENT ) ) {
 			$this->redirect_to_onboarding_page(
 				__( 'There was a duplicate attempt to redirect you to Stripe. Please wait a few seconds and try again.', 'woocommerce-payments' )
 			);
@@ -548,7 +548,7 @@ class WC_Payments_Account {
 		}
 
 		// Set a quickly expiring transient to save the current onboarding state and avoid duplicate requests.
-		set_transient( self::ON_BOARDING_STATUS_TRANSIENT, 1, 10 );
+		set_transient( self::ON_BOARDING_STARTED_TRANSIENT, true, 10 );
 
 		// Clear account transient when generating Stripe's oauth data.
 		$this->clear_cache();
