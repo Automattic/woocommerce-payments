@@ -72,12 +72,10 @@ export function* submitEnabledCurrenciesUpdate( currencies ) {
 			__( 'Enabled currencies updated.', 'woocommerce-payments' )
 		);
 
-		for ( const currency of addedCurrencies ) {
-			wcpayTracks.recordEvent(
-				wcpayTracks.events.MULTI_CURRENCY_CURRENCY_ADDED,
-				{ currency }
-			);
-		}
+		wcpayTracks.recordEvent(
+			wcpayTracks.events.MULTI_CURRENCY_CURRENCIES_ADDED,
+			{ added_currencies: addedCurrencies }
+		);
 	} catch ( e ) {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error updating enabled currencies.', 'woocommerce-payments' )
