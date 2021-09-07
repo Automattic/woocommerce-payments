@@ -61,7 +61,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 
 		$result = $this->change_payment_method_handler->update_subscription_change_payment_button( $default_actions, $mock_subscription );
 
-		$this->assertIsArray( $result );
+		$this->assertTrue( is_array( $result ) );
 		$this->assertContainsOnly( 'array', $result );
 		$this->assertCount( 2, $result );
 
