@@ -412,29 +412,30 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				// Try catching the error without reaching the API.
 				$minimum_amount = $this->get_cached_minimum_amount( $currency );
 				if ( $minimum_amount > $converted_amount ) {
-					$message = sprintf(
-						// translators: %1: payment method name, %2 a formatted price.
-						__(
-							'The selected payment method (%1$s) requires a total amount of at least %2$s.',
-							'woocommerce-payments'
-						),
-						$this->title,
-						wc_price( WC_Payments_Utils::interpret_stripe_amount( $minimum_amount, $currency ), [ 'currency' => $currency ] )
-					);
+					$message = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
 					wc_add_notice( $message, 'error' );
 					return false;
 				}
 
-				$this->payments_api_client->update_intention(
-					$payment_intent_id,
-					$converted_amount,
-					strtolower( $currency ),
-					$save_payment_method,
-					$customer_id,
-					$this->get_metadata_from_order( $order, $payment_type ),
-					$this->get_level3_data_from_order( $order ),
-					$selected_upe_payment_type
-				);
+				try {
+					$this->payments_api_client->update_intention(
+						$payment_intent_id,
+						$converted_amount,
+						strtolower( $currency ),
+						$save_payment_method,
+						$customer_id,
+						$this->get_metadata_from_order( $order, $payment_type ),
+						$this->get_level3_data_from_order( $order ),
+						$selected_upe_payment_type
+					);
+				} catch ( API_Exception $e ) {
+					$minimum_amount = $this->extract_minimum_amount( $e, $currency );
+					if ( ! is_null( $minimum_amount ) ) {
+						$message = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
+						wc_add_notice( $message, 'error' );
+						return false;
+					}
+				}
 			}
 		} else {
 			return $this->parent_process_payment( $order_id );
@@ -457,6 +458,28 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				)
 			),
 		];
+	}
+
+	/**
+	 * Generates the error message, displayed when the minimum amount is not met.
+	 *
+	 * @param int    $minimum_amount A Stripe-formatted minimum amount.
+	 * @param string $currency       The currency code for the transaction.
+	 *
+	 * @return string A user-facing message.
+	 */
+	protected function generate_minimum_amount_error_message( $minimum_amount, $currency ) {
+		$interpreted_amount = WC_Payments_Utils::interpret_stripe_amount( $minimum_amount, $currency );
+
+		return sprintf(
+			// translators: %1: payment method name, %2 a formatted price.
+			__(
+				'The selected payment method (%1$s) requires a total amount of at least %2$s.',
+				'woocommerce-payments'
+			),
+			$this->title,
+			wc_price( $interpreted_amount, [ 'currency' => $currency ] )
+		);
 	}
 
 	/**
