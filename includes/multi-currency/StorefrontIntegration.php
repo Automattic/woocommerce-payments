@@ -153,7 +153,7 @@ class StorefrontIntegration {
 		}
 
 		// Simulation overrides for multi currency onboarding preview.
-		$simulation_variables     = $this->multi_currency->get_multi_currency_onboarding_simulation_variables();
+		$simulation_variables     = $this->multi_currency->get_multi_currency_onboarding_simulation_variables() ?? [];
 		$simulation_enabled       = false;
 		$simulation_hide_switcher = false;
 
