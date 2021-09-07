@@ -11,6 +11,7 @@ import {
 	TextControl,
 	TextareaControl,
 } from '@wordpress/components';
+import { useMemo } from '@wordpress/element';
 
 import { flatten } from 'lodash';
 import moment from 'moment';
@@ -18,8 +19,10 @@ import moment from 'moment';
 /**
  * Internal dependencies.
  */
+import evidenceFields from './fields';
 import { FileUploadControl } from './file-upload';
-import { useDisputeEvidence } from 'wcpay/data';
+import { useDispute, useDisputeEvidence } from 'wcpay/data';
+import { getDisputeProductType } from '../helpers';
 
 /* If description is an array, separate with newline elements. */
 const expandHelp = ( description ) => {
@@ -31,27 +34,64 @@ const expandHelp = ( description ) => {
 };
 
 export const DisputeEvidenceForm = ( props ) => {
-	const {
-		fields,
-		evidence,
-		onChange,
-		onFileChange,
-		onFileRemove,
-		onSave,
-		readOnly,
-		disputeId,
-	} = props;
+	const { evidence, readOnly, disputeId } = props;
 
-	const { isSavingEvidence } = useDisputeEvidence( disputeId );
+	const { dispute, updateDispute } = useDispute( disputeId );
+
+	const {
+		evidenceTransient,
+		evidenceUploadErrors,
+		isSavingEvidence,
+		updateEvidenceTransientForDispute,
+		uploadFileEvidenceForDispute,
+		updateEvidenceUploadErrorsForDispute,
+		saveEvidence,
+		submitEvidence,
+	} = useDisputeEvidence( disputeId );
+
+	const productType = getDisputeProductType( dispute );
+	const disputeReason = dispute && dispute.reason;
+	const fields = useMemo(
+		() => evidenceFields( disputeReason, productType ),
+		[ disputeReason, productType ]
+	);
 
 	if ( ! fields || ! fields.length ) {
 		return null;
 	}
 
+	/*
+	 * Event handlers.
+	 */
+	const updateEvidence = ( key, value ) => {
+		updateEvidenceTransientForDispute( disputeId, {
+			...evidenceTransient,
+			[ key ]: value,
+		} );
+	};
+	const doRemoveFile = ( key ) => {
+		updateEvidence( key, '' );
+		updateDispute( {
+			...dispute,
+			metadata: { ...dispute.metadata, [ key ]: '' },
+			fileSize: { ...dispute.fileSize, [ key ]: 0 },
+		} );
+		updateEvidenceUploadErrorsForDispute( disputeId, {
+			...evidenceUploadErrors,
+			[ key ]: '',
+		} );
+	};
+	const doUploadFile = async ( key, file ) => {
+		uploadFileEvidenceForDispute( disputeId, key, file );
+	};
+
+	/*
+	 * Functions used to compose props for components.
+	 */
 	const composeDefaultControlProps = ( field ) => ( {
 		label: field.label,
 		value: evidence[ field.key ] || '',
-		onChange: ( value ) => onChange( field.key, value ),
+		onChange: ( value ) => updateEvidence( field.key, value ),
 		disabled: readOnly,
 		help: expandHelp( field.description ),
 	} );
@@ -71,8 +111,8 @@ export const DisputeEvidenceForm = ( props ) => {
 			field,
 			fileName,
 			accept,
-			onFileChange,
-			onFileRemove,
+			onFileChange: doUploadFile,
+			onFileRemove: doRemoveFile,
 			disabled: readOnly,
 			isLoading,
 			isDone,
@@ -133,7 +173,8 @@ export const DisputeEvidenceForm = ( props ) => {
 		'woocommerce-payments'
 	);
 	const handleSubmit = () =>
-		window.confirm( confirmMessage ) && onSave( true );
+		window.confirm( confirmMessage ) &&
+		submitEvidence( dispute.id, evidenceTransient );
 
 	return (
 		<>
@@ -178,7 +219,12 @@ export const DisputeEvidenceForm = ( props ) => {
 							</Button>
 							<Button
 								isSecondary
-								onClick={ () => onSave( false ) }
+								onClick={ () =>
+									saveEvidence(
+										dispute.id,
+										evidenceTransient
+									)
+								}
 								isBusy={ isSavingEvidence }
 							>
 								{ __(

@@ -13,6 +13,9 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
     <div
       class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
     >
+      <p>
+        Provide general evidence about the customer and the order.
+      </p>
       <div
         class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
@@ -26,11 +29,18 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
             Product description
           </label>
           <textarea
+            aria-describedby="inspector-textarea-control-0__help"
             class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
             id="inspector-textarea-control-0"
             rows="4"
           />
         </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="inspector-textarea-control-0__help"
+        >
+          A description of the product or service and any relevant details on how this was presented to the customer at the time of purchase.
+        </p>
       </div>
       <div
         class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
@@ -47,6 +57,26 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
           <input
             class="components-text-control__input"
             id="inspector-text-control-0"
+            type="text"
+            value=""
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-text-control-1"
+          >
+            Customer email
+          </label>
+          <input
+            class="components-text-control__input"
+            id="inspector-text-control-1"
             type="text"
             value=""
           />
@@ -108,6 +138,12 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
             />
           </div>
         </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="form-file-upload-base-control-customer_signature__help"
+        >
+          A relevant document or contract showing the customer's signature (if available).
+        </p>
       </div>
       <div
         class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
@@ -117,17 +153,437 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
         >
           <label
             class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="inspector-text-control-1"
+            for="inspector-textarea-control-1"
           >
-            Service date
+            Customer billing address
+          </label>
+          <textarea
+            class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+            id="inspector-textarea-control-1"
+            rows="4"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-text-control-2"
+          >
+            Customer IP address
           </label>
           <input
             class="components-text-control__input"
-            id="inspector-text-control-1"
+            id="inspector-text-control-2"
+            type="text"
+            value="127.0.0.1"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="form-file-upload-base-control-receipt"
+          >
+            Receipt
+          </label>
+          <div
+            class="components-drop-zone__provider"
+          >
+            <div
+              class="components-drop-zone"
+            />
+          </div>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button is-primary has-text has-icon"
+                id="form-file-upload-receipt"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload file
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="form-file-upload-base-control-receipt__help"
+        >
+          Any receipt or message sent to the customer notifying them of the charge. This field will be automatically filled with a Stripe generated email receipt if any such receipt was sent.
+        </p>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="form-file-upload-base-control-customer_communication"
+          >
+            Customer communication
+          </label>
+          <div
+            class="components-drop-zone__provider"
+          >
+            <div
+              class="components-drop-zone"
+            />
+          </div>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button is-primary has-text has-icon"
+                id="form-file-upload-customer_communication"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload file
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="form-file-upload-base-control-customer_communication__help"
+        >
+          Any communication with the customer that you feel is relevant to your case (e.g. emails proving that they received the product or service, or demonstrating their use of or satisfaction with the product or service).
+        </p>
+      </div>
+    </div>
+  </div>
+  <div
+    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      Shipping information
+    </div>
+    <div
+      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-text-control-3"
+          >
+            Shipping carrier
+          </label>
+          <input
+            aria-describedby="inspector-text-control-3__help"
+            class="components-text-control__input"
+            id="inspector-text-control-3"
+            type="text"
+            value=""
+          />
+        </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="inspector-text-control-3__help"
+        >
+          The delivery service that shipped a physical product, such as Fedex, UPS, USPS, etc. If multiple carriers were used for this purchase, please separate them with commas.
+        </p>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-text-control-4"
+          >
+            Tracking number
+          </label>
+          <input
+            aria-describedby="inspector-text-control-4__help"
+            class="components-text-control__input"
+            id="inspector-text-control-4"
+            type="text"
+            value=""
+          />
+        </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="inspector-text-control-4__help"
+        >
+          The tracking number (if available) for a physical product, obtained from the delivery service. If multiple tracking numbers were generated for this purchase, please separate them with commas. When we compile your evidence into a single document, these tracking numbers will be expanded to include detailed delivery information from the carrier.
+        </p>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="form-file-upload-base-control-shipping_documentation"
+          >
+            Proof of shipping
+          </label>
+          <div
+            class="components-drop-zone__provider"
+          >
+            <div
+              class="components-drop-zone"
+            />
+          </div>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button is-primary has-text has-icon"
+                id="form-file-upload-shipping_documentation"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload file
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="form-file-upload-base-control-shipping_documentation__help"
+        >
+          Provide documentation as proof that a product was shipped to the cardholder at the same address the cardholder provided to you. This could include a copy of the shipment receipt or label, and show the full shipping address of the cardholder, if possible.
+        </p>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-text-control-5"
+          >
+            Date of shipment
+          </label>
+          <input
+            aria-describedby="inspector-text-control-5__help"
+            class="components-text-control__input"
+            id="inspector-text-control-5"
             max="2021-06-24"
             type="date"
             value=""
           />
+        </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="inspector-text-control-5__help"
+        >
+          The date on which a physical product began its route to the shipping address. This date should be prior to the date of the dispute.
+        </p>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-textarea-control-2"
+          >
+            Shipping address
+          </label>
+          <textarea
+            aria-describedby="inspector-textarea-control-2__help"
+            class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+            id="inspector-textarea-control-2"
+            rows="4"
+          />
+        </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="inspector-textarea-control-2__help"
+        >
+          The address to which a physical product was shipped. The shipping address must match a billing address verified with AVS. (A signature is not required as evidence of delivery).
+        </p>
+      </div>
+    </div>
+  </div>
+  <div
+    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      Additional details
+    </div>
+    <div
+      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <p>
+        Provide any extra evidence or statements you'd like the bank to see, either as text or by uploading a document.
+      </p>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-textarea-control-3"
+          >
+            Additional details
+          </label>
+          <textarea
+            class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+            id="inspector-textarea-control-3"
+            rows="4"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="form-file-upload-base-control-uncategorized_file"
+          >
+            Additional document
+          </label>
+          <div
+            class="components-drop-zone__provider"
+          >
+            <div
+              class="components-drop-zone"
+            />
+          </div>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button is-primary has-text has-icon"
+                id="form-file-upload-uncategorized_file"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload file
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -188,6 +644,9 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
     <div
       class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
     >
+      <p>
+        Provide general evidence about the customer and the order.
+      </p>
       <div
         class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
@@ -196,15 +655,43 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
         >
           <label
             class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="inspector-textarea-control-1"
+            for="inspector-textarea-control-4"
           >
             Product description
           </label>
           <textarea
+            aria-describedby="inspector-textarea-control-4__help"
             class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
             disabled=""
-            id="inspector-textarea-control-1"
+            id="inspector-textarea-control-4"
             rows="4"
+          />
+        </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="inspector-textarea-control-4__help"
+        >
+          A description of the product or service and any relevant details on how this was presented to the customer at the time of purchase.
+        </p>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-text-control-6"
+          >
+            Customer name
+          </label>
+          <input
+            class="components-text-control__input"
+            disabled=""
+            id="inspector-text-control-6"
+            type="text"
+            value=""
           />
         </div>
       </div>
@@ -216,14 +703,14 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
         >
           <label
             class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="inspector-text-control-2"
+            for="inspector-text-control-7"
           >
-            Customer name
+            Customer email
           </label>
           <input
             class="components-text-control__input"
             disabled=""
-            id="inspector-text-control-2"
+            id="inspector-text-control-7"
             type="text"
             value=""
           />
@@ -286,6 +773,12 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
             />
           </div>
         </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="form-file-upload-base-control-customer_signature__help"
+        >
+          A relevant document or contract showing the customer's signature (if available).
+        </p>
       </div>
       <div
         class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
@@ -295,18 +788,261 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
         >
           <label
             class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="inspector-text-control-3"
+            for="inspector-textarea-control-5"
           >
-            Service date
+            Customer billing address
+          </label>
+          <textarea
+            class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+            disabled=""
+            id="inspector-textarea-control-5"
+            rows="4"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-text-control-8"
+          >
+            Customer IP address
           </label>
           <input
             class="components-text-control__input"
             disabled=""
-            id="inspector-text-control-3"
-            max="2021-06-24"
-            type="date"
-            value=""
+            id="inspector-text-control-8"
+            type="text"
+            value="127.0.0.1"
           />
+        </div>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="form-file-upload-base-control-receipt"
+          >
+            Receipt
+          </label>
+          <div
+            class="components-drop-zone__provider"
+          >
+            <div
+              class="components-drop-zone"
+            />
+          </div>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button is-primary has-text has-icon"
+                disabled=""
+                id="form-file-upload-receipt"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload file
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="form-file-upload-base-control-receipt__help"
+        >
+          Any receipt or message sent to the customer notifying them of the charge. This field will be automatically filled with a Stripe generated email receipt if any such receipt was sent.
+        </p>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="form-file-upload-base-control-customer_communication"
+          >
+            Customer communication
+          </label>
+          <div
+            class="components-drop-zone__provider"
+          >
+            <div
+              class="components-drop-zone"
+            />
+          </div>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button is-primary has-text has-icon"
+                disabled=""
+                id="form-file-upload-customer_communication"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload file
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+        <p
+          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          id="form-file-upload-base-control-customer_communication__help"
+        >
+          Any communication with the customer that you feel is relevant to your case (e.g. emails proving that they received the product or service, or demonstrating their use of or satisfaction with the product or service).
+        </p>
+      </div>
+    </div>
+  </div>
+  <div
+    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      Additional details
+    </div>
+    <div
+      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <p>
+        Provide any extra evidence or statements you'd like the bank to see, either as text or by uploading a document.
+      </p>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-textarea-control-6"
+          >
+            Additional details
+          </label>
+          <textarea
+            class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+            disabled=""
+            id="inspector-textarea-control-6"
+            rows="4"
+          >
+            winning_evidence
+          </textarea>
+        </div>
+      </div>
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="form-file-upload-base-control-uncategorized_file"
+          >
+            Additional document
+          </label>
+          <div
+            class="components-drop-zone__provider"
+          >
+            <div
+              class="components-drop-zone"
+            />
+          </div>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button is-primary has-text has-icon"
+                disabled=""
+                id="form-file-upload-uncategorized_file"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload file
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -494,6 +1230,632 @@ exports[`Dispute evidence page renders correctly 1`] = `
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        General evidence
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <p>
+          Provide general evidence about the customer and the order.
+        </p>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="inspector-textarea-control-15"
+            >
+              Product description
+            </label>
+            <textarea
+              aria-describedby="inspector-textarea-control-15__help"
+              class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+              id="inspector-textarea-control-15"
+              rows="4"
+            />
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-textarea-control-15__help"
+          >
+            A description of the product or service and any relevant details on how this was presented to the customer at the time of purchase.
+          </p>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="inspector-text-control-21"
+            >
+              Customer name
+            </label>
+            <input
+              class="components-text-control__input"
+              id="inspector-text-control-21"
+              type="text"
+              value=""
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="inspector-text-control-22"
+            >
+              Customer email
+            </label>
+            <input
+              class="components-text-control__input"
+              id="inspector-text-control-22"
+              type="text"
+              value=""
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="form-file-upload-base-control-customer_signature"
+            >
+              Customer signature
+            </label>
+            <div
+              class="components-drop-zone__provider"
+            >
+              <div
+                class="components-drop-zone"
+              />
+            </div>
+            <div
+              class="file-upload"
+            >
+              <div
+                class="components-form-file-upload"
+              >
+                <button
+                  class="components-button is-primary has-text has-icon"
+                  id="form-file-upload-customer_signature"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-add-outline"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                      />
+                    </g>
+                  </svg>
+                  Upload file
+                </button>
+                <input
+                  accept=".pdf, image/png, image/jpeg"
+                  style="display: none;"
+                  type="file"
+                />
+              </div>
+              <span
+                class="upload-message"
+              />
+            </div>
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="form-file-upload-base-control-customer_signature__help"
+          >
+            A relevant document or contract showing the customer's signature (if available).
+          </p>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="inspector-textarea-control-16"
+            >
+              Customer billing address
+            </label>
+            <textarea
+              class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+              id="inspector-textarea-control-16"
+              rows="4"
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="inspector-text-control-23"
+            >
+              Customer IP address
+            </label>
+            <input
+              class="components-text-control__input"
+              id="inspector-text-control-23"
+              type="text"
+              value="127.0.0.1"
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="form-file-upload-base-control-receipt"
+            >
+              Receipt
+            </label>
+            <div
+              class="components-drop-zone__provider"
+            >
+              <div
+                class="components-drop-zone"
+              />
+            </div>
+            <div
+              class="file-upload"
+            >
+              <div
+                class="components-form-file-upload"
+              >
+                <button
+                  class="components-button is-primary has-text has-icon"
+                  id="form-file-upload-receipt"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-add-outline"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                      />
+                    </g>
+                  </svg>
+                  Upload file
+                </button>
+                <input
+                  accept=".pdf, image/png, image/jpeg"
+                  style="display: none;"
+                  type="file"
+                />
+              </div>
+              <span
+                class="upload-message"
+              />
+            </div>
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="form-file-upload-base-control-receipt__help"
+          >
+            Any receipt or message sent to the customer notifying them of the charge. This field will be automatically filled with a Stripe generated email receipt if any such receipt was sent.
+          </p>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="form-file-upload-base-control-customer_communication"
+            >
+              Customer communication
+            </label>
+            <div
+              class="components-drop-zone__provider"
+            >
+              <div
+                class="components-drop-zone"
+              />
+            </div>
+            <div
+              class="file-upload"
+            >
+              <div
+                class="components-form-file-upload"
+              >
+                <button
+                  class="components-button is-primary has-text has-icon"
+                  id="form-file-upload-customer_communication"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-add-outline"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                      />
+                    </g>
+                  </svg>
+                  Upload file
+                </button>
+                <input
+                  accept=".pdf, image/png, image/jpeg"
+                  style="display: none;"
+                  type="file"
+                />
+              </div>
+              <span
+                class="upload-message"
+              />
+            </div>
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="form-file-upload-base-control-customer_communication__help"
+          >
+            Any communication with the customer that you feel is relevant to your case (e.g. emails proving that they received the product or service, or demonstrating their use of or satisfaction with the product or service).
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Shipping information
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="inspector-text-control-24"
+            >
+              Shipping carrier
+            </label>
+            <input
+              aria-describedby="inspector-text-control-24__help"
+              class="components-text-control__input"
+              id="inspector-text-control-24"
+              type="text"
+              value=""
+            />
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-text-control-24__help"
+          >
+            The delivery service that shipped a physical product, such as Fedex, UPS, USPS, etc. If multiple carriers were used for this purchase, please separate them with commas.
+          </p>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="inspector-text-control-25"
+            >
+              Tracking number
+            </label>
+            <input
+              aria-describedby="inspector-text-control-25__help"
+              class="components-text-control__input"
+              id="inspector-text-control-25"
+              type="text"
+              value=""
+            />
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-text-control-25__help"
+          >
+            The tracking number (if available) for a physical product, obtained from the delivery service. If multiple tracking numbers were generated for this purchase, please separate them with commas. When we compile your evidence into a single document, these tracking numbers will be expanded to include detailed delivery information from the carrier.
+          </p>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="form-file-upload-base-control-shipping_documentation"
+            >
+              Proof of shipping
+            </label>
+            <div
+              class="components-drop-zone__provider"
+            >
+              <div
+                class="components-drop-zone"
+              />
+            </div>
+            <div
+              class="file-upload"
+            >
+              <div
+                class="components-form-file-upload"
+              >
+                <button
+                  class="components-button is-primary has-text has-icon"
+                  id="form-file-upload-shipping_documentation"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-add-outline"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                      />
+                    </g>
+                  </svg>
+                  Upload file
+                </button>
+                <input
+                  accept=".pdf, image/png, image/jpeg"
+                  style="display: none;"
+                  type="file"
+                />
+              </div>
+              <span
+                class="upload-message"
+              />
+            </div>
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="form-file-upload-base-control-shipping_documentation__help"
+          >
+            Provide documentation as proof that a product was shipped to the cardholder at the same address the cardholder provided to you. This could include a copy of the shipment receipt or label, and show the full shipping address of the cardholder, if possible.
+          </p>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="inspector-text-control-26"
+            >
+              Date of shipment
+            </label>
+            <input
+              aria-describedby="inspector-text-control-26__help"
+              class="components-text-control__input"
+              id="inspector-text-control-26"
+              max="2021-09-07"
+              type="date"
+              value=""
+            />
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-text-control-26__help"
+          >
+            The date on which a physical product began its route to the shipping address. This date should be prior to the date of the dispute.
+          </p>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="inspector-textarea-control-17"
+            >
+              Shipping address
+            </label>
+            <textarea
+              aria-describedby="inspector-textarea-control-17__help"
+              class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+              id="inspector-textarea-control-17"
+              rows="4"
+            />
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-textarea-control-17__help"
+          >
+            The address to which a physical product was shipped. The shipping address must match a billing address verified with AVS. (A signature is not required as evidence of delivery).
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Additional details
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <p>
+          Provide any extra evidence or statements you'd like the bank to see, either as text or by uploading a document.
+        </p>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="inspector-textarea-control-18"
+            >
+              Additional details
+            </label>
+            <textarea
+              class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+              id="inspector-textarea-control-18"
+              rows="4"
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <label
+              class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+              for="form-file-upload-base-control-uncategorized_file"
+            >
+              Additional document
+            </label>
+            <div
+              class="components-drop-zone__provider"
+            >
+              <div
+                class="components-drop-zone"
+              />
+            </div>
+            <div
+              class="file-upload"
+            >
+              <div
+                class="components-form-file-upload"
+              >
+                <button
+                  class="components-button is-primary has-text has-icon"
+                  id="form-file-upload-uncategorized_file"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-add-outline"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                      />
+                    </g>
+                  </svg>
+                  Upload file
+                </button>
+                <input
+                  accept=".pdf, image/png, image/jpeg"
+                  style="display: none;"
+                  type="file"
+                />
+              </div>
+              <span
+                class="upload-message"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <p>
+          When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
+        </p>
+        <p>
+          <strong>
+            Evidence submission is final.
+          </strong>
+           
+          You can also save this evidence for later instead of submitting it immediately.
+           
+          <strong>
+            We will automatically submit any saved evidence at the due date.
+          </strong>
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      >
+        <div>
+          <button
+            class="components-button is-primary"
+            type="button"
+          >
+            Submit evidence
+          </button>
+          <button
+            class="components-button is-secondary"
+            type="button"
+          >
+            Save for later
+          </button>
         </div>
       </div>
     </div>

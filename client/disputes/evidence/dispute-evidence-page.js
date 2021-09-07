@@ -14,20 +14,35 @@ import {
  */
 import Info from '../info';
 import Page from 'components/page';
+import wcpayTracks from 'tracks';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { DisputeEvidenceForm } from './dispute-evidence-form';
 import { useDispute } from 'wcpay/data';
+import {
+	getDisputeProductType,
+	PRODUCT_TYPE_META_KEY,
+} from 'wcpay/disputes/helpers';
 
 export const DisputeEvidencePage = ( props ) => {
-	const {
-		disputeId,
-		productType,
-		onChangeProductType,
-		...evidenceFormProps
-	} = props;
+	const { disputeId, ...evidenceFormProps } = props;
 
-	const { dispute, isLoading } = useDispute( disputeId );
+	const { dispute, updateDispute, isLoading } = useDispute( disputeId );
+
+	const productType = getDisputeProductType( dispute );
+	const updateProductType = ( newProductType ) => {
+		const properties = {
+			selection: newProductType,
+		};
+		wcpayTracks.recordEvent( 'wcpay_dispute_product_selected', properties );
+		updateDispute( {
+			...dispute,
+			metadata: {
+				...dispute.metadata,
+				[ PRODUCT_TYPE_META_KEY ]: newProductType,
+			},
+		} );
+	};
 
 	const readOnly =
 		dispute &&
@@ -81,7 +96,7 @@ export const DisputeEvidencePage = ( props ) => {
 					<LoadableBlock isLoading={ isLoading } numLines={ 2 }>
 						<SelectControl
 							value={ productType }
-							onChange={ onChangeProductType }
+							onChange={ updateProductType }
 							options={ [
 								{
 									label: __(

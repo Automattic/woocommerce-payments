@@ -24,6 +24,9 @@ const mockDisputeNeedsResponse = {
 	evidence_details: {
 		due_by: 1573199200,
 	},
+	metadata: {
+		__product_type: 'physical_product',
+	},
 	reason: 'fraudulent',
 	status: 'needs_response',
 };
@@ -40,13 +43,18 @@ const mockDisputeNoNeedForResponse = {
 	evidence_details: {
 		due_by: 1573099200,
 	},
+	metadata: {
+		__product_type: 'physical_product',
+	},
 	reason: 'general',
 	status: 'under_review',
 };
 
+const mockSubmitEvidence = jest.fn();
+
 jest.mock( 'wcpay/data', () => ( {
 	useDisputeEvidence: () => {
-		return { isSavingEvidence: false };
+		return { isSavingEvidence: false, submitEvidence: mockSubmitEvidence };
 	},
 	useDispute: ( disputeId ) => {
 		if ( disputeId === mockDisputeNeedsResponse.id ) {
@@ -57,35 +65,6 @@ jest.mock( 'wcpay/data', () => ( {
 		return {};
 	},
 } ) );
-
-const fields = [
-	{
-		key: 'general',
-		title: 'General evidence',
-		fields: [
-			{
-				key: 'product_description',
-				label: 'Product description',
-				type: 'textarea',
-			},
-			{
-				key: 'customer_name',
-				label: 'Customer name',
-				type: 'text',
-			},
-			{
-				key: 'customer_signature',
-				label: 'Customer signature',
-				type: 'file',
-			},
-			{
-				key: 'service_date',
-				label: 'Service date',
-				type: 'date',
-			},
-		],
-	},
-];
 
 describe( 'Dispute evidence form', () => {
 	beforeEach( () => {
@@ -99,7 +78,6 @@ describe( 'Dispute evidence form', () => {
 	test( 'needing response, renders correctly', () => {
 		const { container: form } = render(
 			<DisputeEvidenceForm
-				fields={ fields }
 				evidence={ mockDisputeNeedsResponse.evidence }
 				readOnly={ false }
 				disputeId={ mockDisputeNeedsResponse.id }
@@ -111,7 +89,6 @@ describe( 'Dispute evidence form', () => {
 	test( 'not needing response, renders correctly', () => {
 		const { container: form } = render(
 			<DisputeEvidenceForm
-				fields={ fields }
 				evidence={ mockDisputeNoNeedForResponse.evidence }
 				readOnly={ true }
 				disputeId={ mockDisputeNoNeedForResponse.id }
@@ -126,10 +103,8 @@ describe( 'Dispute evidence form', () => {
 		// We have to mount component to select button for click.
 		const { getByRole } = render(
 			<DisputeEvidenceForm
-				fields={ fields }
 				evidence={ mockDisputeNeedsResponse.evidence }
 				readOnly={ false }
-				onSave={ jest.fn() }
 				disputeId={ mockDisputeNeedsResponse.id }
 			/>
 		);
@@ -143,15 +118,11 @@ describe( 'Dispute evidence form', () => {
 	} );
 
 	test( 'onSave called after confirmation only', () => {
-		const onSave = jest.fn();
-
 		// We have to mount component to select button for click.
 		const { getByRole } = render(
 			<DisputeEvidenceForm
-				fields={ fields }
 				evidence={ mockDisputeNeedsResponse.evidence }
 				readOnly={ false }
-				onSave={ onSave }
 				disputeId={ mockDisputeNeedsResponse.id }
 			/>
 		);
@@ -163,11 +134,11 @@ describe( 'Dispute evidence form', () => {
 
 		// Test not confirmed case.
 		fireEvent.click( submitButton );
-		expect( onSave ).toHaveBeenCalledTimes( 0 );
+		expect( mockSubmitEvidence ).toHaveBeenCalledTimes( 0 );
 
 		// Test confirmed case.
 		fireEvent.click( submitButton );
-		expect( onSave ).toHaveBeenCalledTimes( 1 );
+		expect( mockSubmitEvidence ).toHaveBeenCalledTimes( 1 );
 	} );
 } );
 
