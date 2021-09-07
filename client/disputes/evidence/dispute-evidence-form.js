@@ -34,7 +34,7 @@ const expandHelp = ( description ) => {
 };
 
 export const DisputeEvidenceForm = ( props ) => {
-	const { evidence, readOnly, disputeId } = props;
+	const { readOnly, disputeId } = props;
 
 	const { dispute, updateDispute } = useDispute( disputeId );
 
@@ -42,6 +42,7 @@ export const DisputeEvidenceForm = ( props ) => {
 		evidenceTransient,
 		evidenceUploadErrors,
 		isSavingEvidence,
+		isUploadingEvidence,
 		updateEvidenceTransientForDispute,
 		uploadFileEvidenceForDispute,
 		updateEvidenceUploadErrorsForDispute,
@@ -59,6 +60,16 @@ export const DisputeEvidenceForm = ( props ) => {
 	if ( ! fields || ! fields.length ) {
 		return null;
 	}
+
+	const evidence = dispute
+		? {
+				...dispute.evidence,
+				...evidenceTransient,
+				metadata: dispute.metadata || {},
+				isUploading: isUploadingEvidence,
+				uploadingErrors: evidenceUploadErrors,
+		  }
+		: {};
 
 	/*
 	 * Event handlers.

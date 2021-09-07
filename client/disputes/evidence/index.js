@@ -21,12 +21,9 @@ export default ( { query } ) => {
 	const { id: disputeId } = query;
 	const { dispute } = useDispute( disputeId );
 
-	const {
-		isSavingEvidence,
-		isUploadingEvidence,
-		evidenceTransient,
-		evidenceUploadErrors,
-	} = useDisputeEvidence( disputeId );
+	const { isSavingEvidence, evidenceTransient } = useDisputeEvidence(
+		disputeId
+	);
 
 	const { setMessage: setNavigationMessage } = useConfirmNavigation();
 
@@ -63,20 +60,5 @@ export default ( { query } ) => {
 		}
 	}, [ dispute, evidenceTransient, setNavigationMessage, isSavingEvidence ] );
 
-	return (
-		<DisputeEvidencePage
-			disputeId={ disputeId }
-			evidence={
-				dispute
-					? {
-							...dispute.evidence,
-							...evidenceTransient,
-							metadata: dispute.metadata || {},
-							isUploading: isUploadingEvidence,
-							uploadingErrors: evidenceUploadErrors,
-					  }
-					: {}
-			}
-		/>
-	);
+	return <DisputeEvidencePage disputeId={ disputeId } />;
 };
