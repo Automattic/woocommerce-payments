@@ -11,11 +11,8 @@ import { render, fireEvent } from '@testing-library/react';
 import { DisputeEvidenceForm } from '../dispute-evidence-form';
 import { DisputeEvidencePage } from '../dispute-evidence-page';
 
-jest.mock( 'wcpay/data', () => ( {
-	useDisputeEvidence: jest.fn(),
-} ) );
-
-const disputeNeedsResponse = {
+// Need to prefix with "mock" so it's allowed in mocked wcpay/data function.
+const mockDisputeNeedsResponse = {
 	id: 'dp_asdfghjkl',
 	amount: 1000,
 	currency: 'usd',
@@ -31,7 +28,7 @@ const disputeNeedsResponse = {
 	status: 'needs_response',
 };
 
-const disputeNoNeedForResponse = {
+const mockDisputeNoNeedForResponse = {
 	id: 'dp_zxcvbnm',
 	amount: 1050,
 	currency: 'usd',
@@ -46,6 +43,20 @@ const disputeNoNeedForResponse = {
 	reason: 'general',
 	status: 'under_review',
 };
+
+jest.mock( 'wcpay/data', () => ( {
+	useDisputeEvidence: () => {
+		return { isSavingEvidence: false };
+	},
+	useDispute: ( disputeId ) => {
+		if ( disputeId === mockDisputeNeedsResponse.id ) {
+			return { dispute: mockDisputeNeedsResponse };
+		} else if ( disputeId === mockDisputeNoNeedForResponse.id ) {
+			return { dispute: mockDisputeNoNeedForResponse };
+		}
+		return {};
+	},
+} ) );
 
 const fields = [
 	{
@@ -89,8 +100,9 @@ describe( 'Dispute evidence form', () => {
 		const { container: form } = render(
 			<DisputeEvidenceForm
 				fields={ fields }
-				evidence={ disputeNeedsResponse.evidence }
+				evidence={ mockDisputeNeedsResponse.evidence }
 				readOnly={ false }
+				disputeId={ mockDisputeNeedsResponse.id }
 			/>
 		);
 		expect( form ).toMatchSnapshot();
@@ -100,8 +112,9 @@ describe( 'Dispute evidence form', () => {
 		const { container: form } = render(
 			<DisputeEvidenceForm
 				fields={ fields }
-				evidence={ disputeNoNeedForResponse.evidence }
+				evidence={ mockDisputeNoNeedForResponse.evidence }
 				readOnly={ true }
+				disputeId={ mockDisputeNoNeedForResponse.id }
 			/>
 		);
 		expect( form ).toMatchSnapshot();
@@ -114,9 +127,10 @@ describe( 'Dispute evidence form', () => {
 		const { getByRole } = render(
 			<DisputeEvidenceForm
 				fields={ fields }
-				evidence={ disputeNeedsResponse.evidence }
+				evidence={ mockDisputeNeedsResponse.evidence }
 				readOnly={ false }
 				onSave={ jest.fn() }
+				disputeId={ mockDisputeNeedsResponse.id }
 			/>
 		);
 
@@ -135,9 +149,10 @@ describe( 'Dispute evidence form', () => {
 		const { getByRole } = render(
 			<DisputeEvidenceForm
 				fields={ fields }
-				evidence={ disputeNeedsResponse.evidence }
+				evidence={ mockDisputeNeedsResponse.evidence }
 				readOnly={ false }
 				onSave={ onSave }
+				disputeId={ mockDisputeNeedsResponse.id }
 			/>
 		);
 
@@ -167,8 +182,8 @@ describe( 'Dispute evidence page', () => {
 		const { container: form } = render(
 			<DisputeEvidencePage
 				showPlaceholder={ false }
-				dispute={ disputeNeedsResponse }
-				evidence={ disputeNeedsResponse.evidence }
+				disputeId={ mockDisputeNeedsResponse.id }
+				evidence={ mockDisputeNeedsResponse.evidence }
 			/>
 		);
 		expect( form ).toMatchSnapshot();

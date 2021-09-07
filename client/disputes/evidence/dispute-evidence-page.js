@@ -17,26 +17,28 @@ import Page from 'components/page';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { DisputeEvidenceForm } from './dispute-evidence-form';
+import { useDispute } from 'wcpay/data';
 
 export const DisputeEvidencePage = ( props ) => {
 	const {
-		isLoading,
-		dispute = {},
+		disputeId,
 		productType,
 		onChangeProductType,
 		...evidenceFormProps
 	} = props;
+
+	const { dispute, isLoading } = useDispute( disputeId );
+
 	const readOnly =
 		dispute &&
 		'needs_response' !== dispute.status &&
 		'warning_needs_response' !== dispute.status;
-	const disputeIsAvailable = ! isLoading && dispute.id;
-	const testModeNotice = <TestModeNotice topic={ topics.disputeDetails } />;
+	const disputeIsAvailable = ! isLoading && dispute?.id;
 
 	if ( ! isLoading && ! disputeIsAvailable ) {
 		return (
 			<Page isNarrow className="wcpay-dispute-details">
-				{ testModeNotice }
+				<TestModeNotice topic={ topics.disputeDetails } />
 				<div>
 					{ __( 'Dispute not loaded', 'woocommerce-payments' ) }
 				</div>
@@ -46,7 +48,7 @@ export const DisputeEvidencePage = ( props ) => {
 
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
-			{ testModeNotice }
+			<TestModeNotice topic={ topics.disputeDetails } />
 			<Card size="large">
 				<CardHeader>
 					{
@@ -130,6 +132,7 @@ export const DisputeEvidencePage = ( props ) => {
 					<DisputeEvidenceForm
 						{ ...evidenceFormProps }
 						readOnly={ readOnly }
+						disputeId={ disputeId }
 					/>
 				)
 			}

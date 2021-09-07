@@ -19,6 +19,7 @@ import moment from 'moment';
  * Internal dependencies.
  */
 import { FileUploadControl } from './file-upload';
+import { useDisputeEvidence } from 'wcpay/data';
 
 /* If description is an array, separate with newline elements. */
 const expandHelp = ( description ) => {
@@ -38,8 +39,10 @@ export const DisputeEvidenceForm = ( props ) => {
 		onFileRemove,
 		onSave,
 		readOnly,
-		isSavingEvidence,
+		disputeId,
 	} = props;
+
+	const { isSavingEvidence } = useDisputeEvidence( disputeId );
 
 	if ( ! fields || ! fields.length ) {
 		return null;

@@ -48,7 +48,7 @@ const getDisputeProductType = ( dispute ) => {
 // Temporary MVP data wrapper
 export default ( { query } ) => {
 	const { id: disputeId } = query;
-	const { dispute, isLoading, updateDispute } = useDispute( disputeId );
+	const { dispute, updateDispute } = useDispute( disputeId );
 
 	const {
 		isSavingEvidence,
@@ -152,9 +152,8 @@ export default ( { query } ) => {
 
 	return (
 		<DisputeEvidencePage
-			isLoading={ isLoading }
 			isSavingEvidence={ isSavingEvidence }
-			dispute={ dispute }
+			disputeId={ disputeId }
 			evidence={
 				dispute
 					? {
