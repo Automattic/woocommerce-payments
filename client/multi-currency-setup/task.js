@@ -26,7 +26,7 @@ const createMultiCurrencySetupTask = ( { isSetupCompleted } ) => {
 		// It might also be worth exploring adding an error boundary to prevent the whole page to be blank in case of error?
 		container: (
 			<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
-				<MultiCurrencySetup />
+				<MultiCurrencySetup isSetupCompleted={ isSetupCompleted } />
 			</WCPaySettingsContext.Provider>
 		),
 		// please note: marking an item as "dismissed" does not mean it's "completed" - they are considered 2 different things

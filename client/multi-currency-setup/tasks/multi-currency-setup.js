@@ -15,7 +15,15 @@ import SetupCompleteTask from './setup-complete-task';
 import AddCurrenciesTask from './add-currencies-task';
 import './multi-currency-setup.scss';
 
-const MultiCurrencySetup = () => {
+const MultiCurrencySetup = ( { isSetupCompleted } ) => {
+	// Redirect to MC Settings page if the onboarding is once completed.
+	if ( 'yes' === isSetupCompleted ) {
+		window.location.assign(
+			'admin.php?page=wc-settings&tab=wcpay_multi_currency'
+		);
+		return null;
+	}
+
 	return (
 		<Card className="multi-currency-setup-wizard">
 			<CardBody>
