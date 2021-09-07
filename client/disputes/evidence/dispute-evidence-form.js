@@ -106,7 +106,6 @@ export const DisputeEvidenceForm = ( props ) => {
 		disabled: readOnly,
 		help: expandHelp( field.description ),
 	} );
-
 	const composeFileUploadProps = ( field ) => {
 		const fileName =
 			( evidence.metadata && evidence.metadata[ field.key ] ) || '';
@@ -131,7 +130,6 @@ export const DisputeEvidenceForm = ( props ) => {
 			help: expandHelp( field.description ),
 		};
 	};
-
 	const composeFieldControl = ( field ) => {
 		switch ( field.type ) {
 			case 'file':
@@ -167,6 +165,9 @@ export const DisputeEvidenceForm = ( props ) => {
 		}
 	};
 
+	/*
+	 * Construct the evidence component sections.
+	 */
 	const evidenceSections = fields.map( ( section ) => {
 		return (
 			<Card size="large" key={ section.key }>
