@@ -116,7 +116,7 @@ jobs:
             CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
           fi
           echo "$CHANGELOG"
-          echo ::set-output name=CHANGELOG_JSON::$(echo $CHANGELOG | jq -aRs '.')
+          echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG" | jq -aRs '.')
 
       - name: Create release
         id: create_release
@@ -130,7 +130,7 @@ jobs:
           echo "Will build a release for tag '$TAG' with the name '$NAME'..."
 
           echo "Creating pre-release..."
-          CURL_RESPONSE=$(curl --request GET \
+          CURL_RESPONSE=$(curl --request POST \
               --url "$GITHUB_RELEASES_URL" \
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
               --header 'Content-Type: application/json' \
