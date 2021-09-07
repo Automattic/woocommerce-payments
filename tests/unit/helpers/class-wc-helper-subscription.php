@@ -65,6 +65,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $next_payment;
 
 	/**
+	 * End timestamp
+	 *
+	 * @var int
+	 */
+	public $end;
+
+	/**
 	 * Taxes.
 	 *
 	 * @var array
@@ -151,5 +158,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function get_taxes() {
 		return $this->taxes;
+	}
+
+	public function add_order_note( $note = '' ) {
+		// do nothing.
+	}
+
+	public function payment_failed( $new_status = 'on-hold' ) {
+		$this->set_status( $new_status );
 	}
 }
