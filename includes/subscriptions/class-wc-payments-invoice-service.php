@@ -217,7 +217,7 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @return string Invoice ID.
 	 */
-	public static function get_pending_invoice_id( WC_Subscription $subscription ) : string {
+	public static function get_pending_invoice_id( $subscription ) : string {
 		return $subscription->get_meta( self::PENDING_INVOICE_ID_KEY, true );
 	}
 
@@ -227,7 +227,7 @@ class WC_Payments_Invoice_Service {
 	 * @param WC_Subscription $subscription The subscription.
 	 * @param string          $invoice_id   The invoice ID.
 	 */
-	private function set_pending_invoice_id( WC_Subscription $subscription, string $invoice_id ) {
+	private function set_pending_invoice_id( $subscription, string $invoice_id ) {
 		$subscription->update_meta_data( self::PENDING_INVOICE_ID_KEY, $invoice_id );
 		$subscription->save();
 	}
