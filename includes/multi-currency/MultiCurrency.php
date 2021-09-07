@@ -1079,7 +1079,7 @@ class MultiCurrency {
 	/**
 	 * Updates the store settings
 	 *
-	 * @param   array $params  Update requested values
+	 * @param   array $params  Update requested values.
 	 *
 	 * @return  void
 	 */
