@@ -31,7 +31,7 @@ const createMultiCurrencySetupTask = ( { isSetupCompleted } ) => {
 		),
 		// please note: marking an item as "dismissed" does not mean it's "completed" - they are considered 2 different things
 		completed: 'yes' === isSetupCompleted,
-		visible: true,
+		visible: false,
 		additionalInfo: null,
 		isDismissable: true,
 

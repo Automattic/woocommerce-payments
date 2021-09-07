@@ -824,6 +824,9 @@ exports[`Multi Currency enabled currencies list currency search works with curre
               class="add-currencies-task__content"
             >
               <ul>
+                
+                
+                
                 <li
                   class="enabled-currency-checkbox"
                 >
@@ -987,6 +990,9 @@ exports[`Multi Currency enabled currencies list currency search works with curre
               class="add-currencies-task__content"
             >
               <ul>
+                
+                
+                
                 <li
                   class="enabled-currency-checkbox"
                 >
@@ -1150,6 +1156,9 @@ exports[`Multi Currency enabled currencies list currency search works with curre
               class="add-currencies-task__content"
             >
               <ul>
+                
+                
+                
                 <li
                   class="enabled-currency-checkbox"
                 >
@@ -1336,13 +1345,9 @@ exports[`Multi Currency enabled currencies list should hide recommended currenci
               class="add-currencies-task__content"
             >
               <ul>
-                0
-                0
-                <div
-                  class="add-currencies-task__separator"
-                >
-                   
-                </div>
+                
+                
+                
                 <li
                   class="add-currencies-task__available-currencies"
                 >
