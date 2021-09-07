@@ -9,7 +9,7 @@ import { getPath, updateQueryString } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import CurrencySelector from './currency-selector';
+import MultiCurrencySetup from './tasks/multi-currency-setup';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 
 const createMultiCurrencySetupTask = ( { isSetupCompleted } ) => {
@@ -26,7 +26,7 @@ const createMultiCurrencySetupTask = ( { isSetupCompleted } ) => {
 		// It might also be worth exploring adding an error boundary to prevent the whole page to be blank in case of error?
 		container: (
 			<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
-				<CurrencySelector />
+				<MultiCurrencySetup />
 			</WCPaySettingsContext.Provider>
 		),
 		// please note: marking an item as "dismissed" does not mean it's "completed" - they are considered 2 different things
@@ -35,7 +35,7 @@ const createMultiCurrencySetupTask = ( { isSetupCompleted } ) => {
 		additionalInfo: null,
 		isDismissable: true,
 
-		...( '/multi_currency/overview' === getPath()
+		...( '/payments/overview' === getPath()
 			? {
 					onClick: () => {
 						updateQueryString( { task: key }, '' );

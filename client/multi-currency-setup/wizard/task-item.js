@@ -8,7 +8,7 @@ import { Icon, check } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import WizardTaskContext from './task/context';
+import WizardTaskContext from '../../additional-methods-setup/wizard/task/context';
 import './task-item.scss';
 
 const WizardTaskItem = ( {

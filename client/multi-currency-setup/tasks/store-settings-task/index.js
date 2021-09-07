@@ -15,14 +15,14 @@ import interpolateComponents from 'interpolate-components';
 /**
  * Internal dependencies
  */
-import WizardTaskContext from '../wizard/task/context';
-import CollapsibleBody from '../wizard/collapsible-body';
-import WizardTaskItem from '../wizard/task-item';
-import './multi-currency-settings-task.scss';
+import WizardTaskContext from '../../../additional-methods-setup/wizard/task/context';
+import CollapsibleBody from '../../../additional-methods-setup/wizard/collapsible-body';
+import WizardTaskItem from '../../wizard/task-item';
+import './index.scss';
 
 import { useStoreSettings } from 'wcpay/data';
 
-const MultiCurrencySettingsTask = () => {
+const StoreSettingsTask = () => {
 	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();
 
 	const [ status, setStatus ] = useState( 'resolved' );
@@ -183,4 +183,4 @@ const MultiCurrencySettingsTask = () => {
 	);
 };
 
-export default MultiCurrencySettingsTask;
+export default StoreSettingsTask;

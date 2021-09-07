@@ -10,20 +10,16 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import CollapsibleBody from '../wizard/collapsible-body';
-import WizardTaskItem from '../wizard/task-item';
-import WizardTaskContext from '../wizard/task/context';
-import WCPaySettingsContext from '../../settings/wcpay-settings-context';
+import CollapsibleBody from '../../../additional-methods-setup/wizard/collapsible-body';
+import WizardTaskItem from '../../wizard/task-item';
+import WizardTaskContext from '../../../additional-methods-setup/wizard/task/context';
 
-import './setup-complete-task.scss';
+import './index.scss';
 
 import { useDefaultCurrency } from 'wcpay/data';
 
 const SetupComplete = () => {
 	const { isActive } = useContext( WizardTaskContext );
-	const {
-		featureFlags: { multiCurrency },
-	} = useContext( WCPaySettingsContext );
 	const defaultCurrency = useDefaultCurrency();
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
@@ -76,17 +72,15 @@ const SetupComplete = () => {
 					<Button href="admin.php?page=wc-admin" isPrimary>
 						{ __( 'Back to home', 'woocommerce-payments' ) }
 					</Button>
-					{ multiCurrency && (
-						<Button
-							href="admin.php?page=wc-settings&tab=wcpay_multi_currency"
-							isTertiary
-						>
-							{ __(
-								'View Multi-Currency settings',
-								'woocommerce-payments'
-							) }
-						</Button>
-					) }
+					<Button
+						href="admin.php?page=wc-settings&tab=wcpay_multi_currency"
+						isTertiary
+					>
+						{ __(
+							'View Multi-Currency settings',
+							'woocommerce-payments'
+						) }
+					</Button>
 				</div>
 			</CollapsibleBody>
 		</WizardTaskItem>

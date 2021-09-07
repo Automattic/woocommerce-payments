@@ -7,28 +7,25 @@ import { Card, CardBody } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import Wizard from '../wizard/wrapper';
-import WizardTask from '../wizard/task';
-import WizardTaskList from '../wizard/task-list';
-import MultiCurrencySettingsTask from './multi-currency-settings-task';
+import Wizard from '../../additional-methods-setup/wizard/wrapper';
+import WizardTask from '../../additional-methods-setup/wizard/task';
+import WizardTaskList from '../../additional-methods-setup/wizard/task-list';
+import StoreSettingsTask from './store-settings-task';
 import SetupCompleteTask from './setup-complete-task';
 import AddCurrenciesTask from './add-currencies-task';
-import './index.scss';
+import './multi-currency-setup.scss';
 
-const CurrenciesSelector = () => {
+const MultiCurrencySetup = () => {
 	return (
 		<Card className="multi-currency-setup-wizard">
 			<CardBody>
-				<Wizard
-					defaultActiveTask={ 'add-currencies' }
-					defaultCompletedTasks={ 'add-currencies' }
-				>
+				<Wizard defaultActiveTask="add-currencies">
 					<WizardTaskList>
 						<WizardTask id="add-currencies">
 							<AddCurrenciesTask />
 						</WizardTask>
 						<WizardTask id="multi-currency-settings">
-							<MultiCurrencySettingsTask />
+							<StoreSettingsTask />
 						</WizardTask>
 						<WizardTask id="setup-complete">
 							<SetupCompleteTask />
@@ -40,4 +37,4 @@ const CurrenciesSelector = () => {
 	);
 };
 
-export default CurrenciesSelector;
+export default MultiCurrencySetup;

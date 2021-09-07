@@ -105,7 +105,7 @@ export const getTasks = ( {
 			},
 		additionalMethodsSetup.isTaskVisible &&
 			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
-		/*multiCurrencySetup.isTaskVisible*/ true &&
+		multiCurrencySetup.isTaskVisible &&
 			createMultiCurrencySetupTask( multiCurrencySetup ),
 	].filter( Boolean );
 };

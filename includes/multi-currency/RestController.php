@@ -7,9 +7,6 @@
 
 namespace WCPay\MultiCurrency;
 
-use WC_Payments;
-use WP_REST_Response;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -71,6 +68,8 @@ class RestController extends \WC_Payments_REST_Controller {
 
 	/**
 	 * Retrieve currencies for the store.
+	 *
+	 * @return array The store currencies structure.
 	 */
 	public function get_store_currencies() {
 		return [
@@ -84,6 +83,8 @@ class RestController extends \WC_Payments_REST_Controller {
 	 * Update enabled currencies based on posted data.
 	 *
 	 * @param \WP_REST_Request $request Full data about the request.
+	 *
+	 * @return array The store currencies structure.
 	 */
 	public function update_enabled_currencies( $request ) {
 		$params = $request->get_params();
@@ -104,6 +105,8 @@ class RestController extends \WC_Payments_REST_Controller {
 	 * Updates multi currency store settings parameters.
 	 *
 	 * @param   \WP_REST_Request $request  Full data about the request.
+	 *
+	 * @return array The store settings.
 	 */
 	public function update_settings( $request ) {
 		$params = $request->get_params();

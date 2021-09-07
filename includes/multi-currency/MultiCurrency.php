@@ -1225,8 +1225,11 @@ class MultiCurrency {
 
 				// Unhide the store notice in simulation mode.
 				document.addEventListener('DOMContentLoaded', () => {
-					const notice_id = document.querySelector('.woocommerce-store-notice.demo_store').getAttribute('data-notice-id');
-					cookieStore.delete('store_notice' + notice_id);
+					const noticeElement = document.querySelector('.woocommerce-store-notice.demo_store')
+					if( noticeElement ) {
+						const noticeId = noticeElement.getAttribute('data-notice-id');
+						cookieStore.delete( 'store_notice' + noticeId );
+					}
 				});
 			</script>
 				<?php

@@ -8,7 +8,7 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import AddCurrenciesTask from '../add-currencies-task';
+import AddCurrenciesTask from '..';
 import {
 	useCurrencies,
 	useAvailableCurrencies,
@@ -17,7 +17,7 @@ import {
 	useSettings,
 } from 'wcpay/data';
 
-import WizardTaskContext from '../../wizard/task/context';
+import WizardTaskContext from '../../../../additional-methods-setup/wizard/task/context';
 
 jest.mock( 'wcpay/data', () => ( {
 	useCurrencies: jest.fn(),
