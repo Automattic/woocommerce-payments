@@ -10,6 +10,7 @@ namespace WCPay\Payment_Methods;
 use WC_Order;
 use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -70,7 +71,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
-		$this->title              = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->description        = '';
 		$this->checkout_title     = __( 'Popular payment methods', 'woocommerce-payments' );
 		$this->payment_methods    = $payment_methods;
@@ -236,18 +236,89 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return $this->create_setup_intent();
 		}
 
+		$minimum_amount = $this->get_cached_minimum_amount( $currency );
+		if ( ! is_null( $minimum_amount ) && $converted_amount < $minimum_amount ) {
+			// Use the minimum amount in order to create an intent and display fields.
+			$converted_amount = $minimum_amount;
+		}
+
 		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] );
 
-		$payment_intent = $this->payments_api_client->create_intention(
-			$converted_amount,
-			strtolower( $currency ),
-			array_values( $enabled_payment_methods ),
-			$order_id ?? 0
-		);
+		try {
+			$payment_intent = $this->payments_api_client->create_intention(
+				$converted_amount,
+				strtolower( $currency ),
+				array_values( $enabled_payment_methods ),
+				$order_id ?? 0
+			);
+		} catch ( API_Exception $e ) {
+			$minimum_amount = $this->extract_minimum_amount( $e, $currency );
+			if ( ! is_null( $minimum_amount ) ) {
+				/**
+				 * Try to create a new payment intent with the minimum amount
+				 * in order to display fields om the checkout page and allow
+				 * customers to select a shipping method, which might make
+				 * the total amount of the order higher than the minimum
+				 * amount for the API.
+				 */
+				$payment_intent = $this->payments_api_client->create_intention(
+					$minimum_amount,
+					strtolower( $currency ),
+					array_values( $enabled_payment_methods ),
+					$order_id ?? 0
+				);
+			}
+		}
+
 		return [
 			'id'            => $payment_intent->get_id(),
 			'client_secret' => $payment_intent->get_client_secret(),
 		];
+	}
+
+	/**
+	 * Extracts the minimum required amount for a charge from an exception.
+	 *
+	 * If an amount is found, it is stored within a transient, as the amount
+	 * might/will change based on exchange rates and merchant bank accounts.
+	 *
+	 * @param API_Exception $e        The exception that was thrown.
+	 * @param string        $currency The currency used when the exceptionw as thrown.
+	 *
+	 * @return int|null Either the minimum amount (if the exception contains one)
+	 *                  or `null` whenever the exception is of another type.
+	 */
+	protected function extract_minimum_amount( API_Exception $e, string $currency ) {
+		if ( 'amount_too_small' !== $e->get_error_code() ) {
+			return null;
+		}
+
+		// ToDo: Make sure that this works universally!
+		$pattern = "/([\d\.]+) $currency/i";
+		$message = $e->getMessage();
+
+		if ( ! preg_match( $pattern, $message, $matches ) ) {
+			return null;
+		}
+
+		$required = WC_Payments_Utils::prepare_amount( $matches[1], $currency );
+
+		// Cache the result.
+		set_transient( 'wcpay_minimum_amount_' . strtolower( $currency ), $required, DAY_IN_SECONDS ); // ToDo: Is this amount of time appropriate?
+
+		return $required;
+	}
+
+	/**
+	 * Checks if there is a minimum amount required for transactions in a given currency.
+	 *
+	 * @param string $currency The currency to check for.
+	 *
+	 * @return int|null Either the minimum amount, or `null` if not available.
+	 */
+	protected function get_cached_minimum_amount( $currency ) {
+		$cached = get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
+		return intval( $cached ) ? intval( $cached ) : null;
 	}
 
 	/**
@@ -338,6 +409,22 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
 			if ( $payment_needed ) {
+				// Try catching the error without reaching the API.
+				$minimum_amount = $this->get_cached_minimum_amount( $currency );
+				if ( $minimum_amount > $converted_amount ) {
+					$message = sprintf(
+						// translators: %1: payment method name, %2 a formatted price.
+						__(
+							'The selected payment method (%1$s) requires a total amount of at least %2$s.',
+							'woocommerce-payments'
+						),
+						$this->title,
+						wc_price( WC_Payments_Utils::interpret_stripe_amount( $minimum_amount, $currency ), [ 'currency' => $currency ] )
+					);
+					wc_add_notice( $message, 'error' );
+					return false;
+				}
+
 				$this->payments_api_client->update_intention(
 					$payment_intent_id,
 					$converted_amount,
