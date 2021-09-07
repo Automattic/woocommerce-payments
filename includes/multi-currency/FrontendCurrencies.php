@@ -46,6 +46,7 @@ class FrontendCurrencies {
 		$this->multi_currency       = $multi_currency;
 		$this->localization_service = $localization_service;
 
+		// todo probably add check.
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_request() ) {
 			// Currency hooks.
 			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 50 );
