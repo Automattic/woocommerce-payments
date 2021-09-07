@@ -285,45 +285,49 @@ const AddCurrenciesTask = () => {
 								<div className="add-currencies-task__content">
 									<EnabledCurrenciesModalCheckboxList>
 										{ ! searchText &&
-											recommendedCurrencyCodes.length && (
-												<li>
-													<h4>
-														{ __(
-															'Recommended Currencies',
-															'woocommerce-payments'
-														) }
-													</h4>
-												</li>
-											) }
+										recommendedCurrencyCodes.length ? (
+											<li>
+												<h4>
+													{ __(
+														'Recommended Currencies',
+														'woocommerce-payments'
+													) }
+												</h4>
+											</li>
+										) : (
+											''
+										) }
 										{ ! searchText &&
-											recommendedCurrencyCodes.length &&
-											availableCurrencyCodes.length &&
-											recommendedCurrencyCodes.map(
-												( code ) => (
-													<EnabledCurrenciesModalCheckbox
-														key={
-															'recommended-' +
-															availableCurrencies[
-																code
-															].id
-														}
-														checked={
-															selectedCurrencies[
-																code
-															]
-														}
-														onChange={
-															handleChange
-														}
-														currency={
-															availableCurrencies[
-																code
-															]
-														}
-													/>
-												)
-											) }
-										{ ! searchText && (
+										recommendedCurrencyCodes.length &&
+										availableCurrencyCodes.length
+											? recommendedCurrencyCodes.map(
+													( code ) => (
+														<EnabledCurrenciesModalCheckbox
+															key={
+																'recommended-' +
+																availableCurrencies[
+																	code
+																].id
+															}
+															checked={
+																selectedCurrencies[
+																	code
+																]
+															}
+															onChange={
+																handleChange
+															}
+															currency={
+																availableCurrencies[
+																	code
+																]
+															}
+														/>
+													)
+											  )
+											: '' }
+										{ ! searchText &&
+										recommendedCurrencyCodes.length ? (
 											<div
 												className={
 													'add-currencies-task__separator'
@@ -331,6 +335,8 @@ const AddCurrenciesTask = () => {
 											>
 												&nbsp;
 											</div>
+										) : (
+											''
 										) }
 										{ ! searchText && (
 											<li className="add-currencies-task__available-currencies">
