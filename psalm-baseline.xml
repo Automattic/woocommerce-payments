@@ -180,8 +180,9 @@
     <UndefinedClass occurrences="3">
       <code>WC_Subscription</code>
     </UndefinedClass>
-    <UndefinedFunction occurrences="2">
+    <UndefinedFunction occurrences="3">
       <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] )</code>
+      <code>wcs_get_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) )</code>
     </UndefinedFunction>
   </file>
 </files>
