@@ -99,7 +99,8 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 2.9.1 - 2021-xx-xx =
-* Fix - error while checking out with UPE when fields are hidden.
+* Fix - Error while checking out with UPE when fields are hidden.
+* Fix - Unable to onboard when in treatment mode.
 
 = 2.9.0 - 2021-08-25 =
 * Add - Split discount line in timeline into variable fee and fixed fee.
