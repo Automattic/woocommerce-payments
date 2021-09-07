@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 2.9.1 - 2021-xx-xx =
+= 2.9.1 - 2021-09-07 =
 * Fix - Error while checking out with UPE when fields are hidden.
 * Fix - Unable to onboard when in treatment mode.
 

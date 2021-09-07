@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
 Tested up to: 5.8
 Requires PHP: 7.0
-Stable tag: 2.9.0
+Stable tag: 2.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.9.1 - 2021-xx-xx =
+= 2.9.1 - 2021-09-07 =
 * Fix - Error while checking out with UPE when fields are hidden.
 * Fix - Unable to onboard when in treatment mode.
 
