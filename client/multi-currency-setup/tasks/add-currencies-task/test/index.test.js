@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { useSelect } from '@wordpress/data';
 
 /**
@@ -18,6 +18,8 @@ import {
 } from 'wcpay/data';
 
 import WizardTaskContext from '../../../../additional-methods-setup/wizard/task/context';
+import { recommendedCurrencyCodes } from '../constants';
+import { __ } from '@wordpress/i18n';
 
 jest.mock( 'wcpay/data', () => ( {
 	useCurrencies: jest.fn(),
@@ -154,33 +156,6 @@ const enabledCurrencies = {
 		flag: '🇺🇸',
 		symbol: '$',
 	},
-	CAD: {
-		code: 'CAD',
-		rate: '1.42',
-		name: 'Canadian dollar',
-		id: 'cad',
-		is_default: false,
-		flag: '🇨🇦',
-		symbol: '$',
-	},
-	GBP: {
-		code: 'GBP',
-		rate: '0.708099',
-		name: 'Pound sterling',
-		id: 'gbp',
-		is_default: false,
-		flag: '🇬🇧',
-		symbol: '£',
-	},
-	EUR: {
-		code: 'EUR',
-		rate: '0.826381',
-		name: 'Euro',
-		id: 'eur',
-		is_default: false,
-		flag: '🇪🇺',
-		symbol: '€',
-	},
 };
 
 const defaultCurrency = {
@@ -218,9 +193,13 @@ useSettings.mockReturnValue( {
 	isSaving: false,
 } );
 
+const setCompletedMock = jest.fn();
+
 const createContainer = () => {
 	const { container } = render(
-		<WizardTaskContext.Provider value={ { isActive: true } }>
+		<WizardTaskContext.Provider
+			value={ { isActive: true, setCompleted: setCompletedMock } }
+		>
 			<AddCurrenciesTask />
 		</WizardTaskContext.Provider>
 	);
@@ -236,20 +215,254 @@ describe( 'Multi Currency enabled currencies list', () => {
 		jest.clearAllMocks();
 	} );
 
-	test( 'Add currencies task renders correctly', () => {
+	test( 'add currencies task renders correctly', () => {
 		const container = createContainer();
-		expect( container ).toMatchSnapshot();
+		expect( container ).toMatchSnapshot(
+			'snapshot-multi-currency-onboarding'
+		);
 	} );
 
-	test( 'Recommended currencies are checked by default', () => {} );
+	test( 'recommended currencies are checked by default', () => {
+		createContainer();
+		recommendedCurrencyCodes.forEach( ( currencyCode ) => {
+			expect(
+				screen.getByRole( 'checkbox', {
+					name: new RegExp(
+						availableCurrencies[ currencyCode ].name,
+						'g'
+					),
+				} )
+			).toBeChecked();
+		} );
+	} );
 
-	test( 'Currency search works with currency name', () => {} );
+	test( "store currency shouldn't be visible", () => {
+		createContainer();
+		expect(
+			screen.queryByRole( 'checkbox', { name: /US Dollar/ } )
+		).not.toBeInTheDocument();
+	} );
 
-	test( 'Currency search works with currency code', () => {} );
+	test( 'currency search works with currency name', () => {
+		const container = createContainer();
 
-	test( 'Currency search works with currency symbol', () => {} );
+		fireEvent.change(
+			screen.getByPlaceholderText(
+				__( 'Search currencies', 'woocommerce-payments' )
+			),
+			{ target: { value: 'Danish krone' } }
+		);
 
-	test( "Shouldn't proceed with no selected currency", () => {} );
+		expect( container ).toMatchSnapshot(
+			'snapshot-currency-search-by-name'
+		);
 
-	test( 'Should proceed with at least one selected currency', () => {} );
+		expect(
+			screen.getByRole( 'checkbox', { name: /Danish krone/ } )
+		).toBeVisible();
+		expect(
+			screen.queryByRole( 'checkbox', { name: /Euro/ } )
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'currency search works with currency code', () => {
+		const container = createContainer();
+
+		fireEvent.change(
+			screen.getByPlaceholderText(
+				__( 'Search currencies', 'woocommerce-payments' )
+			),
+			{ target: { value: 'DKK' } }
+		);
+
+		expect( container ).toMatchSnapshot(
+			'snapshot-currency-search-by-code'
+		);
+
+		expect(
+			screen.getByRole( 'checkbox', { name: /Danish krone/ } )
+		).toBeVisible();
+		expect(
+			screen.queryByRole( 'checkbox', { name: /Euro/ } )
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'currency search works with currency symbol', () => {
+		const container = createContainer();
+
+		fireEvent.change(
+			screen.getByPlaceholderText(
+				__( 'Search currencies', 'woocommerce-payments' )
+			),
+			{ target: { value: '€' } }
+		);
+
+		expect( container ).toMatchSnapshot(
+			'snapshot-currency-search-by-symbol'
+		);
+
+		expect(
+			screen.getByRole( 'checkbox', { name: /Euro/ } )
+		).toBeVisible();
+		expect(
+			screen.queryByRole( 'checkbox', { name: /Danish krone/ } )
+		).not.toBeInTheDocument();
+	} );
+
+	test( "shouldn't proceed with no selected currency", () => {
+		createContainer();
+		// uncheck all recommended currencies
+		recommendedCurrencyCodes.forEach( ( code ) => {
+			fireEvent.click(
+				screen.queryByRole( 'checkbox', {
+					name: new RegExp( availableCurrencies[ code ].name, 'g' ),
+				} )
+			);
+		} );
+
+		expect(
+			screen.getByRole( 'button', {
+				name: /Add ([a-z0-9]+ )?Currencies/,
+			} )
+		).toBeDisabled();
+	} );
+
+	test( 'should proceed with at least one selected currency', () => {
+		createContainer();
+		// uncheck all recommended currencies
+		recommendedCurrencyCodes.forEach( ( code ) => {
+			fireEvent.click(
+				screen.queryByRole( 'checkbox', {
+					name: new RegExp( availableCurrencies[ code ].name, 'g' ),
+				} )
+			);
+		} );
+
+		expect(
+			screen.getByRole( 'button', {
+				name: /Add ([a-z0-9]+ )?currenc(y|ies)/i,
+			} )
+		).toBeDisabled();
+
+		fireEvent.click(
+			screen.queryByRole( 'checkbox', {
+				name: /Euro/,
+			} )
+		);
+
+		expect(
+			screen.getByRole( 'button', {
+				name: /Add ([a-z0-9]+ )?currenc(y|ies)/i,
+			} )
+		).toBeEnabled();
+
+		expect(
+			screen.getByRole( 'button', {
+				name: /Add ([a-z0-9]+ )?currenc(y|ies)/i,
+			} )
+		).toHaveTextContent( 'Add 1 currency' );
+
+		fireEvent.click(
+			screen.queryByRole( 'checkbox', {
+				name: /Pound sterling/,
+			} )
+		);
+
+		expect(
+			screen.getByRole( 'button', {
+				name: /Add ([a-z0-9]+ )?currenc(y|ies)/i,
+			} )
+		).toBeEnabled();
+
+		expect(
+			screen.getByRole( 'button', {
+				name: /Add ([a-z0-9]+ )?currenc(y|ies)/i,
+			} )
+		).toHaveTextContent( 'Add 2 currencies' );
+	} );
+
+	test( 'should hide recommended currencies section, if all recommended currencies are enabled', () => {
+		useEnabledCurrencies.mockReturnValue( {
+			enabledCurrencies: availableCurrencies,
+			submitEnabledCurrenciesUpdate: jest.fn(),
+		} );
+
+		const container = createContainer();
+
+		expect( container ).toMatchSnapshot(
+			'snapshot-all-currencies-selected'
+		);
+
+		expect( screen.queryAllByRole( 'checkbox' ).length ).toBe( 0 );
+		expect(
+			screen.queryByText( /Recommended Currencies/ )
+		).not.toBeInTheDocument();
+
+		expect(
+			screen.getByRole( 'button', {
+				name: /Add ([a-z0-9]+ )?currenc(y|ies)/i,
+			} )
+		).toBeDisabled();
+
+		// Reset mock currencies to original state.
+		useEnabledCurrencies.mockReturnValue( {
+			enabledCurrencies: enabledCurrencies,
+			submitEnabledCurrenciesUpdate: jest.fn(),
+		} );
+	} );
+
+	test( 'should save the checkboxes state on "continue" click', () => {
+		createContainer();
+		// uncheck all recommended currencies
+		recommendedCurrencyCodes.forEach( ( code ) => {
+			fireEvent.click(
+				screen.queryByRole( 'checkbox', {
+					name: new RegExp( availableCurrencies[ code ].name, 'g' ),
+				} )
+			);
+		} );
+
+		expect(
+			screen.getByRole( 'button', {
+				name: /Add ([a-z0-9]+ )?currenc(y|ies)/i,
+			} )
+		).toBeDisabled();
+
+		fireEvent.click(
+			screen.queryByRole( 'checkbox', {
+				name: /Euro/gi,
+			} )
+		);
+
+		fireEvent.click(
+			screen.queryByRole( 'checkbox', {
+				name: /Pound sterling/gi,
+			} )
+		);
+
+		expect(
+			screen.getByRole( 'button', {
+				name: /Add ([a-z0-9]+ )?currenc(y|ies)/i,
+			} )
+		).toBeEnabled();
+
+		expect(
+			screen.getByRole( 'button', {
+				name: /Add ([a-z0-9]+ )?currenc(y|ies)/i,
+			} )
+		).toHaveTextContent( 'Add 2 currencies' );
+
+		fireEvent.click(
+			screen.getByRole( 'button', {
+				name: /Add ([a-z0-9]+ )?currenc(y|ies)/i,
+			} )
+		);
+
+		expect( setCompletedMock ).toHaveBeenCalledWith(
+			{
+				initialCurrencies: enabledCurrencies,
+			},
+			'multi-currency-settings'
+		);
+	} );
 } );

@@ -123,6 +123,7 @@ const StoreSettingsTask = () => {
 						<CheckboxControl
 							checked={ isAutomaticSwitchEnabledValue }
 							onChange={ handleIsAutomaticSwitchEnabledClick }
+							data-testid={ 'enable_auto_currency' }
 							label={ __(
 								'Automatically switch customers to their local currency if it has been enabled',
 								'woocommerce-payments'
@@ -134,6 +135,7 @@ const StoreSettingsTask = () => {
 						<CheckboxControl
 							checked={ isStorefrontSwitcherEnabledValue }
 							onChange={ handleIsStorefrontSwitcherEnabledClick }
+							data-testid={ 'enable_storefront_switcher' }
 							label={ __(
 								'Add a currency switcher to the cart widget',
 								'woocommerce-payments'
