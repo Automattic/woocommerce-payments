@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Use store currency on analytics leaderboard when Multi-Currency is enabled.
 * Fix - Enabled currencies modal UI.
 * Fix - User order currency format on admin refund button.
+* Fix - Clear the list of selected currencies after closing the modal for adding currencies.
 
 = 2.9.1 - 2021-09-07 =
 * Fix - Error while checking out with UPE when fields are hidden.
