@@ -1021,6 +1021,8 @@ class MultiCurrency {
 	/**
 	 * Apply client order currency format and reduces the rounding precision to 2.
 	 *
+	 * @psalm-suppress InvalidGlobal
+	 *
 	 * @return  void
 	 */
 	public function set_client_format_and_rounding_precision() {
