@@ -68,6 +68,10 @@ class Logger {
 	 * @return bool Depending on the enable_logging setting.
 	 */
 	public static function can_log() {
+		if ( apply_filters( 'wcpay_force_logging', false ) ) {
+			return true;
+		}
+
 		if ( ! function_exists( 'wc_get_logger' ) ) {
 			return false;
 		}

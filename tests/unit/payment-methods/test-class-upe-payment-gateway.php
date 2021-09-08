@@ -31,6 +31,7 @@ use WC_Subscriptions_Cart;
 use WP_UnitTestCase;
 use WP_User;
 use Exception;
+use WCPay\MultiCurrency\Currency;
 
 /**
  * Overriding global function within namespace for testing
@@ -1057,8 +1058,43 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$message   = "Error: Amount must be at least $string $currency";
 		$exception = new API_Exception( $message, 'amount_too_small', 400 );
 
+		// The value should not only be extracted, but cached too.
+		delete_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
+
 		$result = $this->mock_upe_gateway->extract_minimum_amount( $exception, $currency );
 		$this->assertEquals( $expected_value, $result );
+		$this->assertEquals( $result, get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) ) );
+	}
+
+	public function test_extract_minimum_amount_returns_null_for_other_exceptions() {
+		$exception = new API_Exception( 'Some message', 'other_error_code', 400 );
+		$this->assertNull( $this->mock_upe_gateway->extract_minimum_amount( $exception, 'USD' ) );
+	}
+
+	public function test_extract_minimum_amount_logs_error_without_match() {
+		$message   = 'Error: Amount must be at least twenty three USD';
+		$exception = new API_Exception( $message, 'amount_too_small', 400 );
+
+		// Create a temporary class, whose method must be called.
+		$mock_logger = $this->getMockBuilder( 'stdClass' )
+			->setMethods( [ 'log_message' ] )
+			->getMock();
+
+		$mock_logger
+			->expects( $this->once() )
+			->method( 'log_message' )
+			->with( 'Error: Could not extract minimum amount from the following string: "Error: Amount must be at least twenty three USD"' );
+
+		// Force logging and assign the mock method to the right filter.
+		add_filter( 'wcpay_force_logging', '__return_true' );
+		add_filter( 'woocommerce_logger_log_message', [ $mock_logger, 'log_message' ] );
+
+		$result = $this->mock_upe_gateway->extract_minimum_amount( $exception, 'USD' );
+		$this->assertNull( $result );
+
+		// Cleanup.
+		remove_filter( 'woocommerce_logger_log_message', [ $mock_logger, 'log_message' ] );
+		add_filter( 'wcpay_force_logging', '__return_false' );
 	}
 
 	/**

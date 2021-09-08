@@ -293,18 +293,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return null;
 		}
 
-		// ToDo: Make sure that this works universally!
 		$pattern = "/([\d\.]+).*$currency/iu";
 		$message = $e->getMessage();
 
 		if ( ! preg_match( $pattern, $message, $matches ) ) {
+			Logger::log( 'Error: Could not extract minimum amount from the following string: "' . $message . '"' );
 			return null;
 		}
 
 		$required = WC_Payments_Utils::prepare_amount( $matches[1], $currency );
 
 		// Cache the result.
-		set_transient( 'wcpay_minimum_amount_' . strtolower( $currency ), $required, DAY_IN_SECONDS ); // ToDo: Is this amount of time appropriate?
+		set_transient( 'wcpay_minimum_amount_' . strtolower( $currency ), $required, DAY_IN_SECONDS );
 
 		return $required;
 	}
