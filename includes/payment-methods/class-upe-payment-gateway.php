@@ -23,6 +23,7 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payments;
 use WC_Payments_Utils;
+use Session_Rate_Limiter;
 
 use Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
@@ -66,9 +67,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
 	 * @param array                                $payment_methods          - Array of UPE payment methods.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter             - Session Rate Limiter instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service, array $payment_methods ) {
-		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service, array $payment_methods, Session_Rate_Limiter $failed_transaction_rate_limiter ) {
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter );
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 		$this->description        = '';
@@ -409,6 +411,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
 			if ( $payment_needed ) {
+				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+					wc_add_notice( __( 'Your payment was not processed.', 'woocommerce-payments' ), 'error' );
+					return [
+						'result'       => 'fail',
+						'redirect_url' => '',
+					];
+				}
+
 				// Try catching the error without reaching the API.
 				$minimum_amount = $this->get_cached_minimum_amount( $currency );
 				if ( $minimum_amount > $converted_amount ) {
@@ -418,7 +428,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 
 				try {
-					$this->payments_api_client->update_intention(
+					$updated_payment_intent = $this->payments_api_client->update_intention(
 						$payment_intent_id,
 						$converted_amount,
 						strtolower( $currency ),
@@ -435,6 +445,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						wc_add_notice( $message, 'error' );
 						return false;
 					}
+				}
+
+				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
+				if ( 'card_declined' === $last_payment_error_code ) {
+					// UPE method gives us the error of the previous payment attempt, so we use that for the Rate Limiter.
+					$this->failed_transaction_rate_limiter->bump();
 				}
 			}
 		} else {

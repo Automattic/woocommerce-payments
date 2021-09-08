@@ -82,7 +82,7 @@ class WC_Payments_Customer_Service {
 		// User ID might be 0 if fetched from a WP_User instance for a user who isn't logged in.
 		if ( null === $user_id || 0 === $user_id ) {
 			// Try to retrieve the customer id from the session if stored previously.
-			$customer_id = WC()->session->get( self::CUSTOMER_ID_SESSION_KEY );
+			$customer_id = WC()->session ? WC()->session->get( self::CUSTOMER_ID_SESSION_KEY ) : null;
 			return $customer_id;
 		}
 
