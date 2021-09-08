@@ -288,13 +288,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return int|null Either the minimum amount (if the exception contains one)
 	 *                  or `null` whenever the exception is of another type.
 	 */
-	protected function extract_minimum_amount( API_Exception $e, string $currency ) {
+	public function extract_minimum_amount( API_Exception $e, string $currency ) {
 		if ( 'amount_too_small' !== $e->get_error_code() ) {
 			return null;
 		}
 
 		// ToDo: Make sure that this works universally!
-		$pattern = "/([\d\.]+) $currency/i";
+		$pattern = "/([\d\.]+).*$currency/iu";
 		$message = $e->getMessage();
 
 		if ( ! preg_match( $pattern, $message, $matches ) ) {

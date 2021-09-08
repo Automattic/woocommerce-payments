@@ -1022,6 +1022,45 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( $mock_token, $this->mock_upe_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 	}
 
+	public function currencies_for_minimum_accounts_provider() {
+		return [
+			[ 'usd', '$0.50', 50 ],
+			[ 'aed', '2.00 د.إ', 200 ],
+			[ 'aud', '$0.50', 50 ],
+			[ 'bgn', 'лв1.00', 100 ],
+			[ 'brl', 'R$0.50', 50 ],
+			[ 'cad', '$0.50', 50 ],
+			[ 'chf', '0.50 Fr', 50 ],
+			[ 'czk', '15.00Kč', 1500 ],
+			[ 'dkk', '2.50-kr.', 250 ],
+			[ 'eur', '€0.50', 50 ],
+			[ 'gbp', '£0.30', 30 ],
+			[ 'hkd', '$4.00', 400 ],
+			[ 'huf', '175.00 Ft', 17500 ],
+			[ 'inr', '₹0.50', 50 ],
+			[ 'jpy', '¥50', 50 ],
+			[ 'mxn', '$10', 1000 ],
+			[ 'myr', 'RM 2', 200 ],
+			[ 'nok', '3.00-kr.', 300 ],
+			[ 'nzd', '$0.50', 50 ],
+			[ 'pln', '2.00 zł', 200 ],
+			[ 'ron', 'lei2.00', 200 ],
+			[ 'sek', '3.00-kr.', 300 ],
+			[ 'sgd', '$0.50', 50 ],
+		];
+	}
+
+	/**
+	 * @dataProvider currencies_for_minimum_accounts_provider
+	 */
+	public function test_extract_minimum_amount( $currency, $string, $expected_value ) {
+		$message   = "Error: Amount must be at least $string $currency";
+		$exception = new API_Exception( $message, 'amount_too_small', 400 );
+
+		$result = $this->mock_upe_gateway->extract_minimum_amount( $exception, $currency );
+		$this->assertEquals( $expected_value, $result );
+	}
+
 	/**
 	 * Helper function to mock subscriptions for internal UPE payment methods.
 	 */
