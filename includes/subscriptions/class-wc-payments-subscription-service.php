@@ -149,8 +149,7 @@ class WC_Payments_Subscription_Service {
 	 */
 	public function create_subscription( WC_Subscription $subscription ) {
 		$checkout_error_message = __( 'There was a problem creating your subscription. Please try again or contact us for assistance.', 'woocommerce-payments' );
-		$user                   = $subscription->get_user();
-		$wcpay_customer_id      = $user instanceof WP_User ? $this->customer_service->get_customer_id_by_user_id( $user->ID ) : null;
+		$wcpay_customer_id      = $this->customer_service->get_customer_id_for_order( $subscription );
 
 		if ( ! $wcpay_customer_id ) {
 			Logger::error( 'There was a problem creating the WCPay subscription. WCPay customer ID missing.' );
