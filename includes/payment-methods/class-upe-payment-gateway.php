@@ -413,10 +413,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			if ( $payment_needed ) {
 				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
 					wc_add_notice( __( 'Your payment was not processed.', 'woocommerce-payments' ), 'error' );
-					return [
-						'result'       => 'fail',
-						'redirect_url' => '',
-					];
+					return false;
 				}
 
 				// Try catching the error without reaching the API.
