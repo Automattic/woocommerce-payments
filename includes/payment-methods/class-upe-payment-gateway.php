@@ -318,7 +318,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @return int|null Either the minimum amount, or `null` if not available.
 	 */
-	protected function get_cached_minimum_amount( $currency ) {
+	public function get_cached_minimum_amount( $currency ) {
 		$cached = get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
 		return intval( $cached ) ? intval( $cached ) : null;
 	}

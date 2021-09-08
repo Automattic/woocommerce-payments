@@ -1177,6 +1177,112 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		add_filter( 'wcpay_force_logging', '__return_false' );
 	}
 
+	public function test_get_cached_minimum_amount_returns_amount() {
+		// Note: WP stores options as strings.
+		set_transient( 'wcpay_minimum_amount_usd', '500', DAY_IN_SECONDS );
+		$result = $this->mock_upe_gateway->get_cached_minimum_amount( 'usd' );
+		$this->assertSame( 500, $result );
+	}
+
+	public function test_get_cached_minimum_amount_returns_null_without_cache() {
+		delete_transient( 'wcpay_minimum_amount_usd' );
+		$result = $this->mock_upe_gateway->get_cached_minimum_amount( 'usd' );
+		$this->assertNull( $result );
+	}
+
+	public function test_create_payment_intent_uses_cached_minimum_amount() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0.45 );
+		$order->save();
+
+		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 50, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_intention' )
+			->with( 50, 'usd', [ 'card' ] )
+			->willReturn( $intent );
+
+		$this->mock_upe_gateway->create_payment_intent( $order->get_id() );
+	}
+
+	public function test_create_payment_intent_creates_new_intent_with_minimum_amount() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 0.45 );
+		$order->save();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 50, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->exactly( 2 ) )
+			->method( 'create_intention' )
+			->withConsecutive(
+				[ 45, 'usd', [ 'card' ] ],
+				[ 50, 'usd', [ 'card' ] ]
+			)
+			->will(
+				$this->onConsecutiveCalls(
+					$this->throwException( new API_Exception( 'Error: Amount must be at least $0.50 usd', 'amount_too_small', 400 ) ),
+					$this->returnValue( $intent )
+				)
+			);
+
+		$result = $this->mock_upe_gateway->create_payment_intent( $order->get_id() );
+		$this->assertsame( 'client_secret_123', $result['client_secret'] );
+	}
+
+	public function test_process_payment_rejects_with_cached_minimum_acount() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 0.45 );
+		$order->save();
+
+		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
+
+		// Make sure that the payment was not actually processed.
+		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+		$this->assertSame( false, $result );
+
+		// An error should be added.
+		$notices = WC()->session->get( 'wc_notices' );
+		$this->assertArrayHasKey( 'error', $notices );
+		foreach ( $notices['error'] as $notice ) {
+			$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . wc_price( 0.5, [ 'currency' => 'USD' ] ) . '.';
+			$this->assertSame( $message, $notice['notice'] );
+		}
+		wc_clear_notices();
+	}
+
+	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0.45 );
+		$order->save();
+
+		delete_transient( 'wcpay_minimum_amount_usd' );
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_intention' )
+			->will( $this->throwException( new API_Exception( 'Error: Amount must be at least $60 usd', 'amount_too_small', 400 ) ) );
+
+		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+		$this->assertFalse( $result );
+		$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
+
+		// An error should be added.
+		$notices = WC()->session->get( 'wc_notices' );
+		$this->assertArrayHasKey( 'error', $notices );
+		foreach ( $notices['error'] as $notice ) {
+			$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . wc_price( 60, [ 'currency' => 'USD' ] ) . '.';
+			$this->assertSame( $message, $notice['notice'] );
+		}
+		wc_clear_notices();
+	}
+
 	/**
 	 * Helper function to mock subscriptions for internal UPE payment methods.
 	 */
@@ -1198,5 +1304,4 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' => (string) $token->get_id(),
 		];
 	}
-
 }
