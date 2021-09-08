@@ -52,6 +52,7 @@ class Compatibility {
 			add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
 			add_filter( 'woocommerce_product_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
 			add_filter( 'woocommerce_product_variation_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
+			add_filter( 'woocommerce_product_addons_option_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
 		}
 
 		if ( defined( 'DOING_CRON' ) ) {
@@ -126,6 +127,22 @@ class Compatibility {
 					}
 				}
 			}
+		}
+
+		return $this->multi_currency->get_price( $price, 'product' );
+	}
+
+	/**
+	 * Converts the price of an addon from WooCommerce Products Add-on extension.
+	 *
+	 * @param mixed $price   The price to be filtered.
+	 * @param array $type    The type of the addon.
+
+	 * @return mixed         The price as a string or float.
+	 */
+	public function get_addons_price( $price, $type ) {
+		if ( 'percentage_based' === $type['price_type'] ) {
+			return $price;
 		}
 
 		return $this->multi_currency->get_price( $price, 'product' );
