@@ -142,6 +142,8 @@ class Compatibility {
 	 */
 	public function get_addons_price( $price, $type ) {
 		if ( 'percentage_based' === $type['price_type'] ) {
+			// If the addon is a percentage_based type $price is actually a percentage
+			// and doesn't need any conversion.
 			return $price;
 		}
 
