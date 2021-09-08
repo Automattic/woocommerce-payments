@@ -806,6 +806,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
 			} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
 				$error_message = __( 'We\'re not able to process this payment. Please refresh the page and try again.', 'woocommerce-payments' );
+			} elseif ( $e instanceof API_Exception && 'amount_too_small' === $e->get_error_code() ) {
+				$minimum_amount = $this->extract_minimum_amount( $e, $order->get_currency() );
+				if ( ! is_null( $minimum_amount ) ) {
+					$error_message = $this->generate_minimum_amount_error_message( $minimum_amount, $order->get_currency() );
+				}
 			}
 
 			wc_add_notice( $error_message, 'error' );
@@ -978,10 +983,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( $payment_needed ) {
+			$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() );
+			$currency         = strtolower( $order->get_currency() );
+
+			// Try catching the error without reaching the API.
+			$minimum_amount = $this->get_cached_minimum_amount( $currency );
+			if ( $minimum_amount > $converted_amount ) {
+				$message = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
+				wc_add_notice( $message, 'error' );
+				return false;
+			}
+
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 			$intent = $this->payments_api_client->create_and_confirm_intention(
-				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
-				strtolower( $order->get_currency() ),
+				$converted_amount,
+				$currency,
 				$payment_information->get_payment_method(),
 				$customer_id,
 				$payment_information->is_using_manual_capture(),
@@ -2300,5 +2316,72 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return [
 			'card',
 		];
+	}
+
+	/**
+	 * Extracts the minimum required amount for a charge from an exception.
+	 *
+	 * If an amount is found, it is stored within a transient, as the amount
+	 * might/will change based on exchange rates and merchant bank accounts.
+	 *
+	 * @param API_Exception $e        The exception that was thrown.
+	 * @param string        $currency The currency used when the exceptionw as thrown.
+	 *
+	 * @return int|null Either the minimum amount (if the exception contains one)
+	 *                  or `null` whenever the exception is of another type.
+	 */
+	public function extract_minimum_amount( API_Exception $e, string $currency ) {
+		if ( 'amount_too_small' !== $e->get_error_code() ) {
+			return null;
+		}
+
+		$pattern = "/([\d\.]+).*$currency/iu";
+		$message = $e->getMessage();
+
+		if ( ! preg_match( $pattern, $message, $matches ) ) {
+			Logger::log( 'Error: Could not extract minimum amount from the following string: "' . $message . '"' );
+			return null;
+		}
+
+		$required = WC_Payments_Utils::prepare_amount( $matches[1], $currency );
+
+		// Cache the result.
+		set_transient( 'wcpay_minimum_amount_' . strtolower( $currency ), $required, DAY_IN_SECONDS );
+
+		return $required;
+	}
+
+	/**
+	 * Checks if there is a minimum amount required for transactions in a given currency.
+	 *
+	 * @param string $currency The currency to check for.
+	 *
+	 * @return int|null Either the minimum amount, or `null` if not available.
+	 */
+	public function get_cached_minimum_amount( $currency ) {
+		$cached = get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
+		return intval( $cached ) ? intval( $cached ) : null;
+	}
+
+	/**
+	 * Generates the error message, displayed when the minimum amount is not met.
+	 *
+	 * @param int    $minimum_amount A Stripe-formatted minimum amount.
+	 * @param string $currency       The currency code for the transaction.
+	 *
+	 * @return string A user-facing message.
+	 */
+	protected function generate_minimum_amount_error_message( $minimum_amount, $currency ) {
+		$interpreted_amount = WC_Payments_Utils::interpret_stripe_amount( $minimum_amount, $currency );
+
+		return sprintf(
+			// translators: %1: payment method name, %2 a formatted price.
+			__(
+				'The selected payment method (%1$s) requires a total amount of at least %2$s.',
+				'woocommerce-payments'
+			),
+			$this->title,
+			wc_price( $interpreted_amount, [ 'currency' => $currency ] )
+		);
 	}
 }

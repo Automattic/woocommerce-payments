@@ -279,51 +279,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Extracts the minimum required amount for a charge from an exception.
-	 *
-	 * If an amount is found, it is stored within a transient, as the amount
-	 * might/will change based on exchange rates and merchant bank accounts.
-	 *
-	 * @param API_Exception $e        The exception that was thrown.
-	 * @param string        $currency The currency used when the exceptionw as thrown.
-	 *
-	 * @return int|null Either the minimum amount (if the exception contains one)
-	 *                  or `null` whenever the exception is of another type.
-	 */
-	public function extract_minimum_amount( API_Exception $e, string $currency ) {
-		if ( 'amount_too_small' !== $e->get_error_code() ) {
-			return null;
-		}
-
-		$pattern = "/([\d\.]+).*$currency/iu";
-		$message = $e->getMessage();
-
-		if ( ! preg_match( $pattern, $message, $matches ) ) {
-			Logger::log( 'Error: Could not extract minimum amount from the following string: "' . $message . '"' );
-			return null;
-		}
-
-		$required = WC_Payments_Utils::prepare_amount( $matches[1], $currency );
-
-		// Cache the result.
-		set_transient( 'wcpay_minimum_amount_' . strtolower( $currency ), $required, DAY_IN_SECONDS );
-
-		return $required;
-	}
-
-	/**
-	 * Checks if there is a minimum amount required for transactions in a given currency.
-	 *
-	 * @param string $currency The currency to check for.
-	 *
-	 * @return int|null Either the minimum amount, or `null` if not available.
-	 */
-	public function get_cached_minimum_amount( $currency ) {
-		$cached = get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
-		return intval( $cached ) ? intval( $cached ) : null;
-	}
-
-	/**
 	 * Handle AJAX request for creating a setup intent without confirmation for Stripe UPE.
 	 *
 	 * @throws Add_Payment_Method_Exception - If nonce or setup intent is invalid.
@@ -471,28 +426,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				)
 			),
 		];
-	}
-
-	/**
-	 * Generates the error message, displayed when the minimum amount is not met.
-	 *
-	 * @param int    $minimum_amount A Stripe-formatted minimum amount.
-	 * @param string $currency       The currency code for the transaction.
-	 *
-	 * @return string A user-facing message.
-	 */
-	protected function generate_minimum_amount_error_message( $minimum_amount, $currency ) {
-		$interpreted_amount = WC_Payments_Utils::interpret_stripe_amount( $minimum_amount, $currency );
-
-		return sprintf(
-			// translators: %1: payment method name, %2 a formatted price.
-			__(
-				'The selected payment method (%1$s) requires a total amount of at least %2$s.',
-				'woocommerce-payments'
-			),
-			$this->title,
-			wc_price( $interpreted_amount, [ 'currency' => $currency ] )
-		);
 	}
 
 	/**
