@@ -27,14 +27,16 @@ function wcpay_multi_currency_deactivated() {
 	WCPay\MultiCurrency\MultiCurrency::remove_woo_admin_notes();
 }
 
-/**
- * Gets the switcher widget markup.
- *
- * @param array $instance The widget's instance settings.
- * @param array $args     The widget's arguments.
- *
- * @return string The widget markup.
- */
-function get_wcpay_multi_currency_widget_markup( array $instance = [], array $args = [] ): string {
-	return WC_Payments_Multi_Currency()->get_switcher_widget_markup( $instance, $args );
+if ( ! function_exists( 'wc_get_currency_switcher_markup' ) ) {
+	/**
+	 * Gets the switcher widget markup.
+	 *
+	 * @param array $instance The widget's instance settings.
+	 * @param array $args     The widget's arguments.
+	 *
+	 * @return string The widget markup.
+	 */
+	function wc_get_currency_switcher_markup( array $instance = [], array $args = [] ): string {
+		return WC_Payments_Multi_Currency()->get_switcher_widget_markup( $instance, $args );
+	}
 }
