@@ -573,6 +573,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['checkoutTitle']            = $this->checkout_title;
 		$payment_fields['cartContainsSubscription'] = $this->is_subscription_item_in_cart();
 
+		$enabled_billing_fields = [];
+		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
+			if ( ! isset( $billing_field_options['enabled'] ) || $billing_field_options['enabled'] ) {
+				$enabled_billing_fields[] = $billing_field;
+			}
+		}
+		$payment_fields['enabledBillingFields'] = $enabled_billing_fields;
+
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->is_subscriptions_enabled() && $this->is_changing_payment_method_for_subscription() ) {
 				$payment_fields['isChangingPayment']   = true;
