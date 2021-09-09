@@ -15,6 +15,7 @@ const defaultState = {
 	byId: {},
 	queries: {},
 	isSavingEvidenceForDispute: {},
+	isSubmittingEvidenceForDispute: {},
 	isUploadingEvidenceForDispute: {},
 	evidenceUploadErrorsForDispute: {},
 	evidenceTransientForDispute: {},
@@ -47,8 +48,16 @@ const receiveDisputes = (
 			return {
 				...state,
 				isSavingEvidenceForDispute: {
-					...state.isSavingEvidence,
+					...state.isSavingEvidenceForDispute,
 					[ data.id ]: data.isSavingEvidence,
+				},
+			};
+		case TYPES.SET_IS_SUBMITTING_EVIDENCE_FOR_DISPUTE:
+			return {
+				...state,
+				isSubmittingEvidenceForDispute: {
+					...state.isSubmittingEvidenceForDispute,
+					[ data.id ]: data.isSubmittingEvidence,
 				},
 			};
 		case TYPES.SET_IS_UPLOADING_EVIDENCE_FOR_DISPUTE:

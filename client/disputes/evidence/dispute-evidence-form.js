@@ -42,6 +42,7 @@ export const DisputeEvidenceForm = ( props ) => {
 		evidenceTransient,
 		evidenceUploadErrors,
 		isSavingEvidence,
+		isSubmittingEvidence,
 		isUploadingEvidence,
 		updateEvidenceTransientForDispute,
 		uploadFileEvidenceForDispute,
@@ -223,7 +224,11 @@ export const DisputeEvidenceForm = ( props ) => {
 					<CardFooter>
 						{ /* Use wrapping div to keep buttons grouped together. */ }
 						<div>
-							<Button isPrimary onClick={ handleSubmit }>
+							<Button
+								isPrimary
+								onClick={ handleSubmit }
+								isBusy={ isSubmittingEvidence }
+							>
 								{ __(
 									'Submit evidence',
 									'woocommerce-payments'

@@ -45,6 +45,19 @@ export function updateIsSavingEvidenceForDispute(
 	};
 }
 
+export function updateIsSubmittingEvidenceForDispute(
+	disputeId,
+	isSubmittingEvidence
+) {
+	return {
+		type: TYPES.SET_IS_SUBMITTING_EVIDENCE_FOR_DISPUTE,
+		data: {
+			isSubmittingEvidence,
+			id: disputeId,
+		},
+	};
+}
+
 export function updateEvidenceTransientForDispute(
 	disputeId,
 	evidenceTransient
@@ -191,7 +204,7 @@ export function* submitEvidence( disputeId, evidence ) {
 		return;
 	}
 
-	yield updateIsSavingEvidenceForDispute( disputeId, true );
+	yield updateIsSubmittingEvidenceForDispute( disputeId, true );
 
 	try {
 		wcpayTracks.recordEvent( 'wcpay_dispute_submit_evidence_clicked' );
@@ -214,7 +227,7 @@ export function* submitEvidence( disputeId, evidence ) {
 		yield handleSaveError( err, true );
 		error = err;
 	} finally {
-		yield updateIsSavingEvidenceForDispute( disputeId, false );
+		yield updateIsSubmittingEvidenceForDispute( disputeId, false );
 	}
 
 	return null === error;

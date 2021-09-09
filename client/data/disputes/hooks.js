@@ -33,6 +33,7 @@ export const useDispute = ( id ) => {
 export const useDisputeEvidence = ( disputeId ) => {
 	const {
 		isSavingEvidence,
+		isSubmittingEvidence,
 		isUploadingEvidence,
 		evidenceTransient,
 		evidenceUploadErrors,
@@ -40,6 +41,7 @@ export const useDisputeEvidence = ( disputeId ) => {
 		( select ) => {
 			const {
 				getIsSavingEvidenceForDispute,
+				getIsSubmittingEvidenceForDispute,
 				getIsUploadingEvidenceForDispute,
 				getEvidenceTransientForDispute,
 				getEvidenceUploadErrorsForDispute,
@@ -47,6 +49,9 @@ export const useDisputeEvidence = ( disputeId ) => {
 
 			return {
 				isSavingEvidence: getIsSavingEvidenceForDispute( disputeId ),
+				isSubmittingEvidence: getIsSubmittingEvidenceForDispute(
+					disputeId
+				),
 				isUploadingEvidence: getIsUploadingEvidenceForDispute(
 					disputeId
 				),
@@ -70,6 +75,7 @@ export const useDisputeEvidence = ( disputeId ) => {
 
 	return {
 		isSavingEvidence,
+		isSubmittingEvidence,
 		isUploadingEvidence,
 		evidenceTransient,
 		evidenceUploadErrors,
