@@ -2381,7 +2381,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'woocommerce-payments'
 			),
 			$this->title,
-			wc_price( $interpreted_amount, [ 'currency' => $currency ] )
+			wc_price( $interpreted_amount, [ 'currency' => strtoupper( $currency ) ] )
 		);
 	}
 }
