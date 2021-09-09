@@ -6,6 +6,7 @@
 * Fix - Enabled currencies modal UI.
 * Fix - User order currency format on admin refund button.
 * Fix - Clear the list of selected currencies after closing the modal for adding currencies.
+* Fix - Improve error messages when the minimum order amount has not been reached and allow UPE fields to be displayed with less than the minimum amount.
 
 = 2.9.1 - 2021-09-07 =
 * Fix - Error while checking out with UPE when fields are hidden.
