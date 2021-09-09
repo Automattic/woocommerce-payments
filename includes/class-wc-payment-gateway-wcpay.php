@@ -810,7 +810,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			wc_add_notice( $error_message, 'error' );
 
-			$order->update_status( 'failed' );
+			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
+				$order->update_status( 'failed' );
+			}
 
 			if ( $e instanceof API_Exception && $e->get_error_code() === 'card_declined' ) {
 				$this->failed_transaction_rate_limiter->bump();
