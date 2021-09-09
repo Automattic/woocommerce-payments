@@ -47,7 +47,7 @@ class CurrencySwitcherWidget extends WC_Widget {
 		$this->compatibility  = $compatibility;
 
 		$this->widget_id          = 'currency_switcher_widget';
-		$this->widget_name        = __( 'Currency Switcher', 'woocommerce-payments' );
+		$this->widget_name        = __( 'Legacy Currency Switcher', 'woocommerce-payments' );
 		$this->widget_description = __( 'Let your customers switch between your enabled currencies', 'woocommerce-payments' );
 		$this->settings           = [
 			'title'  => [

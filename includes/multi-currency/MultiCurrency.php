@@ -193,6 +193,7 @@ class MultiCurrency {
 
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
+		add_action( 'init', [ $this, 'init_block_widgets' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
@@ -261,15 +262,41 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Initialize the Widgets.
+	 * Initialize the legacy widgets.
 	 *
 	 * @return void
 	 */
 	public function init_widgets() {
+		// Register the legacy widget.
 		$this->currency_switcher_widget = new CurrencySwitcherWidget( $this, $this->compatibility );
 		register_widget( $this->currency_switcher_widget );
 	}
 
+	/**
+	 * Initialize the block widgets.
+	 *
+	 * @return void
+	 */
+	public function init_block_widgets() {
+		// Automatically load dependencies and version.
+		$asset_file = include WCPAY_ABSPATH . 'dist/multi-currency-switcher-block.asset.php';
+
+		wp_register_script(
+			'woocommerce-payments/multi-currency-switcher',
+			plugins_url( 'dist/multi-currency-switcher-block.js', WCPAY_PLUGIN_FILE ),
+			$asset_file['dependencies'],
+			$asset_file['version'],
+			true    // TODO: Should this be true or false?
+		);
+
+		register_block_type(
+			'woocommerce-payments/multi-currency-switcher',
+			[
+				'api_version'   => 2,
+				'editor_script' => 'woocommerce-payments/multi-currency-switcher',
+			]
+		);
+	}
 	/**
 	 * Initialize the Settings Pages.
 	 *
