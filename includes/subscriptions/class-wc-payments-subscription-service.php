@@ -113,6 +113,8 @@ class WC_Payments_Subscription_Service {
 		// Save the new token on the WCPay subscription when it's added to a WC subscription.
 		add_action( 'woocommerce_payment_token_added_to_order', [ $this, 'update_wcpay_subscription_payment_method' ], 10, 3 );
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'prevent_wcpay_subscription_changes' ], 10, 3 );
+
+		add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
 	}
 
 	/**
@@ -256,9 +258,6 @@ class WC_Payments_Subscription_Service {
 					Logger::error( sprintf( 'There was a problem updating the WCPay subscription\'s default payment method on server: %s.', $e->getMessage() ) );
 					return;
 				}
-
-				// now that we have a new payment method, retry the latest failed invoice (if there is one).
-				$this->maybe_attempt_payment_for_subscription( $subscription );
 			}
 		}
 	}
@@ -357,15 +356,46 @@ class WC_Payments_Subscription_Service {
 	/**
 	 * Attempts payment for WCPay subscription if needed.
 	 *
-	 * @param WC_Subscription $subscription WC subscription linked to the WCPay subscription that maybe needs to retry payment.
+	 * @param WC_Subscription  $subscription WC subscription linked to the WCPay subscription that maybe needs to retry payment.
+	 * @param WC_Payment_Token $token        The new subscription token to assign to the invoice order.
 	 *
 	 * @return void
 	 */
-	private function maybe_attempt_payment_for_subscription( WC_Subscription $subscription ) {
+	public function maybe_attempt_payment_for_subscription( $subscription, WC_Payment_Token $token ) {
+
+		if ( ! wcs_is_subscription( $subscription ) ) {
+			return;
+		}
+
 		$wcpay_invoice_id = WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription );
 
-		if ( $wcpay_invoice_id ) {
-			$this->payments_api_client->charge_invoice( $wcpay_invoice_id );
+		if ( ! $wcpay_invoice_id ) {
+			return;
+		}
+
+		$response = $this->payments_api_client->charge_invoice( $wcpay_invoice_id );
+
+		// Rather than wait for the Stripe webhook to be received, complete the order now if it was successfully paid.
+		if ( $response && isset( $response['status'] ) && 'paid' === $response['status'] ) {
+			// Remove the pending invoice ID now that we know it has been paid.
+			$this->invoice_service->mark_pending_invoice_paid_for_subscription( $subscription );
+
+			$order_id = WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id );
+			$order    = $order_id ? wc_get_order( $order_id ) : false;
+
+			if ( $order && $order->needs_payment() ) {
+				// We're about to record a successful payment, temporarily remove the "is request to change payment method" flag as it prevents us from activating the subscrption via WC_Subscription::payment_complete().
+				$is_change_payment_request = WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment;
+				WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment = false;
+
+				// We need to store the successful token on the order otherwise WC_Subscriptions_Change_Payment_Gateway::change_failing_payment_method() will override the successful token with the failing one.
+				$order->add_payment_token( $token );
+				$order->payment_complete();
+
+				// Reinstate the "is request to change payment method" flag.
+				WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment = $is_change_payment_request;
+				wc_add_notice( __( "We've successully collected payment for your subscription using your new payment method.", 'woocommerce-payments' ) );
+			}
 		}
 	}
 

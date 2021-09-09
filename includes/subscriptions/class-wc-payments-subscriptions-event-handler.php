@@ -119,8 +119,11 @@ class WC_Payments_Subscriptions_Event_Handler {
 				throw new Rest_Request_Exception( __( 'Unable to generate renewal order for subscription on the "invoice.paid" event.', 'woocommerce-payments' ) );
 			} else {
 				$this->invoice_service->set_order_invoice_id( $order, $wcpay_invoice_id );
-				$order->payment_complete();
 			}
+		}
+
+		if ( $order->needs_payment() ) {
+			$order->payment_complete();
 		}
 
 		// Remove pending invoice ID in case one was recorded for previous failed renewal attempts.

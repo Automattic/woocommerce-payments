@@ -351,16 +351,22 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 
 		$mock_subscription->update_meta_data( WC_Payments_Invoice_Service_Test::PENDING_INVOICE_ID_KEY, $mock_pending_invoice_id );
 
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $subscription ) {
+				return true;
+			}
+		);
+
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'charge_invoice' )
 			->with( $mock_pending_invoice_id )
 			->willReturn( [ 'invoice_paid' ] );
 
-			PHPUnit_Utils::call_method(
-				$this->subscription_service,
-				'maybe_attempt_payment_for_subscription',
-				[ $mock_subscription ]
-			);
+		PHPUnit_Utils::call_method(
+			$this->subscription_service,
+			'maybe_attempt_payment_for_subscription',
+			[ $mock_subscription, new WC_Payment_Token_CC() ]
+		);
 	}
 
 	/**
