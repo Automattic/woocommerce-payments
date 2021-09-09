@@ -121,8 +121,13 @@
       <code>wcs_order_contains_subscription( $order_id )</code>
     </UndefinedFunction>
   </file>
+  <file src="includes/subscriptions/class-wc-payments-subscriptions.php">
+    <UndefinedDocblockClass occurrences="1">
+      <code>WC_Payments_Tax_Service</code>
+    </UndefinedDocblockClass>
+  </file>
   <file src="includes/subscriptions/class-wc-payments-product-service.php">
-    <UndefinedClass occurrences="5">
+    <UndefinedClass occurrences="7">
       <code>WC_Subscriptions_Product</code>
     </UndefinedClass>
   </file>
@@ -138,4 +143,47 @@
       <code>WC_Subscriptions_Base_Plugin</code>
     </UndefinedClass>
   </file>
+  <file src="includes/subscriptions/class-wc-payments-invoice-service.php">
+    <UndefinedDocblockClass occurrences="2">
+      <code>WC_Payments_Tax_Service</code>
+    </UndefinedDocblockClass>
+    <UndefinedClass occurrences="9">
+      <code>WC_Subscription</code>
+    </UndefinedClass>
+    <UndefinedFunction occurrences="1">
+      <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' =&gt; 'parent' ] )</code>
+    </UndefinedFunction>
+  </file>
+  <file src="includes/subscriptions/class-wc-payments-subscription-service.php">
+    <UndefinedClass occurrences="18">
+      <code>WC_Subscription</code>
+    </UndefinedClass>
+    <UndefinedDocblockClass occurrences="2">
+      <code>WC_Subscription|bool</code>
+    </UndefinedDocblockClass>
+    <UndefinedFunction occurrences="3">
+      <code>wcs_get_subscription</code>
+    </UndefinedFunction>
+  </file>
+  <file src="includes/subscriptions/class-wc-payments-subscriptions-event-handler.php">
+    <UndefinedDocblockClass occurrences="9">
+      <code>WC_Subscription</code>
+    </UndefinedDocblockClass>
+    <UndefinedFunction occurrences="2">
+      <code>wcs_create_renewal_order( $subscription )</code>
+    </UndefinedFunction>
+  </file>
+  <file src="includes/subscriptions/class-wc-payments-subscription-change-payment-method-handler.php">
+    <UndefinedDocblockClass occurrences="3">
+      <code>WC_Subscription</code>
+    </UndefinedDocblockClass>
+    <UndefinedClass occurrences="3">
+      <code>WC_Subscription</code>
+    </UndefinedClass>
+    <UndefinedFunction occurrences="3">
+      <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] )</code>
+      <code>wcs_get_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) )</code>
+    </UndefinedFunction>
+  </file>
 </files>
+
