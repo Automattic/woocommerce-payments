@@ -150,6 +150,10 @@ describe( 'Dispute evidence page', () => {
 	} );
 
 	test( 'renders correctly', () => {
+		// Mock the Date.now() function so the max allowed date for date fields will match the
+		// snapshot.
+		Date.now = jest.fn().mockReturnValue( new Date( '2021-09-08' ) );
+
 		const { container: form } = render(
 			<DisputeEvidencePage
 				showPlaceholder={ false }
