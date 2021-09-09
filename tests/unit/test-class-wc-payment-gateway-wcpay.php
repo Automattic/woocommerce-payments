@@ -1258,6 +1258,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$result = $this->wcpay_gateway->add_payment_method();
 
 		$this->assertEquals( 'error', $result['result'] );
+		wc_clear_notices();
 	}
 
 	public function test_schedule_order_tracking_with_wrong_payment_gateway() {
@@ -1564,7 +1565,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertNull( $result );
 	}
 
-	public function test_process_payment_for_order_rejects_with_cached_minimum_acount() {
+	public function test_process_payment_for_order_rejects_with_cached_minimum_amount() {
 		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
 
 		$order = WC_Helper_Order::create_order();
@@ -1593,7 +1594,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->set_total( 0.45 );
 		$order->save();
 
-		$_POST['wcpay-payment-method'] = 'pm_mock';
+		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
 
 		$this->mock_api_client
 			->expects( $this->once() )
