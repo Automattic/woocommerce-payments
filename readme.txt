@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
 Tested up to: 5.8
 Requires PHP: 7.0
-Stable tag: 2.9.0
+Stable tag: 2.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,6 +101,12 @@ Please note that our support for the checkout block is still experimental and th
 = 3.0.0 - 2021-xx-xx =
 * Add - Download deposits report in CSV.
 * Fix - Use store currency on analytics leaderboard when Multi-Currency is enabled.
+* Fix - Enabled currencies modal UI.
+* Fix - User order currency format on admin refund button.
+
+= 2.9.1 - 2021-09-07 =
+* Fix - Error while checking out with UPE when fields are hidden.
+* Fix - Unable to onboard when in treatment mode.
 
 = 2.9.0 - 2021-08-25 =
 * Add - Split discount line in timeline into variable fee and fixed fee.
