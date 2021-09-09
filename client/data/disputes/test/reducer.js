@@ -37,6 +37,7 @@ describe( 'Disputes reducer tests', () => {
 			evidenceTransientForDispute: {},
 			evidenceUploadErrorsForDispute: {},
 			isSavingEvidenceForDispute: {},
+			isSubmittingEvidenceForDispute: {},
 			isUploadingEvidenceForDispute: {},
 		} );
 
@@ -54,6 +55,7 @@ describe( 'Disputes reducer tests', () => {
 			evidenceTransientForDispute: {},
 			evidenceUploadErrorsForDispute: {},
 			isSavingEvidenceForDispute: {},
+			isSubmittingEvidenceForDispute: {},
 			isUploadingEvidenceForDispute: {},
 		} );
 	} );
@@ -81,6 +83,7 @@ describe( 'Disputes reducer tests', () => {
 			evidenceTransientForDispute: {},
 			evidenceUploadErrorsForDispute: {},
 			isSavingEvidenceForDispute: {},
+			isSubmittingEvidenceForDispute: {},
 			isUploadingEvidenceForDispute: {},
 		};
 
