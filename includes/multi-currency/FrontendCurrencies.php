@@ -72,7 +72,7 @@ class FrontendCurrencies {
 			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 50 );
 		}
 
-		add_action( 'woocommerce_before_thankyou', [ $this, 'init_order_currency' ] );
+		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
 		add_action( 'woocommerce_order_details_before_order_table', [ $this, 'init_order_currency' ] );
 		add_filter( 'woocommerce_cart_hash', [ $this, 'add_currency_to_cart_hash' ], 50 );
 	}
@@ -181,11 +181,11 @@ class FrontendCurrencies {
 	}
 
 	/**
-	 * Inits order currency code from ID in current URL
+	 * Inits order currency code.
 	 *
 	 * @param mixed $order Either WC_Order or the id of an order.
 	 *
-	 * @return void
+	 * @return int The order id.
 	 */
 	public function init_order_currency( $order ) {
 		if ( null !== $this->order_currency ) {
@@ -195,6 +195,8 @@ class FrontendCurrencies {
 		$order = wc_get_order( $order );
 
 		$this->order_currency = $order->get_currency();
+
+		return $order->get_id();
 	}
 
 	/**
