@@ -991,7 +991,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $minimum_amount > $converted_amount ) {
 				$message = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
 				wc_add_notice( $message, 'error' );
-				return false;
+				return [
+					'result'   => 'fail',
+					'redirect' => '',
+				];
 			}
 
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
@@ -2373,6 +2376,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	protected function generate_minimum_amount_error_message( $minimum_amount, $currency ) {
 		$interpreted_amount = WC_Payments_Utils::interpret_stripe_amount( $minimum_amount, $currency );
+		$price              = wc_price( $interpreted_amount, [ 'currency' => strtoupper( $currency ) ] );
 
 		return sprintf(
 			// translators: %1: payment method name, %2 a formatted price.
@@ -2381,7 +2385,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'woocommerce-payments'
 			),
 			$this->title,
-			wc_price( $interpreted_amount, [ 'currency' => strtoupper( $currency ) ] )
+			wp_strip_all_tags( html_entity_decode( $price ) )
 		);
 	}
 }

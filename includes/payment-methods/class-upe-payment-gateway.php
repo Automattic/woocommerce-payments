@@ -368,7 +368,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			if ( $payment_needed ) {
 				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
 					wc_add_notice( __( 'Your payment was not processed.', 'woocommerce-payments' ), 'error' );
-					return false;
+					return [
+						'result'   => 'fail',
+						'redirect' => '',
+					];
 				}
 
 				// Try catching the error without reaching the API.
@@ -376,7 +379,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				if ( $minimum_amount > $converted_amount ) {
 					$message = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
 					wc_add_notice( $message, 'error' );
-					return false;
+					return [
+						'result'   => 'fail',
+						'redirect' => '',
+					];
 				}
 
 				try {
@@ -395,7 +401,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					if ( ! is_null( $minimum_amount ) ) {
 						$message = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
 						wc_add_notice( $message, 'error' );
-						return false;
+						return [
+							'result'   => 'fail',
+							'redirect' => '',
+						];
 					}
 				}
 

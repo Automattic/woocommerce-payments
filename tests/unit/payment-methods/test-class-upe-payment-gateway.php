@@ -1157,13 +1157,20 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 
 		// Make sure that the payment was not actually processed.
 		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
-		$this->assertSame( false, $result );
+		$this->assertSame(
+			[
+				'result'   => 'fail',
+				'redirect' => '',
+			],
+			$result
+		);
 
 		// An error should be added.
 		$notices = WC()->session->get( 'wc_notices' );
 		$this->assertArrayHasKey( 'error', $notices );
 		foreach ( $notices['error'] as $notice ) {
-			$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . wc_price( 0.5, [ 'currency' => 'USD' ] ) . '.';
+			$price   = wp_strip_all_tags( html_entity_decode( wc_price( 0.5, [ 'currency' => 'USD' ] ) ) );
+			$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . $price . '.';
 			$this->assertSame( $message, $notice['notice'] );
 		}
 		wc_clear_notices();
@@ -1183,14 +1190,21 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->will( $this->throwException( new API_Exception( 'Error: Amount must be at least $60 usd', 'amount_too_small', 400 ) ) );
 
 		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
-		$this->assertFalse( $result );
+		$this->assertSame(
+			[
+				'result'   => 'fail',
+				'redirect' => '',
+			],
+			$result
+		);
 		$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
 
 		// An error should be added.
 		$notices = WC()->session->get( 'wc_notices' );
 		$this->assertArrayHasKey( 'error', $notices );
 		foreach ( $notices['error'] as $notice ) {
-			$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . wc_price( 60, [ 'currency' => 'USD' ] ) . '.';
+			$price   = wp_strip_all_tags( html_entity_decode( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
+			$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . $price . '.';
 			$this->assertSame( $message, $notice['notice'] );
 		}
 		wc_clear_notices();

@@ -1575,13 +1575,20 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$pi     = new Payment_Information( 'pm_test', $order );
 		$result = $this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
-		$this->assertFalse( $result );
+		$this->assertSame(
+			[
+				'result'   => 'fail',
+				'redirect' => '',
+			],
+			$result
+		);
 
 		// An error should be added.
 		$notices = WC()->session->get( 'wc_notices' );
 		$this->assertArrayHasKey( 'error', $notices );
 		foreach ( $notices['error'] as $notice ) {
-			$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . wc_price( 0.5, [ 'currency' => 'USD' ] ) . '.';
+			$price   = html_entity_decode( wp_strip_all_tags( wc_price( 0.5, [ 'currency' => 'USD' ] ) ) );
+			$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . $price . '.';
 			$this->assertSame( $message, $notice['notice'] );
 		}
 		wc_clear_notices();
@@ -1615,7 +1622,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$notices = WC()->session->get( 'wc_notices' );
 		$this->assertArrayHasKey( 'error', $notices );
 		foreach ( $notices['error'] as $notice ) {
-			$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . wc_price( 60, [ 'currency' => 'USD' ] ) . '.';
+			$price   = html_entity_decode( wp_strip_all_tags( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
+			$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . $price . '.';
 			$this->assertSame( $message, $notice['notice'] );
 		}
 		wc_clear_notices();
