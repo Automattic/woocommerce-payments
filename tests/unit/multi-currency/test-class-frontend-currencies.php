@@ -8,6 +8,7 @@
 use WCPay\MultiCurrency\Currency;
 use WCPay\MultiCurrency\FrontendCurrencies;
 use WCPay\MultiCurrency\MultiCurrency;
+use WCPay\MultiCurrency\Utils;
 
 /**
  * FrontendCurrencies unit tests.
@@ -30,6 +31,13 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	private $mock_multi_currency;
 
 	/**
+	 * Mock Utils.
+	 *
+	 * @var Utils|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_utils;
+
+	/**
 	 * FrontendCurrencies instance.
 	 *
 	 * @var FrontendCurrencies
@@ -41,8 +49,9 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 		$this->mock_multi_currency       = $this->createMock( MultiCurrency::class );
+		$this->mock_utils                = $this->createMock( Utils::class );
 
-		$this->frontend_currencies = new FrontendCurrencies( $this->mock_multi_currency, $this->mock_localization_service );
+		$this->frontend_currencies = new FrontendCurrencies( $this->mock_multi_currency, $this->mock_localization_service, $this->mock_utils );
 	}
 
 	public function tearDown() {
