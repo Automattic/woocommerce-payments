@@ -26,6 +26,13 @@ class WC_Subscriptions_Product {
 	public static $subscription_product_interval = null;
 
 	/**
+	 * Is a subscription product.
+	 *
+	 * @var bool
+	 */
+	public static $is_subscription = true;
+
+	/**
 	 * Mock for static get_period.
 	 *
 	 * @param Product $product WC Product.
@@ -67,7 +74,7 @@ class WC_Subscriptions_Product {
 	 * @param Product $product WC Product.
 	 */
 	public static function is_subscription( $product ) {
-		return true;
+		return self::$is_subscription;
 	}
 
 	/**
