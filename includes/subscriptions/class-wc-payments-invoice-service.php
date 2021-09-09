@@ -260,7 +260,7 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @return string Invoice ID.
 	 */
-	public static function get_subscription_invoice_id( WC_Subscription $subscription ) {
+	public static function get_subscription_invoice_id( $subscription ) {
 		return $subscription->get_meta( self::ORDER_INVOICE_ID_KEY, true );
 	}
 
