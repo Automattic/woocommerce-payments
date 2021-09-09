@@ -187,7 +187,16 @@ export const merchantWCP = {
 		await expect( page ).toMatchElement( 'h1', { text: 'Subscriptions' } );
 	},
 
-	// Create a subscription product with an optional signup fee
+	/**
+	 * Create a subscription product with an optional signup fee
+	 *
+	 * @param productName
+	 * @param includeSignupFee defaults to `false`
+	 * @param includeFreeTrial defaults to `false`
+	 * @return id of the created subscription product
+	 *
+	 */
+
 	createSubscriptionProduct: async (
 		productName,
 		includeSignupFee = false,
@@ -211,6 +220,11 @@ export const merchantWCP = {
 		}
 
 		await verifyAndPublish();
+
+		// Return the id of this subscription product
+		const postSubstring = page.url().match( /post=\d+/ )[ 0 ];
+		const productId = postSubstring.replace( 'post=', '' );
+		return productId;
 	},
 
 	openDisputes: async () => {
