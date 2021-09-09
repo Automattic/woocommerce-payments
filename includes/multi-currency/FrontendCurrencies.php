@@ -211,6 +211,9 @@ class FrontendCurrencies {
 	 * @return void
 	 */
 	public function init_order_currency() {
+		if ( ! $this->should_override_currency_code() ) {
+			return;
+		}
 		if ( null !== $this->order_currency ) {
 			return;
 		}
