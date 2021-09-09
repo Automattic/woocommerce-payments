@@ -155,6 +155,13 @@ class MultiCurrency {
 	private $localization_service;
 
 	/**
+	 * Tracking instance.
+	 *
+	 * @var Tracking
+	 */
+	protected $tracking;
+
+	/**
 	 * Main MultiCurrency Instance.
 	 *
 	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
