@@ -1,7 +1,7 @@
 /* eslint-disable */
 const path = require( 'path' );
 var NODE_ENV = process.env.NODE_ENV || 'development';
-const NodePolyfillPlugin = require( 'node-polyfill-webpack-plugin' );
+const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 
@@ -84,9 +84,16 @@ const webpackConfig = {
 		alias: {
 			wcpay: path.resolve( __dirname, 'client' ),
 		},
+		fallback: {
+			crypto: require.resolve( 'crypto-browserify' ),
+			stream: require.resolve( 'stream-browserify' ),
+			util: require.resolve( 'util' ),
+		},
 	},
 	plugins: [
-		new NodePolyfillPlugin(),
+		new ProvidePlugin( {
+			process: 'process/browser',
+		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WordPressExternalDependenciesPlugin( {
 			injectPolyfill: true,
