@@ -24,10 +24,6 @@ const webpackConfig = {
 			'./client/multi-currency-analytics/index.js',
 		order: './client/order/index.js',
 	},
-	output: {
-		filename: '[name].js',
-		path: path.resolve( 'dist' ),
-	},
 	module: {
 		rules: [
 			{
