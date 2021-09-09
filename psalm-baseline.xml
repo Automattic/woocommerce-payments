@@ -144,8 +144,8 @@
     </UndefinedClass>
   </file>
   <file src="includes/subscriptions/class-wc-payments-invoice-service.php">
-    <UndefinedDocblockClass occurrences="2">
-      <code>WC_Payments_Tax_Service</code>
+    <UndefinedDocblockClass occurrences="8">
+      <code>WC_Subscription</code>
     </UndefinedDocblockClass>
     <UndefinedClass occurrences="9">
       <code>WC_Subscription</code>
