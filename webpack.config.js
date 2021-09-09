@@ -1,6 +1,7 @@
 /* eslint-disable */
 const path = require( 'path' );
 var NODE_ENV = process.env.NODE_ENV || 'development';
+const NodePolyfillPlugin = require( 'node-polyfill-webpack-plugin' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 
@@ -89,6 +90,7 @@ const webpackConfig = {
 		},
 	},
 	plugins: [
+		new NodePolyfillPlugin(),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WordPressExternalDependenciesPlugin( {
 			injectPolyfill: true,

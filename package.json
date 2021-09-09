@@ -65,6 +65,7 @@
     "debug": "^4.1.1",
     "interpolate-components": "^1.1.1",
     "lodash": "^4.17.14",
+    "node-polyfill-webpack-plugin": "^1.1.4",
     "wordpress-element": "npm:@wordpress/element@2.11.0"
   },
   "devDependencies": {
