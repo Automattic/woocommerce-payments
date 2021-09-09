@@ -232,7 +232,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );

@@ -30,23 +30,40 @@ class FrontendCurrencies {
 	protected $localization_service;
 
 	/**
+	 * Multi-currency utils instance.
+	 *
+	 * @var Utils
+	 */
+	protected $utils;
+
+	/**
 	 * Multi-Currency currency formatting map.
 	 *
 	 * @var array
 	 */
 	protected $currency_format = [];
 
+
+	/**
+	 * Order currency code.
+	 *
+	 * @var string
+	 */
+	protected $order_currency;
+
 	/**
 	 * Constructor.
 	 *
 	 * @param MultiCurrency                    $multi_currency       The MultiCurrency instance.
 	 * @param WC_Payments_Localization_Service $localization_service The Localization Service instance.
+	 * @param Utils                            $utils                Utils instance.
 	 */
-	public function __construct( MultiCurrency $multi_currency, WC_Payments_Localization_Service $localization_service ) {
+	public function __construct( MultiCurrency $multi_currency, WC_Payments_Localization_Service $localization_service, Utils $utils ) {
 		$this->multi_currency       = $multi_currency;
 		$this->localization_service = $localization_service;
+		$this->utils                = $utils;
+		$this->init_order_currency();
 
-		// todo probably add check.
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_request() ) {
 			// Currency hooks.
 			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 50 );
@@ -86,6 +103,9 @@ class FrontendCurrencies {
 	 */
 	public function get_price_decimals( $decimals ): int {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
+		if ( $this->should_override_currency_code() ) {
+			$currency_code = $this->order_currency;
+		}
 		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
 			return absint( $this->localization_service->get_currency_format( $currency_code )['num_decimals'] );
 		}
@@ -101,6 +121,9 @@ class FrontendCurrencies {
 	 */
 	public function get_price_decimal_separator( $separator ): string {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
+		if ( $this->should_override_currency_code() ) {
+			$currency_code = $this->order_currency;
+		}
 		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
 			return $this->localization_service->get_currency_format( $currency_code )['decimal_sep'];
 		}
@@ -116,6 +139,9 @@ class FrontendCurrencies {
 	 */
 	public function get_price_thousand_separator( $separator ): string {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
+		if ( $this->should_override_currency_code() ) {
+			$currency_code = $this->order_currency;
+		}
 		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
 			return $this->localization_service->get_currency_format( $currency_code )['thousand_sep'];
 		}
@@ -131,6 +157,9 @@ class FrontendCurrencies {
 	 */
 	public function get_woocommerce_price_format( $format ): string {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
+		if ( $this->should_override_currency_code() ) {
+			$currency_code = $this->order_currency;
+		}
 		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
 			$currency_pos = $this->localization_service->get_currency_format( $currency_code )['currency_pos'];
 
@@ -160,5 +189,35 @@ class FrontendCurrencies {
 	public function add_currency_to_cart_hash( $hash ): string {
 		$currency = $this->multi_currency->get_selected_currency();
 		return md5( $hash . $currency->get_code() . $currency->get_rate() );
+	}
+
+	/**
+	 * Checks whether currency code used for formatting should be overridden.
+	 *
+	 * @return bool
+	 */
+	public function should_override_currency_code(): bool {
+		return $this->utils->is_call_in_backtrace(
+			[
+				'WC_Shortcode_My_Account::view_order',
+				'WC_Shortcode_Checkout::order_received',
+			]
+		);
+	}
+
+	/**
+	 * Inits order currency code from ID in current URL
+	 *
+	 * @return void
+	 */
+	public function init_order_currency() {
+		if ( null !== $this->order_currency ) {
+			return;
+		}
+
+		$order_id = 126; // todo get order ID from the URL.
+		$order    = wc_get_order( $order_id );
+
+		$this->order_currency = $order->get_currency();
 	}
 }
