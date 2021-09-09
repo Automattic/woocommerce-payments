@@ -155,6 +155,13 @@ class MultiCurrency {
 	private $localization_service;
 
 	/**
+	 * Tracking instance.
+	 *
+	 * @var Tracking
+	 */
+	protected $tracking;
+
+	/**
 	 * Main MultiCurrency Instance.
 	 *
 	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
@@ -234,6 +241,7 @@ class MultiCurrency {
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
+		$this->tracking            = new Tracking( $this );
 
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
