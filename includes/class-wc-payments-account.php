@@ -542,7 +542,7 @@ class WC_Payments_Account {
 	private function init_stripe_oauth( $wcpay_connect_from ) {
 		if ( get_transient( self::ON_BOARDING_STARTED_TRANSIENT ) ) {
 			$this->redirect_to_onboarding_page(
-				__( 'There was a duplicate attempt to redirect you to Stripe. Please wait a few seconds and try again.', 'woocommerce-payments' )
+				__( 'There was a duplicate attempt to initiate account setup. Please wait a few seconds and try again.', 'woocommerce-payments' )
 			);
 			return;
 		}
@@ -574,6 +574,8 @@ class WC_Payments_Account {
 			],
 			$this->get_actioned_notes()
 		);
+
+		delete_transient( self::ON_BOARDING_STARTED_TRANSIENT );
 
 		// If an account already exists for this site, we're done.
 		if ( false === $oauth_data['url'] ) {
