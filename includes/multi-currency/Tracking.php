@@ -42,7 +42,7 @@ class Tracking {
 		$data[ $this->multi_currency->id ] = [
 			'enabled_currencies' => $this->get_enabled_currencies(),
 			'default_currency'   => $this->get_currency_data_array( $this->multi_currency->get_default_currency() ),
-			'order_count'        => $this->get_mc_order_count(),
+			'order_counts'       => $this->get_mc_order_count(),
 		];
 		return $data;
 	}
@@ -112,16 +112,61 @@ class Tracking {
 	/**
 	 * Queries the postmeta table to see how many orders have been made using Multi-Currency.
 	 *
-	 * @return int Result count.
+	 * @return array Result count.
 	 */
-	private function get_mc_order_count(): int {
+	private function get_mc_order_count(): array {
 		global $wpdb;
 
 		$results = $wpdb->get_results( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'" );
-		if ( is_array( $results ) ) {
-			return count( $results );
+		$total   = is_array( $results ) ? count( $results ) : 0;
+
+		$orders_by_currency = $wpdb->get_results(
+			"
+			SELECT
+				gateway, currency, SUM(total) AS totals, COUNT(order_id) AS counts
+			FROM (
+				SELECT
+					orders.id AS order_id,
+					MAX(CASE WHEN meta_key = '_payment_method' THEN meta_value END) gateway,
+					MAX(CASE WHEN meta_key = '_order_total' THEN meta_value END) total,
+					MAX(CASE WHEN meta_key = '_order_currency' THEN meta_value END) currency
+				FROM
+					{$wpdb->prefix}posts orders
+				LEFT JOIN
+					{$wpdb->prefix}postmeta order_meta ON order_meta.post_id = orders.id
+				WHERE orders.post_type = 'shop_order'
+					AND orders.post_status in ( 'wc-completed', 'wc-processing', 'wc-refunded' )
+					AND meta_key in ( '_payment_method', '_order_total', '_order_currency', '_wcpay_multi_currency_order_exchange_rate' )
+				GROUP BY orders.id
+			) order_gateways
+			GROUP BY currency, gateway
+			"
+		);
+
+		$currencies  = [];
+		$added_total = 0;
+		foreach ( $orders_by_currency as $group ) {
+			$counts = $currencies[ $group->currency ]['counts'] ?? 0;
+			$totals = $currencies[ $group->currency ]['totals'] ?? 0;
+
+			$currencies[ $group->currency ] = [
+				'counts'   => $counts + $group->counts,
+				'totals'   => $totals + $group->totals,
+				'gateways' => [
+					$group->gateway => [
+						'counts' => $group->counts,
+						'totals' => $group->totals,
+					],
+				],
+			];
+
+			$added_total += $group->counts;
 		}
 
-		return 0;
+		return [
+			'total'       => $total,
+			'added_total' => $added_total,
+			'currencies'  => $currencies,
+		];
 	}
 }
