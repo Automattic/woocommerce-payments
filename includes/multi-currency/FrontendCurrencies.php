@@ -7,6 +7,7 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Order;
 use WC_Payments_Localization_Service;
 
 defined( 'ABSPATH' ) || exit;
@@ -192,7 +193,9 @@ class FrontendCurrencies {
 			return;
 		}
 
-		$order = wc_get_order( $order );
+		if ( ! $order instanceof WC_Order ) {
+			$order = wc_get_order( $order );
+		}
 
 		$this->order_currency = $order->get_currency();
 
