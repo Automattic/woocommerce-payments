@@ -375,7 +375,6 @@ class WC_Payments_Subscription_Service {
 		$data     = [];
 		$currency = $subscription->get_currency();
 		$discount = $subscription->get_parent()->get_total_discount( false );
-		$items    = array_merge( $subscription->get_items(), $subscription->get_parent()->get_shipping_methods() );
 
 		if ( 'discount' && $discount ) {
 			$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( 'discount' );
@@ -383,21 +382,29 @@ class WC_Payments_Subscription_Service {
 			$data[]         = [ 'price_data' => $price_data ];
 		}
 
-		foreach ( $items as $item ) {
-			if ( $item->is_type( 'line_item' ) ) {
-				$type        = 'sign_up_fee';
-				$unit_amount = floatval( WC_Subscriptions_Product::get_sign_up_fee( $item->get_product() ) );
-			} else {
-				$type        = $item->get_type();
-				$unit_amount = $item->get_total();
+		foreach ( $subscription->get_items() as $item ) {
+			$product           = $item->get_product();
+			$sign_up_fee       = floatval( WC_Subscriptions_Product::get_sign_up_fee( $item->get_product() ) );
+			$one_time_shipping = WC_Subscriptions_Product::needs_one_time_shipping( $product );
+
+			if ( $sign_up_fee ) {
+				$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( 'sign_up_fee' );
+				$data[]         = [
+					'price_data' => $this->format_item_price_data( $currency, $stripe_item_id, $sign_up_fee ),
+					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
+				];
 			}
 
-			$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( $type );
+			if ( $one_time_shipping ) {
+				$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( 'shipping' );
+				$shipping       = 0;
 
-			if ( $unit_amount ) {
-				$price_data = $this->format_item_price_data( $currency, $stripe_item_id, $unit_amount );
-				$data[]     = [
-					'price_data' => $price_data,
+				foreach ( $subscription->get_parent()->get_shipping_methods() as $shipping_method ) {
+					$shipping += $shipping_method->get_total();
+				}
+
+				$data[] = [
+					'price_data' => $this->format_item_price_data( $currency, $stripe_item_id, $shipping ),
 					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
 				];
 			}
