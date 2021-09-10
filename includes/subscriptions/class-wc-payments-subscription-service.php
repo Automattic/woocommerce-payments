@@ -157,8 +157,6 @@ class WC_Payments_Subscription_Service {
 		}
 
 		try {
-			$this->invoice_service->create_invoice_items_for_subscription( $subscription, $wcpay_customer_id );
-
 			$subscription_data = $this->prepare_wcpay_subscription_data( $wcpay_customer_id, $subscription );
 			$response          = $this->payments_api_client->create_subscription( $subscription_data );
 
@@ -298,13 +296,13 @@ class WC_Payments_Subscription_Service {
 	 * @return array WCPay subscription data
 	 */
 	private function prepare_wcpay_subscription_data( string $wcpay_customer_id, WC_Subscription $subscription ) {
-		$items = $this->product_service->get_product_data_for_subscription( $subscription );
+		$recurring_items = $this->get_recurring_item_data_for_subscription( $subscription );
+		$one_time_items  = $this->get_one_time_item_data_for_subscription( $subscription );
 
 		$data = [
-			'customer'           => $wcpay_customer_id,
-			'items'              => $items,
-			'proration_behavior' => 'none',
-			'payment_behavior'   => 'default_incomplete', // creates an incomplete/pending wcpay subscription while still processing the payment on checkout.
+			'customer'          => $wcpay_customer_id,
+			'items'             => $recurring_items,
+			'add_invoice_items' => $one_time_items,
 		];
 
 		if ( self::has_delayed_payment( $subscription ) ) {
@@ -312,6 +310,164 @@ class WC_Payments_Subscription_Service {
 		}
 
 		return apply_filters( 'wcpay_subscriptions_prepare_subscription_data', $data );
+	}
+
+	/**
+	 * Gets recurring item data from a subscription needed to create a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription to fetch product data from.
+	 *
+	 * @return array|null WCPay Product data or null on error.
+	 */
+	public function get_recurring_item_data_for_subscription( WC_Subscription $subscription ) {
+		$data = [];
+
+		foreach ( $subscription->get_items() as $item ) {
+			$product = $item->get_product();
+
+			if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+				continue;
+			}
+
+			$data[] = [
+				'price'     => WC_Payments_Product_Service::get_stripe_price_id( $product ),
+				'quantity'  => $item->get_quantity(),
+				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
+			];
+		}
+
+		$currency       = $subscription->get_currency();
+		$discount       = $subscription->get_total_discount( false );
+		$items          = array_merge( $subscription->get_fees(), $subscription->get_shipping_methods() );
+		$interval       = $subscription->get_billing_period();
+		$interval_count = $subscription->get_billing_interval();
+
+		if ( 'discount' && $discount ) {
+			$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( 'discount' );
+			$price_data     = $this->format_item_price_data( $currency, $stripe_item_id, -$discount, $interval, $interval_count );
+			$data[]         = [ 'price_data' => $price_data ];
+		}
+
+		foreach ( $items as $item ) {
+			$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( $item->get_type() );
+			$unit_amount    = $item->get_total();
+
+			if ( $unit_amount ) {
+				$price_data = $this->format_item_price_data( $currency, $stripe_item_id, $unit_amount, $interval, $interval_count );
+				$data[]     = [
+					'price_data' => $price_data,
+					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
+				];
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Gets one time item data from a subscription needed to create a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription to fetch item data from.
+	 *
+	 * @return array|null WCPay Product data or null on error.
+	 */
+	public function get_one_time_item_data_for_subscription( WC_Subscription $subscription ) {
+		$data     = [];
+		$currency = $subscription->get_currency();
+		$discount = $subscription->get_parent()->get_total_discount( false );
+		$items    = array_merge( $subscription->get_items(), $subscription->get_parent()->get_shipping_methods() );
+
+		if ( 'discount' && $discount ) {
+			$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( 'discount' );
+			$price_data     = $this->format_item_price_data( $currency, $stripe_item_id, -$discount );
+			$data[]         = [ 'price_data' => $price_data ];
+		}
+
+		foreach ( $items as $item ) {
+			if ( $item->is_type( 'line_item' ) ) {
+				$type        = 'sign_up_fee';
+				$unit_amount = floatval( WC_Subscriptions_Product::get_sign_up_fee( $item->get_product() ) );
+			} else {
+				$type        = $item->get_type();
+				$unit_amount = $item->get_total();
+			}
+
+			$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( $type );
+
+			if ( $unit_amount ) {
+				$price_data = $this->format_item_price_data( $currency, $stripe_item_id, $unit_amount );
+				$data[]     = [
+					'price_data' => $price_data,
+					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
+				];
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Prepare tax rates for a subscription item.
+	 *
+	 * @param WC_Order_Item   $item         Subscription order item.
+	 * @param WC_Subscription $subscription A Subscription to get tax rate information from.
+	 *
+	 * @return array
+	 */
+	public function get_tax_rates_for_item( WC_Order_Item $item, WC_Subscription $subscription ) {
+		$tax_rates = [];
+
+		if ( ! wc_tax_enabled() || ! $item->get_taxes() ) {
+			return $tax_rates;
+		}
+
+		$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
+
+		if ( ! $tax_rate_ids ) {
+			return $tax_rates;
+		}
+
+		$tax_inclusive = wc_prices_include_tax();
+
+		foreach ( $subscription->get_taxes() as $tax ) {
+			if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) ) {
+				$tax_rates[] = [
+					'display_name' => $tax->get_name(),
+					'inclusive'    => $tax_inclusive,
+					'percentage'   => $tax->get_rate_percent(),
+				];
+			}
+		}
+
+		return $tax_rates;
+	}
+
+	/**
+	 * Formats item data.
+	 *
+	 * @param string $currency          The item's currency.
+	 * @param string $stripe_product_id The item's Stripe product id.
+	 * @param float  $unit_amount       The item's unit amount.
+	 * @param string $interval          The item's interval. Optional.
+	 * @param int    $interval_count    The item's interval count. Optional.
+	 *
+	 * @return array Structured invoice item array.
+	 */
+	private function format_item_price_data( string $currency, string $stripe_product_id, float $unit_amount, string $interval = '', int $interval_count = 0 ) : array {
+		$data = [
+			'currency'    => $currency,
+			'product'     => $stripe_product_id,
+			'unit_amount' => $unit_amount * 100,
+		];
+
+		if ( $interval && $interval_count ) {
+			$data['recurring'] = [
+				'interval'       => $interval,
+				'interval_count' => $interval_count,
+			];
+		}
+
+		return $data;
 	}
 
 	/**
@@ -517,7 +673,7 @@ class WC_Payments_Subscription_Service {
 
 		$next_payment_time_difference = absint( $wcpay_subscription['current_period_end'] - $subscription->get_time( 'next_payment' ) );
 
-		if ( $next_payment_time_difference > 0 && $next_payment_time_difference >= 12 * HOURS_IN_SECONDS ) {
+		if ( $next_payment_time_difference > 0 && $next_payment_time_difference >= 12 * HOUR_IN_SECONDS ) {
 			$subscription->add_order_note( __( 'The subscription\'s next payment date has been updated to match WCPay server.', 'woocommerce-payments' ) );
 		}
 
