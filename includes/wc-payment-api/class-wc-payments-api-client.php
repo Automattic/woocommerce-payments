@@ -1182,18 +1182,19 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	public function create_terminal_location( $display_name, $address, $metadata = null ) {
-		if ( ! is_array( $address ) || ! isset( $address['country'] ) || ! isset( $address['line1'] ) ) {
+	public function create_terminal_location( $display_name, $address, $metadata = [] ) {
+		if ( ! isset( $address['country'], $address['line1'] ) ) {
 			throw new API_Exception(
 				__( 'Address country and line 1 are required.', 'woocommerce-payments' ),
 				'wcpay_invalid_terminal_location_request',
-				0
+				400
 			);
 		}
 
 		$request = [
 			'display_name' => $display_name,
 			'address'      => $address,
+			'metadata'     => $metadata,
 		];
 
 		return $this->request(
