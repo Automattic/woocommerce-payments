@@ -3,24 +3,9 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	CheckboxControl,
-	SelectControl,
-	TextControl,
-} from '@wordpress/components';
+import { CheckboxControl, TextControl } from '@wordpress/components';
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps } from '@wordpress/block-editor';
-import { createElement, useState } from '@wordpress/element';
-// import ReactDOM from 'react-dom';
-
-/**
- * Internal dependencies
- */
-import {
-	useCurrencies,
-	useDefaultCurrency,
-	useEnabledCurrencies,
-} from 'wcpay/data';
 
 registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 	apiVersion: 2,
@@ -29,7 +14,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		'Let your customers switch between your enabled currencies',
 		'woocommerce-payments'
 	),
-	icon: 'smiley',
+	icon: 'admin-site', // TODO: check the icon to use (https://developer.wordpress.org/resource/dashicons)
 	category: 'widgets',
 	attributes: {
 		title: {
@@ -37,26 +22,33 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		},
 		symbol: {
 			type: 'boolean',
+			default: true,
 		},
 		flag: {
 			type: 'boolean',
+			default: false,
 		},
 	},
 	edit: ( props ) => {
 		const {
 			attributes: { title, symbol, flag },
 			setAttributes,
-			className,
 		} = props;
 
+		// eslint-disable-next-line react-hooks/rules-of-hooks
 		const blockProps = useBlockProps();
 
-		const onChangeTitle = ( title ) => {
-			setAttributes( { title: title } );
+		const onChangeTitle = ( newTitle ) => {
+			setAttributes( { title: newTitle } );
 		};
 
-		const [ isFlagChecked, onChangeFlag ] = useState( flag );
-		const [ isSymbolChecked, onChangeSymbol ] = useState( symbol );
+		const onChangeFlag = ( newFlag ) => {
+			setAttributes( { flag: newFlag } );
+		};
+
+		const onChangeSymbol = ( newSymbol ) => {
+			setAttributes( { symbol: newSymbol } );
+		};
 
 		return (
 			<div { ...blockProps }>
@@ -76,7 +68,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 						'Display currency symbols',
 						'woocommerce-payments'
 					) }
-					checked={ isSymbolChecked }
+					checked={ symbol }
 					onChange={ onChangeSymbol }
 				/>
 				<CheckboxControl
@@ -84,55 +76,15 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 						'Display flags on supported devices',
 						'woocommerce-payments'
 					) }
-					checked={ isFlagChecked }
+					checked={ flag }
 					onChange={ onChangeFlag }
 				/>
 			</div>
 		);
 	},
-	save: ( props ) => {
-		// const defaultCurrency = useDefaultCurrency();
-		// const enabledCurrencies = useEnabledCurrencies();
-
-		// console.log( defaultCurrency );
-		// console.log( enabledCurrencies );
-
-		const onChangeCurrency = ( currency ) => {
-			// TODO: All this would need to do is submit the form so maybe could be inline.
-			print( currency );
-		};
-
-		const blockProps = useBlockProps.save();
-
-		return (
-			<div { ...blockProps }>
-				<span className="widget-title">{ props.attributes.title }</span>
-				<form>
-					<select
-						name="currency"
-						aria-label={ props.attributes.title }
-						onBlur="this.form.submit()"
-					>
-						<option value="USD">USD</option>
-						<option value="EUR">EUR</option>
-						<option value="JPY">JPY</option>
-					</select>
-				</form>
-			</div>
-			// <div { ...blockProps }>
-			// 	<h3>This is the Currency Switcher Widget</h3>
-			// </div>
-			// <SelectControl
-			// 	{ ...blockProps }
-			// 	label={ props.attributes.title }
-			// 	value={ [ 'a', 'b', 'c' ] }
-			// 	onChange={ onChangeCurrency }
-			// 	options={ [
-			// 		{ value: 'jpy', label: 'JPY' },
-			// 		{ value: 'eur', label: 'EUR' },
-			// 		{ value: 'usd', label: 'USD' },
-			// 	] }
-			// />
-		);
+	save: () => {
+		// Return null from the save function, because we need to use a dynamic block.
+		// https://developer.wordpress.org/block-editor/how-to-guides/block-tutorial/creating-dynamic-blocks/
+		return null;
 	},
 } );

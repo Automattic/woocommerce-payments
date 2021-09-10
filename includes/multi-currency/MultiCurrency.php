@@ -71,6 +71,13 @@ class MultiCurrency {
 	protected $currency_switcher_widget;
 
 	/**
+	 * Gutenberg Block implementation of the Currency Switcher Widget instance.
+	 *
+	 * @var CurrencySwitcherBlock
+	 */
+	protected $currency_switcher_block;
+
+	/**
 	 * Utils instance.
 	 *
 	 * @var Utils
@@ -177,13 +184,14 @@ class MultiCurrency {
 	 * @param WC_Payments_Localization_Service $localization_service Localization Service instance.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service ) {
-		$this->payments_api_client  = $payments_api_client;
-		$this->payments_account     = $payments_account;
-		$this->localization_service = $localization_service;
-		$this->geolocation          = new Geolocation( $this->localization_service );
-		$this->utils                = new Utils();
-		$this->compatibility        = new Compatibility( $this, $this->utils );
-		$this->analytics            = new Analytics( $this );
+		$this->payments_api_client     = $payments_api_client;
+		$this->payments_account        = $payments_account;
+		$this->localization_service    = $localization_service;
+		$this->geolocation             = new Geolocation( $this->localization_service );
+		$this->utils                   = new Utils();
+		$this->compatibility           = new Compatibility( $this, $this->utils );
+		$this->analytics               = new Analytics( $this );
+		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
 
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
@@ -193,7 +201,6 @@ class MultiCurrency {
 
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
-		add_action( 'init', [ $this, 'init_block_widgets' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
@@ -272,31 +279,6 @@ class MultiCurrency {
 		register_widget( $this->currency_switcher_widget );
 	}
 
-	/**
-	 * Initialize the block widgets.
-	 *
-	 * @return void
-	 */
-	public function init_block_widgets() {
-		// Automatically load dependencies and version.
-		$asset_file = include WCPAY_ABSPATH . 'dist/multi-currency-switcher-block.asset.php';
-
-		wp_register_script(
-			'woocommerce-payments/multi-currency-switcher',
-			plugins_url( 'dist/multi-currency-switcher-block.js', WCPAY_PLUGIN_FILE ),
-			$asset_file['dependencies'],
-			$asset_file['version'],
-			true    // TODO: Should this be true or false?
-		);
-
-		register_block_type(
-			'woocommerce-payments/multi-currency-switcher',
-			[
-				'api_version'   => 2,
-				'editor_script' => 'woocommerce-payments/multi-currency-switcher',
-			]
-		);
-	}
 	/**
 	 * Initialize the Settings Pages.
 	 *
