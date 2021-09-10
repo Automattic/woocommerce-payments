@@ -1049,6 +1049,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				'country' => 'US',
 				'line1'   => 'Some Str. 2',
 			],
+			'metadata'     => [],
 		];
 
 		$this->mock_http_client
@@ -1081,6 +1082,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			);
 
 		$result = $this->payments_api_client->create_terminal_location( $location['display_name'], $location['address'] );
+		// The returned value is an object, even though Stripe specifies an array.
+		$result['metadata'] = (array) $result['metadata'];
 		$this->assertSame( $location, $result );
 	}
 
