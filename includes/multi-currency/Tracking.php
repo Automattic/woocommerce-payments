@@ -55,10 +55,40 @@ class Tracking {
 	 * @return array Assoc array with the Currency data.
 	 */
 	private function get_currency_data_array( Currency $currency ): array {
-		return [
+		$data = [
 			'code' => $currency->get_code(),
 			'name' => html_entity_decode( $currency->get_name() ),
 		];
+
+		// Return early if it's the default currency.
+		if ( $currency->get_code() === $this->multi_currency->get_default_currency()->get_code() ) {
+			return $data;
+		}
+
+		// Is it a zero decimal currency?
+		$is_zero_decimal = $currency->get_is_zero_decimal();
+
+		// Is it using a custom or automatic rate?
+		$rate_type = get_option( $this->multi_currency->id . '_exchange_rate_' . $currency->get_id(), 'automatic' );
+		$rate_type = 'automatic' === $rate_type ? $rate_type . ' (default)' : $rate_type;
+
+		// What is the price rounding setting?
+		$price_rounding_default = $is_zero_decimal ? '100' : '1.00';
+		$price_rounding         = $currency->get_rounding();
+		$price_rounding         = $price_rounding_default === $price_rounding ? $price_rounding . ' (default)' : $price_rounding;
+
+		// What is the price charm setting?
+		$price_charm = $currency->get_charm();
+		$price_charm = 0.00 === $price_charm ? '0.00 (default)' : $price_charm;
+
+		$additional_data = [
+			'is_zero_decimal' => $is_zero_decimal,
+			'rate_type'       => $rate_type,
+			'price_rounding'  => $price_rounding,
+			'price_charm'     => $price_charm,
+		];
+
+		return array_merge( $data, $additional_data );
 	}
 
 	/**
