@@ -19,9 +19,52 @@ class WCPay_Multi_Currency_Tracking_Tests extends WP_UnitTestCase {
 	private $tracking;
 
 	/**
-	 * @var int
+	 * Mock currencies.
+	 *
+	 * @var array
 	 */
-	private $timestamp_for_testing;
+	private $mock_currencies = [
+		// Default currency.
+		'USD' => [
+			'rate' => 1,
+		],
+		// Zero decimal currency with non-default settings.
+		'BIF' => [
+			'rate'           => 1985.96,
+			'rate_type'      => 'manual',
+			'price_rounding' => '50',
+			'price_charm'    => '-1',
+		],
+		// Currency with non-default settings.
+		'CAD' => [
+			'rate'           => 1.27,
+			'rate_type'      => 'manual',
+			'price_rounding' => '0.50',
+			'price_charm'    => '-0.01',
+		],
+		// Zero decimal currency with default settings.
+		'CLP' => [
+			'rate'           => 786.60,
+			'rate_type'      => 'automatic',
+			'price_rounding' => '100',
+			'price_charm'    => '0.00',
+		],
+		// Currency with default settings.
+		'EUR' => [
+			'rate'           => 0.84,
+			'rate_type'      => 'automatic',
+			'price_rounding' => '1.00',
+			'price_charm'    => '0.00',
+		],
+		// Zero decimal currency with no settings. Mimics currency added, but not modified.
+		'JPY' => [
+			'rate' => 109.86,
+		],
+		// Currency with no settings. Mimics currency added, but not modified.
+		'GBP' => [
+			'rate' => 0.72,
+		],
+	];
 
 	/**
 	 * Mock enabled currencies.
@@ -101,16 +144,52 @@ class WCPay_Multi_Currency_Tracking_Tests extends WP_UnitTestCase {
 			'wcpay_multi_currency' => [
 				'enabled_currencies' => [
 					'BIF' => [
-						'code' => 'BIF',
-						'name' => 'Burundian franc',
+						'code'            => 'BIF',
+						'name'            => 'Burundian franc',
+						'is_zero_decimal' => true,
+						'rate_type'       => 'manual',
+						'price_rounding'  => '50',
+						'price_charm'     => '-1',
 					],
 					'CAD' => [
-						'code' => 'CAD',
-						'name' => 'Canadian dollar',
+						'code'            => 'CAD',
+						'name'            => 'Canadian dollar',
+						'is_zero_decimal' => false,
+						'rate_type'       => 'manual',
+						'price_rounding'  => '0.50',
+						'price_charm'     => '-0.01',
+					],
+					'CLP' => [
+						'code'            => 'CLP',
+						'name'            => 'Chilean peso',
+						'is_zero_decimal' => true,
+						'rate_type'       => 'automatic (default)',
+						'price_rounding'  => '100 (default)',
+						'price_charm'     => '0.00 (default)',
+					],
+					'EUR' => [
+						'code'            => 'EUR',
+						'name'            => 'Euro',
+						'is_zero_decimal' => false,
+						'rate_type'       => 'automatic (default)',
+						'price_rounding'  => '1.00 (default)',
+						'price_charm'     => '0.00 (default)',
+					],
+					'JPY' => [
+						'code'            => 'JPY',
+						'name'            => 'Japanese yen',
+						'is_zero_decimal' => true,
+						'rate_type'       => 'automatic (default)',
+						'price_rounding'  => '100 (default)',
+						'price_charm'     => '0.00 (default)',
 					],
 					'GBP' => [
-						'code' => 'GBP',
-						'name' => 'Pound sterling',
+						'code'            => 'GBP',
+						'name'            => 'Pound sterling',
+						'is_zero_decimal' => false,
+						'rate_type'       => 'automatic (default)',
+						'price_rounding'  => '1.00 (default)',
+						'price_charm'     => '0.00 (default)',
 					],
 				],
 				'default_currency'   => [
@@ -125,15 +204,22 @@ class WCPay_Multi_Currency_Tracking_Tests extends WP_UnitTestCase {
 	}
 
 	private function set_up_mock_enabled_currencies() {
-		$mock_currencies = [
-			'USD' => 1,
-			'BIF' => 1974,
-			'CAD' => 1.206823,
-			'GBP' => 0.708099,
-		];
+		foreach ( $this->mock_currencies as $code => $settings ) {
+			$currency = new WCPay\MultiCurrency\Currency( $code, $settings['rate'] );
 
-		foreach ( $mock_currencies as $code => $rate ) {
-			$currency = new WCPay\MultiCurrency\Currency( $code, $rate );
+			if ( isset( $settings['rate_type'] ) ) {
+				update_option( 'wcpay_multi_currency_exchange_rate_' . $currency->get_id(), $settings['rate_type'] );
+			}
+
+			// Set the rounding as MultiCurrency->get_enabled_currencies() does.
+			$default_rounding = $currency->get_is_zero_decimal() ? '100' : '1.00';
+			$price_rounding   = isset( $settings['price_rounding'] ) ? $settings['price_rounding'] : $default_rounding;
+			$currency->set_rounding( $price_rounding );
+
+			// Set the charm as MultiCurrency->get_enabled_currencies() does.
+			$price_charm = isset( $settings['price_charm'] ) ? $settings['price_charm'] : 0.00;
+			$currency->set_charm( $price_charm );
+
 			$this->mock_enabled_currencies[ $currency->get_code() ] = $currency;
 		}
 	}
