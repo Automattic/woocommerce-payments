@@ -1,24 +1,71 @@
 /**
  * External dependencies
  */
-import { sprintf, __ } from '@wordpress/i18n';
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 
 /**
  * Internal dependencies
  */
 import EnabledCurrencies from './enabled-currencies-list';
+import SingleCurrencySettings from './single-currency-settings';
+import MultiCurrencySettingsContext from './context';
 
-/**
- * Mount React Component
- */
 const currencyContainer = document.getElementById(
 	'wcpay_enabled_currencies_list'
 );
 
+const storeSettingsSection = document.querySelector(
+	'#wcpay_currencies_settings_section'
+);
+
+const submitButton = document.querySelector( 'p.submit' );
+
+const displayStoreSettingsSection = ( isDisplaying ) => {
+	storeSettingsSection.style.display = isDisplaying ? 'block' : 'none';
+	submitButton.style.display = isDisplaying ? 'block' : 'none';
+};
+
+const MultiCurrencySettingsPage = () => {
+	const [
+		isSingleCurrencyScreenOpen,
+		setSingleCurrencyScreenOpen,
+	] = useState( false );
+	const [
+		currencyCodeToShowSettingsFor,
+		setCurrencyCodeToShowSettingsFor,
+	] = useState( null );
+
+	return (
+		<MultiCurrencySettingsContext.Provider
+			value={ {
+				isSingleCurrencyScreenOpen: isSingleCurrencyScreenOpen,
+				currencyCodeToShowSettingsFor: currencyCodeToShowSettingsFor,
+				openSingleCurrencySettings: ( code ) => {
+					setCurrencyCodeToShowSettingsFor( code );
+					setSingleCurrencyScreenOpen( true );
+					displayStoreSettingsSection( false );
+				},
+				closeSingleCurrencySettings: () => {
+					setSingleCurrencyScreenOpen( false );
+					const display =
+						0 <
+						enabledCurrenciesListItemsExceptPlaceholders().length;
+					displayStoreSettingsSection( display );
+				},
+			} }
+		>
+			<EnabledCurrencies />
+			<SingleCurrencySettings />
+		</MultiCurrencySettingsContext.Provider>
+	);
+};
+
+/**
+ * Mount React Component
+ */
 if ( currencyContainer ) {
-	ReactDOM.render( <EnabledCurrencies />, currencyContainer );
+	ReactDOM.render( <MultiCurrencySettingsPage />, currencyContainer );
 }
 
 /**
@@ -27,19 +74,12 @@ if ( currencyContainer ) {
 const enabledCurrenciesList = document.querySelector(
 	'.enabled-currencies-list'
 );
-const storeSettingsSection = document.querySelector(
-	'#wcpay_currencies_settings_section'
-);
-const submitButton = document.querySelector( 'p.submit' );
 
 if ( storeSettingsSection ) {
 	const toggleSettingsSectionDisplay = () => {
 		const display =
-			1 >= enabledCurrenciesListItemsExceptPlaceholders().length
-				? 'none'
-				: 'block';
-		storeSettingsSection.style.display = display;
-		submitButton.style.display = display;
+			0 < enabledCurrenciesListItemsExceptPlaceholders().length;
+		displayStoreSettingsSection( display );
 	};
 
 	const enabledCurrenciesObserver = new MutationObserver(
@@ -68,102 +108,3 @@ const enabledCurrenciesOnboarding = document.querySelector(
 if ( enabledCurrenciesOnboarding ) {
 	submitButton.style.display = 'none';
 }
-
-/**
- * Single currency settings
- */
-let rateType = 'automatic';
-
-const automaticRate = document.querySelector(
-	'[name=wcpay_multi_currency_automatic_exchange_rate]'
-);
-
-const manualRate = document.querySelector(
-	'[name^=wcpay_multi_currency_manual_rate_]'
-);
-
-const rounding = document.querySelector(
-	'[name^=wcpay_multi_currency_price_rounding_]'
-);
-
-const isZeroDecimal = document.querySelector(
-	'[name^=wcpay_multi_currency_is_zero_decimal_]'
-);
-
-const charm = document.querySelector(
-	'[name^=wcpay_multi_currency_price_charm_]'
-);
-
-const previewAmount = document.querySelector(
-	'#wcpay_multi_currency_preview_default'
-);
-
-const previewDisplay = document.querySelector(
-	'#wcpay_multi_currency_preview_converted span'
-);
-
-function updatePreview() {
-	// Get needed field values and update field.
-	const rate = 'manual' === rateType ? manualRate.value : automaticRate.value;
-	const currencyCode = new URLSearchParams( document.location.search )
-		.get( 'section' )
-		.toUpperCase();
-	let total = previewAmount.value * rate;
-
-	if ( 'none' !== rounding.value ) {
-		total = Math.ceil( total / rounding.value ) * rounding.value;
-	}
-
-	total += parseFloat( charm.value );
-	if ( isNaN( total ) ) {
-		previewDisplay.innerHTML = __(
-			'Please enter a valid number',
-			'woocommerce-payments'
-		);
-		return;
-	}
-
-	try {
-		previewDisplay.innerHTML = total.toLocaleString(
-			undefined, // Use the default locale for the given currency.
-			{
-				style: 'currency',
-				currency: currencyCode,
-				currencyDisplay: 'narrowSymbol',
-			}
-		);
-	} catch ( error ) {
-		return sprintf(
-			isZeroDecimal ? '%s %i' : '%s %.2f',
-			currencyCode.toUpperCase(),
-			total
-		);
-	}
-}
-
-const hideShowManualField = ( show ) => {
-	const manualRateField = document
-		.querySelector( '[id^=wcpay_multi_currency_manual_rate_]' )
-		.closest( 'tr' );
-	manualRateField.style.display = show ? 'table-row' : 'none';
-	rateType = show ? 'manual' : 'automatic';
-	updatePreview();
-};
-
-const triggerHideShow = ( value, checked ) => {
-	hideShowManualField( 'manual' === value && true === checked );
-};
-
-document.querySelectorAll( '.exchange-rate-selector' ).forEach( ( radio ) => {
-	triggerHideShow( radio.value, radio.checked );
-
-	radio.addEventListener( 'change', ( event ) => {
-		triggerHideShow( event.target.value, event.target.checked );
-	} );
-} );
-
-[ manualRate, rounding, charm, previewAmount ]
-	.filter( ( _ ) => _ )
-	.forEach( ( element ) =>
-		element.addEventListener( 'input', () => updatePreview() )
-	);

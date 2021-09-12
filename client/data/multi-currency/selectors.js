@@ -31,3 +31,7 @@ export const getEnabledCurrencies = ( state ) => {
 export const getDefaultCurrency = ( state ) => {
 	return getCurrencies( state ).default || {};
 };
+
+export const getCurrencySettings = ( state ) => {
+	return getMultiCurrencyState( state ).currency_settings || {};
+};

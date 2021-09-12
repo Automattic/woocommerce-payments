@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
-import { updateCurrencies } from './actions';
+import { updateCurrencies, updateCurrencySettings } from './actions';
 
 /**
  * Retrieve settings from the site's REST API.
@@ -25,6 +25,27 @@ export function* getCurrencies() {
 	} catch ( e ) {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error retrieving currencies.', 'woocommerce-payments' )
+		);
+	}
+}
+
+/**
+ * Retrieve single currency sttings from the site's REST API.
+ *
+ * @param {string} currencyCode The currency code to fetch settings for.
+ */
+export function* getCurrencySettings( currencyCode ) {
+	const path = `${ NAMESPACE }/multi-currency/currencies/${ currencyCode }`;
+
+	try {
+		const result = yield apiFetch( { path } );
+		yield updateCurrencySettings( result );
+	} catch ( e ) {
+		yield dispatch( 'core/notices' ).createErrorNotice(
+			__(
+				'Error retrieving single currency settings.',
+				'woocommerce-payments'
+			)
 		);
 	}
 }

@@ -47,6 +47,11 @@ const receiveMultiCurrencies = (
 				},
 				default: data.default,
 			};
+		case TYPES.SET_CURRENCY_SETTINGS:
+			return {
+				...state,
+				currency_settings: data,
+			};
 	}
 
 	return state;

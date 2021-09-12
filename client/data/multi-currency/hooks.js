@@ -39,3 +39,12 @@ export const useDefaultCurrency = () =>
 
 		return getDefaultCurrency();
 	} );
+
+export const useCurrencySettings = ( currencyCode ) => {
+	const currencySettings = useSelect( ( select ) => {
+		const { getCurrencySettings } = select( STORE_NAME );
+		return getCurrencySettings( currencyCode );
+	} );
+	const { submitCurrencySettings } = useDispatch( STORE_NAME );
+	return { currencySettings, submitCurrencySettings };
+};

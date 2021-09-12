@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody, CardDivider } from '@wordpress/components';
 
@@ -19,8 +19,13 @@ import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesListItemPlaceholder from './list-item-placeholder';
 import EnabledCurrenciesModal from './modal';
+import MultiCurrencySettingsContext from '../context';
 
 const EnabledCurrencies = () => {
+	const { isSingleCurrencyScreenOpen } = useContext(
+		MultiCurrencySettingsContext
+	);
+
 	const { isLoading } = useCurrencies();
 	const defaultCurrency = useDefaultCurrency();
 	const {
@@ -39,7 +44,8 @@ const EnabledCurrencies = () => {
 		? Object.keys( enabledCurrencies )
 		: [];
 
-	return (
+	// Don't render when the single currency settings are open.
+	return isSingleCurrencyScreenOpen ? null : (
 		<>
 			<Card className={ `${ classBase }__enabled-currencies` }>
 				<CardBody
