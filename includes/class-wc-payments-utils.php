@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Exceptions\{ API_Exception, Connection_Exception };
+
 /**
  * WC Payments Utils class
  */
@@ -476,5 +478,32 @@ class WC_Payments_Utils {
 
 		// Return 'auto' so Stripe.js uses the browser locale.
 		return 'auto';
+	}
+
+	/**
+	 * Returns redacted customer-facing error messages for notices.
+	 *
+	 * This function tries to filter out API exceptions that should not be displayed to customers.
+	 * Generally, only Stripe exceptions with type of `card_error` should be displayed.
+	 * Other API errors should be redacted (https://stripe.com/docs/api/errors#errors-message).
+	 *
+	 * @param Exception $e Exception to get the message from.
+	 *
+	 * @return string
+	 */
+	public static function get_filtered_error_message( Exception $e ) {
+		$error_message = method_exists( $e, 'getLocalizedMessage' ) ? $e->getLocalizedMessage() : $e->getMessage();
+
+		// These notices can be shown when placing an order or adding a new payment method, so we aim for
+		// more generic messages instead of specific order/payment messages when the API Exception is redacted.
+		if ( $e instanceof Connection_Exception ) {
+			$error_message = __( 'There was an error while processing this request. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
+		} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
+			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
+		} elseif ( $e instanceof API_Exception && ! empty( $e->get_error_type() ) && 'card_error' !== $e->get_error_type() ) {
+			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
+		}
+
+		return $error_message;
 	}
 }
