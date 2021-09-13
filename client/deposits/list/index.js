@@ -8,14 +8,12 @@ import { dateI18n } from '@wordpress/date';
 import { __, _n } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
-import { Button } from '@wordpress/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import {
 	downloadCSVFile,
 	generateCSVDataFromTable,
 	generateCSVFileName,
 } from '@woocommerce/csv-export';
-import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies.
@@ -28,6 +26,7 @@ import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import Page from '../../components/page';
 import DepositsFilters from '../filters';
+import DownloadButton from 'components/download-button';
 
 import './style.scss';
 
@@ -235,17 +234,11 @@ export const DepositsList = () => {
 				onQueryChange={ onQueryChange }
 				actions={ [
 					downloadable && (
-						<Button
+						<DownloadButton
 							key="download"
-							className="woocommerce-table__download-button"
-							disabled={ isLoading }
+							isDisabled={ isLoading }
 							onClick={ onDownload }
-						>
-							<Gridicon icon={ 'cloud-download' } />
-							<span className="woocommerce-table__download-button__label">
-								{ __( 'Download', 'woocommerce-payments' ) }
-							</span>
-						</Button>
+						/>
 					),
 				] }
 			/>

@@ -24,6 +24,14 @@ class Analytics {
 
 	const SUPPORTED_CONTEXTS = [ 'orders', 'products', 'variations', 'categories', 'coupons', 'taxes' ];
 
+
+	/**
+	 * SQL string replacements made by the analytics multi-currency extension.
+	 *
+	 * @var array
+	 */
+	protected $sql_replacements = [];
+
 	/**
 	 * Instance of MultiCurrency.
 	 *
@@ -213,15 +221,6 @@ class Analytics {
 	}
 
 	/**
-	 * Get the SQL replacements variable.
-	 *
-	 * @return array
-	 */
-	private function get_sql_replacements(): array {
-		return $this->sql_replacements;
-	}
-
-	/**
 	 * Check to see whether we should convert an order to store in the order stats table.
 	 *
 	 * @param WC_Order|WC_Order_Refund $order The order.
@@ -307,6 +306,16 @@ class Analytics {
 	private function generate_case_when( string $variable, string $then, string $else ): string {
 		return "CASE WHEN {$variable} IS NOT NULL THEN {$then} ELSE {$else} END";
 	}
+
+	/**
+	 * Get the SQL replacements variable.
+	 *
+	 * @return array
+	 */
+	private function get_sql_replacements(): array {
+		return $this->sql_replacements;
+	}
+
 	/**
 	 * Set the SQL replacements variable.
 	 *
