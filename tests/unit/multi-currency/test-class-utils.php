@@ -33,13 +33,15 @@ class WCPay_Multi_Currency_Utils_Tests extends WP_UnitTestCase {
 		$this->assertTrue( $this->utils->is_call_in_backtrace( [ 'WCPay_Multi_Currency_Utils_Tests->test_is_call_in_backtrace_return_true' ] ) );
 	}
 
-	public function test_is_admin_request_returns_false() {
+	public function test_is_admin_api_request_returns_false() {
 		$_SERVER['HTTP_REFERER'] = 'http://example.org/';
-		$this->assertFalse( $this->utils->is_admin_request() );
+		$_SERVER['REQUEST_URI']  = trailingslashit( rest_get_url_prefix() );
+		$this->assertFalse( $this->utils->is_admin_api_request() );
 	}
 
-	public function test_is_admin_request_returns_true() {
+	public function test_is_admin_api_request_returns_true() {
 		$_SERVER['HTTP_REFERER'] = 'http://example.org/wp-admin/';
-		$this->assertTrue( $this->utils->is_admin_request() );
+		$_SERVER['REQUEST_URI']  = trailingslashit( rest_get_url_prefix() );
+		$this->assertTrue( $this->utils->is_admin_api_request() );
 	}
 }

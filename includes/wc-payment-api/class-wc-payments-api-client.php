@@ -1314,9 +1314,11 @@ class WC_Payments_API_Client {
 
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
+			$error_type = null;
 			if ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
+				$error_type    = $response_body['error']['type'] ?? null;
 			} elseif ( isset( $response_body['code'] ) ) {
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
@@ -1332,7 +1334,7 @@ class WC_Payments_API_Client {
 			);
 
 			Logger::error( "$error_message ($error_code)" );
-			throw new API_Exception( $message, $error_code, $response_code );
+			throw new API_Exception( $message, $error_code, $response_code, $error_type );
 		}
 
 		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
