@@ -39,7 +39,7 @@ export function* getCurrencySettings( currencyCode ) {
 
 	try {
 		const result = yield apiFetch( { path } );
-		yield updateCurrencySettings( result );
+		yield updateCurrencySettings( currencyCode, result );
 	} catch ( e ) {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__(

@@ -41,10 +41,10 @@ export function updateDefaultCurrency( data ) {
 	};
 }
 
-export function updateCurrencySettings( data ) {
+export function updateCurrencySettings( code, data ) {
 	return {
 		type: TYPES.SET_CURRENCY_SETTINGS,
-		data,
+		data: { code, data },
 	};
 }
 
@@ -78,7 +78,7 @@ export function* submitCurrencySettings( currencyCode, settings ) {
 			data: settings,
 		} );
 
-		yield updateCurrencySettings( result );
+		yield updateCurrencySettings( currencyCode, result );
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(
 			__( 'Currency settings updated.', 'woocommerce-payments' )

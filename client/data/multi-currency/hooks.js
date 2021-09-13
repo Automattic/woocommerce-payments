@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useSelect, useDispatch } from '@wordpress/data';
+import { useSelect, useDispatch, dispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
 export const useCurrencies = () =>
@@ -41,10 +41,14 @@ export const useDefaultCurrency = () =>
 	} );
 
 export const useCurrencySettings = ( currencyCode ) => {
-	const currencySettings = useSelect( ( select ) => {
-		const { getCurrencySettings } = select( STORE_NAME );
-		return getCurrencySettings( currencyCode );
+	const { currencySettings, isLoading } = useSelect( ( select ) => {
+		const { getCurrencySettings, isResolving } = select( STORE_NAME );
+
+		return {
+			currencySettings: getCurrencySettings( currencyCode ),
+			isLoading: isResolving( 'getCurrencySettings', [ currencyCode ] ),
+		};
 	} );
-	const { submitCurrencySettings } = useDispatch( STORE_NAME );
-	return { currencySettings, submitCurrencySettings };
+	const { submitCurrencySettings } = dispatch( STORE_NAME );
+	return { currencySettings, isLoading, submitCurrencySettings };
 };

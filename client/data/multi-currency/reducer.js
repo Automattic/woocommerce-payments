@@ -50,7 +50,10 @@ const receiveMultiCurrencies = (
 		case TYPES.SET_CURRENCY_SETTINGS:
 			return {
 				...state,
-				currency_settings: data,
+				currency_settings: {
+					...state.currency_settings,
+					[ data.code ]: data.data,
+				},
 			};
 	}
 
