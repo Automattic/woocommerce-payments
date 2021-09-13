@@ -224,6 +224,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param {int} $order_id The id of the order if intent created from Order.
 	 *
 	 * @return array
+	 *
+	 * @throws API_Exception Whenever an API exception occured.
 	 */
 	public function create_payment_intent( $order_id = null ) {
 		$amount = WC()->cart->get_total( false );
@@ -269,6 +271,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					array_values( $enabled_payment_methods ),
 					$order_id ?? 0
 				);
+			} else {
+				throw $e;
 			}
 		}
 
@@ -349,6 +353,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param int $order_id Order ID to process the payment for.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 *
+	 * @throws API_Exception Whenever an API exception occured.
 	 */
 	public function process_payment( $order_id ) {
 		$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -405,6 +411,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 							'result'   => 'fail',
 							'redirect' => '',
 						];
+					} else {
+						throw $e;
 					}
 				}
 
