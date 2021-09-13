@@ -39,7 +39,6 @@ const EnabledCurrencies = () => {
 		? Object.keys( enabledCurrencies )
 		: [];
 
-	// Don't render when the single currency settings are open.
 	return (
 		<>
 			<Card className={ `${ classBase }__enabled-currencies` }>
