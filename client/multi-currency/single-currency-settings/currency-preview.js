@@ -44,7 +44,9 @@ const CurrencyPreview = ( {
 				amount *
 				parseFloat( currencyRate ? currencyRate : targetCurrency.rate );
 			const rounded =
-				converted - ( converted % parseFloat( roundingValue ) );
+				'none' === roundingValue
+					? converted
+					: converted - ( converted % parseFloat( roundingValue ) );
 			const charmed = rounded + parseFloat( charmValue );
 			return formatCurrency( charmed, targetCurrency );
 		},

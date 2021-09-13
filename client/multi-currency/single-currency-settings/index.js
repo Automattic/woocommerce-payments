@@ -4,7 +4,6 @@
  */
 import React, { useContext, useEffect, useState } from 'react';
 import { sprintf, __ } from '@wordpress/i18n';
-import LoadableSettingsSection from 'wcpay/settings/loadable-settings-section';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import SettingsSection from 'wcpay/settings/settings-section';
 import moment from 'moment';
@@ -24,21 +23,23 @@ import {
 } from './constants';
 import { useCurrencies, useCurrencySettings } from 'wcpay/data';
 import MultiCurrencySettingsContext from '../context';
+import { LoadableBlock } from 'wcpay/components/loadable';
 
 const SingleCurrencySettings = () => {
 	const {
-		isSingleCurrencyScreenOpen,
 		currencyCodeToShowSettingsFor,
 		closeSingleCurrencySettings,
 	} = useContext( MultiCurrencySettingsContext );
 
-	const currency = currencyCodeToShowSettingsFor || 'USD';
+	const currency = currencyCodeToShowSettingsFor;
 
-	const { currencies, isLoading } = useCurrencies();
+	const { currencies } = useCurrencies();
 
-	const { currencySettings, submitCurrencySettings } = useCurrencySettings(
-		currency
-	);
+	const {
+		currencySettings,
+		isLoading,
+		submitCurrencySettings,
+	} = useCurrencySettings( currency );
 
 	const storeCurrency = currencies.default ? currencies.default : {};
 	const targetCurrency = currencies.available
@@ -73,17 +74,24 @@ const SingleCurrencySettings = () => {
 	const [ isSaving, setIsSaving ] = useState( false );
 
 	useEffect( () => {
-		setExchangeRateType(
-			currencySettings.exchange_rate_type || initialExchangeRateType
-		);
-		setManualRate( currencySettings.manual_rate || initialManualRate );
-		setPriceRoundingType(
-			currencySettings.price_rounding || initialPriceRoundingType
-		);
-		setPriceCharmType(
-			currencySettings.price_charm || initialPriceCharmType
-		);
-	}, [ currency, currencySettings, initialPriceRoundingType ] );
+		if ( currencySettings[ currency ] ) {
+			setExchangeRateType(
+				currencySettings[ currency ].exchange_rate_type ||
+					initialExchangeRateType
+			);
+			setManualRate(
+				currencySettings[ currency ].manual_rate || initialManualRate
+			);
+			setPriceRoundingType(
+				currencySettings[ currency ].price_rounding ||
+					initialPriceRoundingType
+			);
+			setPriceCharmType(
+				currencySettings[ currency ].price_charm ||
+					initialPriceCharmType
+			);
+		}
+	}, [ currencySettings, currency, initialPriceRoundingType ] );
 
 	const formattedLastUpdatedTime = targetCurrency
 		? moment
@@ -137,7 +145,7 @@ const SingleCurrencySettings = () => {
 		setIsSaving( false );
 	};
 
-	return isSingleCurrencyScreenOpen ? (
+	return (
 		<div className={ 'single-currency-settings' }>
 			<SettingsLayout>
 				<h2 className={ 'single-currency-settings-breadcrumb' }>
@@ -151,7 +159,7 @@ const SingleCurrencySettings = () => {
 					{ targetCurrency.flag }
 				</h2>
 				<SettingsSection Description={ CurrencySettingsDescription }>
-					<LoadableSettingsSection numLines={ 33 }>
+					<LoadableBlock isLoading={ isLoading } numLines={ 33 }>
 						<Card
 							className={
 								'single-currency-settings-currency-settings'
@@ -331,7 +339,13 @@ const SingleCurrencySettings = () => {
 											</h4>
 											{ /* eslint-disable jsx-a11y/no-onchange */ }
 											<select
-												value={ priceRoundingType }
+												value={
+													'none' === priceRoundingType
+														? 'none'
+														: parseFloat(
+																priceRoundingType
+														  )
+												}
 												onChange={ ( event ) =>
 													setPriceRoundingType(
 														event.target.value
@@ -344,7 +358,13 @@ const SingleCurrencySettings = () => {
 												).map( ( value ) => {
 													return (
 														<option
-															value={ value }
+															value={
+																'none' === value
+																	? value
+																	: parseFloat(
+																			value
+																	  )
+															}
 															key={ value }
 														>
 															{
@@ -388,7 +408,9 @@ const SingleCurrencySettings = () => {
 											</h4>
 											{ /* eslint-disable jsx-a11y/no-onchange */ }
 											<select
-												value={ priceCharmType }
+												value={ parseFloat(
+													priceCharmType
+												) }
 												onChange={ ( event ) =>
 													setPriceCharmType(
 														event.target.value
@@ -401,7 +423,9 @@ const SingleCurrencySettings = () => {
 												).map( ( value ) => {
 													return (
 														<option
-															value={ value }
+															value={ parseFloat(
+																value
+															) }
 															key={ value }
 														>
 															{
@@ -437,10 +461,10 @@ const SingleCurrencySettings = () => {
 								</fieldset>
 							</CardBody>
 						</Card>
-					</LoadableSettingsSection>
+					</LoadableBlock>
 				</SettingsSection>
 				<SettingsSection Description={ CurrencyPreviewDescription }>
-					<LoadableSettingsSection numLines={ 8 }>
+					<LoadableBlock isLoading={ isLoading } numLines={ 8 }>
 						<CurrencyPreview
 							className={
 								'single-currency-settings-currency-preview'
@@ -455,7 +479,7 @@ const SingleCurrencySettings = () => {
 							roundingValue={ priceRoundingType }
 							charmValue={ priceCharmType }
 						/>
-					</LoadableSettingsSection>
+					</LoadableBlock>
 				</SettingsSection>
 				<SettingsSection className="single-currency-settings-save-settings-section">
 					<Button
@@ -469,7 +493,7 @@ const SingleCurrencySettings = () => {
 				</SettingsSection>
 			</SettingsLayout>
 		</div>
-	) : null;
+	);
 };
 
 export default SingleCurrencySettings;

@@ -35,28 +35,33 @@ const MultiCurrencySettingsPage = () => {
 		currencyCodeToShowSettingsFor,
 		setCurrencyCodeToShowSettingsFor,
 	] = useState( null );
+	const handleOpenSingleCurrencySettings = ( code ) => {
+		displayStoreSettingsSection( false );
+		setCurrencyCodeToShowSettingsFor( code );
+		setSingleCurrencyScreenOpen( true );
+	};
+	const handleCloseSingleCurrencySettings = () => {
+		const display =
+			0 < enabledCurrenciesListItemsExceptPlaceholders().length;
+		displayStoreSettingsSection( display );
+		setSingleCurrencyScreenOpen( false );
+		setCurrencyCodeToShowSettingsFor( null );
+	};
 
 	return (
 		<MultiCurrencySettingsContext.Provider
 			value={ {
 				isSingleCurrencyScreenOpen: isSingleCurrencyScreenOpen,
 				currencyCodeToShowSettingsFor: currencyCodeToShowSettingsFor,
-				openSingleCurrencySettings: ( code ) => {
-					setCurrencyCodeToShowSettingsFor( code );
-					setSingleCurrencyScreenOpen( true );
-					displayStoreSettingsSection( false );
-				},
-				closeSingleCurrencySettings: () => {
-					setSingleCurrencyScreenOpen( false );
-					const display =
-						0 <
-						enabledCurrenciesListItemsExceptPlaceholders().length;
-					displayStoreSettingsSection( display );
-				},
+				openSingleCurrencySettings: handleOpenSingleCurrencySettings,
+				closeSingleCurrencySettings: handleCloseSingleCurrencySettings,
 			} }
 		>
-			<EnabledCurrencies />
-			<SingleCurrencySettings />
+			{ ! isSingleCurrencyScreenOpen ? (
+				<EnabledCurrencies />
+			) : (
+				<SingleCurrencySettings />
+			) }
 		</MultiCurrencySettingsContext.Provider>
 	);
 };

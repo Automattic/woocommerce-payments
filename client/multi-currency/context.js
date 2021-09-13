@@ -5,6 +5,6 @@
  */
 import { createContext } from 'react';
 
-const MultiCurrencySettingsContext = createContext( null );
+const MultiCurrencySettingsContext = createContext();
 
 export default MultiCurrencySettingsContext;
