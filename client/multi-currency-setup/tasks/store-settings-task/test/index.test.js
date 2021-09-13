@@ -15,10 +15,16 @@ jest.mock( 'wcpay/data', () => ( {
 	useStoreSettings: jest.fn(),
 } ) );
 
+const changeableSettings = [
+	'enable_storefront_switcher',
+	'enable_auto_currency',
+];
+
 useStoreSettings.mockReturnValue( {
 	storeSettings: {
 		enable_storefront_switcher: false,
 		enable_auto_currency: false,
+		site_theme: 'Storefront',
 	},
 	submitStoreSettingsUpdate: jest.fn(),
 } );
@@ -50,16 +56,14 @@ describe( 'Multi Currency Store Settings', () => {
 
 	test( 'store settings are default unchecked', () => {
 		createContainer();
-		const { storeSettings } = useStoreSettings();
-		Object.keys( storeSettings ).forEach( ( setting ) => {
+		changeableSettings.forEach( ( setting ) => {
 			expect( screen.getByTestId( setting ) ).not.toBeChecked();
 		} );
 	} );
 
 	test( 'store settings are changed with clicking', () => {
 		createContainer();
-		const { storeSettings } = useStoreSettings();
-		Object.keys( storeSettings ).forEach( ( setting ) => {
+		changeableSettings.forEach( ( setting ) => {
 			fireEvent.click( screen.getByTestId( setting ) );
 			expect( screen.getByTestId( setting ) ).toBeChecked();
 		} );
@@ -67,7 +71,7 @@ describe( 'Multi Currency Store Settings', () => {
 
 	test( 'store settings are saved with continue button click', () => {
 		createContainer();
-		const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();
+		const { submitStoreSettingsUpdate } = useStoreSettings();
 		fireEvent.click(
 			screen.getByRole( 'button', {
 				name: /Continue/,
@@ -75,7 +79,7 @@ describe( 'Multi Currency Store Settings', () => {
 		);
 		expect( submitStoreSettingsUpdate ).toBeCalledWith( false, false );
 
-		Object.keys( storeSettings ).forEach( ( setting ) => {
+		changeableSettings.forEach( ( setting ) => {
 			fireEvent.click( screen.getByTestId( setting ) );
 			expect( screen.getByTestId( setting ) ).toBeChecked();
 		} );

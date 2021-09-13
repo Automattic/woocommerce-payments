@@ -225,14 +225,25 @@ describe( 'Multi Currency enabled currencies list', () => {
 	test( 'recommended currencies are checked by default', () => {
 		createContainer();
 		recommendedCurrencyCodes.forEach( ( currencyCode ) => {
-			expect(
-				screen.getByRole( 'checkbox', {
-					name: new RegExp(
-						availableCurrencies[ currencyCode ].name,
-						'g'
-					),
-				} )
-			).toBeChecked();
+			if ( currencyCode !== defaultCurrency.code ) {
+				expect(
+					screen.getByRole( 'checkbox', {
+						name: new RegExp(
+							availableCurrencies[ currencyCode ].name,
+							'g'
+						),
+					} )
+				).toBeChecked();
+			} else {
+				expect(
+					screen.queryByRole( 'checkbox', {
+						name: new RegExp(
+							availableCurrencies[ currencyCode ].name,
+							'g'
+						),
+					} )
+				).not.toBeInTheDocument();
+			}
 		} );
 	} );
 
@@ -313,11 +324,16 @@ describe( 'Multi Currency enabled currencies list', () => {
 		createContainer();
 		// uncheck all recommended currencies
 		recommendedCurrencyCodes.forEach( ( code ) => {
-			fireEvent.click(
-				screen.queryByRole( 'checkbox', {
-					name: new RegExp( availableCurrencies[ code ].name, 'g' ),
-				} )
-			);
+			if ( code !== defaultCurrency.code ) {
+				fireEvent.click(
+					screen.queryByRole( 'checkbox', {
+						name: new RegExp(
+							availableCurrencies[ code ].name,
+							'g'
+						),
+					} )
+				);
+			}
 		} );
 
 		expect(
@@ -331,11 +347,16 @@ describe( 'Multi Currency enabled currencies list', () => {
 		createContainer();
 		// uncheck all recommended currencies
 		recommendedCurrencyCodes.forEach( ( code ) => {
-			fireEvent.click(
-				screen.queryByRole( 'checkbox', {
-					name: new RegExp( availableCurrencies[ code ].name, 'g' ),
-				} )
-			);
+			if ( code !== defaultCurrency.code ) {
+				fireEvent.click(
+					screen.queryByRole( 'checkbox', {
+						name: new RegExp(
+							availableCurrencies[ code ].name,
+							'g'
+						),
+					} )
+				);
+			}
 		} );
 
 		expect(
@@ -415,11 +436,16 @@ describe( 'Multi Currency enabled currencies list', () => {
 		createContainer();
 		// uncheck all recommended currencies
 		recommendedCurrencyCodes.forEach( ( code ) => {
-			fireEvent.click(
-				screen.queryByRole( 'checkbox', {
-					name: new RegExp( availableCurrencies[ code ].name, 'g' ),
-				} )
-			);
+			if ( code !== defaultCurrency.code ) {
+				fireEvent.click(
+					screen.queryByRole( 'checkbox', {
+						name: new RegExp(
+							availableCurrencies[ code ].name,
+							'g'
+						),
+					} )
+				);
+			}
 		} );
 
 		expect(

@@ -117,9 +117,11 @@ const AddCurrenciesTask = () => {
 	// and on the description text displayed after adding those checked currencies.
 	useEffect( () => {
 		if ( isActive ) {
-			setActivatedCount(
+			const activatedCurrenciesCount =
 				Object.values( selectedCurrencies ).filter( Boolean ).length -
-					enabledCurrenciesLength
+				enabledCurrenciesLength;
+			setActivatedCount(
+				0 < activatedCurrenciesCount ? activatedCurrenciesCount : 0
 			);
 		}
 	}, [ selectedCurrencies, isActive, enabledCurrenciesLength ] );
