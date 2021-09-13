@@ -857,10 +857,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_order_note( $note );
 			}
 
-			return [
-				'result'   => 'fail',
-				'redirect' => '',
-			];
+			return $this->generate_failed_response();
 		}
 	}
 
@@ -991,10 +988,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $minimum_amount > $converted_amount ) {
 				$message = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
 				wc_add_notice( $message, 'error' );
-				return [
-					'result'   => 'fail',
-					'redirect' => '',
-				];
+				return $this->generate_failed_response();
 			}
 
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
@@ -2387,5 +2381,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->title,
 			wp_strip_all_tags( html_entity_decode( $price ) )
 		);
+	}
+
+	/**
+	 * Returns a response, which will be generated whenever there is a `process_payment` error.
+	 *
+	 * Core ignores everything that's not an array with `result => success`, but blocks
+	 * require a properly formatted response.
+	 *
+	 * @return array
+	 */
+	protected function generate_failed_response() {
+		return [
+			'result'   => 'fail',
+			'redirect' => '',
+		];
 	}
 }
