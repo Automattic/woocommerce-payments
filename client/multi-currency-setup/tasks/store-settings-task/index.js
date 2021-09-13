@@ -135,7 +135,7 @@ const StoreSettingsTask = () => {
 								'woocommerce-payments'
 							) }
 						</div>
-						{ 'Storefdront' === storeSettings.site_theme ? (
+						{ 'Storefront' === storeSettings.site_theme ? (
 							<>
 								<CheckboxControl
 									checked={ isStorefrontSwitcherEnabledValue }
