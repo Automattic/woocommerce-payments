@@ -107,6 +107,8 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Clear the list of selected currencies after closing the modal for adding currencies.
 * Fix - Fix subscription change payment method errors after entering a payment method that fails.
 * Fix - Currency switcher does not affect order confirmation screen prices.
+* Fix - Prevent duplicate account onboarding requests.
+* Fix - Filter out merchant-facing payment errors from customer error notices.
 
 = 2.9.1 - 2021-09-07 =
 * Fix - Error while checking out with UPE when fields are hidden.
