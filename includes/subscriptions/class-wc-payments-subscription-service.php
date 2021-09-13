@@ -148,9 +148,8 @@ class WC_Payments_Subscription_Service {
 	 * @throws Exception Throws an exception to stop checkout processing and display message to customer.
 	 */
 	public function create_subscription( WC_Subscription $subscription ) {
-		$checkout_error_message = __( 'There was a problem creating your subscription. Please try again or use an alternative payment method.', 'woocommerce-payments' );
-		$user                   = $subscription->get_user();
-		$wcpay_customer_id      = $user instanceof WP_User ? $this->customer_service->get_customer_id_by_user_id( $user->ID ) : null;
+		$checkout_error_message = __( 'There was a problem creating your subscription. Please try again or contact us for assistance.', 'woocommerce-payments' );
+		$wcpay_customer_id      = $this->customer_service->get_customer_id_for_order( $subscription );
 
 		if ( ! $wcpay_customer_id ) {
 			Logger::error( 'There was a problem creating the WCPay subscription. WCPay customer ID missing.' );
