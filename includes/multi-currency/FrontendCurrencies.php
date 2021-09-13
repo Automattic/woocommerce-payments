@@ -74,7 +74,7 @@ class FrontendCurrencies {
 		}
 
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
-		add_action( 'woocommerce_order_details_before_order_table', [ $this, 'init_order_currency' ] );
+		add_action( 'woocommerce_account_view-order_endpoint', [ $this, 'init_order_currency' ], 9 );
 		add_filter( 'woocommerce_cart_hash', [ $this, 'add_currency_to_cart_hash' ], 50 );
 	}
 
