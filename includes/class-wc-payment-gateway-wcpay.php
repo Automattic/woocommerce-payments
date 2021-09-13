@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Connection_Exception };
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -800,15 +800,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
-			// TODO: Create more exceptions to handle merchant specific errors.
-			$error_message = $e->getMessage();
-			if ( $e instanceof Connection_Exception ) {
-				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
-			} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
-				$error_message = __( 'We\'re not able to process this payment. Please refresh the page and try again.', 'woocommerce-payments' );
-			}
 
-			wc_add_notice( $error_message, 'error' );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
 				$order->update_status( 'failed' );
@@ -2087,7 +2080,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
 			];
 		} catch ( Exception $e ) {
-			wc_add_notice( $e->getMessage(), 'error', [ 'icon' => 'error' ] );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
 			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
 			return [
 				'result' => 'error',
@@ -2185,7 +2178,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => $e->getMessage(),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				]
 			);
