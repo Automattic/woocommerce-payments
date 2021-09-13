@@ -130,17 +130,33 @@ const StoreSettingsTask = () => {
 							) }
 						/>
 						<div className="multi-currency-settings-task__description">
-							Customers will be notified via store alert banner.
-						</div>
-						<CheckboxControl
-							checked={ isStorefrontSwitcherEnabledValue }
-							onChange={ handleIsStorefrontSwitcherEnabledClick }
-							data-testid={ 'enable_storefront_switcher' }
-							label={ __(
-								'Add a currency switcher to the cart widget',
+							{ __(
+								'Customers will be notified via store alert banner.',
 								'woocommerce-payments'
 							) }
-						/>
+						</div>
+						{ 'Storefdront' === storeSettings.site_theme ? (
+							<>
+								<CheckboxControl
+									checked={ isStorefrontSwitcherEnabledValue }
+									onChange={
+										handleIsStorefrontSwitcherEnabledClick
+									}
+									data-testid={ 'enable_storefront_switcher' }
+									label={ __(
+										'Add a currency switcher to the cart widget',
+										'woocommerce-payments'
+									) }
+								/>
+								<br />
+							</>
+						) : null }
+						<div className="wcpay-wizard-task__description-element is-muted-color">
+							{ __(
+								'A currency switcher is also availabie in your widgets.',
+								'woocommerce-payments'
+							) }
+						</div>
 					</CardBody>
 				</Card>
 				<Button

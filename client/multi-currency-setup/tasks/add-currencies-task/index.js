@@ -56,55 +56,26 @@ const AddCurrenciesTask = () => {
 	const defaultCurrency = useDefaultCurrency();
 	const availableCurrencyCodes = Object.keys( availableCurrencies );
 	const enabledCurrencyCodes = Object.keys( enabledCurrencies );
+	const enabledCurrenciesLength = enabledCurrencyCodes.length;
 	const defaultCurrencyCode = defaultCurrency.code;
 
-	// Remove store currency from available currencies.
-	availableCurrencyCodes.splice(
-		availableCurrencyCodes.indexOf( defaultCurrencyCode ),
-		1
-	);
+	// Prevent the enabled currencies and the store currency from displaying
+	// (enabled currencies include the default currency too).
+	const hiddenCurrencies = [ ...enabledCurrencyCodes ];
 
-	// Remove store currency from recommended currencies.
-	if ( recommendedCurrencyCodes.includes( defaultCurrencyCode ) ) {
-		recommendedCurrencyCodes.splice(
-			recommendedCurrencyCodes.indexOf( defaultCurrencyCode ),
-			1
-		);
-	}
-
-	// Remove already enabled currencies from available currencies.
-	enabledCurrencyCodes.map( ( code ) => {
-		if ( recommendedCurrencyCodes.includes( code ) )
-			recommendedCurrencyCodes.splice(
-				recommendedCurrencyCodes.indexOf( code ),
-				1
-			);
-		if ( availableCurrencyCodes.includes( code ) )
-			availableCurrencyCodes.splice(
-				availableCurrencyCodes.indexOf( code ),
-				1
-			);
-		return code;
-	} );
-
-	// Now, the available currencies list will only contain the selectable ones.
 	// Prefill the selected currency object.
 	const [ activatedCount, setActivatedCount ] = useState( 0 );
 	const [ selectedCurrencies, setSelectedCurrencies ] = useState( {} );
 	useEffect( () => {
 		setSelectedCurrencies(
-			// Prefill recommended currency codes as selected, but changeable.
-			availableCurrencyCodes.reduce(
-				( acc, value ) => {
-					acc[ value ] = recommendedCurrencyCodes.includes( value );
-					return acc;
-				},
-				// Prefill enabled currency codes as selected, but not changeable.
-				enabledCurrencyCodes.reduce( ( acc, value ) => {
-					acc[ value ] = true;
-					return acc;
-				}, {} )
-			)
+			availableCurrencyCodes.reduce( ( acc, value ) => {
+				acc[ value ] = [
+					...recommendedCurrencyCodes,
+					...enabledCurrencyCodes,
+					defaultCurrencyCode,
+				].includes( value );
+				return acc;
+			}, {} )
 		);
 		/* eslint-disable react-hooks/exhaustive-deps */
 	}, [
@@ -121,23 +92,12 @@ const AddCurrenciesTask = () => {
 		} ) );
 	};
 
-	// This state is used for displaying the checked currencies count on the button
-	// and on the description text displayed after adding those checked currencies.
-	useEffect( () => {
-		setActivatedCount(
-			isActive
-				? Object.values( selectedCurrencies ).filter( Boolean ).length -
-						enabledCurrencyCodes.length
-				: activatedCount
-		);
-	}, [ selectedCurrencies, activatedCount, enabledCurrencyCodes, isActive ] );
-
 	// Search component
 	const [ searchText, setSearchText ] = useState( '' );
 	const handleSearchChange = ( event ) => {
 		setSearchText( event.target.value );
 	};
-	const filteredCurrencyCodes = ! searchText
+	const filteredCurrencyCodes = ( ! searchText
 		? availableCurrencyCodes
 		: availableCurrencyCodes.filter( ( code ) => {
 				const { symbol, name } = availableCurrencies[ code ];
@@ -147,7 +107,22 @@ const AddCurrenciesTask = () => {
 						.toLocaleLowerCase()
 						.indexOf( searchText.toLocaleLowerCase() )
 				);
-		  } );
+		  } )
+	).filter( ( code ) => {
+		// Hide already enabled ones from the search results.
+		return ! hiddenCurrencies.includes( code );
+	} );
+
+	// This state is used for displaying the checked currencies count on the button
+	// and on the description text displayed after adding those checked currencies.
+	useEffect( () => {
+		if ( isActive ) {
+			setActivatedCount(
+				Object.values( selectedCurrencies ).filter( Boolean ).length -
+					enabledCurrenciesLength
+			);
+		}
+	}, [ selectedCurrencies, isActive, enabledCurrenciesLength ] );
 
 	const ContinueButton = () => {
 		const checkedCurrencies = useMemo(
@@ -193,6 +168,16 @@ const AddCurrenciesTask = () => {
 		);
 	};
 
+	const displayCurrencyCheckbox = ( code ) =>
+		hiddenCurrencies.includes( code ) ? null : (
+			<EnabledCurrenciesModalCheckbox
+				key={ 'currency-checkbox-' + availableCurrencies[ code ].id }
+				checked={ selectedCurrencies[ code ] }
+				onChange={ handleChange }
+				currency={ availableCurrencies[ code ] }
+			/>
+		);
+
 	return (
 		<WizardTaskItem
 			className="add-currencies-task"
@@ -230,7 +215,7 @@ const AddCurrenciesTask = () => {
 							},
 						} ) }
 				</p>
-				{ 1 < enabledCurrencyCodes.length && (
+				{ 1 < enabledCurrenciesLength && (
 					<p className="wcpay-wizard-task__description-element is-muted-color">
 						{ interpolateComponents( {
 							mixedString: __(
@@ -285,56 +270,34 @@ const AddCurrenciesTask = () => {
 								<div className="add-currencies-task__content">
 									<EnabledCurrenciesModalCheckboxList>
 										{ ! searchText &&
-										recommendedCurrencyCodes.length ? (
-											<li>
-												<h4>
-													{ __(
-														'Recommended Currencies',
-														'woocommerce-payments'
-													) }
-												</h4>
-											</li>
-										) : (
-											''
-										) }
-										{ ! searchText &&
-										recommendedCurrencyCodes.length &&
-										availableCurrencyCodes.length
-											? recommendedCurrencyCodes.map(
-													( code ) => (
-														<EnabledCurrenciesModalCheckbox
-															key={
-																'recommended-' +
-																availableCurrencies[
-																	code
-																].id
-															}
-															checked={
-																selectedCurrencies[
-																	code
-																]
-															}
-															onChange={
-																handleChange
-															}
-															currency={
-																availableCurrencies[
-																	code
-																]
-															}
-														/>
-													)
-											  )
-											: '' }
-										{ ! searchText &&
-										recommendedCurrencyCodes.length ? (
-											<div
-												className={
-													'add-currencies-task__separator'
-												}
-											>
-												&nbsp;
-											</div>
+										recommendedCurrencyCodes.filter(
+											( code ) =>
+												! hiddenCurrencies.includes(
+													code
+												)
+										).length ? (
+											<>
+												<li>
+													<h4>
+														{ __(
+															'Recommended Currencies',
+															'woocommerce-payments'
+														) }
+													</h4>
+												</li>
+												{ availableCurrencyCodes.length
+													? recommendedCurrencyCodes.map(
+															displayCurrencyCheckbox
+													  )
+													: '' }
+												<li
+													className={
+														'add-currencies-task__separator'
+													}
+												>
+													&nbsp;
+												</li>
+											</>
 										) : (
 											''
 										) }
@@ -350,37 +313,13 @@ const AddCurrenciesTask = () => {
 										) }
 										{ filteredCurrencyCodes
 											.filter( ( code ) => {
-												if ( ! searchText ) {
-													return (
-														-1 ===
-														recommendedCurrencyCodes.indexOf(
+												return ! searchText
+													? ! recommendedCurrencyCodes.includes(
 															code
-														)
-													);
-												}
-												return true;
+													  )
+													: true;
 											} )
-											.map( ( code ) => (
-												<EnabledCurrenciesModalCheckbox
-													key={
-														'available-' +
-														availableCurrencies[
-															code
-														].id
-													}
-													checked={
-														selectedCurrencies[
-															code
-														]
-													}
-													onChange={ handleChange }
-													currency={
-														availableCurrencies[
-															code
-														]
-													}
-												/>
-											) ) }
+											.map( displayCurrencyCheckbox ) }
 									</EnabledCurrenciesModalCheckboxList>
 								</div>
 							</LoadableSettingsSection>

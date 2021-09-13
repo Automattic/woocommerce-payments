@@ -1073,6 +1073,7 @@ class MultiCurrency {
 		return [
 			$this->id . '_enable_auto_currency'       => $this->is_using_auto_currency_switching(),
 			$this->id . '_enable_storefront_switcher' => $this->is_using_storefront_switcher(),
+			'site_theme'                              => wp_get_theme()->get( 'Name' ),
 		];
 	}
 
