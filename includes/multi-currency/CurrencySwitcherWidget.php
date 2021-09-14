@@ -119,9 +119,9 @@ class CurrencySwitcherWidget extends WC_Widget {
 	 * @param boolean  $with_symbol Whether to show the currency symbol.
 	 * @param boolean  $with_flag   Whether to show the currency flag.
 	 *
-	 * @return void Displays HTML of currency <option>, or return it as a string.
+	 * @return void Displays HTML of currency <option>
 	 */
-	public function display_currency_option( Currency $currency, bool $with_symbol, bool $with_flag ) {
+	private function display_currency_option( Currency $currency, bool $with_symbol, bool $with_flag ) {
 		$code        = $currency->get_code();
 		$same_symbol = html_entity_decode( $currency->get_symbol() ) === $code;
 		$text        = $code;
