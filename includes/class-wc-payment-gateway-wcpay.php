@@ -2294,7 +2294,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_upe_available_payment_methods() {
 		return [
 			'card',
-			'sepa_debit',
 		];
 	}
 }
