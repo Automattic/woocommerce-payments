@@ -10,7 +10,7 @@ import { useEffect, useRef } from '@wordpress/element';
  */
 import { useMultiCurrency } from 'wcpay/data';
 
-const MultiCurrencyFlag = () => {
+const MultiCurrencyToggle = () => {
 	const [
 		isMultiCurrencyEnabled,
 		updateIsMultiCurrencyEnabled,
@@ -63,4 +63,4 @@ const MultiCurrencyFlag = () => {
 	);
 };
 
-export default MultiCurrencyFlag;
+export default MultiCurrencyToggle;
