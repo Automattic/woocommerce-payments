@@ -196,7 +196,47 @@ class WCPay_Multi_Currency_Tracking_Tests extends WP_UnitTestCase {
 					'code' => 'USD',
 					'name' => 'United States (US) dollar',
 				],
-				'order_count'        => 5,
+				'order_counts'       => [
+					'counts'     => 18,
+					'currencies' => [
+						'BIF' => [
+							'counts'   => 9,
+							'totals'   => 74070,
+							'gateways' => [
+								'unknown'              => [
+									'counts' => 3,
+									'totals' => 0,
+								],
+								'stripe'               => [
+									'counts' => 3,
+									'totals' => 37035,
+								],
+								'woocommerce_payments' => [
+									'counts' => 3,
+									'totals' => 37035,
+								],
+							],
+						],
+						'CAD' => [
+							'counts'   => 9,
+							'totals'   => 740.7,
+							'gateways' => [
+								'unknown'              => [
+									'counts' => 3,
+									'totals' => 0,
+								],
+								'stripe'               => [
+									'counts' => 3,
+									'totals' => 370.35,
+								],
+								'woocommerce_payments' => [
+									'counts' => 3,
+									'totals' => 370.35,
+								],
+							],
+						],
+					],
+				],
 			],
 		];
 
@@ -224,17 +264,61 @@ class WCPay_Multi_Currency_Tracking_Tests extends WP_UnitTestCase {
 		}
 	}
 
+	/**
+	 * This will create 36 orders by using each row in $post_meta_data and creating and order
+	 * for each status in $order_statuses. 18 of those orders should get returned in the
+	 * add_tracker_data test above, as it will exclude all with the exchange_rate of null and
+	 * those with invalid-status as the status.
+	 */
 	private function add_mock_orders_with_meta() {
-		$post_data = [
-			'post_type'   => 'shop_order',
-			'post_status' => 'wc-processing',
+		$order_statuses = [
+			'wc-processing',
+			'wc-completed',
+			'wc-refunded',
+			'invalid-status',
 		];
 
-		for ( $i = 0; $i <= 4; $i++ ) {
-			$order_id = wp_insert_post( $post_data );
-			update_post_meta( $order_id, '_wcpay_multi_currency_order_exchange_rate', 2 );
+		$post_meta_fields = [
+			'_wcpay_multi_currency_order_exchange_rate',
+			'_payment_method',
+			'_order_total',
+			'_order_currency',
+		];
 
-			$this->mock_orders[] = $order_id;
+		$post_meta_data = [
+			[ 2, 'woocommerce_payments', 12345, 'BIF' ],
+			[ 2, 'stripe', 12345, 'BIF' ],
+			[ 2, null, 0, 'BIF' ],
+			[ 2, 'woocommerce_payments', 123.45, 'CAD' ],
+			[ 2, 'stripe', 123.45, 'CAD' ],
+			[ 2, null, 0, 'CAD' ],
+			[ null, 'woocommerce_payments', 123.45, 'USD' ],
+			[ null, 'stripe', 123.45, 'USD' ],
+			[ null, null, 0, 'USD' ],
+		];
+
+		// Go through each set of meta data.
+		foreach ( $post_meta_data as $meta_data ) {
+			// Go through each order status.
+			foreach ( $order_statuses as $status ) {
+				// Create the order with the order status.
+				$order_id = wp_insert_post(
+					[
+						'post_type'   => 'shop_order',
+						'post_status' => $status,
+					]
+				);
+
+				// Now go through the meta data array and update the post_meta data.
+				foreach ( $meta_data as $key => $value ) {
+					if ( null === $value ) {
+						continue;
+					}
+					update_post_meta( $order_id, $post_meta_fields[ $key ], $value );
+				}
+
+				$this->mock_orders[] = $order_id;
+			}
 		}
 	}
 
