@@ -114,10 +114,12 @@ class RestController extends \WC_Payments_REST_Controller {
 	 * @return  array            The currency settings.
 	 */
 	public function update_currency_settings( $request ) {
-		$currency_code = sanitize_key( strtolower( $request['currency_code'] ) );
-		$params        = $request->get_params();
+		$currency_code            = sanitize_key( strtolower( $request['currency_code'] ) );
+		$params                   = $request->get_params();
+		$available_currencies     = WC_Payments_Multi_Currency()->get_available_currencies();
+		$available_currency_codes = array_keys( $available_currencies );
 
-		if ( preg_match( '/^[a-z]{3}$/', $currency_code ) ) {
+		if ( in_array( strtoupper( $currency_code ), $available_currency_codes, true ) ) {
 			if ( isset( $params['exchange_rate_type'] ) && in_array( $params['exchange_rate_type'], [ 'automatic', 'manual' ], true ) ) {
 				update_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, esc_attr( $params['exchange_rate_type'] ) );
 			}
