@@ -77,7 +77,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to get the hash for.
 	 * @return string             The product's hash or an empty string.
 	 */
-	public static function get_stripe_product_hash( WC_Product $product ) : string {
+	public static function get_wcpay_product_hash( WC_Product $product ) : string {
 		return $product->get_meta( self::PRODUCT_HASH_KEY, true );
 	}
 
@@ -87,7 +87,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to get the Stripe ID for.
 	 * @return string             The Stripe product ID or an empty string.
 	 */
-	public static function get_stripe_product_id( WC_Product $product ) : string {
+	public static function get_wcpay_product_id( WC_Product $product ) : string {
 		return $product->get_meta( self::PRODUCT_ID_KEY, true );
 	}
 
@@ -97,7 +97,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to get the hash for.
 	 * @return string             The product's price hash or an empty string.
 	 */
-	public static function get_stripe_price_hash( WC_Product $product ) : string {
+	public static function get_wcpay_price_hash( WC_Product $product ) : string {
 		return $product->get_meta( self::PRICE_HASH_KEY, true );
 	}
 
@@ -107,7 +107,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to get the Stripe price ID for.
 	 * @return string             The product's Stripe price ID or an empty string.
 	 */
-	public static function get_stripe_price_id( WC_Product $product ) : string {
+	public static function get_wcpay_price_id( WC_Product $product ) : string {
 		return $product->get_meta( self::PRICE_ID_KEY, true );
 	}
 
@@ -117,8 +117,8 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to get the Stripe ID for.
 	 * @return string             The Stripe product ID or an empty string.
 	 */
-	public static function has_stripe_product_id( WC_Product $product ) : string {
-		return (bool) self::get_stripe_product_id( $product );
+	public static function has_wcpay_product_id( WC_Product $product ) : string {
+		return (bool) self::get_wcpay_product_id( $product );
 	}
 
 	/**
@@ -142,7 +142,7 @@ class WC_Payments_Product_Service {
 				continue;
 			}
 
-			if ( ! self::has_stripe_product_id( $product_to_update ) || $this->product_needs_update( $product_to_update ) || $this->price_needs_update( $product_to_update ) ) {
+			if ( ! self::has_wcpay_product_id( $product_to_update ) || $this->product_needs_update( $product_to_update ) || $this->price_needs_update( $product_to_update ) ) {
 				$this->products_to_update[ $product_to_update->get_id() ] = $product_to_update->get_id();
 			}
 		}
@@ -164,7 +164,7 @@ class WC_Payments_Product_Service {
 			}
 
 			// If this product already has a Stripe ID update it, otherwise create a new one.
-			if ( self::has_stripe_product_id( $product ) ) {
+			if ( self::has_wcpay_product_id( $product ) ) {
 				$this->update_product( $product );
 			} else {
 				$this->create_product( $product );
@@ -179,14 +179,14 @@ class WC_Payments_Product_Service {
 	 */
 	public function create_product( WC_Product $product ) {
 		try {
-			$product_data   = array_merge( $this->get_product_data( $product ), $this->get_price_data( $product ) );
-			$stripe_product = $this->payments_api_client->create_product( $product_data );
+			$product_data  = array_merge( $this->get_product_data( $product ), $this->get_price_data( $product ) );
+			$wcpay_product = $this->payments_api_client->create_product( $product_data );
 
 			$this->remove_product_update_listeners();
-			$this->set_stripe_product_hash( $product, $this->get_product_hash( $product ) );
-			$this->set_stripe_product_id( $product, $stripe_product['stripe_product_id'] );
-			$this->set_stripe_price_hash( $product, $this->get_price_hash( $product ) );
-			$this->set_stripe_price_id( $product, $stripe_product['stripe_price_id'] );
+			$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
+			$this->set_wcpay_product_id( $product, $wcpay_product['stripe_product_id'] );
+			$this->set_wcpay_price_hash( $product, $this->get_price_hash( $product ) );
+			$this->set_wcpay_price_id( $product, $wcpay_product['stripe_price_id'] );
 			$this->add_product_update_listeners();
 		} catch ( API_Exception $e ) {
 			Logger::log( 'There was a problem creating the product in Stripe: ' . $e->getMessage() );
@@ -199,10 +199,10 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to update.
 	 */
 	public function update_product( WC_Product $product ) {
-		$stripe_product_id = $this->get_stripe_product_id( $product );
+		$wcpay_product_id = $this->get_wcpay_product_id( $product );
 
 		// If the product doesn't have a Stripe ID yet, create it instead.
-		if ( ! $stripe_product_id ) {
+		if ( ! $wcpay_product_id ) {
 			$this->create_product( $product );
 			return;
 		}
@@ -219,20 +219,20 @@ class WC_Payments_Product_Service {
 
 		if ( ! empty( $data ) ) {
 			try {
-				$stripe_product = $this->payments_api_client->update_product( $stripe_product_id, $data );
+				$wcpay_product = $this->payments_api_client->update_product( $wcpay_product_id, $data );
 
 				$this->remove_product_update_listeners();
 
-				if ( isset( $stripe_product['stripe_product_id'] ) ) {
-					$this->set_stripe_product_hash( $product, $this->get_product_hash( $product ) );
+				if ( isset( $wcpay_product['stripe_product_id'] ) ) {
+					$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
 				}
 
-				if ( isset( $stripe_product['stripe_price_id'] ) ) {
-					$old_stripe_price_id = $this->get_stripe_price_id( $product );
+				if ( isset( $wcpay_product['stripe_price_id'] ) ) {
+					$old_wcpay_price_id = $this->get_wcpay_price_id( $product );
 
-					$this->set_stripe_price_hash( $product, $this->get_price_hash( $product ) );
-					$this->set_stripe_price_id( $product, $stripe_product['stripe_price_id'] );
-					$this->archive_price( $old_stripe_price_id );
+					$this->set_wcpay_price_hash( $product, $this->get_price_hash( $product ) );
+					$this->set_wcpay_price_id( $product, $wcpay_product['stripe_price_id'] );
+					$this->archive_price( $old_wcpay_price_id );
 				}
 
 				$this->add_product_update_listeners();
@@ -282,15 +282,15 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to archive.
 	 */
 	public function archive_product( WC_Product $product ) {
-		$stripe_product_id = $this->get_stripe_product_id( $product );
+		$wcpay_product_id = $this->get_wcpay_product_id( $product );
 
-		if ( ! $stripe_product_id ) {
+		if ( ! $wcpay_product_id ) {
 			return;
 		}
 
 		try {
-			$this->archive_price( $this->get_stripe_price_id( $product ) );
-			$this->payments_api_client->update_product( $stripe_product_id, [ 'active' => 'false' ] );
+			$this->archive_price( $this->get_wcpay_price_id( $product ) );
+			$this->payments_api_client->update_product( $wcpay_product_id, [ 'active' => 'false' ] );
 		} catch ( API_Exception $e ) {
 			Logger::log( 'There was a problem archiving the product in Stripe: ' . $e->getMessage() );
 		}
@@ -302,15 +302,15 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product unarchive.
 	 */
 	public function unarchive_product( WC_Product $product ) {
-		$stripe_product_id = $this->get_stripe_product_id( $product );
+		$wcpay_product_id = $this->get_wcpay_product_id( $product );
 
-		if ( ! $stripe_product_id ) {
+		if ( ! $wcpay_product_id ) {
 			return;
 		}
 
 		try {
-			$this->unarchive_price( $this->get_stripe_price_id( $product ) );
-			$this->payments_api_client->update_product( $stripe_product_id, [ 'active' => 'true' ] );
+			$this->unarchive_price( $this->get_wcpay_price_id( $product ) );
+			$this->payments_api_client->update_product( $wcpay_product_id, [ 'active' => 'true' ] );
 		} catch ( API_Exception $e ) {
 			Logger::log( 'There was a problem unarchiving the product in Stripe: ' . $e->getMessage() );
 		}
@@ -319,19 +319,19 @@ class WC_Payments_Product_Service {
 	/**
 	 * Archives a Stripe price object.
 	 *
-	 * @param string $stripe_price_id The price object's ID to archive.
+	 * @param string $wcpay_product_id The price object's ID to archive.
 	 */
-	public function archive_price( string $stripe_price_id ) {
-		$this->payments_api_client->update_price( $stripe_price_id, [ 'active' => 'false' ] );
+	public function archive_price( string $wcpay_product_id ) {
+		$this->payments_api_client->update_price( $wcpay_product_id, [ 'active' => 'false' ] );
 	}
 
 	/**
 	 * Unarchives a Stripe Price object.
 	 *
-	 * @param string $stripe_price_id The Price object's ID to unarchive.
+	 * @param string $wcpay_product_id The Price object's ID to unarchive.
 	 */
-	public function unarchive_price( string $stripe_price_id ) {
-		$this->payments_api_client->update_price( $stripe_price_id, [ 'active' => 'true' ] );
+	public function unarchive_price( string $wcpay_product_id ) {
+		$this->payments_api_client->update_price( $wcpay_product_id, [ 'active' => 'true' ] );
 	}
 
 	/**
@@ -368,7 +368,7 @@ class WC_Payments_Product_Service {
 			}
 
 			$product_data[] = [
-				'price'     => $this->get_stripe_price_id( $product ),
+				'price'     => $this->get_wcpay_price_id( $product ),
 				'quantity'  => $item->get_quantity(),
 				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
 			];
@@ -484,7 +484,7 @@ class WC_Payments_Product_Service {
 	 * @return bool Whether the product needs to be update in Stripe.
 	 */
 	private function product_needs_update( WC_Product $product ) : bool {
-		return $this->get_product_hash( $product ) !== $this->get_stripe_product_hash( $product );
+		return $this->get_product_hash( $product ) !== $this->get_wcpay_product_hash( $product );
 	}
 
 	/**
@@ -495,7 +495,7 @@ class WC_Payments_Product_Service {
 	 * @return bool Whether the product price needs to be update in Stripe.
 	 */
 	private function price_needs_update( WC_Product $product ) : bool {
-		return $this->get_price_hash( $product ) !== $this->get_stripe_price_hash( $product );
+		return $this->get_price_hash( $product ) !== $this->get_wcpay_price_hash( $product );
 	}
 
 
@@ -505,7 +505,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to set the Stripe product hash for.
 	 * @param string     $value   The Stripe product hash.
 	 */
-	private function set_stripe_product_hash( WC_Product $product, string $value ) {
+	private function set_wcpay_product_hash( WC_Product $product, string $value ) {
 		$product->update_meta_data( self::PRODUCT_HASH_KEY, $value );
 		$product->save();
 	}
@@ -516,7 +516,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to set the Stripe ID for.
 	 * @param string     $value   The Stripe product ID.
 	 */
-	private function set_stripe_product_id( WC_Product $product, string $value ) {
+	private function set_wcpay_product_id( WC_Product $product, string $value ) {
 		$product->update_meta_data( self::PRODUCT_ID_KEY, $value );
 		$product->save();
 	}
@@ -527,7 +527,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to set the Stripe price hash for.
 	 * @param string     $value   The Stripe product hash.
 	 */
-	private function set_stripe_price_hash( WC_Product $product, string $value ) {
+	private function set_wcpay_price_hash( WC_Product $product, string $value ) {
 		$product->update_meta_data( self::PRICE_HASH_KEY, $value );
 		$product->save();
 	}
@@ -538,7 +538,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to set the Stripe price ID for.
 	 * @param string     $value   The Stripe price ID.
 	 */
-	private function set_stripe_price_id( WC_Product $product, string $value ) {
+	private function set_wcpay_price_id( WC_Product $product, string $value ) {
 		$product->update_meta_data( self::PRICE_ID_KEY, $value );
 		$product->save();
 	}
