@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import {
 	Button,
 	Card,
@@ -25,7 +25,7 @@ import { useStoreSettings } from 'wcpay/data';
 const StoreSettingsTask = () => {
 	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();
 
-	const [ status, setStatus ] = useState( 'resolved' );
+	const [ isPending, setPending ] = useState( false );
 
 	const [
 		isAutomaticSwitchEnabledValue,
@@ -56,43 +56,31 @@ const StoreSettingsTask = () => {
 
 	const { setCompleted } = useContext( WizardTaskContext );
 
-	const handlePreviewModalOpenClick = useCallback( () => {
+	const handlePreviewModalOpenClick = () => {
 		setPreviewModalOpen( true );
-	}, [ setPreviewModalOpen ] );
+	};
 
-	const handlePreviewModalCloseClick = useCallback( () => {
+	const handlePreviewModalCloseClick = () => {
 		setPreviewModalOpen( false );
-	}, [ setPreviewModalOpen ] );
+	};
 
-	const handleIsAutomaticSwitchEnabledClick = useCallback(
-		( value ) => {
-			setIsAutomaticSwitchEnabledValue( value );
-		},
-		[ setIsAutomaticSwitchEnabledValue ]
-	);
+	const handleIsAutomaticSwitchEnabledClick = ( value ) => {
+		setIsAutomaticSwitchEnabledValue( value );
+	};
 
-	const handleIsStorefrontSwitcherEnabledClick = useCallback(
-		( value ) => {
-			setIsStorefrontSwitcherEnabledValue( value );
-		},
-		[ setIsStorefrontSwitcherEnabledValue ]
-	);
+	const handleIsStorefrontSwitcherEnabledClick = ( value ) => {
+		setIsStorefrontSwitcherEnabledValue( value );
+	};
 
-	const handleContinueClick = useCallback( () => {
-		setStatus( 'pending' );
+	const handleContinueClick = () => {
+		setPending( true );
 		submitStoreSettingsUpdate(
 			isAutomaticSwitchEnabledValue,
 			isStorefrontSwitcherEnabledValue
 		);
-		setStatus( 'resolved' );
+		setPending( false );
 		setCompleted( true, 'setup-complete' );
-	}, [
-		setCompleted,
-		isAutomaticSwitchEnabledValue,
-		isStorefrontSwitcherEnabledValue,
-		setStatus,
-		submitStoreSettingsUpdate,
-	] );
+	};
 
 	return (
 		<WizardTaskItem
@@ -153,23 +141,23 @@ const StoreSettingsTask = () => {
 						) : null }
 						<div className="wcpay-wizard-task__description-element is-muted-color">
 							{ __(
-								'A currency switcher is also availabie in your widgets.',
+								'A currency switcher is also available in your widgets.',
 								'woocommerce-payments'
 							) }
 						</div>
 					</CardBody>
 				</Card>
 				<Button
-					isBusy={ 'pending' === status }
-					disabled={ 'pending' === status }
+					isBusy={ isPending }
+					disabled={ isPending }
 					onClick={ handleContinueClick }
 					isPrimary
 				>
 					{ __( 'Continue', 'woocommerce-payments' ) }
 				</Button>
 				<Button
-					isBusy={ 'pending' === status }
-					disabled={ 'pending' === status }
+					isBusy={ isPending }
+					disabled={ isPending }
 					onClick={ handlePreviewModalOpenClick }
 					className={ 'multi-currency-setup-preview-button' }
 					isTertiary

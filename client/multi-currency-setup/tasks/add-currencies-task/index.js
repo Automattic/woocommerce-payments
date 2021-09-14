@@ -1,13 +1,7 @@
 /**
  * External dependencies
  */
-import React, {
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useState,
-} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { sprintf, __, _n } from '@wordpress/i18n';
 import { Button, Card, CardBody } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
@@ -32,7 +26,6 @@ import EnabledCurrenciesModalCheckbox from '../../../multi-currency/enabled-curr
 import Search from 'components/search';
 
 import { LoadableBlock } from '../../../components/loadable';
-import LoadableSettingsSection from '../../../settings/loadable-settings-section';
 
 import { recommendedCurrencyCodes, numberWords } from './constants';
 import {
@@ -42,10 +35,55 @@ import {
 
 import './index.scss';
 
+const ContinueButton = ( {
+	enabledCurrencyCodes,
+	selectedCurrencyCodes,
+	selectedCurrencyCodesLength,
+	isSaving,
+	submitEnabledCurrenciesUpdate,
+	setCompleted,
+	setSaving,
+} ) => {
+	const handleContinueClick = () => {
+		setSaving( true );
+		submitEnabledCurrenciesUpdate(
+			[ ...enabledCurrencyCodes, ...selectedCurrencyCodes ].sort()
+		);
+		setSaving( false );
+		setCompleted(
+			{
+				initialCurrencies: enabledCurrencyCodes,
+			},
+			'multi-currency-settings'
+		);
+	};
+
+	return (
+		<Button
+			isBusy={ isSaving }
+			disabled={ isSaving || 1 > selectedCurrencyCodesLength }
+			onClick={ handleContinueClick }
+			isPrimary
+		>
+			{ 0 === selectedCurrencyCodesLength
+				? __( 'Add Currencies', 'woocommerce-payments' )
+				: sprintf(
+						_n(
+							'Add %s currency',
+							'Add %s currencies',
+							selectedCurrencyCodesLength,
+							'woocommerce-payments'
+						),
+						selectedCurrencyCodesLength
+				  ) }
+		</Button>
+	);
+};
+
 const AddCurrenciesTask = () => {
 	const { isLoading } = useCurrencies();
-	const { setCompleted, isActive } = useContext( WizardTaskContext );
-	const [ status, setStatus ] = useState( 'resolved' );
+	const [ isSaving, setSaving ] = useState( false );
+	const { isActive, setCompleted } = useContext( WizardTaskContext );
 
 	const {
 		enabledCurrencies,
@@ -56,40 +94,48 @@ const AddCurrenciesTask = () => {
 	const defaultCurrency = useDefaultCurrency();
 	const availableCurrencyCodes = Object.keys( availableCurrencies );
 	const enabledCurrencyCodes = Object.keys( enabledCurrencies );
-	const enabledCurrenciesLength = enabledCurrencyCodes.length;
 	const defaultCurrencyCode = defaultCurrency.code;
 
-	// Prevent the enabled currencies and the store currency from displaying
-	// (enabled currencies include the default currency too).
-	const hiddenCurrencies = [ ...enabledCurrencyCodes ];
+	const visibleCurrencyCodes = availableCurrencyCodes.filter(
+		( code ) => ! enabledCurrencyCodes.includes( code )
+	);
 
-	// Prefill the selected currency object.
-	const [ activatedCount, setActivatedCount ] = useState( 0 );
-	const [ selectedCurrencies, setSelectedCurrencies ] = useState( {} );
-	useEffect( () => {
-		setSelectedCurrencies(
-			availableCurrencyCodes.reduce( ( acc, value ) => {
-				acc[ value ] = [
-					...recommendedCurrencyCodes,
-					...enabledCurrencyCodes,
-					defaultCurrencyCode,
-				].includes( value );
-				return acc;
-			}, {} )
-		);
-		/* eslint-disable react-hooks/exhaustive-deps */
-	}, [
-		JSON.stringify( availableCurrencyCodes ),
-		JSON.stringify( enabledCurrencyCodes ),
-	] );
-	/* eslint-enable react-hooks/exhaustive-deps */
+	const visibleRecommendedCurrencyCodes = recommendedCurrencyCodes.filter(
+		( code ) => visibleCurrencyCodes.includes( code )
+	);
+
+	const [ selectedCurrencyCodes, setSelectedCurrencyCodes ] = useState(
+		visibleRecommendedCurrencyCodes
+	);
+
+	useEffect(
+		() => {
+			// This is important because when the task moves on to the next task,
+			// selectedCurrencyCodes seems to be refilled with the remaining
+			// recommended currencies. To prevent that, only set the selected currencies
+			// if the task is active.
+			if ( isActive ) {
+				setSelectedCurrencyCodes( visibleRecommendedCurrencyCodes );
+			}
+		},
+		/* eslint-disable-next-line react-hooks/exhaustive-deps */
+		[ visibleRecommendedCurrencyCodes.length ]
+	);
+
+	const selectedCurrencyCodesLength = selectedCurrencyCodes.length;
 
 	// Currency checkbox state change event
 	const handleChange = ( currencyCode, enabled ) => {
-		setSelectedCurrencies( ( previouslyEnabled ) => ( {
-			...previouslyEnabled,
-			[ currencyCode ]: enabled,
-		} ) );
+		if ( enabled ) {
+			setSelectedCurrencyCodes( [
+				...selectedCurrencyCodes,
+				currencyCode,
+			] );
+		} else {
+			setSelectedCurrencyCodes(
+				_.without( selectedCurrencyCodes, currencyCode )
+			);
+		}
 	};
 
 	// Search component
@@ -97,9 +143,11 @@ const AddCurrenciesTask = () => {
 	const handleSearchChange = ( event ) => {
 		setSearchText( event.target.value );
 	};
-	const filteredCurrencyCodes = ( ! searchText
-		? availableCurrencyCodes
-		: availableCurrencyCodes.filter( ( code ) => {
+	const filteredCurrencyCodes = ! searchText
+		? visibleCurrencyCodes.filter(
+				( code ) => ! recommendedCurrencyCodes.includes( code )
+		  )
+		: visibleCurrencyCodes.filter( ( code ) => {
 				const { symbol, name } = availableCurrencies[ code ];
 				return (
 					-1 <
@@ -107,74 +155,13 @@ const AddCurrenciesTask = () => {
 						.toLocaleLowerCase()
 						.indexOf( searchText.toLocaleLowerCase() )
 				);
-		  } )
-	).filter( ( code ) => {
-		// Hide already enabled ones from the search results.
-		return ! hiddenCurrencies.includes( code );
-	} );
-
-	// This state is used for displaying the checked currencies count on the button
-	// and on the description text displayed after adding those checked currencies.
-	useEffect( () => {
-		if ( isActive ) {
-			const activatedCurrenciesCount =
-				Object.values( selectedCurrencies ).filter( Boolean ).length -
-				enabledCurrenciesLength;
-			setActivatedCount(
-				0 < activatedCurrenciesCount ? activatedCurrenciesCount : 0
-			);
-		}
-	}, [ selectedCurrencies, isActive, enabledCurrenciesLength ] );
-
-	const ContinueButton = () => {
-		const checkedCurrencies = useMemo(
-			() =>
-				Object.entries( selectedCurrencies )
-					.map( ( [ currency, enabled ] ) => enabled && currency )
-					.filter( Boolean ),
-			[]
-		);
-
-		const handleContinueClick = useCallback( () => {
-			setStatus( 'pending' );
-			checkedCurrencies.sort();
-			submitEnabledCurrenciesUpdate( checkedCurrencies );
-			setStatus( 'resolved' );
-			setCompleted(
-				{
-					initialCurrencies: enabledCurrencies,
-				},
-				'multi-currency-settings'
-			);
-		}, [ checkedCurrencies ] );
-
-		return (
-			<Button
-				isBusy={ 'pending' === status }
-				disabled={ 'pending' === status || 1 > activatedCount }
-				onClick={ handleContinueClick }
-				isPrimary
-			>
-				{ 0 === activatedCount
-					? __( 'Add Currencies', 'woocommerce-payments' )
-					: sprintf(
-							_n(
-								'Add %s currency',
-								'Add %s currencies',
-								activatedCount,
-								'woocommerce-payments'
-							),
-							activatedCount
-					  ) }
-			</Button>
-		);
-	};
+		  } );
 
 	const displayCurrencyCheckbox = ( code ) =>
-		hiddenCurrencies.includes( code ) ? null : (
+		availableCurrencyCodes.length && (
 			<EnabledCurrenciesModalCheckbox
 				key={ 'currency-checkbox-' + availableCurrencies[ code ].id }
-				checked={ selectedCurrencies[ code ] }
+				checked={ selectedCurrencyCodes.includes( code ) }
 				onChange={ handleChange }
 				currency={ availableCurrencies[ code ] }
 			/>
@@ -188,12 +175,12 @@ const AddCurrenciesTask = () => {
 				_n(
 					'%s currency added',
 					'%s currencies added',
-					activatedCount,
+					selectedCurrencyCodesLength,
 					'woocommerce-payments'
 				),
-				10 > activatedCount
-					? _.capitalize( numberWords[ activatedCount ] )
-					: activatedCount
+				10 > selectedCurrencyCodesLength
+					? _.capitalize( numberWords[ selectedCurrencyCodesLength ] )
+					: selectedCurrencyCodesLength
 			) }
 			index={ 1 }
 		>
@@ -217,7 +204,7 @@ const AddCurrenciesTask = () => {
 							},
 						} ) }
 				</p>
-				{ 1 < enabledCurrenciesLength && (
+				{ 1 < enabledCurrencyCodes.length && (
 					<p className="wcpay-wizard-task__description-element is-muted-color">
 						{ interpolateComponents( {
 							mixedString: __(
@@ -250,10 +237,8 @@ const AddCurrenciesTask = () => {
 								onChange={ handleSearchChange }
 							/>
 						</div>
-						<div className={ 'add-currencies-task__separator' }>
-							&nbsp;
-						</div>
-						{ searchText ? (
+						<div className={ 'add-currencies-task__separator' } />
+						{ searchText && (
 							/* translators: %1: filtered currencies count */
 							<h4>
 								{ sprintf(
@@ -264,20 +249,15 @@ const AddCurrenciesTask = () => {
 									filteredCurrencyCodes.length
 								) }
 							</h4>
-						) : (
-							''
 						) }
-						<LoadableBlock numLines={ 30 } isLoading={ isLoading }>
-							<LoadableSettingsSection numLines={ 30 }>
-								<div className="add-currencies-task__content">
-									<EnabledCurrenciesModalCheckboxList>
-										{ ! searchText &&
-										recommendedCurrencyCodes.filter(
-											( code ) =>
-												! hiddenCurrencies.includes(
-													code
-												)
-										).length ? (
+						<LoadableBlock
+							numLines={ 30 }
+							isLoading={ isLoading && availableCurrencies }
+						>
+							<div className="add-currencies-task__content">
+								<EnabledCurrenciesModalCheckboxList>
+									{ ! searchText &&
+										visibleRecommendedCurrencyCodes.length && (
 											<>
 												<li>
 													<h4>
@@ -287,49 +267,51 @@ const AddCurrenciesTask = () => {
 														) }
 													</h4>
 												</li>
-												{ availableCurrencyCodes.length
-													? recommendedCurrencyCodes.map(
-															displayCurrencyCheckbox
-													  )
-													: '' }
+												{ visibleRecommendedCurrencyCodes.map(
+													displayCurrencyCheckbox
+												) }
 												<li
 													className={
 														'add-currencies-task__separator'
 													}
-												>
-													&nbsp;
-												</li>
+												/>
 											</>
-										) : (
-											''
 										) }
-										{ ! searchText && (
-											<li className="add-currencies-task__available-currencies">
-												<h4>
-													{ __(
-														'All Currencies',
-														'woocommerce-payments'
-													) }
-												</h4>
-											</li>
-										) }
-										{ filteredCurrencyCodes
-											.filter( ( code ) => {
-												return ! searchText
-													? ! recommendedCurrencyCodes.includes(
-															code
-													  )
-													: true;
-											} )
-											.map( displayCurrencyCheckbox ) }
-									</EnabledCurrenciesModalCheckboxList>
-								</div>
-							</LoadableSettingsSection>
+									{ ! searchText && (
+										<li className="add-currencies-task__available-currencies">
+											<h4>
+												{ __(
+													'All Currencies',
+													'woocommerce-payments'
+												) }
+											</h4>
+										</li>
+									) }
+									{ filteredCurrencyCodes.map(
+										displayCurrencyCheckbox
+									) }
+								</EnabledCurrenciesModalCheckboxList>
+							</div>
 						</LoadableBlock>
 					</CardBody>
 				</Card>
-				<LoadableBlock numLines={ 5 } isLoading={ isLoading }>
-					<ContinueButton />
+				<LoadableBlock
+					numLines={ 5 }
+					isLoading={ isLoading && availableCurrencies }
+				>
+					<ContinueButton
+						enabledCurrencyCodes={ enabledCurrencyCodes }
+						selectedCurrencyCodes={ selectedCurrencyCodes }
+						selectedCurrencyCodesLength={
+							selectedCurrencyCodesLength
+						}
+						isSaving={ isSaving }
+						submitEnabledCurrenciesUpdate={
+							submitEnabledCurrenciesUpdate
+						}
+						setCompleted={ setCompleted }
+						setSaving={ setSaving }
+					/>
 				</LoadableBlock>
 			</CollapsibleBody>
 		</WizardTaskItem>
