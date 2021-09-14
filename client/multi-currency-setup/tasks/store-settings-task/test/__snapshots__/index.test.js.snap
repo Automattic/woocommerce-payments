@@ -119,7 +119,7 @@ exports[`Multi Currency Store Settings store settings task renders correctly: sn
             <div
               class="wcpay-wizard-task__description-element is-muted-color"
             >
-              A currency switcher is also availabie in your widgets.
+              A currency switcher is also available in your widgets.
             </div>
           </div>
         </div>

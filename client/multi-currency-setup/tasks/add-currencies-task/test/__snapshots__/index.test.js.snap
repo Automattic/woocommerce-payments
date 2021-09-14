@@ -92,9 +92,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
             </div>
             <div
               class="add-currencies-task__separator"
-            >
-               
-            </div>
+            />
             
             <div
               class="add-currencies-task__content"
@@ -118,6 +116,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
                         class="components-checkbox-control__input-container"
                       >
                         <input
+                          checked=""
                           class="components-checkbox-control__input"
                           code="EUR"
                           id="inspector-checkbox-control-0"
@@ -178,6 +177,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
                         class="components-checkbox-control__input-container"
                       >
                         <input
+                          checked=""
                           class="components-checkbox-control__input"
                           code="JPY"
                           id="inspector-checkbox-control-1"
@@ -238,6 +238,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
                         class="components-checkbox-control__input-container"
                       >
                         <input
+                          checked=""
                           class="components-checkbox-control__input"
                           code="GBP"
                           id="inspector-checkbox-control-2"
@@ -298,6 +299,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
                         class="components-checkbox-control__input-container"
                       >
                         <input
+                          checked=""
                           class="components-checkbox-control__input"
                           code="AUD"
                           id="inspector-checkbox-control-3"
@@ -358,6 +360,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
                         class="components-checkbox-control__input-container"
                       >
                         <input
+                          checked=""
                           class="components-checkbox-control__input"
                           code="CAD"
                           id="inspector-checkbox-control-4"
@@ -418,6 +421,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
                         class="components-checkbox-control__input-container"
                       >
                         <input
+                          checked=""
                           class="components-checkbox-control__input"
                           code="INR"
                           id="inspector-checkbox-control-5"
@@ -467,9 +471,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
                 </li>
                 <li
                   class="add-currencies-task__separator"
-                >
-                   
-                </li>
+                />
                 <li
                   class="add-currencies-task__available-currencies"
                 >
@@ -814,9 +816,7 @@ exports[`Multi Currency enabled currencies list currency search works with curre
             </div>
             <div
               class="add-currencies-task__separator"
-            >
-               
-            </div>
+            />
             <h4>
               Search results (1 currencies)
             </h4>
@@ -824,7 +824,6 @@ exports[`Multi Currency enabled currencies list currency search works with curre
               class="add-currencies-task__content"
             >
               <ul>
-                
                 <li
                   class="enabled-currency-checkbox"
                 >
@@ -978,9 +977,7 @@ exports[`Multi Currency enabled currencies list currency search works with curre
             </div>
             <div
               class="add-currencies-task__separator"
-            >
-               
-            </div>
+            />
             <h4>
               Search results (1 currencies)
             </h4>
@@ -988,7 +985,6 @@ exports[`Multi Currency enabled currencies list currency search works with curre
               class="add-currencies-task__content"
             >
               <ul>
-                
                 <li
                   class="enabled-currency-checkbox"
                 >
@@ -1142,9 +1138,7 @@ exports[`Multi Currency enabled currencies list currency search works with curre
             </div>
             <div
               class="add-currencies-task__separator"
-            >
-               
-            </div>
+            />
             <h4>
               Search results (1 currencies)
             </h4>
@@ -1152,7 +1146,6 @@ exports[`Multi Currency enabled currencies list currency search works with curre
               class="add-currencies-task__content"
             >
               <ul>
-                
                 <li
                   class="enabled-currency-checkbox"
                 >
@@ -1331,15 +1324,13 @@ exports[`Multi Currency enabled currencies list should hide recommended currenci
             </div>
             <div
               class="add-currencies-task__separator"
-            >
-               
-            </div>
+            />
             
             <div
               class="add-currencies-task__content"
             >
               <ul>
-                
+                0
                 <li
                   class="add-currencies-task__available-currencies"
                 >

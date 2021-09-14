@@ -486,7 +486,7 @@ describe( 'Multi Currency enabled currencies list', () => {
 
 		expect( setCompletedMock ).toHaveBeenCalledWith(
 			{
-				initialCurrencies: enabledCurrencies,
+				initialCurrencies: Object.keys( enabledCurrencies ),
 			},
 			'multi-currency-settings'
 		);
