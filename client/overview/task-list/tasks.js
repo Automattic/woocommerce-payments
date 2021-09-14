@@ -108,21 +108,20 @@ export const getTasks = ( {
 			needsHttpsSetup && {
 				key: 'force-secure-checkout',
 				title: __( 'Force secure checkout', 'woocommerce-payments' ),
-				content: __(
+				additionalInfo: __(
 					'Protect your customers data and increase trustworthiness of your store by forcing HTTPS on checkout pages.',
 					'woocommerce-payments'
 				),
 				completed: false,
-				action: () => {
+				onClick: () => {
 					window.open(
 						'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
 						'_blank'
 					);
 				},
-				actionLabel: __( 'Read more', 'woocommerce-payments' ),
 				expandable: true,
 				expanded: true,
-				showActionButton: true,
+				showActionButton: false,
 				isDeletable: true,
 				isDismissable: true,
 				allowRemindMeLater: true,
