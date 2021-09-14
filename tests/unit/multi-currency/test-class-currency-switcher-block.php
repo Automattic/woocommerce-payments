@@ -36,20 +36,6 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase
 	 */
 	protected $mock_currencies;
 
-		/**
-		 * Mock available currencies with their rates.
-		 *
-		 * @var array
-		 */
-	private $mock_available_currencies = [
-		'USD' => 1,
-		'CAD' => 1.206823,
-		'GBP' => 0.708099,
-		'EUR' => 0.826381,
-		'CDF' => 2000,
-		'BIF' => 1974, // Zero decimal currency.
-		'CLP' => 706.8, // Zero decimal currency.
-	];
 	public function setUp() {
 		parent::setUp();
 
@@ -130,7 +116,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase
 		}
 	}
 
-	public function block_widget_attributes_provider() {
+	public function block_widget_attributes_provider(): array {
 		return [
 			'with_defaults'        => [
 				[],
