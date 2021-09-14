@@ -138,11 +138,6 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 			->with( $mock_wcpay_subscription, $mock_subscription )
 			->willReturn( null );
 
-		$this->mock_invoice_service->expects( $this->once() )
-			->method( 'create_invoice_items_for_subscription' )
-			->with( $mock_subscription, $wcpay_customer_id, $wcpay_subscription_id )
-			->willReturn( [ 'response' ] );
-
 		$this->subscriptions_event_handler->handle_invoice_upcoming( $test_body );
 	}
 

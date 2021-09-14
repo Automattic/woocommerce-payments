@@ -332,7 +332,7 @@ class WC_Payments_Subscription_Service {
 			}
 
 			$data[] = [
-				'price'     => WC_Payments_Product_Service::get_stripe_price_id( $product ),
+				'price'     => $this->product_service->get_stripe_price_id( $product ),
 				'quantity'  => $item->get_quantity(),
 				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
 			];
@@ -477,7 +477,7 @@ class WC_Payments_Subscription_Service {
 		$data = [
 			'currency'    => $currency,
 			'product'     => $stripe_product_id,
-			'unit_amount' => $unit_amount * 100,
+			'unit_amount' => (int) $unit_amount * 100,
 		];
 
 		if ( $interval && $interval_count ) {

@@ -78,12 +78,6 @@ class WC_Payments_Subscriptions_Event_Handler {
 
 			// Update the subscription in WC to match the WCPay Subscription's next payment date.
 			$this->subscription_service->update_dates_to_match_wcpay_subscription( $wcpay_subscription, $subscription );
-
-			$response = $this->invoice_service->create_invoice_items_for_subscription( $subscription, $wcpay_customer_id, $wcpay_subscription_id );
-
-			if ( is_wp_error( $response ) ) {
-				throw new Rest_Request_Exception( $response->get_error_message() );
-			}
 		}
 	}
 

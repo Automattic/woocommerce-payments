@@ -33,6 +33,13 @@ class WC_Subscriptions_Product {
 	public static $is_subscription = true;
 
 	/**
+	 * Whether product needs one time shipping.
+	 *
+	 * @var bool
+	 */
+	public static $one_time_shipping = false;
+
+	/**
 	 * Mock for static get_period.
 	 *
 	 * @param Product $product WC Product.
@@ -78,6 +85,15 @@ class WC_Subscriptions_Product {
 	}
 
 	/**
+	 * Mock for static needs_one_time_shipping.
+	 *
+	 * @param Product $product WC Product.
+	 */
+	public static function needs_one_time_shipping( $product ) {
+		return self::$one_time_shipping;
+	}
+
+	/**
 	 * Setter for get_period.
 	 *
 	 * @param string $result Result for get_period.
@@ -93,5 +109,14 @@ class WC_Subscriptions_Product {
 	 */
 	public static function set_interval( $result ) {
 		self::$subscription_product_interval = $result;
+	}
+
+	/**
+	 * Setter for needs_one_time_shipping.
+	 *
+	 * @param bool $result Result for needs_one_time_shipping.
+	 */
+	public static function set_needs_one_time_shipping( $result ) {
+		self::$one_time_shipping = $result;
 	}
 }
