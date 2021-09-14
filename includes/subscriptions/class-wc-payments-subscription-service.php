@@ -288,7 +288,7 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Prepares data used to create a WCPay subscription.
+	 * Prepares item data used to create a WCPay subscription.
 	 *
 	 * @param string          $wcpay_customer_id WCPay Customer ID to create the subscription for.
 	 * @param WC_Subscription $subscription      The WC subscription used to create the subscription on server.
@@ -298,11 +298,13 @@ class WC_Payments_Subscription_Service {
 	private function prepare_wcpay_subscription_data( string $wcpay_customer_id, WC_Subscription $subscription ) {
 		$recurring_items = $this->get_recurring_item_data_for_subscription( $subscription );
 		$one_time_items  = $this->get_one_time_item_data_for_subscription( $subscription );
+		$discount_items  = $this->get_discount_item_data_for_subscription( $subscription );
 
 		$data = [
-			'customer'          => $wcpay_customer_id,
-			'items'             => $recurring_items,
 			'add_invoice_items' => $one_time_items,
+			'customer'          => $wcpay_customer_id,
+			'discounts'         => $discount_items,
+			'items'             => $recurring_items,
 		];
 
 		if ( self::has_delayed_payment( $subscription ) ) {
@@ -337,16 +339,9 @@ class WC_Payments_Subscription_Service {
 		}
 
 		$currency       = $subscription->get_currency();
-		$discount       = $subscription->get_total_discount( false );
 		$items          = array_merge( $subscription->get_fees(), $subscription->get_shipping_methods() );
 		$interval       = $subscription->get_billing_period();
 		$interval_count = $subscription->get_billing_interval();
-
-		if ( 'discount' && $discount ) {
-			$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( 'discount' );
-			$price_data     = $this->format_item_price_data( $currency, $stripe_item_id, -$discount, $interval, $interval_count );
-			$data[]         = [ 'price_data' => $price_data ];
-		}
 
 		foreach ( $items as $item ) {
 			$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( $item->get_type() );
@@ -374,13 +369,6 @@ class WC_Payments_Subscription_Service {
 	public function get_one_time_item_data_for_subscription( WC_Subscription $subscription ) {
 		$data     = [];
 		$currency = $subscription->get_currency();
-		$discount = $subscription->get_parent()->get_total_discount( false );
-
-		if ( 'discount' && $discount ) {
-			$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( 'discount' );
-			$price_data     = $this->format_item_price_data( $currency, $stripe_item_id, -$discount );
-			$data[]         = [ 'price_data' => $price_data ];
-		}
 
 		foreach ( $subscription->get_items() as $item ) {
 			$product           = $item->get_product();
@@ -408,6 +396,31 @@ class WC_Payments_Subscription_Service {
 					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
 				];
 			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Prepares discount data used to create a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription used to create the subscription on server.
+	 *
+	 * @return array WCPay subscription data
+	 */
+	private function get_discount_item_data_for_subscription( WC_Subscription $subscription ) : array {
+		$data = [];
+
+		foreach ( $subscription->get_parent()->get_items( 'coupon' ) as $item ) {
+			$code     = $item->get_code();
+			$coupon   = new WC_Coupon( $code );
+			$duration = in_array( $coupon->get_discount_type(), [ 'recurring_fee', 'recurring_percent' ], true ) ? 'forever' : 'once';
+			$data[]   = [
+				'amount_off' => $coupon->get_amount() * 100,
+				'currency'   => $subscription->get_currency(),
+				'duration'   => $duration,
+				'name'       => 'Coupon - ' . $code,
+			];
 		}
 
 		return $data;
