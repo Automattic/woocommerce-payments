@@ -213,15 +213,15 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to update.
 	 */
 	public function update_product( WC_Product $product ) {
-		$wcpay_product_id = $this->get_wcpay_product_id( $product );
 
 		// If the product doesn't have a WC Pay ID yet, create it instead.
-		if ( ! $wcpay_product_id ) {
+		if ( ! self::has_wcpay_product_id( $product ) ) {
 			$this->create_product( $product );
 			return;
 		}
 
-		$data = [];
+		$wcpay_product_id = $this->get_wcpay_product_id( $product );
+		$data             = [];
 
 		if ( $this->product_needs_update( $product ) ) {
 			$data = array_merge( $data, $this->get_product_data( $product ) );
@@ -296,15 +296,14 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to archive.
 	 */
 	public function archive_product( WC_Product $product ) {
-		$wcpay_product_id = $this->get_wcpay_product_id( $product );
 
-		if ( ! $wcpay_product_id ) {
+		if ( ! self::has_wcpay_product_id( $product ) ) {
 			return;
 		}
 
 		try {
 			$this->archive_price( $this->get_wcpay_price_id( $product ) );
-			$this->payments_api_client->update_product( $wcpay_product_id, [ 'active' => 'false' ] );
+			$this->payments_api_client->update_product( $this->get_wcpay_product_id( $product ), [ 'active' => 'false' ] );
 		} catch ( API_Exception $e ) {
 			Logger::log( 'There was a problem archiving the product in WC Pay: ' . $e->getMessage() );
 		}
@@ -316,15 +315,14 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product unarchive.
 	 */
 	public function unarchive_product( WC_Product $product ) {
-		$wcpay_product_id = $this->get_wcpay_product_id( $product );
 
-		if ( ! $wcpay_product_id ) {
+		if ( ! self::has_wcpay_product_id( $product ) ) {
 			return;
 		}
 
 		try {
 			$this->unarchive_price( $this->get_wcpay_price_id( $product ) );
-			$this->payments_api_client->update_product( $wcpay_product_id, [ 'active' => 'true' ] );
+			$this->payments_api_client->update_product( $this->get_wcpay_product_id( $product ), [ 'active' => 'true' ] );
 		} catch ( API_Exception $e ) {
 			Logger::log( 'There was a problem unarchiving the product in WC Pay: ' . $e->getMessage() );
 		}
