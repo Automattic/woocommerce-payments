@@ -15,28 +15,28 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_Product_Service {
 	/**
-	 * The product meta key used to store the product data we last sent to Stripe as a hash. Used to compare current WC product data with Stripe data.
+	 * The product meta key used to store the product data we last sent to WC Pay as a hash. Used to compare current WC product data with WC Pay data.
 	 *
 	 * @const string
 	 */
 	const PRODUCT_HASH_KEY = '_wcpay_product_hash';
 
 	/**
-	 * The product meta key used to store the product's ID in Stripe.
+	 * The product meta key used to store the product's ID in WC Pay.
 	 *
 	 * @const string
 	 */
 	const PRODUCT_ID_KEY = '_wcpay_product_id';
 
 	/**
-	 * The product price meta key used to store the price data we last sent to Stripe as a hash. Used to compare current WC product price data with Stripe data.
+	 * The product price meta key used to store the price data we last sent to WC Pay as a hash. Used to compare current WC product price data with WC Pay data.
 	 *
 	 * @const string
 	 */
 	const PRICE_HASH_KEY = '_wcpay_product_price_hash';
 
 	/**
-	 * The product meta key used to store the product's Stripe Price object ID.
+	 * The product meta key used to store the product's WC Pay Price object ID.
 	 *
 	 * @const string
 	 */
@@ -72,7 +72,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Gets the Stripe product hash associated with a WC product.
+	 * Gets the WC Pay product hash associated with a WC product.
 	 *
 	 * @param WC_Product $product The product to get the hash for.
 	 * @return string             The product's hash or an empty string.
@@ -82,17 +82,17 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Gets the Stripe product ID associated with a WC product.
+	 * Gets the WC Pay product ID associated with a WC product.
 	 *
-	 * @param WC_Product $product The product to get the Stripe ID for.
-	 * @return string             The Stripe product ID or an empty string.
+	 * @param WC_Product $product The product to get the WC Pay ID for.
+	 * @return string             The WC Pay product ID or an empty string.
 	 */
 	public static function get_wcpay_product_id( WC_Product $product ) : string {
 		return $product->get_meta( self::PRODUCT_ID_KEY, true );
 	}
 
 	/**
-	 * Gets the Stripe price hash associated with a WC product.
+	 * Gets the WC Pay price hash associated with a WC product.
 	 *
 	 * @param WC_Product $product The product to get the hash for.
 	 * @return string             The product's price hash or an empty string.
@@ -102,32 +102,32 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Gets the Stripe price ID associated with a WC product.
+	 * Gets the WC Pay price ID associated with a WC product.
 	 *
-	 * @param WC_Product $product The product to get the Stripe price ID for.
-	 * @return string             The product's Stripe price ID or an empty string.
+	 * @param WC_Product $product The product to get the WC Pay price ID for.
+	 * @return string             The product's WC Pay price ID or an empty string.
 	 */
 	public static function get_wcpay_price_id( WC_Product $product ) : string {
 		return $product->get_meta( self::PRICE_ID_KEY, true );
 	}
 
 	/**
-	 * Gets the Stripe product ID associated with a WC product.
+	 * Gets the WC Pay product ID associated with a WC product.
 	 *
-	 * @param WC_Product $product The product to get the Stripe ID for.
-	 * @return string             The Stripe product ID or an empty string.
+	 * @param WC_Product $product The product to get the WC Pay ID for.
+	 * @return string             The WC Pay product ID or an empty string.
 	 */
 	public static function has_wcpay_product_id( WC_Product $product ) : string {
 		return (bool) self::get_wcpay_product_id( $product );
 	}
 
 	/**
-	 * Schedules a subscription product to be created or updated in Stripe on shutdown.
+	 * Schedules a subscription product to be created or updated in WC Pay on shutdown.
 	 *
 	 * @since x.x.x
 	 *
 	 * @param int        $product_id The ID of the product to handle.
-	 * @param WC_Product $product    The product object to handle. Only subscription products will be created or updated in Stripe.
+	 * @param WC_Product $product    The product object to handle. Only subscription products will be created or updated in WC Pay.
 	 */
 	public function maybe_schedule_product_create_or_update( int $product_id, WC_Product $product ) {
 
@@ -163,7 +163,7 @@ class WC_Payments_Product_Service {
 				continue;
 			}
 
-			// If this product already has a Stripe ID update it, otherwise create a new one.
+			// If this product already has a WC Pay ID update it, otherwise create a new one.
 			if ( self::has_wcpay_product_id( $product ) ) {
 				$this->update_product( $product );
 			} else {
@@ -173,7 +173,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Creates a product in Stripe.
+	 * Creates a product in WC Pay.
 	 *
 	 * @param WC_Product $product The product to create.
 	 */
@@ -189,19 +189,19 @@ class WC_Payments_Product_Service {
 			$this->set_wcpay_price_id( $product, $wcpay_product['stripe_price_id'] );
 			$this->add_product_update_listeners();
 		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem creating the product in Stripe: ' . $e->getMessage() );
+			Logger::log( 'There was a problem creating the product in WC Pay: ' . $e->getMessage() );
 		}
 	}
 
 	/**
-	 * Updates a product in Stripe.
+	 * Updates a product in WC Pay.
 	 *
 	 * @param WC_Product $product The product to update.
 	 */
 	public function update_product( WC_Product $product ) {
 		$wcpay_product_id = $this->get_wcpay_product_id( $product );
 
-		// If the product doesn't have a Stripe ID yet, create it instead.
+		// If the product doesn't have a WC Pay ID yet, create it instead.
 		if ( ! $wcpay_product_id ) {
 			$this->create_product( $product );
 			return;
@@ -237,17 +237,17 @@ class WC_Payments_Product_Service {
 
 				$this->add_product_update_listeners();
 			} catch ( API_Exception $e ) {
-				Logger::log( 'There was a problem updating the product in Stripe: ' . $e->getMessage() );
+				Logger::log( 'There was a problem updating the product in WC Pay: ' . $e->getMessage() );
 			}
 		}
 	}
 
 	/**
-	 * Archives a subscription product in Stripe.
+	 * Archives a subscription product in WC Pay.
 	 *
 	 * @since x.x.x
 	 *
-	 * @param int $post_id The ID of the post to handle. Only subscription product IDs will be archived in Stripe.
+	 * @param int $post_id The ID of the post to handle. Only subscription product IDs will be archived in WC Pay.
 	 */
 	public function maybe_archive_product( int $post_id ) {
 		$product = wc_get_product( $post_id );
@@ -260,11 +260,11 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Unarchives a subscription product in Stripe.
+	 * Unarchives a subscription product in WC Pay.
 	 *
 	 * @since x.x.x
 	 *
-	 * @param int $post_id The ID of the post to handle. Only Subscription product post IDs will be unarchived in Stripe.
+	 * @param int $post_id The ID of the post to handle. Only Subscription product post IDs will be unarchived in WC Pay.
 	 */
 	public function maybe_unarchive_product( int $post_id ) {
 		$product = wc_get_product( $post_id );
@@ -277,7 +277,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Archives a product in Stripe.
+	 * Archives a product in WC Pay.
 	 *
 	 * @param WC_Product $product The product to archive.
 	 */
@@ -292,12 +292,12 @@ class WC_Payments_Product_Service {
 			$this->archive_price( $this->get_wcpay_price_id( $product ) );
 			$this->payments_api_client->update_product( $wcpay_product_id, [ 'active' => 'false' ] );
 		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem archiving the product in Stripe: ' . $e->getMessage() );
+			Logger::log( 'There was a problem archiving the product in WC Pay: ' . $e->getMessage() );
 		}
 	}
 
 	/**
-	 * Unarchives a product in Stripe.
+	 * Unarchives a product in WC Pay.
 	 *
 	 * @param WC_Product $product The product unarchive.
 	 */
@@ -312,12 +312,12 @@ class WC_Payments_Product_Service {
 			$this->unarchive_price( $this->get_wcpay_price_id( $product ) );
 			$this->payments_api_client->update_product( $wcpay_product_id, [ 'active' => 'true' ] );
 		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem unarchiving the product in Stripe: ' . $e->getMessage() );
+			Logger::log( 'There was a problem unarchiving the product in WC Pay: ' . $e->getMessage() );
 		}
 	}
 
 	/**
-	 * Archives a Stripe price object.
+	 * Archives a WC Pay price object.
 	 *
 	 * @param string $wcpay_product_id The price object's ID to archive.
 	 */
@@ -326,7 +326,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Unarchives a Stripe Price object.
+	 * Unarchives a WC Pay Price object.
 	 *
 	 * @param string $wcpay_product_id The Price object's ID to unarchive.
 	 */
@@ -335,7 +335,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Attaches the callbacks used to update product changes in Stripe.
+	 * Attaches the callbacks used to update product changes in WC Pay.
 	 */
 	private function add_product_update_listeners() {
 		add_action( 'woocommerce_update_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
@@ -343,7 +343,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Removes the callbacks used to update product changes in Stripe.
+	 * Removes the callbacks used to update product changes in WC Pay.
 	 */
 	private function remove_product_update_listeners() {
 		remove_action( 'woocommerce_update_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 10 );
@@ -414,7 +414,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Gets product data relevant to Stripe from a WC product.
+	 * Gets product data relevant to WC Pay from a WC product.
 	 *
 	 * @param WC_Product $product The product to get data from.
 	 * @return array
@@ -427,7 +427,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Gets price data relevant to Stripe from a WC product.
+	 * Gets price data relevant to WC Pay from a WC product.
 	 *
 	 * @param WC_Product $product The product to get data from.
 	 * @return array
@@ -456,7 +456,7 @@ class WC_Payments_Product_Service {
 
 	/**
 	 * Gets a hash of the product's name and description.
-	 * Used to compare WC changes with Stripe data.
+	 * Used to compare WC changes with WC Pay data.
 	 *
 	 * @param WC_Product $product The product to generate the hash for.
 	 * @return string             The product's price hash.
@@ -467,7 +467,7 @@ class WC_Payments_Product_Service {
 
 	/**
 	 * Gets a hash of the product's price, period, and inverval.
-	 * Used to compare WC changes with Stripe data.
+	 * Used to compare WC changes with WC Pay data.
 	 *
 	 * @param WC_Product $product The product to generate the hash for.
 	 * @return string             The product's price hash.
@@ -477,22 +477,22 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Checks if a prouduct needs to be updated in Stripe.
+	 * Checks if a prouduct needs to be updated in WC Pay.
 	 *
 	 * @param WC_Product $product The product to check updates for.
 	 *
-	 * @return bool Whether the product needs to be update in Stripe.
+	 * @return bool Whether the product needs to be update in WC Pay.
 	 */
 	private function product_needs_update( WC_Product $product ) : bool {
 		return $this->get_product_hash( $product ) !== $this->get_wcpay_product_hash( $product );
 	}
 
 	/**
-	 * Checks if a prouduct price needs to be updated in Stripe.
+	 * Checks if a prouduct price needs to be updated in WC Pay.
 	 *
 	 * @param WC_Product $product The product to check updates for.
 	 *
-	 * @return bool Whether the product price needs to be update in Stripe.
+	 * @return bool Whether the product price needs to be update in WC Pay.
 	 */
 	private function price_needs_update( WC_Product $product ) : bool {
 		return $this->get_price_hash( $product ) !== $this->get_wcpay_price_hash( $product );
@@ -500,10 +500,10 @@ class WC_Payments_Product_Service {
 
 
 	/**
-	 * Sets a Stripe product hash on a WC product.
+	 * Sets a WC Pay product hash on a WC product.
 	 *
-	 * @param WC_Product $product The product to set the Stripe product hash for.
-	 * @param string     $value   The Stripe product hash.
+	 * @param WC_Product $product The product to set the WC Pay product hash for.
+	 * @param string     $value   The WC Pay product hash.
 	 */
 	private function set_wcpay_product_hash( WC_Product $product, string $value ) {
 		$product->update_meta_data( self::PRODUCT_HASH_KEY, $value );
@@ -511,10 +511,10 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Sets a Stripe product ID on a WC product.
+	 * Sets a WC Pay product ID on a WC product.
 	 *
-	 * @param WC_Product $product The product to set the Stripe ID for.
-	 * @param string     $value   The Stripe product ID.
+	 * @param WC_Product $product The product to set the WC Pay ID for.
+	 * @param string     $value   The WC Pay product ID.
 	 */
 	private function set_wcpay_product_id( WC_Product $product, string $value ) {
 		$product->update_meta_data( self::PRODUCT_ID_KEY, $value );
@@ -522,10 +522,10 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Sets a Stripe price hash on a WC product.
+	 * Sets a WC Pay price hash on a WC product.
 	 *
-	 * @param WC_Product $product The product to set the Stripe price hash for.
-	 * @param string     $value   The Stripe product hash.
+	 * @param WC_Product $product The product to set the WC Pay price hash for.
+	 * @param string     $value   The WC Pay product hash.
 	 */
 	private function set_wcpay_price_hash( WC_Product $product, string $value ) {
 		$product->update_meta_data( self::PRICE_HASH_KEY, $value );
@@ -533,10 +533,10 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Set a Stripe price ID on a WC product.
+	 * Set a WC Pay price ID on a WC product.
 	 *
-	 * @param WC_Product $product The product to set the Stripe price ID for.
-	 * @param string     $value   The Stripe price ID.
+	 * @param WC_Product $product The product to set the WC Pay price ID for.
+	 * @param string     $value   The WC Pay price ID.
 	 */
 	private function set_wcpay_price_id( WC_Product $product, string $value ) {
 		$product->update_meta_data( self::PRICE_ID_KEY, $value );
