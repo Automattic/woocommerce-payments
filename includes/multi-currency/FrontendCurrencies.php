@@ -208,20 +208,10 @@ class FrontendCurrencies {
 	 * @return string Three letter currency code.
 	 */
 	private function get_currency_code(): string {
-		return $this->get_override_currency_code() ?? $this->multi_currency->get_selected_currency()->get_code();
-	}
-
-	/**
-	 * Gets the override currency code, if one is needed.
-	 *
-	 * @return ?string Three letter currency code if found, else null.
-	 */
-	private function get_override_currency_code() {
 		if ( $this->should_override_currency_code() ) {
 			return $this->order_currency;
 		}
-
-		return null;
+		return $this->multi_currency->get_selected_currency()->get_code();
 	}
 
 	/**
