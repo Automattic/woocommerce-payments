@@ -327,6 +327,7 @@ class WC_Payments_Admin {
 				'isUpeEnabled'                => WC_Payments_Features::is_upe_enabled(),
 			],
 			'needsHttpsSetup'        => $this->wcpay_gateway->needs_https_setup(),
+			'isMultiCurrencyEnabled' => WC_Payments_Features::is_customer_multi_currency_enabled(),
 		];
 
 		wp_localize_script(

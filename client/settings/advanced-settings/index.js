@@ -11,6 +11,7 @@ import { Card, Button } from '@wordpress/components';
  */
 import SettingsSection from '../settings-section';
 import DebugMode from './debug-mode';
+import MultiCurrencyFlag from './multi-currency';
 import useToggle from './use-toggle';
 import './style.scss';
 import CardBody from '../card-body';
@@ -32,6 +33,7 @@ const AdvancedSettings = () => {
 				<SettingsSection>
 					<Card>
 						<CardBody>
+							<MultiCurrencyFlag />
 							<DebugMode />
 						</CardBody>
 					</Card>
