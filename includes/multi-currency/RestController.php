@@ -91,7 +91,7 @@ class RestController extends \WC_Payments_REST_Controller {
 	/**
 	 * Gets the currency settings for a single currency.
 	 *
-	 * @param   \WP_RESET_Request $request  Full data about the request.
+	 * @param   \WP_REST_Request $request  Full data about the request.
 	 *
 	 * @return  array            The currency settings.
 	 */
@@ -109,7 +109,7 @@ class RestController extends \WC_Payments_REST_Controller {
 	/**
 	 * Updates the currency settings for a single currency.
 	 *
-	 * @param   \WP_RESET_Request $request  Full data about the request.
+	 * @param   \WP_REST_Request $request  Full data about the request.
 	 *
 	 * @return  array            The currency settings.
 	 */
