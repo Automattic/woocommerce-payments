@@ -7,7 +7,6 @@
 
 namespace WCPay\Payment_Methods;
 
-use WCPay\Exceptions\Connection_Exception;
 use WCPay\Logger;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
@@ -125,7 +124,7 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			/* translators: localized exception message */
 			$order->update_status( 'failed', sprintf( __( 'Giropay payment failed: %s', 'woocommerce-payments' ), $e->getLocalizedMessage() ) );
 
-			wc_add_notice( $e->getLocalizedMessage(), 'error' );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
 			exit;
 		}
@@ -232,13 +231,7 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			return $this->process_payment_for_order( WC()->cart, $payment_information, $intent_api_parameters );
 		} catch ( Exception $e ) {
-			// TODO: Create more exceptions to handle merchant specific errors.
-			$error_message = $e->getMessage();
-			if ( is_a( $e, Connection_Exception::class ) ) {
-				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
-			}
-
-			wc_add_notice( $error_message, 'error' );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 
 			$order->update_status( 'failed' );
 
