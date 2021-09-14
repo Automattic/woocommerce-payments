@@ -1658,6 +1658,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				esc_html( $error_message )
 			);
 			$order->add_order_note( $note );
+			// We don't need to set $http_code here
+			// because it will already be set when $error_message is not empty.
 		} else {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
