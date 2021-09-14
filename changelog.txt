@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 3.1.0 - 2021-xx-xx =
+* Add - Gutenberg Block Widget for Multi-Currency.
+
 = 3.0.0 - 2021-xx-xx =
 * Add - Download deposits report in CSV.
 * Fix - Use store currency on analytics leaderboard when Multi-Currency is enabled.
