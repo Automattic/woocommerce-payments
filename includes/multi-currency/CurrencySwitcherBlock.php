@@ -55,7 +55,7 @@ class CurrencySwitcherBlock {
 			plugins_url( 'dist/multi-currency-switcher-block.js', WCPAY_PLUGIN_FILE ),
 			$asset_file['dependencies'],
 			$asset_file['version'],
-			true    // TODO: Should this be true or false?
+			true
 		);
 
 		register_block_type(
@@ -102,15 +102,16 @@ class CurrencySwitcherBlock {
 		$title       = $block_attributes['title'] ?? '';
 		$with_symbol = $block_attributes['symbol'] ?? true;
 		$with_flag   = $block_attributes['flag'] ?? false;
+		$aria_label  = ! empty( $title ) ? $title : 'Currency Selector';
 
 		$widget_content = '';
 
-		if ( '' !== $title ) {
+		if ( ! empty( $title ) ) {
 			$widget_content .= '<span class="gamma widget-title">' . $title . '</span>';
 		}
 
 		$widget_content .= '<form>';
-		$widget_content .= '<select name="currency" aria-label="' . $title . '" onchange="this.form.submit()">';
+		$widget_content .= '<select name="currency" aria-label="' . $aria_label . '" onchange="this.form.submit()">';
 
 		foreach ( $this->multi_currency->get_enabled_currencies() as $currency ) {
 			$widget_content .= $this->render_currency_option( $currency, $with_symbol, $with_flag );
@@ -134,7 +135,7 @@ class CurrencySwitcherBlock {
 		$code        = $currency->get_code();
 		$same_symbol = html_entity_decode( $currency->get_symbol() ) === $code;
 		$text        = $code;
-		$selected    = $this->multi_currency->get_selected_currency()->code === $code ? ' selected' : '';
+		$selected    = $this->multi_currency->get_selected_currency()->code === $code ? 'selected' : '';
 
 		if ( $with_symbol && ! $same_symbol ) {
 			$text = $currency->get_symbol() . ' ' . $text;
