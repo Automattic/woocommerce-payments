@@ -1210,7 +1210,7 @@ class MultiCurrency {
 		// Prepare the params array.
 		$values = [];
 
-		// Walk throught the querystring parameter possibilities, and prepare the params.
+		// Walk through the querystring parameter possibilities, and prepare the params.
 		foreach ( $possible_variables as $possible_variable => $sanitization_callback ) {
 			// phpcs:disable WordPress.Security.NonceVerification
 			if ( isset( $_GET[ $possible_variable ] ) ) {
