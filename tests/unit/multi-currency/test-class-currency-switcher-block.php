@@ -102,26 +102,31 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase
 
 		$this->assertStringContainsString( '<form>', $result );
 
+		$strings_to_test = [];
 		if ( $flag && ! $symbol ) {
-			$this->assertStringContainsString( '<option value="USD" >🇺🇸 USD</option>', $result );
-			$this->assertStringContainsString( '<option value="CAD" >🇨🇦 CAD</option>', $result );
-			$this->assertStringContainsString( '<option value="EUR" >🇪🇺 EUR</option>', $result );
-			$this->assertStringContainsString( '<option value="GBP" >🇬🇧 GBP</option>', $result );
+			$strings_to_test[] = '<option value="USD" >🇺🇸 USD</option>';
+			$strings_to_test[] = '<option value="CAD" >🇨🇦 CAD</option>';
+			$strings_to_test[] = '<option value="EUR" >🇪🇺 EUR</option>';
+			$strings_to_test[] = '<option value="GBP" >🇬🇧 GBP</option>';
 		} elseif ( ! $flag && $symbol ) {
-			$this->assertStringContainsString( '<option value="USD" >$ USD</option>', $result );
-			$this->assertStringContainsString( '<option value="CAD" >$ CAD</option>', $result );
-			$this->assertStringContainsString( '<option value="EUR" >€ EUR</option>', $result );
-			$this->assertStringContainsString( '<option value="GBP" >£ GBP</option>', $result );
+			$strings_to_test[] = '<option value="USD" >$ USD</option>';
+			$strings_to_test[] = '<option value="CAD" >$ CAD</option>';
+			$strings_to_test[] = '<option value="EUR" >€ EUR</option>';
+			$strings_to_test[] = '<option value="GBP" >£ GBP</option>';
 		} elseif ( $flag && $symbol ) {
-			$this->assertStringContainsString( '<option value="USD" >🇺🇸 $ USD</option>', $result );
-			$this->assertStringContainsString( '<option value="CAD" >🇨🇦 $ CAD</option>', $result );
-			$this->assertStringContainsString( '<option value="EUR" >🇪🇺 € EUR</option>', $result );
-			$this->assertStringContainsString( '<option value="GBP" >🇬🇧 £ GBP</option>', $result );
+			$strings_to_test[] = '<option value="USD" >🇺🇸 $ USD</option>';
+			$strings_to_test[] = '<option value="CAD" >🇨🇦 $ CAD</option>';
+			$strings_to_test[] = '<option value="EUR" >🇪🇺 € EUR</option>';
+			$strings_to_test[] = '<option value="GBP" >🇬🇧 £ GBP</option>';
 		} else {
-			$this->assertStringContainsString( '<option value="USD" >USD</option>', $result );
-			$this->assertStringContainsString( '<option value="CAD" >CAD</option>', $result );
-			$this->assertStringContainsString( '<option value="EUR" >EUR</option>', $result );
-			$this->assertStringContainsString( '<option value="GBP" >GBP</option>', $result );
+			$strings_to_test[] = '<option value="USD" >USD</option>';
+			$strings_to_test[] = '<option value="CAD" >CAD</option>';
+			$strings_to_test[] = '<option value="EUR" >EUR</option>';
+			$strings_to_test[] = '<option value="GBP" >GBP</option>';
+		}
+
+		foreach ( $strings_to_test as $string ) {
+			$this->assertStringContainsString( $string, html_entity_decode( $result ) );
 		}
 	}
 
