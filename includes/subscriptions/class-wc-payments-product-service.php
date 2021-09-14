@@ -88,6 +88,12 @@ class WC_Payments_Product_Service {
 	 * @return string             The WC Pay product ID or an empty string.
 	 */
 	public static function get_wcpay_product_id( WC_Product $product ) : string {
+
+		// If the subscription product doesn't have a WC Pay product ID, create one.
+		if ( ! self::has_wcpay_product_id( $product ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
+			WC_Payments_Subscriptions::get_product_service()->create_product( $product );
+		}
+
 		return $product->get_meta( self::PRODUCT_ID_KEY, true );
 	}
 
@@ -108,7 +114,15 @@ class WC_Payments_Product_Service {
 	 * @return string             The product's WC Pay price ID or an empty string.
 	 */
 	public static function get_wcpay_price_id( WC_Product $product ) : string {
-		return $product->get_meta( self::PRICE_ID_KEY, true );
+		$price_id = $product->get_meta( self::PRICE_ID_KEY, true );
+
+		// If the subscription product doesn't have a WC Pay price ID, create one now.
+		if ( empty( $price_id ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
+			WC_Payments_Subscriptions::get_product_service()->create_product( $product );
+			$price_id = $product->get_meta( self::PRICE_ID_KEY, true );
+		}
+
+		return $price_id;
 	}
 
 	/**
@@ -118,7 +132,7 @@ class WC_Payments_Product_Service {
 	 * @return string             The WC Pay product ID or an empty string.
 	 */
 	public static function has_wcpay_product_id( WC_Product $product ) : string {
-		return (bool) self::get_wcpay_product_id( $product );
+		return (bool) $product->get_meta( self::PRODUCT_ID_KEY, true );
 	}
 
 	/**
