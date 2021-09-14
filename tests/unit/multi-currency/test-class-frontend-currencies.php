@@ -50,6 +50,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 		$this->mock_multi_currency       = $this->createMock( MultiCurrency::class );
 		$this->mock_utils                = $this->createMock( Utils::class );
+		$this->mock_order                = WC_Helper_Order::create_order();
 
 		$this->frontend_currencies = new FrontendCurrencies( $this->mock_multi_currency, $this->mock_localization_service, $this->mock_utils );
 	}
@@ -97,11 +98,15 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_decimals_returns_num_decimals_for_order_currency() {
-		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'USD' ) );
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'num_decimals' => 3 ] );
 
-		$this->frontend_currencies->init_order_currency( $this->get_mock_order( 'EUR' ) );
+		$this->mock_order->set_currency( 'EUR' );
+		$this->frontend_currencies->init_order_currency( $this->mock_order );
 
 		$this->assertEquals( 3, $this->frontend_currencies->get_price_decimals( 2 ) );
 	}
@@ -121,11 +126,15 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_decimal_separator_returns_decimal_sep_for_order_currency() {
-		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'USD' ) );
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'decimal_sep' => '.' ] );
 
-		$this->frontend_currencies->init_order_currency( $this->get_mock_order( 'EUR' ) );
+		$this->mock_order->set_currency( 'EUR' );
+		$this->frontend_currencies->init_order_currency( $this->mock_order );
 
 		$this->assertEquals( '.', $this->frontend_currencies->get_price_decimal_separator( ',' ) );
 	}
@@ -145,11 +154,15 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_thousand_separator_returns_thousand_sep_for_order_currency() {
-		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'USD' ) );
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'thousand_sep' => ',' ] );
 
-		$this->frontend_currencies->init_order_currency( $this->get_mock_order( 'EUR' ) );
+		$this->mock_order->set_currency( 'EUR' );
+		$this->frontend_currencies->init_order_currency( $this->mock_order );
 
 		$this->assertEquals( ',', $this->frontend_currencies->get_price_thousand_separator( '.' ) );
 	}
@@ -169,11 +182,15 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_woocommerce_price_format_returns_format_for_order_currency_pos() {
-		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'USD' ) );
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'currency_pos' => 'left' ] );
 
-		$this->frontend_currencies->init_order_currency( $this->get_mock_order( 'EUR' ) );
+		$this->mock_order->set_currency( 'EUR' );
+		$this->frontend_currencies->init_order_currency( $this->mock_order );
 
 		$this->assertEquals( '%1$s%2$s', $this->frontend_currencies->get_woocommerce_price_format( '%2$s%1$s' ) );
 	}
@@ -214,12 +231,5 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 			md5( 'cart_hashGBP0.71' ),
 			$this->frontend_currencies->add_currency_to_cart_hash( 'cart_hash' )
 		);
-	}
-
-	private function get_mock_order( string $currency ) {
-		$order = WC_Helper_Order::create_order();
-		$order->set_currency( $currency );
-
-		return $order;
 	}
 }
