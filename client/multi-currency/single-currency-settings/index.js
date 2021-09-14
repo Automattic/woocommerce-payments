@@ -292,6 +292,9 @@ const SingleCurrencySettings = () => {
 												</h4>
 												<input
 													type="text"
+													data-testid={
+														'manual_rate_input'
+													}
 													defaultValue={
 														manualRate
 															? manualRate
@@ -346,6 +349,7 @@ const SingleCurrencySettings = () => {
 																priceRoundingType
 														  )
 												}
+												data-testid={ 'price_rounding' }
 												onChange={ ( event ) =>
 													setPriceRoundingType(
 														event.target.value
@@ -411,6 +415,7 @@ const SingleCurrencySettings = () => {
 												value={ parseFloat(
 													priceCharmType
 												) }
+												data-testid={ 'price_charm' }
 												onChange={ ( event ) =>
 													setPriceCharmType(
 														event.target.value

@@ -14,8 +14,7 @@ const CurrencyPreview = ( {
 	roundingValue,
 	charmValue,
 } ) => {
-	const initialValue = '20.00';
-
+	const [ baseValue, setBaseValue ] = useState( 20.0 );
 	const [ calculatedValue, setCalculatedValue ] = useState( 0 );
 
 	const formatCurrency = ( amount, currencyInfo ) => {
@@ -39,7 +38,7 @@ const CurrencyPreview = ( {
 
 	const calculateCurrencyConversion = useCallback(
 		( value ) => {
-			const amount = parseFloat( value );
+			const amount = parseFloat( value.toString().replace( /,/g, '.' ) );
 			const converted =
 				amount *
 				parseFloat( currencyRate ? currencyRate : targetCurrency.rate );
@@ -55,14 +54,12 @@ const CurrencyPreview = ( {
 
 	useEffect( () => {
 		if ( targetCurrency ) {
-			const initialCalculation = calculateCurrencyConversion(
-				initialValue
-			);
+			const initialCalculation = calculateCurrencyConversion( baseValue );
 			setCalculatedValue( initialCalculation );
 		}
 	}, [
 		calculateCurrencyConversion,
-		initialValue,
+		baseValue,
 		targetCurrency,
 		roundingValue,
 		charmValue,
@@ -70,6 +67,7 @@ const CurrencyPreview = ( {
 	] );
 
 	const handleTextControlChange = ( value ) => {
+		setBaseValue( value );
 		const calculatedNewValue = calculateCurrencyConversion( value );
 		setCalculatedValue( calculatedNewValue );
 	};
@@ -83,13 +81,15 @@ const CurrencyPreview = ( {
 						{ 'left' === storeCurrency.symbol_position ? (
 							<TextControlWithAffixes
 								prefix={ storeCurrency.symbol }
-								defaultValue={ initialValue }
+								data-testid="store_currency_value"
+								value={ baseValue.toString() }
 								onChange={ handleTextControlChange }
 							/>
 						) : (
 							<TextControlWithAffixes
 								suffix={ storeCurrency.symbol }
-								defaultValue={ initialValue }
+								data-testid="store_currency_value"
+								value={ baseValue.toString() }
 								onChange={ handleTextControlChange }
 							/>
 						) }
@@ -97,7 +97,9 @@ const CurrencyPreview = ( {
 					<div>
 						<h4>{ targetCurrency && targetCurrency.name }</h4>
 						<div>
-							<strong>{ calculatedValue }</strong>
+							<strong data-testid="calculated_value">
+								{ calculatedValue }
+							</strong>
 						</div>
 					</div>
 				</CardBody>
