@@ -113,13 +113,19 @@ export const getTasks = ( {
 					'woocommerce-payments'
 				),
 				completed: false,
-				onClick: () => {
+				action: () => {
 					window.open(
 						'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
 						'_blank'
 					);
 				},
 				actionLabel: __( 'Read more', 'woocommerce-payments' ),
+				expandable: true,
+				expanded: true,
+				showActionButton: true,
+				isDeletable: true,
+				isDismissable: true,
+				allowRemindMeLater: true,
 			},
 		additionalMethodsSetup.isTaskVisible &&
 			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
