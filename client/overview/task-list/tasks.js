@@ -87,7 +87,7 @@ export const getTasks = ( {
 				visible: true,
 				type: 'extension',
 				expandable: true,
-				expanded: false,
+				expanded: true,
 				showActionButton: true,
 			},
 		isAccountOverviewTasksEnabled &&
@@ -109,7 +109,7 @@ export const getTasks = ( {
 				},
 				actionLabel: __( 'Reconnect', 'woocommerce-payments' ),
 				expandable: true,
-				expanded: false,
+				expanded: true,
 				showActionButton: true,
 			},
 		isAccountOverviewTasksEnabled &&
