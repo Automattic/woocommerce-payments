@@ -31,22 +31,23 @@ export const ConcatenateCurrencyStrings = (
 	except,
 	currenciesData
 ) => {
-	if ( currencies.includes( except ) )
-		currencies.splice( currencies.indexOf( except ), 1 );
-	if ( 0 === currencies.length ) return '';
-	if ( 1 === currencies.length )
+	const currenciesCopy = [ ...currencies ];
+	if ( currenciesCopy.includes( except ) )
+		currenciesCopy.splice( currenciesCopy.indexOf( except ), 1 );
+	if ( 0 === currenciesCopy.length ) return '';
+	if ( 1 === currenciesCopy.length )
 		return StringRepresentationOfCurrency(
-			currenciesData[ currencies[ 0 ] ]
+			currenciesData[ currenciesCopy[ 0 ] ]
 		);
-	if ( 2 === currencies.length )
-		return currencies
+	if ( 2 === currenciesCopy.length )
+		return currenciesCopy
 			.map( ( d ) => currenciesData[ d ] )
 			.map( StringRepresentationOfCurrency )
 			.join( __( ' and ' ) );
 
-	const lastCurrency = currenciesData[ currencies.pop() ];
+	const lastCurrency = currenciesData[ currenciesCopy.pop() ];
 	return (
-		currencies
+		currenciesCopy
 			.map( ( d ) => currenciesData[ d ] )
 			.map( StringRepresentationOfCurrency )
 			.join( ', ' ) +
