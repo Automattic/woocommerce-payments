@@ -331,6 +331,7 @@ class WC_Payments_Admin {
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
 			],
 			'needsHttpsSetup'        => $this->wcpay_gateway->needs_https_setup(),
+			'isMultiCurrencyEnabled' => WC_Payments_Features::is_customer_multi_currency_enabled(),
 		];
 
 		wp_localize_script(
