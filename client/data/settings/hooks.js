@@ -70,6 +70,19 @@ export const useDevMode = () => {
 	}, [] );
 };
 
+export const useMultiCurrency = () => {
+	const { updateIsMultiCurrencyEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsMultiCurrencyEnabled } = select( STORE_NAME );
+			const isMultiCurrencyEnabled = getIsMultiCurrencyEnabled();
+			return [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ];
+		},
+		[ updateIsMultiCurrencyEnabled ]
+	);
+};
+
 export const useAccountStatementDescriptor = () => {
 	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
 
