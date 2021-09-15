@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.1.0 - 2021-xx-xx =
+* Add - Customer multi-currency onboarding flow.
+
 = 3.0.0 - 2021-xx-xx =
 * Add - Download deposits report in CSV.
 * Fix - Use store currency on analytics leaderboard when Multi-Currency is enabled.
@@ -108,7 +111,6 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fix subscription change payment method errors after entering a payment method that fails.
 * Fix - Prevent duplicate account onboarding requests.
 * Fix - Filter out merchant-facing payment errors from customer error notices.
-* Add - Customer multi-currency onboarding flow.
 
 = 2.9.1 - 2021-09-07 =
 * Fix - Error while checking out with UPE when fields are hidden.
