@@ -134,8 +134,7 @@ class Settings extends \WC_Settings_Page {
 					[
 						'title'    => __( 'Store settings', 'woocommerce-payments' ),
 						'desc'     => __( 'Automatically switch customers to their local currency if it is enabled above.', 'woocommerce-payments' ),
-						// TODO: Preview link, to be done on #2523.
-						'desc_tip' => __( 'Customers will be notified via store alert banner.', 'woocommerce-payments' ),
+						'desc_tip' => __( 'Customers will be notified via store alert banner.', 'woocommerce-payments' ) . '&nbsp;<span id="preview-pane-placeholder"></span>',
 						'id'       => $this->id . '_enable_auto_currency',
 						'default'  => 'yes',
 						'type'     => 'checkbox',

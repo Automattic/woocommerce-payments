@@ -2,13 +2,14 @@
  * External dependencies
  */
 import { sprintf, __ } from '@wordpress/i18n';
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 
 /**
  * Internal dependencies
  */
 import EnabledCurrencies from './enabled-currencies-list';
+import PreviewModal from './preview-modal';
 
 /**
  * Mount React Component
@@ -51,6 +52,39 @@ if ( storeSettingsSection ) {
 	} );
 
 	toggleSettingsSectionDisplay();
+
+	const previewPanePlaceholder = document.querySelector(
+		'#preview-pane-placeholder'
+	);
+
+	const PreviewModalHelper = () => {
+		const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
+
+		/* eslint-disable jsx-a11y/anchor-is-valid */
+		return (
+			<>
+				<a
+					href="#"
+					onClick={ () => {
+						setPreviewModalOpen( true );
+					} }
+				>
+					{ __( 'Preview', 'woocommerce-payments' ) }
+				</a>
+				<PreviewModal
+					isPreviewModalOpen={ isPreviewModalOpen }
+					setPreviewModalOpen={ setPreviewModalOpen }
+					isAutomaticSwitchEnabledValue={ true }
+					isStorefrontSwitcherEnabledValue={ false }
+				/>
+			</>
+		);
+		/* eslint-enable jsx-a11y/anchor-is-valid */
+	};
+
+	if ( previewPanePlaceholder ) {
+		ReactDOM.render( <PreviewModalHelper />, previewPanePlaceholder );
+	}
 }
 
 function enabledCurrenciesListItemsExceptPlaceholders() {
