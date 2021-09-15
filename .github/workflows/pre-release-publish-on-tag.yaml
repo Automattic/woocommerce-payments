@@ -126,7 +126,7 @@ jobs:
           CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
           GITHUB_RELEASES_URL: ${{ format( 'https://api.github.com/repos/{0}/releases', github.repository ) }}
         run: |
-          NAME=$( echo -n ${TAG_MESSAGE:=$TAG} | jq -aRs '.' )
+          NAME=$( echo -n "${TAG_MESSAGE:=$TAG}" | head -n 1 | jq -aRs '.' )
           echo "Will build a release for tag '$TAG' with the name '$NAME'..."
 
           echo "Creating pre-release..."
