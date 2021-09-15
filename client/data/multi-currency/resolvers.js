@@ -11,7 +11,11 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
-import { updateCurrencies, updateCurrencySettings, updateStoreSettings } from './actions';
+import {
+	updateCurrencies,
+	updateCurrencySettings,
+	updateStoreSettings,
+} from './actions';
 
 /**
  * Retrieve settings from the site's REST API.
@@ -45,10 +49,11 @@ export function* getCurrencySettings( currencyCode ) {
 			__(
 				'Error retrieving single currency settings.',
 				'woocommerce-payments'
-			);
-  }
+			)
+		);
+	}
 }
-      
+
 export function* getStoreSettings() {
 	const path = `${ NAMESPACE }/multi-currency/get-settings`;
 

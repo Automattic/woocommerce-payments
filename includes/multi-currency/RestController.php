@@ -49,12 +49,12 @@ class RestController extends \WC_Payments_REST_Controller {
 			$this->namespace,
 			'/' . $this->rest_base . '/currencies/(?P<currency_code>[A-Za-z]{3})',
 			[
-				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_currency_settings' ],
-      ]
-    );
-    
-    register_rest_route(
+				'methods'  => \WP_REST_Server::READABLE,
+				'callback' => [ $this, 'get_currency_settings' ],
+			]
+		);
+
+		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/get-settings',
 			[
@@ -68,12 +68,12 @@ class RestController extends \WC_Payments_REST_Controller {
 			$this->namespace,
 			'/' . $this->rest_base . '/currencies/(?P<currency_code>[A-Za-z]{3})',
 			[
-				'methods'             => \WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'update_currency_settings' ],
-      ]
-    );
-      
-    register_rest_route(
+				'methods'  => \WP_REST_Server::CREATABLE,
+				'callback' => [ $this, 'update_currency_settings' ],
+			]
+		);
+
+		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/update-settings',
 			[
@@ -157,9 +157,9 @@ class RestController extends \WC_Payments_REST_Controller {
 		}
 
 		return $this->get_currency_settings( $request );
-  }
-  
-  /**
+	}
+
+	/**
 	 * Gets the store settings for Multi Currency.
 	 *
 	 * @return  array  The store settings.

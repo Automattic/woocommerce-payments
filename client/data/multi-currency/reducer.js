@@ -53,8 +53,8 @@ const receiveMultiCurrencies = (
 				currency_settings: {
 					...state.currency_settings,
 					[ data.code ]: data.data,
-        },
-      };
+				},
+			};
 		case TYPES.SET_STORE_SETTINGS:
 			return {
 				...state,

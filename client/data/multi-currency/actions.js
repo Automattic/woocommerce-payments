@@ -45,7 +45,7 @@ export function updateCurrencySettings( code, data ) {
 	return {
 		type: TYPES.SET_CURRENCY_SETTINGS,
 		data: { code, data },
-  };
+	};
 }
 
 export function updateStoreSettings( data ) {
@@ -92,8 +92,9 @@ export function* submitCurrencySettings( currencyCode, settings ) {
 		);
 	} catch ( e ) {
 		yield dispatch( 'core/notices' ).createErrorNotice(
-			__( 'Error updating currency settings.', 'woocommerce-payments' );
-  }
+			__( 'Error updating currency settings.', 'woocommerce-payments' )
+		);
+	}
 }
 
 export function* submitStoreSettingsUpdate(
