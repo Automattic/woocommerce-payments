@@ -394,7 +394,13 @@ const SingleCurrencySettings = () => {
 												) }
 												<Button
 													isLink
-													onClick={ () => {} }
+													onClick={ () => {
+														open(
+															'http://docs.woocommerce.com/document/payments/' +
+																'currencies/multi-currency-setup/#price-rounding',
+															'_blank'
+														);
+													} }
 												>
 													{ __(
 														'Learn more',
@@ -453,7 +459,13 @@ const SingleCurrencySettings = () => {
 												) }
 												<Button
 													isLink
-													onClick={ () => {} }
+													onClick={ () => {
+														open(
+															'http://docs.woocommerce.com/document/payments/' +
+																'currencies/multi-currency-setup/#price-charm',
+															'_blank'
+														);
+													} }
 												>
 													{ __(
 														'Learn more',
