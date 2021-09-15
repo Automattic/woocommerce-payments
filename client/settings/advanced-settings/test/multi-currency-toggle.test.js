@@ -21,12 +21,12 @@ describe( 'MultiCurrencyToggle', () => {
 		jest.clearAllMocks();
 	} );
 
-	it( 'sets the heading as focused after rendering', () => {
+	it( 'renders the component', () => {
 		render( <MultiCurrencyToggle /> );
 
 		expect(
-			screen.getByText( 'Enable Customer Multi Currency' )
-		).toHaveFocus();
+			screen.queryByLabelText( 'Enable multi-currency' )
+		).toBeInTheDocument();
 	} );
 
 	it.each( [ [ true ], [ false ] ] )(
@@ -41,7 +41,7 @@ describe( 'MultiCurrencyToggle', () => {
 			render( <MultiCurrencyToggle /> );
 
 			const enableMultiCurrencyCheckbox = screen.getByLabelText(
-				'Allow your customers to shop and pay in their local currency.'
+				'Enable multi-currency'
 			);
 
 			userEvent.click( enableMultiCurrencyCheckbox );
