@@ -77,14 +77,18 @@ export const getTasks = ( {
 				),
 				additionalInfo: accountDetailsTaskDescription,
 				completed: 'complete' === status,
-				onClick:
+				action:
 					'complete' === status
 						? undefined
 						: () => {
 								window.open( accountLink, '_blank' );
 						  },
+				actionLabel: __( 'Update', 'woocommerce-payments' ),
 				visible: true,
 				type: 'extension',
+				expandable: true,
+				expanded: false,
+				showActionButton: true,
 			},
 		isAccountOverviewTasksEnabled &&
 			wpcomReconnectUrl && {
