@@ -100,9 +100,13 @@ export const getTasks = ( {
 					'woocommerce-payments'
 				),
 				completed: false,
-				onClick: () => {
+				action: () => {
 					window.location.href = wpcomReconnectUrl;
 				},
+				actionLabel: __( 'Reconnect', 'woocommerce-payments' ),
+				expandable: true,
+				expanded: false,
+				showActionButton: true,
 			},
 		isAccountOverviewTasksEnabled &&
 			needsHttpsSetup && {
