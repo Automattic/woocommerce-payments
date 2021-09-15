@@ -49,8 +49,9 @@ class RestController extends \WC_Payments_REST_Controller {
 			$this->namespace,
 			'/' . $this->rest_base . '/currencies/(?P<currency_code>[A-Za-z]{3})',
 			[
-				'methods'  => \WP_REST_Server::READABLE,
-				'callback' => [ $this, 'get_currency_settings' ],
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_currency_settings' ],
+				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
 
@@ -68,8 +69,9 @@ class RestController extends \WC_Payments_REST_Controller {
 			$this->namespace,
 			'/' . $this->rest_base . '/currencies/(?P<currency_code>[A-Za-z]{3})',
 			[
-				'methods'  => \WP_REST_Server::CREATABLE,
-				'callback' => [ $this, 'update_currency_settings' ],
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'update_currency_settings' ],
+				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
 
@@ -126,7 +128,6 @@ class RestController extends \WC_Payments_REST_Controller {
 			'price_charm'        => get_option( 'wcpay_multi_currency_price_charm_' . $currency_code, null ),
 		];
 	}
-
 
 	/**
 	 * Updates the currency settings for a single currency.
