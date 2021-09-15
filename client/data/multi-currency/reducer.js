@@ -53,6 +53,17 @@ const receiveMultiCurrencies = (
 				currency_settings: {
 					...state.currency_settings,
 					[ data.code ]: data.data,
+        },
+      };
+		case TYPES.SET_STORE_SETTINGS:
+			return {
+				...state,
+				settings: {
+					enable_auto_currency:
+						data.wcpay_multi_currency_enable_auto_currency,
+					enable_storefront_switcher:
+						data.wcpay_multi_currency_enable_storefront_switcher,
+					site_theme: data.site_theme,
 				},
 			};
 	}
