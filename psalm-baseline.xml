@@ -155,7 +155,7 @@
     </UndefinedFunction>
   </file>
   <file src="includes/subscriptions/class-wc-payments-subscription-service.php">
-    <UndefinedClass occurrences="22">
+    <UndefinedClass occurrences="25">
       <code>WC_Subscription</code>
     </UndefinedClass>
     <UndefinedDocblockClass occurrences="2">

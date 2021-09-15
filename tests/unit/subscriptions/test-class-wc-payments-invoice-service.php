@@ -13,8 +13,10 @@ use WCPay\Exceptions\API_Exception;
  */
 class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 
-	const PENDING_INVOICE_ID_KEY = '_wcpay_pending_invoice_id';
-	const ORDER_INVOICE_ID_KEY   = '_wcpay_billing_invoice_id';
+	const PENDING_INVOICE_ID_KEY        = '_wcpay_pending_invoice_id';
+	const ORDER_INVOICE_ID_KEY          = '_wcpay_billing_invoice_id';
+	const SUBSCRIPTION_ITEM_ID_META_KEY = '_wcpay_subscription_item_id';
+	const PRICE_ID_KEY                  = '_wcpay_product_price_id';
 
 	/**
 	 * Mock WC_Payments_API_Client.
@@ -175,9 +177,55 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Tests for WC_Payments_Invoice_Service::validate_invoice_items()
+	 */
+	public function test_validate_invoice_items() {
+		$mock_order        = WC_Helper_Order::create_order();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $mock_order );
+
+		foreach ( $mock_order->get_items( 'line_item', 'fee', 'shipping' ) as $item ) {
+			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123' );
+		}
+
+		$mock_items = [
+			[
+				'subscription_item' => 'si_test123',
+				'amount'            => 1000,
+				'quantity'          => 1,
+				'tax_rates'         => [
+					[
+						'percentage' => 10,
+					],
+				],
+			],
+		];
+
+		$mock_discounts = [];
+
+		$this->mock_product_service
+			->expects( $this->once() )
+			->method( 'get_stripe_price_id' )
+			->willReturn( 'price_test123' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_subscription_item' )
+			->with(
+				'si_test123',
+				[
+					'price'    => 'price_test123',
+					'quantity' => 4,
+				]
+			);
+
+		$this->invoice_service->validate_invoice_items( $mock_items, $mock_discounts, $mock_subscription );
+	}
+
+	/**
 	 * Mocks the wcs_order_contains_subscription function return.
 	 *
-	 * @param bool The value to return to wcs_order_contains_subscription() calls.
+	 * @param bool $value The value to return to wcs_order_contains_subscription() calls.
 	 */
 	private function mock_wcs_get_subscriptions_for_order( $value ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(

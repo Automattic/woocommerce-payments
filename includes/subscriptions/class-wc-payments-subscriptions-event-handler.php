@@ -56,7 +56,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$event_object          = $this->get_event_property( $event_data, 'object' );
 		$wcpay_subscription_id = $this->get_event_property( $event_object, 'subscription' );
 		$wcpay_customer_id     = $this->get_event_property( $event_object, 'customer' );
-		$wcpay_discounts       = $this->get_event_property( $event_object, 'discounts' );
+		$wcpay_discounts       = $this->get_event_property( $event_object, 'discount' );
 		$wcpay_lines           = $this->get_event_property( $event_object, 'lines' );
 		$wcpay_lines           = $this->get_event_property( $wcpay_lines, 'data' );
 		$subscription          = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );

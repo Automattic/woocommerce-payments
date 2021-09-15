@@ -88,7 +88,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 				'object' => [
 					'subscription' => 'sub_ID_not_exists',
 					'customer'     => 'cus_test1234',
-					'discounts'    => [],
+					'discount'     => [],
 					'lines'        => [
 						'data' => [],
 					],
@@ -113,7 +113,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 				'object' => [
 					'subscription' => $wcpay_subscription_id,
 					'customer'     => $wcpay_customer_id,
-					'discounts'    => [],
+					'discount'     => [],
 					'lines'        => [
 						'data' => [],
 					],
@@ -160,7 +160,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 				'object' => [
 					'subscription' => $wcpay_subscription_id,
 					'customer'     => $wcpay_customer_id,
-					'discounts'    => [],
+					'discount'     => [],
 					'lines'        => [
 						'data' => [],
 					],

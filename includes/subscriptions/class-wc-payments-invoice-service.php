@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -37,12 +38,21 @@ class WC_Payments_Invoice_Service {
 	private $payments_api_client;
 
 	/**
+	 * Product Service
+	 *
+	 * @var WC_Payments_Product_Service
+	 */
+	private $product_service;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payments_API_Client      $payments_api_client  WooCommerce Payments API client.
+	 * @param WC_Payments_Product_Service $product_service      Product Service.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Product_Service $product_service ) {
 		$this->payments_api_client = $payments_api_client;
+		$this->product_service     = $product_service;
 
 		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_record_first_invoice_payment' ], 10, 3 );
 	}
@@ -106,6 +116,8 @@ class WC_Payments_Invoice_Service {
 	 * @param array           $wcpay_items     The Stripe invoice items.
 	 * @param array           $wcpay_discounts The Stripe invoice discounts.
 	 * @param WC_Subscription $subscription    The WC Subscription object.
+	 *
+	 * @throws Rest_Request_Exception WCPay subscription item data not found in WC.
 	 */
 	public function validate_invoice_items( array $wcpay_items, array $wcpay_discounts, WC_Subscription $subscription ) {
 		$wcpay_item_data = [];
@@ -123,30 +135,55 @@ class WC_Payments_Invoice_Service {
 		foreach ( $subscription->get_items( 'line_item', 'fee', 'shipping' ) as $item ) {
 			$subscription_item_id = WC_Payments_Subscription_Service::get_wcpay_subscription_item_id( $item );
 
-			if ( $wcpay_subscription_item_id !== $subscription_item_id ) {
-				// Log and fix.
-				return;
+			if ( ! $subscription_item_id ) {
+				continue;
 			}
 
-			if ( (int) $item->get_total() * 100 !== $wcpay_item_data['amount'] ) {
-				// Fix price.
-				return;
+			if ( ! in_array( $subscription_item_id, array_keys( $wcpay_item_data ), true ) ) {
+				$message = __( 'WCPay invoice item not found in WC Subscription', 'woocommerce-payments' );
+				Logger::error( $message );
+				throw new Rest_Request_Exception( $message );
 			}
 
-			if ( $item->get_quantity() !== $wcpay_item_data['quantity'] ) {
-				// Fix quantity.
-				return;
+			$item_data   = $wcpay_item_data[ $subscription_item_id ];
+			$repair_data = [];
+
+			if ( (int) $item->get_total() * 100 !== $item_data['amount'] ) {
+				if ( $item->is_type( 'line_item' ) ) {
+					$product              = $item->get_product();
+					$repair_data['price'] = $this->product_service->get_stripe_price_id( $product );
+				} else {
+					$repair_data['price_data'] = WC_Payments_Subscription_Service::format_item_price_data(
+						$subscription->get_currency(),
+						$this->product_service->get_stripe_product_id_for_item( $item->get_type() ),
+						$item->get_total(),
+						$subscription->get_billing_period(),
+						$subscription->get_billing_interval()
+					);
+				}
 			}
 
-			if ( $item->get_taxes() ) {
-				foreach ( $item->get_taxes() as $tax ) {
-					if ( ! in_array( (int) $tax->get_rate_percent(), $wcpay_item_data['tax_rates'], true ) ) {
-						// Fix tax rates.
-						return;
+			if ( $item->get_quantity() !== $item_data['quantity'] ) {
+				$repair_data['quantity'] = $item->get_quantity();
+			}
+
+			if ( ! empty( $item->get_taxes() ) ) {
+				$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
+
+				foreach ( $subscription->get_taxes() as $tax ) {
+					if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) && ! in_array( (int) $tax->get_rate_percent(), $item_data['tax_rates'], true ) ) {
+						$repair_data['tax_rates'] = WC_Payments_Subscription_Service::get_tax_rates_for_item( $item, $subscription );
+						break;
 					}
 				}
 			}
+
+			if ( ! empty( $repair_data ) ) {
+				$this->payments_api_client->update_subscription_item( $subscription_item_id, $repair_data );
+			}
 		}
+
+		// Handle discounts.
 	}
 
 	/**
@@ -161,17 +198,6 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
-	 * Sets the subscription last invoice ID meta for WC subscription.
-	 *
-	 * @param WC_Subscription $subscription The subscription.
-	 * @param string          $invoice_id   The invoice ID.
-	 */
-	private function set_pending_invoice_id( $subscription, string $invoice_id ) {
-		$subscription->update_meta_data( self::PENDING_INVOICE_ID_KEY, $invoice_id );
-		$subscription->save();
-	}
-
-	/**
 	 * Gets the invoice ID from a WC order.
 	 *
 	 * @param WC_Order $order The order.
@@ -179,17 +205,6 @@ class WC_Payments_Invoice_Service {
 	 */
 	public static function get_order_invoice_id( WC_Order $order ) : string {
 		return $order->get_meta( self::ORDER_INVOICE_ID_KEY, true );
-	}
-
-	/**
-	 * Sets the subscription's last invoice ID meta for WC subscription.
-	 *
-	 * @param WC_Order $order      The order.
-	 * @param string   $invoice_id The invoice ID.
-	 */
-	public function set_order_invoice_id( WC_Order $order, string $invoice_id ) {
-		$order->update_meta_data( self::ORDER_INVOICE_ID_KEY, $invoice_id );
-		$order->save();
 	}
 
 	/**
@@ -201,17 +216,6 @@ class WC_Payments_Invoice_Service {
 	 */
 	public static function get_subscription_invoice_id( $subscription ) {
 		return $subscription->get_meta( self::ORDER_INVOICE_ID_KEY, true );
-	}
-
-	/**
-	 * Sets the subscription's last invoice ID meta for WC subscription.
-	 *
-	 * @param WC_Subscription $subscription      The subscription.
-	 * @param string          $parent_invoice_id The parent order invoice ID.
-	 */
-	public function set_subscription_invoice_id( WC_Subscription $subscription, string $parent_invoice_id ) {
-		$subscription->update_meta_data( self::ORDER_INVOICE_ID_KEY, $parent_invoice_id );
-		$subscription->save();
 	}
 
 	/**
@@ -235,5 +239,38 @@ class WC_Payments_Invoice_Service {
 				$invoice_id
 			)
 		);
+	}
+
+	/**
+	 * Sets the subscription's last invoice ID meta for WC subscription.
+	 *
+	 * @param WC_Order $order      The order.
+	 * @param string   $invoice_id The invoice ID.
+	 */
+	public function set_order_invoice_id( WC_Order $order, string $invoice_id ) {
+		$order->update_meta_data( self::ORDER_INVOICE_ID_KEY, $invoice_id );
+		$order->save();
+	}
+
+	/**
+	 * Sets the subscription's last invoice ID meta for WC subscription.
+	 *
+	 * @param WC_Subscription $subscription      The subscription.
+	 * @param string          $parent_invoice_id The parent order invoice ID.
+	 */
+	public function set_subscription_invoice_id( WC_Subscription $subscription, string $parent_invoice_id ) {
+		$subscription->update_meta_data( self::ORDER_INVOICE_ID_KEY, $parent_invoice_id );
+		$subscription->save();
+	}
+
+	/**
+	 * Sets the subscription last invoice ID meta for WC subscription.
+	 *
+	 * @param WC_Subscription $subscription The subscription.
+	 * @param string          $invoice_id   The invoice ID.
+	 */
+	private function set_pending_invoice_id( $subscription, string $invoice_id ) {
+		$subscription->update_meta_data( self::PENDING_INVOICE_ID_KEY, $invoice_id );
+		$subscription->save();
 	}
 }

@@ -47,8 +47,7 @@ class WC_Payments_API_Client {
 	const PRODUCTS_API           = 'products';
 	const PRICES_API             = 'products/prices';
 	const SUBSCRIPTIONS_API      = 'subscriptions';
-	const INVOICES_API           = 'invoices';
-	const INVOICE_ITEMS_API      = 'invoices/items';
+	const SUBSCRIPTION_ITEMS_API = 'subscriptions/items';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1157,6 +1156,24 @@ class WC_Payments_API_Client {
 			[],
 			self::SUBSCRIPTIONS_API . '/' . $wcpay_subscription_id,
 			self::DELETE
+		);
+	}
+
+	/**
+	 * Update a WCPay subscription item.
+	 *
+	 * @param string $wcpay_subscription_item_id WCPay subscription item ID.
+	 * @param array  $data                       Update subscription item data.
+	 *
+	 * @return array Updated WCPay subscription item response from server.
+	 *
+	 * @throws API_Exception If updating the WCPay subscription item fails.
+	 */
+	public function update_subscription_item( $wcpay_subscription_item_id, $data ) {
+		return $this->request(
+			$data,
+			self::SUBSCRIPTION_ITEMS_API . '/' . $wcpay_subscription_item_id,
+			self::POST
 		);
 	}
 

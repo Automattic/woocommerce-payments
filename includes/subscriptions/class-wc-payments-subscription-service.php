@@ -437,70 +437,6 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Prepare tax rates for a subscription item.
-	 *
-	 * @param WC_Order_Item   $item         Subscription order item.
-	 * @param WC_Subscription $subscription A Subscription to get tax rate information from.
-	 *
-	 * @return array
-	 */
-	public function get_tax_rates_for_item( WC_Order_Item $item, WC_Subscription $subscription ) {
-		$tax_rates = [];
-
-		if ( ! wc_tax_enabled() || ! $item->get_taxes() ) {
-			return $tax_rates;
-		}
-
-		$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
-
-		if ( ! $tax_rate_ids ) {
-			return $tax_rates;
-		}
-
-		$tax_inclusive = wc_prices_include_tax();
-
-		foreach ( $subscription->get_taxes() as $tax ) {
-			if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) ) {
-				$tax_rates[] = [
-					'display_name' => $tax->get_name(),
-					'inclusive'    => $tax_inclusive,
-					'percentage'   => $tax->get_rate_percent(),
-				];
-			}
-		}
-
-		return $tax_rates;
-	}
-
-	/**
-	 * Formats item data.
-	 *
-	 * @param string $currency          The item's currency.
-	 * @param string $stripe_product_id The item's Stripe product id.
-	 * @param float  $unit_amount       The item's unit amount.
-	 * @param string $interval          The item's interval. Optional.
-	 * @param int    $interval_count    The item's interval count. Optional.
-	 *
-	 * @return array Structured invoice item array.
-	 */
-	private function format_item_price_data( string $currency, string $stripe_product_id, float $unit_amount, string $interval = '', int $interval_count = 0 ) : array {
-		$data = [
-			'currency'    => $currency,
-			'product'     => $stripe_product_id,
-			'unit_amount' => (int) $unit_amount * 100,
-		];
-
-		if ( $interval && $interval_count ) {
-			$data['recurring'] = [
-				'interval'       => $interval,
-				'interval_count' => $interval_count,
-			];
-		}
-
-		return $data;
-	}
-
-	/**
 	 * Updates a WCPay subscription.
 	 *
 	 * @param WC_Subscription $subscription The WC subscription that relates to the WCPay subscription that needs updating.
@@ -674,6 +610,81 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
+	 * Determines if a given WC subscription is a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription WC Subscription object.
+	 *
+	 * @return bool
+	 */
+	public static function is_wcpay_subscription( WC_Subscription $subscription ) : bool {
+		return WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
+	}
+
+	/**
+	 * Formats item data.
+	 *
+	 * @param string $currency          The item's currency.
+	 * @param string $stripe_product_id The item's Stripe product id.
+	 * @param float  $unit_amount       The item's unit amount.
+	 * @param string $interval          The item's interval. Optional.
+	 * @param int    $interval_count    The item's interval count. Optional.
+	 *
+	 * @return array Structured invoice item array.
+	 */
+	public static function format_item_price_data( string $currency, string $stripe_product_id, float $unit_amount, string $interval = '', int $interval_count = 0 ) : array {
+		$data = [
+			'currency'    => $currency,
+			'product'     => $stripe_product_id,
+			'unit_amount' => (int) $unit_amount * 100,
+		];
+
+		if ( $interval && $interval_count ) {
+			$data['recurring'] = [
+				'interval'       => $interval,
+				'interval_count' => $interval_count,
+			];
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Prepare tax rates for a subscription item.
+	 *
+	 * @param WC_Order_Item   $item         Subscription order item.
+	 * @param WC_Subscription $subscription A Subscription to get tax rate information from.
+	 *
+	 * @return array
+	 */
+	public static function get_tax_rates_for_item( WC_Order_Item $item, WC_Subscription $subscription ) {
+		$tax_rates = [];
+
+		if ( ! wc_tax_enabled() || ! $item->get_taxes() ) {
+			return $tax_rates;
+		}
+
+		$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
+
+		if ( ! $tax_rate_ids ) {
+			return $tax_rates;
+		}
+
+		$tax_inclusive = wc_prices_include_tax();
+
+		foreach ( $subscription->get_taxes() as $tax ) {
+			if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) ) {
+				$tax_rates[] = [
+					'display_name' => $tax->get_name(),
+					'inclusive'    => $tax_inclusive,
+					'percentage'   => $tax->get_rate_percent(),
+				];
+			}
+		}
+
+		return $tax_rates;
+	}
+
+	/**
 	 * Sets the WCPay subscription ID meta for WC subscription.
 	 *
 	 * @param WC_Subscription $subscription WC Subscription to store meta against.
@@ -713,17 +724,6 @@ class WC_Payments_Subscription_Service {
 				);
 			}
 		}
-	}
-
-	/**
-	 * Determines if a given WC subscription is a WCPay subscription.
-	 *
-	 * @param WC_Subscription $subscription WC Subscription object.
-	 *
-	 * @return bool
-	 */
-	public static function is_wcpay_subscription( WC_Subscription $subscription ) : bool {
-		return WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
 	}
 
 	/**
