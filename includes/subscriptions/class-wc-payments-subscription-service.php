@@ -30,6 +30,13 @@ class WC_Payments_Subscription_Service {
 	const SUBSCRIPTION_ID_META_KEY = '_wcpay_subscription_id';
 
 	/**
+	 * Subscription item meta key used to store WCPay subscription item's ID.
+	 *
+	 * @const string
+	 */
+	const SUBSCRIPTION_ITEM_ID_META_KEY = '_wcpay_subscription_item_id';
+
+	/**
 	 * WC Payments API Client
 	 *
 	 * @var WC_Payments_API_Client
@@ -161,6 +168,7 @@ class WC_Payments_Subscription_Service {
 			$response          = $this->payments_api_client->create_subscription( $subscription_data );
 
 			$this->set_wcpay_subscription_id( $subscription, $response['id'] );
+			$this->set_wcpay_subscription_item_ids( $subscription, $response['items']['data'] );
 			$this->invoice_service->set_subscription_invoice_id( $subscription, $response['latest_invoice'] );
 		} catch ( API_Exception $e ) {
 			Logger::log( sprintf( 'There was a problem creating the WCPay subscription %s', $e->getMessage() ) );
@@ -332,6 +340,7 @@ class WC_Payments_Subscription_Service {
 			}
 
 			$data[] = [
+				'metadata'  => [ 'wc_item_id' => $item->get_id() ],
 				'price'     => $this->product_service->get_stripe_price_id( $product ),
 				'quantity'  => $item->get_quantity(),
 				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
@@ -350,6 +359,7 @@ class WC_Payments_Subscription_Service {
 			if ( $unit_amount ) {
 				$price_data = $this->format_item_price_data( $currency, $stripe_item_id, $unit_amount, $interval, $interval_count );
 				$data[]     = [
+					'metadata'   => [ 'wc_item_id' => $item->get_id() ],
 					'price_data' => $price_data,
 					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
 				];
@@ -653,6 +663,17 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
+	 * Gets the WCPay subscription item ID from a WC subscription item.
+	 *
+	 * @param WC_Order_Item $item WC Item.
+	 *
+	 * @return string
+	 */
+	public static function get_wcpay_subscription_item_id( WC_Order_Item $item ) {
+		return $item->get_meta( self::SUBSCRIPTION_ITEM_ID_META_KEY, true );
+	}
+
+	/**
 	 * Sets the WCPay subscription ID meta for WC subscription.
 	 *
 	 * @param WC_Subscription $subscription WC Subscription to store meta against.
@@ -663,6 +684,35 @@ class WC_Payments_Subscription_Service {
 	private function set_wcpay_subscription_id( WC_Subscription $subscription, string $value ) {
 		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $value );
 		$subscription->save();
+	}
+
+	/**
+	 * Sets Stripe subscription item ids on WC order items.
+	 *
+	 * @param WC_Subscription $subscription       The WC Subscription object.
+	 * @param array           $subscription_items The Stripe Subscription data.
+	 *
+	 * @return void
+	 */
+	public function set_wcpay_subscription_item_ids( WC_Subscription $subscription, array $subscription_items ) {
+		foreach ( $subscription_items as $item ) {
+			$wcpay_subscription_item_id = $item['id'];
+			$subscription_item_id       = isset( $item['metadata']['wc_item_id'] ) ? $item['metadata']['wc_item_id'] : false;
+
+			if ( $subscription_item_id ) {
+				$subscription_item = $subscription->get_item( $subscription_item_id );
+				$subscription_item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, $wcpay_subscription_item_id );
+				$subscription_item->save();
+			} else {
+				Logger::log(
+					sprintf(
+						// Translators: %s Stripe subscription item ID.
+						__( 'Unable to set subscription item ID meta for WCPay subscription item %s.', 'woocommerce-payments' ),
+						$wcpay_subscription_item_id
+					)
+				);
+			}
+		}
 	}
 
 	/**

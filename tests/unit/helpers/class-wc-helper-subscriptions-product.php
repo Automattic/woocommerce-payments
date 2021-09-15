@@ -10,7 +10,7 @@
  *
  * This helper class should ONLY be used for unit tests!.
  */
-class WC_Subscriptions_Product {
+class WC_Subscriptions_Product extends WC_Product {
 	/**
 	 * Subscription product period.
 	 *

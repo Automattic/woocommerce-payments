@@ -45,7 +45,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 	}
 
 	/**
-	 * Adds fee, discount, and shipping related invoice items to WCPay subscription.
+	 * Validate and correct subscription status, date, and lines.
 	 *
 	 * @param array $body The event body that triggered the webhook.
 	 *
@@ -56,6 +56,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$event_object          = $this->get_event_property( $event_data, 'object' );
 		$wcpay_subscription_id = $this->get_event_property( $event_object, 'subscription' );
 		$wcpay_customer_id     = $this->get_event_property( $event_object, 'customer' );
+		$wcpay_discounts       = $this->get_event_property( $event_object, 'discounts' );
+		$wcpay_lines           = $this->get_event_property( $event_object, 'lines' );
+		$wcpay_lines           = $this->get_event_property( $wcpay_lines, 'data' );
 		$subscription          = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
 
 		if ( ! $subscription ) {
@@ -78,6 +81,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 
 			// Update the subscription in WC to match the WCPay Subscription's next payment date.
 			$this->subscription_service->update_dates_to_match_wcpay_subscription( $wcpay_subscription, $subscription );
+			$this->invoice_service->validate_invoice_items( $wcpay_lines, $wcpay_discounts, $subscription );
 		}
 	}
 
@@ -176,7 +180,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 	 * @param array  $event_data Event data.
 	 * @param string $key        Requested key.
 	 *
-	 * @return string
+	 * @return mixed
 	 *
 	 * @throws Rest_Request_Exception Event data not found by key.
 	 */

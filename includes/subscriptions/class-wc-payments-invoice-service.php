@@ -101,6 +101,55 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
+	 * Validates a Stripe invoice.
+	 *
+	 * @param array           $wcpay_items     The Stripe invoice items.
+	 * @param array           $wcpay_discounts The Stripe invoice discounts.
+	 * @param WC_Subscription $subscription    The WC Subscription object.
+	 */
+	public function validate_invoice_items( array $wcpay_items, array $wcpay_discounts, WC_Subscription $subscription ) {
+		$wcpay_item_data = [];
+
+		foreach ( $wcpay_items as $item ) {
+			$wcpay_subscription_item_id = $item['subscription_item'];
+
+			$wcpay_item_data[ $wcpay_subscription_item_id ] = [
+				'amount'    => $item['amount'],
+				'quantity'  => $item['quantity'],
+				'tax_rates' => array_column( $item['tax_rates'], 'percentage' ),
+			];
+		}
+
+		foreach ( $subscription->get_items( 'line_item', 'fee', 'shipping' ) as $item ) {
+			$subscription_item_id = WC_Payments_Subscription_Service::get_wcpay_subscription_item_id( $item );
+
+			if ( $wcpay_subscription_item_id !== $subscription_item_id ) {
+				// Log and fix.
+				return;
+			}
+
+			if ( (int) $item->get_total() * 100 !== $wcpay_item_data['amount'] ) {
+				// Fix price.
+				return;
+			}
+
+			if ( $item->get_quantity() !== $wcpay_item_data['quantity'] ) {
+				// Fix quantity.
+				return;
+			}
+
+			if ( $item->get_taxes() ) {
+				foreach ( $item->get_taxes() as $tax ) {
+					if ( ! in_array( (int) $tax->get_rate_percent(), $wcpay_item_data['tax_rates'], true ) ) {
+						// Fix tax rates.
+						return;
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Gets the subscription last invoice ID from WC subscription.
 	 *
 	 * @param WC_Subscription $subscription The subscription.
