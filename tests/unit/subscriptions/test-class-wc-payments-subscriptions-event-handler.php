@@ -333,9 +333,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 				'object' => [
 					'attempt_count' => $attempt_count,
 					'customer'      => $customer_id,
-					'discount'      => [
-						'coupon' => [],
-					],
+					'discounts'     => [],
 					'id'            => $invoice_id,
 					'lines'         => [
 						'data' => [],
