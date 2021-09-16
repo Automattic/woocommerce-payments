@@ -74,6 +74,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 				'card',
 				'bancontact',
 				'giropay',
+				'sepa_debit',
 			]
 		);
 		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->willReturn(

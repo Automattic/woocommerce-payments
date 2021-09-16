@@ -15,7 +15,7 @@ const formatDetails = ( payment ) => {
 	const paymentMethod = payment[ payment.type ];
 	switch ( payment.type ) {
 		case 'card':
-		case 'sepa':
+		case 'sepa_debit':
 			return (
 				<Fragment>
 					&nbsp;&bull;&bull;&bull;&bull;&nbsp;{ paymentMethod.last4 }
