@@ -167,13 +167,13 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 						<div className="payment-details-summary__id">
 							<Loadable
 								isLoading={ isLoading }
-								placeholder="Payment ID: ch_xxxxxxxxxxxxxxxxxxxxxxxx"
+								placeholder="Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx"
 							>
 								{ `${ __(
 									'Payment ID',
 									'woocommerce-payments'
 								) }: ` }
-								{ charge.id }
+								{ charge.payment_intent }
 							</Loadable>
 						</div>
 					</div>
