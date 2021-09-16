@@ -44,10 +44,32 @@ class RestController extends \WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/get-settings',
+			[
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_settings' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/update-settings',
+			[
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'update_settings' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
 	 * Retrieve currencies for the store.
+	 *
+	 * @return array The store currencies structure.
 	 */
 	public function get_store_currencies() {
 		return [
@@ -61,10 +83,34 @@ class RestController extends \WC_Payments_REST_Controller {
 	 * Update enabled currencies based on posted data.
 	 *
 	 * @param \WP_REST_Request $request Full data about the request.
+	 *
+	 * @return array The store currencies structure.
 	 */
 	public function update_enabled_currencies( $request ) {
 		$params = $request->get_params();
 		WC_Payments_Multi_Currency()->set_enabled_currencies( $params['enabled'] );
 		return $this->get_store_currencies();
+	}
+
+	/**
+	 * Gets the store settings for Multi Currency.
+	 *
+	 * @return  array  The store settings.
+	 */
+	public function get_settings() {
+		return WC_Payments_Multi_Currency()->get_settings();
+	}
+
+	/**
+	 * Updates multi currency store settings parameters.
+	 *
+	 * @param   \WP_REST_Request $request  Full data about the request.
+	 *
+	 * @return array The store settings.
+	 */
+	public function update_settings( $request ) {
+		$params = $request->get_params();
+		WC_Payments_Multi_Currency()->update_settings( $params );
+		return WC_Payments_Multi_Currency()->get_settings();
 	}
 }
