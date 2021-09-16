@@ -163,6 +163,20 @@ const isFXEvent = ( event = {} ) => {
 	);
 };
 
+/**
+ * Returns a boolean indicating whether only fee applied is the base fee
+ *
+ * @param {Object} event Event object
+ *
+ * @return {boolean} true if the only applied fee is the base fee
+ */
+const isBaseFeeOnly = ( event ) => {
+	if ( ! event.fee_rates ) return false;
+
+	const history = event.fee_rates.history;
+	return 1 === history?.length && 'base' === history[ 0 ].type;
+};
+
 const composeNetString = ( event ) => {
 	if ( ! isFXEvent( event ) ) {
 		return formatExplicitCurrency(
@@ -201,11 +215,13 @@ const composeFeeString = ( event ) => {
 	}
 
 	return sprintf(
-		/* translators: %1$s is the total fee amount, %2$f%% is the fee percentage, and %3$s is the fixed fee amount. */
-		__( 'Fee (%2$f%% + %3$s): %1$s', 'woocommerce-payments' ),
+		/* translators: %1$s is the total fee amount, %2$f%% is the fee percentage, %3$s is the fixed fee amount
+		 * and %4%s is the fee label  */
+		__( '%4$s (%2$f%% + %3$s): %1$s', 'woocommerce-payments' ),
 		formatCurrency( -feeAmount, feeCurrency ),
 		formatFee( percentage ),
-		formatCurrency( fixed, fixedCurrency )
+		formatCurrency( fixed, fixedCurrency ),
+		isBaseFeeOnly( event ) ? 'Base fee' : 'Fee'
 	);
 };
 
@@ -330,7 +346,11 @@ const feeBreakdown = ( event ) => {
 		);
 	} );
 
-	return <ul className="fee-breakdown-list">{ feeHistoryList }</ul>;
+	return (
+		<ul className="fee-breakdown-list">
+			{ isBaseFeeOnly( event ) ? [] : feeHistoryList }
+		</ul>
+	);
 };
 
 /**
