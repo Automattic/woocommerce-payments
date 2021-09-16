@@ -67,7 +67,7 @@ export default {
 	},
 	sepa_debit: {
 		id: 'sepa_debit',
-		label: __( 'Direct debit payment', 'woocommerce-payments' ),
+		label: __( 'SEPA Direct Debit', 'woocommerce-payments' ),
 		description: __(
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
 			'woocommerce-payments'
