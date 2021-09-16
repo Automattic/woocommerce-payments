@@ -67,7 +67,6 @@ class Compatibility {
 			add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );
 
 			add_action( 'woocommerce_checkout_create_order_line_item', [ $this, 'order_line_item' ], 50, 3 );
-			add_filter( 'woocommerce_product_addons_get_product_addon_price_for_display', [ $this, 'price_for_display' ], 50, 3 );
 		}
 
 		if ( defined( 'DOING_CRON' ) ) {
@@ -77,14 +76,6 @@ class Compatibility {
 
 	public function order_line_item( $item, $cart_item_key, $values ) {
 		$trigger = 'here';
-	}
-
-	public function price_for_display( $display_price, $price, $cart_item ) {
-		if ( null === $cart_item ) {
-			return $display_price;
-		}
-
-		return $display_price;
 	}
 
 	// public function get_unconverted_price( $product, $type = '' ) {
