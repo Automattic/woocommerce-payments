@@ -173,7 +173,9 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 									'Payment ID',
 									'woocommerce-payments'
 								) }: ` }
-								{ charge.payment_intent }
+								{ charge.payment_intent
+									? charge.payment_intent
+									: charge.id }
 							</Loadable>
 						</div>
 					</div>
