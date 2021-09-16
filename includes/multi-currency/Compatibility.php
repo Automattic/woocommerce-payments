@@ -143,7 +143,7 @@ class Compatibility {
 			'qty'   => 1,
 			'price' => $price,
 		];
-		$price = \WC_Product_Addons_Helper::get_product_addon_tax_display_mode() === 'incl' ? wc_get_price_including_tax( $product, $args ) : wc_get_price_excluding_tax( $product, $args );
+		$price = $this->get_product_addon_tax_display_mode() === 'incl' ? wc_get_price_including_tax( $product, $args ) : wc_get_price_excluding_tax( $product, $args );
 
 		/**
 		 * When a user is tax exempt and product prices are exclusive of taxes, WooCommerce displays prices as follows:
@@ -333,6 +333,19 @@ class Compatibility {
 		$params['currency_format_thousand_sep'] = wc_get_price_thousand_separator();
 
 		return $params;
+	}
+
+	/**
+	 * Return tax display mode depending on context.
+	 *
+	 * @return string
+	 */
+	private function get_product_addon_tax_display_mode() {
+		if ( is_cart() || is_checkout() ) {
+			return get_option( 'woocommerce_tax_display_cart' );
+		}
+
+		return get_option( 'woocommerce_tax_display_shop' );
 	}
 
 	/**
