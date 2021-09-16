@@ -34,7 +34,9 @@
 		}
 		.settings-section__controls {
 			.single-currency-settings-currency-settings {
-				padding: 24px;
+				& > .components-card__body {
+					padding: 24px;
+				}
 				h3 {
 					font-weight: 600;
 					font-size: 14px;
@@ -145,7 +147,7 @@
 					display: flex;
 					& > div {
 						padding: 0 6px 0 0;
-						flex: 1 0 50%;
+						flex: 1 0 calc( 50% - 6px );
 						display: flex;
 						flex-direction: column;
 						&:nth-child( 2n ) {
