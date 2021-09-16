@@ -8,12 +8,16 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import WcPaySurveyContext from './context';
+import { wcPaySurveys } from './questions';
 import { NAMESPACE } from '../../data/constants';
 
 const WcPaySurveyContextProvider = ( { children } ) => {
 	const [ isSurveySubmitted, setSurveySubmitted ] = useState( false );
 	const [ status, setStatus ] = useState( 'resolved' );
-	const [ surveyAnswers, setSurveyAnswers ] = useState( {} );
+	// set a default answer since the survey form has a default value.
+	const [ surveyAnswers, setSurveyAnswers ] = useState(
+		wcPaySurveys[ 0 ].defaultAnswer
+	);
 
 	const submitSurvey = useCallback( () => {
 		setStatus( 'pending' );
