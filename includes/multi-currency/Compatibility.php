@@ -61,15 +61,63 @@ class Compatibility {
 			add_filter( 'woocommerce_get_cart_item_from_session', [ $this, 'get_cart_item_from_session' ], 50, 2 );
 			add_filter( 'woocommerce_product_addons_option_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
 			add_filter( 'woocommerce_product_addons_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
-			add_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_addon_display_price' ], 50, 3 );
-			add_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_addon_display_price' ], 50, 3 );
+			add_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_addon_order_display_price' ], 50, 3 );
+			add_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_addon_order_display_price' ], 50, 3 );
 			add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );
 			add_action( 'woocommerce_get_item_data', [ $this, 'get_item_data' ], 50, 2 );
+		}
+
+		if ( wp_doing_ajax() ) {
+			// Product Add-Ons filters.
+			add_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
+			add_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
 		}
 
 		if ( defined( 'DOING_CRON' ) ) {
 			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
 		}
+	}
+
+	/**
+	 * Gets the product price during ajax requests from the product page.
+	 *
+	 * @param float       $price    Price to get converted.
+	 * @param int         $quantity Quantity of the product selected.
+	 * @param \WC_Product $product  WC_Product related to the price.
+	 *
+	 * @return float Adjusted price.
+	 */
+	public function get_product_calculation_price( float $price, int $quantity, \WC_Product $product ): float {
+		// We only want to do this when this specific method is called.
+		if ( $this->utils->is_call_in_backtrace( [ 'WC_Product_Addons_Cart_Ajax->calculate_tax' ] ) ) {
+			// Remove the filters that called this method to prevent endless loop.
+			remove_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_product_calculation_price' ], 50 );
+			remove_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_product_calculation_price' ], 50 );
+
+			/**
+			 * Check to see which filter is being called.
+			 * Use the function that filter comes from to check on the product's price.
+			 * If the price matches, convert the price.
+			 *
+			 * This is done due to these functions are called on the add on price once and the product price twice
+			 * during the WC_Product_Addons_Cart_Ajax->calculate_tax request and we only need to convert the product prices.
+			 */
+			if ( 'woocommerce_get_price_including_tax' === current_filter() ) {
+				if ( wc_get_price_including_tax( $product, [ 'qty' => $quantity ] ) === $price ) {
+					$price = $this->multi_currency->get_price( $price, 'product' );
+				}
+			} else {
+				if ( wc_get_price_excluding_tax( $product, [ 'qty' => $quantity ] ) === $price ) {
+					$price = $this->multi_currency->get_price( $price, 'product' );
+				}
+			}
+
+			// Add our filters back.
+			add_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
+			add_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
+		}
+
+		return $price;
 	}
 
 	/**
@@ -105,6 +153,8 @@ class Compatibility {
 				$name .= '';
 			} elseif ( 'percentage_based' === $addon['price_type'] && 0 === $price ) {
 				$name .= '';
+			} elseif ( 'custom_price' === $addon['field_type'] ) {
+				$name .= ' (' . wc_price( $addon['price'] ) . ')';
 			} elseif ( 'percentage_based' !== $addon['price_type'] && $addon['price'] && apply_filters( 'woocommerce_addons_add_price_to_name', '__return_true' ) ) {
 				// Get our converted and tax adjusted price to put in the add on name.
 				$price = $this->multi_currency->get_price( $addon['price'], 'product' );
@@ -205,8 +255,12 @@ class Compatibility {
 		$cart_item['addons_sale_price_before_calc']    = (float) $sale_price;
 
 		foreach ( $cart_item['addons'] as $addon ) {
-			$price_type  = $addon['price_type'];
-			$addon_price = 'percentage_based' === $price_type ? $addon['price'] : $this->multi_currency->get_price( $addon['price'], 'product' );
+			$price_type = $addon['price_type'];
+			if ( 'percentage_based' === $price_type || 'custom_price' === $addon['field_type'] ) {
+				$addon_price = $addon['price'];
+			} else {
+				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
+			}
 
 			switch ( $price_type ) {
 				case 'percentage_based':
@@ -272,7 +326,7 @@ class Compatibility {
 	}
 
 	/**
-	 * Gets the display price for add ons.
+	 * Gets the display price for add ons in orders.
 	 *
 	 * @param float       $price    Price to get converted.
 	 * @param int         $quantity Quantity is unused, but passed by the filter.
@@ -280,13 +334,13 @@ class Compatibility {
 	 *
 	 * @return float Adjusted price.
 	 */
-	public function get_addon_display_price( float $price, int $quantity, \WC_Product $product ): float {
+	public function get_addon_order_display_price( float $price, int $quantity, \WC_Product $product ): float {
 		// We only want to do this when these specific methods are called.
 		if ( $this->utils->is_call_in_backtrace( [ 'WC_Product_Addons_Helper::get_product_addon_price_for_display' ] ) ) {
 			if ( $this->utils->is_call_in_backtrace( [ 'WC_Product_Addons_Cart->order_line_item' ] ) ) {
 				// Remove the filters that called this method to prevent endless loop.
-				remove_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_addon_display_price' ], 50 );
-				remove_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_addon_display_price' ], 50 );
+				remove_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_addon_order_display_price' ], 50 );
+				remove_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_addon_order_display_price' ], 50 );
 
 				// Go through each cart item and return the price itself if it's a percentage based price.
 				$cart = WC()->cart->get_cart_contents();
@@ -297,7 +351,7 @@ class Compatibility {
 					 * those equal the same amount, then the flat fee add on's price will not be converted in the display price.
 					 * The display price is used in the cart and checkout page, along with the line item meta in orders.
 					 */
-					$percentage_price = $item['data']->get_meta( 'wcpay_mc_percentage_currency_amount' );
+					$percentage_price = (float) $item['data']->get_meta( 'wcpay_mc_percentage_currency_amount' );
 					$percentage_price = $this->get_tax_adjusted_price( $percentage_price, $product );
 					if ( (string) $price === (string) $percentage_price
 						&& $item['data']->get_id() === $product->get_id() ) {
@@ -310,8 +364,8 @@ class Compatibility {
 				$price = $this->get_tax_adjusted_price( $price, $product );
 
 				// Add our filters back.
-				add_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_addon_display_price' ], 50, 3 );
-				add_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_addon_display_price' ], 50, 3 );
+				add_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_addon_order_display_price' ], 50, 3 );
+				add_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_addon_order_display_price' ], 50, 3 );
 			}
 		}
 
@@ -319,7 +373,7 @@ class Compatibility {
 	}
 
 	/**
-	 * Fixes currency display issues in Product Add-Ons. It gets these values directly from the db options,
+	 * Fixes currency formatting issues in Product Add-Ons. It gets these values directly from the db options,
 	 * so those values aren't filtered. Luckily, there's a filter.
 	 *
 	 * @param array $params Product Add-Ons global parameters.
@@ -327,7 +381,6 @@ class Compatibility {
 	 * @return array Adjust parameters.
 	 */
 	public function product_addons_params( array $params ): array {
-		// Fixes currency formatting issues.
 		$params['currency_format_num_decimals'] = wc_get_price_decimals();
 		$params['currency_format_decimal_sep']  = wc_get_price_decimal_separator();
 		$params['currency_format_thousand_sep'] = wc_get_price_thousand_separator();
