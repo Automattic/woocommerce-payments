@@ -9,6 +9,7 @@ namespace WCPay\MultiCurrency;
 
 use WC_Order;
 use WC_Order_Refund;
+use WC_Product_Addons_Helper;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -58,15 +59,12 @@ class Compatibility {
 			add_filter( 'woocommerce_product_addons_adjust_price', '__return_false' );
 			add_filter( 'woocommerce_add_cart_item', [ $this, 'add_cart_item' ], 50 );
 			add_filter( 'woocommerce_get_cart_item_from_session', [ $this, 'get_cart_item_from_session' ], 50, 2 );
-
 			add_filter( 'woocommerce_product_addons_option_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
 			add_filter( 'woocommerce_product_addons_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
-			add_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_display_price' ], 50, 3 );
-			add_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_display_price' ], 50, 3 );
-			add_filter( 'raw_woocommerce_price', [ $this, 'get_mini_cart_price' ], 50, 2 );
+			add_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_addon_display_price' ], 50, 3 );
+			add_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_addon_display_price' ], 50, 3 );
 			add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );
-
-			add_action( 'woocommerce_checkout_create_order_line_item', [ $this, 'order_line_item' ], 50, 3 );
+			add_action( 'woocommerce_get_item_data', [ $this, 'get_item_data' ], 50, 2 );
 		}
 
 		if ( defined( 'DOING_CRON' ) ) {
@@ -74,107 +72,197 @@ class Compatibility {
 		}
 	}
 
-	public function order_line_item( $item, $cart_item_key, $values ) {
-		$trigger = 'here';
-	}
+	/**
+	 * This will remove the cart item data that Product Add-Ons adds and replace it with our own modified data.
+	 * The method is mocked after WC_Product_Addons_Cart->get_item_data(), but modified to fit our needs.
+	 *
+	 * @param array $other_data The $cart_item's other/additional data.
+	 * @param array $cart_item The cart item being processed.
+	 *
+	 * @return array
+	 */
+	public function get_item_data( $other_data, $cart_item ): array {
+		// If we have no add on data, return early.
+		if ( empty( $cart_item['addons'] ) ) {
+			return $other_data;
+		}
 
-	// public function get_unconverted_price( $product, $type = '' ) {
-	// 	switch ( $type ) {
-	// 		case 'regular':
-	// 			$price = $product->get_regular_price();
-	// 			break;
-	// 		case 'sale':
-	// 			$price = $product->get_sale_price();
-	// 			break;
-	// 		default:
-	// 			$price = $product->get_price();
-	// 			break;
-	// 	}
-	// 	return $price;
-	// }
+		$new_data = [];
 
-	public function add_cart_item( $cart_item ) {
-		if ( ! empty( $cart_item['addons'] ) ) {
-			$price         = (float) $cart_item['data']->get_price( 'view' ); //$prices['price'];
-			$regular_price = (float) $cart_item['data']->get_regular_price( 'view' ); //$prices['regular_price'];
-			$sale_price    = (float) $cart_item['data']->get_sale_price( 'view' ); //$prices['sale_price'];
-			// $price         = (float) $this->get_unconverted_price( $cart_item['data'], 'default' );
-			// $regular_price = (float) $this->get_unconverted_price( $cart_item['data'], 'regular' );
-			// $sale_price    = (float) $this->get_unconverted_price( $cart_item['data'], 'sale' );
-			$quantity      = $cart_item['quantity'];
+		// Go through each of the add ons on the cart item.
+		foreach ( $cart_item['addons'] as $addon ) {
 
-			// Compatibility with Smart Coupons self declared gift amount purchase.
-			if ( empty( $price ) && ! empty( $_POST['credit_called'] ) ) {
-				// Variable $_POST['credit_called'] is an array.
-				if ( isset( $_POST['credit_called'][ $cart_item['data']->get_id() ] ) ) {
-					$price         = (float) $_POST['credit_called'][ $cart_item['data']->get_id() ];
-					$regular_price = $price;
-					$sale_price    = $price;
+			// The 'value' is the same in for the add on in cart_item and in other_data, so that's what we use to trigger the removal.
+			foreach ( $other_data as $key => $data ) {
+				if ( $addon['value'] === $data['value'] ) {
+					unset( $other_data[ $key ] );
 				}
 			}
+			$price = isset( $cart_item['addons_price_before_calc'] ) ? $cart_item['addons_price_before_calc'] : $addon['price'];
+			$name  = $addon['name'];
 
-			if ( empty( $price ) && ! empty( $cart_item['credit_amount'] ) ) {
-				$price         = (float) $cart_item['credit_amount'];
+			if ( 0 === $addon['price'] ) {
+				$name .= '';
+			} elseif ( 'percentage_based' === $addon['price_type'] && 0 === $price ) {
+				$name .= '';
+			} elseif ( 'percentage_based' !== $addon['price_type'] && $addon['price'] && apply_filters( 'woocommerce_addons_add_price_to_name', '__return_true' ) ) {
+				// Get our converted and tax adjusted price to put in the add on name.
+				$price = $this->multi_currency->get_price( $addon['price'], 'product' );
+				$price = $this->get_tax_adjusted_price( $price, $cart_item['data'] );
+				$name .= ' (' . wc_price( $price ) . ')';
+			} else {
+				// Get the percentage cost in the currency in use, and set the meta data on the product that the value was converted.
+				$_product = wc_get_product( $cart_item['product_id'] );
+				$_product->set_price( $price * ( $addon['price'] / 100 ) );
+				$_product->update_meta_data( 'wcpay_mc_addons_converted', 1 );
+				$name .= ' (' . WC()->cart->get_product_price( $_product ) . ')';
+			}
+
+			$new_data[] = [
+				'name'    => $name,
+				'value'   => $addon['value'],
+				'display' => isset( $addon['display'] ) ? $addon['display'] : '',
+			];
+		}
+
+		return array_merge( $other_data, $new_data );
+	}
+
+	/**
+	 * Checks if prices should have taxes added/removed and gets them for an item.
+	 * Heavily inspired by WC_Product_Addons_Helper::get_product_addon_price_for_display().
+	 *
+	 * @param float       $price Price to be adjusted.
+	 * @param \WC_Product $product The prouduct the price is related to.
+	 *
+	 * @return float Adjusted price.
+	 */
+	private function get_tax_adjusted_price( float $price, \WC_Product $product ): float {
+		// Add the args, then get the price with tax added or removed.
+		$args  = [
+			'qty'   => 1,
+			'price' => $price,
+		];
+		$price = WC_Product_Addons_Helper::get_product_addon_tax_display_mode() === 'incl' ? wc_get_price_including_tax( $product, $args ) : wc_get_price_excluding_tax( $product, $args );
+
+		/**
+		 * When a user is tax exempt and product prices are exclusive of taxes, WooCommerce displays prices as follows:
+		 * - Catalog and product pages: including taxes
+		 * - Cart and Checkout pages: excluding taxes
+		 */
+		if ( ( is_cart() || is_checkout() ) && ! empty( WC()->customer ) && WC()->customer->get_is_vat_exempt() && ! wc_prices_include_tax() ) {
+			$price = wc_get_price_excluding_tax(
+				$product,
+				[
+					'qty'   => 1,
+					'price' => $price,
+				]
+			);
+		}
+
+		return $price;
+	}
+
+	/**
+	 * Adds the add ons to the items in the cart.
+	 * This replaces WC_Product_Addons_Cart->add_cart_item().
+	 *
+	 * @param array $cart_item Cart item as an array.
+	 *
+	 * @return array
+	 */
+	public function add_cart_item( array $cart_item ): array {
+		// Return early if there are no add ons.
+		if ( empty( $cart_item['addons'] ) ) {
+			return $cart_item;
+		}
+
+		$price         = (float) $cart_item['data']->get_price( 'view' );
+		$regular_price = (float) $cart_item['data']->get_regular_price( 'view' );
+		$sale_price    = (float) $cart_item['data']->get_sale_price( 'view' );
+		$quantity      = $cart_item['quantity'];
+
+		// Compatibility with Smart Coupons self declared gift amount purchase.
+		$credit_called = ! empty( $_POST['credit_called'] ) ? $_POST['credit_called'] : null;  // phpcs:ignore
+		if ( empty( $price ) && ! empty( $credit_called ) ) {
+			// Variable $_POST['credit_called'] is an array.
+			if ( isset( $credit_called[ $cart_item['data']->get_id() ] ) ) {
+				$price         = (float) $credit_called[ $cart_item['data']->get_id() ];
 				$regular_price = $price;
 				$sale_price    = $price;
 			}
+		}
 
-			// Save the price before price type calculations to be used later.
-			// $cart_item['addons_price_before_calc']         = (float) $this->get_unconverted_price( $cart_item['data'], 'default' );
-			// $cart_item['addons_regular_price_before_calc'] = (float) $this->get_unconverted_price( $cart_item['data'], 'regular' );
-			// $cart_item['addons_sale_price_before_calc']    = (float) $this->get_unconverted_price( $cart_item['data'], 'sale' );
-			$cart_item['addons_price_before_calc']         = (float) $price;
-			$cart_item['addons_regular_price_before_calc'] = (float) $regular_price;
-			$cart_item['addons_sale_price_before_calc']    = (float) $sale_price;
+		if ( empty( $price ) && ! empty( $cart_item['credit_amount'] ) ) {
+			$price         = (float) $cart_item['credit_amount'];
+			$regular_price = $price;
+			$sale_price    = $price;
+		}
 
-			foreach ( $cart_item['addons'] as $addon ) {
-				$price_type  = $addon['price_type'];
-				$addon_price = 'percentage_based' === $price_type ? $addon['price'] : $this->multi_currency->get_price( $addon['price'], 'product' );
+		// Save the price before price type calculations to be used later.
+		$cart_item['addons_price_before_calc']         = (float) $price;
+		$cart_item['addons_regular_price_before_calc'] = (float) $regular_price;
+		$cart_item['addons_sale_price_before_calc']    = (float) $sale_price;
 
-				switch ( $price_type ) {
-					case 'percentage_based':
-						$price         += (float) ( $cart_item['data']->get_price( 'view' ) * ( $addon_price / 100 ) );
-						$regular_price += (float) ( $regular_price * ( $addon_price / 100 ) );
-						$sale_price    += (float) ( $sale_price * ( $addon_price / 100 ) );
+		foreach ( $cart_item['addons'] as $addon ) {
+			$price_type  = $addon['price_type'];
+			$addon_price = 'percentage_based' === $price_type ? $addon['price'] : $this->multi_currency->get_price( $addon['price'], 'product' );
 
-						$cart_item['data']->update_meta_data(
-							'wcpay_mc_percentage_currency_amount',
-							$cart_item['addons_price_before_calc'] * ( $addon_price / 100 )
-						);
-						break;
-					case 'flat_fee':
-						$price         += (float) ( $addon_price / $quantity );
-						$regular_price += (float) ( $addon_price / $quantity );
-						$sale_price    += (float) ( $addon_price / $quantity );
-						break;
-					default:
-						$price         += (float) $addon_price;
-						$regular_price += (float) $addon_price;
-						$sale_price    += (float) $addon_price;
-						break;
-				}
+			switch ( $price_type ) {
+				case 'percentage_based':
+					$price         += (float) ( $cart_item['data']->get_price( 'view' ) * ( $addon_price / 100 ) );
+					$regular_price += (float) ( $regular_price * ( $addon_price / 100 ) );
+					$sale_price    += (float) ( $sale_price * ( $addon_price / 100 ) );
+
+					// Add our percentage amount as meta data on the cart item so we can use it later.
+					$cart_item['data']->update_meta_data(
+						'wcpay_mc_percentage_currency_amount',
+						$cart_item['addons_price_before_calc'] * ( $addon_price / 100 )
+					);
+					break;
+				case 'flat_fee':
+					$price         += (float) ( $addon_price / $quantity );
+					$regular_price += (float) ( $addon_price / $quantity );
+					$sale_price    += (float) ( $addon_price / $quantity );
+					break;
+				default:
+					$price         += (float) $addon_price;
+					$regular_price += (float) $addon_price;
+					$sale_price    += (float) $addon_price;
+					break;
 			}
+		}
 
-			$cart_item['data']->set_price( $price );
-			$cart_item['data']->update_meta_data( 'wcpay_mc_converted', 1 );
+		$cart_item['data']->set_price( $price );
 
-			// Only update regular price if it was defined.
-			$has_regular_price = is_numeric( $cart_item['data']->get_regular_price( 'edit' ) );
-			if ( $has_regular_price ) {
-				$cart_item['data']->set_regular_price( $regular_price );
-			}
+		// Let ourselves know this item has had add ons converted.
+		$cart_item['data']->update_meta_data( 'wcpay_mc_addons_converted', 1 );
 
-			// Only update sale price if it was defined.
-			$has_sale_price = is_numeric( $cart_item['data']->get_sale_price( 'edit' ) );
-			if ( $has_sale_price ) {
-				$cart_item['data']->set_sale_price( $sale_price );
-			}
+		// Only update regular price if it was defined.
+		$has_regular_price = is_numeric( $cart_item['data']->get_regular_price( 'edit' ) );
+		if ( $has_regular_price ) {
+			$cart_item['data']->set_regular_price( $regular_price );
+		}
+
+		// Only update sale price if it was defined.
+		$has_sale_price = is_numeric( $cart_item['data']->get_sale_price( 'edit' ) );
+		if ( $has_sale_price ) {
+			$cart_item['data']->set_sale_price( $sale_price );
 		}
 
 		return $cart_item;
 	}
 
-	public function get_cart_item_from_session( $cart_item, $values ) {
+	/**
+	 * Gets the cart items out of the session.
+	 * This replaces WC_Product_Addons_Cart->get_cart_item_from_session().
+	 *
+	 * @param array $cart_item Cart item data.
+	 * @param array $values    Cart item values.
+	 *
+	 * @return array
+	 */
+	public function get_cart_item_from_session( array $cart_item, array $values ): array {
 		if ( ! empty( $values['addons'] ) ) {
 			$cart_item['addons'] = $values['addons'];
 			$cart_item           = $this->add_cart_item( $cart_item );
@@ -183,68 +271,62 @@ class Compatibility {
 		return $cart_item;
 	}
 
-	public function get_mini_cart_price( $price, $original_price ) {
-		$cart = WC()->cart->get_cart_contents();
-
-		foreach ( $cart as $item ) {
-			/**
-			 * This is a best guess scenario, and it only affects the display.
-			 * For example, if a product has a flat fee add on, and a percentage add on, and for some reason
-			 * those equal the same amount, then the flat fee add on's price will not be converted in the mini cart.
-			 * 
-			 * ..not presently working if taxes are included in prices.
-			 */
-			$percentage_price = $item['data']->get_meta( 'wcpay_mc_percentage_currency_amount' );
-			if ( (string) $price === (string) $percentage_price ) {
-				return $price;
-			}
-		}
-
-		if ( $this->utils->is_call_in_backtrace( [ 'woocommerce_mini_cart' ] )
-			&& $this->utils->is_call_in_backtrace( [ 'WC_Product_Addons_Cart->get_item_data' ] ) ) {
-			$price = $this->multi_currency->get_price( $price, 'product' );
-		}
-
-		return $price;
-	}
-
-	public function get_display_price( $price, $qty, $product ) {
-		$cart = WC()->cart->get_cart_contents();
-
-		foreach ( $cart as $item ) {
-			/**
-			 * This is a best guess scenario, and it only affects the display.
-			 * For example, if a product has a flat fee add on, and a percentage add on, and for some reason
-			 * those equal the same amount, then the flat fee add on's price will not be converted in the display price.
-			 * The display price is used in the cart and checkout page, along with the line item meta in orders.
-			 * 
-			 * ..not presently working if taxes are included in prices.
-			 */
-			// $item_price = $item['data']->get_meta( 'wcpay_mc_percentage_currency_amount' );
-			// $item_qty = $item['quantity'];
-			// $item_id = $item['data']->get_id();
-			// $prod_id = $product->get_id();
-			if ( (string) $price === (string) $item['data']->get_meta( 'wcpay_mc_percentage_currency_amount' )
-				&& $item['data']->get_id() === $product->get_id() ) {
-				return $price;
-			}
-		}
-
+	/**
+	 * Gets the display price for add ons.
+	 *
+	 * @param float       $price    Price to get converted.
+	 * @param int         $quantity Quantity is unused, but passed by the filter.
+	 * @param \WC_Product $product  Product related to the price.
+	 *
+	 * @return float Adjusted price.
+	 */
+	public function get_addon_display_price( float $price, int $quantity, \WC_Product $product ): float {
+		// We only want to do this when these specific methods are called.
 		if ( $this->utils->is_call_in_backtrace( [ 'WC_Product_Addons_Helper::get_product_addon_price_for_display' ] ) ) {
-			$calls = [
-				'WC_Product_Addons_Cart->order_line_item', // Fixes the values entered into order line item meta.
-				'WC_Product_Addons_Cart->get_item_data', // Fixes the values in the cart and checkout pages.
-			];
+			if ( $this->utils->is_call_in_backtrace( [ 'WC_Product_Addons_Cart->order_line_item' ] ) ) {
+				// Remove the filters that called this method to prevent endless loop.
+				remove_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_addon_display_price' ], 50 );
+				remove_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_addon_display_price' ], 50 );
 
-			if ( $this->utils->is_call_in_backtrace( $calls ) ) {
+				// Go through each cart item and return the price itself if it's a percentage based price.
+				$cart = WC()->cart->get_cart_contents();
+				foreach ( $cart as $item ) {
+					/**
+					 * This is a best guess scenario, and it only affects the display.
+					 * For example, if a product has a flat fee add on, and a percentage add on, and for some reason
+					 * those equal the same amount, then the flat fee add on's price will not be converted in the display price.
+					 * The display price is used in the cart and checkout page, along with the line item meta in orders.
+					 */
+					$percentage_price = $item['data']->get_meta( 'wcpay_mc_percentage_currency_amount' );
+					$percentage_price = $this->get_tax_adjusted_price( $percentage_price, $product );
+					if ( (string) $price === (string) $percentage_price
+						&& $item['data']->get_id() === $product->get_id() ) {
+						return $price;
+					}
+				}
+
+				// Get the add on's price.
 				$price = $this->multi_currency->get_price( $price, 'product' );
+				$price = $this->get_tax_adjusted_price( $price, $product );
+
+				// Add our filters back.
+				add_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_addon_display_price' ], 50, 3 );
+				add_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_addon_display_price' ], 50, 3 );
 			}
 		}
 
 		return $price;
 	}
 
-	public function product_addons_params( $params ) {
+	/**
+	 * Fixes currency display issues in Product Add-Ons. It gets these values directly from the db options,
+	 * so those values aren't filtered. Luckily, there's a filter.
+	 *
+	 * @param array $params Product Add-Ons global parameters.
+	 *
+	 * @return array Adjust parameters.
+	 */
+	public function product_addons_params( array $params ): array {
 		// Fixes currency formatting issues.
 		$params['currency_format_num_decimals'] = wc_get_price_decimals();
 		$params['currency_format_decimal_sep']  = wc_get_price_decimal_separator();
@@ -455,18 +537,8 @@ class Compatibility {
 			return true;
 		}
 
-		// if ( $this->utils->is_call_in_backtrace( [ 'WCPay\MultiCurrency\Compatibility->get_unconverted_price' ] ) ) {
-		// 	return false;
-		// }
-
-		// Correct the percentage price in the addon name in the cart.
-		if ( $this->utils->is_call_in_backtrace( [ 'WC_Product_Addons_Cart->get_item_data' ] )
-			&& $this->utils->is_call_in_backtrace( [ 'WC_Cart->get_product_price' ] ) ) {
-				return false;
-		}
-
 		// Check for cart items to see if they have already been converted.
-		if ( 1 === $product->get_meta( 'wcpay_mc_converted' ) ) {
+		if ( 1 === $product->get_meta( 'wcpay_mc_addons_converted' ) ) {
 			return false;
 		}
 
