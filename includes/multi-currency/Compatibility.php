@@ -9,7 +9,7 @@ namespace WCPay\MultiCurrency;
 
 use WC_Order;
 use WC_Order_Refund;
-use WC_Product_Addons_Helper;
+use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -143,7 +143,7 @@ class Compatibility {
 			'qty'   => 1,
 			'price' => $price,
 		];
-		$price = WC_Product_Addons_Helper::get_product_addon_tax_display_mode() === 'incl' ? wc_get_price_including_tax( $product, $args ) : wc_get_price_excluding_tax( $product, $args );
+		$price = \WC_Product_Addons_Helper::get_product_addon_tax_display_mode() === 'incl' ? wc_get_price_including_tax( $product, $args ) : wc_get_price_excluding_tax( $product, $args );
 
 		/**
 		 * When a user is tax exempt and product prices are exclusive of taxes, WooCommerce displays prices as follows:
