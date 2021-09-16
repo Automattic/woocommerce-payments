@@ -187,9 +187,12 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 							title={ task.title }
 							actionLabel={ task.actionLabel }
 							completed={ task.completed }
-							content={ task.content || task.additionalInfo }
-							expanded
-							action={ task.onClick }
+							content={ task.content }
+							additionalInfo={ task.additionalInfo }
+							showActionButton={ task.showActionButton }
+							expanded={ task.expanded }
+							action={ task.action }
+							onClick={ task.onClick }
 							time={ task.time }
 							level={ task.level }
 							onDelete={

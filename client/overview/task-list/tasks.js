@@ -3,62 +3,28 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies.
  */
 import createAdditionalMethodsSetupTask from '../../additional-methods-setup/task';
 import createMultiCurrencySetupTask from '../../multi-currency-setup/task';
-import { formatCurrency } from 'utils/currency';
-import { getDetailsURL } from 'components/details-link';
+import wcpayTracks from 'tracks';
 
-const getDisputesTasks = ( disputes ) => {
+const getDisputesToResolve = ( disputes ) => {
 	if ( ! disputes ) {
-		return [];
+		return 0;
 	}
-	return disputes.map(
-		( {
-			amount,
-			currency,
-			evidence_details: evidenceDetails,
-			id,
-			status: disputeStatus,
-		} ) => {
-			return {
-				key: `dispute-resolution-${ id }`,
-				level: 3,
-				title: sprintf(
-					/* translators: %s - amount referred to in the dispute */
-					__(
-						'A disputed payment for %s needs your response',
-						'woocommerce-payments'
-					),
-					formatCurrency( amount || 0, currency || 'USD' )
-				),
-				content: sprintf(
-					/* translators: %s - deadline to respond (date) */
-					__( 'Respond by %s', 'woocommerce-payments' ),
-					dateI18n(
-						'M j, Y - g:iA',
-						moment( evidenceDetails.due_by * 1000 ).toISOString()
-					)
-				),
-				completed: ! [
-					'warning_needs_response',
-					'needs_response',
-				].includes( disputeStatus ),
-				isDeletable: true,
-				isDismissable: true,
-				allowRemindMeLater: true,
-				onClick: () => {
-					window.location.href = getDetailsURL( id, 'disputes' );
-				},
-			};
-		}
-	);
+	const incompleteDisputes = disputes.filter( ( { status } ) => {
+		return [ 'warning_needs_response', 'needs_response' ].includes(
+			status
+		);
+	} );
+	return incompleteDisputes.length;
 };
 
 export const getTasks = ( {
@@ -69,14 +35,15 @@ export const getTasks = ( {
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
 	needsHttpsSetup,
-	disputes,
+	disputes = [],
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	let accountDetailsTaskDescription;
 
-	const disputesToResolve = getDisputesTasks( disputes );
+	const isDisputeTaskVisible = 0 < disputes.length;
+	const disputesToResolve = getDisputesToResolve( disputes );
 
 	if ( accountRestrictedSoon ) {
 		accountDetailsTaskDescription = sprintf(
@@ -110,7 +77,7 @@ export const getTasks = ( {
 				),
 				additionalInfo: accountDetailsTaskDescription,
 				completed: 'complete' === status,
-				onClick:
+				action:
 					'complete' === status
 						? undefined
 						: () => {
@@ -133,7 +100,7 @@ export const getTasks = ( {
 					'woocommerce-payments'
 				),
 				completed: false,
-				onClick: () => {
+				action: () => {
 					window.location.href = wpcomReconnectUrl;
 				},
 			},
@@ -146,7 +113,7 @@ export const getTasks = ( {
 					'woocommerce-payments'
 				),
 				completed: false,
-				onClick: () => {
+				action: () => {
 					window.open(
 						'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
 						'_blank'
@@ -158,7 +125,36 @@ export const getTasks = ( {
 			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
 		multiCurrencySetup.isTaskVisible &&
 			createMultiCurrencySetupTask( multiCurrencySetup ),
-		...disputesToResolve,
+		isDisputeTaskVisible && {
+			key: 'dispute-resolution-task',
+			level: 3,
+			title: sprintf(
+				_n(
+					'1 disputed payment needs your response',
+					'%s disputed payments needs your response',
+					disputesToResolve,
+					'woocommerce-payments'
+				),
+				disputesToResolve ? disputesToResolve : disputes.length
+			),
+			additionalInfo: disputesToResolve
+				? __( 'View and respond', 'woocommerce-payments' )
+				: '',
+			completed: 0 === disputesToResolve,
+			isDeletable: true,
+			isDismissable: true,
+			allowRemindMeLater: true,
+			showActionButton: false,
+			onClick: () => {
+				wcpayTracks.recordEvent( 'wcpay_overview_task', {
+					task: 'dispute-resolution-task',
+				} );
+				window.location.href = addQueryArgs( 'admin.php', {
+					page: 'wc-admin',
+					path: '/payments/disputes',
+				} );
+			},
+		},
 	].filter( Boolean );
 };
 
