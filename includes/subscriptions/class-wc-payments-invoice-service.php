@@ -58,6 +58,61 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
+	 * Gets the subscription last invoice ID from WC subscription.
+	 *
+	 * @param WC_Subscription $subscription The subscription.
+	 *
+	 * @return string Invoice ID.
+	 */
+	public static function get_pending_invoice_id( $subscription ) : string {
+		return $subscription->get_meta( self::PENDING_INVOICE_ID_KEY, true );
+	}
+
+	/**
+	 * Gets the invoice ID from a WC order.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return string Invoice ID.
+	 */
+	public static function get_order_invoice_id( WC_Order $order ) : string {
+		return $order->get_meta( self::ORDER_INVOICE_ID_KEY, true );
+	}
+
+	/**
+	 * Gets the invoice ID from a WC subscription.
+	 *
+	 * @param WC_Subscription $subscription The subscription.
+	 *
+	 * @return string Invoice ID.
+	 */
+	public static function get_subscription_invoice_id( $subscription ) {
+		return $subscription->get_meta( self::ORDER_INVOICE_ID_KEY, true );
+	}
+
+	/**
+	 * Gets the WC order ID from the invoice ID.
+	 *
+	 * @param string $invoice_id The invoice ID.
+	 * @return int The order ID.
+	 */
+	public static function get_order_id_by_invoice_id( string $invoice_id ) {
+		global $wpdb;
+
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"
+				SELECT pm.post_id
+				FROM {$wpdb->prefix}postmeta AS pm
+				INNER JOIN {$wpdb->prefix}posts AS p ON pm.post_id = p.ID
+				WHERE pm.meta_key = %s AND pm.meta_value = %s
+				",
+				self::ORDER_INVOICE_ID_KEY,
+				$invoice_id
+			)
+		);
+	}
+
+	/**
 	 * Sets a pending invoice ID meta for a subscription.
 	 *
 	 * @param WC_Subscription $subscription The subscription to set the invoice on.
@@ -111,13 +166,13 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
-	 * Validates a Stripe invoice.
+	 * Validates a WCPay invoice.
 	 *
-	 * @param array           $wcpay_items     The Stripe invoice items.
-	 * @param array           $wcpay_discounts The Stripe invoice discounts.
+	 * @param array           $wcpay_items     The WCPay invoice items.
+	 * @param array           $wcpay_discounts The WCPay invoice discounts.
 	 * @param WC_Subscription $subscription    The WC Subscription object.
 	 *
-	 * @throws Rest_Request_Exception WCPay subscription item data not found in WC.
+	 * @throws Rest_Request_Exception WCPay invoice items do not match WC subscription items.
 	 */
 	public function validate_invoice_items( array $wcpay_items, array $wcpay_discounts, WC_Subscription $subscription ) {
 		$wcpay_item_data = [];
@@ -140,7 +195,7 @@ class WC_Payments_Invoice_Service {
 			}
 
 			if ( ! in_array( $subscription_item_id, array_keys( $wcpay_item_data ), true ) ) {
-				$message = __( 'WCPay invoice item not found in WC Subscription', 'woocommerce-payments' );
+				$message = __( 'WCPay invoice items do not match WC subscription items', 'woocommerce-payments' );
 				Logger::error( $message );
 				throw new Rest_Request_Exception( $message );
 			}
@@ -183,62 +238,7 @@ class WC_Payments_Invoice_Service {
 			}
 		}
 
-		// Handle discounts.
-	}
-
-	/**
-	 * Gets the subscription last invoice ID from WC subscription.
-	 *
-	 * @param WC_Subscription $subscription The subscription.
-	 *
-	 * @return string Invoice ID.
-	 */
-	public static function get_pending_invoice_id( $subscription ) : string {
-		return $subscription->get_meta( self::PENDING_INVOICE_ID_KEY, true );
-	}
-
-	/**
-	 * Gets the invoice ID from a WC order.
-	 *
-	 * @param WC_Order $order The order.
-	 * @return string Invoice ID.
-	 */
-	public static function get_order_invoice_id( WC_Order $order ) : string {
-		return $order->get_meta( self::ORDER_INVOICE_ID_KEY, true );
-	}
-
-	/**
-	 * Gets the invoice ID from a WC subscription.
-	 *
-	 * @param WC_Subscription $subscription The subscription.
-	 *
-	 * @return string Invoice ID.
-	 */
-	public static function get_subscription_invoice_id( $subscription ) {
-		return $subscription->get_meta( self::ORDER_INVOICE_ID_KEY, true );
-	}
-
-	/**
-	 * Gets the WC order ID from the invoice ID.
-	 *
-	 * @param string $invoice_id The invoice ID.
-	 * @return int The order ID.
-	 */
-	public static function get_order_id_by_invoice_id( string $invoice_id ) {
-		global $wpdb;
-
-		return (int) $wpdb->get_var(
-			$wpdb->prepare(
-				"
-				SELECT pm.post_id
-				FROM {$wpdb->prefix}postmeta AS pm
-				INNER JOIN {$wpdb->prefix}posts AS p ON pm.post_id = p.ID
-				WHERE pm.meta_key = %s AND pm.meta_value = %s
-				",
-				self::ORDER_INVOICE_ID_KEY,
-				$invoice_id
-			)
-		);
+		// TODO: Handle discounts.
 	}
 
 	/**

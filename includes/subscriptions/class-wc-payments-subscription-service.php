@@ -125,6 +125,152 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
+	 * Checks if the WC subscription has a first payment date that is in the future.
+	 *
+	 * @param WC_Subscription $subscription WC subscription to check if first payment is now or delayed.
+	 *
+	 * @return bool Whether the first payment is delayed.
+	 */
+	public static function has_delayed_payment( WC_Subscription $subscription ) {
+		$trial_end = $subscription->get_time( 'trial_end' );
+		$has_sync  = false;
+
+		// TODO: Check if there is a better way to see if sync date is today.
+		if ( WC_Subscriptions_Synchroniser::is_syncing_enabled() && WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
+			$has_sync = true;
+
+			foreach ( $subscription->get_items( 'line_item' ) as $item ) {
+				if ( WC_Subscriptions_Synchroniser::is_payment_upfront( $item->get_product() ) ) {
+					$has_sync = false;
+					break;
+				}
+			}
+		}
+
+		return $has_sync || $trial_end > time();
+	}
+
+	/**
+	 * Gets the WC subscription associated with a WCPay subscription ID.
+	 *
+	 * @param string $wcpay_subscription_id WCPay subscription ID.
+	 *
+	 * @return WC_Subscription|bool The WC subscription or false if it can't be found.
+	 */
+	public static function get_subscription_from_wcpay_subscription_id( string $wcpay_subscription_id ) {
+		global $wpdb;
+
+		$subscription_id = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT post_id FROM {$wpdb->prefix}postmeta
+				WHERE meta_key = %s
+				AND meta_value = %s",
+				self::SUBSCRIPTION_ID_META_KEY,
+				$wcpay_subscription_id
+			)
+		);
+
+		return wcs_get_subscription( $subscription_id );
+	}
+
+	/**
+	 * Gets the WCPay subscription ID from a WC subscription.
+	 *
+	 * @param WC_Subscription $subscription WC Subscription.
+	 *
+	 * @return string
+	 */
+	public static function get_wcpay_subscription_id( WC_Subscription $subscription ) {
+		return $subscription->get_meta( self::SUBSCRIPTION_ID_META_KEY, true );
+	}
+
+	/**
+	 * Gets the WCPay subscription item ID from a WC subscription item.
+	 *
+	 * @param WC_Order_Item $item WC Item.
+	 *
+	 * @return string
+	 */
+	public static function get_wcpay_subscription_item_id( WC_Order_Item $item ) {
+		return $item->get_meta( self::SUBSCRIPTION_ITEM_ID_META_KEY, true );
+	}
+
+	/**
+	 * Determines if a given WC subscription is a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription WC Subscription object.
+	 *
+	 * @return bool
+	 */
+	public static function is_wcpay_subscription( WC_Subscription $subscription ) : bool {
+		return WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
+	}
+
+	/**
+	 * Formats item data.
+	 *
+	 * @param string $currency          The item's currency.
+	 * @param string $wcpay_product_id  The item's Stripe product id.
+	 * @param float  $unit_amount       The item's unit amount.
+	 * @param string $interval          The item's interval. Optional.
+	 * @param int    $interval_count    The item's interval count. Optional.
+	 *
+	 * @return array Structured invoice item array.
+	 */
+	public static function format_item_price_data( string $currency, string $wcpay_product_id, float $unit_amount, string $interval = '', int $interval_count = 0 ) : array {
+		$data = [
+			'currency'    => $currency,
+			'product'     => $wcpay_product_id,
+			'unit_amount' => (int) $unit_amount * 100,
+		];
+
+		if ( $interval && $interval_count ) {
+			$data['recurring'] = [
+				'interval'       => $interval,
+				'interval_count' => $interval_count,
+			];
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Prepare tax rates for a subscription item.
+	 *
+	 * @param WC_Order_Item   $item         Subscription order item.
+	 * @param WC_Subscription $subscription A Subscription to get tax rate information from.
+	 *
+	 * @return array
+	 */
+	public static function get_tax_rates_for_item( WC_Order_Item $item, WC_Subscription $subscription ) {
+		$tax_rates = [];
+
+		if ( ! wc_tax_enabled() || ! $item->get_taxes() ) {
+			return $tax_rates;
+		}
+
+		$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
+
+		if ( ! $tax_rate_ids ) {
+			return $tax_rates;
+		}
+
+		$tax_inclusive = wc_prices_include_tax();
+
+		foreach ( $subscription->get_taxes() as $tax ) {
+			if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) ) {
+				$tax_rates[] = [
+					'display_name' => $tax->get_name(),
+					'inclusive'    => $tax_inclusive,
+					'percentage'   => $tax->get_rate_percent(),
+				];
+			}
+		}
+
+		return $tax_rates;
+	}
+
+	/**
 	 * Gets a WCPay subscription from a WC subscription object.
 	 *
 	 * @param WC_Subscription $subscription The WC subscription to get from server.
@@ -296,185 +442,6 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Prepares item data used to create a WCPay subscription.
-	 *
-	 * @param string          $wcpay_customer_id WCPay Customer ID to create the subscription for.
-	 * @param WC_Subscription $subscription      The WC subscription used to create the subscription on server.
-	 *
-	 * @return array WCPay subscription data
-	 */
-	private function prepare_wcpay_subscription_data( string $wcpay_customer_id, WC_Subscription $subscription ) {
-		$recurring_items = $this->get_recurring_item_data_for_subscription( $subscription );
-		$one_time_items  = $this->get_one_time_item_data_for_subscription( $subscription );
-		$discount_items  = $this->get_discount_item_data_for_subscription( $subscription );
-
-		$data = [
-			'add_invoice_items' => $one_time_items,
-			'customer'          => $wcpay_customer_id,
-			'discounts'         => $discount_items,
-			'items'             => $recurring_items,
-		];
-
-		if ( self::has_delayed_payment( $subscription ) ) {
-			$data['trial_end'] = max( $subscription->get_time( 'trial_end' ), $subscription->get_time( 'next_payment' ) );
-		}
-
-		return apply_filters( 'wcpay_subscriptions_prepare_subscription_data', $data );
-	}
-
-	/**
-	 * Gets recurring item data from a subscription needed to create a WCPay subscription.
-	 *
-	 * @param WC_Subscription $subscription The WC subscription to fetch product data from.
-	 *
-	 * @return array|null WCPay Product data or null on error.
-	 */
-	public function get_recurring_item_data_for_subscription( WC_Subscription $subscription ) {
-		$data = [];
-
-		foreach ( $subscription->get_items() as $item ) {
-			$product = $item->get_product();
-
-			if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
-				continue;
-			}
-
-			$data[] = [
-				'metadata'  => [ 'wc_item_id' => $item->get_id() ],
-				'price'     => $this->product_service->get_stripe_price_id( $product ),
-				'quantity'  => $item->get_quantity(),
-				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
-			];
-		}
-
-		$currency       = $subscription->get_currency();
-		$items          = array_merge( $subscription->get_fees(), $subscription->get_shipping_methods() );
-		$interval       = $subscription->get_billing_period();
-		$interval_count = $subscription->get_billing_interval();
-
-		foreach ( $items as $item ) {
-			$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( $item->get_type() );
-			$unit_amount    = $item->get_total();
-
-			if ( $unit_amount ) {
-				$price_data = $this->format_item_price_data( $currency, $stripe_item_id, $unit_amount, $interval, $interval_count );
-				$data[]     = [
-					'metadata'   => [ 'wc_item_id' => $item->get_id() ],
-					'price_data' => $price_data,
-					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
-				];
-			}
-		}
-
-		return $data;
-	}
-
-	/**
-	 * Gets one time item data from a subscription needed to create a WCPay subscription.
-	 *
-	 * @param WC_Subscription $subscription The WC subscription to fetch item data from.
-	 *
-	 * @return array|null WCPay Product data or null on error.
-	 */
-	public function get_one_time_item_data_for_subscription( WC_Subscription $subscription ) {
-		$data     = [];
-		$currency = $subscription->get_currency();
-
-		foreach ( $subscription->get_items() as $item ) {
-			$product           = $item->get_product();
-			$sign_up_fee       = floatval( WC_Subscriptions_Product::get_sign_up_fee( $item->get_product() ) );
-			$one_time_shipping = WC_Subscriptions_Product::needs_one_time_shipping( $product );
-
-			if ( $sign_up_fee ) {
-				$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( 'sign_up_fee' );
-				$data[]         = [
-					'price_data' => $this->format_item_price_data( $currency, $stripe_item_id, $sign_up_fee ),
-					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
-				];
-			}
-
-			if ( $one_time_shipping ) {
-				$stripe_item_id = $this->product_service->get_stripe_product_id_for_item( 'shipping' );
-				$shipping       = 0;
-
-				foreach ( $subscription->get_parent()->get_shipping_methods() as $shipping_method ) {
-					$shipping += $shipping_method->get_total();
-				}
-
-				$data[] = [
-					'price_data' => $this->format_item_price_data( $currency, $stripe_item_id, $shipping ),
-					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
-				];
-			}
-		}
-
-		return $data;
-	}
-
-	/**
-	 * Prepares discount data used to create a WCPay subscription.
-	 *
-	 * @param WC_Subscription $subscription The WC subscription used to create the subscription on server.
-	 *
-	 * @return array WCPay subscription data
-	 */
-	private function get_discount_item_data_for_subscription( WC_Subscription $subscription ) : array {
-		$data = [];
-
-		foreach ( $subscription->get_parent()->get_items( 'coupon' ) as $item ) {
-			$code     = $item->get_code();
-			$coupon   = new WC_Coupon( $code );
-			$duration = in_array( $coupon->get_discount_type(), [ 'recurring_fee', 'recurring_percent' ], true ) ? 'forever' : 'once';
-			$data[]   = [
-				'amount_off' => $coupon->get_amount() * 100,
-				'currency'   => $subscription->get_currency(),
-				'duration'   => $duration,
-				'name'       => 'Coupon - ' . $code,
-			];
-		}
-
-		return $data;
-	}
-
-	/**
-	 * Updates a WCPay subscription.
-	 *
-	 * @param WC_Subscription $subscription The WC subscription that relates to the WCPay subscription that needs updating.
-	 * @param array           $data         Data to update.
-	 *
-	 * @return array|null Updated wcpay subscription or null if there was an error.
-	 */
-	private function update_subscription( WC_Subscription $subscription, array $data ) {
-		$wcpay_subscription_id = $this->get_wcpay_subscription_id( $subscription );
-		$response              = null;
-
-		if ( ! $wcpay_subscription_id ) {
-			Logger::log( 'There was a problem updating the WCPay subscription in: Subscription does not contain a valid subscription ID.' );
-			return;
-		}
-
-		try {
-			$response = $this->payments_api_client->update_subscription( $wcpay_subscription_id, $data );
-		} catch ( API_Exception $e ) {
-			Logger::log( sprintf( 'There was a problem updating the WCPay subscription on server: %s', $e->getMessage() ) );
-		}
-
-		return $response;
-	}
-
-	/**
-	 * Set the trial end date for the WCPay subscription (this updates both trial end as well as next payment).
-	 *
-	 * @param WC_Subscription $subscription WC subscription linked to the WCPay subscription that needs updating.
-	 * @param int             $timestamp    Next payment or trial end timestamp in UTC.
-	 *
-	 * @return void
-	 */
-	private function set_trial_end_for_subscription( WC_Subscription $subscription, int $timestamp ) {
-		$this->update_subscription( $subscription, [ 'trial_end' => $timestamp ] );
-	}
-
-	/**
 	 * Attempts payment for WCPay subscription if needed.
 	 *
 	 * @param WC_Subscription  $subscription WC subscription linked to the WCPay subscription that maybe needs to retry payment.
@@ -539,165 +506,6 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Checks if the WC subscription has a first payment date that is in the future.
-	 *
-	 * @param WC_Subscription $subscription WC subscription to check if first payment is now or delayed.
-	 *
-	 * @return bool Whether the first payment is delayed.
-	 */
-	public static function has_delayed_payment( WC_Subscription $subscription ) {
-		$trial_end = $subscription->get_time( 'trial_end' );
-		$has_sync  = false;
-
-		// TODO: Check if there is a better way to see if sync date is today.
-		if ( WC_Subscriptions_Synchroniser::is_syncing_enabled() && WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
-			$has_sync = true;
-
-			foreach ( $subscription->get_items( 'line_item' ) as $item ) {
-				if ( WC_Subscriptions_Synchroniser::is_payment_upfront( $item->get_product() ) ) {
-					$has_sync = false;
-					break;
-				}
-			}
-		}
-
-		return $has_sync || $trial_end > time();
-	}
-
-	/**
-	 * Gets the WC subscription associated with a WCPay subscription ID.
-	 *
-	 * @param string $wcpay_subscription_id WCPay subscription ID.
-	 *
-	 * @return WC_Subscription|bool The WC subscription or false if it can't be found.
-	 */
-	public static function get_subscription_from_wcpay_subscription_id( string $wcpay_subscription_id ) {
-		global $wpdb;
-
-		$subscription_id = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT post_id FROM {$wpdb->prefix}postmeta
-				WHERE meta_key = %s
-				AND meta_value = %s",
-				self::SUBSCRIPTION_ID_META_KEY,
-				$wcpay_subscription_id
-			)
-		);
-
-		return wcs_get_subscription( $subscription_id );
-	}
-
-	/**
-	 * Gets the WCPay subscription ID from a WC subscription.
-	 *
-	 * @param WC_Subscription $subscription WC Subscription.
-	 *
-	 * @return string
-	 */
-	public static function get_wcpay_subscription_id( WC_Subscription $subscription ) {
-		return $subscription->get_meta( self::SUBSCRIPTION_ID_META_KEY, true );
-	}
-
-	/**
-	 * Gets the WCPay subscription item ID from a WC subscription item.
-	 *
-	 * @param WC_Order_Item $item WC Item.
-	 *
-	 * @return string
-	 */
-	public static function get_wcpay_subscription_item_id( WC_Order_Item $item ) {
-		return $item->get_meta( self::SUBSCRIPTION_ITEM_ID_META_KEY, true );
-	}
-
-	/**
-	 * Determines if a given WC subscription is a WCPay subscription.
-	 *
-	 * @param WC_Subscription $subscription WC Subscription object.
-	 *
-	 * @return bool
-	 */
-	public static function is_wcpay_subscription( WC_Subscription $subscription ) : bool {
-		return WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
-	}
-
-	/**
-	 * Formats item data.
-	 *
-	 * @param string $currency          The item's currency.
-	 * @param string $stripe_product_id The item's Stripe product id.
-	 * @param float  $unit_amount       The item's unit amount.
-	 * @param string $interval          The item's interval. Optional.
-	 * @param int    $interval_count    The item's interval count. Optional.
-	 *
-	 * @return array Structured invoice item array.
-	 */
-	public static function format_item_price_data( string $currency, string $stripe_product_id, float $unit_amount, string $interval = '', int $interval_count = 0 ) : array {
-		$data = [
-			'currency'    => $currency,
-			'product'     => $stripe_product_id,
-			'unit_amount' => (int) $unit_amount * 100,
-		];
-
-		if ( $interval && $interval_count ) {
-			$data['recurring'] = [
-				'interval'       => $interval,
-				'interval_count' => $interval_count,
-			];
-		}
-
-		return $data;
-	}
-
-	/**
-	 * Prepare tax rates for a subscription item.
-	 *
-	 * @param WC_Order_Item   $item         Subscription order item.
-	 * @param WC_Subscription $subscription A Subscription to get tax rate information from.
-	 *
-	 * @return array
-	 */
-	public static function get_tax_rates_for_item( WC_Order_Item $item, WC_Subscription $subscription ) {
-		$tax_rates = [];
-
-		if ( ! wc_tax_enabled() || ! $item->get_taxes() ) {
-			return $tax_rates;
-		}
-
-		$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
-
-		if ( ! $tax_rate_ids ) {
-			return $tax_rates;
-		}
-
-		$tax_inclusive = wc_prices_include_tax();
-
-		foreach ( $subscription->get_taxes() as $tax ) {
-			if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) ) {
-				$tax_rates[] = [
-					'display_name' => $tax->get_name(),
-					'inclusive'    => $tax_inclusive,
-					'percentage'   => $tax->get_rate_percent(),
-				];
-			}
-		}
-
-		return $tax_rates;
-	}
-
-	/**
-	 * Sets the WCPay subscription ID meta for WC subscription.
-	 *
-	 * @param WC_Subscription $subscription WC Subscription to store meta against.
-	 * @param string          $value        WCPay subscription ID meta value.
-	 *
-	 * @return void
-	 */
-	private function set_wcpay_subscription_id( WC_Subscription $subscription, string $value ) {
-		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $value );
-		$subscription->save();
-	}
-
-	/**
 	 * Sets Stripe subscription item ids on WC order items.
 	 *
 	 * @param WC_Subscription $subscription       The WC Subscription object.
@@ -749,6 +557,207 @@ class WC_Payments_Subscription_Service {
 
 		// Remove the 'subscription_date_changes' exception.
 		$this->clear_feature_support_exception( $subscription, 'subscription_date_changes' );
+	}
+
+	/**
+	 * Prepares item data used to create a WCPay subscription.
+	 *
+	 * @param string          $wcpay_customer_id WCPay Customer ID to create the subscription for.
+	 * @param WC_Subscription $subscription      The WC subscription used to create the subscription on server.
+	 *
+	 * @return array WCPay subscription data
+	 */
+	private function prepare_wcpay_subscription_data( string $wcpay_customer_id, WC_Subscription $subscription ) {
+		$recurring_items = $this->get_recurring_item_data_for_subscription( $subscription );
+		$one_time_items  = $this->get_one_time_item_data_for_subscription( $subscription );
+		$discount_items  = $this->get_discount_item_data_for_subscription( $subscription );
+		$data            = [
+			'customer' => $wcpay_customer_id,
+			'items'    => $recurring_items,
+		];
+
+		if ( self::has_delayed_payment( $subscription ) ) {
+			$data['trial_end'] = max( $subscription->get_time( 'trial_end' ), $subscription->get_time( 'next_payment' ) );
+		}
+
+		if ( ! empty( $one_time_items ) ) {
+			$data['add_invoice_items'] = $one_time_items;
+		}
+
+		if ( ! empty( $discount_items ) ) {
+			$data['discounts'] = $discount_items;
+		}
+
+		return apply_filters( 'wcpay_subscriptions_prepare_subscription_data', $data );
+	}
+
+	/**
+	 * Gets recurring item data from a subscription needed to create a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription to fetch product data from.
+	 *
+	 * @return array WCPay recurring item data.
+	 */
+	private function get_recurring_item_data_for_subscription( WC_Subscription $subscription ) : array {
+		$data = [];
+
+		foreach ( $subscription->get_items() as $item ) {
+			$product = $item->get_product();
+
+			if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+				continue;
+			}
+
+			$data[] = [
+				'metadata'  => [ 'wc_item_id' => $item->get_id() ],
+				'price'     => $this->product_service->get_stripe_price_id( $product ),
+				'quantity'  => $item->get_quantity(),
+				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
+			];
+		}
+
+		$additional_items = array_merge( $subscription->get_fees(), $subscription->get_shipping_methods() );
+
+		foreach ( $additional_items as $item ) {
+			$wcpay_item_id = $this->product_service->get_stripe_product_id_for_item( $item->get_type() );
+			$unit_amount   = $item->get_total();
+
+			if ( $unit_amount ) {
+				$price_data = $this->format_item_price_data(
+					$subscription->get_currency(),
+					$wcpay_item_id,
+					$unit_amount,
+					$subscription->get_billing_period(),
+					$subscription->get_billing_interval()
+				);
+
+				$data[] = [
+					'metadata'   => [ 'wc_item_id' => $item->get_id() ],
+					'price_data' => $price_data,
+					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
+				];
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Gets one time item data from a subscription needed to create a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription to fetch item data from.
+	 *
+	 * @return array WCPay one time item data.
+	 */
+	private function get_one_time_item_data_for_subscription( WC_Subscription $subscription ) : array {
+		$data     = [];
+		$currency = $subscription->get_currency();
+
+		foreach ( $subscription->get_items() as $item ) {
+			$product           = $item->get_product();
+			$sign_up_fee       = floatval( WC_Subscriptions_Product::get_sign_up_fee( $product ) );
+			$one_time_shipping = WC_Subscriptions_Product::needs_one_time_shipping( $product );
+
+			if ( $sign_up_fee ) {
+				$wcpay_item_id = $this->product_service->get_stripe_product_id_for_item( 'sign_up_fee' );
+				$data[]        = [
+					'price_data' => $this->format_item_price_data( $currency, $wcpay_item_id, $sign_up_fee ),
+					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
+				];
+			}
+
+			if ( $one_time_shipping ) {
+				$wcpay_item_id = $this->product_service->get_stripe_product_id_for_item( 'shipping' );
+				$shipping      = 0;
+
+				foreach ( $subscription->get_parent()->get_shipping_methods() as $shipping_method ) {
+					$shipping += $shipping_method->get_total();
+				}
+
+				$data[] = [
+					'price_data' => $this->format_item_price_data( $currency, $wcpay_item_id, $shipping ),
+					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
+				];
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Prepares discount data used to create a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription used to create the subscription on server.
+	 *
+	 * @return array WCPay discount item data.
+	 */
+	private function get_discount_item_data_for_subscription( WC_Subscription $subscription ) : array {
+		$data = [];
+
+		foreach ( $subscription->get_parent()->get_items( 'coupon' ) as $item ) {
+			$code     = $item->get_code();
+			$coupon   = new WC_Coupon( $code );
+			$duration = in_array( $coupon->get_discount_type(), [ 'recurring_fee', 'recurring_percent' ], true ) ? 'forever' : 'once';
+			$data[]   = [
+				'amount_off' => $coupon->get_amount() * 100,
+				'currency'   => $subscription->get_currency(),
+				'duration'   => $duration,
+				'name'       => 'Coupon - ' . $code,
+			];
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Updates a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription that relates to the WCPay subscription that needs updating.
+	 * @param array           $data         Data to update.
+	 *
+	 * @return array|null Updated wcpay subscription or null if there was an error.
+	 */
+	private function update_subscription( WC_Subscription $subscription, array $data ) {
+		$wcpay_subscription_id = $this->get_wcpay_subscription_id( $subscription );
+		$response              = null;
+
+		if ( ! $wcpay_subscription_id ) {
+			Logger::log( 'There was a problem updating the WCPay subscription in: Subscription does not contain a valid subscription ID.' );
+			return;
+		}
+
+		try {
+			$response = $this->payments_api_client->update_subscription( $wcpay_subscription_id, $data );
+		} catch ( API_Exception $e ) {
+			Logger::log( sprintf( 'There was a problem updating the WCPay subscription on server: %s', $e->getMessage() ) );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Set the trial end date for the WCPay subscription (this updates both trial end as well as next payment).
+	 *
+	 * @param WC_Subscription $subscription WC subscription linked to the WCPay subscription that needs updating.
+	 * @param int             $timestamp    Next payment or trial end timestamp in UTC.
+	 *
+	 * @return void
+	 */
+	private function set_trial_end_for_subscription( WC_Subscription $subscription, int $timestamp ) {
+		$this->update_subscription( $subscription, [ 'trial_end' => $timestamp ] );
+	}
+
+	/**
+	 * Sets the WCPay subscription ID meta for WC subscription.
+	 *
+	 * @param WC_Subscription $subscription WC Subscription to store meta against.
+	 * @param string          $value        WCPay subscription ID meta value.
+	 *
+	 * @return void
+	 */
+	private function set_wcpay_subscription_id( WC_Subscription $subscription, string $value ) {
+		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $value );
+		$subscription->save();
 	}
 
 	/**

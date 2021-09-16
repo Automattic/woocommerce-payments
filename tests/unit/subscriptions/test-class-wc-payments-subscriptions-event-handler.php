@@ -83,18 +83,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	 * Test exception thrown during handle_invoice_upcoming.
 	 */
 	public function test_handle_invoice_upcoming_exception() {
-		$test_body = [
-			'data' => [
-				'object' => [
-					'subscription' => 'sub_ID_not_exists',
-					'customer'     => 'cus_test1234',
-					'discount'     => [],
-					'lines'        => [
-						'data' => [],
-					],
-				],
-			],
-		];
+		$test_body = $this->get_mock_test_body( 'sub_ID_not_exists', 'cus_test1234' );
 
 		$this->expectException( Rest_Request_Exception::class );
 		$this->expectExceptionMessage( 'Cannot find subscription to handle the "invoice.upcoming" event.' );
@@ -108,20 +97,8 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	public function test_handle_invoice_upcoming_active() {
 		$wcpay_subscription_id = 'sub_invoiceUpcoming';
 		$wcpay_customer_id     = 'cus_test1234';
-		$test_body             = [
-			'data' => [
-				'object' => [
-					'subscription' => $wcpay_subscription_id,
-					'customer'     => $wcpay_customer_id,
-					'discount'     => [],
-					'lines'        => [
-						'data' => [],
-					],
-				],
-			],
-		];
-
-		$mock_subscription = new WC_Subscription();
+		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id );
+		$mock_subscription     = new WC_Subscription();
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $wcpay_subscription_id );
 		$mock_subscription->next_payment = time();
 
@@ -155,21 +132,9 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	public function test_handle_invoice_upcoming_suspended() {
 		$wcpay_subscription_id = 'sub_invoiceUpcomingSuspended';
 		$wcpay_customer_id     = 'cus_test4321';
-		$test_body             = [
-			'data' => [
-				'object' => [
-					'subscription' => $wcpay_subscription_id,
-					'customer'     => $wcpay_customer_id,
-					'discount'     => [],
-					'lines'        => [
-						'data' => [],
-					],
-				],
-			],
-		];
-
-		$mock_order        = WC_Helper_Order::create_order();
-		$mock_subscription = new WC_Subscription();
+		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id );
+		$mock_order            = WC_Helper_Order::create_order();
+		$mock_subscription     = new WC_Subscription();
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $wcpay_subscription_id );
 		$mock_subscription->next_payment = 0;
 		$mock_subscription->end          = 0;
@@ -198,15 +163,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	 * Test handle_invoice_paid when the incoming webhook belongs to a subscription that doesn't exist.
 	 */
 	public function test_handle_invoice_paid_exception() {
-		$test_body = [
-			'data' => [
-				'object' => [
-					'subscription' => 'sub_ID_no_invoice_paid',
-					'customer'     => 'cus_test1234',
-					'id'           => 'ii_testInvoiceID',
-				],
-			],
-		];
+		$test_body = $this->get_mock_test_body( 'sub_ID_no_invoice_paid', 'cus_test1234', 'ii_testInvoiceID' );
 
 		$this->expectException( Rest_Request_Exception::class );
 		$this->expectExceptionMessage( 'Cannot find subscription for the incoming "invoice.paid" event.' );
@@ -221,17 +178,8 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 		$wcpay_subscription_id = 'sub_invoiceUpcoming';
 		$wcpay_customer_id     = 'cus_test1234';
 		$wcpay_invoiceid       = 'ii_testInvoiceID';
-		$test_body             = [
-			'data' => [
-				'object' => [
-					'subscription' => $wcpay_subscription_id,
-					'customer'     => $wcpay_customer_id,
-					'id'           => $wcpay_invoiceid,
-				],
-			],
-		];
-
-		$mock_subscription = new WC_Subscription();
+		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoiceid );
+		$mock_subscription     = new WC_Subscription();
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $wcpay_subscription_id );
 		$mock_subscription->next_payment = time();
 
@@ -248,18 +196,9 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 		$wcpay_subscription_id = 'sub_invoiceUpcoming';
 		$wcpay_customer_id     = 'cus_test1234';
 		$wcpay_invoiceid       = 'ii_testInvoiceID';
-		$test_body             = [
-			'data' => [
-				'object' => [
-					'subscription' => $wcpay_subscription_id,
-					'customer'     => $wcpay_customer_id,
-					'id'           => $wcpay_invoiceid,
-				],
-			],
-		];
-
-		$mock_renewal_order = WC_Helper_Order::create_order();
-		$mock_subscription  = new WC_Subscription();
+		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoiceid );
+		$mock_renewal_order    = WC_Helper_Order::create_order();
+		$mock_subscription     = new WC_Subscription();
 
 		WC_Subscriptions::set_wcs_get_subscription(
 			function ( $id ) use ( $mock_subscription ) {
@@ -290,15 +229,9 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	 * Test handle_invoice_payment_failed() when invalid data is given
 	 */
 	public function test_invoice_payment_failed_missing_attempts_data() {
-		$test_body = [
-			'data' => [
-				'object' => [
-					'subscription' => 'sub_test1234',
-					'customer'     => 'cust_test1234',
-					'id'           => 'ii_test1234',
-				],
-			],
-		];
+		$test_body = $this->get_mock_test_body();
+
+		unset( $test_body['data']['object']['attempt_count'] );
 
 		$this->expectException( Rest_Request_Exception::class );
 		$this->expectExceptionMessage( 'attempt_count not found in array' );
@@ -313,19 +246,9 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 		$wcpay_subscription_id = 'sub_invoiceFailed';
 		$wcpay_customer_id     = 'cus_failed1234';
 		$wcpay_invoice_id      = 'ii_failedInvoiceID';
-		$test_body             = [
-			'data' => [
-				'object' => [
-					'subscription'  => $wcpay_subscription_id,
-					'customer'      => $wcpay_customer_id,
-					'id'            => $wcpay_invoice_id,
-					'attempt_count' => 1,
-				],
-			],
-		];
-
-		$mock_order        = WC_Helper_Order::create_order();
-		$mock_subscription = new WC_Subscription();
+		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoice_id, 1 );
+		$mock_order            = WC_Helper_Order::create_order();
+		$mock_subscription     = new WC_Subscription();
 		$mock_subscription->set_parent( $mock_order );
 
 		WC_Subscriptions::set_wcs_get_subscription(
@@ -362,19 +285,9 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 		$wcpay_subscription_id = 'sub_invoiceFailed';
 		$wcpay_customer_id     = 'cus_failed1234';
 		$wcpay_invoice_id      = 'ii_failedInvoiceID';
-		$test_body             = [
-			'data' => [
-				'object' => [
-					'subscription'  => $wcpay_subscription_id,
-					'customer'      => $wcpay_customer_id,
-					'id'            => $wcpay_invoice_id,
-					'attempt_count' => 4,
-				],
-			],
-		];
-
-		$mock_order        = WC_Helper_Order::create_order();
-		$mock_subscription = new WC_Subscription();
+		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoice_id, 4 );
+		$mock_order            = WC_Helper_Order::create_order();
+		$mock_subscription     = new WC_Subscription();
 		$mock_subscription->set_parent( $mock_order );
 
 		WC_Subscriptions::set_wcs_get_subscription(
@@ -402,5 +315,34 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 		$this->subscriptions_event_handler->handle_invoice_payment_failed( $test_body );
 
 		$this->assertTrue( $mock_subscription->has_status( 'cancelled' ) );
+	}
+
+	/**
+	 * Helper method to generate test event body.
+	 *
+	 * @param string $subscription_id The WCPay subscription ID.
+	 * @param string $customer_id     The WCPay customer ID.
+	 * @param string $invoice_id      The WCPay invoice ID.
+	 * @param inte   $attempt_count   The WCPay attempt count for failed renewals.
+	 *
+	 * @return array
+	 */
+	private function get_mock_test_body( $subscription_id = 'sub_test1234', $customer_id = 'cust_test1234', $invoice_id = 'ii_test1234', $attempt_count = 1 ) {
+		return [
+			'data' => [
+				'object' => [
+					'attempt_count' => $attempt_count,
+					'customer'      => $customer_id,
+					'discount'      => [
+						'coupon' => [],
+					],
+					'id'            => $invoice_id,
+					'lines'         => [
+						'data' => [],
+					],
+					'subscription'  => $subscription_id,
+				],
+			],
+		];
 	}
 }

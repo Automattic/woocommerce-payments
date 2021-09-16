@@ -129,7 +129,7 @@ class WC_Payments_Product_Service {
 	 * Gets the WC Pay product ID associated with a WC product.
 	 *
 	 * @param string $type The item type to create a product for.
-	 * return string       The item's Stripe product id.
+	 * return string       The item's WCPay product id.
 	 */
 	public function get_stripe_product_id_for_item( string $type ) : string {
 		if ( ! get_option( self::PRODUCT_ID_KEY . '_' . $type ) ) {
@@ -228,16 +228,16 @@ class WC_Payments_Product_Service {
 	 */
 	public function create_product_for_item_type( string $type ) {
 		try {
-			$stripe_product = $this->payments_api_client->create_product(
+			$wcpay_product = $this->payments_api_client->create_product(
 				[
 					'description' => 'N/A',
 					'name'        => ucfirst( $type ),
 				]
 			);
 
-			update_option( self::PRODUCT_ID_KEY . '_' . $type, $stripe_product['stripe_product_id'] );
+			update_option( self::PRODUCT_ID_KEY . '_' . $type, $wcpay_product['stripe_product_id'] );
 		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem creating the product in Stripe: ' . $e->getMessage() );
+			Logger::log( 'There was a problem creating the product on WCPay Server: ' . $e->getMessage() );
 		}
 	}
 
