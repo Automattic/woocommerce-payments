@@ -52,11 +52,10 @@ class WC_Payments_Subscriptions_Event_Handler {
 	 * @throws Rest_Request_Exception Required parameters not found.
 	 */
 	public function handle_invoice_upcoming( array $body ) {
-		$event_data            = $this->get_event_property( $body, 'data' );
-		$event_object          = $this->get_event_property( $event_data, 'object' );
+		$event_object          = $this->get_event_property( $body, [ 'data', 'object' ] );
 		$wcpay_subscription_id = $this->get_event_property( $event_object, 'subscription' );
 		$wcpay_customer_id     = $this->get_event_property( $event_object, 'customer' );
-		$wcpay_discounts       = $this->get_event_property( $event_object, [ 'discount', 'coupon' ] );
+		$wcpay_discounts       = $this->get_event_property( $event_object, 'discounts' );
 		$wcpay_lines           = $this->get_event_property( $event_object, [ 'lines', 'data' ] );
 		$subscription          = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
 

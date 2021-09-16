@@ -139,7 +139,7 @@ class WC_Payments_Subscription_Service {
 		if ( WC_Subscriptions_Synchroniser::is_syncing_enabled() && WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
 			$has_sync = true;
 
-			foreach ( $subscription->get_items( 'line_item' ) as $item ) {
+			foreach ( $subscription->get_items() as $item ) {
 				if ( WC_Subscriptions_Synchroniser::is_payment_upfront( $item->get_product() ) ) {
 					$has_sync = false;
 					break;

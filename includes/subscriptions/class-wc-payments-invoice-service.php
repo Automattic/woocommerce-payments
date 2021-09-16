@@ -187,7 +187,7 @@ class WC_Payments_Invoice_Service {
 			];
 		}
 
-		foreach ( $subscription->get_items( 'line_item', 'fee', 'shipping' ) as $item ) {
+		foreach ( $subscription->get_items( [ 'line_item', 'fee', 'shipping' ] ) as $item ) {
 			$subscription_item_id = WC_Payments_Subscription_Service::get_wcpay_subscription_item_id( $item );
 
 			if ( ! $subscription_item_id ) {
@@ -195,7 +195,7 @@ class WC_Payments_Invoice_Service {
 			}
 
 			if ( ! in_array( $subscription_item_id, array_keys( $wcpay_item_data ), true ) ) {
-				$message = __( 'WCPay invoice items do not match WC subscription items', 'woocommerce-payments' );
+				$message = __( 'The WCPay invoice items do not match WC subscription items', 'woocommerce-payments' );
 				Logger::error( $message );
 				throw new Rest_Request_Exception( $message );
 			}
