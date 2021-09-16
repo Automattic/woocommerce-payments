@@ -48,16 +48,218 @@ class Compatibility {
 		$this->utils          = $utils;
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
+			// Subscriptions filters.
 			add_filter( 'option_woocommerce_subscriptions_multiple_purchase', [ $this, 'maybe_disable_mixed_cart' ], 50 );
 			add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
 			add_filter( 'woocommerce_product_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
 			add_filter( 'woocommerce_product_variation_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
+
+			// Product Add-Ons filters.
+			add_filter( 'woocommerce_product_addons_adjust_price', '__return_false' );
+			add_filter( 'woocommerce_add_cart_item', [ $this, 'add_cart_item' ], 50 );
+			add_filter( 'woocommerce_get_cart_item_from_session', [ $this, 'get_cart_item_from_session' ], 50, 2 );
+
 			add_filter( 'woocommerce_product_addons_option_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
+			add_filter( 'woocommerce_product_addons_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
+			add_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_display_price' ], 50, 3 );
+			add_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_display_price' ], 50, 3 );
+			add_filter( 'raw_woocommerce_price', [ $this, 'get_mini_cart_price' ], 50, 2 );
+			add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );
+
+			add_action( 'woocommerce_checkout_create_order_line_item', [ $this, 'order_line_item' ], 50, 3 );
+			add_filter( 'woocommerce_product_addons_get_product_addon_price_for_display', [ $this, 'price_for_display' ], 50, 3 );
 		}
 
 		if ( defined( 'DOING_CRON' ) ) {
 			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
 		}
+	}
+
+	public function order_line_item( $item, $cart_item_key, $values ) {
+		$trigger = 'here';
+	}
+
+	public function price_for_display( $display_price, $price, $cart_item ) {
+		if ( null === $cart_item ) {
+			return $display_price;
+		}
+
+		return $display_price;
+	}
+
+	// public function get_unconverted_price( $product, $type = '' ) {
+	// 	switch ( $type ) {
+	// 		case 'regular':
+	// 			$price = $product->get_regular_price();
+	// 			break;
+	// 		case 'sale':
+	// 			$price = $product->get_sale_price();
+	// 			break;
+	// 		default:
+	// 			$price = $product->get_price();
+	// 			break;
+	// 	}
+	// 	return $price;
+	// }
+
+	public function add_cart_item( $cart_item ) {
+		if ( ! empty( $cart_item['addons'] ) ) {
+			$price         = (float) $cart_item['data']->get_price( 'view' ); //$prices['price'];
+			$regular_price = (float) $cart_item['data']->get_regular_price( 'view' ); //$prices['regular_price'];
+			$sale_price    = (float) $cart_item['data']->get_sale_price( 'view' ); //$prices['sale_price'];
+			// $price         = (float) $this->get_unconverted_price( $cart_item['data'], 'default' );
+			// $regular_price = (float) $this->get_unconverted_price( $cart_item['data'], 'regular' );
+			// $sale_price    = (float) $this->get_unconverted_price( $cart_item['data'], 'sale' );
+			$quantity      = $cart_item['quantity'];
+
+			// Compatibility with Smart Coupons self declared gift amount purchase.
+			if ( empty( $price ) && ! empty( $_POST['credit_called'] ) ) {
+				// Variable $_POST['credit_called'] is an array.
+				if ( isset( $_POST['credit_called'][ $cart_item['data']->get_id() ] ) ) {
+					$price         = (float) $_POST['credit_called'][ $cart_item['data']->get_id() ];
+					$regular_price = $price;
+					$sale_price    = $price;
+				}
+			}
+
+			if ( empty( $price ) && ! empty( $cart_item['credit_amount'] ) ) {
+				$price         = (float) $cart_item['credit_amount'];
+				$regular_price = $price;
+				$sale_price    = $price;
+			}
+
+			// Save the price before price type calculations to be used later.
+			// $cart_item['addons_price_before_calc']         = (float) $this->get_unconverted_price( $cart_item['data'], 'default' );
+			// $cart_item['addons_regular_price_before_calc'] = (float) $this->get_unconverted_price( $cart_item['data'], 'regular' );
+			// $cart_item['addons_sale_price_before_calc']    = (float) $this->get_unconverted_price( $cart_item['data'], 'sale' );
+			$cart_item['addons_price_before_calc']         = (float) $price;
+			$cart_item['addons_regular_price_before_calc'] = (float) $regular_price;
+			$cart_item['addons_sale_price_before_calc']    = (float) $sale_price;
+
+			foreach ( $cart_item['addons'] as $addon ) {
+				$price_type  = $addon['price_type'];
+				$addon_price = 'percentage_based' === $price_type ? $addon['price'] : $this->multi_currency->get_price( $addon['price'], 'product' );
+
+				switch ( $price_type ) {
+					case 'percentage_based':
+						$price         += (float) ( $cart_item['data']->get_price( 'view' ) * ( $addon_price / 100 ) );
+						$regular_price += (float) ( $regular_price * ( $addon_price / 100 ) );
+						$sale_price    += (float) ( $sale_price * ( $addon_price / 100 ) );
+
+						$cart_item['data']->update_meta_data(
+							'wcpay_mc_percentage_currency_amount',
+							$cart_item['addons_price_before_calc'] * ( $addon_price / 100 )
+						);
+						break;
+					case 'flat_fee':
+						$price         += (float) ( $addon_price / $quantity );
+						$regular_price += (float) ( $addon_price / $quantity );
+						$sale_price    += (float) ( $addon_price / $quantity );
+						break;
+					default:
+						$price         += (float) $addon_price;
+						$regular_price += (float) $addon_price;
+						$sale_price    += (float) $addon_price;
+						break;
+				}
+			}
+
+			$cart_item['data']->set_price( $price );
+			$cart_item['data']->update_meta_data( 'wcpay_mc_converted', 1 );
+
+			// Only update regular price if it was defined.
+			$has_regular_price = is_numeric( $cart_item['data']->get_regular_price( 'edit' ) );
+			if ( $has_regular_price ) {
+				$cart_item['data']->set_regular_price( $regular_price );
+			}
+
+			// Only update sale price if it was defined.
+			$has_sale_price = is_numeric( $cart_item['data']->get_sale_price( 'edit' ) );
+			if ( $has_sale_price ) {
+				$cart_item['data']->set_sale_price( $sale_price );
+			}
+		}
+
+		return $cart_item;
+	}
+
+	public function get_cart_item_from_session( $cart_item, $values ) {
+		if ( ! empty( $values['addons'] ) ) {
+			$cart_item['addons'] = $values['addons'];
+			$cart_item           = $this->add_cart_item( $cart_item );
+		}
+
+		return $cart_item;
+	}
+
+	public function get_mini_cart_price( $price, $original_price ) {
+		$cart = WC()->cart->get_cart_contents();
+
+		foreach ( $cart as $item ) {
+			/**
+			 * This is a best guess scenario, and it only affects the display.
+			 * For example, if a product has a flat fee add on, and a percentage add on, and for some reason
+			 * those equal the same amount, then the flat fee add on's price will not be converted in the mini cart.
+			 * 
+			 * ..not presently working if taxes are included in prices.
+			 */
+			$percentage_price = $item['data']->get_meta( 'wcpay_mc_percentage_currency_amount' );
+			if ( (string) $price === (string) $percentage_price ) {
+				return $price;
+			}
+		}
+
+		if ( $this->utils->is_call_in_backtrace( [ 'woocommerce_mini_cart' ] )
+			&& $this->utils->is_call_in_backtrace( [ 'WC_Product_Addons_Cart->get_item_data' ] ) ) {
+			$price = $this->multi_currency->get_price( $price, 'product' );
+		}
+
+		return $price;
+	}
+
+	public function get_display_price( $price, $qty, $product ) {
+		$cart = WC()->cart->get_cart_contents();
+
+		foreach ( $cart as $item ) {
+			/**
+			 * This is a best guess scenario, and it only affects the display.
+			 * For example, if a product has a flat fee add on, and a percentage add on, and for some reason
+			 * those equal the same amount, then the flat fee add on's price will not be converted in the display price.
+			 * The display price is used in the cart and checkout page, along with the line item meta in orders.
+			 * 
+			 * ..not presently working if taxes are included in prices.
+			 */
+			// $item_price = $item['data']->get_meta( 'wcpay_mc_percentage_currency_amount' );
+			// $item_qty = $item['quantity'];
+			// $item_id = $item['data']->get_id();
+			// $prod_id = $product->get_id();
+			if ( (string) $price === (string) $item['data']->get_meta( 'wcpay_mc_percentage_currency_amount' )
+				&& $item['data']->get_id() === $product->get_id() ) {
+				return $price;
+			}
+		}
+
+		if ( $this->utils->is_call_in_backtrace( [ 'WC_Product_Addons_Helper::get_product_addon_price_for_display' ] ) ) {
+			$calls = [
+				'WC_Product_Addons_Cart->order_line_item', // Fixes the values entered into order line item meta.
+				'WC_Product_Addons_Cart->get_item_data', // Fixes the values in the cart and checkout pages.
+			];
+
+			if ( $this->utils->is_call_in_backtrace( $calls ) ) {
+				$price = $this->multi_currency->get_price( $price, 'product' );
+			}
+		}
+
+		return $price;
+	}
+
+	public function product_addons_params( $params ) {
+		// Fixes currency formatting issues.
+		$params['currency_format_num_decimals'] = wc_get_price_decimals();
+		$params['currency_format_decimal_sep']  = wc_get_price_decimal_separator();
+		$params['currency_format_thousand_sep'] = wc_get_price_thousand_separator();
+
+		return $params;
 	}
 
 	/**
@@ -260,6 +462,21 @@ class Compatibility {
 	public function should_convert_product_price( $product = null ): bool {
 		if ( ! $product ) {
 			return true;
+		}
+
+		// if ( $this->utils->is_call_in_backtrace( [ 'WCPay\MultiCurrency\Compatibility->get_unconverted_price' ] ) ) {
+		// 	return false;
+		// }
+
+		// Correct the percentage price in the addon name in the cart.
+		if ( $this->utils->is_call_in_backtrace( [ 'WC_Product_Addons_Cart->get_item_data' ] )
+			&& $this->utils->is_call_in_backtrace( [ 'WC_Cart->get_product_price' ] ) ) {
+				return false;
+		}
+
+		// Check for cart items to see if they have already been converted.
+		if ( 1 === $product->get_meta( 'wcpay_mc_converted' ) ) {
+			return false;
 		}
 
 		// Check for subscription renewal or resubscribe.
