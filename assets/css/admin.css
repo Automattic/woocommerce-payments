@@ -110,6 +110,11 @@
 	background-size: contain;
 }
 
+.payment-method__brand--sepa_debit {
+	background: no-repeat url( '../images/payment-methods/sepa_debit.svg' );
+	background-size: contain;
+}
+
 .wc_gateways tr[data-gateway_id='woocommerce_payments'] .payment-method__icon {
 	border: 1px solid #ddd;
 	border-radius: 2px;
