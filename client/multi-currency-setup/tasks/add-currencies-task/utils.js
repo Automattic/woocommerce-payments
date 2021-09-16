@@ -10,12 +10,15 @@ import { sprintf, __ } from '@wordpress/i18n';
  * @return {string} The string representation of the currency object.
  */
 export const StringRepresentationOfCurrency = ( currency ) => {
-	const name = currency.name;
-	const hintText =
-		currency.code === currency.symbol
-			? currency.code
-			: sprintf( '%s %s', currency.symbol, currency.code );
-	return sprintf( '%s (%s)', name, hintText );
+	if ( currency && currency.name && currency.symbol && currency.code ) {
+		const name = currency.name;
+		const hintText =
+			currency.code === currency.symbol
+				? currency.code
+				: sprintf( '%s %s', currency.symbol, currency.code );
+		return sprintf( '%s (%s)', name, hintText );
+	}
+	return '';
 };
 
 /**
@@ -31,28 +34,19 @@ export const ConcatenateCurrencyStrings = (
 	except,
 	currenciesData
 ) => {
-	if ( currencies.includes( except ) )
-		currencies.splice( currencies.indexOf( except ), 1 );
-	if ( 0 === currencies.length ) return '';
-	if ( 1 === currencies.length )
-		return StringRepresentationOfCurrency(
-			currenciesData[ currencies[ 0 ] ]
-		);
-	if ( 2 === currencies.length )
-		return currencies
-			.map( ( d ) => currenciesData[ d ] )
-			.map( StringRepresentationOfCurrency )
-			.join( __( ' and ' ) );
-
-	const lastCurrency = currenciesData[ currencies.pop() ];
-	return (
-		currencies
-			.map( ( d ) => currenciesData[ d ] )
-			.map( StringRepresentationOfCurrency )
-			.join( ', ' ) +
-		', ' +
-		__( 'and', 'woocommerce-payments' ) +
-		' ' +
-		StringRepresentationOfCurrency( lastCurrency )
+	const filteredCurrencies = currencies.filter(
+		( code ) => code !== except && currenciesData[ code ]
 	);
+	const __and = __( 'and', 'woocommerce-payments' );
+	return filteredCurrencies
+		.map( ( code ) =>
+			StringRepresentationOfCurrency( currenciesData[ code ] )
+		)
+		.join( ', ' )
+		.replace(
+			/, ([^,]+)$/,
+			2 === filteredCurrencies.length
+				? ' ' + __and + ' $1'
+				: ', ' + __and + ' $1'
+		);
 };
