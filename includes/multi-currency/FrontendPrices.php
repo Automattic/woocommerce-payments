@@ -39,7 +39,7 @@ class FrontendPrices {
 		$this->multi_currency = $multi_currency;
 		$this->compatibility  = $compatibility;
 
-		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
+		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			// Simple product price hooks.
 			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price' ], 50, 2 );
 			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price' ], 50, 2 );

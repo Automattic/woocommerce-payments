@@ -9,9 +9,11 @@ namespace WCPay\MultiCurrency;
 
 use WC_Payments;
 use WC_Payments_Account;
+use WC_Payments_Utils;
 use WC_Payments_API_Client;
 use WC_Payments_Localization_Service;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Logger;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
@@ -113,23 +115,23 @@ class MultiCurrency {
 	/**
 	 * The available currencies.
 	 *
-	 * @var array
+	 * @var Currency[]|null
 	 */
-	protected $available_currencies = [];
+	protected $available_currencies = null;
 
 	/**
 	 * The default currency.
 	 *
-	 * @var Currency
+	 * @var Currency|null
 	 */
-	protected $default_currency;
+	protected $default_currency = null;
 
 	/**
 	 * The enabled currencies.
 	 *
-	 * @var array
+	 * @var Currency[]|null
 	 */
-	protected $enabled_currencies = [];
+	protected $enabled_currencies = null;
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -151,6 +153,13 @@ class MultiCurrency {
 	 * @var WC_Payments_Localization_Service
 	 */
 	private $localization_service;
+
+	/**
+	 * Tracking instance.
+	 *
+	 * @var Tracking
+	 */
+	protected $tracking;
 
 	/**
 	 * Main MultiCurrency Instance.
@@ -186,7 +195,7 @@ class MultiCurrency {
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
-			add_action( 'admin_head', [ $this, 'set_client_rounding_precision' ] );
+			add_action( 'admin_head', [ $this, 'set_client_format_and_rounding_precision' ] );
 		}
 
 		add_action( 'init', [ $this, 'init' ] );
@@ -232,6 +241,7 @@ class MultiCurrency {
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
+		$this->tracking            = new Tracking( $this );
 
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
@@ -307,6 +317,7 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function clear_cache() {
+		Logger::debug( 'Clearing the cache to force new rates to be fetched from the server.' );
 		delete_option( self::CURRENCY_CACHE_OPTION );
 	}
 
@@ -406,6 +417,30 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Generates the switcher widget markup.
+	 *
+	 * @param array $instance The widget's instance settings.
+	 * @param array $args     The widget's arguments.
+	 *
+	 * @return string The widget markup.
+	 */
+	public function get_switcher_widget_markup( array $instance = [], array $args = [] ): string {
+		/**
+		 * The spl_object_hash function is used here due to we register the widget with an instance of the widget and
+		 * not the class name of the widget. WordPress core takes the instance and passes it through spl_object_hash
+		 * to get a hash and adds that as the widget's name in the $wp_widget_factory->widgets[] array. In order to
+		 * call the_widget, you need to have the name of the widget, so we get the instance and hash to use.
+		 */
+		ob_start();
+		the_widget(
+			spl_object_hash( $this->get_currency_switcher_widget() ),
+			apply_filters( $this->id . '_theme_widget_instance', $instance ),
+			apply_filters( $this->id . '_theme_widget_args', $args )
+		);
+		return ob_get_clean();
+	}
+
+	/**
 	 * Sets up the available currencies, which are alphabetical by name.
 	 *
 	 * @return void
@@ -489,33 +524,46 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function set_default_currency() {
-		$this->default_currency = $this->available_currencies[ get_woocommerce_currency() ] ?? null;
+		$available_currencies   = $this->get_available_currencies();
+		$this->default_currency = $available_currencies[ get_woocommerce_currency() ] ?? null;
 	}
 
 	/**
-	 * Gets the currencies available.
+	 * Gets the currencies available. Initializes it if needed.
 	 *
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_available_currencies(): array {
+		if ( null !== $this->available_currencies ) {
+			return $this->available_currencies;
+		}
+		$this->init();
 		return $this->available_currencies;
 	}
 
 	/**
-	 * Gets the store base currency.
+	 * Gets the store base currency. Initializes it if needed.
 	 *
 	 * @return Currency The store base currency.
 	 */
 	public function get_default_currency(): Currency {
+		if ( null !== $this->default_currency ) {
+			return $this->default_currency;
+		}
+		$this->init();
 		return $this->default_currency;
 	}
 
 	/**
-	 * Gets the currently enabled currencies.
+	 * Gets the currently enabled currencies. Initializes it if needed.
 	 *
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_enabled_currencies(): array {
+		if ( null !== $this->enabled_currencies ) {
+			return $this->enabled_currencies;
+		}
+		$this->init();
 		return $this->enabled_currencies;
 	}
 
@@ -529,11 +577,16 @@ class MultiCurrency {
 	public function set_enabled_currencies( $currencies = [] ) {
 		if ( 0 < count( $currencies ) ) {
 			// Get the currencies that were removed before they are updated.
-			$removed_currencies = array_diff( array_keys( $this->enabled_currencies ), $currencies );
+			$removed_currencies = array_diff( array_keys( $this->get_enabled_currencies() ), $currencies );
 
 			// Update the enabled currencies and reinitialize.
 			update_option( $this->id . '_enabled_currencies', $currencies );
 			$this->initialize_enabled_currencies();
+
+			Logger::debug(
+				'Enabled currencies updated: '
+				. var_export( $currencies, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			);
 
 			// Now remove the removed currencies settings.
 			$this->remove_currencies_settings( $removed_currencies );
@@ -550,7 +603,7 @@ class MultiCurrency {
 
 		$code = $this->compatibility->override_selected_currency() ? $this->compatibility->override_selected_currency() : $code;
 
-		return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
+		return $this->get_enabled_currencies()[ $code ] ?? $this->get_default_currency();
 	}
 
 	/**
@@ -838,6 +891,7 @@ class MultiCurrency {
 			'updated'    => $updated,
 		];
 
+		Logger::debug( 'Saved currencies fetched from the server to the cache. Expiry: ' . gmdate( 'Y-m-d H:i:s', time() + $expiration ) );
 		return update_option( self::CURRENCY_CACHE_OPTION, $currency_cache, 'no' );
 	}
 
@@ -932,7 +986,7 @@ class MultiCurrency {
 		$code = is_a( $currency, Currency::class ) ? $currency->get_code() : strtoupper( $currency );
 
 		// Bail if the currency code passed is not 3 characters, or if the currency is presently enabled.
-		if ( 3 !== strlen( $code ) || isset( $this->enabled_currencies[ $code ] ) ) {
+		if ( 3 !== strlen( $code ) || isset( $this->get_enabled_currencies()[ $code ] ) ) {
 			return;
 		}
 
@@ -997,16 +1051,31 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Reduces the client rounding precision to 2
+	 * Apply client order currency format and reduces the rounding precision to 2.
+	 *
+	 * @psalm-suppress InvalidGlobal
 	 *
 	 * @return  void
 	 */
-	public function set_client_rounding_precision() {
+	public function set_client_format_and_rounding_precision() {
 		$screen = get_current_screen();
 		if ( 'post' === $screen->base && 'shop_order' === $screen->post_type ) :
+			global $post;
+			$currency                     = wc_get_order( $post->ID )->get_currency();
+			$currency_format_num_decimals = $this->backend_currencies->get_price_decimals( $currency );
+			$currency_format_decimal_sep  = $this->backend_currencies->get_price_decimal_separator( $currency );
+			$currency_format_thousand_sep = $this->backend_currencies->get_price_thousand_separator( $currency );
+			$currency_format              = str_replace( [ '%1$s', '%2$s', '&nbsp;' ], [ '%s', '%v', ' ' ], $this->backend_currencies->get_woocommerce_price_format( $currency ) );
+
 			$rounding_precision = wc_get_price_decimals() ?? wc_get_rounding_precision();
 			?>
-		<script>woocommerce_admin_meta_boxes.rounding_precision = <?php echo intval( $rounding_precision ); ?>;</script>
+		<script>
+		woocommerce_admin_meta_boxes.currency_format_num_decimals = <?php echo intval( $currency_format_num_decimals ); ?>;
+		woocommerce_admin_meta_boxes.currency_format_decimal_sep = '<?php echo esc_attr( $currency_format_decimal_sep ); ?>';
+		woocommerce_admin_meta_boxes.currency_format_thousand_sep = '<?php echo esc_attr( $currency_format_thousand_sep ); ?>';
+		woocommerce_admin_meta_boxes.currency_format = '<?php echo esc_attr( $currency_format ); ?>';
+		woocommerce_admin_meta_boxes.rounding_precision = <?php echo intval( $rounding_precision ); ?>;
+		</script>
 			<?php
 		endif;
 	}

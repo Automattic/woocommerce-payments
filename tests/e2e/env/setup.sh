@@ -231,5 +231,9 @@ fi
 
 cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
 
+echo "Disabling rate limiter for card declined in E2E tests"
+
+cli wp option add wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
+
 echo
 step "Client site is up and running at http://${WP_URL}/wp-admin/"

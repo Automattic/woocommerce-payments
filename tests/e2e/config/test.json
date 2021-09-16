@@ -32,6 +32,7 @@
         "country": "United States (US)",
         "addressfirstline": "60 29th Street #343",
         "addresssecondline": "store",
+        "countryandstate": "United States (US) — California",
         "city": "San Francisco",
         "state": "CA",
         "postcode": "94110"
@@ -208,6 +209,18 @@
       },
       "cvc": "11",
       "label": "Visa ending in 4242"
+    }
+  },
+  "onboardingwizard": {
+    "industry": "Test industry",
+    "numberofproducts": "1 - 10",
+    "sellingelsewhere": "No"
+  },
+  "settings": {
+    "shipping": {
+      "zonename": "United States",
+      "zoneregions": "United States (US)",
+      "shippingmethod": "Free shipping"
     }
   }
 }

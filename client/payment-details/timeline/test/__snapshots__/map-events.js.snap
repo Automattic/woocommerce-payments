@@ -316,7 +316,7 @@ Array [
       "Fee: $15.00",
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "$36.60 will be deducted from a future deposit.",
+    "headline": "$36.60 USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -362,7 +362,7 @@ Array [
     ],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": <React.Fragment>
-      $44.99 was added to your 
+      $44.99 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
         type="wc-admin"
@@ -417,7 +417,7 @@ Array [
       "1,00 EUR → 1.20222 USD: $21.64 USD",
     ],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "A payment of €18,00 was successfully refunded.",
+    "headline": "A payment of €18,00 EUR was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -454,7 +454,7 @@ Array [
       "1,00 EUR → 1.2 USD: $6.00 USD",
     ],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "A payment of €5,00 was successfully refunded.",
+    "headline": "A payment of €5,00 EUR was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -634,7 +634,7 @@ Array [
       "Fee: $15.00",
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "$110.00 will be deducted from a future deposit.",
+    "headline": "$110.00 USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -680,7 +680,7 @@ Array [
     ],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": <React.Fragment>
-      $115.00 was added to your 
+      $115.00 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
         type="wc-admin"
@@ -723,7 +723,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "$100.00 will be deducted from a future deposit.",
+    "headline": "$100.00 USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -735,7 +735,7 @@ Array [
       undefined,
     ],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "A payment of $100.00 was successfully refunded.",
+    "headline": "A payment of $100.00 USD was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -760,7 +760,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "$50.00 will be deducted from a future deposit.",
+    "headline": "$50.00 USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -772,7 +772,7 @@ Array [
       undefined,
     ],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "A payment of $50.00 was successfully refunded.",
+    "headline": "A payment of $50.00 USD was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"

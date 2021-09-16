@@ -57,7 +57,7 @@ class WC_Payments_Fraud_Service_Test extends WP_UnitTestCase {
 		$this->assertNotFalse( has_filter( 'wcpay_prepare_fraud_config', [ $this->fraud_service, 'prepare_fraud_config' ] ) );
 		$this->assertNotFalse( has_filter( 'wcpay_current_session_id', [ $this->fraud_service, 'get_session_id' ] ) );
 		$this->assertNotFalse( has_action( 'init', [ $this->fraud_service, 'link_session_if_user_just_logged_in' ] ) );
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->fraud_service, 'send_forter_token' ] ) );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->fraud_service, 'send_forter_cookie_token' ] ) );
 	}
 
 	public function test_prepare_fraud_config_forter_returns_null_when_is_not_admin() {
@@ -94,7 +94,7 @@ class WC_Payments_Fraud_Service_Test extends WP_UnitTestCase {
 		$this->fraud_service->send_forter_token( 'token' );
 	}
 
-	public function test_send_forter_token_returns_early_without_cookie_and_token() {
+	public function test_send_forter_token_returns_early_without_token() {
 		$this->mock_account
 			->method( 'is_stripe_connected' )
 			->willReturn( true );
@@ -122,23 +122,6 @@ class WC_Payments_Fraud_Service_Test extends WP_UnitTestCase {
 			->method( 'get_stripe_account_id' );
 
 		$this->fraud_service->send_forter_token( 'token' );
-	}
-
-	public function test_send_forter_token_proceed_with_cookie_only() {
-		$_COOKIE['forterToken'] = 'token';
-
-		$this->mock_account
-			->method( 'is_stripe_connected' )
-			->willReturn( true );
-		$this->mock_account
-			->method( 'get_fraud_services_config' )
-			->willReturn( [ 'forter' => [] ] );
-
-		$this->mock_account
-			->expects( $this->once() )
-			->method( 'get_stripe_account_id' );
-
-		$this->fraud_service->send_forter_token();
 	}
 
 	public function test_send_forter_token_send_only_once() {
@@ -203,6 +186,24 @@ class WC_Payments_Fraud_Service_Test extends WP_UnitTestCase {
 		$this->fraud_service->send_forter_token( 'token' );
 
 		$this->assertSame( 'acct_id', get_option( 'wcpay_forter_token_sent' ) );
+	}
+
+	public function send_forter_cookie_token_do_nothing_without_cookie() {
+		$this->mock_account
+			->expects( $this->never() )
+			->method( 'is_stripe_connected' );
+
+		$this->fraud_service->send_forter_cookie_token();
+	}
+
+	public function send_forter_cookie_token_proceed() {
+		$_COOKIE['forterToken'] = 'token';
+
+		$this->mock_account
+			->expects( $this->once() )
+			->method( 'is_stripe_connected' );
+
+		$this->fraud_service->send_forter_cookie_token();
 	}
 
 

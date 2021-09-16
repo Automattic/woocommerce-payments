@@ -451,7 +451,7 @@ const mapEventToTimelineItems = ( event ) => {
 			];
 		case 'partial_refund':
 		case 'full_refund':
-			const formattedAmount = formatCurrency(
+			const formattedAmount = formatExplicitCurrency(
 				event.amount_refunded,
 				event.currency
 			);
@@ -539,7 +539,7 @@ const mapEventToTimelineItems = ( event ) => {
 					],
 				};
 			} else {
-				const formattedTotal = formatCurrency(
+				const formattedExplicitTotal = formatExplicitCurrency(
 					Math.abs( event.amount ) + Math.abs( event.fee ),
 					event.currency
 				);
@@ -551,7 +551,7 @@ const mapEventToTimelineItems = ( event ) => {
 					: formatCurrency( event.amount, event.currency );
 				depositTimelineItem = getDepositTimelineItem(
 					event,
-					formattedTotal,
+					formattedExplicitTotal,
 					false,
 					[
 						sprintf(
@@ -605,7 +605,7 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 			];
 		case 'dispute_won':
-			const formattedTotal = formatCurrency(
+			const formattedExplicitTotal = formatExplicitCurrency(
 				Math.abs( event.amount ) + Math.abs( event.fee ),
 				event.currency
 			);
@@ -614,7 +614,7 @@ const mapEventToTimelineItems = ( event ) => {
 					event,
 					__( 'Disputed: Won', 'woocommerce-payments' )
 				),
-				getDepositTimelineItem( event, formattedTotal, true, [
+				getDepositTimelineItem( event, formattedExplicitTotal, true, [
 					sprintf(
 						/* translators: %s is a monetary amount */
 						__( 'Dispute reversal: %s', 'woocommerce-payments' ),

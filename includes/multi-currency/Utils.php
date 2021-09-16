@@ -29,4 +29,13 @@ class Utils {
 		}
 		return false;
 	}
+
+	/**
+	 * Checks if is a REST API request and the HTTP referer matches admin url.
+	 *
+	 * @return boolean
+	 */
+	public static function is_admin_api_request(): bool {
+		return 0 === stripos( wp_get_referer(), admin_url() ) && WC()->is_rest_api_request();
+	}
 }
