@@ -2,18 +2,18 @@
  * External dependencies
  */
 import React from 'react';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
-import EnabledCurrencies from '../';
+import SingleCurrencySettings from '../';
 import {
 	useCurrencies,
 	useAvailableCurrencies,
 	useDefaultCurrency,
 	useEnabledCurrencies,
+	useCurrencySettings,
 } from 'wcpay/data';
 
 import MultiCurrencySettingsContext from '../../context';
@@ -23,6 +23,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useAvailableCurrencies: jest.fn(),
 	useDefaultCurrency: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
+	useCurrencySettings: jest.fn(),
 } ) );
 
 const availableCurrencies = {
@@ -185,9 +186,22 @@ useEnabledCurrencies.mockReturnValue( {
 	submitEnabledCurrenciesUpdate: () => {},
 } );
 
+useCurrencySettings.mockReturnValue( {
+	currencySettings: {
+		EUR: {
+			exchange_rate_type: 'automatic',
+			manual_rate: null,
+			price_charm: null,
+			price_rounding: null,
+		},
+	},
+	isLoading: false,
+	submitCurrencySettings: jest.fn(),
+} );
+
 const containerContext = {
-	isSingleCurrencyScreenOpen: false,
-	currencyCodeToShowSettingsFor: null,
+	isSingleCurrencyScreenOpen: true,
+	currencyCodeToShowSettingsFor: 'EUR',
 	openSingleCurrencySettings: jest.fn(),
 	closeSingleCurrencySettings: jest.fn(),
 };
@@ -195,75 +209,100 @@ const containerContext = {
 const getContainer = () => {
 	return render(
 		<MultiCurrencySettingsContext.Provider value={ containerContext }>
-			<EnabledCurrencies />
+			<SingleCurrencySettings />
 		</MultiCurrencySettingsContext.Provider>
 	);
 };
 
-describe( 'Multi Currency enabled currencies list', () => {
+describe( 'Single currency settings screen', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = { zeroDecimalCurrencies: [] };
 	} );
 
-	test( 'Enabled currencies list renders correctly', () => {
+	test( 'Page renders correctly', () => {
 		const { container } = getContainer();
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'Available currencies modal renders correctly', () => {
+	test( 'Settings work correctly', () => {
 		getContainer();
 		expect(
-			screen.queryByRole( 'dialog', { name: /add enabled currencies/i } )
-		).not.toBeInTheDocument();
-		fireEvent.click(
-			screen.getByRole( 'button', { name: /add currencies/i } )
-		);
-		const modal = screen.queryByRole( 'dialog', {
-			name: /add enabled currencies/i,
+			screen.queryByText( /Currency Settings/i )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText( /Current rate: 1 USD = 0.826381 EUR/ )
+		).toBeInTheDocument();
+
+		// Check the selects if they have default values.
+		expect( screen.getByTestId( 'price_rounding' ) ).toHaveValue( '1' );
+		expect( screen.getByTestId( 'price_charm' ) ).toHaveValue( '0' );
+
+		// Test when Automatic rate selected.
+		expect(
+			screen.getByRole( 'radio', { name: /Fetch rates automatically/ } )
+		).toBeChecked();
+		expect( screen.queryByTestId( 'manual_rate_input' ) ).toBeNull();
+		expect( screen.getByTestId( 'store_currency_value' ) ).toBeVisible();
+		fireEvent.change( screen.getByTestId( 'store_currency_value' ), {
+			target: {
+				value: '10',
+			},
 		} );
-		expect( modal ).toBeInTheDocument();
-		expect( modal ).toMatchSnapshot();
-	} );
-
-	test( 'Remove currency modal renders correctly', () => {
-		getContainer();
-		expect(
-			screen.queryByRole( 'dialog', { name: /remove euro/i } )
-		).not.toBeInTheDocument();
-		fireEvent.click(
-			screen.getByRole( 'button', {
-				name: /remove euro as an enabled currency/i,
-			} )
+		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
+			'8.00€'
 		);
-		const modal = screen.queryByRole( 'dialog', { name: /remove euro/i } );
-		expect( modal ).toBeInTheDocument();
-		expect( modal ).toMatchSnapshot();
-	} );
+		// Manual Rate calculation.
+		fireEvent.click( screen.getByRole( 'radio', { name: /Manual/ } ) );
+		expect( screen.getByTestId( 'manual_rate_input' ) ).toBeVisible();
+		fireEvent.change( screen.getByTestId( 'manual_rate_input' ), {
+			target: {
+				value: '2',
+			},
+		} );
 
-	test( 'Modal should clear search term on cancel and update selected', () => {
-		for ( const name of [ /cancel/i, /update selected/i ] ) {
-			getContainer();
-			userEvent.click(
-				screen.getByRole( 'button', {
-					name: /add currencies/i,
-				} )
-			);
-			userEvent.type( screen.getByRole( 'textbox' ), 'dollar' );
-			userEvent.click(
-				screen.getByRole( 'button', {
-					name,
-				} )
-			);
-			userEvent.click(
-				screen.getByRole( 'button', {
-					name: /add currencies/i,
-				} )
-			);
-			expect(
-				screen.queryByDisplayValue( 'dollar' )
-			).not.toBeInTheDocument();
-			cleanup();
-		}
+		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
+			'20.00€'
+		);
+
+		fireEvent.change( screen.getByTestId( 'manual_rate_input' ), {
+			target: {
+				value: '1.77',
+			},
+		} );
+
+		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
+			'17.00€'
+		);
+
+		// Price rounding calculation.
+		fireEvent.change( screen.getByTestId( 'price_rounding' ), {
+			target: { value: '0.5' },
+		} );
+		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
+			'17.50€'
+		);
+
+		// Price charm calculation.
+		fireEvent.change( screen.getByTestId( 'price_charm' ), {
+			target: { value: '-0.05' },
+		} );
+		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
+			'17.45€'
+		);
+
+		// Submit settings test.
+		const { submitCurrencySettings } = useCurrencySettings();
+
+		fireEvent.click(
+			screen.getByRole( 'button', { name: /Save Changes/i } )
+		);
+
+		expect( submitCurrencySettings ).toHaveBeenCalledWith( 'EUR', {
+			exchange_rate_type: 'manual',
+			manual_rate: '1.77',
+			price_rounding: '0.5',
+			price_charm: '-0.05',
+		} );
 	} );
 } );
