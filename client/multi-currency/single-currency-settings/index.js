@@ -160,7 +160,7 @@ const SingleCurrencySettings = () => {
 
 	return (
 		<div className={ 'single-currency-settings' }>
-			<SettingsLayout>
+			<SettingsLayout displayBanner={ false }>
 				<h2 className={ 'single-currency-settings-breadcrumb' }>
 					<Button
 						isLink
