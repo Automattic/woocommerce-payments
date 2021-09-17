@@ -1,11 +1,7 @@
 /**
  * Internal dependencies
  */
-import {
-	useCurrencies,
-	useDefaultCurrency,
-	useEnabledCurrencies,
-} from 'wcpay/data';
+import { useCurrencies, useEnabledCurrencies } from 'wcpay/data';
 
 /**
  * External dependencies
@@ -20,10 +16,7 @@ import {
 	RangeControl,
 } from '@wordpress/components';
 import { registerBlockType } from '@wordpress/blocks';
-import {
-	InspectorControls,
-	useBlockProps,
-} from '@wordpress/block-editor';
+import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 
 registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 	apiVersion: 2,
@@ -98,11 +91,20 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 			{ name: 'blue', color: '#00f' },
 		];
 
-		const { isLoading } = useCurrencies();
-		const defaultCurrency = useDefaultCurrency();
-		const {
-			enabledCurrencies,
-		} = useEnabledCurrencies();
+		// eslint-disable-next-line react-hooks/rules-of-hooks
+		const isLoading = useCurrencies();
+		// eslint-disable-next-line react-hooks/rules-of-hooks
+		const enabledCurrencies = useEnabledCurrencies();
+
+		const enabledKeys = enabledCurrencies
+			? Object.keys( enabledCurrencies )
+			: [];
+
+		const placeholders = [
+			{ id: 'usd', code: 'USD', flag: '🇺🇸', symbol: '$' },
+			{ id: 'eur', code: 'EUR', flag: '🇪🇺', symbol: '€' },
+			{ id: 'jpy', code: 'JPY', flag: '🇯🇵', symbol: '¥' },
+		];
 
 		// eslint-disable-next-line react-hooks/rules-of-hooks
 		const blockProps = useBlockProps();
@@ -274,19 +276,43 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 					</PanelBody>
 				</InspectorControls>
 
-				<span className="gamma widget-title">
-					{ title === undefined ? 'Currency Switcher' : title }
-				</span>
+				<div className="widget widget-block">
+					<span className="gamma widget-title">
+						{ title === undefined ? 'Currency Switcher' : title }
+					</span>
 
-				<select name="currency" aria-label={ title }>
-					{ enabledCurrencies.map( ( currency, i ) => (
-						<option key={ i } value={ currency['code'] }>
-							{ flag ? currency['flag'] + ' ' : '' }
-							{ symbol ? currency['symbol'] + ' ' : '' }
-							{ currency['name'] }
-						</option>
-					) ) }
-				</select>
+					<select name="currency" aria-label={ title }>
+						{ ! isLoading &&
+							enabledCurrencies &&
+							enabledKeys.map( ( code ) => (
+								<option
+									key={ enabledCurrencies[ code ].id }
+									value={ enabledCurrencies[ code ].code }
+								>
+									{ flag
+										? enabledCurrencies[ code ].flag + ' '
+										: '' }
+									{ symbol
+										? enabledCurrencies[ code ].symbol + ' '
+										: '' }
+									{ enabledCurrencies[ code ].code }
+								</option>
+							) ) }
+						{ isLoading &&
+							[ 0, 1, 2 ].map( ( i ) => (
+								<option
+									key={ placeholders[ i ].id }
+									value={ placeholders[ i ].code }
+								>
+									{ flag ? placeholders[ i ].flag + ' ' : '' }
+									{ symbol
+										? placeholders[ i ].symbol + ' '
+										: '' }
+									{ placeholders[ i ].code }
+								</option>
+							) ) }
+					</select>
+				</div>
 			</div>
 		);
 	},
