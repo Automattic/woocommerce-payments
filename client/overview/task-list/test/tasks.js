@@ -166,6 +166,33 @@ describe( 'getTasks()', () => {
 		);
 	} );
 
+	it( 'returns expected button labels on tasks', () => {
+		const tasks = getTasks( {
+			isAccountOverviewTasksEnabled: true,
+			showUpdateDetailsTask: 'yes',
+			wpcomReconnectUrl: 'http://example.com',
+			accountStatus: {},
+			needsHttpsSetup: true,
+		} );
+
+		expect( tasks ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'update-business-details',
+					actionLabel: 'Update',
+				} ),
+				expect.objectContaining( {
+					key: 'reconnect-wpcom-user',
+					actionLabel: 'Reconnect',
+				} ),
+				expect.objectContaining( {
+					key: 'force-secure-checkout',
+					actionLabel: 'Read more',
+				} ),
+			] )
+		);
+	} );
+
 	describe( 'additional method setup task', () => {
 		beforeEach( () => {
 			createAdditionalMethodsSetupTask.mockReturnValue( {} );

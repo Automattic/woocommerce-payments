@@ -39,6 +39,7 @@ const OverviewPage = () => {
 		multiCurrencySetup,
 		wpcomReconnectUrl,
 		needsHttpsSetup,
+		isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 	} );
 	const queryParams = getQuery();
 
