@@ -192,6 +192,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-sepa-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-p24-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
@@ -244,6 +245,7 @@ class WC_Payments {
 			$payment_method_classes = [
 				CC_Payment_Method::class,
 				Bancontact_Payment_Method::class,
+				Sepa_Payment_Method::class,
 				Giropay_Payment_Method::class,
 				Sofort_Payment_Method::class,
 				P24_Payment_Method::class,
@@ -751,6 +753,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$tos_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-terminal-locations-controller.php';
+		$accounts_controller = new WC_REST_Payments_Terminal_Locations_Controller( self::$api_client );
+		$accounts_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-fraud-controller.php';
 		$fraud_controller = new WC_REST_Payments_Fraud_Controller( self::$api_client );

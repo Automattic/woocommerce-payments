@@ -58,7 +58,7 @@ describe( 'WcPaySurveyContextProvider', () => {
 			isSurveySubmitted: false,
 			submitSurvey: expect.any( Function ),
 			status: 'resolved',
-			surveyAnswers: {},
+			surveyAnswers: { 'why-disable': 'slow-buggy' },
 			setSurveyAnswers: expect.any( Function ),
 		} );
 		expect( apiFetch ).not.toHaveBeenCalled();
