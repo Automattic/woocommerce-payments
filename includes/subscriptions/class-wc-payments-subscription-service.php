@@ -299,12 +299,9 @@ class WC_Payments_Subscription_Service {
 	 */
 	private function prepare_wcpay_subscription_data( string $wcpay_customer_id, WC_Subscription $subscription ) {
 		$items = $this->product_service->get_product_data_for_subscription( $subscription );
-
-		$data = [
-			'customer'           => $wcpay_customer_id,
-			'items'              => $items,
-			'proration_behavior' => 'none',
-			'payment_behavior'   => 'default_incomplete', // creates an incomplete/pending wcpay subscription while still processing the payment on checkout.
+		$data  = [
+			'customer' => $wcpay_customer_id,
+			'items'    => $items,
 		];
 
 		if ( self::has_delayed_payment( $subscription ) ) {
