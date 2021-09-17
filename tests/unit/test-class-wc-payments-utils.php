@@ -328,9 +328,32 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		$this->assertEquals( WC_Payments_Utils::get_order_intent_currency( $order ), 'EUR' );
 	}
 
+	public function test_prepare_amount() {
+		$this->assertEquals( 2450.0, WC_Payments_Utils::prepare_amount( 245 ) );
+		$this->assertEquals( 1000, WC_Payments_Utils::prepare_amount( 100, 'USD' ) );
+		$this->assertEquals( 100, WC_Payments_Utils::prepare_amount( 100, 'JPY' ) );
+		$this->assertEquals( 500, WC_Payments_Utils::prepare_amount( 500, 'jpy' ) );
+
+	}
+
 	public function test_interpret_stripe_amount() {
-		$this->assertEquals( WC_Payments_Utils::interpret_stripe_amount( 100, 'usd' ), 1 );
-		$this->assertEquals( WC_Payments_Utils::interpret_stripe_amount( 100, 'jpy' ), 100 );
+		$this->assertEquals( 1, WC_Payments_Utils::interpret_stripe_amount( 100 ) );
+		$this->assertEquals( 1, WC_Payments_Utils::interpret_stripe_amount( 100, 'usd' ) );
+		$this->assertEquals( 1, WC_Payments_Utils::interpret_stripe_amount( 100, 'eur' ) );
+		$this->assertEquals( 100, WC_Payments_Utils::interpret_stripe_amount( 100, 'jpy' ) );
+		$this->assertEquals( 100, WC_Payments_Utils::interpret_stripe_amount( 100, 'bif' ) );
+	}
+
+	public function test_interpret_stripe_exchange_rate() {
+		$this->assertEquals( 1.00, WC_Payments_Utils::interpret_string_exchange_rate( 1.00, 'USD', 'USD' ) );
+		$this->assertEquals( 0.63, WC_Payments_Utils::interpret_string_exchange_rate( 0.63, 'USD', 'EUR' ) );
+		$this->assertEquals( 6.63, WC_Payments_Utils::interpret_string_exchange_rate( 0.0063, 'USD', 'JPY' ) );
+		$this->assertEquals( 0.0063, WC_Payments_Utils::interpret_string_exchange_rate( 6.63, 'JPY', 'USD' ) );
+	}
+
+	public function test_is_zero_decimal_currency() {
+		$this->assertEquals( false, WC_Payments_Utils::is_zero_decimal_currency( 'usd' ) );
+		$this->assertEquals( true, WC_Payments_Utils::is_zero_decimal_currency( 'jpy' ) );
 	}
 
 	public function test_it_returns_is_payment_settings_page_for_main_settings_page() {

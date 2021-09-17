@@ -124,6 +124,21 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->update_option( 'saved_cards', 'yes' );
 	}
 
+	public function test_attach_exchange_info_to_order() {
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'USD' );
+		$order->save();
+
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		// TODO: finish this test.
+	}
+
 	public function test_process_refund() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';

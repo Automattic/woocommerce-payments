@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Logger;
+use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
@@ -1110,15 +1111,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$currency_order   = $order->get_currency();
-		$currency_account = $this->account->get_account_default_currency();
+		$currency_store   = strtolower( WC_Payments_Multi_Currency()->get_default_currency()->get_code() ) ?? null;
+		$currency_order   = strtolower( $order->get_currency() );
+		$currency_account = strtolower( $this->account->get_account_default_currency() );
 
-		if ( strtolower( $currency_order ) !== $currency_account ) {
+		// If the default currency for the store is different from the currency for the merchant's Stripe account,
+		// the conversion rate provided by Stripe won't make sense, so we should not attach it to the order meta data
+		// and instead we'll rely on the _wcpay_multi_currency_order_exchange_rate meta key for analytics.
+		if ( $currency_store !== $currency_account ) {
+			return;
+		}
+
+		if ( $currency_order !== $currency_account ) {
 			// We check that the currency used in the order is different than the one set in the WC Payments account
 			// to avoid requesting the charge if not needed.
 			$charge        = $this->payments_api_client->get_charge( $charge_id );
 			$exchange_rate = $charge['balance_transaction']['exchange_rate'] ?? null;
 			if ( isset( $exchange_rate ) ) {
+				$exchange_rate = WC_Payments_Utils::interpret_string_exchange_rate( $exchange_rate, $currency_order, $currency_account );
 				$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
 				$order->save_meta_data();
 			}
