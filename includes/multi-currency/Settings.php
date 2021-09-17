@@ -96,17 +96,6 @@ class Settings extends \WC_Settings_Page {
 				$this->id . '_enabled_currencies_settings',
 				[
 					[
-						'title' => __( 'Enabled currencies', 'woocommerce-payments' ),
-						'desc'  => sprintf(
-							/* translators: %s: url to documentation. */
-							__( 'Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules. <a href="%s">Learn more</a>', 'woocommerce-payments' ),
-							self::LEARN_MORE_URL
-						),
-						'type'  => 'title',
-						'id'    => $this->id . '_enabled_currencies',
-					],
-
-					[
 						'type' => 'wcpay_enabled_currencies_list',
 					],
 
@@ -120,25 +109,19 @@ class Settings extends \WC_Settings_Page {
 					],
 
 					[
-						'title' => __( 'Store settings', 'woocommerce-payments' ),
-						'desc'  => sprintf(
-							/* translators: %s: url to documentation. */
-							__( 'Store settings allow your customers to choose which currency they would like to use when shopping at your store. <a href="%s" target="blank">Learn more</a>', 'woocommerce-payments' ),
-							self::LEARN_MORE_URL
-						),
 						'type'  => 'title',
 						'id'    => $this->id . '_store_settings',
 						'class' => $this->id . '_store_settings_input',
 					],
 
 					[
-						'title'    => __( 'Store settings', 'woocommerce-payments' ),
 						'desc'     => __( 'Automatically switch customers to their local currency if it is enabled above.', 'woocommerce-payments' ),
 						// TODO: Preview link, to be done on #2523.
 						'desc_tip' => __( 'Customers will be notified via store alert banner.', 'woocommerce-payments' ),
 						'id'       => $this->id . '_enable_auto_currency',
 						'default'  => 'yes',
 						'type'     => 'checkbox',
+						'class'    => 'components-checkbox-control__input',
 					],
 
 					[
