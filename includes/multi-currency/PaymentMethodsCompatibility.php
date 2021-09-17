@@ -65,10 +65,11 @@ class PaymentMethodsCompatibility {
 				if ( in_array( $method, [ 'card', 'card_present' ], true ) ) {
 					return $result;
 				}
+				$class_key = $method;
 				if ( 'sepa_debit' === $method ) {
-					$method = 'sepa';
+					$class_key = 'sepa';
 				}
-				$class_name = '\\WCPay\\Payment_Methods\\' . ucfirst( strtolower( $method ) ) . '_Payment_Method';
+				$class_name = '\\WCPay\\Payment_Methods\\' . ucfirst( strtolower( $class_key ) ) . '_Payment_Method';
 				if ( ! class_exists( $class_name ) ) {
 					return $result;
 				}

@@ -172,6 +172,50 @@
 	}
 }
 
+.wcpay-confirmation-modal.wcpay-confirmation-modal.enabled-currency-delete-modal {
+	max-width: 495px;
+	.components-modal__header {
+		padding: 0 16px;
+		margin: 0 -16px 16px;
+		.components-modal__header-heading {
+			font-size: 16px;
+			font-weight: 500;
+			line-height: 24px;
+		}
+		.components-modal__header-heading-container svg {
+			height: 22px;
+			transform: translate( 0, 4px ) rotate( 180deg );
+			margin-right: 6px;
+			fill: #d94f4f;
+		}
+	}
+	.components-modal__content {
+		padding: 0 16px 16px;
+		p {
+			font-size: 14px;
+			line-height: 19px;
+		}
+		ul {
+			margin-block-start: 14px;
+			margin-block-end: 22px;
+			li {
+				margin-bottom: 12px;
+				.woocommerce-payments__payment-method-icon svg {
+					margin-right: 8px;
+				}
+			}
+		}
+	}
+	.wcpay-confirmation-modal__separator {
+		margin: 32px -16px 16px;
+	}
+	.wcpay-confirmation-modal__footer {
+		& > *:not( :first-child ) {
+			margin-left: 12px;
+		}
+	}
+}
+
 @media screen and ( max-width: 600px ) {
 	.add-enabled-currencies-modal {
 		.components-modal__content {
