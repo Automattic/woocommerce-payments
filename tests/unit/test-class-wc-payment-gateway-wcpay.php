@@ -1473,4 +1473,28 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		);
 		$this->assertFalse( $this->wcpay_gateway->is_available_for_current_currency() );
 	}
+
+	public function test_attach_intent_info_to_order_fails_payment_complete() {
+		// test if metadata needed for refunds is being saved despite the payment_complete method.
+		$order = $this->getMockBuilder( WC_Order::class )
+			->disableOriginalConstructor()
+			->setMethods( [ 'update_meta_data', 'save', 'payment_complete' ] )
+			->getMock();
+
+		$intent_id      = 'pi_xxxxxxxxxxxxx';
+		$charge_id      = 'ch_yyyyyyyyyyyyy';
+		$customer_id    = 'cus_12345';
+		$payment_method = 'woocommerce_payments';
+		$intent_status  = 'succeeded';
+		$currency       = 'USD';
+
+		$order->expects( $this->atLeast( 2 ) )->method( 'update_meta_data' )->withConsecutive(
+			[ '_intent_id', $intent_id ],
+			[ '_charge_id', $charge_id ]
+		);
+		$order->method( 'payment_complete' )->willReturn( false );
+		$order->expects( $this->once() )->method( 'save' );
+
+		$this->wcpay_gateway->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+	}
 }
