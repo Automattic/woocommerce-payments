@@ -129,6 +129,14 @@ if ( storeSettingsSection ) {
 	)[ 0 ];
 	storeSettingsContentContainer.appendChild( storeSettingsContent );
 
+	// Place the Store Settings element inside of storeSettingsContainer
+	const storeSettingsNote = document.querySelector(
+		'#wcpay_currencies_settings_section > div > p'
+	);
+
+	if ( storeSettingsNote )
+		storeSettingsContentContainer.appendChild( storeSettingsNote );
+
 	// Position and style Submit button
 	submitButton.style.textAlign = 'right';
 	submitButton.style.display = 'flex';
