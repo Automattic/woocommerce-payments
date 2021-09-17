@@ -37,7 +37,7 @@ class WCPay_Multi_Currency_Currency_Tests extends WP_UnitTestCase {
 		$json = wp_json_encode( $this->currency );
 
 		$this->assertSame(
-			'{"code":"USD","rate":1,"name":"United States (US) dollar","id":"usd","is_default":true,"flag":"\ud83c\uddfa\ud83c\uddf8","symbol":"$","is_zero_decimal":false,"last_updated":' . $this->timestamp_for_testing . '}',
+			'{"code":"USD","rate":1,"name":"United States (US) dollar","id":"usd","is_default":true,"flag":"\ud83c\uddfa\ud83c\uddf8","symbol":"$","symbol_position":"left","is_zero_decimal":false,"last_updated":' . $this->timestamp_for_testing . '}',
 			$json
 		);
 	}
@@ -46,7 +46,7 @@ class WCPay_Multi_Currency_Currency_Tests extends WP_UnitTestCase {
 		$json = wp_json_encode( new Currency( 'WST' ) );
 
 		$this->assertSame(
-			'{"code":"WST","rate":1,"name":"Samoan t\u0101l\u0101","id":"wst","is_default":false,"flag":"\ud83c\uddfc\ud83c\uddf8","symbol":"T","is_zero_decimal":false,"last_updated":null}',
+			'{"code":"WST","rate":1,"name":"Samoan t\u0101l\u0101","id":"wst","is_default":false,"flag":"\ud83c\uddfc\ud83c\uddf8","symbol":"T","symbol_position":"left","is_zero_decimal":false,"last_updated":null}',
 			$json
 		);
 	}
