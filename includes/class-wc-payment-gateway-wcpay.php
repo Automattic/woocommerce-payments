@@ -1591,8 +1591,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->get_level3_data_from_order( $order )
 			);
 
-			$status   = $intent->get_status();
-			$currency = $intent->get_currency();
+			$status    = $intent->get_status();
+			$currency  = $intent->get_currency();
+			$http_code = 200;
 
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
@@ -1633,7 +1634,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			);
 			$order->add_order_note( $note );
 			$order->payment_complete();
-			$http_code = 200;
 		} elseif ( ! empty( $error_message ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
@@ -1651,8 +1651,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				esc_html( $error_message )
 			);
 			$order->add_order_note( $note );
-			// We don't need to set $http_code here
-			// because it will already be set when $error_message is not empty.
 		} else {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
@@ -1663,7 +1661,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order )
 			);
 			$order->add_order_note( $note );
-			$http_code = 500;
+			$http_code = 502;
 		}
 
 		if ( $is_authorization_expired ) {

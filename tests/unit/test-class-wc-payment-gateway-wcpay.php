@@ -804,7 +804,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				'status'    => 'requires_capture',
 				'id'        => $intent_id,
 				'message'   => null,
-				'http_code' => 500,
+				'http_code' => 502,
 			],
 			$result
 		);
@@ -861,7 +861,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				'status'    => 'requires_capture',
 				'id'        => $intent_id,
 				'message'   => null,
-				'http_code' => 500,
+				'http_code' => 502,
 			],
 			$result
 		);
