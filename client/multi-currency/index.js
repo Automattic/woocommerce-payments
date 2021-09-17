@@ -22,9 +22,14 @@ const storeSettingsSection = document.querySelector(
 
 const submitButton = document.querySelector( 'p.submit' );
 
+let storeSettingsContainer;
+
 const displayStoreSettingsSection = ( isDisplaying ) => {
 	storeSettingsSection.style.display = isDisplaying ? 'block' : 'none';
 	submitButton.style.display = isDisplaying ? 'block' : 'none';
+	if ( storeSettingsContainer ) {
+		storeSettingsContainer.style.display = isDisplaying ? 'block' : 'none';
+	}
 };
 
 const MultiCurrencySettingsPage = () => {
@@ -67,8 +72,6 @@ const MultiCurrencySettingsPage = () => {
 	);
 };
 
-let storeSettingsContainer;
-
 /**
  * Mount React Component
  */
@@ -103,7 +106,6 @@ if ( storeSettingsSection ) {
 		const display =
 			0 < enabledCurrenciesListItemsExceptPlaceholders().length;
 		displayStoreSettingsSection( display );
-		storeSettingsContainer.style.display = display ? 'block' : 'none';
 	};
 
 	const enabledCurrenciesObserver = new MutationObserver(
