@@ -11,7 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Logger;
-use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
