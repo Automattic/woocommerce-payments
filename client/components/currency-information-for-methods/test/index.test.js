@@ -59,6 +59,7 @@ describe( 'CurrencyInformationForMethods', () => {
 						'ideal',
 						'p24',
 						'sofort',
+						'sepa_debit',
 					] }
 				/>
 			</FlagsContextWrapper>
@@ -81,6 +82,7 @@ describe( 'CurrencyInformationForMethods', () => {
 						'ideal',
 						'p24',
 						'sofort',
+						'sepa_debit',
 					] }
 				/>
 			</FlagsContextWrapper>
@@ -110,6 +112,7 @@ describe( 'CurrencyInformationForMethods', () => {
 						'ideal',
 						'p24',
 						'sofort',
+						'sepa_debit',
 					] }
 				/>
 			</FlagsContextWrapper>

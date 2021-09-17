@@ -26,6 +26,7 @@ const OverviewPage = () => {
 		accountStatus,
 		showUpdateDetailsTask,
 		additionalMethodsSetup,
+		multiCurrencySetup,
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 		needsHttpsSetup,
@@ -35,6 +36,7 @@ const OverviewPage = () => {
 		accountStatus,
 		showUpdateDetailsTask,
 		additionalMethodsSetup,
+		multiCurrencySetup,
 		wpcomReconnectUrl,
 		needsHttpsSetup,
 	} );
