@@ -1,0 +1,301 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Single currency settings screen Page renders correctly 1`] = `
+<div>
+  <div
+    class="single-currency-settings"
+  >
+    <div
+      class="wcpay-settings-layout"
+    >
+      <h2
+        class="single-currency-settings-breadcrumb"
+      >
+        <button
+          class="components-button is-link"
+          type="button"
+        >
+          Enabled currencies
+        </button>
+         
+        &gt; 
+        Euro
+         (
+        EUR
+        )
+         
+        🇪🇺
+      </h2>
+      <div
+        class="settings-section"
+      >
+        <div
+          class="settings-section__details"
+        >
+          <h2>
+            Currency settings
+          </h2>
+          <p>
+            Choose between automatic or manual exchange rates and modify formatting rules to refine the display of your prices.
+          </p>
+        </div>
+        <div
+          class="settings-section__controls"
+        >
+          <div
+            class="components-card is-size-medium single-currency-settings-currency-settings css-1xs3c37-CardUI e1q7k77g0"
+          >
+            <div
+              class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+            >
+              <h3>
+                Exchange rate
+              </h3>
+              <fieldset>
+                <ul>
+                  <li>
+                    <label
+                      for="single-currency-settings__automatic_rate_radio"
+                    >
+                      <div
+                        class="single-currency-settings-radio-wrapper"
+                      >
+                        <input
+                          checked=""
+                          class="exchange-rate-selector"
+                          id="single-currency-settings__automatic_rate_radio"
+                          name="wcpay_multi_currency_exchange_rate_aud"
+                          type="radio"
+                          value="automatic"
+                        />
+                        <h4>
+                          Fetch rates automatically
+                        </h4>
+                      </div>
+                      <p
+                        class="single-currency-settings-description single-currency-settings-description-inset"
+                      >
+                        Current rate: 1 USD = 0.826381 EUR (Updated hourly, Last updated: Invalid date)
+                      </p>
+                    </label>
+                  </li>
+                  <li>
+                    <label
+                      for="single-currency-settings__manual_rate_radio"
+                    >
+                      <div
+                        class="single-currency-settings-radio-wrapper"
+                      >
+                        <input
+                          class="exchange-rate-selector"
+                          id="single-currency-settings__manual_rate_radio"
+                          name="wcpay_multi_currency_exchange_rate_aud"
+                          type="radio"
+                          value="manual"
+                        />
+                        <h4>
+                          Manual
+                        </h4>
+                      </div>
+                      <p
+                        class="single-currency-settings-description single-currency-settings-description-inset"
+                      >
+                        Enter your fixed rate of exchange
+                      </p>
+                    </label>
+                  </li>
+                  
+                </ul>
+              </fieldset>
+              <h3>
+                Formatting Rules
+              </h3>
+              <fieldset>
+                <ul>
+                  <li>
+                    <h4>
+                      Price Rounding
+                    </h4>
+                    <select
+                      data-testid="price_rounding"
+                    >
+                      <option
+                        value="none"
+                      >
+                        None
+                      </option>
+                      <option
+                        value="0.25"
+                      >
+                        0.25
+                      </option>
+                      <option
+                        value="0.5"
+                      >
+                        0.50
+                      </option>
+                      <option
+                        value="1"
+                      >
+                        1.00 (recommended)
+                      </option>
+                      <option
+                        value="5"
+                      >
+                        5.00
+                      </option>
+                      <option
+                        value="10"
+                      >
+                        10.00
+                      </option>
+                    </select>
+                    <p
+                      class="single-currency-settings-description"
+                    >
+                      Make your EUR prices consistent by rounding them up after they're converted.
+                      <button
+                        class="components-button is-link"
+                        type="button"
+                      >
+                        Learn more
+                      </button>
+                    </p>
+                  </li>
+                  <li>
+                    <h4>
+                      Charm Pricing
+                    </h4>
+                    <select
+                      data-testid="price_charm"
+                    >
+                      <option
+                        value="0"
+                      >
+                        None
+                      </option>
+                      <option
+                        value="-0.01"
+                      >
+                        -0.01
+                      </option>
+                      <option
+                        value="-0.05"
+                      >
+                        -0.05
+                      </option>
+                    </select>
+                    <p
+                      class="single-currency-settings-description"
+                    >
+                      Reduce the converted price for a specific amount
+                      <button
+                        class="components-button is-link"
+                        type="button"
+                      >
+                        Learn more
+                      </button>
+                    </p>
+                  </li>
+                </ul>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="settings-section"
+      >
+        <div
+          class="settings-section__details"
+        >
+          <h2>
+            Preview
+          </h2>
+          <p>
+            Enter a price in your default currency (United States (US) dollar) to see it converted to Euro using the exchange rate and formatting rules above.
+          </p>
+        </div>
+        <div
+          class="settings-section__controls"
+        >
+          <div
+            class="single-currency-settings-preview-wrapper"
+          >
+            <div
+              class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+            >
+              <div
+                class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+              >
+                <div>
+                  <h4>
+                    United States (US) dollar
+                  </h4>
+                  <div>
+                    <div
+                      class="components-base-control with-value"
+                    >
+                      <div
+                        class="components-base-control__field"
+                      >
+                        <div
+                          class="text-control-with-affixes text-control-with-suffix"
+                        >
+                          <input
+                            aria-describedby="inspector-text-control-with-affixes-0__suffix"
+                            class="components-text-control__input"
+                            data-testid="store_currency_value"
+                            id="inspector-text-control-with-affixes-0"
+                            type="text"
+                            value="20"
+                          />
+                          <span
+                            class="text-control-with-affixes__suffix"
+                            id="inspector-text-control-with-affixes-0__suffix"
+                          >
+                            $
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4>
+                    Euro
+                  </h4>
+                  <div>
+                    <strong
+                      data-testid="calculated_value"
+                    >
+                      16.00€
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="settings-section single-currency-settings-save-settings-section"
+      >
+        <div
+          class="settings-section__details"
+        />
+        <div
+          class="settings-section__controls"
+        >
+          <button
+            class="components-button is-primary"
+            type="button"
+          >
+            Save changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
