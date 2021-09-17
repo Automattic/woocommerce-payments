@@ -20,6 +20,7 @@ jQuery( function ( $ ) {
 	const publishableKey = getConfig( 'publishableKey' );
 	const isUPEEnabled = getConfig( 'isUPEEnabled' );
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
+	const enabledBillingFields = getConfig( 'enabledBillingFields' );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -114,16 +115,36 @@ jQuery( function ( $ ) {
 	let paymentIntentId = null;
 	let isUPEComplete = false;
 	const hiddenBillingFields = {
-		name: 'never',
-		email: 'never',
-		phone: 'never',
+		name:
+			enabledBillingFields.includes( 'billing_first_name' ) ||
+			enabledBillingFields.includes( 'billing_last_name' )
+				? 'never'
+				: 'auto',
+		email: enabledBillingFields.includes( 'billing_email' )
+			? 'never'
+			: 'auto',
+		phone: enabledBillingFields.includes( 'billing_phone' )
+			? 'never'
+			: 'auto',
 		address: {
-			country: 'never',
-			line1: 'never',
-			line2: 'never',
-			city: 'never',
-			state: 'never',
-			postalCode: 'never',
+			country: enabledBillingFields.includes( 'billing_country' )
+				? 'never'
+				: 'auto',
+			line1: enabledBillingFields.includes( 'billing_address_1' )
+				? 'never'
+				: 'auto',
+			line2: enabledBillingFields.includes( 'billing_address_2' )
+				? 'never'
+				: 'auto',
+			city: enabledBillingFields.includes( 'billing_city' )
+				? 'never'
+				: 'auto',
+			state: enabledBillingFields.includes( 'billing_state' )
+				? 'never'
+				: 'auto',
+			postalCode: enabledBillingFields.includes( 'billing_postcode' )
+				? 'never'
+				: 'auto',
 		},
 	};
 
@@ -222,16 +243,18 @@ jQuery( function ( $ ) {
 	 */
 	const getBillingDetails = ( fields ) => {
 		return {
-			name: `${ fields.billing_first_name } ${ fields.billing_last_name }`.trim(),
-			email: fields.billing_email,
-			phone: fields.billing_phone,
+			name:
+				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
+				'-',
+			email: fields.billing_email || '-',
+			phone: fields.billing_phone || '-',
 			address: {
-				country: fields.billing_country,
-				line1: fields.billing_address_1,
-				line2: fields.billing_address_2,
-				city: fields.billing_city,
-				state: fields.billing_state,
-				postal_code: fields.billing_postcode,
+				country: fields.billing_country || '-',
+				line1: fields.billing_address_1 || '-',
+				line2: fields.billing_address_2 || '-',
+				city: fields.billing_city || '-',
+				state: fields.billing_state || '-',
+				postal_code: fields.billing_postcode || '-',
 			},
 		};
 	};

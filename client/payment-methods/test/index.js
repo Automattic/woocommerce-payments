@@ -100,7 +100,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const cc = screen.getByText( 'Credit card / debit card' );
-		const sepa = screen.getByText( 'Direct debit payment' );
+		const sepa = screen.getByText( 'SEPA Direct Debit' );
 		[ cc, sepa ].forEach( ( method ) => {
 			expect( method.closest( 'ul' ) ).toHaveClass(
 				'payment-methods__enabled-methods'
