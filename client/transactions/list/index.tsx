@@ -50,7 +50,6 @@ import {
 	formatQueryFilters,
 	getTransactionsCSV,
 } from '../../data/transactions/resolvers';
-import { getQueriesForElement } from '@testing-library/dom';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -499,6 +498,15 @@ export const TransactionsList = (
 		transactionsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
 
+	const {
+		date_before: dateBefore,
+		date_after: dateAfter,
+		date_between: dateBetween,
+	} = getQuery();
+
+	const areDateAdvanceFiltersActive =
+		!! dateBefore || !! dateAfter || !! dateBetween;
+
 	return (
 		<Page>
 			{ showFilters && (
@@ -539,7 +547,11 @@ export const TransactionsList = (
 						<DownloadButton
 							key="download"
 							isDisabled={ isLoading }
-							onClick={ exportCSV }
+							onClick={
+								areDateAdvanceFiltersActive
+									? exportCSV
+									: onDownload
+							}
 						/>
 					),
 				] }
