@@ -97,12 +97,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
-	 * @param WC_Payments_Account                  $account                  - Account class instance.
-	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
-	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
-	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
-	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter             - Rate Limiter for failed transactions.
+	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                  $account                         - Account class instance.
+	 * @param WC_Payments_Customer_Service         $customer_service                - Customer class instance.
+	 * @param WC_Payments_Token_Service            $token_service                   - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Rate Limiter for failed transactions.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -1111,7 +1111,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$currency_store   = strtolower( WC_Payments_Multi_Currency()->get_default_currency()->get_code() ) ?? null;
+		$currency_store   = strtolower( get_option( 'woocommerce_currency' ) );
 		$currency_order   = strtolower( $order->get_currency() );
 		$currency_account = strtolower( $this->account->get_account_default_currency() );
 
