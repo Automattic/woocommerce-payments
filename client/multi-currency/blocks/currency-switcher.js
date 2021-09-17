@@ -11,12 +11,14 @@ import { __ } from '@wordpress/i18n';
 import {
 	CheckboxControl,
 	PanelBody,
-	TextControl,
-	ColorPalette,
 	RangeControl,
 } from '@wordpress/components';
 import { registerBlockType } from '@wordpress/blocks';
-import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
+import {
+	ColorPaletteControl,
+	InspectorControls,
+	useBlockProps,
+} from '@wordpress/block-editor';
 
 registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 	apiVersion: 2,
@@ -28,9 +30,6 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 	icon: 'admin-site', // TODO: check the icon to use (https://developer.wordpress.org/resource/dashicons)
 	category: 'widgets',
 	attributes: {
-		title: {
-			type: 'array',
-		},
 		symbol: {
 			type: 'boolean',
 			default: true,
@@ -39,15 +38,15 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 			type: 'boolean',
 			default: false,
 		},
-		textSize: {
+		fontSize: {
 			type: 'integer',
 			default: 11,
 		},
-		textLineHeight: {
+		fontLineHeight: {
 			type: 'float',
 			default: 1.2,
 		},
-		textColor: {
+		fontColor: {
 			type: 'string',
 			default: '#000000',
 		},
@@ -71,12 +70,11 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 	edit: ( props ) => {
 		const {
 			attributes: {
-				title,
 				symbol,
 				flag,
-				textSize,
-				textLineHeight,
-				textColor,
+				fontSize,
+				fontLineHeight,
+				fontColor,
 				border,
 				borderRadius,
 				borderColor,
@@ -84,12 +82,6 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 			},
 			setAttributes,
 		} = props;
-
-		const colors = [
-			{ name: 'red', color: '#f00' },
-			{ name: 'white', color: '#fff' },
-			{ name: 'blue', color: '#00f' },
-		];
 
 		// eslint-disable-next-line react-hooks/rules-of-hooks
 		const isLoading = useCurrencies();
@@ -106,12 +98,22 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 			{ id: 'jpy', code: 'JPY', flag: '🇯🇵', symbol: '¥' },
 		];
 
+		const styles = {
+			// div: {
+			// 	border: border ? '2px' : '0px',
+			// 	borderRadius: borderColor,
+			// 	borderColor: border ? borderColor : 'transparent',
+			// 	lineHeight: fontLineHeight,
+			// },
+			select: {
+				fontSize: fontSize,
+				color: fontColor,
+				backgroundColor: backgroundColor,
+			},
+		};
+
 		// eslint-disable-next-line react-hooks/rules-of-hooks
 		const blockProps = useBlockProps();
-
-		const onChangeTitle = ( newTitle ) => {
-			setAttributes( { title: newTitle } );
-		};
 
 		const onChangeFlag = ( newFlag ) => {
 			setAttributes( { flag: newFlag } );
@@ -121,25 +123,25 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 			setAttributes( { symbol: newSymbol } );
 		};
 
-		const onChangeTextSize = ( newTextSize ) => {
+		const onChangeFontSize = ( newFontSize ) => {
 			setAttributes( {
-				textSize: newTextSize === undefined ? 11 : newTextSize,
+				fontSize: newFontSize === undefined ? 11 : newFontSize,
 			} );
 		};
 
-		const onChangeTextLineHeight = ( newTextLineHeight ) => {
+		const onChangeFontLineHeight = ( newFontLineHeight ) => {
 			setAttributes( {
-				textLineHeight:
-					newTextLineHeight === undefined
+				fontLineHeight:
+					newFontLineHeight === undefined
 						? 'normal'
-						: newTextLineHeight,
+						: newFontLineHeight,
 			} );
 		};
 
-		const onChangeTextColor = ( newTextColor ) => {
+		const onChangeFontColor = ( newFontColor ) => {
 			setAttributes( {
-				textColor:
-					newTextColor === undefined ? '#000000' : newTextColor,
+				fontColor:
+					newFontColor === undefined ? '#000000' : newFontColor,
 			} );
 		};
 
@@ -192,16 +194,6 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 						</a>
 					</PanelBody>
 					<PanelBody title={ __( 'Layout', 'woocommerce-payments' ) }>
-						<TextControl
-							label={ __( 'Title', 'woocommerce-payments' ) }
-							// help={ __(
-							// 	'The title that will appear above the currency switcher. Leave blank for no title.',
-							// 	'woocommerce-payments'
-							// ) }
-							onChange={ onChangeTitle }
-							value={ title }
-						/>
-
 						<CheckboxControl
 							label={ __(
 								'Display flags',
@@ -227,6 +219,10 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 						/>
 
 						<RangeControl
+							label={ __(
+								'Border radius',
+								'woocommerce-payments'
+							) }
 							value={ borderRadius }
 							onChange={ onChangeBorderRadius }
 							min={ 1 }
@@ -237,14 +233,19 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 						title={ __( 'Typography', 'woocommerce-payments' ) }
 					>
 						<RangeControl
-							value={ textSize }
-							onChange={ onChangeTextSize }
+							label={ __( 'Size', 'woocommerce-payments' ) }
+							value={ fontSize }
+							onChange={ onChangeFontSize }
 							min={ 6 }
 							max={ 48 }
 						/>
 						<RangeControl
-							value={ textLineHeight }
-							onChange={ onChangeTextLineHeight }
+							label={ __(
+								'Line height',
+								'woocommerce-payments'
+							) }
+							value={ fontLineHeight }
+							onChange={ onChangeFontLineHeight }
 							min={ 1 }
 							max={ 3 }
 							step={ 0.1 }
@@ -253,35 +254,28 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 					<PanelBody
 						title={ __( 'Color settings', 'woocommerce-payments' ) }
 					>
-						<ColorPalette
-							onChange={ onChangeTextColor }
-							value={ textColor }
-							colors={ colors }
+						<ColorPaletteControl
+							onChange={ onChangeFontColor }
+							value={ fontColor }
 							label={ __( 'Text', 'woocommerce-payments' ) }
 						/>
 
-						<ColorPalette
+						<ColorPaletteControl
 							onChange={ onChangeBackgroundColor }
 							value={ backgroundColor }
-							colors={ colors }
 							label={ __( 'Background', 'woocommerce-payments' ) }
 						/>
 
-						<ColorPalette
+						<ColorPaletteControl
 							onChange={ onChangeBorderColor }
 							value={ borderColor }
-							colors={ colors }
 							label={ __( 'Border', 'woocommerce-payments' ) }
 						/>
 					</PanelBody>
 				</InspectorControls>
 
-				<div className="widget widget-block">
-					<span className="gamma widget-title">
-						{ title === undefined ? 'Currency Switcher' : title }
-					</span>
-
-					<select name="currency" aria-label={ title }>
+				<div className="currency-switcher-holder" style={ styles.div }>
+					<select name="currency" style={ styles.select }>
 						{ ! isLoading &&
 							enabledCurrencies &&
 							enabledKeys.map( ( code ) => (
