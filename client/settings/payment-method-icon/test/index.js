@@ -58,7 +58,7 @@ describe( 'PaymentMethodIcon', () => {
 	test( 'renders Sepa payment method icon and label', () => {
 		render( <PaymentMethodIcon name="sepa_debit" showName /> );
 
-		const label = screen.queryByText( 'Direct debit payment' );
+		const label = screen.queryByText( 'SEPA Direct Debit' );
 		expect( label ).toBeInTheDocument();
 	} );
 
