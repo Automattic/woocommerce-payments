@@ -102,10 +102,8 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 
 		$mock_wcpay_subscription_id = 'wcpay_subscription_test12345';
 		$mock_subscription_data     = [
-			'customer'           => 'wcpay_cus_test12345',
-			'items'              => [ 'not empty subscription data' ],
-			'proration_behavior' => 'none',
-			'payment_behavior'   => 'default_incomplete',
+			'customer' => 'wcpay_cus_test12345',
+			'items'    => [ 'not empty subscription data' ],
 		];
 
 		$this->assertNotEquals( $mock_subscription->get_meta( self::SUBSCRIPTION_ID_META_KEY ), $mock_wcpay_subscription_id );
@@ -281,10 +279,8 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->willReturn( [ 'item1' => 'item1_data' ] );
 
 		$expected_result = [
-			'customer'           => $mock_wcpay_customer_id,
-			'items'              => [ 'item1' => 'item1_data' ],
-			'proration_behavior' => 'none',
-			'payment_behavior'   => 'default_incomplete',
+			'customer' => $mock_wcpay_customer_id,
+			'items'    => [ 'item1' => 'item1_data' ],
 		];
 
 		$actual_result = PHPUnit_Utils::call_method(
