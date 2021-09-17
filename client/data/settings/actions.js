@@ -77,6 +77,10 @@ export function updateIsDebugLogEnabled( isEnabled ) {
 	return updateSettingsValues( { is_debug_log_enabled: isEnabled } );
 }
 
+export function updateIsMultiCurrencyEnabled( isEnabled ) {
+	return updateSettingsValues( { is_multi_currency_enabled: isEnabled } );
+}
+
 export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	return updateSettingsValues( {
 		account_statement_descriptor: accountStatementDescriptor,

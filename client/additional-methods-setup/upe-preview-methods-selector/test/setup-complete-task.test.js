@@ -28,7 +28,15 @@ describe( 'SetupComplete', () => {
 		};
 
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'bancontact', 'giropay', 'sofort', 'ideal', 'p24' ],
+			[
+				'card',
+				'bancontact',
+				'giropay',
+				'sofort',
+				'ideal',
+				'p24',
+				'sepa_debit',
+			],
 			() => null,
 		] );
 	} );
@@ -106,6 +114,7 @@ describe( 'SetupComplete', () => {
 								'ideal',
 								'p24',
 								'sofort',
+								'sepa_debit',
 							],
 						},
 					},
@@ -139,6 +148,7 @@ describe( 'SetupComplete', () => {
 								'ideal',
 								'p24',
 								'sofort',
+								'sepa_debit',
 							],
 						},
 					},
@@ -188,6 +198,7 @@ describe( 'SetupComplete', () => {
 			'ideal',
 			'p24',
 			'sofort',
+			'sepa_debit',
 		];
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'card', ...additionalMethods ],

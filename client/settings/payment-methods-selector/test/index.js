@@ -100,7 +100,7 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( sofortCheckbox ).not.toBeChecked();
 
 		const sepaCheckbox = screen.getByRole( 'checkbox', {
-			name: 'Direct debit payment',
+			name: 'SEPA Direct Debit',
 		} );
 		expect( sepaCheckbox ).not.toBeChecked();
 
