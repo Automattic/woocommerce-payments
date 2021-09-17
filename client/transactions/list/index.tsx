@@ -25,7 +25,7 @@ import {
 	generateCSVDataFromTable,
 	generateCSVFileName,
 } from '@woocommerce/csv-export';
-
+import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
@@ -45,6 +45,12 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 import DownloadButton from 'components/download-button';
+
+import {
+	formatQueryFilters,
+	getTransactionsCSV,
+} from '../../data/transactions/resolvers';
+import { getQueriesForElement } from '@testing-library/dom';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -176,6 +182,30 @@ const getColumns = (
 			isLeftAligned: true,
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
+
+function download( filename, downloadUrl ) {
+	const element = document.createElement( 'a' );
+	element.setAttribute( 'href', downloadUrl );
+	element.setAttribute( 'download', filename );
+
+	element.style.display = 'none';
+	document.body.appendChild( element );
+
+	element.click();
+
+	document.body.removeChild( element );
+}
+
+const exportCSV = async () => {
+	const path = getTransactionsCSV( getQuery() );
+
+	const { download_url: downloadUrl } = await apiFetch( {
+		path,
+		method: 'POST',
+		data: formatQueryFilters( getQuery() ),
+	} );
+	download( 'data_csv', downloadUrl );
+};
 
 export const TransactionsList = (
 	props: TransactionsListProps
@@ -509,7 +539,7 @@ export const TransactionsList = (
 						<DownloadButton
 							key="download"
 							isDisabled={ isLoading }
-							onClick={ onDownload }
+							onClick={ exportCSV }
 						/>
 					),
 				] }

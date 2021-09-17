@@ -34,6 +34,15 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/download',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'get_transactions_csv' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/summary',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -74,6 +83,21 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		$deposit_id = $request->get_param( 'deposit_id' );
 		$filters    = $this->get_transactions_filters( $request );
 		return $this->forward_request( 'list_transactions', [ $page, $page_size, $sort, $direction, $filters, $deposit_id ] );
+	}
+
+	/**
+	 * Retrieve transactions to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_transactions_csv( $request ) {
+		$page       = (int) $request->get_param( 'page' );
+		$page_size  = (int) $request->get_param( 'pagesize' );
+		$sort       = $request->get_param( 'sort' );
+		$direction  = $request->get_param( 'direction' );
+		$deposit_id = $request->get_param( 'deposit_id' );
+		$filters    = $this->get_transactions_filters( $request );
+		return $this->forward_request( 'list_transactions_csv', [ $page, $page_size, $sort, $direction, $filters, $deposit_id ] );
 	}
 
 	/**

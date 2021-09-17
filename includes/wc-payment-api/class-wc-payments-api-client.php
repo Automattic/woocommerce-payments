@@ -619,6 +619,40 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * List transactions export url
+	 *
+	 * @param int    $page       The requested page.
+	 * @param int    $page_size  The size of the requested page.
+	 * @param string $sort       The column to be used for sorting.
+	 * @param string $direction  The sorting direction.
+	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $deposit_id The deposit to filter on.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function list_transactions_csv( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [], $deposit_id = null ) {
+		// Map Order # terms to the actual charge id to be used in the server.
+		if ( ! empty( $filters['search'] ) ) {
+			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
+		}
+
+		$query = array_merge(
+			$filters,
+			[
+				'page'       => $page,
+				'pagesize'   => $page_size,
+				'sort'       => $sort,
+				'direction'  => $direction,
+				'deposit_id' => $deposit_id,
+			]
+		);
+
+		$transactions_url = $this->request( $query, self::TRANSACTIONS_API . '/download', self::POST );
+		return $transactions_url;
+	}
+
+	/**
 	 * Fetch a single transaction with provided id.
 	 *
 	 * @param string $transaction_id id of requested transaction.
