@@ -1,4 +1,10 @@
 /**
+ * Important note:
+ * This test won't be successful in -dev (non-headless) mode, because different selectors are present in page editor.
+ * Speaking of addNewPageCheckoutWCB() method when creating a new Checkout page with WCB block inside (37th line).
+ * Might be Chromium browser's behavior, but good to mention that the correct selectors are present in headless mode,
+ * so testing headless would be what the user really see in Chrome, Firefox, Opera...
+ *
  * External dependencies
  */
 import config from 'config';
@@ -30,6 +36,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await merchant.login();
 			await merchantWCP.addNewPageCheckoutWCB();
 			await merchant.logout();
+			await shopper.login();
 		} );
 
 		afterAll( async () => {
@@ -37,7 +44,6 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 		} );
 
 		it( 'using a basic card', async () => {
-			await shopper.login();
 			await shopper.goToShop();
 			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
