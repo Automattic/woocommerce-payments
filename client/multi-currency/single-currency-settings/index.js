@@ -21,7 +21,11 @@ import {
 	zeroDecimalCurrencyCharmOptions,
 	zeroDecimalCurrencyRoundingOptions,
 } from './constants';
-import { useCurrencies, useCurrencySettings } from 'wcpay/data';
+import {
+	useCurrencies,
+	useCurrencySettings,
+	useEnabledCurrencies,
+} from 'wcpay/data';
 import MultiCurrencySettingsContext from '../context';
 import { LoadableBlock } from 'wcpay/components/loadable';
 
@@ -34,6 +38,7 @@ const SingleCurrencySettings = () => {
 	const currency = currencyCodeToShowSettingsFor;
 
 	const { currencies } = useCurrencies();
+	const { enabledCurrencies } = useEnabledCurrencies();
 
 	const {
 		currencySettings,
@@ -142,12 +147,20 @@ const SingleCurrencySettings = () => {
 			price_rounding: priceRoundingType,
 			price_charm: priceCharmType,
 		} );
+
+		// Update the rate to display it in the Currency list if is set as manual
+		if ( ! isNaN( manualRate ) ) {
+			enabledCurrencies[ targetCurrency.code ].rate = Number(
+				manualRate
+			);
+		}
+
 		setIsSaving( false );
 	};
 
 	return (
 		<div className={ 'single-currency-settings' }>
-			<SettingsLayout>
+			<SettingsLayout displayBanner={ false }>
 				<h2 className={ 'single-currency-settings-breadcrumb' }>
 					<Button
 						isLink
