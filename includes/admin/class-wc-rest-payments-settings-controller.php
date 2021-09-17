@@ -90,6 +90,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'is_multi_currency_enabled'         => [
+						'description'       => __( 'WooCommerce Payments multi currency feature flag setting.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
 					'account_statement_descriptor'      => [
 						'description'       => __( 'WooCommerce Payments bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
 						'type'              => 'string',
@@ -184,6 +189,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_manual_capture_enabled'         => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
 				'is_test_mode_enabled'              => $this->wcpay_gateway->is_in_test_mode(),
 				'is_dev_mode_enabled'               => $this->wcpay_gateway->is_in_dev_mode(),
+				'is_multi_currency_enabled'         => WC_Payments_Features::is_customer_multi_currency_enabled(),
 				'account_statement_descriptor'      => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
 				'is_payment_request_enabled'        => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
 				'is_debug_log_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
@@ -207,6 +213,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_manual_capture_enabled( $request );
 		$this->update_is_test_mode_enabled( $request );
 		$this->update_is_debug_log_enabled( $request );
+		$this->update_is_multi_currency_enabled( $request );
 		$this->update_account_statement_descriptor( $request );
 		$this->update_is_payment_request_enabled( $request );
 		$this->update_payment_request_enabled_locations( $request );
@@ -313,6 +320,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_debug_log_enabled = $request->get_param( 'is_debug_log_enabled' );
 
 		$this->wcpay_gateway->update_option( 'enable_logging', $is_debug_log_enabled ? 'yes' : 'no' );
+	}
+
+	/**
+	 * Updates Customer multi currency feature status.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_multi_currency_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_multi_currency_enabled' ) ) {
+			return;
+		}
+
+		$is_multi_currency_enabled = $request->get_param( 'is_multi_currency_enabled' );
+
+		update_option( '_wcpay_feature_customer_multi_currency', $is_multi_currency_enabled ? '1' : '0' );
 	}
 
 	/**

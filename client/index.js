@@ -171,6 +171,7 @@ addFilter(
 			accountStatus,
 			showUpdateDetailsTask,
 			additionalMethodsSetup,
+			multiCurrencySetup,
 			featureFlags: { accountOverviewTaskList },
 		} = wcpaySettings;
 
@@ -178,6 +179,7 @@ addFilter(
 			accountStatus,
 			showUpdateDetailsTask,
 			additionalMethodsSetup,
+			multiCurrencySetup,
 			isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 		} );
 

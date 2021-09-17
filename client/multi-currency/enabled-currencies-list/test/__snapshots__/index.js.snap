@@ -652,13 +652,13 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
           <div
             class="enabled-currency__actions"
           >
-            <a
+            <button
               aria-label="Edit Canadian dollar"
               class="components-button enabled-currency__action edit is-link"
-              href="admin.php?page=wc-settings&tab=wcpay_multi_currency&section=cad"
+              type="button"
             >
               manage
-            </a>
+            </button>
             <button
               aria-label="Remove Canadian dollar as an enabled currency"
               class="components-button enabled-currency__action delete is-link"
@@ -702,13 +702,13 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
           <div
             class="enabled-currency__actions"
           >
-            <a
+            <button
               aria-label="Edit Pound sterling"
               class="components-button enabled-currency__action edit is-link"
-              href="admin.php?page=wc-settings&tab=wcpay_multi_currency&section=gbp"
+              type="button"
             >
               manage
-            </a>
+            </button>
             <button
               aria-label="Remove Pound sterling as an enabled currency"
               class="components-button enabled-currency__action delete is-link"
@@ -752,13 +752,13 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
           <div
             class="enabled-currency__actions"
           >
-            <a
+            <button
               aria-label="Edit Euro"
               class="components-button enabled-currency__action edit is-link"
-              href="admin.php?page=wc-settings&tab=wcpay_multi_currency&section=eur"
+              type="button"
             >
               manage
-            </a>
+            </button>
             <button
               aria-label="Remove Euro as an enabled currency"
               class="components-button enabled-currency__action delete is-link"
