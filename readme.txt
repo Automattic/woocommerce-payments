@@ -101,6 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 = 3.1.0 - 2021-xx-xx =
 * Add - Customer multi-currency onboarding flow.
 * Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
+* Add - Update layout of the Multi-currency settings screen.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
