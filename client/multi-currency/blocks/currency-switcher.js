@@ -55,7 +55,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 			default: false,
 		},
 		borderRadius: {
-			type: 'string',
+			type: 'integer',
 			default: 3,
 		},
 		borderColor: {
@@ -99,12 +99,12 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		];
 
 		const styles = {
-			// div: {
-			// 	border: border ? '2px' : '0px',
-			// 	borderRadius: borderColor,
-			// 	borderColor: border ? borderColor : 'transparent',
-			// 	lineHeight: fontLineHeight,
-			// },
+			div: {
+				// 	border: border ? '2px' : '0px',
+				// 	borderRadius: borderColor,
+				// 	borderColor: border ? borderColor : 'transparent',
+				// 	lineHeight: fontLineHeight,
+			},
 			select: {
 				fontSize: fontSize,
 				color: fontColor,
@@ -167,7 +167,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 
 		const onChangeBackgroundColor = ( newBackgroundColor ) => {
 			setAttributes( {
-				borderColor:
+				backgroundColor:
 					newBackgroundColor === undefined
 						? 'transparent'
 						: newBackgroundColor,

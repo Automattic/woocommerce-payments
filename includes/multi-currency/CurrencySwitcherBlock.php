@@ -7,6 +7,10 @@
 
 namespace WCPay\MultiCurrency;
 
+use function http_build_query;
+use function implode;
+use function urldecode;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -65,16 +69,41 @@ class CurrencySwitcherBlock {
 				'editor_script'   => 'woocommerce-payments/multi-currency-switcher',
 				'render_callback' => [ $this, 'render_block_widget' ],
 				'attributes'      => [
-					'title'  => [
-						'type' => 'string',
-					],
-					'symbol' => [
+					'symbol'          => [
 						'type'    => 'boolean',
 						'default' => true,
 					],
-					'flag'   => [
+					'flag'            => [
 						'type'    => 'boolean',
 						'default' => false,
+					],
+					'fontSize'        => [
+						'type'    => 'integer',
+						'default' => 11,
+					],
+					'fontLineHeight'  => [
+						'type'    => 'float',
+						'default' => 1.2,
+					],
+					'fontColor'       => [
+						'type'    => 'string',
+						'default' => '#000000',
+					],
+					'border'          => [
+						'type'    => 'boolean',
+						'default' => false,
+					],
+					'borderRadius'    => [
+						'type'    => 'string',
+						'default' => 3,
+					],
+					'borderColor'     => [
+						'type'    => 'string',
+						'default' => '#000000',
+					],
+					'backgroundColor' => [
+						'type'    => 'string',
+						'default' => 'transparent',
 					],
 				],
 			]
@@ -99,26 +128,22 @@ class CurrencySwitcherBlock {
 			return '';
 		}
 
-		$title       = $block_attributes['title'] ?? '';
 		$with_symbol = $block_attributes['symbol'] ?? true;
 		$with_flag   = $block_attributes['flag'] ?? false;
-		$aria_label  = ! empty( $title ) ? $title : 'Currency Selector';
 
-		$widget_content = '';
+		$styles        = $this->get_widget_styles( $block_attributes );
+		$div_styles    = $this->implode_styles_array( $styles['div'] );
+		$select_styles = $this->implode_styles_array( $styles['select'] );
 
-		if ( ! empty( $title ) ) {
-			$widget_content .= '<span class="gamma widget-title">' . $title . '</span>';
-		}
-
-		$widget_content .= '<form>';
-		$widget_content .= '<select name="currency" aria-label="' . $aria_label . '" onchange="this.form.submit()">';
+		$widget_content  = '<form>';
+		$widget_content .= '<div class="currency-switcher-holder" style="' . $div_styles . '">';
+		$widget_content .= '<select name="currency" onchange="this.form.submit()" style="' . $select_styles . '">';
 
 		foreach ( $this->multi_currency->get_enabled_currencies() as $currency ) {
 			$widget_content .= $this->render_currency_option( $currency, $with_symbol, $with_flag );
 		}
 
-		$widget_content .= '</select>';
-		$widget_content .= '</form>';
+		$widget_content .= '</select></div></form>';
 		return $widget_content;
 	}
 
@@ -145,5 +170,44 @@ class CurrencySwitcherBlock {
 		}
 
 		return '<option value="' . $code . '" ' . $selected . '>' . $text . '</option>';
+	}
+
+	/**
+	 * Given an array of styling rules, output them as a string containing valid CSS.
+	 *
+	 * @param array $styles An array of CSS styles.
+	 *
+	 * @return string
+	 */
+	private function implode_styles_array( array $styles ): string {
+		$return_str = '';
+		foreach ( $styles as $key => $value ) {
+			$return_str .= $key . ': ' . $value . '; ';
+		}
+
+		return $return_str;
+	}
+
+	/**
+	 * Generate the styles that need to be applied to the widget based on the block attributes.
+	 *
+	 * @param array $block_attributes The block attributes.
+	 *
+	 * @return array
+	 */
+	private function get_widget_styles( array $block_attributes ): array {
+		return [
+			'div'    => [
+				'border'        => '0px', // TODO: set to $block_attributes['border'] ? '1px solid' : '0px solid' when border issue is resolved.
+				'border-radius' => isset( $block_attributes['borderRadius'] ) ? $block_attributes['borderRadius'] . 'px' : '3px',
+				'border-color'  => $block_attributes['borderColor'] ?? '#000000',
+				'line-height'   => $block_attributes['fontLineHeight'] ?? 1.2,
+			],
+			'select' => [
+				'font-size'        => isset( $block_attributes['fontSize'] ) ? $block_attributes['fontSize'] . 'px' : '11px',
+				'color'            => $block_attributes['fontColor'] ?? '#000000',
+				'background-color' => $block_attributes['backgroundColor'] ?? '#000000',
+			],
+		];
 	}
 }

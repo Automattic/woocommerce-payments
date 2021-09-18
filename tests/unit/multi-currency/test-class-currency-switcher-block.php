@@ -55,12 +55,9 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase
 	}
 
 	/**
-	 * @group underTest
 	 * @dataProvider block_widget_attributes_provider
 	 */
-	public function test_render_block_widget( $attributes ) {
-		// Use the same defaults as the function.
-		$title  = $attributes['title'] ?? '';
+	public function test_render_block_widget( $attributes, $test_styles ) {
 		$flag   = $attributes['flag'] ?? false;
 		$symbol = $attributes['symbol'] ?? true;
 
@@ -74,19 +71,14 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase
 
 		$result = $this->currency_switcher_block->render_block_widget( $attributes, '' );
 
-		if ( '' !== ( $title ?? '' ) ) {
+		$this->assertStringContainsString( '<form>', $result );
+
+		if ( $test_styles ) {
 			$this->assertStringContainsString(
-				'<span class="gamma widget-title">' . $title . '</span>',
-				$result
-			);
-		} else {
-			$this->assertStringNotContainsString(
-				'<span class="gamma widget-title">',
+				"style=\"font-size: {$attributes['fontSize']}px; color: {$attributes['fontColor']}; background-color: {$attributes['backgroundColor']}; \"",
 				$result
 			);
 		}
-
-		$this->assertStringContainsString( '<form>', $result );
 
 		$strings_to_test = [];
 		if ( $flag && ! $symbol ) {
@@ -120,41 +112,39 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase
 		return [
 			'with_defaults'        => [
 				[],
-			],
-			'with_title'           => [
-				[
-					'title'  => 'Test',
-					'symbol' => false,
-					'flag'   => false,
-				],
-			],
-			'without_title'        => [
-				[
-					'title'  => '',
-					'symbol' => false,
-					'flag'   => false,
-				],
+				false,
 			],
 			'with_flag'            => [
 				[
-					'title'  => 'Test',
 					'symbol' => false,
 					'flag'   => true,
 				],
+				false,
 			],
 			'with_symbol'          => [
 				[
-					'title'  => 'Test',
 					'symbol' => true,
 					'flag'   => false,
 				],
+				false,
 			],
 			'with_flag_and_symbol' => [
 				[
-					'title'  => 'Test',
 					'symbol' => true,
 					'flag'   => true,
 				],
+				false,
+			],
+			'with_styles_applied'  => [
+				[
+					'symbol'          => false,
+					'flag'            => false,
+					'fontLineHeight'  => 1.2,
+					'fontSize'        => 34,
+					'fontColor'       => '#B00F0F',
+					'backgroundColor' => '#E5FFCC',
+				],
+				true,
 			],
 		];
 	}
