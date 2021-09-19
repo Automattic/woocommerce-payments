@@ -3,15 +3,29 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
- * Internal dependencies
+ * Internal dependencies.
  */
 import createAdditionalMethodsSetupTask from '../../additional-methods-setup/task';
 import createMultiCurrencySetupTask from '../../multi-currency-setup/task';
+import wcpayTracks from 'tracks';
+
+const getDisputesToResolve = ( disputes ) => {
+	if ( ! disputes ) {
+		return 0;
+	}
+	const incompleteDisputes = disputes.filter( ( { status } ) => {
+		return [ 'warning_needs_response', 'needs_response' ].includes(
+			status
+		);
+	} );
+	return incompleteDisputes.length;
+};
 
 export const getTasks = ( {
 	accountStatus,
@@ -21,11 +35,15 @@ export const getTasks = ( {
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
 	needsHttpsSetup,
+	disputes = [],
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	let accountDetailsTaskDescription;
+
+	const isDisputeTaskVisible = 0 < disputes.length;
+	const disputesToResolve = getDisputesToResolve( disputes );
 
 	if ( accountRestrictedSoon ) {
 		accountDetailsTaskDescription = sprintf(
@@ -76,7 +94,7 @@ export const getTasks = ( {
 					'Reconnect WooCommerce Payments',
 					'woocommerce-payments'
 				),
-				content: __(
+				additionalInfo: __(
 					'WooCommerce Payments is missing a connected WordPress.com account. ' +
 						'Some functionality will be limited without a connected account.',
 					'woocommerce-payments'
@@ -101,11 +119,56 @@ export const getTasks = ( {
 						'_blank'
 					);
 				},
-				actionLabel: __( 'Read more', 'woocommerce-payments' ),
+				expanded: true,
+				isDeletable: true,
+				isDismissable: true,
+				allowRemindMeLater: true,
 			},
 		additionalMethodsSetup.isTaskVisible &&
 			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
 		multiCurrencySetup.isTaskVisible &&
 			createMultiCurrencySetupTask( multiCurrencySetup ),
+		isDisputeTaskVisible && {
+			key: 'dispute-resolution-task',
+			level: 3,
+			title: sprintf(
+				_n(
+					'1 disputed payment needs your response',
+					'%s disputed payments needs your response',
+					disputesToResolve,
+					'woocommerce-payments'
+				),
+				disputesToResolve ? disputesToResolve : disputes.length
+			),
+			additionalInfo: disputesToResolve
+				? __( 'View and respond', 'woocommerce-payments' )
+				: '',
+			completed: 0 === disputesToResolve,
+			isDeletable: true,
+			isDismissable: true,
+			allowRemindMeLater: true,
+			onClick: () => {
+				wcpayTracks.recordEvent( 'wcpay_overview_task', {
+					task: 'dispute-resolution-task',
+				} );
+				window.location.href = addQueryArgs( 'admin.php', {
+					page: 'wc-admin',
+					path: '/payments/disputes',
+				} );
+			},
+		},
 	].filter( Boolean );
+};
+
+export const taskSort = ( a, b ) => {
+	if ( a.completed || b.completed ) {
+		return a.completed ? 1 : -1;
+	}
+	// Three is the lowest level.
+	const aLevel = a.level || 3;
+	const bLevel = b.level || 3;
+	if ( aLevel === bLevel ) {
+		return 0;
+	}
+	return aLevel > bLevel ? 1 : -1;
 };
