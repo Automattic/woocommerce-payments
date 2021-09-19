@@ -1155,7 +1155,9 @@ class WC_Payments_API_Client {
 		return $this->request(
 			[],
 			self::SUBSCRIPTIONS_API . '/' . $wcpay_subscription_id,
-			self::DELETE
+			self::DELETE,
+			true,
+			true
 		);
 	}
 
