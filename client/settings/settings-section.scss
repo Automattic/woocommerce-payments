@@ -13,10 +13,11 @@
 	&__details {
 		flex: 0 1 auto;
 		margin-bottom: 24px;
+		max-width: 328px;
 
 		@include breakpoint( '>800px' ) {
-			flex: 0 0 25%;
-			margin: 0 32px 0 0;
+			flex: 0 0 33%;
+			margin: 0 24px 0 0;
 		}
 
 		h2 {
