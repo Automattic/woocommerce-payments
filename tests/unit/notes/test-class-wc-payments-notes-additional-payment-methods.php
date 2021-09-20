@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Tracker;
+
 /**
  * Class WC_Payments_Notes_Additional_Payment_Methods tests.
  */
@@ -22,6 +24,8 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WP_UnitTestCase 
 
 		delete_option( '_wcpay_feature_upe_settings_preview' );
 		delete_option( '_wcpay_feature_upe' );
+
+		Tracker::remove_admin_event( 'wcpay_upe_enabled' );
 	}
 
 	public function test_get_note() {
@@ -75,5 +79,31 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WP_UnitTestCase 
 		WC_Payments_Notes_Additional_Payment_Methods::maybe_enable_upe_feature_flag();
 
 		$this->assertSame( '0', get_option( '_wcpay_feature_upe' ) );
+		$this->assertEquals( [], Tracker::get_admin_events() );
+	}
+
+	public function test_maybe_enable_upe_feature_flag_tracks_upe_enable() {
+		$account_mock = $this->getMockBuilder( \WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->setMethods( [ 'is_stripe_connected' ] )
+			->getMock();
+
+		$account_mock->expects( $this->atLeastOnce() )
+			->method( 'is_stripe_connected' )
+			->will( $this->returnValue( true ) );
+
+		WC_Payments_Notes_Additional_Payment_Methods::set_account( $account_mock );
+		$_GET['page']   = 'wc-settings';
+		$_GET['action'] = 'enable-upe';
+
+		WC_Payments_Notes_Additional_Payment_Methods::maybe_enable_upe_feature_flag();
+
+		$this->assertSame( '1', get_option( '_wcpay_feature_upe' ) );
+		$this->assertEquals(
+			[
+				'wcpay_upe_enabled' => [],
+			],
+			Tracker::get_admin_events()
+		);
 	}
 }

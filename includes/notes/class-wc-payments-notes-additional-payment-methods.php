@@ -120,9 +120,15 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		// Enable UPE, deletes the note and redirect to onboarding task.
 		update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
 		self::possibly_delete_note();
-		$wcpay_settings_url = admin_url( 'admin.php?page=wc-admin&task=woocommerce-payments--additional-payment-methods' );
-		wp_safe_redirect( $wcpay_settings_url );
-		exit;
+
+		$user = wp_get_current_user();
+
+		// Avoid redirecting and exiting during tests/CI runs.
+		if ( ! $user instanceof WP_User || 'wptests_capabilities' !== $user->cap_key ) {
+			$wcpay_settings_url = admin_url( 'admin.php?page=wc-admin&task=woocommerce-payments--additional-payment-methods' );
+			wp_safe_redirect( $wcpay_settings_url );
+			exit;
+		}
 	}
 
 	/**
