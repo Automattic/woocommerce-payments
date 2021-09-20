@@ -102,6 +102,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Customer multi-currency onboarding flow.
 * Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
 * Add - Update layout of the Multi-currency settings screen.
+* Fix - Fixed missing file error for removed CSS file.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
@@ -113,7 +114,6 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fix subscription change payment method errors after entering a payment method that fails.
 * Fix - Prevent duplicate account onboarding requests.
 * Fix - Filter out merchant-facing payment errors from customer error notices.
-* Fix - Fixed missing file error for removed CSS file.
 
 = 2.9.1 - 2021-09-07 =
 * Fix - Error while checking out with UPE when fields are hidden.
