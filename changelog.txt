@@ -1,6 +1,12 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.0.0 - 2021-xx-xx =
+= 3.1.0 - 2021-xx-xx =
+* Add - Customer multi-currency onboarding flow.
+* Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
+* Add - Update layout of the Multi-currency settings screen.
+* Fix - Fixed missing file error for removed CSS file.
+
+= 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
 * Fix - Use store currency on analytics leaderboard when Multi-Currency is enabled.
 * Add - Add API to expose Multi-Currency widget to theme/plugin developers for easy integration.
