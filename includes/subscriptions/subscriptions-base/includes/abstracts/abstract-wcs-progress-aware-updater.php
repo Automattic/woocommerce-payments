@@ -36,16 +36,17 @@ abstract class WCS_Progress_Aware_Updater extends WCS_Background_Repairer {
 	 * Increase a counter of updated item.
 	 */
 	protected function increase_updated_count() {
-		set_option( "{$this->repair_hook}_updated_count", $this->get_updated_count() + 1 );
-		set_option( "{$this->repair_hook}_last_updated", time() );
+		update_option( "{$this->repair_hook}_updated_count", $this->get_updated_count() + 1 );
+		update_option( "{$this->repair_hook}_last_updated", time() );
 	}
 
 	/**
 	 * Returns total items to update, number of updated items, is done boolean, last updated and next update timestamp.
 	 */
 	public function get_progress() {
-		$total       = $this->get_items_to_update_count();
 		$updated     = $this->get_updated_count();
+		$to_update   = $this->get_items_to_update_count();
+		$total       = $to_update + $updated;
 		$last_update = get_option( "{$this->repair_hook}_last_updated" );;
 
 		$next_update        = null;
@@ -61,7 +62,7 @@ abstract class WCS_Progress_Aware_Updater extends WCS_Background_Repairer {
 		return [
 			'total'       => $total,
 			'updated'     => $updated,
-			'is_done'     => $updated >= $total,
+			'is_done'     => 0 === $to_update,
 			'last_update' => $last_update,
 			'next_update' => $next_update,
 		];
@@ -70,5 +71,5 @@ abstract class WCS_Progress_Aware_Updater extends WCS_Background_Repairer {
 	/**
 	 * Total count of items to be updated before this process is considered finished.
 	 */
-	abstract protected function get_items_to_update_count( );
+	abstract protected function get_items_to_update_count();
 }
