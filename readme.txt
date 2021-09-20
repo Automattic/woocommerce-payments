@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.6 or newer.
-* WooCommerce 5.4 or newer.
+* WooCommerce 5.5 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fixed missing file error for removed CSS file.
 * Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
 * Fix - Currency switcher does not affect order confirmation screen prices.
+* Update - Bump minimum supported version of WooCommerce from 5.4 to 5.5.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
