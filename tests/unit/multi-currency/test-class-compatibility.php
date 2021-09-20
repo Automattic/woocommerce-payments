@@ -80,11 +80,59 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 
 	public function woocommerce_filter_provider() {
 		return [
+			// Subscriptions filters.
 			[ 'option_woocommerce_subscriptions_multiple_purchase', 'maybe_disable_mixed_cart' ],
 			[ 'woocommerce_subscriptions_product_price', 'get_subscription_product_price' ],
 			[ 'woocommerce_product_get__subscription_sign_up_fee', 'get_subscription_product_signup_fee' ],
 			[ 'woocommerce_product_variation_get__subscription_sign_up_fee', 'get_subscription_product_signup_fee' ],
+
+			// Product Add-Ons filters.
+			[ 'woocommerce_add_cart_item', 'add_cart_item' ],
+			[ 'woocommerce_get_cart_item_from_session', 'get_cart_item_from_session' ],
+			[ 'woocommerce_product_addons_option_price_raw', 'get_addons_price' ],
+			[ 'woocommerce_product_addons_price_raw', 'get_addons_price' ],
+			[ 'woocommerce_get_price_including_tax', 'get_addon_order_display_price' ],
+			[ 'woocommerce_get_price_excluding_tax', 'get_addon_order_display_price' ],
+			[ 'woocommerce_product_addons_params', 'product_addons_params' ],
+			[ 'woocommerce_get_item_data', 'get_item_data' ],
 		];
+	}
+
+	/**
+	 * @dataProvider ajax_filter_provider
+	 */
+	public function test_registers_ajax_filters_properly( $filter, $function_name ) {
+		// Add filter to make it seem like it is an ajax request, then re-init Compatibility.
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		$this->compatibility = new WCPay\MultiCurrency\Compatibility( $this->mock_multi_currency, $this->mock_utils );
+
+		$priority = has_filter( $filter, [ $this->compatibility, $function_name ] );
+		$this->assertGreaterThan(
+			10,
+			$priority,
+			"Filter '$filter' was not registered with '$function_name' with a priority higher than the default."
+		);
+		$this->assertLessThan(
+			100,
+			$priority,
+			"Filter '$filter' was registered with '$function_name' with a priority higher than than 100, which can cause double conversions."
+		);
+
+		// Remove all ajax filters, and re-init Compatibility again.
+		remove_all_filters( 'wp_doing_ajax' );
+		$this->compatibility = new WCPay\MultiCurrency\Compatibility( $this->mock_multi_currency, $this->mock_utils );
+	}
+
+	public function ajax_filter_provider() {
+		return [
+			// Product Add-Ons filters.
+			[ 'woocommerce_get_price_including_tax', 'get_product_calculation_price' ],
+			[ 'woocommerce_get_price_excluding_tax', 'get_product_calculation_price' ],
+		];
+	}
+
+	public function test_woocommerce_product_addons_adjust_price_filter() {
+		$this->assertFalse( apply_filters( 'woocommerce_product_addons_adjust_price', true ) );
 	}
 
 	// Test should not convert the product price due to all checks return true.
@@ -579,6 +627,436 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		// Assert the actual order wasn't changed (only modified for returning from the filter).
 		$order = wc_get_order( $result->get_id() );
 		$this->assertEquals( 1000, $order->get_total() );
+	}
+
+	public function test_get_product_calculation_price() {
+		global $wp_current_filter;
+		$wp_current_filter[] = 'woocommerce_get_price_excluding_tax';
+		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+		$product = WC_Helper_Product::create_simple_product();
+		$this->mock_multi_currency->method( 'get_price' )->willReturn( 12.99 );
+
+		$test_values = [
+			[ 12.99, 1 ],
+			[ 25.98, 2 ],
+			[ 38.97, 3 ],
+		];
+
+		foreach ( $test_values as $values ) {
+			$this->assertEquals( $values[0], $this->compatibility->get_product_calculation_price( $values[0], $values[1], $product ) );
+		}
+		array_pop( $wp_current_filter );
+	}
+
+	public function test_get_item_data_correctly_modifies_other_data_array_correctly() {
+		$other_data = [
+			[
+				'other' => 'should remain',
+			],
+			[
+				'name'    => 'test name',
+				'value'   => 'test value',
+				'display' => 'test display',
+			],
+		];
+
+		$cart_item = [
+			'addons' => [
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'test value',
+					'price'      => 1.5,
+					'price_type' => 'flat_fee',
+					'display'    => 'This is a checkbox',
+					'field_type' => 'test',
+				],
+			],
+			'data'   => WC_Helper_Product::create_simple_product(),
+		];
+
+		$expected = [
+			[
+				'other' => 'should remain',
+			],
+			[
+				'name'    => 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</bdi></span>)',
+				'value'   => 'test value',
+				'display' => 'This is a checkbox',
+			],
+		];
+
+		$this->mock_multi_currency->method( 'get_price' )->with( 1.5, 'product' )->willReturn( 2.0 );
+
+		$this->assertSame( $expected, $this->compatibility->get_item_data( $other_data, $cart_item ) );
+	}
+
+	public function test_get_item_data_does_not_add_addon_price_to_name_if_price_zero() {
+		$cart_item = [
+			'addons' => [
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'test value',
+					'price'      => 0,
+					'price_type' => 'flat_fee',
+					'field_type' => 'test',
+				],
+			],
+			'data'   => WC_Helper_Product::create_simple_product(),
+		];
+
+		$expected = [
+			[
+				'name'    => 'checkboxes',
+				'value'   => 'test value',
+				'display' => '',
+			],
+		];
+
+		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $cart_item ) );
+	}
+
+	public function test_get_item_data_does_not_add_addon_price_to_name_if_percentage_price_zero() {
+		$cart_item = [
+			'addons' => [
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'test value',
+					'price'      => 0,
+					'price_type' => 'percentage_based',
+					'field_type' => 'test',
+				],
+			],
+			'data'   => WC_Helper_Product::create_simple_product(),
+		];
+
+		$expected = [
+			[
+				'name'    => 'checkboxes',
+				'value'   => 'test value',
+				'display' => '',
+			],
+		];
+
+		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $cart_item ) );
+	}
+
+	public function test_get_item_data_adds_custom_price_to_name_properly() {
+		$cart_item = [
+			'addons' => [
+				[
+					'name'       => 'custom price',
+					'value'      => 'test value',
+					'price'      => 42,
+					'price_type' => 'flat_fee',
+					'field_type' => 'custom_price',
+				],
+			],
+			'data'   => WC_Helper_Product::create_simple_product(),
+		];
+
+		$expected = [
+			[
+				'name'    => 'custom price (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+				'value'   => 'test value',
+				'display' => '',
+			],
+		];
+
+		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $cart_item ) );
+	}
+
+	public function test_get_item_data_adds_price_to_name_properly() {
+		$cart_item = [
+			'addons' => [
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'test value',
+					'price'      => 1.5,
+					'price_type' => 'flat_fee',
+					'field_type' => 'test',
+				],
+			],
+			'data'   => WC_Helper_Product::create_simple_product(),
+		];
+
+		$expected = [
+			[
+				'name'    => 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</bdi></span>)',
+				'value'   => 'test value',
+				'display' => '',
+			],
+		];
+
+		$this->mock_multi_currency->method( 'get_price' )->with( 1.5, 'product' )->willReturn( 2.0 );
+
+		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $cart_item ) );
+	}
+
+	public function test_get_item_data_adds_percentage_price_to_name_properly() {
+		$product   = WC_Helper_Product::create_simple_product();
+		$cart_item = [
+			'addons'                   => [
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'test value',
+					'price'      => 50,
+					'price_type' => 'percentage_based',
+					'field_type' => 'test',
+				],
+			],
+			'data'                     => $product,
+			'product_id'               => $product->get_id(),
+			'addons_price_before_calc' => 10,
+		];
+
+		$expected = [
+			[
+				'name'    => 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</bdi></span>)',
+				'value'   => 'test value',
+				'display' => '',
+			],
+		];
+
+		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $cart_item ) );
+	}
+
+	public function test_add_cart_item_returns_proper_addon_data() {
+		$product   = WC_Helper_Product::create_simple_product();
+		$cart_item = [
+			'addons'     => [
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'flat fee',
+					'price'      => 50,
+					'price_type' => 'flat_fee',
+					'field_type' => 'checkbox',
+				],
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'percentage based',
+					'price'      => 50,
+					'price_type' => 'percentage_based',
+					'field_type' => 'checkbox',
+				],
+				[
+					'name'       => 'customer defined',
+					'value'      => '',
+					'price'      => 50,
+					'price_type' => 'quantity_based',
+					'field_type' => 'custom_price',
+				],
+			],
+			'product_id' => $product->get_id(),
+			'data'       => $product,
+			'quantity'   => 1,
+		];
+
+		$result = $this->compatibility->add_cart_item( $cart_item );
+
+		$this->assertSame( $cart_item['addons'], $result['addons'] );
+		$this->assertEquals( 10, $result['addons_price_before_calc'] );
+		$this->assertEquals( 10, $result['addons_regular_price_before_calc'] );
+		$this->assertEquals( 0, $result['addons_sale_price_before_calc'] );
+		$this->assertEquals( 1, $cart_item['data']->get_meta( 'wcpay_mc_addons_converted' ) );
+	}
+
+	public function test_add_cart_item_returns_percentage_price_correctly() {
+		$product   = WC_Helper_Product::create_simple_product();
+		$cart_item = [
+			'addons'     => [
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'percentage based',
+					'price'      => 50,
+					'price_type' => 'percentage_based',
+					'field_type' => 'checkbox',
+				],
+			],
+			'product_id' => $product->get_id(),
+			'data'       => $product,
+			'quantity'   => 1,
+		];
+
+		$result = $this->compatibility->add_cart_item( $cart_item );
+
+		$this->assertEquals( floatval( 15 ), floatval( $cart_item['data']->get_price() ) );
+	}
+
+	public function test_add_cart_item_returns_flat_fee_price_correctly() {
+		$product   = WC_Helper_Product::create_simple_product();
+		$cart_item = [
+			'addons'     => [
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'flat fee',
+					'price'      => 50,
+					'price_type' => 'flat_fee',
+					'field_type' => 'checkbox',
+				],
+			],
+			'product_id' => $product->get_id(),
+			'data'       => $product,
+			'quantity'   => 1,
+		];
+
+		$this->mock_multi_currency->method( 'get_price' )->with( 50, 'product' )->willReturn( 75 );
+
+		$result = $this->compatibility->add_cart_item( $cart_item );
+
+		$this->assertEquals( floatval( 85 ), floatval( $cart_item['data']->get_price() ) );
+	}
+
+	public function test_add_cart_item_returns_custom_price_correctly() {
+		$product   = WC_Helper_Product::create_simple_product();
+		$cart_item = [
+			'addons'     => [
+				[
+					'name'       => 'customer defined',
+					'value'      => '',
+					'price'      => 50,
+					'price_type' => 'quantity_based',
+					'field_type' => 'custom_price',
+				],
+			],
+			'product_id' => $product->get_id(),
+			'data'       => $product,
+			'quantity'   => 1,
+		];
+
+		$result = $this->compatibility->add_cart_item( $cart_item );
+
+		$this->assertEquals( floatval( 60 ), floatval( $cart_item['data']->get_price() ) );
+	}
+
+	public function test_get_addon_order_display_price_returns_correct_flat_fee_price_without_tax() {
+		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+		$this->mock_multi_currency->method( 'get_price' )->with( 10, 'product' )->willReturn( 15 );
+
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->assertEquals( 15, $this->compatibility->get_addon_order_display_price( 10, 1, $product ) );
+	}
+
+	public function test_get_addon_order_display_price_returns_correct_flat_fee_price_with_tax() {
+		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+		$this->mock_multi_currency->method( 'get_price' )->with( 10, 'product' )->willReturn( 15 );
+
+		// We need to make it think it's in checkout with taxes enabled and included in the price.
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+		add_filter( 'woocommerce_product_is_taxable', '__return_true' );
+		add_filter(
+			'woocommerce_matched_rates',
+			function( $rates ) {
+				$rates[] = [
+					'rate'     => 10,
+					'label'    => 'test tax',
+					'shipping' => 'yes',
+					'compound' => 'no',
+				];
+				return $rates;
+			}
+		);
+		update_option( 'woocommerce_tax_display_cart', 'incl' );
+
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->assertEquals( 16.50, $this->compatibility->get_addon_order_display_price( 10, 1, $product ) );
+
+		// Be sure to undo all the tax stuff.
+		remove_filter( 'woocommerce_is_checkout', 10 );
+		remove_filter( 'woocommerce_product_is_taxable', 10 );
+		remove_filter( 'woocommerce_matched_rates', 10 );
+		update_option( 'woocommerce_tax_display_cart', 'excl' );
+	}
+
+	public function test_get_addon_order_display_price_returns_correct_percentage_price_without_tax() {
+		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+
+		$product               = WC_Helper_Product::create_simple_product();     // Price is 10.
+		$addon_price           = 50;                                             // Price is percentage, so 50%.
+		$addon_currency_amount = $product->get_price() * ( $addon_price / 100 ); // Amount is 5.
+
+		// Set the cart item data, then add the item to the cart.
+		$cart_item_data = [
+			'addons' => [
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'percentage based',
+					'price'      => $addon_price,
+					'price_type' => 'percentage_based',
+					'field_type' => 'checkbox',
+				],
+			],
+		];
+		WC()->cart->add_to_cart( $product->get_id(), 1, 0, [], $cart_item_data );
+
+		// Go through the one item in the cart and add the percentage currency amount set above to the meta.
+		$cart = WC()->cart->get_cart_contents();
+		foreach ( $cart as $item ) {
+			$item['data']->update_meta_data( 'wcpay_mc_percentage_currency_amount', $addon_currency_amount );
+		}
+
+		$price = $this->compatibility->get_addon_order_display_price( $addon_currency_amount, 1, $product );
+		$this->assertEquals( $addon_currency_amount, $price );
+	}
+
+	public function test_get_addon_order_display_price_returns_correct_percentage_price_with_tax() {
+		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+
+		// We need to make it think it's in checkout with taxes enabled and included in the price.
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+		add_filter( 'woocommerce_product_is_taxable', '__return_true' );
+		add_filter(
+			'woocommerce_matched_rates',
+			function( $rates ) {
+				$rates[] = [
+					'rate'     => 10,
+					'label'    => 'test tax',
+					'shipping' => 'yes',
+					'compound' => 'no',
+				];
+				return $rates;
+			}
+		);
+		update_option( 'woocommerce_tax_display_cart', 'incl' );
+
+		$product               = WC_Helper_Product::create_simple_product();     // Price is 10.
+		$addon_price           = 50;                                             // Price is percentage, so 50%.
+		$addon_currency_amount = $product->get_price() * ( $addon_price / 100 ); // Amount is 5.
+		$expected_price        = $addon_currency_amount * 1.10;                  // Tax is 10% above, so we multiply by 1.1.
+
+		// Set the cart item data, then add the item to the cart.
+		$cart_item_data = [
+			'addons' => [
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'percentage based',
+					'price'      => $addon_price,
+					'price_type' => 'percentage_based',
+					'field_type' => 'checkbox',
+				],
+			],
+		];
+		WC()->cart->add_to_cart( $product->get_id(), 1, 0, [], $cart_item_data );
+
+		// Go through the one item in the cart and add the percentage currency amount set above to the meta.
+		$cart = WC()->cart->get_cart_contents();
+		foreach ( $cart as $item ) {
+			$item['data']->update_meta_data(
+				'wcpay_mc_percentage_currency_amount',
+				$addon_currency_amount
+			);
+		}
+
+		// We submit the expected price because that's what PAO does. There's a check in the tested method that confirms the math adds up.
+		$price = $this->compatibility->get_addon_order_display_price( $expected_price, 1, $product );
+		$this->assertEquals( $expected_price, $price );
+
+		// Be sure to undo all the tax stuff.
+		remove_filter( 'woocommerce_is_checkout', 10 );
+		remove_filter( 'woocommerce_product_is_taxable', 10 );
+		remove_filter( 'woocommerce_matched_rates', 10 );
+		update_option( 'woocommerce_tax_display_cart', 'excl' );
 	}
 
 	private function mock_wcs_cart_contains_renewal( $value ) {
