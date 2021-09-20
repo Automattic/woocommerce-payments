@@ -1193,6 +1193,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 
 				$order->set_status( 'on-hold', $note );
+				$order->save();
 				break;
 			case 'requires_action':
 				if ( $payment_needed ) {
