@@ -1169,7 +1169,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					);
 					$order->add_order_note( $note );
 				}
-				$order->payment_complete( $intent_id );
+				try {
+					$order->payment_complete( $intent_id );
+				} catch ( Exception $e ) {
+					// continue further, something unexpected happened, but we can't really do nothing with that.
+					Logger::log( 'Error when completing payment for order: ' . $e->getMessage() );
+				}
 				break;
 			case 'processing':
 			case 'requires_capture':
