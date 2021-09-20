@@ -5,8 +5,12 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Tracker;
+
 /**
  * WC_REST_UPE_Flag_Toggle_Controller unit tests.
+ *
+ * @group something
  */
 class WC_REST_UPE_Flag_Toggle_Controller_Test extends WP_UnitTestCase {
 
@@ -51,6 +55,16 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WP_UnitTestCase {
 		$this->controller = new WC_REST_UPE_Flag_Toggle_Controller( $this->gateway );
 	}
 
+	/**
+	 * Post-test cleanup.
+	 */
+	public function tearDown() {
+		parent::tearDown();
+
+		Tracker::remove_admin_event( 'wcpay_upe_disabled' );
+		Tracker::remove_admin_event( 'wcpay_upe_enabled' );
+	}
+
 	public function test_get_flag_request_returns_status_code_200() {
 		$response = $this->controller->get_flag();
 
@@ -92,6 +106,34 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WP_UnitTestCase {
 			$this->gateway->get_option(
 				'upe_enabled_payment_method_ids'
 			)
+		);
+	}
+
+	public function test_set_flag_disabled_triggers_track_event() {
+		$request = new WP_REST_Request( 'POST', self::ROUTE );
+		$request->set_param( 'is_upe_enabled', false );
+
+		$response = $this->controller->set_flag( $request );
+
+		$this->assertEquals(
+			[
+				'wcpay_upe_disabled' => [],
+			],
+			Tracker::get_admin_events()
+		);
+	}
+
+	public function test_set_flag_enabled_triggers_track_event() {
+		$request = new WP_REST_Request( 'POST', self::ROUTE );
+		$request->set_param( 'is_upe_enabled', true );
+
+		$response = $this->controller->set_flag( $request );
+
+		$this->assertEquals(
+			[
+				'wcpay_upe_enabled' => [],
+			],
+			Tracker::get_admin_events()
 		);
 	}
 }
