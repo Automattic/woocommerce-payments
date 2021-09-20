@@ -674,12 +674,18 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			'data'   => WC_Helper_Product::create_simple_product(),
 		];
 
+		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$expected_name = 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</bdi></span>)';
+		} else {
+			$expected_name = 'checkboxes (<span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</span>)';
+		}
+
 		$expected = [
 			[
 				'other' => 'should remain',
 			],
 			[
-				'name'    => 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</bdi></span>)',
+				'name'    => $expected_name,
 				'value'   => 'test value',
 				'display' => 'This is a checkbox',
 			],
@@ -779,9 +785,15 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			'data'   => WC_Helper_Product::create_simple_product(),
 		];
 
+		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$expected_name = 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</bdi></span>)';
+		} else {
+			$expected_name = 'checkboxes (<span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</span>)';
+		}
+
 		$expected = [
 			[
-				'name'    => 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</bdi></span>)',
+				'name'    => $expected_name,
 				'value'   => 'test value',
 				'display' => '',
 			],
@@ -809,9 +821,15 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			'addons_price_before_calc' => 10,
 		];
 
+		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$expected_name = 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</bdi></span>)';
+		} else {
+			$expected_name = 'checkboxes (<span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</span>)';
+		}
+
 		$expected = [
 			[
-				'name'    => 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</bdi></span>)',
+				'name'    => $expected_name,
 				'value'   => 'test value',
 				'display' => '',
 			],
