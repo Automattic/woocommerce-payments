@@ -61,7 +61,9 @@
         "addresssecondline": "shipping",
         "city": "San Francisco",
         "state": "CA",
-        "postcode": "94110"
+        "postcode": "94110",
+        "phone": "123456789",
+        "email": "e2e-wcpay-customer@woocommerce.com"
       }
     }
   },
