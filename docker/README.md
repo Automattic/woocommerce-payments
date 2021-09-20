@@ -4,9 +4,13 @@ Make sure everything has been installed:
 
 `npm install`
 
-To start a local development environment with the plugin locally enter this command:
+To create and start a local development environment with the plugin locally enter this command:
 
-`npm run up`
+`npm run up:recreate`
+
+This will (re-)create all containers and run a setup script to ensure everything is configured. 
+
+Once you've created the environment, you can quickly bring it back up with `npm run up`.
 
 Remember to either build the JS (`npm run build`) or watch for JS changes (`npm start`)
 
