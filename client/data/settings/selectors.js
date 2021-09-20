@@ -55,6 +55,10 @@ export const getIsDebugLogEnabled = ( state ) => {
 	return getSettings( state ).is_debug_log_enabled || false;
 };
 
+export const getIsMultiCurrencyEnabled = ( state ) => {
+	return getSettings( state ).is_multi_currency_enabled || false;
+};
+
 export const getPaymentRequestLocations = ( state ) => {
 	return getSettings( state ).payment_request_enabled_locations || EMPTY_ARR;
 };

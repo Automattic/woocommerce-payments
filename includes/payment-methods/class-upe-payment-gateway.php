@@ -141,7 +141,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => $e->getMessage(),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				]
 			);
@@ -211,7 +211,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => $e->getMessage(),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				]
 			);
@@ -273,7 +273,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => $e->getMessage(),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				]
 			);
@@ -549,7 +549,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			/* translators: localized exception message */
 			$order->update_status( 'failed', sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() ) );
 
-			wc_add_notice( $e->getMessage(), 'error' );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
 			exit;
 		}
@@ -572,6 +572,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['upeAppearance']            = get_transient( self::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['checkoutTitle']            = $this->checkout_title;
 		$payment_fields['cartContainsSubscription'] = $this->is_subscription_item_in_cart();
+
+		$enabled_billing_fields = [];
+		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
+			if ( ! isset( $billing_field_options['enabled'] ) || $billing_field_options['enabled'] ) {
+				$enabled_billing_fields[] = $billing_field;
+			}
+		}
+		$payment_fields['enabledBillingFields'] = $enabled_billing_fields;
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->is_subscriptions_enabled() && $this->is_changing_payment_method_for_subscription() ) {
@@ -635,7 +643,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			return $payment_method->get_payment_token_for_user( $user, $payment_method_id );
 		} catch ( Exception $e ) {
-			wc_add_notice( $e->getMessage(), 'error', [ 'icon' => 'error' ] );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
 			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
 			return [
 				'result' => 'error',
@@ -791,7 +799,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => $e->getMessage(),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				]
 			);

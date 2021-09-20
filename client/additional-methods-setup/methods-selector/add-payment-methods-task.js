@@ -29,6 +29,7 @@ import {
 } from '../../data';
 import './add-payment-methods-task.scss';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
+import { upeMethods } from '../constants';
 
 const useGetCountryName = () => {
 	const generalSettings = useSelect(
@@ -149,15 +150,6 @@ const AddPaymentMethodsTask = () => {
 	] );
 
 	const countryName = useGetCountryName();
-
-	const upeMethods = [
-		'bancontact',
-		'giropay',
-		'ideal',
-		'p24',
-		'sepa_debit',
-		'sofort',
-	];
 
 	return (
 		<WizardTaskItem
