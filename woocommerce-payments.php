@@ -11,7 +11,7 @@
  * WC requires at least: 4.0
  * WC tested up to: 5.6
  * Requires WP: 5.6
- * Version: 2.9.1
+ * Version: 3.0.0
  *
  * @package WooCommerce\Payments
  */

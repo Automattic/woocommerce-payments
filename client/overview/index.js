@@ -16,28 +16,36 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
 import DepositsInformation from 'components/deposits-information';
 import TaskList from './task-list';
-import { getTasks } from './task-list/tasks';
+import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
+import { useDisputes } from 'data';
 
 import './style.scss';
 
 const OverviewPage = () => {
 	const {
 		accountStatus,
+		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		additionalMethodsSetup,
+		multiCurrencySetup,
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 		needsHttpsSetup,
 	} = wcpaySettings;
+	const { disputes, isLoading } = useDisputes( getQuery() );
 
-	const tasks = getTasks( {
+	const tasksUnsorted = getTasks( {
 		accountStatus,
 		showUpdateDetailsTask,
 		additionalMethodsSetup,
+		multiCurrencySetup,
 		wpcomReconnectUrl,
 		needsHttpsSetup,
+		disputes,
 	} );
+	const tasks =
+		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
 	const queryParams = getQuery();
 
 	const showKycSuccessNotice =
@@ -79,8 +87,11 @@ const OverviewPage = () => {
 				accountStatus={ wcpaySettings.accountStatus }
 				accountFees={ wcpaySettings.accountFees }
 			/>
-			{ !! accountOverviewTaskList && 0 < tasks.length && (
-				<TaskList tasks={ tasks } />
+			{ !! accountOverviewTaskList && 0 < tasks.length && ! isLoading && (
+				<TaskList
+					tasks={ tasks }
+					overviewTasksVisibility={ overviewTasksVisibility }
+				/>
 			) }
 			<InboxNotifications />
 		</Page>
