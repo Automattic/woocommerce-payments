@@ -10,6 +10,8 @@ use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Tracker;
+
 /**
  * Class WC_Payments_Notes_Additional_Payment_Methods
  */
@@ -108,6 +110,11 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 
 				return;
 			}
+		}
+
+		// Track enabling UPE if it wasn't enabled before.
+		if ( '1' !== get_option( WC_Payments_Features::UPE_FLAG_NAME ) ) {
+			Tracker::track_admin( 'wcpay_upe_enabled' );
 		}
 
 		// Enable UPE, deletes the note and redirect to onboarding task.
