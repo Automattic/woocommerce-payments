@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Tracker;
+
 /**
  * REST controller for UPE feature flag.
  */
@@ -116,6 +118,8 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 
 		$is_upe_enabled = $request->get_param( 'is_upe_enabled' );
 
+		$this->track_upe_toggle( $is_upe_enabled );
+
 		if ( $is_upe_enabled ) {
 			update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
 			return;
@@ -140,5 +144,15 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
 			WC_Payments_Notes_Additional_Payment_Methods::possibly_delete_note();
 		}
+	}
+
+	/**
+	 * Tracks UPE activation/deactivation.
+	 *
+	 * @param bool $is_upe_enabled Whether UPE is being enabled.
+	 */
+	private function track_upe_toggle( $is_upe_enabled ) {
+		$event = $is_upe_enabled ? 'wcpay_upe_enabled' : 'wcpay_upe_disabled';
+		Tracker::track_admin( $event );
 	}
 }
