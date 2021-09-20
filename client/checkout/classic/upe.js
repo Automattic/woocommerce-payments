@@ -271,6 +271,17 @@ jQuery( function ( $ ) {
 			return;
 		}
 
+		/*
+		 * Trigger this event to ensure the tokenization-form.js init
+		 * is executed.
+		 *
+		 * This script handles the radio input interaction when toggling
+		 * between the user's saved card / entering new card details.
+		 *
+		 * Ref: https://github.com/woocommerce/woocommerce/blob/2429498/assets/js/frontend/tokenization-form.js#L109
+		 */
+		$( document.body ).trigger( 'wc-credit-card-form-init' );
+
 		// If paying from order, we need to create Payment Intent from order not cart.
 		const isOrderPay = getConfig( 'isOrderPay' );
 		const isCheckout = getConfig( 'isCheckout' );
