@@ -23,6 +23,7 @@ class WC_Payments_API_Client {
 	const POST   = 'POST';
 	const GET    = 'GET';
 	const DELETE = 'DELETE';
+	const PUT    = 'PUT';
 
 	const API_TIMEOUT_SECONDS = 70;
 
@@ -1155,9 +1156,7 @@ class WC_Payments_API_Client {
 		return $this->request(
 			[],
 			self::SUBSCRIPTIONS_API . '/' . $wcpay_subscription_id,
-			self::DELETE,
-			true,
-			true
+			self::DELETE
 		);
 	}
 
@@ -1373,7 +1372,7 @@ class WC_Payments_API_Client {
 
 		$body = null;
 
-		if ( self::GET === $method ) {
+		if ( in_array( $method, [ self::GET, self::DELETE ], true ) ) {
 			$url .= '?' . http_build_query( $params );
 		} else {
 			// Encode the request body as JSON.
@@ -1393,7 +1392,7 @@ class WC_Payments_API_Client {
 		$headers['User-Agent']   = $this->user_agent;
 
 		Logger::log( "REQUEST $method $url" );
-		if ( 'POST' === $method || 'PUT' === $method ) {
+		if ( in_array( $method, [ self::POST, self::PUT ], true ) ) {
 			Logger::log(
 				'BODY: '
 				. var_export( WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
