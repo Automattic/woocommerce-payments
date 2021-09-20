@@ -627,7 +627,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		wp_register_script(
 			'WCPAY_CHECKOUT',
 			plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout' ],
+			[ 'stripe', 'wc-checkout', 'woocommerce-tokenization-form' ],
 			WC_Payments::get_file_version( 'dist/checkout.js' ),
 			true
 		);
