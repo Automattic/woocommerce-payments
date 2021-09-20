@@ -205,9 +205,9 @@ class FrontendCurrencies {
 	/**
 	 * Gets the currency code for us to use.
 	 *
-	 * @return string Three letter currency code.
+	 * @return string|null Three letter currency code.
 	 */
-	private function get_currency_code(): string {
+	private function get_currency_code() {
 		if ( $this->should_override_currency_code() ) {
 			return $this->order_currency;
 		}
