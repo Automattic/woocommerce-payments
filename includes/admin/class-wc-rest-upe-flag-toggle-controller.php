@@ -118,7 +118,12 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 
 		$is_upe_enabled = $request->get_param( 'is_upe_enabled' );
 
-		$this->track_upe_toggle( $is_upe_enabled );
+		$was_upe_enabled = '1' === get_option( WC_Payments_Features::UPE_FLAG_NAME );
+
+		// Make sure the value changed to avoid inaccurate toggle events.
+		if ( $is_upe_enabled === $was_upe_enabled ) {
+			$this->track_upe_toggle( $is_upe_enabled );
+		}
 
 		if ( $is_upe_enabled ) {
 			update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
