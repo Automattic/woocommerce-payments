@@ -46,6 +46,7 @@ class WC_Payments_API_Client {
 	const TRACKING_API           = 'tracking';
 	const PRODUCTS_API           = 'products';
 	const PRICES_API             = 'products/prices';
+	const INVOICES_API           = 'invoices';
 	const SUBSCRIPTIONS_API      = 'subscriptions';
 	const SUBSCRIPTION_ITEMS_API = 'subscriptions/items';
 
@@ -1057,36 +1058,6 @@ class WC_Payments_API_Client {
 			$data,
 			self::INVOICES_API . '/' . $invoice_id . '/pay',
 			self::POST
-		);
-	}
-
-	/**
-	 * Creates invoice items.
-	 *
-	 * @param array $invoice_item_data The invoice item data.
-	 *
-	 * @throws API_Exception Error creating the invoice item.
-	 */
-	public function create_invoice_items( $invoice_item_data ) {
-		return $this->request(
-			[ 'invoiceitems' => $invoice_item_data ],
-			self::INVOICE_ITEMS_API,
-			self::POST
-		);
-	}
-
-	/**
-	 * Deletes an invoice item.
-	 *
-	 * @param string $invoice_item_id ID of the invoice item to delete.
-	 *
-	 * @throws API_Exception Error deleting the invoice item.
-	 */
-	public function delete_invoice_item( $invoice_item_id ) {
-		return $this->request(
-			[],
-			self::INVOICE_ITEMS_API . '/' . $invoice_item_id,
-			self::DELETE
 		);
 	}
 

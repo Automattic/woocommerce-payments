@@ -113,8 +113,8 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to get the WC Pay price ID for.
 	 * @return string             The product's WC Pay price ID or an empty string.
 	 */
-	public function get_stripe_price_id( WC_Product $product ) : string {
-		return $product->get_meta( self::PRICE_ID_KEY, true );
+	public static function get_wcpay_price_id( WC_Product $product ) : string {
+		$price_id = $product->get_meta( self::PRICE_ID_KEY, true );
 
 		// If the subscription product doesn't have a WC Pay price ID, create one now.
 		if ( empty( $price_id ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
@@ -140,7 +140,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Gets the Stripe product ID associated with a WC product.
+	 * Check if the WC product has a WC Pay product ID.
 	 *
 	 * @param WC_Product $product The product to get the WC Pay ID for.
 	 * @return string             The WC Pay product ID or an empty string.
@@ -460,7 +460,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Gets product data relevant to Stripe from a WC product.
+	 * Gets product data relevant to WC Pay from a WC product.
 	 *
 	 * @param WC_Product $product The product to get data from.
 	 * @return array
