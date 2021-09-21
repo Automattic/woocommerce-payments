@@ -162,6 +162,13 @@ class MultiCurrency {
 	protected $tracking;
 
 	/**
+	 * Simulation variables array.
+	 *
+	 * @var array
+	 */
+	protected $simulation_params;
+
+	/**
 	 * Main MultiCurrency Instance.
 	 *
 	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
@@ -208,13 +215,7 @@ class MultiCurrency {
 			// Make sure that this runs after the main init function.
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
 			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
-
-			// This is required in the MC onboarding simulation iframe.
-			$simulation_params = $this->get_multi_currency_onboarding_simulation_variables();
-			if ( 0 < count( $simulation_params ) ) {
-				// Modify the page links to deliver required params in the simulation.
-				$this->add_simulation_params_to_preview_urls( $simulation_params );
-			}
+			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
 		}
 	}
 
@@ -609,6 +610,7 @@ class MultiCurrency {
 		$code = $this->get_stored_currency_code();
 
 		$code = $this->compatibility->override_selected_currency() ? $this->compatibility->override_selected_currency() : $code;
+		$code = apply_filters( 'wcpay_multi_currency_get_selected_currency', $code );
 
 		return $this->get_enabled_currencies()[ $code ] ?? $this->get_default_currency();
 	}
@@ -666,46 +668,16 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function update_selected_currency_by_geolocation() {
-
-		// Simulation overrides for multi currency onboarding preview.
-		$simulation_variables   = $this->get_multi_currency_onboarding_simulation_variables();
-		$simulation_enabled     = false;
-		$simulation_hide_notice = false;
-
-		if ( isset( $simulation_variables['enable_auto_currency'] ) ) {
-			$simulation_enabled     = true;
-			$enable_auto_currency   = boolval( $simulation_variables['enable_auto_currency'] );
-			$simulation_hide_notice = ! $enable_auto_currency;
-		}
-
 		// We only want to automatically set the currency if it's already not set.
-		if ( (
-				$simulation_enabled
-				|| $this->is_using_auto_currency_switching()
-			)
-			&& ! $simulation_hide_notice
-			&& (
-				$simulation_enabled
-				|| ! $this->get_stored_currency_code()
-			) ) {
+		if ( $this->is_using_auto_currency_switching() && ! $this->get_stored_currency_code() ) {
 			$currency = $this->geolocation->get_currency_by_customer_location();
 			// Update currency and display notice if enabled.
 			if ( ! empty( $this->get_enabled_currencies()[ $currency ] ) ) {
-				if ( ! $simulation_enabled ) {
-					$this->update_selected_currency( $currency );
-				} else {
-					add_filter(
-						'woocommerce_get_stored_currency_code',
-						function( $code ) use ( $currency ) {
-							return $currency;
-						}
-					);
-				}
+				$this->update_selected_currency( $currency );
 				add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
 			}
 		}
 	}
-
 
 	/**
 	 * Gets the configured value for apply charm pricing only to products.
@@ -803,9 +775,9 @@ class MultiCurrency {
 		}
 
 		$message = sprintf(
-			/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name */
+		/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name */
 			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a>Use %3$s instead.</a>', 'woocommerce-payments' ),
-			WC()->countries->countries[ $country ],
+			apply_filters( 'wcpay_multi_currency_override_notice_country', WC()->countries->countries[ $country ] ),
 			$current_currency->get_name(),
 			$currencies[ $store_currency ]
 		);
@@ -895,8 +867,6 @@ class MultiCurrency {
 		} elseif ( $user_id ) {
 			$code = get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
 		}
-
-		$code = apply_filters( 'woocommerce_get_stored_currency_code', $code );
 
 		return $code;
 	}
@@ -1185,26 +1155,105 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Validates the given currency code.
+	 *
+	 * @param   string $currency_code  The currency code to check validity.
+	 *
+	 * @return  string|false  Returns back the currency code in uppercase letters if it's valid, or `false` if not.
+	 */
+	public function validate_currency_code( $currency_code ) {
+		return in_array( strtoupper( $currency_code ), array_keys( $this->available_currencies ), true )
+		? strtoupper( $currency_code )
+		: false;
+	}
+
+	/**
+	 * Get simulation params from querystring and activate when needed
+	 *
+	 * @return  void
+	 */
+	public function possible_simulation_activation() {
+		// This is required in the MC onboarding simulation iframe.
+		$this->simulation_params = $this->get_multi_currency_onboarding_simulation_variables();
+		if ( ! $this->is_simulation_enabled() ) {
+			return;
+		}
+		// Modify the page links to deliver required params in the simulation.
+		$this->add_simulation_params_to_preview_urls();
+		$this->simulate_client_currency();
+	}
+
+	/**
+	 * Enables simulation of client browser currency.
+	 *
+	 * @return  void
+	 */
+	public function simulate_client_currency() {
+		if ( ! $this->simulation_params['enable_auto_currency'] || ! $this->simulation_params['client_currency'] ) {
+			return;
+		}
+		$simulation_currency = $this->simulation_params['client_currency'];
+
+		// Simulate client currency from geolocation.
+		add_filter(
+			'wcpay_multi_currency_get_selected_currency',
+			function( $selected_currency ) use ( $simulation_currency ) {
+				return $simulation_currency;
+			}
+		);
+
+		// Always display the notice on simulation screen.
+		add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
+
+		// Skip recalculating the cart to prevent infinite loop in simulation.
+		remove_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
+
+	}
+
+	/**
+	 * Returns whether the simulation querystring param is set and active
+	 *
+	 * @return  bool  Whether the simulation is enabled or not
+	 */
+	public function is_simulation_enabled() {
+		return 0 < count( array_keys( $this->simulation_params ) );
+	}
+
+	/**
 	 * Gets the multi currency onboarding preview overrides from the querystring.
 	 *
 	 * @return  array  Override variables
 	 */
 	public function get_multi_currency_onboarding_simulation_variables() {
+
+		$parameters = $_GET; // phpcs:ignore WordPress.Security.NonceVerification
 		// Check if we are in a preview session, don't interfere with the main session.
-		if ( ! isset( $_GET['is_mc_onboarding_simulation'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return [];
+		if ( ! isset( $parameters['is_mc_onboarding_simulation'] ) || true !== boolval( $parameters['is_mc_onboarding_simulation'] ) ) {
+			// Check if the page referer has the variables.
+			$server = $_SERVER; // phpcs:ignore WordPress.Security.NonceVerification
+			// Check if we are coming from a simulation session (if we don't have the necessary query strings).
+			if ( isset( $server['HTTP_REFERER'] ) && 0 < strpos( $server['HTTP_REFERER'], 'is_mc_onboarding_simulation' ) ) {
+				wp_parse_str( wp_parse_url( $server['HTTP_REFERER'], PHP_URL_QUERY ), $parameters );
+				if ( ! isset( $parameters['is_mc_onboarding_simulation'] ) || true !== boolval( $parameters['is_mc_onboarding_simulation'] ) ) {
+					return [];
+				}
+			} else {
+				return [];
+			}
 		}
 
 		// Define variables which can be overridden inside the preview session, with their sanitization methods.
 		$possible_variables = [
 			'enable_storefront_switcher' => 'wp_validate_boolean',
 			'enable_auto_currency'       => 'wp_validate_boolean',
+			'client_currency'            => [ $this, 'validate_currency_code' ],
 		];
 
 		// Define the defaults if the parameter is missing in the request.
 		$defaults = [
 			'enable_storefront_switcher' => false,
 			'enable_auto_currency'       => false,
+			'client_currency'            => null,
 		];
 
 		// Prepare the params array.
@@ -1213,12 +1262,10 @@ class MultiCurrency {
 		// Walk through the querystring parameter possibilities, and prepare the params.
 		foreach ( $possible_variables as $possible_variable => $sanitization_callback ) {
 			// phpcs:disable WordPress.Security.NonceVerification
-			if ( isset( $_GET[ $possible_variable ] ) ) {
+			if ( isset( $parameters[ $possible_variable ] ) ) {
 				$values[ $possible_variable ] = call_user_func(
 					$sanitization_callback,
-					wp_unslash(
-						$_GET[ $possible_variable ] // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-					)
+					$parameters[ $possible_variable ] // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 				);
 				// phpcs:enable WordPress.Security.NonceVerification
 			} else {
@@ -1237,7 +1284,8 @@ class MultiCurrency {
 	 *
 	 * @return  void
 	 */
-	private function add_simulation_params_to_preview_urls( $params ) {
+	private function add_simulation_params_to_preview_urls() {
+		$params = $this->simulation_params;
 		add_filter(
 			'wp_footer',
 			function() use ( $params ) {
@@ -1252,6 +1300,7 @@ class MultiCurrency {
 						parsedURL.searchParams.set('is_mc_onboarding_simulation', true);
 						parsedURL.searchParams.set('enable_auto_currency', <?php echo esc_attr( $params['enable_auto_currency'] ? 'true' : 'false' ); ?>);
 						parsedURL.searchParams.set('enable_storefront_switcher', <?php echo esc_attr( $params['enable_storefront_switcher'] ? 'true' : 'false' ); ?>);
+						parsedURL.searchParams.set('client_currency', '<?php echo esc_attr( $params['client_currency'] ?? '' ); ?>');
 						link.href = parsedURL.toString();
 					}
 				});

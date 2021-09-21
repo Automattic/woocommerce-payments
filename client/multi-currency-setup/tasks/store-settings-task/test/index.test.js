@@ -8,17 +8,30 @@ import { render, screen, fireEvent } from '@testing-library/react';
  * Internal dependencies
  */
 import WizardTaskContext from '../../../../additional-methods-setup/wizard/task/context';
-import { useStoreSettings } from 'wcpay/data';
+import { useCurrencies, useStoreSettings } from 'wcpay/data';
 import StoreSettingsTask from '..';
 
 jest.mock( 'wcpay/data', () => ( {
 	useStoreSettings: jest.fn(),
+	useCurrencies: jest.fn(),
 } ) );
 
 const changeableSettings = [
 	'enable_storefront_switcher',
 	'enable_auto_currency',
 ];
+
+useCurrencies.mockReturnValue( {
+	currencies: {
+		enabled: {
+			USD: {},
+			GBP: {},
+		},
+		default: {
+			code: 'USD',
+		},
+	},
+} );
 
 useStoreSettings.mockReturnValue( {
 	storeSettings: {
@@ -108,7 +121,7 @@ describe( 'Multi Currency Store Settings', () => {
 				.querySelector( 'iframe' )
 		).toHaveAttribute(
 			'src',
-			'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=false&enable_auto_currency=false'
+			'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=false&enable_auto_currency=false&client_currency=GBP'
 		);
 	} );
 
@@ -132,7 +145,7 @@ describe( 'Multi Currency Store Settings', () => {
 				.querySelector( 'iframe' )
 		).toHaveAttribute(
 			'src',
-			'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=true&enable_auto_currency=false'
+			'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=true&enable_auto_currency=false&client_currency=GBP'
 		);
 	} );
 } );

@@ -257,26 +257,28 @@ const AddCurrenciesTask = () => {
 							<div className="add-currencies-task__content">
 								<EnabledCurrenciesModalCheckboxList>
 									{ ! searchText &&
-										visibleRecommendedCurrencyCodes.length && (
-											<>
-												<li>
-													<h4>
-														{ __(
-															'Recommended Currencies',
-															'woocommerce-payments'
-														) }
-													</h4>
-												</li>
-												{ visibleRecommendedCurrencyCodes.map(
-													displayCurrencyCheckbox
-												) }
-												<li
-													className={
-														'add-currencies-task__separator'
-													}
-												/>
-											</>
-										) }
+									visibleRecommendedCurrencyCodes.length ? (
+										<>
+											<li>
+												<h4>
+													{ __(
+														'Recommended Currencies',
+														'woocommerce-payments'
+													) }
+												</h4>
+											</li>
+											{ visibleRecommendedCurrencyCodes.map(
+												displayCurrencyCheckbox
+											) }
+											<li
+												className={
+													'add-currencies-task__separator'
+												}
+											/>
+										</>
+									) : (
+										''
+									) }
 									{ ! searchText && (
 										<li className="add-currencies-task__available-currencies">
 											<h4>

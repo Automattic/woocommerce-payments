@@ -11,9 +11,10 @@ import './index.scss';
 
 const PreviewModal = ( {
 	isPreviewModalOpen,
+	setPreviewModalOpen,
 	isStorefrontSwitcherEnabledValue,
 	isAutomaticSwitchEnabledValue,
-	setPreviewModalOpen,
+	clientCurrency,
 } ) => {
 	const handlePreviewModalCloseClick = () => {
 		setPreviewModalOpen( false );
@@ -35,7 +36,9 @@ const PreviewModal = ( {
 						'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=' +
 						isStorefrontSwitcherEnabledValue +
 						'&enable_auto_currency=' +
-						isAutomaticSwitchEnabledValue
+						isAutomaticSwitchEnabledValue +
+						'&client_currency=' +
+						clientCurrency
 					}
 				></iframe>
 			</Modal>
