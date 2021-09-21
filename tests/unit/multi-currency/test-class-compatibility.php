@@ -816,7 +816,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			],
 		];
 
-		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $cart_item ) );
+		$this->assertSame( $expected, $result );
 	}
 
 	public function test_get_item_data_adds_percentage_price_to_name_properly() {
@@ -836,6 +836,8 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			'addons_price_before_calc' => 10,
 		];
 
+		$result = $this->compatibility->get_item_data( [], $cart_item );
+
 		// WC 4.4 introduced the <bdi> wrapper, and we still test back to WC 4.0.
 		// For some reason version_compare didn't work to fix the issue, so, we update the string instead.
 		if ( isset( $result[0]['name'] ) && false === strpos( $result[0]['name'], '<bdi>' ) ) {
@@ -851,7 +853,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			],
 		];
 
-		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $cart_item ) );
+		$this->assertSame( $expected, $result );
 	}
 
 	public function test_add_cart_item_returns_proper_addon_data() {
