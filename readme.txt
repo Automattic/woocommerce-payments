@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
 * Add - Update layout of the Multi-currency settings screen.
 * Fix - Fixed missing file error for removed CSS file.
+* Fix - Currency switcher does not affect order confirmation screen prices.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
@@ -112,7 +113,6 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - User order currency format on admin refund button.
 * Fix - Clear the list of selected currencies after closing the modal for adding currencies.
 * Fix - Fix subscription change payment method errors after entering a payment method that fails.
-* Fix - Currency switcher does not affect order confirmation screen prices.
 * Fix - Prevent duplicate account onboarding requests.
 * Fix - Filter out merchant-facing payment errors from customer error notices.
 
