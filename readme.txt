@@ -104,6 +104,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Update layout of the Multi-currency settings screen.
 * Fix - Fixed missing file error for removed CSS file.
 * Add - Add WooCommerce Product Add-Ons compatibility.
+* Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
