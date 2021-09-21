@@ -99,16 +99,13 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		];
 
 		const styles = {
-			div: {
-				// 	border: border ? '2px' : '0px',
-				// 	borderRadius: borderColor,
-				// 	borderColor: border ? borderColor : 'transparent',
-				// 	lineHeight: fontLineHeight,
-			},
 			select: {
 				fontSize: fontSize,
 				color: fontColor,
 				backgroundColor: backgroundColor,
+				border: border ? '1px solid' : '0px',
+				borderColor: borderColor,
+				borderRadius: borderRadius,
 			},
 		};
 

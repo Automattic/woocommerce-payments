@@ -198,12 +198,12 @@ class CurrencySwitcherBlock {
 	private function get_widget_styles( array $block_attributes ): array {
 		return [
 			'div'    => [
-				'border'        => '0px', // TODO: set to $block_attributes['border'] ? '1px solid' : '0px solid' when border issue is resolved.
-				'border-radius' => isset( $block_attributes['borderRadius'] ) ? $block_attributes['borderRadius'] . 'px' : '3px',
-				'border-color'  => $block_attributes['borderColor'] ?? '#000000',
-				'line-height'   => $block_attributes['fontLineHeight'] ?? 1.2,
+				'line-height' => $block_attributes['fontLineHeight'] ?? 1.2,
 			],
 			'select' => [
+				'border'           => isset( $block_attributes['border'] ) ? '1px solid' : '0px solid',
+				'border-radius'    => isset( $block_attributes['borderRadius'] ) ? $block_attributes['borderRadius'] . 'px' : '3px',
+				'border-color'     => $block_attributes['borderColor'] ?? '#000000',
 				'font-size'        => isset( $block_attributes['fontSize'] ) ? $block_attributes['fontSize'] . 'px' : '11px',
 				'color'            => $block_attributes['fontColor'] ?? '#000000',
 				'background-color' => $block_attributes['backgroundColor'] ?? '#000000',

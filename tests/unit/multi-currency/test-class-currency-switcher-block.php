@@ -73,9 +73,14 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase
 
 		$this->assertStringContainsString( '<form>', $result );
 
+		// Attributes are set with defaults in CurrencySwitcherBlock if they are not set, so we need to check them.
+		$border_attribute        = isset( $attributes['border'] ) ? '1px solid' : '0px solid';
+		$border_radius_attribute = isset( $attributes['borderRadius'] ) ? $attributes['borderRadius'] . 'px' : '3px';
+		$border_color_attribute  = $attributes['borderColor'] ?? '#000000';
+
 		if ( $test_styles ) {
 			$this->assertStringContainsString(
-				"style=\"font-size: {$attributes['fontSize']}px; color: {$attributes['fontColor']}; background-color: {$attributes['backgroundColor']}; \"",
+				"style=\"border: {$border_attribute}; border-radius: {$border_radius_attribute}; border-color: {$border_color_attribute}; font-size: {$attributes['fontSize']}px; color: {$attributes['fontColor']}; background-color: {$attributes['backgroundColor']}; \"",
 				$result
 			);
 		}
