@@ -273,6 +273,7 @@ jQuery( function ( $ ) {
 		// If paying from order, we need to create Payment Intent from order not cart.
 		const isOrderPay = getConfig( 'isOrderPay' );
 		const isCheckout = getConfig( 'isCheckout' );
+		const isChangingPayment = getConfig( 'isChangingPayment' );
 		let orderId;
 		if ( isOrderPay ) {
 			orderId = getConfig( 'orderId' );
@@ -318,7 +319,7 @@ jQuery( function ( $ ) {
 						'always'
 					);
 				}
-				if ( isCheckout && ! isOrderPay ) {
+				if ( isCheckout && ! ( isOrderPay || isChangingPayment ) ) {
 					upeSettings.fields = {
 						billingDetails: hiddenBillingFields,
 					};
