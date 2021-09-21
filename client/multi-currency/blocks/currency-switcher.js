@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { useCurrencies, useEnabledCurrencies } from 'wcpay/data';
+import { useEnabledCurrencies, useCurrencies } from 'wcpay/data';
 
 /**
  * External dependencies
@@ -84,14 +84,14 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		} = props;
 
 		// eslint-disable-next-line react-hooks/rules-of-hooks
-		const isLoading = useCurrencies();
+		const { enabledCurrencies } = useEnabledCurrencies();
 		// eslint-disable-next-line react-hooks/rules-of-hooks
-		const enabledCurrencies = useEnabledCurrencies();
-
+		const { isLoading } = useCurrencies();
 		const enabledKeys = enabledCurrencies
 			? Object.keys( enabledCurrencies )
 			: [];
 
+		// In case there is a problem retrieving enabled currencies.
 		const placeholders = [
 			{ id: 'usd', code: 'USD', flag: '🇺🇸', symbol: '$' },
 			{ id: 'eur', code: 'EUR', flag: '🇪🇺', symbol: '€' },
