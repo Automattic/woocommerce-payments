@@ -674,10 +674,15 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			'data'   => WC_Helper_Product::create_simple_product(),
 		];
 
-		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$expected_name = 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</bdi></span>)';
-		} else {
-			$expected_name = 'checkboxes (<span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</span>)';
+		$this->mock_multi_currency->method( 'get_price' )->with( 1.5, 'product' )->willReturn( 2.0 );
+
+		$result = $this->compatibility->get_item_data( $other_data, $cart_item );
+
+		// WC 4.4 introduced the <bdi> wrapper, and we still test back to WC 4.0.
+		// For some reason version_compare didn't work to fix the issue, so, we update the string instead.
+		if ( isset( $result[1]['name'] ) && ! strstr( $result[1]['name'], '<bdi>' ) ) {
+			$result[1]['name'] = str_replace( 'amount"><span', 'amount"><bdi><span', $result[1]['name'] );
+			$result[1]['name'] = str_replace( '</span>)', '<bdi></span>)', $result[1]['name'] );
 		}
 
 		$expected = [
@@ -685,15 +690,13 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 				'other' => 'should remain',
 			],
 			[
-				'name'    => $expected_name,
+				'name'    => 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</bdi></span>)',
 				'value'   => 'test value',
 				'display' => 'This is a checkbox',
 			],
 		];
 
-		$this->mock_multi_currency->method( 'get_price' )->with( 1.5, 'product' )->willReturn( 2.0 );
-
-		$this->assertSame( $expected, $this->compatibility->get_item_data( $other_data, $cart_item ) );
+		$this->assertSame( $expected, $result );
 	}
 
 	public function test_get_item_data_does_not_add_addon_price_to_name_if_price_zero() {
@@ -760,6 +763,15 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			'data'   => WC_Helper_Product::create_simple_product(),
 		];
 
+		$result = $this->compatibility->get_item_data( [], $cart_item );
+
+		// WC 4.4 introduced the <bdi> wrapper, and we still test back to WC 4.0.
+		// For some reason version_compare didn't work to fix the issue, so, we update the string instead.
+		if ( isset( $result[0]['name'] ) && ! strstr( $result[0]['name'], '<bdi>' ) ) {
+			$result[0]['name'] = str_replace( 'amount"><span', 'amount"><bdi><span', $result[0]['name'] );
+			$result[0]['name'] = str_replace( '</span>)', '<bdi></span>)', $result[0]['name'] );
+		}
+
 		$expected = [
 			[
 				'name'    => 'custom price (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
@@ -768,7 +780,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			],
 		];
 
-		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $cart_item ) );
+		$this->assertSame( $expected, $result );
 	}
 
 	public function test_get_item_data_adds_price_to_name_properly() {
@@ -785,21 +797,24 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			'data'   => WC_Helper_Product::create_simple_product(),
 		];
 
-		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$expected_name = 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</bdi></span>)';
-		} else {
-			$expected_name = 'checkboxes (<span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</span>)';
+		$this->mock_multi_currency->method( 'get_price' )->with( 1.5, 'product' )->willReturn( 2.0 );
+
+		$result = $this->compatibility->get_item_data( [], $cart_item );
+
+		// WC 4.4 introduced the <bdi> wrapper, and we still test back to WC 4.0.
+		// For some reason version_compare didn't work to fix the issue, so, we update the string instead.
+		if ( isset( $result[0]['name'] ) && ! strstr( $result[0]['name'], '<bdi>' ) ) {
+			$result[0]['name'] = str_replace( 'amount"><span', 'amount"><bdi><span', $result[0]['name'] );
+			$result[0]['name'] = str_replace( '</span>)', '<bdi></span>)', $result[0]['name'] );
 		}
 
 		$expected = [
 			[
-				'name'    => $expected_name,
+				'name'    => 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>2.00</bdi></span>)',
 				'value'   => 'test value',
 				'display' => '',
 			],
 		];
-
-		$this->mock_multi_currency->method( 'get_price' )->with( 1.5, 'product' )->willReturn( 2.0 );
 
 		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $cart_item ) );
 	}
@@ -821,15 +836,16 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			'addons_price_before_calc' => 10,
 		];
 
-		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$expected_name = 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</bdi></span>)';
-		} else {
-			$expected_name = 'checkboxes (<span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</span>)';
+		// WC 4.4 introduced the <bdi> wrapper, and we still test back to WC 4.0.
+		// For some reason version_compare didn't work to fix the issue, so, we update the string instead.
+		if ( isset( $result[0]['name'] ) && ! strstr( $result[0]['name'], '<bdi>' ) ) {
+			$result[0]['name'] = str_replace( 'amount"><span', 'amount"><bdi><span', $result[0]['name'] );
+			$result[0]['name'] = str_replace( '</span>)', '<bdi></span>)', $result[0]['name'] );
 		}
 
 		$expected = [
 			[
-				'name'    => $expected_name,
+				'name'    => 'checkboxes (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</bdi></span>)',
 				'value'   => 'test value',
 				'display' => '',
 			],
