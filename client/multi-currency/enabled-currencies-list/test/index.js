@@ -241,7 +241,7 @@ describe( 'Multi Currency enabled currencies list', () => {
 	} );
 
 	test( 'Remove currency modal renders correctly', () => {
-		global.multiCurrencyPaymentMethodsMap = {
+		window.multiCurrencyPaymentMethodsMap = {
 			EUR: {
 				giropay: 'giropay',
 				sofort: 'Sofort',
@@ -260,7 +260,7 @@ describe( 'Multi Currency enabled currencies list', () => {
 		const modal = screen.queryByRole( 'dialog', { name: /remove euro/i } );
 		expect( modal ).toBeInTheDocument();
 		expect( modal ).toMatchSnapshot();
-		global.multiCurrencyPaymentMethodsMap = undefined;
+		window.multiCurrencyPaymentMethodsMap = undefined;
 	} );
 
 	test( 'Modal should clear search term on cancel and update selected', () => {
