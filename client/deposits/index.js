@@ -39,7 +39,7 @@ const DepositsPage = () => {
 	return (
 		<Page>
 			<Experiment
-				name="wcpay_empty_state_preview_mode_v4"
+				name="wcpay_empty_state_preview_mode_v5"
 				treatmentExperience={ treatmentExperience }
 				defaultExperience={ defaultExperience }
 			/>

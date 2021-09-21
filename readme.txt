@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
 Tested up to: 5.8
 Requires PHP: 7.0
-Stable tag: 2.9.0
+Stable tag: 3.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,9 +98,26 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.0.0 - 2021-xx-xx =
+= 3.1.0 - 2021-xx-xx =
+* Add - Customer multi-currency onboarding flow.
+* Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
+* Add - Update layout of the Multi-currency settings screen.
+* Fix - Fixed missing file error for removed CSS file.
+
+= 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
 * Fix - Use store currency on analytics leaderboard when Multi-Currency is enabled.
+* Add - Add API to expose Multi-Currency widget to theme/plugin developers for easy integration.
+* Fix - Enabled currencies modal UI.
+* Fix - User order currency format on admin refund button.
+* Fix - Clear the list of selected currencies after closing the modal for adding currencies.
+* Fix - Fix subscription change payment method errors after entering a payment method that fails.
+* Fix - Prevent duplicate account onboarding requests.
+* Fix - Filter out merchant-facing payment errors from customer error notices.
+
+= 2.9.1 - 2021-09-07 =
+* Fix - Error while checking out with UPE when fields are hidden.
+* Fix - Unable to onboard when in treatment mode.
 
 = 2.9.0 - 2021-08-25 =
 * Add - Split discount line in timeline into variable fee and fixed fee.
@@ -162,6 +179,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
 * Fix - Do not overwrite admin pages when account is disconnected.
 * Update - Set a description when creating payment intents.
+* Add - Add dispute resolution task.
 
 = 2.6.1 - 2021-07-01 =
 * Fix - Updates the notes query filters to prevent breaking the WooCommerce > Home inbox.

@@ -52,6 +52,15 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->mock_coupon = $this->createMock( \WC_Coupon::class );
 	}
 
+	public function tearDown() {
+		// Reset cart checks so future tests can pass.
+		$this->mock_wcs_cart_contains_renewal( false );
+		$this->mock_wcs_cart_contains_resubscribe( false );
+		$this->mock_wcs_get_order_type_cart_items( false );
+
+		parent::tearDown();
+	}
+
 	/**
 	 * @dataProvider woocommerce_filter_provider
 	 */

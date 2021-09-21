@@ -180,6 +180,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			Bancontact_Payment_Method::class,
 			P24_Payment_Method::class,
 			Ideal_Payment_Method::class,
+			Sepa_Payment_Method::class,
 		];
 
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
@@ -909,6 +910,9 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$bancontact_details        = [
 			'type' => 'bancontact',
 		];
+		$sepa_details              = [
+			'type' => 'sepa_debit',
+		];
 		$ideal_details             = [
 			'type' => 'ideal',
 		];
@@ -922,6 +926,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			$bancontact_details,
 			$p24_details,
 			$ideal_details,
+			$sepa_details,
 		];
 
 		$expected_payment_method_titles = [
@@ -933,6 +938,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			'Bancontact',
 			'Przelewy24 (P24)',
 			'iDEAL',
+			'SEPA Direct Debit',
 		];
 
 		foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
@@ -978,6 +984,9 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$mock_bancontact_details = [
 			'type' => 'bancontact',
 		];
+		$mock_sepa_details       = [
+			'type' => 'sepa_debit',
+		];
 		$mock_ideal_details      = [
 			'type' => 'ideal',
 		];
@@ -988,6 +997,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$p24_method        = $this->mock_payment_methods['p24'];
 		$sofort_method     = $this->mock_payment_methods['sofort'];
 		$bancontact_method = $this->mock_payment_methods['bancontact'];
+		$sepa_method       = $this->mock_payment_methods['sepa_debit'];
 		$ideal_method      = $this->mock_payment_methods['ideal'];
 
 		$this->assertEquals( 'card', $card_method->get_id() );
@@ -1022,6 +1032,12 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertTrue( $bancontact_method->is_enabled_at_checkout() );
 		$this->assertFalse( $bancontact_method->is_reusable() );
 
+		$this->assertEquals( 'sepa_debit', $sepa_method->get_id() );
+		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title() );
+		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title( $mock_sepa_details ) );
+		$this->assertTrue( $sepa_method->is_enabled_at_checkout() );
+		$this->assertTrue( $sepa_method->is_reusable() );
+
 		$this->assertEquals( 'ideal', $ideal_method->get_id() );
 		$this->assertEquals( 'iDEAL', $ideal_method->get_title() );
 		$this->assertEquals( 'iDEAL', $ideal_method->get_title( $mock_ideal_details ) );
@@ -1036,6 +1052,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$giropay_method    = $this->mock_payment_methods['giropay'];
 		$sofort_method     = $this->mock_payment_methods['sofort'];
 		$bancontact_method = $this->mock_payment_methods['bancontact'];
+		$sepa_method       = $this->mock_payment_methods['sepa_debit'];
 		$p24_method        = $this->mock_payment_methods['p24'];
 		$ideal_method      = $this->mock_payment_methods['ideal'];
 
@@ -1043,6 +1060,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertFalse( $giropay_method->is_enabled_at_checkout() );
 		$this->assertFalse( $sofort_method->is_enabled_at_checkout() );
 		$this->assertFalse( $bancontact_method->is_enabled_at_checkout() );
+		$this->assertTrue( $sepa_method->is_enabled_at_checkout() );
 		$this->assertFalse( $p24_method->is_enabled_at_checkout() );
 		$this->assertFalse( $ideal_method->is_enabled_at_checkout() );
 	}
@@ -1052,6 +1070,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$giropay_method    = $this->mock_payment_methods['giropay'];
 		$sofort_method     = $this->mock_payment_methods['sofort'];
 		$bancontact_method = $this->mock_payment_methods['bancontact'];
+		$sepa_method       = $this->mock_payment_methods['sepa_debit'];
 		$p24_method        = $this->mock_payment_methods['p24'];
 		$ideal_method      = $this->mock_payment_methods['ideal'];
 
@@ -1061,6 +1080,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertTrue( $giropay_method->is_currency_valid() );
 		$this->assertTrue( $sofort_method->is_currency_valid() );
 		$this->assertTrue( $bancontact_method->is_currency_valid() );
+		$this->assertTrue( $sepa_method->is_currency_valid() );
 		$this->assertTrue( $p24_method->is_currency_valid() );
 		$this->assertTrue( $ideal_method->is_currency_valid() );
 
@@ -1070,6 +1090,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertFalse( $giropay_method->is_currency_valid() );
 		$this->assertFalse( $sofort_method->is_currency_valid() );
 		$this->assertFalse( $bancontact_method->is_currency_valid() );
+		$this->assertFalse( $sepa_method->is_currency_valid() );
 		$this->assertFalse( $p24_method->is_currency_valid() );
 		$this->assertFalse( $ideal_method->is_currency_valid() );
 
