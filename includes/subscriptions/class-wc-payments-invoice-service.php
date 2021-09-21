@@ -225,10 +225,14 @@ class WC_Payments_Invoice_Service {
 			if ( ! empty( $item->get_taxes() ) ) {
 				$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
 
-				foreach ( $subscription->get_taxes() as $tax ) {
-					if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) && ! in_array( (int) $tax->get_rate_percent(), $item_data['tax_rates'], true ) ) {
-						$repair_data['tax_rates'] = WC_Payments_Subscription_Service::get_tax_rates_for_item( $item, $subscription );
-						break;
+				if ( count( $tax_rate_ids ) !== count( $item_data['tax_rates'] ) ) {
+					$repair_data['tax_rates'] = WC_Payments_Subscription_Service::get_tax_rates_for_item( $item, $subscription );
+				} else {
+					foreach ( $subscription->get_taxes() as $tax ) {
+						if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) && ! in_array( (int) $tax->get_rate_percent(), $item_data['tax_rates'], true ) ) {
+							$repair_data['tax_rates'] = WC_Payments_Subscription_Service::get_tax_rates_for_item( $item, $subscription );
+							break;
+						}
 					}
 				}
 			}
