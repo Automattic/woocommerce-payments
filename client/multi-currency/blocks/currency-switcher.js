@@ -27,7 +27,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		'Let your customers switch between your enabled currencies',
 		'woocommerce-payments'
 	),
-	icon: 'admin-site', // TODO: check the icon to use (https://developer.wordpress.org/resource/dashicons)
+	icon: 'money-alt',
 	category: 'widgets',
 	attributes: {
 		symbol: {
