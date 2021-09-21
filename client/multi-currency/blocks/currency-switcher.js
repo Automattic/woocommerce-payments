@@ -99,6 +99,9 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		];
 
 		const styles = {
+			div: {
+				lineHeight: fontLineHeight,
+			},
 			select: {
 				fontSize: fontSize,
 				color: fontColor,
