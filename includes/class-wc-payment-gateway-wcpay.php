@@ -1581,7 +1581,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order - Order to capture charge on.
 	 *
-	 * @return array An array containing the status (succeeded/failed), id (intent ID), and message (error message if any)
+	 * @return array An array containing the status (succeeded/failed), id (intent ID), message (error message if any), and http code
 	 */
 	public function capture_charge( $order ) {
 		$amount                   = $order->get_total();
@@ -1589,6 +1589,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$intent                   = null;
 		$status                   = null;
 		$error_message            = null;
+		$http_code                = null;
 		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
 
 		try {
@@ -1598,14 +1599,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->get_level3_data_from_order( $order )
 			);
 
-			$status   = $intent->get_status();
-			$currency = $intent->get_currency();
+			$status    = $intent->get_status();
+			$currency  = $intent->get_currency();
+			$http_code = 200;
 
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
 		} catch ( API_Exception $e ) {
 			try {
 				$error_message = $e->getMessage();
+				$http_code     = $e->get_http_code();
 
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
 				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
@@ -1617,6 +1620,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// original error message.
 				$status        = null;
 				$error_message = $e->getMessage();
+				$http_code     = $e->get_http_code();
 			}
 		}
 
@@ -1665,6 +1669,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order )
 			);
 			$order->add_order_note( $note );
+			$http_code = 502;
 		}
 
 		if ( $is_authorization_expired ) {
@@ -1672,9 +1677,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return [
-			'status'  => $status ?? 'failed',
-			'id'      => ! empty( $intent ) ? $intent->get_id() : null,
-			'message' => $error_message,
+			'status'    => $status ?? 'failed',
+			'id'        => ! empty( $intent ) ? $intent->get_id() : null,
+			'message'   => $error_message,
+			'http_code' => $http_code,
 		];
 	}
 

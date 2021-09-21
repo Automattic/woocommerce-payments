@@ -103,6 +103,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
 * Add - Update layout of the Multi-currency settings screen.
 * Fix - Fixed missing file error for removed CSS file.
+* Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
+* Fix - Currency switcher does not affect order confirmation screen prices.
 * Fix - Refund button is missing from orders that saved with errors.
 
 = 3.0.0 - 2021-09-16 =

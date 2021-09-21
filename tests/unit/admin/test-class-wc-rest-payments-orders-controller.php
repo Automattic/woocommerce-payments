@@ -223,6 +223,58 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Payment capture failed to complete with the following message: Test error', $response->get_error_message() );
 	}
 
+	public function test_capture_terminal_payment_error_invalid_arguments() {
+		$order = $this->create_mock_order();
+
+		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
+		$mock_intent
+			->expects( $this->any() )
+			->method( 'get_status' )
+			->willReturn( 'requires_capture' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->willReturn(
+				// See https://stripe.com/docs/error-codes#amount-too-large.
+				[
+					'status'    => 'failed',
+					'message'   => 'Error: The payment could not be captured because the requested capture amount is greater than the authorized amount.',
+					'http_code' => 400,
+				]
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_terminal_payment( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 400, $data['status'] );
+		$this->assertSame( 'wcpay_capture_error', $response->get_error_code() );
+		$this->assertEquals(
+			'Payment capture failed to complete with the following message: ' .
+			'Error: The payment could not be captured because the requested capture amount is greater than the authorized amount.',
+			$response->get_error_message()
+		);
+	}
+
 	public function test_capture_terminal_payment_handles_exceptions() {
 		$order = $this->create_mock_order();
 
