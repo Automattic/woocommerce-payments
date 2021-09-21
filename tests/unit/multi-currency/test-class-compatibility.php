@@ -680,7 +680,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 
 		// WC 4.4 introduced the <bdi> wrapper, and we still test back to WC 4.0.
 		// For some reason version_compare didn't work to fix the issue, so, we update the string instead.
-		if ( isset( $result[1]['name'] ) && ! strstr( $result[1]['name'], '<bdi>' ) ) {
+		if ( isset( $result[1]['name'] ) && false === strpos( $result[1]['name'], '<bdi>' ) ) {
 			$result[1]['name'] = str_replace( 'amount"><span', 'amount"><bdi><span', $result[1]['name'] );
 			$result[1]['name'] = str_replace( '</span>)', '</bdi></span>)', $result[1]['name'] );
 		}
@@ -767,7 +767,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 
 		// WC 4.4 introduced the <bdi> wrapper, and we still test back to WC 4.0.
 		// For some reason version_compare didn't work to fix the issue, so, we update the string instead.
-		if ( isset( $result[0]['name'] ) && ! strstr( $result[0]['name'], '<bdi>' ) ) {
+		if ( isset( $result[0]['name'] ) && false === strpos( $result[0]['name'], '<bdi>' ) ) {
 			$result[0]['name'] = str_replace( 'amount"><span', 'amount"><bdi><span', $result[0]['name'] );
 			$result[0]['name'] = str_replace( '</span>)', '</bdi></span>)', $result[0]['name'] );
 		}
@@ -803,7 +803,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 
 		// WC 4.4 introduced the <bdi> wrapper, and we still test back to WC 4.0.
 		// For some reason version_compare didn't work to fix the issue, so, we update the string instead.
-		if ( isset( $result[0]['name'] ) && ! strstr( $result[0]['name'], '<bdi>' ) ) {
+		if ( isset( $result[0]['name'] ) && false === strpos( $result[0]['name'], '<bdi>' ) ) {
 			$result[0]['name'] = str_replace( 'amount"><span', 'amount"><bdi><span', $result[0]['name'] );
 			$result[0]['name'] = str_replace( '</span>)', '</bdi></span>)', $result[0]['name'] );
 		}
@@ -838,7 +838,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 
 		// WC 4.4 introduced the <bdi> wrapper, and we still test back to WC 4.0.
 		// For some reason version_compare didn't work to fix the issue, so, we update the string instead.
-		if ( isset( $result[0]['name'] ) && ! strstr( $result[0]['name'], '<bdi>' ) ) {
+		if ( isset( $result[0]['name'] ) && false === strpos( $result[0]['name'], '<bdi>' ) ) {
 			$result[0]['name'] = str_replace( 'amount"><span', 'amount"><bdi><span', $result[0]['name'] );
 			$result[0]['name'] = str_replace( '</span>)', '</bdi></span>)', $result[0]['name'] );
 		}
