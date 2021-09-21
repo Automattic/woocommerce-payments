@@ -1,46 +1,54 @@
-/* global wcpayPaymentRequestParams, Stripe, jQuery, wc_add_to_cart_variation_params */
-
+/* global jQuery, wcpayPaymentRequestParams, wc_add_to_cart_variation_params */
+/**
+ * External dependencies
+ */
+import { doAction } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import './style.scss';
+import WCPayAPI from '../checkout/api';
+
+import {
+	shippingAddressChangeHandler,
+	shippingOptionChangeHandler,
+	paymentMethodHandler,
+} from './event-handlers.js';
+
+import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
 jQuery( ( $ ) => {
-	const stripe = Stripe( wcpayPaymentRequestParams.stripe.publishableKey, {
-		stripeAccount: wcpayPaymentRequestParams.stripe.accountId,
-	} );
+	// Don't load if blocks checkout is being loaded.
+	if ( wcpayPaymentRequestParams.has_block ) {
+		return;
+	}
+
+	const publishableKey = wcpayPaymentRequestParams.stripe.publishableKey;
+
+	if ( ! publishableKey ) {
+		// If no configuration is present, probably this is not the checkout page.
+		return;
+	}
+
+	const api = new WCPayAPI(
+		{
+			publishableKey,
+			accountId: wcpayPaymentRequestParams.stripe.accountId,
+			locale: wcpayPaymentRequestParams.stripe.locale,
+		},
+		// A promise-based interface to jQuery.post.
+		( url, args ) => {
+			return new Promise( ( resolve, reject ) => {
+				jQuery.post( url, args ).then( resolve ).fail( reject );
+			} );
+		}
+	);
+
 	let paymentRequestType;
 
 	/**
 	 * Object to handle Stripe payment forms.
 	 */
 	const wcpayPaymentRequest = {
-		/**
-		 * Get WC AJAX endpoint URL.
-		 *
-		 * @param  {string} endpoint Endpoint.
-		 * @return {string} URL with interpolated endpoint.
-		 */
-		getAjaxURL: ( endpoint ) =>
-			wcpayPaymentRequestParams.ajax_url
-				.toString()
-				.replace( '%%endpoint%%', 'wcpay_' + endpoint ),
-
-		getCartDetails: () => {
-			const data = {
-				security: wcpayPaymentRequestParams.nonce.payment,
-			};
-
-			$.ajax( {
-				type: 'POST',
-				data: data,
-				url: wcpayPaymentRequest.getAjaxURL( 'get_cart_details' ),
-				success: ( response ) => {
-					wcpayPaymentRequest.startPaymentRequest( response );
-				},
-			} );
-		},
-
 		getAttributes: function () {
 			const select = $( '.variations_form' ).find( '.variations select' );
 			const data = {};
@@ -68,110 +76,6 @@ jQuery( ( $ ) => {
 			};
 		},
 
-		processPaymentMethod: ( paymentMethod ) => {
-			const data = wcpayPaymentRequest.getOrderData( paymentMethod );
-
-			return $.ajax( {
-				type: 'POST',
-				data: data,
-				dataType: 'json',
-				url: wcpayPaymentRequest.getAjaxURL( 'create_order' ),
-			} );
-		},
-
-		/**
-		 * Get order data.
-		 *
-		 * @param {Object} evt Event.
-		 * @return {Object} Order data.
-		 */
-		getOrderData: ( evt ) => {
-			/* eslint-disable camelcase */
-			const paymentMethod = evt.paymentMethod;
-			const email = paymentMethod.billing_details.email;
-			const phone = paymentMethod.billing_details.phone;
-			const billing = paymentMethod.billing_details.address;
-			const name = paymentMethod.billing_details.name;
-			const shipping = evt.shippingAddress;
-			const data = {
-				_wpnonce: wcpayPaymentRequestParams.nonce.checkout,
-				billing_first_name:
-					null !== name
-						? name.split( ' ' ).slice( 0, 1 ).join( ' ' )
-						: '',
-				billing_last_name:
-					null !== name
-						? name.split( ' ' ).slice( 1 ).join( ' ' )
-						: '',
-				billing_company: '',
-				billing_email: null !== email ? email : evt.payerEmail,
-				billing_phone:
-					null !== phone
-						? phone
-						: evt.payerPhone.replace( '/[() -]/g', '' ),
-				billing_country: null !== billing ? billing.country : '',
-				billing_address_1: null !== billing ? billing.line1 : '',
-				billing_address_2: null !== billing ? billing.line2 : '',
-				billing_city: null !== billing ? billing.city : '',
-				billing_state: null !== billing ? billing.state : '',
-				billing_postcode: null !== billing ? billing.postal_code : '',
-				shipping_first_name: '',
-				shipping_last_name: '',
-				shipping_company: '',
-				shipping_country: '',
-				shipping_address_1: '',
-				shipping_address_2: '',
-				shipping_city: '',
-				shipping_state: '',
-				shipping_postcode: '',
-				shipping_method: [
-					null === evt.shippingOption ? null : evt.shippingOption.id,
-				],
-				order_comments: '',
-				payment_method: 'woocommerce_payments',
-				ship_to_different_address: 1,
-				terms: 1,
-				'wcpay-payment-method': paymentMethod.id,
-				payment_request_type: paymentRequestType,
-			};
-
-			if ( shipping ) {
-				data.shipping_first_name = shipping.recipient
-					.split( ' ' )
-					.slice( 0, 1 )
-					.join( ' ' );
-				data.shipping_last_name = shipping.recipient
-					.split( ' ' )
-					.slice( 1 )
-					.join( ' ' );
-				data.shipping_company = shipping.organization;
-				data.shipping_country = shipping.country;
-				data.shipping_address_1 =
-					'undefined' === typeof shipping.addressLine[ 0 ]
-						? ''
-						: shipping.addressLine[ 0 ];
-				data.shipping_address_2 =
-					'undefined' === typeof shipping.addressLine[ 1 ]
-						? ''
-						: shipping.addressLine[ 1 ];
-				data.shipping_city = shipping.city;
-				data.shipping_state = shipping.region;
-				data.shipping_postcode = shipping.postalCode;
-			}
-
-			return data;
-			/* eslint-enable camelcase */
-		},
-
-		/**
-		 * Generate error message HTML.
-		 *
-		 * @param  {string} message Error message.
-		 * @return {Object} Error message HTML.
-		 */
-		getErrorMessageHTML: ( message ) =>
-			$( '<div class="woocommerce-error" />' ).text( message ),
-
 		/**
 		 * Abort payment and display error messages.
 		 *
@@ -186,7 +90,9 @@ jQuery( ( $ ) => {
 			const $container = $( '.woocommerce-notices-wrapper' ).first();
 
 			if ( $container.length ) {
-				$container.append( message );
+				$container.append(
+					$( '<div class="woocommerce-error" />' ).text( message )
+				);
 
 				$( 'html, body' ).animate(
 					{
@@ -202,15 +108,10 @@ jQuery( ( $ ) => {
 		/**
 		 * Complete payment.
 		 *
-		 * @param {PaymentResponse} payment Payment response instance.
-		 * @param {string}          url     Order thank you page URL.
+		 * @param {string} url Order thank you page URL.
 		 */
-		completePayment: ( payment, url ) => {
+		completePayment: ( url ) => {
 			wcpayPaymentRequest.block();
-
-			payment.complete( 'success' );
-
-			// Success, then redirect to the Thank You page.
 			window.location = url;
 		},
 
@@ -225,68 +126,9 @@ jQuery( ( $ ) => {
 		},
 
 		/**
-		 * Update shipping options.
-		 *
-		 * @param {Object}         details Payment details.
-		 * @param {PaymentAddress} address Shipping address.
-		 * @return {Object} AJAX request.
-		 */
-		updateShippingOptions: ( details, address ) => {
-			/* eslint-disable camelcase */
-			const data = {
-				security: wcpayPaymentRequestParams.nonce.shipping,
-				country: address.country,
-				state: address.region,
-				postcode: address.postalCode,
-				city: address.city,
-				address:
-					'undefined' === typeof address.addressLine[ 0 ]
-						? ''
-						: address.addressLine[ 0 ],
-				address_2:
-					'undefined' === typeof address.addressLine[ 1 ]
-						? ''
-						: address.addressLine[ 1 ],
-				payment_request_type: paymentRequestType,
-				is_product_page: wcpayPaymentRequestParams.is_product_page,
-			};
-			/* eslint-enable camelcase */
-
-			return $.ajax( {
-				type: 'POST',
-				data: data,
-				url: wcpayPaymentRequest.getAjaxURL( 'get_shipping_options' ),
-			} );
-		},
-
-		/**
-		 * Updates the shipping price and the total based on the shipping option.
-		 *
-		 * @param {Object}   details        The line items and shipping options.
-		 * @param {string}   shippingOption User's preferred shipping option to use for shipping price calculations.
-		 * @return {Object} AJAX request.
-		 */
-		updateShippingDetails: ( details, shippingOption ) => {
-			/* eslint-disable camelcase */
-			const data = {
-				security: wcpayPaymentRequestParams.nonce.update_shipping,
-				shipping_method: [ shippingOption.id ],
-				payment_request_type: paymentRequestType,
-				is_product_page: wcpayPaymentRequestParams.is_product_page,
-			};
-			/* eslint-enable camelcase */
-
-			return $.ajax( {
-				type: 'POST',
-				data: data,
-				url: wcpayPaymentRequest.getAjaxURL( 'update_shipping_method' ),
-			} );
-		},
-
-		/**
 		 * Adds the item to the cart and return cart details.
 		 *
-		 * @return {Object} AJAX request.
+		 * @return {Promise} Promise for the request to the server.
 		 */
 		addToCart: () => {
 			let productId = $( '.single_add_to_cart_button' ).val();
@@ -299,8 +141,6 @@ jQuery( ( $ ) => {
 			}
 
 			const data = {
-				security: wcpayPaymentRequestParams.nonce.add_to_cart,
-				// eslint-disable-next-line camelcase
 				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
 				attributes: $( '.variations_form' ).length
@@ -308,7 +148,7 @@ jQuery( ( $ ) => {
 					: [],
 			};
 
-			// add addons data to the POST body
+			// Add addons data to the POST body
 			const formData = $( 'form.cart' ).serializeArray();
 			$.each( formData, ( i, field ) => {
 				if ( /^addon-/.test( field.name ) ) {
@@ -328,93 +168,49 @@ jQuery( ( $ ) => {
 				}
 			} );
 
-			return $.ajax( {
-				type: 'POST',
-				data: data,
-				url: wcpayPaymentRequest.getAjaxURL( 'add_to_cart' ),
-			} );
-		},
-
-		clearCart: () => {
-			const data = {
-				security: wcpayPaymentRequestParams.nonce.clear_cart,
-			};
-
-			return $.ajax( {
-				type: 'POST',
-				data: data,
-				url: wcpayPaymentRequest.getAjaxURL( 'clear_cart' ),
-				success: () => {},
-			} );
-		},
-
-		getRequestOptionsFromLocal: () => {
-			return {
-				total: wcpayPaymentRequestParams.product.total,
-				currency: wcpayPaymentRequestParams.checkout.currency_code,
-				country: wcpayPaymentRequestParams.checkout.country_code,
-				requestPayerName: true,
-				requestPayerEmail: true,
-				requestPayerPhone:
-					wcpayPaymentRequestParams.checkout.needs_payer_phone,
-				requestShipping:
-					wcpayPaymentRequestParams.product.requestShipping,
-				displayItems: wcpayPaymentRequestParams.product.displayItems,
-			};
+			return api.paymentRequestAddToCart( data );
 		},
 
 		/**
 		 * Starts the payment request
 		 *
-		 * @param {Object} cart Cart data.
+		 * @param {Object} options Payment request options.
 		 */
-		startPaymentRequest: ( cart ) => {
-			let paymentDetails, options;
-
-			if ( wcpayPaymentRequestParams.is_product_page ) {
-				options = wcpayPaymentRequest.getRequestOptionsFromLocal();
-
-				paymentDetails = options;
-			} else {
-				options = {
-					total: cart.order_data.total,
-					currency: cart.order_data.currency,
-					country: cart.order_data.country_code,
-					requestPayerName: true,
-					requestPayerEmail: true,
-					requestPayerPhone:
-						wcpayPaymentRequestParams.checkout.needs_payer_phone,
-					requestShipping: cart.shipping_required ? true : false,
-					displayItems: cart.order_data.displayItems,
-				};
-
-				paymentDetails = cart.order_data;
-			}
-
-			// Puerto Rico (PR) is the only US territory/possession that's supported by Stripe.
-			// Since it's considered a US state by Stripe, we need to do some special mapping.
-			if ( 'PR' === options.country ) {
-				options.country = 'US';
-			}
-
-			const paymentRequest = stripe.paymentRequest( options );
-
-			const elements = stripe.elements( {
-				locale: wcpayPaymentRequestParams.button.locale,
-			} );
+		startPaymentRequest: ( options ) => {
+			const paymentRequest = getPaymentRequest( options );
+			const elements = api.getStripe().elements();
 			const prButton = wcpayPaymentRequest.createPaymentRequestButton(
 				elements,
 				paymentRequest
 			);
 
+			const doActionPaymentRequestAvailability = ( args ) => {
+				doAction( 'wcpay.payment-request.availability', args );
+			};
+
 			// Check the availability of the Payment Request API first.
 			paymentRequest.canMakePayment().then( ( result ) => {
 				if ( ! result ) {
+					doActionPaymentRequestAvailability( {
+						paymentRequestType: null,
+					} );
 					return;
 				}
-				paymentRequestType = result.applePay
-					? 'apple_pay'
-					: 'payment_request_api';
+
+				// TODO: Don't display custom button when paymentRequestType
+				// is `apple_pay` or `google_pay`.
+				if ( result.applePay ) {
+					paymentRequestType = 'apple_pay';
+				} else if ( result.googlePay ) {
+					paymentRequestType = 'google_pay';
+				} else {
+					paymentRequestType = 'payment_request_api';
+				}
+
+				doActionPaymentRequestAvailability( {
+					paymentRequestType: paymentRequestType,
+				} );
+
 				wcpayPaymentRequest.attachPaymentRequestButtonEventListeners(
 					prButton,
 					paymentRequest
@@ -422,75 +218,22 @@ jQuery( ( $ ) => {
 				wcpayPaymentRequest.showPaymentRequestButton( prButton );
 			} );
 
-			// Possible statuses success, fail, invalid_payer_name, invalid_payer_email, invalid_payer_phone, invalid_shipping_address.
-			paymentRequest.on( 'shippingaddresschange', ( evt ) => {
-				$.when(
-					wcpayPaymentRequest.updateShippingOptions(
-						paymentDetails,
-						evt.shippingAddress
-					)
-				).then( ( response ) => {
-					evt.updateWith( {
-						status: response.result,
-						shippingOptions: response.shipping_options,
-						total: response.total,
-						displayItems: response.displayItems,
-					} );
-				} );
-			} );
+			paymentRequest.on( 'shippingaddresschange', ( event ) =>
+				shippingAddressChangeHandler( api, event )
+			);
 
-			paymentRequest.on( 'shippingoptionchange', ( evt ) => {
-				$.when(
-					wcpayPaymentRequest.updateShippingDetails(
-						paymentDetails,
-						evt.shippingOption
-					)
-				).then( ( response ) => {
-					if ( 'success' === response.result ) {
-						evt.updateWith( {
-							status: 'success',
-							total: response.total,
-							displayItems: response.displayItems,
-						} );
-					}
+			paymentRequest.on( 'shippingoptionchange', ( event ) =>
+				shippingOptionChangeHandler( api, event )
+			);
 
-					if ( 'fail' === response.result ) {
-						evt.updateWith( { status: 'fail' } );
-					}
-				} );
-			} );
-
-			paymentRequest.on( 'paymentmethod', ( evt ) => {
-				// Check if we allow prepaid cards.
-				if (
-					'no' ===
-						wcpayPaymentRequestParams.stripe.allow_prepaid_card &&
-					'prepaid' === evt.source.card.funding
-				) {
-					wcpayPaymentRequest.abortPayment(
-						evt,
-						wcpayPaymentRequest.getErrorMessageHTML(
-							wcpayPaymentRequestParams.i18n.no_prepaid_card
-						)
-					);
-				} else {
-					$.when(
-						wcpayPaymentRequest.processPaymentMethod( evt )
-					).then( ( response ) => {
-						if ( 'success' === response.result ) {
-							wcpayPaymentRequest.completePayment(
-								evt,
-								response.redirect
-							);
-						} else {
-							wcpayPaymentRequest.abortPayment(
-								evt,
-								response.messages
-							);
-						}
-					} );
-				}
-			} );
+			paymentRequest.on( 'paymentmethod', ( event ) =>
+				paymentMethodHandler(
+					api,
+					wcpayPaymentRequest.completePayment,
+					wcpayPaymentRequest.abortPayment,
+					event
+				)
+			);
 		},
 
 		getSelectedProductData: () => {
@@ -511,25 +254,15 @@ jQuery( ( $ ) => {
 			);
 
 			const data = {
-				security:
-					wcpayPaymentRequestParams.nonce.get_selected_product_data,
-				// eslint-disable-next-line camelcase
 				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
 				attributes: $( '.variations_form' ).length
 					? wcpayPaymentRequest.getAttributes().data
 					: [],
-				// eslint-disable-next-line camelcase
 				addon_value: addonValue,
 			};
 
-			return $.ajax( {
-				type: 'POST',
-				data: data,
-				url: wcpayPaymentRequest.getAjaxURL(
-					'get_selected_product_data'
-				),
-			} );
+			return api.paymentRequestGetSelectedProductData( data );
 		},
 
 		/**
@@ -573,34 +306,6 @@ jQuery( ( $ ) => {
 		 * @return {Object} Stripe paymentRequest element or custom button jQuery element.
 		 */
 		createPaymentRequestButton: ( elements, paymentRequest ) => {
-			let button;
-			if ( wcpayPaymentRequestParams.button.is_custom ) {
-				button = $( wcpayPaymentRequestParams.button.css_selector );
-				if ( button.length ) {
-					// We fallback to default paymentRequest button if no custom button is found in the UI.
-					// Add flag to be sure that created button is custom button rather than fallback element.
-					button.data( 'isCustom', true );
-					return button;
-				}
-			}
-
-			if ( wcpayPaymentRequestParams.button.is_branded ) {
-				if ( wcpayPaymentRequest.shouldUseGooglePayBrand() ) {
-					button = wcpayPaymentRequest.createGooglePayButton();
-					// Add flag to be sure that created button is branded rather than fallback element.
-					button.data( 'isBranded', true );
-					return button;
-				}
-
-				// Not implemented branded buttons default to Stripe's button
-				// Apple Pay buttons can also fall back to Stripe's button, as it's already branded
-				// Set button type to default or buy, depending on branded type, to avoid issues with Stripe
-				wcpayPaymentRequestParams.button.type =
-					'long' === wcpayPaymentRequestParams.button.branded_type
-						? 'buy'
-						: 'default';
-			}
-
 			return elements.create( 'paymentRequestButton', {
 				paymentRequest: paymentRequest,
 				style: {
@@ -613,68 +318,6 @@ jQuery( ( $ ) => {
 			} );
 		},
 
-		/**
-		 * Checks if button is custom payment request button.
-		 *
-		 * @param {Object} prButton Stripe paymentRequest element or custom jQuery element.
-		 *
-		 * @return {boolean} True when prButton is custom button jQuery element.
-		 */
-		isCustomPaymentRequestButton: ( prButton ) =>
-			prButton &&
-			'function' === typeof prButton.data &&
-			prButton.data( 'isCustom' ),
-
-		isBrandedPaymentRequestButton: ( prButton ) =>
-			prButton &&
-			'function' === typeof prButton.data &&
-			prButton.data( 'isBranded' ),
-
-		shouldUseGooglePayBrand: () => {
-			const ua = window.navigator.userAgent.toLowerCase();
-			const isChrome =
-				/chrome/.test( ua ) &&
-				! /edge|edg|opr|brave\//.test( ua ) &&
-				'Google Inc.' === window.navigator.vendor;
-			// newer versions of Brave do not have the userAgent string
-			const isBrave = isChrome && window.navigator.brave;
-			return isChrome && ! isBrave;
-		},
-
-		createGooglePayButton: () => {
-			const allowedThemes = [ 'dark', 'light' ];
-			const allowedTypes = [ 'short', 'long' ];
-
-			let theme = wcpayPaymentRequestParams.button.theme;
-			let type = wcpayPaymentRequestParams.button.branded_type;
-			const locale = wcpayPaymentRequestParams.button.locale;
-			const height = wcpayPaymentRequestParams.button.height;
-			theme = allowedThemes.includes( theme ) ? theme : 'light';
-			type = allowedTypes.includes( type ) ? type : 'long';
-
-			const button = $(
-				'<button type="button" id="wcpay-branded-button" aria-label="Google Pay" class="gpay-button"></button>'
-			);
-			button.css( 'height', height + 'px' );
-			button.addClass( theme + ' ' + type );
-			if ( 'long' === type ) {
-				const url =
-					'https://www.gstatic.com/instantbuy/svg/' +
-					theme +
-					'/' +
-					locale +
-					'.svg';
-				const fallbackUrl =
-					'https://www.gstatic.com/instantbuy/svg/' +
-					theme +
-					'/en.svg';
-				// Check if locale GPay button exists, default to en if not
-				setBackgroundImageWithFallback( button, url, fallbackUrl );
-			}
-
-			return button;
-		},
-
 		attachPaymentRequestButtonEventListeners: (
 			prButton,
 			paymentRequest
@@ -685,10 +328,7 @@ jQuery( ( $ ) => {
 					paymentRequest
 				);
 			} else {
-				wcpayPaymentRequest.attachCartPageEventListeners(
-					prButton,
-					paymentRequest
-				);
+				wcpayPaymentRequest.attachCartPageEventListeners( prButton );
 			}
 		},
 
@@ -697,6 +337,13 @@ jQuery( ( $ ) => {
 			const addToCartButton = $( '.single_add_to_cart_button' );
 
 			prButton.on( 'click', ( evt ) => {
+				// If login is required for checkout, display redirect confirmation dialog.
+				if ( wcpayPaymentRequestParams.login_confirmation ) {
+					evt.preventDefault();
+					displayLoginConfirmation( paymentRequestType );
+					return;
+				}
+
 				// First check if product can be added to cart.
 				if ( addToCartButton.is( '.disabled' ) ) {
 					evt.preventDefault(); // Prevent showing payment request modal.
@@ -704,14 +351,12 @@ jQuery( ( $ ) => {
 						addToCartButton.is( '.wc-variation-is-unavailable' )
 					) {
 						window.alert(
-							// eslint-disable-next-line camelcase
 							wc_add_to_cart_variation_params.i18n_unavailable_text
 						);
 					} else if (
 						addToCartButton.is( '.wc-variation-selection-needed' )
 					) {
 						window.alert(
-							// eslint-disable-next-line camelcase
 							wc_add_to_cart_variation_params.i18n_make_a_selection_text
 						);
 					}
@@ -725,22 +370,10 @@ jQuery( ( $ ) => {
 				}
 
 				wcpayPaymentRequest.addToCart();
-
-				if (
-					wcpayPaymentRequest.isCustomPaymentRequestButton(
-						prButton
-					) ||
-					wcpayPaymentRequest.isBrandedPaymentRequestButton(
-						prButton
-					)
-				) {
-					evt.preventDefault();
-					paymentRequest.show();
-				}
 			} );
 
 			$( document.body ).on( 'woocommerce_variation_has_changed', () => {
-				wcpayPaymentRequest.blockPaymentRequestButton( prButton );
+				wcpayPaymentRequest.blockPaymentRequestButton();
 
 				$.when( wcpayPaymentRequest.getSelectedProductData() ).then(
 					( response ) => {
@@ -750,9 +383,7 @@ jQuery( ( $ ) => {
 								displayItems: response.displayItems,
 							} )
 						).then( () => {
-							wcpayPaymentRequest.unblockPaymentRequestButton(
-								prButton
-							);
+							wcpayPaymentRequest.unblockPaymentRequestButton();
 						} );
 					}
 				);
@@ -761,23 +392,21 @@ jQuery( ( $ ) => {
 			// Block the payment request button as soon as an "input" event is fired, to avoid sync issues
 			// when the customer clicks on the button before the debounced event is processed.
 			$( '.quantity' ).on( 'input', '.qty', () => {
-				wcpayPaymentRequest.blockPaymentRequestButton( prButton );
+				wcpayPaymentRequest.blockPaymentRequestButton();
 			} );
 
 			$( '.quantity' ).on(
 				'input',
 				'.qty',
 				wcpayPaymentRequest.debounce( 250, () => {
-					wcpayPaymentRequest.blockPaymentRequestButton( prButton );
+					wcpayPaymentRequest.blockPaymentRequestButton();
 					paymentRequestError = [];
 
 					$.when( wcpayPaymentRequest.getSelectedProductData() ).then(
 						( response ) => {
 							if ( response.error ) {
 								paymentRequestError = [ response.error ];
-								wcpayPaymentRequest.unblockPaymentRequestButton(
-									prButton
-								);
+								wcpayPaymentRequest.unblockPaymentRequestButton();
 							} else {
 								$.when(
 									paymentRequest.update( {
@@ -785,9 +414,7 @@ jQuery( ( $ ) => {
 										displayItems: response.displayItems,
 									} )
 								).then( () => {
-									wcpayPaymentRequest.unblockPaymentRequestButton(
-										prButton
-									);
+									wcpayPaymentRequest.unblockPaymentRequestButton();
 								} );
 							}
 						}
@@ -796,42 +423,18 @@ jQuery( ( $ ) => {
 			);
 		},
 
-		attachCartPageEventListeners: ( prButton, paymentRequest ) => {
-			if (
-				( ! wcpayPaymentRequestParams.button.is_custom ||
-					! wcpayPaymentRequest.isCustomPaymentRequestButton(
-						prButton
-					) ) &&
-				( ! wcpayPaymentRequestParams.button.is_branded ||
-					! wcpayPaymentRequest.isBrandedPaymentRequestButton(
-						prButton
-					) )
-			) {
-				return;
-			}
-
+		attachCartPageEventListeners: ( prButton ) => {
 			prButton.on( 'click', ( evt ) => {
-				evt.preventDefault();
-				paymentRequest.show();
+				// If login is required for checkout, display redirect confirmation dialog.
+				if ( wcpayPaymentRequestParams.login_confirmation ) {
+					evt.preventDefault();
+					displayLoginConfirmation( paymentRequestType );
+				}
 			} );
 		},
 
 		showPaymentRequestButton: ( prButton ) => {
-			if (
-				wcpayPaymentRequest.isCustomPaymentRequestButton( prButton )
-			) {
-				prButton.addClass( 'is-active' );
-				$(
-					'#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator'
-				).show();
-			} else if (
-				wcpayPaymentRequest.isBrandedPaymentRequestButton( prButton )
-			) {
-				$(
-					'#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator'
-				).show();
-				$( '#wcpay-payment-request-button' ).html( prButton );
-			} else if ( $( '#wcpay-payment-request-button' ).length ) {
+			if ( $( '#wcpay-payment-request-button' ).length ) {
 				$(
 					'#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator'
 				).show();
@@ -839,7 +442,7 @@ jQuery( ( $ ) => {
 			}
 		},
 
-		blockPaymentRequestButton: ( prButton ) => {
+		blockPaymentRequestButton: () => {
 			// check if element isn't already blocked before calling block() to avoid blinking overlay issues
 			// blockUI.isBlocked is either undefined or 0 when element is not blocked
 			if (
@@ -849,20 +452,10 @@ jQuery( ( $ ) => {
 			}
 
 			$( '#wcpay-payment-request-button' ).block( { message: null } );
-			if (
-				wcpayPaymentRequest.isCustomPaymentRequestButton( prButton )
-			) {
-				prButton.addClass( 'is-blocked' );
-			}
 		},
 
-		unblockPaymentRequestButton: ( prButton ) => {
+		unblockPaymentRequestButton: () => {
 			$( '#wcpay-payment-request-button' ).unblock();
-			if (
-				wcpayPaymentRequest.isCustomPaymentRequestButton( prButton )
-			) {
-				prButton.removeClass( 'is-blocked' );
-			}
 		},
 
 		/**
@@ -870,9 +463,25 @@ jQuery( ( $ ) => {
 		 */
 		init: () => {
 			if ( wcpayPaymentRequestParams.is_product_page ) {
-				wcpayPaymentRequest.startPaymentRequest( '' );
+				wcpayPaymentRequest.startPaymentRequest( {
+					stripe: api.getStripe(),
+					total: wcpayPaymentRequestParams.product.total.amount,
+					requestShipping:
+						wcpayPaymentRequestParams.product.needs_shipping,
+					displayItems:
+						wcpayPaymentRequestParams.product.displayItems,
+				} );
 			} else {
-				wcpayPaymentRequest.getCartDetails();
+				// If this is the cart or checkout page, we need to request the
+				// cart details for the payment request.
+				api.paymentRequestGetCartDetails().then( ( cart ) => {
+					wcpayPaymentRequest.startPaymentRequest( {
+						stripe: api.getStripe(),
+						total: cart.total.amount,
+						requestShipping: cart.needs_shipping,
+						displayItems: cart.displayItems,
+					} );
+				} );
 			}
 		},
 	};
@@ -888,14 +497,4 @@ jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_checkout', () => {
 		wcpayPaymentRequest.init();
 	} );
-
-	function setBackgroundImageWithFallback( element, background, fallback ) {
-		element.css( 'background-image', 'url(' + background + ')' );
-		// Need to use an img element to avoid CORS issues
-		const testImg = document.createElement( 'img' );
-		testImg.onerror = () => {
-			element.css( 'background-image', 'url(' + fallback + ')' );
-		};
-		testImg.src = background;
-	}
 } );

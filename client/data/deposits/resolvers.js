@@ -20,7 +20,10 @@ import {
 	updateErrorForDepositsOverview,
 	updateDepositsSummary,
 	updateErrorForDepositsSummary,
+	updateAllDepositsOverviews,
+	updateErrorForAllDepositsOverviews,
 } from './actions';
+import { formatDateValue } from 'utils';
 
 /**
  * Retrieve a single deposit from the deposits API.
@@ -61,12 +64,40 @@ export function* getDepositsOverview() {
 	}
 }
 
-/*eslint-disable camelcase*/
+/**
+ * Retrieve all deposits' overviews from the deposits API.
+ */
+export function* getAllDepositsOverviews() {
+	const path = addQueryArgs( `${ NAMESPACE }/deposits/overview-all` );
+
+	try {
+		const result = yield apiFetch( { path } );
+		yield updateAllDepositsOverviews( result );
+	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				"Error retrieving all deposits' overviews.",
+				'woocommerce-payments'
+			)
+		);
+		yield updateErrorForAllDepositsOverviews( e );
+	}
+}
+
 const formatQueryFilters = ( query ) => ( {
 	match: query.match,
 	store_currency_is: query.storeCurrencyIs,
+	date_before: formatDateValue( query.dateBefore, true ),
+	date_after: formatDateValue( query.dateAfter ),
+	date_between: query.dateBetween && [
+		formatDateValue( query.dateBetween[ 0 ] ),
+		formatDateValue( query.dateBetween[ 1 ], true ),
+	],
+	status_is: query.statusIs,
+	status_is_not: query.statusIsNot,
 } );
-/*eslint-enable camelcase*/
 
 /**
  * Retrieves a series of deposits from the deposits list API.

@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Deposits filters when filtering by status should render all status 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="paid"
+  >
+    Paid
+  </option>,
+  <option
+    value="pending"
+  >
+    Pending
+  </option>,
+  <option
+    value="in_transit"
+  >
+    In transit
+  </option>,
+  <option
+    value="canceled"
+  >
+    Canceled
+  </option>,
+  <option
+    value="failed"
+  >
+    Failed
+  </option>,
+  <option
+    value="estimated"
+  >
+    Estimated
+  </option>,
+]
+`;

@@ -11,11 +11,15 @@
 }
 /* stylelint-disable selector-id-pattern */
 #adminmenu
-	#toplevel_page_wc-admin-path--payments-deposits
+	#toplevel_page_wc-admin-path--payments-overview
 	.menu-icon-generic
 	div.wp-menu-image::before,
 #adminmenu
 	#toplevel_page_wc-admin-path--payments-connect
+	.menu-icon-generic
+	div.wp-menu-image::before,
+#adminmenu
+	#toplevel_page_wc-admin-path--payments-deposits
 	.menu-icon-generic
 	div.wp-menu-image::before {
 	font-family: 'WCPay' !important;
@@ -65,7 +69,53 @@
 .payment-method__brand--unknown {
 	background: no-repeat url( '../images/cards/unknown.svg' );
 }
-/* Hide all other woocommerce payments methods except the main gateway on core payments setting page */
-.wc_gateways tr[data-gateway_id^='woocommerce_payments_'] {
-	display: none;
+
+.payment-method__brand--giropay {
+	background: no-repeat url( '../images/payment-methods/giropay.svg' );
+	background-size: contain;
+}
+
+.payment-method__brand--p24 {
+	background: no-repeat url( '../images/payment-methods/przelewy24.svg' );
+	background-size: contain;
+}
+
+.payment-method__brand--sepa_debit {
+	background: no-repeat url( '../images/cards/sepa.svg' );
+	background-size: contain;
+}
+
+.payment-method__brand--sofort {
+	background: no-repeat url( '../images/payment-methods/sofort.svg' );
+	background-size: contain;
+}
+
+.payment-method__brand--ideal {
+	background: no-repeat url( '../images/payment-methods/ideal.svg' );
+	background-size: contain;
+}
+
+.payment-method__brand--google-pay {
+	background: no-repeat url( '../images/cards/google-pay.svg' );
+	background-size: contain;
+}
+
+.payment-method__brand--apple-pay {
+	background: no-repeat url( '../images/cards/apple-pay.svg' );
+	background-size: contain;
+}
+
+.payment-method__brand--bancontact {
+	background: no-repeat url( '../images/payment-methods/bancontact.svg' );
+	background-size: contain;
+}
+
+.payment-method__brand--sepa_debit {
+	background: no-repeat url( '../images/payment-methods/sepa_debit.svg' );
+	background-size: contain;
+}
+
+.wc_gateways tr[data-gateway_id='woocommerce_payments'] .payment-method__icon {
+	border: 1px solid #ddd;
+	border-radius: 2px;
 }

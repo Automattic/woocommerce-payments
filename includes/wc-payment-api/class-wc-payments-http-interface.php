@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Exceptions\API_Exception;
+
 /**
  * A wrapper around Jetpack HTTP request library. Necessary to increase
  * the testability of WC_Payments_API_Client, and allow dependency
@@ -19,12 +21,13 @@ interface WC_Payments_Http_Interface {
 	 *
 	 * @param array  $args             - The arguments to passed to Jetpack.
 	 * @param string $body             - The body passed on to the HTTP request.
-	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
+	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url. Defaults to true.
+	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
 	 *
 	 * @return array HTTP response on success.
 	 * @throws API_Exception - If not connected or request failed.
 	 */
-	public function remote_request( $args, $body = null, $is_site_specific = true );
+	public function remote_request( $args, $body = null, $is_site_specific = true, $use_user_token = false );
 
 	/**
 	 * Checks if Jetpack is connected.
@@ -34,6 +37,13 @@ interface WC_Payments_Http_Interface {
 	 * @return bool true if Jetpack connection has access token.
 	 */
 	public function is_connected();
+
+	/**
+	 * Checks if the site has an admin who is also a connection owner.
+	 *
+	 * @return bool True if Jetpack connection has an owner.
+	 */
+	public function has_connection_owner();
 
 	/**
 	 * Gets the current WP.com blog ID.
@@ -51,4 +61,23 @@ interface WC_Payments_Http_Interface {
 	 * @throws API_Exception - Exception thrown on failure.
 	 */
 	public function start_connection( $redirect );
+
+	/**
+	 * Queries the WordPress.com REST API with a user token.
+	 *
+	 * @param string $path REST API path.
+	 * @param string $version REST API version. Default is `2`.
+	 * @param array  $args Arguments to {@see WP_Http}. Default is `array()`.
+	 * @param string $body Body passed to {@see WP_Http}. Default is `null`.
+	 * @param string $base_api_path REST API root. Default is `wpcom`.
+	 *
+	 * @return array|WP_Error $response Response data, else {@see WP_Error} on failure.
+	 */
+	public function wpcom_json_api_request_as_user(
+		$path,
+		$version = '2',
+		$args = [],
+		$body = null,
+		$base_api_path = 'wpcom'
+	);
 }

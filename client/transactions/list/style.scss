@@ -1,5 +1,7 @@
 @import 'node_modules/@wordpress/components/src/tooltip/style.scss';
 
+$space-header-item: 12px;
+
 .transactions-list {
 	.date-time {
 		min-width: 195px;
@@ -15,6 +17,15 @@
 			fill: $studio-gray-30;
 		}
 	}
+
+	// slight adjustment to align header items with sorting button to account for icon width
+	.woocommerce-table__header.is-numeric .components-button {
+		margin-right: $space-header-item;
+	}
+
+	.woocommerce-table__header.is-center-aligned {
+		text-align: center;
+	}
 }
 
 /**
@@ -24,7 +35,6 @@
 */
 $gap: 16px;
 $gap-small: 12px;
-$gap-smaller: 8px;
 .woocommerce-report-table {
 	.woocommerce-search {
 		flex-grow: 1;
@@ -62,13 +72,6 @@ $gap-smaller: 8px;
 					grid-area: 2 / 2 / 3 / 4;
 					margin-right: 0;
 				}
-
-				.woocommerce-table__download-button {
-					grid-area: 1 / 2 / 2 / 3;
-					justify-self: end;
-					margin: -6px 0;
-					position: absolute;
-				}
 			}
 		}
 
@@ -81,12 +84,6 @@ $gap-smaller: 8px;
 					grid-column-start: 1;
 					grid-column-end: 2;
 				}
-
-				.woocommerce-table__download-button {
-					align-self: center;
-					grid-column-start: 2;
-					grid-column-end: 3;
-				}
 			}
 
 			@include breakpoint( '<960px' ) {
@@ -96,10 +93,6 @@ $gap-smaller: 8px;
 					.woocommerce-search {
 						grid-area: 2 / 1 / 3 / 4;
 						margin-left: 0;
-					}
-
-					.woocommerce-table__download-button {
-						grid-area: 1 / 2 / 2 / 3;
 					}
 				}
 			}
@@ -116,29 +109,6 @@ $gap-smaller: 8px;
 		.woocommerce-compare-button {
 			padding: 3px $gap-small;
 			height: auto;
-		}
-	}
-}
-
-button.woocommerce-table__download-button {
-	padding: 6px $gap-small;
-	color: $studio-black;
-	text-decoration: none;
-	align-items: center;
-
-	svg {
-		margin-right: $gap-smaller;
-		height: 24px;
-		width: 24px;
-	}
-
-	@include breakpoint( '<960px' ) {
-		svg {
-			margin-right: 0;
-		}
-
-		.woocommerce-table__download-button__label {
-			display: none;
 		}
 	}
 }

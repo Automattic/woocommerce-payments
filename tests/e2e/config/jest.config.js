@@ -8,9 +8,16 @@ config( { path: path.resolve( __dirname, 'local.env' ) } );
 module.exports = {
 	...jestConfig,
 	rootDir: path.resolve( __dirname, '../../../' ),
-	roots: [ path.resolve( __dirname, '../specs' ) ],
+	roots: [
+		path.resolve( __dirname, '../specs/merchant' ),
+		path.resolve( __dirname, '../specs/shopper' ),
+	],
 	setupFilesAfterEnv: [
 		path.resolve( __dirname, '../setup/jest-setup.js' ),
 		...jestConfig.setupFilesAfterEnv,
 	],
+	testSequencer: path.resolve(
+		__dirname,
+		'../config/jest-custom-sequencer.js'
+	),
 };

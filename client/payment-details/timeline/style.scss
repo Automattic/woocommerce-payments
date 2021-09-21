@@ -1,0 +1,17 @@
+.woocommerce-timeline
+	.woocommerce-timeline-item
+	.woocommerce-timeline-item__body {
+	.fee-breakdown-list,
+	.discount-split-list {
+		margin-left: 16px;
+		line-height: 1.5;
+	}
+
+	.fee-breakdown-list {
+		list-style-type: disc;
+	}
+
+	.discount-split-list {
+		list-style-type: circle;
+	}
+}

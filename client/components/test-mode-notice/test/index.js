@@ -42,7 +42,7 @@ describe( 'Test mode notification', () => {
 	test( 'Returns correct URL component', () => {
 		const expected = (
 			<a href={ getPaymentSettingsUrl() }>
-				{ 'View WooCommerce Payments settings.' }
+				{ 'View WooCommerce Payments settings' }
 			</a>
 		);
 

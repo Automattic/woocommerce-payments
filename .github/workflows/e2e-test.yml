@@ -8,9 +8,13 @@ on:
       - release/*
 
 env:
+  E2E_GH_TOKEN:                                ${{ secrets.E2E_GH_TOKEN }}
   CI_USER_TOKEN:                               ${{ secrets.CI_USER_TOKEN }}
   WCP_DEV_TOOLS_REPO:                          ${{ secrets.WCP_DEV_TOOLS_REPO }}
   WCP_SERVER_REPO:                             ${{ secrets.WCP_SERVER_REPO }}
+  WC_SUBSCRIPTIONS_REPO:                       ${{ secrets.WC_SUBSCRIPTIONS_REPO }}
+  WC_ACTION_SCHEDULER_REPO:                    ${{ secrets.WC_ACTION_SCHEDULER_REPO }}
+  WC_BLOCKS_REPO:                              ${{ secrets.WC_BLOCKS_REPO }}
   E2E_WCPAY_STRIPE_ACCOUNT_ID:                 ${{ secrets.E2E_WCPAY_STRIPE_ACCOUNT_ID }}
   E2E_WCPAY_STRIPE_TEST_CLIENT_ID:             ${{ secrets.E2E_WCPAY_STRIPE_TEST_CLIENT_ID }}
   E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY:            ${{ secrets.E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY }}
@@ -20,7 +24,7 @@ env:
 jobs:
   e2e:
     name:    E2E tests
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast:     false
       matrix:
@@ -71,3 +75,7 @@ jobs:
       - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false
       - run: npm run test:e2e-setup
       - run: npm run test:e2e
+      - uses: actions/upload-artifact@v2
+        with:
+          name: screenshots
+          path: screenshots

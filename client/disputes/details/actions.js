@@ -6,7 +6,6 @@
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { Button } from '@wordpress/components';
-import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -31,9 +30,9 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 
 	return (
 		<div>
-			<Link
+			<Button
+				isPrimary
 				href={ challengeUrl }
-				className="components-button is-button is-primary is-large"
 				onClick={ () =>
 					wcpayTracks.recordEvent(
 						needsResponse
@@ -45,10 +44,10 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 				{ needsResponse
 					? __( 'Challenge dispute', 'woocommerce-payments' )
 					: __( 'View submitted evidence', 'woocommerce-payments' ) }
-			</Link>
+			</Button>
 			{ needsResponse && (
 				<Button
-					isDefault
+					isSecondary
 					onClick={ () =>
 						window.confirm( acceptMessage ) && onAccept()
 					}

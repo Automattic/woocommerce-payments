@@ -34,6 +34,22 @@ export const getPaymentSettingsUrl = () => {
 };
 
 /**
+ * Returns the URL to a specific payment method's settings page.
+ *
+ * @param {string} method Payment method ID.
+ *
+ * @return {string} URL to the payment method's settings page.
+ */
+export const getPaymentMethodSettingsUrl = ( method ) => {
+	return addQueryArgs( 'admin.php', {
+		page: 'wc-settings',
+		tab: 'checkout',
+		section: 'woocommerce_payments',
+		method,
+	} );
+};
+
+/**
  * Returns the URL to the list of payment methods page.
  *
  * @return {string} URL to the list of payment methods page.

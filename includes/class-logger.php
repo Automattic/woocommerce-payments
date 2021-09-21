@@ -7,6 +7,7 @@
 
 namespace WCPay;
 
+use WC_Logger;
 use WC_Payments;
 
 defined( 'ABSPATH' ) || exit; // block direct access.

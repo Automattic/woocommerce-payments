@@ -1,0 +1,87 @@
+.payment-method {
+	display: flex;
+	margin: 0;
+	padding: 16px 24px 14px 24px;
+	background: #fff;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+
+	@include breakpoint( '>660px' ) {
+		padding: 24px 24px 24px 24px;
+		flex-wrap: nowrap;
+	}
+
+	&:not( :last-child ) {
+		box-shadow: inset 0 -1px 0 #e8eaeb;
+	}
+
+	&__text {
+		flex: 1 1 100%;
+		order: 1;
+
+		@include breakpoint( '>660px' ) {
+			flex: 1 1 auto;
+			margin-right: 25px;
+			order: 3;
+		}
+	}
+
+	&__label {
+		display: inline-block;
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 20px;
+		color: $gray-900;
+		margin-bottom: 4px;
+	}
+
+	&__description {
+		color: $studio-gray-50;
+		font-size: 13px;
+		line-height: 16px;
+		margin-bottom: 14px;
+
+		@include breakpoint( '>660px' ) {
+			margin-bottom: 0;
+		}
+	}
+
+	&__actions {
+		align-items: center;
+		display: flex;
+		justify-content: center;
+		order: 3;
+
+		@include breakpoint( '>660px' ) {
+			order: 4;
+		}
+	}
+
+	&__action {
+		&.delete {
+			margin-right: 25px;
+
+			svg {
+				fill: #a2aab2;
+			}
+		}
+	}
+
+	&__icon {
+		border-radius: 2px;
+		display: none;
+		flex: 0 0 63.69px;
+		height: 40px;
+		margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
+
+		@include breakpoint( '>660px' ) {
+			display: flex;
+			order: 2;
+		}
+	}
+
+	&.has-icon-border &__icon {
+		box-shadow: 0 0 0 1px #ddd;
+	}
+}

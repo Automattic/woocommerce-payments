@@ -14,7 +14,7 @@ exports[`Test mode notification Component is rendered correctly 1`] = `
         <a
           href="https://example.com/"
         >
-          View WooCommerce Payments settings.
+          View WooCommerce Payments settings
         </a>
       </span>
     </div>
@@ -36,7 +36,7 @@ exports[`Test mode notification Component is rendered correctly 2`] = `
         <a
           href="https://example.com/"
         >
-          View WooCommerce Payments settings.
+          View WooCommerce Payments settings
         </a>
       </span>
     </div>
@@ -58,7 +58,7 @@ exports[`Test mode notification Component is rendered correctly 3`] = `
         <a
           href="https://example.com/"
         >
-          View WooCommerce Payments settings.
+          View WooCommerce Payments settings
         </a>
       </span>
     </div>
@@ -84,7 +84,7 @@ exports[`Test mode notification Component is rendered correctly 4`] = `
         <a
           href="https://example.com/"
         >
-          View WooCommerce Payments settings.
+          View WooCommerce Payments settings
         </a>
       </span>
     </div>
@@ -110,7 +110,7 @@ exports[`Test mode notification Component is rendered correctly 5`] = `
         <a
           href="https://example.com/"
         >
-          View WooCommerce Payments settings.
+          View WooCommerce Payments settings
         </a>
       </span>
     </div>
@@ -136,7 +136,7 @@ exports[`Test mode notification Component is rendered correctly 6`] = `
         <a
           href="https://example.com/"
         >
-          View WooCommerce Payments settings.
+          View WooCommerce Payments settings
         </a>
       </span>
     </div>

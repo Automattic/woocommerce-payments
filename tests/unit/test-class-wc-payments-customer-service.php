@@ -57,6 +57,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		delete_user_option( 1, self::CUSTOMER_TEST_META_KEY );
 		delete_user_option( 1, '_wcpay_customer_id' );
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
+		WC()->session->__unset( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY );
 		parent::tearDown();
 	}
 
@@ -236,6 +237,41 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		);
 
 		$this->assertEquals( 'cus_test12345', $customer_id );
+	}
+
+	/**
+	 * Test non logged in user keeps its customer id saved in the Session.
+	 */
+	public function test_non_logged_in_user_saves_customer_id_in_session() {
+		$user               = new WP_User( 0 );
+		$mock_customer_data = $this->get_mock_customer_data();
+		$customer_id        = 'cus_test12345';
+
+		$this->mock_account->expects( $this->once() )
+			->method( 'get_fraud_services_config' )
+			->willReturn( [ 'sift' => [ 'session_id' => 'woo_session_id' ] ] );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'create_customer' )
+			->with(
+				array_merge(
+					$mock_customer_data,
+					[ 'session_id' => 'woo_session_id' ]
+				)
+			)
+			->willReturn( $customer_id );
+
+		$this->customer_service->create_customer_for_user( $user, $mock_customer_data );
+		$this->assertEquals(
+			WC()->session->get( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY ),
+			$this->customer_service->get_customer_id_by_user_id( 0 )
+		);
+
+		$this->assertEquals(
+			WC()->session->get( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY ),
+			$customer_id
+		);
+
 	}
 
 	/**

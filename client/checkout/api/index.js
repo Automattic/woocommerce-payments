@@ -3,7 +3,12 @@
 /**
  * Internal dependencies
  */
-import { getConfig, setConfig } from 'utils/checkout';
+import { getConfig } from 'utils/checkout';
+import {
+	getPaymentRequestData,
+	getPaymentRequestAjaxURL,
+	buildAjaxURL,
+} from '../../payment-request/utils';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -33,21 +38,49 @@ export default class WCPayAPI {
 			publishableKey,
 			accountId,
 			forceNetworkSavedCards,
+			locale,
+			isUPEEnabled,
 		} = this.options;
 
 		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
 			if ( ! this.stripePlatform ) {
-				this.stripePlatform = new Stripe( publishableKey );
+				this.stripePlatform = new Stripe( publishableKey, { locale } );
 			}
 			return this.stripePlatform;
 		}
 
 		if ( ! this.stripe ) {
-			this.stripe = new Stripe( publishableKey, {
-				stripeAccount: accountId,
-			} );
+			if ( isUPEEnabled ) {
+				this.stripe = new Stripe( publishableKey, {
+					stripeAccount: accountId,
+					betas: [ 'payment_element_beta_1' ],
+					locale,
+				} );
+			} else {
+				this.stripe = new Stripe( publishableKey, {
+					stripeAccount: accountId,
+					locale,
+				} );
+			}
 		}
 		return this.stripe;
+	}
+
+	/**
+	 * Load Stripe for payment request button.
+	 *
+	 * @return {Promise} Promise with the Stripe object or an error.
+	 */
+	loadStripe() {
+		return new Promise( ( resolve ) => {
+			try {
+				resolve( this.getStripe() );
+			} catch ( error ) {
+				// In order to avoid showing console error publicly to users,
+				// we resolve instead of rejecting when there is an error.
+				resolve( { error } );
+			}
+		} );
 	}
 
 	/**
@@ -64,7 +97,6 @@ export default class WCPayAPI {
 			constructor() {
 				this.args = {
 					...elements,
-					// eslint-disable-next-line camelcase
 					billing_details: {
 						address: {},
 					},
@@ -155,10 +187,7 @@ export default class WCPayAPI {
 		const isSetupIntent = 'si' === partials[ 1 ];
 		let orderId = partials[ 2 ];
 		const clientSecret = partials[ 3 ];
-		// Update the current order status nonce with the new one to ensure that the update
-		// order status call works when a guest user creates an account during checkout.
-		// eslint-disable-next-line camelcase
-		setConfig( 'updateOrderStatusNonce', partials[ 4 ] );
+		const nonce = partials[ 4 ];
 
 		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
 		const isOrderPage = -1 < orderPayIndex;
@@ -196,15 +225,19 @@ export default class WCPayAPI {
 					( result.error.setup_intent &&
 						result.error.setup_intent.id );
 
-				const ajaxCall = this.request( getConfig( 'ajaxUrl' ), {
+				// In case this is being called via payment request button from a product page,
+				// the getConfig function won't work, so fallback to getPaymentRequestData.
+				const ajaxUrl =
+					getPaymentRequestData( 'ajax_url' ) ??
+					getConfig( 'ajaxUrl' );
+
+				const ajaxCall = this.request( ajaxUrl, {
 					action: 'update_order_status',
-					// eslint-disable-next-line camelcase
 					order_id: orderId,
-					// eslint-disable-next-line camelcase
-					_ajax_nonce: getConfig( 'updateOrderStatusNonce' ),
-					// eslint-disable-next-line camelcase
+					// Update the current order status nonce with the new one to ensure that the update
+					// order status call works when a guest user creates an account during checkout.
+					_ajax_nonce: nonce,
 					intent_id: intentId,
-					// eslint-disable-next-line camelcase
 					payment_method_id: paymentMethodToSave || null,
 				} );
 
@@ -216,7 +249,10 @@ export default class WCPayAPI {
 				}
 
 				return verificationCall.then( ( response ) => {
-					const result = JSON.parse( response );
+					const result =
+						'string' === typeof response
+							? JSON.parse( response )
+							: response;
 
 					if ( result.error ) {
 						throw result.error;
@@ -233,6 +269,23 @@ export default class WCPayAPI {
 	}
 
 	/**
+	 * Creates a setup intent without confirming it.
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	initSetupIntent() {
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_setup_intent' ),
+			{ _ajax_nonce: getConfig( 'createSetupIntentNonce' ) }
+		).then( ( response ) => {
+			if ( ! response.success ) {
+				throw response.data.error;
+			}
+			return response.data;
+		} );
+	}
+
+	/**
 	 * Sets up an intent based on a payment method.
 	 *
 	 * @param {string} paymentMethodId The ID of the payment method.
@@ -242,7 +295,6 @@ export default class WCPayAPI {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			action: 'create_setup_intent',
 			'wcpay-payment-method': paymentMethodId,
-			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
 		} ).then( ( response ) => {
 			if ( ! response.success ) {
@@ -254,19 +306,237 @@ export default class WCPayAPI {
 				return response.data;
 			}
 
-			return (
-				this.getStripe()
-					// eslint-disable-next-line camelcase
-					.confirmCardSetup( response.data.client_secret )
-					.then( ( confirmedSetupIntent ) => {
-						const { setupIntent, error } = confirmedSetupIntent;
-						if ( error ) {
-							throw error;
-						}
+			return this.getStripe()
+				.confirmCardSetup( response.data.client_secret )
+				.then( ( confirmedSetupIntent ) => {
+					const { setupIntent, error } = confirmedSetupIntent;
+					if ( error ) {
+						throw error;
+					}
 
-						return setupIntent;
-					} )
-			);
+					return setupIntent;
+				} );
+		} );
+	}
+
+	/**
+	 * Creates an intent based on a payment method.
+	 *
+	 * @param {int} orderId The id of the order if creating the intent on Order Pay page.
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	createIntent( orderId ) {
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'create_payment_intent' ),
+			{
+				wcpay_order_id: orderId,
+				_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
+			}
+		)
+			.then( ( response ) => {
+				if ( ! response.success ) {
+					throw response.data.error;
+				}
+				return response.data;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajax request.
+					throw new Error( error.statusText );
+				}
+			} );
+	}
+
+	/**
+	 * Updates a payment intent with data from order: customer, level3 data and and maybe sets the payment for future use.
+	 *
+	 * @param {string} paymentIntentId The id of the payment intent.
+	 * @param {int} orderId The id of the order.
+	 * @param {string} savePaymentMethod 'yes' if saving.
+	 * @param {string} selectedUPEPaymentType The name of the selected UPE payment type or empty string.
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	updateIntent(
+		paymentIntentId,
+		orderId,
+		savePaymentMethod,
+		selectedUPEPaymentType
+	) {
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'update_payment_intent' ),
+			{
+				wcpay_order_id: orderId,
+				wc_payment_intent_id: paymentIntentId,
+				save_payment_method: savePaymentMethod,
+				wcpay_selected_upe_payment_type: selectedUPEPaymentType,
+				_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
+			}
+		)
+			.then( ( response ) => {
+				if ( 'failure' === response.result ) {
+					throw new Error( response.messages );
+				}
+				return response;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajaxrequest.
+					throw new Error( error.statusText );
+				}
+			} );
+	}
+
+	/**
+	 * Saves the calculated UPE appearance values in a transient.
+	 *
+	 * @param {Object} appearance The UPE appearance object with style values
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	saveUPEAppearance( appearance ) {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			appearance,
+			action: 'save_upe_appearance',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
+		} )
+			.then( ( response ) => {
+				// There is not any action to take or harm caused by a failed update, so just returning success status.
+				return response.success;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajaxrequest.
+					throw new Error( error.statusText );
+				}
+			} );
+	}
+
+	/**
+	 * Process checkout and update payment intent via AJAX.
+	 *
+	 * @param {string} paymentIntentId ID of payment intent to be updated.
+	 * @param {Object} fields Checkout fields.
+	 * @return {Promise} Promise containing redirect URL for UPE element.
+	 */
+	processCheckout( paymentIntentId, fields ) {
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'checkout', '' ),
+			{
+				...fields,
+				wc_payment_intent_id: paymentIntentId,
+			}
+		)
+			.then( ( response ) => {
+				if ( 'failure' === response.result ) {
+					throw new Error( response.messages );
+				}
+				return response;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajaxrequest.
+					throw new Error( error.statusText );
+				}
+			} );
+	}
+
+	/**
+	 * Submits shipping address to get available shipping options
+	 * from Payment Request button.
+	 *
+	 * @param {Object} shippingAddress Shipping details.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestCalculateShippingOptions( shippingAddress ) {
+		return this.request(
+			getPaymentRequestAjaxURL( 'get_shipping_options' ),
+			{
+				security: getPaymentRequestData( 'nonce' )?.shipping,
+				is_product_page: getPaymentRequestData( 'is_product_page' ),
+				...shippingAddress,
+			}
+		);
+	}
+
+	/**
+	 * Updates cart with selected shipping option.
+	 *
+	 * @param {Object} shippingOption Shipping option.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestUpdateShippingDetails( shippingOption ) {
+		return this.request(
+			getPaymentRequestAjaxURL( 'update_shipping_method' ),
+			{
+				security: getPaymentRequestData( 'nonce' )?.update_shipping,
+				shipping_method: [ shippingOption.id ],
+				is_product_page: getPaymentRequestData( 'is_product_page' ),
+			}
+		);
+	}
+
+	/**
+	 * Get cart items and total amount.
+	 *
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestGetCartDetails() {
+		return this.request( getPaymentRequestAjaxURL( 'get_cart_details' ), {
+			security: getPaymentRequestData( 'nonce' )?.get_cart_details,
+		} );
+	}
+
+	/**
+	 * Add product to cart from variable product page.
+	 *
+	 * @param {Object} productData Product data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestAddToCart( productData ) {
+		return this.request( getPaymentRequestAjaxURL( 'add_to_cart' ), {
+			security: getPaymentRequestData( 'nonce' )?.add_to_cart,
+			...productData,
+		} );
+	}
+
+	/**
+	 * Get selected product data from variable product page.
+	 *
+	 * @param {Object} productData Product data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestGetSelectedProductData( productData ) {
+		return this.request(
+			getPaymentRequestAjaxURL( 'get_selected_product_data' ),
+			{
+				security: getPaymentRequestData( 'nonce' )
+					?.get_selected_product_data,
+				...productData,
+			}
+		);
+	}
+
+	/**
+	 * Creates order based on Payment Request payment method.
+	 *
+	 * @param {Object} paymentData Order data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestCreateOrder( paymentData ) {
+		return this.request( getPaymentRequestAjaxURL( 'create_order' ), {
+			_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
+			...paymentData,
 		} );
 	}
 }

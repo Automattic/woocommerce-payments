@@ -1,0 +1,10 @@
+.wcpay-settings-layout {
+	margin: 24px auto 0;
+	max-width: 1032px;
+	display: flex;
+	flex-flow: column;
+
+	@include breakpoint( '>960px' ) {
+		padding: 0 56px;
+	}
+}

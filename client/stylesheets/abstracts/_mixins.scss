@@ -19,3 +19,24 @@
 		content: '\00a0';
 	}
 }
+
+@mixin modal-footer-buttons {
+	display: flex;
+	justify-content: flex-end;
+
+	> * {
+		&:not( :first-child ) {
+			margin-left: $grid-unit-20;
+		}
+	}
+}
+
+@mixin modal-footer-buttons-left {
+	display: flex;
+
+	> * {
+		&:not( :last-child ) {
+			margin-right: $grid-unit-20;
+		}
+	}
+}

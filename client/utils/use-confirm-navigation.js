@@ -3,22 +3,28 @@
 /**
  * External dependencies
  */
-import { useEffect } from '@wordpress/element';
+import { useEffect, useCallback, useRef } from '@wordpress/element';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Hook for displaying an optional confirmation message.
  *
  * Usage:
- * - useConfirmNavigation( () => 'Are you sure you want to leave?' );
- * - useConfirmNavigation( saved => { if ( ! saved ) return 'Discard unsaved changes?' }, [ saved ] );
+ * - const callback = useConfirmNavigation( () => 'Are you sure you want to leave?' );
+ *   useEffect( callback , [ callback, otherDependency ] );
  *
  * @param {Function} getMessage returns confirmation message string if one should appear
- * @param {Array} deps effect dependencies
+ * @return {Function} The callback to execute
  */
-const useConfirmNavigation = ( getMessage, deps ) => {
+const useConfirmNavigation = ( getMessage ) => {
+	const savedCallback = useRef();
+
 	useEffect( () => {
-		const message = getMessage();
+		savedCallback.current = getMessage;
+	} );
+
+	return useCallback( () => {
+		const message = savedCallback.current();
 		if ( ! message ) {
 			return;
 		}
@@ -34,7 +40,7 @@ const useConfirmNavigation = ( getMessage, deps ) => {
 			window.removeEventListener( 'beforeunload', handler );
 			unblock();
 		};
-	}, deps );
+	}, [] );
 };
 
 export default useConfirmNavigation;

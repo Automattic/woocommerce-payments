@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Exceptions\{ API_Exception, Connection_Exception };
+
 /**
  * WC Payments Utils class
  */
@@ -146,9 +148,9 @@ class WC_Payments_Utils {
 	 * List of currencies supported by Stripe, the amounts for which are already in the smallest unit.
 	 * Sourced directly from https://stripe.com/docs/currencies#zero-decimal
 	 *
-	 * @return array $currencies
+	 * @return string[]
 	 */
-	public static function zero_decimal_currencies() {
+	public static function zero_decimal_currencies(): array {
 		return [
 			'bif', // Burundian Franc.
 			'clp', // Chilean Peso.
@@ -166,6 +168,35 @@ class WC_Payments_Utils {
 			'xaf', // Central African Cfa Franc.
 			'xof', // West African Cfa Franc.
 			'xpf', // Cfp Franc.
+		];
+	}
+
+	/**
+	 * List of countries enabled for Stripe platform account. See also
+	 * https://docs.woocommerce.com/document/payments/countries/ for the most actual status.
+	 *
+	 * @return string[]
+	 */
+	public static function supported_countries(): array {
+		return [
+			'AT' => __( 'Austria', 'woocommerce-payments' ),
+			'AU' => __( 'Australia', 'woocommerce-payments' ),
+			'BE' => __( 'Belgium', 'woocommerce-payments' ),
+			'CA' => __( 'Canada', 'woocommerce-payments' ),
+			'CH' => __( 'Switzerland', 'woocommerce-payments' ),
+			'DE' => __( 'Germany', 'woocommerce-payments' ),
+			'ES' => __( 'Spain', 'woocommerce-payments' ),
+			'FR' => __( 'France', 'woocommerce-payments' ),
+			'GB' => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
+			'HK' => __( 'Hong Kong', 'woocommerce-payments' ),
+			'IE' => __( 'Ireland', 'woocommerce-payments' ),
+			'IT' => __( 'Italy', 'woocommerce-payments' ),
+			'NL' => __( 'Netherlands', 'woocommerce-payments' ),
+			'NZ' => __( 'New Zealand', 'woocommerce-payments' ),
+			'PL' => __( 'Poland', 'woocommerce-payments' ),
+			'PT' => __( 'Portugal', 'woocommerce-payments' ),
+			'SG' => __( 'Singapore', 'woocommerce-payments' ),
+			'US' => __( 'United States (US)', 'woocommerce-payments' ),
 		];
 	}
 
@@ -354,5 +385,125 @@ class WC_Payments_Utils {
 	 */
 	public static function set_order_intent_currency( WC_Order $order, string $currency ) {
 		$order->update_meta_data( self::ORDER_INTENT_CURRENCY_META_KEY, $currency );
+	}
+
+	/**
+	 * Checks if the currently displayed page is the WooCommerce Payments
+	 * settings page or a payment method settings page.
+	 *
+	 * @return bool
+	 */
+	public static function is_payments_settings_page(): bool {
+		global $current_section, $current_tab;
+
+		return (
+			is_admin()
+			&& $current_tab && $current_section
+			&& 'checkout' === $current_tab
+			&& 0 === strpos( $current_section, 'woocommerce_payments' )
+		);
+	}
+
+	/**
+	 * Converts a locale to the closest supported by Stripe.js.
+	 *
+	 * Stripe.js supports only a subset of IETF language tags, if a country specific locale is not supported we use
+	 * the default for that language (https://stripe.com/docs/js/appendix/supported_locales).
+	 * If no match is found we return 'auto' so Stripe.js uses the browser locale.
+	 *
+	 * @param string $locale The locale to convert.
+	 *
+	 * @return string Closest locale supported by Stripe ('auto' if NONE)
+	 */
+	public static function convert_to_stripe_locale( string $locale ): string {
+		// List copied from: https://stripe.com/docs/js/appendix/supported_locales.
+		$supported = [
+			'ar',     // Arabic.
+			'bg',     // Bulgarian (Bulgaria).
+			'cs',     // Czech (Czech Republic).
+			'da',     // Danish.
+			'de',     // German (Germany).
+			'el',     // Greek (Greece).
+			'en',     // English.
+			'en-GB',  // English (United Kingdom).
+			'es',     // Spanish (Spain).
+			'es-419', // Spanish (Latin America).
+			'et',     // Estonian (Estonia).
+			'fi',     // Finnish (Finland).
+			'fr',     // French (France).
+			'fr-CA',  // French (Canada).
+			'he',     // Hebrew (Israel).
+			'hu',     // Hungarian (Hungary).
+			'id',     // Indonesian (Indonesia).
+			'it',     // Italian (Italy).
+			'ja',     // Japanese.
+			'lt',     // Lithuanian (Lithuania).
+			'lv',     // Latvian (Latvia).
+			'ms',     // Malay (Malaysia).
+			'mt',     // Maltese (Malta).
+			'nb',     // Norwegian Bokmål.
+			'nl',     // Dutch (Netherlands).
+			'pl',     // Polish (Poland).
+			'pt-BR',  // Portuguese (Brazil).
+			'pt',     // Portuguese (Brazil).
+			'ro',     // Romanian (Romania).
+			'ru',     // Russian (Russia).
+			'sk',     // Slovak (Slovakia).
+			'sl',     // Slovenian (Slovenia).
+			'sv',     // Swedish (Sweden).
+			'th',     // Thai.
+			'tr',     // Turkish (Turkey).
+			'zh',     // Chinese Simplified (China).
+			'zh-HK',  // Chinese Traditional (Hong Kong).
+			'zh-TW',  // Chinese Traditional (Taiwan).
+		];
+
+		// Stripe uses '-' instead of '_' (used in WordPress).
+		$locale = str_replace( '_', '-', $locale );
+
+		if ( in_array( $locale, $supported, true ) ) {
+			return $locale;
+		}
+
+		// For the Latin America and Caribbean region Stripe uses the locale.
+		// For now we only support Spanish (Spain) in the extension, if/when support for Latin America and the Caribbean
+		// locales is added we will need to group all locales for 'UN M49' under 'es_419' (52 countries in total).
+		// https://en.wikipedia.org/wiki/UN_M49.
+
+		// Remove the country code and try with that.
+		$base_locale = substr( $locale, 0, 2 );
+		if ( in_array( $base_locale, $supported, true ) ) {
+			return $base_locale;
+		}
+
+		// Return 'auto' so Stripe.js uses the browser locale.
+		return 'auto';
+	}
+
+	/**
+	 * Returns redacted customer-facing error messages for notices.
+	 *
+	 * This function tries to filter out API exceptions that should not be displayed to customers.
+	 * Generally, only Stripe exceptions with type of `card_error` should be displayed.
+	 * Other API errors should be redacted (https://stripe.com/docs/api/errors#errors-message).
+	 *
+	 * @param Exception $e Exception to get the message from.
+	 *
+	 * @return string
+	 */
+	public static function get_filtered_error_message( Exception $e ) {
+		$error_message = method_exists( $e, 'getLocalizedMessage' ) ? $e->getLocalizedMessage() : $e->getMessage();
+
+		// These notices can be shown when placing an order or adding a new payment method, so we aim for
+		// more generic messages instead of specific order/payment messages when the API Exception is redacted.
+		if ( $e instanceof Connection_Exception ) {
+			$error_message = __( 'There was an error while processing this request. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
+		} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
+			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
+		} elseif ( $e instanceof API_Exception && ! empty( $e->get_error_type() ) && 'card_error' !== $e->get_error_type() ) {
+			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
+		}
+
+		return $error_message;
 	}
 }

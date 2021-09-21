@@ -18,7 +18,6 @@ describe( 'Dispute info', () => {
 	} );
 
 	test( 'renders correctly', () => {
-		/* eslint-disable camelcase */
 		const dispute = {
 			amount: 1000,
 			currency: 'usd',
@@ -39,7 +38,6 @@ describe( 'Dispute info', () => {
 				},
 			},
 		};
-		/* eslint-enable camelcase */
 
 		const { container: info } = render( <Info dispute={ dispute } /> );
 		expect( info ).toMatchSnapshot();

@@ -32,6 +32,10 @@ class WC_Helper_Order {
 		$order->delete( true );
 	}
 
+	public static function woocommerce_currency_usd() {
+		return 'USD';
+	}
+
 	/**
 	 * Create a order.
 	 *
@@ -46,6 +50,11 @@ class WC_Helper_Order {
 	 * @return WC_Order
 	 */
 	public static function create_order( $customer_id = 1, $total = 50, $product = null ) {
+
+		// Since the default currency of WooCommerce < 5.3.0 is GBP.
+		if ( version_compare( WC_VERSION, '5.3.0', '<' ) && ! has_filter( 'woocommerce_currency', 'WC_Helper_Order::woocommerce_currency_usd' ) ) {
+			add_filter( 'woocommerce_currency', 'WC_Helper_Order::woocommerce_currency_usd' );
+		}
 
 		if ( ! is_a( $product, 'WC_Product' ) ) {
 			$product = WC_Helper_Product::create_simple_product();

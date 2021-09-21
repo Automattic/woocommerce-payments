@@ -1,0 +1,196 @@
+.wcpay-multi-currency__enabled-currencies-header {
+	display: flex;
+
+	div {
+		flex: 1;
+	}
+
+	div:nth-child( 1 ) {
+		min-width: 45%;
+	}
+
+	div:nth-child( 3 ) {
+		min-width: 10%;
+	}
+}
+
+.enabled-currencies-list {
+	margin: 0;
+
+	.enabled-currency {
+		display: flex;
+		flex-wrap: wrap;
+		padding: 7px 24px;
+		margin: 0;
+		border-top: 1px solid $studio-gray-5;
+		line-height: 45px;
+
+		&:first-child {
+			border-top: none;
+			background-color: $studio-gray-0;
+		}
+
+		&__container {
+			display: flex;
+			flex-wrap: wrap;
+			min-width: 45%;
+		}
+
+		&__container,
+		&__rate {
+			flex: 1;
+		}
+
+		&__flag {
+			font-size: 24px;
+			margin: 0 10px 0 0;
+		}
+
+		&__flag-text {
+			width: 24px;
+			height: 18px;
+			line-height: 18px;
+			margin: 14px 0.07em;
+			background-color: $studio-gray-5;
+			border-radius: 5px;
+			text-align: center;
+
+			span {
+				font-size: 9px;
+				vertical-align: bottom;
+			}
+		}
+
+		&__label {
+			padding: 0 5px 0 0;
+		}
+
+		&__code,
+		&__rate {
+			color: $studio-gray-30;
+		}
+
+		&__actions {
+			text-align: right;
+			display: flex;
+			min-width: 10%;
+			color: $studio-gray-20;
+			justify-content: right;
+
+			.components-button {
+				text-decoration: none;
+				color: $studio-gray-20;
+			}
+
+			.delete {
+				margin: 0 0 0 24px;
+				padding: 0 0 0 5px;
+			}
+		}
+	}
+
+	.enabled-currency-placeholder {
+		align-items: center;
+		p {
+			white-space: nowrap;
+			overflow: hidden;
+		}
+		.is-block {
+			margin: 10px 0 10px !important;
+		}
+		.enabled-currency__container {
+			align-items: center;
+			.enabled-currency__flag {
+				width: 28px;
+				p {
+					font-size: 24px;
+				}
+			}
+			.enabled-currency__label {
+				width: 120px;
+			}
+			.enabled-currency__code {
+				width: 40px;
+			}
+		}
+		.enabled-currency__rate {
+			.is-block {
+				width: 150px;
+			}
+		}
+		.enabled-currency__actions {
+			justify-content: end;
+			p {
+				width: 100px;
+			}
+		}
+	}
+}
+
+.add-enabled-currencies-modal {
+	max-width: 500px;
+
+	.enabled-currency-checkbox {
+		&__flag {
+			font-size: 20px;
+			margin: 0 5px 0 0;
+		}
+
+		&__flag-text {
+			display: inline-block;
+			width: 20px;
+			height: 15px;
+			line-height: 15px;
+			vertical-align: top;
+			margin: 0 0.07em;
+			background-color: $studio-gray-5;
+			border-radius: 2px;
+			text-align: center;
+
+			span {
+				font-size: 9px;
+				vertical-align: bottom;
+			}
+		}
+
+		&__code {
+			color: $studio-gray-30;
+		}
+	}
+
+	.components-checkbox-control__label {
+		font-size: 15px;
+	}
+
+	&__content {
+		overflow-y: scroll;
+		min-height: 350px;
+		max-height: 350px;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		margin: 0 -#{$grid-unit-30} -#{$grid-unit-30} 0;
+		padding-left: 4px;
+	}
+
+	&__search {
+		border-bottom: 1px solid $studio-gray-5;
+		margin: -24px -24px 0;
+		padding: 16px;
+	}
+}
+
+@media screen and ( max-width: 600px ) {
+	.add-enabled-currencies-modal {
+		.components-modal__content {
+			display: flex;
+			flex-direction: column;
+		}
+
+		&__content {
+			max-height: none;
+			min-height: 0;
+			flex: 1;
+		}
+	}
+}

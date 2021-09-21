@@ -10,11 +10,10 @@ import { render, fireEvent } from '@testing-library/react';
  */
 import { DisputeEvidenceForm, DisputeEvidencePage } from '../';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useDisputeEvidence: jest.fn(),
 } ) );
 
-/* eslint-disable camelcase */
 const disputeNeedsResponse = {
 	id: 'dp_asdfghjkl',
 	amount: 1000,
@@ -46,7 +45,6 @@ const disputeNoNeedForResponse = {
 	reason: 'general',
 	status: 'under_review',
 };
-/* eslint-enable camelcase */
 
 const fields = [
 	{
@@ -68,11 +66,24 @@ const fields = [
 				label: 'Customer signature',
 				type: 'file',
 			},
+			{
+				key: 'service_date',
+				label: 'Service date',
+				type: 'date',
+			},
 		],
 	},
 ];
 
 describe( 'Dispute evidence form', () => {
+	beforeEach( () => {
+		// mock Date.now that moment library uses to get current date for testing purposes
+		Date.now = jest.fn( () => new Date( '2021-06-24T12:33:37.000Z' ) );
+	} );
+	afterEach( () => {
+		// roll it back
+		Date.now = () => new Date();
+	} );
 	test( 'needing response, renders correctly', () => {
 		const { container: form } = render(
 			<DisputeEvidenceForm

@@ -58,7 +58,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 			->disableOriginalConstructor()
-			->setMethods( [ 'order_from_charge_id' ] )
+			->setMethods( [ 'order_from_charge_id', 'order_from_intent_id' ] )
 			->getMock();
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
@@ -156,6 +156,75 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
 	}
 
+	public function test_valid_failed_refund_webhook_sets_failed_meta() {
+		// Setup test request data.
+		$this->request_body['type']           = 'charge.refund.updated';
+		$this->request_body['data']['object'] = [
+			'status'   => 'failed',
+			'charge'   => 'test_charge_id',
+			'id'       => 'test_refund_id',
+			'amount'   => 999,
+			'currency' => 'gbp',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$mock_order->method( 'get_currency' )->willReturn( 'GBP' );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'~^A refund of <span class="woocommerce-Price-amount amount">(<bdi>)?<span class="woocommerce-Price-currencySymbol">&pound;</span>9.99(</bdi>)?</span> GBP was <strong>unsuccessful</strong> using WooCommerce Payments \(<code>test_refund_id</code>\).$~'
+				)
+			);
+
+		// The expects condition here is the real test; we expect that the 'update_meta_data' function
+		// is called with the appropriate values.
+		$mock_order
+			->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with( '_wcpay_refund_status', 'failed' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$this->controller->handle_webhook( $this->request );
+	}
+
+	public function test_non_failed_refund_update_webhook_does_not_set_failed_meta() {
+		// Setup test request data.
+		$this->request_body['type']           = 'charge.refund.updated';
+		$this->request_body['data']['object'] = [
+			'status' => 'success',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$this->mock_db_wrapper
+			->expects( $this->never() )
+			->method( 'order_from_charge_id' );
+
+		// The expects condition here is the real test; we expect that the 'update_meta_data' function
+		// is never called to update the meta data.
+		$mock_order
+			->expects( $this->never() )
+			->method( 'update_meta_data' );
+
+		// Run the test.
+		$this->controller->handle_webhook( $this->request );
+
+	}
+
 	/**
 	 * Test a valid failed refund update webhook.
 	 */
@@ -172,17 +241,16 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
-		$mock_order = $this->getMockBuilder( WC_Order::class )
-			->disableOriginalConstructor()
-			->setMethods( [ 'add_order_note' ] )
-			->getMock();
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$mock_order->method( 'get_currency' )->willReturn( 'GBP' );
 
 		$mock_order
 			->expects( $this->once() )
 			->method( 'add_order_note' )
 			->with(
 				$this->matchesRegularExpression(
-					'~^A refund of <span class="woocommerce-Price-amount amount">(<bdi>)?<span class="woocommerce-Price-currencySymbol">&pound;</span>9.99(</bdi>)?</span> was <strong>unsuccessful</strong> using WooCommerce Payments \(<code>test_refund_id</code>\).$~'
+					'~^A refund of <span class="woocommerce-Price-amount amount">(<bdi>)?<span class="woocommerce-Price-currencySymbol">&pound;</span>9.99(</bdi>)?</span> GBP was <strong>unsuccessful</strong> using WooCommerce Payments \(<code>test_refund_id</code>\).$~'
 				)
 			);
 
@@ -218,17 +286,16 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
-		$mock_order = $this->getMockBuilder( WC_Order::class )
-			->disableOriginalConstructor()
-			->setMethods( [ 'add_order_note' ] )
-			->getMock();
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$mock_order->method( 'get_currency' )->willReturn( 'GBP' );
 
 		$mock_order
 			->expects( $this->once() )
 			->method( 'add_order_note' )
 			->with(
 				$this->matchesRegularExpression(
-					'~^A refund of <span class="woocommerce-Price-amount amount">(<bdi>)?<span class="woocommerce-Price-currencySymbol">&euro;</span>9.99(</bdi>)?</span> was <strong>unsuccessful</strong> using WooCommerce Payments \(<code>test_refund_id</code>\).$~'
+					'~^A refund of <span class="woocommerce-Price-amount amount">(<bdi>)?<span class="woocommerce-Price-currencySymbol">&euro;</span>9.99(</bdi>)?</span> GBP was <strong>unsuccessful</strong> using WooCommerce Payments \(<code>test_refund_id</code>\).$~'
 				)
 			);
 
@@ -264,17 +331,16 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
-		$mock_order = $this->getMockBuilder( WC_Order::class )
-			->disableOriginalConstructor()
-			->setMethods( [ 'add_order_note' ] )
-			->getMock();
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$mock_order->method( 'get_currency' )->willReturn( 'GBP' );
 
 		$mock_order
 			->expects( $this->once() )
 			->method( 'add_order_note' )
 			->with(
 				$this->matchesRegularExpression(
-					'~^A refund of <span class="woocommerce-Price-amount amount">(<bdi>)?<span class="woocommerce-Price-currencySymbol">&yen;</span>999.00(</bdi>)?</span> was <strong>unsuccessful</strong> using WooCommerce Payments \(<code>test_refund_id</code>\).$~'
+					'~^A refund of <span class="woocommerce-Price-amount amount">(<bdi>)?<span class="woocommerce-Price-currencySymbol">&yen;</span>999.00(</bdi>)?</span> GBP was <strong>unsuccessful</strong> using WooCommerce Payments \(<code>test_refund_id</code>\).$~'
 				)
 			);
 
@@ -447,6 +513,93 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$response = $this->controller->handle_webhook( $this->request );
 
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
+	}
+
+	/**
+	 * Tests that a payment_intent.succeeded event will complete the order.
+	 */
+	public function test_payment_intent_successful_and_completes_order() {
+		$this->request_body['type']           = 'payment_intent.succeeded';
+		$this->request_body['data']['object'] = [
+			'id'       => 'pi_123123123123123', // payment_intent's ID.
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [],
+			'currency' => 'eur',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( [ 'processing', 'completed' ] )
+			->willReturn( false );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$response = $this->controller->handle_webhook( $this->request );
+
+		// Check the response.
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
+	}
+
+	/**
+	 * Tests that a payment_intent.succeeded event will not complete the order
+	 * if it is already completed/processed.
+	 */
+	public function test_payment_intent_successful_when_retrying() {
+		$this->request_body['type']           = 'payment_intent.succeeded';
+		$this->request_body['data']['object'] = [
+			'id'       => 'pi_123123123123123', // payment_intent's ID.
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [],
+			'currency' => 'eur',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( [ 'processing', 'completed' ] )
+			->willReturn( true );
+
+		$mock_order
+			->expects( $this->never() )
+			->method( 'payment_complete' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$response = $this->controller->handle_webhook( $this->request );
+
+		// Check the response.
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 200, $response->get_status() );

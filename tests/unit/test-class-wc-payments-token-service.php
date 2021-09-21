@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Payment_Method;
 
 /**
  * WC_Payments_Token_Service unit tests.
@@ -74,6 +75,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 				'exp_month' => 6,
 				'exp_year'  => $expiry_year,
 			],
+			'type' => Payment_Method::CARD,
 		];
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
@@ -87,6 +89,28 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
 	}
 
+	/**
+	 * Test add SEPA token to user.
+	 */
+	public function test_add_token_to_user_for_sepa() {
+		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
+		$mock_payment_method = [
+			'id'         => 'pm_mock',
+			'sepa_debit' => [
+				'last4' => '3000',
+			],
+			'type'       => Payment_Method::SEPA,
+		];
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments_sepa', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		$this->assertEquals( '3000', $token->get_last4() );
+		$this->assertInstanceOf( WC_Payment_Token_WCPay_SEPA::class, $token );
+	}
+
 	public function test_add_payment_method_to_user() {
 		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
 		$mock_payment_method = [
@@ -97,6 +121,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 				'exp_month' => 6,
 				'exp_year'  => $expiry_year,
 			],
+			'type' => Payment_Method::CARD,
 		];
 
 		$this->mock_api_client

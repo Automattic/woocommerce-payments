@@ -1,0 +1,11 @@
+.disable-confirmation-modal {
+	&__payment-methods-list {
+		margin-bottom: 32px;
+
+		> * {
+			&:not( :last-child ) {
+				margin-bottom: 12px;
+			}
+		}
+	}
+}

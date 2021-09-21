@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 /** @format */
 /**
  * External dependencies
@@ -8,21 +7,11 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import PaymentDetailsTimeline from '../';
-import { useTimeline } from 'data';
+import { useTimeline } from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useTimeline: jest.fn(),
 } ) );
-
-// Mock the Timeline component because it's not published at the time of writing this test.
-// TODO: Remove this mock and update snapshots once the Timeline component is live.
-jest.mock( '@woocommerce/components', () => {
-	const Card = require.requireActual( '@woocommerce/components' ).Card;
-	return {
-		Card,
-		Timeline: jest.fn( () => <div>Mock timeline</div> ),
-	};
-} );
 
 describe( 'PaymentDetailsTimeline', () => {
 	beforeEach( () => {
@@ -163,16 +152,6 @@ describe( 'PaymentDetailsTimeline', () => {
 			timelineError: null,
 			isLoading: false,
 		} );
-
-		const { container } = render(
-			<PaymentDetailsTimeline chargeId={ 'ch_test' } />
-		);
-
-		expect( container ).toMatchSnapshot();
-	} );
-
-	test( 'does not render when the feature flag is disabled', () => {
-		wcpaySettings.featureFlags.paymentTimeline = false;
 
 		const { container } = render(
 			<PaymentDetailsTimeline chargeId={ 'ch_test' } />

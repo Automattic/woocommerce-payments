@@ -54,7 +54,7 @@ class WC_Payments_Remote_Note_Service {
 	 *
 	 * @param array $note_data The note data to process.
 	 *
-	 * @return WC_Admin_Note|Note Note object.
+	 * @return Automattic\WooCommerce\Admin\Notes\WC_Admin_Note|Automattic\WooCommerce\Admin\Notes\Note Note object.
 	 *
 	 * @throws Rest_Request_Exception If note data is invalid.
 	 */

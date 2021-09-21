@@ -20,12 +20,13 @@ import {
 	SelectControl,
 } from '@wordpress/components';
 import { merge, some, flatten, isMatchWith } from 'lodash';
+import moment from 'moment';
 
 /**
  * Internal dependencies.
  */
 import '../style.scss';
-import { useDisputeEvidence } from 'data';
+import { useDisputeEvidence } from 'wcpay/data';
 import evidenceFields from './fields';
 import { FileUploadControl } from './file-upload';
 import Info from '../info';
@@ -110,6 +111,15 @@ export const DisputeEvidenceForm = ( props ) => {
 						{ ...composeDefaultControlProps( field ) }
 					/>
 				);
+			case 'date':
+				return (
+					<TextControl
+						key={ field.key }
+						type={ 'date' }
+						max={ moment().format( 'YYYY-MM-DD' ) }
+						{ ...composeDefaultControlProps( field ) }
+					/>
+				);
 			default:
 				return (
 					<TextareaControl
@@ -172,16 +182,24 @@ export const DisputeEvidenceForm = ( props ) => {
 						</p>
 					</CardBody>
 					<CardFooter>
-						<Button isPrimary isLarge onClick={ handleSubmit }>
-							{ __( 'Submit evidence', 'woocommerce-payments' ) }
-						</Button>
-						<Button
-							isDefault
-							isLarge
-							onClick={ () => onSave( false ) }
-						>
-							{ __( 'Save for later', 'woocommerce-payments' ) }
-						</Button>
+						{ /* Use wrapping div to keep buttons grouped together. */ }
+						<div>
+							<Button isPrimary onClick={ handleSubmit }>
+								{ __(
+									'Submit evidence',
+									'woocommerce-payments'
+								) }
+							</Button>
+							<Button
+								isSecondary
+								onClick={ () => onSave( false ) }
+							>
+								{ __(
+									'Save for later',
+									'woocommerce-payments'
+								) }
+							</Button>
+						</div>
 					</CardFooter>
 				</Card>
 			) }
@@ -359,7 +377,7 @@ export default ( { query } ) => {
 			}
 		);
 
-	useConfirmNavigation( () => {
+	const confirmationNavigationCallback = useConfirmNavigation( () => {
 		if ( pristine ) {
 			return;
 		}
@@ -368,19 +386,25 @@ export default ( { query } ) => {
 			'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
 			'woocommerce-payments'
 		);
-	}, [ pristine ] );
+	} );
 
-	const fetchDispute = async () => {
-		setLoading( true );
-		try {
-			setDispute( await apiFetch( { path } ) );
-		} finally {
-			setLoading( false );
-		}
-	};
+	useEffect( confirmationNavigationCallback, [
+		pristine,
+		confirmationNavigationCallback,
+	] );
+
 	useEffect( () => {
+		const fetchDispute = async () => {
+			setLoading( true );
+			try {
+				setDispute( await apiFetch( { path } ) );
+			} finally {
+				setLoading( false );
+			}
+		};
+
 		fetchDispute();
-	}, [] );
+	}, [ setLoading, setDispute, path ] );
 
 	const updateEvidence = ( key, value ) =>
 		setEvidence( ( e ) => ( { ...e, [ key ]: value } ) );
@@ -393,11 +417,37 @@ export default ( { query } ) => {
 		updateDispute( {
 			metadata: { [ key ]: '' },
 			uploadingErrors: { [ key ]: '' },
+			fileSize: { [ key ]: 0 },
 		} );
+	};
+
+	const fileSizeExceeded = ( latestFileSize ) => {
+		const fileSizeLimitInBytes = 4500000;
+		const fileSizes = dispute.fileSize
+			? Object.values( dispute.fileSize )
+			: [];
+		const totalFileSize =
+			fileSizes.reduce( ( acc, fileSize ) => acc + fileSize, 0 ) +
+			latestFileSize;
+		if ( fileSizeLimitInBytes < totalFileSize ) {
+			createInfoNotice(
+				__(
+					"The files you've attached to this dispute as evidence will exceed the limit for a " +
+						"dispute's total size. Try using smaller files as evidence. Hint: if you've attached " +
+						'images, you might want to try providing them in lower resolutions.',
+					'woocommerce-payments'
+				)
+			);
+			return true;
+		}
 	};
 
 	const doUploadFile = async ( key, file ) => {
 		if ( ! file ) {
+			return;
+		}
+
+		if ( fileSizeExceeded( file.size ) ) {
 			return;
 		}
 
@@ -429,6 +479,7 @@ export default ( { query } ) => {
 			updateDispute( {
 				metadata: { [ key ]: uploadedFile.filename },
 				isUploading: { [ key ]: false },
+				fileSize: { [ key ]: uploadedFile.size },
 			} );
 			updateEvidence( key, uploadedFile.id );
 
@@ -469,7 +520,26 @@ export default ( { query } ) => {
 			We rely on WC-Admin Transient notices to display success message.
 			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
 		*/
-		createSuccessNotice( message );
+		createSuccessNotice( message, {
+			actions: [
+				{
+					label: submit
+						? __(
+								'View submitted evidence',
+								'woocommerce-payments'
+						  )
+						: __(
+								'Return to evidence submission',
+								'woocommerce-payments'
+						  ),
+					url: addQueryArgs( 'admin.php', {
+						page: 'wc-admin',
+						path: '/payments/disputes/challenge',
+						id: query.id,
+					} ),
+				},
+			],
+		} );
 
 		getHistory().push( href );
 	};
@@ -493,8 +563,10 @@ export default ( { query } ) => {
 		// Prevent submit if upload is in progress.
 		if ( isUploadingEvidence() ) {
 			createInfoNotice(
-				__( 'Please wait until file upload is finished' ),
-				'woocommerce-payments'
+				__(
+					'Please wait until file upload is finished',
+					'woocommerce-payments'
+				)
 			);
 			return;
 		}
@@ -541,9 +613,10 @@ export default ( { query } ) => {
 		} );
 	};
 
+	const disputeReason = dispute && dispute.reason;
 	const fieldsToDisplay = useMemo(
-		() => evidenceFields( dispute && dispute.reason, productType ),
-		[ dispute && dispute.reason, productType ]
+		() => evidenceFields( disputeReason, productType ),
+		[ disputeReason, productType ]
 	);
 
 	return (

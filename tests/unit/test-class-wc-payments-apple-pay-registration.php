@@ -59,7 +59,11 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->wc_apple_pay_registration = new WC_Payments_Apple_Pay_Registration( $this->mock_api_client, $this->mock_account );
+		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->wc_apple_pay_registration = new WC_Payments_Apple_Pay_Registration( $this->mock_api_client, $this->mock_account, $mock_gateway );
 
 		$this->file_name             = 'apple-developer-merchantid-domain-association';
 		$this->initial_file_contents = file_get_contents( WCPAY_ABSPATH . '/' . $this->file_name ); // @codingStandardsIgnoreLine
@@ -95,5 +99,27 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 		$rewrite_rule = 'index.php?' . $this->file_name . '=1';
 
 		$this->assertContains( $rewrite_rule, $wp_rewrite->rewrite_rules() );
+	}
+
+	public function test_it_adds_rewrite_rules_before_init_priority_10() {
+		$add_rewrite_rules_callback_priority = has_action(
+			'init',
+			[ $this->wc_apple_pay_registration, 'add_domain_association_rewrite_rule' ]
+		);
+
+		$this->assertInternalType( 'int', $add_rewrite_rules_callback_priority );
+		$this->assertLessThan(
+			10,
+			$add_rewrite_rules_callback_priority
+		);
+	}
+
+	public function test_it_verifies_domain_during_upgrade() {
+		$verify_callback_priority = has_action(
+			'woocommerce_woocommerce_payments_updated',
+			[ $this->wc_apple_pay_registration, 'verify_domain_if_configured' ]
+		);
+
+		$this->assertInternalType( 'int', $verify_callback_priority );
 	}
 }

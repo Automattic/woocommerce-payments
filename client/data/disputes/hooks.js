@@ -30,7 +30,6 @@ export const useDisputeEvidence = () => {
 	return { updateDispute };
 };
 
-// eslint-disable-next-line camelcase
 export const useDisputes = ( { paged, per_page: perPage } ) =>
 	useSelect(
 		( select ) => {

@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
 // Create a dependency on wp-mediaelement. Necessary to prevent a type of JS error.
 // See discussion in WCPay PR #1263 in GitHub.
+// eslint-disable-next-line import/no-unresolved
 import 'wp-mediaelement';
 
 /**
@@ -22,6 +23,7 @@ import DisputesPage from 'disputes';
 import DisputeDetailsPage from 'disputes/details';
 import DisputeEvidencePage from 'disputes/evidence';
 import OverviewPage from 'overview';
+import { getTasks } from 'overview/task-list/tasks';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -45,20 +47,16 @@ addFilter(
 			},
 		} );
 
-		if ( wcpaySettings.featureFlags.accountOverview ) {
-			pages.push( {
-				container: OverviewPage,
-				path: '/payments/overview',
-				wpOpenMenu: menuID,
-				breadcrumbs: [
-					rootLink,
-					__( 'Overview', 'woocommerce-payments' ),
-				],
-				navArgs: {
-					id: 'wc-payments-overview',
-				},
-			} );
-		}
+		pages.push( {
+			container: OverviewPage,
+			path: '/payments/overview',
+			wpOpenMenu: menuID,
+			breadcrumbs: [ rootLink, __( 'Overview', 'woocommerce-payments' ) ],
+			navArgs: {
+				id: 'wc-payments-overview',
+			},
+		} );
+
 		pages.push( {
 			container: DepositsPage,
 			path: '/payments/deposits',
@@ -146,7 +144,7 @@ addFilter(
 );
 
 /**
- * Get menu settings based on the top level link being connect or deposits
+ * Get menu settings based on the top level link being connect or overview
  *
  * @return { { menuID, rootLink } }  Object containing menuID and rootLink
  */
@@ -154,7 +152,7 @@ function getMenuSettings() {
 	const connectPage = document.querySelector(
 		'#toplevel_page_wc-admin-path--payments-connect'
 	);
-	const topLevelPage = connectPage ? 'connect' : 'deposits';
+	const topLevelPage = connectPage ? 'connect' : 'overview';
 
 	return {
 		menuID: `toplevel_page_wc-admin-path--payments-${ topLevelPage }`,
@@ -164,3 +162,27 @@ function getMenuSettings() {
 		],
 	};
 }
+
+addFilter(
+	'woocommerce_admin_onboarding_task_list',
+	'woocommerce-payments',
+	( tasks ) => {
+		const {
+			accountStatus,
+			showUpdateDetailsTask,
+			additionalMethodsSetup,
+			multiCurrencySetup,
+			featureFlags: { accountOverviewTaskList },
+		} = wcpaySettings;
+
+		const wcPayTasks = getTasks( {
+			accountStatus,
+			showUpdateDetailsTask,
+			additionalMethodsSetup,
+			multiCurrencySetup,
+			isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
+		} );
+
+		return [ ...tasks, ...wcPayTasks ];
+	}
+);

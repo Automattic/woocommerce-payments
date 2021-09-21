@@ -45,6 +45,14 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 	private $mock_action_scheduler_service;
 
 	/**
+	 * Mock Session_Rate_Limiter.
+	 *
+	 * @var Session_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_rate_limiter;
+
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
@@ -99,9 +107,11 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 			->method( 'add_payment_method_to_user' )
 			->willReturn( $this->token );
 
+		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
+
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
-		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' )
+		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
@@ -109,6 +119,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
+					$this->mock_rate_limiter,
 				]
 			)
 			->setMethods(
@@ -147,7 +158,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$this->mock_wcs_order_contains_subscription( false );
 
-		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', 'cus_1234', 'pm_56789', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
@@ -176,7 +187,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$this->mock_wcs_order_contains_subscription( true );
 
-		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', 'cus_1234', 'pm_56789', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
@@ -211,7 +222,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 		);
 		$order->add_payment_token( $this->token );
 
-		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', 'cus_1234', 'pm_56789', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )

@@ -1,0 +1,17 @@
+.add-payment-methods-task {
+	&__payment-selector-wrapper {
+		max-height: 300px;
+		width: 100%;
+		overflow: hidden auto;
+	}
+
+	&__payment-selector-title {
+		font-weight: bold;
+		color: #1d2327;
+		font-size: 14px;
+	}
+
+	hr.components-card__divider {
+		width: 100%;
+	}
+}

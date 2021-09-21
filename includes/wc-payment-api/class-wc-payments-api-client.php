@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
 
 /**
@@ -24,22 +25,24 @@ class WC_Payments_API_Client {
 
 	const API_TIMEOUT_SECONDS = 70;
 
-	const ACCOUNTS_API        = 'accounts';
-	const APPLE_PAY_API       = 'apple_pay';
-	const CHARGES_API         = 'charges';
-	const CONN_TOKENS_API     = 'terminal/connection_tokens';
-	const CUSTOMERS_API       = 'customers';
-	const INTENTIONS_API      = 'intentions';
-	const REFUNDS_API         = 'refunds';
-	const DEPOSITS_API        = 'deposits';
-	const TRANSACTIONS_API    = 'transactions';
-	const DISPUTES_API        = 'disputes';
-	const FILES_API           = 'files';
-	const OAUTH_API           = 'oauth';
-	const TIMELINE_API        = 'timeline';
-	const PAYMENT_METHODS_API = 'payment_methods';
-	const SETUP_INTENTS_API   = 'setup_intents';
-	const TRACKING_API        = 'tracking';
+	const ACCOUNTS_API           = 'accounts';
+	const APPLE_PAY_API          = 'apple_pay';
+	const CHARGES_API            = 'charges';
+	const CONN_TOKENS_API        = 'terminal/connection_tokens';
+	const TERMINAL_LOCATIONS_API = 'terminal/locations';
+	const CUSTOMERS_API          = 'customers';
+	const CURRENCY_API           = 'currency';
+	const INTENTIONS_API         = 'intentions';
+	const REFUNDS_API            = 'refunds';
+	const DEPOSITS_API           = 'deposits';
+	const TRANSACTIONS_API       = 'transactions';
+	const DISPUTES_API           = 'disputes';
+	const FILES_API              = 'files';
+	const OAUTH_API              = 'oauth';
+	const TIMELINE_API           = 'timeline';
+	const PAYMENT_METHODS_API    = 'payment_methods';
+	const SETUP_INTENTS_API      = 'setup_intents';
+	const TRACKING_API           = 'tracking';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -103,6 +106,15 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Checks if the site has an admin who is also a connection owner.
+	 *
+	 * @return bool True if Jetpack connection has an owner.
+	 */
+	public function has_server_connection_owner() {
+		return $this->http_client->has_connection_owner();
+	}
+
+	/**
 	 * Gets the current WP.com blog ID, if the Jetpack connection has been set up.
 	 *
 	 * @return integer|NULL Current WPCOM blog ID, or NULL if not connected yet.
@@ -155,6 +167,7 @@ class WC_Payments_API_Client {
 	 * @param array  $metadata               - Meta data values to be sent along with payment intent creation.
 	 * @param array  $level3                 - Level 3 data.
 	 * @param bool   $off_session            - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
+	 * @param array  $additional_parameters  - An array of any additional request parameters, particularly for additional payment methods.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -168,7 +181,8 @@ class WC_Payments_API_Client {
 		$save_payment_method = false,
 		$metadata = [],
 		$level3 = [],
-		$off_session = false
+		$off_session = false,
+		$additional_parameters = []
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -180,9 +194,10 @@ class WC_Payments_API_Client {
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
+		$request['description']    = $this->get_intent_description( $metadata['order_id'] ?? 0 );
 
-		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
-			$request['payment_method_types'] = [ 'card', 'sepa_debit' ];
+		if ( WC_Payments_Features::is_sepa_enabled() ) {
+			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
 			$request['mandate_data']         = [
 				'customer_acceptance' => [
 					'type'   => 'online',
@@ -194,8 +209,10 @@ class WC_Payments_API_Client {
 			];
 		}
 
+		$request = array_merge( $request, $additional_parameters );
+
 		if ( $off_session ) {
-			$request['off_session'] = true;
+			$request['off_session'] = 'true';
 		}
 
 		if ( $save_payment_method ) {
@@ -203,6 +220,83 @@ class WC_Payments_API_Client {
 		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
+	 * Create an intention, without confirming it.
+	 *
+	 * @param int    $amount          - Amount to charge.
+	 * @param string $currency_code   - Currency to charge in.
+	 * @param array  $payment_methods - Payment methods to include.
+	 * @param int    $order_id        - The order ID.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function create_intention(
+		$amount,
+		$currency_code,
+		$payment_methods,
+		$order_id
+	) {
+		$request                         = [];
+		$request['amount']               = $amount;
+		$request['currency']             = $currency_code;
+		$request['description']          = $this->get_intent_description( $order_id );
+		$request['payment_method_types'] = $payment_methods;
+
+		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
+	 * Updates an intention, without confirming it.
+	 *
+	 * @param string $intention_id              - The ID of the intention to update.
+	 * @param int    $amount                    - Amount to charge.
+	 * @param string $currency_code             - Currency to charge in.
+	 * @param bool   $save_payment_method       - Whether to setup payment intent for future usage.
+	 * @param string $customer_id               - Stripe customer to associate payment intent with.
+	 * @param array  $metadata                  - Meta data values to be sent along with payment intent creation.
+	 * @param array  $level3                    - Level 3 data.
+	 * @param string $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function update_intention(
+		$intention_id,
+		$amount,
+		$currency_code,
+		$save_payment_method = false,
+		$customer_id = '',
+		$metadata = [],
+		$level3 = [],
+		$selected_upe_payment_type = ''
+	) {
+		$request = [
+			'amount'      => $amount,
+			'currency'    => $currency_code,
+			'metadata'    => $metadata,
+			'level3'      => $level3,
+			'description' => $this->get_intent_description( $metadata['order_id'] ?? 0 ),
+		];
+
+		if ( '' !== $selected_upe_payment_type ) {
+			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
+			$request['payment_method_types'] = [ $selected_upe_payment_type ];
+		}
+		if ( $customer_id ) {
+			$request['customer'] = $customer_id;
+		}
+		if ( $save_payment_method ) {
+			$request['setup_future_usage'] = 'off_session';
+		}
+
+		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
 	}
@@ -280,6 +374,28 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Setup an intention, without confirming it.
+	 *
+	 * @param string $customer_id          - ID of the customer.
+	 * @param array  $payment_method_types - Payment methods to include.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function create_setup_intention(
+		$customer_id,
+		$payment_method_types
+	) {
+		$request = [
+			'customer'             => $customer_id,
+			'confirm'              => 'false',
+			'payment_method_types' => $payment_method_types,
+		];
+
+		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
+	}
+
+	/**
 	 * Create a setup intent.
 	 *
 	 * @param string $payment_method_id      - ID of payment method to be saved.
@@ -290,11 +406,23 @@ class WC_Payments_API_Client {
 	 */
 	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id ) {
 		$request = [
-			'payment_method'       => $payment_method_id,
-			'customer'             => $customer_id,
-			'confirm'              => 'true',
-			'payment_method_types' => [ 'card', 'sepa_debit' ],
+			'payment_method' => $payment_method_id,
+			'customer'       => $customer_id,
+			'confirm'        => 'true',
 		];
+
+		if ( WC_Payments_Features::is_sepa_enabled() ) {
+			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
+			$request['mandate_data']         = [
+				'customer_acceptance' => [
+					'type'   => 'online',
+					'online' => [
+						'ip_address' => WC_Geolocation::get_ip_address(),
+						'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? $this->user_agent, //phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+					],
+				],
+			];
+		}
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
 	}
@@ -348,6 +476,16 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get an overview of all deposits (for all currencies).
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_all_deposits_overviews() {
+		return $this->request( [], self::DEPOSITS_API . '/overview-all', self::GET );
+	}
+
+	/**
 	 * Get summary of deposits.
 	 *
 	 * @param array $filters The filters to be used in the query.
@@ -367,6 +505,25 @@ class WC_Payments_API_Client {
 	 */
 	public function get_deposit( $deposit_id ) {
 		return $this->request( [], self::DEPOSITS_API . '/' . $deposit_id, self::GET );
+	}
+
+	/**
+	 * Trigger a manual deposit.
+	 *
+	 * @param string $type Type of deposit. Only "instant" is supported for now.
+	 * @param string $transaction_ids Comma-separated list of transaction IDs that will be associated with this deposit.
+	 * @return array The new deposit object.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function manual_deposit( $type, $transaction_ids ) {
+		return $this->request(
+			[
+				'type'            => $type,
+				'transaction_ids' => $transaction_ids,
+			],
+			self::DEPOSITS_API,
+			self::POST
+		);
 	}
 
 	/**
@@ -665,9 +822,35 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get currency rates from the server.
+	 *
+	 * @param string $currency_from - The currency to convert from.
+	 * @param ?array $currencies_to - An array of the currencies we want to convert into. If left empty, will get all supported currencies.
+	 *
+	 * @return array
+	 *
+	 * @throws API_Exception - Error contacting the API.
+	 */
+	public function get_currency_rates( string $currency_from, $currencies_to = null ) {
+		$query_body = [ 'currency_from' => $currency_from ];
+
+		if ( null !== $currencies_to ) {
+			$query_body['currencies_to'] = $currencies_to;
+		}
+
+		return $this->request(
+			$query_body,
+			self::CURRENCY_API . '/rates',
+			self::GET
+		);
+	}
+
+	/**
 	 * Get current account data
 	 *
 	 * @return array An array describing an account object.
+	 *
+	 * @throws API_Exception - Error contacting the API.
 	 */
 	public function get_account_data() {
 		return $this->request(
@@ -690,7 +873,9 @@ class WC_Payments_API_Client {
 		return $this->request(
 			$stripe_account_settings,
 			self::ACCOUNTS_API,
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
@@ -718,7 +903,7 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		return $this->request( $request_args, self::OAUTH_API . '/init', self::POST );
+		return $this->request( $request_args, self::OAUTH_API . '/init', self::POST, true, true );
 	}
 
 	/**
@@ -735,7 +920,9 @@ class WC_Payments_API_Client {
 				'test_mode'    => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API . '/login_links',
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
@@ -874,7 +1061,9 @@ class WC_Payments_API_Client {
 				'user_name' => $user_name,
 			],
 			self::ACCOUNTS_API . '/tos_agreements',
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
@@ -963,17 +1152,73 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Retrieves a store's terminal locations.
+	 *
+	 * @return array[] Stripe terminal location objects.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_terminal_locations() {
+		return $this->request( [], self::TERMINAL_LOCATIONS_API, self::GET );
+	}
+
+	/**
+	 * Creates a new terminal location.
+	 *
+	 * @param string  $display_name The display name of the terminal location.
+	 * @param array   $address {
+	 *     Address partials.
+	 *
+	 *     @type string $country     Two-letter country code.
+	 *     @type string $line1       Address line 1.
+	 *     @type string $line2       Optional. Address line 2.
+	 *     @type string $city        Optional. City, district, suburb, town, or village.
+	 *     @type int    $postal_code Optional. ZIP or postal code.
+	 *     @type string $state       Optional. State, county, province, or region.
+	 * }
+	 * @param mixed[] $metadata Optional. Metadata for the location.
+	 *
+	 * @return array A Stripe terminal location object.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function create_terminal_location( $display_name, $address, $metadata = [] ) {
+		if ( ! isset( $address['country'], $address['line1'] ) ) {
+			throw new API_Exception(
+				__( 'Address country and line 1 are required.', 'woocommerce-payments' ),
+				'wcpay_invalid_terminal_location_request',
+				400
+			);
+		}
+
+		$request = [
+			'display_name' => $display_name,
+			'address'      => $address,
+			'metadata'     => $metadata,
+		];
+
+		return $this->request(
+			$request,
+			self::TERMINAL_LOCATIONS_API,
+			self::POST
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
 	 * @param string $api              - The API endpoint to call.
 	 * @param string $method           - The HTTP method to make the request with.
-	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
+	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url. Defaults to true.
+	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
 	 *
 	 * @return array
 	 * @throws API_Exception - If the account ID hasn't been set.
 	 */
-	private function request( $params, $api, $method, $is_site_specific = true ) {
+	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false ) {
 		// Apply the default params that can be overridden by the calling method.
 		$params = wp_parse_args(
 			$params,
@@ -1027,7 +1272,8 @@ class WC_Payments_API_Client {
 				'connect_timeout' => self::API_TIMEOUT_SECONDS,
 			],
 			$body,
-			$is_site_specific
+			$is_site_specific,
+			$use_user_token
 		);
 
 		$response_body = $this->extract_response_body( $response );
@@ -1052,8 +1298,22 @@ class WC_Payments_API_Client {
 	 */
 	private function request_with_level3_data( $params, $api, $method, $is_site_specific = true ) {
 		// If level3 data is not present for some reason, simply proceed normally.
-		if ( ! isset( $params['level3'] ) ) {
+		if ( empty( $params['level3'] ) || ! is_array( $params['level3'] ) ) {
 			return $this->request( $params, $api, $method, $is_site_specific );
+		}
+
+		// If level3 data doesn't contain any items, add a zero priced fee to meet Stripe's requirement.
+		if ( ! isset( $params['level3']['line_items'] ) || ! is_array( $params['level3']['line_items'] ) || 0 === count( $params['level3']['line_items'] ) ) {
+			$params['level3']['line_items'] = [
+				[
+					'discount_amount'     => 0,
+					'product_code'        => 'zero-cost-fee',
+					'product_description' => 'Zero cost fee',
+					'quantity'            => 1,
+					'tax_amount'          => 0,
+					'unit_cost'           => 0,
+				],
+			];
 		}
 
 		try {
@@ -1110,9 +1370,11 @@ class WC_Payments_API_Client {
 
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
+			$error_type = null;
 			if ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
+				$error_type    = $response_body['error']['type'] ?? null;
 			} elseif ( isset( $response_body['code'] ) ) {
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
@@ -1128,7 +1390,7 @@ class WC_Payments_API_Client {
 			);
 
 			Logger::error( "$error_message ($error_code)" );
-			throw new API_Exception( $message, $error_code, $response_code );
+			throw new API_Exception( $message, $error_code, $response_code, $error_type );
 		}
 
 		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
@@ -1156,16 +1418,14 @@ class WC_Payments_API_Client {
 			$object['order'] = [
 				'number'       => $order->get_order_number(),
 				'url'          => $order->get_edit_order_url(),
-				'customer_url' => admin_url(
-					add_query_arg(
-						[
-							'page'      => 'wc-admin',
-							'path'      => '/customers',
-							'filter'    => 'single_customer',
-							'customers' => $order->get_customer_id(),
-						],
-						'admin.php'
-					)
+				'customer_url' => add_query_arg(
+					[
+						'page'      => 'wc-admin',
+						'path'      => '/customers',
+						'filter'    => 'single_customer',
+						'customers' => $order->get_customer_id(),
+					],
+					'admin.php'
 				),
 			];
 
@@ -1224,18 +1484,44 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
-		$charge = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
+		$charge             = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
+		$next_action        = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
+		$last_payment_error = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
 
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
 			$intention_array['currency'],
+			$intention_array['customer'] ?? $charge['customer'] ?? null,
+			$intention_array['payment_method'] ?? $charge['payment_method'] ?? $intention_array['source'] ?? null,
 			$created,
 			$intention_array['status'],
 			$charge ? $charge['id'] : null,
-			$intention_array['client_secret']
+			$intention_array['client_secret'],
+			$next_action,
+			$last_payment_error,
+			$charge ? $charge['payment_method_details'] : null
 		);
 
 		return $intent;
+	}
+
+	/**
+	 * Returns a formatted intention description.
+	 *
+	 * @param  int $order_id The order ID.
+	 * @return string        A formatted intention description.
+	 */
+	private function get_intent_description( int $order_id ): string {
+		$domain_name = str_replace( [ 'https://', 'http://' ], '', get_site_url() );
+		$blog_id     = $this->get_blog_id();
+
+		// Forgo i18n as this is only visible in the Stripe dashboard.
+		return sprintf(
+			'Online Payment%s for %s%s',
+			0 !== $order_id ? " for Order #$order_id" : '',
+			$domain_name,
+			null !== $blog_id ? " blog_id $blog_id" : ''
+		);
 	}
 }

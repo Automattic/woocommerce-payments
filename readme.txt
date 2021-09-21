@@ -1,10 +1,10 @@
 === WooCommerce Payments ===
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
-Requires at least: 5.4
-Tested up to: 5.7
+Requires at least: 5.6
+Tested up to: 5.8
 Requires PHP: 7.0
-Stable tag: 2.2.0
+Stable tag: 3.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,9 +38,8 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* United States-based business.
-* WordPress 5.4 or newer.
-* WooCommerce 4.0 or newer.
+* WordPress 5.6 or newer.
+* WooCommerce 5.4 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -57,11 +56,9 @@ Install and activate the WooCommerce and WooCommerce Payments plugins, if you ha
 
 = What countries and currencies are supported? =
 
-If you are an individual or business based in the United States, you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world.
+If you are an individual or business based in [one of these countries](https://docs.woocommerce.com/document/payments/countries/#section-1), you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world.
 
 We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooCommerce Payments launch next](https://woocommerce.com/payments/#request-invite).
-
-[Learn more](https://docs.woocommerce.com/document/payments/countries/).
 
 = Why is a WordPress.com account and connection required? =
 
@@ -101,7 +98,157 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.3.0 - 2021-xx-xx =
+= 3.1.0 - 2021-xx-xx =
+* Add - Customer multi-currency onboarding flow.
+* Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
+* Add - Update layout of the Multi-currency settings screen.
+* Fix - Fixed missing file error for removed CSS file.
+
+= 3.0.0 - 2021-09-16 =
+* Add - Download deposits report in CSV.
+* Fix - Use store currency on analytics leaderboard when Multi-Currency is enabled.
+* Add - Add API to expose Multi-Currency widget to theme/plugin developers for easy integration.
+* Fix - Enabled currencies modal UI.
+* Fix - User order currency format on admin refund button.
+* Fix - Clear the list of selected currencies after closing the modal for adding currencies.
+* Fix - Fix subscription change payment method errors after entering a payment method that fails.
+* Fix - Prevent duplicate account onboarding requests.
+* Fix - Filter out merchant-facing payment errors from customer error notices.
+
+= 2.9.1 - 2021-09-07 =
+* Fix - Error while checking out with UPE when fields are hidden.
+* Fix - Unable to onboard when in treatment mode.
+
+= 2.9.0 - 2021-08-25 =
+* Add - Split discount line in timeline into variable fee and fixed fee.
+* Add - Order status validation for payments/orders/{order_id}/create_customer API.
+* Add - Add country code parameter to ExPlat API requests.
+* Add - Add a new hook to get a list of enabled payment request methods.
+* Fix - Align table items according to design correctly.
+* Fix - Fatal error if wcpay_multi_currency_enabled_currencies is a string.
+* Fix - Show the estimated deposit date in the transactions CSV export rather than the deposit ID.
+* Fix - Keep track of customer id in non logged in users.
+* Update - Bump minimum supported version of WooCommerce from 5.3 to 5.4.
+
+= 2.8.4 - 2021-08-17 =
+* Fix - Fix database connection error on account cache clear.
+* Fix - Fix fatal error logged when updating analytics data when account is not connected to Stripe.
+* Fix - Multi-Currency Compatibility fatal error with Subscriptions when account is not connected to Stripe.
+
+= 2.8.3 - 2021-08-10 =
+* Fix - Fix for payment request buttons when the new payment methods gateway is enabled.
+
+= 2.8.2 - 2021-08-05 =
+* Fix - If account is disconnected or not set up do not display onboarding task and UPE inbox note.
+* Fix - Fix for the site acting as disconnected after the account cache expires.
+* Fix - Fix for failed Giropay and Sofort transactions causing an error.
+
+= 2.8.1 - 2021-08-04 =
+* Fix - Enable Multi-Currency only if there is a linked WooCommerce Payments account.
+
+= 2.8.0 - 2021-08-04 =
+* Add - Allow merchants to add additional currencies to their store, allowing a store’s customers to shop and browse in the currency of their choice.
+* Add - *Early access*: allow your store to collect payments with Giropay and Sofort. Enable the feature in settings!
+* Add - Use date picker for applicable dispute evidence fields.
+* Fix - Avoid crash when seeing the details of an empty deposit.
+* Fix - Disabled Payment Request Buttons when order has to be split into multiple packages because Payment Requests do not support that use case.
+* Fix - Fee discounts should use the discount currency rather than the base fee currency.
+* Fix - Do not redirect to the onboarding page when account retrieval fails.
+* Add - Allow the customer to perform SCA authentication on Subscription renewals.
+* Update - Actualized supported countries list for onboarding.
+* Add - Dispute Status Chip into the header of the Dispute Details page.
+* Fix - Use a singular label in the summary of Transactions and Deposits lists.
+* Add - Disable payment gateway when not in test mode and not using https or ssl checkout enforcement.
+* Fix - Improved errors handling during onboarding and page overview.
+* Update - Remove Account in the old Settings page.
+* Update - Bump minimum supported version of WooCommerce from 5.2 to 5.3.
+* Update - Bump minimum supported version of WordPress from 5.5 to 5.6.
+* Fix - Stop refund process when using an invalid amount
+* Fix - Improve sanitization of ExPlat cookie.
+* Add - Show fee breakdown in transaction details timeline.
+* Add - REST endpoint to get customer id from an order.
+* Fix - Explat not caching when no variation is returned.
+
+= 2.7.1 - 2021-07-26 =
+* Fix - Ensure test mode setting value is correctly saved.
+* Fix - Onboarding redirection occasionally not finalizing account connection.
+
+= 2.7.0 - 2021-07-14 =
+* Add - Add a link to the snackbar notice that appears after submitting or saving evidence for a dispute challenge.
+* Add - Support saving new cards and paying with previously saved cards in the WooCommerce Checkout Block.
+* Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
+* Fix - Do not overwrite admin pages when account is disconnected.
+* Update - Set a description when creating payment intents.
+* Add - Add dispute resolution task.
+
+= 2.6.1 - 2021-07-01 =
+* Fix - Updates the notes query filters to prevent breaking the WooCommerce > Home inbox.
+
+= 2.6.0 - 2021-06-23 =
+* Add - Notify the admin if WordPress.com user connection is broken.
+* Add - Experimental PHP client for Explat.
+* Add - WooCommerce Payment inbox notifications to the overview screen.
+* Fix - Fix fatal error if store currency is changed after enabled (multi) currencies set.
+* Fix - Use of deprecated call-style to registerPaymentMethods. WooCommerce Payments now requires WooCommerce Blocks of at least version 3.9.0.
+* Fix - Deposit date on Transactions list page.
+* Fix - Rounding error when displaying fee percentages on the Overview and Transactions pages.
+* Add - Error message when total size of dispute evidence files uploaded goes over limit.
+* Update - Pass currency to wc_price when adding intent notes to orders.
+* Update - Instant deposit inbox note wording.
+* Fix - Deposit overview details for non instant ones.
+* Add - Introduce new settings layout
+* Update - Removed "Branded" and "Custom label" options on Payment request buttons to align with design guidelines.
+* Update - Converted payment request button size value to distinct options to align with design guidelines.
+* Tweak - Run post-upgrade actions during any request instead of only on wp-admin requests.
+* Update - Payment request button should guide users to login when necessary.
+* Add - When setting WooCommerce Payments up, inform if merchant business country is not supported.
+* Update - Bump minimum supported version of WooCommerce from 4.8 to 5.2.
+* Add - Introduce advance filters on deposits page.
+* Update: Prefill OAuth flow with WC store country
+
+= 2.5.0 - 2021-06-02 =
+* Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
+* Update - Use Site Language when rendering Stripe elements.
+* Update - Use blog ID for authenticating most of the requests.
+* Fix: Misaligned columns on Deposits page.
+* Add - Tracking for returning from OAuth connection.
+* Fix - Transactions and deposits counts on the table summary are rendered as "undefined".
+* Update - Deposit overview details.
+* Add - Redirect to WooCommerce home page after successful WooCommerce Payments KYC (Know Your Customer).
+* Fix - Added CSV column heading for transaction id column.
+* Update - Bump minimum supported version of WordPress from 5.4 to 5.5.
+* Update - Bump minimum supported version of WooCommerce from 4.5 to 4.8.
+* Add - Deposit overviews have been added to the overview page.
+* Update - Account overview page is now GA and default page for woocommerce payments.
+* Update - Base fee and account status has been moved to overview page from WCPay settings.
+* Fix - Express payment method being displayed on blocks checkout when Payment Request is not supported.
+* Fix - Subscription sign-up fees not included in total for Payment Request Button.
+
+= 2.4.0 - 2021-05-12 =
+* Update - Improve the Connect Account page.
+* Update - Base UI components and their styling.
+* Fix - Deposits overview details not displayed.
+* Fix - WooCommerce Payments disappeared from WooCommerce Settings if WooCommerce Subscriptions is activated.
+* Add - REST endpoint to capture payments by order ID.
+* Add - Explat package for A/B tests.
+* Add - Payment request button support for checkout and cart blocks.
+* Update - Bump minimum supported WooCommerce version from 4.0 to 4.5.
+* Update - Implement expirement on Connect Page.
+* Fix - Columns are misaligned on Payments->Transactions/Disputes page.
+* Fix - Risk level is displayed as a "Numeric" value in transactions CSV.
+
+= 2.3.3 - 2021-05-06 =
+* Update - Additional logic and styling for instant deposits.
+
+= 2.3.2 - 2021-04-27 =
+* Fix - Error when purchasing free trial subscriptions.
+
+= 2.3.1 - 2021-04-26 =
+* Fix - Various account connection cache tweaks
+* Update - Use option instead of transient for caching account data
+* Fix - Error when using SCA / 3DS credit card in checkout block.
+
+= 2.3.0 - 2021-04-21 =
 * Add - Introduced deposit currency filter for transactions overview page.
 * Add - Download transactions report in CSV.
 * Update - Tweak the connection detection logic.
@@ -116,6 +263,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Introduced deposit currency filter for deposits overview page.
 * Update - Make Payment Request Button available for all merchants.
 * Add - Configurable Payment Request Button locations.
+* Add - Addition of the Instant Deposits feature to allow qualified merchants to manually trigger payouts.
 
 = 2.2.0 - 2021-03-31 =
 * Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.

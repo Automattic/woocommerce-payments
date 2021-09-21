@@ -50,6 +50,18 @@ const renderModal = () => {
 };
 
 describe( 'ToS modal', () => {
+	beforeAll( () => {
+		global.wcpay_tos_settings = {
+			trackStripeConnected: {
+				is_existing_stripe_account: true,
+			},
+		};
+	} );
+
+	afterAll( () => {
+		delete global.wcpay_tos_settings;
+	} );
+
 	afterEach( () => {
 		jest.clearAllMocks();
 	} );

@@ -30,7 +30,7 @@ exports[`Dispute info renders correctly 1`] = `
       <span
         class="wcpay-dispute-info-value"
       >
-        $10.00
+        $10.00 USD
       </span>
     </div>
     <div

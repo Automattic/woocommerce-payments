@@ -1,0 +1,8 @@
+$space-header-item: 12px;
+
+.wcpay-deposits-list {
+	// slight adjustment to align header items with sorting button to account for icon width
+	.woocommerce-table__header.is-numeric .components-button {
+		margin-right: $space-header-item;
+	}
+}

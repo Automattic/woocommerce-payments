@@ -59,6 +59,26 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/overview-all',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_all_deposits_overviews' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'manual_deposit' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -93,6 +113,13 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Retrieve an overview of all deposits from the API.
+	 */
+	public function get_all_deposits_overviews() {
+		return $this->forward_request( 'get_all_deposits_overviews', [] );
+	}
+
+	/**
 	 * Retrieve deposit to respond with via API.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
@@ -112,10 +139,25 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 			[
 				'match'             => $request->get_param( 'match' ),
 				'store_currency_is' => $request->get_param( 'store_currency_is' ),
+				'date_before'       => $request->get_param( 'date_before' ),
+				'date_after'        => $request->get_param( 'date_after' ),
+				'date_between'      => $request->get_param( 'date_between' ),
+				'status_is'         => $request->get_param( 'status_is' ),
+				'status_is_not'     => $request->get_param( 'status_is_not' ),
 			],
 			static function ( $filter ) {
 				return null !== $filter;
 			}
 		);
+	}
+
+	/**
+	 * Trigger a manual deposit.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function manual_deposit( $request ) {
+		$params = $request->get_params();
+		return $this->forward_request( 'manual_deposit', [ $params['type'], $params['transaction_ids'] ] );
 	}
 }

@@ -3,14 +3,28 @@
  */
 import config from 'config';
 
-/**
- * Internal dependencies
- */
-import { CustomerFlow, uiUnblocked } from './index';
+const { shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
+// WooCommerce Checkout
 export async function fillCardDetails( page, card ) {
 	const frameHandle = await page.waitForSelector(
 		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
+	);
+	const stripeFrame = await frameHandle.contentFrame();
+	const inputs = await stripeFrame.$$( '.InputElement.Input' );
+
+	const [ cardNumberInput, cardDateInput, cardCvcInput ] = inputs;
+	await cardNumberInput.type( card.number, { delay: 20 } );
+	await cardDateInput.type( card.expires.month + card.expires.year, {
+		delay: 20,
+	} );
+	await cardCvcInput.type( card.cvc, { delay: 20 } );
+}
+
+// WooCommerce Blocks Checkout
+export async function fillCardDetailsWCB( page, card ) {
+	const frameHandle = await page.waitForSelector(
+		'#payment-method .wcpay-card-mounted iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
 	const inputs = await stripeFrame.$$( '.InputElement.Input' );
@@ -43,7 +57,7 @@ export async function confirmCardAuthentication(
 	);
 	let challengeFrame = await challengeFrameHandle.contentFrame();
 	// 3DS 1 cards have another iframe enclosing the authorize form
-	if ( '3DS' === cardType ) {
+	if ( '3DS' === cardType.toUpperCase() ) {
 		const acsFrameHandle = await challengeFrame.waitForSelector(
 			'iframe[name="acsFrame"]'
 		);
@@ -55,14 +69,53 @@ export async function confirmCardAuthentication(
 	await button.click();
 }
 
-export async function setupProductCheckout( billingDetails ) {
-	await CustomerFlow.goToShop();
-	await CustomerFlow.addToCartFromShopPage(
-		config.get( 'products.simple.name' )
+/**
+ * Set up checkout with any number of products.
+ *
+ * @param {any} billingDetails Values to be entered into the 'Billing details' form in the Checkout page
+ * @param {any} lineItems A 2D array of line items where each line item is an array
+ * that contains the product title as the first element, and the quantity as the second.
+ * For example, if you want to checkout the products x2 "Hoodie" and x3 "Belt" then you can set this `lineItems` parameter like this:
+ *
+ * `[ [ "Hoodie", 2 ], [ "Belt", 3 ] ]`.
+ *
+ * Default value is 1 piece of `config.get( 'products.simple.name' )`.
+ */
+export async function setupProductCheckout(
+	billingDetails,
+	lineItems = [ [ config.get( 'products.simple.name' ), 1 ] ]
+) {
+	const cartItemsCounter = '.cart-contents .count';
+
+	await shopper.goToShop();
+
+	// Get the current number of items in the cart
+	let cartSize = await page.$eval( cartItemsCounter, ( e ) =>
+		Number( e.innerText.replace( /\D/g, '' ) )
 	);
-	await CustomerFlow.goToCheckout();
+
+	// Add items to the cart
+	for ( const line of lineItems ) {
+		let [ productTitle, qty ] = line;
+
+		while ( qty-- ) {
+			await shopper.addToCartFromShopPage( productTitle );
+
+			// Make sure that the number of items in the cart is incremented first before adding another item.
+			await expect( page ).toMatchElement( cartItemsCounter, {
+				text: new RegExp( `${ ++cartSize } items?` ),
+			} );
+		}
+	}
+
+	await setupCheckout( billingDetails );
+}
+
+// Set up checkout
+export async function setupCheckout( billingDetails ) {
+	await shopper.goToCheckout();
 	await uiUnblocked();
-	await CustomerFlow.fillBillingDetails( billingDetails );
+	await shopper.fillBillingDetails( billingDetails );
 	// Woo core blocks and refreshes the UI after 1s after each key press in a text field or immediately after a select
 	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
 	await page.waitFor( 1000 );

@@ -1,6 +1,7 @@
 /* eslint-disable */
 const path = require( 'path' );
 var NODE_ENV = process.env.NODE_ENV || 'development';
+const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 
@@ -11,20 +12,28 @@ const webpackConfig = {
 		index: './client/index.js',
 		settings: './client/settings/index.js',
 		'blocks-checkout': './client/checkout/blocks/index.js',
+		'upe-blocks-checkout': './client/checkout/blocks/upe.js',
 		checkout: './client/checkout/classic/index.js',
+		upe_checkout: './client/checkout/classic/upe.js',
 		'payment-request': './client/payment-request/index.js',
 		'subscription-edit-page': './client/subscription-edit-page.js',
 		tos: './client/tos/index.js',
-	},
-	output: {
-		filename: '[name].js',
-		path: path.resolve( 'dist' ),
+		'payment-gateways': './client/payment-gateways/index.js',
+		'multi-currency': './client/multi-currency/index.js',
+		'multi-currency-analytics':
+			'./client/multi-currency-analytics/index.js',
+		order: './client/order/index.js',
 	},
 	module: {
 		rules: [
 			{
-				test: /\.(t|j)sx?$/,
-				loader: 'ts-loader',
+				test: /\.tsx?$/,
+				use: [ 'babel-loader', 'ts-loader' ],
+				exclude: /node_modules/,
+			},
+			{
+				test: /\.jsx?$/,
+				loader: 'babel-loader',
 				exclude: /node_modules/,
 			},
 			{
@@ -42,6 +51,7 @@ const webpackConfig = {
 							},
 							additionalData:
 								'@import "node_modules/@wordpress/base-styles/_colors.scss"; ' +
+								'@import "node_modules/@wordpress/base-styles/_colors.native.scss"; ' +
 								'@import "node_modules/@wordpress/base-styles/_variables.scss"; ' +
 								'@import "node_modules/@wordpress/base-styles/_mixins.scss"; ' +
 								'@import "node_modules/@wordpress/base-styles/_breakpoints.scss"; ' +
@@ -49,7 +59,8 @@ const webpackConfig = {
 								'@import "node_modules/@wordpress/base-styles/_z-index.scss"; ' +
 								'@import "_colors"; ' +
 								'@import "_breakpoints"; ' +
-								'@import "_mixins"; ',
+								'@import "_mixins"; ' +
+								'@import "_variables"; ',
 						},
 					},
 				],
@@ -60,13 +71,29 @@ const webpackConfig = {
 				exclude: /node_modules/,
 				loader: 'source-map-loader',
 			},
+			{
+				test: /\.(svg|png)$/,
+				exclude: /node_modules/,
+				type: 'asset/inline',
+			},
 		],
 	},
 	resolve: {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
 		modules: [ path.join( __dirname, 'client' ), 'node_modules' ],
+		alias: {
+			wcpay: path.resolve( __dirname, 'client' ),
+		},
+		fallback: {
+			crypto: require.resolve( 'crypto-browserify' ),
+			stream: require.resolve( 'stream-browserify' ),
+			util: require.resolve( 'util' ),
+		},
 	},
 	plugins: [
+		new ProvidePlugin( {
+			process: 'process/browser',
+		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WordPressExternalDependenciesPlugin( {
 			injectPolyfill: true,

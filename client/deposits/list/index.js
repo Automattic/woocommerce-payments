@@ -5,22 +5,30 @@
  */
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
-import { __ } from '@wordpress/i18n';
+import { __, _n } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import {
+	downloadCSVFile,
+	generateCSVDataFromTable,
+	generateCSVFileName,
+} from '@woocommerce/csv-export';
 
 /**
  * Internal dependencies.
  */
-import { useDeposits, useDepositsSummary } from 'data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { displayType, displayStatus } from '../strings';
 import { formatStringValue } from 'util';
-import { formatCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import Page from '../../components/page';
 import DepositsFilters from '../filters';
+import DownloadButton from 'components/download-button';
+
+import './style.scss';
 
 const getColumns = ( sortByDate ) => [
 	{
@@ -28,6 +36,7 @@ const getColumns = ( sortByDate ) => [
 		label: '',
 		required: true,
 		cellClassName: 'info-button ' + ( sortByDate ? 'is-sorted' : '' ),
+		isLeftAligned: true,
 	},
 	{
 		key: 'date',
@@ -45,6 +54,7 @@ const getColumns = ( sortByDate ) => [
 		label: __( 'Type', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Type', 'woocommerce-payments' ),
 		required: true,
+		isLeftAligned: true,
 	},
 	{
 		key: 'amount',
@@ -59,25 +69,25 @@ const getColumns = ( sortByDate ) => [
 		label: __( 'Status', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Status', 'woocommerce-payments' ),
 		required: true,
+		isLeftAligned: true,
 	},
 	// TODO { key: 'transactions', label: __( 'Transactions', 'woocommerce-payments' ), isNumeric: true },
 	{
 		key: 'bankAccount',
 		label: __( 'Bank account', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Bank account', 'woocommerce-payments' ),
+		isLeftAligned: true,
 	},
 ];
 
 export const DepositsList = () => {
-	const { deposits, depositsCount, isLoading } = useDeposits( getQuery() );
+	const { deposits, isLoading } = useDeposits( getQuery() );
 	const { depositsSummary, isLoading: isSummaryLoading } = useDepositsSummary(
 		getQuery()
 	);
 
-	const columnsArgs = [
-		! getQuery().orderby || 'date' === getQuery().orderby,
-	];
-	const columns = useMemo( () => getColumns( ...columnsArgs ), columnsArgs );
+	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
+	const columns = useMemo( () => getColumns( sortByDate ), [ sortByDate ] );
 
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children ) => (
@@ -110,7 +120,7 @@ export const DepositsList = () => {
 			amount: {
 				value: deposit.amount / 100,
 				display: clickable(
-					formatCurrency( deposit.amount, deposit.currency )
+					formatExplicitCurrency( deposit.amount, deposit.currency )
 				),
 			},
 			status: {
@@ -129,18 +139,35 @@ export const DepositsList = () => {
 		return columns.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
 
-	const summary = [
-		{ label: 'deposits', value: `${ depositsSummary.count }` },
-	];
-
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
-	if ( ! isSummaryLoading ) {
-		const isSingleCurrency =
-			2 > ( depositsSummary.store_currencies || [] ).length;
+	const isSingleCurrency =
+		2 > ( depositsSummary.store_currencies || [] ).length;
+
+	// initializing summary with undefined as we don't want to render the TableSummary component unless we have the data
+	let summary;
+	const isDespositsSummaryDataLoaded =
+		depositsSummary.count !== undefined &&
+		depositsSummary.total !== undefined &&
+		false === isSummaryLoading;
+
+	// Generate summary only if the data has been loaded
+	if ( isDespositsSummaryDataLoaded ) {
+		summary = [
+			{
+				label: _n(
+					'deposit',
+					'deposits',
+					depositsSummary.count,
+					'woocommerce-payments'
+				),
+				value: `${ depositsSummary.count }`,
+			},
+		];
+
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push( {
-				label: 'total',
-				value: `${ formatCurrency(
+				label: __( 'total', 'woocommerce-payments' ),
+				value: `${ formatExplicitCurrency(
 					depositsSummary.total,
 					depositsSummary.currency
 				) }`,
@@ -152,20 +179,68 @@ export const DepositsList = () => {
 		depositsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ] : [] );
 
+	const title = __( 'Deposits', 'woocommerce-payments' );
+
+	const downloadable = !! rows.length;
+
+	const onDownload = () => {
+		const { page, path, ...params } = getQuery();
+
+		const csvColumns = [
+			{
+				...columns[ 0 ],
+				label: __( 'Deposit Id', 'woocommerce-payments' ),
+			},
+			...columns.slice( 1 ),
+		];
+
+		const csvRows = rows.map( ( row ) => [
+			row[ 0 ],
+			{
+				...row[ 1 ],
+				value: dateI18n(
+					'Y-m-d',
+					moment.utc( row[ 1 ].value ).toISOString(),
+					true
+				),
+			},
+			...row.slice( 2 ),
+		] );
+
+		downloadCSVFile(
+			generateCSVFileName( title, params ),
+			generateCSVDataFromTable( csvColumns, csvRows )
+		);
+
+		window.wcTracks.recordEvent( 'wcpay_deposits_download', {
+			exported_deposits: rows.length,
+			total_deposits: depositsSummary.count,
+		} );
+	};
+
 	return (
 		<Page>
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
-				className="deposits-list woocommerce-report-table"
+				className="wcpay-deposits-list woocommerce-report-table"
 				title={ __( 'Deposit history', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ getQuery().per_page || 25 }
-				totalRows={ depositsCount }
+				totalRows={ depositsSummary.count }
 				headers={ columns }
 				rows={ rows }
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				actions={ [
+					downloadable && (
+						<DownloadButton
+							key="download"
+							isDisabled={ isLoading }
+							onClick={ onDownload }
+						/>
+					),
+				] }
 			/>
 		</Page>
 	);

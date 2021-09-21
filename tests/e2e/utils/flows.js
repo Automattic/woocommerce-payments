@@ -5,78 +5,51 @@
 /**
  * External dependencies
  */
-import { pressKeyWithModifier } from '@wordpress/e2e-test-utils';
 
-/**
- * Internal dependencies
- */
-import { clearAndFillInput } from './helpers';
+const {
+	merchant,
+	verifyAndPublish,
+	evalAndClick,
+	uiUnblocked,
+	clearAndFillInput,
+} = require( '@woocommerce/e2e-utils' );
+const {
+	fillCardDetails,
+	confirmCardAuthentication,
+} = require( '../utils/payments' );
 
 const config = require( 'config' );
 const baseUrl = config.get( 'url' );
 
-const WP_ADMIN_LOGIN = baseUrl + 'wp-login.php';
-const WP_ADMIN_DASHBOARD = baseUrl + 'wp-admin';
-const WP_ADMIN_PLUGINS = baseUrl + 'wp-admin/plugins.php';
-const WP_ADMIN_SETUP_WIZARD = baseUrl + 'wp-admin/admin.php?page=wc-setup';
-const WP_ADMIN_ALL_ORDERS_VIEW =
-	baseUrl + 'wp-admin/edit.php?post_type=shop_order';
-const WP_ADMIN_NEW_COUPON =
-	baseUrl + 'wp-admin/post-new.php?post_type=shop_coupon';
-const WP_ADMIN_NEW_ORDER =
-	baseUrl + 'wp-admin/post-new.php?post_type=shop_order';
-const WP_ADMIN_NEW_PRODUCT =
-	baseUrl + 'wp-admin/post-new.php?post_type=product';
-const WP_ADMIN_WC_SETTINGS =
-	baseUrl + 'wp-admin/admin.php?page=wc-settings&tab=';
-const WP_ADMIN_PERMALINK_SETTINGS = baseUrl + 'wp-admin/options-permalink.php';
+import { uiLoaded } from './helpers';
 
-const SHOP_PAGE = baseUrl + 'shop';
-const SHOP_PRODUCT_PAGE = baseUrl + '?p=';
-const SHOP_CART_PAGE = baseUrl + 'cart';
-const SHOP_CHECKOUT_PAGE = baseUrl + 'checkout/';
 const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
-
-const MY_ACCOUNT_ORDERS = baseUrl + 'my-account/orders';
-const MY_ACCOUNT_DOWNLOADS = baseUrl + 'my-account/downloads';
-const MY_ACCOUNT_ADDRESSES = baseUrl + 'my-account/edit-address';
-const MY_ACCOUNT_ACCOUNT_DETAILS = baseUrl + 'my-account/edit-account';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
+const WC_ADMIN_BASE_URL = baseUrl + 'wp-admin/';
+const MY_ACCOUNT_SUBSCRIPTIONS = baseUrl + 'my-account/subscriptions';
+const WCPAY_DISPUTES =
+	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/disputes';
+const WCPAY_DEPOSITS =
+	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/deposits';
+const WCPAY_TRANSACTIONS =
+	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/transactions';
+const WC_SUBSCRIPTIONS_PAGE =
+	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
+const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
+const WP_ADMIN_PAGES = baseUrl + 'wp-admin/edit.php?post_type=page';
+const WCB_CHECKOUT = baseUrl + 'checkout-wcb/';
 
-const getProductColumnExpression = ( productTitle ) =>
-	'td[@class="product-name" and ' +
-	`a[contains(text(), "${ productTitle }")]` +
-	']';
+export const RUN_SUBSCRIPTIONS_TESTS =
+	'1' !== process.env.SKIP_WC_SUBSCRIPTIONS_TESTS;
 
-const getQtyInputExpression = ( args = {} ) => {
-	let qtyValue = '';
+export const RUN_ACTION_SCHEDULER_TESTS =
+	'1' !== process.env.SKIP_WC_ACTION_SCHEDULER_TESTS;
 
-	if ( args.checkQty ) {
-		qtyValue = ` and @value="${ args.qty }"`;
-	}
-
-	return 'input[contains(@class, "input-text")' + qtyValue + ']';
-};
-
-const getQtyColumnExpression = ( args ) =>
-	'td[@class="product-quantity" and ' +
-	'.//' +
-	getQtyInputExpression( args ) +
-	']';
-
-const getCartItemExpression = ( productTitle, args ) =>
-	'//tr[contains(@class, "cart_item") and ' +
-	getProductColumnExpression( productTitle ) +
-	' and ' +
-	getQtyColumnExpression( args ) +
-	']';
-
-const getRemoveExpression = () =>
-	'td[@class="product-remove"]//a[@class="remove"]';
+export const RUN_WC_BLOCKS_TESTS = '1' !== process.env.SKIP_WC_BLOCKS_TESTS;
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
-const PaymentsCustomerFlow = {
+export const shopperWCP = {
 	goToPaymentMethods: async () => {
 		await page.goto( MY_ACCOUNT_PAYMENT_METHODS, {
 			waitUntil: 'networkidle0',
@@ -129,329 +102,240 @@ const PaymentsCustomerFlow = {
 	toggleCreateAccount: async () => {
 		await expect( page ).toClick( '#createaccount' );
 	},
-};
 
-const CustomerFlow = {
-	addToCart: async () => {
-		await Promise.all( [
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			page.click( '.single_add_to_cart_button' ),
-		] );
-	},
-
-	addToCartFromShopPage: async ( productTitle ) => {
-		const addToCartXPath =
-			`//li[contains(@class, "type-product") and a/h2[contains(text(), "${ productTitle }")]]` +
-			'//a[contains(@class, "add_to_cart_button") and contains(@class, "ajax_add_to_cart")';
-
-		const [ addToCartButton ] = await page.$x( addToCartXPath + ']' );
-		addToCartButton.click();
-
-		await page.waitFor(
-			addToCartXPath + ' and contains(@class, "added")]'
-		);
-	},
-
-	goToCheckout: async () => {
-		await page.goto( SHOP_CHECKOUT_PAGE, {
+	goToSubscriptions: async () => {
+		await page.goto( MY_ACCOUNT_SUBSCRIPTIONS, {
 			waitUntil: 'networkidle0',
 		} );
 	},
 
-	goToOrders: async () => {
-		await page.goto( MY_ACCOUNT_ORDERS, {
+	/**
+	 * Happy path for adding a new payment method in 'My Account > Payment methods' page.
+	 * It can handle 3DS and 3DS2 flows.
+	 *
+	 * @param {*} cardType Card type as defined in the `test.json` file. Examples: `basic`, `3ds2`, `declined`.
+	 * @param {*} card Card object that you want to add as the new payment method.
+	 */
+	addNewPaymentMethod: async ( cardType, card ) => {
+		const cardIs3DS =
+			cardType.toUpperCase().includes( '3DS' ) &&
+			! cardType.toLowerCase().includes( 'declined' );
+
+		await expect( page ).toClick( 'a', {
+			text: 'Add payment method',
+		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+		await fillCardDetails( page, card );
+		await expect( page ).toClick( 'button', {
+			text: 'Add payment method',
+		} );
+
+		if ( cardIs3DS ) {
+			await confirmCardAuthentication( page, cardType );
+		}
+		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
 	},
 
-	goToDownloads: async () => {
-		await page.goto( MY_ACCOUNT_DOWNLOADS, {
+	openCheckoutWCB: async () => {
+		await page.goto( WCB_CHECKOUT, {
 			waitUntil: 'networkidle0',
 		} );
 	},
 
-	goToAddresses: async () => {
-		await page.goto( MY_ACCOUNT_ADDRESSES, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	goToAccountDetails: async () => {
-		await page.goto( MY_ACCOUNT_ACCOUNT_DETAILS, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	goToProduct: async ( postID ) => {
-		await page.goto( SHOP_PRODUCT_PAGE + postID, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	goToShop: async () => {
-		await page.goto( SHOP_PAGE, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	placeOrder: async () => {
-		await Promise.all( [
-			expect( page ).toClick( '#place_order' ),
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-		] );
-	},
-
-	productIsInCheckout: async (
-		productTitle,
-		quantity,
-		total,
-		cartSubtotal
-	) => {
-		await expect( page ).toMatchElement( '.product-name', {
-			text: productTitle,
-		} );
-		await expect( page ).toMatchElement( '.product-quantity', {
-			text: quantity,
-		} );
-		await expect( page ).toMatchElement( '.product-total .amount', {
-			text: total,
-		} );
-		await expect( page ).toMatchElement( '.cart-subtotal .amount', {
-			text: cartSubtotal,
-		} );
-	},
-
-	goToCart: async () => {
-		await page.goto( SHOP_CART_PAGE, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	login: async () => {
-		await page.goto( SHOP_MY_ACCOUNT_PAGE, {
-			waitUntil: 'networkidle0',
-		} );
-
-		await expect( page.title() ).resolves.toMatch( 'My account' );
-
-		await page.type( '#username', config.get( 'users.customer.username' ) );
-		await page.type( '#password', config.get( 'users.customer.password' ) );
-
-		await Promise.all( [
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			page.click( 'button[name="login"]' ),
-		] );
-	},
-
-	productIsInCart: async ( productTitle, quantity = null ) => {
-		const cartItemArgs = quantity ? { qty: quantity } : {};
-		const cartItemXPath = getCartItemExpression(
-			productTitle,
-			cartItemArgs
-		);
-
-		await expect( page.$x( cartItemXPath ) ).resolves.toHaveLength( 1 );
-	},
-
-	fillBillingDetails: async ( customerBillingDetails ) => {
-		await expect( page ).toFill(
-			'#billing_first_name',
-			customerBillingDetails.firstname
-		);
-		await expect( page ).toFill(
-			'#billing_last_name',
-			customerBillingDetails.lastname
-		);
-		await expect( page ).toFill(
-			'#billing_company',
-			customerBillingDetails.company
-		);
-		await expect( page ).toSelect(
-			'#billing_country',
-			customerBillingDetails.country
-		);
-		await expect( page ).toFill(
-			'#billing_address_1',
-			customerBillingDetails.addressfirstline
-		);
-		await expect( page ).toFill(
-			'#billing_address_2',
-			customerBillingDetails.addresssecondline
-		);
-		await expect( page ).toFill(
-			'#billing_city',
-			customerBillingDetails.city
-		);
-		await expect( page ).toSelect(
-			'#billing_state',
-			customerBillingDetails.state
-		);
-		await expect( page ).toFill(
-			'#billing_postcode',
-			customerBillingDetails.postcode
-		);
-		await expect( page ).toFill(
-			'#billing_phone',
-			customerBillingDetails.phone
-		);
-		await expect( page ).toFill(
-			'#billing_email',
-			customerBillingDetails.email
-		);
-	},
-
-	fillShippingDetails: async ( customerShippingDetails ) => {
-		await expect( page ).toFill(
-			'#shipping_first_name',
+	fillShippingDetailsWCB: async ( customerShippingDetails ) => {
+		await clearAndFillInput( '#email', customerShippingDetails.email );
+		await clearAndFillInput(
+			'#shipping-first_name',
 			customerShippingDetails.firstname
 		);
-		await expect( page ).toFill(
-			'#shipping_last_name',
+		await clearAndFillInput(
+			'#shipping-last_name',
 			customerShippingDetails.lastname
 		);
-		await expect( page ).toFill(
-			'#shipping_company',
-			customerShippingDetails.company
-		);
-		await expect( page ).toSelect(
-			'#shipping_country',
-			customerShippingDetails.country
-		);
-		await expect( page ).toFill(
-			'#shipping_address_1',
+		await clearAndFillInput(
+			'#shipping-address_1',
 			customerShippingDetails.addressfirstline
 		);
-		await expect( page ).toFill(
-			'#shipping_address_2',
-			customerShippingDetails.addresssecondline
-		);
-		await expect( page ).toFill(
-			'#shipping_city',
+		await clearAndFillInput(
+			'#shipping-city',
 			customerShippingDetails.city
 		);
-		await expect( page ).toSelect(
-			'#shipping_state',
-			customerShippingDetails.state
-		);
-		await expect( page ).toFill(
-			'#shipping_postcode',
+		await clearAndFillInput(
+			'#shipping-postcode',
 			customerShippingDetails.postcode
 		);
 	},
-
-	removeFromCart: async ( productTitle ) => {
-		const cartItemXPath = getCartItemExpression( productTitle );
-		const removeItemXPath = cartItemXPath + '//' + getRemoveExpression();
-
-		const [ removeButton ] = await page.$x( removeItemXPath );
-		await removeButton.click();
-	},
-
-	setCartQuantity: async ( productTitle, quantityValue ) => {
-		const cartItemXPath = getCartItemExpression( productTitle );
-		const quantityInputXPath =
-			cartItemXPath + '//' + getQtyInputExpression();
-
-		const [ quantityInput ] = await page.$x( quantityInputXPath );
-		await quantityInput.focus();
-		await pressKeyWithModifier( 'primary', 'a' );
-		await quantityInput.type( quantityValue.toString() );
-	},
-
-	...PaymentsCustomerFlow,
 };
 
-const StoreOwnerFlow = {
-	login: async () => {
-		await page.goto( WP_ADMIN_LOGIN, {
-			waitUntil: 'networkidle0',
-		} );
-
-		await expect( page.title() ).resolves.toMatch( 'Log In' );
-
-		await clearAndFillInput( '#user_login', ' ' );
-
-		await page.type( '#user_login', config.get( 'users.admin.username' ) );
-		await page.type( '#user_pass', config.get( 'users.admin.password' ) );
-
+// The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
+// keeping our customizations grouped here so it's easier to extend the flows once the move happens.
+export const merchantWCP = {
+	openDisputeDetails: async ( disputeDetailsLink ) => {
 		await Promise.all( [
-			page.click( 'input[type=submit]' ),
+			page.goto( WC_ADMIN_BASE_URL + disputeDetailsLink, {
+				waitUntil: 'networkidle0',
+			} ),
+			uiLoaded(),
+		] );
+		await uiLoaded();
+	},
+
+	openChallengeDispute: async () => {
+		await Promise.all( [
+			evalAndClick( 'a.components-button.is-primary' ),
 			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+			uiLoaded(),
 		] );
 	},
 
-	logout: async () => {
-		await page.goto( baseUrl + 'wp-login.php?action=logout', {
-			waitUntil: 'networkidle0',
-		} );
-
-		await expect( page ).toMatch( 'You are attempting to log out' );
-
+	openAcceptDispute: async () => {
 		await Promise.all( [
+			page.removeAllListeners( 'dialog' ),
+			evalAndClick( 'button.components-button.is-secondary' ),
+			page.on( 'dialog', async ( dialog ) => {
+				await dialog.accept();
+			} ),
+			uiUnblocked(),
 			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			page.click( 'a' ),
+			uiLoaded(),
 		] );
 	},
 
-	openAllOrdersView: async () => {
-		await page.goto( WP_ADMIN_ALL_ORDERS_VIEW, {
-			waitUntil: 'networkidle0',
-		} );
+	openPaymentDetails: async ( paymentDetailsLink ) => {
+		await Promise.all( [
+			page.goto( paymentDetailsLink, {
+				waitUntil: 'networkidle0',
+			} ),
+			uiLoaded(),
+		] );
+		await uiLoaded();
 	},
 
-	openDashboard: async () => {
-		await page.goto( WP_ADMIN_DASHBOARD, {
+	openSubscriptions: async () => {
+		await page.goto( WC_SUBSCRIPTIONS_PAGE, {
 			waitUntil: 'networkidle0',
 		} );
+		await expect( page ).toMatchElement( 'h1', { text: 'Subscriptions' } );
 	},
 
-	openNewCoupon: async () => {
-		await page.goto( WP_ADMIN_NEW_COUPON, {
-			waitUntil: 'networkidle0',
-		} );
-	},
+	/**
+	 * Create a subscription product with an optional signup fee
+	 *
+	 * @param productName
+	 * @param includeSignupFee defaults to `false`
+	 * @param includeFreeTrial defaults to `false`
+	 * @return id of the created subscription product
+	 *
+	 */
 
-	openNewOrder: async () => {
-		await page.goto( WP_ADMIN_NEW_ORDER, {
-			waitUntil: 'networkidle0',
-		} );
-	},
+	createSubscriptionProduct: async (
+		productName,
+		includeSignupFee = false,
+		includeFreeTrial = false
+	) => {
+		// Go to "add product" page
+		await merchant.openNewProduct();
 
-	openNewProduct: async () => {
-		await page.goto( WP_ADMIN_NEW_PRODUCT, {
-			waitUntil: 'networkidle0',
-		} );
-	},
+		// Make sure we're on the add product page
+		await expect( page.title() ).resolves.toMatch( 'Add new product' );
+		await expect( page ).toFill( '#title', productName );
+		await expect( page ).toSelect( '#product-type', 'Simple subscription' );
+		await expect( page ).toFill( '#_subscription_price', '9.99' );
 
-	openPermalinkSettings: async () => {
-		await page.goto( WP_ADMIN_PERMALINK_SETTINGS, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	openPlugins: async () => {
-		await page.goto( WP_ADMIN_PLUGINS, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	openSettings: async ( tab, section = null ) => {
-		let settingsUrl = WP_ADMIN_WC_SETTINGS + tab;
-
-		if ( section ) {
-			settingsUrl += `&section=${ section }`;
+		if ( includeSignupFee ) {
+			await expect( page ).toFill( '#_subscription_sign_up_fee', '1.99' );
 		}
 
-		await page.goto( settingsUrl, {
+		if ( includeFreeTrial ) {
+			await expect( page ).toFill( '#_subscription_trial_length', '14' );
+		}
+
+		await verifyAndPublish();
+
+		// Return the id of this subscription product
+		const postSubstring = page.url().match( /post=\d+/ )[ 0 ];
+		const productId = postSubstring.replace( 'post=', '' );
+		return productId;
+	},
+
+	openDisputes: async () => {
+		await page.goto( WCPAY_DISPUTES, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
+	},
+
+	openDeposits: async () => {
+		await page.goto( WCPAY_DEPOSITS, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
+	},
+
+	openTransactions: async () => {
+		await page.goto( WCPAY_TRANSACTIONS, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
+	},
+
+	openActionScheduler: async () => {
+		await page.goto( ACTION_SCHEDULER, {
 			waitUntil: 'networkidle0',
 		} );
 	},
 
-	runSetupWizard: async () => {
-		await page.goto( WP_ADMIN_SETUP_WIZARD, {
+	openWCPSettings: async () => {
+		await merchant.openSettings( 'checkout', 'woocommerce_payments' );
+	},
+
+	wcpSettingsSaveChanges: async () => {
+		await expect( page ).toClick( '.save-settings-section button' );
+		await expect( page ).toClick( '.components-snackbar', {
+			timeout: 30000,
+		} );
+	},
+
+	addNewPageCheckoutWCB: async () => {
+		await page.goto( WP_ADMIN_PAGES, {
 			waitUntil: 'networkidle0',
 		} );
+
+		// Add a new page called "Checkout WCB"
+		await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
+		await expect( page ).toClick( '.page-title-action', {
+			waitUntil: 'networkidle0',
+		} );
+		await page.waitForSelector( 'h1.editor-post-title__input' );
+		await page.type( 'h1.editor-post-title__input', 'Checkout WCB' );
+
+		// Insert new checkout by WCB (searching for Checkout block and pressing Enter)
+		await expect( page ).toClick(
+			'button.edit-post-header-toolbar__inserter-toggle'
+		);
+		await expect( page ).toFill(
+			'div.components-search-control__input-wrapper > input.components-search-control__input',
+			'Checkout'
+		);
+		await page.keyboard.press( 'Tab' );
+		await page.keyboard.press( 'Tab' );
+		await page.keyboard.press( 'Enter' );
+
+		// Dismiss dialog about potentially compatibility issues
+		await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
+
+		// Publish the page
+		await expect( page ).toClick(
+			'button.editor-post-publish-panel__toggle'
+		);
+		await expect( page ).toClick( 'button.editor-post-publish-button' );
+		await page.waitForSelector(
+			'.components-snackbar__content',
+			'Page updated.'
+		);
 	},
 };
-
-export { CustomerFlow, StoreOwnerFlow };
