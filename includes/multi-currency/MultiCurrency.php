@@ -1318,6 +1318,22 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Checks if the currently displayed page is the WooCommerce Payments
+	 * settings page for the multi currency settings.
+	 *
+	 * @return bool
+	 */
+	public function is_multi_currency_settings_page(): bool {
+		global $current_screen, $current_tab;
+		return (
+			is_admin()
+			&& $current_tab && $current_screen
+			&& 'wcpay_multi_currency' === $current_tab
+			&& 'woocommerce_page_wc-settings' === $current_screen->base
+		);
+	}
+
+	/**
 	 * Returns if the currency initialization are completed
 	 *
 	 * @return  bool    If the initializations have been completedÎ
