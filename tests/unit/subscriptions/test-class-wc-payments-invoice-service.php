@@ -193,11 +193,7 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 				'subscription_item' => 'si_test123',
 				'amount'            => 1000,
 				'quantity'          => 1,
-				'tax_rates'         => [
-					[
-						'percentage' => 10,
-					],
-				],
+				'tax_rates'         => [],
 			],
 		];
 
@@ -205,7 +201,7 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_product_service
 			->expects( $this->once() )
-			->method( 'get_stripe_price_id' )
+			->method( 'get_wcpay_price_id' )
 			->willReturn( 'price_test123' );
 
 		$this->mock_api_client

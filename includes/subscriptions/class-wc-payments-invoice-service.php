@@ -206,7 +206,7 @@ class WC_Payments_Invoice_Service {
 			if ( (int) $item->get_total() * 100 !== $item_data['amount'] ) {
 				if ( $item->is_type( 'line_item' ) ) {
 					$product              = $item->get_product();
-					$repair_data['price'] = $this->product_service->get_stripe_price_id( $product );
+					$repair_data['price'] = $this->product_service->get_wcpay_price_id( $product );
 				} else {
 					$repair_data['price_data'] = WC_Payments_Subscription_Service::format_item_price_data(
 						$subscription->get_currency(),

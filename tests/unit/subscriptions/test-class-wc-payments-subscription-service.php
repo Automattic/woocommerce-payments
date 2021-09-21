@@ -151,7 +151,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_subscription_data['customer'] );
 
 		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_stripe_price_id' )
+			->method( 'get_wcpay_price_id' )
 			->willReturn( $mock_wcpay_price_id );
 
 		$this->mock_product_service->expects( $this->once() )
@@ -348,7 +348,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		update_user_option( 1, WC_Payments_Customer_Service::WCPAY_LIVE_CUSTOMER_ID_OPTION, $mock_wcpay_customer_id );
 
 		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_stripe_price_id' )
+			->method( 'get_wcpay_price_id' )
 			->willReturn( 'wcpay_price_test123' );
 
 		$this->mock_product_service->expects( $this->once() )

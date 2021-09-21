@@ -610,7 +610,7 @@ class WC_Payments_Subscription_Service {
 
 			$data[] = [
 				'metadata'  => [ 'wc_item_id' => $item->get_id() ],
-				'price'     => $this->product_service->get_stripe_price_id( $product ),
+				'price'     => $this->product_service->get_wcpay_price_id( $product ),
 				'quantity'  => $item->get_quantity(),
 				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
 			];
