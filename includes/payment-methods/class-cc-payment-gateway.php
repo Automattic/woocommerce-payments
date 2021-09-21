@@ -19,4 +19,10 @@ use WC_Payments_Token_Service;
  * Right now behaves exactly like WC_Payment_Gateway_WCPay for max compatibility.
  */
 class CC_Payment_Gateway extends WC_Payment_Gateway_WCPay {
+	/**
+	 * Just a dummy var for testing.
+	 *
+	 * @var string
+	 */
+	public $dummy_var;
 }
