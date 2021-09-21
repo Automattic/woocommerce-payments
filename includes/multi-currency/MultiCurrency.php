@@ -1280,8 +1280,6 @@ class MultiCurrency {
 	/**
 	 * Adds the required querystring parameters to all urls in preview pages.
 	 *
-	 * @param   array $params  The parameters which will be appended.
-	 *
 	 * @return  void
 	 */
 	private function add_simulation_params_to_preview_urls() {
