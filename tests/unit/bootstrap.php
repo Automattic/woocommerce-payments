@@ -57,26 +57,6 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php';
 	require_once $_plugin_dir . 'includes/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 	require_once $_plugin_dir . 'includes/class-wc-payment-gateway-wcpay.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-cc-payment-gateway.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-giropay-payment-gateway.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-sepa-payment-gateway.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-sofort-payment-gateway.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-upe-payment-gateway.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-upe-payment-method.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-cc-payment-method.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-bancontact-payment-method.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-sepa-payment-method.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-giropay-payment-method.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-p24-payment-method.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-sofort-payment-method.php';
-	require_once $_plugin_dir . 'includes/payment-methods/class-ideal-payment-method.php';
-	require_once $_plugin_dir . 'includes/class-wc-payment-token-wcpay-sepa.php';
-	require_once $_plugin_dir . 'includes/class-wc-payments-token-service.php';
-	require_once $_plugin_dir . 'includes/class-wc-payments-payment-request-button-handler.php';
-	require_once $_plugin_dir . 'includes/class-wc-payments-apple-pay-registration.php';
-
-	require_once $_plugin_dir . 'includes/class-wc-payments-features.php';
-	require_once $_plugin_dir . 'includes/class-wc-payments-utils.php';
 
 	require_once $_plugin_dir . 'includes/exceptions/class-rest-request-exception.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin.php';
