@@ -74,9 +74,6 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
 	require_once $_plugin_dir . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
 }
-// TODO - just for test. Try loading phpunit-polyfills.
-$_plugin_dir = dirname( __FILE__ ) . '/../../';
-require_once $_plugin_dir . '/vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
