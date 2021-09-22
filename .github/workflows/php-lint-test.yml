@@ -5,7 +5,7 @@ on:
 
 env:
   WP_VERSION: latest
-  WC_VERSION: 4.5.0  # the most used version here
+  WC_VERSION: 5.5.0  # the min supported version as per L-2 policy
 
 jobs:
   lint:
