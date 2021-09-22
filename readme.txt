@@ -106,6 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
 * Fix - Currency switcher does not affect order confirmation screen prices.
 * Update - Bump minimum supported version of WooCommerce from 5.4 to 5.5.
+* Update - Bump minimum required version of WooCommerce from 4.0 to 4.4.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
