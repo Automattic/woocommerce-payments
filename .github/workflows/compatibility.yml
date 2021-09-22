@@ -30,6 +30,9 @@ jobs:
           - woocommerce: '4.4.0'
             wordpress:   '5.4'
             php:         '7.3'
+          - woocommerce: '4.4.0'
+            wordpress:   '5.4'
+            php:         '7.4'
     env:
       WP_VERSION: ${{ matrix.wordpress }}
       WC_VERSION: ${{ matrix.woocommerce }}
