@@ -82,14 +82,19 @@ exports[`Multi Currency Store Settings store settings task renders correctly: sn
                 class="components-checkbox-control__label"
                 for="inspector-checkbox-control-1"
               >
-                Add a currency switcher to the cart widget
+                Add a currency switcher to the Storefront theme on breadcrumb section.
               </label>
             </div>
           </div>
           <div
             class="multi-currency-settings__description"
           >
-            A currency switcher is also available in your widgets.
+            A currency switcher is also available in your widgets. 
+            <a
+              href="widgets.php"
+            >
+              Configure now
+            </a>
           </div>
         </div>
       </div>
