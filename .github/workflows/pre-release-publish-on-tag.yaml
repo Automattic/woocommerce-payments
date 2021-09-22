@@ -89,7 +89,11 @@ jobs:
           coverage: none
 
       - name: Build release
+        env:
+          TAG: ${{ steps.get_tag.outputs.TAG_REF }}
         run: |
+          # Change the 'Version' header in woocommerce-payments.php:14 to 2.4.0-test-2
+          sed -i "s/^ \* Version: .*$/ * Version: ${TAG}/" woocommerce-payments.php
           npm ci
           npm run build
 
