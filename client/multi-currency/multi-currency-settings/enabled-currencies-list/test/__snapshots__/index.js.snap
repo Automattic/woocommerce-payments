@@ -577,6 +577,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
         Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules. 
         <a
           href="https://docs.woocommerce.com/document/payments/currencies/multi-currency-setup/"
+          rel="noreferrer"
           target="_blank"
         >
           Learn more

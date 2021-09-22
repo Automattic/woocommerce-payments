@@ -8,10 +8,10 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import SettingsLayout from '../../../settings/settings-layout';
-import EnabledCurrenciesList from '../../enabled-currencies-list';
+import EnabledCurrenciesList from '../enabled-currencies-list';
 import StoreSettings from '../store-settings';
 
-jest.mock( '../../enabled-currencies-list', () => jest.fn() );
+jest.mock( '../enabled-currencies-list', () => jest.fn() );
 jest.mock( '../store-settings', () => jest.fn() );
 
 const getContainer = () => {

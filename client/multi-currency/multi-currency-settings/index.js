@@ -7,7 +7,7 @@ import React from 'react';
  * Internal dependencies
  */
 import SettingsLayout from '../../settings/settings-layout';
-import EnabledCurrenciesList from '../enabled-currencies-list';
+import EnabledCurrenciesList from './enabled-currencies-list';
 import StoreSettings from './store-settings';
 import './style.scss';
 
