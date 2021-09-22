@@ -1084,7 +1084,7 @@ class MultiCurrency {
 	 * @return bool
 	 */
 	public function is_using_auto_currency_switching(): bool {
-		return 'yes' === get_option( $this->id . '_enable_auto_currency', false );
+		return 'yes' === get_option( $this->id . '_enable_auto_currency', 'no' );
 	}
 
 	/**
@@ -1093,7 +1093,7 @@ class MultiCurrency {
 	 * @return  bool
 	 */
 	public function is_using_storefront_switcher(): bool {
-		return 'yes' === get_option( $this->id . '_enable_storefront_switcher', false );
+		return 'yes' === get_option( $this->id . '_enable_storefront_switcher', 'no' );
 	}
 
 	/**
