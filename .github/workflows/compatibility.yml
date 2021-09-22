@@ -11,7 +11,9 @@ jobs:
       fail-fast:    false
       max-parallel: 10
       matrix:
-        woocommerce: [ '4.4.0', '4.5.0', '4.6.0', '4.7.0', '4.8.0', '4.9.0', '5.0.0', '5.1.0', '5.2.0', '5.3.0', '5.4.0', '5.5.0' ]
+        # woocommerce: [ '4.4.0', '4.5.0', '4.6.0', '4.7.0', '4.8.0', '4.9.0', '5.0.0', '5.1.0', '5.2.0', '5.3.0', '5.4.0', '5.5.0' ]
+        # TODO: reduce matrix test cases
+        woocommerce: [ '4.4.0' ]
         wordpress:   [ 'latest' ]
         php:         [ '7.4' ]
         include:
@@ -19,6 +21,15 @@ jobs:
           - woocommerce: '4.4.0'
             wordpress:   '5.4'
             php:         '7.0'
+          - woocommerce: '4.4.0'
+            wordpress:   '5.4'
+            php:         '7.1'
+          - woocommerce: '4.4.0'
+            wordpress:   '5.4'
+            php:         '7.2'
+          - woocommerce: '4.4.0'
+            wordpress:   '5.4'
+            php:         '7.3'
     env:
       WP_VERSION: ${{ matrix.wordpress }}
       WC_VERSION: ${{ matrix.woocommerce }}
