@@ -57,6 +57,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php';
 	require_once $_plugin_dir . 'includes/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 	require_once $_plugin_dir . 'includes/class-wc-payment-gateway-wcpay.php';
+	require_once $_plugin_dir . 'includes/payment-methods/class-cc-payment-gateway.php';
 
 	require_once $_plugin_dir . 'includes/exceptions/class-rest-request-exception.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin.php';
