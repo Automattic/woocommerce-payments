@@ -46,6 +46,8 @@ function _manually_load_plugin() {
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
 	require $_plugin_dir . 'woocommerce-payments.php';
+	// TODO Just for testing.
+	var_dump( WCPAY_PLUGIN_FILE ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_dump
 
 	require_once $_plugin_dir . 'includes/class-wc-payments-db.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-charge.php';
