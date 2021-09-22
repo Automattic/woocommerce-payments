@@ -130,15 +130,26 @@ const StoreSettings = () => {
 									}
 									data-testid={ 'enable_storefront_switcher' }
 									label={ __(
-										'Add a currency switcher to the cart widget',
+										'Add a currency switcher to the Storefront theme on breadcrumb section.',
 										'woocommerce-payments'
 									) }
 								/>
 							) : null }
 							<div className="multi-currency-settings__description">
-								{ __(
-									'A currency switcher is also available in your widgets.',
-									'woocommerce-payments'
+								{ createInterpolateElement(
+									sprintf(
+										/* translators: %s: url to the widgets page */
+										__(
+											'A currency switcher is also available in your widgets. ' +
+												'<linkToWidgets>Configure now</linkToWidgets>',
+											'woocommerce-payments'
+										),
+										'widgets.php'
+									),
+									{
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										linkToWidgets: <a href="widgets.php" />,
+									}
 								) }
 							</div>
 						</CardBody>
