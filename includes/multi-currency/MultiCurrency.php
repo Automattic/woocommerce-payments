@@ -246,7 +246,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 
