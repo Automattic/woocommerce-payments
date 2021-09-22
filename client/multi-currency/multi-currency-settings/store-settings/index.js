@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
 import { sprintf, __ } from '@wordpress/i18n';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,7 +13,6 @@ import './style.scss';
 
 import { useStoreSettings } from 'wcpay/data';
 import SettingsSection from 'wcpay/settings/settings-section';
-import { createInterpolateElement } from '@wordpress/element';
 import { LoadableBlock } from 'wcpay/components/loadable';
 
 const StoreSettingsDescription = () => {

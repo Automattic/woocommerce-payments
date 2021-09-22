@@ -5,6 +5,7 @@
 import React from 'react';
 import { sprintf, __ } from '@wordpress/i18n';
 import { Card, CardBody, CardDivider } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -20,7 +21,6 @@ import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesListItemPlaceholder from './list-item-placeholder';
 import EnabledCurrenciesModal from './modal';
-import { createInterpolateElement } from '@wordpress/element';
 import SettingsSection from 'wcpay/settings/settings-section';
 
 const EnabledCurrenciesSettingsDescription = () => {
