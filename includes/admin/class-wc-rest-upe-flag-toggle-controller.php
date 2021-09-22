@@ -7,8 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Tracker;
-
 /**
  * REST controller for UPE feature flag.
  */
