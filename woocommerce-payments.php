@@ -68,6 +68,7 @@ add_filter( 'woocommerce_translations_updates_for_woocommerce-payments', '__retu
  */
 function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
+		var_dump( __FILE__ . ' - file and line - ' . __LINE__ ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_dump
 		return;
 	}
 	$jetpack_config = new Automattic\Jetpack\Config();
