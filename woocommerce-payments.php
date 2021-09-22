@@ -91,6 +91,8 @@ add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
  */
 function wcpay_init() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
+	// TODO Just for testing.
+	var_dump( __FILE__ . ' - file and line - ' . __LINE__ ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_dump
 	WC_Payments::init();
 }
 
