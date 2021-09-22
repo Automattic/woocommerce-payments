@@ -55,10 +55,15 @@ register_activation_hook( __FILE__, 'wcpay_activated' );
 register_deactivation_hook( __FILE__, 'wcpay_deactivated' );
 
 // The JetPack autoloader might not catch up yet when activating the plugin. If so, we'll stop here to avoid JetPack connection failures.
+var_dump( __FILE__ . ' - file and line - ' . __LINE__ ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_dump
+
 $is_autoloading_ready = class_exists( Automattic\Jetpack\Connection\Rest_Authentication::class ) && class_exists( MyCLabs\Enum\Enum::class );
 if ( ! $is_autoloading_ready ) {
 	return;
 }
+
+var_dump( __FILE__ . ' - file and line - ' . __LINE__ ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_dump
+
 
 // Subscribe to automated translations.
 add_filter( 'woocommerce_translations_updates_for_woocommerce-payments', '__return_true' );
