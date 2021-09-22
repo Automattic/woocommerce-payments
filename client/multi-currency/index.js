@@ -52,5 +52,5 @@ const MultiCurrencySettingsPage = () => {
 
 ReactDOM.render(
 	<MultiCurrencySettingsPage />,
-	document.querySelector( '#wcpay_enabled_currencies_list' )
+	document.querySelector( '#wcpay_multi_currency_settings_container' )
 );
