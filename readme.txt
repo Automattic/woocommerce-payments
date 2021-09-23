@@ -106,6 +106,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Add WooCommerce Product Add-Ons compatibility.
 * Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
 * Fix - Currency switcher does not affect order confirmation screen prices.
+* Fix - Error when attempting to change the payment method for a subscription with UPE enabled.
+* Add - Multi-Currency track currency added.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
