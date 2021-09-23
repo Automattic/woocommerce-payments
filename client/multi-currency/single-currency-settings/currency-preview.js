@@ -45,7 +45,8 @@ const CurrencyPreview = ( {
 			const rounded =
 				'none' === roundingValue
 					? converted
-					: converted - ( converted % parseFloat( roundingValue ) );
+					: Math.ceil( converted / parseFloat( roundingValue ) ) *
+					  parseFloat( roundingValue );
 			const charmed = rounded + parseFloat( charmValue );
 			return formatCurrency( charmed, targetCurrency );
 		},
