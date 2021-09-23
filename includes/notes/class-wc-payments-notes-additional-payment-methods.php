@@ -113,8 +113,10 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		}
 
 		// Track enabling UPE if it wasn't enabled before.
-		if ( '1' !== get_option( WC_Payments_Features::UPE_FLAG_NAME ) ) {
-			Tracker::track_admin( 'wcpay_upe_enabled' );
+		if ( ! WC_Payments_Features::is_upe_enabled() && class_exists( 'WC_Tracks' ) ) {
+			// We're not using Tracker::track_admin() here because
+			// WC_Pay\record_tracker_events() is never triggered due to the redirect below.
+			WC_Tracks::record_event( 'wcpay_upe_enabled' );
 		}
 
 		// Enable UPE, deletes the note and redirect to onboarding task.
