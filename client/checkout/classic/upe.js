@@ -18,6 +18,7 @@ jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
 
 	const publishableKey = getConfig( 'publishableKey' );
+	const isChangingPayment = getConfig( 'isChangingPayment' );
 	const isUPEEnabled = getConfig( 'isUPEEnabled' );
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 	const enabledBillingFields = getConfig( 'enabledBillingFields' );
@@ -329,7 +330,7 @@ jQuery( function ( $ ) {
 						'always'
 					);
 				}
-				if ( isCheckout && ! isOrderPay ) {
+				if ( isCheckout && ! ( isOrderPay || isChangingPayment ) ) {
 					upeSettings.fields = {
 						billingDetails: hiddenBillingFields,
 					};
@@ -392,7 +393,6 @@ jQuery( function ( $ ) {
 			! upeElement
 		) {
 			renameGatewayTitle();
-			const isChangingPayment = getConfig( 'isChangingPayment' );
 
 			// We use a setup intent if we are on the screens to add a new payment method or to change a subscription payment.
 			const useSetUpIntent =
@@ -665,7 +665,7 @@ jQuery( function ( $ ) {
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
 		if ( ! isUsingSavedPaymentMethod() ) {
-			if ( getConfig( 'isChangingPayment' ) ) {
+			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );
 				return false;
 			}
