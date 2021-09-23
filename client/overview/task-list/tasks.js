@@ -75,7 +75,7 @@ export const getTasks = ( {
 					'Update WooCommerce Payments business details',
 					'woocommerce-payments'
 				),
-				additionalInfo: accountDetailsTaskDescription,
+				content: accountDetailsTaskDescription,
 				completed: 'complete' === status,
 				action:
 					'complete' === status
@@ -98,7 +98,7 @@ export const getTasks = ( {
 					'Reconnect WooCommerce Payments',
 					'woocommerce-payments'
 				),
-				additionalInfo: __(
+				content: __(
 					'WooCommerce Payments is missing a connected WordPress.com account. ' +
 						'Some functionality will be limited without a connected account.',
 					'woocommerce-payments'
