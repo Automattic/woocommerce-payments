@@ -1,6 +1,6 @@
 # WooCommerce Payments End-to-end tests
 
-E2E tests can be run locally or in Travis CI.
+E2E tests can be run locally or in GitHub Action.
 
 ## Setup
 
@@ -24,12 +24,35 @@ DEBUG=true
 For local setup:
 
 1. Create file `local.env` in the `tests/e2e/config` folder with required values.
-    * If you have access to the Subscriptions plugin, please follow the instructions from `tests/e2e/specs/README.md` before running the setup. Make sure to include also Action Scheduler & WooCommerce Blocks plugins from the same document as well.
-    * If you don't, you may skip those plugins setup and tests by adding `SKIP_WC_SUBSCRIPTIONS_TESTS=1`, `SKIP_WC_ACTION_SCHEDULER_TESTS=1` and `SKIP_WC_BLOCKS_TESTS=1` to your `local.env` in the `tests/e2e/config` folder.
 
-1. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running setup script.
+INSTALLING PLUGINS WooCommerce Subscriptions, Action Scheduler & WC Gutenberg Products Block
+If you have access to the WC Subscriptions, Action Scheduler & WC Gutenberg Products Block, please follow these instructions before running the setup.
 
-1. Run setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
+For the `E2E_GH_TOKEN`, follow [these instructions to generate a GitHub Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) and assign the `repo` scope to it.
+
+The setup script requires the below env variables to be configured for all three plugins.
+Make sure you have the following set in your `local.env` in the `tests/e2e/config` folder:
+
+```
+E2E_GH_TOKEN='githubPersonalAccessToken'
+WC_SUBSCRIPTIONS_REPO='{owner}/{repo}'
+WC_ACTION_SCHEDULER_REPO='{owner}/{repo}'
+WC_BLOCKS_REPO='{owner}/{repo}'
+```
+
+SKIPPING PLUGINS WooCommerce Subscriptions, Action Scheduler & WC Gutenberg Products Block
+If you don't, you may skip those plugins setup and tests by adding `SKIP_WC_SUBSCRIPTIONS_TESTS=1`, `SKIP_WC_ACTION_SCHEDULER_TESTS=1` and `SKIP_WC_BLOCKS_TESTS=1` to your `local.env` in the `tests/e2e/config` folder.
+Adding the following line to your `local.env` in the `tests/e2e/config` folder and set it to `1` to skip the tests that rely on the plugin:
+
+`SKIP_WC_SUBSCRIPTIONS_TESTS=1`
+`SKIP_WC_ACTION_SCHEDULER_TESTS=1`
+`SKIP_WC_BLOCKS_TESTS=1`
+
+With this set in your local `local.env`, any tests that relates on WC Subscriptions, Action Scheduler or WC Gutenberg Products Block will be skipped!
+
+2. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running setup script.
+
+3. Run setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
 
 After you set the E2E environment up, you can access to the containers on:
 
