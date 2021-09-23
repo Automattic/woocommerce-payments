@@ -13,8 +13,10 @@ use WCPay\Exceptions\API_Exception;
  */
 class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 
-	const PENDING_INVOICE_ID_KEY = '_wcpay_pending_invoice_id';
-	const ORDER_INVOICE_ID_KEY   = '_wcpay_billing_invoice_id';
+	const PENDING_INVOICE_ID_KEY        = '_wcpay_pending_invoice_id';
+	const ORDER_INVOICE_ID_KEY          = '_wcpay_billing_invoice_id';
+	const SUBSCRIPTION_ITEM_ID_META_KEY = '_wcpay_subscription_item_id';
+	const PRICE_ID_KEY                  = '_wcpay_product_price_id';
 
 	/**
 	 * Mock WC_Payments_API_Client.
@@ -60,44 +62,6 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 
 		$this->invoice_service->mark_pending_invoice_paid_for_subscription( $mock_subscription );
 		$this->assertEquals( '', $mock_subscription->get_meta( self::PENDING_INVOICE_ID_KEY, true ) );
-	}
-
-	/**
-	 * Tests for WC_Payments_Invoice_Service::delete_invoice_items()
-	 */
-	public function test_delete_invoice_items() {
-		$invoice_ids = [ 'in_foo', 'in_bar', 'in_baz' ];
-
-		$this->mock_api_client->expects( $this->exactly( 3 ) )
-			->method( 'delete_invoice_item' )
-			->withConsecutive(
-				[ $this->equalTo( 'in_foo' ) ],
-				[ $this->equalTo( 'in_bar' ) ],
-				[ $this->equalTo( 'in_baz' ) ]
-			);
-
-		$this->invoice_service->delete_invoice_items( $invoice_ids );
-	}
-
-	/**
-	 * Tests for WC_Payments_Invoice_Service::format_invoice_item_data()
-	 */
-	public function test_format_invoice_item_data() {
-		$result = PHPUnit_Utils::call_method(
-			$this->invoice_service,
-			'format_invoice_item_data',
-			[ 10, 'USD', 'foobar' ]
-		);
-
-		$this->assertEquals(
-			[
-				'amount'      => (float) 1000,
-				'currency'    => 'USD',
-				'description' => 'foobar',
-				'tax_rates'   => [],
-			],
-			$result
-		);
 	}
 
 	/**
@@ -162,118 +126,6 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Tests for WC_Payments_Invoice_Service::prepare_invoice_item_data()
-	 */
-	public function test_prepare_invoice_item_data_with_subscription_id() {
-		$mock_order                 = WC_Helper_Order::create_order();
-		$mock_subscription          = new WC_Subscription();
-		$mock_items                 = $mock_order->get_shipping_methods();
-		$mock_order_item            = array_pop( $mock_items );
-		$mock_wcpay_subscription_id = 'si_testSubscriptionID';
-		$mock_wcpay_customer_id     = 'cust_testCustomerID';
-
-		$mock_subscription->set_parent( $mock_order );
-		$mock_order->set_discount_total( 20 );
-
-		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_tax_rates_for_item' )
-			->with( $mock_order_item, $mock_subscription )
-			->willReturn( [] );
-
-		$result = PHPUnit_Utils::call_method(
-			$this->invoice_service,
-			'prepare_invoice_item_data',
-			[ $mock_subscription, $mock_wcpay_customer_id, $mock_wcpay_subscription_id ]
-		);
-
-		$this->assertTrue( is_array( $result ) );
-		$this->assertContainsOnly( 'array', $result );
-		$this->assertEquals( 2, count( $result ) );
-
-		foreach ( $result as $item_data ) {
-			foreach ( [ 'amount', 'currency', 'description', 'tax_rates', 'customer', 'subscription' ] as $key ) {
-				$this->assertArrayHasKey( $key, $item_data );
-			}
-		}
-	}
-
-	/**
-	 * Tests for WC_Payments_Invoice_Service::prepare_invoice_item_data()
-	 */
-	public function test_prepare_invoice_item_data_without_subscription_id() {
-		$mock_order             = WC_Helper_Order::create_order();
-		$mock_subscription      = new WC_Subscription();
-		$mock_items             = $mock_order->get_shipping_methods();
-		$mock_order_item        = array_pop( $mock_items );
-		$mock_wcpay_customer_id = 'cust_testCustomerID';
-
-		$mock_subscription->set_parent( $mock_order );
-		$mock_order->set_discount_total( 20 );
-
-		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_tax_rates_for_item' )
-			->with( $mock_order_item, $mock_subscription )
-			->willReturn( [] );
-
-		$result = PHPUnit_Utils::call_method(
-			$this->invoice_service,
-			'prepare_invoice_item_data',
-			[ $mock_subscription, $mock_wcpay_customer_id, '' ]
-		);
-
-		$this->assertTrue( is_array( $result ) );
-		$this->assertContainsOnly( 'array', $result );
-		$this->assertEquals( 2, count( $result ) );
-
-		foreach ( $result as $item_data ) {
-			foreach ( [ 'amount', 'currency', 'description', 'tax_rates', 'customer' ] as $key ) {
-				$this->assertArrayHasKey( $key, $item_data );
-			}
-
-			$this->assertArrayNotHasKey( 'subscription', $item_data );
-		}
-	}
-
-	/**
-	 * Tests for WC_Payments_Invoice_Service::create_invoice_items_for_subscription()
-	 */
-	public function test_create_invoice_items_for_subscription() {
-		$wcpay_subscription_id = 'sub_test123';
-		$wcpay_customer_id     = 'cus_test123';
-
-		$mock_order        = WC_Helper_Order::create_order();
-		$mock_subscription = new WC_Subscription();
-		$mock_items        = $mock_order->get_shipping_methods();
-		$mock_order_item   = array_pop( $mock_items );
-
-		$mock_subscription->set_parent( $mock_order );
-
-		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_tax_rates_for_item' )
-			->with( $mock_order_item, $mock_subscription )
-			->willReturn( [] );
-
-		// The mock order comes with a $10 flat rate shipping so the expected invoice items are the following.
-		$expected_args = [
-			[
-				'amount'       => 1000,
-				'currency'     => 'USD',
-				'description'  => 'Flat rate shipping',
-				'tax_rates'    => [],
-				'customer'     => $wcpay_customer_id,
-				'subscription' => $wcpay_subscription_id,
-			],
-		];
-
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'create_invoice_items' )
-			->with( $expected_args )
-			->willReturn( [ 'mockNewInvoiceID' ] );
-
-		$this->invoice_service->create_invoice_items_for_subscription( $mock_subscription, $wcpay_customer_id, $wcpay_subscription_id );
-	}
-
-	/**
 	 * Tests for WC_Payments_Invoice_Service::maybe_record_first_invoice_payment()
 	 */
 	public function test_maybe_record_first_invoice_payment() {
@@ -325,9 +177,51 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Tests for WC_Payments_Invoice_Service::validate_invoice_items()
+	 */
+	public function test_validate_invoice_items() {
+		$mock_order        = WC_Helper_Order::create_order();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $mock_order );
+
+		foreach ( $mock_order->get_items( 'line_item', 'fee', 'shipping' ) as $item ) {
+			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123' );
+		}
+
+		$mock_items = [
+			[
+				'subscription_item' => 'si_test123',
+				'amount'            => 1000,
+				'quantity'          => 1,
+				'tax_rates'         => [],
+			],
+		];
+
+		$mock_discounts = [];
+
+		$this->mock_product_service
+			->expects( $this->once() )
+			->method( 'get_wcpay_price_id' )
+			->willReturn( 'price_test123' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_subscription_item' )
+			->with(
+				'si_test123',
+				[
+					'price'    => 'price_test123',
+					'quantity' => 4,
+				]
+			);
+
+		$this->invoice_service->validate_invoice_items( $mock_items, $mock_discounts, $mock_subscription );
+	}
+
+	/**
 	 * Mocks the wcs_order_contains_subscription function return.
 	 *
-	 * @param bool The value to return to wcs_order_contains_subscription() calls.
+	 * @param bool $value The value to return to wcs_order_contains_subscription() calls.
 	 */
 	private function mock_wcs_get_subscriptions_for_order( $value ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(

@@ -46,8 +46,9 @@ class WC_Payments_API_Client {
 	const TRACKING_API           = 'tracking';
 	const PRODUCTS_API           = 'products';
 	const PRICES_API             = 'products/prices';
-	const SUBSCRIPTIONS_API      = 'subscriptions';
 	const INVOICES_API           = 'invoices';
+	const SUBSCRIPTIONS_API      = 'subscriptions';
+	const SUBSCRIPTION_ITEMS_API = 'subscriptions/items';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1069,36 +1070,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Creates invoice items.
-	 *
-	 * @param array $invoice_item_data The invoice item data.
-	 *
-	 * @throws API_Exception Error creating the invoice item.
-	 */
-	public function create_invoice_items( $invoice_item_data ) {
-		return $this->request(
-			[ 'invoiceitems' => $invoice_item_data ],
-			self::INVOICE_ITEMS_API,
-			self::POST
-		);
-	}
-
-	/**
-	 * Deletes an invoice item.
-	 *
-	 * @param string $invoice_item_id ID of the invoice item to delete.
-	 *
-	 * @throws API_Exception Error deleting the invoice item.
-	 */
-	public function delete_invoice_item( $invoice_item_id ) {
-		return $this->request(
-			[],
-			self::INVOICE_ITEMS_API . '/' . $invoice_item_id,
-			self::DELETE
-		);
-	}
-
-	/**
 	 * Fetch a WCPay subscription.
 	 *
 	 * @param string $wcpay_subscription_id Data used to create subscription.
@@ -1164,6 +1135,24 @@ class WC_Payments_API_Client {
 			[],
 			self::SUBSCRIPTIONS_API . '/' . $wcpay_subscription_id,
 			self::DELETE
+		);
+	}
+
+	/**
+	 * Update a WCPay subscription item.
+	 *
+	 * @param string $wcpay_subscription_item_id WCPay subscription item ID.
+	 * @param array  $data                       Update subscription item data.
+	 *
+	 * @return array Updated WCPay subscription item response from server.
+	 *
+	 * @throws API_Exception If updating the WCPay subscription item fails.
+	 */
+	public function update_subscription_item( $wcpay_subscription_item_id, $data ) {
+		return $this->request(
+			$data,
+			self::SUBSCRIPTION_ITEMS_API . '/' . $wcpay_subscription_item_id,
+			self::POST
 		);
 	}
 
