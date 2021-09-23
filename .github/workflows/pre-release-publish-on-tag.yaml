@@ -89,7 +89,11 @@ jobs:
           coverage: none
 
       - name: Build release
+        env:
+          TAG: ${{ steps.get_tag.outputs.TAG_REF }}
         run: |
+          # Change the 'Version' header in woocommerce-payments.php:14 to 2.4.0-test-2
+          sed -i "s/^ \* Version: .*$/ * Version: ${TAG}/" woocommerce-payments.php
           npm ci
           npm run build
 
@@ -126,7 +130,7 @@ jobs:
           CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
           GITHUB_RELEASES_URL: ${{ format( 'https://api.github.com/repos/{0}/releases', github.repository ) }}
         run: |
-          NAME=$( echo -n ${TAG_MESSAGE:=$TAG} | jq -aRs '.' )
+          NAME=$( echo -ne "${TAG_MESSAGE:=$TAG}" | sed 's/\\n/\n/g' | head -n 1 | jq -aRs '.|rtrimstr("\n")' )
           echo "Will build a release for tag '$TAG' with the name '$NAME'..."
 
           echo "Creating pre-release..."

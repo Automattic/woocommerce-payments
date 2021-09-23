@@ -42,6 +42,13 @@ export function updateDefaultCurrency( data ) {
 	};
 }
 
+export function updateCurrencySettings( code, data ) {
+	return {
+		type: TYPES.SET_CURRENCY_SETTINGS,
+		data: { code, data },
+	};
+}
+
 export function updateStoreSettings( data ) {
 	return {
 		type: TYPES.SET_STORE_SETTINGS,
@@ -85,6 +92,26 @@ export function* submitEnabledCurrenciesUpdate( currencies ) {
 	} catch ( e ) {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error updating enabled currencies.', 'woocommerce-payments' )
+		);
+	}
+}
+
+export function* submitCurrencySettings( currencyCode, settings ) {
+	try {
+		const result = yield apiFetch( {
+			path: `${ NAMESPACE }/multi-currency/currencies/${ currencyCode }`,
+			method: 'POST',
+			data: settings,
+		} );
+
+		yield updateCurrencySettings( currencyCode, result );
+
+		yield dispatch( 'core/notices' ).createSuccessNotice(
+			__( 'Currency settings updated.', 'woocommerce-payments' )
+		);
+	} catch ( e ) {
+		yield dispatch( 'core/notices' ).createErrorNotice(
+			__( 'Error updating currency settings.', 'woocommerce-payments' )
 		);
 	}
 }
