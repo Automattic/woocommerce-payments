@@ -784,9 +784,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'succeeded',
-				'id'      => $intent_id,
-				'message' => null,
+				'status'    => 'succeeded',
+				'id'        => $intent_id,
+				'message'   => null,
+				'http_code' => 200,
 			],
 			$result
 		);
@@ -841,9 +842,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'succeeded',
-				'id'      => $intent_id,
-				'message' => null,
+				'status'    => 'succeeded',
+				'id'        => $intent_id,
+				'message'   => null,
+				'http_code' => 200,
 			],
 			$result
 		);
@@ -897,9 +899,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'requires_capture',
-				'id'      => $intent_id,
-				'message' => null,
+				'status'    => 'requires_capture',
+				'id'        => $intent_id,
+				'message'   => null,
+				'http_code' => 502,
 			],
 			$result
 		);
@@ -953,9 +956,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'requires_capture',
-				'id'      => $intent_id,
-				'message' => null,
+				'status'    => 'requires_capture',
+				'id'        => $intent_id,
+				'message'   => null,
+				'http_code' => 502,
 			],
 			$result
 		);
@@ -1012,9 +1016,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'failed',
-				'id'      => $intent_id,
-				'message' => 'test exception',
+				'status'    => 'failed',
+				'id'        => $intent_id,
+				'message'   => 'test exception',
+				'http_code' => 500,
 			],
 			$result
 		);
@@ -1073,9 +1078,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'failed',
-				'id'      => $intent_id,
-				'message' => 'test exception',
+				'status'    => 'failed',
+				'id'        => $intent_id,
+				'message'   => 'test exception',
+				'http_code' => 500,
 			],
 			$result
 		);
@@ -1133,9 +1139,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'failed',
-				'id'      => $intent_id,
-				'message' => 'test exception',
+				'status'    => 'failed',
+				'id'        => $intent_id,
+				'message'   => 'test exception',
+				'http_code' => 500,
 			],
 			$result
 		);

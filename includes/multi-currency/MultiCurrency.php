@@ -246,7 +246,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 
@@ -1267,6 +1267,22 @@ class MultiCurrency {
 			</script>
 				<?php
 			}
+		);
+	}
+
+	/**
+	 * Checks if the currently displayed page is the WooCommerce Payments
+	 * settings page for the multi currency settings.
+	 *
+	 * @return bool
+	 */
+	public function is_multi_currency_settings_page(): bool {
+		global $current_screen, $current_tab;
+		return (
+			is_admin()
+			&& $current_tab && $current_screen
+			&& 'wcpay_multi_currency' === $current_tab
+			&& 'woocommerce_page_wc-settings' === $current_screen->base
 		);
 	}
 
