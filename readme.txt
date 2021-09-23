@@ -99,6 +99,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 3.1.0 - 2021-xx-xx =
+* Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
 * Add - Customer multi-currency onboarding flow.
 * Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
 * Add - Update layout of the Multi-currency settings screen.
