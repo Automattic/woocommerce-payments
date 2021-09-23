@@ -1,6 +1,7 @@
 /* eslint-disable */
 const path = require( 'path' );
 var NODE_ENV = process.env.NODE_ENV || 'development';
+const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 
@@ -24,10 +25,6 @@ const webpackConfig = {
 		'multi-currency-analytics':
 			'./client/multi-currency-analytics/index.js',
 		order: './client/order/index.js',
-	},
-	output: {
-		filename: '[name].js',
-		path: path.resolve( 'dist' ),
 	},
 	module: {
 		rules: [
@@ -79,7 +76,7 @@ const webpackConfig = {
 			{
 				test: /\.(svg|png)$/,
 				exclude: /node_modules/,
-				loader: 'url-loader',
+				type: 'asset/inline',
 			},
 		],
 	},
@@ -89,8 +86,16 @@ const webpackConfig = {
 		alias: {
 			wcpay: path.resolve( __dirname, 'client' ),
 		},
+		fallback: {
+			crypto: require.resolve( 'crypto-browserify' ),
+			stream: require.resolve( 'stream-browserify' ),
+			util: require.resolve( 'util' ),
+		},
 	},
 	plugins: [
+		new ProvidePlugin( {
+			process: 'process/browser',
+		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WordPressExternalDependenciesPlugin( {
 			injectPolyfill: true,
