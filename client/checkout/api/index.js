@@ -360,6 +360,7 @@ export default class WCPayAPI {
 	 * @param {int} orderId The id of the order.
 	 * @param {string} savePaymentMethod 'yes' if saving.
 	 * @param {string} selectedUPEPaymentType The name of the selected UPE payment type or empty string.
+	 * @param {string?} paymentCountry The payment two-letter iso country code or null.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
@@ -367,7 +368,8 @@ export default class WCPayAPI {
 		paymentIntentId,
 		orderId,
 		savePaymentMethod,
-		selectedUPEPaymentType
+		selectedUPEPaymentType,
+		paymentCountry
 	) {
 		return this.request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'update_payment_intent' ),
@@ -376,6 +378,7 @@ export default class WCPayAPI {
 				wc_payment_intent_id: paymentIntentId,
 				save_payment_method: savePaymentMethod,
 				wcpay_selected_upe_payment_type: selectedUPEPaymentType,
+				wcpay_payment_country: paymentCountry,
 				_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
 			}
 		)
