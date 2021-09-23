@@ -263,7 +263,7 @@ class WC_Payments_API_Client {
 	 * @param array   $metadata                  - Meta data values to be sent along with payment intent creation.
 	 * @param array   $level3                    - Level 3 data.
 	 * @param string  $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
-	 * @param ?string $payment_country - The payment two-letter iso country code or null.
+	 * @param ?string $payment_country           - The payment two-letter iso country code or null.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
