@@ -212,9 +212,9 @@ class WC_Payments_Product_Service {
 
 			$this->remove_product_update_listeners();
 			$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
-			$this->set_wcpay_product_id( $product, $wcpay_product['stripe_product_id'] );
+			$this->set_wcpay_product_id( $product, $wcpay_product['wcpay_product_id'] );
 			$this->set_wcpay_price_hash( $product, $this->get_price_hash( $product ) );
-			$this->set_wcpay_price_id( $product, $wcpay_product['stripe_price_id'] );
+			$this->set_wcpay_price_id( $product, $wcpay_product['wcpay_price_id'] );
 			$this->add_product_update_listeners();
 		} catch ( API_Exception $e ) {
 			Logger::log( 'There was a problem creating the product in WC Pay: ' . $e->getMessage() );
@@ -235,7 +235,7 @@ class WC_Payments_Product_Service {
 				]
 			);
 
-			update_option( self::PRODUCT_ID_KEY . '_' . $type, $wcpay_product['stripe_product_id'] );
+			update_option( self::PRODUCT_ID_KEY . '_' . $type, $wcpay_product['wcpay_product_id'] );
 		} catch ( API_Exception $e ) {
 			Logger::log( 'There was a problem creating the product on WCPay Server: ' . $e->getMessage() );
 		}
@@ -271,15 +271,15 @@ class WC_Payments_Product_Service {
 
 				$this->remove_product_update_listeners();
 
-				if ( isset( $wcpay_product['stripe_product_id'] ) ) {
+				if ( isset( $wcpay_product['wcpay_product_id'] ) ) {
 					$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
 				}
 
-				if ( isset( $wcpay_product['stripe_price_id'] ) ) {
+				if ( isset( $wcpay_product['wcpay_price_id'] ) ) {
 					$old_wcpay_price_id = $this->get_wcpay_price_id( $product );
 
 					$this->set_wcpay_price_hash( $product, $this->get_price_hash( $product ) );
-					$this->set_wcpay_price_id( $product, $wcpay_product['stripe_price_id'] );
+					$this->set_wcpay_price_id( $product, $wcpay_product['wcpay_price_id'] );
 					$this->archive_price( $old_wcpay_price_id );
 				}
 

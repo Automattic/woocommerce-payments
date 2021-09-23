@@ -51,8 +51,8 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 			->with( $this->get_mock_product_data() )
 			->willReturn(
 				[
-					'stripe_product_id' => 'prod_test123',
-					'stripe_price_id'   => 'price_test123',
+					'wcpay_product_id' => 'prod_test123',
+					'wcpay_price_id'   => 'price_test123',
 				]
 			);
 
@@ -78,8 +78,8 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 			)
 			->willReturn(
 				[
-					'stripe_product_id' => 'prod_test123',
-					'stripe_price_id'   => 'price_test123',
+					'wcpay_product_id' => 'prod_test123',
+					'wcpay_price_id'   => 'price_test123',
 				]
 			);
 
@@ -106,8 +106,8 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 			)
 			->willReturn(
 				[
-					'stripe_price_id' => 'price_test123',
-					'object'          => 'price',
+					'wcpay_price_id' => 'price_test123',
+					'object'         => 'price',
 				]
 			);
 
@@ -119,8 +119,8 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 			)
 			->willReturn(
 				[
-					'stripe_product_id' => 'prod_test123',
-					'object'            => 'product',
+					'wcpay_product_id' => 'prod_test123',
+					'object'           => 'product',
 				]
 			);
 
@@ -141,8 +141,8 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 			)
 			->willReturn(
 				[
-					'stripe_price_id' => 'price_test123',
-					'object'          => 'price',
+					'wcpay_price_id' => 'price_test123',
+					'object'         => 'price',
 				]
 			);
 
@@ -223,8 +223,8 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 			->with( $this->get_mock_product_data() )
 			->willReturn(
 				[
-					'stripe_product_id' => 'prod_test123',
-					'stripe_price_id'   => $mock_price_id,
+					'wcpay_product_id' => 'prod_test123',
+					'wcpay_price_id'   => $mock_price_id,
 				]
 			);
 
@@ -257,8 +257,8 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 			->with( $this->get_mock_product_data() )
 			->willReturn(
 				[
-					'stripe_product_id' => $mock_prodict_id,
-					'stripe_price_id'   => 'price_test123',
+					'wcpay_product_id' => $mock_prodict_id,
+					'wcpay_price_id'   => 'price_test123',
 				]
 			);
 
