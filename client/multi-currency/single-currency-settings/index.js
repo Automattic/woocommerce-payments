@@ -20,6 +20,7 @@ import {
 	decimalCurrencyRoundingOptions,
 	zeroDecimalCurrencyCharmOptions,
 	zeroDecimalCurrencyRoundingOptions,
+	toMoment,
 } from './constants';
 import {
 	useCurrencies,
@@ -98,11 +99,10 @@ const SingleCurrencySettings = () => {
 		}
 	}, [ currencySettings, currency, initialPriceRoundingType ] );
 
-	const formattedLastUpdatedTime = targetCurrency
+	const formattedLastUpdatedDateTime = targetCurrency
 		? moment
 				.unix( targetCurrency.last_updated )
-				.utc()
-				.format( 'HH:mm [UTC]' )
+				.format( toMoment( window.wcSettings.dateFormat ) + ' HH:mm' )
 		: '';
 
 	const CurrencySettingsDescription = () => (
@@ -229,16 +229,20 @@ const SingleCurrencySettings = () => {
 														'single-currency-settings-description-inset'
 													) }
 												>
-													{ sprintf(
-														__(
-															'Current rate: 1 %s = %s %s (Updated hourly, Last updated: %s)',
-															'woocommerce-payments'
-														),
-														storeCurrency.code,
-														targetCurrency.rate,
-														targetCurrency.code,
-														formattedLastUpdatedTime
-													) }
+													{ targetCurrency.last_updated
+														? sprintf(
+																__(
+																	'Current rate: 1 %s = %s %s (Last updated: %s)',
+																	'woocommerce-payments'
+																),
+																storeCurrency.code,
+																targetCurrency.rate,
+																targetCurrency.code,
+																formattedLastUpdatedDateTime
+														  )
+														: __(
+																'Error - Unable to fetch automatic rate for this currency'
+														  ) }
 												</p>
 											</label>
 										</li>
