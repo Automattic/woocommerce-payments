@@ -86,10 +86,10 @@ if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
 }
 
 /**
- * Don't init the subscriptions-base when running WCPAY unit tests.
+ * Don't init the subscriptions-core package when running WCPAY unit tests.
  *
- * Init'ing the subscriptions-base loads all subscriptions class and hooks, which breaks existing WCPAY unit tests.
+ * Init'ing the subscriptions-core loads all subscriptions class and hooks, which breaks existing WCPAY unit tests.
  * WCPAY already mocks the WC Subscriptions classes/functions it needs so there's no need to load them anyway.
  */
-function wcpay_init_subscriptions_base() {
+function wcpay_init_subscriptions_core() {
 }

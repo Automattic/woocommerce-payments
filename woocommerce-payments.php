@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
 define( 'WCPAY_ABSPATH', __DIR__ . '/' );
 define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
-define( 'WCPAY_SUBSCRIPTIONS_ABSPATH', __DIR__ . '/includes/subscriptions/subscriptions-base/' );
+define( 'WCPAY_SUBSCRIPTIONS_ABSPATH', __DIR__ . '/vendor/woocommerce/subscriptions-core/' );
 
 require_once __DIR__ . '/vendor/autoload_packages.php';
 
@@ -99,32 +99,32 @@ function wcpay_init() {
 // If you change the priority of this action, you'll need to change it in the wcpay_check_old_jetpack_version function too.
 add_action( 'plugins_loaded', 'wcpay_init', 11 );
 
-if ( ! function_exists( 'wcpay_init_subscriptions_base' ) ) {
+if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 
 	/**
-	 * Initialise subscriptions-base if WC Subscriptions (the plugin) isn't loaded
+	 * Initialise subscriptions-core if WC Subscriptions (the plugin) isn't loaded
 	 */
-	function wcpay_init_subscriptions_base() {
+	function wcpay_init_subscriptions_core() {
 		$wc_subscriptions_plugin_slug = 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 		$wcs_is_being_activated       = isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $wc_subscriptions_plugin_slug === $_GET['plugin']; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		/**
-		* If the current request is to activate subscriptions, don't load our subscriptions base plugin.
+		* If the current request is to activate subscriptions, don't load the subscriptions-core package.
 		*
-		* WP loads the newly activated plugin's base file later than `plugins_loaded`, and so there's no opportunity for us to not load our base feature set on a consistent hook.
-		* We also cannot init the base plugin too late, because if we do, we miss hooks that register the subscription post types etc.
+		* WP loads the newly activated plugin's base file later than `plugins_loaded`, and so there's no opportunity for us to not load our core feature set on a consistent hook.
+		* We also cannot init subscriptions core too late, because if we do, we miss hooks that register the subscription post types etc.
 		*/
 		if ( $wcs_is_being_activated ) {
 			return;
 		}
 
 		if ( ! Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $wc_subscriptions_plugin_slug ) ) {
-			require_once WCPAY_SUBSCRIPTIONS_ABSPATH . 'includes/class-wc-subscriptions-base-plugin.php';
-			new WC_Subscriptions_Base_Plugin();
+			require_once WCPAY_SUBSCRIPTIONS_ABSPATH . 'includes/class-wc-subscriptions-core-plugin.php';
+			new WC_Subscriptions_Core_Plugin();
 		}
 	}
 }
-wcpay_init_subscriptions_base();
+wcpay_init_subscriptions_core();
 
 /**
  * Check if WCPay is installed alongside an old version of Jetpack (8.1 or earlier). Due to the autoloader code in those old
