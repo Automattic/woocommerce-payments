@@ -124,6 +124,104 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->update_option( 'saved_cards', 'yes' );
 	}
 
+	public function test_attach_exchange_info_to_order_with_no_conversion() {
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'USD' );
+		$order->save();
+
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		$this->wcpay_gateway->attach_exchange_info_to_order( $order, $charge_id );
+
+		// The meta key should not be set.
+		$this->assertEquals( '', $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
+	public function test_attach_exchange_info_to_order_with_different_account_currency_no_conversion() {
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'USD' );
+		$order->save();
+
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'jpy' );
+
+		$this->wcpay_gateway->attach_exchange_info_to_order( $order, $charge_id );
+
+		// The meta key should not be set.
+		$this->assertEquals( '', $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
+	public function test_attach_exchange_info_to_order_with_zero_decimal_order_currency() {
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'JPY' );
+		$order->save();
+
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn(
+				[
+					'id'                  => 'ch_123456',
+					'amount'              => 4500,
+					'balance_transaction' => [
+						'amount'        => 4450,
+						'fee'           => 50,
+						'currency'      => 'USD',
+						'exchange_rate' => 0.9414,
+					],
+				]
+			);
+
+		$this->wcpay_gateway->attach_exchange_info_to_order( $order, $charge_id );
+		$this->assertEquals( 0.009414, $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
+	public function test_attach_exchange_info_to_order_with_different_order_currency() {
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'EUR' );
+		$order->save();
+
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn(
+				[
+					'id'                  => 'ch_123456',
+					'amount'              => 4500,
+					'balance_transaction' => [
+						'amount'        => 4450,
+						'fee'           => 50,
+						'currency'      => 'USD',
+						'exchange_rate' => 0.853,
+					],
+				]
+			);
+
+		$this->wcpay_gateway->attach_exchange_info_to_order( $order, $charge_id );
+		$this->assertEquals( 0.853, $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
 	public function test_process_refund() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
