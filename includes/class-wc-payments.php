@@ -837,6 +837,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Payment_Request_Button_Handler instance
+	 *
+	 * @return WC_Payments_Payment_Request_Button_Handler Button Handler instance
+	 */
+	public static function get_payment_request_button_handler() {
+		return self::$payment_request_button_handler;
+	}
+		
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
