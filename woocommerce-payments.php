@@ -105,8 +105,10 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 	 * Initialise subscriptions-core if WC Subscriptions (the plugin) isn't loaded
 	 */
 	function wcpay_init_subscriptions_core() {
-		$wc_subscriptions_plugin_slug = 'woocommerce-subscriptions/woocommerce-subscriptions.php';
-		$wcs_is_being_activated       = isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $wc_subscriptions_plugin_slug === $_GET['plugin']; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$subscriptions_plugin_slug = 'woocommerce-subscriptions/woocommerce-subscriptions.php';
+		$wcs_core_plugin_slug      = 'woocommerce-subscriptions-core/woocommerce-subscriptions-core.php';
+		$is_subscriptions_active   = ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $subscriptions_plugin_slug === $_GET['plugin'] ) || Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $subscriptions_plugin_slug ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$is_wcs_core_active        = ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $wcs_core_plugin_slug === $_GET['plugin'] ) || Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $wcs_core_plugin_slug ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		/**
 		* If the current request is to activate subscriptions, don't load the subscriptions-core package.
@@ -114,14 +116,13 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 		* WP loads the newly activated plugin's base file later than `plugins_loaded`, and so there's no opportunity for us to not load our core feature set on a consistent hook.
 		* We also cannot init subscriptions core too late, because if we do, we miss hooks that register the subscription post types etc.
 		*/
-		if ( $wcs_is_being_activated ) {
+		if ( $is_subscriptions_active ) {
 			return;
 		}
 
-		if ( ! Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $wc_subscriptions_plugin_slug ) ) {
-			require_once WCPAY_SUBSCRIPTIONS_ABSPATH . 'includes/class-wc-subscriptions-core-plugin.php';
-			new WC_Subscriptions_Core_Plugin();
-		}
+		// TODO: Surround the following code with a condition so we only load Subscriptions if the store has a feature flag set (i.e. only US Stores).
+		require_once $is_wcs_core_active ? WP_PLUGIN_DIR . '/woocommerce-subscriptions-core/' : WCPAY_SUBSCRIPTIONS_ABSPATH . 'includes/class-wc-subscriptions-core-plugin.php';
+		new WC_Subscriptions_Core_Plugin();
 	}
 }
 wcpay_init_subscriptions_core();
