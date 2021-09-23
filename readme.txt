@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fixed missing file error for removed CSS file.
 * Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
 * Fix - Currency switcher does not affect order confirmation screen prices.
+* Fix - Error when attempting to change the payment method for a subscription with UPE enabled.
 * Update - Bump minimum supported version of WooCommerce from 5.4 to 5.5.
 * Update - Bump minimum required version of WooCommerce from 4.0 to 4.4.
 
