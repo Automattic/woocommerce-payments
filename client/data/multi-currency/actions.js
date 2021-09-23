@@ -4,14 +4,15 @@
  * External dependencies
  */
 import { apiFetch } from '@wordpress/data-controls';
-import { dispatch } from '@wordpress/data';
+import { dispatch, select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
+import wcpayTracks from 'tracks';
 
 /**
  * Internal Dependencies
  */
 import TYPES from './action-types';
-import { NAMESPACE } from '../constants';
+import { NAMESPACE, STORE_NAME } from '../constants';
 
 export function updateCurrencies( data ) {
 	return {
@@ -56,6 +57,16 @@ export function updateStoreSettings( data ) {
 }
 
 export function* submitEnabledCurrenciesUpdate( currencies ) {
+	const enabledCurrencies = Object.keys(
+		select( STORE_NAME ).getEnabledCurrencies()
+	);
+	const addedCurrencies = currencies.filter(
+		( currency ) => ! enabledCurrencies.includes( currency )
+	);
+	const removedCurrencies = enabledCurrencies.filter(
+		( currency ) => ! currencies.includes( currency )
+	);
+
 	try {
 		const result = yield apiFetch( {
 			path: `${ NAMESPACE }/multi-currency/update-enabled-currencies`,
@@ -69,6 +80,14 @@ export function* submitEnabledCurrenciesUpdate( currencies ) {
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(
 			__( 'Enabled currencies updated.', 'woocommerce-payments' )
+		);
+
+		wcpayTracks.recordEvent(
+			wcpayTracks.events.MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED,
+			{
+				added_currencies: addedCurrencies,
+				removed_currencies: removedCurrencies,
+			}
 		);
 	} catch ( e ) {
 		yield dispatch( 'core/notices' ).createErrorNotice(
