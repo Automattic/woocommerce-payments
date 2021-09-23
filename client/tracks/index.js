@@ -37,6 +37,8 @@ const events = {
 		'wcpay_deposits_summary_empty_state_click',
 	UPE_ENABLED: 'wcpay_upe_enabled',
 	UPE_DISABLED: 'wcpay_upe_disabled',
+	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
+		'wcpay_multi_currency_enabled_currencies_updated',
 };
 
 export default {
