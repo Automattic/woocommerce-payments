@@ -45,17 +45,18 @@ class WC_Payments_Subscriptions_Event_Handler {
 	}
 
 	/**
-	 * Adds fee, discount, and shipping related invoice items to WCPay subscription.
+	 * Validate and correct subscription status, date, and lines.
 	 *
 	 * @param array $body The event body that triggered the webhook.
 	 *
 	 * @throws Rest_Request_Exception Required parameters not found.
 	 */
 	public function handle_invoice_upcoming( array $body ) {
-		$event_data            = $this->get_event_property( $body, 'data' );
-		$event_object          = $this->get_event_property( $event_data, 'object' );
+		$event_object          = $this->get_event_property( $body, [ 'data', 'object' ] );
 		$wcpay_subscription_id = $this->get_event_property( $event_object, 'subscription' );
 		$wcpay_customer_id     = $this->get_event_property( $event_object, 'customer' );
+		$wcpay_discounts       = $this->get_event_property( $event_object, 'discounts' );
+		$wcpay_lines           = $this->get_event_property( $event_object, [ 'lines', 'data' ] );
 		$subscription          = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
 
 		if ( ! $subscription ) {
@@ -76,14 +77,8 @@ class WC_Payments_Subscriptions_Event_Handler {
 			// Translators: %s Scheduled/upcoming payment date in Y-m-d H:i:s format.
 			$subscription->add_order_note( sprintf( __( 'Next automatic payment scheduled for %s.', 'woocommerce-payments' ), get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $wcpay_subscription['current_period_end'] ), wc_date_format() . ' ' . wc_time_format() ) ) );
 
-			// Update the subscription in WC to match the WCPay Subscription's next payment date.
 			$this->subscription_service->update_dates_to_match_wcpay_subscription( $wcpay_subscription, $subscription );
-
-			$response = $this->invoice_service->create_invoice_items_for_subscription( $subscription, $wcpay_customer_id, $wcpay_subscription_id );
-
-			if ( is_wp_error( $response ) ) {
-				throw new Rest_Request_Exception( $response->get_error_message() );
-			}
+			$this->invoice_service->validate_invoice_items( $wcpay_lines, $wcpay_discounts, $subscription );
 		}
 	}
 
@@ -179,19 +174,26 @@ class WC_Payments_Subscriptions_Event_Handler {
 	/**
 	 * Gets the event data by property.
 	 *
-	 * @param array  $event_data Event data.
-	 * @param string $key        Requested key.
+	 * @param array $event_data Event data.
+	 * @param mixed $key        Requested key.
 	 *
-	 * @return string
+	 * @return mixed
 	 *
 	 * @throws Rest_Request_Exception Event data not found by key.
 	 */
-	private function get_event_property( array $event_data, string $key ) {
-		if ( ! isset( $event_data[ $key ] ) ) {
-			// Translators: %s Property name not found in event data array.
-			throw new Rest_Request_Exception( sprintf( __( '%s not found in array', 'woocommerce-payments' ), $key ) );
+	private function get_event_property( array $event_data, $key ) {
+		$keys = is_array( $key ) ? $key : [ $key ];
+		$data = $event_data;
+
+		foreach ( $keys as $k ) {
+			if ( ! isset( $data[ $k ] ) ) {
+				// Translators: %s Property name not found in event data array.
+				throw new Rest_Request_Exception( sprintf( __( '%s not found in array', 'woocommerce-payments' ), $k ) );
+			}
+
+			$data = $data[ $k ];
 		}
 
-		return $event_data[ $key ];
+		return $data;
 	}
 }

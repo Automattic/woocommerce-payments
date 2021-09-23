@@ -113,7 +113,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to get the WC Pay price ID for.
 	 * @return string             The product's WC Pay price ID or an empty string.
 	 */
-	public static function get_wcpay_price_id( WC_Product $product ) : string {
+	public function get_wcpay_price_id( WC_Product $product ) : string {
 		$price_id = $product->get_meta( self::PRICE_ID_KEY, true );
 
 		// If the subscription product doesn't have a WC Pay price ID, create one now.
@@ -127,6 +127,20 @@ class WC_Payments_Product_Service {
 
 	/**
 	 * Gets the WC Pay product ID associated with a WC product.
+	 *
+	 * @param string $type The item type to create a product for.
+	 * return string       The item's WCPay product id.
+	 */
+	public function get_stripe_product_id_for_item( string $type ) : string {
+		if ( ! get_option( self::PRODUCT_ID_KEY . '_' . $type ) ) {
+			$this->create_product_for_item_type( $type );
+		}
+
+		return get_option( self::PRODUCT_ID_KEY . '_' . $type );
+	}
+
+	/**
+	 * Check if the WC product has a WC Pay product ID.
 	 *
 	 * @param WC_Product $product The product to get the WC Pay ID for.
 	 * @return string             The WC Pay product ID or an empty string.
@@ -198,12 +212,32 @@ class WC_Payments_Product_Service {
 
 			$this->remove_product_update_listeners();
 			$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
-			$this->set_wcpay_product_id( $product, $wcpay_product['stripe_product_id'] );
+			$this->set_wcpay_product_id( $product, $wcpay_product['wcpay_product_id'] );
 			$this->set_wcpay_price_hash( $product, $this->get_price_hash( $product ) );
-			$this->set_wcpay_price_id( $product, $wcpay_product['stripe_price_id'] );
+			$this->set_wcpay_price_id( $product, $wcpay_product['wcpay_price_id'] );
 			$this->add_product_update_listeners();
 		} catch ( API_Exception $e ) {
 			Logger::log( 'There was a problem creating the product in WC Pay: ' . $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Create a generic item product in WC Pay.
+	 *
+	 * @param string $type The item type to create a product for.
+	 */
+	public function create_product_for_item_type( string $type ) {
+		try {
+			$wcpay_product = $this->payments_api_client->create_product(
+				[
+					'description' => 'N/A',
+					'name'        => ucfirst( $type ),
+				]
+			);
+
+			update_option( self::PRODUCT_ID_KEY . '_' . $type, $wcpay_product['wcpay_product_id'] );
+		} catch ( API_Exception $e ) {
+			Logger::log( 'There was a problem creating the product on WCPay Server: ' . $e->getMessage() );
 		}
 	}
 
@@ -237,15 +271,15 @@ class WC_Payments_Product_Service {
 
 				$this->remove_product_update_listeners();
 
-				if ( isset( $wcpay_product['stripe_product_id'] ) ) {
+				if ( isset( $wcpay_product['wcpay_product_id'] ) ) {
 					$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
 				}
 
-				if ( isset( $wcpay_product['stripe_price_id'] ) ) {
+				if ( isset( $wcpay_product['wcpay_price_id'] ) ) {
 					$old_wcpay_price_id = $this->get_wcpay_price_id( $product );
 
 					$this->set_wcpay_price_hash( $product, $this->get_price_hash( $product ) );
-					$this->set_wcpay_price_id( $product, $wcpay_product['stripe_price_id'] );
+					$this->set_wcpay_price_id( $product, $wcpay_product['wcpay_price_id'] );
 					$this->archive_price( $old_wcpay_price_id );
 				}
 

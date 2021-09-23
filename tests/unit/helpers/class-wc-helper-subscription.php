@@ -79,6 +79,27 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $status;
 
 	/**
+	 * Currency.
+	 *
+	 * @var string
+	 */
+	public $currency = 'USD';
+
+	/**
+	 * Helper variable for mocking the subscription's billing period.
+	 *
+	 * @var string
+	 */
+	public $billing_period = 'month';
+
+	/**
+	 * Helper variable for mocking the subscription's billing interval.
+	 *
+	 * @var string
+	 */
+	public $billing_interval = 1;
+
+	/**
 	 * Taxes.
 	 *
 	 * @var array
@@ -119,6 +140,18 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function get_parent() {
 		return ! empty( $this->parent_order ) ? $this->parent_order : false;
+	}
+
+	public function get_items() {
+		return ! empty( $this->parent_order ) ? $this->parent_order->get_items() : [];
+	}
+
+	public function get_fees() {
+		return ! empty( $this->parent_order ) ? $this->parent_order->get_fees() : [];
+	}
+
+	public function get_shipping_methods() {
+		return ! empty( $this->parent_order ) ? $this->parent_order->get_shipping_methods() : [];
 	}
 
 	public function get_related_orders( $type ) {
@@ -167,6 +200,10 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		return $this->taxes;
 	}
 
+	public function get_currency() {
+		return $this->currency;
+	}
+
 	public function add_order_note( $note = '' ) {
 		// do nothing.
 	}
@@ -177,6 +214,14 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function get_status() {
 		return $this->status;
+	}
+
+	public function get_billing_period() {
+		return $this->billing_period;
+	}
+
+	public function get_billing_interval() {
+		return $this->billing_interval;
 	}
 
 	public function has_status( $status ) {
