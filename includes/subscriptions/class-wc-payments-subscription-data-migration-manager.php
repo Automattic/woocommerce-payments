@@ -13,6 +13,11 @@ class WC_Payments_Subscription_Data_Migration_Manager {
 	use WC_Payments_Subscriptions_Utilities;
 
 	/**
+	 * The option key used to store whether the WC Subscriptions plugin is active or not.
+	 */
+	const WC_SUBSCRIPTIONS_PLUGIN_ACTIVE_OPTION = 'wcpay_subscriptions_plugin_active';
+
+	/**
 	 * The WP option key used to store the migration state.
 	 *
 	 * @var string
@@ -36,50 +41,76 @@ class WC_Payments_Subscription_Data_Migration_Manager {
 	/**
 	 * The background batch processors to run on upgrade.
 	 *
-	 * @var WCS_Background_Repairer[]
+	 * @var WC_Payments_Subscriptions_Background_Migrator[]
 	 */
-	private $upgrade_background_processors = [];
+	private $upgrade_background_migrators = [];
 
 	/**
 	 * The background batch processors to run on downgrade.
 	 *
-	 * @var WCS_Background_Repairer[]
+	 * @var WC_Payments_Subscriptions_Background_Migrator[]
 	 */
-	private $downgrade_background_processors = [];
+	private $downgrade_background_migrators = [];
 
 	/**
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'woocommerce_subscriptions_activated', [ $this, 'maybe_schedule_upgrade' ] );
-		add_action( 'woocommerce_subscriptions_deactivated', [ $this, 'maybe_schedule_downgrade' ] );
+		$this->load_background_processors();
 
-		// Before we initialise the batch processors, validate that the current migration status is correct.
-		$this->validate_migration_status();
+		// Before we initialise the batch processors, check if the plugin status has changed.
+		$this->check_for_migrations();
 		$this->init_background_processors();
 	}
 
 	/**
-	 * Validates that the current store's migration status matches the WC Subscriptions plugin active status.
-	 *
-	 * If the migration status is inconsistant with the plugin status, this function also checks if we need to schedule the reverse migration.
+	 * Loads the background processors for the current type of migration.
 	 */
-	private function validate_migration_status() {
-		// If the store is upgrading, make sure WC Subscriptions is still active.
-		if ( $this->is_upgrading() && ! $this->is_subscriptions_plugin_active() ) {
-			$this->clear_migration_status();
-			$this->maybe_schedule_downgrade();
-		} elseif ( $this->is_downgrading() && $this->is_subscriptions_plugin_active() ) {
-			// If the store is downgrading, and the WC Subscriptions plugin is active.
+	private function load_background_processors() {
+		// Load the abstract data migrator class.
+		include_once __DIR__ . '/data-migrators/class-wc-payments-subscriptions-background-migrator.php';
+		include_once __DIR__ . '/data-migrators/class-wc-payments-manual-subscriptions-downgrader.php';
+
+		$this->downgrade_background_migrators[] = new WC_Payments_Manual_Subscriptions_Downgrader();
+	}
+
+	/**
+	 * Checks if the store's WC Subscriptions plugin status has changed and if so whether we need to schedule data migrations.
+	 */
+	public function check_for_migrations() {
+		$plugin_was_active = 'yes' === get_option( self::WC_SUBSCRIPTIONS_PLUGIN_ACTIVE_OPTION, 'no' );
+
+		// If the plugin wasn't active but is now, check if we have subscriptions which need migrating.
+		if ( ! $plugin_was_active && $this->is_subscriptions_plugin_active() ) {
+
+			// If we were in the middle of a downgrade, make sure we cancel those jobs first.
+			if ( $this->is_downgrading() ) {
+				$this->cancel_background_migrators( self::DOWNGRADING );
+			}
+
 			$this->clear_migration_status();
 			$this->maybe_schedule_upgrade();
+
+			update_option( self::WC_SUBSCRIPTIONS_PLUGIN_ACTIVE_OPTION, 'yes' );
+		} elseif ( $plugin_was_active && ! $this->is_subscriptions_plugin_active() ) {
+
+			// If we were in the middle of an upgrade, make sure we cancel those jobs first.
+			if ( $this->is_upgrading() ) {
+				$this->cancel_background_migrators( self::UPGRADING );
+			}
+
+			$this->clear_migration_status();
+			$this->maybe_schedule_downgrade();
+
+			// Deleting the option is equivalent to the plugin not being active.
+			delete_option( self::WC_SUBSCRIPTIONS_PLUGIN_ACTIVE_OPTION );
 		}
 	}
 
 	/**
-	 * Initialises the batch processors that apply to the type of data migration the store is undergoing.
+	 * Initializes the batch processors that apply to the type of data migration the store is undergoing.
 	 */
-	private function init_background_processors() {
+	public function init_background_processors() {
 		$migration_type = $this->get_migration_type();
 
 		if ( $migration_type ) {
@@ -161,6 +192,17 @@ class WC_Payments_Subscription_Data_Migration_Manager {
 	}
 
 	/**
+	 * Cancels all the background batch processors by migration type.
+	 *
+	 * @param string $migration_type The type of migration to check. Can be 'downgrade' or 'upgrade'.
+	 */
+	private function cancel_background_migrators( $migration_type ) {
+		foreach ( $this->get_background_processors_by_type( $migration_type ) as $batch_processor ) {
+			$batch_processor->unschedule_all_actions();
+		}
+	}
+
+	/**
 	 * Determines if there is data to migrate based on a type of upgrade/downgrade.
 	 *
 	 * @param string $migration_type The type of migration to check. Can be 'downgrade' or 'upgrade'.
@@ -168,8 +210,7 @@ class WC_Payments_Subscription_Data_Migration_Manager {
 	 */
 	private function has_data_to_migrate( $migration_type ) {
 		foreach ( $this->get_background_processors_by_type( $migration_type ) as $batch_processor ) {
-			// TODO: this function is currently inaccessible so will need to change pending Shendy's work.
-			if ( ! empty( $batch_processor->get_items_to_repair() ) ) {
+			if ( $batch_processor->has_items_to_update() ) {
 				return true;
 			}
 		}
@@ -181,14 +222,14 @@ class WC_Payments_Subscription_Data_Migration_Manager {
 	 * Gets the background processors by migration type.
 	 *
 	 * @param string $migration_type The type of migration to check. Can be 'downgrade' or 'upgrade'.
-	 * @return WCS_Background_Repairer[] The background batch processors.
+	 * @return WC_Payments_Subscriptions_Background_Migrator[] The background batch processors.
 	 */
 	private function get_background_processors_by_type( $migration_type ) {
 		switch ( $migration_type ) {
 			case self::UPGRADING:
-				return $this->upgrade_background_processors;
+				return $this->upgrade_background_migrators;
 			case self::DOWNGRADING:
-				return $this->downgrade_background_processor;
+				return $this->downgrade_background_migrators;
 			default:
 				return [];
 		}

@@ -43,6 +43,13 @@ class WC_Payments_Subscriptions {
 	private static $event_handler;
 
 	/**
+	 * Instance of WC_Payments_Subscription_Data_Migration_Manager, created on action hook init.
+	 *
+	 * @var WC_Payments_Subscription_Data_Migration_Manager
+	 */
+	private static $data_migration_manager;
+
+	/**
 	 * Initialize WooCommerce Payments subscriptions. (Stripe Billing)
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WCPay API client.
@@ -65,7 +72,16 @@ class WC_Payments_Subscriptions {
 		self::$event_handler = new WC_Payments_Subscriptions_Event_Handler( self::$invoice_service, self::$subscription_service );
 
 		new WC_Payments_Subscription_Change_Payment_Method_Handler();
-		new WC_Payments_Subscription_Data_Migration_Manager();
+
+		/**
+		 * If the WC Subscriptions plugin is currently being activated, there's a lapse in Subscriptions
+		 * functionality being available (WC Pay stops loading it's packaged version but the plugin isn't yet active).
+		 *
+		 * For that reason we cannot load the migrators until we have access to a Subscriptions install.
+		 */
+		if ( ! self::is_plugin_being_activated() ) {
+			add_action( 'init', [ __CLASS__, 'get_data_migration_manager' ] );
+		}
 	}
 
 	/**
@@ -78,7 +94,7 @@ class WC_Payments_Subscriptions {
 	}
 
 	/**
-	 * Returns the the product service instance.
+	 * Returns the product service instance.
 	 *
 	 * @return WC_Payments_Product_Service The product service object.
 	 */
@@ -87,7 +103,7 @@ class WC_Payments_Subscriptions {
 	}
 
 	/**
-	 * Returns the the invoice service instance.
+	 * Returns the invoice service instance.
 	 *
 	 * @return WC_Payments_Invoice_Service
 	 */
@@ -96,11 +112,34 @@ class WC_Payments_Subscriptions {
 	}
 
 	/**
-	 * Returns the the subscription service instance.
+	 * Returns the subscription service instance.
 	 *
 	 * @return WC_Payments_Subscription_Service
 	 */
 	public static function get_subscription_service() {
 		return self::$subscription_service;
+	}
+
+	/**
+	 * Returns the data migration manager instance.
+	 *
+	 * @return WC_Payments_Subscription_Data_Migration_Manager
+	 */
+	public static function get_data_migration_manager() {
+		if ( is_null( self::$data_migration_manager ) && did_action( 'init' ) ) {
+			self::$data_migration_manager = new WC_Payments_Subscription_Data_Migration_Manager();
+		}
+
+		return self::$data_migration_manager;
+	}
+
+	/**
+	 * Checks if the current request is to activate the WC Subscriptions plugin.
+	 *
+	 * @return bool
+	 */
+	private static function is_plugin_being_activated() {
+		$wc_subscriptions_plugin_slug = 'woocommerce-subscriptions/woocommerce-subscriptions.php';
+		return isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === wc_clean( wp_unslash( $_GET['action'] ) ) && wc_clean( wp_unslash( $_GET['plugin'] ) ) === $wc_subscriptions_plugin_slug; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 }

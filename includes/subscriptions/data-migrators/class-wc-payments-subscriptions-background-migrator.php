@@ -41,7 +41,7 @@ abstract class WC_Payments_Subscriptions_Background_Migrator extends WCS_Backgro
 	 *
 	 * @param mixed $item The individial item which needs to be handled (updated/migrated/repaired).
 	 */
-	protected function repair_item( $item ) {
+	public function repair_item( $item ) {
 		$this->handle_item( $item );
 	}
 
@@ -80,5 +80,28 @@ abstract class WC_Payments_Subscriptions_Background_Migrator extends WCS_Backgro
 	 */
 	public function has_items_to_update() {
 		return $this->get_items_to_update_count() > 0;
+	}
+
+	/**
+	 * Schedules the action to migrate this item.
+	 *
+	 * Overrides the parent function to prevent scheduling an action for the same item if one is already scheduled.
+	 *
+	 * @param mixed $item The item to be migrated.
+	 */
+	protected function update_item( $item ) {
+		if ( ! is_numeric( as_next_scheduled_action( $this->repair_hook, [ 'object' => $item ] ) ) ) {
+			as_schedule_single_action( gmdate( 'U' ) + HOUR_IN_SECONDS, $this->repair_hook, [ 'object' => $item ] );
+		}
+
+		unset( $this->items_to_repair[ $item ] );
+	}
+
+	/**
+	 * Cancels all scheduled actions linked to this migrator.
+	 */
+	public function unschedule_all_actions() {
+		$this->unschedule_background_updates();
+		as_unschedule_all_actions( $this->repair_hook );
 	}
 }
