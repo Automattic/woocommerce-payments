@@ -102,17 +102,17 @@ add_action( 'plugins_loaded', 'wcpay_init', 11 );
 if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 
 	/**
-	 * Initialise subscriptions-base if WC Subscriptions (the plugin) isn't loaded
+	 * Initialise subscriptions-core if WC Subscriptions (the plugin) isn't loaded
 	 */
 	function wcpay_init_subscriptions_core() {
 		$wc_subscriptions_plugin_slug = 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 		$wcs_is_being_activated       = isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $wc_subscriptions_plugin_slug === $_GET['plugin']; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		/**
-		* If the current request is to activate subscriptions, don't load our subscriptions base plugin.
+		* If the current request is to activate subscriptions, don't load the subscriptions-core package.
 		*
-		* WP loads the newly activated plugin's base file later than `plugins_loaded`, and so there's no opportunity for us to not load our base feature set on a consistent hook.
-		* We also cannot init the base plugin too late, because if we do, we miss hooks that register the subscription post types etc.
+		* WP loads the newly activated plugin's base file later than `plugins_loaded`, and so there's no opportunity for us to not load our core feature set on a consistent hook.
+		* We also cannot init subscriptions core too late, because if we do, we miss hooks that register the subscription post types etc.
 		*/
 		if ( $wcs_is_being_activated ) {
 			return;
