@@ -226,7 +226,28 @@ describe( 'Multi Currency enabled currencies list', () => {
 		expect( modal ).toMatchSnapshot();
 	} );
 
+	test( 'Remove currency modal doesnt render when theres no dependency', () => {
+		getContainer();
+		expect(
+			screen.queryByRole( 'dialog', { name: /remove euro/i } )
+		).not.toBeInTheDocument();
+		fireEvent.click(
+			screen.getByRole( 'button', {
+				name: /remove euro as an enabled currency/i,
+			} )
+		);
+		const modal = screen.queryByRole( 'dialog', { name: /remove euro/i } );
+		expect( modal ).not.toBeInTheDocument();
+	} );
+
 	test( 'Remove currency modal renders correctly', () => {
+		window.multiCurrencyPaymentMethodsMap = {
+			EUR: {
+				giropay: 'giropay',
+				sofort: 'Sofort',
+				sepa_debit: 'SEPA Direct Debit',
+			},
+		};
 		getContainer();
 		expect(
 			screen.queryByRole( 'dialog', { name: /remove euro/i } )
@@ -239,6 +260,7 @@ describe( 'Multi Currency enabled currencies list', () => {
 		const modal = screen.queryByRole( 'dialog', { name: /remove euro/i } );
 		expect( modal ).toBeInTheDocument();
 		expect( modal ).toMatchSnapshot();
+		window.multiCurrencyPaymentMethodsMap = undefined;
 	} );
 
 	test( 'Modal should clear search term on cancel and update selected', () => {
