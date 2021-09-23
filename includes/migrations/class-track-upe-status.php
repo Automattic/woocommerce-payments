@@ -38,8 +38,14 @@ class Track_Upe_Status {
 			return;
 		}
 
-		// Track the event and flag the install so this doesn't run again.
-		self::trigger_track_event();
+		$upe_value = get_option( \WC_Payments_Features::UPE_FLAG_NAME, 'not-set' );
+
+		// Don't trigger the track event when the flag isn't set.
+		if ( 'not-set' !== $upe_value ) {
+			self::trigger_track_event();
+		}
+
+		// Flag the install so this doesn't run again.
 		self::mark_as_tracked();
 	}
 

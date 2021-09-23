@@ -68,17 +68,12 @@ class Track_Upe_Status_Test extends WP_UnitTestCase {
 		$this->assertSame( '1', get_option( Track_Upe_Status::IS_TRACKED_OPTION ) );
 	}
 
-	public function test_track_default_on_upgrade() {
+	public function test_do_nothing_default_on_upgrade() {
 		delete_option( WC_Payments_Features::UPE_FLAG_NAME );
 
 		Track_Upe_Status::maybe_track();
 
-		$this->assertEquals(
-			[
-				'wcpay_upe_disabled' => [],
-			],
-			Tracker::get_admin_events()
-		);
+		$this->assertEquals( [], Tracker::get_admin_events() );
 
 		$this->assertSame( '1', get_option( Track_Upe_Status::IS_TRACKED_OPTION ) );
 	}
