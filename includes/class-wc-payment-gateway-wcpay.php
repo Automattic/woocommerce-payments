@@ -2309,6 +2309,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Returns the list of enabled payment method types that will function with the current checkout.
+	 *
+	 * @param string $order_id Order ID.
+	 * @return string[]
+	 */
+	public function get_upe_enabled_at_checkout_payment_method_ids( $order_id = null ) {
+		$capture                    = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
+		$capturable_payment_methods = $capture ? $this->get_upe_enabled_payment_method_ids() : [ 'card' ];
+		$enabled_payment_methods    = [];
+		foreach ( $capturable_payment_methods as $payment_method_id ) {
+			if ( isset( $this->payment_methods[ $payment_method_id ] ) && $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id ) ) {
+				$enabled_payment_methods[] = $payment_method_id;
+			}
+		}
+		return $enabled_payment_methods;
+	}
+
+	/**
 	 * Returns the list of available payment method types for UPE.
 	 * See https://stripe.com/docs/stripe-js/payment-element#web-create-payment-intent for a complete list.
 	 *
