@@ -79,11 +79,11 @@ class CurrencySwitcherBlock {
 					],
 					'fontSize'        => [
 						'type'    => 'integer',
-						'default' => 11,
+						'default' => 13,
 					],
 					'fontLineHeight'  => [
 						'type'    => 'float',
-						'default' => 1.2,
+						'default' => 1.5,
 					],
 					'fontColor'       => [
 						'type'    => 'string',
@@ -91,7 +91,7 @@ class CurrencySwitcherBlock {
 					],
 					'border'          => [
 						'type'    => 'boolean',
-						'default' => false,
+						'default' => true,
 					],
 					'borderRadius'    => [
 						'type'    => 'string',

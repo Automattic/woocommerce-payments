@@ -154,7 +154,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		const onChangeBorderRadius = ( newBorderRadius ) => {
 			setAttributes( {
 				borderRadius:
-					newBorderRadius === undefined ? '3px' : newBorderRadius,
+					newBorderRadius === undefined ? 3 : newBorderRadius,
 			} );
 		};
 
