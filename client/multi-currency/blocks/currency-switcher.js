@@ -84,9 +84,10 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		} = props;
 
 		// eslint-disable-next-line react-hooks/rules-of-hooks
-		const { enabledCurrencies } = useEnabledCurrencies();
-		// eslint-disable-next-line react-hooks/rules-of-hooks
 		const { isLoading } = useCurrencies();
+		// eslint-disable-next-line react-hooks/rules-of-hooks
+		const { enabledCurrencies } = useEnabledCurrencies();
+
 		const enabledKeys = enabledCurrencies
 			? Object.keys( enabledCurrencies )
 			: [];
