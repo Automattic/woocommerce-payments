@@ -292,7 +292,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 									{ enabledCurrencies[ code ].code }
 								</option>
 							) ) }
-						{ isLoading &&
+						{ ( isLoading || ! enabledCurrencies ) &&
 							[ 0, 1, 2 ].map( ( i ) => (
 								<option
 									key={ placeholders[ i ].id }
