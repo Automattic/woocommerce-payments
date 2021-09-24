@@ -75,7 +75,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                       <p
                         class="single-currency-settings-description single-currency-settings-description-inset"
                       >
-                        Current rate: 1 USD = 0.826381 EUR (Updated hourly, Last updated: Invalid date)
+                        Current rate: 1 USD = 0.826381 EUR (Last updated: 24 September, 2021 01:14)
                       </p>
                     </label>
                   </li>
@@ -269,7 +269,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                     <strong
                       data-testid="calculated_value"
                     >
-                      16.00€
+                      17.00€
                     </strong>
                   </div>
                 </div>

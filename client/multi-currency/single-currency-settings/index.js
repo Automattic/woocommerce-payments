@@ -102,7 +102,10 @@ const SingleCurrencySettings = () => {
 	const formattedLastUpdatedDateTime = targetCurrency
 		? moment
 				.unix( targetCurrency.last_updated )
-				.format( toMoment( window.wcSettings.dateFormat ) + ' HH:mm' )
+				.format(
+					toMoment( window.wcSettings.dateFormat ?? 'j F, Y' ) +
+						' HH:mm'
+				)
 		: '';
 
 	const CurrencySettingsDescription = () => (
