@@ -166,7 +166,7 @@ class MultiCurrency {
 	 *
 	 * @var array
 	 */
-	protected $simulation_params;
+	protected $simulation_params = [];
 
 	/**
 	 * Main MultiCurrency Instance.
@@ -674,7 +674,10 @@ class MultiCurrency {
 			// Update currency and display notice if enabled.
 			if ( ! empty( $this->get_enabled_currencies()[ $currency ] ) ) {
 				$this->update_selected_currency( $currency );
-				add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
+				// Prevent duplicates in simulation.
+				if ( ! has_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] ) ) {
+					add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
+				}
 			}
 		}
 	}
@@ -1188,7 +1191,7 @@ class MultiCurrency {
 	 *
 	 * @return  void
 	 */
-	public function simulate_client_currency() {
+	private function simulate_client_currency() {
 		if ( ! $this->simulation_params['enable_auto_currency'] || ! $this->simulation_params['client_currency'] ) {
 			return;
 		}
@@ -1202,8 +1205,10 @@ class MultiCurrency {
 			}
 		);
 
-		// Always display the notice on simulation screen.
-		add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
+		// Always display the notice on simulation screen, prevent duplicate hooks.
+		if ( ! has_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] ) ) {
+			add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
+		}
 
 		// Skip recalculating the cart to prevent infinite loop in simulation.
 		remove_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
