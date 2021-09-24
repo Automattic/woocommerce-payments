@@ -665,9 +665,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'total_label'        => $this->get_total_label(),
 		];
 
-		wp_register_style( 'payment_request_styles', plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ), [], WC_Payments::get_file_version( 'dist/payment-request.css' ) );
-		wp_enqueue_style( 'payment_request_styles' );
-
 		wp_register_script( 'WCPAY_PAYMENT_REQUEST', plugins_url( 'dist/payment-request.js', WCPAY_PLUGIN_FILE ), [ 'jquery', 'stripe' ], WC_Payments::get_file_version( 'dist/payment-request.js' ), true );
 
 		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $payment_request_params );

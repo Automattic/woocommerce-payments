@@ -11,6 +11,7 @@ const {
 	verifyAndPublish,
 	evalAndClick,
 	uiUnblocked,
+	clearAndFillInput,
 } = require( '@woocommerce/e2e-utils' );
 const {
 	fillCardDetails,
@@ -35,12 +36,16 @@ const WCPAY_TRANSACTIONS =
 const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
 const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
+const WP_ADMIN_PAGES = baseUrl + 'wp-admin/edit.php?post_type=page';
+const WCB_CHECKOUT = baseUrl + 'checkout-wcb/';
 
 export const RUN_SUBSCRIPTIONS_TESTS =
 	'1' !== process.env.SKIP_WC_SUBSCRIPTIONS_TESTS;
 
 export const RUN_ACTION_SCHEDULER_TESTS =
 	'1' !== process.env.SKIP_WC_ACTION_SCHEDULER_TESTS;
+
+export const RUN_WC_BLOCKS_TESTS = '1' !== process.env.SKIP_WC_BLOCKS_TESTS;
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
@@ -133,6 +138,36 @@ export const shopperWCP = {
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
+	},
+
+	openCheckoutWCB: async () => {
+		await page.goto( WCB_CHECKOUT, {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	fillShippingDetailsWCB: async ( customerShippingDetails ) => {
+		await clearAndFillInput( '#email', customerShippingDetails.email );
+		await clearAndFillInput(
+			'#shipping-first_name',
+			customerShippingDetails.firstname
+		);
+		await clearAndFillInput(
+			'#shipping-last_name',
+			customerShippingDetails.lastname
+		);
+		await clearAndFillInput(
+			'#shipping-address_1',
+			customerShippingDetails.addressfirstline
+		);
+		await clearAndFillInput(
+			'#shipping-city',
+			customerShippingDetails.city
+		);
+		await clearAndFillInput(
+			'#shipping-postcode',
+			customerShippingDetails.postcode
+		);
 	},
 };
 
@@ -263,5 +298,44 @@ export const merchantWCP = {
 		await expect( page ).toClick( '.components-snackbar', {
 			timeout: 30000,
 		} );
+	},
+
+	addNewPageCheckoutWCB: async () => {
+		await page.goto( WP_ADMIN_PAGES, {
+			waitUntil: 'networkidle0',
+		} );
+
+		// Add a new page called "Checkout WCB"
+		await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
+		await expect( page ).toClick( '.page-title-action', {
+			waitUntil: 'networkidle0',
+		} );
+		await page.waitForSelector( 'h1.editor-post-title__input' );
+		await page.type( 'h1.editor-post-title__input', 'Checkout WCB' );
+
+		// Insert new checkout by WCB (searching for Checkout block and pressing Enter)
+		await expect( page ).toClick(
+			'button.edit-post-header-toolbar__inserter-toggle'
+		);
+		await expect( page ).toFill(
+			'div.components-search-control__input-wrapper > input.components-search-control__input',
+			'Checkout'
+		);
+		await page.keyboard.press( 'Tab' );
+		await page.keyboard.press( 'Tab' );
+		await page.keyboard.press( 'Enter' );
+
+		// Dismiss dialog about potentially compatibility issues
+		await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
+
+		// Publish the page
+		await expect( page ).toClick(
+			'button.editor-post-publish-panel__toggle'
+		);
+		await expect( page ).toClick( 'button.editor-post-publish-button' );
+		await page.waitForSelector(
+			'.components-snackbar__content',
+			'Page updated.'
+		);
 	},
 };

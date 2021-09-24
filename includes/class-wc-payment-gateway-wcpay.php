@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Connection_Exception };
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -96,12 +96,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
-	 * @param WC_Payments_Account                  $account                  - Account class instance.
-	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
-	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
-	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
-	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter             - Rate Limiter for failed transactions.
+	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                  $account                         - Account class instance.
+	 * @param WC_Payments_Customer_Service         $customer_service                - Customer class instance.
+	 * @param WC_Payments_Token_Service            $token_service                   - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Rate Limiter for failed transactions.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -800,15 +800,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
-			// TODO: Create more exceptions to handle merchant specific errors.
-			$error_message = $e->getMessage();
-			if ( $e instanceof Connection_Exception ) {
-				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
-			} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
-				$error_message = __( 'We\'re not able to process this payment. Please refresh the page and try again.', 'woocommerce-payments' );
-			}
 
-			wc_add_notice( $error_message, 'error' );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
 				$order->update_status( 'failed' );
@@ -1117,15 +1110,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$currency_order   = $order->get_currency();
-		$currency_account = $this->account->get_account_default_currency();
+		$currency_store   = strtolower( get_option( 'woocommerce_currency' ) );
+		$currency_order   = strtolower( $order->get_currency() );
+		$currency_account = strtolower( $this->account->get_account_default_currency() );
 
-		if ( strtolower( $currency_order ) !== $currency_account ) {
+		// If the default currency for the store is different from the currency for the merchant's Stripe account,
+		// the conversion rate provided by Stripe won't make sense, so we should not attach it to the order meta data
+		// and instead we'll rely on the _wcpay_multi_currency_order_exchange_rate meta key for analytics.
+		if ( $currency_store !== $currency_account ) {
+			return;
+		}
+
+		if ( $currency_order !== $currency_account ) {
 			// We check that the currency used in the order is different than the one set in the WC Payments account
 			// to avoid requesting the charge if not needed.
 			$charge        = $this->payments_api_client->get_charge( $charge_id );
 			$exchange_rate = $charge['balance_transaction']['exchange_rate'] ?? null;
 			if ( isset( $exchange_rate ) ) {
+				$exchange_rate = WC_Payments_Utils::interpret_string_exchange_rate( $exchange_rate, $currency_order, $currency_account );
 				$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
 				$order->save_meta_data();
 			}
@@ -1144,6 +1146,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param string   $currency Currency code.
 	 */
 	public function attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
+		// first, let's save all the metadata that needed for refunds, required for status change etc.
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', $intent_status );
+		$order->update_meta_data( '_payment_method_id', $payment_method );
+		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
+		$order->save();
+
+		// after that, note is added regarding what intention status order has.
 		$amount         = $order->get_total();
 		$payment_needed = $amount > 0;
 
@@ -1165,7 +1178,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					);
 					$order->add_order_note( $note );
 				}
-				$order->payment_complete( $intent_id );
+				try {
+					$order->payment_complete( $intent_id );
+				} catch ( Exception $e ) {
+					// continue further, something unexpected happened, but we can't really do nothing with that.
+					Logger::log( 'Error when completing payment for order: ' . $e->getMessage() );
+				}
 				break;
 			case 'processing':
 			case 'requires_capture':
@@ -1184,6 +1202,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 
 				$order->set_status( 'on-hold', $note );
+				$order->save();
 				break;
 			case 'requires_action':
 				if ( $payment_needed ) {
@@ -1206,15 +1225,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				break;
 		}
-
-		$order->set_transaction_id( $intent_id );
-		$order->update_meta_data( '_intent_id', $intent_id );
-		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', $intent_status );
-		$order->update_meta_data( '_payment_method_id', $payment_method );
-		$order->update_meta_data( '_stripe_customer_id', $customer_id );
-		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
-		$order->save();
 	}
 
 	/**
@@ -1580,7 +1590,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order - Order to capture charge on.
 	 *
-	 * @return array An array containing the status (succeeded/failed), id (intent ID), and message (error message if any)
+	 * @return array An array containing the status (succeeded/failed), id (intent ID), message (error message if any), and http code
 	 */
 	public function capture_charge( $order ) {
 		$amount                   = $order->get_total();
@@ -1588,6 +1598,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$intent                   = null;
 		$status                   = null;
 		$error_message            = null;
+		$http_code                = null;
 		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
 
 		try {
@@ -1597,14 +1608,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->get_level3_data_from_order( $order )
 			);
 
-			$status   = $intent->get_status();
-			$currency = $intent->get_currency();
+			$status    = $intent->get_status();
+			$currency  = $intent->get_currency();
+			$http_code = 200;
 
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
 		} catch ( API_Exception $e ) {
 			try {
 				$error_message = $e->getMessage();
+				$http_code     = $e->get_http_code();
 
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
 				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
@@ -1616,6 +1629,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// original error message.
 				$status        = null;
 				$error_message = $e->getMessage();
+				$http_code     = $e->get_http_code();
 			}
 		}
 
@@ -1664,6 +1678,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order )
 			);
 			$order->add_order_note( $note );
+			$http_code = 502;
 		}
 
 		if ( $is_authorization_expired ) {
@@ -1671,9 +1686,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return [
-			'status'  => $status ?? 'failed',
-			'id'      => ! empty( $intent ) ? $intent->get_id() : null,
-			'message' => $error_message,
+			'status'    => $status ?? 'failed',
+			'id'        => ! empty( $intent ) ? $intent->get_id() : null,
+			'message'   => $error_message,
+			'http_code' => $http_code,
 		];
 	}
 
@@ -2087,7 +2103,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
 			];
 		} catch ( Exception $e ) {
-			wc_add_notice( $e->getMessage(), 'error', [ 'icon' => 'error' ] );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
 			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
 			return [
 				'result' => 'error',
@@ -2185,7 +2201,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => $e->getMessage(),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				]
 			);
