@@ -190,7 +190,10 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 							target="_blank"
 							rel="noreferrer"
 						>
-							Adjust and edit your Multi-Currency settings
+							{ __(
+								'Adjust and edit your Multi-Currency settings',
+								'woocommerce-payments'
+							) }
 						</a>
 					</PanelBody>
 					<PanelBody title={ __( 'Layout', 'woocommerce-payments' ) }>
