@@ -313,7 +313,9 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 									{ flag
 										? enabledCurrencies[ code ].flag + ' '
 										: '' }
-									{ symbol
+									{ symbol &&
+									enabledCurrencies[ code ].symbol !==
+										enabledCurrencies[ code ].code
 										? enabledCurrencies[ code ].symbol + ' '
 										: '' }
 									{ enabledCurrencies[ code ].code }
