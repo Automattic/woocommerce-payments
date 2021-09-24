@@ -121,7 +121,7 @@ describe( 'Multi Currency Store Settings', () => {
 				.querySelector( 'iframe' )
 		).toHaveAttribute(
 			'src',
-			'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=false&enable_auto_currency=false&client_currency=GBP'
+			'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=false&enable_auto_currency=false'
 		);
 	} );
 
@@ -145,7 +145,7 @@ describe( 'Multi Currency Store Settings', () => {
 				.querySelector( 'iframe' )
 		).toHaveAttribute(
 			'src',
-			'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=true&enable_auto_currency=false&client_currency=GBP'
+			'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=true&enable_auto_currency=false'
 		);
 	} );
 } );

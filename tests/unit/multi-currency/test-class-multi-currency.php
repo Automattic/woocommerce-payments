@@ -811,7 +811,6 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			[
 				'enable_storefront_switcher' => false,
 				'enable_auto_currency'       => false,
-				'client_currency'            => null,
 			],
 			$this->multi_currency->get_multi_currency_onboarding_simulation_variables()
 		);
@@ -825,19 +824,17 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			[
 				'enable_storefront_switcher' => true,
 				'enable_auto_currency'       => false,
-				'client_currency'            => null,
 			],
 			$this->multi_currency->get_multi_currency_onboarding_simulation_variables()
 		);
 
 		$_GET                    = [];
-		$_SERVER['HTTP_REFERER'] = '?is_mc_onboarding_simulation=true&enable_auto_currency=true&client_currency=USD';
+		$_SERVER['HTTP_REFERER'] = '?is_mc_onboarding_simulation=true&enable_auto_currency=true&enable_storefront_switcher=true';
 
 		$this->assertEquals(
 			[
-				'enable_storefront_switcher' => false,
+				'enable_storefront_switcher' => true,
 				'enable_auto_currency'       => true,
-				'client_currency'            => 'USD',
 			],
 			$this->multi_currency->get_multi_currency_onboarding_simulation_variables()
 		);
