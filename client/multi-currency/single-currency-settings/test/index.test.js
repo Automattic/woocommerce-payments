@@ -165,7 +165,7 @@ describe( 'Single currency settings screen', () => {
 			},
 		} );
 		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
-			'9.00€'
+			'€9.00'
 		);
 		// Manual Rate calculation.
 		fireEvent.click( screen.getByRole( 'radio', { name: /Manual/ } ) );
@@ -177,7 +177,7 @@ describe( 'Single currency settings screen', () => {
 		} );
 
 		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
-			'20.00€'
+			'€20.00'
 		);
 
 		fireEvent.change( screen.getByTestId( 'manual_rate_input' ), {
@@ -187,7 +187,7 @@ describe( 'Single currency settings screen', () => {
 		} );
 
 		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
-			'18.00€'
+			'€18.00'
 		);
 
 		// Price rounding calculation.
@@ -195,7 +195,7 @@ describe( 'Single currency settings screen', () => {
 			target: { value: '0.5' },
 		} );
 		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
-			'17.50€'
+			'€17.50'
 		);
 
 		// Price charm calculation.
@@ -203,7 +203,7 @@ describe( 'Single currency settings screen', () => {
 			target: { value: '-0.05' },
 		} );
 		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
-			'17.45€'
+			'€17.45'
 		);
 
 		// Submit settings test.
