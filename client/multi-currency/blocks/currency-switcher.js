@@ -106,7 +106,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 				fontSize: fontSize,
 				color: fontColor,
 				backgroundColor: backgroundColor,
-				border: border ? '1px solid' : '0px',
+				borderWidth: border ? '1px' : '0px',
 				borderColor: borderColor,
 				borderRadius: borderRadius,
 			},
