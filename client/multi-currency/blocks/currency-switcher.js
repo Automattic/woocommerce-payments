@@ -40,11 +40,11 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		},
 		fontSize: {
 			type: 'integer',
-			default: 11,
+			default: 13,
 		},
 		fontLineHeight: {
 			type: 'float',
-			default: 1.2,
+			default: 1.5,
 		},
 		fontColor: {
 			type: 'string',
@@ -52,7 +52,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		},
 		border: {
 			type: 'boolean',
-			default: false,
+			default: true,
 		},
 		borderRadius: {
 			type: 'integer',
