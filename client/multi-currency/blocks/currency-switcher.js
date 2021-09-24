@@ -22,7 +22,7 @@ import {
 
 registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 	apiVersion: 2,
-	title: __( 'Currency Switcher', 'woocommerce-payments' ),
+	title: __( 'Currency Switcher Block', 'woocommerce-payments' ),
 	description: __(
 		'Let your customers switch between your enabled currencies',
 		'woocommerce-payments'
