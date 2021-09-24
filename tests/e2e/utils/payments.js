@@ -13,7 +13,8 @@ export async function fillCardDetails( page, card ) {
 	const stripeFrame = await frameHandle.contentFrame();
 
 	const cardNumberInput = await stripeFrame.waitForSelector(
-		'[name="cardnumber"]'
+		'[name="cardnumber"]',
+		{ timeout: 30000 }
 	);
 	await cardNumberInput.type( card.number, { delay: 20 } );
 
@@ -111,6 +112,7 @@ export async function setupProductCheckout(
 			// Make sure that the number of items in the cart is incremented first before adding another item.
 			await expect( page ).toMatchElement( cartItemsCounter, {
 				text: new RegExp( `${ ++cartSize } items?` ),
+				timeout: 30000,
 			} );
 		}
 	}
