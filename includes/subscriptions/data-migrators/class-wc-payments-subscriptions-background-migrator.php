@@ -37,7 +37,7 @@ abstract class WC_Payments_Subscriptions_Background_Migrator extends WCS_Backgro
 
 	/**
 	 * Handles an individual item.
-	 * Because the extending classes aren't exclusively repairing items, this function simply acts as a wrapper repair_item().
+	 * Because the extending classes aren't exclusively repairing items, this function simply acts as a wrapper for repair_item().
 	 *
 	 * @param mixed $item The individial item which needs to be handled (updated/migrated/repaired).
 	 */
@@ -49,7 +49,7 @@ abstract class WC_Payments_Subscriptions_Background_Migrator extends WCS_Backgro
 	 * Schedules the background job to start processing items.
 	 * Because the extending classes aren't exclusively repairing items, this function simply acts as a wrapper for schedule_repair().
 	 */
-	public function schedule_updates() {
+	public function schedule_update() {
 		$this->schedule_repair();
 	}
 
@@ -90,8 +90,8 @@ abstract class WC_Payments_Subscriptions_Background_Migrator extends WCS_Backgro
 	 * @param mixed $item The item to be migrated.
 	 */
 	protected function update_item( $item ) {
-		if ( ! is_numeric( as_next_scheduled_action( $this->repair_hook, [ 'object' => $item ] ) ) ) {
-			as_schedule_single_action( gmdate( 'U' ) + HOUR_IN_SECONDS, $this->repair_hook, [ 'object' => $item ] );
+		if ( ! is_numeric( as_next_scheduled_action( $this->repair_hook, [ 'subscription_id' => $item ] ) ) ) {
+			as_schedule_single_action( gmdate( 'U' ) + HOUR_IN_SECONDS, $this->repair_hook, [ 'subscription_id' => $item ] );
 		}
 
 		unset( $this->items_to_repair[ $item ] );
@@ -100,7 +100,7 @@ abstract class WC_Payments_Subscriptions_Background_Migrator extends WCS_Backgro
 	/**
 	 * Cancels all scheduled actions linked to this migrator.
 	 */
-	public function unschedule_all_actions() {
+	public function cancel_all_actions() {
 		$this->unschedule_background_updates();
 		as_unschedule_all_actions( $this->repair_hook );
 	}
