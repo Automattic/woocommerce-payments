@@ -238,13 +238,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return $this->create_setup_intent();
 		}
 
-		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] );
+		$capture_method          = empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] ? 'automatic' : 'manual';
+		$enabled_payment_methods = $this->get_upe_enabled_at_checkout_payment_method_ids( $order_id );
 
 		$payment_intent = $this->payments_api_client->create_intention(
 			$converted_amount,
 			strtolower( $currency ),
 			array_values( $enabled_payment_methods ),
-			$order_id ?? 0
+			$order_id ?? 0,
+			$capture_method
 		);
 		return [
 			'id'            => $payment_intent->get_id(),
