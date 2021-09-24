@@ -514,6 +514,10 @@ class Compatibility {
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
 			}
 
+			if ( 'custom_price' === $addon['field_type'] ) {
+				$this->update_cart_item_meta_data( $cart_item['data'], 'custom', $addon_price );
+			}
+
 			switch ( $price_type ) {
 				case 'percentage_based':
 					$price         += (float) ( $cart_item['data']->get_price( 'view' ) * ( $addon_price / 100 ) );
@@ -521,10 +525,7 @@ class Compatibility {
 					$sale_price    += (float) ( $sale_price * ( $addon_price / 100 ) );
 
 					// Add our percentage amount as meta data on the cart item so we can use it later.
-					$cart_item['data']->update_meta_data(
-						'wcpay_mc_percentage_currency_amount',
-						$cart_item['addons_price_before_calc'] * ( $addon_price / 100 )
-					);
+					$this->update_cart_item_meta_data( $cart_item['data'], 'percentage', $cart_item['addons_price_before_calc'] * ( $addon_price / 100 ) );
 					break;
 				case 'flat_fee':
 					$price         += (float) ( $addon_price / $quantity );
@@ -593,8 +594,10 @@ class Compatibility {
 				remove_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_addon_order_display_price' ], 50 );
 				remove_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_addon_order_display_price' ], 50 );
 
-				// Go through each cart item and return the price itself if it's a percentage based price.
-				$cart = WC()->cart->get_cart_contents();
+				// Go through each cart item and return the price itself if it's a percentage based or custom price.
+				$cart          = WC()->cart->get_cart_contents();
+				$is_percentage = false;
+				$is_custom     = false;
 				foreach ( $cart as $item ) {
 					/**
 					 * This is a best guess scenario, and it only affects the display.
@@ -602,17 +605,31 @@ class Compatibility {
 					 * those equal the same amount, then the flat fee add on's price will not be converted in the display price.
 					 * The display price is used in the cart and checkout page, along with the line item meta in orders.
 					 */
-					$percentage_price = (float) $item['data']->get_meta( 'wcpay_mc_percentage_currency_amount' );
-					$percentage_price = $this->get_tax_adjusted_price( $percentage_price, $product );
-					if ( (string) $price === (string) $percentage_price
-						&& $item['data']->get_id() === $product->get_id() ) {
-						return $price;
+					$percentage_prices = $item['data']->get_meta( 'wcpay_mc_percentage_currency_amounts' );
+					foreach ( $percentage_prices as $percentage_price ) {
+						$percentage_price = $this->get_tax_adjusted_price( (float) $percentage_price, $product );
+						if ( (string) $price === (string) $percentage_price
+							&& $item['data']->get_id() === $product->get_id() ) {
+							$is_percentage = true;
+						}
+					}
+
+					// Same as above, it's a best guess and if another add on's price matches the amount, it will not get converted.
+					$custom_prices = $item['data']->get_meta( 'wcpay_mc_custom_currency_amounts' );
+					foreach ( $custom_prices as $custom_price ) {
+						$custom_price = $this->get_tax_adjusted_price( (float) $custom_price, $product );
+						if ( (string) $price === (string) $custom_price
+							&& $item['data']->get_id() === $product->get_id() ) {
+							$is_custom = true;
+						}
 					}
 				}
 
-				// Get the add on's price.
-				$price = $this->multi_currency->get_price( $price, 'product' );
-				$price = $this->get_tax_adjusted_price( $price, $product );
+				if ( ! $is_percentage && ! $is_custom ) {
+					// Get the add on's price.
+					$price = $this->multi_currency->get_price( $price, 'product' );
+					$price = $this->get_tax_adjusted_price( $price, $product );
+				}
 
 				// Add our filters back.
 				add_filter( 'woocommerce_get_price_including_tax', [ $this, 'get_addon_order_display_price' ], 50, 3 );
@@ -792,5 +809,25 @@ class Compatibility {
 		}
 
 		return get_option( 'woocommerce_tax_display_shop' );
+	}
+
+	/**
+	 * Updates the cart item's meta data so we can retrieve it later.
+	 *
+	 * @param \WC_Product $cart_item The product in the cart.
+	 * @param string      $type      The type of meta we're adding.
+	 * @param float       $amount    The amount being added to the meta array.
+	 *
+	 * @return void
+	 */
+	private function update_cart_item_meta_data( \WC_Product $cart_item, string $type, float $amount ) {
+
+		$key = 'percentage' === $type ? 'wcpay_mc_percentage_currency_amounts' : 'wcpay_mc_custom_currency_amounts';
+
+		$amounts   = $cart_item->get_meta( $key );
+		$amounts   = is_array( $amounts ) ? $amounts : [];
+		$amounts[] = $amount;
+
+		$cart_item->update_meta_data( $key, $amounts );
 	}
 }
