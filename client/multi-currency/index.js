@@ -149,19 +149,6 @@ if ( storeSettingsSection ) {
 		'#preview-pane-placeholder'
 	);
 
-	const getFirstEnabledCurrencyFromList = () => {
-		const currenciesList = enabledCurrenciesListItemsExceptPlaceholders();
-		if ( 1 < currenciesList.length ) {
-			return currenciesList
-				.slice( 1, 2 )[ 0 ]
-				.classList.toString()
-				.replace( 'enabled-currency ', '' )
-				.trim()
-				.toUpperCase();
-		}
-		return null;
-	};
-
 	const PreviewModalHelper = () => {
 		const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
@@ -181,7 +168,6 @@ if ( storeSettingsSection ) {
 					setPreviewModalOpen={ setPreviewModalOpen }
 					isAutomaticSwitchEnabledValue={ true }
 					isStorefrontSwitcherEnabledValue={ false }
-					clientCurrency={ getFirstEnabledCurrencyFromList() }
 				/>
 			</>
 		);

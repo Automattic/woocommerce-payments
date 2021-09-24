@@ -14,7 +14,6 @@ const PreviewModal = ( {
 	setPreviewModalOpen,
 	isStorefrontSwitcherEnabledValue,
 	isAutomaticSwitchEnabledValue,
-	clientCurrency,
 } ) => {
 	const handlePreviewModalCloseClick = () => {
 		setPreviewModalOpen( false );
@@ -36,9 +35,7 @@ const PreviewModal = ( {
 						'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=' +
 						isStorefrontSwitcherEnabledValue +
 						'&enable_auto_currency=' +
-						isAutomaticSwitchEnabledValue +
-						'&client_currency=' +
-						clientCurrency
+						isAutomaticSwitchEnabledValue
 					}
 				></iframe>
 			</Modal>

@@ -1192,16 +1192,33 @@ class MultiCurrency {
 	 * @return  void
 	 */
 	private function simulate_client_currency() {
-		if ( ! $this->simulation_params['enable_auto_currency'] || ! $this->simulation_params['client_currency'] ) {
+		if ( ! $this->simulation_params['enable_auto_currency'] ) {
 			return;
 		}
-		$simulation_currency = $this->simulation_params['client_currency'];
+
+		$countries = WC_Payments_Utils::supported_countries();
+
+		$predefined_simulation_currencies = [
+			'USD' => $countries['US'],
+			'GBP' => $countries['GB'],
+		];
+
+		$simulation_currency = 'USD' === get_option( 'woocommerce_currency', 'USD' ) ? 'GBP' : 'USD';
+		$simulation_country  = $predefined_simulation_currencies[ $simulation_currency ];
 
 		// Simulate client currency from geolocation.
 		add_filter(
 			'wcpay_multi_currency_get_selected_currency',
 			function( $selected_currency ) use ( $simulation_currency ) {
 				return $simulation_currency;
+			}
+		);
+
+		// Simulate client country from geolocation.
+		add_filter(
+			'wcpay_multi_currency_override_notice_country',
+			function( $selected_country ) use ( $simulation_country ) {
+				return $simulation_country;
 			}
 		);
 
@@ -1251,14 +1268,12 @@ class MultiCurrency {
 		$possible_variables = [
 			'enable_storefront_switcher' => 'wp_validate_boolean',
 			'enable_auto_currency'       => 'wp_validate_boolean',
-			'client_currency'            => [ $this, 'validate_currency_code' ],
 		];
 
 		// Define the defaults if the parameter is missing in the request.
 		$defaults = [
 			'enable_storefront_switcher' => false,
 			'enable_auto_currency'       => false,
-			'client_currency'            => null,
 		];
 
 		// Prepare the params array.
@@ -1303,7 +1318,6 @@ class MultiCurrency {
 						parsedURL.searchParams.set('is_mc_onboarding_simulation', true);
 						parsedURL.searchParams.set('enable_auto_currency', <?php echo esc_attr( $params['enable_auto_currency'] ? 'true' : 'false' ); ?>);
 						parsedURL.searchParams.set('enable_storefront_switcher', <?php echo esc_attr( $params['enable_storefront_switcher'] ? 'true' : 'false' ); ?>);
-						parsedURL.searchParams.set('client_currency', '<?php echo esc_attr( $params['client_currency'] ?? '' ); ?>');
 						link.href = parsedURL.toString();
 					}
 				});
