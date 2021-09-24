@@ -11,13 +11,20 @@ export async function fillCardDetails( page, card ) {
 		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
-	const inputs = await stripeFrame.$$( '.InputElement.Input' );
 
-	const [ cardNumberInput, cardDateInput, cardCvcInput ] = inputs;
+	const cardNumberInput = await stripeFrame.waitForSelector(
+		'[name="cardnumber"]'
+	);
 	await cardNumberInput.type( card.number, { delay: 20 } );
+
+	const cardDateInput = await stripeFrame.waitForSelector(
+		'[name="exp-date"]'
+	);
 	await cardDateInput.type( card.expires.month + card.expires.year, {
 		delay: 20,
 	} );
+
+	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
 	await cardCvcInput.type( card.cvc, { delay: 20 } );
 }
 
