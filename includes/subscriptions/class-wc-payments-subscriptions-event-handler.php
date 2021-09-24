@@ -78,7 +78,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 			$subscription->add_order_note( sprintf( __( 'Next automatic payment scheduled for %s.', 'woocommerce-payments' ), get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $wcpay_subscription['current_period_end'] ), wc_date_format() . ' ' . wc_time_format() ) ) );
 
 			$this->subscription_service->update_dates_to_match_wcpay_subscription( $wcpay_subscription, $subscription );
-			$this->invoice_service->validate_invoice_items( $wcpay_lines, $wcpay_discounts, $subscription );
+			$this->invoice_service->validate_invoice( $wcpay_lines, $wcpay_discounts ? $wcpay_discounts : [], $subscription );
 		}
 	}
 
