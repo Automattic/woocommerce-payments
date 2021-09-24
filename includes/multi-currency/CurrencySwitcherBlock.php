@@ -79,7 +79,7 @@ class CurrencySwitcherBlock {
 					],
 					'fontSize'        => [
 						'type'    => 'integer',
-						'default' => 13,
+						'default' => 14,
 					],
 					'fontLineHeight'  => [
 						'type'    => 'number',

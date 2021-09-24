@@ -60,7 +60,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		},
 		fontSize: {
 			type: 'integer',
-			default: 13,
+			default: 14,
 		},
 		fontLineHeight: {
 			type: 'float',
