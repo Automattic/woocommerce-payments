@@ -99,13 +99,16 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 3.1.0 - 2021-xx-xx =
+* Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
 * Add - Customer multi-currency onboarding flow.
 * Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
 * Add - Update layout of the Multi-currency settings screen.
 * Fix - Fixed missing file error for removed CSS file.
 * Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
 * Fix - Currency switcher does not affect order confirmation screen prices.
-* Fix - Refund button is missing from orders that saved with errors.
+* Fix - Error when attempting to change the payment method for a subscription with UPE enabled.
+* Add - Multi-Currency track currency added.
+* Fix - Fill missing order_intent_info even if an exception occurs.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
