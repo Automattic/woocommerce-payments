@@ -46,6 +46,9 @@ class WC_Payments_Subscription_Data_Migration_Manager {
 
 		// Before we initialise the batch processors, check if the plugin status has changed.
 		$this->verify_migration_state();
+
+		// Before we initialise the batch processors, check if the migrations have finished.
+		$this->check_migration_status();
 		$this->init_migrators();
 	}
 
@@ -83,6 +86,21 @@ class WC_Payments_Subscription_Data_Migration_Manager {
 
 			// Deleting the option is equivalent to the plugin not being active.
 			delete_option( self::WC_SUBSCRIPTIONS_PLUGIN_ACTIVE_OPTION );
+		}
+	}
+
+	/**
+	 * Checks if the store's is upgrading and still has migrations scheduled.
+	 */
+	private function check_migration_status() {
+		if ( $this->is_upgrading() ) {
+			foreach ( $this->upgrade_migrators as $migrator ) {
+				if ( ! $migrator->has_finished() ) {
+					return;
+				}
+			}
+
+			$this->clear_migration_status();
 		}
 	}
 

@@ -104,4 +104,23 @@ abstract class WC_Payments_Subscriptions_Background_Migrator extends WCS_Backgro
 		$this->unschedule_background_updates();
 		as_unschedule_all_actions( $this->repair_hook );
 	}
+
+	/**
+	 * Checks if this data migrator has finished.
+	 *
+	 * @return bool Whether the migrator has finished. True if it has finished, otherwise false.
+	 */
+	public function has_finished() {
+		// If there are still actions scheduled in the "Discovery" phase we haven't finished yet.
+		if ( is_numeric( as_next_scheduled_action( $this->scheduled_hook ) ) ) {
+			return false;
+		}
+
+		// If there are individual subscription actions scheduled, we haven't finished.
+		if ( is_numeric( as_next_scheduled_action( $this->repair_hook ) ) ) {
+			return false;
+		}
+
+		return true;
+	}
 }
