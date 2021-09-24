@@ -177,9 +177,9 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Tests for WC_Payments_Invoice_Service::validate_invoice_items()
+	 * Tests for WC_Payments_Invoice_Service::validate_invoice()
 	 */
-	public function test_validate_invoice_items() {
+	public function test_validate_invoice() {
 		$mock_order        = WC_Helper_Order::create_order();
 		$mock_subscription = new WC_Subscription();
 		$mock_subscription->set_parent( $mock_order );
@@ -188,7 +188,7 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123' );
 		}
 
-		$mock_items = [
+		$mock_item_data = [
 			[
 				'subscription_item' => 'si_test123',
 				'amount'            => 1000,
@@ -197,7 +197,7 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 			],
 		];
 
-		$mock_discounts = [];
+		$mock_discount_data = [];
 
 		$this->mock_product_service
 			->expects( $this->once() )
@@ -215,7 +215,7 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$this->invoice_service->validate_invoice_items( $mock_items, $mock_discounts, $mock_subscription );
+		$this->invoice_service->validate_invoice( $mock_item_data, $mock_discount_data, $mock_subscription );
 	}
 
 	/**
