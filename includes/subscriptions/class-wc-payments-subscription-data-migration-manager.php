@@ -63,7 +63,7 @@ class WC_Payments_Subscription_Data_Migration_Manager {
 	/**
 	 * Checks if the store's WC Subscriptions plugin status has changed and if so whether we need to schedule upgrades.
 	 */
-	public function verify_migration_state() {
+	private function verify_migration_state() {
 		$plugin_was_active = 'yes' === get_option( self::WC_SUBSCRIPTIONS_PLUGIN_ACTIVE_OPTION, 'no' );
 
 		// If the plugin wasn't active but is now, check if we need to upgrade any subscriptions.
