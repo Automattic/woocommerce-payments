@@ -123,7 +123,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 				borderWidth: border ? '1px' : '0px',
 				borderColor: borderColor,
 				borderRadius: borderRadius,
-				padding: '4px',
+				padding: '2px',
 			},
 		};
 

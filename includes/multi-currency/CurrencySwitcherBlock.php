@@ -201,7 +201,7 @@ class CurrencySwitcherBlock {
 				'line-height' => $block_attributes['fontLineHeight'] ?? 1.2,
 			],
 			'select' => [
-				'padding'          => '4px',
+				'padding'          => '2px',
 				'border'           => isset( $block_attributes['border'] ) ? '1px solid' : '0px solid',
 				'border-radius'    => isset( $block_attributes['borderRadius'] ) ? $block_attributes['borderRadius'] . 'px' : '3px',
 				'border-color'     => $block_attributes['borderColor'] ?? '#000000',
