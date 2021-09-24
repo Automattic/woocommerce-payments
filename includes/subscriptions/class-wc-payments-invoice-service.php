@@ -186,7 +186,7 @@ class WC_Payments_Invoice_Service {
 
 		$discount_data = $this->get_repair_data_for_wcpay_discounts( $wcpay_discount_data, $subscription );
 
-		if ( ! empty( $discount_data ) ) {
+		if ( isset( $discount_data ) ) {
 			$response = $this->payments_api_client->update_subscription(
 				WC_Payments_Subscription_Service::get_wcpay_subscription_id( $subscription ),
 				[ 'discounts' => $discount_data ]
@@ -312,10 +312,10 @@ class WC_Payments_Invoice_Service {
 	 * @param array           $wcpay_discount_data The WCPay disounts.
 	 * @param WC_Subscription $subscription        The WC Subscription object.
 	 *
-	 * @return array
+	 * @return mixed
 	 */
-	private function get_repair_data_for_wcpay_discounts( array $wcpay_discount_data, WC_Subscription $subscription ) : array {
-		$repair_data               = [];
+	private function get_repair_data_for_wcpay_discounts( array $wcpay_discount_data, WC_Subscription $subscription ) {
+		$repair_data               = null;
 		$subscription_discount_ids = WC_Payments_Subscription_Service::get_wcpay_discount_ids( $subscription );
 
 		if ( ! empty( $subscription_discount_ids ) || ! empty( $wcpay_discount_data ) ) {
