@@ -112,13 +112,6 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 			? Object.keys( enabledCurrencies )
 			: [];
 
-		// In case there is a problem retrieving enabled currencies.
-		const placeholders = [
-			{ id: 'usd', code: 'USD', flag: '🇺🇸', symbol: '$' },
-			{ id: 'eur', code: 'EUR', flag: '🇪🇺', symbol: '€' },
-			{ id: 'jpy', code: 'JPY', flag: '🇯🇵', symbol: '¥' },
-		];
-
 		const styles = {
 			div: {
 				lineHeight: fontLineHeight,
@@ -299,7 +292,16 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 				</InspectorControls>
 
 				<div className="currency-switcher-holder" style={ styles.div }>
-					<select name="currency" style={ styles.select }>
+					<select
+						name="currency"
+						disabled={ isLoading }
+						style={ styles.select }
+					>
+						{ isLoading && (
+							<option>
+								{ __( 'Loading…', 'woocommerce-payments' ) }
+							</option>
+						) }
 						{ ! isLoading &&
 							enabledCurrencies &&
 							enabledKeys.map( ( code ) => (
@@ -314,19 +316,6 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 										? enabledCurrencies[ code ].symbol + ' '
 										: '' }
 									{ enabledCurrencies[ code ].code }
-								</option>
-							) ) }
-						{ ( isLoading || ! enabledCurrencies ) &&
-							[ 0, 1, 2 ].map( ( i ) => (
-								<option
-									key={ placeholders[ i ].id }
-									value={ placeholders[ i ].code }
-								>
-									{ flag ? placeholders[ i ].flag + ' ' : '' }
-									{ symbol
-										? placeholders[ i ].symbol + ' '
-										: '' }
-									{ placeholders[ i ].code }
 								</option>
 							) ) }
 					</select>
