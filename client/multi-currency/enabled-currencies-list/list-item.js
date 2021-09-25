@@ -85,6 +85,7 @@ const EnabledCurrenciesListItem = ( {
 						onClick={ onDeleteClick }
 						label={ name }
 						code={ code }
+						symbol={ symbol }
 					/>
 				) }
 			</div>
