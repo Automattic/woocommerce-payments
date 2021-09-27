@@ -619,7 +619,6 @@ class MultiCurrency {
 		$code = $this->get_stored_currency_code();
 
 		$code = $this->compatibility->override_selected_currency() ? $this->compatibility->override_selected_currency() : $code;
-		$code = apply_filters( 'wcpay_multi_currency_get_selected_currency', $code );
 
 		return $this->get_enabled_currencies()[ $code ] ?? $this->get_default_currency();
 	}
@@ -790,7 +789,7 @@ class MultiCurrency {
 		/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name */
 			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a>Use %3$s instead.</a>', 'woocommerce-payments' ),
 			apply_filters( 'wcpay_multi_currency_override_notice_country', WC()->countries->countries[ $country ] ),
-			$current_currency->get_name(),
+			apply_filters( 'wcpay_multi_currency_override_notice_currency_name', $current_currency->get_name() ),
 			$currencies[ $store_currency ]
 		);
 
@@ -1212,14 +1211,15 @@ class MultiCurrency {
 			'GBP' => $countries['GB'],
 		];
 
-		$simulation_currency = 'USD' === get_option( 'woocommerce_currency', 'USD' ) ? 'GBP' : 'USD';
-		$simulation_country  = $predefined_simulation_currencies[ $simulation_currency ];
+		$simulation_currency      = 'USD' === get_option( 'woocommerce_currency', 'USD' ) ? 'GBP' : 'USD';
+		$simulation_currency_name = $this->available_currencies[ $simulation_currency ]->get_name();
+		$simulation_country       = $predefined_simulation_currencies[ $simulation_currency ];
 
 		// Simulate client currency from geolocation.
 		add_filter(
-			'wcpay_multi_currency_get_selected_currency',
-			function( $selected_currency ) use ( $simulation_currency ) {
-				return $simulation_currency;
+			'wcpay_multi_currency_override_notice_currency_name',
+			function( $selected_currency_name ) use ( $simulation_currency_name ) {
+				return $simulation_currency_name;
 			}
 		);
 
