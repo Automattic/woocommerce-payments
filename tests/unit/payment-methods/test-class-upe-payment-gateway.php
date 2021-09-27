@@ -397,6 +397,62 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$result = $this->mock_upe_gateway->create_payment_intent( $order_id );
 	}
 
+	public function test_create_payment_intent_defaults_to_automatic_capture() {
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = new WC_Payments_API_Intention( 'pi_mock', 5000, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_intention' )
+			->with(
+				5000,
+				'usd',
+				[ 'card' ],
+				$order_id,
+				'automatic'
+			)
+			->willReturn( $intent );
+		$this->mock_upe_gateway->create_payment_intent( $order_id );
+	}
+
+	public function test_create_payment_intent_with_automatic_capture() {
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = new WC_Payments_API_Intention( 'pi_mock', 5000, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+		$this->mock_upe_gateway->settings['manual_capture'] = 'no';
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_intention' )
+			->with(
+				5000,
+				'usd',
+				[ 'card' ],
+				$order_id,
+				'automatic'
+			)
+			->willReturn( $intent );
+		$this->mock_upe_gateway->create_payment_intent( $order_id );
+	}
+
+	public function test_create_payment_intent_with_manual_capture() {
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = new WC_Payments_API_Intention( 'pi_mock', 5000, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+		$this->mock_upe_gateway->settings['manual_capture'] = 'yes';
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_intention' )
+			->with(
+				5000,
+				'usd',
+				[ 'card' ],
+				$order_id,
+				'manual'
+			)
+			->willReturn( $intent );
+		$this->mock_upe_gateway->create_payment_intent( $order_id );
+	}
+
 	public function test_create_setup_intent_existing_customer() {
 		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
 
