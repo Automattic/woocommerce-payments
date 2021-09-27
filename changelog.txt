@@ -10,6 +10,7 @@
 * Fix - Currency switcher does not affect order confirmation screen prices.
 * Fix - Error when attempting to change the payment method for a subscription with UPE enabled.
 * Add - Multi-Currency track currency added.
+* Fix - Fill missing order_intent_info even if an exception occurs.
 * Add - Gutenberg Block Widget for Multi-Currency.
 
 = 3.0.0 - 2021-09-16 =
@@ -22,6 +23,7 @@
 * Fix - Fix subscription change payment method errors after entering a payment method that fails.
 * Fix - Prevent duplicate account onboarding requests.
 * Fix - Filter out merchant-facing payment errors from customer error notices.
+* Fix - Add primary action to high priority tasks.
 
 = 2.9.1 - 2021-09-07 =
 * Fix - Error while checking out with UPE when fields are hidden.
