@@ -111,8 +111,9 @@ const SingleCurrencySettings = () => {
 		? moment
 				.unix( targetCurrency.last_updated )
 				.format(
-					toMoment( window.wcSettings?.dateFormat ?? 'j F, Y' ) +
-						' HH:mm'
+					toMoment( window.wcSettings?.dateFormat ?? 'F j, Y' ) +
+						' ' +
+						toMoment( window.wcSettings?.timeFormat ?? 'HH:mm' )
 				)
 		: '';
 
