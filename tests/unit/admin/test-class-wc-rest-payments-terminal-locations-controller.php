@@ -63,7 +63,6 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 				'city'        => WC()->countries->get_base_city(),
 				'country'     => WC()->countries->get_base_country(),
 				'line1'       => WC()->countries->get_base_address(),
-				'line2'       => WC()->countries->get_base_address_2(),
 				'postal_code' => WC()->countries->get_base_postcode(),
 				'state'       => WC()->countries->get_base_state(),
 			],
@@ -89,7 +88,7 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 		$result = $this->controller->get_store_location( $this->request );
 
 		$this->assertSame( 'store_address_is_incomplete', $result->get_error_code() );
-		$this->assertStringEndsWith( '/admin.php?page=wc-settings', $result->get_error_data()['url'] );
+		$this->assertStringEndsWith( '/admin.php?page=wc-settings&tab=general', $result->get_error_data()['url'] );
 	}
 
 	public function test_creates_location_from_scratch() {

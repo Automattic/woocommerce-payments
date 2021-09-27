@@ -45,26 +45,36 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_store_location( $request ) {
-		$name             = get_bloginfo();
 		$store_address    = WC()->countries;
-		$location_address = [
-			'city'        => $store_address->get_base_city(),
-			'country'     => $store_address->get_base_country(),
-			'line1'       => $store_address->get_base_address(),
-			'line2'       => $store_address->get_base_address_2(),
-			'postal_code' => $store_address->get_base_postcode(),
-			'state'       => $store_address->get_base_state(),
-		];
+		$location_address = array_filter(
+			[
+				'city'        => $store_address->get_base_city(),
+				'country'     => $store_address->get_base_country(),
+				'line1'       => $store_address->get_base_address(),
+				'line2'       => $store_address->get_base_address_2(),
+				'postal_code' => $store_address->get_base_postcode(),
+				'state'       => $store_address->get_base_state(),
+			]
+		);
 
 		// If address is not populated, emit an error and specify the URL where this can be done.
-		$provided_address       = array_filter( $location_address );
-		$is_address_unpopulated = 2 === count( $provided_address ) && isset( $provided_address['country'], $provided_address['state'] );
+		$is_address_unpopulated = 2 === count( $location_address ) && isset( $location_address['country'], $location_address['state'] );
 		if ( $is_address_unpopulated ) {
 			return rest_ensure_response(
 				new \WP_Error(
 					'store_address_is_incomplete',
 					__( 'The store address is incomplete, please actualize settings.', 'woocommerce-payments' ),
-					[ 'url' => admin_url( add_query_arg( [ 'page' => 'wc-settings' ], 'admin.php' ) ) ]
+					[
+						'url' => admin_url(
+							add_query_arg(
+								[
+									'page' => 'wc-settings',
+									'tab'  => 'general',
+								],
+								'admin.php'
+							)
+						),
+					]
 				)
 			);
 		}
@@ -78,6 +88,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			}
 
 			// Check the existing locations to see if one of them matches the store.
+			$name = get_bloginfo();
 			foreach ( $locations as $location ) {
 				if (
 					$location['display_name'] === $name
