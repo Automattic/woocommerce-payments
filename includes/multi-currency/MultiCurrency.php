@@ -781,7 +781,7 @@ class MultiCurrency {
 		$currencies       = get_woocommerce_currencies();
 
 		// Do not display notice if using the store's default currency.
-		if ( $store_currency === $current_currency->get_code() ) {
+		if ( $store_currency === $current_currency->get_code() && ! $this->is_simulation_enabled() ) {
 			return;
 		}
 
