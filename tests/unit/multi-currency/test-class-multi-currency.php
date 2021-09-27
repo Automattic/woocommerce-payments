@@ -309,34 +309,6 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertSame( 'GBP', $this->multi_currency->get_selected_currency()->get_code() );
 	}
 
-	public function test_get_selected_currency_returns_override_by_filter() {
-		add_filter(
-			'wcpay_multi_currency_get_selected_currency',
-			function( $selected_currency ) {
-				return 'CAD';
-			}
-		);
-
-		wp_set_current_user( self::LOGGED_IN_USER_ID );
-		update_user_meta( self::LOGGED_IN_USER_ID, WCPay\MultiCurrency\MultiCurrency::CURRENCY_META_KEY, 'GBP' );
-
-		$this->assertSame( 'CAD', $this->multi_currency->get_selected_currency()->get_code() );
-	}
-
-	public function test_get_selected_currency_returns_default_when_override_by_filter_isnt_enabled() {
-		add_filter(
-			'wcpay_multi_currency_get_selected_currency',
-			function( $selected_currency ) {
-				return 'NZD';
-			}
-		);
-
-		wp_set_current_user( self::LOGGED_IN_USER_ID );
-		update_user_meta( self::LOGGED_IN_USER_ID, WCPay\MultiCurrency\MultiCurrency::CURRENCY_META_KEY, 'GBP' );
-
-		$this->assertSame( get_woocommerce_currency(), $this->multi_currency->get_selected_currency()->get_code() );
-	}
-
 	public function test_get_selected_currency_returns_default_currency_with_no_stripe_account() {
 		$this->init_multi_currency( null, false );
 		$this->assertSame( get_woocommerce_currency(), $this->multi_currency->get_selected_currency()->get_code() );
