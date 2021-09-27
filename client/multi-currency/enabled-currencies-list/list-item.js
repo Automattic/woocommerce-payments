@@ -10,6 +10,8 @@ import { Button } from '@wordpress/components';
  * Internal dependencies
  */
 import DeleteButton from './delete-button';
+import MultiCurrencySettingsContext from '../context';
+import { useContext } from 'react';
 
 const EnabledCurrenciesListItem = ( {
 	currency: { code, flag, id, is_default: isDefault, name, symbol, rate },
@@ -19,9 +21,9 @@ const EnabledCurrenciesListItem = ( {
 	},
 	onDeleteClick,
 } ) => {
-	const getEditUrl = ( currencyId ) => {
-		return `admin.php?page=wc-settings&tab=wcpay_multi_currency&section=${ currencyId.toLowerCase() }`;
-	};
+	const { openSingleCurrencySettings } = useContext(
+		MultiCurrencySettingsContext
+	);
 
 	const formatCurrencyRate = () => {
 		const formattedRate = isDefaultZeroDecimal
@@ -61,7 +63,9 @@ const EnabledCurrenciesListItem = ( {
 				{ ! isDefault && (
 					<Button
 						isLink
-						href={ getEditUrl( id ) }
+						onClick={ () => {
+							openSingleCurrencySettings( code );
+						} }
 						aria-label={ sprintf(
 							__(
 								/* translators: %1: Currency to be edited. */
@@ -81,6 +85,7 @@ const EnabledCurrenciesListItem = ( {
 						onClick={ onDeleteClick }
 						label={ name }
 						code={ code }
+						symbol={ symbol }
 					/>
 				) }
 			</div>

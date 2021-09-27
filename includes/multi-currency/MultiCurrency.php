@@ -71,6 +71,13 @@ class MultiCurrency {
 	protected $currency_switcher_widget;
 
 	/**
+	 * Gutenberg Block implementation of the Currency Switcher Widget instance.
+	 *
+	 * @var CurrencySwitcherBlock
+	 */
+	protected $currency_switcher_block;
+
+	/**
 	 * Utils instance.
 	 *
 	 * @var Utils
@@ -184,13 +191,14 @@ class MultiCurrency {
 	 * @param WC_Payments_Localization_Service $localization_service Localization Service instance.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service ) {
-		$this->payments_api_client  = $payments_api_client;
-		$this->payments_account     = $payments_account;
-		$this->localization_service = $localization_service;
-		$this->geolocation          = new Geolocation( $this->localization_service );
-		$this->utils                = new Utils();
-		$this->compatibility        = new Compatibility( $this, $this->utils );
-		$this->analytics            = new Analytics( $this );
+		$this->payments_api_client     = $payments_api_client;
+		$this->payments_account        = $payments_account;
+		$this->localization_service    = $localization_service;
+		$this->geolocation             = new Geolocation( $this->localization_service );
+		$this->utils                   = new Utils();
+		$this->compatibility           = new Compatibility( $this, $this->utils );
+		$this->analytics               = new Analytics( $this );
+		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
 
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
@@ -246,7 +254,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 
@@ -276,11 +284,12 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Initialize the Widgets.
+	 * Initialize the legacy widgets.
 	 *
 	 * @return void
 	 */
 	public function init_widgets() {
+		// Register the legacy widget.
 		$this->currency_switcher_widget = new CurrencySwitcherWidget( $this, $this->compatibility );
 		register_widget( $this->currency_switcher_widget );
 	}
@@ -1267,6 +1276,22 @@ class MultiCurrency {
 			</script>
 				<?php
 			}
+		);
+	}
+
+	/**
+	 * Checks if the currently displayed page is the WooCommerce Payments
+	 * settings page for the multi currency settings.
+	 *
+	 * @return bool
+	 */
+	public function is_multi_currency_settings_page(): bool {
+		global $current_screen, $current_tab;
+		return (
+			is_admin()
+			&& $current_tab && $current_screen
+			&& 'wcpay_multi_currency' === $current_tab
+			&& 'woocommerce_page_wc-settings' === $current_screen->base
 		);
 	}
 

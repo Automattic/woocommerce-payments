@@ -10,9 +10,9 @@ import React from 'react';
 import Banner from '../../banner';
 import './style.scss';
 
-const SettingsLayout = ( { children } ) => (
+const SettingsLayout = ( { children, displayBanner = true } ) => (
 	<div className="wcpay-settings-layout">
-		<Banner />
+		{ displayBanner && <Banner /> }
 
 		{ children }
 	</div>
