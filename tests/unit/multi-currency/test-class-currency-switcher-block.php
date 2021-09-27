@@ -80,7 +80,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase
 
 		if ( $test_styles ) {
 			$this->assertStringContainsString(
-				"style=\"border: {$border_attribute}; border-radius: {$border_radius_attribute}; border-color: {$border_color_attribute}; font-size: {$attributes['fontSize']}px; color: {$attributes['fontColor']}; background-color: {$attributes['backgroundColor']}; \"",
+				"style=\"padding: 2px; border: {$border_attribute}; border-radius: {$border_radius_attribute}; border-color: {$border_color_attribute}; font-size: {$attributes['fontSize']}px; color: {$attributes['fontColor']}; background-color: {$attributes['backgroundColor']}; \"",
 				$result
 			);
 		}
