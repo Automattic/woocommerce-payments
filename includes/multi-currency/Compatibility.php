@@ -606,21 +606,25 @@ class Compatibility {
 					 * The display price is used in the cart and checkout page, along with the line item meta in orders.
 					 */
 					$percentage_prices = $item['data']->get_meta( 'wcpay_mc_percentage_currency_amounts' );
-					foreach ( $percentage_prices as $percentage_price ) {
-						$percentage_price = $this->get_tax_adjusted_price( (float) $percentage_price, $product );
-						if ( (string) $price === (string) $percentage_price
-							&& $item['data']->get_id() === $product->get_id() ) {
-							$is_percentage = true;
+					if ( is_array( $percentage_prices ) ) {
+						foreach ( $percentage_prices as $percentage_price ) {
+							$percentage_price = $this->get_tax_adjusted_price( (float) $percentage_price, $product );
+							if ( (string) $price === (string) $percentage_price
+								&& $item['data']->get_id() === $product->get_id() ) {
+								$is_percentage = true;
+							}
 						}
 					}
 
 					// Same as above, it's a best guess and if another add on's price matches the amount, it will not get converted.
 					$custom_prices = $item['data']->get_meta( 'wcpay_mc_custom_currency_amounts' );
-					foreach ( $custom_prices as $custom_price ) {
-						$custom_price = $this->get_tax_adjusted_price( (float) $custom_price, $product );
-						if ( (string) $price === (string) $custom_price
-							&& $item['data']->get_id() === $product->get_id() ) {
-							$is_custom = true;
+					if ( is_array( $custom_prices ) ) {
+						foreach ( $custom_prices as $custom_price ) {
+							$custom_price = $this->get_tax_adjusted_price( (float) $custom_price, $product );
+							if ( (string) $price === (string) $custom_price
+								&& $item['data']->get_id() === $product->get_id() ) {
+								$is_custom = true;
+							}
 						}
 					}
 				}

@@ -1029,11 +1029,12 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		// Go through the one item in the cart and add the percentage currency amount set above to the meta.
 		$cart = WC()->cart->get_cart_contents();
 		foreach ( $cart as $item ) {
-			$item['data']->update_meta_data( 'wcpay_mc_percentage_currency_amount', $addon_currency_amount );
+			$item['data']->update_meta_data( 'wcpay_mc_percentage_currency_amount', [ $addon_currency_amount ] );
 		}
 
 		$price = $this->compatibility->get_addon_order_display_price( $addon_currency_amount, 1, $product );
 		$this->assertEquals( $addon_currency_amount, $price );
+		WC()->cart->empty_cart();
 	}
 
 	public function test_get_addon_order_display_price_returns_correct_percentage_price_with_tax() {
@@ -1078,10 +1079,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		// Go through the one item in the cart and add the percentage currency amount set above to the meta.
 		$cart = WC()->cart->get_cart_contents();
 		foreach ( $cart as $item ) {
-			$item['data']->update_meta_data(
-				'wcpay_mc_percentage_currency_amount',
-				$addon_currency_amount
-			);
+			$item['data']->update_meta_data( 'wcpay_mc_percentage_currency_amount', [ $addon_currency_amount ] );
 		}
 
 		// We submit the expected price because that's what PAO does. There's a check in the tested method that confirms the math adds up.
@@ -1093,6 +1091,94 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		remove_filter( 'woocommerce_product_is_taxable', 10 );
 		remove_filter( 'woocommerce_matched_rates', 10 );
 		update_option( 'woocommerce_tax_display_cart', 'excl' );
+		WC()->cart->empty_cart();
+	}
+
+	public function test_get_addon_order_display_price_returns_correct_custom_price_without_tax() {
+		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+
+		$product     = WC_Helper_Product::create_simple_product(); // Price is 10.
+		$addon_price = 50;                                         // Price is custom, so 50.
+
+		// Set the cart item data, then add the item to the cart.
+		$cart_item_data = [
+			'addons' => [
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'custom price',
+					'price'      => $addon_price,
+					'price_type' => 'quantity_based',
+					'field_type' => 'custom_price',
+				],
+			],
+		];
+		WC()->cart->add_to_cart( $product->get_id(), 1, 0, [], $cart_item_data );
+
+		// Go through the one item in the cart and add the custom amount set above to the meta.
+		$cart = WC()->cart->get_cart_contents();
+		foreach ( $cart as $item ) {
+			$item['data']->update_meta_data( 'wcpay_mc_custom_currency_amounts', [ $addon_price ] );
+		}
+
+		$price = $this->compatibility->get_addon_order_display_price( $addon_price, 1, $product );
+		$this->assertEquals( $addon_price, $price );
+		WC()->cart->empty_cart();
+	}
+
+	public function test_get_addon_order_display_price_returns_correct_custom_price_with_tax() {
+		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+
+		// We need to make it think it's in checkout with taxes enabled and included in the price.
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+		add_filter( 'woocommerce_product_is_taxable', '__return_true' );
+		add_filter(
+			'woocommerce_matched_rates',
+			function( $rates ) {
+				$rates[] = [
+					'rate'     => 10,
+					'label'    => 'test tax',
+					'shipping' => 'yes',
+					'compound' => 'no',
+				];
+				return $rates;
+			}
+		);
+		update_option( 'woocommerce_tax_display_cart', 'incl' );
+
+		$product        = WC_Helper_Product::create_simple_product(); // Price is 10.
+		$addon_price    = 50;                                         // Price is custom, so 50.
+		$expected_price = $addon_price * 1.10;                        // Tax is 10% above, so we multiply by 1.1.
+
+		// Set the cart item data, then add the item to the cart.
+		$cart_item_data = [
+			'addons' => [
+				[
+					'name'       => 'checkboxes',
+					'value'      => 'custom price',
+					'price'      => $addon_price,
+					'price_type' => 'quantity_based',
+					'field_type' => 'custom_price',
+				],
+			],
+		];
+		WC()->cart->add_to_cart( $product->get_id(), 1, 0, [], $cart_item_data );
+
+		// Go through the one item in the cart and add the custom amount set above to the meta.
+		$cart = WC()->cart->get_cart_contents();
+		foreach ( $cart as $item ) {
+			$item['data']->update_meta_data( 'wcpay_mc_custom_currency_amounts', [ $addon_price ] );
+		}
+
+		// We submit the expected price because that's what PAO does. There's a check in the tested method that confirms the math adds up.
+		$price = $this->compatibility->get_addon_order_display_price( $expected_price, 1, $product );
+		$this->assertEquals( $expected_price, $price );
+
+		// Be sure to undo all the tax stuff.
+		remove_filter( 'woocommerce_is_checkout', 10 );
+		remove_filter( 'woocommerce_product_is_taxable', 10 );
+		remove_filter( 'woocommerce_matched_rates', 10 );
+		update_option( 'woocommerce_tax_display_cart', 'excl' );
+		WC()->cart->empty_cart();
 	}
 
 	private function mock_wcs_cart_contains_renewal( $value ) {
