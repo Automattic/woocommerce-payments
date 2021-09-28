@@ -124,9 +124,9 @@ trait WC_Payments_Subscriptions_Utilities {
 	 *
 	 * This may be the version of the package in WC Payments or WC Subscriptions. Which ever one happens to be loaded.
 	 *
-	 * @return null|string The base Subscriptions libary version.
+	 * @return null|string The core Subscriptions libary version.
 	 */
-	public function get_subscriptions_base_version() {
-		return WC_Subscriptions_Base_Plugin::instance()->get_plugin_version();
+	public function get_subscriptions_core_version() {
+		return WC_Subscriptions_Core_Plugin::instance()->get_plugin_version();
 	}
 }

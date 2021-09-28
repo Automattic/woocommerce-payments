@@ -114,7 +114,7 @@
     <UndefinedClass occurrences="3">
       <code>WC_Subscriptions_Cart</code>
       <code>WC_Subscriptions_Cart</code>
-      <code>WC_Subscriptions_Base_Plugin</code>
+      <code>WC_Subscriptions_Core_Plugin</code>
     </UndefinedClass>
     <UndefinedFunction occurrences="2">
       <code>wcs_is_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) )</code>
@@ -140,7 +140,7 @@
   </file>
   <file src="woocommerce-payments.php">
     <UndefinedClass occurrences="1">
-      <code>WC_Subscriptions_Base_Plugin</code>
+      <code>WC_Subscriptions_Core_Plugin</code>
     </UndefinedClass>
   </file>
   <file src="includes/subscriptions/class-wc-payments-invoice-service.php">
