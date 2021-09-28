@@ -110,6 +110,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Multi-Currency track currency added.
 * Fix - Fill missing order_intent_info even if an exception occurs.
 * Add - Gutenberg Block Widget for Multi-Currency.
+* Fix - Translations in transaction/deposit exports
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
