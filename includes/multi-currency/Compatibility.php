@@ -613,6 +613,7 @@ class Compatibility {
 				$cart          = WC()->cart->get_cart_contents();
 				$is_percentage = false;
 				$is_custom     = false;
+				$is_multiplier = false;
 				foreach ( $cart as $item ) {
 					/**
 					 * This is a best guess scenario, and it only affects the display.
@@ -694,7 +695,10 @@ class Compatibility {
 	 * @return boolean
 	 */
 	public function has_checkout_block() {
-		return has_block( 'woocommerce/checkout' );
+		remove_filter( 'woocommerce_is_checkout', [ $this, 'has_checkout_block' ], 50 );
+		$is_checkout = is_checkout() || has_block( 'woocommerce/checkout' );
+		add_filter( 'woocommerce_is_checkout', [ $this, 'has_checkout_block' ], 50 );
+		return $is_checkout;
 	}
 
 	/**
