@@ -48,26 +48,41 @@ class Compatibility {
 		$this->multi_currency = $multi_currency;
 		$this->utils          = $utils;
 
-		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
-			// Subscriptions filters.
-			add_filter( 'option_woocommerce_subscriptions_multiple_purchase', [ $this, 'maybe_disable_mixed_cart' ], 50 );
-			add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
-			add_filter( 'woocommerce_product_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
-			add_filter( 'woocommerce_product_variation_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
+		$this->register_filters();
+	}
 
-			// Product Add-Ons filters.
-			add_filter( 'woocommerce_product_addons_option_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
-			add_filter( 'woocommerce_product_addons_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
-			add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );
-			add_filter( 'woocommerce_product_addons_get_item_data', [ $this, 'get_item_data' ], 50, 3 );
-			add_filter( 'woocommerce_product_addons_update_product_price', [ $this, 'update_product_price' ], 50, 4 );
-			add_filter( 'woocommerce_product_addons_order_line_item_meta', [ $this, 'order_line_item_meta' ], 50, 4 );
+	/**
+	 * Registers our filters for compatibility.
+	 *
+	 * @return void
+	 */
+	private function register_filters() {
+
+		// Subscriptions filters.
+		if ( class_exists( 'WC_Subscriptions' ) ) {
+			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
+				add_filter( 'option_woocommerce_subscriptions_multiple_purchase', [ $this, 'maybe_disable_mixed_cart' ], 50 );
+				add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
+				add_filter( 'woocommerce_product_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
+				add_filter( 'woocommerce_product_variation_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
+			}
 		}
 
-		if ( wp_doing_ajax() ) {
-			// Product Add-Ons filters.
-			add_filter( 'woocommerce_product_addons_ajax_get_product_price_including_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
-			add_filter( 'woocommerce_product_addons_ajax_get_product_price_excluding_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
+		// Product Add-Ons filters.
+		if ( class_exists( 'WC_Product_Addons' ) ) {
+			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
+				add_filter( 'woocommerce_product_addons_option_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
+				add_filter( 'woocommerce_product_addons_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
+				add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );
+				add_filter( 'woocommerce_product_addons_get_item_data', [ $this, 'get_item_data' ], 50, 3 );
+				add_filter( 'woocommerce_product_addons_update_product_price', [ $this, 'update_product_price' ], 50, 4 );
+				add_filter( 'woocommerce_product_addons_order_line_item_meta', [ $this, 'order_line_item_meta' ], 50, 4 );
+			}
+
+			if ( wp_doing_ajax() ) {
+				add_filter( 'woocommerce_product_addons_ajax_get_product_price_including_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
+				add_filter( 'woocommerce_product_addons_ajax_get_product_price_excluding_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
+			}
 		}
 
 		if ( defined( 'DOING_CRON' ) ) {
@@ -374,14 +389,14 @@ class Compatibility {
 	/**
 	 * Filters the meta data for order line items so that we can properly set values in the names.
 	 *
-	 * @param array                 $meta_data A key/value for the meta data to be inserted for the line item.
-	 * @param array                 $addon     The addon being processed.
-	 * @param WC_Order_Item_Product $item      Order item data.
-	 * @param array                 $values    Order item values.
+	 * @param array                  $meta_data A key/value for the meta data to be inserted for the line item.
+	 * @param array                  $addon     The addon being processed.
+	 * @param \WC_Order_Item_Product $item      Order item data.
+	 * @param array                  $values    Order item values.
 	 *
 	 * @return array A key/value for the meta data to be inserted for the line item.
 	 */
-	public function order_line_item_meta( array $meta_data, array $addon, $item, $values ): array {
+	public function order_line_item_meta( array $meta_data, array $addon, \WC_Order_Item_Product $item, array $values ): array {
 
 		// If there is an add-on price, add the price of the add-on to the label name.
 		if ( $addon['price'] && apply_filters( 'woocommerce_addons_add_price_to_name', true ) ) {

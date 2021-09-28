@@ -80,10 +80,52 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 
 	public function woocommerce_filter_provider() {
 		return [
+			// Subscriptions filters.
 			[ 'option_woocommerce_subscriptions_multiple_purchase', 'maybe_disable_mixed_cart' ],
 			[ 'woocommerce_subscriptions_product_price', 'get_subscription_product_price' ],
 			[ 'woocommerce_product_get__subscription_sign_up_fee', 'get_subscription_product_signup_fee' ],
 			[ 'woocommerce_product_variation_get__subscription_sign_up_fee', 'get_subscription_product_signup_fee' ],
+
+			// Product Add Ons filters.
+			[ 'woocommerce_product_addons_option_price_raw', 'get_addons_price' ],
+			[ 'woocommerce_product_addons_price_raw', 'get_addons_price' ],
+			[ 'woocommerce_product_addons_params', 'product_addons_params' ],
+			[ 'woocommerce_product_addons_get_item_data', 'get_item_data' ],
+			[ 'woocommerce_product_addons_update_product_price', 'update_product_price' ],
+			[ 'woocommerce_product_addons_order_line_item_meta', 'order_line_item_meta' ],
+		];
+	}
+
+	/**
+	 * @dataProvider ajax_filter_provider
+	 */
+	public function test_registers_ajax_filters_properly( $filter, $function_name ) {
+		// Add filter to make it seem like it is an ajax request, then re-init Compatibility.
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		$this->compatibility = new WCPay\MultiCurrency\Compatibility( $this->mock_multi_currency, $this->mock_utils );
+
+		$priority = has_filter( $filter, [ $this->compatibility, $function_name ] );
+		$this->assertGreaterThan(
+			10,
+			$priority,
+			"Filter '$filter' was not registered with '$function_name' with a priority higher than the default."
+		);
+		$this->assertLessThan(
+			100,
+			$priority,
+			"Filter '$filter' was registered with '$function_name' with a priority higher than than 100, which can cause double conversions."
+		);
+
+		// Remove all ajax filters, and re-init Compatibility again.
+		remove_all_filters( 'wp_doing_ajax' );
+		$this->compatibility = new WCPay\MultiCurrency\Compatibility( $this->mock_multi_currency, $this->mock_utils );
+	}
+
+	public function ajax_filter_provider() {
+		return [
+			// Product Add-Ons filters.
+			[ 'woocommerce_product_addons_ajax_get_product_price_including_tax', 'get_product_calculation_price' ],
+			[ 'woocommerce_product_addons_ajax_get_product_price_excluding_tax', 'get_product_calculation_price' ],
 		];
 	}
 
@@ -371,6 +413,12 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->assertTrue( $this->compatibility->should_convert_product_price( null ) );
 	}
 
+	public function test_should_convert_product_price_return_false_when_product_meta_addons_converted_set() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->update_meta_data( 'wcpay_mc_addons_converted', 1 );
+		$this->assertFalse( $this->compatibility->should_convert_product_price( $product ) );
+	}
+
 	public function test_should_convert_coupon_amount_return_false_when_renewal_in_cart() {
 		$this->mock_utils
 			->expects( $this->exactly( 2 ) )
@@ -579,6 +627,92 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		// Assert the actual order wasn't changed (only modified for returning from the filter).
 		$order = wc_get_order( $result->get_id() );
 		$this->assertEquals( 1000, $order->get_total() );
+	}
+
+	public function test_get_addons_price_returns_percentage_without_conversion() {
+		$this->assertEquals( 50, $this->compatibility->get_addons_price( 50, [ 'price_type' => 'percentage_based' ] ) );
+	}
+
+	public function test_get_addons_price_returns_converted_price() {
+		$this->mock_multi_currency->method( 'get_price' )->with( 50, 'product' )->willReturn( 75 );
+		$this->assertEquals( 75, $this->compatibility->get_addons_price( 50, [ 'price_type' => 'flat_fee' ] ) );
+	}
+
+	public function test_get_product_calculation_price_returns_correctly() {
+		$price = 42;
+		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( $price );
+		for ( $i = 1; $i < 5; $i++ ) {
+			$expected = $price * $i;
+			$this->assertEquals( $expected, $this->compatibility->get_product_calculation_price( $expected, $i, $this->mock_product ) );
+		}
+	}
+
+	public function test_order_line_item_meta_returns_flat_fee_data_correctly() {
+		$price = 42;
+		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( $price * 2 );
+		$addon = [
+			'name'       => 'checkboxes',
+			'value'      => 'flat fee',
+			'price'      => $price,
+			'field_type' => 'checkbox',
+			'price_type' => 'flat_fee',
+		];
+
+		// Create an Order Item, add a new product to the Order Item.
+		$item = new WC_Order_Item_Product();
+		$item->set_props( [ 'product' => WC_Helper_Product::create_simple_product() ] );
+		$item->save();
+
+		$expected = [
+			'key'   => 'checkboxes ($84.00)',
+			'value' => 'flat fee',
+		];
+		$this->assertSame( $expected, $this->compatibility->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
+	}
+
+	public function test_order_line_item_meta_returns_percentage_data_correctly() {
+		$price = 50;
+		$addon = [
+			'name'       => 'checkboxes',
+			'value'      => 'percentage based',
+			'price'      => $price,
+			'field_type' => 'checkbox',
+			'price_type' => 'percentage_based',
+		];
+
+		// Create an Order Item, add a new product to the Order Item.
+		$item = new WC_Order_Item_Product();
+		$item->set_props( [ 'product' => WC_Helper_Product::create_simple_product() ] );
+		$item->save();
+
+		$expected = [
+			'key'   => 'checkboxes ($5.00)',
+			'value' => 'percentage based',
+		];
+		$this->assertSame( $expected, $this->compatibility->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
+	}
+
+	public function test_order_line_item_meta_returns_custom_price_data_correctly() {
+		$price = 42;
+		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( $price * 2 );
+		$addon = [
+			'name'       => 'checkboxes',
+			'value'      => 'custom price',
+			'price'      => $price,
+			'field_type' => 'custom_price',
+			'price_type' => '',
+		];
+
+		// Create an Order Item, add a new product to the Order Item.
+		$item = new WC_Order_Item_Product();
+		$item->set_props( [ 'product' => WC_Helper_Product::create_simple_product() ] );
+		$item->save();
+
+		$expected = [
+			'key'   => 'checkboxes ($42.00)',
+			'value' => 42,
+		];
+		$this->assertSame( $expected, $this->compatibility->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
 	}
 
 	private function mock_wcs_cart_contains_renewal( $value ) {
