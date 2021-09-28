@@ -1,0 +1,14 @@
+.settings-section__controls {
+	.multi-currency-settings-store-settings {
+		& > .components-card__body {
+			padding: 24px;
+		}
+		h3 {
+			font-weight: 600;
+			font-size: 14px;
+			line-height: 20px;
+			color: #000;
+			margin: 0 0 16px 0;
+		}
+	}
+}

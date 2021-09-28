@@ -3,9 +3,10 @@
  * External dependencies
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
 import { TextControlWithAffixes } from '@woocommerce/components';
+import { formatCurrency } from 'wcpay/utils/currency';
 
 const CurrencyPreview = ( {
 	storeCurrency,
@@ -17,25 +18,6 @@ const CurrencyPreview = ( {
 	const [ baseValue, setBaseValue ] = useState( 20.0 );
 	const [ calculatedValue, setCalculatedValue ] = useState( 0 );
 
-	const formatCurrency = ( amount, currencyInfo ) => {
-		const formatMap = {
-			right: '%1$s%2$s',
-			right_space: '%1$s %2$s',
-			left: '%2$s%1$s',
-			left_space: '%2$s%1$s',
-		};
-		const currencyFormat = Object.keys( formatMap ).includes(
-			currencyInfo.symbol_position
-		)
-			? formatMap[ currencyInfo.symbol_position ]
-			: '%1$s%2$s';
-		return sprintf(
-			currencyFormat,
-			amount.toFixed( currencyInfo.is_zero_decimal ? 0 : 2 ),
-			currencyInfo.symbol
-		);
-	};
-
 	const calculateCurrencyConversion = useCallback(
 		( value ) => {
 			const amount = parseFloat( value.toString().replace( /,/g, '.' ) );
@@ -45,11 +27,24 @@ const CurrencyPreview = ( {
 			const rounded =
 				'none' === roundingValue
 					? converted
-					: converted - ( converted % parseFloat( roundingValue ) );
+					: Math.ceil( converted / parseFloat( roundingValue ) ) *
+					  parseFloat( roundingValue );
 			const charmed = rounded + parseFloat( charmValue );
-			return formatCurrency( charmed, targetCurrency );
+			return isNaN( charmed )
+				? __( 'Please enter a valid number', 'woocommerce-payments' )
+				: formatCurrency(
+						charmed * 100,
+						targetCurrency.code,
+						storeCurrency.code
+				  );
 		},
-		[ charmValue, currencyRate, roundingValue, targetCurrency ]
+		[
+			charmValue,
+			currencyRate,
+			roundingValue,
+			targetCurrency,
+			storeCurrency,
+		]
 	);
 
 	useEffect( () => {
