@@ -5,4 +5,5 @@
 npx --no-install yarnhook
 
 # make sure the autoload files are regenerated
+composer install
 composer dumpautoload
