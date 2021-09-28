@@ -59,7 +59,13 @@ exports[`Multi Currency Store Settings store settings task renders correctly: sn
           <div
             class="multi-currency-settings__description"
           >
-            Customers will be notified via store alert banner.
+            Customers will be notified via store alert banner. 
+            <button
+              class="components-button is-link"
+              type="button"
+            >
+              Preview
+            </button>
           </div>
           <div
             class="components-base-control css-wdf2ti-Wrapper e1puf3u0"

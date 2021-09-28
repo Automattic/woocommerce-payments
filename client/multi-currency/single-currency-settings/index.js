@@ -26,6 +26,7 @@ import {
 	useCurrencies,
 	useCurrencySettings,
 	useEnabledCurrencies,
+	useStoreSettings,
 } from 'wcpay/data';
 import MultiCurrencySettingsContext from '../context';
 import { LoadableBlock } from 'wcpay/components/loadable';
@@ -40,6 +41,7 @@ const SingleCurrencySettings = () => {
 
 	const { currencies } = useCurrencies();
 	const { enabledCurrencies } = useEnabledCurrencies();
+	const { storeSettings } = useStoreSettings();
 
 	const {
 		currencySettings,
@@ -111,9 +113,9 @@ const SingleCurrencySettings = () => {
 		? moment
 				.unix( targetCurrency.last_updated )
 				.format(
-					toMoment( window.wcSettings?.dateFormat ?? 'F j, Y' ) +
+					toMoment( storeSettings.date_format ?? 'F j, Y' ) +
 						' ' +
-						toMoment( window.wcSettings?.timeFormat ?? 'HH:mm' )
+						toMoment( storeSettings.time_format ?? 'HH:mm' )
 				)
 		: '';
 
