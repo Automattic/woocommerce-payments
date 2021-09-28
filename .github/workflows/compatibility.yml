@@ -11,7 +11,9 @@ jobs:
       fail-fast:    false
       max-parallel: 10
       matrix:
-        woocommerce: [ '4.4.0', '4.5.0', '4.6.0', '4.7.0', '4.8.0', '4.9.0', '5.0.0', '5.1.0', '5.2.0', '5.3.0', '5.4.0', '5.5.0', '5.6.0', '5.7.0' ]
+# TODO - temp - remove number of test cases         
+#        woocommerce: [ '4.4.0', '4.5.0', '4.6.0', '4.7.0', '4.8.0', '4.9.0', '5.0.0', '5.1.0', '5.2.0', '5.3.0', '5.4.0', '5.5.0', '5.6.0', '5.7.0' ]
+        woocommerce: [ '4.4.0', '5.7.0' ]
         wordpress:   [ 'latest' ]
         php:         [ '7.4' ]
         include:
@@ -41,7 +43,9 @@ jobs:
           tools:       composer
           coverage:    none
       # run CI checks
-      - run: if [[ "${{ matrix.php }}" == '7.0' ]]; then wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar; fi;
+# TODO - remove this as here https://make.wordpress.org/core/handbook/references/phpunit-compatibility-and-wordpress-versions/
+# TODO mentions that "In WordPress 5.2: Added support for PHPUnit 7 on PHP 7.0"
+#      - run: if [[ "${{ matrix.php }}" == '7.0' ]]; then wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar; fi;
       - run: bash bin/run-ci-tests.bash
 
   # a dedicated job, as allowed to fail
