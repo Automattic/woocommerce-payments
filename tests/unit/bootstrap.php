@@ -27,7 +27,6 @@ if ( PHP_VERSION_ID >= 80000 && file_exists( $_tests_dir . '/includes/phpunit7/M
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
 
-
 /**
  * Manually load the plugin being tested.
  */
