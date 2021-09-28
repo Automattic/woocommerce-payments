@@ -38,6 +38,7 @@ useStoreSettings.mockReturnValue( {
 		enable_storefront_switcher: false,
 		enable_auto_currency: false,
 		site_theme: 'Storefront',
+		store_url: 'store_path',
 	},
 	submitStoreSettingsUpdate: jest.fn(),
 } );
@@ -121,7 +122,7 @@ describe( 'Multi Currency Store Settings', () => {
 				.querySelector( 'iframe' )
 		).toHaveAttribute(
 			'src',
-			'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=false&enable_auto_currency=false'
+			'/store_path?is_mc_onboarding_simulation=1&enable_storefront_switcher=false&enable_auto_currency=false'
 		);
 	} );
 
@@ -145,7 +146,7 @@ describe( 'Multi Currency Store Settings', () => {
 				.querySelector( 'iframe' )
 		).toHaveAttribute(
 			'src',
-			'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=true&enable_auto_currency=false'
+			'/store_path?is_mc_onboarding_simulation=1&enable_storefront_switcher=true&enable_auto_currency=false'
 		);
 	} );
 } );

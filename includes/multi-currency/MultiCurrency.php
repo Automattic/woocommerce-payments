@@ -1087,6 +1087,9 @@ class MultiCurrency {
 			$this->id . '_enable_auto_currency'       => $this->is_using_auto_currency_switching(),
 			$this->id . '_enable_storefront_switcher' => $this->is_using_storefront_switcher(),
 			'site_theme'                              => wp_get_theme()->get( 'Name' ),
+			'date_format'                             => esc_attr( get_option( 'date_format', 'F j, Y' ) ),
+			'time_format'                             => esc_attr( get_option( 'time_format', 'g:i a' ) ),
+			'store_url'                               => esc_attr( get_page_uri( wc_get_page_id( 'shop' ) ) ),
 		];
 	}
 

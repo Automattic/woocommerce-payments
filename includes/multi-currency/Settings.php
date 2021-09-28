@@ -73,12 +73,6 @@ class Settings extends \WC_Settings_Page {
 		// Hide original save button.
 		$GLOBALS['hide_save_button'] = true;
 		?>
-			<script>
-				document.addEventListener('DOMContentLoaded', () => {
-					window.wcSettings.dateFormat = "<?php echo esc_attr( get_option( 'date_format', 'F j, Y' ) ); ?>";
-					window.wcSettings.timeFormat = "<?php echo esc_attr( get_option( 'time_format', 'g:i a' ) ); ?>";
-				});
-			</script>
 			<div id="wcpay_multi_currency_settings_container" aria-describedby="wcpay_multi_currency_settings_container-description"></div>
 		<?php
 	}

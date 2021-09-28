@@ -3,6 +3,7 @@
  */
 import { Modal } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { useStoreSettings } from 'wcpay/data';
 
 /**
  * Internal dependencies
@@ -15,6 +16,8 @@ const PreviewModal = ( {
 	isStorefrontSwitcherEnabledValue,
 	isAutomaticSwitchEnabledValue,
 } ) => {
+	const { storeSettings } = useStoreSettings();
+
 	const handlePreviewModalCloseClick = () => {
 		setPreviewModalOpen( false );
 	};
@@ -32,7 +35,9 @@ const PreviewModal = ( {
 					title={ __( 'Preview', 'woocommerce-payments' ) }
 					className={ 'multi-currency-store-settings-preview-iframe' }
 					src={
-						'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=' +
+						'/' +
+						storeSettings.store_url +
+						'?is_mc_onboarding_simulation=1&enable_storefront_switcher=' +
 						isStorefrontSwitcherEnabledValue +
 						'&enable_auto_currency=' +
 						isAutomaticSwitchEnabledValue

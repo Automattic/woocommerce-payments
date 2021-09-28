@@ -15,17 +15,10 @@ import WizardTaskItem from '../../wizard/task-item';
 import PreviewModal from '../../../multi-currency/preview-modal';
 import './index.scss';
 
-import { useCurrencies, useStoreSettings } from 'wcpay/data';
+import { useStoreSettings } from 'wcpay/data';
 
 const StoreSettingsTask = () => {
 	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();
-	const { currencies } = useCurrencies();
-
-	const firstEnabledCurrency = currencies.enabled
-		? Object.keys( currencies.enabled ).filter(
-				( code ) => code !== currencies.default.code
-		  )[ 0 ]
-		: '';
 
 	const [ isPending, setPending ] = useState( false );
 
@@ -171,7 +164,6 @@ const StoreSettingsTask = () => {
 					isAutomaticSwitchEnabledValue={
 						isAutomaticSwitchEnabledValue
 					}
-					clientCurrency={ firstEnabledCurrency }
 				/>
 			</CollapsibleBody>
 		</WizardTaskItem>
