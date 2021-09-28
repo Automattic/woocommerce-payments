@@ -35,24 +35,7 @@ const availableCurrencies = {
 		is_default: true,
 		flag: '🇺🇸',
 		symbol: '$',
-	},
-	CAD: {
-		code: 'CAD',
-		rate: '1.206823',
-		name: 'Canadian dollar',
-		id: 'cad',
-		is_default: false,
-		flag: '🇨🇦',
-		symbol: '$',
-	},
-	GBP: {
-		code: 'GBP',
-		rate: '0.708099',
-		name: 'Pound sterling',
-		id: 'gbp',
-		is_default: false,
-		flag: '🇬🇧',
-		symbol: '£',
+		last_updated: 1632460484,
 	},
 	EUR: {
 		code: 'EUR',
@@ -62,60 +45,7 @@ const availableCurrencies = {
 		is_default: false,
 		flag: '🇪🇺',
 		symbol: '€',
-	},
-	AED: {
-		code: 'AED',
-		rate: '3.6732',
-		name: 'United Arab Emirates dirham',
-		id: 'aed',
-		is_default: false,
-		flag: '🇦🇪',
-		symbol: 'د.إ',
-	},
-	CDF: {
-		code: 'CDF',
-		rate: '2000',
-		name: 'Congolese franc',
-		id: 'cdf',
-		is_default: false,
-		flag: '🇨🇩',
-		symbol: 'Fr',
-	},
-	NZD: {
-		code: 'NZD',
-		rate: '1.387163',
-		name: 'New Zealand dollar',
-		id: 'nzd',
-		is_default: false,
-		flag: '🇳🇿',
-		symbol: '$',
-	},
-	DKK: {
-		code: 'DKK',
-		rate: '6.144615',
-		name: 'Danish krone',
-		id: 'dkk',
-		is_default: false,
-		flag: '🇩🇰',
-		symbol: 'DKK',
-	},
-	BIF: {
-		code: 'BIF',
-		rate: '1974',
-		name: 'Burundian franc',
-		id: 'bif',
-		is_default: false,
-		flag: '🇧🇮',
-		symbol: 'Fr',
-	},
-	CLP: {
-		code: 'CLP',
-		rate: '706.8',
-		name: 'Chilean peso',
-		id: 'clp',
-		is_default: false,
-		flag: '🇨🇱',
-		symbol: '$',
+		last_updated: 1632460484,
 	},
 };
 
@@ -128,24 +58,7 @@ const enabledCurrencies = {
 		is_default: true,
 		flag: '🇺🇸',
 		symbol: '$',
-	},
-	CAD: {
-		code: 'CAD',
-		rate: '1.42',
-		name: 'Canadian dollar',
-		id: 'cad',
-		is_default: false,
-		flag: '🇨🇦',
-		symbol: '$',
-	},
-	GBP: {
-		code: 'GBP',
-		rate: '0.708099',
-		name: 'Pound sterling',
-		id: 'gbp',
-		is_default: false,
-		flag: '🇬🇧',
-		symbol: '£',
+		last_updated: 1632460484,
 	},
 	EUR: {
 		code: 'EUR',
@@ -155,6 +68,7 @@ const enabledCurrencies = {
 		is_default: false,
 		flag: '🇪🇺',
 		symbol: '€',
+		last_updated: 1632460484,
 	},
 };
 
@@ -166,6 +80,7 @@ const defaultCurrency = {
 	is_default: true,
 	flag: '🇺🇸',
 	symbol: '$',
+	last_updated: 1632460484,
 };
 
 useCurrencies.mockReturnValue( {
@@ -250,7 +165,7 @@ describe( 'Single currency settings screen', () => {
 			},
 		} );
 		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
-			'8.00€'
+			'€9.00'
 		);
 		// Manual Rate calculation.
 		fireEvent.click( screen.getByRole( 'radio', { name: /Manual/ } ) );
@@ -262,17 +177,17 @@ describe( 'Single currency settings screen', () => {
 		} );
 
 		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
-			'20.00€'
+			'€20.00'
 		);
 
 		fireEvent.change( screen.getByTestId( 'manual_rate_input' ), {
 			target: {
-				value: '1.77',
+				value: '1.73',
 			},
 		} );
 
 		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
-			'17.00€'
+			'€18.00'
 		);
 
 		// Price rounding calculation.
@@ -280,7 +195,7 @@ describe( 'Single currency settings screen', () => {
 			target: { value: '0.5' },
 		} );
 		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
-			'17.50€'
+			'€17.50'
 		);
 
 		// Price charm calculation.
@@ -288,7 +203,7 @@ describe( 'Single currency settings screen', () => {
 			target: { value: '-0.05' },
 		} );
 		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
-			'17.45€'
+			'€17.45'
 		);
 
 		// Submit settings test.
@@ -300,7 +215,7 @@ describe( 'Single currency settings screen', () => {
 
 		expect( submitCurrencySettings ).toHaveBeenCalledWith( 'EUR', {
 			exchange_rate_type: 'manual',
-			manual_rate: '1.77',
+			manual_rate: '1.73',
 			price_rounding: '0.5',
 			price_charm: '-0.05',
 		} );
