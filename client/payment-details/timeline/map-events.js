@@ -217,11 +217,11 @@ const composeFeeString = ( event ) => {
 	return sprintf(
 		/* translators: %1$s is the total fee amount, %2$f%% is the fee percentage, %3$s is the fixed fee amount
 		 * and %4%s is the fee label  */
-		__( '%4$s (%2$f%% + %3$s): %1$s', 'woocommerce-payments' ),
-		formatCurrency( -feeAmount, feeCurrency ),
+		__( '%1$s (%2$f%% + %3$s): %4$s', 'woocommerce-payments' ),
+		isBaseFeeOnly( event ) ? 'Base fee' : 'Fee',
 		formatFee( percentage ),
 		formatCurrency( fixed, fixedCurrency ),
-		isBaseFeeOnly( event ) ? 'Base fee' : 'Fee'
+		formatCurrency( -feeAmount, feeCurrency )
 	);
 };
 
