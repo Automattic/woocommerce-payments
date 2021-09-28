@@ -27,7 +27,7 @@ trait WC_Payments_Subscriptions_Utilities {
 		}
 
 		// TODO update this once we know how the base library feature will be enabled.
-		return class_exists( 'WC_Subscriptions_Base_Plugin' );
+		return class_exists( 'WC_Subscriptions_Core_Plugin' );
 	}
 
 	/**
