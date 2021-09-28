@@ -42,6 +42,17 @@ const TransactionsAndDeposits = () => {
 	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
 		?.account_statement_descriptor?.message;
 
+	// const authorizationCheckoutHelp = isIppEnabled ? __(
+	// 	'When enabled, users will be able to pay with a saved card during checkout. ' +
+	// 	'Card details are stored in our platform, not on your store.' +
+	// 	'Note: This setting is ignored by in-person payments. In-person payments authorization is valid for 48 hours.',
+	// 	'woocommerce-payments'
+	// ) : __(
+	// 	'When enabled, users will be able to pay with a saved card during checkout. ' +
+	// 	'Card details are stored in our platform, not on your store.',
+	// 	'woocommerce-payments'
+	// );
+
 	return (
 		<Card className="transactions-and-deposits">
 			<CardBody>
