@@ -1181,6 +1181,8 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		WC()->cart->empty_cart();
 	}
 
+	// TODO: If this version is kept we need a test for get_addon_order_display_price returning the correct multiplier price.
+
 	private function mock_wcs_cart_contains_renewal( $value ) {
 		WC_Subscriptions::wcs_cart_contains_renewal(
 			function () use ( $value ) {
