@@ -65,6 +65,7 @@ class Compatibility {
 			add_filter( 'woocommerce_get_price_excluding_tax', [ $this, 'get_addon_order_display_price' ], 50, 3 );
 			add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );
 			add_action( 'woocommerce_get_item_data', [ $this, 'get_item_data' ], 50, 2 );
+			add_filter( 'woocommerce_is_checkout', [ $this, 'has_checkout_block' ], 50 );
 		}
 
 		if ( wp_doing_ajax() ) {
@@ -658,6 +659,15 @@ class Compatibility {
 		$params['currency_format_thousand_sep'] = wc_get_price_thousand_separator();
 
 		return $params;
+	}
+
+	/**
+	 * Checks if the page contains the checkout block.
+	 *
+	 * @return boolean
+	 */
+	public function has_checkout_block() {
+		return has_block( 'woocommerce/checkout' );
 	}
 
 	/**
