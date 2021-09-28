@@ -197,6 +197,10 @@ install_woocommerce() {
 }
 
 install_gutenberg() {
+	# TODO - temp, do not try installing the latest Gutenberg for old WP versions
+	if [[ $WP_VERSION != 'latest' ]]; then
+		return 0
+	fi
 	INSTALLED_GUTENBERG_VERSION=$(wp plugin get gutenberg --field=version)
 
 	if [[ -n $INSTALLED_GUTENBERG_VERSION ]]; then
