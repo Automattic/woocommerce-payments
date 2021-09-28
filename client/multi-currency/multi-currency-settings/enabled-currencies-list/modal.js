@@ -16,7 +16,7 @@ import {
 } from 'wcpay/data';
 import EnabledCurrenciesModalCheckboxList from './modal-checkbox-list';
 import EnabledCurrenciesModalCheckbox from './modal-checkbox';
-import ConfirmationModal from '../../components/confirmation-modal';
+import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import Search from 'components/search';
 import './style.scss';
 
