@@ -14,6 +14,7 @@ import './style.scss';
 import { useStoreSettings } from 'wcpay/data';
 import SettingsSection from 'wcpay/settings/settings-section';
 import { LoadableBlock } from 'wcpay/components/loadable';
+import PreviewModal from 'wcpay/multi-currency/preview-modal';
 
 const StoreSettingsDescription = () => {
 	const LEARN_MORE_URL =
@@ -66,6 +67,8 @@ const StoreSettings = () => {
 		setIsStorefrontSwitcherEnabledValue,
 	] = useState( false );
 
+	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
+
 	useEffect( () => {
 		if ( Object.keys( storeSettings ).length ) {
 			setIsStorefrontSwitcherEnabledValue(
@@ -117,9 +120,22 @@ const StoreSettings = () => {
 								) }
 							/>
 							<div className="multi-currency-settings__description">
-								{ __(
-									'Customers will be notified via store alert banner.',
-									'woocommerce-payments'
+								{ createInterpolateElement(
+									__(
+										'Customers will be notified via store alert banner. ' +
+											'<previewLink>Preview</previewLink>',
+										'woocommerce-payments'
+									),
+									{
+										previewLink: (
+											<Button
+												isLink
+												onClick={ () => {
+													setPreviewModalOpen( true );
+												} }
+											/>
+										),
+									}
 								) }
 							</div>
 							{ 'Storefront' === storeSettings.site_theme ? (
@@ -153,6 +169,12 @@ const StoreSettings = () => {
 								) }
 							</div>
 						</CardBody>
+						<PreviewModal
+							isPreviewModalOpen={ isPreviewModalOpen }
+							setPreviewModalOpen={ setPreviewModalOpen }
+							isStorefrontSwitcherEnabledValue={ false }
+							isAutomaticSwitchEnabledValue={ true }
+						/>
 					</Card>
 				</LoadableBlock>
 			</SettingsSection>
