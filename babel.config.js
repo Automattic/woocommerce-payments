@@ -15,6 +15,13 @@ module.exports = {
 					'@wordpress/babel-plugin-makepot',
 					{
 						output: 'languages/woocommerce-payments-client.pot',
+						functions: {
+							__: [ 'msgid' ],
+							esc_html_e: [ 'msgid' ],
+							_n: [ 'msgid', 'msgid_plural' ],
+							_x: [ 'msgid', 'msgctxt' ],
+							_nx: [ 'msgid', 'msgid_plural', null, 'msgctxt' ],
+						},
 					},
 				],
 			],
