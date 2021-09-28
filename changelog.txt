@@ -12,6 +12,7 @@
 * Add - Multi-Currency track currency added.
 * Fix - Fill missing order_intent_info even if an exception occurs.
 * Add - Gutenberg Block Widget for Multi-Currency.
+* Update - WCPay logo
 * Fix - Add credit card on My Account using other payment gateways does not show "Your card number is incomplete" error
 
 = 3.0.0 - 2021-09-16 =
