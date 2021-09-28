@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Exceptions\{ API_Exception, Connection_Exception };
+
 /**
  * WC Payments Utils class
  */
@@ -117,7 +119,7 @@ class WC_Payments_Utils {
 	public static function prepare_amount( $amount, $currency = 'USD' ) {
 		$conversion_rate = 100;
 
-		if ( in_array( strtolower( $currency ), self::zero_decimal_currencies(), true ) ) {
+		if ( self::is_zero_decimal_currency( strtolower( $currency ) ) ) {
 			$conversion_rate = 1;
 		}
 
@@ -135,11 +137,51 @@ class WC_Payments_Utils {
 	public static function interpret_stripe_amount( int $amount, string $currency = 'usd' ): float {
 		$conversion_rate = 100;
 
-		if ( in_array( $currency, self::zero_decimal_currencies(), true ) ) {
+		if ( self::is_zero_decimal_currency( $currency ) ) {
 			$conversion_rate = 1;
 		}
 
 		return (float) $amount / $conversion_rate;
+	}
+
+	/**
+	 * Interprets an exchange rate from the Stripe API.
+	 *
+	 * @param float  $exchange_rate        The exchange rate returned from the stripe API.
+	 * @param string $presentment_currency The currency the customer was charged in.
+	 * @param string $base_currency        The Stripe account currency.
+	 * @return float
+	 */
+	public static function interpret_string_exchange_rate(
+		float $exchange_rate,
+		string $presentment_currency,
+		string $base_currency
+	): float {
+		$is_presentment_currency_zero_decimal = self::is_zero_decimal_currency( strtolower( $presentment_currency ) );
+		$is_base_currency_zero_decimal        = self::is_zero_decimal_currency( strtolower( $base_currency ) );
+
+		if ( $is_presentment_currency_zero_decimal && ! $is_base_currency_zero_decimal ) {
+			return $exchange_rate / 100;
+		} elseif ( ! $is_presentment_currency_zero_decimal && $is_base_currency_zero_decimal ) {
+			return $exchange_rate * 100;
+		} else {
+			return $exchange_rate;
+		}
+	}
+
+	/**
+	 * Check whether a given currency is in the list of zero-decimal currencies supported by Stripe.
+	 *
+	 * @param string $currency The currency code.
+	 *
+	 * @return bool
+	 */
+	public static function is_zero_decimal_currency( string $currency ): bool {
+		if ( in_array( $currency, self::zero_decimal_currencies(), true ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -476,5 +518,32 @@ class WC_Payments_Utils {
 
 		// Return 'auto' so Stripe.js uses the browser locale.
 		return 'auto';
+	}
+
+	/**
+	 * Returns redacted customer-facing error messages for notices.
+	 *
+	 * This function tries to filter out API exceptions that should not be displayed to customers.
+	 * Generally, only Stripe exceptions with type of `card_error` should be displayed.
+	 * Other API errors should be redacted (https://stripe.com/docs/api/errors#errors-message).
+	 *
+	 * @param Exception $e Exception to get the message from.
+	 *
+	 * @return string
+	 */
+	public static function get_filtered_error_message( Exception $e ) {
+		$error_message = method_exists( $e, 'getLocalizedMessage' ) ? $e->getLocalizedMessage() : $e->getMessage();
+
+		// These notices can be shown when placing an order or adding a new payment method, so we aim for
+		// more generic messages instead of specific order/payment messages when the API Exception is redacted.
+		if ( $e instanceof Connection_Exception ) {
+			$error_message = __( 'There was an error while processing this request. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
+		} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
+			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
+		} elseif ( $e instanceof API_Exception && ! empty( $e->get_error_type() ) && 'card_error' !== $e->get_error_type() ) {
+			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
+		}
+
+		return $error_message;
 	}
 }

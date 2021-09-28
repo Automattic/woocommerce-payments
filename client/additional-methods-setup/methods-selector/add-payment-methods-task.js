@@ -29,6 +29,7 @@ import {
 } from '../../data';
 import './add-payment-methods-task.scss';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
+import { upeMethods } from '../constants';
 
 const useGetCountryName = () => {
 	const generalSettings = useSelect(
@@ -208,35 +209,20 @@ const AddPaymentMethodsTask = () => {
 							) }
 						</p>
 						<PaymentMethodCheckboxes>
-							{ availablePaymentMethods.includes( 'giropay' ) && (
-								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.giropay }
-									onChange={ handlePaymentMethodChange }
-									name="giropay"
-								/>
-							) }
-							{ availablePaymentMethods.includes( 'sofort' ) && (
-								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.sofort }
-									onChange={ handlePaymentMethodChange }
-									name="sofort"
-								/>
-							) }
-							{ availablePaymentMethods.includes(
-								'sepa_debit'
-							) && (
-								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.sepa_debit }
-									onChange={ handlePaymentMethodChange }
-									name="sepa_debit"
-								/>
-							) }
-							{ availablePaymentMethods.includes( 'ideal' ) && (
-								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.ideal }
-									onChange={ handlePaymentMethodChange }
-									name="ideal"
-								/>
+							{ upeMethods.map(
+								( key ) =>
+									availablePaymentMethods.includes( key ) && (
+										<PaymentMethodCheckbox
+											key={ key }
+											checked={
+												paymentMethodsState[ key ]
+											}
+											onChange={
+												handlePaymentMethodChange
+											}
+											name={ key }
+										/>
+									)
 							) }
 						</PaymentMethodCheckboxes>
 					</CardBody>

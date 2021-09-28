@@ -27,10 +27,12 @@ describe( 'PaymentMethodsSelector', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
+			'bancontact',
 			'giropay',
-			'sofort',
-			'sepa_debit',
 			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
 		] );
 	} );
 
@@ -75,12 +77,22 @@ describe( 'PaymentMethodsSelector', () => {
 		).toBeInTheDocument();
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 4 );
+		expect( paymentMethods ).toHaveLength( 6 );
+
+		const bancontactPayCheckbox = screen.getByRole( 'checkbox', {
+			name: 'Bancontact',
+		} );
+		expect( bancontactPayCheckbox ).not.toBeChecked();
 
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
 			name: 'giropay',
 		} );
 		expect( giroPayCheckbox ).not.toBeChecked();
+
+		const p24Checkbox = screen.getByRole( 'checkbox', {
+			name: 'Przelewy24 (P24)',
+		} );
+		expect( p24Checkbox ).not.toBeChecked();
 
 		const sofortCheckbox = screen.getByRole( 'checkbox', {
 			name: 'Sofort',
@@ -88,7 +100,7 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( sofortCheckbox ).not.toBeChecked();
 
 		const sepaCheckbox = screen.getByRole( 'checkbox', {
-			name: 'Direct debit payment',
+			name: 'SEPA Direct Debit',
 		} );
 		expect( sepaCheckbox ).not.toBeChecked();
 
@@ -142,10 +154,16 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( addPaymentMethodButton );
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
-		expect( paymentMethods ).toHaveLength( 3 );
+		expect( paymentMethods ).toHaveLength( 5 );
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
 		).toBeNull();
+		expect(
+			screen.queryByRole( 'checkbox', { name: 'Bancontact' } )
+		).not.toBeNull();
+		expect(
+			screen.queryByRole( 'checkbox', { name: 'Przelewy24 (P24)' } )
+		).not.toBeNull();
 		expect(
 			screen.queryByRole( 'checkbox', { name: 'iDEAL' } )
 		).not.toBeNull();
@@ -228,16 +246,24 @@ describe( 'PaymentMethodsSelector', () => {
 		} );
 		user.click( addPaymentMethodButton );
 
+		const bancontactCheckbox = screen.getByRole( 'checkbox', {
+			name: 'Bancontact',
+		} );
+		user.click( bancontactCheckbox );
+
 		const giroPayCheckbox = screen.getByRole( 'checkbox', {
 			name: 'giropay',
 		} );
 		user.click( giroPayCheckbox );
 
+		const p24Checkbox = screen.getByRole( 'checkbox', {
+			name: 'Przelewy24 (P24)',
+		} );
+		user.click( p24Checkbox );
 		const idealCheckbox = screen.getByRole( 'checkbox', {
 			name: 'iDEAL',
 		} );
 		user.click( idealCheckbox );
-
 		const addSelectedButton = screen.getByRole( 'button', {
 			name: 'Add selected',
 		} );
@@ -245,7 +271,9 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( updateEnabledPaymentMethodIdsMock ).toHaveBeenCalledWith( [
 			'card',
 			'sepa_debit',
+			'bancontact',
 			'giropay',
+			'p24',
 			'ideal',
 		] );
 		expect(

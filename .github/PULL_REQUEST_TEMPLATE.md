@@ -38,3 +38,12 @@ Add as many details as possible to help others reproduce the issue and test the 
 - [ ] Added changelog entry (or does not apply)
 - [ ] Covered with tests (or have a good reason not to test in description ☝️)
 - [ ] Tested on mobile (or does not apply)
+
+**Post merge**
+
+<!--
+Make sure you edit the page for the current release when adding testing instructions.
+We often create a blank page ahead of time for the next release.
+-->
+
+- [ ] Added testing instructions to the [release testing doc](https://github.com/Automattic/woocommerce-payments/wiki/Release-testing-instructions) (or does not apply)

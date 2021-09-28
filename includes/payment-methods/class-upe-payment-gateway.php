@@ -12,6 +12,7 @@ use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\Constants\Payment_Type;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
@@ -21,6 +22,7 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payments;
 use WC_Payments_Utils;
+use Session_Rate_Limiter;
 
 use Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
@@ -64,9 +66,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
 	 * @param array                                $payment_methods          - Array of UPE payment methods.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter             - Session Rate Limiter instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service, array $payment_methods ) {
-		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service, array $payment_methods, Session_Rate_Limiter $failed_transaction_rate_limiter ) {
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter );
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 		$this->title              = __( 'WooCommerce Payments', 'woocommerce-payments' );
@@ -138,7 +141,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => $e->getMessage(),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				]
 			);
@@ -165,6 +168,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+			$payment_type               = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 
 			$this->payments_api_client->update_intention(
 				$payment_intent_id,
@@ -172,6 +176,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				strtolower( $currency ),
 				$save_payment_method,
 				$customer_id,
+				$this->get_metadata_from_order( $order, $payment_type ),
 				$this->get_level3_data_from_order( $order ),
 				$selected_upe_payment_type
 			);
@@ -206,7 +211,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => $e->getMessage(),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				]
 			);
@@ -268,7 +273,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => $e->getMessage(),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				]
 			);
@@ -329,20 +334,35 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$save_payment_method       = ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$token                     = Payment_Information::get_token_from_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_type              = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
 			if ( $payment_needed ) {
-				$this->payments_api_client->update_intention(
+				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+					wc_add_notice( __( 'Your payment was not processed.', 'woocommerce-payments' ), 'error' );
+					return [
+						'result'       => 'fail',
+						'redirect_url' => '',
+					];
+				}
+
+				$updated_payment_intent  = $this->payments_api_client->update_intention(
 					$payment_intent_id,
 					$converted_amount,
 					strtolower( $currency ),
 					$save_payment_method,
 					$customer_id,
+					$this->get_metadata_from_order( $order, $payment_type ),
 					$this->get_level3_data_from_order( $order ),
 					$selected_upe_payment_type
 				);
+				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
+				if ( 'card_declined' === $last_payment_error_code ) {
+					// UPE method gives us the error of the previous payment attempt, so we use that for the Rate Limiter.
+					$this->failed_transaction_rate_limiter->bump();
+				}
 			}
 		} else {
 			return $this->parent_process_payment( $order_id );
@@ -529,7 +549,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			/* translators: localized exception message */
 			$order->update_status( 'failed', sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() ) );
 
-			wc_add_notice( $e->getMessage(), 'error' );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
 			exit;
 		}
@@ -552,6 +572,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['upeAppearance']            = get_transient( self::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['checkoutTitle']            = $this->checkout_title;
 		$payment_fields['cartContainsSubscription'] = $this->is_subscription_item_in_cart();
+
+		$enabled_billing_fields = [];
+		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
+			if ( ! isset( $billing_field_options['enabled'] ) || $billing_field_options['enabled'] ) {
+				$enabled_billing_fields[] = $billing_field;
+			}
+		}
+		$payment_fields['enabledBillingFields'] = $enabled_billing_fields;
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->is_subscriptions_enabled() && $this->is_changing_payment_method_for_subscription() ) {
@@ -615,7 +643,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			return $payment_method->get_payment_token_for_user( $user, $payment_method_id );
 		} catch ( Exception $e ) {
-			wc_add_notice( $e->getMessage(), 'error', [ 'icon' => 'error' ] );
+			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
 			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
 			return [
 				'result' => 'error',
@@ -738,7 +766,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$methods[] = 'giropay';
 		$methods[] = 'sofort';
-		$methods[] = 'ideal';
 
 		return array_values(
 			apply_filters(
@@ -772,7 +799,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => $e->getMessage(),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				]
 			);

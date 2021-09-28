@@ -32,6 +32,7 @@
         "country": "United States (US)",
         "addressfirstline": "60 29th Street #343",
         "addresssecondline": "store",
+        "countryandstate": "United States (US) — California",
         "city": "San Francisco",
         "state": "CA",
         "postcode": "94110"
@@ -60,11 +61,13 @@
         "addresssecondline": "shipping",
         "city": "San Francisco",
         "state": "CA",
-        "postcode": "94110"
+        "postcode": "94110",
+        "phone": "123456789",
+        "email": "e2e-wcpay-customer@woocommerce.com"
       }
     }
   },
-  "cards" : {
+  "cards": {
     "basic": {
       "number": "4242424242424242",
       "expires": {
@@ -82,6 +85,15 @@
       },
       "cvc": "123",
       "label": "Visa ending in 1111"
+    },
+    "basic3": {
+      "number": "378282246310005",
+      "expires": {
+        "month": "11",
+        "year": "30"
+      },
+      "cvc": "1234",
+      "label": "Amex ending in 0005"
     },
     "3ds": {
       "number": "4000002760003184",
@@ -190,7 +202,36 @@
       },
       "cvc": "626",
       "label": "Visa ending in 1629"
+    },
+    "invalid-exp-date": {
+      "number": "4242424242424242",
+      "expires": {
+        "month": "11",
+        "year": "12"
+      },
+      "cvc": "123",
+      "label": "Visa ending in 4242"
+    },
+    "invalid-cvv-number": {
+      "number": "4242424242424242",
+      "expires": {
+        "month": "06",
+        "year": "24"
+      },
+      "cvc": "11",
+      "label": "Visa ending in 4242"
+    }
+  },
+  "onboardingwizard": {
+    "industry": "Test industry",
+    "numberofproducts": "1 - 10",
+    "sellingelsewhere": "No"
+  },
+  "settings": {
+    "shipping": {
+      "zonename": "United States",
+      "zoneregions": "United States (US)",
+      "shippingmethod": "Free shipping"
     }
   }
 }
-

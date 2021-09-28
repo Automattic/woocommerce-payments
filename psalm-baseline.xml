@@ -105,10 +105,9 @@
       <code>WC_Subscription</code>
       <code>WC_Subscription</code>
     </UndefinedDocblockClass>
-    <UndefinedFunction occurrences="3">
+    <UndefinedFunction occurrences="2">
       <code>wcs_get_subscriptions_for_order( $order-&gt;get_id() )</code>
       <code>wcs_is_subscription( $order )</code>
-      <code>wcs_order_contains_subscription( $order_id )</code>
     </UndefinedFunction>
   </file>
   <file src="includes/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php">
@@ -116,8 +115,9 @@
       <code>WC_Subscriptions_Cart</code>
       <code>WC_Subscriptions_Cart</code>
     </UndefinedClass>
-    <UndefinedFunction occurrences="1">
+    <UndefinedFunction occurrences="2">
       <code>wcs_is_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) )</code>
+      <code>wcs_order_contains_subscription( $order_id )</code>
     </UndefinedFunction>
   </file>
   <file src="includes/wc-payment-api/class-wc-payments-http.php">

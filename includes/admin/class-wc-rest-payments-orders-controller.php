@@ -116,6 +116,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Capture the intent and update order status.
 			$result = $this->gateway->capture_charge( $order );
 			if ( 'succeeded' !== $result['status'] ) {
+				$http_code = $result['http_code'] ?? 502;
 				return new WP_Error(
 					'wcpay_capture_error',
 					sprintf(
@@ -123,7 +124,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
 						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
 					),
-					[ 'status' => 502 ]
+					[ 'status' => $http_code ]
 				);
 			}
 			$order->update_status( 'completed' );
@@ -154,6 +155,11 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$order = wc_get_order( $order_id );
 			if ( false === $order || ! ( $order instanceof WC_Order ) ) {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
+			}
+
+			$disallowed_order_statuses = apply_filters( 'wcpay_create_customer_disallowed_order_statuses', [ 'completed', 'cancelled', 'refunded', 'failed' ] );
+			if ( $order->has_status( $disallowed_order_statuses ) ) {
+				return new WP_Error( 'wcpay_invalid_order_status', __( 'Invalid order status', 'woocommerce-payments' ), [ 'status' => 400 ] );
 			}
 
 			$order_user        = $order->get_user();

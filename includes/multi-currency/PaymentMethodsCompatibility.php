@@ -8,6 +8,7 @@
 namespace WCPay\MultiCurrency;
 
 use WC_Payment_Gateway_WCPay;
+use WC_Payments_Features;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -30,18 +31,6 @@ class PaymentMethodsCompatibility {
 	private $gateway;
 
 	/**
-	 * A map between payment methods and the currency code they require.
-	 *
-	 * @var string[]
-	 */
-	private $payment_method_currency_map = [
-		'giropay'    => 'EUR',
-		'sepa_debit' => 'EUR',
-		'sofort'     => 'EUR',
-		'ideal'      => 'EUR',
-	];
-
-	/**
 	 * Constructor
 	 *
 	 * @param MultiCurrency            $multi_currency The multi currency class instance.
@@ -53,24 +42,57 @@ class PaymentMethodsCompatibility {
 
 		add_action(
 			'update_option_woocommerce_woocommerce_payments_settings',
-			[
-				$this,
-				'add_missing_currencies',
-			]
+			[ $this, 'add_missing_currencies' ]
 		);
+		add_action( 'admin_head', [ $this, 'add_payment_method_currency_dependencies_script' ] );
+	}
+
+	/**
+	 * Returns the currencies needed per enabled payment method
+	 *
+	 * @return  array  The currencies keyed with the related payment method
+	 */
+	public function get_enabled_payment_method_currencies() {
+
+		if ( ! WC_Payments_Features::is_upe_enabled() ) {
+			return [];
+		}
+
+		$enabled_payment_method_ids       = $this->gateway->get_upe_enabled_payment_method_ids();
+		$payment_methods_needing_currency = array_reduce(
+			$enabled_payment_method_ids,
+			function ( $result, $method ) {
+				if ( in_array( $method, [ 'card', 'card_present' ], true ) ) {
+					return $result;
+				}
+				$class_key = $method;
+				if ( 'sepa_debit' === $method ) {
+					$class_key = 'sepa';
+				}
+				$class_name = '\\WCPay\\Payment_Methods\\' . ucfirst( strtolower( $class_key ) ) . '_Payment_Method';
+				if ( ! class_exists( $class_name ) ) {
+					return $result;
+				}
+				$payment_method_instance = new $class_name( null );
+
+				$result[ $method ] = [
+					'currencies' => $payment_method_instance->get_currencies(),
+					'title'      => $payment_method_instance->get_title(),
+				];
+
+				return $result;
+			},
+			[]
+		);
+
+		return $payment_methods_needing_currency;
 	}
 
 	/**
 	 * Ensures that when a payment method is added from the settings, the needed currency is also added.
 	 */
 	public function add_missing_currencies() {
-		$enabled_payment_method_ids       = $this->gateway->get_upe_enabled_payment_method_ids();
-		$payment_methods_needing_currency = array_filter(
-			$enabled_payment_method_ids,
-			function ( $method ) {
-				return isset( $this->payment_method_currency_map[ $method ] );
-			}
-		);
+		$payment_methods_needing_currency = $this->get_enabled_payment_method_currencies();
 		if ( empty( $payment_methods_needing_currency ) ) {
 			return;
 		}
@@ -80,17 +102,23 @@ class PaymentMethodsCompatibility {
 
 		$missing_currency_codes = [];
 
-		// we have payments needing some currency being enabled, let's ensure the currency is present.
-		foreach ( $payment_methods_needing_currency as $payment_method ) {
-			$needed_currency_code = $this->payment_method_currency_map[ $payment_method ];
-			if ( ! isset( $available_currencies[ $needed_currency_code ] ) ) {
-				continue;
-			}
-			if ( isset( $enabled_currencies[ $needed_currency_code ] ) ) {
-				continue;
-			}
+		// TODO: we need to find something about having a currency not available for the method in case of having disabled currencies in the future.
+		// First option, not do display it if the available currency is blocked by something else (Stripe, merchant, WCPay etc.)
+		// Second option, showing a notice that it can't be selected because the currency is not available to use.
 
-			$missing_currency_codes[] = $needed_currency_code;
+		// we have payments needing some currency being enabled, let's ensure the currency is present.
+		foreach ( $payment_methods_needing_currency as $payment_method_data ) {
+			$needed_currency_codes = $payment_method_data['currencies'];
+			foreach ( $needed_currency_codes as $needed_currency_code ) {
+				if ( ! isset( $available_currencies[ $needed_currency_code ] ) ) {
+					continue;
+				}
+				if ( isset( $enabled_currencies[ $needed_currency_code ] ) ) {
+					continue;
+				}
+
+				$missing_currency_codes[] = $needed_currency_code;
+			}
 		}
 
 		$missing_currency_codes = array_unique( $missing_currency_codes );
@@ -100,5 +128,34 @@ class PaymentMethodsCompatibility {
 		}
 
 		$this->multi_currency->set_enabled_currencies( array_merge( array_keys( $enabled_currencies ), $missing_currency_codes ) );
+	}
+
+	/**
+	 * Adds the notices for currencies that are bound to an UPE payment method.
+	 *
+	 * @return  void
+	 */
+	public function add_payment_method_currency_dependencies_script() {
+		$payment_methods_needing_currency = $this->get_enabled_payment_method_currencies();
+		if ( empty( $payment_methods_needing_currency ) ) {
+			return;
+		}
+
+		$currency_methods_map = [];
+		foreach ( $payment_methods_needing_currency as $method => $data ) {
+			foreach ( $data['currencies'] as $currency ) {
+				if ( ! isset( $currency_methods_map[ $currency ] ) ) {
+					$currency_methods_map[ $currency ] = [];
+				}
+				$currency_methods_map[ $currency ][ $method ] = $data['title'];
+			}
+		}
+
+		if ( WC_Payments_Multi_Currency()->is_multi_currency_settings_page() ) : ?>
+			<script type='text/javascript'>
+				window.multiCurrencyPaymentMethodsMap = <?php echo wp_json_encode( $currency_methods_map ); ?>;
+			</script>
+			<?php
+		endif;
 	}
 }

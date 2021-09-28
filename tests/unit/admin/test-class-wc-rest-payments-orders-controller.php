@@ -223,6 +223,58 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Payment capture failed to complete with the following message: Test error', $response->get_error_message() );
 	}
 
+	public function test_capture_terminal_payment_error_invalid_arguments() {
+		$order = $this->create_mock_order();
+
+		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
+		$mock_intent
+			->expects( $this->any() )
+			->method( 'get_status' )
+			->willReturn( 'requires_capture' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->willReturn(
+				// See https://stripe.com/docs/error-codes#amount-too-large.
+				[
+					'status'    => 'failed',
+					'message'   => 'Error: The payment could not be captured because the requested capture amount is greater than the authorized amount.',
+					'http_code' => 400,
+				]
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_terminal_payment( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 400, $data['status'] );
+		$this->assertSame( 'wcpay_capture_error', $response->get_error_code() );
+		$this->assertEquals(
+			'Payment capture failed to complete with the following message: ' .
+			'Error: The payment could not be captured because the requested capture amount is greater than the authorized amount.',
+			$response->get_error_message()
+		);
+	}
+
 	public function test_capture_terminal_payment_handles_exceptions() {
 		$order = $this->create_mock_order();
 
@@ -435,6 +487,38 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 
 		$result_order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'cus_exist', $result_order->get_meta( '_stripe_customer_id' ) );
+	}
+
+	public function test_create_customer_from_order_with_invalid_status() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'completed' );
+		$order->save();
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'get_customer_id_by_user_id' );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'create_customer_for_user' );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'update_customer_for_user' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		$response = $this->controller->create_customer( $request );
+		$this->assertInstanceOf( WP_Error::class, $response );
+
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 400, $data['status'] );
 	}
 
 	public function test_create_customer_from_order_non_guest_with_customer_id_from_order_meta() {

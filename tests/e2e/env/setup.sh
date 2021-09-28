@@ -216,6 +216,24 @@ else
 	echo "Skipping install of Action Scheduler"
 fi
 
+if [[ ! ${SKIP_WC_BLOCKS_TESTS} ]]; then
+	echo "Install and activate the latest release of WooCommerce Blocks"
+	cd $E2E_ROOT/deps
+	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_BLOCKS_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
+	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_BLOCKS_REPO/archive/$LATEST_RELEASE.zip"
+
+	unzip -qq woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}.zip
+
+	echo "Moving the unzipped plugin files. This may require your admin password"
+	sudo mv woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}/* $E2E_ROOT/deps/woocommerce-gutenberg-products-block
+
+	cli wp plugin activate woocommerce-gutenberg-products-block
+
+	rm -rf woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}
+else
+	echo "Skipping install of WooCommerce Blocks"
+fi
+
 echo "Installing basic auth plugin for interfacing with the API"
 cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
 
@@ -230,6 +248,10 @@ if [[ -n $CI ]]; then
 fi
 
 cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
+
+echo "Disabling rate limiter for card declined in E2E tests"
+
+cli wp option add wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
 
 echo
 step "Client site is up and running at http://${WP_URL}/wp-admin/"

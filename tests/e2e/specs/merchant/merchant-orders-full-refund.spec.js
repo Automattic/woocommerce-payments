@@ -114,10 +114,10 @@ describe( 'Order > Full refund', () => {
 		// Verify the transaction timeline reflects the refund events
 		await Promise.all( [
 			expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-				text: `A payment of ${ orderAmount } was successfully refunded.`,
+				text: `A payment of ${ orderAmount } USD was successfully refunded.`,
 			} ),
 			expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-				text: `${ orderAmount } will be deducted from a future deposit.`,
+				text: `${ orderAmount } USD will be deducted from a future deposit.`,
 			} ),
 			expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
 				text: 'Payment status changed to Refunded.',

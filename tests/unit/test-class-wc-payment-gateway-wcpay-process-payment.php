@@ -48,6 +48,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	private $mock_action_scheduler_service;
 
 	/**
+	 * Mock Session_Rate_Limiter.
+	 *
+	 * @var Session_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_rate_limiter;
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
@@ -95,6 +102,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
+
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
 		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
@@ -105,6 +114,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
+					$this->mock_rate_limiter,
 				]
 			)
 			->setMethods(
@@ -507,7 +517,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	public function test_connection_exception_thrown() {
 		// Arrange: Reusable data.
 		$error_message = 'Test error.';
-		$error_notice  = 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.';
+		$error_notice  = 'There was an error while processing this request. If you continue to see this notice, please contact the admin.';
 
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
@@ -547,9 +557,37 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$this->assertEquals( '', $result['redirect'] );
 	}
 
+	public function test_failed_transaction_rate_limiter_is_limited() {
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+
+		// Arrange: Rate limiter is limited.
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( true );
+
+		// Act: process payment.
+		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		$result_order = wc_get_order( $order->get_id() );
+
+		// Assert: Order status was updated.
+		$this->assertEquals( 'failed', $result_order->get_status() );
+
+		// Assert: No order note was added, besides the status change and failed transaction details.
+		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+		$this->assertContains( 'A payment of &#36;50.00 USD failed to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.', strip_tags( $notes[0]->content, '' ) );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'fail', $result['result'] );
+		$this->assertEquals( '', $result['redirect'] );
+	}
+
 	public function test_bad_request_exception_thrown() {
 		$error_message = 'Test error.';
-		$error_notice  = 'We\'re not able to process this payment. Please refresh the page and try again.';
+		$error_notice  = 'We\'re not able to process this request. Please refresh the page and try again.';
 
 		$order = WC_Helper_Order::create_order();
 

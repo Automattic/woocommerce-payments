@@ -25,23 +25,24 @@ class WC_Payments_API_Client {
 
 	const API_TIMEOUT_SECONDS = 70;
 
-	const ACCOUNTS_API        = 'accounts';
-	const APPLE_PAY_API       = 'apple_pay';
-	const CHARGES_API         = 'charges';
-	const CONN_TOKENS_API     = 'terminal/connection_tokens';
-	const CUSTOMERS_API       = 'customers';
-	const CURRENCY_API        = 'currency';
-	const INTENTIONS_API      = 'intentions';
-	const REFUNDS_API         = 'refunds';
-	const DEPOSITS_API        = 'deposits';
-	const TRANSACTIONS_API    = 'transactions';
-	const DISPUTES_API        = 'disputes';
-	const FILES_API           = 'files';
-	const OAUTH_API           = 'oauth';
-	const TIMELINE_API        = 'timeline';
-	const PAYMENT_METHODS_API = 'payment_methods';
-	const SETUP_INTENTS_API   = 'setup_intents';
-	const TRACKING_API        = 'tracking';
+	const ACCOUNTS_API           = 'accounts';
+	const APPLE_PAY_API          = 'apple_pay';
+	const CHARGES_API            = 'charges';
+	const CONN_TOKENS_API        = 'terminal/connection_tokens';
+	const TERMINAL_LOCATIONS_API = 'terminal/locations';
+	const CUSTOMERS_API          = 'customers';
+	const CURRENCY_API           = 'currency';
+	const INTENTIONS_API         = 'intentions';
+	const REFUNDS_API            = 'refunds';
+	const DEPOSITS_API           = 'deposits';
+	const TRANSACTIONS_API       = 'transactions';
+	const DISPUTES_API           = 'disputes';
+	const FILES_API              = 'files';
+	const OAUTH_API              = 'oauth';
+	const TIMELINE_API           = 'timeline';
+	const PAYMENT_METHODS_API    = 'payment_methods';
+	const SETUP_INTENTS_API      = 'setup_intents';
+	const TRACKING_API           = 'tracking';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -259,6 +260,7 @@ class WC_Payments_API_Client {
 	 * @param string $currency_code             - Currency to charge in.
 	 * @param bool   $save_payment_method       - Whether to setup payment intent for future usage.
 	 * @param string $customer_id               - Stripe customer to associate payment intent with.
+	 * @param array  $metadata                  - Meta data values to be sent along with payment intent creation.
 	 * @param array  $level3                    - Level 3 data.
 	 * @param string $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
 	 *
@@ -271,13 +273,16 @@ class WC_Payments_API_Client {
 		$currency_code,
 		$save_payment_method = false,
 		$customer_id = '',
+		$metadata = [],
 		$level3 = [],
 		$selected_upe_payment_type = ''
 	) {
 		$request = [
-			'amount'   => $amount,
-			'currency' => $currency_code,
-			'level3'   => $level3,
+			'amount'      => $amount,
+			'currency'    => $currency_code,
+			'metadata'    => $metadata,
+			'level3'      => $level3,
+			'description' => $this->get_intent_description( $metadata['order_id'] ?? 0 ),
 		];
 
 		if ( '' !== $selected_upe_payment_type ) {
@@ -823,6 +828,8 @@ class WC_Payments_API_Client {
 	 * @param ?array $currencies_to - An array of the currencies we want to convert into. If left empty, will get all supported currencies.
 	 *
 	 * @return array
+	 *
+	 * @throws API_Exception - Error contacting the API.
 	 */
 	public function get_currency_rates( string $currency_from, $currencies_to = null ) {
 		$query_body = [ 'currency_from' => $currency_from ];
@@ -1145,6 +1152,61 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Retrieves a store's terminal locations.
+	 *
+	 * @return array[] Stripe terminal location objects.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_terminal_locations() {
+		return $this->request( [], self::TERMINAL_LOCATIONS_API, self::GET );
+	}
+
+	/**
+	 * Creates a new terminal location.
+	 *
+	 * @param string  $display_name The display name of the terminal location.
+	 * @param array   $address {
+	 *     Address partials.
+	 *
+	 *     @type string $country     Two-letter country code.
+	 *     @type string $line1       Address line 1.
+	 *     @type string $line2       Optional. Address line 2.
+	 *     @type string $city        Optional. City, district, suburb, town, or village.
+	 *     @type int    $postal_code Optional. ZIP or postal code.
+	 *     @type string $state       Optional. State, county, province, or region.
+	 * }
+	 * @param mixed[] $metadata Optional. Metadata for the location.
+	 *
+	 * @return array A Stripe terminal location object.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function create_terminal_location( $display_name, $address, $metadata = [] ) {
+		if ( ! isset( $address['country'], $address['line1'] ) ) {
+			throw new API_Exception(
+				__( 'Address country and line 1 are required.', 'woocommerce-payments' ),
+				'wcpay_invalid_terminal_location_request',
+				400
+			);
+		}
+
+		$request = [
+			'display_name' => $display_name,
+			'address'      => $address,
+			'metadata'     => $metadata,
+		];
+
+		return $this->request(
+			$request,
+			self::TERMINAL_LOCATIONS_API,
+			self::POST
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -1308,9 +1370,11 @@ class WC_Payments_API_Client {
 
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
+			$error_type = null;
 			if ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
+				$error_type    = $response_body['error']['type'] ?? null;
 			} elseif ( isset( $response_body['code'] ) ) {
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
@@ -1326,7 +1390,7 @@ class WC_Payments_API_Client {
 			);
 
 			Logger::error( "$error_message ($error_code)" );
-			throw new API_Exception( $message, $error_code, $response_code );
+			throw new API_Exception( $message, $error_code, $response_code, $error_type );
 		}
 
 		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
