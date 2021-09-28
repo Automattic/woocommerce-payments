@@ -99,6 +99,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 3.1.0 - 2021-xx-xx =
+* Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
 * Add - Customer multi-currency onboarding flow.
 * Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
 * Add - Update layout of the Multi-currency settings screen.
@@ -106,6 +107,9 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
 * Fix - Currency switcher does not affect order confirmation screen prices.
 * Fix - Error when attempting to change the payment method for a subscription with UPE enabled.
+* Add - Multi-Currency track currency added.
+* Fix - Fill missing order_intent_info even if an exception occurs.
+* Add - Gutenberg Block Widget for Multi-Currency.
 * Update - Bump minimum supported version of WooCommerce from 5.4 to 5.5.
 * Update - Bump minimum required version of WooCommerce from 4.0 to 4.4.
 
