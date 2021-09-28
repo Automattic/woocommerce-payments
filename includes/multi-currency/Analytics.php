@@ -209,7 +209,7 @@ class Analytics {
 		$exchange_rate_tbl        = $prefix . 'exchange_rate_postmeta';
 		$stripe_exchange_rate_tbl = $prefix . 'stripe_exchange_rate_postmeta';
 
-		// If this is a suppotted context, add the joins. If this is an unsupported context, see if we can add the joins.
+		// If this is a supported context, add the joins. If this is an unsupported context, see if we can add the joins.
 		if ( $this->is_supported_context( $context ) && ( in_array( $context_page, self::SUPPORTED_CONTEXTS, true ) || $this->is_order_stats_table_used_in_clauses( $clauses ) ) ) {
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.post_id AND {$currency_tbl}.meta_key = '_order_currency'";
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.post_id AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
