@@ -408,6 +408,9 @@ class Compatibility {
 			} elseif ( 'custom_price' === $addon['field_type'] ) {
 				// Custom prices do not get converted.
 				$addon_price = $addon['price'];
+			} elseif ( 'input_multiplier' === $addon['field_type'] ) {
+				// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
+				$addon_price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
 			} else {
 				// Convert all others.
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
@@ -470,6 +473,9 @@ class Compatibility {
 			// Percentage based and custom defined addon prices do not get converted, all others do.
 			if ( 'percentage_based' === $addon['price_type'] || 'custom_price' === $addon['field_type'] ) {
 				$addon_price = $addon['price'];
+			} elseif ( 'input_multiplier' === $addon['field_type'] ) {
+				// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
+				$addon_price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
 			} else {
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
 			}
@@ -531,6 +537,10 @@ class Compatibility {
 		} elseif ( 'percentage_based' !== $addon['price_type'] && $addon['price'] && apply_filters( 'woocommerce_addons_add_price_to_name', '__return_true' ) ) {
 			// Get our converted and tax adjusted price to put in the add on name.
 			$price = $this->multi_currency->get_price( $addon['price'], 'product' );
+			if ( 'input_multiplier' === $addon['field_type'] ) {
+				// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
+				$price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
+			}
 			$price = \WC_Product_Addons_Helper::get_product_addon_price_for_display( $price, $cart_item['data'] );
 			$name .= ' (' . wc_price( $price ) . ')';
 		} else {
