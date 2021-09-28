@@ -258,6 +258,11 @@ const feeBreakdown = ( event ) => {
 		return;
 	}
 
+	// hide breakdown when there's only a base fee
+	if ( isBaseFeeOnly( event ) ) {
+		return;
+	}
+
 	const {
 		fee_rates: { history },
 	} = event;
@@ -346,11 +351,7 @@ const feeBreakdown = ( event ) => {
 		);
 	} );
 
-	return (
-		<ul className="fee-breakdown-list">
-			{ isBaseFeeOnly( event ) ? [] : feeHistoryList }
-		</ul>
-	);
+	return <ul className="fee-breakdown-list"> { feeHistoryList } </ul>;
 };
 
 /**
