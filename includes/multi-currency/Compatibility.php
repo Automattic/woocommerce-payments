@@ -517,6 +517,14 @@ class Compatibility {
 				$addon_price = $addon['price'];
 			} elseif ( 'input_multiplier' === $addon['field_type'] ) {
 				$addon_price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
+				$this->update_cart_item_meta_data(
+					$cart_item['data'],
+					'multiplier',
+					[
+						'incorrect_price' => $this->multi_currency->get_price( $addon['price'], 'product' ),
+						'correct_price'   => $addon_price,
+					]
+				);
 			} else {
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
 			}
@@ -634,9 +642,22 @@ class Compatibility {
 							}
 						}
 					}
+
+					// Same as above, it's a best guess and if another add on's price matches the amount, it will not get converted.
+					$multiplier_prices = $item['data']->get_meta( 'wcpay_mc_multiplier_currency_amounts' );
+					if ( is_array( $multiplier_prices ) ) {
+						foreach ( $multiplier_prices as $multiplier_price ) {
+							$incorrect_price = $this->get_tax_adjusted_price( (float) $multiplier_price['incorrect_price'], $product );
+							if ( (string) $this->multi_currency->get_price( $price, 'product' ) === (string) $incorrect_price
+								&& $item['data']->get_id() === $product->get_id() ) {
+								$is_multiplier = true;
+								$price         = $multiplier_price['correct_price'];
+							}
+						}
+					}
 				}
 
-				if ( ! $is_percentage && ! $is_custom ) {
+				if ( ! $is_percentage && ! $is_custom && ! $is_multiplier ) {
 					// Get the add on's price.
 					$price = $this->multi_currency->get_price( $price, 'product' );
 					$price = $this->get_tax_adjusted_price( $price, $product );
@@ -836,13 +857,23 @@ class Compatibility {
 	 *
 	 * @param \WC_Product $cart_item The product in the cart.
 	 * @param string      $type      The type of meta we're adding.
-	 * @param float       $amount    The amount being added to the meta array.
+	 * @param mixed       $amount    The amount or data we're going to need later.
 	 *
 	 * @return void
 	 */
-	private function update_cart_item_meta_data( \WC_Product $cart_item, string $type, float $amount ) {
+	private function update_cart_item_meta_data( \WC_Product $cart_item, string $type, $amount ) {
 
-		$key = 'percentage' === $type ? 'wcpay_mc_percentage_currency_amounts' : 'wcpay_mc_custom_currency_amounts';
+		switch ( $type ) {
+			case 'percentage':
+				$key = 'wcpay_mc_percentage_currency_amounts';
+				break;
+			case 'multiplier':
+				$key = 'wcpay_mc_multiplier_currency_amounts';
+				break;
+			default:
+				$key = 'wcpay_mc_custom_currency_amounts';
+				break;
+		}
 
 		$amounts   = $cart_item->get_meta( $key );
 		$amounts   = is_array( $amounts ) ? $amounts : [];
