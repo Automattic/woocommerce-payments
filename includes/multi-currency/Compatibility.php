@@ -446,6 +446,10 @@ class Compatibility {
 			} elseif ( 'percentage_based' !== $addon['price_type'] && $addon['price'] && apply_filters( 'woocommerce_addons_add_price_to_name', '__return_true' ) ) {
 				// Get our converted and tax adjusted price to put in the add on name.
 				$price = $this->multi_currency->get_price( $addon['price'], 'product' );
+				// If the add on is a quantity type, we have to get the individual add on amount, then multiply it by what the customer input.
+				if ( 'input_multiplier' === $addon['field_type'] ) {
+					$price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
+				}
 				$price = $this->get_tax_adjusted_price( $price, $cart_item['data'] );
 				$name .= ' (' . wc_price( $price ) . ')';
 			} else {
@@ -511,6 +515,8 @@ class Compatibility {
 			$price_type = $addon['price_type'];
 			if ( 'percentage_based' === $price_type || 'custom_price' === $addon['field_type'] ) {
 				$addon_price = $addon['price'];
+			} elseif ( 'input_multiplier' === $addon['field_type'] ) {
+				$addon_price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
 			} else {
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
 			}
