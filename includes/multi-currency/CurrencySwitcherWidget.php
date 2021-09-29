@@ -47,7 +47,7 @@ class CurrencySwitcherWidget extends WC_Widget {
 		$this->compatibility  = $compatibility;
 
 		$this->widget_id          = 'currency_switcher_widget';
-		$this->widget_name        = __( 'Currency Switcher', 'woocommerce-payments' );
+		$this->widget_name        = __( 'Currency Switcher Widget', 'woocommerce-payments' );
 		$this->widget_description = __( 'Let your customers switch between your enabled currencies', 'woocommerce-payments' );
 		$this->settings           = [
 			'title'  => [
@@ -118,6 +118,7 @@ class CurrencySwitcherWidget extends WC_Widget {
 	 * @param Currency $currency    Currency to use for <option> element.
 	 * @param boolean  $with_symbol Whether to show the currency symbol.
 	 * @param boolean  $with_flag   Whether to show the currency flag.
+	 *
 	 * @return void Displays HTML of currency <option>
 	 */
 	private function display_currency_option( Currency $currency, bool $with_symbol, bool $with_flag ) {

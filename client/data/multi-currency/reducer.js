@@ -64,6 +64,9 @@ const receiveMultiCurrencies = (
 					enable_storefront_switcher:
 						data.wcpay_multi_currency_enable_storefront_switcher,
 					site_theme: data.site_theme,
+					date_format: data.date_format,
+					time_format: data.time_format,
+					store_url: data.store_url,
 				},
 			};
 	}
