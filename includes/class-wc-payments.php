@@ -159,7 +159,16 @@ class WC_Payments {
 
 		if ( ! self::check_plugin_dependencies( true ) ) {
 			add_filter( 'admin_notices', [ __CLASS__, 'check_plugin_dependencies' ] );
-			return;
+
+			/**
+			 * After displaying notice errors in WP Admin, still silently load the plugin if the account is connected.
+			 *
+			 * @since 3.1.0
+			 */
+			$account_data = get_option( 'wcpay_account_data' );
+			if ( ! isset( $account_data['account'] ) ) {
+				return;
+			};
 		}
 
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
