@@ -1,0 +1,127 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Multi Currency Store Settings store settings task renders correctly: snapshot-multi-currency-store_settings 1`] = `
+<div>
+  <div
+    class="settings-section multi-currency-settings-store-settings-section"
+  >
+    <div
+      class="settings-section__details"
+    >
+      <h2>
+        Store settings
+      </h2>
+      <p>
+        Store settings allow your customers to choose which currency they would like to use when shopping at your store. 
+        <a
+          href="https://docs.woocommerce.com/document/payments/currencies/multi-currency-setup/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Learn more
+        </a>
+      </p>
+    </div>
+    <div
+      class="settings-section__controls"
+    >
+      <div
+        class="components-card is-size-medium multi-currency-settings__wrapper css-1xs3c37-CardUI e1q7k77g0"
+      >
+        <div
+          class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+        >
+          <div
+            class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+          >
+            <div
+              class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+            >
+              <span
+                class="components-checkbox-control__input-container"
+              >
+                <input
+                  class="components-checkbox-control__input"
+                  data-testid="enable_auto_currency"
+                  id="inspector-checkbox-control-0"
+                  type="checkbox"
+                  value="1"
+                />
+              </span>
+              <label
+                class="components-checkbox-control__label"
+                for="inspector-checkbox-control-0"
+              >
+                Automatically switch customers to their local currency if it has been enabled
+              </label>
+            </div>
+          </div>
+          <div
+            class="multi-currency-settings__description"
+          >
+            Customers will be notified via store alert banner. 
+            <button
+              class="components-button is-link"
+              type="button"
+            >
+              Preview
+            </button>
+          </div>
+          <div
+            class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+          >
+            <div
+              class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+            >
+              <span
+                class="components-checkbox-control__input-container"
+              >
+                <input
+                  class="components-checkbox-control__input"
+                  data-testid="enable_storefront_switcher"
+                  id="inspector-checkbox-control-1"
+                  type="checkbox"
+                  value="1"
+                />
+              </span>
+              <label
+                class="components-checkbox-control__label"
+                for="inspector-checkbox-control-1"
+              >
+                Add a currency switcher to the Storefront theme on breadcrumb section.
+              </label>
+            </div>
+          </div>
+          <div
+            class="multi-currency-settings__description"
+          >
+            A currency switcher is also available in your widgets. 
+            <a
+              href="widgets.php"
+            >
+              Configure now
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="settings-section multi-currency-settings-save-settings-section"
+  >
+    <div
+      class="settings-section__details"
+    />
+    <div
+      class="settings-section__controls"
+    >
+      <button
+        class="components-button is-primary"
+        type="button"
+      >
+        Save changes
+      </button>
+    </div>
+  </div>
+</div>
+`;
