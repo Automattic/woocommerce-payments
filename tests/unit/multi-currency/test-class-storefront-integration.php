@@ -25,28 +25,9 @@ class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase 
 	public function setUp() {
 		parent::setUp();
 
+		/** @var MultiCurrency|PHPUnit_Framework_MockObject_MockObject */
 		$this->mock_multi_currency    = $this->createMock( MultiCurrency::class );
 		$this->storefront_integration = new StorefrontIntegration( $this->mock_multi_currency );
-	}
-
-	public function tearDown() {
-		remove_all_filters( 'option_wcpay_multi_currency_enable_storefront_switcher' );
-
-		parent::tearDown();
-	}
-
-	public function test_always_register_settings_on_init() {
-		// Settings should be registered even when only one currency is enabled.
-		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( [ [] ] );
-
-		// Settings should be registered even when the switcher is not enabled.
-		update_option( 'wcpay_multi_currency_enable_storefront_switcher', 'no' );
-
-		$this->assertSame(
-			10,
-			has_filter( 'wcpay_multi_currency_enabled_currencies_settings', [ $this->storefront_integration, 'filter_store_settings' ] ),
-			"The filter 'wcpay_multi_currency_enabled_currencies_settings' with function 'filter_store_settings' was not registered with a priority of 10."
-		);
 	}
 
 	/**
@@ -55,8 +36,7 @@ class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase 
 	public function test_does_not_register_actions_when_less_than_2_currencies( $filter, $function_name ) {
 		// The breadcrumbs widget should only be registered when 2 or more currencies are enabled.
 		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( [ [] ] );
-
-		update_option( 'wcpay_multi_currency_enable_storefront_switcher', 'yes' );
+		$this->mock_multi_currency->method( 'is_using_storefront_switcher' )->willReturn( true );
 		// Reinit class to re-evaluate conditional hooks.
 		$this->storefront_integration = new StorefrontIntegration( $this->mock_multi_currency );
 
@@ -72,8 +52,8 @@ class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase 
 	public function test_does_not_register_actions_when_switcher_disabled( $filter, $function_name ) {
 		// The breadcrumbs widget should only be registered when 2 or more currencies are enabled.
 		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( [ [], [] ] );
+		$this->mock_multi_currency->method( 'is_using_storefront_switcher' )->willReturn( false );
 
-		update_option( 'wcpay_multi_currency_enable_storefront_switcher', 'no' );
 		// Reinit class to re-evaluate conditional hooks.
 		$this->storefront_integration = new StorefrontIntegration( $this->mock_multi_currency );
 
@@ -83,33 +63,14 @@ class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase 
 		);
 	}
 
-
-	/**
-	 * @dataProvider switcher_filter_provider
-	 */
-	public function test_registers_actions_when_switcher_default( $filter, $function_name ) {
-		// The breadcrumbs widget should only be registered when 2 or more currencies are enabled.
-		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( [ [], [] ] );
-
-		delete_option( 'wcpay_multi_currency_enable_storefront_switcher' );
-		// Reinit class to re-evaluate conditional hooks.
-		$this->storefront_integration = new StorefrontIntegration( $this->mock_multi_currency );
-
-		$this->assertGreaterThan(
-			10,
-			has_filter( $filter, [ $this->storefront_integration, $function_name ] ),
-			"The filter '$filter' with function '$function_name' was not registered with a priority above 10."
-		);
-	}
-
 	/**
 	 * @dataProvider switcher_filter_provider
 	 */
 	public function test_registers_actions_when_switcher_enabled( $filter, $function_name ) {
 		// The breadcrumbs widget should only be registered when 2 or more currencies are enabled.
 		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( [ [], [] ] );
+		$this->mock_multi_currency->method( 'is_using_storefront_switcher' )->willReturn( true );
 
-		update_option( 'wcpay_multi_currency_enable_storefront_switcher', 'yes' );
 		// Reinit class to re-evaluate conditional hooks.
 		$this->storefront_integration = new StorefrontIntegration( $this->mock_multi_currency );
 

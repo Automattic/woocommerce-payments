@@ -1,0 +1,48 @@
+.multi-currency-settings {
+	&__wrapper {
+		& > .components-card__body {
+			&.is-size-medium {
+				padding: 24px;
+			}
+			.components-base-control {
+				.components-base-control__field {
+					margin-bottom: 0;
+				}
+			}
+			& > .wcpay-wizard__description-element {
+				font-size: 13px;
+				line-height: 16px;
+			}
+		}
+	}
+	&__description {
+		font-size: 13px;
+		line-height: 16px;
+		padding: 0 0 0 32px;
+		margin: 8px 0 12px;
+		color: #7e7e7e;
+		&:last-child {
+			margin: 4px 0 0;
+		}
+	}
+	.settings-section__details {
+		h2 {
+			font-style: normal;
+			font-weight: 600;
+			font-size: 16px;
+			line-height: 24px;
+			margin: 24px 0 12px;
+		}
+
+		p {
+			font-style: normal;
+			font-weight: normal;
+			font-size: 13px;
+			line-height: 16px;
+			color: var( --wc-subtext );
+		}
+	}
+	.multi-currency-settings-save-settings-section {
+		text-align: right;
+	}
+}
