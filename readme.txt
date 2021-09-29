@@ -113,6 +113,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - WCPay logo
 * Fix - Translations in transaction/deposit exports
 * Fix - Update shipping cost in payment sheet when changing payment method.
+* Fix - Transaction search with translated terms
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.

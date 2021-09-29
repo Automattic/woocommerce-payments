@@ -15,6 +15,7 @@
 * Update - WCPay logo
 * Fix - Translations in transaction/deposit exports
 * Fix - Update shipping cost in payment sheet when changing payment method.
+* Fix - Transaction search with translated terms
 * Fix - Add credit card on My Account using other payment gateways does not show "Your card number is incomplete" error
 
 = 3.0.0 - 2021-09-16 =
