@@ -275,7 +275,7 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 			);
 
 		$this->invoice_service->validate_invoice( $mock_item_data, $mock_discount_data, $mock_subscription );
-		$this->assertEquals( [], $mock_subscription->get_meta( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, true ) );
+		$this->assertSame( [], $mock_subscription->get_meta( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, true ) );
 	}
 	/**
 	 * Mocks the wcs_order_contains_subscription function return.

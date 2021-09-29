@@ -318,7 +318,7 @@ class WC_Payments_Subscription_Service {
 			$coupon   = new WC_Coupon( $code );
 			$duration = in_array( $coupon->get_discount_type(), [ 'recurring_fee', 'recurring_percent' ], true ) ? 'forever' : 'once';
 			$data[]   = [
-				'amount_off' => $coupon->get_amount() * 100,
+				'amount_off' => $item->get_discount() * 100,
 				'currency'   => $subscription->get_currency(),
 				'duration'   => $duration,
 				// Translators: %s Coupon code.
