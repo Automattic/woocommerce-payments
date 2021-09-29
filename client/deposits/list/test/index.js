@@ -230,17 +230,13 @@ describe( 'Deposits list', () => {
 			expect( formatDate( csvFirstDeposit[ 1 ] ) ).toBe(
 				displayFirstDeposit[ 0 ]
 			); // date
-			expect( csvFirstDeposit[ 2 ] ).toBe(
-				displayFirstDeposit[ 1 ].toLowerCase()
-			); // type
+			expect( csvFirstDeposit[ 2 ] ).toBe( displayFirstDeposit[ 1 ] ); // type
 			expect(
 				getUnformattedAmount( displayFirstDeposit[ 2 ] ).indexOf(
 					csvFirstDeposit[ 3 ]
 				)
 			).not.toBe( -1 ); // amount
-			expect( csvFirstDeposit[ 4 ] ).toBe(
-				displayFirstDeposit[ 3 ].toLowerCase()
-			); // status
+			expect( csvFirstDeposit[ 4 ] ).toBe( displayFirstDeposit[ 3 ] ); // status
 			expect( csvFirstDeposit[ 5 ] ).toBe(
 				`"${ displayFirstDeposit[ 4 ] }"`
 			); // bank account
