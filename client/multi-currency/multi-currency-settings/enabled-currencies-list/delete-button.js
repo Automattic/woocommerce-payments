@@ -7,7 +7,7 @@ import { Button, Icon } from '@wordpress/components';
 import Gridicon from 'gridicons';
 import interpolateComponents from 'interpolate-components';
 import { useCallback, useState } from '@wordpress/element';
-import ConfirmationModal from '../../components/confirmation-modal';
+import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import CurrencyDeleteIllustration from 'wcpay/components/currency-delete-illustration';
 import PaymentMethodIcon from 'wcpay/settings/payment-method-icon';
 

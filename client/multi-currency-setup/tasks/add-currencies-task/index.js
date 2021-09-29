@@ -21,8 +21,9 @@ import {
 	useDefaultCurrency,
 } from 'wcpay/data';
 
-import EnabledCurrenciesModalCheckboxList from '../../../multi-currency/enabled-currencies-list/modal-checkbox-list';
-import EnabledCurrenciesModalCheckbox from '../../../multi-currency/enabled-currencies-list/modal-checkbox';
+// eslint-disable-next-line max-len
+import EnabledCurrenciesModalCheckboxList from '../../../multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox-list';
+import EnabledCurrenciesModalCheckbox from '../../../multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox';
 import Search from 'components/search';
 
 import { LoadableBlock } from '../../../components/loadable';
@@ -257,26 +258,28 @@ const AddCurrenciesTask = () => {
 							<div className="add-currencies-task__content">
 								<EnabledCurrenciesModalCheckboxList>
 									{ ! searchText &&
-										visibleRecommendedCurrencyCodes.length && (
-											<>
-												<li>
-													<h4>
-														{ __(
-															'Recommended Currencies',
-															'woocommerce-payments'
-														) }
-													</h4>
-												</li>
-												{ visibleRecommendedCurrencyCodes.map(
-													displayCurrencyCheckbox
-												) }
-												<li
-													className={
-														'add-currencies-task__separator'
-													}
-												/>
-											</>
-										) }
+									visibleRecommendedCurrencyCodes.length ? (
+										<>
+											<li>
+												<h4>
+													{ __(
+														'Recommended Currencies',
+														'woocommerce-payments'
+													) }
+												</h4>
+											</li>
+											{ visibleRecommendedCurrencyCodes.map(
+												displayCurrencyCheckbox
+											) }
+											<li
+												className={
+													'add-currencies-task__separator'
+												}
+											/>
+										</>
+									) : (
+										''
+									) }
 									{ ! searchText && (
 										<li className="add-currencies-task__available-currencies">
 											<h4>
