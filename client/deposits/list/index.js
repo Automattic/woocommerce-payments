@@ -114,7 +114,7 @@ export const DepositsList = () => {
 			details: { value: deposit.id, display: detailsLink },
 			date: { value: deposit.date, display: dateDisplay },
 			type: {
-				value: deposit.type,
+				value: displayType[ deposit.type ],
 				display: clickable( displayType[ deposit.type ] ),
 			},
 			amount: {
@@ -124,7 +124,7 @@ export const DepositsList = () => {
 				),
 			},
 			status: {
-				value: deposit.status,
+				value: displayStatus[ deposit.status ],
 				display: clickable(
 					displayStatus[ deposit.status ] ||
 						formatStringValue( deposit.status )
