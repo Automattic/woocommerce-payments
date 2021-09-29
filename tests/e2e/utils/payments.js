@@ -11,13 +11,21 @@ export async function fillCardDetails( page, card ) {
 		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
-	const inputs = await stripeFrame.$$( '.InputElement.Input' );
 
-	const [ cardNumberInput, cardDateInput, cardCvcInput ] = inputs;
+	const cardNumberInput = await stripeFrame.waitForSelector(
+		'[name="cardnumber"]',
+		{ timeout: 30000 }
+	);
 	await cardNumberInput.type( card.number, { delay: 20 } );
+
+	const cardDateInput = await stripeFrame.waitForSelector(
+		'[name="exp-date"]'
+	);
 	await cardDateInput.type( card.expires.month + card.expires.year, {
 		delay: 20,
 	} );
+
+	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
 	await cardCvcInput.type( card.cvc, { delay: 20 } );
 }
 
@@ -104,6 +112,7 @@ export async function setupProductCheckout(
 			// Make sure that the number of items in the cart is incremented first before adding another item.
 			await expect( page ).toMatchElement( cartItemsCounter, {
 				text: new RegExp( `${ ++cartSize } items?` ),
+				timeout: 30000,
 			} );
 		}
 	}
