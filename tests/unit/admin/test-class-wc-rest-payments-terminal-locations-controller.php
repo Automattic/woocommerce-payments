@@ -36,6 +36,12 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 
+		// Set the store location for running test cases as intended.
+		update_option( 'woocommerce_store_city', 'San Francisco' );
+		update_option( 'woocommerce_default_country', 'US:CA' );
+		update_option( 'woocommerce_store_address', '60 29th Street Suite 343' );
+		update_option( 'woocommerce_store_postcode', '94110' );
+
 		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
 			->getMock();
@@ -47,7 +53,6 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 			'GET',
 			'/wc/v3/payments/terminal/locations'
 		);
-
 		$this->request->set_header( 'Content-Type', 'application/json' );
 
 		$this->location = [
@@ -58,14 +63,35 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 				'city'        => WC()->countries->get_base_city(),
 				'country'     => WC()->countries->get_base_country(),
 				'line1'       => WC()->countries->get_base_address(),
-				'line2'       => WC()->countries->get_base_address_2(),
 				'postal_code' => WC()->countries->get_base_postcode(),
 				'state'       => WC()->countries->get_base_state(),
 			],
 		];
 	}
 
-	public function test_creates_location_from_scatch() {
+	public function test_emits_error_when_address_not_populated() {
+		delete_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY );
+
+		// Set the store location settings for running the test case as intended.
+		delete_option( 'woocommerce_store_city' );
+		delete_option( 'woocommerce_store_address' );
+		delete_option( 'woocommerce_store_postcode' );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_terminal_locations' );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'create_terminal_location' );
+
+		$result = $this->controller->get_store_location( $this->request );
+
+		$this->assertSame( 'store_address_is_incomplete', $result->get_error_code() );
+		$this->assertStringEndsWith( '/admin.php?page=wc-settings&tab=general', $result->get_error_data()['url'] );
+	}
+
+	public function test_creates_location_from_scratch() {
 		delete_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY );
 
 		$this->mock_api_client

@@ -20,11 +20,13 @@ import {
 	decimalCurrencyRoundingOptions,
 	zeroDecimalCurrencyCharmOptions,
 	zeroDecimalCurrencyRoundingOptions,
+	toMoment,
 } from './constants';
 import {
 	useCurrencies,
 	useCurrencySettings,
 	useEnabledCurrencies,
+	useStoreSettings,
 } from 'wcpay/data';
 import MultiCurrencySettingsContext from '../context';
 import { LoadableBlock } from 'wcpay/components/loadable';
@@ -39,6 +41,7 @@ const SingleCurrencySettings = () => {
 
 	const { currencies } = useCurrencies();
 	const { enabledCurrencies } = useEnabledCurrencies();
+	const { storeSettings } = useStoreSettings();
 
 	const {
 		currencySettings,
@@ -50,6 +53,14 @@ const SingleCurrencySettings = () => {
 	const targetCurrency = currencies.available
 		? currencies.available[ currency ]
 		: {};
+
+	// Polyfill for window.wcpaySettings.zeroDecimalCurrencies.
+	// It's needed for wcpay/currency/utils library to format currencies correctly.
+	window.wcpaySettings = window.wcpaySettings || {
+		zeroDecimalCurrencies: Object.values( currencies.available )
+			.filter( ( currencyInfo ) => currencyInfo.is_zero_decimal )
+			.map( ( currencyInfo ) => currencyInfo.code ),
+	};
 
 	const targetCurrencyRoundingOptions = targetCurrency.is_zero_decimal
 		? zeroDecimalCurrencyRoundingOptions
@@ -98,11 +109,14 @@ const SingleCurrencySettings = () => {
 		}
 	}, [ currencySettings, currency, initialPriceRoundingType ] );
 
-	const formattedLastUpdatedTime = targetCurrency
+	const formattedLastUpdatedDateTime = targetCurrency
 		? moment
 				.unix( targetCurrency.last_updated )
-				.utc()
-				.format( 'HH:mm [UTC]' )
+				.format(
+					toMoment( storeSettings.date_format ?? 'F j, Y' ) +
+						' ' +
+						toMoment( storeSettings.time_format ?? 'HH:mm' )
+				)
 		: '';
 
 	const CurrencySettingsDescription = () => (
@@ -229,16 +243,20 @@ const SingleCurrencySettings = () => {
 														'single-currency-settings-description-inset'
 													) }
 												>
-													{ sprintf(
-														__(
-															'Current rate: 1 %s = %s %s (Updated hourly, Last updated: %s)',
-															'woocommerce-payments'
-														),
-														storeCurrency.code,
-														targetCurrency.rate,
-														targetCurrency.code,
-														formattedLastUpdatedTime
-													) }
+													{ targetCurrency.last_updated
+														? sprintf(
+																__(
+																	'Current rate: 1 %s = %s %s (Last updated: %s)',
+																	'woocommerce-payments'
+																),
+																storeCurrency.code,
+																targetCurrency.rate,
+																targetCurrency.code,
+																formattedLastUpdatedDateTime
+														  )
+														: __(
+																'Error - Unable to fetch automatic rate for this currency'
+														  ) }
 												</p>
 											</label>
 										</li>
