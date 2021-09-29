@@ -1,3 +1,11 @@
+.multi-currency-settings {
+	.settings-section:not( .settings-section:last-child ) {
+		&.multi-currency-settings-enabled-currencies-section {
+			margin-bottom: 32px;
+		}
+	}
+}
+
 .wcpay-multi-currency__enabled-currencies-header {
 	display: flex;
 
