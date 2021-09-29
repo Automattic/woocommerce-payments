@@ -605,7 +605,7 @@ class WC_Payments_Subscription_Service {
 	private function prepare_wcpay_subscription_data( string $wcpay_customer_id, WC_Subscription $subscription ) {
 		$recurring_items = $this->get_recurring_item_data_for_subscription( $subscription );
 		$one_time_items  = $this->get_one_time_item_data_for_subscription( $subscription );
-		$discount_items  = $this->get_discount_item_data_for_subscription( $subscription, true );
+		$discount_items  = self::get_discount_item_data_for_subscription( $subscription, true );
 		$data            = [
 			'customer' => $wcpay_customer_id,
 			'items'    => $recurring_items,
