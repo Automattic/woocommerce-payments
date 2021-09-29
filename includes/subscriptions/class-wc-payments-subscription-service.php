@@ -92,6 +92,14 @@ class WC_Payments_Subscription_Service {
 	private $feature_support_exceptions = [];
 
 	/**
+	 * Whether the current request is creating a WCPay subscription from
+	 * a prior manual renewal subscription.
+	 *
+	 * @var bool
+	 */
+	private $is_creating_subscription_from_manual_renewal_subscription = false;
+
+	/**
 	 * WC Payments Subscriptions Constructor
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WC payments API Client.
@@ -114,6 +122,7 @@ class WC_Payments_Subscription_Service {
 
 		if ( ! $this->is_subscriptions_plugin_active() ) {
 			add_action( 'woocommerce_checkout_subscription_created', [ $this, 'create_subscription' ] );
+			add_action( 'woocommerce_subscriptions_pre_update_payment_method', [ $this, 'maybe_add_action_to_create_subscription_from_manual_renewal_subscription' ], 10, 2 );
 		}
 
 		add_action( 'woocommerce_subscription_status_cancelled', [ $this, 'cancel_subscription' ] );
@@ -379,11 +388,39 @@ class WC_Payments_Subscription_Service {
 				$this->set_wcpay_discount_ids( $subscription, $response['discounts'] );
 			}
 
-			$this->invoice_service->set_subscription_invoice_id( $subscription, $response['latest_invoice'] );
+			if ( ! empty( $response['latest_invoice'] ) ) {
+				$this->invoice_service->set_subscription_invoice_id( $subscription, $response['latest_invoice'] );
+			}
 		} catch ( API_Exception $e ) {
 			Logger::log( sprintf( 'There was a problem creating the WCPay subscription %s', $e->getMessage() ) );
 			throw new Exception( $checkout_error_message );
 		}
+	}
+
+	/**
+	 * Conditionally adds an action to create a WCPay subscription when a
+	 * shopper adds a payment method. This only takes place when the
+	 * subscription previously required manual renewal.
+	 *
+	 * @param WC_Subscription $subscription       An instance of a WC_Subscription object.
+	 * @param string          $new_payment_method The ID of the new payment method.
+	 *
+	 * @return void
+	 */
+	public function maybe_add_action_to_create_subscription_from_manual_renewal_subscription( WC_Subscription $subscription, string $new_payment_method ) {
+		// Not changing the subscription payment method to WooCommerce payments, bail.
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
+			return;
+		}
+
+		// Not transitioning from manual renewal, bail.
+		if ( false === $subscription->get_requires_manual_renewal() ) {
+			return;
+		}
+
+		$this->is_creating_subscription_from_manual_renewal_subscription = true;
+
+		add_action( 'woocommerce_subscription_payment_method_updated', [ $this, 'create_subscription' ] );
 	}
 
 	/**
@@ -623,6 +660,11 @@ class WC_Payments_Subscription_Service {
 			$data['discounts'] = $discount_items;
 		}
 
+		if ( $this->is_creating_subscription_from_manual_renewal_subscription ) {
+			$data['backdate_start_date']  = max( $subscription->get_time( 'last_order_date_created' ), $subscription->get_time( 'last_order_date_paid' ) );
+			$data['billing_cycle_anchor'] = $subscription->get_time( 'next_payment' );
+		}
+
 		return apply_filters( 'wcpay_subscriptions_prepare_subscription_data', $data );
 	}
 
@@ -643,12 +685,37 @@ class WC_Payments_Subscription_Service {
 				continue;
 			}
 
-			$data[] = [
+			$item_data = [
 				'metadata'  => [ 'wc_item_id' => $item->get_id() ],
 				'price'     => $this->product_service->get_wcpay_price_id( $product ),
 				'quantity'  => $item->get_quantity(),
 				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
 			];
+
+			$product_price         = $product->get_price();
+			$product_interval      = WC_Subscriptions_Product::get_interval( $product );
+			$product_period        = WC_Subscriptions_Product::get_period( $product );
+			$item_total            = $item->get_total();
+			$subscription_interval = $subscription->get_billing_interval();
+			$subscription_period   = $subscription->get_billing_period();
+
+			if (
+				$product_price !== $item_total ||
+				$product_interval !== $subscription_interval ||
+				$product_period !== $subscription_period
+			) {
+				unset( $item_data['price'] );
+
+				$item_data['price_data'] = $this->format_item_price_data(
+					$subscription->get_currency(),
+					$this->product_service->get_wcpay_product_id( $product ),
+					$item_total,
+					$subscription_period,
+					$subscription_interval
+				);
+			}
+
+			$data[] = $item_data;
 		}
 
 		$additional_items = array_merge( $subscription->get_fees(), $subscription->get_shipping_methods() );
