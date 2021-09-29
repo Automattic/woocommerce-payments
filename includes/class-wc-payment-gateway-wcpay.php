@@ -953,6 +953,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
+		// Add card mandate options parameters to the order payment intent if needed.
+		$additional_api_parameters = array_merge(
+			$additional_api_parameters,
+			$this->maybe_add_mandate_to_order_payment( $order )
+		);
+
 		if ( $payment_needed ) {
 			$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() );
 			$currency         = strtolower( $order->get_currency() );
