@@ -78,14 +78,6 @@ class Track_Upe_Status_Test extends WP_UnitTestCase {
 		$this->assertSame( '1', get_option( Track_Upe_Status::IS_TRACKED_OPTION ) );
 	}
 
-	public function test_do_nothing_on_new_install() {
-		delete_option( 'woocommerce_woocommerce_payments_version' );
-
-		Track_Upe_Status::maybe_track();
-
-		$this->assertEquals( [], Tracker::get_admin_events() );
-	}
-
 	public function test_do_nothing_when_tracked() {
 		update_option( Track_Upe_Status::IS_TRACKED_OPTION, '1' );
 
