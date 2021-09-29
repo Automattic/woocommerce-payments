@@ -31,13 +31,6 @@ class Track_Upe_Status {
 			return;
 		}
 
-		// No need to track on new installs. We want the data
-		// from existing ones. New installs will have the events built-in.
-		if ( ! get_option( 'woocommerce_woocommerce_payments_version' ) ) {
-			self::mark_as_tracked();
-			return;
-		}
-
 		$upe_value = get_option( \WC_Payments_Features::UPE_FLAG_NAME, 'not-set' );
 
 		// Don't trigger the track event when the flag isn't set.
