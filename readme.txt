@@ -112,6 +112,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Gutenberg Block Widget for Multi-Currency.
 * Update - WCPay logo
 * Fix - Translations in transaction/deposit exports
+* Fix - Update shipping cost in payment sheet when changing payment method.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
