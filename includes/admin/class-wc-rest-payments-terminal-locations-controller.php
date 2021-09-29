@@ -63,7 +63,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			return rest_ensure_response(
 				new \WP_Error(
 					'store_address_is_incomplete',
-					__( 'The store address is incomplete, please actualize settings.', 'woocommerce-payments' ),
+					__( 'The store address is incomplete, please update your settings.', 'woocommerce-payments' ),
 					[
 						'url' => admin_url(
 							add_query_arg(
