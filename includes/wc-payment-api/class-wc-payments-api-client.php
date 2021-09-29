@@ -23,7 +23,6 @@ class WC_Payments_API_Client {
 	const POST   = 'POST';
 	const GET    = 'GET';
 	const DELETE = 'DELETE';
-	const PUT    = 'PUT';
 
 	const API_TIMEOUT_SECONDS = 70;
 
@@ -1372,8 +1371,12 @@ class WC_Payments_API_Client {
 
 		$body = null;
 
+		$redacted_params = WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT );
+		$redacted_url    = $url;
+
 		if ( in_array( $method, [ self::GET, self::DELETE ], true ) ) {
-			$url .= '?' . http_build_query( $params );
+			$url          .= '?' . http_build_query( $params );
+			$redacted_url .= '?' . http_build_query( $redacted_params );
 		} else {
 			// Encode the request body as JSON.
 			$body = wp_json_encode( $params );
@@ -1391,11 +1394,11 @@ class WC_Payments_API_Client {
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
 		$headers['User-Agent']   = $this->user_agent;
 
-		Logger::log( "REQUEST $method $url" );
-		if ( in_array( $method, [ self::POST, self::PUT ], true ) ) {
+		Logger::log( "REQUEST $method $redacted_url" );
+		if ( null !== $body ) {
 			Logger::log(
 				'BODY: '
-				. var_export( WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+				. var_export( $redacted_params, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 			);
 		}
 

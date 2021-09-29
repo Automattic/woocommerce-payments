@@ -1180,6 +1180,114 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test redacting request params.
+	 *
+	 * @dataProvider redacting_params_data
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_redacting_params( $request_arguments, $logger_num_calls, ...$logger_expected_arguments ) {
+		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
+							->setMethods( [ 'log' ] )
+							->getMock();
+
+		$logger_ref = new ReflectionProperty( 'WCPay\Logger', 'logger' );
+		$logger_ref->setAccessible( true );
+		$logger_ref->setValue( null, $mock_logger );
+
+		$wcpay_dev_mode_true = function () {
+			return true;
+		};
+		add_filter( 'wcpay_dev_mode', $wcpay_dev_mode_true );
+
+		$mock_logger
+			->expects( $this->exactly( $logger_num_calls ) )
+			->method( 'log' )
+			->withConsecutive( ...$logger_expected_arguments );
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->will(
+				$this->returnValue(
+					[
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+						'body'     => wp_json_encode(
+							[
+								'status' => true,
+							]
+						),
+					]
+				)
+			);
+
+		$reflection     = new ReflectionClass( $this->payments_api_client );
+		$request_method = $reflection->getMethod( 'request' );
+		$request_method->setAccessible( true );
+		$request_method->invokeArgs( $this->payments_api_client, $request_arguments );
+		$request_method->setAccessible( false );
+
+		// clean up.
+		$logger_ref->setAccessible( true );
+		$logger_ref->setValue( null, null );
+		remove_filter( 'wcpay_dev_mode', $wcpay_dev_mode_true );
+	}
+
+	/**
+	 * Data provider for test_redacting_params
+	 */
+	public function redacting_params_data() {
+		$string_should_not_include_secret = function( $string ) {
+			return false === strpos( $string, 'some-secret' );
+		};
+
+		return [
+			'delete' => [
+				[ [ 'client_secret' => 'some-secret' ], 'abc', 'DELETE' ],
+				2,
+				[
+					$this->anything(),
+					$this->callback( $string_should_not_include_secret ),
+				],
+				[
+					$this->anything(),
+					$this->anything(),
+				],
+			],
+			'get'    => [
+				[ [ 'client_secret' => 'some-secret' ], 'abc', 'GET' ],
+				2,
+				[
+					$this->anything(),
+					$this->callback( $string_should_not_include_secret ),
+				],
+				[
+					$this->anything(),
+					$this->anything(),
+				],
+			],
+			'post'   => [
+				[ [ 'client_secret' => 'some-secret' ], 'abc', 'POST' ],
+				3,
+				[
+					$this->anything(),
+					$this->callback( $string_should_not_include_secret ),
+				],
+				[
+					$this->anything(),
+					$this->callback( $string_should_not_include_secret ),
+				],
+				[
+					$this->anything(),
+					$this->anything(),
+				],
+			],
+		];
+	}
+
+	/**
 	 * Set up http mock response.
 	 *
 	 * @param int   $status_code status code for the mocked response.
