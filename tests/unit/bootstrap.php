@@ -92,4 +92,5 @@ if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
  * WCPAY already mocks the WC Subscriptions classes/functions it needs so there's no need to load them anyway.
  */
 function wcpay_init_subscriptions_core() {
+	require_once dirname( __FILE__ ) . '/helpers/class-wc-helper-background-repairer.php';
 }
