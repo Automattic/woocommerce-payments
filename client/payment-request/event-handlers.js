@@ -22,7 +22,9 @@ export const shippingAddressChangeHandler = async ( api, event ) => {
 };
 
 export const shippingOptionChangeHandler = async ( api, event ) => {
-	const response = await api.paymentRequestUpdateShippingDetails( event );
+	const response = await api.paymentRequestUpdateShippingDetails(
+		event.shippingOption
+	);
 
 	if ( 'success' === response.result ) {
 		event.updateWith( {
