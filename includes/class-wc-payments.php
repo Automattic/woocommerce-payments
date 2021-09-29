@@ -414,8 +414,9 @@ class WC_Payments {
 			if ( ! $silent ) {
 				$message = WC_Payments_Utils::esc_interpolated_html(
 					sprintf(
-						/* translators: %1: required WC version number, %2: currently installed WC version number */
-						__( 'WooCommerce Payments requires <strong>WooCommerce %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
+						/* translators: %1: current WooCommerce Payment version, %2: required WC version number, %3: currently installed WC version number */
+						__( 'WooCommerce Payments %1$s requires <strong>WooCommerce %2$s</strong> or greater to be installed (you are using %3$s). ', 'woocommerce-payments' ),
+						WCPAY_VERSION_NUMBER,
 						$wc_version,
 						WC_VERSION
 					),
@@ -424,7 +425,22 @@ class WC_Payments {
 				if ( current_user_can( 'update_plugins' ) ) {
 					// Take the user to the "plugins" screen instead of trying to update WooCommerce inline. WooCommerce adds important information
 					// on its plugin row regarding the currently installed extensions and their compatibility with the latest WC version.
-					$message .= ' <a href="' . admin_url( 'plugins.php' ) . '">' . __( 'Update WooCommerce', 'woocommerce-payments' ) . '</a>';
+					$message .= '<br/><a href="' . admin_url( 'plugins.php' ) . '">' . __( 'Update WooCommerce', 'woocommerce-payments' ) . '</a>';
+
+					/**
+					 * Recommend using a previous version of WCPay for out-of-date Woo core version.
+					 *
+					 * @since 3.1.0
+					 */
+					$message .= ' ';
+					$message .= WC_Payments_Utils::esc_interpolated_html(
+					/* translators: contain a link to https://wordpress.org/plugins/woocommerce-payments/advanced/#download-previous-link */
+						__( 'or <strong>(not recommended)</strong> manually re-install <a>a previous version</a> of WooCommerce Payments.', 'woocommerce-payments' ),
+						[
+							'strong' => '<strong>',
+							'a'      => '<a href="https://wordpress.org/plugins/woocommerce-payments/advanced/#download-previous-link" target="_blank">',
+						]
+					);
 				}
 				self::display_admin_error( $message );
 			}
