@@ -41,7 +41,7 @@ describe( 'Order > Manual Capture', () => {
 			'.woocommerce-order-overview__order.order > strong'
 		);
 		orderId = await orderIdField.evaluate( ( el ) => el.innerText );
-	} );
+	}, 120000 );
 
 	afterAll( async () => {
 		// Disable the "Issue an authorization on checkout, and capture later" option
