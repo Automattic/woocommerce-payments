@@ -114,11 +114,13 @@
 							line-height: 16px;
 						}
 						.single-currency-settings-description {
-							color: #1e1e1e;
-							font-style: italic;
-							font-weight: normal;
-							font-size: 12px;
+							font-size: 13px;
 							line-height: 16px;
+							margin: 8px 0 12px;
+							color: #7e7e7e;
+							&:last-child {
+								margin: 4px 0 0;
+							}
 							&.single-currency-settings-description-inset {
 								padding-left: 24px;
 							}

@@ -110,6 +110,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Multi-Currency track currency added.
 * Fix - Fill missing order_intent_info even if an exception occurs.
 * Add - Gutenberg Block Widget for Multi-Currency.
+* Update - WCPay logo
+* Fix - Update shipping cost in payment sheet when changing payment method.
 * Update - Bump minimum supported version of WooCommerce from 5.4 to 5.5.
 * Update - Bump minimum required version of WooCommerce from 4.0 to 4.4.
 
