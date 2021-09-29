@@ -692,6 +692,30 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->assertSame( $expected, $this->compatibility->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
 	}
 
+	public function test_order_line_item_meta_returns_input_multiplier_data_correctly() {
+		$price = 42;
+		$value = 2;
+		$this->mock_multi_currency->method( 'get_price' )->with( $price / $value, 'product' )->willReturn( $price / $value );
+		$addon = [
+			'name'       => 'quantity',
+			'value'      => $value,
+			'price'      => $price,
+			'field_type' => 'input_multiplier',
+			'price_type' => 'flat_fee',
+		];
+
+		// Create an Order Item, add a new product to the Order Item.
+		$item = new WC_Order_Item_Product();
+		$item->set_props( [ 'product' => WC_Helper_Product::create_simple_product() ] );
+		$item->save();
+
+		$expected = [
+			'key'   => 'quantity ($42.00)',
+			'value' => 2,
+		];
+		$this->assertSame( $expected, $this->compatibility->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
+	}
+
 	public function test_order_line_item_meta_returns_custom_price_data_correctly() {
 		$price = 42;
 		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( $price * 2 );
@@ -713,6 +737,161 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			'value' => 42,
 		];
 		$this->assertSame( $expected, $this->compatibility->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
+	}
+
+	public function test_update_product_price_returns_flat_fee_data_correctly() {
+		$addon     = [
+			'name'       => 'checkboxes',
+			'value'      => 'flat fee',
+			'price'      => 42,
+			'field_type' => 'checkbox',
+			'price_type' => 'flat_fee',
+		];
+		$cart_item = [
+			'addons'   => [ $addon ],
+			'data'     => WC_Helper_Product::create_simple_product(),
+			'quantity' => 1,
+		];
+		$prices    = [
+			'price'         => 10,
+			'regular_price' => 10,
+			'sale_price'    => 0,
+		];
+		$expected  = [
+			'price'         => 78.0, // (10 * 1.5) + (42 * 1.5)
+			'regular_price' => 78.0,
+			'sale_price'    => 63.0, // (0 * 1.5) + (42 * 1.5)
+		];
+
+		$this->mock_multi_currency
+			->expects( $this->exactly( 4 ) )
+			->method( 'get_price' )
+			->withConsecutive(
+				[ 10.0, 'product' ],
+				[ 10.0, 'product' ],
+				[ 0.0, 'product' ],
+				[ 42.0, 'product' ]
+			)
+			->willReturn( 15.0, 15.0, 0.0, 63.0 );
+
+		$this->assertSame( $expected, $this->compatibility->update_product_price( [], $cart_item, $prices ) );
+		$this->assertEquals( 1, $cart_item['data']->get_meta( 'wcpay_mc_addons_converted' ) );
+	}
+
+	public function test_update_product_price_returns_percentage_data_correctly() {
+		$addon     = [
+			'name'       => 'checkboxes',
+			'value'      => 'percentage',
+			'price'      => 50,
+			'field_type' => 'checkbox',
+			'price_type' => 'percentage_based',
+		];
+		$cart_item = [
+			'addons'   => [ $addon ],
+			'data'     => WC_Helper_Product::create_simple_product(),
+			'quantity' => 1,
+		];
+		$prices    = [
+			'price'         => 10,
+			'regular_price' => 10,
+			'sale_price'    => 0,
+		];
+		$expected  = [
+			'price'         => 22.5, // 10 * 1.5 * 1.5
+			'regular_price' => 22.5,
+			'sale_price'    => 0.0,
+		];
+
+		// Product is created with a price of 10, and update_product_price calls get_price, which is already converted.
+		$cart_item['data']->set_price( 15.0 );
+
+		$this->mock_multi_currency
+			->expects( $this->exactly( 3 ) )
+			->method( 'get_price' )
+			->withConsecutive(
+				[ 10.0, 'product' ],
+				[ 10.0, 'product' ],
+				[ 0.0, 'product' ]
+			)
+			->willReturn( 15.0, 15.0, 0.0 );
+
+		$this->assertSame( $expected, $this->compatibility->update_product_price( [], $cart_item, $prices ) );
+	}
+
+	public function test_update_product_price_returns_custom_price_data_correctly() {
+		$addon     = [
+			'name'       => 'custom price',
+			'value'      => 'custom price',
+			'price'      => 42,
+			'field_type' => 'custom_price',
+			'price_type' => 'quantity_based',
+		];
+		$cart_item = [
+			'addons'   => [ $addon ],
+			'data'     => WC_Helper_Product::create_simple_product(),
+			'quantity' => 1,
+		];
+		$prices    = [
+			'price'         => 10,
+			'regular_price' => 10,
+			'sale_price'    => 0,
+		];
+		$expected  = [
+			'price'         => 57.0, // (10 * 1.5) + 42
+			'regular_price' => 57.0,
+			'sale_price'    => 42.0,
+		];
+
+		$this->mock_multi_currency
+			->expects( $this->exactly( 3 ) )
+			->method( 'get_price' )
+			->withConsecutive(
+				[ 10.0, 'product' ],
+				[ 10.0, 'product' ],
+				[ 0.0, 'product' ]
+			)
+			->willReturn( 15.0, 15.0, 0.0 );
+
+		$this->assertSame( $expected, $this->compatibility->update_product_price( [], $cart_item, $prices ) );
+	}
+
+	public function test_update_product_price_returns_multiplier_data_correctly() {
+		$addon     = [
+			'name'       => 'quantity multiplier',
+			'value'      => 2,
+			'price'      => 84,
+			'field_type' => 'input_multiplier',
+			'price_type' => 'flat_fee',
+		];
+		$cart_item = [
+			'addons'   => [ $addon ],
+			'data'     => WC_Helper_Product::create_simple_product(),
+			'quantity' => 1,
+		];
+		$prices    = [
+			'price'         => 10,
+			'regular_price' => 10,
+			'sale_price'    => 0,
+		];
+		$expected  = [
+			'price'         => 141.0, // (10 * 1.5) + ((42 * 1.5) * 2)
+			'regular_price' => 141.0,
+			'sale_price'    => 126.0, // (0 * 1.5) + ((42 * 1.5) * 2)
+		];
+
+		$this->mock_multi_currency
+			->expects( $this->exactly( 4 ) )
+			->method( 'get_price' )
+			->withConsecutive(
+				[ 10.0, 'product' ],
+				[ 10.0, 'product' ],
+				[ 0.0, 'product' ],
+				[ 42.0, 'product' ]
+			)
+			->willReturn( 15.0, 15.0, 0.0, 63.0 );
+
+		$this->assertSame( $expected, $this->compatibility->update_product_price( [], $cart_item, $prices ) );
+		$this->assertEquals( 1, $cart_item['data']->get_meta( 'wcpay_mc_addons_converted' ) );
 	}
 
 	private function mock_wcs_cart_contains_renewal( $value ) {

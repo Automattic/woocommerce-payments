@@ -485,12 +485,6 @@ class Compatibility {
 					$price         += (float) ( $cart_item['data']->get_price( 'view' ) * ( $addon_price / 100 ) );
 					$regular_price += (float) ( $regular_price * ( $addon_price / 100 ) );
 					$sale_price    += (float) ( $sale_price * ( $addon_price / 100 ) );
-
-					// Add our percentage amount as meta data on the cart item so we can use it later.
-					$cart_item['data']->update_meta_data(
-						'wcpay_mc_percentage_currency_amount',
-						$cart_item['addons_price_before_calc'] * ( $addon_price / 100 )
-					);
 					break;
 				case 'flat_fee':
 					$price         += (float) ( $addon_price / $quantity );
