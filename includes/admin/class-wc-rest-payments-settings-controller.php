@@ -198,6 +198,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_type'       => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
 				'payment_request_button_theme'      => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
 				'is_saved_cards_enabled'            => $this->wcpay_gateway->is_saved_cards_enabled(),
+				'is_card_present_eligible'          => $this->wcpay_gateway->is_card_present_eligible(),
 			]
 		);
 	}

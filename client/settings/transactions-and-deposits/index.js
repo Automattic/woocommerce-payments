@@ -21,6 +21,7 @@ import {
 	useManualCapture,
 	useGetSavingError,
 	useSavedCards,
+	useCardPresentEligible,
 } from '../../data';
 import './style.scss';
 
@@ -41,17 +42,7 @@ const TransactionsAndDeposits = () => {
 	] = useAccountStatementDescriptor();
 	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
 		?.account_statement_descriptor?.message;
-
-	// const authorizationCheckoutHelp = isIppEnabled ? __(
-	// 	'When enabled, users will be able to pay with a saved card during checkout. ' +
-	// 	'Card details are stored in our platform, not on your store.' +
-	// 	'Note: This setting is ignored by in-person payments. In-person payments authorization is valid for 48 hours.',
-	// 	'woocommerce-payments'
-	// ) : __(
-	// 	'When enabled, users will be able to pay with a saved card during checkout. ' +
-	// 	'Card details are stored in our platform, not on your store.',
-	// 	'woocommerce-payments'
-	// );
+	const [ isCarPresentEligible ] = useCardPresentEligible();
 
 	return (
 		<Card className="transactions-and-deposits">
@@ -79,11 +70,23 @@ const TransactionsAndDeposits = () => {
 						'Issue an authorization on checkout, and capture later',
 						'woocommerce-payments'
 					) }
-					help={ __(
-						'Charge must be captured on the order details screen within 7 days of authorization, ' +
-							'otherwise the authorization and order will be canceled.',
-						'woocommerce-payments'
-					) }
+					help={
+						<span>
+							{ __(
+								'Charge must be captured on the order details screen within 7 days of authorization, ' +
+									'otherwise the authorization and order will be canceled.',
+								'woocommerce-payments'
+							) }
+							<br />
+							{ isCarPresentEligible
+								? __(
+										' Note: This setting is ignored by in-person payments. ' +
+											'In-person payments authorization is valid for 48 hours.',
+										'woocommerce-payments'
+								  )
+								: '' }
+						</span>
+					}
 				/>
 				{ customerBankStatementErrorMessage && (
 					<Notice status="error" isDismissible={ false }>
