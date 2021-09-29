@@ -1175,8 +1175,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			);
 
 		$result = $this->payments_api_client->cancel_subscription( 'sub_test' );
-		$this->assertEquals( 'sub_test', $result['id'] );
-		$this->assertEquals( 'subscription', $result['object'] );
+		$this->assertSame( 'sub_test', $result['id'] );
+		$this->assertSame( 'subscription', $result['object'] );
 	}
 
 	/**
