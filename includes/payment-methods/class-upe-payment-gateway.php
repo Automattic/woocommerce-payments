@@ -8,6 +8,7 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Order;
+use WC_Payments_Explicit_Price_Formatter;
 use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
@@ -80,6 +81,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
+		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] );
 
 		add_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
 		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
@@ -577,6 +579,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['upeAppearance']            = get_transient( self::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['checkoutTitle']            = $this->checkout_title;
 		$payment_fields['cartContainsSubscription'] = $this->is_subscription_item_in_cart();
+		$payment_fields['logPaymentErrorNonce']     = wp_create_nonce( 'wcpay_log_payment_error_nonce' );
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
@@ -872,5 +875,66 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 		return $this->payment_methods[ $payment_method_id ]->is_reusable()
 			&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() );
+	}
+
+	/**
+	 * Log UPE Payment Errors on Checkout.
+	 *
+	 * @throws Exception If nonce is not present or invalid or charge ID is empty or order not found.
+	 */
+	public function log_payment_error_ajax() {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_log_payment_error_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Exception( 'Invalid request.' );
+			}
+
+			$charge_id = isset( $_POST['charge_id'] ) ? wc_clean( wp_unslash( $_POST['charge_id'] ) ) : '';
+			if ( empty( $charge_id ) ) {
+				throw new Exception( 'Charge ID cannot be empty.' );
+			}
+
+			// Get charge data from WCPay Server.
+			$get_charge_data = $this->payments_api_client->get_charge( $charge_id );
+			$order_id        = $get_charge_data['metadata']['order_id'];
+
+			// Validate Order ID and proceed with logging errors and updating order status.
+			$order = wc_get_order( $order_id );
+			if ( ! $order ) {
+				throw new Exception( 'Order not found. Unable to log error.' );
+			}
+
+			$order_note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the failed payment amount, %2: error message  */
+					__(
+						'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+						'woocommerce-payments'
+					),
+					[
+						'strong' => '<strong>',
+						'code'   => '<code>',
+					]
+				),
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
+				esc_html( rtrim( $get_charge_data['failure_message'], '.' ) )
+			);
+
+			// Set order as failed and add the order note.
+			if ( 'failed' !== $order->get_status() ) {
+				$order->update_status( 'failed' );
+			}
+			$order->add_order_note( $order_note );
+
+			wp_send_json_success();
+		} catch ( Exception $e ) {
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+		}
 	}
 }
