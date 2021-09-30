@@ -8,8 +8,9 @@ if test -f "$XDEBUG_OVERRIDE_FILE"; then
 
 	# Get the status from the override file.
 	XDEBUG_STATUS_CONTENTS=$(cat "$XDEBUG_OVERRIDE_FILE")
-	XDEBUG_STATUS=${XDEBUG_STATUS_CONTENTS: 1}
-	if [ $XDEBUG_STATUS -eq '0' ]; then
+	XDEBUG_STATUS=${XDEBUG_STATUS_CONTENTS:0:1}
+
+	if [[ "$XDEBUG_STATUS" == '#' ]]; then
 		echo 'Enabling XDebug...';
 		echo 'zend_extension=xdebug' > $XDEBUG_OVERRIDE_FILE
 	else
@@ -23,4 +24,4 @@ else
 fi
 
 # Restart the apache service.
-service apache2 restart
+service apache2 force-reload
