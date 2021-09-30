@@ -43,7 +43,7 @@ function _manually_load_plugin() {
 	// is not loaded even though it's set during the tests setup.
 	update_option( 'woocommerce_currency', 'USD' );
 
-	// Enable the WCPay Subscription feature flag in tests to ensure we can test
+	// Enable the WCPay Subscriptions feature flag in tests to ensure we can test
 	// subscriptions funtionality.
 	add_filter(
 		'pre_option__wcpay_feature_subscriptions',
