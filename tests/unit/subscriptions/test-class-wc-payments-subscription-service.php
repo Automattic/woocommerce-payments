@@ -331,15 +331,18 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$mock_subscription            = new WC_Subscription();
 		$mock_subscription->trial_end = 0;
 		$mock_subscription_product    = new WC_Subscriptions_Product();
-		$mock_subscription_product->save(); // Calling get_items on orders returns false unless we save.
+		$mock_subscription_product->save();
 		$mock_order         = WC_Helper_Order::create_order( 1, 50, $mock_subscription_product );
 		$mock_line_item     = array_values( $mock_order->get_items() )[0];
 		$mock_shipping_item = array_values( $mock_order->get_items( 'shipping' ) )[0];
-		$mock_coupon        = new WC_Coupon();
-		$mock_coupon->set_code( 'test_coupon' );
-		$mock_coupon->set_amount( 10.0 );
-		$mock_coupon->save();
-		$mock_order->apply_coupon( $mock_coupon );
+		$mock_coupon_item   = new WC_Order_Item_Coupon();
+		$mock_coupon_item->set_props(
+			[
+				'code'     => 'test_coupon',
+				'discount' => 5,
+			]
+		);
+		$mock_order->add_item( $mock_coupon_item );
 		$mock_subscription->set_parent( $mock_order );
 
 		$mock_wcpay_subscription_id = 'wcpay_prepare_sub12345';
@@ -359,7 +362,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			'customer'  => $mock_wcpay_customer_id,
 			'discounts' => [
 				[
-					'amount_off' => 1000,
+					'amount_off' => 500,
 					'currency'   => 'USD',
 					'duration'   => 'once',
 					'name'       => 'Coupon - test_coupon',
