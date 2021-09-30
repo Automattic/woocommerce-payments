@@ -114,6 +114,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Translations in transaction/deposit exports
 * Fix - Update shipping cost in payment sheet when changing payment method.
 * Fix - Transaction search with translated terms
+* Fix - Inconsistent shipping options in Payment Request popup
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
