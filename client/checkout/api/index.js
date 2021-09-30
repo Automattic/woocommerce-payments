@@ -545,4 +545,23 @@ export default class WCPayAPI {
 			...paymentData,
 		} );
 	}
+
+	/**
+	 * Log Payment Errors via Ajax.
+	 *
+	 * @param {string} chargeId Stripe Charge ID
+	 * @return {boolean} Returns true irrespective of result.
+	 */
+	logPaymentError( chargeId ) {
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'log_payment_error' ),
+			{
+				charge_id: chargeId,
+				_ajax_nonce: getConfig( 'logPaymentErrorNonce' ),
+			}
+		).then( () => {
+			// There is not any action to take or harm caused by a failed update, so just returning true.
+			return true;
+		} );
+	}
 }
