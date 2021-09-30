@@ -37,13 +37,16 @@ export const useEnabledCurrencies = () => {
 };
 
 export const useStoreSettings = () => {
-	const storeSettings = useSelect( ( select ) => {
-		const { getStoreSettings } = select( STORE_NAME );
+	const { storeSettings, isLoading } = useSelect( ( select ) => {
+		const { getStoreSettings, isResolving } = select( STORE_NAME );
 
-		return getStoreSettings();
+		return {
+			storeSettings: getStoreSettings(),
+			isLoading: isResolving( 'getStoreSettings', [] ),
+		};
 	} );
 	const { submitStoreSettingsUpdate } = useDispatch( STORE_NAME );
-	return { storeSettings, submitStoreSettingsUpdate };
+	return { storeSettings, isLoading, submitStoreSettingsUpdate };
 };
 
 export const useDefaultCurrency = () =>
