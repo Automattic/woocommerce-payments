@@ -169,6 +169,27 @@ export const shopperWCP = {
 			customerShippingDetails.postcode
 		);
 	},
+
+	fillBillingDetailsWCB: async ( customerBillingDetails ) => {
+		await clearAndFillInput( '#email', customerBillingDetails.email );
+		await clearAndFillInput(
+			'#billing-first_name',
+			customerBillingDetails.firstname
+		);
+		await clearAndFillInput(
+			'#billing-last_name',
+			customerBillingDetails.lastname
+		);
+		await clearAndFillInput(
+			'#billing-address_1',
+			customerBillingDetails.addressfirstline
+		);
+		await clearAndFillInput( '#billing-city', customerBillingDetails.city );
+		await clearAndFillInput(
+			'#billing-postcode',
+			customerBillingDetails.postcode
+		);
+	},
 };
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
