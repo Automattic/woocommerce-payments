@@ -56,7 +56,7 @@ describe( 'Payment Methods', () => {
 		}
 	);
 
-	it( 'to no now show error when adding card on another payment gateway', async () => {
+	it( 'should not show error when adding payment method on another gateway', async () => {
 		await shopperWCP.goToPaymentMethods();
 		await expect( page ).toClick( 'a', {
 			text: 'Add payment method',
