@@ -226,7 +226,7 @@ export const merchantWCP = {
 	 * Create a subscription product with an optional signup fee
 	 *
 	 * @param productName
-	 * @param periodTime defaults to `month`
+	 * @param periodTime can be `day`, `week`, `month` or `year`
 	 * @param includeSignupFee defaults to `false`
 	 * @param includeFreeTrial defaults to `false`
 	 * @return id of the created subscription product
@@ -235,7 +235,7 @@ export const merchantWCP = {
 
 	createSubscriptionProduct: async (
 		productName,
-		periodTime = 'month',
+		periodTime,
 		includeSignupFee = false,
 		includeFreeTrial = false
 	) => {

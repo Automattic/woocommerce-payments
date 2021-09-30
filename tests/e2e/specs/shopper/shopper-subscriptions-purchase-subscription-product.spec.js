@@ -12,7 +12,6 @@ import { fillCardDetails, setupCheckout } from '../../utils/payments';
 const nowLocal = new Date();
 const nextPayDate = 'In 7 days';
 const productName = `Subscription product ${ nowLocal.getTime() }`;
-const periodTime = 'week';
 const customerBilling = config.get( 'addresses.customer.billing' );
 const card = config.get( 'cards.basic' );
 const baseUrl = config.get( 'url' );
@@ -30,7 +29,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await merchant.login();
 			productId = await merchantWCP.createSubscriptionProduct(
 				productName,
-				periodTime
+				'week'
 			);
 			await merchant.logout();
 		} );
