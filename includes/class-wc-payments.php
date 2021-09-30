@@ -154,7 +154,6 @@ class WC_Payments {
 	public static function init() {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
-		include_once __DIR__ . '/class-wc-payments-features.php';
 		include_once __DIR__ . '/class-wc-payments-utils.php';
 
 		$check   = self::check_plugin_dependencies();
@@ -327,9 +326,11 @@ class WC_Payments {
 			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 		}
 
-		// Load subscriptions (Stripe Billing).
-		include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
-		WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service );
+		// Load WCPay Subscriptions.
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
+			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service );
+		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
