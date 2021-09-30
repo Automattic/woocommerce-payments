@@ -30,7 +30,6 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await merchant.login();
 			await merchantWCP.addNewPageCheckoutWCB();
 			await merchant.logout();
-			await shopper.login();
 			await shopper.goToShop();
 			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
@@ -47,7 +46,6 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 		afterAll( async () => {
 			// Clear the cart at the end so it's ready for another test
 			await shopper.emptyCart();
-			await shopper.logout();
 		} );
 
 		it( 'should throw an error that the card was simply declined', async () => {

@@ -18,7 +18,7 @@ const getNextPaymentDate = ( subscriptionStartDateLocal ) => {
 	const formatter = new Intl.DateTimeFormat( 'en-US', {
 		dateStyle: 'long',
 	} );
-	const nextPaymentDate = nowUTC.setUTCDate( nowUTC.getDate() + 30 );
+	const nextPaymentDate = nowUTC.setDate( nowUTC.getDate() + 30 );
 	return formatter.format( nextPaymentDate );
 };
 
