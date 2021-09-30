@@ -11,7 +11,7 @@ if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	. "$E2E_ROOT/config/local.env"
 fi
 
-if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
+if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$SERVER_PATH" ]]; then
 	step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
 
 	if [[ -z $WCP_SERVER_REPO ]]; then
@@ -19,7 +19,7 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
 		exit 1;
 	fi
 
-	rm -rf $SERVER_PATH
+	rm -rf "$SERVER_PATH"
 	git clone --depth=1 --branch ${WCP_SERVER_BRANCH-trunk} $WCP_SERVER_REPO "$SERVER_PATH"
 else
 	echo "Using cached server at ${SERVER_PATH}"
@@ -62,14 +62,14 @@ step "Configuring server with stripe account"
 
 cd "$cwd"
 
-if [[ $FORCE_E2E_DEPS_SETUP || ! -d $DEV_TOOLS_PATH ]]; then
+if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$DEV_TOOLS_PATH" ]]; then
 	step "Fetching dev tools"
 	if [[ -z $WCP_DEV_TOOLS_REPO ]]; then
 		echo "WCP_DEV_TOOLS_REPO env variable is not defined"
 		exit 1;
 	fi
 
-	rm -rf $DEV_TOOLS_PATH
+	rm -rf "$DEV_TOOLS_PATH"
 	git clone --depth=1 --branch ${WCP_DEV_TOOLS_BRANCH-trunk} $WCP_DEV_TOOLS_REPO "$DEV_TOOLS_PATH"
 fi
 
