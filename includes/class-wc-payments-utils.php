@@ -119,7 +119,7 @@ class WC_Payments_Utils {
 	public static function prepare_amount( $amount, $currency = 'USD' ) {
 		$conversion_rate = 100;
 
-		if ( in_array( strtolower( $currency ), self::zero_decimal_currencies(), true ) ) {
+		if ( self::is_zero_decimal_currency( strtolower( $currency ) ) ) {
 			$conversion_rate = 1;
 		}
 
@@ -137,11 +137,51 @@ class WC_Payments_Utils {
 	public static function interpret_stripe_amount( int $amount, string $currency = 'usd' ): float {
 		$conversion_rate = 100;
 
-		if ( in_array( $currency, self::zero_decimal_currencies(), true ) ) {
+		if ( self::is_zero_decimal_currency( $currency ) ) {
 			$conversion_rate = 1;
 		}
 
 		return (float) $amount / $conversion_rate;
+	}
+
+	/**
+	 * Interprets an exchange rate from the Stripe API.
+	 *
+	 * @param float  $exchange_rate        The exchange rate returned from the stripe API.
+	 * @param string $presentment_currency The currency the customer was charged in.
+	 * @param string $base_currency        The Stripe account currency.
+	 * @return float
+	 */
+	public static function interpret_string_exchange_rate(
+		float $exchange_rate,
+		string $presentment_currency,
+		string $base_currency
+	): float {
+		$is_presentment_currency_zero_decimal = self::is_zero_decimal_currency( strtolower( $presentment_currency ) );
+		$is_base_currency_zero_decimal        = self::is_zero_decimal_currency( strtolower( $base_currency ) );
+
+		if ( $is_presentment_currency_zero_decimal && ! $is_base_currency_zero_decimal ) {
+			return $exchange_rate / 100;
+		} elseif ( ! $is_presentment_currency_zero_decimal && $is_base_currency_zero_decimal ) {
+			return $exchange_rate * 100;
+		} else {
+			return $exchange_rate;
+		}
+	}
+
+	/**
+	 * Check whether a given currency is in the list of zero-decimal currencies supported by Stripe.
+	 *
+	 * @param string $currency The currency code.
+	 *
+	 * @return bool
+	 */
+	public static function is_zero_decimal_currency( string $currency ): bool {
+		if ( in_array( $currency, self::zero_decimal_currencies(), true ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -246,7 +286,7 @@ class WC_Payments_Utils {
 	public static function get_charge_ids_from_search_term( $term ) {
 		$order_term = __( 'Order #', 'woocommerce-payments' );
 		if ( substr( $term, 0, strlen( $order_term ) ) === $order_term ) {
-			$term_parts = explode( '#', $term, 2 );
+			$term_parts = explode( $order_term, $term, 2 );
 			$order_id   = isset( $term_parts[1] ) ? $term_parts[1] : '';
 			$order      = wc_get_order( $order_id );
 			if ( $order ) {
@@ -256,7 +296,7 @@ class WC_Payments_Utils {
 
 		$subscription_term = __( 'Subscription #', 'woocommerce-payments' );
 		if ( function_exists( 'wcs_get_subscription' ) && substr( $term, 0, strlen( $subscription_term ) ) === $subscription_term ) {
-			$term_parts      = explode( '#', $term, 2 );
+			$term_parts      = explode( $subscription_term, $term, 2 );
 			$subscription_id = isset( $term_parts[1] ) ? $term_parts[1] : '';
 			$subscription    = wcs_get_subscription( $subscription_id );
 			if ( $subscription ) {

@@ -294,10 +294,14 @@ export const merchantWCP = {
 	},
 
 	wcpSettingsSaveChanges: async () => {
+		const snackbarSettingsSaved = '.components-snackbar';
+
 		await expect( page ).toClick( '.save-settings-section button' );
-		await expect( page ).toClick( '.components-snackbar', {
-			timeout: 30000,
+		await expect( page ).toMatchElement( snackbarSettingsSaved, {
+			text: 'Settings saved.',
+			timeout: 60000,
 		} );
+		await expect( page ).toClick( snackbarSettingsSaved );
 	},
 
 	addNewPageCheckoutWCB: async () => {
