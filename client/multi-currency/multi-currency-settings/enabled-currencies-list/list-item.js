@@ -10,7 +10,7 @@ import { Button } from '@wordpress/components';
  * Internal dependencies
  */
 import DeleteButton from './delete-button';
-import MultiCurrencySettingsContext from '../context';
+import MultiCurrencySettingsContext from '../../context';
 import { useContext } from 'react';
 
 const EnabledCurrenciesListItem = ( {

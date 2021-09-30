@@ -13,10 +13,12 @@ use WCPay\Exceptions\API_Exception;
  */
 class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 
-	const PENDING_INVOICE_ID_KEY        = '_wcpay_pending_invoice_id';
-	const ORDER_INVOICE_ID_KEY          = '_wcpay_billing_invoice_id';
-	const SUBSCRIPTION_ITEM_ID_META_KEY = '_wcpay_subscription_item_id';
-	const PRICE_ID_KEY                  = '_wcpay_product_price_id';
+	const PRICE_ID_KEY                       = '_wcpay_product_price_id';
+	const PENDING_INVOICE_ID_KEY             = '_wcpay_pending_invoice_id';
+	const ORDER_INVOICE_ID_KEY               = '_wcpay_billing_invoice_id';
+	const SUBSCRIPTION_ID_META_KEY           = '_wcpay_subscription_id';
+	const SUBSCRIPTION_ITEM_ID_META_KEY      = '_wcpay_subscription_item_id';
+	const SUBSCRIPTION_DISCOUNT_IDS_META_KEY = '_wcpay_subscription_discount_ids';
 
 	/**
 	 * Mock WC_Payments_API_Client.
@@ -177,18 +179,62 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Tests for WC_Payments_Invoice_Service::validate_invoice_items()
+	 * Tests for WC_Payments_Invoice_Service::validate_invoice() with valid data.
 	 */
-	public function test_validate_invoice_items() {
+	public function test_validate_invoice_with_valid_data() {
 		$mock_order        = WC_Helper_Order::create_order();
 		$mock_subscription = new WC_Subscription();
 		$mock_subscription->set_parent( $mock_order );
+		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, [ 'sub_test123' ] );
+		$mock_subscription->update_meta_data( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, [ 'di_test123' ] );
 
 		foreach ( $mock_order->get_items( 'line_item', 'fee', 'shipping' ) as $item ) {
 			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123' );
 		}
 
-		$mock_items = [
+		$mock_item_data = [
+			[
+				'subscription_item' => 'si_test123',
+				'amount'            => 4000,
+				'quantity'          => 4,
+				'tax_rates'         => [],
+			],
+			[
+				'subscription_item' => 'si_test123',
+				'amount'            => 4000,
+				'quantity'          => 4,
+				'tax_rates'         => [],
+			],
+		];
+
+		$mock_discount_data = [ 'di_test123' ];
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'update_subscription_item' );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'update_subscription' );
+
+		$this->invoice_service->validate_invoice( $mock_item_data, $mock_discount_data, $mock_subscription );
+	}
+
+	/**
+	 * Tests for WC_Payments_Invoice_Service::validate_invoice() with invalid data.
+	 */
+	public function test_validate_invoice_with_invalid_data() {
+		$mock_order        = WC_Helper_Order::create_order();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $mock_order );
+		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
+		$mock_subscription->update_meta_data( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, [ 'di_test123' ] );
+
+		foreach ( $mock_order->get_items( 'line_item', 'fee', 'shipping' ) as $item ) {
+			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123' );
+		}
+
+		$mock_item_data = [
 			[
 				'subscription_item' => 'si_test123',
 				'amount'            => 1000,
@@ -197,7 +243,7 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 			],
 		];
 
-		$mock_discounts = [];
+		$mock_discount_data = [ 'di_test456' ];
 
 		$this->mock_product_service
 			->expects( $this->once() )
@@ -215,9 +261,22 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$this->invoice_service->validate_invoice_items( $mock_items, $mock_discounts, $mock_subscription );
-	}
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_subscription' )
+			->with(
+				'sub_test123',
+				[
+					'discounts' => [],
+				]
+			)
+			->willReturn(
+				[ 'discounts' => [] ]
+			);
 
+		$this->invoice_service->validate_invoice( $mock_item_data, $mock_discount_data, $mock_subscription );
+		$this->assertSame( [], $mock_subscription->get_meta( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, true ) );
+	}
 	/**
 	 * Mocks the wcs_order_contains_subscription function return.
 	 *

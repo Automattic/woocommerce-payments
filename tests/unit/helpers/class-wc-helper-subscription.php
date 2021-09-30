@@ -142,8 +142,8 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		return ! empty( $this->parent_order ) ? $this->parent_order : false;
 	}
 
-	public function get_items() {
-		return ! empty( $this->parent_order ) ? $this->parent_order->get_items() : [];
+	public function get_items( $type = 'line_item' ) {
+		return ! empty( $this->parent_order ) ? $this->parent_order->get_items( $type ) : [];
 	}
 
 	public function get_fees() {
