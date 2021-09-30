@@ -9,22 +9,10 @@ import { RUN_SUBSCRIPTIONS_TESTS, describeif, merchantWCP } from '../../utils';
 
 import { fillCardDetails, setupCheckout } from '../../utils/payments';
 
-const getNextPaymentDate = ( subscriptionStartDateLocal ) => {
-	const nowUTC = new Date(
-		subscriptionStartDateLocal.getUTCFullYear(),
-		subscriptionStartDateLocal.getUTCMonth(),
-		subscriptionStartDateLocal.getUTCDate()
-	);
-	const formatter = new Intl.DateTimeFormat( 'en-US', {
-		dateStyle: 'long',
-	} );
-	const nextPaymentDate = nowUTC.setUTCDate( nowUTC.getDate() + 30 );
-	return formatter.format( nextPaymentDate );
-};
-
 const nowLocal = new Date();
-const nextPayDateFormatted = getNextPaymentDate( nowLocal );
+const nextPayDate = 'In 7 days';
 const productName = `Subscription product ${ nowLocal.getTime() }`;
+const periodTime = 'week';
 const customerBilling = config.get( 'addresses.customer.billing' );
 const card = config.get( 'cards.basic' );
 const baseUrl = config.get( 'url' );
@@ -41,7 +29,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 		beforeAll( async () => {
 			await merchant.login();
 			productId = await merchantWCP.createSubscriptionProduct(
-				productName
+				productName,
+				periodTime
 			);
 			await merchant.logout();
 		} );
@@ -82,7 +71,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await expect( page ).toMatchElement(
 				'td.subscription-next-payment',
 				{
-					text: `${ nextPayDateFormatted }`,
+					text: `${ nextPayDate }`,
 				}
 			);
 			await expect( page ).toMatchElement( 'td.subscription-total', {
@@ -120,12 +109,12 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				'table.subscription_details'
 			);
 			await expect( subDetailsTable ).toMatch( 'Active' );
-			await expect( subDetailsTable ).toMatch( nextPayDateFormatted );
+			await expect( subDetailsTable ).toMatch( nextPayDate );
 
 			// Verify that all details in the 'Subscription totals' table are correct.
 			const subTotalsTable = await page.$( 'table.order_details' );
 			await expect( subTotalsTable ).toMatch( productName );
-			await expect( subTotalsTable ).toMatch( '$9.99 / month' );
+			await expect( subTotalsTable ).toMatch( '$9.99 / week' );
 
 			// Verify that all details in 'Related orders' table are correct.
 			await expect( page ).toMatchElement( 'td.order-number', {
