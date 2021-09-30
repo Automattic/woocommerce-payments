@@ -24,6 +24,7 @@ define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 define( 'WCPAY_SUBSCRIPTIONS_ABSPATH', __DIR__ . '/vendor/woocommerce/subscriptions-core/' );
 
 require_once __DIR__ . '/vendor/autoload_packages.php';
+require_once __DIR__ . '/includes/class-wc-payments-features.php';
 
 /**
  * Plugin activation hook.
@@ -105,11 +106,6 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 	 * Initialise subscriptions-core if WC Subscriptions (the plugin) isn't loaded
 	 */
 	function wcpay_init_subscriptions_core() {
-
-		if ( ! class_exists( 'WC_Payments_Features' ) ) {
-			include_once WCPAY_ABSPATH . 'includes/class-wc-payments-features.php';
-		}
-
 		if ( ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			return;
 		}

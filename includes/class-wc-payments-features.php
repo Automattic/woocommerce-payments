@@ -92,22 +92,10 @@ class WC_Payments_Features {
 	/**
 	 * Checks whether WCPay Subscriptions is enabled.
 	 *
-	 * @param WC_Payments_Account $wcpay_account Connected WCPay Account to check the location.
 	 * @return bool
 	 */
-	public static function is_wcpay_subscriptions_enabled( $wcpay_account = null ) {
-		$is_wcpay_subscriptions_enabled = get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME );
-
-		/**
-		 * // Set the feature flag if it's not set
-		 * if ( empty( $is_wcpay_subscriptions_enabled ) ) {
-		 * // Enable WCPay Subscriptions for US stores if the option is not set.
-		 * $is_wcpay_subscriptions_enabled = 'US' === $wcpay_account->get_account_country() ? 'true' : 'false';
-		 * add_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, $is_wcpay_subscriptions_enabled );
-		 * }
-		 */
-
-		return 'true' === $is_wcpay_subscriptions_enabled;
+	public static function is_wcpay_subscriptions_enabled() {
+		return '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
 	}
 
 	/**
