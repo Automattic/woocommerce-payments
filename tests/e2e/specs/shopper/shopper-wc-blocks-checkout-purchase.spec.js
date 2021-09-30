@@ -21,7 +21,7 @@ import {
 	RUN_WC_BLOCKS_TESTS,
 } from '../../utils';
 
-const billingDetails = config.get( 'addresses.customer.billing' );
+const shippingDetails = config.get( 'addresses.customer.shipping' );
 const productName = config.get( 'products.simple.name' );
 
 import {
@@ -42,7 +42,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await shopper.goToShop();
 			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
-			await shopperWCP.fillBillingDetailsWCB( billingDetails );
+			await shopperWCP.fillShippingDetailsWCB( shippingDetails );
 
 			// Fill CC details and purchase the product
 			const card = config.get( 'cards.basic' );
@@ -58,7 +58,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await shopper.goToShop();
 			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
-			await shopperWCP.fillBillingDetailsWCB( billingDetails );
+			await shopperWCP.fillShippingDetailsWCB( shippingDetails );
 
 			// Fill CC details and purchase the product
 			const card = config.get( 'cards.3ds' );
