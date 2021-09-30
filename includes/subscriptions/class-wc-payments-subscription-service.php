@@ -37,6 +37,13 @@ class WC_Payments_Subscription_Service {
 	const SUBSCRIPTION_ITEM_ID_META_KEY = '_wcpay_subscription_item_id';
 
 	/**
+	 * Subscription discounts meta key used to store WCPay subscription discount IDs.
+	 *
+	 * @const string
+	 */
+	const SUBSCRIPTION_DISCOUNT_IDS_META_KEY = '_wcpay_subscription_discount_ids';
+
+	/**
 	 * WC Payments API Client
 	 *
 	 * @var WC_Payments_API_Client
@@ -196,6 +203,30 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
+	 * Gets the WCPay subscription discount IDs from a WC subscription.
+	 *
+	 * @param WC_Subscription $subscription WC Subscription.
+	 *
+	 * @return array
+	 */
+	public static function get_wcpay_discount_ids( WC_Subscription $subscription ) {
+		return $subscription->get_meta( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, true );
+	}
+
+	/**
+	 * Sets Stripe discount ids on WC subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC Subscription object.
+	 * @param array           $discounts    The WCPay discount data.
+	 *
+	 * @return void
+	 */
+	public static function set_wcpay_discount_ids( WC_Subscription $subscription, array $discounts ) {
+		$subscription->update_meta_data( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, $discounts );
+		$subscription->save();
+	}
+
+	/**
 	 * Determines if a given WC subscription is a WCPay subscription.
 	 *
 	 * @param WC_Subscription $subscription WC Subscription object.
@@ -271,6 +302,34 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
+	 * Prepares discount data used to create a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription used to create the subscription on server.
+	 * @param bool            $parent       Whether to get data from subscription parent.
+	 *
+	 * @return array WCPay discount item data.
+	 */
+	public static function get_discount_item_data_for_subscription( WC_Subscription $subscription, bool $parent = false ) : array {
+		$data  = [];
+		$items = $parent ? $subscription->get_parent()->get_items( 'coupon' ) : $subscription->get_items( 'coupon' );
+
+		foreach ( $items as $item ) {
+			$code     = $item->get_code();
+			$coupon   = new WC_Coupon( $code );
+			$duration = in_array( $coupon->get_discount_type(), [ 'recurring_fee', 'recurring_percent' ], true ) ? 'forever' : 'once';
+			$data[]   = [
+				'amount_off' => $item->get_discount() * 100,
+				'currency'   => $subscription->get_currency(),
+				'duration'   => $duration,
+				// Translators: %s Coupon code.
+				'name'       => sprintf( __( 'Coupon - %s', 'woocommerce-payments' ), $code ),
+			];
+		}
+
+		return $data;
+	}
+
+	/**
 	 * Gets a WCPay subscription from a WC subscription object.
 	 *
 	 * @param WC_Subscription $subscription The WC subscription to get from server.
@@ -315,6 +374,11 @@ class WC_Payments_Subscription_Service {
 
 			$this->set_wcpay_subscription_id( $subscription, $response['id'] );
 			$this->set_wcpay_subscription_item_ids( $subscription, $response['items']['data'] );
+
+			if ( isset( $response['discounts'] ) ) {
+				$this->set_wcpay_discount_ids( $subscription, $response['discounts'] );
+			}
+
 			$this->invoice_service->set_subscription_invoice_id( $subscription, $response['latest_invoice'] );
 		} catch ( API_Exception $e ) {
 			Logger::log( sprintf( 'There was a problem creating the WCPay subscription %s', $e->getMessage() ) );
@@ -506,35 +570,6 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Sets Stripe subscription item ids on WC order items.
-	 *
-	 * @param WC_Subscription $subscription       The WC Subscription object.
-	 * @param array           $subscription_items The Stripe Subscription data.
-	 *
-	 * @return void
-	 */
-	public function set_wcpay_subscription_item_ids( WC_Subscription $subscription, array $subscription_items ) {
-		foreach ( $subscription_items as $item ) {
-			$wcpay_subscription_item_id = $item['id'];
-			$subscription_item_id       = isset( $item['metadata']['wc_item_id'] ) ? $item['metadata']['wc_item_id'] : false;
-
-			if ( $subscription_item_id ) {
-				$subscription_item = $subscription->get_item( $subscription_item_id );
-				$subscription_item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, $wcpay_subscription_item_id );
-				$subscription_item->save();
-			} else {
-				Logger::log(
-					sprintf(
-						// Translators: %s Stripe subscription item ID.
-						__( 'Unable to set subscription item ID meta for WCPay subscription item %s.', 'woocommerce-payments' ),
-						$wcpay_subscription_item_id
-					)
-				);
-			}
-		}
-	}
-
-	/**
 	 * Updates a subscription's next payment date to match the WCPay subscription's payment date.
 	 *
 	 * @param array           $wcpay_subscription The WCPay Subscription data.
@@ -570,7 +605,7 @@ class WC_Payments_Subscription_Service {
 	private function prepare_wcpay_subscription_data( string $wcpay_customer_id, WC_Subscription $subscription ) {
 		$recurring_items = $this->get_recurring_item_data_for_subscription( $subscription );
 		$one_time_items  = $this->get_one_time_item_data_for_subscription( $subscription );
-		$discount_items  = $this->get_discount_item_data_for_subscription( $subscription );
+		$discount_items  = self::get_discount_item_data_for_subscription( $subscription, true );
 		$data            = [
 			'customer' => $wcpay_customer_id,
 			'items'    => $recurring_items,
@@ -685,31 +720,6 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Prepares discount data used to create a WCPay subscription.
-	 *
-	 * @param WC_Subscription $subscription The WC subscription used to create the subscription on server.
-	 *
-	 * @return array WCPay discount item data.
-	 */
-	private function get_discount_item_data_for_subscription( WC_Subscription $subscription ) : array {
-		$data = [];
-
-		foreach ( $subscription->get_parent()->get_items( 'coupon' ) as $item ) {
-			$code     = $item->get_code();
-			$coupon   = new WC_Coupon( $code );
-			$duration = in_array( $coupon->get_discount_type(), [ 'recurring_fee', 'recurring_percent' ], true ) ? 'forever' : 'once';
-			$data[]   = [
-				'amount_off' => $coupon->get_amount() * 100,
-				'currency'   => $subscription->get_currency(),
-				'duration'   => $duration,
-				'name'       => 'Coupon - ' . $code,
-			];
-		}
-
-		return $data;
-	}
-
-	/**
 	 * Updates a WCPay subscription.
 	 *
 	 * @param WC_Subscription $subscription The WC subscription that relates to the WCPay subscription that needs updating.
@@ -758,6 +768,35 @@ class WC_Payments_Subscription_Service {
 	private function set_wcpay_subscription_id( WC_Subscription $subscription, string $value ) {
 		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $value );
 		$subscription->save();
+	}
+
+	/**
+	 * Sets Stripe subscription item ids on WC order items.
+	 *
+	 * @param WC_Subscription $subscription       The WC Subscription object.
+	 * @param array           $subscription_items The WCPay Subscription data.
+	 *
+	 * @return void
+	 */
+	private function set_wcpay_subscription_item_ids( WC_Subscription $subscription, array $subscription_items ) {
+		foreach ( $subscription_items as $item ) {
+			$wcpay_subscription_item_id = $item['id'];
+			$subscription_item_id       = isset( $item['metadata']['wc_item_id'] ) ? $item['metadata']['wc_item_id'] : false;
+
+			if ( $subscription_item_id ) {
+				$subscription_item = $subscription->get_item( $subscription_item_id );
+				$subscription_item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, $wcpay_subscription_item_id );
+				$subscription_item->save();
+			} else {
+				Logger::log(
+					sprintf(
+						// Translators: %s Stripe subscription item ID.
+						__( 'Unable to set subscription item ID meta for WCPay subscription item %s.', 'woocommerce-payments' ),
+						$wcpay_subscription_item_id
+					)
+				);
+			}
+		}
 	}
 
 	/**
