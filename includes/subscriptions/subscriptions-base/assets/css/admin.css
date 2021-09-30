@@ -720,7 +720,8 @@ table.wp-list-table .subscription_renewal_order:after {
 	color: #a46497;
 }
 
-table.wc_gateways .renewals .tips {
+table.wc_gateways .renewals .tips,
+table.wc_gateways .renewals .renewals-enabled-icon {
 	margin: 0 0.2em;
 	display: inline-block;
 }
