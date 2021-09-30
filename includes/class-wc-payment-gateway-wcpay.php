@@ -499,11 +499,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function is_card_present_eligible( $empty_value = false ) {
-		try {
-			if ( ! $this->is_connected() ) {
-				return $empty_value;
-			}
 
+		if ( ! $this->is_connected() ) {
+			return $empty_value;
+		}
+
+		try {
 			return $this->account->is_card_present_eligible();
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to get account card present eligible .' . $e );
