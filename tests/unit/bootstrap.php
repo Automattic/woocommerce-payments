@@ -43,6 +43,15 @@ function _manually_load_plugin() {
 	// is not loaded even though it's set during the tests setup.
 	update_option( 'woocommerce_currency', 'USD' );
 
+	// Enable the WCPay Subscription feature flag in tests to ensure we can test
+	// subscriptions funtionality.
+	add_filter(
+		'pre_option__wcpay_feature_subscriptions',
+		function() {
+			return '1';
+		}
+	);
+
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
 	require $_plugin_dir . 'woocommerce-payments.php';
