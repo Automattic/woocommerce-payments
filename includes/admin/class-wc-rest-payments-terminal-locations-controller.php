@@ -45,17 +45,41 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_store_location( $request ) {
-		try {
-			$name    = get_bloginfo();
-			$address = [
-				'city'        => WC()->countries->get_base_city(),
-				'country'     => WC()->countries->get_base_country(),
-				'line1'       => WC()->countries->get_base_address(),
-				'line2'       => WC()->countries->get_base_address_2(),
-				'postal_code' => WC()->countries->get_base_postcode(),
-				'state'       => WC()->countries->get_base_state(),
-			];
+		$store_address    = WC()->countries;
+		$location_address = array_filter(
+			[
+				'city'        => $store_address->get_base_city(),
+				'country'     => $store_address->get_base_country(),
+				'line1'       => $store_address->get_base_address(),
+				'line2'       => $store_address->get_base_address_2(),
+				'postal_code' => $store_address->get_base_postcode(),
+				'state'       => $store_address->get_base_state(),
+			]
+		);
 
+		// If address is not populated, emit an error and specify the URL where this can be done.
+		$is_address_unpopulated = 2 === count( $location_address ) && isset( $location_address['country'], $location_address['state'] );
+		if ( $is_address_unpopulated ) {
+			return rest_ensure_response(
+				new \WP_Error(
+					'store_address_is_incomplete',
+					__( 'The store address is incomplete, please update your settings.', 'woocommerce-payments' ),
+					[
+						'url' => admin_url(
+							add_query_arg(
+								[
+									'page' => 'wc-settings',
+									'tab'  => 'general',
+								],
+								'admin.php'
+							)
+						),
+					]
+				)
+			);
+		}
+
+		try {
 			// Load the cached locations or retrieve them from the API.
 			$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
 			if ( ! $locations ) {
@@ -64,17 +88,18 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			}
 
 			// Check the existing locations to see if one of them matches the store.
+			$name = get_bloginfo();
 			foreach ( $locations as $location ) {
 				if (
 					$location['display_name'] === $name
-					&& count( array_intersect( $location['address'], $address ) ) === count( $address )
+					&& count( array_intersect( $location['address'], $location_address ) ) === count( $location_address )
 				) {
 					return $this->format_location_response( $location );
 				}
 			}
 
 			// Create a new location, and add it to the cached list.
-			$location    = $this->api_client->create_terminal_location( $name, $address );
+			$location    = $this->api_client->create_terminal_location( $name, $location_address );
 			$locations[] = $location;
 			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 
