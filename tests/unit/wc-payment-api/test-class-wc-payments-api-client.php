@@ -188,46 +188,46 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		// Mock the HTTP client manually to assert we are sending the correct args.
 		$this->mock_http_client
-		->expects( $this->once() )
-		->method( 'remote_request' )
-		->with(
-			[
-				'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents',
-				'method'          => 'POST',
-				'headers'         => [
-					'Content-Type' => 'application/json; charset=utf-8',
-					'User-Agent'   => 'Unit Test Agent/0.1.0',
-				],
-				'timeout'         => 70,
-				'connect_timeout' => 70,
-			],
-			wp_json_encode(
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
 				[
-					'test_mode'            => false,
-					'customer'             => $customer_id,
-					'confirm'              => 'false',
-					'payment_method_types' => $payment_method_types,
-				]
-			),
-			true,
-			false
-		)
-		->will(
-			$this->returnValue(
-				[
-					'body'     => wp_json_encode(
-						[
-							'id'     => 'seti_mock',
-							'object' => 'setup_intent',
-						]
-					),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents',
+					'method'          => 'POST',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
 					],
-				]
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				wp_json_encode(
+					[
+						'test_mode'            => false,
+						'customer'             => $customer_id,
+						'confirm'              => 'false',
+						'payment_method_types' => $payment_method_types,
+					]
+				),
+				true,
+				false
 			)
-		);
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode(
+							[
+								'id'     => 'seti_mock',
+								'object' => 'setup_intent',
+							]
+						),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
 
 		$result = $this->payments_api_client->create_setup_intention( $customer_id, $payment_method_types );
 
@@ -257,49 +257,49 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		// Mock the HTTP client manually to assert we are adding mandate data.
 		$this->mock_http_client
-		->expects( $this->once() )
-		->method( 'remote_request' )
-		->with(
-			[
-				'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents',
-				'method'          => 'POST',
-				'headers'         => [
-					'Content-Type' => 'application/json; charset=utf-8',
-					'User-Agent'   => 'Unit Test Agent/0.1.0',
-				],
-				'timeout'         => 70,
-				'connect_timeout' => 70,
-			],
-			wp_json_encode(
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
 				[
-					'test_mode'            => false,
-					'payment_method'       => $payment_method_id,
-					'customer'             => $customer_id,
-					'confirm'              => 'true',
-					'payment_method_types' => $payment_method_types,
-					'mandate_data'         => $mandate_data,
-				]
-			),
-			true,
-			false
-		)
-		->will(
-			$this->returnValue(
-				[
-					'body'     => wp_json_encode(
-						[
-							'id'             => 'seti_mock',
-							'object'         => 'setup_intent',
-							'payment_method' => $payment_method_id,
-						]
-					),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents',
+					'method'          => 'POST',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
 					],
-				]
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				wp_json_encode(
+					[
+						'test_mode'            => false,
+						'payment_method'       => $payment_method_id,
+						'customer'             => $customer_id,
+						'confirm'              => 'true',
+						'payment_method_types' => $payment_method_types,
+						'mandate_data'         => $mandate_data,
+					]
+				),
+				true,
+				false
 			)
-		);
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode(
+							[
+								'id'             => 'seti_mock',
+								'object'         => 'setup_intent',
+								'payment_method' => $payment_method_id,
+							]
+						),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
 
 		$result = $this->payments_api_client->create_and_confirm_setup_intent( $payment_method_id, $customer_id );
 
@@ -1194,6 +1194,160 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				100,
 				999,
 				'Online Payment for Order #100 for example.org blog_id 999',
+			],
+		];
+	}
+
+	/**
+	 * Test a successful call to cancel subscription.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_cancel_subscription() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/subscriptions/sub_test?test_mode=0',
+					'method'          => 'DELETE',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				null,
+				true,
+				false
+			)
+			->will(
+				$this->returnValue(
+					[
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+						'body'     => wp_json_encode(
+							[
+								'id'     => 'sub_test',
+								'object' => 'subscription',
+							]
+						),
+					]
+				)
+			);
+
+		$result = $this->payments_api_client->cancel_subscription( 'sub_test' );
+		$this->assertSame( 'sub_test', $result['id'] );
+		$this->assertSame( 'subscription', $result['object'] );
+	}
+
+	/**
+	 * Test redacting request params.
+	 *
+	 * @dataProvider redacting_params_data
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_redacting_params( $request_arguments, $logger_num_calls, ...$logger_expected_arguments ) {
+		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
+							->setMethods( [ 'log' ] )
+							->getMock();
+
+		$logger_ref = new ReflectionProperty( 'WCPay\Logger', 'logger' );
+		$logger_ref->setAccessible( true );
+		$logger_ref->setValue( null, $mock_logger );
+
+		$wcpay_dev_mode_true = function () {
+			return true;
+		};
+		add_filter( 'wcpay_dev_mode', $wcpay_dev_mode_true );
+
+		$mock_logger
+			->expects( $this->exactly( $logger_num_calls ) )
+			->method( 'log' )
+			->withConsecutive( ...$logger_expected_arguments );
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->will(
+				$this->returnValue(
+					[
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+						'body'     => wp_json_encode(
+							[
+								'status' => true,
+							]
+						),
+					]
+				)
+			);
+
+		$reflection     = new ReflectionClass( $this->payments_api_client );
+		$request_method = $reflection->getMethod( 'request' );
+		$request_method->setAccessible( true );
+		$request_method->invokeArgs( $this->payments_api_client, $request_arguments );
+		$request_method->setAccessible( false );
+
+		// clean up.
+		$logger_ref->setAccessible( true );
+		$logger_ref->setValue( null, null );
+		remove_filter( 'wcpay_dev_mode', $wcpay_dev_mode_true );
+	}
+
+	/**
+	 * Data provider for test_redacting_params
+	 */
+	public function redacting_params_data() {
+		$string_should_not_include_secret = function( $string ) {
+			return false === strpos( $string, 'some-secret' );
+		};
+
+		return [
+			'delete' => [
+				[ [ 'client_secret' => 'some-secret' ], 'abc', 'DELETE' ],
+				2,
+				[
+					$this->anything(),
+					$this->callback( $string_should_not_include_secret ),
+				],
+				[
+					$this->anything(),
+					$this->anything(),
+				],
+			],
+			'get'    => [
+				[ [ 'client_secret' => 'some-secret' ], 'abc', 'GET' ],
+				2,
+				[
+					$this->anything(),
+					$this->callback( $string_should_not_include_secret ),
+				],
+				[
+					$this->anything(),
+					$this->anything(),
+				],
+			],
+			'post'   => [
+				[ [ 'client_secret' => 'some-secret' ], 'abc', 'POST' ],
+				3,
+				[
+					$this->anything(),
+					$this->callback( $string_should_not_include_secret ),
+				],
+				[
+					$this->anything(),
+					$this->callback( $string_should_not_include_secret ),
+				],
+				[
+					$this->anything(),
+					$this->anything(),
+				],
 			],
 		];
 	}
