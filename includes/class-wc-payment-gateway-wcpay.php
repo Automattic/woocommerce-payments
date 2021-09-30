@@ -495,7 +495,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Check if account is eligible for card present.
 	 *
-	 * @param null $empty_value - Default return value.
+	 * @param false $empty_value - Default return value.
 	 * @return bool
 	 */
 	public function is_card_present_eligible( $empty_value = false ) {

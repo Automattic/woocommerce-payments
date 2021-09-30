@@ -103,4 +103,18 @@ describe( 'TransactionsAndDeposits', () => {
 			)
 		).toBeInTheDocument();
 	} );
+
+	it( 'display ipp payment notice', async () => {
+		useCardPresentEligible.mockReturnValue( [ true ] );
+
+		render( <TransactionsAndDeposits /> );
+
+		expect(
+			screen.getByText(
+				new RegExp(
+					'In-person payments authorization is valid for 48 hours.'
+				)
+			)
+		).toBeInTheDocument();
+	} );
 } );

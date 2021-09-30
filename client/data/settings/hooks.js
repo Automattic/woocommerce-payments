@@ -23,11 +23,11 @@ export const useSavedCards = () => {
 export const useCardPresentEligible = () => {
 	const { updateIsCardPresentEligible } = useDispatch( STORE_NAME );
 
-	const isCarPresentEligible = useSelect( ( select ) => {
+	const isCardPresentEligible = useSelect( ( select ) => {
 		return select( STORE_NAME ).getIsCardPresentEligible();
 	}, [] );
 
-	return [ isCarPresentEligible, updateIsCardPresentEligible ];
+	return [ isCardPresentEligible, updateIsCardPresentEligible ];
 };
 
 export const useEnabledPaymentMethodIds = () => {

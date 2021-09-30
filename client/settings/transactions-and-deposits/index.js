@@ -42,7 +42,7 @@ const TransactionsAndDeposits = () => {
 	] = useAccountStatementDescriptor();
 	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
 		?.account_statement_descriptor?.message;
-	const [ isCarPresentEligible ] = useCardPresentEligible();
+	const [ isCardPresentEligible ] = useCardPresentEligible();
 
 	return (
 		<Card className="transactions-and-deposits">
@@ -78,7 +78,7 @@ const TransactionsAndDeposits = () => {
 								'woocommerce-payments'
 							) }
 							<br />
-							{ isCarPresentEligible
+							{ isCardPresentEligible
 								? __(
 										' Note: This setting is ignored by in-person payments. ' +
 											'In-person payments authorization is valid for 48 hours.',
