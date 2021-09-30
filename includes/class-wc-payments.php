@@ -434,20 +434,15 @@ class WC_Payments {
 				if ( current_user_can( 'update_plugins' ) ) {
 					// Take the user to the "plugins" screen instead of trying to update WooCommerce inline. WooCommerce adds important information
 					// on its plugin row regarding the currently installed extensions and their compatibility with the latest WC version.
-					$message .= '<br/><a href="' . admin_url( 'plugins.php' ) . '">' . __( 'Update WooCommerce', 'woocommerce-payments' ) . '</a>';
-
-					/**
-					 * Recommend using a previous version of WCPay for out-of-date Woo core version.
-					 *
-					 * @since 3.1.0
-					 */
-					$message .= ' ';
+					$message .= '<br/>';
 					$message .= WC_Payments_Utils::esc_interpolated_html(
-					/* translators: contain a link to https://wordpress.org/plugins/woocommerce-payments/advanced/#download-previous-link */
-						__( 'or <strong>(not recommended)</strong> manually re-install <a>a previous version</a> of WooCommerce Payments.', 'woocommerce-payments' ),
+					/* translators: a1: link to the Plugins page, a2: link to the page having all previous versions */
+						__( '<a1>Update WooCommerce</a1> <strong>(recommended)</strong> or manually re-install <a2>a previous version</a2> of WooCommerce Payments.', 'woocommerce-payments' ),
 						[
+
+							'a1'     => '<a href="' . admin_url( 'plugins.php' ) . '">',
 							'strong' => '<strong>',
-							'a'      => '<a href="https://wordpress.org/plugins/woocommerce-payments/advanced/#download-previous-link" target="_blank">',
+							'a2'     => '<a href="https://wordpress.org/plugins/woocommerce-payments/advanced/#download-previous-link" target="_blank">',
 						]
 					);
 				}
