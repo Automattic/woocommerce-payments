@@ -35,6 +35,15 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<location_id>\w+)',
+			[
+				'methods'             => WP_REST_Server::DELETABLE,
+				'callback'            => [ $this, 'delete_location' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -124,5 +133,30 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				'livemode'     => $location['livemode'],
 			]
 		);
+	}
+
+	/**
+	 * Proxies the delete location request to the server.
+	 *
+	 * @param WP_REST_REQUEST $request Request object.
+	 *
+	 * @throws API_Exception - If the location is invalid or downstream call fails.
+	 */
+	public function delete_location( $request ) {
+		try {
+			$deletion_response = $this->api_client->delete_terminal_location(
+				$request->get_param( 'location_id' )
+			);
+
+			// Delete the transient in case the delete call goes through to avoid caching side effects.
+			if ( true === $deletion_response['deleted'] ?? false ) {
+				delete_transient( self::STORE_LOCATIONS_TRANSIENT_KEY );
+			}
+
+			return $deletion_response;
+		} catch ( API_Exception $e ) {
+			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+		}
+
 	}
 }

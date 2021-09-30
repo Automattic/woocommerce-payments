@@ -20,8 +20,9 @@ class WC_Payments_API_Client {
 	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';
 	const ENDPOINT_REST_BASE     = 'wcpay';
 
-	const POST = 'POST';
-	const GET  = 'GET';
+	const POST   = 'POST';
+	const GET    = 'GET';
+	const DELETE = 'DELETE';
 
 	const API_TIMEOUT_SECONDS = 70;
 
@@ -1204,6 +1205,47 @@ class WC_Payments_API_Client {
 			self::TERMINAL_LOCATIONS_API,
 			self::POST
 		);
+	}
+
+	/**
+	 * Deletes the specified location object.
+	 *
+	 * @param string $location_id The id of the terminal location.
+	 *
+	 * @return array Stripe's terminal deletion response.
+	 * @see https://stripe.com/docs/api/terminal/locations/delete
+	 *
+	 * @throws API_Exception If the location id is invalid or downstream call fails.
+	 */
+	public function delete_terminal_location( $location_id ) {
+		// Validate the supplied location id.
+		if ( ! $this->is_valid_terminal_location( $location_id ) ) {
+			throw new API_Exception(
+				__( 'The location id supplied is invalid.', 'woocommerce-payments' ),
+				'wcpay_invalid_terminal_location_request',
+				400
+			);
+		}
+
+		return $this->request( [], self::TERMINAL_LOCATIONS_API . '/' . $location_id, self::DELETE );
+	}
+
+	/**
+	 * Validates the specified $location_id against the following rules:
+	 * - Should not be null.
+	 * - Should be a string with length greater then 4 (prefix `tml_`).
+	 * - Should followin the location id pattern eg. tml_EVEMFwsjWdeSfy
+	 *     - Pattern is lose deliberately to accommodate for changes from Stripe in future.
+	 *
+	 * @param string $location_id The location id to validate.
+	 *
+	 * @return boolean
+	 */
+	private function is_valid_terminal_location( $location_id ) {
+		if ( ! $location_id || strlen( $location_id ) < 4 || preg_match( '/[a-zA-Z]+_[a-zA-Z]+/', $location_id ) !== 1 ) {
+			return false;
+		}
+		return true;
 	}
 
 	/**
