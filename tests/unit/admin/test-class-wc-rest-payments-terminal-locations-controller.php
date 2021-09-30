@@ -185,4 +185,35 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 		$result = $this->controller->get_store_location( $this->request );
 		$this->assertEquals( $this->location, $result->get_data() );
 	}
+
+	public function test_deletes_cache_on_succesful_delete_request() {
+		set_transient(
+			Controller::STORE_LOCATIONS_TRANSIENT_KEY,
+			[ $this->location ]
+		);
+
+		// Setup a delete request.
+		$this->delete_request = new WP_REST_Request(
+			'DELETE',
+			'/wc/v3/payments/terminal/locations/' . $this->location['id']
+		);
+		$this->delete_request->set_header( 'Content-Type', 'application/json' );
+		$expected_delete_response = [
+			'id'      => $this->location['id'],
+			'object'  => 'terminal.location',
+			'deleted' => true,
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'delete_terminal_location' )
+			->willReturn( $expected_delete_response );
+
+		$result = $this->controller->delete_location( $this->delete_request );
+		$this->assertEquals( $expected_delete_response, $result );
+		$this->assertEquals(
+			false,
+			get_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY )
+		);
+	}
 }
