@@ -114,6 +114,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Translations in transaction/deposit exports
 * Fix - Update shipping cost in payment sheet when changing payment method.
 * Fix - Transaction search with translated terms
+* Update - Replace REST endpoint for onboarding initialization.
 * Update - Bump minimum supported version of WooCommerce from 5.4 to 5.5.
 * Update - Bump minimum required version of WooCommerce from 4.0 to 4.4.
 * Update - Continue loading WCPay if the account is connected.
