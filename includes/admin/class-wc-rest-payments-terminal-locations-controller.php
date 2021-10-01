@@ -66,6 +66,25 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'create_location' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'display_name' => [
+						'type'     => 'string',
+						'required' => true,
+					],
+					'address'      => [
+						'type'     => 'object',
+						'required' => true,
+					],
+				],
+			]
+		);
 	}
 
 	/**
@@ -228,6 +247,31 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			}
 
 			return $this->api_client->get_terminal_location( $location_id );
+		} catch ( API_Exception $e ) {
+			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Proxies the create location request to the server.
+	 *
+	 * @param WP_REST_REQUEST $request Request object.
+	 *
+	 * @throws API_Exception - If the downstream call fails.
+	 */
+	public function create_location( $request ) {
+		try {
+			$display_name = $request['display_name'];
+			$address      = $request['address'];
+
+			$location = $this->api_client->create_terminal_location( $display_name, $address );
+
+			// Update the transient with the newly created location.
+			$locations   = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
+			$locations[] = $location;
+			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
+
+			return $this->format_location_response( $location );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
