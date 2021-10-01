@@ -186,7 +186,7 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 		$this->assertEquals( $this->location, $result->get_data() );
 	}
 
-	public function test_deletes_cache_on_succesful_delete_request() {
+	public function test_deletes_cache_on_successful_delete_request() {
 		set_transient(
 			Controller::STORE_LOCATIONS_TRANSIENT_KEY,
 			[ $this->location ]
@@ -211,6 +211,41 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 
 		$result = $this->controller->delete_location( $this->delete_request );
 		$this->assertEquals( $expected_delete_response, $result );
+		$this->assertEquals(
+			false,
+			get_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY )
+		);
+	}
+
+	public function test_deletes_cache_on_successful_update_request() {
+		set_transient(
+			Controller::STORE_LOCATIONS_TRANSIENT_KEY,
+			[ $this->location ]
+		);
+
+		// Setup a update request.
+		$this->update_request = new WP_REST_Request(
+			'POST',
+			'/wc/v3/payments/terminal/locations/' . $this->location['id'],
+			[
+				'display_name' => 'New display name!',
+			]
+		);
+		$this->update_request->set_header( 'Content-Type', 'application/json' );
+		$expected_update_response = [
+			'id'           => $this->location['id'],
+			'object'       => 'terminal.location',
+			'address'      => $this->location['address'],
+			'display_name' => 'New display name!',
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_terminal_location' )
+			->willReturn( $expected_update_response );
+
+		$result = $this->controller->update_location( $this->update_request );
+		$this->assertEquals( $expected_update_response, $result );
 		$this->assertEquals(
 			false,
 			get_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY )
