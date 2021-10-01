@@ -253,4 +253,26 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 			get_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY )
 		);
 	}
+
+	public function test_retreive_uses_cache_for_existing_location() {
+		set_transient(
+			Controller::STORE_LOCATIONS_TRANSIENT_KEY,
+			[ $this->location ]
+		);
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_terminal_location' );
+
+		// Setup a get request.
+		$this->get_request = new WP_REST_Request(
+			'GET',
+			'/wc/v3/payments/terminal/locations'
+		);
+		$this->get_request->set_param( 'location_id', $this->location['id'] );
+		$this->get_request->set_header( 'Content-Type', 'application/json' );
+
+		$result = $this->controller->get_location( $this->get_request );
+		$this->assertEquals( $this->location, $result->get_data() );
+	}
 }
