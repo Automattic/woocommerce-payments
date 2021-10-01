@@ -451,7 +451,13 @@ class WC_Payments {
 				);
 			}
 
-			$res['passed'] = false;
+			/**
+			 * If WCPay account is connected, still silently load the plugin.
+			 * Can not use self::$account->is_stripe_connected() as many dependencies are not loaded at this point.
+			 *
+			 * @since 3.1.0
+			 */
+			$res['passed'] = self::has_cached_account_connection();
 			return $res;
 		}
 
@@ -486,7 +492,13 @@ class WC_Payments {
 				$res['message'] .= ' <a href="' . $deactivate_url . '">' . __( 'Use the bundled version of WooCommerce Admin', 'woocommerce-payments' ) . '</a>';
 			}
 
-			$res['passed'] = false;
+			/**
+			 * If WCPay account is connected, still silently load the plugin.
+			 * Can not use self::$account->is_stripe_connected() as many dependencies are not loaded at this point.
+			 *
+			 * @since 3.1.0
+			 */
+			$res['passed'] = self::has_cached_account_connection();
 			return $res;
 		}
 
@@ -521,6 +533,16 @@ class WC_Payments {
 	private static function is_at_plugin_install_page() {
 		$cur_screen = get_current_screen();
 		return 'update' === $cur_screen->id && 'plugins' === $cur_screen->parent_base;
+	}
+
+	/**
+	 * Check if the current WCPay Account has cache data.
+	 *
+	 * @return bool True if the cache data exists in wp_options.
+	 */
+	private static function has_cached_account_connection(): bool {
+		$account_data = get_option( 'wcpay_account_data' );
+		return isset( $account_data['account'] ) && is_array( $account_data['account'] );
 	}
 
 	/**
