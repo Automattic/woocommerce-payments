@@ -28,12 +28,13 @@ jobs:
     strategy:
       fail-fast:     false
       matrix:
-        woocommerce: [ '4.0.0', '4.5.0', 'beta' ]
+        # Min WooCommerce | L-2 | L(atest) | beta
+        woocommerce: [ '4.4.0', '5.5.0', '5.7.0', 'beta' ]
         wordpress:   [ 'latest' ]
         php:         [ '7.4' ]
         include:
           # Edge case: oldest dependencies compatibility
-          - woocommerce: '4.0.0'
+          - woocommerce: '4.4.0'
             wordpress:   '5.4'
             php:         '7.0'
     env:
