@@ -195,8 +195,9 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 		// Setup a delete request.
 		$this->delete_request = new WP_REST_Request(
 			'DELETE',
-			'/wc/v3/payments/terminal/locations/' . $this->location['id']
+			'/wc/v3/payments/terminal/locations/'
 		);
+		$this->delete_request->set_param( 'location_id', $this->location['id'] );
 		$this->delete_request->set_header( 'Content-Type', 'application/json' );
 		$expected_delete_response = [
 			'id'      => $this->location['id'],
@@ -226,11 +227,12 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 		// Setup a update request.
 		$this->update_request = new WP_REST_Request(
 			'POST',
-			'/wc/v3/payments/terminal/locations/' . $this->location['id'],
+			'/wc/v3/payments/terminal/locations/',
 			[
 				'display_name' => 'New display name!',
 			]
 		);
+		$this->update_request->set_param( 'location_id', $this->location['id'] );
 		$this->update_request->set_header( 'Content-Type', 'application/json' );
 		$expected_update_response = [
 			'id'           => $this->location['id'],
