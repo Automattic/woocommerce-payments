@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.6 or newer.
-* WooCommerce 5.4 or newer.
+* WooCommerce 5.5 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -116,6 +116,8 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Transaction search with translated terms
 * Update - Replace REST endpoint for onboarding initialization.
 * Fix - UPE missing international card fees.
+* Update - Bump minimum supported version of WooCommerce from 5.4 to 5.5.
+* Update - Bump minimum required version of WooCommerce from 4.0 to 4.4.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
