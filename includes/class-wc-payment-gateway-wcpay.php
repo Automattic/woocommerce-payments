@@ -2332,15 +2332,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return null;
 		}
 
-		$pattern = "/([\d\.]+).*$currency/iu";
-		$message = $e->getMessage();
-
-		if ( ! preg_match( $pattern, $message, $matches ) ) {
-			Logger::log( 'Error: Could not extract minimum amount from the following string: "' . $message . '"' );
-			return null;
-		}
-
-		$required = WC_Payments_Utils::prepare_amount( $matches[1], $currency );
+		$data     = $e->get_data();
+		$required = $data['minimum_amount'];
 
 		// Cache the result.
 		set_transient( 'wcpay_minimum_amount_' . strtolower( $currency ), $required, DAY_IN_SECONDS );

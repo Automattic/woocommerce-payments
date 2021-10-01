@@ -21,6 +21,13 @@ class API_Exception extends Base_Exception {
 	private $http_code = 0;
 
 	/**
+	 * Holds additional data, returned from the API.
+	 *
+	 * @var array
+	 */
+	private $additional_data = [];
+
+	/**
 	 * Constructor
 	 *
 	 * @param string     $message    The Exception message to throw.
@@ -42,5 +49,23 @@ class API_Exception extends Base_Exception {
 	 */
 	public function get_http_code() {
 		return $this->http_code;
+	}
+
+	/**
+	 * Sets additional data for the exception.
+	 *
+	 * @param array $data The data to add to the exception.
+	 */
+	public function set_data( $data ) {
+		$this->additional_data += $data;
+	}
+
+	/**
+	 * Returns all available additional data for the exception.
+	 *
+	 * @return array
+	 */
+	public function get_data() {
+		return $this->additional_data;
 	}
 }

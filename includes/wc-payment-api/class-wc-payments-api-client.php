@@ -1332,7 +1332,11 @@ class WC_Payments_API_Client {
 			);
 
 			Logger::error( "$error_message ($error_code)" );
-			throw new API_Exception( $message, $error_code, $response_code );
+			$exception = new API_Exception( $message, $error_code, $response_code );
+			if ( isset( $response_body['data'] ) ) {
+				$exception->set_data( $response_body['data'] );
+			}
+			throw $exception;
 		}
 
 		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
