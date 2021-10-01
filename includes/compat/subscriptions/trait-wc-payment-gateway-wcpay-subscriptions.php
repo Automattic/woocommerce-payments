@@ -272,7 +272,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		try {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
-			$this->process_payment_for_order( null, $payment_information );
+			$this->process_payment_for_order( null, $payment_information, $additional_api_parameters );
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
