@@ -275,4 +275,26 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 		$result = $this->controller->get_location( $this->get_request );
 		$this->assertEquals( $this->location, $result->get_data() );
 	}
+
+	public function test_creating_new_location_adds_it_to_cache() {
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_terminal_location' )
+			->willReturn( $this->location );
+
+		// Setup a create request.
+		$this->create_request = new WP_REST_Request(
+			'POST',
+			'/wc/v3/payments/terminal/locations/',
+			[
+				'display_name' => $this->location['display_name'],
+				'address'      => $this->location['address'],
+			]
+		);
+		$this->create_request->set_header( 'Content-Type', 'application/json' );
+
+		$this->controller->create_location( $this->create_request );
+
+		$this->assertSame( [ $this->location ], get_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY ) );
+	}
 }
