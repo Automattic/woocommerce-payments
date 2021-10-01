@@ -904,6 +904,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				throw new Exception( 'Order not found. Unable to log error.' );
 			}
 
+			$order_amount  = WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order );
+			$error_message = esc_html( rtrim( $get_charge_data['failure_message'], '.' ) );
+
 			$order_note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the failed payment amount, %2: error message  */
@@ -916,8 +919,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						'code'   => '<code>',
 					]
 				),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
-				esc_html( rtrim( $get_charge_data['failure_message'], '.' ) )
+				$order_amount,
+				$error_message
 			);
 
 			// Set order as failed and add the order note.
