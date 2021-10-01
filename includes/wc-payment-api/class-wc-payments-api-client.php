@@ -1243,6 +1243,20 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Retrieves the specified terminal location.
+	 *
+	 * @param string $location_id The id of the terminal location.
+	 *
+	 * @return array A Stripe terminal location object.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_terminal_location( $location_id ) {
+		return $this->request( [], self::TERMINAL_LOCATIONS_API . '/' . $location_id, self::GET );
+	}
+
+	/**
 	 * Deletes the specified location object.
 	 *
 	 * @param string $location_id The id of the terminal location.

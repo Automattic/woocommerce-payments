@@ -57,6 +57,15 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<location_id>\w+)',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_location' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -192,6 +201,33 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			delete_transient( self::STORE_LOCATIONS_TRANSIENT_KEY );
 
 			return $updation_response;
+		} catch ( API_Exception $e ) {
+			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Proxies the get location request to the server.
+	 *
+	 * @param WP_REST_REQUEST $request Request object.
+	 *
+	 * @throws API_Exception - If the downstream call fails.
+	 */
+	public function get_location( $request ) {
+		try {
+			$locations   = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
+			$location_id = $request->get_param( 'location_id' );
+
+			// Check if the location exists in cache before making the request.
+			if ( $locations ) {
+				foreach ( $locations as $location ) {
+					if ( $location['id'] === $location_id ) {
+						return $this->format_location_response( $location );
+					}
+				}
+			}
+
+			return $this->api_client->get_terminal_location( $location_id );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
