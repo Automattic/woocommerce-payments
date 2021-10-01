@@ -245,7 +245,8 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'update_terminal_location' );
+			->method( 'update_terminal_location' )
+			->willReturn( array_merge( $this->location, [ 'display_name' => 'New display name!' ] ) );
 
 		$this->controller->update_location( $this->update_request );
 		$this->assertEquals(
