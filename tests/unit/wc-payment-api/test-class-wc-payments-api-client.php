@@ -1087,21 +1087,6 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->assertSame( $location, $result );
 	}
 
-	public function test_delete_terminal_location_null_value() {
-		$this->expectException( API_Exception::class );
-		$this->payments_api_client->delete_terminal_location( null );
-	}
-
-	public function test_delete_terminal_location_invalid_string_length() {
-		$this->expectException( API_Exception::class );
-		$this->payments_api_client->delete_terminal_location( 'abc' );
-	}
-
-	public function test_delete_terminal_location_invalid_string_pattern() {
-		$this->expectException( API_Exception::class );
-		$this->payments_api_client->delete_terminal_location( 'abcdefghi' );
-	}
-
 	public function test_delete_terminal_location_success() {
 		$delete_location_response = [
 			'id'      => 'tml_XXXXXXX',
