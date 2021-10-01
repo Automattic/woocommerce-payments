@@ -218,8 +218,8 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 			->method( 'delete_terminal_location' )
 			->willReturn( $expected_delete_response );
 
-		$result = $this->controller->delete_location( $this->delete_request );
-		$this->assertEquals( $expected_delete_response, $result );
+		$this->controller->delete_location( $this->delete_request );
+
 		$this->assertEquals(
 			false,
 			get_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY )
