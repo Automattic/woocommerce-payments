@@ -77,12 +77,12 @@
 			}
 
 			&.is-destructive {
-				background-color: $studio-red;
-				border-color: $studio-red;
+				box-shadow: inset 0 0 0 1px $studio-red;
+				color: $studio-red;
 
 				&:hover {
-					background-color: $studio-red-60;
-					border-color: $studio-red-60;
+					box-shadow: inset 0 0 0 1px $studio-red-60;
+					color: $studio-red-60;
 				}
 			}
 		}
