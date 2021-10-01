@@ -477,7 +477,7 @@ class WC_Payments_Admin {
 			)
 		);
 
-		$track_stripe_connected = get_option( '_wcpay_oauth_stripe_connected' );
+		$track_stripe_connected = get_option( '_wcpay_onboarding_stripe_connected' );
 
 		if ( $tos_agreement_declined || $tos_agreement_required || $track_stripe_connected ) {
 			// phpcs:ignore WordPress.Security.NonceVerification
