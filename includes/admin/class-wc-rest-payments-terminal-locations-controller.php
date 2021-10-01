@@ -219,7 +219,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			// Delete the transient in case the update call goes through to avoid caching side effects.
 			delete_transient( self::STORE_LOCATIONS_TRANSIENT_KEY );
 
-			return $updation_response;
+			return $this->format_location_response( $updation_response );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
@@ -246,7 +246,9 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				}
 			}
 
-			return $this->api_client->get_terminal_location( $location_id );
+			return $this->format_location_response(
+				$this->api_client->get_terminal_location( $location_id )
+			);
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
