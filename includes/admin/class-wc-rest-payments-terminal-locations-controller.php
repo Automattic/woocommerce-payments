@@ -44,6 +44,19 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<location_id>\w+)',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'update_location' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'display_name',
+					'address',
+				],
+			]
+		);
 	}
 
 	/**
@@ -140,7 +153,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 *
 	 * @param WP_REST_REQUEST $request Request object.
 	 *
-	 * @throws API_Exception - If the location is invalid or downstream call fails.
+	 * @throws API_Exception - If the downstream call fails.
 	 */
 	public function delete_location( $request ) {
 		try {
@@ -158,5 +171,29 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
 
+	}
+
+	/**
+	 * Proxies the update location request to the server.
+	 *
+	 * @param WP_REST_REQUEST $request Request object.
+	 *
+	 * @throws API_Exception - If the downstream call fails.
+	 */
+	public function update_location( $request ) {
+		try {
+			$location_id  = $request->get_param( 'location_id' );
+			$display_name = $request['display_name'];
+			$address      = $request['address'];
+
+			$updation_response = $this->api_client->update_terminal_location( $location_id, $display_name, $address );
+
+			// Delete the transient in case the update call goes through to avoid caching side effects.
+			delete_transient( self::STORE_LOCATIONS_TRANSIENT_KEY );
+
+			return $updation_response;
+		} catch ( API_Exception $e ) {
+			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+		}
 	}
 }
