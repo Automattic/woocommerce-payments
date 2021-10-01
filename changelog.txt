@@ -16,6 +16,7 @@
 * Fix - Translations in transaction/deposit exports
 * Fix - Update shipping cost in payment sheet when changing payment method.
 * Fix - Transaction search with translated terms
+* Update - Replace REST endpoint for onboarding initialization.
 * Fix - UPE missing international card fees.
 
 = 3.0.0 - 2021-09-16 =

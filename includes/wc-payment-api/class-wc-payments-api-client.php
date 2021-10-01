@@ -38,7 +38,7 @@ class WC_Payments_API_Client {
 	const TRANSACTIONS_API       = 'transactions';
 	const DISPUTES_API           = 'disputes';
 	const FILES_API              = 'files';
-	const OAUTH_API              = 'oauth';
+	const ONBOARDING_API         = 'onboarding';
 	const TIMELINE_API           = 'timeline';
 	const PAYMENT_METHODS_API    = 'payment_methods';
 	const SETUP_INTENTS_API      = 'setup_intents';
@@ -885,7 +885,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get data needed to initialize the OAuth flow
+	 * Get data needed to initialize the onboarding flow
 	 *
 	 * @param string $return_url     - URL to redirect to at the end of the flow.
 	 * @param array  $business_data  - Data to prefill the form.
@@ -896,9 +896,9 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_oauth_data( $return_url, array $business_data = [], array $site_data = [], array $actioned_notes = [] ) {
+	public function get_onboarding_data( $return_url, array $business_data = [], array $site_data = [], array $actioned_notes = [] ) {
 		$request_args = apply_filters(
-			'wc_payments_get_oauth_data_args',
+			'wc_payments_get_onboarding_data_args',
 			[
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
@@ -908,7 +908,7 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		return $this->request( $request_args, self::OAUTH_API . '/init', self::POST, true, true );
+		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
 	}
 
 	/**
