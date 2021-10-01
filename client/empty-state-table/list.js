@@ -53,7 +53,7 @@ dashboard -- all without setup costs or monthly fees.",
 			<p className="terms-of-service">
 				{ createInterpolateElement(
 					__(
-						'By clicking "Finish setup", you agree to the <a>Terms of Service</a>',
+						'By clicking "Finish setup", you agree to the <a>Terms of service</a>',
 						'woocommerce-payments'
 					),
 					{

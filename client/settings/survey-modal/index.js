@@ -156,7 +156,7 @@ const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
 							disabled={ 'pending' === status }
 							onClick={ () => submitSurvey() }
 						>
-							{ __( 'Send Feedback', 'woocommerce-payments' ) }
+							{ __( 'Send feedback', 'woocommerce-payments' ) }
 						</Button>
 					</>
 				}

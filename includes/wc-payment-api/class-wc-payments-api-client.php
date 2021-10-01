@@ -1050,7 +1050,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Records a new Terms of Service agreement.
+	 * Records a new Terms of service agreement.
 	 *
 	 * @param string $source     A string, which describes where the merchant agreed to the terms.
 	 * @param string $user_name  The user_login of the current user.

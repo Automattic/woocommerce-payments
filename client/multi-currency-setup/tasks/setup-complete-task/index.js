@@ -40,7 +40,7 @@ const SetupComplete = () => {
 
 	return (
 		<WizardTaskItem
-			title={ __( 'Setup Complete', 'woocommerce-payments' ) }
+			title={ __( 'Setup complete', 'woocommerce-payments' ) }
 			index={ 3 }
 		>
 			<CollapsibleBody>

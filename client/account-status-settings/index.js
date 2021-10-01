@@ -81,7 +81,7 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 		);
 	} else if ( 'rejected.terms_of_service' === status ) {
 		description = __(
-			'This account has been rejected due to a Terms of Service violation.',
+			'This account has been rejected due to a Terms of service violation.',
 			'woocommerce-payments'
 		);
 	} else if ( status.startsWith( 'rejected' ) ) {

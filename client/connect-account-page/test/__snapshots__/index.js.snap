@@ -805,7 +805,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
                   rel="noopener noreferrer"
                   target="_blank"
                 >
-                  Terms of Service
+                  Terms of service
                 </a>
               </span>
               <a

@@ -5,7 +5,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-03-31T21:58:40.000Z,
-    "headline": "Payment status changed to Authorization Expired.",
+    "headline": "Payment status changed to Authorization expired.",
     "icon": <t
       className=""
       icon="sync"
@@ -30,7 +30,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-03-31T10:57:59.000Z,
-    "headline": "Payment status changed to Authorization Voided.",
+    "headline": "Payment status changed to Authorization voided.",
     "icon": <t
       className=""
       icon="sync"
@@ -120,7 +120,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T20:26:47.000Z,
-    "headline": "Payment status changed to Disputed: In Review.",
+    "headline": "Payment status changed to Disputed: In review.",
     "icon": <t
       className=""
       icon="sync"
@@ -145,7 +145,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment status changed to Disputed: Needs Response.",
+    "headline": "Payment status changed to Disputed: Needs response.",
     "icon": <t
       className=""
       icon="sync"
@@ -302,7 +302,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment status changed to Disputed: Needs Response.",
+    "headline": "Payment status changed to Disputed: Needs response.",
     "icon": <t
       className=""
       icon="sync"
@@ -432,7 +432,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "Payment status changed to Partial Refund.",
+    "headline": "Payment status changed to partial refund.",
     "icon": <t
       className=""
       icon="sync"
@@ -620,7 +620,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment status changed to Disputed: Needs Response.",
+    "headline": "Payment status changed to Disputed: Needs response.",
     "icon": <t
       className=""
       icon="sync"
@@ -750,7 +750,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "Payment status changed to Partial Refund.",
+    "headline": "Payment status changed to partial refund.",
     "icon": <t
       className=""
       icon="sync"

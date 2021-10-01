@@ -11,7 +11,7 @@ use WCPay\Logger;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * REST controller for Terms of Services routes.
+ * REST controller for Terms of services routes.
  */
 class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 

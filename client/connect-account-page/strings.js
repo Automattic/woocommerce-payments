@@ -61,7 +61,7 @@ export default {
 
 	terms: createInterpolateElement(
 		__(
-			'By clicking “Finish setup”, you agree to the <a>Terms of Service</a>',
+			'By clicking “Finish setup”, you agree to the <a>Terms of service</a>',
 			'woocommerce-payments'
 		),
 		{

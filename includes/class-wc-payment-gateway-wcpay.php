@@ -155,8 +155,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 			],
 			'saved_cards'                      => [
-				'title'       => __( 'Saved Cards', 'woocommerce-payments' ),
-				'label'       => __( 'Enable Payment via Saved Cards', 'woocommerce-payments' ),
+				'title'       => __( 'Saved cards', 'woocommerce-payments' ),
+				'label'       => __( 'Enable payment via saved cards', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'If enabled, users will be able to pay with a saved card during checkout. Card details are saved on our platform, not on your store.', 'woocommerce-payments' ),
 				'default'     => 'yes',
@@ -701,7 +701,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $prepared_customer_data;
 	}
 	/**
-	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
+	 * Renders the Credit card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
 	 */
@@ -956,7 +956,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 						/* translators: %1: the last 4 digit of the credit card */
-						__( 'Payment method is changed to: <strong>Credit Card ending in %1$s</strong>.', 'woocommerce-payments' ),
+						__( 'Payment method is changed to: <strong>Credit card ending in %1$s</strong>.', 'woocommerce-payments' ),
 						[
 							'strong' => '<strong>',
 						]
@@ -1293,7 +1293,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return new WP_Error(
 				'uncaptured-payment',
 				/* translators: an error message which will appear if a user tries to refund an order which is has been authorized but not yet charged. */
-				__( "This payment is not captured yet. To cancel this order, please go to 'Order Actions' > 'Cancel Authorization'. To proceed with a refund, please go to 'Order Actions' > 'Capture charge' to charge the payment card, and then trigger a refund via the 'Refund' button.", 'woocommerce-payments' )
+				__( "This payment is not captured yet. To cancel this order, please go to 'Order Actions' > 'Cancel authorization'. To proceed with a refund, please go to 'Order Actions' > 'Capture charge' to charge the payment card, and then trigger a refund via the 'Refund' button.", 'woocommerce-payments' )
 			);
 		}
 
@@ -1527,7 +1527,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$error_message    = $this->account->update_stripe_account( $account_settings );
 
 		if ( is_string( $error_message ) ) {
-			$msg = __( 'Failed to update Statement descriptor. ', 'woocommerce-payments' ) . $error_message;
+			$msg = __( 'Failed to update statement descriptor. ', 'woocommerce-payments' ) . $error_message;
 			$this->add_error( $msg );
 		}
 	}

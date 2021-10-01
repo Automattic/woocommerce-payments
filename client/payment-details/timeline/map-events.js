@@ -377,7 +377,7 @@ const mapEventToTimelineItems = ( event ) => {
 			return [
 				getStatusChangeTimelineItem(
 					event,
-					__( 'Authorization Voided', 'woocommerce-payments' )
+					__( 'Authorization voided', 'woocommerce-payments' )
 				),
 				getMainTimelineItem(
 					event,
@@ -398,7 +398,7 @@ const mapEventToTimelineItems = ( event ) => {
 			return [
 				getStatusChangeTimelineItem(
 					event,
-					__( 'Authorization Expired', 'woocommerce-payments' )
+					__( 'Authorization expired', 'woocommerce-payments' )
 				),
 				getMainTimelineItem(
 					event,
@@ -466,7 +466,7 @@ const mapEventToTimelineItems = ( event ) => {
 					event,
 					'full_refund' === type
 						? __( 'Refunded', 'woocommerce-payments' )
-						: __( 'Partial Refund', 'woocommerce-payments' )
+						: __( 'Partial refund', 'woocommerce-payments' )
 				),
 				getDepositTimelineItem( event, depositAmount, false ),
 				getMainTimelineItem(
@@ -572,7 +572,7 @@ const mapEventToTimelineItems = ( event ) => {
 			return [
 				getStatusChangeTimelineItem(
 					event,
-					__( 'Disputed: Needs Response', 'woocommerce-payments' )
+					__( 'Disputed: Needs response', 'woocommerce-payments' )
 				),
 				depositTimelineItem,
 				getMainTimelineItem(
@@ -592,7 +592,7 @@ const mapEventToTimelineItems = ( event ) => {
 			return [
 				getStatusChangeTimelineItem(
 					event,
-					__( 'Disputed: In Review', 'woocommerce-payments' )
+					__( 'Disputed: In review', 'woocommerce-payments' )
 				),
 				getMainTimelineItem(
 					event,

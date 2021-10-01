@@ -416,7 +416,7 @@ describe( 'Multi Currency enabled currencies list', () => {
 
 		expect( screen.queryAllByRole( 'checkbox' ).length ).toBe( 0 );
 		expect(
-			screen.queryByText( /Recommended Currencies/ )
+			screen.queryByText( /Recommended currencies/ )
 		).not.toBeInTheDocument();
 
 		expect(

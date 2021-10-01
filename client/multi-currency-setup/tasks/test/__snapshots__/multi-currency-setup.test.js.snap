@@ -11,13 +11,13 @@ exports[`Multi Currency enabled currencies list wizard renders correctly: snapsh
       <div>
         <ul>
           <p>
-            Currency Selector
+            Currency selector
           </p>
           <p>
-            Store Settings Form
+            Store settings form
           </p>
           <p>
-            Setup Complete Screen
+            Setup complete Screen
           </p>
         </ul>
       </div>

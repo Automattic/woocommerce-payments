@@ -23,9 +23,9 @@ const createContainer = () => {
 
 describe( 'Multi Currency enabled currencies list', () => {
 	beforeEach( () => {
-		AddCurrenciesTask.mockReturnValue( <p>Currency Selector</p> );
-		StoreSettingsTask.mockReturnValue( <p>Store Settings Form</p> );
-		SetupCompleteTask.mockReturnValue( <p>Setup Complete Screen</p> );
+		AddCurrenciesTask.mockReturnValue( <p>Currency selector</p> );
+		StoreSettingsTask.mockReturnValue( <p>Store settings form</p> );
+		SetupCompleteTask.mockReturnValue( <p>Setup complete Screen</p> );
 	} );
 	test( 'wizard renders correctly', () => {
 		const container = createContainer();

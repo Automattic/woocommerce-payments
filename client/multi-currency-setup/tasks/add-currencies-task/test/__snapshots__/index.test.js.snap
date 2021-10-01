@@ -100,7 +100,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
               <ul>
                 <li>
                   <h4>
-                    Recommended Currencies
+                    Recommended currencies
                   </h4>
                 </li>
                 <li
@@ -476,7 +476,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
                   class="add-currencies-task__available-currencies"
                 >
                   <h4>
-                    All Currencies
+                    All currencies
                   </h4>
                 </li>
                 <li
@@ -1338,7 +1338,7 @@ exports[`Multi Currency enabled currencies list should hide recommended currenci
                   class="add-currencies-task__available-currencies"
                 >
                   <h4>
-                    All Currencies
+                    All currencies
                   </h4>
                 </li>
               </ul>
@@ -1350,7 +1350,7 @@ exports[`Multi Currency enabled currencies list should hide recommended currenci
           disabled=""
           type="button"
         >
-          Add Currencies
+          Add currencies
         </button>
       </div>
     </div>
