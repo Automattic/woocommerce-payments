@@ -32,7 +32,11 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 		beforeAll( async () => {
 			// Create subscription product
 			await merchant.login();
-			await merchantWCP.createSubscriptionProduct( productName, false );
+			await merchantWCP.createSubscriptionProduct(
+				productName,
+				'month',
+				false
+			);
 			await merchant.logout();
 		} );
 

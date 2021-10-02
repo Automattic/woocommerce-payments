@@ -247,6 +247,7 @@ export const merchantWCP = {
 	 * Create a subscription product with an optional signup fee
 	 *
 	 * @param productName
+	 * @param periodTime can be `day`, `week`, `month` or `year`
 	 * @param includeSignupFee defaults to `false`
 	 * @param includeFreeTrial defaults to `false`
 	 * @return id of the created subscription product
@@ -255,6 +256,7 @@ export const merchantWCP = {
 
 	createSubscriptionProduct: async (
 		productName,
+		periodTime,
 		includeSignupFee = false,
 		includeFreeTrial = false
 	) => {
@@ -266,6 +268,7 @@ export const merchantWCP = {
 		await expect( page ).toFill( '#title', productName );
 		await expect( page ).toSelect( '#product-type', 'Simple subscription' );
 		await expect( page ).toFill( '#_subscription_price', '9.99' );
+		await expect( page ).toSelect( '#_subscription_period', periodTime );
 
 		if ( includeSignupFee ) {
 			await expect( page ).toFill( '#_subscription_sign_up_fee', '1.99' );

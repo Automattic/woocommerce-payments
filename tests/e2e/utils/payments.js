@@ -7,6 +7,7 @@ const { shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 // WooCommerce Checkout
 export async function fillCardDetails( page, card ) {
+	await page.waitForSelector( '.__PrivateStripeElement' );
 	const frameHandle = await page.waitForSelector(
 		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
 	);
