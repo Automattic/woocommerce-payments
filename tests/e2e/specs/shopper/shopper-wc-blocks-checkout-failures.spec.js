@@ -39,9 +39,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 		afterEach( async () => {
 			// Reload the page after every test so there are no messages
 			await page.reload();
-			await page.waitForSelector( '.blockUI' );
-			await uiUnblocked();
-			await page.waitForSelector( '.__PrivateStripeElement' );
+			await page.waitFor( 3000 );
 		} );
 
 		afterAll( async () => {
