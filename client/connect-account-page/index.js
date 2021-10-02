@@ -11,6 +11,7 @@ import { render, useState, useEffect } from '@wordpress/element';
  */
 import OnboardingLocationCheckModal from './modal';
 import Page from 'components/page';
+import ErrorBoundary from 'components/error-boundary';
 import strings from './strings';
 import wcpayTracks from 'tracks';
 import Banner from '../banner';
@@ -211,26 +212,28 @@ const ConnectAccountPage = () => {
 	return (
 		<div className="connect-account-page">
 			<Page isNarrow className="connect-account">
-				<ConnectPageError />
-				<Card className="connect-account__card">
-					<CardBody>
-						<Banner style="account-page" />
-						<div className="content">
-							{ wcpaySettings.onBoardingDisabled ? (
-								<ConnectPageOnboardingDisabled />
-							) : (
-								<ConnectPageOnboarding />
-							) }
-						</div>
-					</CardBody>
-				</Card>
-				{ ! wcpaySettings.onBoardingDisabled && (
-					<Card className="connect-account__steps">
+				<ErrorBoundary>
+					<ConnectPageError />
+					<Card className="connect-account__card">
 						<CardBody>
-							<ConnectPageOnboardingSteps />
+							<Banner style="account-page" />
+							<div className="content">
+								{ wcpaySettings.onBoardingDisabled ? (
+									<ConnectPageOnboardingDisabled />
+								) : (
+									<ConnectPageOnboarding />
+								) }
+							</div>
 						</CardBody>
 					</Card>
-				) }
+					{ ! wcpaySettings.onBoardingDisabled && (
+						<Card className="connect-account__steps">
+							<CardBody>
+								<ConnectPageOnboardingSteps />
+							</CardBody>
+						</Card>
+					) }
+				</ErrorBoundary>
 			</Page>
 		</div>
 	);

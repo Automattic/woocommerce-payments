@@ -12,6 +12,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import Page from 'components/page';
+import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
 import DepositsInformation from 'components/deposits-information';
@@ -55,45 +56,49 @@ const OverviewPage = () => {
 
 	return (
 		<Page isNarrow className="wcpay-overview">
-			{ showKycSuccessNotice && (
-				<Notice
-					status="success"
-					isDismissible={ false }
-					className="wcpay-connection-success"
-				>
-					{ __(
-						"Thanks for verifying your business details. You're ready to start taking payments!",
-						'woocommerce-payments'
-					) }
-				</Notice>
-			) }
+			<ErrorBoundary>
+				{ showKycSuccessNotice && (
+					<Notice
+						status="success"
+						isDismissible={ false }
+						className="wcpay-connection-success"
+					>
+						{ __(
+							"Thanks for verifying your business details. You're ready to start taking payments!",
+							'woocommerce-payments'
+						) }
+					</Notice>
+				) }
 
-			{ showLoginError && (
-				<Notice
-					status="error"
-					isDismissible={ false }
-					className="wcpay-login-error"
-				>
-					{ __(
-						'There was a problem redirecting you to the account dashboard. Please try again.',
-						'woocommerce-payments'
-					) }
-				</Notice>
-			) }
+				{ showLoginError && (
+					<Notice
+						status="error"
+						isDismissible={ false }
+						className="wcpay-login-error"
+					>
+						{ __(
+							'There was a problem redirecting you to the account dashboard. Please try again.',
+							'woocommerce-payments'
+						) }
+					</Notice>
+				) }
 
-			<TestModeNotice topic={ topics.overview } />
-			<DepositsInformation />
-			<AccountStatus
-				accountStatus={ wcpaySettings.accountStatus }
-				accountFees={ wcpaySettings.accountFees }
-			/>
-			{ !! accountOverviewTaskList && 0 < tasks.length && ! isLoading && (
-				<TaskList
-					tasks={ tasks }
-					overviewTasksVisibility={ overviewTasksVisibility }
+				<TestModeNotice topic={ topics.overview } />
+				<DepositsInformation />
+				<AccountStatus
+					accountStatus={ wcpaySettings.accountStatus }
+					accountFees={ wcpaySettings.accountFees }
 				/>
-			) }
-			<InboxNotifications />
+				{ !! accountOverviewTaskList &&
+					0 < tasks.length &&
+					! isLoading && (
+						<TaskList
+							tasks={ tasks }
+							overviewTasksVisibility={ overviewTasksVisibility }
+						/>
+					) }
+				<InboxNotifications />
+			</ErrorBoundary>
 		</Page>
 	);
 };

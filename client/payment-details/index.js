@@ -12,6 +12,7 @@ import PaymentDetailsSummary from './summary';
 import PaymentDetailsTimeline from './timeline';
 import PaymentDetailsPaymentMethod from './payment-method';
 import Page from 'components/page';
+import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 
 const PaymentDetails = ( props ) => {
@@ -38,15 +39,20 @@ const PaymentDetails = ( props ) => {
 
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
-			{ testModeNotice }
-			<PaymentDetailsSummary charge={ charge } isLoading={ isLoading } />
-			{ wcpaySettings.featureFlags.paymentTimeline && (
-				<PaymentDetailsTimeline chargeId={ chargeId } />
-			) }
-			<PaymentDetailsPaymentMethod
-				charge={ charge }
-				isLoading={ isLoading }
-			/>
+			<ErrorBoundary>
+				{ testModeNotice }
+				<PaymentDetailsSummary
+					charge={ charge }
+					isLoading={ isLoading }
+				/>
+				{ wcpaySettings.featureFlags.paymentTimeline && (
+					<PaymentDetailsTimeline chargeId={ chargeId } />
+				) }
+				<PaymentDetailsPaymentMethod
+					charge={ charge }
+					isLoading={ isLoading }
+				/>
+			</ErrorBoundary>
 		</Page>
 	);
 };

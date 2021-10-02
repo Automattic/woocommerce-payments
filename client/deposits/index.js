@@ -8,6 +8,7 @@
  * Internal dependencies.
  */
 import Page from 'components/page';
+import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import DepositsList from './list';
 import {
@@ -38,11 +39,13 @@ const DepositsPage = () => {
 
 	return (
 		<Page>
-			<Experiment
-				name="wcpay_empty_state_preview_mode_v5"
-				treatmentExperience={ treatmentExperience }
-				defaultExperience={ defaultExperience }
-			/>
+			<ErrorBoundary>
+				<Experiment
+					name="wcpay_empty_state_preview_mode_v5"
+					treatmentExperience={ treatmentExperience }
+					defaultExperience={ defaultExperience }
+				/>
+			</ErrorBoundary>
 		</Page>
 	);
 };
