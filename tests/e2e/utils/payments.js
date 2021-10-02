@@ -31,6 +31,7 @@ export async function fillCardDetails( page, card ) {
 
 // WooCommerce Blocks Checkout
 export async function fillCardDetailsWCB( page, card ) {
+	await page.waitForSelector( '.__PrivateStripeElement' );
 	const frameHandle = await page.waitForSelector(
 		'#payment-method .wcpay-card-mounted iframe[name^="__privateStripeFrame"]'
 	);
