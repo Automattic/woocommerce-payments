@@ -392,7 +392,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Payment status changed to partial refund.
+                      Payment status changed to Partial refund.
                     </span>
                   </div>
                   <span
