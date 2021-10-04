@@ -432,7 +432,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "Payment status changed to partial refund.",
+    "headline": "Payment status changed to Partial refund.",
     "icon": <t
       className=""
       icon="sync"
@@ -750,7 +750,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "Payment status changed to partial refund.",
+    "headline": "Payment status changed to Partial refund.",
     "icon": <t
       className=""
       icon="sync"
