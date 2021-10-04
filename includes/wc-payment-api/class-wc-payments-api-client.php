@@ -231,6 +231,7 @@ class WC_Payments_API_Client {
 	 * @param string $currency_code   - Currency to charge in.
 	 * @param array  $payment_methods - Payment methods to include.
 	 * @param int    $order_id        - The order ID.
+	 * @param string $capture_method  - optional capture method (either `automatic` or `manual`).
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -239,13 +240,15 @@ class WC_Payments_API_Client {
 		$amount,
 		$currency_code,
 		$payment_methods,
-		$order_id
+		$order_id,
+		$capture_method = 'automatic'
 	) {
 		$request                         = [];
 		$request['amount']               = $amount;
 		$request['currency']             = $currency_code;
 		$request['description']          = $this->get_intent_description( $order_id );
 		$request['payment_method_types'] = $payment_methods;
+		$request['capture_method']       = $capture_method;
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
