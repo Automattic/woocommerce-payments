@@ -77,11 +77,10 @@ const TransactionsAndDeposits = () => {
 									'otherwise the authorization and order will be canceled.',
 								'woocommerce-payments'
 							) }
-							<br />
 							{ isCardPresentEligible
 								? __(
-										' Note: This setting is ignored by in-person payments. ' +
-											'In-person payments authorization is valid for 48 hours.',
+										' The setting is not applied to In-Person Payments ' +
+											'(please note that In-Person Payments should be captured within 2 days of authorization).',
 										'woocommerce-payments'
 								  )
 								: '' }

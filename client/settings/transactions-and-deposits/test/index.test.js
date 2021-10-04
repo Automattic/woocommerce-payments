@@ -111,9 +111,7 @@ describe( 'TransactionsAndDeposits', () => {
 
 		expect(
 			screen.getByText(
-				new RegExp(
-					'In-person payments authorization is valid for 48 hours.'
-				)
+				new RegExp( 'The setting is not applied to In-Person Payments' )
 			)
 		).toBeInTheDocument();
 	} );
