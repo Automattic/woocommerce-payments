@@ -55,4 +55,31 @@ describe( 'Payment Methods', () => {
 			} );
 		}
 	);
+
+	it( 'should not show error when adding payment method on another gateway', async () => {
+		await shopperWCP.goToPaymentMethods();
+		await expect( page ).toClick( 'a', {
+			text: 'Add payment method',
+		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+
+		//This will simulate selecting other payment gateway
+		await page.$eval( 'input[name="payment_method"]:checked', ( input ) => {
+			input.checked = false;
+		} );
+
+		await expect( page ).toClick( 'button', {
+			text: 'Add payment method',
+		} );
+
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+
+		await expect( page ).not.toMatchElement( '.woocommerce-error', {
+			timeout: 3000,
+		} );
+	} );
 } );
