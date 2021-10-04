@@ -118,6 +118,8 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - UPE missing international card fees.
 * Update - Bump minimum supported version of WooCommerce from 5.4 to 5.5.
 * Update - Bump minimum required version of WooCommerce from 4.0 to 4.4.
+* Update - Continue loading WCPay if the account is connected.
+* Add - Message to suggest using the previous version of WooCommerce Payments for old Woo core versions.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
