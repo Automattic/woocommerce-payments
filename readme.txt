@@ -109,6 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Error when attempting to change the payment method for a subscription with UPE enabled.
 * Add - Multi-Currency track currency added.
 * Fix - Fill missing order_intent_info even if an exception occurs.
+* Fix - Authorize and capture payments later with new credit cards.
 * Add - Gutenberg Block Widget for Multi-Currency.
 * Update - WCPay logo
 * Fix - Translations in transaction/deposit exports
