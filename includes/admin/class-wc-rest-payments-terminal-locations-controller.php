@@ -246,9 +246,12 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				}
 			}
 
-			return $this->format_location_response(
-				$this->api_client->get_terminal_location( $location_id )
-			);
+			// Fetch the location from server and update the cache to include it.
+			$location    = $this->api_client->get_terminal_location( $location_id );
+			$locations[] = $location;
+			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
+
+			return $this->format_location_response( $location );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
