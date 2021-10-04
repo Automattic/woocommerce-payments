@@ -20,6 +20,7 @@ import {
 	InspectorControls,
 	useBlockProps,
 } from '@wordpress/block-editor';
+
 registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 	apiVersion: 2,
 	title: __( 'Currency Switcher Block', 'woocommerce-payments' ),
