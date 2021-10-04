@@ -1146,6 +1146,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param string   $currency Currency code.
 	 */
 	public function attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
+		// first, let's save all the metadata that needed for refunds, required for status change etc.
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', $intent_status );
+		$order->update_meta_data( '_payment_method_id', $payment_method );
+		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
+		$order->save();
+
+		// after that, note is added regarding what intention status order has.
 		$amount         = $order->get_total();
 		$payment_needed = $amount > 0;
 
@@ -1167,7 +1178,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					);
 					$order->add_order_note( $note );
 				}
-				$order->payment_complete( $intent_id );
+				try {
+					$order->payment_complete( $intent_id );
+				} catch ( Exception $e ) {
+					// continue further, something unexpected happened, but we can't really do nothing with that.
+					Logger::log( 'Error when completing payment for order: ' . $e->getMessage() );
+				}
 				break;
 			case 'processing':
 			case 'requires_capture':
@@ -1186,6 +1202,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 
 				$order->set_status( 'on-hold', $note );
+				$order->save();
 				break;
 			case 'requires_action':
 				if ( $payment_needed ) {
@@ -1208,15 +1225,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				break;
 		}
-
-		$order->set_transaction_id( $intent_id );
-		$order->update_meta_data( '_intent_id', $intent_id );
-		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', $intent_status );
-		$order->update_meta_data( '_payment_method_id', $payment_method );
-		$order->update_meta_data( '_stripe_customer_id', $customer_id );
-		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
-		$order->save();
 	}
 
 	/**

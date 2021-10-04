@@ -38,6 +38,7 @@ const WCPayUPEFields = ( {
 	const [ selectedUPEPaymentType, setSelectedUPEPaymentType ] = useState(
 		''
 	);
+	const [ paymentCountry, setPaymentCountry ] = useState( null );
 
 	const businessName = getConfig( 'accountDescriptor' );
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
@@ -134,7 +135,8 @@ const WCPayUPEFields = ( {
 							paymentIntentId,
 							orderId,
 							shouldSavePayment ? 'yes' : 'no',
-							selectedUPEPaymentType
+							selectedUPEPaymentType,
+							paymentCountry
 						);
 
 						const paymentElement = elements.getElement(
@@ -163,6 +165,7 @@ const WCPayUPEFields = ( {
 			paymentIntentId,
 			shouldSavePayment,
 			selectedUPEPaymentType,
+			paymentCountry,
 		]
 	);
 
@@ -170,6 +173,7 @@ const WCPayUPEFields = ( {
 	const upeOnChange = ( event ) => {
 		setIsUPEComplete( event.complete );
 		setSelectedUPEPaymentType( event.value.type );
+		setPaymentCountry( event.value.country );
 	};
 
 	const elementOptions = {

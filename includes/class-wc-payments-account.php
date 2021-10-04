@@ -41,7 +41,7 @@ class WC_Payments_Account {
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
 
-		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
+		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
 		add_action( 'wcpay_instant_deposit_reminder', [ $this, 'handle_instant_deposits_inbox_reminder' ] );
@@ -320,9 +320,9 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Handle OAuth (login/init/redirect) routes
+	 * Handle onboarding (login/init/redirect) routes
 	 */
-	public function maybe_handle_oauth() {
+	public function maybe_handle_onboarding() {
 		if ( ! is_admin() ) {
 			return;
 		}
@@ -371,9 +371,9 @@ class WC_Payments_Account {
 			}
 
 			try {
-				$this->init_stripe_oauth( $wcpay_connect_param );
+				$this->init_stripe_onboarding( $wcpay_connect_param );
 			} catch ( Exception $e ) {
-				Logger::error( 'Init Stripe oauth flow failed. ' . $e );
+				Logger::error( 'Init Stripe onboarding flow failed. ' . $e );
 				$this->redirect_to_onboarding_page(
 					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' )
 				);
@@ -503,7 +503,7 @@ class WC_Payments_Account {
 				'wcpay-connect-jetpack-success' => '1',
 				'_wpnonce'                      => wp_create_nonce( 'wcpay-connect' ),
 			],
-			$this->get_oauth_return_url( $wcpay_connect_from )
+			$this->get_onboarding_return_url( $wcpay_connect_from )
 		);
 		$this->payments_api_client->start_server_connection( $redirect );
 	}
@@ -521,12 +521,12 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Builds the URL to return the user to after the Jetpack/OAuth flow.
+	 * Builds the URL to return the user to after the Jetpack/Onboarding flow.
 	 *
 	 * @param string $wcpay_connect_from - Constant to decide where the user should be returned to after connecting.
 	 * @return string
 	 */
-	private function get_oauth_return_url( $wcpay_connect_from ) {
+	private function get_onboarding_return_url( $wcpay_connect_from ) {
 		// If connection originated on the WCADMIN payment task page, return there.
 		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
 		return 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_from
@@ -535,11 +535,11 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Initializes the OAuth flow by fetching the URL from the API and redirecting to it.
+	 * Initializes the onboarding flow by fetching the URL from the API and redirecting to it.
 	 *
 	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
 	 */
-	private function init_stripe_oauth( $wcpay_connect_from ) {
+	private function init_stripe_onboarding( $wcpay_connect_from ) {
 		if ( get_transient( self::ON_BOARDING_STARTED_TRANSIENT ) ) {
 			$this->redirect_to_onboarding_page(
 				__( 'There was a duplicate attempt to initiate account setup. Please wait a few seconds and try again.', 'woocommerce-payments' )
@@ -554,14 +554,14 @@ class WC_Payments_Account {
 		$this->clear_cache();
 
 		$current_user = wp_get_current_user();
-		$return_url   = $this->get_oauth_return_url( $wcpay_connect_from );
+		$return_url   = $this->get_onboarding_return_url( $wcpay_connect_from );
 
 		$country = WC()->countries->get_base_country();
 		if ( ! array_key_exists( $country, WC_Payments_Utils::supported_countries() ) ) {
 			$country = null;
 		}
 
-		$oauth_data = $this->payments_api_client->get_oauth_data(
+		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			$return_url,
 			[
 				'email'         => $current_user->user_email,
@@ -578,9 +578,9 @@ class WC_Payments_Account {
 		delete_transient( self::ON_BOARDING_STARTED_TRANSIENT );
 
 		// If an account already exists for this site, we're done.
-		if ( false === $oauth_data['url'] ) {
+		if ( false === $onboarding_data['url'] ) {
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
-			update_option( '_wcpay_oauth_stripe_connected', [ 'is_existing_stripe_account' => true ] );
+			update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => true ] );
 			wp_safe_redirect(
 				add_query_arg(
 					[ 'wcpay-connection-success' => '1' ],
@@ -590,26 +590,26 @@ class WC_Payments_Account {
 			exit;
 		}
 
-		set_transient( 'wcpay_stripe_oauth_state', $oauth_data['state'], DAY_IN_SECONDS );
+		set_transient( 'wcpay_stripe_onboarding_state', $onboarding_data['state'], DAY_IN_SECONDS );
 
-		wp_safe_redirect( $oauth_data['url'] );
+		wp_safe_redirect( $onboarding_data['url'] );
 		exit;
 	}
 
 	/**
-	 * Once the API redirects back to the site after the OAuth flow, verifies the parameters and stores the data
+	 * Once the API redirects back to the site after the onboarding flow, verifies the parameters and stores the data
 	 *
 	 * @param string $state Secret string.
 	 * @param string $mode Mode in which this account has been connected. Either 'test' or 'live'.
 	 */
 	private function finalize_connection( $state, $mode ) {
-		if ( get_transient( 'wcpay_stripe_oauth_state' ) !== $state ) {
+		if ( get_transient( 'wcpay_stripe_onboarding_state' ) !== $state ) {
 			$this->redirect_to_onboarding_page(
 				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' )
 			);
 			return;
 		}
-		delete_transient( 'wcpay_stripe_oauth_state' );
+		delete_transient( 'wcpay_stripe_onboarding_state' );
 		$this->clear_cache();
 
 		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
@@ -617,7 +617,7 @@ class WC_Payments_Account {
 
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
-		update_option( '_wcpay_oauth_stripe_connected', [ 'is_existing_stripe_account' => false ] );
+		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
 
 		wp_safe_redirect(
 			add_query_arg(

@@ -16,7 +16,7 @@ import {
 	useEnabledCurrencies,
 } from 'wcpay/data';
 
-import MultiCurrencySettingsContext from '../../context';
+import MultiCurrencySettingsContext from '../../../context';
 
 jest.mock( 'wcpay/data', () => ( {
 	useCurrencies: jest.fn(),
