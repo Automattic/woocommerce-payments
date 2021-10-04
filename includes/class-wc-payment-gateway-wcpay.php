@@ -2311,7 +2311,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Returns the list of enabled payment method types that will function with the current checkout.
 	 *
-	 * @param string $order_id Order ID.
+	 * @param string $order_id optional Order ID.
 	 * @return string[]
 	 */
 	public function get_upe_enabled_at_checkout_payment_method_ids( $order_id = null ) {
@@ -2319,7 +2319,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$capturable_payment_methods = $capture ? $this->get_upe_enabled_payment_method_ids() : [ 'card' ];
 		$enabled_payment_methods    = [];
 		foreach ( $capturable_payment_methods as $payment_method_id ) {
-			if ( isset( $this->payment_methods[ $payment_method_id ] ) && $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id ) ) {
+			if ( isset( $this->payment_methods[ $payment_method_id ] )
+				&& $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id )
+				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() ) ) {
 				$enabled_payment_methods[] = $payment_method_id;
 			}
 		}
