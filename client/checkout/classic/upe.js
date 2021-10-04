@@ -556,7 +556,11 @@ jQuery( function ( $ ) {
 				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
 			}
 			if ( error ) {
-				throw error;
+				// Log payment errors on charge and then throw the error.
+				const logError = await api.logPaymentError( error.charge );
+				if ( logError ) {
+					throw error;
+				}
 			}
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
