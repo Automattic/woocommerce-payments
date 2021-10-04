@@ -338,7 +338,7 @@ describe( 'Multi Currency enabled currencies list', () => {
 
 		expect(
 			screen.getByRole( 'button', {
-				name: /Add ([a-z0-9]+ )?Currencies/,
+				name: /Add ([a-z0-9]+ )?currencies/,
 			} )
 		).toBeDisabled();
 	} );
