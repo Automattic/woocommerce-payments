@@ -1090,6 +1090,53 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->assertSame( $location, $result );
 	}
 
+	public function test_delete_terminal_location_success() {
+		$delete_location_response = [
+			'id'      => 'tml_XXXXXXX',
+			'object'  => 'terminal.deleted',
+			'deleted' => true,
+		];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations/tml_XXXXXXX',
+					'method'          => 'DELETE',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				wp_json_encode(
+					[
+						'test_mode' => false,
+					]
+				),
+				true,
+				false
+			)
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode( $delete_location_response ),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
+
+		$this->assertSame(
+			$this->payments_api_client->delete_terminal_location( 'tml_XXXXXXX' ),
+			$delete_location_response
+		);
+	}
+
 	/**
 	 * Data provider for test_request_with_level3_data
 	 */
