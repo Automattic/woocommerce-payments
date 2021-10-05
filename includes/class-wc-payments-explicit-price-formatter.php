@@ -31,6 +31,7 @@ class WC_Payments_Explicit_Price_Formatter {
 		add_filter( 'woocommerce_get_formatted_order_total', [ __CLASS__, 'get_explicit_price' ], 100, 2 );
 		add_action( 'woocommerce_admin_order_totals_after_tax', [ __CLASS__, 'register_formatted_woocommerce_price_filter' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ __CLASS__, 'unregister_formatted_woocommerce_price_filter' ] );
+		add_filter( '__experimental_woocommerce_supports_explicit_format', [ __CLASS__, 'enable_support_for_explicit_format' ] );
 	}
 
 	/**
@@ -91,6 +92,15 @@ class WC_Payments_Explicit_Price_Formatter {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Provides data to WC Core whether the explicit formatting should be applied or not.
+	 *
+	 * @return  bool  Whether the explicit formatting should be applied or not.
+	 */
+	public static function enable_support_for_explicit_format() {
+		return static::should_output_explicit_price();
 	}
 
 	/**

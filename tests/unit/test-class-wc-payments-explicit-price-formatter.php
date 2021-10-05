@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -119,6 +120,7 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 		delete_option( self::CACHED_CURRENCIES_OPTION );
 		delete_option( self::ENABLED_CURRENCIES_OPTION );
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'no' );
+		update_option( '_wcpay_feature_customer_multi_currency', '1' );
 
 		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( WC_Payments_Multi_Currency() );
 
@@ -128,6 +130,8 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 	public function test_get_explicit_price_with_order_currency_on_backend_with_one_enabled_currency() {
 		set_current_screen( 'edit-page' );
 		$this->prepare_one_enabled_currency();
+
+		/** @var WC_Order|null|MockObject */
 		$order = $this->createMock( WC_Order::class );
 		$order->method( 'get_currency' )->willReturn( 'BRL' );
 
@@ -149,6 +153,7 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 	public function test_get_explicit_price_with_order_currency_on_backend_with_multiple_enabled_currencies() {
 		set_current_screen( 'edit-page' );
 
+		/** @var WC_Order|null|MockObject */
 		$order = $this->createMock( WC_Order::class );
 		$order->method( 'get_currency' )->willReturn( 'BRL' );
 
@@ -166,6 +171,7 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 	}
 
 	public function test_get_explicit_price_skips_prefixed_prices() {
+		/** @var WC_Order|null|MockObject */
 		$order = $this->createMock( WC_Order::class );
 		$order->method( 'get_currency' )->willReturn( 'CHF' );
 
@@ -174,6 +180,7 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 
 	public function test_get_explicit_price_with_order_currency_on_frontend_with_one_enabled_currency() {
 		$this->prepare_one_enabled_currency();
+		/** @var WC_Order|null|MockObject */
 		$order = $this->createMock( WC_Order::class );
 		$order->method( 'get_currency' )->willReturn( 'BRL' );
 
@@ -191,6 +198,7 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 	}
 
 	public function test_get_explicit_price_with_order_currency_on_frontend_with_multiple_enabled_currencies() {
+		/** @var WC_Order|null|MockObject */
 		$order = $this->createMock( WC_Order::class );
 		$order->method( 'get_currency' )->willReturn( 'BRL' );
 
@@ -205,10 +213,27 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 		$this->assertSame( '$10.30 USD', WC_Payments_Explicit_Price_Formatter::get_explicit_price( '$10.30 USD' ) );
 	}
 
+	public function test_woocommerce_explicit_flag_returns_true_on_multiple_currencies() {
+		$this->assertTrue( has_filter( '__experimental_woocommerce_supports_explicit_format' ) );
+		$this->assertTrue( apply_filters( '__experimental_woocommerce_supports_explicit_format', false ) );
+	}
+
+	public function test_woocommerce_explicit_flag_returns_false_if_mc_is_disabled() {
+		update_option( '_wcpay_feature_customer_multi_currency', '0' );
+		WC_Payments_Explicit_Price_Formatter::init();
+		$this->assertTrue( has_filter( '__experimental_woocommerce_supports_explicit_format' ) );
+		$this->assertFalse( apply_filters( '__experimental_woocommerce_supports_explicit_format', false ) );
+	}
+
+	public function test_woocommerce_explicit_flag_returns_false_on_single_currency() {
+		$this->prepare_one_enabled_currency();
+		$this->assertTrue( has_filter( '__experimental_woocommerce_supports_explicit_format' ) );
+		$this->assertFalse( apply_filters( '__experimental_woocommerce_supports_explicit_format', false ) );
+	}
+
 	private function prepare_one_enabled_currency() {
 		$this->multi_currency->set_enabled_currencies( [ 'USD' ] );
 	}
-
 
 	private function mock_currency_settings( $currency_code, $settings ) {
 		foreach ( $settings as $setting => $value ) {
@@ -225,9 +250,11 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true ) {
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
+		/** @var WC_Payments_Account|MockObject */
 		$this->mock_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( $wcpay_account_connected );
 
+		/** @var WC_Payments_Localization_Service|MockObject */
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 
 		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
