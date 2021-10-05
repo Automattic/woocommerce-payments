@@ -801,4 +801,29 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		return false;
 	}
+
+	/**
+	 * Add an order note if the renew intent next action requires the merchant to authenticate the payment.
+	 * The note includes the charge attempt date and let the merchant know the need of an off-session step by the customer.
+	 *
+	 * @param WC_Order $order The renew order.
+	 * @param array    $next_action Next action intent content from Stripe's response.
+	 * @return void
+	 */
+	public function maybe_add_card_await_notification_note( WC_Order $order, array $next_action ) {
+		if ( isset( $next_action['type'] ) && 'card_await_notification' === $next_action['type'] ) {
+			$charge_attempt_at = $next_action['card_await_notification']['charge_attempt_at'];
+			$attempt_date      = wp_date( get_option( 'date_format', 'F j, Y' ), $charge_attempt_at, wp_timezone() );
+			$attempt_time      = wp_date( get_option( 'time_format', 'g:i a' ), $charge_attempt_at, wp_timezone() );
+
+			$note = sprintf(
+			/* translators: 1) date in date_format or 'F j, Y'; 2) time in time_format or 'g:i a' */
+				__( 'The customer must authorize this payment via the pre-debit notification sent to them by their card issuing bank before %1$s at %2$s, when the charge will be attempted.', 'woocommerce-payments' ),
+				$attempt_date,
+				$attempt_time
+			);
+
+			$order->add_order_note( $note );
+		}
+	}
 }
