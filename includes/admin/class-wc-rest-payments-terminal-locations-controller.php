@@ -85,6 +85,15 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_all_locations' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -166,14 +175,22 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * @return WP_REST_Response
 	 */
 	private function format_location_response( $location ) {
-		return rest_ensure_response(
-			[
-				'id'           => $location['id'],
-				'address'      => $location['address'],
-				'display_name' => $location['display_name'],
-				'livemode'     => $location['livemode'],
-			]
-		);
+		return rest_ensure_response( $this->extract_location_fields( $location ) );
+	}
+
+	/**
+	 * Extracts the relevant fields from a terminal location object.
+	 *
+	 * @param array $location The location.
+	 * @return array The picked fields from location object.
+	 */
+	private function extract_location_fields( $location ) {
+		return [
+			'id'           => $location['id'],
+			'address'      => $location['address'],
+			'display_name' => $location['display_name'],
+			'livemode'     => $location['livemode'],
+		];
 	}
 
 	/**
@@ -277,6 +294,36 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 
 			return $this->format_location_response( $location );
+		} catch ( API_Exception $e ) {
+			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Proxies the get all locations request to the server.
+	 *
+	 * @param WP_REST_REQUEST $request Request object.
+	 *
+	 * @throws API_Exception - If the downstream call fails.
+	 */
+	public function get_all_locations( $request ) {
+		try {
+			// Check if locations are cached already and return them if present.
+			$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
+
+			// Fetch from downstream in case of a cache miss and update cache for subsequent calls.
+			if ( ! $locations ) {
+				$locations = $this->api_client->get_terminal_locations();
+				set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
+			}
+
+			// Format the response to pick the required fields.
+			$formatted_location_response = [];
+			foreach ( $locations as $location ) {
+				$formatted_location_response[] = $this->extract_location_fields( $location );
+			}
+
+			return rest_ensure_response( $formatted_location_response );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
