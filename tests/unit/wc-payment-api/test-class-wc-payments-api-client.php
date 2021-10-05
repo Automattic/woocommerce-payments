@@ -1102,7 +1102,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->method( 'remote_request' )
 			->with(
 				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations/tml_XXXXXXX',
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations/tml_XXXXXXX?test_mode=0',
 					'method'          => 'DELETE',
 					'headers'         => [
 						'Content-Type' => 'application/json; charset=utf-8',
@@ -1111,11 +1111,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					'timeout'         => 70,
 					'connect_timeout' => 70,
 				],
-				wp_json_encode(
-					[
-						'test_mode' => false,
-					]
-				),
+				null,
 				true,
 				false
 			)
