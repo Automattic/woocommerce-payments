@@ -65,24 +65,24 @@
 		align-items: center;
 
 		// Selector here is super specific to ensure styles are overwritten.
-		.components-button.is-primary:not( :disabled ):not( [aria-disabled='true'] ) {
+		.components-button.is-secondary:not( :disabled ):not( [aria-disabled='true'] ) {
 			&.is-success {
-				background-color: $studio-green;
-				border-color: $studio-green;
+				box-shadow: inset 0 0 0 1px $studio-green;
+				color: $studio-green;
 
 				&:hover {
-					background-color: $studio-green-60;
-					border-color: $studio-green-60;
+					box-shadow: inset 0 0 0 1px $studio-green-60;
+					color: $studio-green-60;
 				}
 			}
 
 			&.is-destructive {
-				background-color: $studio-red;
-				border-color: $studio-red;
+				box-shadow: inset 0 0 0 1px $studio-red;
+				color: $studio-red;
 
 				&:hover {
-					background-color: $studio-red-60;
-					border-color: $studio-red-60;
+					box-shadow: inset 0 0 0 1px $studio-red-60;
+					color: $studio-red-60;
 				}
 			}
 		}

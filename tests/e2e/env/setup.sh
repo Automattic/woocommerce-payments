@@ -11,7 +11,7 @@ if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	. "$E2E_ROOT/config/local.env"
 fi
 
-if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
+if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$SERVER_PATH" ]]; then
 	step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
 
 	if [[ -z $WCP_SERVER_REPO ]]; then
@@ -19,13 +19,13 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
 		exit 1;
 	fi
 
-	rm -rf $SERVER_PATH
-	git clone --depth=1 --branch ${WCP_SERVER_BRANCH-trunk} $WCP_SERVER_REPO $SERVER_PATH
+	rm -rf "$SERVER_PATH"
+	git clone --depth=1 --branch ${WCP_SERVER_BRANCH-trunk} $WCP_SERVER_REPO "$SERVER_PATH"
 else
 	echo "Using cached server at ${SERVER_PATH}"
 fi
 
-cd $SERVER_PATH
+cd "$SERVER_PATH"
 
 step "Creating server secrets"
 SECRETS="<?php
@@ -55,22 +55,22 @@ if [[ -n $CI ]]; then
 fi
 
 step "Setting up SERVER containers"
-$SERVER_PATH/local/bin/docker-setup.sh
+"$SERVER_PATH"/local/bin/docker-setup.sh
 
 step "Configuring server with stripe account"
-$SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID test 1 1
+"$SERVER_PATH"/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID test 1 1
 
-cd $cwd
+cd "$cwd"
 
-if [[ $FORCE_E2E_DEPS_SETUP || ! -d $DEV_TOOLS_PATH ]]; then
+if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$DEV_TOOLS_PATH" ]]; then
 	step "Fetching dev tools"
 	if [[ -z $WCP_DEV_TOOLS_REPO ]]; then
 		echo "WCP_DEV_TOOLS_REPO env variable is not defined"
 		exit 1;
 	fi
 
-	rm -rf $DEV_TOOLS_PATH
-	git clone --depth=1 --branch ${WCP_DEV_TOOLS_BRANCH-trunk} $WCP_DEV_TOOLS_REPO $DEV_TOOLS_PATH
+	rm -rf "$DEV_TOOLS_PATH"
+	git clone --depth=1 --branch ${WCP_DEV_TOOLS_BRANCH-trunk} $WCP_DEV_TOOLS_REPO "$DEV_TOOLS_PATH"
 fi
 
 step "Starting CLIENT containers"
@@ -106,8 +106,8 @@ echo
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
-	redirect_output sudo chown www-data:www-data -R $E2E_ROOT/docker/wordpress/wp-content
-	redirect_output ls -al $E2E_ROOT/docker/wordpress
+	redirect_output sudo chown www-data:www-data -R "$E2E_ROOT"/docker/wordpress/wp-content
+	redirect_output ls -al "$E2E_ROOT"/docker/wordpress
 fi
 
 echo "Pulling the WordPress CLI docker image..."
@@ -182,14 +182,14 @@ cli wp wcpay_dev set_blog_id $BLOG_ID
 
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	echo "Install and activate the latest release of WooCommerce Subscriptions"
-	cd $E2E_ROOT/deps
+	cd "$E2E_ROOT"/deps
 	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
 	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_SUBSCRIPTIONS_REPO/archive/$LATEST_RELEASE.zip"
 
 	unzip -qq woocommerce-subscriptions-$LATEST_RELEASE.zip
 
 	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv woocommerce-subscriptions-$LATEST_RELEASE/* $E2E_ROOT/deps/woocommerce-subscriptions
+	sudo mv woocommerce-subscriptions-$LATEST_RELEASE/* "$E2E_ROOT"/deps/woocommerce-subscriptions
 
 	cli wp plugin activate woocommerce-subscriptions
 
@@ -200,14 +200,14 @@ fi
 
 if [[ ! ${SKIP_WC_ACTION_SCHEDULER_TESTS} ]]; then
 	echo "Install and activate the latest release of Action Scheduler"
-	cd $E2E_ROOT/deps
+	cd "$E2E_ROOT"/deps
 	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_ACTION_SCHEDULER_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
 	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_ACTION_SCHEDULER_REPO/archive/$LATEST_RELEASE.zip"
 
 	unzip -qq action-scheduler-$LATEST_RELEASE.zip
 
 	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv action-scheduler-$LATEST_RELEASE/* $E2E_ROOT/deps/action-scheduler
+	sudo mv action-scheduler-$LATEST_RELEASE/* "$E2E_ROOT"/deps/action-scheduler
 
 	cli wp plugin activate action-scheduler
 
@@ -218,14 +218,14 @@ fi
 
 if [[ ! ${SKIP_WC_BLOCKS_TESTS} ]]; then
 	echo "Install and activate the latest release of WooCommerce Blocks"
-	cd $E2E_ROOT/deps
+	cd "$E2E_ROOT"/deps
 	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_BLOCKS_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
 	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_BLOCKS_REPO/archive/$LATEST_RELEASE.zip"
 
 	unzip -qq woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}.zip
 
 	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}/* $E2E_ROOT/deps/woocommerce-gutenberg-products-block
+	sudo mv woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}/* "$E2E_ROOT"/deps/woocommerce-gutenberg-products-block
 
 	cli wp plugin activate woocommerce-gutenberg-products-block
 

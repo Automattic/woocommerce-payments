@@ -29,8 +29,8 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 	afterEach( async () => {
 		// Reload the page after every test so there are no messages
 		await page.reload();
-		await uiUnblocked();
-		await page.waitFor( 2000 );
+		await page.waitForSelector( '.blockUI' );
+		await page.waitFor( 3000 );
 	} );
 
 	afterAll( async () => {

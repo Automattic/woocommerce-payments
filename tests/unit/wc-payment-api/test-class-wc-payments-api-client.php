@@ -569,17 +569,17 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test getting initial oauth data.
+	 * Test getting initial onboarding data.
 	 *
 	 * @throws API_Exception
 	 */
-	public function test_get_oauth_data() {
+	public function test_get_onboarding_data() {
 		$this->mock_http_client
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
 				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/oauth/init',
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/init',
 					'method'          => 'POST',
 					'headers'         => [
 						'Content-Type' => 'application/json; charset=utf-8',
@@ -609,7 +609,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					]
 				),
 				true,
-				true // get_oauth_data should use user token auth.
+				true // get_onboarding_data should use user token auth.
 			)
 			->willReturn(
 				[
@@ -622,7 +622,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			);
 
 		// Call the method under test.
-		$result = $this->payments_api_client->get_oauth_data(
+		$result = $this->payments_api_client->get_onboarding_data(
 			'http://localhost',
 			[
 				'a' => 1,
@@ -895,6 +895,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$expected_amount         = 123;
 		$expected_status         = 'succeeded';
 		$selected_payment_method = 'giropay';
+		$payment_country         = 'US';
 		$save_payment_method     = true;
 		$metadata                = [
 			'customer_name'  => 'Testy Testerson',
@@ -942,6 +943,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					'level3'               => $level3_data,
 					'description'          => 'Online Payment for Order #' . strval( $metadata['order_id'] ) . ' for ' . str_replace( [ 'https://', 'http://' ], '', $metadata['site_url'] ),
 					'payment_method_types' => [ 'giropay' ],
+					'payment_country'      => 'US',
 					'customer'             => $customer_id,
 					'setup_future_usage'   => 'off_session',
 				]
@@ -982,7 +984,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			$customer_id,
 			$metadata,
 			$level3_data,
-			$selected_payment_method
+			$selected_payment_method,
+			$payment_country
 		);
 
 		$this->assertEquals( $expected_amount, $result->get_amount() );
@@ -1085,6 +1088,53 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		// The returned value is an object, even though Stripe specifies an array.
 		$result['metadata'] = (array) $result['metadata'];
 		$this->assertSame( $location, $result );
+	}
+
+	public function test_delete_terminal_location_success() {
+		$delete_location_response = [
+			'id'      => 'tml_XXXXXXX',
+			'object'  => 'terminal.deleted',
+			'deleted' => true,
+		];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations/tml_XXXXXXX',
+					'method'          => 'DELETE',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				wp_json_encode(
+					[
+						'test_mode' => false,
+					]
+				),
+				true,
+				false
+			)
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode( $delete_location_response ),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
+
+		$this->assertSame(
+			$this->payments_api_client->delete_terminal_location( 'tml_XXXXXXX' ),
+			$delete_location_response
+		);
 	}
 
 	/**

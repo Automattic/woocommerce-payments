@@ -56,7 +56,8 @@
     "tube:setup": "./bin/jurassic-tube-setup.sh",
     "tube:start": "./docker/bin/jt/tunnel.sh",
     "tube:stop": "./docker/bin/jt/tunnel.sh break",
-    "psalm": "./bin/run-psalm.sh"
+    "psalm": "./bin/run-psalm.sh",
+    "xdebug:toggle": "docker-compose exec -u root wordpress /var/www/html/wp-content/plugins/woocommerce-payments/bin/xdebug-toggle.sh"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "1.4.1",
