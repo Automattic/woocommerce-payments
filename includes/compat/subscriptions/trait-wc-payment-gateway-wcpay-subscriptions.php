@@ -281,7 +281,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			if ( ! empty( $payment_information ) ) {
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the failed payment amount, %2: error message  */
+					/* translators: %1: the failed payment amount, %2: error message  */
 						__(
 							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
 							'woocommerce-payments'
@@ -786,6 +786,16 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
 			if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
 				return true;
+			}
+
+			// Multiple subscriptions per order needs:
+			// - Set amount type to maximum, to allow renews of any amount under the order total.
+			// - Set interval to sporadic, to not follow any specific interval.
+			// - Unset interval count, because it doesn't apply anymore.
+			if ( 1 < count( $subscriptions ) ) {
+				$result['payment_method_options']['card']['mandate_options']['amount_type'] = 'maximum';
+				$result['payment_method_options']['card']['mandate_options']['interval']    = 'sporadic';
+				unset( $result['payment_method_options']['card']['mandate_options']['interval_count'] );
 			}
 		}
 
