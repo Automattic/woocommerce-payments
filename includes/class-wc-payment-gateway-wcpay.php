@@ -707,7 +707,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function payment_fields() {
 		try {
-			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
+			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
 
 			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
 			wp_enqueue_script( 'WCPAY_CHECKOUT' );
