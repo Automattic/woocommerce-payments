@@ -7,7 +7,6 @@ import React from 'react';
  * Internal dependencies
  */
 import Page from 'components/page';
-import ErrorBoundary from 'components/error-boundary';
 import TransactionsList from './list';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import {
@@ -38,13 +37,11 @@ export const TransactionsPage = (): JSX.Element => {
 
 	return (
 		<Page>
-			<ErrorBoundary>
-				<Experiment
-					name="wcpay_empty_state_preview_mode_v5"
-					treatmentExperience={ treatmentExperience }
-					defaultExperience={ defaultExperience }
-				/>
-			</ErrorBoundary>
+			<Experiment
+				name="wcpay_empty_state_preview_mode_v5"
+				treatmentExperience={ treatmentExperience }
+				defaultExperience={ defaultExperience }
+			/>
 		</Page>
 	);
 };

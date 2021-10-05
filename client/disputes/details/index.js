@@ -15,7 +15,6 @@ import Actions from './actions';
 import Info from '../info';
 import Paragraphs from 'components/paragraphs';
 import Page from 'components/page';
-import ErrorBoundary from 'components/error-boundary';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
@@ -60,85 +59,80 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 
 	return (
 		<Page isNarrow className="wcpay-dispute-details">
-			<ErrorBoundary>
-				{ testModeNotice }
-				<Card size="large">
-					<CardHeader className="header-dispute-overview">
-						<LoadableBlock isLoading={ isLoading } numLines={ 1 }>
-							{ __( 'Dispute overview', 'woocommerce-payments' ) }
-							<DisputeStatusChip status={ dispute.status } />
-						</LoadableBlock>
-					</CardHeader>
-					<CardBody>
-						<Info dispute={ dispute } isLoading={ isLoading } />
-						<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
-							<Paragraphs>{ mapping.overview }</Paragraphs>
-						</LoadableBlock>
-					</CardBody>
-					<CardFooter>
-						<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-							{ actions }
-						</LoadableBlock>
-					</CardFooter>
-				</Card>
-				<Card size="large">
-					<CardHeader>
-						<Loadable
-							isLoading={ isLoading }
-							value={
-								mapping.display
-									? sprintf(
-											/* translators: heading for dispute category information section */
-											__(
-												'Dispute: %s',
-												'woocommerce-payments'
-											),
-											mapping.display
-									  )
-									: __(
-											'Dispute type',
+			{ testModeNotice }
+			<Card size="large">
+				<CardHeader className="header-dispute-overview">
+					<LoadableBlock isLoading={ isLoading } numLines={ 1 }>
+						{ __( 'Dispute overview', 'woocommerce-payments' ) }
+						<DisputeStatusChip status={ dispute.status } />
+					</LoadableBlock>
+				</CardHeader>
+				<CardBody>
+					<Info dispute={ dispute } isLoading={ isLoading } />
+					<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
+						<Paragraphs>{ mapping.overview }</Paragraphs>
+					</LoadableBlock>
+				</CardBody>
+				<CardFooter>
+					<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
+						{ actions }
+					</LoadableBlock>
+				</CardFooter>
+			</Card>
+			<Card size="large">
+				<CardHeader>
+					<Loadable
+						isLoading={ isLoading }
+						value={
+							mapping.display
+								? sprintf(
+										/* translators: heading for dispute category information section */
+										__(
+											'Dispute: %s',
 											'woocommerce-payments'
-									  )
-							}
-						/>
-					</CardHeader>
-					<CardBody>
-						<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
-							<Paragraphs>{ mapping.summary }</Paragraphs>
-						</LoadableBlock>
+										),
+										mapping.display
+								  )
+								: __( 'Dispute type', 'woocommerce-payments' )
+						}
+					/>
+				</CardHeader>
+				<CardBody>
+					<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
+						<Paragraphs>{ mapping.summary }</Paragraphs>
+					</LoadableBlock>
 
-						<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-							{ mapping.required && (
-								<h3>
-									{ ' ' }
-									{ __(
-										'Required to overturn dispute',
-										'woocommerce-payments'
-									) }{ ' ' }
-								</h3>
-							) }
-							<Paragraphs>{ mapping.required }</Paragraphs>
-						</LoadableBlock>
+					<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
+						{ mapping.required && (
+							<h3>
+								{ ' ' }
+								{ __(
+									'Required to overturn dispute',
+									'woocommerce-payments'
+								) }{ ' ' }
+							</h3>
+						) }
+						<Paragraphs>{ mapping.required }</Paragraphs>
+					</LoadableBlock>
 
-						<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-							{ mapping.respond && (
-								<h3>
-									{ __(
-										'How to respond',
-										'woocommerce-payments'
-									) }
-								</h3>
-							) }
-							<Paragraphs>{ mapping.respond }</Paragraphs>
-						</LoadableBlock>
-					</CardBody>
-					<CardFooter>
-						<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-							{ actions }
-						</LoadableBlock>
-					</CardFooter>
-				</Card>
-			</ErrorBoundary>
+					<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
+						{ mapping.respond && (
+							<h3>
+								{ __(
+									'How to respond',
+									'woocommerce-payments'
+								) }
+							</h3>
+						) }
+						<Paragraphs>{ mapping.respond }</Paragraphs>
+					</LoadableBlock>
+				</CardBody>
+				<CardFooter>
+					<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
+						{ actions }
+					</LoadableBlock>
+				</CardFooter>
+			</Card>
 		</Page>
 	);
 };

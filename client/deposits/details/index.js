@@ -21,7 +21,6 @@ import { useDeposit } from 'wcpay/data';
 import { displayStatus } from '../strings';
 import TransactionsList from 'transactions/list';
 import Page from 'components/page';
-import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
@@ -144,11 +143,9 @@ export const DepositOverview = ( { depositId } ) => {
 
 export const DepositDetails = ( { query: { id: depositId } } ) => (
 	<Page>
-		<ErrorBoundary>
-			<TestModeNotice topic={ topics.depositDetails } />
-			<DepositOverview depositId={ depositId } />
-			<TransactionsList depositId={ depositId } />
-		</ErrorBoundary>
+		<TestModeNotice topic={ topics.depositDetails } />
+		<DepositOverview depositId={ depositId } />
+		<TransactionsList depositId={ depositId } />
 	</Page>
 );
 
