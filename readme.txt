@@ -122,7 +122,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Continue loading WCPay if the account is connected.
 * Add - Message to suggest using the previous version of WooCommerce Payments for old Woo core versions.
 * Fix - Enable logging for UPE checkout errors.
-* Fix - Currency switcher customer notice doesn't appear.
+* Fix - Show currency switcher notice until customer explicitly dismisses it.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
