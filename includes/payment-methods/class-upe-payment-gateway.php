@@ -8,6 +8,7 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Order;
+use WC_Payments_Explicit_Price_Formatter;
 use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
@@ -80,6 +81,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
+		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] );
 
 		add_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
 		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
@@ -134,8 +136,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : '';
 			$save_payment_method       = isset( $_POST['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_POST['save_payment_method'] ) ) : false;
 			$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : '';
+			$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null;
 
-			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type ), 200 );
+			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type, $payment_country ), 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
@@ -155,10 +158,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param {int}     $order_id                  The id of the order if intent created from Order.
 	 * @param {boolean} $save_payment_method       True if saving the payment method.
 	 * @param {string}  $selected_upe_payment_type The name of the selected UPE payment type or empty string.
+	 * @param {?string} $payment_country           The payment two-letter iso country code or null.
 	 *
 	 * @return array|null An array with result of the update, or nothing
 	 */
-	public function update_payment_intent( $payment_intent_id = '', $order_id = null, $save_payment_method = false, $selected_upe_payment_type = '' ) {
+	public function update_payment_intent( $payment_intent_id = '', $order_id = null, $save_payment_method = false, $selected_upe_payment_type = '', $payment_country = null ) {
 		$order = wc_get_order( $order_id );
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
@@ -178,7 +182,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$customer_id,
 				$this->get_metadata_from_order( $order, $payment_type ),
 				$this->get_level3_data_from_order( $order ),
-				$selected_upe_payment_type
+				$selected_upe_payment_type,
+				$payment_country
 			);
 		}
 
@@ -238,13 +243,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return $this->create_setup_intent();
 		}
 
-		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] );
+		$capture_method          = empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] ? 'automatic' : 'manual';
+		$enabled_payment_methods = $this->get_upe_enabled_at_checkout_payment_method_ids( $order_id );
 
 		$payment_intent = $this->payments_api_client->create_intention(
 			$converted_amount,
 			strtolower( $currency ),
 			array_values( $enabled_payment_methods ),
-			$order_id ?? 0
+			$order_id ?? 0,
+			$capture_method
 		);
 		return [
 			'id'            => $payment_intent->get_id(),
@@ -335,6 +342,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$token                     = Payment_Information::get_token_from_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_type              = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
+		$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
@@ -356,7 +364,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					$customer_id,
 					$this->get_metadata_from_order( $order, $payment_type ),
 					$this->get_level3_data_from_order( $order ),
-					$selected_upe_payment_type
+					$selected_upe_payment_type,
+					$payment_country
 				);
 				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
 				if ( 'card_declined' === $last_payment_error_code ) {
@@ -572,6 +581,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['upeAppearance']            = get_transient( self::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['checkoutTitle']            = $this->checkout_title;
 		$payment_fields['cartContainsSubscription'] = $this->is_subscription_item_in_cart();
+		$payment_fields['logPaymentErrorNonce']     = wp_create_nonce( 'wcpay_log_payment_error_nonce' );
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
@@ -729,6 +739,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				<div id="wcpay-upe-errors" role="alert"></div>
 				<input id="wcpay-payment-method-upe" type="hidden" name="wcpay-payment-method-upe" />
 				<input id="wcpay_selected_upe_payment_type" type="hidden" name="wcpay_selected_upe_payment_type" />
+				<input id="wcpay_payment_country" type="hidden" name="wcpay_payment_country" />
 
 			<?php
 			$methods_enabled_for_saved_payments = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );
@@ -820,7 +831,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	private function get_enabled_payment_method_config() {
 		$settings                = [];
-		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] );
+		$enabled_payment_methods = $this->get_upe_enabled_at_checkout_payment_method_ids();
 
 		if ( $this->is_subscriptions_enabled() && $this->is_changing_payment_method_for_subscription() ) {
 			$enabled_payment_methods = array_filter( $enabled_payment_methods, [ $this, 'is_enabled_for_saved_payments' ] );
@@ -838,22 +849,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	/**
 	 * Function to be used with array_filter
-	 * to filter UPE payment methods supported with current checkout
-	 *
-	 * @param string $payment_method_id Stripe payment method.
-	 *
-	 * @return bool
-	 */
-	private function is_enabled_at_checkout( $payment_method_id ) {
-		if ( ! isset( $this->payment_methods[ $payment_method_id ] ) ) {
-			return false;
-		}
-		return $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout()
-			&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() );
-	}
-
-	/**
-	 * Function to be used with array_filter
 	 * to filter UPE payment methods that support saved payments
 	 *
 	 * @param string $payment_method_id Stripe payment method.
@@ -866,5 +861,69 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 		return $this->payment_methods[ $payment_method_id ]->is_reusable()
 			&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() );
+	}
+
+	/**
+	 * Log UPE Payment Errors on Checkout.
+	 *
+	 * @throws Exception If nonce is not present or invalid or charge ID is empty or order not found.
+	 */
+	public function log_payment_error_ajax() {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_log_payment_error_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Exception( 'Invalid request.' );
+			}
+
+			$charge_id = isset( $_POST['charge_id'] ) ? wc_clean( wp_unslash( $_POST['charge_id'] ) ) : '';
+			if ( empty( $charge_id ) ) {
+				throw new Exception( 'Charge ID cannot be empty.' );
+			}
+
+			// Get charge data from WCPay Server.
+			$get_charge_data = $this->payments_api_client->get_charge( $charge_id );
+			$order_id        = $get_charge_data['metadata']['order_id'];
+
+			// Validate Order ID and proceed with logging errors and updating order status.
+			$order = wc_get_order( $order_id );
+			if ( ! $order ) {
+				throw new Exception( 'Order not found. Unable to log error.' );
+			}
+
+			$order_amount  = WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order );
+			$error_message = esc_html( rtrim( $get_charge_data['failure_message'], '.' ) );
+
+			$order_note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the failed payment amount, %2: error message  */
+					__(
+						'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+						'woocommerce-payments'
+					),
+					[
+						'strong' => '<strong>',
+						'code'   => '<code>',
+					]
+				),
+				$order_amount,
+				$error_message
+			);
+
+			// Set order as failed and add the order note.
+			if ( 'failed' !== $order->get_status() ) {
+				$order->update_status( 'failed' );
+			}
+			$order->add_order_note( $order_note );
+
+			wp_send_json_success();
+		} catch ( Exception $e ) {
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+		}
 	}
 }

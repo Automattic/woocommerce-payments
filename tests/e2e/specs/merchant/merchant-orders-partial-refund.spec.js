@@ -76,7 +76,7 @@ describe.each( dataTable )(
 
 			// Login as merchant
 			await merchant.login();
-		} );
+		}, 120000 );
 
 		afterAll( async () => {
 			await merchant.logout();
