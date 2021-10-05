@@ -109,6 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Error when attempting to change the payment method for a subscription with UPE enabled.
 * Add - Multi-Currency track currency added.
 * Fix - Fill missing order_intent_info even if an exception occurs.
+* Fix - Authorize and capture payments later with new credit cards.
 * Add - Gutenberg Block Widget for Multi-Currency.
 * Update - WCPay logo
 * Fix - Translations in transaction/deposit exports
@@ -120,6 +121,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Bump minimum required version of WooCommerce from 4.0 to 4.4.
 * Update - Continue loading WCPay if the account is connected.
 * Add - Message to suggest using the previous version of WooCommerce Payments for old Woo core versions.
+* Fix - Enable logging for UPE checkout errors.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
