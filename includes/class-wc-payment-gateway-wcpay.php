@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Connection_Exception };
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Connection_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -804,13 +804,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$error_message = $e->getMessage();
 			if ( $e instanceof Connection_Exception ) {
 				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
+			} elseif ( $e instanceof Amount_Too_Small_Exception ) {
+				$minimum_amount = $this->extract_minimum_amount( $e, $order->get_currency() );
+				$error_message  = $this->generate_minimum_amount_error_message( $minimum_amount, $order->get_currency() );
 			} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
 				$error_message = __( 'We\'re not able to process this payment. Please refresh the page and try again.', 'woocommerce-payments' );
-			} elseif ( $e instanceof API_Exception && 'amount_too_small' === $e->get_error_code() ) {
-				$minimum_amount = $this->extract_minimum_amount( $e, $order->get_currency() );
-				if ( ! is_null( $minimum_amount ) ) {
-					$error_message = $this->generate_minimum_amount_error_message( $minimum_amount, $order->get_currency() );
-				}
 			}
 
 			wc_add_notice( $error_message, 'error' );
@@ -2321,19 +2319,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * If an amount is found, it is stored within a transient, as the amount
 	 * might/will change based on exchange rates and merchant bank accounts.
 	 *
-	 * @param API_Exception $e        The exception that was thrown.
-	 * @param string        $currency The currency used when the exceptionw as thrown.
+	 * @param Amount_Too_Small_Exception $e        The exception that was thrown.
+	 * @param string                     $currency The currency used when the exceptionw as thrown.
 	 *
-	 * @return int|null Either the minimum amount (if the exception contains one)
-	 *                  or `null` whenever the exception is of another type.
+	 * @return int The minimum amount.
 	 */
-	public function extract_minimum_amount( API_Exception $e, string $currency ) {
-		if ( 'amount_too_small' !== $e->get_error_code() ) {
-			return null;
-		}
-
-		$data     = $e->get_data();
-		$required = $data['minimum_amount'];
+	public function extract_minimum_amount( Amount_Too_Small_Exception $e, string $currency ) {
+		$required = $e->get_minimum_amount();
 
 		// Cache the result.
 		set_transient( 'wcpay_minimum_amount_' . strtolower( $currency ), $required, DAY_IN_SECONDS );

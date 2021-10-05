@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Constants\Payment_Method;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Logger;
 
 /**
@@ -1314,6 +1315,10 @@ class WC_Payments_API_Client {
 
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
+			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
+				throw new Amount_Too_Small_Exception( $response_body['message'], $response_body['data']['minimum_amount'], $response_code );
+			}
+
 			if ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
@@ -1332,11 +1337,7 @@ class WC_Payments_API_Client {
 			);
 
 			Logger::error( "$error_message ($error_code)" );
-			$exception = new API_Exception( $message, $error_code, $response_code );
-			if ( isset( $response_body['data'] ) ) {
-				$exception->set_data( $response_body['data'] );
-			}
-			throw $exception;
+			throw new API_Exception( $message, $error_code, $response_code );
 		}
 
 		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].

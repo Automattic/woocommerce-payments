@@ -26,6 +26,7 @@ use WC_Payments_Utils;
 use Session_Rate_Limiter;
 
 use Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 
 
@@ -255,25 +256,22 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				array_values( $enabled_payment_methods ),
 				$order_id ?? 0
 			);
-		} catch ( API_Exception $e ) {
+		} catch ( Amount_Too_Small_Exception $e ) {
 			$minimum_amount = $this->extract_minimum_amount( $e, $currency );
-			if ( ! is_null( $minimum_amount ) ) {
-				/**
-				 * Try to create a new payment intent with the minimum amount
-				 * in order to display fields om the checkout page and allow
-				 * customers to select a shipping method, which might make
-				 * the total amount of the order higher than the minimum
-				 * amount for the API.
-				 */
-				$payment_intent = $this->payments_api_client->create_intention(
-					$minimum_amount,
-					strtolower( $currency ),
-					array_values( $enabled_payment_methods ),
-					$order_id ?? 0
-				);
-			} else {
-				throw $e;
-			}
+
+			/**
+			 * Try to create a new payment intent with the minimum amount
+			 * in order to display fields om the checkout page and allow
+			 * customers to select a shipping method, which might make
+			 * the total amount of the order higher than the minimum
+			 * amount for the API.
+			 */
+			$payment_intent = $this->payments_api_client->create_intention(
+				$minimum_amount,
+				strtolower( $currency ),
+				array_values( $enabled_payment_methods ),
+				$order_id ?? 0
+			);
 		}
 
 		return [
@@ -396,15 +394,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						$this->get_level3_data_from_order( $order ),
 						$selected_upe_payment_type
 					);
-				} catch ( API_Exception $e ) {
+				} catch ( Amount_Too_Small_Exception $e ) {
 					$minimum_amount = $this->extract_minimum_amount( $e, $currency );
-					if ( ! is_null( $minimum_amount ) ) {
-						$message = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
-						wc_add_notice( $message, 'error' );
-						return $this->generate_failed_response();
-					} else {
-						throw $e;
-					}
+					$message        = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
+					wc_add_notice( $message, 'error' );
+					return $this->generate_failed_response();
 				}
 
 				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
