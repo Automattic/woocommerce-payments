@@ -985,8 +985,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$minimum_amount = $this->get_cached_minimum_amount( $currency );
 			if ( $minimum_amount > $converted_amount ) {
 				$message = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
-				wc_add_notice( $message, 'error' );
-				return $this->generate_failed_response();
+				throw new Exception( $message );
 			}
 
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).

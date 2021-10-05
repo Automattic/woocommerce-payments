@@ -371,16 +371,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			if ( $payment_needed ) {
 				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
-					wc_add_notice( __( 'Your payment was not processed.', 'woocommerce-payments' ), 'error' );
-					return $this->generate_failed_response();
+					throw new Exception( __( 'Your payment was not processed.', 'woocommerce-payments' ) );
 				}
 
 				// Try catching the error without reaching the API.
 				$minimum_amount = $this->get_cached_minimum_amount( $currency );
 				if ( $minimum_amount > $converted_amount ) {
 					$message = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
-					wc_add_notice( $message, 'error' );
-					return $this->generate_failed_response();
+					throw new Exception( $message );
 				}
 
 				try {
@@ -397,8 +395,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				} catch ( Amount_Too_Small_Exception $e ) {
 					$minimum_amount = $this->extract_minimum_amount( $e, $currency );
 					$message        = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
-					wc_add_notice( $message, 'error' );
-					return $this->generate_failed_response();
+					throw new Exception( $message );
 				}
 
 				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
