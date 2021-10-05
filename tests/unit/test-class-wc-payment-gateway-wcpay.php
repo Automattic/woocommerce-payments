@@ -1530,26 +1530,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$message   = 'Error: Amount must be at least twenty three USD';
 		$exception = new API_Exception( $message, 'amount_too_small', 400 );
 
-		// Create a temporary class, whose method must be called.
-		$mock_logger = $this->getMockBuilder( 'stdClass' )
-			->setMethods( [ 'log_message' ] )
-			->getMock();
-
-		$mock_logger
-			->expects( $this->once() )
-			->method( 'log_message' )
-			->with( 'Error: Could not extract minimum amount from the following string: "Error: Amount must be at least twenty three USD"' );
-
-		// Force logging and assign the mock method to the right filter.
-		add_filter( 'wcpay_force_logging', '__return_true' );
-		add_filter( 'woocommerce_logger_log_message', [ $mock_logger, 'log_message' ] );
-
 		$result = $this->wcpay_gateway->extract_minimum_amount( $exception, 'USD' );
 		$this->assertNull( $result );
-
-		// Cleanup.
-		remove_filter( 'woocommerce_logger_log_message', [ $mock_logger, 'log_message' ] );
-		add_filter( 'wcpay_force_logging', '__return_false' );
 	}
 
 	public function test_get_cached_minimum_amount_returns_amount() {
