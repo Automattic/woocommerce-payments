@@ -452,7 +452,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 				return 'US';
 			}
 		);
-
+		// todo delete the comment.
 		$this->multi_currency->display_geolocation_currency_update_notice();
 
 		$this->expectOutputString( '' );
