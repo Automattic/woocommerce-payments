@@ -32,7 +32,7 @@ class ErrorBoundary extends Component {
 		return (
 			<Notice status="error" isDismissible={ false }>
 				{ __(
-					'There was an error rendering the component, please try again. Contact support for assistance if the problem persists.',
+					'There was an error rendering this view. Please contact support for assistance if the problem persists.',
 					'woocommerce-payments'
 				) }
 				<br />
