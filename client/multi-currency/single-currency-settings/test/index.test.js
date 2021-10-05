@@ -14,6 +14,7 @@ import {
 	useDefaultCurrency,
 	useEnabledCurrencies,
 	useCurrencySettings,
+	useStoreSettings,
 } from 'wcpay/data';
 
 import MultiCurrencySettingsContext from '../../context';
@@ -24,6 +25,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useDefaultCurrency: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
 	useCurrencySettings: jest.fn(),
+	useStoreSettings: jest.fn(),
 } ) );
 
 const availableCurrencies = {
@@ -112,6 +114,16 @@ useCurrencySettings.mockReturnValue( {
 	},
 	isLoading: false,
 	submitCurrencySettings: jest.fn(),
+} );
+
+useStoreSettings.mockReturnValue( {
+	storeSettings: {
+		enable_storefront_switcher: false,
+		enable_auto_currency: false,
+		site_theme: 'Storefront',
+		store_url: 'store_path',
+	},
+	submitStoreSettingsUpdate: jest.fn(),
 } );
 
 const containerContext = {
