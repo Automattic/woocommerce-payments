@@ -20,8 +20,9 @@ class WC_Payments_API_Client {
 	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';
 	const ENDPOINT_REST_BASE     = 'wcpay';
 
-	const POST = 'POST';
-	const GET  = 'GET';
+	const POST   = 'POST';
+	const GET    = 'GET';
+	const DELETE = 'DELETE';
 
 	const API_TIMEOUT_SECONDS = 70;
 
@@ -1212,6 +1213,69 @@ class WC_Payments_API_Client {
 			self::TERMINAL_LOCATIONS_API,
 			self::POST
 		);
+	}
+
+	/**
+	 * Updates an existing terminal location.
+	 *
+	 * @param string $location_id The id of the terminal location.
+	 * @param string $display_name The display name of the terminal location.
+	 * @param array  $address {
+	 *     Address partials.
+	 *
+	 *     @type string $country     Two-letter country code.
+	 *     @type string $line1       Address line 1.
+	 *     @type string $line2       Optional. Address line 2.
+	 *     @type string $city        Optional. City, district, suburb, town, or village.
+	 *     @type int    $postal_code Optional. ZIP or postal code.
+	 *     @type string $state       Optional. State, county, province, or region.
+	 * }
+	 *
+	 * @return array A Stripe terminal location object.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function update_terminal_location( $location_id, $display_name, $address ) {
+		// Any parameters not provided will be left unchanged so pass only supplied values.
+		$update_request_body = array_merge(
+			( isset( $address ) ? [ 'address' => $address ] : [] ),
+			( isset( $display_name ) ? [ 'display_name' => $display_name ] : [] )
+		);
+
+		return $this->request(
+			$update_request_body,
+			self::TERMINAL_LOCATIONS_API . '/' . $location_id,
+			self::POST
+		);
+	}
+
+	/**
+	 * Retrieves the specified terminal location.
+	 *
+	 * @param string $location_id The id of the terminal location.
+	 *
+	 * @return array A Stripe terminal location object.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_terminal_location( $location_id ) {
+		return $this->request( [], self::TERMINAL_LOCATIONS_API . '/' . $location_id, self::GET );
+	}
+
+	/**
+	 * Deletes the specified location object.
+	 *
+	 * @param string $location_id The id of the terminal location.
+	 *
+	 * @return array Stripe's terminal deletion response.
+	 * @see https://stripe.com/docs/api/terminal/locations/delete
+	 *
+	 * @throws API_Exception If the location id is invalid or downstream call fails.
+	 */
+	public function delete_terminal_location( $location_id ) {
+		return $this->request( [], self::TERMINAL_LOCATIONS_API . '/' . $location_id, self::DELETE );
 	}
 
 	/**
