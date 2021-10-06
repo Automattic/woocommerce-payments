@@ -486,32 +486,34 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			);
 
 		// Act: process payment.
-		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
-		$result_order = wc_get_order( $order->get_id() );
+		$this->expectException( Exception::class );
+		try {
+			$this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		} catch ( Exception $e ) {
+			$result_order = wc_get_order( $order->get_id() );
 
-		// Assert: Order status was updated.
-		$this->assertEquals( 'failed', $result_order->get_status() );
+			// Assert: Order status was updated.
+			$this->assertEquals( 'failed', $result_order->get_status() );
 
-		// Assert: Order transaction ID was not set.
-		$this->assertEquals( '', $result_order->get_meta( '_transaction_id' ) );
+			// Assert: Order transaction ID was not set.
+			$this->assertEquals( '', $result_order->get_meta( '_transaction_id' ) );
 
-		// Assert: Order meta was not updated with charge ID, intention status, or intent ID.
-		$this->assertEquals( '', $result_order->get_meta( '_intent_id' ) );
-		$this->assertEquals( '', $result_order->get_meta( '_charge_id' ) );
-		$this->assertEquals( '', $result_order->get_meta( '_intention_status' ) );
+			// Assert: Order meta was not updated with charge ID, intention status, or intent ID.
+			$this->assertEquals( '', $result_order->get_meta( '_intent_id' ) );
+			$this->assertEquals( '', $result_order->get_meta( '_charge_id' ) );
+			$this->assertEquals( '', $result_order->get_meta( '_intention_status' ) );
 
-		// Assert: No order note was added, besides the status change and failed transaction details.
-		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
-		$this->assertCount( 2, $notes );
-		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( 'A payment of &#36;50.00 USD failed to complete with the following message: Error: No such customer: 123.', strip_tags( $notes[0]->content, '' ) );
+			// Assert: No order note was added, besides the status change and failed transaction details.
+			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+			$this->assertCount( 2, $notes );
+			$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+			$this->assertContains( 'A payment of &#36;50.00 USD failed to complete with the following message: Error: No such customer: 123.', strip_tags( $notes[0]->content, '' ) );
 
-		// Assert: A WooCommerce notice was added.
-		$this->assertTrue( wc_has_notice( $error_message, 'error' ) );
+			// Assert: A WooCommerce notice was added.
+			$this->assertTrue( wc_has_notice( $error_message, 'error' ) );
 
-		// Assert: Returning correct array.
-		$this->assertEquals( 'fail', $result['result'] );
-		$this->assertEquals( '', $result['redirect'] );
+			throw $e;
+		}
 	}
 
 	public function test_connection_exception_thrown() {
@@ -537,24 +539,26 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			);
 
 		// Act: process payment.
-		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
-		$result_order = wc_get_order( $order->get_id() );
+		$this->expectException( Exception::class );
+		try {
+			$this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		} catch ( Exception $e ) {
+			$result_order = wc_get_order( $order->get_id() );
 
-		// Assert: Order status was updated.
-		$this->assertEquals( 'failed', $result_order->get_status() );
+			// Assert: Order status was updated.
+			$this->assertEquals( 'failed', $result_order->get_status() );
 
-		// Assert: No order note was added, besides the status change and failed transaction details.
-		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
-		$this->assertCount( 2, $notes );
-		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( 'A payment of &#36;50.00 USD failed to complete with the following message: Test error.', strip_tags( $notes[0]->content, '' ) );
+			// Assert: No order note was added, besides the status change and failed transaction details.
+			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+			$this->assertCount( 2, $notes );
+			$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+			$this->assertContains( 'A payment of &#36;50.00 USD failed to complete with the following message: Test error.', strip_tags( $notes[0]->content, '' ) );
 
-		// Assert: A WooCommerce notice was added.
-		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
+			// Assert: A WooCommerce notice was added.
+			$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
 
-		// Assert: Returning correct array.
-		$this->assertEquals( 'fail', $result['result'] );
-		$this->assertEquals( '', $result['redirect'] );
+			throw $e;
+		}
 	}
 
 	public function test_failed_transaction_rate_limiter_is_limited() {
@@ -568,21 +572,23 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->willReturn( true );
 
 		// Act: process payment.
-		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
-		$result_order = wc_get_order( $order->get_id() );
+		$this->expectException( Exception::class );
+		try {
+			$this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		} catch ( Exception $e ) {
+			$result_order = wc_get_order( $order->get_id() );
 
-		// Assert: Order status was updated.
-		$this->assertEquals( 'failed', $result_order->get_status() );
+			// Assert: Order status was updated.
+			$this->assertEquals( 'failed', $result_order->get_status() );
 
-		// Assert: No order note was added, besides the status change and failed transaction details.
-		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
-		$this->assertCount( 2, $notes );
-		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( 'A payment of &#36;50.00 USD failed to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.', strip_tags( $notes[0]->content, '' ) );
+			// Assert: No order note was added, besides the status change and failed transaction details.
+			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+			$this->assertCount( 2, $notes );
+			$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+			$this->assertContains( 'A payment of &#36;50.00 USD failed to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.', strip_tags( $notes[0]->content, '' ) );
 
-		// Assert: Returning correct array.
-		$this->assertEquals( 'fail', $result['result'] );
-		$this->assertEquals( '', $result['redirect'] );
+			throw $e;
+		}
 	}
 
 	public function test_bad_request_exception_thrown() {
@@ -605,24 +611,26 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			);
 
 		// Act: process payment.
-		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
-		$result_order = wc_get_order( $order->get_id() );
+		$this->expectException( Exception::class );
+		try {
+			$this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		} catch ( Exception $e ) {
+			$result_order = wc_get_order( $order->get_id() );
 
-		// Assert: Order status was updated.
-		$this->assertEquals( 'failed', $result_order->get_status() );
+			// Assert: Order status was updated.
+			$this->assertEquals( 'failed', $result_order->get_status() );
 
-		// Assert: No order note was added, besides the status change and failed transaction details.
-		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
-		$this->assertCount( 2, $notes );
-		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( "A payment of &#36;50.00 USD failed to complete with the following message: $error_message", strip_tags( $notes[0]->content, '' ) );
+			// Assert: No order note was added, besides the status change and failed transaction details.
+			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+			$this->assertCount( 2, $notes );
+			$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+			$this->assertContains( "A payment of &#36;50.00 USD failed to complete with the following message: $error_message", strip_tags( $notes[0]->content, '' ) );
 
-		// Assert: A WooCommerce notice was added.
-		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
+			// Assert: A WooCommerce notice was added.
+			$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
 
-		// Assert: Returning correct array.
-		$this->assertEquals( 'fail', $result['result'] );
-		$this->assertEquals( '', $result['redirect'] );
+			throw $e;
+		}
 	}
 
 
@@ -896,7 +904,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->will( $this->returnValue( new WC_Payment_Token_CC() ) );
 
 		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_not_saved_card_at_checkout() {

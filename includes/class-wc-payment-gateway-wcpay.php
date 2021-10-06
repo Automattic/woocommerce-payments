@@ -855,7 +855,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_order_note( $note );
 			}
 
-			return $this->generate_failed_response();
+			throw new Exception( $error_message );
 		}
 	}
 

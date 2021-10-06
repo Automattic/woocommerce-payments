@@ -371,10 +371,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	public function maybe_add_token_to_subscription_order( $order, $token ) {
 		if ( $this->is_subscriptions_enabled() ) {
 			$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
-			foreach ( $subscriptions as $subscription ) {
-				$payment_token = $this->get_payment_token( $subscription );
-				if ( is_null( $payment_token ) || $token->get_id() !== $payment_token->get_id() ) {
-					$subscription->add_payment_token( $token );
+			if ( is_array( $subscriptions ) ) {
+				foreach ( $subscriptions as $subscription ) {
+					$payment_token = $this->get_payment_token( $subscription );
+					if ( is_null( $payment_token ) || $token->get_id() !== $payment_token->get_id() ) {
+						$subscription->add_payment_token( $token );
+					}
 				}
 			}
 		}

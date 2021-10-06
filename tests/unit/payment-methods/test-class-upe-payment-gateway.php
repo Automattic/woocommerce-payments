@@ -33,6 +33,7 @@ use WP_User;
 use Exception;
 use WCPay\MultiCurrency\Currency;
 use Session_Rate_Limiter;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 
 /**
  * Overriding global function within namespace for testing
@@ -1137,7 +1138,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			)
 			->will(
 				$this->onConsecutiveCalls(
-					$this->throwException( new API_Exception( 'Error: Amount must be at least $0.50 usd', 'amount_too_small', 400 ) ),
+					$this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $0.50 usd', 50, 400 ) ),
 					$this->returnValue( $intent )
 				)
 			);
@@ -1156,24 +1157,11 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
 		// Make sure that the payment was not actually processed.
-		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
-		$this->assertSame(
-			[
-				'result'   => 'fail',
-				'redirect' => '',
-			],
-			$result
-		);
-
-		// An error should be added.
-		$notices = WC()->session->get( 'wc_notices' );
-		$this->assertArrayHasKey( 'error', $notices );
-		foreach ( $notices['error'] as $notice ) {
-			$price   = wp_strip_all_tags( html_entity_decode( wc_price( 0.5, [ 'currency' => 'USD' ] ) ) );
-			$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . $price . '.';
-			$this->assertSame( $message, $notice['notice'] );
-		}
-		wc_clear_notices();
+		$price   = wp_strip_all_tags( html_entity_decode( wc_price( 0.5, [ 'currency' => 'USD' ] ) ) );
+		$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . $price . '.';
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( $message );
+		$this->mock_upe_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {
@@ -1187,27 +1175,19 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'update_intention' )
-			->will( $this->throwException( new API_Exception( 'Error: Amount must be at least $60 usd', 'amount_too_small', 400 ) ) );
+			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 400 ) ) );
 
-		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
-		$this->assertSame(
-			[
-				'result'   => 'fail',
-				'redirect' => '',
-			],
-			$result
-		);
-		$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
+		$price   = wp_strip_all_tags( html_entity_decode( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
+		$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . $price . '.';
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( $message );
 
-		// An error should be added.
-		$notices = WC()->session->get( 'wc_notices' );
-		$this->assertArrayHasKey( 'error', $notices );
-		foreach ( $notices['error'] as $notice ) {
-			$price   = wp_strip_all_tags( html_entity_decode( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
-			$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . $price . '.';
-			$this->assertSame( $message, $notice['notice'] );
+		try {
+			$this->mock_upe_gateway->process_payment( $order->get_id() );
+		} catch ( Exception $e ) {
+			$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
+			throw $e;
 		}
-		wc_clear_notices();
 	}
 
 	/**
