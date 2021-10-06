@@ -52,8 +52,14 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				'callback'            => [ $this, 'update_location' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'display_name',
-					'address',
+					'display_name' => [
+						'type'     => 'string',
+						'required' => false,
+					],
+					'address'      => [
+						'type'     => 'object',
+						'required' => false,
+					],
 				],
 			]
 		);
