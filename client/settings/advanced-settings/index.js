@@ -15,6 +15,7 @@ import MultiCurrencyToggle from './multi-currency-toggle';
 import useToggle from './use-toggle';
 import './style.scss';
 import CardBody from '../card-body';
+import ErrorBoundary from '../../components/error-boundary';
 
 const AdvancedSettings = () => {
 	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( false );
@@ -31,12 +32,14 @@ const AdvancedSettings = () => {
 			</SettingsSection>
 			{ isSectionExpanded && (
 				<SettingsSection>
-					<Card>
-						<CardBody>
-							<MultiCurrencyToggle />
-							<DebugMode />
-						</CardBody>
-					</Card>
+					<ErrorBoundary>
+						<Card>
+							<CardBody>
+								<MultiCurrencyToggle />
+								<DebugMode />
+							</CardBody>
+						</Card>
+					</ErrorBoundary>
 				</SettingsSection>
 			) }
 		</>

@@ -22,6 +22,7 @@ import TransactionsAndDeposits from '../transactions-and-deposits';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
 import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
+import ErrorBoundary from '../../components/error-boundary';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -102,28 +103,36 @@ const SettingsManager = () => {
 		<SettingsLayout>
 			<SettingsSection Description={ GeneralSettingsDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
-					<GeneralSettings />
+					<ErrorBoundary>
+						<GeneralSettings />
+					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
 			{ isUPESettingsPreviewEnabled && (
 				<SettingsSection Description={ PaymentMethodsDescription }>
 					<LoadableSettingsSection numLines={ 20 }>
-						<WcPayUpeContextProvider
-							defaultIsUpeEnabled={ isUpeEnabled }
-						>
-							<PaymentMethods />
-						</WcPayUpeContextProvider>
+						<ErrorBoundary>
+							<WcPayUpeContextProvider
+								defaultIsUpeEnabled={ isUpeEnabled }
+							>
+								<PaymentMethods />
+							</WcPayUpeContextProvider>
+						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</SettingsSection>
 			) }
 			<SettingsSection Description={ PaymentRequestDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
-					<PaymentRequest />
+					<ErrorBoundary>
+						<PaymentRequest />
+					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection Description={ TransactionsAndDepositsDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
-					<TransactionsAndDeposits />
+					<ErrorBoundary>
+						<TransactionsAndDeposits />
+					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<AdvancedSettings />
