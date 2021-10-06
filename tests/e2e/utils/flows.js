@@ -127,6 +127,13 @@ export const shopperWCP = {
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
+
+		if ( null !== page.$( '#wc-woocommerce_payments-payment-token-new' ) ) {
+			await expect( page ).toClick(
+				'#wc-woocommerce_payments-payment-token-new'
+			);
+		}
+
 		await fillCardDetails( page, card );
 		await expect( page ).toClick( 'button', {
 			text: 'Add payment method',
