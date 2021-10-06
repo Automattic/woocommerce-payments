@@ -302,12 +302,12 @@ const feeBreakdown = ( event ) => {
 			0 !== fixedRate
 				? __(
 						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
-						'Subscription fee: %1$s%% + %2$s',
+						'Recurring transaction fee: %1$s%% + %2$s',
 						'woocommerce-payments'
 				  )
 				: __(
 						/* translators: %1$s% is the fee amount */
-						'Subscription fee: %1$s%%',
+						'Recurring transaction fee: %1$s%%',
 						'woocommerce-payments'
 				  ),
 		discount: __( 'Discount', 'woocommerce-payments' ),
