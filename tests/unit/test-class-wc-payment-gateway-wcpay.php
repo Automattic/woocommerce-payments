@@ -1483,12 +1483,12 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	public function test_extract_minimum_amount() {
 		$minimum   = 50;
 		$currency  = 'USD';
-		$exception = new Amount_Too_Small_Exception( 'Amount must be at least $0.50 USD', $minimum, 400 );
+		$exception = new Amount_Too_Small_Exception( 'Amount must be at least $0.50 USD', $minimum, strtolower( $currency ), 400 );
 
 		// The value should not only be extracted, but cached too.
 		delete_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
 
-		$result = $this->wcpay_gateway->extract_minimum_amount( $exception, $currency );
+		$result = $this->wcpay_gateway->extract_minimum_amount( $exception );
 		$this->assertEquals( $minimum, $result );
 		$this->assertEquals( $result, get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) ) );
 	}
@@ -1533,7 +1533,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
-			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 400 ) ) );
+			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 'usd', 400 ) ) );
 
 		$this->expectException( Exception::class );
 		$price   = html_entity_decode( wp_strip_all_tags( wc_price( 60, [ 'currency' => 'USD' ] ) ) );

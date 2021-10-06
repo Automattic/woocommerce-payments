@@ -1138,7 +1138,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			)
 			->will(
 				$this->onConsecutiveCalls(
-					$this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $0.50 usd', 50, 400 ) ),
+					$this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $0.50 usd', 50, 'usd', 400 ) ),
 					$this->returnValue( $intent )
 				)
 			);
@@ -1175,7 +1175,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'update_intention' )
-			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 400 ) ) );
+			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 'usd', 400 ) ) );
 
 		$price   = wp_strip_all_tags( html_entity_decode( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
 		$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . $price . '.';

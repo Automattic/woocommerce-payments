@@ -1316,7 +1316,12 @@ class WC_Payments_API_Client {
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
 			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
-				throw new Amount_Too_Small_Exception( $response_body['message'], $response_body['data']['minimum_amount'], $response_code );
+				throw new Amount_Too_Small_Exception(
+					$response_body['message'],
+					$response_body['data']['minimum_amount'],
+					$response_body['data']['currency'],
+					$response_code
+				);
 			}
 
 			if ( isset( $response_body['error'] ) ) {

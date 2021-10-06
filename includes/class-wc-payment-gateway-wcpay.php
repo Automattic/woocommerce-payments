@@ -805,7 +805,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $e instanceof Connection_Exception ) {
 				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
 			} elseif ( $e instanceof Amount_Too_Small_Exception ) {
-				$minimum_amount = $this->extract_minimum_amount( $e, $order->get_currency() );
+				$minimum_amount = $this->extract_minimum_amount( $e );
 				$error_message  = $this->generate_minimum_amount_error_message( $minimum_amount, $order->get_currency() );
 			} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
 				$error_message = __( 'We\'re not able to process this payment. Please refresh the page and try again.', 'woocommerce-payments' );
@@ -2318,16 +2318,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * If an amount is found, it is stored within a transient, as the amount
 	 * might/will change based on exchange rates and merchant bank accounts.
 	 *
-	 * @param Amount_Too_Small_Exception $e        The exception that was thrown.
-	 * @param string                     $currency The currency used when the exceptionw as thrown.
+	 * @param Amount_Too_Small_Exception $e The exception that was thrown.
 	 *
 	 * @return int The minimum amount.
 	 */
-	public function extract_minimum_amount( Amount_Too_Small_Exception $e, string $currency ) {
+	public function extract_minimum_amount( Amount_Too_Small_Exception $e ) {
 		$required = $e->get_minimum_amount();
 
 		// Cache the result.
-		set_transient( 'wcpay_minimum_amount_' . strtolower( $currency ), $required, DAY_IN_SECONDS );
+		set_transient( 'wcpay_minimum_amount_' . $e->get_currency(), $required, DAY_IN_SECONDS );
 
 		return $required;
 	}

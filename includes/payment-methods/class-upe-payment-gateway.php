@@ -257,7 +257,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$order_id ?? 0
 			);
 		} catch ( Amount_Too_Small_Exception $e ) {
-			$minimum_amount = $this->extract_minimum_amount( $e, $currency );
+			$minimum_amount = $this->extract_minimum_amount( $e );
 
 			/**
 			 * Try to create a new payment intent with the minimum amount
@@ -393,7 +393,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						$selected_upe_payment_type
 					);
 				} catch ( Amount_Too_Small_Exception $e ) {
-					$minimum_amount = $this->extract_minimum_amount( $e, $currency );
+					$minimum_amount = $this->extract_minimum_amount( $e );
 					$message        = $this->generate_minimum_amount_error_message( $minimum_amount, $currency );
 					throw new Exception( $message );
 				}
