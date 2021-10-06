@@ -818,7 +818,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 			$note = sprintf(
 			/* translators: 1) date in date_format or 'F j, Y'; 2) time in time_format or 'g:i a' */
-				__( 'The customer must authorize this payment via the pre-debit notification sent to them by their card issuing bank before %1$s at %2$s, when the charge will be attempted.', 'woocommerce-payments' ),
+				__( 'The customer must authorize this payment via the pre-debit notification sent to them by their card issuing bank, before %1$s at %2$s, when the charge will be attempted.', 'woocommerce-payments' ),
 				$attempt_date,
 				$attempt_time
 			);
