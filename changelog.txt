@@ -26,6 +26,7 @@
 * Add - Message to suggest using the previous version of WooCommerce Payments for old Woo core versions.
 * Fix - Appearance of upload file buttons inside challenge dispute page
 * Fix - Enable logging for UPE checkout errors.
+* Update - Composer package `automattic/jetpack-connection` from v1.20.0 to v1.30.5.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
