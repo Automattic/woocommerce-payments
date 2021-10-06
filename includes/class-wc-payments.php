@@ -407,6 +407,7 @@ class WC_Payments {
 			);
 
 			if ( current_user_can( 'install_plugins' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php'; // Load this file for the `validate_plugin` function.
 				if ( is_wp_error( validate_plugin( 'woocommerce/woocommerce.php' ) ) ) {
 					// WooCommerce is not installed.
 					$activate_url  = wp_nonce_url( admin_url( 'update.php?action=install-plugin&plugin=woocommerce' ), 'install-plugin_woocommerce' );
