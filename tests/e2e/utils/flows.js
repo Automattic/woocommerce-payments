@@ -129,7 +129,10 @@ export const shopperWCP = {
 			waitUntil: 'networkidle0',
 		} );
 
-		if ( null !== page.$( '#wc-woocommerce_payments-payment-token-new' ) ) {
+		if (
+			null !==
+			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) )
+		) {
 			await setCheckbox( '#wc-woocommerce_payments-payment-token-new' );
 		}
 
