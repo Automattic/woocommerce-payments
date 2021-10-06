@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Multi Currency Store Settings store settings task renders correctly: snapshot-multi-currency-store_settings 1`] = `
+exports[`Multi-Currency Store Settings store settings task renders correctly: snapshot-multi-currency-store_settings 1`] = `
 <div>
   <li
     class="wcpay-wizard-task is-active"

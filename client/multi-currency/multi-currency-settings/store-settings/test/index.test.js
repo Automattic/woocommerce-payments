@@ -33,7 +33,7 @@ const createContainer = () => {
 	return container;
 };
 
-describe( 'Multi Currency Store Settings', () => {
+describe( 'Multi-Currency Store Settings', () => {
 	afterEach( () => {
 		jest.clearAllMocks();
 	} );

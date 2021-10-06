@@ -19,7 +19,7 @@ use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that controls Multi Currency functionality.
+ * Class that controls Multi-Currency functionality.
  */
 class MultiCurrency {
 
@@ -229,7 +229,7 @@ class MultiCurrency {
 
 	/**
 	 * Called after the WooCommerce session has been initialized. Initialises the available currencies,
-	 * default currency and enabled currencies for the multi currency plugin.
+	 * default currency and enabled currencies for the Multi-Currency plugin.
 	 *
 	 * @return void
 	 */
@@ -1254,7 +1254,7 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Gets the multi currency onboarding preview overrides from the querystring.
+	 * Gets the Multi-Currency onboarding preview overrides from the querystring.
 	 *
 	 * @return  array  Override variables
 	 */
@@ -1350,7 +1350,7 @@ class MultiCurrency {
 
 	/**
 	 * Checks if the currently displayed page is the WooCommerce Payments
-	 * settings page for the multi currency settings.
+	 * settings page for the Multi-Currency settings.
 	 *
 	 * @return bool
 	 */

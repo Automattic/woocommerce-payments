@@ -104,7 +104,7 @@ class Analytics {
 	}
 
 	/**
-	 * When an order is updated in the stats table, perform a check to see if it is a multi currency order
+	 * When an order is updated in the stats table, perform a check to see if it is a Multi-Currency order
 	 * and convert the information into the store's default currency if it is.
 	 *
 	 * @param array    $args  - An array of the arguments to be inserted into the order stats table.
@@ -256,7 +256,7 @@ class Analytics {
 
 	/**
 	 * Check whether the order stats table is referenced in the clauses, to work out whether
-	 * to add the JOIN columns for multi currency.
+	 * to add the JOIN columns for Multi-Currency.
 	 *
 	 * @param array $clauses The array containing the clauses used.
 	 *

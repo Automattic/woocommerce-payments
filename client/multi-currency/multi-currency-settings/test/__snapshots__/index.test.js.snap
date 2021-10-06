@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Multi Currency Settings page renders correctly: snapshot-multi-currency-setup-wizard 1`] = `
+exports[`Multi-Currency Settings page renders correctly: snapshot-multi-currency-setup-wizard 1`] = `
 Object {
   "asFragment": [Function],
   "baseElement": <body>

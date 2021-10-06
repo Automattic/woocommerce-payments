@@ -297,7 +297,7 @@ describe( 'mapTimelineEvents', () => {
 		} );
 	} );
 
-	describe( 'multi currency events', () => {
+	describe( 'Multi-Currency events', () => {
 		test( 'formats captured events without fee details', () => {
 			expect(
 				mapTimelineEvents( [

@@ -21,7 +21,7 @@ const createContainer = () => {
 	return container;
 };
 
-describe( 'Multi Currency enabled currencies list', () => {
+describe( 'Multi-Currency enabled currencies list', () => {
 	beforeEach( () => {
 		AddCurrenciesTask.mockReturnValue( <p>Currency selector</p> );
 		StoreSettingsTask.mockReturnValue( <p>Store settings form</p> );

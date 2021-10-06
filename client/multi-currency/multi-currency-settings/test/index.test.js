@@ -23,7 +23,7 @@ const getContainer = () => {
 	);
 };
 
-describe( 'Multi Currency Settings', () => {
+describe( 'Multi-Currency Settings', () => {
 	beforeEach( () => {
 		EnabledCurrenciesList.mockReturnValue( <p>Enabled currencies list</p> );
 		StoreSettings.mockReturnValue( <p>Store settings form</p> );

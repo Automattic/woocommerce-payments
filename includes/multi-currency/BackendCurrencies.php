@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Payments Multi Currency Backend Currencies
+ * WooCommerce Payments Multi-Currency Backend Currencies
  *
  * @package WooCommerce\Payments
  */
@@ -12,7 +12,7 @@ use WC_Payments_Localization_Service;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that formats Multi Currency currencies on the backend.
+ * Class that formats Multi-Currency currencies on the backend.
  */
 class BackendCurrencies {
 	/**

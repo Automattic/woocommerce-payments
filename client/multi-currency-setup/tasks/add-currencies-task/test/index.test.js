@@ -206,7 +206,7 @@ const createContainer = () => {
 	return container;
 };
 
-describe( 'Multi Currency enabled currencies list', () => {
+describe( 'Multi-Currency enabled currencies list', () => {
 	beforeEach( () => {
 		global.wcpaySettings = { zeroDecimalCurrencies: [] };
 	} );

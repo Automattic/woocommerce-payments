@@ -199,7 +199,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats captured events with fee details 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats captured events with fee details 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -248,7 +248,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats captured events without fee details 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats captured events without fee details 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -297,7 +297,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats dispute_needs_response events 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats dispute_needs_response events 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -343,7 +343,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats dispute_won events 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats dispute_won events 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -390,7 +390,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats full_refund events 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats full_refund events 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -427,7 +427,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats partial_refund events 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats partial_refund events 1`] = `
 Array [
   Object {
     "body": Array [],
