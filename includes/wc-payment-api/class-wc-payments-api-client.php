@@ -21,28 +21,30 @@ class WC_Payments_API_Client {
 	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';
 	const ENDPOINT_REST_BASE     = 'wcpay';
 
-	const POST = 'POST';
-	const GET  = 'GET';
+	const POST   = 'POST';
+	const GET    = 'GET';
+	const DELETE = 'DELETE';
 
 	const API_TIMEOUT_SECONDS = 70;
 
-	const ACCOUNTS_API        = 'accounts';
-	const APPLE_PAY_API       = 'apple_pay';
-	const CHARGES_API         = 'charges';
-	const CONN_TOKENS_API     = 'terminal/connection_tokens';
-	const CUSTOMERS_API       = 'customers';
-	const CURRENCY_API        = 'currency';
-	const INTENTIONS_API      = 'intentions';
-	const REFUNDS_API         = 'refunds';
-	const DEPOSITS_API        = 'deposits';
-	const TRANSACTIONS_API    = 'transactions';
-	const DISPUTES_API        = 'disputes';
-	const FILES_API           = 'files';
-	const OAUTH_API           = 'oauth';
-	const TIMELINE_API        = 'timeline';
-	const PAYMENT_METHODS_API = 'payment_methods';
-	const SETUP_INTENTS_API   = 'setup_intents';
-	const TRACKING_API        = 'tracking';
+	const ACCOUNTS_API           = 'accounts';
+	const APPLE_PAY_API          = 'apple_pay';
+	const CHARGES_API            = 'charges';
+	const CONN_TOKENS_API        = 'terminal/connection_tokens';
+	const TERMINAL_LOCATIONS_API = 'terminal/locations';
+	const CUSTOMERS_API          = 'customers';
+	const CURRENCY_API           = 'currency';
+	const INTENTIONS_API         = 'intentions';
+	const REFUNDS_API            = 'refunds';
+	const DEPOSITS_API           = 'deposits';
+	const TRANSACTIONS_API       = 'transactions';
+	const DISPUTES_API           = 'disputes';
+	const FILES_API              = 'files';
+	const ONBOARDING_API         = 'onboarding';
+	const TIMELINE_API           = 'timeline';
+	const PAYMENT_METHODS_API    = 'payment_methods';
+	const SETUP_INTENTS_API      = 'setup_intents';
+	const TRACKING_API           = 'tracking';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -231,6 +233,7 @@ class WC_Payments_API_Client {
 	 * @param string $currency_code   - Currency to charge in.
 	 * @param array  $payment_methods - Payment methods to include.
 	 * @param int    $order_id        - The order ID.
+	 * @param string $capture_method  - optional capture method (either `automatic` or `manual`).
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -239,13 +242,15 @@ class WC_Payments_API_Client {
 		$amount,
 		$currency_code,
 		$payment_methods,
-		$order_id
+		$order_id,
+		$capture_method = 'automatic'
 	) {
 		$request                         = [];
 		$request['amount']               = $amount;
 		$request['currency']             = $currency_code;
 		$request['description']          = $this->get_intent_description( $order_id );
 		$request['payment_method_types'] = $payment_methods;
+		$request['capture_method']       = $capture_method;
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
@@ -255,14 +260,15 @@ class WC_Payments_API_Client {
 	/**
 	 * Updates an intention, without confirming it.
 	 *
-	 * @param string $intention_id              - The ID of the intention to update.
-	 * @param int    $amount                    - Amount to charge.
-	 * @param string $currency_code             - Currency to charge in.
-	 * @param bool   $save_payment_method       - Whether to setup payment intent for future usage.
-	 * @param string $customer_id               - Stripe customer to associate payment intent with.
-	 * @param array  $metadata                  - Meta data values to be sent along with payment intent creation.
-	 * @param array  $level3                    - Level 3 data.
-	 * @param string $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
+	 * @param string  $intention_id              - The ID of the intention to update.
+	 * @param int     $amount                    - Amount to charge.
+	 * @param string  $currency_code             - Currency to charge in.
+	 * @param bool    $save_payment_method       - Whether to setup payment intent for future usage.
+	 * @param string  $customer_id               - Stripe customer to associate payment intent with.
+	 * @param array   $metadata                  - Meta data values to be sent along with payment intent creation.
+	 * @param array   $level3                    - Level 3 data.
+	 * @param string  $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
+	 * @param ?string $payment_country           - The payment two-letter iso country code or null.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -275,7 +281,8 @@ class WC_Payments_API_Client {
 		$customer_id = '',
 		$metadata = [],
 		$level3 = [],
-		$selected_upe_payment_type = ''
+		$selected_upe_payment_type = '',
+		$payment_country = null
 	) {
 		$request = [
 			'amount'      => $amount,
@@ -288,6 +295,9 @@ class WC_Payments_API_Client {
 		if ( '' !== $selected_upe_payment_type ) {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
+		}
+		if ( $payment_country ) {
+			$request['payment_country'] = $payment_country;
 		}
 		if ( $customer_id ) {
 			$request['customer'] = $customer_id;
@@ -880,7 +890,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get data needed to initialize the OAuth flow
+	 * Get data needed to initialize the onboarding flow
 	 *
 	 * @param string $return_url     - URL to redirect to at the end of the flow.
 	 * @param array  $business_data  - Data to prefill the form.
@@ -891,9 +901,9 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_oauth_data( $return_url, array $business_data = [], array $site_data = [], array $actioned_notes = [] ) {
+	public function get_onboarding_data( $return_url, array $business_data = [], array $site_data = [], array $actioned_notes = [] ) {
 		$request_args = apply_filters(
-			'wc_payments_get_oauth_data_args',
+			'wc_payments_get_onboarding_data_args',
 			[
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
@@ -903,7 +913,7 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		return $this->request( $request_args, self::OAUTH_API . '/init', self::POST, true, true );
+		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
 	}
 
 	/**
@@ -1152,6 +1162,124 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Retrieves a store's terminal locations.
+	 *
+	 * @return array[] Stripe terminal location objects.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_terminal_locations() {
+		return $this->request( [], self::TERMINAL_LOCATIONS_API, self::GET );
+	}
+
+	/**
+	 * Creates a new terminal location.
+	 *
+	 * @param string  $display_name The display name of the terminal location.
+	 * @param array   $address {
+	 *     Address partials.
+	 *
+	 *     @type string $country     Two-letter country code.
+	 *     @type string $line1       Address line 1.
+	 *     @type string $line2       Optional. Address line 2.
+	 *     @type string $city        Optional. City, district, suburb, town, or village.
+	 *     @type int    $postal_code Optional. ZIP or postal code.
+	 *     @type string $state       Optional. State, county, province, or region.
+	 * }
+	 * @param mixed[] $metadata Optional. Metadata for the location.
+	 *
+	 * @return array A Stripe terminal location object.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function create_terminal_location( $display_name, $address, $metadata = [] ) {
+		if ( ! isset( $address['country'], $address['line1'] ) ) {
+			throw new API_Exception(
+				__( 'Address country and line 1 are required.', 'woocommerce-payments' ),
+				'wcpay_invalid_terminal_location_request',
+				400
+			);
+		}
+
+		$request = [
+			'display_name' => $display_name,
+			'address'      => $address,
+			'metadata'     => $metadata,
+		];
+
+		return $this->request(
+			$request,
+			self::TERMINAL_LOCATIONS_API,
+			self::POST
+		);
+	}
+
+	/**
+	 * Updates an existing terminal location.
+	 *
+	 * @param string $location_id The id of the terminal location.
+	 * @param string $display_name The display name of the terminal location.
+	 * @param array  $address {
+	 *     Address partials.
+	 *
+	 *     @type string $country     Two-letter country code.
+	 *     @type string $line1       Address line 1.
+	 *     @type string $line2       Optional. Address line 2.
+	 *     @type string $city        Optional. City, district, suburb, town, or village.
+	 *     @type int    $postal_code Optional. ZIP or postal code.
+	 *     @type string $state       Optional. State, county, province, or region.
+	 * }
+	 *
+	 * @return array A Stripe terminal location object.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function update_terminal_location( $location_id, $display_name, $address ) {
+		// Any parameters not provided will be left unchanged so pass only supplied values.
+		$update_request_body = array_merge(
+			( isset( $address ) ? [ 'address' => $address ] : [] ),
+			( isset( $display_name ) ? [ 'display_name' => $display_name ] : [] )
+		);
+
+		return $this->request(
+			$update_request_body,
+			self::TERMINAL_LOCATIONS_API . '/' . $location_id,
+			self::POST
+		);
+	}
+
+	/**
+	 * Retrieves the specified terminal location.
+	 *
+	 * @param string $location_id The id of the terminal location.
+	 *
+	 * @return array A Stripe terminal location object.
+	 * @see https://stripe.com/docs/api/terminal/locations/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_terminal_location( $location_id ) {
+		return $this->request( [], self::TERMINAL_LOCATIONS_API . '/' . $location_id, self::GET );
+	}
+
+	/**
+	 * Deletes the specified location object.
+	 *
+	 * @param string $location_id The id of the terminal location.
+	 *
+	 * @return array Stripe's terminal deletion response.
+	 * @see https://stripe.com/docs/api/terminal/locations/delete
+	 *
+	 * @throws API_Exception If the location id is invalid or downstream call fails.
+	 */
+	public function delete_terminal_location( $location_id ) {
+		return $this->request( [], self::TERMINAL_LOCATIONS_API . '/' . $location_id, self::DELETE );
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -1315,6 +1443,7 @@ class WC_Payments_API_Client {
 
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
+			$error_type = null;
 			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
 				throw new Amount_Too_Small_Exception(
 					$response_body['message'],
@@ -1322,11 +1451,10 @@ class WC_Payments_API_Client {
 					$response_body['data']['currency'],
 					$response_code
 				);
-			}
-
-			if ( isset( $response_body['error'] ) ) {
+			} elseif ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
+				$error_type    = $response_body['error']['type'] ?? null;
 			} elseif ( isset( $response_body['code'] ) ) {
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
@@ -1342,7 +1470,7 @@ class WC_Payments_API_Client {
 			);
 
 			Logger::error( "$error_message ($error_code)" );
-			throw new API_Exception( $message, $error_code, $response_code );
+			throw new API_Exception( $message, $error_code, $response_code, $error_type );
 		}
 
 		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].

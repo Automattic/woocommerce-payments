@@ -510,7 +510,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			$this->assertContains( 'A payment of &#36;50.00 USD failed to complete with the following message: Error: No such customer: 123.', strip_tags( $notes[0]->content, '' ) );
 
 			// Assert: A WooCommerce notice was added.
-			$this->assertTrue( wc_has_notice( $error_message, 'error' ) );
+			$this->assertSame( $error_message, $e->getMessage() );
 
 			throw $e;
 		}
@@ -519,7 +519,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	public function test_connection_exception_thrown() {
 		// Arrange: Reusable data.
 		$error_message = 'Test error.';
-		$error_notice  = 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.';
+		$error_notice  = 'There was an error while processing this request. If you continue to see this notice, please contact the admin.';
 
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
@@ -555,7 +555,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			$this->assertContains( 'A payment of &#36;50.00 USD failed to complete with the following message: Test error.', strip_tags( $notes[0]->content, '' ) );
 
 			// Assert: A WooCommerce notice was added.
-			$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
+			$this->assertSame( $error_notice, $e->getMessage() );
 
 			throw $e;
 		}
@@ -593,7 +593,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 	public function test_bad_request_exception_thrown() {
 		$error_message = 'Test error.';
-		$error_notice  = 'We\'re not able to process this payment. Please refresh the page and try again.';
+		$error_notice  = 'We\'re not able to process this request. Please refresh the page and try again.';
 
 		$order = WC_Helper_Order::create_order();
 
@@ -627,7 +627,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			$this->assertContains( "A payment of &#36;50.00 USD failed to complete with the following message: $error_message", strip_tags( $notes[0]->content, '' ) );
 
 			// Assert: A WooCommerce notice was added.
-			$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
+			$this->assertSame( $error_notice, $e->getMessage() );
 
 			throw $e;
 		}

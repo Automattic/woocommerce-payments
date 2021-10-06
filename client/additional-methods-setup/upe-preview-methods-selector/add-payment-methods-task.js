@@ -28,15 +28,7 @@ import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/p
 import { LoadableBlock } from '../../components/loadable';
 import LoadableSettingsSection from '../../settings/loadable-settings-section';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
-
-const upeMethods = [
-	'bancontact',
-	'giropay',
-	'ideal',
-	'p24',
-	'sepa_debit',
-	'sofort',
-];
+import { upeMethods } from '../constants';
 
 const usePaymentMethodsCheckboxState = () => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();

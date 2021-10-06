@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
-Tested up to: 5.8
+Tested up to: 5.8.1
 Requires PHP: 7.0
-Stable tag: 2.9.1
+Stable tag: 3.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.6 or newer.
-* WooCommerce 5.4 or newer.
+* WooCommerce 5.5 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -98,13 +98,47 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.0.0 - 2021-xx-xx =
+= 3.2.0 - 2021-xx-xx =
+* Fix - Improve error messages when the minimum order amount has not been reached and allow UPE fields to be displayed with less than the minimum amount.
+
+= 3.1.0 - 2021-10-06 =
+* Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
+* Add - Customer multi-currency onboarding flow.
+* Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
+* Add - Update layout of the Multi-currency settings screen.
+* Fix - Fixed missing file error for removed CSS file.
+* Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
+* Fix - Currency switcher does not affect order confirmation screen prices.
+* Fix - Error when attempting to change the payment method for a subscription with UPE enabled.
+* Add - Multi-Currency track currency added.
+* Fix - Fill missing order_intent_info even if an exception occurs.
+* Fix - Authorize and capture payments later with new credit cards.
+* Add - Gutenberg Block Widget for Multi-Currency.
+* Update - WCPay logo.
+* Fix - Translations in transaction/deposit exports
+* Fix - Update shipping cost in payment sheet when changing payment method.
+* Fix - Transaction search with translated terms.
+* Update - Replace REST endpoint for onboarding initialization.
+* Fix - UPE missing international card fees.
+* Update - Bump minimum supported version of WooCommerce from 5.4 to 5.5.
+* Update - Bump minimum required version of WooCommerce from 4.0 to 4.4.
+* Fix - Add credit card on My Account using other payment gateways does not show "Your card number is incomplete" error.
+* Update - Continue loading WCPay if the account is connected.
+* Add - Message to suggest using the previous version of WooCommerce Payments for old Woo core versions.
+* Fix - Appearance of upload file buttons inside challenge dispute page.
+* Fix - Enable logging for UPE checkout errors.
+* Update - Composer package `automattic/jetpack-connection` from v1.20.0 to v1.30.5.
+
+= 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
 * Fix - Use store currency on analytics leaderboard when Multi-Currency is enabled.
+* Add - Add API to expose Multi-Currency widget to theme/plugin developers for easy integration.
 * Fix - Enabled currencies modal UI.
 * Fix - User order currency format on admin refund button.
 * Fix - Clear the list of selected currencies after closing the modal for adding currencies.
-* Fix - Improve error messages when the minimum order amount has not been reached and allow UPE fields to be displayed with less than the minimum amount.
+* Fix - Fix subscription change payment method errors after entering a payment method that fails.
+* Fix - Prevent duplicate account onboarding requests.
+* Fix - Filter out merchant-facing payment errors from customer error notices.
 
 = 2.9.1 - 2021-09-07 =
 * Fix - Error while checking out with UPE when fields are hidden.
@@ -170,6 +204,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
 * Fix - Do not overwrite admin pages when account is disconnected.
 * Update - Set a description when creating payment intents.
+* Add - Add dispute resolution task.
 
 = 2.6.1 - 2021-07-01 =
 * Fix - Updates the notes query filters to prevent breaking the WooCommerce > Home inbox.

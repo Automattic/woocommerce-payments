@@ -129,6 +129,104 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->update_option( 'saved_cards', 'yes' );
 	}
 
+	public function test_attach_exchange_info_to_order_with_no_conversion() {
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'USD' );
+		$order->save();
+
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		$this->wcpay_gateway->attach_exchange_info_to_order( $order, $charge_id );
+
+		// The meta key should not be set.
+		$this->assertEquals( '', $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
+	public function test_attach_exchange_info_to_order_with_different_account_currency_no_conversion() {
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'USD' );
+		$order->save();
+
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'jpy' );
+
+		$this->wcpay_gateway->attach_exchange_info_to_order( $order, $charge_id );
+
+		// The meta key should not be set.
+		$this->assertEquals( '', $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
+	public function test_attach_exchange_info_to_order_with_zero_decimal_order_currency() {
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'JPY' );
+		$order->save();
+
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn(
+				[
+					'id'                  => 'ch_123456',
+					'amount'              => 4500,
+					'balance_transaction' => [
+						'amount'        => 4450,
+						'fee'           => 50,
+						'currency'      => 'USD',
+						'exchange_rate' => 0.9414,
+					],
+				]
+			);
+
+		$this->wcpay_gateway->attach_exchange_info_to_order( $order, $charge_id );
+		$this->assertEquals( 0.009414, $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
+	public function test_attach_exchange_info_to_order_with_different_order_currency() {
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'EUR' );
+		$order->save();
+
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn(
+				[
+					'id'                  => 'ch_123456',
+					'amount'              => 4500,
+					'balance_transaction' => [
+						'amount'        => 4450,
+						'fee'           => 50,
+						'currency'      => 'USD',
+						'exchange_rate' => 0.853,
+					],
+				]
+			);
+
+		$this->wcpay_gateway->attach_exchange_info_to_order( $order, $charge_id );
+		$this->assertEquals( 0.853, $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
 	public function test_process_refund() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
@@ -691,9 +789,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'succeeded',
-				'id'      => $intent_id,
-				'message' => null,
+				'status'    => 'succeeded',
+				'id'        => $intent_id,
+				'message'   => null,
+				'http_code' => 200,
 			],
 			$result
 		);
@@ -748,9 +847,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'succeeded',
-				'id'      => $intent_id,
-				'message' => null,
+				'status'    => 'succeeded',
+				'id'        => $intent_id,
+				'message'   => null,
+				'http_code' => 200,
 			],
 			$result
 		);
@@ -804,9 +904,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'requires_capture',
-				'id'      => $intent_id,
-				'message' => null,
+				'status'    => 'requires_capture',
+				'id'        => $intent_id,
+				'message'   => null,
+				'http_code' => 502,
 			],
 			$result
 		);
@@ -860,9 +961,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'requires_capture',
-				'id'      => $intent_id,
-				'message' => null,
+				'status'    => 'requires_capture',
+				'id'        => $intent_id,
+				'message'   => null,
+				'http_code' => 502,
 			],
 			$result
 		);
@@ -919,9 +1021,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'failed',
-				'id'      => $intent_id,
-				'message' => 'test exception',
+				'status'    => 'failed',
+				'id'        => $intent_id,
+				'message'   => 'test exception',
+				'http_code' => 500,
 			],
 			$result
 		);
@@ -980,9 +1083,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'failed',
-				'id'      => $intent_id,
-				'message' => 'test exception',
+				'status'    => 'failed',
+				'id'        => $intent_id,
+				'message'   => 'test exception',
+				'http_code' => 500,
 			],
 			$result
 		);
@@ -1040,9 +1144,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'  => 'failed',
-				'id'      => $intent_id,
-				'message' => 'test exception',
+				'status'    => 'failed',
+				'id'        => $intent_id,
+				'message'   => 'test exception',
+				'http_code' => 500,
 			],
 			$result
 		);
@@ -1480,32 +1585,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertFalse( $this->wcpay_gateway->is_available_for_current_currency() );
 	}
 
-	public function test_extract_minimum_amount() {
-		$minimum   = 50;
-		$currency  = 'USD';
-		$exception = new Amount_Too_Small_Exception( 'Amount must be at least $0.50 USD', $minimum, strtolower( $currency ), 400 );
-
-		// The value should not only be extracted, but cached too.
-		delete_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
-
-		$result = $this->wcpay_gateway->extract_minimum_amount( $exception );
-		$this->assertEquals( $minimum, $result );
-		$this->assertEquals( $result, get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) ) );
-	}
-
-	public function test_get_cached_minimum_amount_returns_amount() {
-		// Note: WP stores options as strings.
-		set_transient( 'wcpay_minimum_amount_usd', '500', DAY_IN_SECONDS );
-		$result = $this->wcpay_gateway->get_cached_minimum_amount( 'usd' );
-		$this->assertSame( 500, $result );
-	}
-
-	public function test_get_cached_minimum_amount_returns_null_without_cache() {
-		delete_transient( 'wcpay_minimum_amount_usd' );
-		$result = $this->wcpay_gateway->get_cached_minimum_amount( 'usd' );
-		$this->assertNull( $result );
-	}
-
 	public function test_process_payment_for_order_rejects_with_cached_minimum_amount() {
 		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
 
@@ -1517,7 +1596,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$pi = new Payment_Information( 'pm_test', $order );
 
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'The selected payment method (Credit card / debit card) requires a total amount of at least $0.50.' );
+		$this->expectExceptionMessage( 'The selected payment method requires a total amount of at least $0.50.' );
 		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
@@ -1537,7 +1616,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->expectException( Exception::class );
 		$price   = html_entity_decode( wp_strip_all_tags( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
-		$message = 'The selected payment method (Credit card / debit card) requires a total amount of at least ' . $price . '.';
+		$message = 'The selected payment method requires a total amount of at least ' . $price . '.';
 		$this->expectExceptionMessage( $message );
 
 		try {
@@ -1546,5 +1625,29 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
 			throw $e;
 		}
+	}
+
+	public function test_attach_intent_info_to_order_fails_payment_complete() {
+		// test if metadata needed for refunds is being saved despite the payment_complete method.
+		$order = $this->getMockBuilder( WC_Order::class )
+			->disableOriginalConstructor()
+			->setMethods( [ 'update_meta_data', 'save', 'payment_complete' ] )
+			->getMock();
+
+		$intent_id      = 'pi_xxxxxxxxxxxxx';
+		$charge_id      = 'ch_yyyyyyyyyyyyy';
+		$customer_id    = 'cus_12345';
+		$payment_method = 'woocommerce_payments';
+		$intent_status  = 'succeeded';
+		$currency       = 'USD';
+
+		$order->expects( $this->atLeast( 2 ) )->method( 'update_meta_data' )->withConsecutive(
+			[ '_intent_id', $intent_id ],
+			[ '_charge_id', $charge_id ]
+		);
+		$order->method( 'payment_complete' )->willThrowException( new Exception( 'something went wrong' ) );
+		$order->expects( $this->once() )->method( 'save' );
+
+		$this->wcpay_gateway->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
 	}
 }

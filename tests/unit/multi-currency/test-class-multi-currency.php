@@ -728,6 +728,90 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $this->multi_currency->get_available_currencies() );
 	}
 
+	public function test_get_switcher_widget_markup() {
+		$expected = '<div class="widget ">		<form>
+						<select
+				name="currency"
+				aria-label=""
+				onchange="this.form.submit()"
+			>
+				<option value="USD" selected>&#36; USD</option><option value="BIF">Fr BIF</option><option value="CAD">&#36; CAD</option><option value="GBP">&pound; GBP</option>			</select>
+		</form>
+		</div>';
+
+		$this->assertEquals( $expected, $this->multi_currency->get_switcher_widget_markup() );
+	}
+
+	public function test_validate_currency_code_returns_existing_currency_code() {
+		$this->assertEquals( 'CAD', $this->multi_currency->validate_currency_code( 'CAD' ) );
+		$this->assertEquals( 'CAD', $this->multi_currency->validate_currency_code( 'cAd' ) );
+		$this->assertEquals( 'CAD', $this->multi_currency->validate_currency_code( 'cad' ) );
+	}
+
+	public function test_validate_currency_code_returns_false_on_non_matching_currency_code() {
+		$this->assertEquals( false, $this->multi_currency->validate_currency_code( 'XXX' ) );
+		$this->assertEquals( false, $this->multi_currency->validate_currency_code( 'YYY' ) );
+	}
+
+	public function test_is_simulation_enabled() {
+		$this->assertFalse( $this->multi_currency->is_simulation_enabled() );
+		$_GET = [
+			'is_mc_onboarding_simulation' => true,
+			'enable_storefront_switcher'  => true,
+		];
+		$this->multi_currency->possible_simulation_activation();
+		$this->assertTrue( $this->multi_currency->is_simulation_enabled() );
+	}
+
+	public function test_get_multi_currency_onboarding_simulation_variables() {
+		$this->assertFalse( $this->multi_currency->is_simulation_enabled() );
+
+		$this->assertEquals( [], $this->multi_currency->get_multi_currency_onboarding_simulation_variables() );
+
+		$_GET = [
+			'is_mc_onboarding_simulation' => false,
+			'enable_storefront_switcher'  => true,
+		];
+
+		$this->assertEquals( [], $this->multi_currency->get_multi_currency_onboarding_simulation_variables() );
+
+		$_GET = [
+			'is_mc_onboarding_simulation' => true,
+		];
+
+		$this->assertEquals(
+			[
+				'enable_storefront_switcher' => false,
+				'enable_auto_currency'       => false,
+			],
+			$this->multi_currency->get_multi_currency_onboarding_simulation_variables()
+		);
+
+		$_GET = [
+			'is_mc_onboarding_simulation' => true,
+			'enable_storefront_switcher'  => true,
+		];
+
+		$this->assertEquals(
+			[
+				'enable_storefront_switcher' => true,
+				'enable_auto_currency'       => false,
+			],
+			$this->multi_currency->get_multi_currency_onboarding_simulation_variables()
+		);
+
+		$_GET                    = [];
+		$_SERVER['HTTP_REFERER'] = '?is_mc_onboarding_simulation=true&enable_auto_currency=true&enable_storefront_switcher=true';
+
+		$this->assertEquals(
+			[
+				'enable_storefront_switcher' => true,
+				'enable_auto_currency'       => true,
+			],
+			$this->multi_currency->get_multi_currency_onboarding_simulation_variables()
+		);
+	}
+
 	public function get_price_provider() {
 		return [
 			[ '5.2499', '0.00', 5.2499 ],
@@ -781,6 +865,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		);
 
 		$this->multi_currency = new MultiCurrency( $mock_api_client ?? $this->mock_api_client, $this->mock_account, $this->mock_localization_service );
+		$this->multi_currency->init_widgets();
 		$this->multi_currency->init();
 	}
 
