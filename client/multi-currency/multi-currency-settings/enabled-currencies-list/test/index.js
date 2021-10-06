@@ -16,6 +16,8 @@ import {
 	useEnabledCurrencies,
 } from 'wcpay/data';
 
+import MultiCurrencySettingsContext from '../../../context';
+
 jest.mock( 'wcpay/data', () => ( {
 	useCurrencies: jest.fn(),
 	useAvailableCurrencies: jest.fn(),
@@ -183,6 +185,21 @@ useEnabledCurrencies.mockReturnValue( {
 	submitEnabledCurrenciesUpdate: () => {},
 } );
 
+const containerContext = {
+	isSingleCurrencyScreenOpen: false,
+	currencyCodeToShowSettingsFor: null,
+	openSingleCurrencySettings: jest.fn(),
+	closeSingleCurrencySettings: jest.fn(),
+};
+
+const getContainer = () => {
+	return render(
+		<MultiCurrencySettingsContext.Provider value={ containerContext }>
+			<EnabledCurrencies />
+		</MultiCurrencySettingsContext.Provider>
+	);
+};
+
 describe( 'Multi Currency enabled currencies list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -190,12 +207,12 @@ describe( 'Multi Currency enabled currencies list', () => {
 	} );
 
 	test( 'Enabled currencies list renders correctly', () => {
-		const { container } = render( <EnabledCurrencies /> );
+		const { container } = getContainer();
 		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'Available currencies modal renders correctly', () => {
-		render( <EnabledCurrencies /> );
+		getContainer();
 		expect(
 			screen.queryByRole( 'dialog', { name: /add enabled currencies/i } )
 		).not.toBeInTheDocument();
@@ -209,8 +226,29 @@ describe( 'Multi Currency enabled currencies list', () => {
 		expect( modal ).toMatchSnapshot();
 	} );
 
+	test( 'Remove currency modal doesnt render when theres no dependency', () => {
+		getContainer();
+		expect(
+			screen.queryByRole( 'dialog', { name: /remove euro/i } )
+		).not.toBeInTheDocument();
+		fireEvent.click(
+			screen.getByRole( 'button', {
+				name: /remove euro as an enabled currency/i,
+			} )
+		);
+		const modal = screen.queryByRole( 'dialog', { name: /remove euro/i } );
+		expect( modal ).not.toBeInTheDocument();
+	} );
+
 	test( 'Remove currency modal renders correctly', () => {
-		render( <EnabledCurrencies /> );
+		window.multiCurrencyPaymentMethodsMap = {
+			EUR: {
+				giropay: 'giropay',
+				sofort: 'Sofort',
+				sepa_debit: 'SEPA Direct Debit',
+			},
+		};
+		getContainer();
 		expect(
 			screen.queryByRole( 'dialog', { name: /remove euro/i } )
 		).not.toBeInTheDocument();
@@ -222,11 +260,12 @@ describe( 'Multi Currency enabled currencies list', () => {
 		const modal = screen.queryByRole( 'dialog', { name: /remove euro/i } );
 		expect( modal ).toBeInTheDocument();
 		expect( modal ).toMatchSnapshot();
+		window.multiCurrencyPaymentMethodsMap = undefined;
 	} );
 
 	test( 'Modal should clear search term on cancel and update selected', () => {
 		for ( const name of [ /cancel/i, /update selected/i ] ) {
-			render( <EnabledCurrencies /> );
+			getContainer();
 			userEvent.click(
 				screen.getByRole( 'button', {
 					name: /add currencies/i,

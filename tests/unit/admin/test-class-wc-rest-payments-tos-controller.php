@@ -107,11 +107,11 @@ class WC_REST_Payments_Tos_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_remove_stripe_connect_track_should_delete_option() {
-		add_option( '_wcpay_oauth_stripe_connected', [ 'props' => true ] );
+		add_option( '_wcpay_onboarding_stripe_connected', [ 'props' => true ] );
 
 		// Run the test.
 		$this->controller->remove_stripe_connect_track( $this->request );
 
-		$this->assertFalse( get_option( '_wcpay_oauth_stripe_connected', false ) );
+		$this->assertFalse( get_option( '_wcpay_onboarding_stripe_connected', false ) );
 	}
 }

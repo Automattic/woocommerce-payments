@@ -18,6 +18,7 @@ jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
 
 	const publishableKey = getConfig( 'publishableKey' );
+	const isChangingPayment = getConfig( 'isChangingPayment' );
 	const isUPEEnabled = getConfig( 'isUPEEnabled' );
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 	const enabledBillingFields = getConfig( 'enabledBillingFields' );
@@ -235,6 +236,11 @@ jQuery( function ( $ ) {
 		$( '#wcpay_selected_upe_payment_type' ).val( paymentType );
 	};
 
+	// Set the payment country field
+	const setPaymentCountry = ( country ) => {
+		$( '#wcpay_payment_country' ).val( country );
+	};
+
 	/**
 	 * Converts form fields object into Stripe `billing_details` object.
 	 *
@@ -318,7 +324,7 @@ jQuery( function ( $ ) {
 						'always'
 					);
 				}
-				if ( isCheckout && ! isOrderPay ) {
+				if ( isCheckout && ! ( isOrderPay || isChangingPayment ) ) {
 					upeSettings.fields = {
 						billingDetails: hiddenBillingFields,
 					};
@@ -334,6 +340,7 @@ jQuery( function ( $ ) {
 							.isReusable;
 					showNewPaymentMethodCheckbox( isPaymentMethodReusable );
 					setSelectedUPEPaymentType( selectedUPEPaymentType );
+					setPaymentCountry( event.value.country );
 					isUPEComplete = event.complete;
 				} );
 			} )
@@ -381,7 +388,6 @@ jQuery( function ( $ ) {
 			! upeElement
 		) {
 			renameGatewayTitle();
-			const isChangingPayment = getConfig( 'isChangingPayment' );
 
 			// We use a setup intent if we are on the screens to add a new payment method or to change a subscription payment.
 			const useSetUpIntent =
@@ -455,7 +461,8 @@ jQuery( function ( $ ) {
 				paymentIntentId,
 				orderId,
 				savePaymentMethod,
-				$( '#wcpay_selected_upe_payment_type' ).val()
+				$( '#wcpay_selected_upe_payment_type' ).val(),
+				$( '#wcpay_payment_country' ).val()
 			);
 
 			const { error } = await api.getStripe().confirmPayment( {
@@ -549,7 +556,11 @@ jQuery( function ( $ ) {
 				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
 			}
 			if ( error ) {
-				throw error;
+				// Log payment errors on charge and then throw the error.
+				const logError = await api.logPaymentError( error.charge );
+				if ( logError ) {
+					throw error;
+				}
 			}
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
@@ -643,6 +654,15 @@ jQuery( function ( $ ) {
 
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
+		if (
+			'woocommerce_payments' !==
+			$(
+				"#add_payment_method input:checked[name='payment_method']"
+			).val()
+		) {
+			return;
+		}
+
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
 			if ( isUPEEnabled && paymentIntentId ) {
 				handleUPEAddPayment( $( this ) );
@@ -654,7 +674,7 @@ jQuery( function ( $ ) {
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
 		if ( ! isUsingSavedPaymentMethod() ) {
-			if ( getConfig( 'isChangingPayment' ) ) {
+			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );
 				return false;
 			}

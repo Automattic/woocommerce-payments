@@ -1,9 +1,24 @@
+.multi-currency-settings {
+	.settings-section:not( .settings-section:last-child ) {
+		&.multi-currency-settings-enabled-currencies-section {
+			margin-bottom: 32px;
+		}
+	}
+}
+
 .wcpay-multi-currency__enabled-currencies-header {
 	display: flex;
-	margin-right: 100px;
 
 	div {
 		flex: 1;
+	}
+
+	div:nth-child( 1 ) {
+		min-width: 45%;
+	}
+
+	div:nth-child( 3 ) {
+		min-width: 10%;
 	}
 }
 
@@ -26,12 +41,12 @@
 		&__container {
 			display: flex;
 			flex-wrap: wrap;
+			min-width: 45%;
 		}
 
 		&__container,
 		&__rate {
 			flex: 1;
-			min-width: 300px;
 		}
 
 		&__flag {
@@ -66,8 +81,9 @@
 		&__actions {
 			text-align: right;
 			display: flex;
-			min-width: 100px;
+			min-width: 10%;
 			color: $studio-gray-20;
+			justify-content: right;
 
 			.components-button {
 				text-decoration: none;
@@ -169,6 +185,50 @@
 		border-bottom: 1px solid $studio-gray-5;
 		margin: -24px -24px 0;
 		padding: 16px;
+	}
+}
+
+.wcpay-confirmation-modal.wcpay-confirmation-modal.enabled-currency-delete-modal {
+	max-width: 495px;
+	.components-modal__header {
+		padding: 0 16px;
+		margin: 0 -16px 16px;
+		.components-modal__header-heading {
+			font-size: 16px;
+			font-weight: 500;
+			line-height: 24px;
+		}
+		.components-modal__header-heading-container svg {
+			height: 22px;
+			transform: translate( 0, 4px ) rotate( 180deg );
+			margin-right: 6px;
+			fill: #d94f4f;
+		}
+	}
+	.components-modal__content {
+		padding: 0 16px 16px;
+		p {
+			font-size: 14px;
+			line-height: 19px;
+		}
+		ul {
+			margin-block-start: 14px;
+			margin-block-end: 22px;
+			li {
+				margin-bottom: 12px;
+				.woocommerce-payments__payment-method-icon svg {
+					margin-right: 8px;
+				}
+			}
+		}
+	}
+	.wcpay-confirmation-modal__separator {
+		margin: 32px -16px 16px;
+	}
+	.wcpay-confirmation-modal__footer {
+		& > *:not( :first-child ) {
+			margin-left: 12px;
+		}
 	}
 }
 

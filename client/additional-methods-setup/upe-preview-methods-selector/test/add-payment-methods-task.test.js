@@ -136,7 +136,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			'giropay',
 			'iDEAL',
 			'Przelewy24 (P24)',
-			'Direct debit payment',
+			'SEPA Direct Debit',
 			'Sofort',
 		];
 
@@ -202,7 +202,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			'giropay',
 			'iDEAL',
 			'Przelewy24 (P24)',
-			'Direct debit payment',
+			'SEPA Direct Debit',
 			'Sofort',
 		];
 
@@ -265,7 +265,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			'giropay',
 			'iDEAL',
 			'Przelewy24 (P24)',
-			'Direct debit payment',
+			'SEPA Direct Debit',
 			'Sofort',
 		];
 

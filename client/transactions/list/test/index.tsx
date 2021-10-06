@@ -7,6 +7,9 @@ import * as React from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { dateI18n } from '@wordpress/date';
+import moment from 'moment';
+import os from 'os';
 
 /**
  * Internal dependencies
@@ -104,6 +107,18 @@ const getMockTransactions: () => Transaction[] = () => [
 		deposit_id: 'po_mock',
 	},
 ];
+
+function getUnformattedAmount( formattedAmount: string ) {
+	const amount = formattedAmount.replace( /[^0-9,.' ]/g, '' ).trim();
+	return amount.replace( ',', '.' ); // Euro fix
+}
+
+function formatDate( date: string ) {
+	return dateI18n(
+		'M j, Y / g:iA',
+		moment.utc( date ).local().toISOString()
+	);
+}
 
 describe( 'Transactions list', () => {
 	beforeEach( () => {
@@ -434,6 +449,65 @@ describe( 'Transactions list', () => {
 					.split( '\n' )[ 0 ]
 					.split( ',' )
 			).toEqual( expected );
+		} );
+
+		test( 'should match the visible rows', () => {
+			const { getByRole, getAllByRole } = render( <TransactionsList /> );
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
+			const csvRows = csvContent.split( os.EOL );
+			const displayRows: HTMLElement[] = getAllByRole( 'row' );
+
+			expect( csvRows.length ).toEqual( displayRows.length );
+
+			const csvFirstTransaction = csvRows[ 1 ].split( ',' );
+			const displayFirstTransaction: string[] = Array.from(
+				displayRows[ 1 ].querySelectorAll( 'td' )
+			).map( ( td: HTMLElement ) => td.textContent || '' );
+
+			// Date/Time column is a th
+			// Extract is separately and prepend to csvFirstTransaction
+			const displayFirstRowHead: string[] = Array.from(
+				displayRows[ 1 ].querySelectorAll( 'th' )
+			).map( ( th: HTMLElement ) => th.textContent || '' );
+			displayFirstTransaction.unshift( displayFirstRowHead[ 0 ] );
+
+			// Note:
+			//
+			// 1. CSV and display indexes are off by 1 because the first field in CSV is transaction id,
+			//    which is missing in display.
+			//
+			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
+			//    trailing zeros as in the display amount.
+			//
+			expect( displayFirstTransaction[ 0 ] ).toBe(
+				formatDate( csvFirstTransaction[ 1 ].replace( /['"]+/g, '' ) ) // strip extra quotes
+			); // date
+			expect( displayFirstTransaction[ 1 ] ).toBe(
+				csvFirstTransaction[ 2 ]
+			); // type
+			expect(
+				getUnformattedAmount( displayFirstTransaction[ 2 ] ).indexOf(
+					csvFirstTransaction[ 3 ]
+				)
+			).not.toBe( -1 ); // amount
+			expect(
+				getUnformattedAmount( displayFirstTransaction[ 3 ] ).indexOf(
+					csvFirstTransaction[ 4 ]
+				)
+			).not.toBe( -1 ); // fees
+			expect(
+				getUnformattedAmount( displayFirstTransaction[ 4 ] ).indexOf(
+					csvFirstTransaction[ 5 ]
+				)
+			).not.toBe( -1 ); // net
+			expect( displayFirstTransaction[ 5 ] ).toBe(
+				csvFirstTransaction[ 6 ]
+			); // order number
+			expect( displayFirstTransaction[ 7 ] ).toBe(
+				csvFirstTransaction[ 8 ].replace( /['"]+/g, '' ) // strip extra quotes
+			); // customer
 		} );
 	} );
 } );

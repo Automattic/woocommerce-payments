@@ -71,6 +71,13 @@ class MultiCurrency {
 	protected $currency_switcher_widget;
 
 	/**
+	 * Gutenberg Block implementation of the Currency Switcher Widget instance.
+	 *
+	 * @var CurrencySwitcherBlock
+	 */
+	protected $currency_switcher_block;
+
+	/**
 	 * Utils instance.
 	 *
 	 * @var Utils
@@ -162,6 +169,13 @@ class MultiCurrency {
 	protected $tracking;
 
 	/**
+	 * Simulation variables array.
+	 *
+	 * @var array
+	 */
+	protected $simulation_params = [];
+
+	/**
 	 * Main MultiCurrency Instance.
 	 *
 	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
@@ -184,13 +198,14 @@ class MultiCurrency {
 	 * @param WC_Payments_Localization_Service $localization_service Localization Service instance.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service ) {
-		$this->payments_api_client  = $payments_api_client;
-		$this->payments_account     = $payments_account;
-		$this->localization_service = $localization_service;
-		$this->geolocation          = new Geolocation( $this->localization_service );
-		$this->utils                = new Utils();
-		$this->compatibility        = new Compatibility( $this, $this->utils );
-		$this->analytics            = new Analytics( $this );
+		$this->payments_api_client     = $payments_api_client;
+		$this->payments_account        = $payments_account;
+		$this->localization_service    = $localization_service;
+		$this->geolocation             = new Geolocation( $this->localization_service );
+		$this->utils                   = new Utils();
+		$this->compatibility           = new Compatibility( $this, $this->utils );
+		$this->analytics               = new Analytics( $this );
+		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
 
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
@@ -208,6 +223,7 @@ class MultiCurrency {
 			// Make sure that this runs after the main init function.
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
 			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
+			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
 		}
 	}
 
@@ -239,7 +255,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 
@@ -269,11 +285,12 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Initialize the Widgets.
+	 * Initialize the legacy widgets.
 	 *
 	 * @return void
 	 */
 	public function init_widgets() {
+		// Register the legacy widget.
 		$this->currency_switcher_widget = new CurrencySwitcherWidget( $this, $this->compatibility );
 		register_widget( $this->currency_switcher_widget );
 	}
@@ -662,15 +679,16 @@ class MultiCurrency {
 		// We only want to automatically set the currency if it's already not set.
 		if ( $this->is_using_auto_currency_switching() && ! $this->get_stored_currency_code() ) {
 			$currency = $this->geolocation->get_currency_by_customer_location();
-
 			// Update currency and display notice if enabled.
 			if ( ! empty( $this->get_enabled_currencies()[ $currency ] ) ) {
 				$this->update_selected_currency( $currency );
-				add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
+				// Prevent duplicates in simulation.
+				if ( ! has_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] ) ) {
+					add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
+				}
 			}
 		}
 	}
-
 
 	/**
 	 * Gets the configured value for apply charm pricing only to products.
@@ -763,15 +781,15 @@ class MultiCurrency {
 		$currencies       = get_woocommerce_currencies();
 
 		// Do not display notice if using the store's default currency.
-		if ( $store_currency === $current_currency->get_code() ) {
+		if ( $store_currency === $current_currency->get_code() && ! $this->is_simulation_enabled() ) {
 			return;
 		}
 
 		$message = sprintf(
-			/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name */
+		/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name */
 			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a>Use %3$s instead.</a>', 'woocommerce-payments' ),
-			WC()->countries->countries[ $country ],
-			$current_currency->get_name(),
+			apply_filters( 'wcpay_multi_currency_override_notice_country', WC()->countries->countries[ $country ] ),
+			apply_filters( 'wcpay_multi_currency_override_notice_currency_name', $current_currency->get_name() ),
 			$currencies[ $store_currency ]
 		);
 
@@ -1046,8 +1064,53 @@ class MultiCurrency {
 	 *
 	 * @return bool
 	 */
-	private function is_using_auto_currency_switching(): bool {
-		return 'yes' === get_option( $this->id . '_enable_auto_currency', false );
+	public function is_using_auto_currency_switching(): bool {
+		return 'yes' === get_option( $this->id . '_enable_auto_currency', 'no' );
+	}
+
+	/**
+	 * Checks if the merchant has enabled the currency switcher widget.
+	 *
+	 * @return  bool
+	 */
+	public function is_using_storefront_switcher(): bool {
+		return 'yes' === get_option( $this->id . '_enable_storefront_switcher', 'no' );
+	}
+
+	/**
+	 * Gets the store settings.
+	 *
+	 * @return  array  The store settings.
+	 */
+	public function get_settings() {
+		return [
+			$this->id . '_enable_auto_currency'       => $this->is_using_auto_currency_switching(),
+			$this->id . '_enable_storefront_switcher' => $this->is_using_storefront_switcher(),
+			'site_theme'                              => wp_get_theme()->get( 'Name' ),
+			'date_format'                             => esc_attr( get_option( 'date_format', 'F j, Y' ) ),
+			'time_format'                             => esc_attr( get_option( 'time_format', 'g:i a' ) ),
+			'store_url'                               => esc_attr( get_page_uri( wc_get_page_id( 'shop' ) ) ),
+		];
+	}
+
+	/**
+	 * Updates the store settings
+	 *
+	 * @param   array $params  Update requested values.
+	 *
+	 * @return  void
+	 */
+	public function update_settings( $params ) {
+		$updateable_options = [
+			'wcpay_multi_currency_enable_auto_currency',
+			'wcpay_multi_currency_enable_storefront_switcher',
+		];
+
+		foreach ( $updateable_options as $key ) {
+			if ( isset( $params[ $key ] ) ) {
+				update_option( $key, sanitize_text_field( $params[ $key ] ) );
+			}
+		}
 	}
 
 	/**
@@ -1102,6 +1165,202 @@ class MultiCurrency {
 			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components' ],
 			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
+		);
+	}
+
+	/**
+	 * Validates the given currency code.
+	 *
+	 * @param   string $currency_code  The currency code to check validity.
+	 *
+	 * @return  string|false  Returns back the currency code in uppercase letters if it's valid, or `false` if not.
+	 */
+	public function validate_currency_code( $currency_code ) {
+		return in_array( strtoupper( $currency_code ), array_keys( $this->available_currencies ), true )
+		? strtoupper( $currency_code )
+		: false;
+	}
+
+	/**
+	 * Get simulation params from querystring and activate when needed
+	 *
+	 * @return  void
+	 */
+	public function possible_simulation_activation() {
+		// This is required in the MC onboarding simulation iframe.
+		$this->simulation_params = $this->get_multi_currency_onboarding_simulation_variables();
+		if ( ! $this->is_simulation_enabled() ) {
+			return;
+		}
+		// Modify the page links to deliver required params in the simulation.
+		$this->add_simulation_params_to_preview_urls();
+		$this->simulate_client_currency();
+	}
+
+	/**
+	 * Enables simulation of client browser currency.
+	 *
+	 * @return  void
+	 */
+	private function simulate_client_currency() {
+		if ( ! $this->simulation_params['enable_auto_currency'] ) {
+			return;
+		}
+
+		$countries = WC_Payments_Utils::supported_countries();
+
+		$predefined_simulation_currencies = [
+			'USD' => $countries['US'],
+			'GBP' => $countries['GB'],
+		];
+
+		$simulation_currency      = 'USD' === get_option( 'woocommerce_currency', 'USD' ) ? 'GBP' : 'USD';
+		$simulation_currency_name = $this->available_currencies[ $simulation_currency ]->get_name();
+		$simulation_country       = $predefined_simulation_currencies[ $simulation_currency ];
+
+		// Simulate client currency from geolocation.
+		add_filter(
+			'wcpay_multi_currency_override_notice_currency_name',
+			function( $selected_currency_name ) use ( $simulation_currency_name ) {
+				return $simulation_currency_name;
+			}
+		);
+
+		// Simulate client country from geolocation.
+		add_filter(
+			'wcpay_multi_currency_override_notice_country',
+			function( $selected_country ) use ( $simulation_country ) {
+				return $simulation_country;
+			}
+		);
+
+		// Always display the notice on simulation screen, prevent duplicate hooks.
+		if ( ! has_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] ) ) {
+			add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
+		}
+
+		// Skip recalculating the cart to prevent infinite loop in simulation.
+		remove_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
+
+	}
+
+	/**
+	 * Returns whether the simulation querystring param is set and active
+	 *
+	 * @return  bool  Whether the simulation is enabled or not
+	 */
+	public function is_simulation_enabled() {
+		return 0 < count( array_keys( $this->simulation_params ) );
+	}
+
+	/**
+	 * Gets the multi currency onboarding preview overrides from the querystring.
+	 *
+	 * @return  array  Override variables
+	 */
+	public function get_multi_currency_onboarding_simulation_variables() {
+
+		$parameters = $_GET; // phpcs:ignore WordPress.Security.NonceVerification
+		// Check if we are in a preview session, don't interfere with the main session.
+		if ( ! isset( $parameters['is_mc_onboarding_simulation'] ) || true !== boolval( $parameters['is_mc_onboarding_simulation'] ) ) {
+			// Check if the page referer has the variables.
+			$server = $_SERVER; // phpcs:ignore WordPress.Security.NonceVerification
+			// Check if we are coming from a simulation session (if we don't have the necessary query strings).
+			if ( isset( $server['HTTP_REFERER'] ) && 0 < strpos( $server['HTTP_REFERER'], 'is_mc_onboarding_simulation' ) ) {
+				wp_parse_str( wp_parse_url( $server['HTTP_REFERER'], PHP_URL_QUERY ), $parameters );
+				if ( ! isset( $parameters['is_mc_onboarding_simulation'] ) || true !== boolval( $parameters['is_mc_onboarding_simulation'] ) ) {
+					return [];
+				}
+			} else {
+				return [];
+			}
+		}
+
+		// Define variables which can be overridden inside the preview session, with their sanitization methods.
+		$possible_variables = [
+			'enable_storefront_switcher' => 'wp_validate_boolean',
+			'enable_auto_currency'       => 'wp_validate_boolean',
+		];
+
+		// Define the defaults if the parameter is missing in the request.
+		$defaults = [
+			'enable_storefront_switcher' => false,
+			'enable_auto_currency'       => false,
+		];
+
+		// Prepare the params array.
+		$values = [];
+
+		// Walk through the querystring parameter possibilities, and prepare the params.
+		foreach ( $possible_variables as $possible_variable => $sanitization_callback ) {
+			// phpcs:disable WordPress.Security.NonceVerification
+			if ( isset( $parameters[ $possible_variable ] ) ) {
+				$values[ $possible_variable ] = call_user_func(
+					$sanitization_callback,
+					$parameters[ $possible_variable ] // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				);
+				// phpcs:enable WordPress.Security.NonceVerification
+			} else {
+				// Append the default, the param is missing in the querystring.
+				$values [ $possible_variable ] = $defaults[ $possible_variable ];
+			}
+		}
+
+		return $values;
+	}
+
+	/**
+	 * Adds the required querystring parameters to all urls in preview pages.
+	 *
+	 * @return  void
+	 */
+	private function add_simulation_params_to_preview_urls() {
+		$params = $this->simulation_params;
+		add_filter(
+			'wp_footer',
+			function() use ( $params ) {
+				?>
+			<script type="text/javascript" id="wcpay_multi_currency-simulation-script">
+				// Add simulation overrides to all links.
+				document.querySelectorAll('a').forEach((link) => {
+					const parsedURL = new URL(link.href);
+					if (
+						false === parsedURL.searchParams.has( 'is_mc_onboarding_simulation' )
+					) {
+						parsedURL.searchParams.set('is_mc_onboarding_simulation', true);
+						parsedURL.searchParams.set('enable_auto_currency', <?php echo esc_attr( $params['enable_auto_currency'] ? 'true' : 'false' ); ?>);
+						parsedURL.searchParams.set('enable_storefront_switcher', <?php echo esc_attr( $params['enable_storefront_switcher'] ? 'true' : 'false' ); ?>);
+						link.href = parsedURL.toString();
+					}
+				});
+
+				// Unhide the store notice in simulation mode.
+				document.addEventListener('DOMContentLoaded', () => {
+					const noticeElement = document.querySelector('.woocommerce-store-notice.demo_store')
+					if( noticeElement ) {
+						const noticeId = noticeElement.getAttribute('data-notice-id');
+						cookieStore.delete( 'store_notice' + noticeId );
+					}
+				});
+			</script>
+				<?php
+			}
+		);
+	}
+
+	/**
+	 * Checks if the currently displayed page is the WooCommerce Payments
+	 * settings page for the multi currency settings.
+	 *
+	 * @return bool
+	 */
+	public function is_multi_currency_settings_page(): bool {
+		global $current_screen, $current_tab;
+		return (
+			is_admin()
+			&& $current_tab && $current_screen
+			&& 'wcpay_multi_currency' === $current_tab
+			&& 'woocommerce_page_wc-settings' === $current_screen->base
 		);
 	}
 

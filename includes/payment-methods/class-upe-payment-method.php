@@ -88,6 +88,15 @@ abstract class UPE_Payment_Method {
 	}
 
 	/**
+	 * Returns payment method currencies
+	 *
+	 * @return array
+	 */
+	public function get_currencies() {
+		return $this->currencies;
+	}
+
+	/**
 	 * Returns boolean dependent on whether payment method
 	 * can be used at checkout
 	 *

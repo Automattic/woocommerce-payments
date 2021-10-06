@@ -38,7 +38,7 @@ class WC_Payments_API_Client {
 	const TRANSACTIONS_API       = 'transactions';
 	const DISPUTES_API           = 'disputes';
 	const FILES_API              = 'files';
-	const OAUTH_API              = 'oauth';
+	const ONBOARDING_API         = 'onboarding';
 	const TIMELINE_API           = 'timeline';
 	const PAYMENT_METHODS_API    = 'payment_methods';
 	const SETUP_INTENTS_API      = 'setup_intents';
@@ -231,6 +231,7 @@ class WC_Payments_API_Client {
 	 * @param string $currency_code   - Currency to charge in.
 	 * @param array  $payment_methods - Payment methods to include.
 	 * @param int    $order_id        - The order ID.
+	 * @param string $capture_method  - optional capture method (either `automatic` or `manual`).
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -239,13 +240,15 @@ class WC_Payments_API_Client {
 		$amount,
 		$currency_code,
 		$payment_methods,
-		$order_id
+		$order_id,
+		$capture_method = 'automatic'
 	) {
 		$request                         = [];
 		$request['amount']               = $amount;
 		$request['currency']             = $currency_code;
 		$request['description']          = $this->get_intent_description( $order_id );
 		$request['payment_method_types'] = $payment_methods;
+		$request['capture_method']       = $capture_method;
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
@@ -255,14 +258,15 @@ class WC_Payments_API_Client {
 	/**
 	 * Updates an intention, without confirming it.
 	 *
-	 * @param string $intention_id              - The ID of the intention to update.
-	 * @param int    $amount                    - Amount to charge.
-	 * @param string $currency_code             - Currency to charge in.
-	 * @param bool   $save_payment_method       - Whether to setup payment intent for future usage.
-	 * @param string $customer_id               - Stripe customer to associate payment intent with.
-	 * @param array  $metadata                  - Meta data values to be sent along with payment intent creation.
-	 * @param array  $level3                    - Level 3 data.
-	 * @param string $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
+	 * @param string  $intention_id              - The ID of the intention to update.
+	 * @param int     $amount                    - Amount to charge.
+	 * @param string  $currency_code             - Currency to charge in.
+	 * @param bool    $save_payment_method       - Whether to setup payment intent for future usage.
+	 * @param string  $customer_id               - Stripe customer to associate payment intent with.
+	 * @param array   $metadata                  - Meta data values to be sent along with payment intent creation.
+	 * @param array   $level3                    - Level 3 data.
+	 * @param string  $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
+	 * @param ?string $payment_country           - The payment two-letter iso country code or null.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -275,7 +279,8 @@ class WC_Payments_API_Client {
 		$customer_id = '',
 		$metadata = [],
 		$level3 = [],
-		$selected_upe_payment_type = ''
+		$selected_upe_payment_type = '',
+		$payment_country = null
 	) {
 		$request = [
 			'amount'      => $amount,
@@ -288,6 +293,9 @@ class WC_Payments_API_Client {
 		if ( '' !== $selected_upe_payment_type ) {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
+		}
+		if ( $payment_country ) {
+			$request['payment_country'] = $payment_country;
 		}
 		if ( $customer_id ) {
 			$request['customer'] = $customer_id;
@@ -880,7 +888,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get data needed to initialize the OAuth flow
+	 * Get data needed to initialize the onboarding flow
 	 *
 	 * @param string $return_url     - URL to redirect to at the end of the flow.
 	 * @param array  $business_data  - Data to prefill the form.
@@ -891,9 +899,9 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_oauth_data( $return_url, array $business_data = [], array $site_data = [], array $actioned_notes = [] ) {
+	public function get_onboarding_data( $return_url, array $business_data = [], array $site_data = [], array $actioned_notes = [] ) {
 		$request_args = apply_filters(
-			'wc_payments_get_oauth_data_args',
+			'wc_payments_get_onboarding_data_args',
 			[
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
@@ -903,7 +911,7 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		return $this->request( $request_args, self::OAUTH_API . '/init', self::POST, true, true );
+		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
 	}
 
 	/**

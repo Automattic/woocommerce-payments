@@ -1,0 +1,30 @@
+.multi-currency-settings-task {
+	&__wrapper {
+		margin-top: 24px;
+		& > .components-card__body {
+			&.is-size-medium {
+				padding: 24px;
+			}
+			.components-base-control {
+				.components-base-control__field {
+					margin-bottom: 0;
+				}
+			}
+			& > .wcpay-wizard-task__description-element {
+				font-size: 13px;
+			}
+		}
+	}
+	&__description {
+		font-size: 12px;
+		font-style: italic;
+		padding: 0 0 0 32px;
+		margin: 4px 0 12px;
+		color: #757575;
+	}
+}
+
+.components-button.is-tertiary.multi-currency-setup-preview-button {
+	margin-left: 8px;
+	padding: 6px 12px;
+}

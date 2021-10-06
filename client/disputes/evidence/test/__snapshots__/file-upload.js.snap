@@ -28,7 +28,7 @@ exports[`FileUploadControl renders default file upload control 1`] = `
           class="components-form-file-upload"
         >
           <button
-            class="components-button is-primary has-text has-icon"
+            class="components-button is-secondary has-text has-icon"
             id="form-file-upload-field_key"
             type="button"
           >
@@ -90,7 +90,7 @@ exports[`FileUploadControl renders disabled state 1`] = `
           class="components-form-file-upload"
         >
           <button
-            class="components-button is-success is-primary has-text has-icon"
+            class="components-button is-success is-secondary has-text has-icon"
             disabled=""
             id="form-file-upload-field_key"
             type="button"
@@ -155,7 +155,7 @@ exports[`FileUploadControl renders loading state 1`] = `
           class="components-form-file-upload"
         >
           <button
-            class="components-button is-primary is-busy has-text has-icon"
+            class="components-button is-secondary is-busy has-text has-icon"
             disabled=""
             id="form-file-upload-field_key"
             type="button"
@@ -218,7 +218,7 @@ exports[`FileUploadControl renders upload done state 1`] = `
           class="components-form-file-upload"
         >
           <button
-            class="components-button is-success is-primary has-text has-icon"
+            class="components-button is-success is-secondary has-text has-icon"
             id="form-file-upload-field_key"
             type="button"
           >
@@ -301,7 +301,7 @@ exports[`FileUploadControl renders upload failed state 1`] = `
           class="components-form-file-upload"
         >
           <button
-            class="components-button is-primary is-destructive has-text has-icon"
+            class="components-button is-secondary is-destructive has-text has-icon"
             id="form-file-upload-field_key"
             type="button"
           >

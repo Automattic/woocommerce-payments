@@ -39,40 +39,6 @@ class StorefrontIntegration {
 	}
 
 	/**
-	 * Adds the checkbox to the store settings to toggle the currency switched in the Storefront breadcrumb section.
-	 *
-	 * @param array $settings The settings from the Settings class.
-	 *
-	 * @return array The modified settings array.
-	 */
-	public function filter_store_settings( array $settings ): array {
-		foreach ( $settings as $key => $value ) {
-			if ( ! isset( $value['id'] ) ) {
-				continue;
-			}
-			if ( $this->id . '_enable_auto_currency' === $value['id'] ) {
-				$settings[ $key ]['checkboxgroup'] = 'start';
-			}
-			if ( $this->id . '_store_settings_widgets_link' === $value['id'] ) {
-				$settings[ $key ] = [
-					'desc'          => __( 'Add a currency switcher to the Storefront theme on breadcrumb section. ', 'woocommerce-payments' ),
-					'desc_tip'      => sprintf(
-						/* translators: %s: url to the widgets page */
-						__( 'A currency switcher is also available in your widgets. <a href="%s">Configure now</a>', 'woocommerce-payments' ),
-						'widgets.php'
-					),
-					'id'            => $this->id . '_enable_storefront_switcher',
-					'default'       => 'yes',
-					'type'          => 'checkbox',
-					'checkboxgroup' => 'end',
-				];
-			}
-		}
-		return $settings;
-	}
-
-
-	/**
 	 * Adds the CSS to the head of the page.
 	 *
 	 * @return void
@@ -126,17 +92,36 @@ class StorefrontIntegration {
 	 * @return void
 	 */
 	private function init_actions_and_filters() {
-		add_filter( $this->id . '_enabled_currencies_settings', [ $this, 'filter_store_settings' ] );
-
 		// Do not enable the breadcrumb widget if there's only one currency active.
 		if ( 1 >= count( $this->multi_currency->get_enabled_currencies() ) ) {
 			return;
 		}
 
-		// We want this enabled by default, so we default the option to 'yes'.
-		if ( 'yes' === get_option( $this->id . '_enable_storefront_switcher', 'yes' ) ) {
-			add_filter( 'woocommerce_breadcrumb_defaults', [ $this, 'modify_breadcrumb_defaults' ], 9999 );
-			add_action( 'wp_enqueue_scripts', [ $this, 'add_inline_css' ], 50 );
+		// Simulation overrides for multi currency onboarding preview.
+		$simulation_variables     = $this->multi_currency->get_multi_currency_onboarding_simulation_variables() ?? [];
+		$simulation_enabled       = false;
+		$simulation_hide_switcher = false;
+
+		if ( 0 < count( $simulation_variables ) && isset( $simulation_variables['enable_storefront_switcher'] ) ) {
+			// We have a incoming override request! Simulate the flag.
+			$simulation_enabled         = true;
+			$enable_storefront_switcher = boolval( $simulation_variables['enable_storefront_switcher'] );
+			// If the Storefront switcher is not enabled on the onboarding page, hide it.
+			if ( ! $enable_storefront_switcher ) {
+				$simulation_hide_switcher = true;
+			}
 		}
+
+		// We want this enabled by default, so we default the option to 'yes'.
+		if ( ! $simulation_hide_switcher
+			&& (
+				$simulation_enabled
+				|| $this->multi_currency->is_using_storefront_switcher()
+				)
+			) {
+				add_filter( 'woocommerce_breadcrumb_defaults', [ $this, 'modify_breadcrumb_defaults' ], 9999 );
+				add_action( 'wp_enqueue_scripts', [ $this, 'add_inline_css' ], 50 );
+		}
+
 	}
 }
