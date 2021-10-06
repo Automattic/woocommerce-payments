@@ -62,7 +62,7 @@ const SetupComplete = () => {
 				</p>
 				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ __(
-						'To enter your own exchange rates or update the formatting rules for each currency, visit the multi-currency ' +
+						'To enter your own exchange rates or update the formatting rules for each currency, visit the Multi-Currency ' +
 							'settings.',
 						'woocommerce-payments'
 					) }

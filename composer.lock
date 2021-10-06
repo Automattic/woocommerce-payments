@@ -554,7 +554,7 @@
             "license": [
                 "GPL-2.0-or-later"
             ],
-            "description": "Everything need to manage the terms of service state",
+            "description": "Everything need to manage the Terms of Service state",
             "support": {
                 "source": "https://github.com/Automattic/jetpack-terms-of-service/tree/v1.9.10"
             },

@@ -13,7 +13,7 @@ use WC_Order_Refund;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that contains multi-currency related support for WooCommerce analytics.
+ * Class that contains Multi-Currency related support for WooCommerce analytics.
  */
 class Analytics {
 	const PRIORITY_EARLY   = 1;
@@ -26,7 +26,7 @@ class Analytics {
 
 
 	/**
-	 * SQL string replacements made by the analytics multi-currency extension.
+	 * SQL string replacements made by the analytics Multi-Currency extension.
 	 *
 	 * @var array
 	 */

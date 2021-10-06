@@ -1027,7 +1027,7 @@ exports[`Multi Currency enabled currencies list Remove currency modal renders co
       </li>
     </ul>
     <p>
-      You can add Euro (EUR €) again at any time in Multi-currency settings.
+      You can add Euro (EUR €) again at any time in Multi-Currency settings.
     </p>
     <hr
       class="wcpay-confirmation-modal__separator"
