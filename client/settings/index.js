@@ -11,6 +11,7 @@ import enqueueFraudScripts from 'fraud-scripts';
 import SettingsManager from 'settings/settings-manager';
 import PaymentMethodSettings from './payment-method-settings';
 import WCPaySettingsContext from './wcpay-settings-context';
+import ErrorBoundary from '../components/error-boundary';
 
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( wcpaySettings.fraudServices );
@@ -22,7 +23,9 @@ const settingsContainer = document.getElementById(
 if ( settingsContainer ) {
 	ReactDOM.render(
 		<WCPaySettingsContext.Provider value={ wcpaySettings }>
-			<SettingsManager />
+			<ErrorBoundary>
+				<SettingsManager />
+			</ErrorBoundary>
 		</WCPaySettingsContext.Provider>,
 		settingsContainer
 	);
@@ -35,7 +38,9 @@ if ( paymentMethodSettingsContainer ) {
 	const methodId = paymentMethodSettingsContainer.dataset.methodId;
 
 	ReactDOM.render(
-		<PaymentMethodSettings methodId={ methodId } />,
+		<ErrorBoundary>
+			<PaymentMethodSettings methodId={ methodId } />
+		</ErrorBoundary>,
 		paymentMethodSettingsContainer
 	);
 }
