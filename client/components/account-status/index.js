@@ -73,7 +73,8 @@ const AccountStatusDetails = ( props ) => {
 			</FlexItem>
 		</>
 	);
-
+	// @TODO- display fees for every payment method from 'accountFees' (keys card card_present, giropay and sofort)
+	// and remove informations from base and discount keys.
 	return (
 		<AccountStatusCard title={ cardTitle }>
 			<AccountStatusItem
