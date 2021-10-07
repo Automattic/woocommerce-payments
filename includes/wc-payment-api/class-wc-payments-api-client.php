@@ -24,29 +24,30 @@ class WC_Payments_API_Client {
 	const GET    = 'GET';
 	const DELETE = 'DELETE';
 
-	const API_TIMEOUT_SECONDS = 70;
-	const ACCOUNTS_API        = 'accounts';
-	const APPLE_PAY_API       = 'apple_pay';
-	const CHARGES_API         = 'charges';
-	const CONN_TOKENS_API     = 'terminal/connection_tokens';
-	const CUSTOMERS_API       = 'customers';
-	const CURRENCY_API        = 'currency';
-	const INTENTIONS_API      = 'intentions';
-	const REFUNDS_API         = 'refunds';
-	const DEPOSITS_API        = 'deposits';
-	const TRANSACTIONS_API    = 'transactions';
-	const DISPUTES_API        = 'disputes';
-	const FILES_API           = 'files';
-	const OAUTH_API           = 'oauth';
-	const TIMELINE_API        = 'timeline';
-	const PAYMENT_METHODS_API = 'payment_methods';
-	const SETUP_INTENTS_API   = 'setup_intents';
-	const TRACKING_API        = 'tracking';
-	const PRODUCTS_API        = 'products';
-	const PRICES_API          = 'products/prices';
-	const SUBSCRIPTIONS_API   = 'subscriptions';
-	const INVOICES_API        = 'invoices';
-	const INVOICE_ITEMS_API   = 'invoices/items';
+	const API_TIMEOUT_SECONDS    = 70;
+	const ACCOUNTS_API           = 'accounts';
+	const APPLE_PAY_API          = 'apple_pay';
+	const CHARGES_API            = 'charges';
+	const CONN_TOKENS_API        = 'terminal/connection_tokens';
+	const TERMINAL_LOCATIONS_API = 'terminal/locations';
+	const CUSTOMERS_API          = 'customers';
+	const CURRENCY_API           = 'currency';
+	const INTENTIONS_API         = 'intentions';
+	const REFUNDS_API            = 'refunds';
+	const DEPOSITS_API           = 'deposits';
+	const TRANSACTIONS_API       = 'transactions';
+	const DISPUTES_API           = 'disputes';
+	const FILES_API              = 'files';
+	const OAUTH_API              = 'oauth';
+	const TIMELINE_API           = 'timeline';
+	const PAYMENT_METHODS_API    = 'payment_methods';
+	const SETUP_INTENTS_API      = 'setup_intents';
+	const TRACKING_API           = 'tracking';
+	const PRODUCTS_API           = 'products';
+	const PRICES_API             = 'products/prices';
+	const SUBSCRIPTIONS_API      = 'subscriptions';
+	const INVOICES_API           = 'invoices';
+	const INVOICE_ITEMS_API      = 'invoices/items';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
