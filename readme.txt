@@ -100,6 +100,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 3.2.0 - 2021-xx-xx =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
+* Fix - Prevent currency switcher to show when enabled currencies list is empty.
 * Fix - Show currency switcher notice until customer explicitly dismisses it.
 
 = 3.1.0 - 2021-10-06 =
