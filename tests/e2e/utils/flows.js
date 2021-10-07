@@ -12,6 +12,7 @@ const {
 	evalAndClick,
 	uiUnblocked,
 	clearAndFillInput,
+	setCheckbox,
 } = require( '@woocommerce/e2e-utils' );
 const {
 	fillCardDetails,
@@ -127,6 +128,14 @@ export const shopperWCP = {
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
+
+		if (
+			null !==
+			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) )
+		) {
+			await setCheckbox( '#wc-woocommerce_payments-payment-token-new' );
+		}
+
 		await fillCardDetails( page, card );
 		await expect( page ).toClick( 'button', {
 			text: 'Add payment method',
@@ -167,6 +176,27 @@ export const shopperWCP = {
 		await clearAndFillInput(
 			'#shipping-postcode',
 			customerShippingDetails.postcode
+		);
+	},
+
+	fillBillingDetailsWCB: async ( customerBillingDetails ) => {
+		await clearAndFillInput( '#email', customerBillingDetails.email );
+		await clearAndFillInput(
+			'#billing-first_name',
+			customerBillingDetails.firstname
+		);
+		await clearAndFillInput(
+			'#billing-last_name',
+			customerBillingDetails.lastname
+		);
+		await clearAndFillInput(
+			'#billing-address_1',
+			customerBillingDetails.addressfirstline
+		);
+		await clearAndFillInput( '#billing-city', customerBillingDetails.city );
+		await clearAndFillInput(
+			'#billing-postcode',
+			customerBillingDetails.postcode
 		);
 	},
 };
