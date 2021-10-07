@@ -12,6 +12,7 @@ const {
 	evalAndClick,
 	uiUnblocked,
 	clearAndFillInput,
+	setCheckbox,
 } = require( '@woocommerce/e2e-utils' );
 const {
 	fillCardDetails,
@@ -127,6 +128,14 @@ export const shopperWCP = {
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
+
+		if (
+			null !==
+			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) )
+		) {
+			await setCheckbox( '#wc-woocommerce_payments-payment-token-new' );
+		}
+
 		await fillCardDetails( page, card );
 		await expect( page ).toClick( 'button', {
 			text: 'Add payment method',
