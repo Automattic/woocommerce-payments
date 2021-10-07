@@ -37,7 +37,7 @@ const createAdditionalMethodsSetupTask = ( {
 		),
 		// please note: marking an item as "dismissed" does not mean it's "completed" - they are considered 2 different things
 		completed: 'yes' === isSetupCompleted,
-		visible: true,
+		visible: false,
 		additionalInfo: __(
 			'Offer your customers preferred payment methods with WooCommerce Payments',
 			'woocommerce-payments'
