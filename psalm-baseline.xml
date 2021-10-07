@@ -163,7 +163,7 @@
     </UndefinedDocblockClass>
     <UndefinedFunction occurrences="4">
       <code>wcs_get_subscription</code>
-      <code>wcs_get_subscriptions_for_order( $order_id )</code>
+      <code>wcs_get_subscriptions_for_renewal_order( $order_id )</code>
     </UndefinedFunction>
   </file>
   <file src="includes/subscriptions/class-wc-payments-subscriptions-event-handler.php">
