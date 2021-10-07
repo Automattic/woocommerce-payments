@@ -17,10 +17,17 @@ trait WC_Payments_Subscriptions_Utilities {
 	/**
 	 * Checks if subscriptions are enabled on the site.
 	 *
+	 * Subscriptions functionality is enabled if the WC Subscriptions plugin is active and greater than v 2.2, or the base feature is turned on.
+	 *
 	 * @return bool Whether subscriptions is enabled or not.
 	 */
 	public function is_subscriptions_enabled() {
-		return class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' );
+		if ( $this->is_subscriptions_plugin_active() ) {
+			return version_compare( $this->get_subscriptions_plugin_version(), '2.2.0', '>=' );
+		}
+
+		// TODO update this once we know how the base library feature will be enabled.
+		return class_exists( 'WC_Subscriptions_Core_Plugin' );
 	}
 
 	/**
@@ -94,4 +101,32 @@ trait WC_Payments_Subscriptions_Utilities {
 		return wcs_cart_contains_renewal();
 	}
 
+	/**
+	 * Checks if the WC Subscriptions plugin is active.
+	 *
+	 * @return bool Whether the plugin is active or not.
+	 */
+	public function is_subscriptions_plugin_active() {
+		return class_exists( 'WC_Subscriptions' );
+	}
+
+	/**
+	 * Gets the version of WooCommerce Subscriptions that is active.
+	 *
+	 * @return null|string The plugin version. Returns null when WC Subscriptions is not active/loaded.
+	 */
+	public function get_subscriptions_plugin_version() {
+		return class_exists( 'WC_Subscriptions' ) ? WC_Subscriptions::$version : null;
+	}
+
+	/**
+	 * Gets the version of the Subscriptions base library running.
+	 *
+	 * This may be the version of the package in WC Payments or WC Subscriptions. Which ever one happens to be loaded.
+	 *
+	 * @return null|string The core Subscriptions libary version.
+	 */
+	public function get_subscriptions_core_version() {
+		return WC_Subscriptions_Core_Plugin::instance()->get_plugin_version();
+	}
 }
