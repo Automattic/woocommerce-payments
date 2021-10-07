@@ -416,8 +416,9 @@ class Compatibility {
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
 			}
 
-			// Get the display price.
 			/**
+			 * Get the display price.
+			 *
 			 * The WC_Product_Addons_Helper is defined in Product Add Ons.
 			 * This method in WCPay is only called if Product Add Ons is installed and active.
 			 *
