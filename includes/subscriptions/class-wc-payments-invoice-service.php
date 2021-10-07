@@ -152,7 +152,9 @@ class WC_Payments_Invoice_Service {
 		$order_completed = in_array( $new_status, [ apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ], true );
 
 		if ( $needed_payment && $order_completed ) {
-			foreach ( wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'parent' ] ) as $subscription ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => [ 'parent', 'renewal' ] ] );
+
+			foreach ( $subscriptions as $subscription ) {
 				$invoice_id = self::get_subscription_invoice_id( $subscription );
 
 				if ( ! $invoice_id ) {

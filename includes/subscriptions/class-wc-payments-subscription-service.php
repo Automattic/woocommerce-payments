@@ -129,6 +129,7 @@ class WC_Payments_Subscription_Service {
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'prevent_wcpay_subscription_changes' ], 10, 3 );
 
 		add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
+		add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'create_subscription_for_manual_renewal' ] );
 	}
 
 	/**
@@ -592,6 +593,21 @@ class WC_Payments_Subscription_Service {
 
 		// Remove the 'subscription_date_changes' exception.
 		$this->clear_feature_support_exception( $subscription, 'subscription_date_changes' );
+	}
+
+	/**
+	 * Creates a WCPay subscription on successful renewal payment for manual WC subscription.
+	 *
+	 * @param int $order_id WC Order ID.
+	 */
+	public function create_subscription_for_manual_renewal( int $order_id ) {
+		$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
+
+		foreach ( $subscriptions as $subscription_id => $subscription ) {
+			if ( ! self::get_wcpay_subscription_id( $subscription ) && $subscription->is_manual() ) {
+				$this->create_subscription( $subscription );
+			}
+		}
 	}
 
 	/**
