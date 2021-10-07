@@ -418,8 +418,8 @@ class Compatibility {
 
 			// Get the display price.
 			/**
-			 * WC_Product_Addons_Helper is undefined within WooCommerce Payments, but this method is only called if the
-			 * Product Add Ons extension is installed and active.
+			 * The WC_Product_Addons_Helper is defined in Product Add Ons.
+			 * This method in WCPay is only called if Product Add Ons is installed and active.
 			 *
 			 * @psalm-suppress UndefinedClass
 			 */
@@ -542,8 +542,8 @@ class Compatibility {
 				$price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
 			}
 			/**
-			 * WC_Product_Addons_Helper is undefined within WooCommerce Payments, but this method is only called if the
-			 * Product Add Ons extension is installed and active.
+			 * The WC_Product_Addons_Helper is defined in Product Add Ons.
+			 * This method in WCPay is only called if Product Add Ons is installed and active.
 			 *
 			 * @psalm-suppress UndefinedClass
 			 */
