@@ -807,10 +807,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * The note includes the charge attempt date and let the merchant know the need of an off-session step by the customer.
 	 *
 	 * @param WC_Order $order The renew order.
-	 * @param array    $next_action Next action intent content from Stripe's response.
+	 * @param ?array   $next_action Next action intent content from Stripe's response.
 	 * @return void
 	 */
-	public function maybe_add_card_await_notification_note( WC_Order $order, array $next_action ) {
+	public function maybe_add_card_await_notification_note( WC_Order $order, array $next_action = null ) {
 		if ( isset( $next_action['type'] ) && 'card_await_notification' === $next_action['type'] ) {
 			$charge_attempt_at = $next_action['card_await_notification']['charge_attempt_at'];
 			$attempt_date      = wp_date( get_option( 'date_format', 'F j, Y' ), $charge_attempt_at, wp_timezone() );
