@@ -93,6 +93,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $currency = 'USD';
 
 	/**
+	 * Created timestamp
+	 *
+	 * @var int
+	 */
+	public $date_created;
+
+	/**
 	 * Helper variable for mocking the subscription's billing period.
 	 *
 	 * @var string
