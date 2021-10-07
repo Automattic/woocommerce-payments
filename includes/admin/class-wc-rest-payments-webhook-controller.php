@@ -130,6 +130,15 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				case 'payment_intent.succeeded':
 					$this->process_webhook_payment_intent_succeeded( $body );
 					break;
+				case 'invoice.upcoming':
+					WC_Payments_Subscriptions::get_event_handler()->handle_invoice_upcoming( $body );
+					break;
+				case 'invoice.paid':
+					WC_Payments_Subscriptions::get_event_handler()->handle_invoice_paid( $body );
+					break;
+				case 'invoice.payment_failed':
+					WC_Payments_Subscriptions::get_event_handler()->handle_invoice_payment_failed( $body );
+					break;
 			}
 
 			try {
