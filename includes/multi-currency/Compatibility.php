@@ -417,6 +417,12 @@ class Compatibility {
 			}
 
 			// Get the display price.
+			/**
+			 * WC_Product_Addons_Helper is undefined within WooCommerce Payments, but this method is only called if the
+			 * Product Add Ons extension is installed and active.
+			 *
+			 * @psalm-suppress UndefinedClass
+			 */
 			$price          = html_entity_decode(
 				wp_strip_all_tags( wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $values['data'] ) ) ),
 				ENT_QUOTES,
@@ -522,9 +528,9 @@ class Compatibility {
 		$price = isset( $cart_item['addons_price_before_calc'] ) ? $cart_item['addons_price_before_calc'] : $addon['price'];
 		$name  = $addon['name'];
 
-		if ( 0 === $addon['price'] ) {
+		if ( 0.0 === $addon['price'] ) {
 			$name .= '';
-		} elseif ( 'percentage_based' === $addon['price_type'] && 0 === $price ) {
+		} elseif ( 'percentage_based' === $addon['price_type'] && 0.0 === $price ) {
 			$name .= '';
 		} elseif ( 'custom_price' === $addon['field_type'] ) {
 			$name .= ' (' . wc_price( $addon['price'] ) . ')';
@@ -535,6 +541,12 @@ class Compatibility {
 				// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
 				$price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
 			}
+			/**
+			 * WC_Product_Addons_Helper is undefined within WooCommerce Payments, but this method is only called if the
+			 * Product Add Ons extension is installed and active.
+			 *
+			 * @psalm-suppress UndefinedClass
+			 */
 			$price = \WC_Product_Addons_Helper::get_product_addon_price_for_display( $price, $cart_item['data'] );
 			$name .= ' (' . wc_price( $price ) . ')';
 		} else {

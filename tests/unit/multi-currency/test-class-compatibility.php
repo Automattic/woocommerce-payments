@@ -894,6 +894,162 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->assertEquals( 1, $cart_item['data']->get_meta( 'wcpay_mc_addons_converted' ) );
 	}
 
+	public function test_get_item_data_returns_zero_price_data_correctly() {
+		$addon     = [
+			'name'       => 'checkbox',
+			'value'      => 'zero price',
+			'price'      => 0.0,
+			'field_type' => 'checkbox',
+			'price_type' => 'flat_fee',
+			'display'    => 'display',
+		];
+		$cart_item = [
+			'addons'   => [ $addon ],
+			'data'     => WC_Helper_Product::create_simple_product(),
+			'quantity' => 1,
+		];
+		$expected  = [
+			'name'    => 'checkbox',
+			'value'   => 'zero price',
+			'display' => 'display',
+		];
+
+		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $addon, $cart_item ) );
+	}
+
+	public function test_get_item_data_returns_zero_percentage_price_data_correctly() {
+		$addon     = [
+			'name'       => 'checkbox',
+			'value'      => 'zero price',
+			'price'      => 50,
+			'field_type' => 'checkbox',
+			'price_type' => 'percentage_based',
+		];
+		$cart_item = [
+			'addons'                   => [ $addon ],
+			'data'                     => WC_Helper_Product::create_simple_product(),
+			'quantity'                 => 1,
+			'addons_price_before_calc' => 0.0,
+		];
+		$expected  = [
+			'name'    => 'checkbox',
+			'value'   => 'zero price',
+			'display' => '',
+		];
+
+		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $addon, $cart_item ) );
+	}
+
+	public function test_get_item_data_returns_custom_price_data_correctly() {
+		$addon     = [
+			'name'       => 'Customer defined price',
+			'value'      => '',
+			'price'      => 42,
+			'field_type' => 'custom_price',
+			'price_type' => 'quantity_based',
+		];
+		$cart_item = [
+			'addons'                   => [ $addon ],
+			'data'                     => WC_Helper_Product::create_simple_product(),
+			'quantity'                 => 1,
+			'addons_price_before_calc' => 10,
+		];
+		$expected  = [
+			'name'    => 'Customer defined price (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			'value'   => '',
+			'display' => '',
+		];
+
+		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $addon, $cart_item ) );
+	}
+
+	public function test_get_item_data_returns_multiplier_price_data_correctly() {
+		$price     = 42;
+		$value     = 2;
+		$addon     = [
+			'name'       => 'Multiplier',
+			'value'      => $value,
+			'price'      => $price,
+			'field_type' => 'input_multiplier',
+			'price_type' => 'flat_fee',
+		];
+		$cart_item = [
+			'addons'   => [ $addon ],
+			'data'     => WC_Helper_Product::create_simple_product(),
+			'quantity' => 1,
+		];
+		$expected  = [
+			'name'    => 'Multiplier (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			'value'   => 2,
+			'display' => '',
+		];
+
+		$this->mock_multi_currency
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_price' )
+			->withConsecutive(
+				[ $price, 'product' ],
+				[ $price / $value, 'product' ]
+			)
+			->willReturn(
+				$price,
+				$price / $value
+			);
+
+		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $addon, $cart_item ) );
+	}
+
+	// Handles flat_fee and quantity_based.
+	public function test_get_item_data_returns_price_data_correctly() {
+		$price     = 42;
+		$addon     = [
+			'name'       => 'Checkbox',
+			'value'      => 'Flat fee',
+			'price'      => $price,
+			'field_type' => 'checkbox',
+			'price_type' => 'flat_fee',
+		];
+		$cart_item = [
+			'addons'   => [ $addon ],
+			'data'     => WC_Helper_Product::create_simple_product(),
+			'quantity' => 1,
+		];
+		$expected  = [
+			'name'    => 'Checkbox (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			'value'   => 'Flat fee',
+			'display' => '',
+		];
+
+		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( $price );
+		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $addon, $cart_item ) );
+	}
+
+	public function test_get_item_data_returns_percentage_price_data_correctly() {
+		$addon     = [
+			'name'       => 'Checkbox',
+			'value'      => 'Percentage',
+			'price'      => 50,
+			'field_type' => 'checkbox',
+			'price_type' => 'percentage_based',
+		];
+		$product   = WC_Helper_Product::create_simple_product();
+		$cart_item = [
+			'addons'                   => [ $addon ],
+			'data'                     => $product,
+			'product_id'               => $product->get_id(),
+			'quantity'                 => 1,
+			'addons_price_before_calc' => 10,
+		];
+		$expected  = [
+			'name'    => 'Checkbox (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</bdi></span>)',
+			'value'   => 'Percentage',
+			'display' => '',
+		];
+
+		$this->mock_multi_currency->method( 'get_price' )->with( 10, 'product' )->willReturn( 10 );
+		$this->assertSame( $expected, $this->compatibility->get_item_data( [], $addon, $cart_item ) );
+	}
+
 	private function mock_wcs_cart_contains_renewal( $value ) {
 		WC_Subscriptions::wcs_cart_contains_renewal(
 			function () use ( $value ) {
