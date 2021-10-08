@@ -28,7 +28,11 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await merchant.login();
 
 			// Create subscription product with signup fee
-			await merchantWCP.createSubscriptionProduct( productName, true );
+			await merchantWCP.createSubscriptionProduct(
+				productName,
+				'month',
+				true
+			);
 
 			await merchant.logout();
 		} );

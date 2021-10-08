@@ -236,6 +236,11 @@ jQuery( function ( $ ) {
 		$( '#wcpay_selected_upe_payment_type' ).val( paymentType );
 	};
 
+	// Set the payment country field
+	const setPaymentCountry = ( country ) => {
+		$( '#wcpay_payment_country' ).val( country );
+	};
+
 	/**
 	 * Converts form fields object into Stripe `billing_details` object.
 	 *
@@ -270,6 +275,17 @@ jQuery( function ( $ ) {
 		if ( upeElement || paymentIntentId ) {
 			return;
 		}
+
+		/*
+		 * Trigger this event to ensure the tokenization-form.js init
+		 * is executed.
+		 *
+		 * This script handles the radio input interaction when toggling
+		 * between the user's saved card / entering new card details.
+		 *
+		 * Ref: https://github.com/woocommerce/woocommerce/blob/2429498/assets/js/frontend/tokenization-form.js#L109
+		 */
+		$( document.body ).trigger( 'wc-credit-card-form-init' );
 
 		// If paying from order, we need to create Payment Intent from order not cart.
 		const isOrderPay = getConfig( 'isOrderPay' );
@@ -335,6 +351,7 @@ jQuery( function ( $ ) {
 							.isReusable;
 					showNewPaymentMethodCheckbox( isPaymentMethodReusable );
 					setSelectedUPEPaymentType( selectedUPEPaymentType );
+					setPaymentCountry( event.value.country );
 					isUPEComplete = event.complete;
 				} );
 			} )
@@ -455,7 +472,8 @@ jQuery( function ( $ ) {
 				paymentIntentId,
 				orderId,
 				savePaymentMethod,
-				$( '#wcpay_selected_upe_payment_type' ).val()
+				$( '#wcpay_selected_upe_payment_type' ).val(),
+				$( '#wcpay_payment_country' ).val()
 			);
 
 			const { error } = await api.getStripe().confirmPayment( {
@@ -549,7 +567,11 @@ jQuery( function ( $ ) {
 				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
 			}
 			if ( error ) {
-				throw error;
+				// Log payment errors on charge and then throw the error.
+				const logError = await api.logPaymentError( error.charge );
+				if ( logError ) {
+					throw error;
+				}
 			}
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
@@ -643,6 +665,15 @@ jQuery( function ( $ ) {
 
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
+		if (
+			'woocommerce_payments' !==
+			$(
+				"#add_payment_method input:checked[name='payment_method']"
+			).val()
+		) {
+			return;
+		}
+
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
 			if ( isUPEEnabled && paymentIntentId ) {
 				handleUPEAddPayment( $( this ) );
