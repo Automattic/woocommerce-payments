@@ -26,9 +26,7 @@ describe( 'Saved cards ', () => {
 			beforeAll( async () => {
 				await merchant.login();
 				await merchantWCP.activateUpe();
-				await merchantWCP.deactivateUpe();
 				await merchant.logout();
-
 				await shopper.login();
 			} );
 
