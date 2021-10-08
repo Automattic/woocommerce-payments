@@ -8,7 +8,7 @@ const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { shopperWCP } from '../../utils/flows';
+import { merchantWCP, shopperWCP } from '../../utils/flows';
 import {
 	confirmCardAuthentication,
 	setupProductCheckout,
@@ -19,71 +19,14 @@ const cards = [
 	[ '3DS2', config.get( 'cards.3ds2' ) ],
 ];
 
-const WCPAY_DEV_TOOLS = `${ config.get(
-	'url'
-) }wp-admin/admin.php?page=wcpaydev`;
-
-async function activateUpe() {
-	await page.goto( WCPAY_DEV_TOOLS, {
-		waitUntil: 'networkidle0',
-	} );
-
-	if ( ! ( await page.$( '#_wcpay_feature_upe:checked' ) ) ) {
-		await expect( page ).toClick( 'label', {
-			text: 'Enable UPE checkout',
-		} );
-	}
-
-	const isAdditionalPaymentsActive = await page.$(
-		'#_wcpay_feature_upe_additional_payment_methods:checked'
-	);
-
-	if ( ! isAdditionalPaymentsActive ) {
-		await expect( page ).toClick( 'label', {
-			text: 'Add UPE additional payment methods',
-		} );
-	}
-
-	await expect( page ).toClick( 'input[type="submit"]' );
-	await page.waitForNavigation( {
-		waitUntil: 'networkidle0',
-	} );
-}
-
-async function deactivateUpe() {
-	await page.goto( WCPAY_DEV_TOOLS, {
-		waitUntil: 'networkidle0',
-	} );
-
-	if ( await page.$( '#_wcpay_feature_upe:checked' ) ) {
-		await expect( page ).toClick( 'label', {
-			text: 'Enable UPE checkout',
-		} );
-	}
-
-	const isAdditionalPaymentsActive = await page.$(
-		'#_wcpay_feature_upe_additional_payment_methods:checked'
-	);
-
-	if ( isAdditionalPaymentsActive ) {
-		await expect( page ).toClick( 'label', {
-			text: 'Add UPE additional payment methods',
-		} );
-	}
-
-	await expect( page ).toClick( 'input[type="submit"]' );
-	await page.waitForNavigation( {
-		waitUntil: 'networkidle0',
-	} );
-}
-
 describe( 'Saved cards ', () => {
 	describe.each( cards )(
 		'when using a %s card added through my account',
 		( cardType, card ) => {
 			beforeAll( async () => {
 				await merchant.login();
-				await activateUpe();
+				await merchantWCP.activateUpe();
+				await merchantWCP.deactivateUpe();
 				await merchant.logout();
 
 				await shopper.login();
@@ -92,7 +35,7 @@ describe( 'Saved cards ', () => {
 			afterAll( async () => {
 				await shopperWCP.logout();
 				await merchant.login();
-				await deactivateUpe();
+				await merchantWCP.deactivateUpe();
 				await merchant.logout();
 			} );
 
