@@ -14,6 +14,7 @@
 * Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
 * Fix - Currency switcher does not affect order confirmation screen prices.
 * Fix - Error when attempting to change the payment method for a subscription with UPE enabled.
+* Fix - Track for when updating the Payment Requests setting not being recorded.
 * Add - Multi-Currency track currency added.
 * Fix - Fill missing order_intent_info even if an exception occurs.
 * Fix - Authorize and capture payments later with new credit cards.
