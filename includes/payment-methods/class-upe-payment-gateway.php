@@ -111,7 +111,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		wp_register_script(
 			'wcpay-upe-checkout',
 			plugins_url( 'dist/upe_checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout' ],
+			[ 'stripe', 'wc-checkout', 'woocommerce-tokenization-form' ],
 			WC_Payments::get_file_version( 'dist/upe_checkout.js' ),
 			true
 		);
@@ -688,7 +688,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function payment_fields() {
 		try {
-			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
+			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
 
 			$payment_fields = $this->get_payment_fields_js_config();
 			wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $payment_fields );
