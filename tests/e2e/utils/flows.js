@@ -117,24 +117,27 @@ export const shopperWCP = {
 	 * @param {*} card Card object that you want to add as the new payment method.
 	 */
 	addNewPaymentMethod: async ( cardType, card ) => {
-		const cardIs3DS =
-			cardType.toUpperCase().includes( '3DS' ) &&
-			! cardType.toLowerCase().includes( 'declined' );
-
 		await expect( page ).toClick( 'a', {
 			text: 'Add payment method',
 		} );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
+
 		await fillCardDetails( page, card );
+
 		await expect( page ).toClick( 'button', {
 			text: 'Add payment method',
 		} );
 
+		const cardIs3DS =
+			cardType.toUpperCase().includes( '3DS' ) &&
+			! cardType.toLowerCase().includes( 'declined' );
+
 		if ( cardIs3DS ) {
 			await confirmCardAuthentication( page, cardType );
 		}
+
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
