@@ -27,6 +27,7 @@ import {
 	useSettings,
 	usePaymentRequestEnabledSettings,
 } from '../../data';
+import wcpayTracks from '../../tracks';
 import './add-payment-methods-task.scss';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 import { upeMethods } from '../constants';
@@ -132,6 +133,16 @@ const AddPaymentMethodsTask = () => {
 				setIsPaymentRequestEnabled( initialIsPaymentRequestEnabled );
 				updateEnabledPaymentMethodIds( initialEnabledPaymentMethodIds );
 				return;
+			}
+
+			// Record the track event when the setting is updated.
+			if ( initialIsPaymentRequestEnabled !== isPaymentRequestChecked ) {
+				wcpayTracks.recordEvent(
+					wcpayTracks.events.PAYMENT_REQUEST_SETTINGS_CHANGE,
+					{
+						enabled: isPaymentRequestChecked ? 'yes' : 'no',
+					}
+				);
 			}
 
 			setCompleted( true, 'setup-complete' );
