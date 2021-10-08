@@ -373,4 +373,30 @@ class WC_Payments_Customer_Service {
 			}
 		}
 	}
+
+	/**
+	 * Get the WCPay customer ID associated with an order, or create one if none found.
+	 *
+	 * @param WC_Order $order WC Order object.
+	 *
+	 * @return string WCPay customer ID.
+	 *
+	 * @throws API_Exception If there's an error creating customer.
+	 */
+	public function get_customer_id_for_order( $order ) {
+		$customer_id = null;
+		$user        = $order->get_user();
+
+		if ( false !== $user ) {
+			// Determine the customer making the payment, create one if we don't have one already.
+			$customer_id = $this->get_customer_id_by_user_id( $user->ID );
+
+			if ( null === $customer_id ) {
+				$customer_data = self::map_customer_data( $order, new WC_Customer( $user->ID ) );
+				$customer_id   = $this->create_customer_for_user( $user, $customer_data );
+			}
+		}
+
+		return $customer_id;
+	}
 }
