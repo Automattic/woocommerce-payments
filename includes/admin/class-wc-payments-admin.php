@@ -69,6 +69,13 @@ class WC_Payments_Admin {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 
+		// This function was introduced in Gutenberg in 1.5.0.
+		// It should be safe to rely on it.
+		if ( function_exists( 'gutenberg_pre_init' ) ) {
+			// Remove the style overwrite Gutenberg does.
+			add_action( 'wp_default_styles', [ $this, 'remove_gutenberg_styles_overwrite' ], 9 );
+		}
+
 		$this->admin_child_pages = [
 			'wc-payments-overview'     => [
 				'id'       => 'wc-payments-overview',
@@ -765,5 +772,35 @@ class WC_Payments_Admin {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Removes the style overwrite Gutenberg does.
+	 *
+	 * This prevents some styling conflicts with the "VisuallyHidden" component.
+	 */
+	public function remove_gutenberg_styles_overwrite() {
+		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		if ( empty( $url_params['page'] ) ) {
+			return;
+		}
+
+		// Only remove the action in WCPay's settings page in WC,
+		// and in the task page for selecting additional payment methods.
+		if (
+			(
+				'wc-settings' === $url_params['page'] &&
+				! empty( $url_params['section'] ) &&
+				'woocommerce_payments' === $url_params['section']
+			) ||
+			(
+				'wc-admin' === $url_params['page'] &&
+				! empty( $url_params['task'] ) &&
+				'woocommerce-payments--additional-payment-methods' === $url_params['task']
+			)
+		) {
+			remove_action( 'wp_default_styles', 'gutenberg_register_packages_styles' );
+		}
 	}
 }
