@@ -197,44 +197,10 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	public function test_create_subscription_for_manual_renewal() {
 		$mock_subscription_product = new WC_Subscriptions_Product();
 		$mock_subscription_product->save();
-		$mock_order         = WC_Helper_Order::create_order( 1, 50, $mock_subscription_product );
-		$mock_line_item     = array_values( $mock_order->get_items() )[0];
-		$mock_shipping_item = array_values( $mock_order->get_items( 'shipping' ) )[0];
-		$mock_subscription  = new WC_Subscription();
+		$mock_order        = WC_Helper_Order::create_order( 1, 50, $mock_subscription_product );
+		$mock_subscription = new WC_Subscription();
 		$mock_subscription->set_manual( true );
 		$mock_subscription->set_parent( $mock_order );
-		$mock_wcpay_product_id           = 'wcpay_prod_test123';
-		$mock_wcpay_price_id             = 'wcpay_price_test123';
-		$mock_wcpay_subscription_id      = 'wcpay_subscription_test12345';
-		$mock_wcpay_subscription_item_id = 'wcpay_subscription_item_test12345';
-		$mock_subscription_data          = [
-			'customer' => '1',
-			'items'    => [
-				[
-					'price'     => $mock_wcpay_price_id,
-					'quantity'  => 4,
-					'metadata'  => [
-						'wc_item_id' => $mock_line_item->get_id(),
-					],
-					'tax_rates' => [],
-				],
-				[
-					'price_data' => [
-						'product'     => $mock_wcpay_product_id,
-						'currency'    => 'USD',
-						'unit_amount' => 1000,
-						'recurring'   => [
-							'interval'       => 'month',
-							'interval_count' => 1,
-						],
-					],
-					'metadata'   => [
-						'wc_item_id' => $mock_shipping_item->get_id(),
-					],
-					'tax_rates'  => [],
-				],
-			],
-		];
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
 			function ( $id ) use ( $mock_subscription ) {
@@ -242,44 +208,28 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			}
 		);
 
-		$this->assertNotEquals( $mock_subscription->get_meta( self::SUBSCRIPTION_ID_META_KEY ), $mock_wcpay_subscription_id );
-
 		$this->mock_customer_service->expects( $this->once() )
 			->method( 'get_customer_id_for_order' )
 			->with( $mock_subscription )
-			->willReturn( $mock_subscription_data['customer'] );
+			->willReturn( 'wcpay_cus_test123' );
 
 		$this->mock_product_service->expects( $this->once() )
 			->method( 'get_wcpay_price_id' )
-			->willReturn( $mock_wcpay_price_id );
+			->willReturn( 'wcpay_price_test123' );
 
 		$this->mock_product_service->expects( $this->once() )
 			->method( 'get_stripe_product_id_for_item' )
-			->willReturn( $mock_wcpay_product_id );
+			->willReturn( 'wcpay_prod_test123' );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_subscription' )
-			->with( $mock_subscription_data )
 			->willReturn(
 				[
-					'id'             => $mock_wcpay_subscription_id,
-					'latest_invoice' => 'mock_wcpay_invoice_id',
+					'id'             => 'wcpay_sub_test123',
 					'items'          => [
-						'data' => [
-							[
-								'id'       => $mock_wcpay_subscription_item_id,
-								'metadata' => [
-									'wc_item_id' => $mock_line_item->get_id(),
-								],
-							],
-							[
-								'id'       => $mock_wcpay_subscription_item_id,
-								'metadata' => [
-									'wc_item_id' => $mock_shipping_item->get_id(),
-								],
-							],
-						],
+						'data' => [],
 					],
+					'latest_invoice' => 'wcpay_in_test123',
 				]
 			);
 
