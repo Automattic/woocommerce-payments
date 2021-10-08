@@ -458,6 +458,20 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->expectOutputString( '' );
 	}
 
+	public function test_display_geolocation_currency_update_notice_does_not_display_if_using_other_currency_than_geolocated() {
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'US';
+			}
+		);
+
+		$this->multi_currency->display_geolocation_currency_update_notice();
+
+		$this->expectOutputString( '' );
+	}
+
 	public function test_get_price_returns_price_in_default_currency() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, get_woocommerce_currency() );
 
@@ -740,6 +754,76 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		</div>';
 
 		$this->assertEquals( $expected, $this->multi_currency->get_switcher_widget_markup() );
+	}
+
+	public function test_validate_currency_code_returns_existing_currency_code() {
+		$this->assertEquals( 'CAD', $this->multi_currency->validate_currency_code( 'CAD' ) );
+		$this->assertEquals( 'CAD', $this->multi_currency->validate_currency_code( 'cAd' ) );
+		$this->assertEquals( 'CAD', $this->multi_currency->validate_currency_code( 'cad' ) );
+	}
+
+	public function test_validate_currency_code_returns_false_on_non_matching_currency_code() {
+		$this->assertEquals( false, $this->multi_currency->validate_currency_code( 'XXX' ) );
+		$this->assertEquals( false, $this->multi_currency->validate_currency_code( 'YYY' ) );
+	}
+
+	public function test_is_simulation_enabled() {
+		$this->assertFalse( $this->multi_currency->is_simulation_enabled() );
+		$_GET = [
+			'is_mc_onboarding_simulation' => true,
+			'enable_storefront_switcher'  => true,
+		];
+		$this->multi_currency->possible_simulation_activation();
+		$this->assertTrue( $this->multi_currency->is_simulation_enabled() );
+	}
+
+	public function test_get_multi_currency_onboarding_simulation_variables() {
+		$this->assertFalse( $this->multi_currency->is_simulation_enabled() );
+
+		$this->assertEquals( [], $this->multi_currency->get_multi_currency_onboarding_simulation_variables() );
+
+		$_GET = [
+			'is_mc_onboarding_simulation' => false,
+			'enable_storefront_switcher'  => true,
+		];
+
+		$this->assertEquals( [], $this->multi_currency->get_multi_currency_onboarding_simulation_variables() );
+
+		$_GET = [
+			'is_mc_onboarding_simulation' => true,
+		];
+
+		$this->assertEquals(
+			[
+				'enable_storefront_switcher' => false,
+				'enable_auto_currency'       => false,
+			],
+			$this->multi_currency->get_multi_currency_onboarding_simulation_variables()
+		);
+
+		$_GET = [
+			'is_mc_onboarding_simulation' => true,
+			'enable_storefront_switcher'  => true,
+		];
+
+		$this->assertEquals(
+			[
+				'enable_storefront_switcher' => true,
+				'enable_auto_currency'       => false,
+			],
+			$this->multi_currency->get_multi_currency_onboarding_simulation_variables()
+		);
+
+		$_GET                    = [];
+		$_SERVER['HTTP_REFERER'] = '?is_mc_onboarding_simulation=true&enable_auto_currency=true&enable_storefront_switcher=true';
+
+		$this->assertEquals(
+			[
+				'enable_storefront_switcher' => true,
+				'enable_auto_currency'       => true,
+			],
+			$this->multi_currency->get_multi_currency_onboarding_simulation_variables()
+		);
 	}
 
 	public function get_price_provider() {

@@ -54,7 +54,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 		beforeAll( async () => {
 			await merchant.login();
 			productId = await merchantWCP.createSubscriptionProduct(
-				productName
+				productName,
+				'month'
 			);
 			await merchant.logout();
 

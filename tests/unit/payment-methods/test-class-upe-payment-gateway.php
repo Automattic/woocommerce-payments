@@ -383,6 +383,73 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$result = $this->mock_upe_gateway->update_payment_intent( $intent_id, $order_id, $save_payment_method, $selected_upe_payment_type );
 	}
 
+	public function test_update_payment_intent_with_payment_country() {
+		$order        = WC_Helper_Order::create_order();
+		$order_id     = $order->get_id();
+		$product_item = current( $order->get_items( 'line_item' ) );
+
+		$this->set_cart_contains_subscription_items( false );
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'manage_customer_details_for_order' )
+			->will(
+				$this->returnValue( [ '', 'cus_12345' ] )
+			);
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'create_customer_for_user' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_intention' )
+			->with(
+				'pi_mock',
+				5000,
+				'usd',
+				false,
+				'cus_12345',
+				[
+					'customer_name'  => 'Jeroen Sormani',
+					'customer_email' => 'admin@example.org',
+					'site_url'       => 'http://example.org',
+					'order_id'       => $order_id,
+					'order_key'      => $order->get_order_key(),
+					'payment_type'   => Payment_Type::SINGLE(),
+				],
+				[
+					'merchant_reference' => (string) $order_id,
+					'shipping_amount'    => 1000.0,
+					'line_items'         => [
+						(object) [
+							'product_code'        => 30,
+							'product_description' => 'Beanie with Logo',
+							'unit_cost'           => 1800,
+							'quantity'            => 1,
+							'tax_amount'          => 270,
+							'discount_amount'     => 0,
+							'product_code'        => $product_item->get_product_id(),
+							'product_description' => 'Dummy Product',
+							'unit_cost'           => 1000.0,
+							'quantity'            => 4,
+							'tax_amount'          => 0.0,
+							'discount_amount'     => 0.0,
+						],
+					],
+					'customer_reference' => (string) $order_id,
+				],
+				null,
+				'US'
+			)
+			->willReturn(
+				[
+					'sucess' => 'true',
+				]
+			);
+
+		$this->mock_upe_gateway->update_payment_intent( 'pi_mock', $order_id, false, null, 'US' );
+	}
+
 	public function test_create_payment_intent_uses_order_amount_if_order() {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
@@ -395,6 +462,62 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->set_cart_contains_subscription_items( false );
 
 		$result = $this->mock_upe_gateway->create_payment_intent( $order_id );
+	}
+
+	public function test_create_payment_intent_defaults_to_automatic_capture() {
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = new WC_Payments_API_Intention( 'pi_mock', 5000, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_intention' )
+			->with(
+				5000,
+				'usd',
+				[ 'card' ],
+				$order_id,
+				'automatic'
+			)
+			->willReturn( $intent );
+		$this->mock_upe_gateway->create_payment_intent( $order_id );
+	}
+
+	public function test_create_payment_intent_with_automatic_capture() {
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = new WC_Payments_API_Intention( 'pi_mock', 5000, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+		$this->mock_upe_gateway->settings['manual_capture'] = 'no';
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_intention' )
+			->with(
+				5000,
+				'usd',
+				[ 'card' ],
+				$order_id,
+				'automatic'
+			)
+			->willReturn( $intent );
+		$this->mock_upe_gateway->create_payment_intent( $order_id );
+	}
+
+	public function test_create_payment_intent_with_manual_capture() {
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = new WC_Payments_API_Intention( 'pi_mock', 5000, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+		$this->mock_upe_gateway->settings['manual_capture'] = 'yes';
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_intention' )
+			->with(
+				5000,
+				'usd',
+				[ 'card' ],
+				$order_id,
+				'manual'
+			)
+			->willReturn( $intent );
+		$this->mock_upe_gateway->create_payment_intent( $order_id );
 	}
 
 	public function test_create_setup_intent_existing_customer() {

@@ -12,6 +12,7 @@ const {
 	evalAndClick,
 	uiUnblocked,
 	clearAndFillInput,
+	setCheckbox,
 } = require( '@woocommerce/e2e-utils' );
 const {
 	fillCardDetails,
@@ -127,6 +128,14 @@ export const shopperWCP = {
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
+
+		if (
+			null !==
+			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) )
+		) {
+			await setCheckbox( '#wc-woocommerce_payments-payment-token-new' );
+		}
+
 		await fillCardDetails( page, card );
 		await expect( page ).toClick( 'button', {
 			text: 'Add payment method',
@@ -167,6 +176,27 @@ export const shopperWCP = {
 		await clearAndFillInput(
 			'#shipping-postcode',
 			customerShippingDetails.postcode
+		);
+	},
+
+	fillBillingDetailsWCB: async ( customerBillingDetails ) => {
+		await clearAndFillInput( '#email', customerBillingDetails.email );
+		await clearAndFillInput(
+			'#billing-first_name',
+			customerBillingDetails.firstname
+		);
+		await clearAndFillInput(
+			'#billing-last_name',
+			customerBillingDetails.lastname
+		);
+		await clearAndFillInput(
+			'#billing-address_1',
+			customerBillingDetails.addressfirstline
+		);
+		await clearAndFillInput( '#billing-city', customerBillingDetails.city );
+		await clearAndFillInput(
+			'#billing-postcode',
+			customerBillingDetails.postcode
 		);
 	},
 };
@@ -226,6 +256,7 @@ export const merchantWCP = {
 	 * Create a subscription product with an optional signup fee
 	 *
 	 * @param productName
+	 * @param periodTime can be `day`, `week`, `month` or `year`
 	 * @param includeSignupFee defaults to `false`
 	 * @param includeFreeTrial defaults to `false`
 	 * @return id of the created subscription product
@@ -234,6 +265,7 @@ export const merchantWCP = {
 
 	createSubscriptionProduct: async (
 		productName,
+		periodTime,
 		includeSignupFee = false,
 		includeFreeTrial = false
 	) => {
@@ -245,6 +277,7 @@ export const merchantWCP = {
 		await expect( page ).toFill( '#title', productName );
 		await expect( page ).toSelect( '#product-type', 'Simple subscription' );
 		await expect( page ).toFill( '#_subscription_price', '9.99' );
+		await expect( page ).toSelect( '#_subscription_period', periodTime );
 
 		if ( includeSignupFee ) {
 			await expect( page ).toFill( '#_subscription_sign_up_fee', '1.99' );
@@ -294,10 +327,14 @@ export const merchantWCP = {
 	},
 
 	wcpSettingsSaveChanges: async () => {
+		const snackbarSettingsSaved = '.components-snackbar';
+
 		await expect( page ).toClick( '.save-settings-section button' );
-		await expect( page ).toClick( '.components-snackbar', {
-			timeout: 30000,
+		await expect( page ).toMatchElement( snackbarSettingsSaved, {
+			text: 'Settings saved.',
+			timeout: 60000,
 		} );
+		await expect( page ).toClick( snackbarSettingsSaved );
 	},
 
 	addNewPageCheckoutWCB: async () => {
