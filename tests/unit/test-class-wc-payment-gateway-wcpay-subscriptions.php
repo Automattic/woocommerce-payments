@@ -81,22 +81,22 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( self::USER_ID );
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
-			->disableOriginalConstructor()
-			->getMock();
+		->disableOriginalConstructor()
+		->getMock();
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
-			->disableOriginalConstructor()
-			->getMock();
+		->disableOriginalConstructor()
+		->getMock();
 
 		$this->mock_token_service = $this->getMockBuilder( 'WC_Payments_Token_Service' )
-			->disableOriginalConstructor()
-			->getMock();
+		->disableOriginalConstructor()
+		->getMock();
 
 		$this->mock_action_scheduler_service = $this->getMockBuilder( 'WC_Payments_Action_Scheduler_Service' )
-			->disableOriginalConstructor()
-			->getMock();
+		->disableOriginalConstructor()
+		->getMock();
 
 		$this->mock_session_rate_limiter = $this->getMockBuilder( Session_Rate_Limiter::class )
 			->disableOriginalConstructor()
@@ -221,10 +221,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->mock_customer_service
-			->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->with( self::USER_ID )
-			->willReturn( self::CUSTOMER_ID );
+		->expects( $this->once() )
+		->method( 'get_customer_id_by_user_id' )
+		->with( self::USER_ID )
+		->willReturn( self::CUSTOMER_ID );
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -241,8 +241,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
 
 		$this->mock_customer_service
-			->expects( $this->never() )
-			->method( 'get_customer_id_by_user_id' );
+		->expects( $this->never() )
+		->method( 'get_customer_id_by_user_id' );
 
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
@@ -257,8 +257,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$token->delete();
 
 		$this->mock_customer_service
-			->expects( $this->never() )
-			->method( 'get_customer_id_by_user_id' );
+		->expects( $this->never() )
+		->method( 'get_customer_id_by_user_id' );
 
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
@@ -280,9 +280,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->mock_customer_service
-			->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->willThrowException( new API_Exception( 'Error', 'error', 500 ) );
+		->expects( $this->once() )
+		->method( 'get_customer_id_by_user_id' )
+		->willThrowException( new API_Exception( 'Error', 'error', 500 ) );
 
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
@@ -305,9 +305,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->mock_customer_service
-			->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->willThrowException( new API_Exception( 'Error', 'error', 500 ) );
+		->expects( $this->once() )
+		->method( 'get_customer_id_by_user_id' )
+		->willThrowException( new API_Exception( 'Error', 'error', 500 ) );
 
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
@@ -322,6 +322,52 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'failed', $renewal_order->get_status() );
 		$this->assertStringContainsString( 'failed', $latest_wcpay_note->content );
 		$this->assertStringContainsString( wc_price( $renewal_order->get_total(), [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
+	}
+
+	public function test_scheduled_subscription_payment_adds_mandate() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$subscription->add_meta_data( '_stripe_mandate_id', 'mandate_id' );
+		$subscription->save_meta_data();
+
+		$renew_order = WC_Helper_Order::create_order( self::USER_ID );
+		$renew_order->set_parent_id( $subscription->get_id() );
+
+		$token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+		$renew_order->add_payment_token( $token );
+
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ $renew_order ] );
+
+		$this->mock_api_client
+		->expects( $this->once() )
+		->method( 'create_and_confirm_intention' )
+		->with(
+			$this->anything(),
+			$this->anything(),
+			$this->anything(),
+			$this->anything(),
+			$this->anything(),
+			$this->anything(),
+			$this->anything(),
+			$this->anything(),
+			$this->anything(),
+			// additional_parameters.
+			$this->equalTo( [ 'mandate' => 'mandate_id' ] )
+		)
+		->willReturn(
+			new WC_Payments_API_Intention(
+				self::PAYMENT_INTENT_ID,
+				1500,
+				'usd',
+				'cus_12345',
+				'pm_12345',
+				new DateTime(),
+				'succeeded',
+				self::CHARGE_ID,
+				''
+			)
+		);
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renew_order->get_total(), $renew_order );
 	}
 
 	public function test_subscription_payment_method_filter_bypass_other_payment_methods() {
@@ -749,6 +795,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		WC_Subscriptions::set_wcs_is_subscription(
 			function ( $order ) use ( $return_value ) {
 				return $return_value;
+			}
+		);
+	}
+
+	private function mock_wcs_get_subscriptions_for_renewal_order( $value ) {
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $order ) use ( $value ) {
+				return $value;
 			}
 		);
 	}

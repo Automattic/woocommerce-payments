@@ -44,8 +44,8 @@ class WC_REST_Payments_Webhook_Controller_Test extends WCPAY_UnitTestCase {
 
 		/** @var WC_Payments_API_Client|MockObject $mock_api_client */
 		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
-			->disableOriginalConstructor()
-			->getMock();
+		->disableOriginalConstructor()
+		->getMock();
 
 		$this->mock_webhook_processing_service = $this->createMock( WC_Payments_Webhook_Processing_Service::class );
 
@@ -121,5 +121,35 @@ class WC_REST_Payments_Webhook_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 500, $response->get_status() );
 		$this->assertSame( [ 'result' => 'error' ], $response_data );
+	}
+
+	/**
+	 * Tests that a payment_intent.succeeded will save mandate if it's received.
+	 */
+	public function test_payment_intent_succeeded_save_mandate() {
+		$this->request_body['type']           = 'payment_intent.succeeded';
+		$this->request_body['data']['object'] = [
+			'id' => 'pi_123123123123123',
+		];
+
+		$this->request_body['data']['object']['charges']['data'][0]['payment_method_details']['card']['mandate'] = 'mandate_id';
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with( '_stripe_mandate_id', 'mandate_id' )
+			->willReturn( true );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $mock_order );
+
+		$this->controller->handle_webhook( $this->request );
 	}
 }
