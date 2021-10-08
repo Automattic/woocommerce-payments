@@ -69,9 +69,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 
-		// This function was introduced in Gutenberg in 1.5.0.
-		// It should be safe to rely on it.
-		if ( function_exists( 'gutenberg_pre_init' ) ) {
+		if ( function_exists( 'gutenberg_register_packages_styles' ) ) {
 			// Remove the style overwrite Gutenberg does.
 			add_action( 'wp_default_styles', [ $this, 'remove_gutenberg_styles_overwrite' ], 9 );
 		}
