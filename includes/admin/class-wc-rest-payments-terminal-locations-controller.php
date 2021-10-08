@@ -121,6 +121,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 		);
 
 		// If address is not populated, emit an error and specify the URL where this can be done.
+		// See also https://tosbourn.com/list-of-countries-without-a-postcode/ when launching in new countries.
 		$is_address_populated = isset( $location_address['country'], $location_address['city'], $location_address['postal_code'], $location_address['line1'] );
 		if ( ! $is_address_populated ) {
 			return rest_ensure_response(
