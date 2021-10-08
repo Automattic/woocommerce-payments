@@ -47,47 +47,7 @@ class Compatibility {
 	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
 		$this->multi_currency = $multi_currency;
 		$this->utils          = $utils;
-
-		$this->register_filters();
-	}
-
-	/**
-	 * Registers our filters for compatibility.
-	 *
-	 * @return void
-	 */
-	private function register_filters() {
-
-		// Subscriptions filters.
-		if ( class_exists( 'WC_Subscriptions' ) ) {
-			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
-				add_filter( 'option_woocommerce_subscriptions_multiple_purchase', [ $this, 'maybe_disable_mixed_cart' ], 50 );
-				add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
-				add_filter( 'woocommerce_product_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
-				add_filter( 'woocommerce_product_variation_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
-			}
-		}
-
-		// Product Add-Ons filters.
-		if ( class_exists( 'WC_Product_Addons' ) ) {
-			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
-				add_filter( 'woocommerce_product_addons_option_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
-				add_filter( 'woocommerce_product_addons_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
-				add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );
-				add_filter( 'woocommerce_product_addons_get_item_data', [ $this, 'get_item_data' ], 50, 3 );
-				add_filter( 'woocommerce_product_addons_update_product_price', [ $this, 'update_product_price' ], 50, 4 );
-				add_filter( 'woocommerce_product_addons_order_line_item_meta', [ $this, 'order_line_item_meta' ], 50, 4 );
-			}
-
-			if ( wp_doing_ajax() ) {
-				add_filter( 'woocommerce_product_addons_ajax_get_product_price_including_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
-				add_filter( 'woocommerce_product_addons_ajax_get_product_price_excluding_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
-			}
-		}
-
-		if ( defined( 'DOING_CRON' ) ) {
-			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
-		}
+		$this->init_filters();
 	}
 
 	/**
@@ -580,6 +540,45 @@ class Compatibility {
 		$params['currency_format_thousand_sep'] = wc_get_price_thousand_separator();
 
 		return $params;
+	}
+
+	/**
+	 * Initializes our filters for compatibility.
+	 *
+	 * @return void
+	 */
+	private function init_filters() {
+
+		// Subscriptions filters.
+		if ( class_exists( 'WC_Subscriptions' ) ) {
+			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
+				add_filter( 'option_woocommerce_subscriptions_multiple_purchase', [ $this, 'maybe_disable_mixed_cart' ], 50 );
+				add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
+				add_filter( 'woocommerce_product_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
+				add_filter( 'woocommerce_product_variation_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
+			}
+		}
+
+		// Product Add-Ons filters.
+		if ( class_exists( 'WC_Product_Addons' ) ) {
+			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
+				add_filter( 'woocommerce_product_addons_option_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
+				add_filter( 'woocommerce_product_addons_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
+				add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );
+				add_filter( 'woocommerce_product_addons_get_item_data', [ $this, 'get_item_data' ], 50, 3 );
+				add_filter( 'woocommerce_product_addons_update_product_price', [ $this, 'update_product_price' ], 50, 4 );
+				add_filter( 'woocommerce_product_addons_order_line_item_meta', [ $this, 'order_line_item_meta' ], 50, 4 );
+			}
+
+			if ( wp_doing_ajax() ) {
+				add_filter( 'woocommerce_product_addons_ajax_get_product_price_including_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
+				add_filter( 'woocommerce_product_addons_ajax_get_product_price_excluding_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
+			}
+		}
+
+		if ( defined( 'DOING_CRON' ) ) {
+			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
+		}
 	}
 
 	/**
