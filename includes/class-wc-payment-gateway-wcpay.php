@@ -1081,7 +1081,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
 		} else {
 			$payment_method_details = false;
-			$payment_method_options = array_keys( $intent['payment_method_options'] );
+			$payment_method_options = isset( $intent['payment_method_options'] ) ? array_keys( $intent['payment_method_options'] ) : null;
 			$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
 		}
 
