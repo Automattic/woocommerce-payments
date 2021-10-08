@@ -403,8 +403,7 @@ class Compatibility {
 	}
 
 	/**
-	 * Adds the add ons to the items in the cart.
-	 * This mimics WC_Product_Addons_Cart->add_cart_item().
+	 * Updates the product price according to converted add on values.
 	 *
 	 * @param array $updated_prices Prices updated by Product Add-Ons (unused).
 	 * @param array $cart_item      Cart item meta data.
@@ -477,7 +476,7 @@ class Compatibility {
 	}
 
 	/**
-	 * Filters the cart item data meta.
+	 * Filters the cart item data meta so we can provide the proper name with converted add on price.
 	 *
 	 * @param array $addon_data The addon data we are filtering/replacing.
 	 * @param array $addon      The addon being processed.
