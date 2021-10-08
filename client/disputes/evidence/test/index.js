@@ -14,6 +14,11 @@ jest.mock( 'wcpay/data', () => ( {
 	useDisputeEvidence: jest.fn(),
 } ) );
 
+jest.mock( '@wordpress/data', () => ( {
+	...jest.requireActual( '@wordpress/data' ),
+	useDispatch: jest.fn().mockReturnValue( { createErrorNotice: jest.fn() } ),
+} ) );
+
 const disputeNeedsResponse = {
 	id: 'dp_asdfghjkl',
 	amount: 1000,

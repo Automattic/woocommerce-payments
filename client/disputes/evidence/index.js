@@ -36,6 +36,7 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import wcpayTracks from 'tracks';
 
+const DISPUTE_EVIDENCE_MAX_LENGTH = 150000;
 const PRODUCT_TYPE_META_KEY = '__product_type';
 
 /* If description is an array, separate with newline elements. */
@@ -58,14 +59,49 @@ export const DisputeEvidenceForm = ( props ) => {
 		readOnly,
 	} = props;
 
+	const { createErrorNotice } = useDispatch( 'core/notices' );
+
 	if ( ! fields || ! fields.length ) {
 		return null;
 	}
 
+	const isEvidenceWithinLengthLimit = ( field, value ) => {
+		// Enforce character count for individual evidence field.
+		if ( field.maxLength && value.length >= field.maxLength ) {
+			return false;
+		}
+
+		// Enforce character count for combined evidence fields.
+		const totalLength = Object.values( {
+			...evidence,
+			[ field.key ]: value,
+		} ).reduce(
+			( acc, cur ) =>
+				'string' === typeof cur ? acc + cur.length : acc,
+			0
+		);
+		if ( totalLength >= DISPUTE_EVIDENCE_MAX_LENGTH ) {
+			return false;
+		}
+
+		return true;
+	};
+
 	const composeDefaultControlProps = ( field ) => ( {
 		label: field.label,
 		value: evidence[ field.key ] || '',
-		onChange: ( value ) => onChange( field.key, value ),
+		onChange: ( value ) => {
+			if ( ! isEvidenceWithinLengthLimit( field, value ) ) {
+				createErrorNotice(
+					__(
+						'Reached maximum character count for evidence',
+						'woocommerce-payments'
+					)
+				);
+				return;
+			}
+			onChange( field.key, value );
+		},
 		disabled: readOnly,
 		help: expandHelp( field.description ),
 	} );
@@ -124,6 +160,7 @@ export const DisputeEvidenceForm = ( props ) => {
 				return (
 					<TextareaControl
 						key={ field.key }
+						maxLength={ field.maxLength }
 						{ ...composeDefaultControlProps( field ) }
 					/>
 				);

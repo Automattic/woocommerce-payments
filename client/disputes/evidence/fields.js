@@ -19,6 +19,7 @@ const sections = [
 			{
 				key: 'product_description',
 				label: __( 'Product description', 'woocommerce-payments' ),
+				maxLength: 20000,
 				type: 'textarea',
 				description: __(
 					'A description of the product or service and any relevant details on how this was presented to the customer at the time of purchase.',
@@ -90,6 +91,7 @@ const sections = [
 			{
 				key: 'refund_policy_disclosure',
 				label: __( 'Refund policy disclosure', 'woocommerce-payments' ),
+				maxLength: 20000,
 				type: 'textarea',
 				description: __(
 					'An explanation of how and when the customer was shown or provided your refund policy prior to purchase.',
@@ -102,6 +104,7 @@ const sections = [
 					'Refund refusal explanation',
 					'woocommerce-payments'
 				),
+				maxLength: 20000,
 				type: 'textarea',
 				description: __(
 					'Your explanation for why the customer is not entitled to a refund.',
@@ -130,6 +133,7 @@ const sections = [
 					'Explanation of duplicate charge',
 					'woocommerce-payments'
 				),
+				maxLength: 20000,
 				type: 'textarea',
 				description: __(
 					'An explanation of the difference between the disputed payment and the prior one that appears to be a duplicate.',
@@ -250,6 +254,7 @@ const sections = [
 					'Cancellation policy disclosure',
 					'woocommerce-payments'
 				),
+				maxLength: 20000,
 				type: 'textarea',
 				description: __(
 					'An explanation of how and when the customer was shown your cancellation policy prior to purchase.',
@@ -259,6 +264,7 @@ const sections = [
 			{
 				key: 'cancellation_rebuttal',
 				label: __( 'Cancellation rebuttal', 'woocommerce-payments' ),
+				maxLength: 20000,
 				type: 'textarea',
 				description: __(
 					"A justification for why the customer's subscription was not canceled.",
@@ -374,6 +380,7 @@ const sections = [
 			{
 				key: 'uncategorized_text',
 				label: __( 'Additional details', 'woocommerce-payments' ),
+				maxLength: 20000,
 				type: 'textarea',
 			},
 			{
