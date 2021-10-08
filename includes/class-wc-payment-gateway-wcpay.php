@@ -627,7 +627,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		wp_register_script(
 			'WCPAY_CHECKOUT',
 			plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout' ],
+			[ 'stripe', 'wc-checkout', 'woocommerce-tokenization-form' ],
 			WC_Payments::get_file_version( 'dist/checkout.js' ),
 			true
 		);
@@ -707,7 +707,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function payment_fields() {
 		try {
-			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
+			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
 
 			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
 			wp_enqueue_script( 'WCPAY_CHECKOUT' );
@@ -964,6 +964,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_information->get_payment_token()->get_last4()
 				);
 				$order->add_order_note( $note );
+
+				do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $payment_information->get_payment_token() );
 			}
 
 			return [
@@ -2306,6 +2308,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'card',
 			]
 		);
+	}
+
+	/**
+	 * Returns the list of enabled payment method types that will function with the current checkout.
+	 *
+	 * @param string $order_id optional Order ID.
+	 * @return string[]
+	 */
+	public function get_upe_enabled_at_checkout_payment_method_ids( $order_id = null ) {
+		$capture                    = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
+		$capturable_payment_methods = $capture ? $this->get_upe_enabled_payment_method_ids() : [ 'card' ];
+		$enabled_payment_methods    = [];
+		foreach ( $capturable_payment_methods as $payment_method_id ) {
+			if ( isset( $this->payment_methods[ $payment_method_id ] )
+				&& $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id )
+				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() ) ) {
+				$enabled_payment_methods[] = $payment_method_id;
+			}
+		}
+		return $enabled_payment_methods;
 	}
 
 	/**
