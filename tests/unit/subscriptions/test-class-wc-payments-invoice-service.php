@@ -140,24 +140,22 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 			->method( 'charge_invoice' )
 			->with( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
 
-		// Negative Cases.
-		// Mock an empty list of subscriptions.
-		$this->mock_wcs_get_subscriptions_for_order( [] );
-
-		// Order isn't related to a subscription.
-		$this->invoice_service->maybe_record_invoice_payment( $mock_order->get_id() );
-
-		// Invalid order ID.
-		$this->invoice_service->maybe_record_invoice_payment( 0 );
-
-		// Mock the get subscriptions from order call.
-		$this->mock_wcs_get_subscriptions_for_order( [ $mock_subscription ] );
-
-		// Mock the order having a invoice ID stored in meta.
 		$mock_subscription->update_meta_data( self::ORDER_INVOICE_ID_KEY, $invoice_id );
 		$mock_subscription->save();
 
 		// Positive Case.
+		$this->mock_wcs_get_subscriptions_for_order( [ $mock_subscription ] );
+		$this->invoice_service->maybe_record_invoice_payment( $mock_order->get_id() );
+
+		// Negative Cases.
+		// Invalid order ID.
+		$this->invoice_service->maybe_record_invoice_payment( 0 );
+		// Order isn't related to a subscription.
+		$this->mock_wcs_get_subscriptions_for_order( [] );
+		$this->invoice_service->maybe_record_invoice_payment( $mock_order->get_id() );
+		// Order contains invoice ID meta.
+		$mock_order->update_meta_data( self::ORDER_INVOICE_ID_KEY, $invoice_id );
+		$mock_order->save();
 		$this->invoice_service->maybe_record_invoice_payment( $mock_order->get_id() );
 	}
 

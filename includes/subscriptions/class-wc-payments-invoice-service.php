@@ -144,7 +144,7 @@ class WC_Payments_Invoice_Service {
 	public function maybe_record_invoice_payment( int $order_id ) {
 		$order = wc_get_order( $order_id );
 
-		if ( ! $order ) {
+		if ( ! $order || self::get_order_invoice_id( $order ) ) {
 			return;
 		}
 
