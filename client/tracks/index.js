@@ -35,6 +35,8 @@ const events = {
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
 	DEPOSITS_SUMMARY_EMPTY_STATE_CLICKED:
 		'wcpay_deposits_summary_empty_state_click',
+	UPE_ENABLED: 'wcpay_upe_enabled',
+	UPE_DISABLED: 'wcpay_upe_disabled',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
 		'wcpay_multi_currency_enabled_currencies_updated',
 	PAYMENT_REQUEST_SETTINGS_CHANGE: 'wcpay_payment_request_settings_change',

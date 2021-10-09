@@ -2,6 +2,7 @@
 
 = 3.2.0 - 2021-xx-xx =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
+* Add - UPE track on upgrade and on setting toggle.
 * Fix - Prevent currency switcher to show when enabled currencies list is empty.
 * Fix - Show currency switcher notice until customer explicitly dismisses it.
 * Update - Fee breakdown when there's only a base fee
