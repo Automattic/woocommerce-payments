@@ -199,7 +199,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$mock_subscription_product->save();
 		$mock_order        = WC_Helper_Order::create_order( 1, 50, $mock_subscription_product );
 		$mock_subscription = new WC_Subscription();
-		$mock_subscription->set_manual( true );
+		$mock_subscription->set_requires_manual_renewal( true );
 		$mock_subscription->set_parent( $mock_order );
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
@@ -242,7 +242,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	public function test_create_subscription_for_manual_renewal_on_existing_wcpay_subscription() {
 		$mock_order        = WC_Helper_Order::create_order();
 		$mock_subscription = new WC_Subscription();
-		$mock_subscription->set_manual( true );
+		$mock_subscription->set_requires_manual_renewal( true );
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
 		$mock_subscription->set_parent( $mock_order );
 

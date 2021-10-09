@@ -157,6 +157,12 @@ class WC_Payments_Invoice_Service {
 
 			// Update the status of the invoice to paid but don't charge the customer by using paid_out_of_band parameter.
 			$this->payments_api_client->charge_invoice( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
+
+			if ( $subscription->is_manual() ) {
+				$subscription->set_requires_manual_renewal( false );
+				$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+				$subscription->save();
+			}
 		}
 	}
 

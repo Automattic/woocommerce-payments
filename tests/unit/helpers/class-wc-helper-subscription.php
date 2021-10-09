@@ -239,7 +239,7 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		return $this->manual;
 	}
 
-	public function set_manual( $bool ) {
+	public function set_requires_manual_renewal( $bool ) {
 		$this->manual = $bool;
 	}
 }
