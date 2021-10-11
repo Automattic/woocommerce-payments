@@ -78,7 +78,7 @@ const P24Details = ( { charge = {}, isLoading } ) => {
 			<div className="payment-method-details__column">
 				<Detail
 					isLoading={ isLoading }
-					label={ __( 'Bank Name', 'woocommerce-payments' ) }
+					label={ __( 'Bank name', 'woocommerce-payments' ) }
 				>
 					{ p24BankList[ bank ] }
 				</Detail>
@@ -99,7 +99,7 @@ const P24Details = ( { charge = {}, isLoading } ) => {
 
 				<Detail
 					isLoading={ isLoading }
-					label={ __( 'Verified Name', 'woocommerce-payments' ) }
+					label={ __( 'Verified name', 'woocommerce-payments' ) }
 				>
 					{ verifiedName }
 				</Detail>

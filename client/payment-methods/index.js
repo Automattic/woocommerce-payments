@@ -45,10 +45,10 @@ const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
 		<DropdownMenu
 			icon={ moreVertical }
-			label={ __( 'Add Feedback or Disable', 'woocommerce-payments' ) }
+			label={ __( 'Add feedback or disable', 'woocommerce-payments' ) }
 			controls={ [
 				{
-					title: __( 'Provide Feedback', 'woocommerce-payments' ),
+					title: __( 'Provide feedback', 'woocommerce-payments' ),
 					onClick: () => setOpenModal( 'survey' ),
 				},
 				{
