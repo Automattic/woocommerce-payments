@@ -10,6 +10,8 @@ use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Tracker;
+
 /**
  * Class WC_Payments_Notes_Additional_Payment_Methods
  */
@@ -110,9 +112,17 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 			}
 		}
 
+		// Track enabling UPE if it wasn't enabled before.
+		if ( ! WC_Payments_Features::is_upe_enabled() && class_exists( 'WC_Tracks' ) ) {
+			// We're not using Tracker::track_admin() here because
+			// WC_Pay\record_tracker_events() is never triggered due to the redirect below.
+			WC_Tracks::record_event( 'wcpay_upe_enabled' );
+		}
+
 		// Enable UPE, deletes the note and redirect to onboarding task.
 		update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
 		self::possibly_delete_note();
+
 		$wcpay_settings_url = admin_url( 'admin.php?page=wc-admin&task=woocommerce-payments--additional-payment-methods' );
 		wp_safe_redirect( $wcpay_settings_url );
 		exit;
