@@ -67,6 +67,7 @@ class WC_Payments_Product_Service {
 		add_action( 'shutdown', [ $this, 'create_or_update_products' ] );
 		add_action( 'wp_trash_post', [ $this, 'maybe_archive_product' ] );
 		add_action( 'untrashed_post', [ $this, 'maybe_unarchive_product' ] );
+		add_filter( 'woocommerce_duplicate_product_exclude_meta', [ $this, 'exclude_meta_wcpay_product_id' ] );
 
 		$this->add_product_update_listeners();
 	}
@@ -147,6 +148,17 @@ class WC_Payments_Product_Service {
 	 */
 	public static function has_wcpay_product_id( WC_Product $product ) : string {
 		return (bool) $product->get_meta( self::PRODUCT_ID_KEY, true );
+	}
+
+	/**
+	 * Prevents duplicate _wcpay_product_id when duplicating a subscription product.
+	 *
+	 * @param array $meta_keys The keys to exclude from the duplicate.
+	 * @return array Keys to exclude, including _wcpay_product_id.
+	 */
+	public static function exclude_meta_wcpay_product_id( $meta_keys ) {
+		$meta_keys[] = self::PRODUCT_ID_KEY;
+		return $meta_keys;
 	}
 
 	/**
