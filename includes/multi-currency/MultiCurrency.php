@@ -676,18 +676,28 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function update_selected_currency_by_geolocation() {
-		// We only want to automatically set the currency if it's already not set.
-		if ( $this->is_using_auto_currency_switching() && ! $this->get_stored_currency_code() ) {
-			$currency = $this->geolocation->get_currency_by_customer_location();
-			// Update currency and display notice if enabled.
-			if ( ! empty( $this->get_enabled_currencies()[ $currency ] ) ) {
-				$this->update_selected_currency( $currency );
-				// Prevent duplicates in simulation.
-				if ( ! has_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] ) ) {
-					add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
-				}
-			}
+		// We only want to automatically set the currency if this option is enabled.
+		if ( ! $this->is_using_auto_currency_switching() ) {
+			return;
 		}
+
+		// Display notice, prevent duplicates in simulation.
+		if ( ! has_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] ) ) {
+			add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
+		}
+
+		// Update currency only if it's already not set.
+		if ( $this->get_stored_currency_code() ) {
+			return;
+		}
+
+		$currency = $this->geolocation->get_currency_by_customer_location();
+
+		if ( empty( $this->get_enabled_currencies()[ $currency ] ) ) {
+			return;
+		}
+
+		$this->update_selected_currency( $currency );
 	}
 
 	/**
@@ -775,14 +785,23 @@ class MultiCurrency {
 	 * automatic currency switch.
 	 */
 	public function display_geolocation_currency_update_notice() {
-		$current_currency = $this->get_selected_currency();
-		$store_currency   = get_option( 'woocommerce_currency' );
-		$country          = $this->geolocation->get_country_by_customer_location();
-		$currencies       = get_woocommerce_currencies();
+		$current_currency    = $this->get_selected_currency();
+		$store_currency      = get_option( 'woocommerce_currency' );
+		$country             = $this->geolocation->get_country_by_customer_location();
+		$geolocated_currency = $this->geolocation->get_currency_by_customer_location();
+		$currencies          = get_woocommerce_currencies();
 
-		// Do not display notice if using the store's default currency.
-		if ( $store_currency === $current_currency->get_code() && ! $this->is_simulation_enabled() ) {
-			return;
+		// Don't run next checks if simulation is enabled.
+		if ( ! $this->is_simulation_enabled() ) {
+			// Do not display notice if using the store's default currency.
+			if ( $store_currency === $current_currency->get_code() ) {
+				return;
+			}
+
+			// Do not display notice for other currencies than geolocated.
+			if ( $current_currency->get_code() !== $geolocated_currency ) {
+				return;
+			}
 		}
 
 		$message = sprintf(

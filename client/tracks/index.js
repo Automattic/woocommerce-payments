@@ -37,6 +37,7 @@ const events = {
 		'wcpay_deposits_summary_empty_state_click',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
 		'wcpay_multi_currency_enabled_currencies_updated',
+	PAYMENT_REQUEST_SETTINGS_CHANGE: 'wcpay_payment_request_settings_change',
 };
 
 export default {
