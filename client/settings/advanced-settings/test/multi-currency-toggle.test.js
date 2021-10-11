@@ -25,7 +25,7 @@ describe( 'MultiCurrencyToggle', () => {
 		render( <MultiCurrencyToggle /> );
 
 		expect(
-			screen.queryByLabelText( 'Enable multi-currency' )
+			screen.queryByLabelText( 'Enable Multi-Currency' )
 		).toBeInTheDocument();
 	} );
 
@@ -41,7 +41,7 @@ describe( 'MultiCurrencyToggle', () => {
 			render( <MultiCurrencyToggle /> );
 
 			const enableMultiCurrencyCheckbox = screen.getByLabelText(
-				'Enable multi-currency'
+				'Enable Multi-Currency'
 			);
 
 			userEvent.click( enableMultiCurrencyCheckbox );

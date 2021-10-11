@@ -52,7 +52,7 @@ exports[`Multi-Currency Store Settings store settings task renders correctly: sn
         <p
           class="wcpay-wizard-task__description-element is-muted-color"
         >
-          These settings can be changed any time by visiting the multi-currency settings
+          These settings can be changed any time by visiting the Multi-Currency settings
         </p>
         <div
           class="components-card is-size-medium multi-currency-settings-task__wrapper css-1xs3c37-CardUI e1q7k77g0"
