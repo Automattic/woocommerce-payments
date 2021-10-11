@@ -39,6 +39,8 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$this->mock_product    = $this->get_mock_product();
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		$this->product_service = new WC_Payments_Product_Service( $this->mock_api_client );
+
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 	}
 
 	/**
@@ -265,5 +267,49 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$this->mock_get_interval( 3 );
 
 		$this->assertSame( $mock_prodict_id, WC_Payments_Product_Service::get_wcpay_product_id( $this->mock_product ) );
+	}
+
+	/**
+	 * Tests for WC_Payments_Product_Service::get_wcpay_product_hash_option()
+	 */
+	public function test_get_wcpay_product_hash_option() {
+		$this->assertSame( '_wcpay_product_hash_live', WC_Payments_Product_Service::get_wcpay_product_hash_option() );
+
+		// set to testmode.
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		$this->assertSame( '_wcpay_product_hash_test', WC_Payments_Product_Service::get_wcpay_product_hash_option() );
+	}
+
+	/**
+	 * Tests for WC_Payments_Product_Service::get_wcpay_product_id_option()
+	 */
+	public function test_get_wcpay_product_id_option() {
+		$this->assertSame( '_wcpay_product_id_live', WC_Payments_Product_Service::get_wcpay_product_id_option() );
+
+		// set to testmode.
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		$this->assertSame( '_wcpay_product_id_test', WC_Payments_Product_Service::get_wcpay_product_id_option() );
+	}
+
+	/**
+	 * Tests for WC_Payments_Product_Service::get_wcpay_price_hash_option()
+	 */
+	public function test_get_wcpay_price_hash_option() {
+		$this->assertSame( '_wcpay_product_price_hash_live', WC_Payments_Product_Service::get_wcpay_price_hash_option() );
+
+		// set to testmode.
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		$this->assertSame( '_wcpay_product_price_hash_test', WC_Payments_Product_Service::get_wcpay_price_hash_option() );
+	}
+
+	/**
+	 * Tests for WC_Payments_Product_Service::get_wcpay_price_id_option()
+	 */
+	public function test_get_wcpay_price_id_option() {
+		$this->assertSame( '_wcpay_product_price_id_live', WC_Payments_Product_Service::get_wcpay_price_id_option() );
+
+		// set to testmode.
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		$this->assertSame( '_wcpay_product_price_id_test', WC_Payments_Product_Service::get_wcpay_price_id_option() );
 	}
 }
