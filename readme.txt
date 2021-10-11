@@ -102,6 +102,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
 * Fix - Prevent currency switcher to show when enabled currencies list is empty.
 * Fix - Show currency switcher notice until customer explicitly dismisses it.
+* Update - Fee breakdown when there's only a base fee
+* Fix - Inconsistent shipping options in Payment Request popup.
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
