@@ -9,6 +9,7 @@ namespace WCPay\MultiCurrency;
 
 use WC_Order;
 use WC_Order_Refund;
+use WCPay\MultiCurrency\Compatibility\WooCommerceDeposits;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -57,6 +58,8 @@ class Compatibility {
 		if ( defined( 'DOING_CRON' ) ) {
 			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
 		}
+
+		$compatibility_classes[] = new WooCommerceDeposits( $multi_currency, $utils );
 	}
 
 	/**
