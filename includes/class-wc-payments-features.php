@@ -72,7 +72,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the customer multi-currency feature is enabled
+	 * Checks whether the customer Multi-Currency feature is enabled
 	 *
 	 * @return bool
 	 */
