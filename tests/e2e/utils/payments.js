@@ -61,6 +61,34 @@ export async function fillCardDetails( page, card ) {
 	}
 }
 
+// Clear WC Checkout Card Details
+export async function clearCardDetails() {
+	const frameHandle = await page.waitForSelector(
+		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
+	);
+	const stripeFrame = await frameHandle.contentFrame();
+	const cardNumberInput = await stripeFrame.waitForSelector(
+		'[name="cardnumber"]'
+	);
+	const cardDateInput = await stripeFrame.waitForSelector(
+		'[name="exp-date"]'
+	);
+	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
+
+	await cardNumberInput.click();
+	await page.waitFor( 1000 );
+	await cardNumberInput.click( { clickCount: 3 } );
+	await page.keyboard.press( 'Backspace' );
+
+	await page.waitFor( 1000 );
+	await cardDateInput.click( { clickCount: 3 } );
+	await page.keyboard.press( 'Backspace' );
+
+	await page.waitFor( 1000 );
+	await cardCvcInput.click( { clickCount: 3 } );
+	await page.keyboard.press( 'Backspace' );
+}
+
 // WooCommerce Blocks Checkout
 export async function fillCardDetailsWCB( page, card ) {
 	await page.waitForSelector( '.__PrivateStripeElement' );
@@ -76,6 +104,28 @@ export async function fillCardDetailsWCB( page, card ) {
 		delay: 20,
 	} );
 	await cardCvcInput.type( card.cvc, { delay: 20 } );
+}
+
+// Clear WC Checkout Card Details
+export async function clearWCBCardDetails() {
+	const frameHandle = await page.waitForSelector(
+		'#payment-method .wcpay-card-mounted iframe[name^="__privateStripeFrame"]'
+	);
+	const stripeFrame = await frameHandle.contentFrame();
+	const inputs = await stripeFrame.$$( '.InputElement.Input' );
+	const [ cardNumberInput, cardDateInput, cardCvcInput ] = inputs;
+
+	await page.waitFor( 1000 );
+	await cardNumberInput.click( { clickCount: 3 } );
+	await page.keyboard.press( 'Backspace' );
+
+	await page.waitFor( 1000 );
+	await cardDateInput.click( { clickCount: 3 } );
+	await page.keyboard.press( 'Backspace' );
+
+	await page.waitFor( 1000 );
+	await cardCvcInput.click( { clickCount: 3 } );
+	await page.keyboard.press( 'Backspace' );
 }
 
 export async function confirmCardAuthentication(
