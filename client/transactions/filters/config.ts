@@ -22,11 +22,9 @@ export interface TransactionsFilterType {
 	defaultValue?: string;
 }
 
-const transactionTypesOptions = Object.entries( displayType )
-	// Currently, we do not support APMs from the shopper's experience, so we can hide those filters.
-	// TODO: Remove line below when implementing APMs support. See https://github.com/Automattic/woocommerce-payments/issues/692.
-	.filter( ( [ type ] ) => ! type.startsWith( 'payment' ) )
-	.map( ( [ type, label ] ) => ( { label, value: type } ) );
+const transactionTypesOptions = Object.entries(
+	displayType
+).map( ( [ type, label ] ) => ( { label, value: type } ) );
 
 export const filters: [ TransactionsFilterType, TransactionsFilterType ] = [
 	{
