@@ -323,7 +323,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates Customer Multi-Currency feature status.
+	 * Updates customer Multi-Currency feature status.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */

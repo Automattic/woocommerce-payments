@@ -701,7 +701,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $prepared_customer_data;
 	}
 	/**
-	 * Renders the Credit card input fields needed to get the user's payment information on the checkout page.
+	 * Renders the credit card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
 	 */
