@@ -788,6 +788,22 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				return true;
 			}
 
+			// Get total by adding only subscriptions and get rid of any other product or fee.
+			$subs_amount = 0;
+			foreach ( $subscriptions as $sub ) {
+				$subs_amount += $sub->get_total();
+			}
+
+			$result['setup_future_usage']                                = 'off_session';
+			$result['payment_method_options']['card']['mandate_options'] = [
+				'reference'      => $order->get_id(),
+				'amount'         => WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() ),
+				'amount_type'    => 'fixed',
+				'start_date'     => $subscription->get_time( 'date_created' ),
+				'interval'       => $subscription->get_billing_period(),
+				'interval_count' => $subscription->get_billing_interval(),
+			];
+
 			// Multiple subscriptions per order needs:
 			// - Set amount type to maximum, to allow renews of any amount under the order total.
 			// - Set interval to sporadic, to not follow any specific interval.
