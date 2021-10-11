@@ -14,33 +14,62 @@ defined( 'ABSPATH' ) || exit;
  * Class handling any subscription product functionality
  */
 class WC_Payments_Product_Service {
-	/**
-	 * The product meta key used to store the product data we last sent to WC Pay as a hash. Used to compare current WC product data with WC Pay data.
-	 *
-	 * @const string
-	 */
-	const PRODUCT_HASH_KEY = '_wcpay_product_hash';
 
 	/**
-	 * The product meta key used to store the product's ID in WC Pay.
+	 * The product meta key used to store the live product data we last sent to WC Pay as a hash. Used to compare current WC product data with live WC Pay data.
 	 *
 	 * @const string
 	 */
-	const PRODUCT_ID_KEY = '_wcpay_product_id';
+	const LIVE_PRODUCT_HASH_KEY = '_wcpay_product_hash_live';
 
 	/**
-	 * The product price meta key used to store the price data we last sent to WC Pay as a hash. Used to compare current WC product price data with WC Pay data.
+	 * The product meta key used to store the testmode product data we last sent to WC Pay as a hash. Used to compare current WC product data with WC Pay data.
 	 *
 	 * @const string
 	 */
-	const PRICE_HASH_KEY = '_wcpay_product_price_hash';
+	const TEST_PRODUCT_HASH_KEY = '_wcpay_product_hash_test';
 
 	/**
-	 * The product meta key used to store the product's WC Pay Price object ID.
+	 * The live product meta key used to store the product's ID in WC Pay.
 	 *
 	 * @const string
 	 */
-	const PRICE_ID_KEY = '_wcpay_product_price_id';
+	const LIVE_PRODUCT_ID_KEY = '_wcpay_product_id_live';
+
+	/**
+	 * The testmode product meta key used to store the product's ID in WC Pay.
+	 *
+	 * @const string
+	 */
+	const TEST_PRODUCT_ID_KEY = '_wcpay_product_id_test';
+
+	/**
+	 * The product price meta key used to store the live price data we last sent to WC Pay as a hash. Used to compare current WC product price data with live WC Pay data.
+	 *
+	 * @const string
+	 */
+	const LIVE_PRICE_HASH_KEY = '_wcpay_product_price_hash_live';
+
+	/**
+	 * The product price meta key used to store the testmode price data we last sent to WC Pay as a hash. Used to compare current WC product price data with testmode WC Pay data.
+	 *
+	 * @const string
+	 */
+	const TEST_PRICE_HASH_KEY = '_wcpay_product_price_hash_test';
+
+	/**
+	 * The product meta key used to store the live product's WC Pay Price object ID.
+	 *
+	 * @const string
+	 */
+	const LIVE_PRICE_ID_KEY = '_wcpay_product_price_id_live';
+
+	/**
+	 * The product meta key used to store the testmode product's WC Pay Price object ID.
+	 *
+	 * @const string
+	 */
+	const TEST_PRICE_ID_KEY = '_wcpay_product_price_id_test';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -79,7 +108,7 @@ class WC_Payments_Product_Service {
 	 * @return string             The product's hash or an empty string.
 	 */
 	public static function get_wcpay_product_hash( WC_Product $product ) : string {
-		return $product->get_meta( self::PRODUCT_HASH_KEY, true );
+		return $product->get_meta( self::get_wcpay_product_hash_option(), true );
 	}
 
 	/**
@@ -95,7 +124,7 @@ class WC_Payments_Product_Service {
 			WC_Payments_Subscriptions::get_product_service()->create_product( $product );
 		}
 
-		return $product->get_meta( self::PRODUCT_ID_KEY, true );
+		return $product->get_meta( self::get_wcpay_product_id_option(), true );
 	}
 
 	/**
@@ -105,7 +134,7 @@ class WC_Payments_Product_Service {
 	 * @return string             The product's price hash or an empty string.
 	 */
 	public static function get_wcpay_price_hash( WC_Product $product ) : string {
-		return $product->get_meta( self::PRICE_HASH_KEY, true );
+		return $product->get_meta( self::get_wcpay_price_hash_option(), true );
 	}
 
 	/**
@@ -115,12 +144,12 @@ class WC_Payments_Product_Service {
 	 * @return string             The product's WC Pay price ID or an empty string.
 	 */
 	public function get_wcpay_price_id( WC_Product $product ) : string {
-		$price_id = $product->get_meta( self::PRICE_ID_KEY, true );
+		$price_id = $product->get_meta( self::get_wcpay_price_id_option(), true );
 
 		// If the subscription product doesn't have a WC Pay price ID, create one now.
 		if ( empty( $price_id ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
 			WC_Payments_Subscriptions::get_product_service()->create_product( $product );
-			$price_id = $product->get_meta( self::PRICE_ID_KEY, true );
+			$price_id = $product->get_meta( self::get_wcpay_price_id_option(), true );
 		}
 
 		return $price_id;
@@ -133,11 +162,11 @@ class WC_Payments_Product_Service {
 	 * return string       The item's WCPay product id.
 	 */
 	public function get_wcpay_product_id_for_item( string $type ) : string {
-		if ( ! get_option( self::PRODUCT_ID_KEY . '_' . $type ) ) {
+		if ( ! get_option( self::get_wcpay_product_id_option() . '_' . $type ) ) {
 			$this->create_product_for_item_type( $type );
 		}
 
-		return get_option( self::PRODUCT_ID_KEY . '_' . $type );
+		return get_option( self::get_wcpay_product_id_option() . '_' . $type );
 	}
 
 	/**
@@ -147,7 +176,7 @@ class WC_Payments_Product_Service {
 	 * @return string             The WC Pay product ID or an empty string.
 	 */
 	public static function has_wcpay_product_id( WC_Product $product ) : string {
-		return (bool) $product->get_meta( self::PRODUCT_ID_KEY, true );
+		return (bool) $product->get_meta( self::get_wcpay_product_id_option(), true );
 	}
 
 	/**
@@ -246,7 +275,7 @@ class WC_Payments_Product_Service {
 				]
 			);
 
-			update_option( self::PRODUCT_ID_KEY . '_' . $type, $wcpay_product['wcpay_product_id'] );
+			update_option( self::get_wcpay_product_id_option() . '_' . $type, $wcpay_product['wcpay_product_id'] );
 		} catch ( API_Exception $e ) {
 			Logger::log( 'There was a problem creating the product on WCPay Server: ' . $e->getMessage() );
 		}
@@ -563,7 +592,7 @@ class WC_Payments_Product_Service {
 	 * @param string     $value   The WC Pay product hash.
 	 */
 	private function set_wcpay_product_hash( WC_Product $product, string $value ) {
-		$product->update_meta_data( self::PRODUCT_HASH_KEY, $value );
+		$product->update_meta_data( self::get_wcpay_product_hash_option(), $value );
 		$product->save();
 	}
 
@@ -574,7 +603,7 @@ class WC_Payments_Product_Service {
 	 * @param string     $value   The WC Pay product ID.
 	 */
 	private function set_wcpay_product_id( WC_Product $product, string $value ) {
-		$product->update_meta_data( self::PRODUCT_ID_KEY, $value );
+		$product->update_meta_data( self::get_wcpay_product_id_option(), $value );
 		$product->save();
 	}
 
@@ -585,7 +614,7 @@ class WC_Payments_Product_Service {
 	 * @param string     $value   The WC Pay product hash.
 	 */
 	private function set_wcpay_price_hash( WC_Product $product, string $value ) {
-		$product->update_meta_data( self::PRICE_HASH_KEY, $value );
+		$product->update_meta_data( self::get_wcpay_price_hash_option(), $value );
 		$product->save();
 	}
 
@@ -596,7 +625,43 @@ class WC_Payments_Product_Service {
 	 * @param string     $value   The WC Pay price ID.
 	 */
 	private function set_wcpay_price_id( WC_Product $product, string $value ) {
-		$product->update_meta_data( self::PRICE_ID_KEY, $value );
+		$product->update_meta_data( self::get_wcpay_price_id_option(), $value );
 		$product->save();
+	}
+
+	/**
+	 * Returns the name of the product hash option meta, taking test mode into account.
+	 *
+	 * @return string The price hash option name.
+	 */
+	public static function get_wcpay_product_hash_option() : string {
+		return WC_Payments::get_gateway()->is_in_test_mode() ? self::TEST_PRODUCT_HASH_KEY : self::LIVE_PRODUCT_HASH_KEY;
+	}
+
+	/**
+	 * Returns the name of the product id option meta, taking test mode into account.
+	 *
+	 * @return string The price hash option name.
+	 */
+	public static function get_wcpay_product_id_option() : string {
+		return WC_Payments::get_gateway()->is_in_test_mode() ? self::TEST_PRODUCT_ID_KEY : self::LIVE_PRODUCT_ID_KEY;
+	}
+
+	/**
+	 * Returns the name of the price hash option meta, taking test mode into account.
+	 *
+	 * @return string The price hash option name.
+	 */
+	public static function get_wcpay_price_hash_option() : string {
+		return WC_Payments::get_gateway()->is_in_test_mode() ? self::TEST_PRICE_HASH_KEY : self::LIVE_PRICE_HASH_KEY;
+	}
+
+	/**
+	 * Returns the name of the price id option meta, taking test mode into account.
+	 *
+	 * @return string The price hash option name.
+	 */
+	public static function get_wcpay_price_id_option() : string {
+		return WC_Payments::get_gateway()->is_in_test_mode() ? self::TEST_PRICE_ID_KEY : self::LIVE_PRICE_ID_KEY;
 	}
 }
