@@ -8,6 +8,21 @@ HTMLOptionsCollection [
     Charge
   </option>,
   <option
+    value="payment"
+  >
+    Payment
+  </option>,
+  <option
+    value="payment_failure_refund"
+  >
+    Payment failure refund
+  </option>,
+  <option
+    value="payment_refund"
+  >
+    Payment refund
+  </option>,
+  <option
     value="refund"
   >
     Refund

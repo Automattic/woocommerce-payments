@@ -627,7 +627,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		wp_register_script(
 			'WCPAY_CHECKOUT',
 			plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout' ],
+			[ 'stripe', 'wc-checkout', 'woocommerce-tokenization-form' ],
 			WC_Payments::get_file_version( 'dist/checkout.js' ),
 			true
 		);
@@ -707,7 +707,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function payment_fields() {
 		try {
-			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
+			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
 
 			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
 			wp_enqueue_script( 'WCPAY_CHECKOUT' );
@@ -964,6 +964,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_information->get_payment_token()->get_last4()
 				);
 				$order->add_order_note( $note );
+
+				do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $payment_information->get_payment_token() );
 			}
 
 			return [

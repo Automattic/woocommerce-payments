@@ -9,6 +9,7 @@ namespace WCPay\MultiCurrency;
 
 use WC_Order;
 use WC_Order_Refund;
+use WC_Payments;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -59,6 +60,10 @@ class Analytics {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		}
 
+		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+			add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
+		}
+
 		add_filter( 'woocommerce_analytics_update_order_stats_data', [ $this, 'update_order_stats_data' ], self::PRIORITY_LATEST, 2 );
 
 		// If we aren't making a REST request, return before adding these filters.
@@ -101,6 +106,18 @@ class Analytics {
 		$this->register_admin_scripts();
 
 		wp_enqueue_script( self::SCRIPT_NAME );
+	}
+
+	/**
+	 * Disables report caching. Used for development of analytics related functionality.
+	 * To disable report caching
+	 *
+	 * @param array $args Filter arguments.
+	 *
+	 * @return boolean
+	 */
+	public function disable_report_caching( $args ): bool {
+		return false;
 	}
 
 	/**
