@@ -5,7 +5,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-03-31T21:58:40.000Z,
-    "headline": "Payment status changed to Authorization Expired.",
+    "headline": "Payment status changed to Authorization expired.",
     "icon": <t
       className=""
       icon="sync"
@@ -30,7 +30,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-03-31T10:57:59.000Z,
-    "headline": "Payment status changed to Authorization Voided.",
+    "headline": "Payment status changed to Authorization voided.",
     "icon": <t
       className=""
       icon="sync"
@@ -120,7 +120,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T20:26:47.000Z,
-    "headline": "Payment status changed to Disputed: In Review.",
+    "headline": "Payment status changed to Disputed: In review.",
     "icon": <t
       className=""
       icon="sync"
@@ -145,7 +145,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment status changed to Disputed: Needs Response.",
+    "headline": "Payment status changed to Disputed: Needs response.",
     "icon": <t
       className=""
       icon="sync"
@@ -199,7 +199,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats captured events with fee details 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats captured events with fee details 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -248,7 +248,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats captured events without fee details 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats captured events without fee details 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -297,12 +297,12 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats dispute_needs_response events 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats dispute_needs_response events 1`] = `
 Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment status changed to Disputed: Needs Response.",
+    "headline": "Payment status changed to Disputed: Needs response.",
     "icon": <t
       className=""
       icon="sync"
@@ -343,7 +343,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats dispute_won events 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats dispute_won events 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -390,7 +390,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats full_refund events 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats full_refund events 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -427,12 +427,12 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats partial_refund events 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats partial_refund events 1`] = `
 Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "Payment status changed to Partial Refund.",
+    "headline": "Payment status changed to Partial refund.",
     "icon": <t
       className=""
       icon="sync"
@@ -671,7 +671,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment status changed to Disputed: Needs Response.",
+    "headline": "Payment status changed to Disputed: Needs response.",
     "icon": <t
       className=""
       icon="sync"
@@ -801,7 +801,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "Payment status changed to Partial Refund.",
+    "headline": "Payment status changed to Partial refund.",
     "icon": <t
       className=""
       icon="sync"

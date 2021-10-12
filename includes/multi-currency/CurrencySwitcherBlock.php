@@ -35,7 +35,7 @@ class CurrencySwitcherBlock {
 	/**
 	 * Constructor.
 	 *
-	 * @param MultiCurrency $multi_currency Instance of Multi Currency.
+	 * @param MultiCurrency $multi_currency Instance of Multi-Currency.
 	 * @param Compatibility $compatibility  Instance of Compatibility.
 	 */
 	public function __construct( MultiCurrency $multi_currency, Compatibility $compatibility ) {
