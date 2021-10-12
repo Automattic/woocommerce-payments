@@ -245,7 +245,8 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * @throws API_Exception If request to server fails.
 	 */
 	private function reload_locations() {
-		set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $this->api_client->get_terminal_locations(), DAY_IN_SECONDS );
+		$locations = $this->api_client->get_terminal_locations();
+		set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 	}
 
 	/**
