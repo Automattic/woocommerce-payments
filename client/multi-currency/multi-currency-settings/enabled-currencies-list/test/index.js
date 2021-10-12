@@ -200,7 +200,7 @@ const getContainer = () => {
 	);
 };
 
-describe( 'Multi Currency enabled currencies list', () => {
+describe( 'Multi-Currency enabled currencies list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = { zeroDecimalCurrencies: [] };

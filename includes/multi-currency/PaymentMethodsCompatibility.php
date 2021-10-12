@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class PaymentMethodsCompatibility {
 	/**
-	 * The multi currency class instance.
+	 * The Multi-Currency class instance.
 	 *
 	 * @var MultiCurrency
 	 */
@@ -33,7 +33,7 @@ class PaymentMethodsCompatibility {
 	/**
 	 * Constructor
 	 *
-	 * @param MultiCurrency            $multi_currency The multi currency class instance.
+	 * @param MultiCurrency            $multi_currency The Multi-Currency class instance.
 	 * @param WC_Payment_Gateway_WCPay $gateway The WCPay gateway class instance.
 	 */
 	public function __construct( MultiCurrency $multi_currency, WC_Payment_Gateway_WCPay $gateway ) {
