@@ -52,11 +52,33 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				'callback'            => [ $this, 'update_location' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'display_name' => [
-						'type' => 'string',
+					'display_name'         => [
+						'type'     => 'string',
+						'required' => false,
 					],
-					'address'      => [
-						'type' => 'object',
+					'address[country]'     => [
+						'type'     => 'string',
+						'required' => false,
+					],
+					'address[line1]'       => [
+						'type'     => 'string',
+						'required' => false,
+					],
+					'address[city]'        => [
+						'type'     => 'string',
+						'required' => false,
+					],
+					'address[line2]'       => [
+						'type'     => 'string',
+						'required' => false,
+					],
+					'address[postal_code]' => [
+						'type'     => 'string',
+						'required' => false,
+					],
+					'address[state]'       => [
+						'type'     => 'string',
+						'required' => false,
 					],
 				],
 			]
@@ -78,13 +100,33 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				'callback'            => [ $this, 'create_location' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'display_name' => [
+					'display_name'         => [
 						'type'     => 'string',
 						'required' => true,
 					],
-					'address'      => [
-						'type'     => 'object',
+					'address[country]'     => [
+						'type'     => 'string',
 						'required' => true,
+					],
+					'address[line1]'       => [
+						'type'     => 'string',
+						'required' => true,
+					],
+					'address[city]'        => [
+						'type'     => 'string',
+						'required' => false,
+					],
+					'address[line2]'       => [
+						'type'     => 'string',
+						'required' => false,
+					],
+					'address[postal_code]' => [
+						'type'     => 'string',
+						'required' => false,
+					],
+					'address[state]'       => [
+						'type'     => 'string',
+						'required' => false,
 					],
 				],
 			]
@@ -158,7 +200,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 					$location['display_name'] === $name
 					&& count( array_intersect( $location['address'], $location_address ) ) === count( $location_address )
 				) {
-					return $this->format_location_response( $location );
+					return rest_ensure_response( $this->extract_location_fields( $location ) );
 				}
 			}
 
@@ -167,20 +209,10 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			$locations[] = $location;
 			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 
-			return $this->format_location_response( $location );
+			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
-	}
-
-	/**
-	 * Formats a Stripe terminal location object into a correct response.
-	 *
-	 * @param array $location The location.
-	 * @return WP_REST_Response
-	 */
-	private function format_location_response( $location ) {
-		return rest_ensure_response( $this->extract_location_fields( $location ) );
 	}
 
 	/**
@@ -189,7 +221,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * @param array $location The location.
 	 * @return array The picked fields from location object.
 	 */
-	private function extract_location_fields( $location ) {
+	private function extract_location_fields( array $location ): array {
 		return [
 			'id'           => $location['id'],
 			'address'      => $location['address'],
@@ -207,20 +239,17 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 */
 	public function delete_location( $request ) {
 		try {
-			$deletion_response = $this->api_client->delete_terminal_location(
-				$request->get_param( 'location_id' )
-			);
+			$location = $this->api_client->delete_terminal_location( $request->get_param( 'location_id' ) );
 
 			// Delete the transient in case the delete call goes through to avoid caching side effects.
-			if ( true === $deletion_response['deleted'] ?? false ) {
+			if ( true === ( $location['deleted'] ?? false ) ) {
 				delete_transient( self::STORE_LOCATIONS_TRANSIENT_KEY );
 			}
 
-			return $deletion_response;
+			return rest_ensure_response( $location );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
-
 	}
 
 	/**
@@ -235,13 +264,12 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			$location_id  = $request->get_param( 'location_id' );
 			$display_name = $request['display_name'];
 			$address      = $request['address'];
-
-			$updation_response = $this->api_client->update_terminal_location( $location_id, $display_name, $address );
+			$location     = $this->api_client->update_terminal_location( $location_id, $display_name, $address );
 
 			// Delete the transient in case the update call goes through to avoid caching side effects.
 			delete_transient( self::STORE_LOCATIONS_TRANSIENT_KEY );
 
-			return $this->format_location_response( $updation_response );
+			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
@@ -257,13 +285,16 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	public function get_location( $request ) {
 		try {
 			$locations   = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
+			$locations   = $locations ? $locations : [];
 			$location_id = $request->get_param( 'location_id' );
+
+			// TODO: if no locations, fetch them and re-work the following if-foreach construct.
 
 			// Check if the location exists in cache before making the request.
 			if ( $locations ) {
 				foreach ( $locations as $location ) {
 					if ( $location['id'] === $location_id ) {
-						return $this->format_location_response( $location );
+						return rest_ensure_response( $this->extract_location_fields( $location ) );
 					}
 				}
 			}
@@ -273,7 +304,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			$locations[] = $location;
 			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 
-			return $this->format_location_response( $location );
+			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
@@ -290,15 +321,15 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 		try {
 			$display_name = $request['display_name'];
 			$address      = $request['address'];
-
-			$location = $this->api_client->create_terminal_location( $display_name, $address );
+			$location     = $this->api_client->create_terminal_location( $display_name, $address );
 
 			// Update the transient with the newly created location.
 			$locations   = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
+			$locations   = $locations ? $locations : [];
 			$locations[] = $location;
 			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 
-			return $this->format_location_response( $location );
+			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
@@ -315,6 +346,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 		try {
 			// Check if locations are cached already and return them if present.
 			$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
+			$locations = $locations ? $locations : [];
 
 			// Fetch from downstream in case of a cache miss and update cache for subsequent calls.
 			if ( ! $locations ) {
@@ -322,13 +354,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 			}
 
-			// Format the response to pick the required fields.
-			$formatted_location_response = [];
-			foreach ( $locations as $location ) {
-				$formatted_location_response[] = $this->extract_location_fields( $location );
-			}
-
-			return rest_ensure_response( $formatted_location_response );
+			return rest_ensure_response( array_map( [ $this, 'extract_location_fields' ], $locations ) );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
