@@ -208,48 +208,6 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	}
 
 	/**
-	 * Extracts the relevant fields from a terminal location object.
-	 *
-	 * @param array $location The location.
-	 * @return array          The picked fields from location object.
-	 */
-	private function extract_location_fields( array $location ): array {
-		return [
-			'id'           => $location['id'],
-			'address'      => $location['address'],
-			'display_name' => $location['display_name'],
-			'livemode'     => $location['livemode'],
-		];
-	}
-
-	/**
-	 * Attempts to read locations from transient and re-populates it if needed.
-	 *
-	 * @return array         Terminal locations.
-	 * @throws API_Exception If request to server fails.
-	 */
-	private function fetch_locations(): array {
-		$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
-		if ( ! $locations ) {
-			$locations = $this->api_client->get_terminal_locations();
-			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
-		}
-
-		return $locations;
-	}
-
-	/**
-	 * Refreshes the locations stored in transient.
-	 *
-	 * @return void
-	 * @throws API_Exception If request to server fails.
-	 */
-	private function reload_locations() {
-		$locations = $this->api_client->get_terminal_locations();
-		set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
-	}
-
-	/**
 	 * Proxies the delete location request to the server.
 	 *
 	 * @param WP_REST_REQUEST $request Request object.
@@ -341,5 +299,47 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
+	}
+
+	/**
+	 * Extracts the relevant fields from a terminal location object.
+	 *
+	 * @param array $location The location.
+	 * @return array          The picked fields from location object.
+	 */
+	private function extract_location_fields( array $location ): array {
+		return [
+			'id'           => $location['id'],
+			'address'      => $location['address'],
+			'display_name' => $location['display_name'],
+			'livemode'     => $location['livemode'],
+		];
+	}
+
+	/**
+	 * Attempts to read locations from transient and re-populates it if needed.
+	 *
+	 * @return array         Terminal locations.
+	 * @throws API_Exception If request to server fails.
+	 */
+	private function fetch_locations(): array {
+		$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
+		if ( ! $locations ) {
+			$locations = $this->api_client->get_terminal_locations();
+			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
+		}
+
+		return $locations;
+	}
+
+	/**
+	 * Refreshes the locations stored in transient.
+	 *
+	 * @return void
+	 * @throws API_Exception If request to server fails.
+	 */
+	private function reload_locations() {
+		$locations = $this->api_client->get_terminal_locations();
+		set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 	}
 }
