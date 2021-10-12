@@ -197,7 +197,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				}
 			}
 
-			// Create a new location, and actualize transient.
+			// If the location is missing, Create a new one and actualize the transient.
 			$location = $this->api_client->create_terminal_location( $name, $location_address );
 			$this->reload_locations();
 
