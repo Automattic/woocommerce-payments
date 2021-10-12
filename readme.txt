@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Fee breakdown when there's only a base fee
 * Fix - Inconsistent shipping options in Payment Request popup.
 * Fix - Border style not being applied properly on Multi-Currency block widget.
+* Fix - Applied sentence case on all strings
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
