@@ -21,7 +21,7 @@
 						<?php
 							printf(
 								// Translators: placeholders are opening and closing strong HTML tags.
-								esc_html__( 'By deactivating the %1$sWooCommerce Subscriptions%2$s plugin, your store will switch to use %1$sSubscriptions powered by WooCommerce Payments%2$s.', 'woocommerce-payments' ),
+								esc_html__( 'By deactivating the %1$sWooCommerce Subscriptions%2$s plugin, your store will switch to %1$sSubscriptions powered by WooCommerce Payments%2$s.', 'woocommerce-payments' ),
 								'<strong>',
 								'</strong>'
 							);
