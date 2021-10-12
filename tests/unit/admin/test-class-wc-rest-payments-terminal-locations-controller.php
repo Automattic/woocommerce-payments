@@ -88,7 +88,7 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 		$result = $this->controller->get_store_location( $this->request );
 
 		$this->assertSame( 'store_address_is_incomplete', $result->get_error_code() );
-		$this->assertStringEndsWith( '/admin.php?page=wc-settings&tab=general', $result->get_error_data()['url'] );
+		$this->assertStringEndsWith( '/admin.php?page=wc-settings&tab=general', $result->get_error_message() );
 	}
 
 	public function test_creates_location_from_scratch() {
