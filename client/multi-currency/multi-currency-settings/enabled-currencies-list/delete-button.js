@@ -123,7 +123,7 @@ const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 					<p>
 						{ sprintf(
 							__(
-								'You can add %s (%s) again at any time in Multi-currency settings.',
+								'You can add %s (%s) again at any time in Multi-Currency settings.',
 								'woocommerce-payments'
 							),
 							label,

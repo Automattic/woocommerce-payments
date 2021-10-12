@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Payments Multi Currency Frontend Prices
+ * WooCommerce Payments Multi-Currency Frontend Prices
  *
  * @package WooCommerce\Payments
  */
@@ -12,7 +12,7 @@ use WC_Order;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that applies Multi Currency prices on the frontend.
+ * Class that applies Multi-Currency prices on the frontend.
  */
 class FrontendPrices {
 	/**

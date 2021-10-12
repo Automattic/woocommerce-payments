@@ -10,7 +10,7 @@ namespace WCPay\MultiCurrency;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that controls Multi Currency Storefront Integration.
+ * Class that controls Multi-Currency Storefront Integration.
  */
 class StorefrontIntegration {
 	/**
@@ -97,7 +97,7 @@ class StorefrontIntegration {
 			return;
 		}
 
-		// Simulation overrides for multi currency onboarding preview.
+		// Simulation overrides for Multi-Currency onboarding preview.
 		$simulation_variables     = $this->multi_currency->get_multi_currency_onboarding_simulation_variables() ?? [];
 		$simulation_enabled       = false;
 		$simulation_hide_switcher = false;

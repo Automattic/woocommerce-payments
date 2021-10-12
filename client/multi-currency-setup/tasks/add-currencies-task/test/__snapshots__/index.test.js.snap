@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Multi Currency enabled currencies list add currencies task renders correctly: snapshot-multi-currency-onboarding 1`] = `
+exports[`Multi-Currency enabled currencies list add currencies task renders correctly: snapshot-multi-currency-onboarding 1`] = `
 <div>
   <li
     class="wcpay-wizard-task add-currencies-task is-active"
@@ -100,7 +100,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
               <ul>
                 <li>
                   <h4>
-                    Recommended Currencies
+                    Recommended currencies
                   </h4>
                 </li>
                 <li
@@ -476,7 +476,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
                   class="add-currencies-task__available-currencies"
                 >
                   <h4>
-                    All Currencies
+                    All currencies
                   </h4>
                 </li>
                 <li
@@ -724,7 +724,7 @@ exports[`Multi Currency enabled currencies list add currencies task renders corr
 </div>
 `;
 
-exports[`Multi Currency enabled currencies list currency search works with currency code: snapshot-currency-search-by-code 1`] = `
+exports[`Multi-Currency enabled currencies list currency search works with currency code: snapshot-currency-search-by-code 1`] = `
 <div>
   <li
     class="wcpay-wizard-task add-currencies-task is-active"
@@ -886,7 +886,7 @@ exports[`Multi Currency enabled currencies list currency search works with curre
 </div>
 `;
 
-exports[`Multi Currency enabled currencies list currency search works with currency name: snapshot-currency-search-by-name 1`] = `
+exports[`Multi-Currency enabled currencies list currency search works with currency name: snapshot-currency-search-by-name 1`] = `
 <div>
   <li
     class="wcpay-wizard-task add-currencies-task is-active"
@@ -1048,7 +1048,7 @@ exports[`Multi Currency enabled currencies list currency search works with curre
 </div>
 `;
 
-exports[`Multi Currency enabled currencies list currency search works with currency symbol: snapshot-currency-search-by-symbol 1`] = `
+exports[`Multi-Currency enabled currencies list currency search works with currency symbol: snapshot-currency-search-by-symbol 1`] = `
 <div>
   <li
     class="wcpay-wizard-task add-currencies-task is-active"
@@ -1226,7 +1226,7 @@ exports[`Multi Currency enabled currencies list currency search works with curre
 </div>
 `;
 
-exports[`Multi Currency enabled currencies list should hide recommended currencies section, if all recommended currencies are enabled: snapshot-all-currencies-selected 1`] = `
+exports[`Multi-Currency enabled currencies list should hide recommended currencies section, if all recommended currencies are enabled: snapshot-all-currencies-selected 1`] = `
 <div>
   <li
     class="wcpay-wizard-task add-currencies-task is-active"
@@ -1338,7 +1338,7 @@ exports[`Multi Currency enabled currencies list should hide recommended currenci
                   class="add-currencies-task__available-currencies"
                 >
                   <h4>
-                    All Currencies
+                    All currencies
                   </h4>
                 </li>
               </ul>
@@ -1350,7 +1350,7 @@ exports[`Multi Currency enabled currencies list should hide recommended currenci
           disabled=""
           type="button"
         >
-          Add Currencies
+          Add currencies
         </button>
       </div>
     </div>
