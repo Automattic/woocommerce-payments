@@ -85,7 +85,7 @@ const TransactionsAndDepositsDescription = () => (
 			) }
 		</p>
 		<ExternalLink href="https://docs.woocommerce.com/document/payments/faq/">
-			{ __( 'View Frequently Asked Questions', 'woocommerce-payments' ) }
+			{ __( 'View frequently asked questions', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
 );

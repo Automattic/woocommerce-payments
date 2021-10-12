@@ -52,8 +52,12 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				'callback'            => [ $this, 'update_location' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'display_name',
-					'address',
+					'display_name' => [
+						'type' => 'string',
+					],
+					'address'      => [
+						'type' => 'object',
+					],
 				],
 			]
 		);
@@ -117,8 +121,9 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 		);
 
 		// If address is not populated, emit an error and specify the URL where this can be done.
-		$is_address_unpopulated = 2 === count( $location_address ) && isset( $location_address['country'], $location_address['state'] );
-		if ( $is_address_unpopulated ) {
+		// See also https://tosbourn.com/list-of-countries-without-a-postcode/ when launching in new countries.
+		$is_address_populated = isset( $location_address['country'], $location_address['city'], $location_address['postal_code'], $location_address['line1'] );
+		if ( ! $is_address_populated ) {
 			return rest_ensure_response(
 				new \WP_Error(
 					'store_address_is_incomplete',

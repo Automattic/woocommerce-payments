@@ -346,7 +346,7 @@ class WC_Payments_Apple_Pay_Registration {
 		<div class="notice notice-warning apple-pay-message">
 			<p>
 				<strong><?php echo esc_html( 'Apple Pay:' ); ?></strong>
-				<?php echo esc_html_e( 'Payment Request Buttons are enabled. To use Apple Pay, please use a live WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+				<?php echo esc_html_e( 'Payment request buttons are enabled. To use Apple Pay, please use a live WooCommerce Payments account.', 'woocommerce-payments' ); ?>
 			</p>
 		</div>
 		<?php
@@ -379,7 +379,7 @@ class WC_Payments_Apple_Pay_Registration {
 				'title' => [],
 			],
 		];
-		$payment_request_button_text       = __( 'Payment Request Button:', 'woocommerce-payments' );
+		$payment_request_button_text       = __( 'Payment request button:', 'woocommerce-payments' );
 		$verification_failed_without_error = __( 'Apple Pay domain verification failed.', 'woocommerce-payments' );
 		$verification_failed_with_error    = __( 'Apple Pay domain verification failed with the following error:', 'woocommerce-payments' );
 		$check_log_text                    = sprintf(
