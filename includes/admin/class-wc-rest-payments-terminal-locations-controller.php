@@ -292,20 +292,17 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 */
 	public function get_location( $request ) {
 		try {
-			$locations   = $this->fetch_locations();
+			// Check if the location is already in the transient.
 			$location_id = $request->get_param( 'location_id' );
-
-			// Check if the location exists in cache before making the request.
-			foreach ( $locations as $location ) {
+			foreach ( $this->fetch_locations() as $location ) {
 				if ( $location['id'] === $location_id ) {
 					return rest_ensure_response( $this->extract_location_fields( $location ) );
 				}
 			}
 
-			// Fetch the location from server and update the cache to include it.
-			$location    = $this->api_client->get_terminal_location( $location_id );
-			$locations[] = $location;
-			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
+			// If the location is missing, fetch it individually and reload the transient.
+			$location = $this->api_client->get_terminal_location( $location_id );
+			$this->reload_locations();
 
 			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
@@ -321,10 +318,8 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 */
 	public function create_location( $request ) {
 		try {
-			$display_name = $request['display_name'];
-			$address      = $request['address'];
-			$location     = $this->api_client->create_terminal_location( $display_name, $address );
-
+			// Create location and reload the transient.
+			$location = $this->api_client->create_terminal_location( $request['display_name'], $request['address'] );
 			$this->reload_locations();
 
 			return rest_ensure_response( $this->extract_location_fields( $location ) );
