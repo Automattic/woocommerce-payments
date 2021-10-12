@@ -30,7 +30,7 @@
 						<?php
 							printf(
 								// Translators: $1 and $2 placeholders are opening and closing strong HTML tags. $3 and $4 are opening and closing link HTML tags. $5 is an opening link HTML tag.
-								esc_html__( 'Exisiting subscriptions will %1$s%3$srenew manually%4$s%2$s - subscribers will need to log in to pay for renewal. Access to premium features will also be removed. %5$sLearn more.%4$s', 'woocommerce-payments' ),
+								esc_html__( 'Existing subscriptions will %1$s%3$srenew manually%4$s%2$s - subscribers will need to log in to pay for renewal. Access to premium features will also be removed. %5$sLearn more.%4$s', 'woocommerce-payments' ),
 								'<strong>',
 								'</strong>',
 								'<a href="https://docs.woocommerce.com/document/subscriptions/renewal-process/#section-4">',
