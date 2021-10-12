@@ -52,32 +52,12 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				'callback'            => [ $this, 'update_location' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'display_name'         => [
+					'display_name' => [
 						'type'     => 'string',
 						'required' => false,
 					],
-					'address[country]'     => [
-						'type'     => 'string',
-						'required' => false,
-					],
-					'address[line1]'       => [
-						'type'     => 'string',
-						'required' => false,
-					],
-					'address[city]'        => [
-						'type'     => 'string',
-						'required' => false,
-					],
-					'address[line2]'       => [
-						'type'     => 'string',
-						'required' => false,
-					],
-					'address[postal_code]' => [
-						'type'     => 'string',
-						'required' => false,
-					],
-					'address[state]'       => [
-						'type'     => 'string',
+					'address'      => [
+						'type'     => 'object',
 						'required' => false,
 					],
 				],
@@ -100,33 +80,13 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				'callback'            => [ $this, 'create_location' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'display_name'         => [
+					'display_name' => [
 						'type'     => 'string',
 						'required' => true,
 					],
-					'address[country]'     => [
-						'type'     => 'string',
+					'address'      => [
+						'type'     => 'object',
 						'required' => true,
-					],
-					'address[line1]'       => [
-						'type'     => 'string',
-						'required' => true,
-					],
-					'address[city]'        => [
-						'type'     => 'string',
-						'required' => false,
-					],
-					'address[line2]'       => [
-						'type'     => 'string',
-						'required' => false,
-					],
-					'address[postal_code]' => [
-						'type'     => 'string',
-						'required' => false,
-					],
-					'address[state]'       => [
-						'type'     => 'string',
-						'required' => false,
 					],
 				],
 			]
