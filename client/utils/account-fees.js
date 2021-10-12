@@ -102,8 +102,6 @@ export const formatMethodFeesDescription = ( methodFees ) => {
 
 export const getTransactionsPaymentMethodName = ( paymentMethod ) => {
 	switch ( paymentMethod ) {
-		case 'base':
-			return __( 'Base transactions', 'woocommerce-payments' );
 		case 'card':
 			return __( 'Card transactions', 'woocommerce-payments' );
 		case 'card_present':

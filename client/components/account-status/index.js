@@ -73,8 +73,23 @@ const AccountStatusDetails = ( props ) => {
 			</FlexItem>
 		</>
 	);
-	// @TODO- display fees for every payment method from 'accountFees' (keys card card_present, giropay and sofort)
-	// and remove informations from base and discount keys.
+
+	const discounts = Object.entries( accountFees )
+		.map( ( [ key, value ] ) => {
+			//ignore base and discount fields - still used for backwards compatibilityss
+			if (
+				'base' === key ||
+				'discount' === key ||
+				0 === value.discount.length
+			)
+				return null;
+			// console.log(value.discount);
+			return value.discount;
+		} )
+		.filter( function ( el ) {
+			return null != el && 0 < el.length;
+		} );
+
 	return (
 		<AccountStatusCard title={ cardTitle }>
 			<AccountStatusItem
@@ -91,7 +106,11 @@ const AccountStatusDetails = ( props ) => {
 					depositsStatus={ accountStatus.depositsStatus }
 				/>
 			</AccountStatusItem>
-			<h4>{ __( 'Active discounts', 'woocommerce-payments' ) }</h4>
+			{ 0 < discounts.length ? (
+				<h4>{ __( 'Active discounts', 'woocommerce-payments' ) }</h4>
+			) : (
+				''
+			) }
 			<AccountFees accountFees={ accountFees } />
 		</AccountStatusCard>
 	);
