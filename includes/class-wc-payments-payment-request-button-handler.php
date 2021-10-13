@@ -476,8 +476,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 				return false;
 			}
 
-			// Trial subscriptions with shipping are not supported.
-			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
+			// Subscriptions products are not supported.
+			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) ) {
 				return false;
 			}
 		}
@@ -689,8 +689,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
-		// Trial subscriptions with shipping are not supported.
-		if ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
+		// Subscriptions products are not supported.
+		if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return false;
 		}
 
