@@ -658,7 +658,7 @@ class WC_Payments_Subscription_Service {
 			$unit_amount   = $item->get_total();
 
 			if ( $unit_amount ) {
-				$price_data = $this->format_item_price_data(
+				$price_data = self::format_item_price_data(
 					$subscription->get_currency(),
 					$wcpay_item_id,
 					$unit_amount,
@@ -696,7 +696,7 @@ class WC_Payments_Subscription_Service {
 			if ( $sign_up_fee ) {
 				$wcpay_item_id = $this->product_service->get_stripe_product_id_for_item( 'sign_up_fee' );
 				$data[]        = [
-					'price_data' => $this->format_item_price_data( $currency, $wcpay_item_id, $sign_up_fee ),
+					'price_data' => self::format_item_price_data( $currency, $wcpay_item_id, $sign_up_fee ),
 					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
 				];
 			}
@@ -710,7 +710,7 @@ class WC_Payments_Subscription_Service {
 				}
 
 				$data[] = [
-					'price_data' => $this->format_item_price_data( $currency, $wcpay_item_id, $shipping ),
+					'price_data' => self::format_item_price_data( $currency, $wcpay_item_id, $shipping ),
 					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
 				];
 			}
