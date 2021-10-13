@@ -49,7 +49,7 @@ const dataTable = [
 ];
 
 describe.each( dataTable )(
-	'Order > Partial refund',
+	'Order > Partial Refund',
 	( testName, { lineItems, refundInputs } ) => {
 		let orderId;
 		let orderTotal;
@@ -189,7 +189,7 @@ describe.each( dataTable )(
 					text: `$${ refundTotalString } USD will be deducted from a future deposit.`,
 				} ),
 				expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-					text: 'Payment status changed to partial refund.',
+					text: 'Payment status changed to Partial Refund.',
 				} ),
 			] );
 		} );
