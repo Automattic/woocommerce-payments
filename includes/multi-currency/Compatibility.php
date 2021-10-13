@@ -17,6 +17,9 @@ defined( 'ABSPATH' ) || exit;
  * Class that controls Multi Currency Compatibility.
  */
 class Compatibility {
+
+	const ADDONS_CONVERTED_META_KEY = '_wcpay_multi_currency_addons_converted';
+
 	/**
 	 * Subscription switch cart item.
 	 *
@@ -235,7 +238,7 @@ class Compatibility {
 		}
 
 		// Check for cart items to see if they have already been converted.
-		if ( 1 === $product->get_meta( 'wcpay_mc_addons_converted' ) ) {
+		if ( 1 === $product->get_meta( self::ADDONS_CONVERTED_META_KEY ) ) {
 			return false;
 		}
 
@@ -466,7 +469,7 @@ class Compatibility {
 		}
 
 		// Let ourselves know this item has had add ons converted.
-		$cart_item['data']->update_meta_data( 'wcpay_mc_addons_converted', 1 );
+		$cart_item['data']->update_meta_data( self::ADDONS_CONVERTED_META_KEY, 1 );
 
 		return [
 			'price'         => $price,
@@ -514,7 +517,7 @@ class Compatibility {
 			$_product = wc_get_product( $cart_item['product_id'] );
 			$price    = $this->multi_currency->get_price( $price, 'product' );
 			$_product->set_price( $price * ( $addon['price'] / 100 ) );
-			$_product->update_meta_data( 'wcpay_mc_addons_converted', 1 );
+			$_product->update_meta_data( self::ADDONS_CONVERTED_META_KEY, 1 );
 			$name .= ' (' . WC()->cart->get_product_price( $_product ) . ')';
 		}
 

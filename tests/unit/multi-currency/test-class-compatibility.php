@@ -415,7 +415,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 
 	public function test_should_convert_product_price_return_false_when_product_meta_addons_converted_set() {
 		$product = WC_Helper_Product::create_simple_product();
-		$product->update_meta_data( 'wcpay_mc_addons_converted', 1 );
+		$product->update_meta_data( '_wcpay_multi_currency_addons_converted', 1 );
 		$this->assertFalse( $this->compatibility->should_convert_product_price( $product ) );
 	}
 
@@ -775,7 +775,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			->willReturn( 15.0, 15.0, 0.0, 63.0 );
 
 		$this->assertSame( $expected, $this->compatibility->update_product_price( [], $cart_item, $prices ) );
-		$this->assertEquals( 1, $cart_item['data']->get_meta( 'wcpay_mc_addons_converted' ) );
+		$this->assertEquals( 1, $cart_item['data']->get_meta( '_wcpay_multi_currency_addons_converted' ) );
 	}
 
 	public function test_update_product_price_returns_percentage_data_correctly() {
@@ -891,7 +891,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 			->willReturn( 15.0, 15.0, 0.0, 63.0 );
 
 		$this->assertSame( $expected, $this->compatibility->update_product_price( [], $cart_item, $prices ) );
-		$this->assertEquals( 1, $cart_item['data']->get_meta( 'wcpay_mc_addons_converted' ) );
+		$this->assertEquals( 1, $cart_item['data']->get_meta( '_wcpay_multi_currency_addons_converted' ) );
 	}
 
 	public function test_get_item_data_returns_zero_price_data_correctly() {
