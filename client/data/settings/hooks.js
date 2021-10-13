@@ -20,6 +20,16 @@ export const useSavedCards = () => {
 	return [ isSavedCardsEnabled, updateIsSavedCardsEnabled ];
 };
 
+export const useCardPresentEligible = () => {
+	const { updateIsCardPresentEligible } = useDispatch( STORE_NAME );
+
+	const isCardPresentEligible = useSelect( ( select ) => {
+		return select( STORE_NAME ).getIsCardPresentEligible();
+	}, [] );
+
+	return [ isCardPresentEligible, updateIsCardPresentEligible ];
+};
+
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 

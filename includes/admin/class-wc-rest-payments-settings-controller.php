@@ -91,7 +91,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_multi_currency_enabled'         => [
-						'description'       => __( 'WooCommerce Payments multi currency feature flag setting.', 'woocommerce-payments' ),
+						'description'       => __( 'WooCommerce Payments Multi-Currency feature flag setting.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
@@ -199,6 +199,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_type'       => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
 				'payment_request_button_theme'      => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
 				'is_saved_cards_enabled'            => $this->wcpay_gateway->is_saved_cards_enabled(),
+				'is_card_present_eligible'          => $this->wcpay_gateway->is_card_present_eligible(),
 			]
 		);
 	}
@@ -324,7 +325,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates Customer multi currency feature status.
+	 * Updates customer Multi-Currency feature status.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */

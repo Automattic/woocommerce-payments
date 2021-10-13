@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Payments Multi Currency Geolocation Class
+ * WooCommerce Payments Multi-Currency Geolocation Class
  *
  * @package WooCommerce\Payments
  */

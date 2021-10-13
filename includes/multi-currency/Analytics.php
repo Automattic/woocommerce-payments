@@ -14,7 +14,7 @@ use WC_Payments;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that contains multi-currency related support for WooCommerce analytics.
+ * Class that contains Multi-Currency related support for WooCommerce analytics.
  */
 class Analytics {
 	const PRIORITY_EARLY   = 1;
@@ -27,7 +27,7 @@ class Analytics {
 
 
 	/**
-	 * SQL string replacements made by the analytics multi-currency extension.
+	 * SQL string replacements made by the analytics Multi-Currency extension.
 	 *
 	 * @var array
 	 */
@@ -121,7 +121,7 @@ class Analytics {
 	}
 
 	/**
-	 * When an order is updated in the stats table, perform a check to see if it is a multi currency order
+	 * When an order is updated in the stats table, perform a check to see if it is a Multi-Currency order
 	 * and convert the information into the store's default currency if it is.
 	 *
 	 * @param array    $args  - An array of the arguments to be inserted into the order stats table.
@@ -273,7 +273,7 @@ class Analytics {
 
 	/**
 	 * Check whether the order stats table is referenced in the clauses, to work out whether
-	 * to add the JOIN columns for multi currency.
+	 * to add the JOIN columns for Multi-Currency.
 	 *
 	 * @param array $clauses The array containing the clauses used.
 	 *

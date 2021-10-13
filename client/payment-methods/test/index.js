@@ -270,7 +270,7 @@ describe( 'PaymentMethods', () => {
 			</WcPayUpeContextProvider>
 		);
 		const disableUPEButton = screen.queryByRole( 'button', {
-			name: 'Add Feedback or Disable',
+			name: 'Add feedback or disable',
 		} );
 
 		expect( disableUPEButton ).toBeInTheDocument();
@@ -287,7 +287,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const disableUPEButton = screen.queryByRole( 'button', {
-			name: 'Add Feedback or Disable',
+			name: 'Add feedback or disable',
 		} );
 
 		expect( disableUPEButton ).not.toBeInTheDocument();
