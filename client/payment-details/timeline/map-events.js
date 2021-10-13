@@ -298,7 +298,7 @@ const feeBreakdown = ( event ) => {
 						'Foreign exchange fee: %1$s%%',
 						'woocommerce-payments'
 				  ),
-		subscription:
+		'additional-wcpay-subscription':
 			0 !== fixedRate
 				? __(
 						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
