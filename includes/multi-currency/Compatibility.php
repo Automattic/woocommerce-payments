@@ -362,7 +362,7 @@ class Compatibility {
 		if ( $addon['price'] && apply_filters( 'woocommerce_addons_add_price_to_name', true ) ) {
 			$product = $item->get_product();
 
-			if ( $addon['price'] && 'percentage_based' === $addon['price_type'] && 0 !== $product->get_price() ) {
+			if ( 'percentage_based' === $addon['price_type'] && 0.0 !== (float) $product->get_price() ) {
 				// Calculate the percentage price.
 				$addon_price = $product->get_price() * ( $addon['price'] / 100 );
 			} elseif ( 'custom_price' === $addon['field_type'] ) {
