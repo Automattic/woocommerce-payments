@@ -108,13 +108,13 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/connect', $item_names_by_urls );
 	}
 
-	public function test_it_renders_payments_badge_if_activation_date_is_older_than_7_days_and_stripe_is_not_connected() {
+	public function test_it_renders_payments_badge_if_activation_date_is_older_than_3_days_and_stripe_is_not_connected() {
 		global $menu;
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
 		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( false );
-		update_option( 'wcpay_activation_timestamp', time() - WEEK_IN_SECONDS );
+		update_option( 'wcpay_activation_timestamp', time() - ( 3 * DAY_IN_SECONDS ) );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
