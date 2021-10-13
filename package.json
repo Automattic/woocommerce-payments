@@ -30,6 +30,7 @@
     "test:debug": "wp-scripts --inspect-brk test-unit-js --runInBand --no-cache --config tests/js/jest.config.js",
     "test:e2e-setup": "./tests/e2e/env/setup.sh",
     "test:e2e-down": "./tests/e2e/env/down.sh",
+    "test:e2e-up": "./tests/e2e/env/up.sh",
     "test:e2e-cleanup": "./tests/e2e/env/cleanup.sh",
     "test:e2e-reset": "npm run test:e2e-down && npm run test:e2e-cleanup",
     "test:e2e": "NODE_CONFIG_DIR='tests/e2e/config' wp-scripts test-e2e --config tests/e2e/config/jest.config.js",

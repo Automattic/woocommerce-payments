@@ -1,0 +1,85 @@
+#wcpay-subscriptions-plugin-warning-notice .button {
+	height: 36px;
+	align-items: center;
+	box-sizing: border-box;
+	padding: 6px 12px;
+	border-radius: 2px;
+	line-height: normal;
+	cursor: pointer;
+}
+#wcpay-subscriptions-plugin-warning-notice .button-secondary {
+	background: transparent;
+}
+#wcpay-subscriptions-plugin-warning-notice .button.busy {
+	animation: wcpay-plugin-notice-submit-button-busy 3000ms infinite linear;
+	background-image: linear-gradient(
+		-45deg,
+		transparent 33%,
+		#0000004d 33%,
+		#0000004d 70%,
+		transparent 70%
+	);
+	background-size: 100px 100%;
+}
+#wcpay-subscriptions-plugin-warning-notice
+	footer
+	.inner
+	> *:not( :first-child ) {
+	margin-left: 16px;
+}
+#wcpay-subscriptions-plugin-warning-notice h1 {
+	font-size: 1rem;
+	font-weight: 600;
+	line-height: 1;
+}
+#wcpay-subscriptions-plugin-warning-notice header,
+#wcpay-subscriptions-plugin-warning-notice footer {
+	background: initial;
+	box-shadow: initial;
+}
+#wcpay-subscriptions-plugin-warning-notice header {
+	margin: 0 -24px;
+	padding-top: 24px;
+	padding-left: 24px;
+	height: 60px;
+	border-bottom: 1px solid #dcdcde;
+}
+#wcpay-subscriptions-plugin-warning-notice footer {
+	padding: 24px;
+	border-top: 1px solid #dcdcde;
+}
+#wcpay-subscriptions-plugin-warning-notice .wc-backbone-modal-content {
+	border-radius: 2px;
+	padding: 0 24px 24px;
+}
+#wcpay-subscriptions-plugin-warning-notice .modal-close-link {
+	height: 100%;
+	width: 60px;
+	border-left: none;
+}
+#wcpay-subscriptions-plugin-warning-notice .modal-close-link:hover {
+	background: transparent;
+}
+#wcpay-subscriptions-plugin-warning-notice article {
+	padding: 1.5em 0;
+}
+#wcpay-subscriptions-plugin-warning-notice .wc-backbone-modal-main {
+	padding-bottom: 60px;
+}
+#wcpay-subscriptions-plugin-warning-notice .modal-close-link:hover::before {
+	color: initial;
+}
+#wcpay-subscriptions-plugin-warning-notice ul {
+	padding-left: 24px;
+	list-style: disc;
+}
+#wcpay-subscriptions-plugin-warning-notice ul > li > ul {
+	margin-top: 6px;
+	list-style: circle;
+}
+
+@keyframes wcpay-plugin-notice-submit-button-busy {
+	0% {
+		background-position: 200px 0;
+	}
+}

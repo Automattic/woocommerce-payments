@@ -358,7 +358,7 @@ const SingleCurrencySettings = () => {
 								</fieldset>
 								<h3>
 									{ __(
-										'Formatting Rules',
+										'Formatting rules',
 										'woocommerce-payments'
 									) }
 								</h3>
@@ -367,7 +367,7 @@ const SingleCurrencySettings = () => {
 										<li>
 											<h4>
 												{ __(
-													'Price Rounding',
+													'Price rounding',
 													'woocommerce-payments'
 												) }
 											</h4>
@@ -443,7 +443,7 @@ const SingleCurrencySettings = () => {
 										<li>
 											<h4>
 												{ __(
-													'Charm Pricing',
+													'Charm pricing',
 													'woocommerce-payments'
 												) }
 											</h4>
