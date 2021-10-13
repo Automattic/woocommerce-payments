@@ -259,7 +259,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			];
 		}
 
-		if ( wc_shipping_enabled() && $product->needs_shipping() ) {
+		if ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() ) {
 			$items[] = [
 				'label'   => __( 'Shipping', 'woocommerce-payments' ),
 				'amount'  => 0,
@@ -281,7 +281,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'pending' => true,
 		];
 
-		$data['needs_shipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
+		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
 		$data['currency']       = strtolower( get_woocommerce_currency() );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
@@ -1174,7 +1174,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			wc_add_notice(
 				sprintf(
 					/* translators: %s: country. */
-					__( 'The Payment Request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
+					__( 'The payment request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
 					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
 				),
 				'error'

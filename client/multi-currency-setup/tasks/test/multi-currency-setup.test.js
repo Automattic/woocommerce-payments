@@ -21,11 +21,11 @@ const createContainer = () => {
 	return container;
 };
 
-describe( 'Multi Currency enabled currencies list', () => {
+describe( 'Multi-Currency enabled currencies list', () => {
 	beforeEach( () => {
-		AddCurrenciesTask.mockReturnValue( <p>Currency Selector</p> );
-		StoreSettingsTask.mockReturnValue( <p>Store Settings Form</p> );
-		SetupCompleteTask.mockReturnValue( <p>Setup Complete Screen</p> );
+		AddCurrenciesTask.mockReturnValue( <p>Currency selector</p> );
+		StoreSettingsTask.mockReturnValue( <p>Store settings form</p> );
+		SetupCompleteTask.mockReturnValue( <p>Setup complete screen</p> );
 	} );
 	test( 'wizard renders correctly', () => {
 		const container = createContainer();
