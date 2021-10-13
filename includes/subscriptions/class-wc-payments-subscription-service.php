@@ -252,7 +252,7 @@ class WC_Payments_Subscription_Service {
 		$data = [
 			'currency'    => $currency,
 			'product'     => $wcpay_product_id,
-			'unit_amount' => (int) $unit_amount * 100,
+			'unit_amount' => WC_Payments_Utils::prepare_amount( $unit_amount, $currency ),
 		];
 
 		if ( $interval && $interval_count ) {
