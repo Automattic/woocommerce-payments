@@ -39,7 +39,9 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$this->mock_product    = $this->get_mock_product();
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		$this->product_service = new WC_Payments_Product_Service( $this->mock_api_client );
+	}
 
+	public function tearDown() {
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 	}
 
