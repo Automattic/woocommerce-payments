@@ -273,10 +273,12 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	 * Test WC_Payments_Subscription_Service->update_wcpay_subscription_payment_method()
 	 */
 	public function test_update_wcpay_subscription_payment_method() {
+		$mock_order                 = WC_Helper_Order::create_order();
 		$subscription               = new WC_Subscription();
 		$mock_wcpay_subscription_id = 'wcpay_subscription_test12345';
 		$mock_wcpay_token_id        = 'wcpay_test_token1234';
 		$token                      = WC_Helper_Token::create_token( $mock_wcpay_token_id, 1 );
+		$subscription->set_parent( $mock_order );
 
 		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $mock_wcpay_subscription_id );
 
@@ -288,7 +290,14 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_subscription' )
-			->with( $mock_wcpay_subscription_id, [ 'default_payment_method' => $mock_wcpay_token_id ] )
+			->with(
+				$mock_wcpay_subscription_id,
+				[
+					'default_payment_method' => $mock_wcpay_token_id,
+					'currency'               => 'usd',
+					'amount'                 => 5000,
+				]
+			)
 			->willReturn( [ 'id' => $mock_wcpay_subscription_id ] );
 
 		$this->subscription_service->update_wcpay_subscription_payment_method( 1, $token->get_id(), $token );

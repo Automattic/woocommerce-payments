@@ -160,7 +160,7 @@ describe( 'PaymentDetailsTimeline', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders subscription fee correctly ', () => {
+	test( 'renders subscription fee correctly', () => {
 		// Mock all the possible events.
 		useTimeline.mockReturnValue( {
 			timeline: [
@@ -180,8 +180,8 @@ describe( 'PaymentDetailsTimeline', () => {
 								currency: 'usd',
 							},
 							{
-								type: 'subscription',
-								additional_type: '',
+								type: 'additional',
+								additional_type: 'wcpay-subscription',
 								percentage_rate: 0.01,
 								fixed_rate: 0,
 								currency: 'usd',
