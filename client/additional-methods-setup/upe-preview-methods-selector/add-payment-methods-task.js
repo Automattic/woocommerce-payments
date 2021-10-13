@@ -21,6 +21,7 @@ import WizardTaskItem from '../wizard/task-item';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
+	useGetPaymentMethodStatuses,
 	useSettings,
 } from '../../data';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
@@ -29,6 +30,7 @@ import { LoadableBlock } from '../../components/loadable';
 import LoadableSettingsSection from '../../settings/loadable-settings-section';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 import { upeMethods } from '../constants';
+import paymentMethodsMap from '../../payment-methods-map';
 
 const usePaymentMethodsCheckboxState = () => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
@@ -138,6 +140,7 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 
 const AddPaymentMethodsTask = () => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
+	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 	const { isActive } = useContext( WizardTaskContext );
 
 	// I am using internal state in this component
@@ -205,6 +208,13 @@ const AddPaymentMethodsTask = () => {
 														paymentMethodsState[
 															key
 														]
+													}
+													status={
+														paymentMethodStatuses[
+															paymentMethodsMap[
+																key
+															].stripe_key
+														] ?? 'unrequested'
 													}
 													onChange={
 														handlePaymentMethodChange

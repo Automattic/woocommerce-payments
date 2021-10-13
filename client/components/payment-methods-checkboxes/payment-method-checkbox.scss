@@ -28,8 +28,12 @@
 		margin-bottom: 0;
 	}
 
-	&__fees {
+	&__statuses {
 		margin-left: auto;
+	}
+
+	&__statuses,
+	&__fees {
 		margin-right: 3px;
 		text-transform: uppercase;
 
@@ -51,5 +55,22 @@
 		svg {
 			display: none;
 		}
+	}
+}
+
+.wcpay-pill {
+	margin-left: $gap-smaller;
+	text-transform: uppercase;
+	&.payment-status-pending {
+		border: 1px solid $studio-orange;
+		color: $studio-orange;
+	}
+	&.payment-status-unrequested {
+		border: 1px solid $studio-red;
+		color: $studio-red;
+	}
+	&.payment-status-inactive {
+		border: 1px solid $studio-red;
+		color: $studio-red;
 	}
 }

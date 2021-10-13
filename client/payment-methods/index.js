@@ -24,6 +24,7 @@ import './style.scss';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
+	useGetPaymentMethodStatuses,
 } from 'wcpay/data';
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
@@ -115,6 +116,8 @@ const PaymentMethods = () => {
 		updateEnabledMethodIds,
 	] = useEnabledPaymentMethodIds();
 
+	const paymentMethodStatuses = useGetPaymentMethodStatuses();
+
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 	const enabledMethods = availablePaymentMethodIds
 		.filter( ( method ) => enabledMethodIds.includes( method ) )
@@ -188,6 +191,12 @@ const PaymentMethods = () => {
 								<PaymentMethod
 									key={ id }
 									Icon={ Icon }
+									status={
+										paymentMethodStatuses[
+											methodsConfiguration[ id ]
+												.stripe_key
+										] ?? 'unrequested'
+									}
 									onDeleteClick={
 										1 < enabledMethods.length
 											? handleDeleteClick

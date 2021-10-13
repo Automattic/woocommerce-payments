@@ -11,15 +11,15 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import PaymentMethodIcon from '../../settings/payment-method-icon';
+import PaymentMethodsMap from '../../payment-methods-map';
 import Pill from '../pill';
 import Tooltip from '../tooltip';
-import paymentMethodsMap from '../../payment-methods-map';
 import './payment-method-checkbox.scss';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { formatMethodFeesDescription } from '../../utils/account-fees';
 
 const PaymentMethodDescription = ( { name } ) => {
-	const description = paymentMethodsMap[ name ]?.description;
+	const description = PaymentMethodsMap[ name ]?.description;
 	if ( ! description ) return null;
 
 	return (
@@ -37,7 +37,13 @@ const PaymentMethodDescription = ( { name } ) => {
 	);
 };
 
-const PaymentMethodCheckbox = ( { onChange, name, checked = false, fees } ) => {
+const PaymentMethodCheckbox = ( {
+	onChange,
+	name,
+	checked = false,
+	fees,
+	status,
+} ) => {
 	const { accountFees } = useContext( WCPaySettingsContext );
 
 	const handleChange = useCallback(
@@ -46,6 +52,15 @@ const PaymentMethodCheckbox = ( { onChange, name, checked = false, fees } ) => {
 		},
 		[ name, onChange ]
 	);
+
+	const disabled = ! [ 'active', 'pending', 'unrequested' ].includes(
+		status
+	);
+
+	// Uncheck payment method if checked and disabled.
+	if ( disabled && checked ) {
+		handleChange( false );
+	}
 
 	const label = useMemo( () => <PaymentMethodIcon name={ name } showName />, [
 		name,
@@ -57,28 +72,65 @@ const PaymentMethodCheckbox = ( { onChange, name, checked = false, fees } ) => {
 				checked={ checked }
 				onChange={ handleChange }
 				label={ label }
+				disabled={ disabled }
 			/>
-			<Tooltip
-				content={ __(
-					'Base transaction fees',
-					'woocommerce-payments'
-				) }
-			>
-				<Pill
-					className="payment-method-checkbox__fees"
-					aria-label={ sprintf(
-						__(
-							'Base transaction fees: %s',
+			<div className={ 'payment-method-checkbox__statuses' }>
+				{ 'pending' === status && (
+					<Tooltip
+						content={ __(
+							'This payment method is pending approval. Once approved, you will be able to use it.',
 							'woocommerce-payments'
-						),
-						fees
+						) }
+					>
+						<Pill className={ 'payment-status-pending' }>
+							{ __( 'Pending', 'woocommerce-payments' ) }
+						</Pill>
+					</Tooltip>
+				) }
+				{ disabled && (
+					<Tooltip
+						content={ sprintf(
+							__(
+								'To use %s, please contact WooCommerce support.',
+								'woocommerce-payments'
+							),
+							PaymentMethodsMap[ name ].label
+						) }
+					>
+						<Pill className={ 'payment-status-' + status }>
+							{ __(
+								'Contact WooCommerce Support',
+								'woocommerce-payments'
+							) }
+						</Pill>
+					</Tooltip>
+				) }
+			</div>
+			{ 'active' === status && (
+				<Tooltip
+					content={ __(
+						'Base transaction fees',
+						'woocommerce-payments'
 					) }
 				>
-					<span>
-						{ formatMethodFeesDescription( accountFees[ name ] ) }
-					</span>
-				</Pill>
-			</Tooltip>
+					<Pill
+						className="payment-method-checkbox__fees"
+						aria-label={ sprintf(
+							__(
+								'Base transaction fees: %s',
+								'woocommerce-payments'
+							),
+							fees
+						) }
+					>
+						<span>
+							{ formatMethodFeesDescription(
+								accountFees[ name ]
+							) }
+						</span>
+					</Pill>
+				</Tooltip>
+			) }
 			<PaymentMethodDescription name={ name } />
 		</li>
 	);
