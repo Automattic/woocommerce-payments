@@ -14,6 +14,7 @@ import AddPaymentMethodsTask from '../add-payment-methods-task';
 import {
 	useGetAvailablePaymentMethodIds,
 	useEnabledPaymentMethodIds,
+	useGetPaymentMethodStatuses,
 	useSettings,
 	useCurrencies,
 	useEnabledCurrencies,
@@ -26,6 +27,7 @@ jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn(),
 	useCurrencies: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
+	useGetPaymentMethodStatuses: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/a11y', () => ( {
@@ -52,6 +54,15 @@ describe( 'AddPaymentMethodsTask', () => {
 			'sepa_debit',
 			'sofort',
 		] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: 'active',
+			bancontact_payments: 'active',
+			giropay_payments: 'active',
+			ideal_payments: 'active',
+			p24_payments: 'active',
+			sepa_debit_payments: 'active',
+			sofort_payments: 'active',
+		} );
 		useSettings.mockReturnValue( {
 			saveSettings: () => Promise.resolve( true ),
 			isSaving: false,

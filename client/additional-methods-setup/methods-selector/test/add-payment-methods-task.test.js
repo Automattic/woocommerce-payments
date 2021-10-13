@@ -15,6 +15,7 @@ import {
 	useEnabledPaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	useGetAvailablePaymentMethodIds,
+	useGetPaymentMethodStatuses,
 	useSettings,
 } from '../../../data';
 
@@ -25,6 +26,7 @@ jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn(),
 	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
 	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
+	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
 } ) );
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
@@ -53,6 +55,15 @@ describe( 'AddPaymentMethodsTask', () => {
 		useSettings.mockReturnValue( {
 			saveSettings: jest.fn().mockResolvedValue( true ),
 			isSaving: false,
+		} );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: 'active',
+			bancontact_payments: 'active',
+			giropay_payments: 'active',
+			ideal_payments: 'active',
+			p24_payments: 'active',
+			sepa_debit_payments: 'active',
+			sofort_payments: 'active',
 		} );
 	} );
 

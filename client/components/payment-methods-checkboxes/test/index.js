@@ -33,6 +33,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 						onChange={ handleChange }
 						checked={ key[ 1 ] }
 						name={ key[ 0 ] }
+						status={ 'active' }
 					/>
 				) ) }
 			</PaymentMethodsCheckboxes>
