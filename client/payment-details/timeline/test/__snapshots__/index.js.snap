@@ -392,7 +392,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Payment status changed to Partial Refund.
+                      Payment status changed to Partial refund.
                     </span>
                   </div>
                   <span
@@ -523,7 +523,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Payment status changed to Disputed: In Review.
+                      Payment status changed to Disputed: In review.
                     </span>
                   </div>
                   <span
@@ -613,7 +613,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Payment status changed to Disputed: Needs Response.
+                      Payment status changed to Disputed: Needs response.
                     </span>
                   </div>
                   <span
@@ -970,7 +970,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Payment status changed to Authorization Expired.
+                      Payment status changed to Authorization expired.
                     </span>
                   </div>
                   <span
@@ -1048,7 +1048,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Payment status changed to Authorization Voided.
+                      Payment status changed to Authorization voided.
                     </span>
                   </div>
                   <span

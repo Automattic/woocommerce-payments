@@ -43,6 +43,7 @@ Handy utility scripts for managing environment:
 * `npm run test:e2e-down` Stops E2E environment containers.
 * `npm run test:e2e-cleanup` Removes fetched dependencies and docker volumes
 * `npm run test:e2e-reset` Stops containers and performs cleanup.
+* `npm run test:e2e-up` Starts containers without setting up again.
 
 ## Running tests
 

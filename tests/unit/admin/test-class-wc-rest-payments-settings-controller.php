@@ -467,4 +467,28 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			remove_action( 'rest_api_init', [ RestApi::class, 'register_rest_routes' ] );
 		}
 	}
+
+	public function test_get_settings_card_eligible_flag() {
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'is_server_connected' )
+			->willReturn( true );
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'get_account_data' )
+			->willReturn(
+				[
+					'card_present_eligible' => true,
+					'is_live'               => true,
+				]
+			);
+
+		$response = $this->upe_controller->get_settings();
+
+		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
+		$this->assertTrue( $response->get_data()['is_card_present_eligible'] );
+	}
+
+
 }

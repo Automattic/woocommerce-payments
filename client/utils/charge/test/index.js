@@ -196,7 +196,7 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 
-	test( 'multi-currency basic charge', () => {
+	test( 'Multi-Currency basic charge', () => {
 		const charge = {
 			amount: 1800,
 			currency: 'usd',
@@ -252,7 +252,7 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 
-	test( 'multi-currency partial refund', () => {
+	test( 'Multi-Currency partial refund', () => {
 		const refunds = [ 1000, 500 ];
 		const charge = {
 			amount: 1800,
@@ -322,7 +322,7 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 
-	test( 'multi-currency full refund', () => {
+	test( 'Multi-Currency full refund', () => {
 		// Refund at higher rate
 		const refunds = [ 1000, 800 ];
 		const charge = {
@@ -424,7 +424,7 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 
-	test( 'multi-currency full dispute', () => {
+	test( 'Multi-Currency full dispute', () => {
 		const charge = {
 			amount: 1800,
 			currency: 'usd',

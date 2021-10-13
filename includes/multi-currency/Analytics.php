@@ -9,11 +9,12 @@ namespace WCPay\MultiCurrency;
 
 use WC_Order;
 use WC_Order_Refund;
+use WC_Payments;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that contains multi-currency related support for WooCommerce analytics.
+ * Class that contains Multi-Currency related support for WooCommerce analytics.
  */
 class Analytics {
 	const PRIORITY_EARLY   = 1;
@@ -26,7 +27,7 @@ class Analytics {
 
 
 	/**
-	 * SQL string replacements made by the analytics multi-currency extension.
+	 * SQL string replacements made by the analytics Multi-Currency extension.
 	 *
 	 * @var array
 	 */
@@ -57,6 +58,10 @@ class Analytics {
 	public function init() {
 		if ( is_admin() ) {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+		}
+
+		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+			add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 		}
 
 		add_filter( 'woocommerce_analytics_update_order_stats_data', [ $this, 'update_order_stats_data' ], self::PRIORITY_LATEST, 2 );
@@ -104,7 +109,19 @@ class Analytics {
 	}
 
 	/**
-	 * When an order is updated in the stats table, perform a check to see if it is a multi currency order
+	 * Disables report caching. Used for development of analytics related functionality.
+	 * To disable report caching
+	 *
+	 * @param array $args Filter arguments.
+	 *
+	 * @return boolean
+	 */
+	public function disable_report_caching( $args ): bool {
+		return false;
+	}
+
+	/**
+	 * When an order is updated in the stats table, perform a check to see if it is a Multi-Currency order
 	 * and convert the information into the store's default currency if it is.
 	 *
 	 * @param array    $args  - An array of the arguments to be inserted into the order stats table.
@@ -256,7 +273,7 @@ class Analytics {
 
 	/**
 	 * Check whether the order stats table is referenced in the clauses, to work out whether
-	 * to add the JOIN columns for multi currency.
+	 * to add the JOIN columns for Multi-Currency.
 	 *
 	 * @param array $clauses The array containing the clauses used.
 	 *
