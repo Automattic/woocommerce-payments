@@ -14,7 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\Tracker;
 
 /**
  * WC_Payments_Payment_Request_Button_Handler class.
@@ -53,9 +52,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  void
 	 */
 	public function init() {
-		// Add Track event on settings change.
-		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'track_payment_request_settings_change' ], 10, 2 );
-
 		// Checks if WCPay is enabled.
 		if ( ! $this->gateway->is_enabled() ) {
 			return;
@@ -101,26 +97,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// will be used to calculate it whenever the option value is retrieved instead.
 		// It's used for displaying inbox notifications.
 		add_filter( 'pre_option_wcpay_is_apple_pay_enabled', [ $this, 'get_option_is_apple_pay_enabled' ], 10, 1 );
-	}
-
-	/**
-	 * Track Payment Request settings activation/deactivation.
-	 *
-	 * @param array $prev_settings Settings before update.
-	 * @param array $settings      Settings after update.
-	 */
-	public function track_payment_request_settings_change( $prev_settings, $settings ) {
-		$prev_payment_request_enabled = 'yes' === ( $prev_settings['payment_request'] ?? 'no' );
-		$payment_request_enabled      = 'yes' === ( $settings['payment_request'] ?? 'no' );
-
-		if ( $prev_payment_request_enabled !== $payment_request_enabled ) {
-			Tracker::track_admin(
-				'wcpay_payment_request_settings_change',
-				[
-					'enabled' => $payment_request_enabled,
-				]
-			);
-		}
 	}
 
 	/**
@@ -283,7 +259,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			];
 		}
 
-		if ( wc_shipping_enabled() && $product->needs_shipping() ) {
+		if ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() ) {
 			$items[] = [
 				'label'   => __( 'Shipping', 'woocommerce-payments' ),
 				'amount'  => 0,
@@ -305,7 +281,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'pending' => true,
 		];
 
-		$data['needs_shipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
+		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
 		$data['currency']       = strtolower( get_woocommerce_currency() );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
@@ -1198,7 +1174,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			wc_add_notice(
 				sprintf(
 					/* translators: %s: country. */
-					__( 'The Payment Request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
+					__( 'The payment request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
 					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
 				),
 				'error'

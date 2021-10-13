@@ -100,12 +100,16 @@ Please note that our support for the checkout block is still experimental and th
 
 = 3.2.0 - 2021-xx-xx =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
+* Fix - Prevent currency switcher to show when enabled currencies list is empty.
+* Fix - Show currency switcher notice until customer explicitly dismisses it.
+* Update - Fee breakdown when there's only a base fee
+* Fix - Inconsistent shipping options in Payment Request popup.
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
-* Add - Customer multi-currency onboarding flow.
-* Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
-* Add - Update layout of the Multi-currency settings screen.
+* Add - Customer Multi-Currency onboarding flow.
+* Add - Checkbox toggle for disabling customer Multi-Currency feature in Advanced Settings.
+* Add - Update layout of the Multi-Currency settings screen.
 * Fix - Fixed missing file error for removed CSS file.
 * Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
 * Fix - Currency switcher does not affect order confirmation screen prices.
@@ -310,13 +314,13 @@ Please note that our support for the checkout block is still experimental and th
 
 = 2.0.0 - 2021-02-22 =
 * Update - Render customer details in transactions list as text instead of link if order missing.
-* Update - Render transaction summary on details page for multi-currency transactions.
+* Update - Render transaction summary on details page for Multi-Currency transactions.
 * Update - Improvements to fraud prevention.
 * Fix - Added better notices for end users if there are connection errors when making payments.
 * Fix - If account is set to manual payouts display 'Temporarily suspended' under Payments > Settings.
 * Add - Add file dropzones to dispute evidence upload fields
 * Add - Currency conversion indicator to Transactions list.
-* Add - Transaction timeline details for multi-currency transactions.
+* Add - Transaction timeline details for Multi-Currency transactions.
 * Update - Link order note with transaction details page.
 * Fix - Updating payment method using saved payment for WC Subscriptions orders.
 

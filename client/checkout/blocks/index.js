@@ -40,8 +40,8 @@ registerPaymentMethod( {
 	savedTokenComponent: <SavedTokenHandler api={ api } />,
 	canMakePayment: () => !! api.getStripe(),
 	paymentMethodId: PAYMENT_METHOD_NAME_CARD,
-	label: __( 'Credit Card', 'woocommerce-payments' ),
-	ariaLabel: __( 'Credit Card', 'woocommerce-payments' ),
+	label: __( 'Credit card', 'woocommerce-payments' ),
+	ariaLabel: __( 'Credit card', 'woocommerce-payments' ),
 	supports: {
 		showSavedCards: getConfig( 'isSavedCardsEnabled' ) ?? false,
 		showSaveOption: getConfig( 'isSavedCardsEnabled' ) ?? false,

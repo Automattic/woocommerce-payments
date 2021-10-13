@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Multi Currency enabled currencies list Available currencies modal renders correctly 1`] = `
+exports[`Multi-Currency enabled currencies list Available currencies modal renders correctly 1`] = `
 <div
   aria-labelledby="components-modal-header-0"
   class="components-modal__frame wcpay-confirmation-modal add-enabled-currencies-modal"
@@ -562,7 +562,7 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
 </div>
 `;
 
-exports[`Multi Currency enabled currencies list Enabled currencies list renders correctly 1`] = `
+exports[`Multi-Currency enabled currencies list Enabled currencies list renders correctly 1`] = `
 <div>
   <div
     class="settings-section multi-currency-settings-enabled-currencies-section"
@@ -816,7 +816,7 @@ exports[`Multi Currency enabled currencies list Enabled currencies list renders 
 </div>
 `;
 
-exports[`Multi Currency enabled currencies list Remove currency modal renders correctly 1`] = `
+exports[`Multi-Currency enabled currencies list Remove currency modal renders correctly 1`] = `
 <div
   aria-labelledby="components-modal-header-1"
   class="components-modal__frame wcpay-confirmation-modal enabled-currency-delete-modal"
@@ -1027,7 +1027,7 @@ exports[`Multi Currency enabled currencies list Remove currency modal renders co
       </li>
     </ul>
     <p>
-      You can add Euro (EUR €) again at any time in Multi-currency settings.
+      You can add Euro (EUR €) again at any time in Multi-Currency settings.
     </p>
     <hr
       class="wcpay-confirmation-modal__separator"

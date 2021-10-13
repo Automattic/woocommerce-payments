@@ -13,7 +13,7 @@ use WC_Payments_Utils;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Multi Currency Currency object.
+ * Multi-Currency Currency object.
  */
 class Currency implements \JsonSerializable {
 
