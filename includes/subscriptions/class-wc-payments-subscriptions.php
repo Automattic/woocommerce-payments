@@ -47,8 +47,9 @@ class WC_Payments_Subscriptions {
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WCPay API client.
 	 * @param WC_Payments_Customer_Service $customer_service WCPay Customer Service.
+	 * @param WC_Payment_Gateway_WCPay     $card_gateway     WCPay Payment Gateway.
 	 */
-	public static function init( WC_Payments_API_Client $api_client, WC_Payments_Customer_Service $customer_service ) {
+	public static function init( WC_Payments_API_Client $api_client, WC_Payments_Customer_Service $customer_service, WC_Payment_Gateway_WCPay $card_gateway ) {
 		// Load Services.
 		include_once __DIR__ . '/class-wc-payments-product-service.php';
 		include_once __DIR__ . '/class-wc-payments-invoice-service.php';
@@ -57,7 +58,7 @@ class WC_Payments_Subscriptions {
 
 		self::$product_service      = new WC_Payments_Product_Service( $api_client );
 		self::$invoice_service      = new WC_Payments_Invoice_Service( $api_client, self::$product_service );
-		self::$subscription_service = new WC_Payments_Subscription_Service( $api_client, $customer_service, self::$product_service, self::$invoice_service );
+		self::$subscription_service = new WC_Payments_Subscription_Service( $api_client, $customer_service, self::$product_service, self::$invoice_service, $card_gateway );
 
 		// Load the subscription and invoice incoming event handler.
 		include_once __DIR__ . '/class-wc-payments-subscriptions-event-handler.php';

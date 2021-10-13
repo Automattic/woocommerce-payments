@@ -98,6 +98,7 @@ class WC_Payments_Subscription_Service {
 	 * @param WC_Payments_Customer_Service $customer_service WC payments customer serivce.
 	 * @param WC_Payments_Product_Service  $product_service  WC payments Products service.
 	 * @param WC_Payments_Invoice_Service  $invoice_service  WC payments Invoice service.
+	 * @param WC_Payment_Gateway_WCPay     $card_gateway     WC payments Payment Gateway.
 	 *
 	 * @return void
 	 */
@@ -105,12 +106,14 @@ class WC_Payments_Subscription_Service {
 		WC_Payments_API_Client $api_client,
 		WC_Payments_Customer_Service $customer_service,
 		WC_Payments_Product_Service $product_service,
-		WC_Payments_Invoice_Service $invoice_service
+		WC_Payments_Invoice_Service $invoice_service,
+		WC_Payment_Gateway_WCPay $card_gateway
 	) {
 		$this->payments_api_client = $api_client;
 		$this->customer_service    = $customer_service;
 		$this->product_service     = $product_service;
 		$this->invoice_service     = $invoice_service;
+		$this->card_gateway        = $card_gateway;
 
 		if ( ! $this->is_subscriptions_plugin_active() ) {
 			add_action( 'woocommerce_checkout_subscription_created', [ $this, 'create_subscription' ] );
@@ -592,6 +595,31 @@ class WC_Payments_Subscription_Service {
 
 		// Remove the 'subscription_date_changes' exception.
 		$this->clear_feature_support_exception( $subscription, 'subscription_date_changes' );
+	}
+
+	/**
+	 * Retrieves the intent object and adds its data to the order.
+	 *
+	 * @param WC_Order $order The order to update.
+	 * @param string   $intent_id The intent ID.
+	 */
+	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
+		try {
+			$intent_object = $this->payments_api_client->get_intent( $intent_id );
+		} catch ( API_Exception $e ) {
+			$order->add_order_note( __( 'The payment info couldn\'t be added to the order.', 'woocommerce-payments' ) );
+			return;
+		}
+
+		$this->card_gateway->attach_intent_info_to_order(
+			$order,
+			$intent_id,
+			$intent_object->get_status(),
+			$intent_object->get_payment_method_id(),
+			$intent_object->get_customer_id(),
+			$intent_object->get_charge_id(),
+			$intent_object->get_currency()
+		);
 	}
 
 	/**
