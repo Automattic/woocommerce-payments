@@ -131,7 +131,7 @@ class WC_Payments_Product_Service {
 	 * @param string $type The item type to create a product for.
 	 * return string       The item's WCPay product id.
 	 */
-	public function get_stripe_product_id_for_item( string $type ) : string {
+	public function get_wcpay_product_id_for_item( string $type ) : string {
 		if ( ! get_option( self::PRODUCT_ID_KEY . '_' . $type ) ) {
 			$this->create_product_for_item_type( $type );
 		}

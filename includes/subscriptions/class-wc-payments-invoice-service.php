@@ -275,7 +275,7 @@ class WC_Payments_Invoice_Service {
 				} else {
 					$repair_data[ $subscription_item_id ]['price_data'] = WC_Payments_Subscription_Service::format_item_price_data(
 						$subscription->get_currency(),
-						$this->product_service->get_stripe_product_id_for_item( $item->get_type() ),
+						$this->product_service->get_wcpay_product_id_for_item( $item->get_type() ),
 						$item->get_total(),
 						$subscription->get_billing_period(),
 						$subscription->get_billing_interval()
