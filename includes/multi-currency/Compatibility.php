@@ -13,7 +13,7 @@ use WC_Order_Refund;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that controls Multi Currency Compatibility.
+ * Class that controls Multi-Currency Compatibility.
  */
 class Compatibility {
 	/**

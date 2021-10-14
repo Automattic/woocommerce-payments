@@ -161,7 +161,7 @@ class RestController extends \WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Gets the store settings for Multi Currency.
+	 * Gets the store settings for Multi-Currency.
 	 *
 	 * @return  array  The store settings.
 	 */
@@ -170,7 +170,7 @@ class RestController extends \WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates multi currency store settings parameters.
+	 * Updates Multi-Currency store settings parameters.
 	 *
 	 * @param   \WP_REST_Request $request  Full data about the request.
 	 *
