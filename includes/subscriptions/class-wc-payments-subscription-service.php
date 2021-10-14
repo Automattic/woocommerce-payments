@@ -92,12 +92,12 @@ class WC_Payments_Subscription_Service {
 	private $feature_support_exceptions = [];
 
 	/**
-	 * Whether the current request is creating a WCPay subscription from
-	 * a prior manual renewal subscription.
+	 * Whether the current request is creating a WCPay subscription when
+	 * updating the subscription payment method from the "My account" page.
 	 *
 	 * @var bool
 	 */
-	private $is_creating_subscription_from_manual_renewal_subscription = false;
+	private $is_creating_subscription_from_update_payment_method = false;
 
 	/**
 	 * WC Payments Subscriptions Constructor
@@ -122,7 +122,7 @@ class WC_Payments_Subscription_Service {
 
 		if ( ! $this->is_subscriptions_plugin_active() ) {
 			add_action( 'woocommerce_checkout_subscription_created', [ $this, 'create_subscription' ] );
-			add_action( 'woocommerce_subscriptions_pre_update_payment_method', [ $this, 'maybe_add_action_to_create_subscription_from_manual_renewal_subscription' ], 10, 2 );
+			add_action( 'woocommerce_subscription_payment_method_updated', [ $this, 'maybe_create_subscription_from_update_payment_method' ], 10, 2 );
 		}
 
 		add_action( 'woocommerce_subscription_status_cancelled', [ $this, 'cancel_subscription' ] );
@@ -259,9 +259,9 @@ class WC_Payments_Subscription_Service {
 	 */
 	public static function format_item_price_data( string $currency, string $wcpay_product_id, float $unit_amount, string $interval = '', int $interval_count = 0 ) : array {
 		$data = [
-			'currency'    => $currency,
-			'product'     => $wcpay_product_id,
-			'unit_amount' => (int) $unit_amount * 100,
+			'currency'            => $currency,
+			'product'             => $wcpay_product_id,
+			'unit_amount_decimal' => $unit_amount * 100,
 		];
 
 		if ( $interval && $interval_count ) {
@@ -398,29 +398,28 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Conditionally adds an action to create a WCPay subscription when a
-	 * shopper adds a payment method. This only takes place when the
-	 * subscription previously required manual renewal.
+	 * Conditionally creates a WCPay subscription when a subscriber
+	 * updates the subscription payment method from their account page.
 	 *
 	 * @param WC_Subscription $subscription       An instance of a WC_Subscription object.
 	 * @param string          $new_payment_method The ID of the new payment method.
 	 *
 	 * @return void
 	 */
-	public function maybe_add_action_to_create_subscription_from_manual_renewal_subscription( WC_Subscription $subscription, string $new_payment_method ) {
-		// Not changing the subscription payment method to WooCommerce payments, bail.
+	public function maybe_create_subscription_from_update_payment_method( WC_Subscription $subscription, string $new_payment_method ) {
+		// Not changing the subscription payment method to WooCommerce Payments, bail.
 		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
 			return;
 		}
 
-		// Not transitioning from manual renewal, bail.
-		if ( false === $subscription->get_requires_manual_renewal() ) {
+		// We already have a WCPay subscription ID, bail.
+		if ( (bool) self::get_wcpay_subscription_id( $subscription ) ) {
 			return;
 		}
 
-		$this->is_creating_subscription_from_manual_renewal_subscription = true;
+		$this->is_creating_subscription_from_update_payment_method = true;
 
-		add_action( 'woocommerce_subscription_payment_method_updated', [ $this, 'create_subscription' ] );
+		$this->create_subscription( $subscription );
 	}
 
 	/**
@@ -660,7 +659,7 @@ class WC_Payments_Subscription_Service {
 			$data['discounts'] = $discount_items;
 		}
 
-		if ( $this->is_creating_subscription_from_manual_renewal_subscription ) {
+		if ( $this->is_creating_subscription_from_update_payment_method ) {
 			$data['backdate_start_date']  = max( $subscription->get_time( 'last_order_date_created' ), $subscription->get_time( 'last_order_date_paid' ) );
 			$data['billing_cycle_anchor'] = $subscription->get_time( 'next_payment' );
 		}
@@ -692,11 +691,11 @@ class WC_Payments_Subscription_Service {
 				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
 			];
 
-			$product_price         = $product->get_price();
-			$product_interval      = WC_Subscriptions_Product::get_interval( $product );
+			$product_price         = (float) $product->get_price();
+			$product_interval      = (int) WC_Subscriptions_Product::get_interval( $product );
 			$product_period        = WC_Subscriptions_Product::get_period( $product );
-			$item_total            = $item->get_total();
-			$subscription_interval = $subscription->get_billing_interval();
+			$item_total            = floatval( $item->get_total() ) / $item->get_quantity();
+			$subscription_interval = (int) $subscription->get_billing_interval();
 			$subscription_period   = $subscription->get_billing_period();
 
 			if (
