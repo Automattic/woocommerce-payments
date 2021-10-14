@@ -127,10 +127,10 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 				],
 				[
 					'price_data' => [
-						'product'     => $mock_wcpay_product_id,
-						'currency'    => 'USD',
-						'unit_amount' => 1000,
-						'recurring'   => [
+						'product'             => $mock_wcpay_product_id,
+						'currency'            => 'USD',
+						'unit_amount_decimal' => 1000.0,
+						'recurring'           => [
 							'interval'       => 'month',
 							'interval_count' => 1,
 						],
@@ -379,10 +379,10 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 				],
 				[
 					'price_data' => [
-						'product'     => 'wcpay_prod_test123',
-						'currency'    => 'USD',
-						'unit_amount' => 1000,
-						'recurring'   => [
+						'product'             => 'wcpay_prod_test123',
+						'currency'            => 'USD',
+						'unit_amount_decimal' => 1000.0,
+						'recurring'           => [
 							'interval'       => 'month',
 							'interval_count' => 1,
 						],
