@@ -74,4 +74,116 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		expect( handleChange ).toHaveBeenNthCalledWith( 5, 'sepa_debit', true );
 		expect( handleChange ).toHaveBeenNthCalledWith( 6, 'sofort', true );
 	} );
+
+	it( 'shows the pending notice pill on payment methods with pending statuses', () => {
+		const handleChange = () => {};
+		const page = render(
+			<PaymentMethodsCheckboxes>
+				<PaymentMethodsCheckbox
+					key={ 'sofort' }
+					onChange={ handleChange }
+					checked={ 1 }
+					name={ 'sofort' }
+					status={ 'pending' }
+				/>
+			</PaymentMethodsCheckboxes>
+		);
+
+		expect( page.container ).toContainHTML(
+			'<span class="wcpay-pill payment-status-pending">Pending</span>'
+		);
+	} );
+
+	it( 'can click the checkbox on payment methods with pending statuses', () => {
+		const handleChange = jest.fn();
+		render(
+			<PaymentMethodsCheckboxes>
+				<PaymentMethodsCheckbox
+					key={ 'sofort' }
+					onChange={ handleChange }
+					checked={ 0 }
+					name={ 'sofort' }
+					status={ 'pending' }
+				/>
+			</PaymentMethodsCheckboxes>
+		);
+
+		const sofortCheckbox = screen.getByRole( 'checkbox', {
+			name: 'Sofort',
+		} );
+		expect( sofortCheckbox ).not.toBeChecked();
+		userEvent.click( sofortCheckbox );
+		expect( handleChange ).toHaveBeenCalledTimes( 1 );
+		expect( handleChange ).toHaveBeenNthCalledWith( 1, 'sofort', true );
+	} );
+
+	it( 'shows the disabled notice pill on payment methods with disabled statuses', () => {
+		const handleChange = () => {};
+		const page = render(
+			<PaymentMethodsCheckboxes>
+				<PaymentMethodsCheckbox
+					key={ 'sofort' }
+					onChange={ handleChange }
+					checked={ 1 }
+					name={ 'sofort' }
+					status={ 'inactive' }
+				/>
+			</PaymentMethodsCheckboxes>
+		);
+
+		expect( page.container ).toContainHTML(
+			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
+		);
+	} );
+
+	it( 'can not click the payment methods checkbox with disabled statuses', () => {
+		const handleChange = jest.fn();
+		render(
+			<PaymentMethodsCheckboxes>
+				<PaymentMethodsCheckbox
+					key={ 'sofort' }
+					onChange={ handleChange }
+					checked={ 0 }
+					name={ 'sofort' }
+					status={ 'inactive' }
+				/>
+			</PaymentMethodsCheckboxes>
+		);
+		const sofortCheckbox = screen.getByRole( 'checkbox', {
+			name: 'Sofort',
+		} );
+		expect( sofortCheckbox ).not.toBeChecked();
+		userEvent.click( sofortCheckbox );
+		expect( handleChange ).toHaveBeenCalledTimes( 0 ); // Because the input is disabled.
+		expect( sofortCheckbox ).not.toBeChecked();
+	} );
+
+	it( 'doesnt show the pending and disabled notice pill on payment methods with active and unrequested statuses', () => {
+		const handleChange = () => {};
+		const page = render(
+			<PaymentMethodsCheckboxes>
+				<PaymentMethodsCheckbox
+					key={ 'sofort' }
+					onChange={ handleChange }
+					checked={ 1 }
+					name={ 'sofort' }
+					status={ 'active' }
+				/>
+				<PaymentMethodsCheckbox
+					key={ 'giropay' }
+					onChange={ handleChange }
+					checked={ 1 }
+					name={ 'giropay' }
+					status={ 'unrequested' }
+				/>
+			</PaymentMethodsCheckboxes>
+		);
+
+		expect( page.container ).not.toContainHTML(
+			'<span class="wcpay-pill payment-status-pending">Pending</span>'
+		);
+		expect( page.container ).not.toContainHTML(
+			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
+		);
+	} );
 } );

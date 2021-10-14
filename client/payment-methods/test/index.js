@@ -206,6 +206,42 @@ describe( 'PaymentMethods', () => {
 		] );
 	} );
 
+	test( 'inactive and pending payment methods have notice pills', () => {
+		const updateEnabledMethodsMock = jest.fn( () => {} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[
+				'card',
+				'bancontact',
+				'giropay',
+				'ideal',
+				'p24',
+				'sepa_debit',
+				'sofort',
+			],
+			updateEnabledMethodsMock,
+		] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: 'active',
+			bancontact_payments: 'inactive',
+			giropay_payments: 'pending',
+			ideal_payments: 'inactive',
+			p24_payments: 'inactive',
+			sepa_debit_payments: 'active',
+			sofort_payments: 'pending',
+		} );
+
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+
+		expect( screen.queryAllByText( /Pending/i ).length ).toEqual( 2 );
+		expect(
+			screen.queryAllByText( /Contact WooCommerce Support/i ).length
+		).toEqual( 3 );
+	} );
+
 	test( 'express payments rendered when UPE preview feture flag is enabled', () => {
 		const featureFlagContext = {
 			featureFlags: { upeSettingsPreview: true, upe: false },

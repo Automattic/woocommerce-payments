@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { CheckboxControl, Icon, VisuallyHidden } from '@wordpress/components';
 import { useCallback, useMemo } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
@@ -53,14 +53,14 @@ const PaymentMethodCheckbox = ( {
 		[ name, onChange ]
 	);
 
-	const disabled = ! [ 'active', 'pending', 'unrequested' ].includes(
-		status
-	);
+	const disabled = 'inactive' === status;
 
 	// Uncheck payment method if checked and disabled.
-	if ( disabled && checked ) {
-		handleChange( false );
-	}
+	useEffect( () => {
+		if ( disabled && checked ) {
+			handleChange( false );
+		}
+	}, [ disabled, checked, handleChange ] );
 
 	const label = useMemo( () => <PaymentMethodIcon name={ name } showName />, [
 		name,

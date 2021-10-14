@@ -22,9 +22,7 @@ const PaymentMethod = ( {
 	onDeleteClick,
 	className,
 } ) => {
-	const disabled = ! [ 'active', 'pending', 'unrequested' ].includes(
-		status
-	);
+	const disabled = 'inactive' === status;
 
 	return (
 		<li

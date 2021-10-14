@@ -26,7 +26,7 @@ jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn(),
 	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
 	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
-	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
+	useGetPaymentMethodStatuses: jest.fn(),
 } ) );
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
@@ -102,6 +102,59 @@ describe( 'AddPaymentMethodsTask', () => {
 			expect(
 				screen.getByRole( 'checkbox', { name: checkboxName } )
 			).not.toBeChecked();
+		} );
+	} );
+
+	it( 'should render the active and pending payment methods checkboxes with default values', () => {
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: 'active',
+			bancontact_payments: 'inactive',
+			giropay_payments: 'pending',
+			ideal_payments: 'inactive',
+			p24_payments: 'active',
+			sepa_debit_payments: 'inactive',
+			sofort_payments: 'pending',
+		} );
+
+		render(
+			<WizardTaskContext.Provider value={ {} }>
+				<AddPaymentMethodsTask />
+			</WizardTaskContext.Provider>
+		);
+
+		const expectedToBeChecked = [ 'Credit card / debit card', 'giropay' ];
+
+		expectedToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).toBeChecked();
+		} );
+
+		const expectedNotToBeChecked = [
+			'SEPA Direct Debit',
+			'Sofort',
+			'Bancontact',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'Enable Apple Pay & Google Pay',
+		];
+
+		expectedNotToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).not.toBeChecked();
+		} );
+
+		const expectedToBeDisabled = [
+			'SEPA Direct Debit',
+			'Bancontact',
+			'iDEAL',
+		];
+
+		expectedToBeDisabled.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).toBeDisabled();
 		} );
 	} );
 

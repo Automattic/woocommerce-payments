@@ -316,4 +316,65 @@ describe( 'AddPaymentMethodsTask', () => {
 			)
 		);
 	} );
+
+	it( 'should not allow the inactive ones to be selected', async () => {
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: 'active',
+			bancontact_payments: 'inactive',
+			giropay_payments: 'pending',
+			ideal_payments: 'active',
+			p24_payments: 'inactive',
+			sepa_debit_payments: 'pending',
+			sofort_payments: 'active',
+		} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[
+				'card',
+				'bancontact',
+				'giropay',
+				'p24',
+				'ideal',
+				'sepa_debit',
+				'sofort',
+			],
+			() => null,
+		] );
+		render(
+			<SettingsContextProvider>
+				<WizardTaskContext.Provider
+					value={ { setCompleted: () => null, isActive: true } }
+				>
+					<AddPaymentMethodsTask />
+				</WizardTaskContext.Provider>
+			</SettingsContextProvider>
+		);
+		// The payment methods should all be checked.
+		const expectedToBeChecked = [
+			'giropay',
+			'iDEAL',
+			'SEPA Direct Debit',
+			'Sofort',
+		];
+
+		expectedToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).toBeChecked();
+		} );
+
+		const expectedToBeUnchecked = [ 'Bancontact', 'Przelewy24 (P24)' ];
+
+		expectedToBeUnchecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).not.toBeChecked();
+			// Click the inactive checkbox, to see if it gets enabled.
+			userEvent.click(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			);
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).not.toBeChecked();
+		} );
+	} );
 } );
