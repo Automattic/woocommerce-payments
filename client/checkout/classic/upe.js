@@ -322,11 +322,9 @@ jQuery( function ( $ ) {
 					api.saveUPEAppearance( appearance );
 				}
 
-				const businessName = getConfig( 'accountDescriptor' );
 				const upeSettings = {
 					clientSecret,
 					appearance,
-					business: { name: businessName },
 				};
 
 				if ( getConfig( 'cartContainsSubscription' ) ) {
