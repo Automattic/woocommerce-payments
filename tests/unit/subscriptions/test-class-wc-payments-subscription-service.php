@@ -597,4 +597,19 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $next_payment_time, $subscription->get_time( 'next_payment' ) );
 	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service::format_item_price_data().
+	 */
+	public function test_format_item_price_data() {
+		$expected = [
+			'currency'            => 'USD',
+			'product'             => '',
+			'unit_amount_decimal' => 1033.33,
+		];
+
+		$actual = WC_Payments_Subscription_Service::format_item_price_data( 'USD', '', 10.3333 );
+
+		$this->assertEquals( $expected, $actual );
+	}
 }
