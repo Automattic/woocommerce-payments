@@ -217,12 +217,7 @@ class WC_Payments_Product_Service {
 				continue;
 			}
 
-			// If this product already has a WC Pay ID update it, otherwise create a new one.
-			if ( self::has_wcpay_product_id( $product ) ) {
-				$this->update_product( $product );
-			} else {
-				$this->create_product( $product );
-			}
+			$this->update_products( $product );
 		}
 	}
 
@@ -272,7 +267,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @param WC_Product $product The product to update.
 	 */
-	public function update_product( WC_Product $product ) {
+	public function update_products( WC_Product $product ) {
 
 		// If the product doesn't have a WC Pay ID yet, create it instead.
 		if ( ! self::has_wcpay_product_id( $product ) ) {
