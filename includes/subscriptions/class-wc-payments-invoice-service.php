@@ -54,7 +54,8 @@ class WC_Payments_Invoice_Service {
 		$this->payments_api_client = $payments_api_client;
 		$this->product_service     = $product_service;
 
-		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_record_first_invoice_payment' ], 10, 3 );
+		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'maybe_record_invoice_payment' ], 10, 1 );
+		add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'maybe_record_invoice_payment' ], 11, 1 );
 	}
 
 	/**
@@ -132,35 +133,38 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
-	 * Marks the initial subscription invoice as paid after a parent order is completed.
+	 * Marks a subscription invoice as paid after a parent or renewal order is completed.
 	 *
 	 * When a subscription's parent order goes from a pending payment status to a payment completed status,
+	 * or when a subscription with no corresponding Stripe subscription is manually renewed,
 	 * make sure the invoice is marked as paid (without charging the customer since it was charged on checkout).
 	 *
-	 * @param int    $order_id   The order which is updating status.
-	 * @param string $old_status The order's old status.
-	 * @param string $new_status The order's new status.
+	 * @param int $order_id The WC order ID.
 	 */
-	public function maybe_record_first_invoice_payment( int $order_id, string $old_status, string $new_status ) {
+	public function maybe_record_invoice_payment( int $order_id ) {
 		$order = wc_get_order( $order_id );
 
-		if ( ! $order ) {
+		if ( ! $order || self::get_order_invoice_id( $order ) ) {
 			return;
 		}
 
-		$needed_payment  = in_array( $old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', [ 'pending', 'on-hold', 'failed' ], $order ), true );
-		$order_completed = in_array( $new_status, [ apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ], true );
+		foreach ( wcs_get_subscriptions_for_order( $order, [ 'order_type' => [ 'parent', 'renewal' ] ] ) as $subscription ) {
+			$invoice_id = self::get_subscription_invoice_id( $subscription );
 
-		if ( $needed_payment && $order_completed ) {
-			foreach ( wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'parent' ] ) as $subscription ) {
-				$invoice_id = self::get_subscription_invoice_id( $subscription );
+			if ( ! $invoice_id ) {
+				continue;
+			}
 
-				if ( ! $invoice_id ) {
-					continue;
-				}
+			// Update the status of the invoice to paid but don't charge the customer by using paid_out_of_band parameter.
+			$this->payments_api_client->charge_invoice( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
 
-				// Update the status of the invoice to paid but don't charge the customer by using paid_out_of_band parameter.
-				$this->payments_api_client->charge_invoice( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
+			if ( $subscription->is_manual() ) {
+				$subscription->set_requires_manual_renewal( false );
+				$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+				// Copy the payment token used to pay for the order to the subscription.
+				WC_Payments::get_gateway()->update_failing_payment_method( $subscription, $order );
+				$subscription->save();
 			}
 		}
 	}
