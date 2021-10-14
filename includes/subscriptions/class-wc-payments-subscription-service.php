@@ -251,9 +251,9 @@ class WC_Payments_Subscription_Service {
 	 */
 	public static function format_item_price_data( string $currency, string $wcpay_product_id, float $unit_amount, string $interval = '', int $interval_count = 0 ) : array {
 		$data = [
-			'currency'            => $currency,
-			'product'             => $wcpay_product_id,
-			'unit_amount_decimal' => $unit_amount * 100,
+			'currency'    => $currency,
+			'product'     => $wcpay_product_id,
+			'unit_amount' => (int) $unit_amount * 100,
 		];
 
 		if ( $interval && $interval_count ) {
