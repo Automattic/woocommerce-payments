@@ -1282,7 +1282,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
 </div>
 `;
 
-exports[`PaymentDetailsTimeline renders subscription fee correctly  1`] = `
+exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
 <div>
   <div
     class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
@@ -1432,12 +1432,14 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly  1`] = `
                     <ul
                       class="fee-breakdown-list"
                     >
+                       
                       <li>
                         Base fee: 2.9% + $0.30
                       </li>
                       <li>
                         Recurring transaction fee: 1%
                       </li>
+                       
                     </ul>
                   </span>
                   <span>
