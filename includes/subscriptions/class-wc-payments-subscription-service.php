@@ -694,7 +694,8 @@ class WC_Payments_Subscription_Service {
 			$product_price         = (float) $product->get_price();
 			$product_interval      = (int) WC_Subscriptions_Product::get_interval( $product );
 			$product_period        = WC_Subscriptions_Product::get_period( $product );
-			$item_total            = floatval( $item->get_total() ) / $item->get_quantity();
+			$inclusive_taxes       = $subscription->get_prices_include_tax() ? array_sum( $item->get_taxes()['total'] ) : 0;
+			$item_total            = floatval( $item->get_total() + $inclusive_taxes ) / $item->get_quantity();
 			$subscription_interval = (int) $subscription->get_billing_interval();
 			$subscription_period   = $subscription->get_billing_period();
 

@@ -245,10 +245,10 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$ref->setAccessible( true );
 		$ref->setValue( null, $this->product_service );
 
-		$mock_prodict_id = 'prod_123_wcpay_test_product_id';
-		$this->mock_product->update_meta_data( WC_Payments_Product_Service::PRODUCT_ID_KEY, $mock_prodict_id );
+		$mock_product_id = 'prod_123_wcpay_test_product_id';
+		$this->mock_product->update_meta_data( WC_Payments_Product_Service::PRODUCT_ID_KEY, $mock_product_id );
 
-		$this->assertSame( $mock_prodict_id, WC_Payments_Product_Service::get_wcpay_product_id( $this->mock_product ) );
+		$this->assertSame( $mock_product_id, $this->product_service->get_wcpay_product_id( $this->mock_product ) );
 
 		// Test that deleting the price will cause the product to be created.
 		$this->mock_product->delete_meta_data( WC_Payments_Product_Service::PRODUCT_ID_KEY );
@@ -257,7 +257,7 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 			->with( $this->get_mock_product_data() )
 			->willReturn(
 				[
-					'wcpay_product_id' => $mock_prodict_id,
+					'wcpay_product_id' => $mock_product_id,
 					'wcpay_price_id'   => 'price_test123',
 				]
 			);
@@ -265,6 +265,6 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$this->mock_get_period( 'month' );
 		$this->mock_get_interval( 3 );
 
-		$this->assertSame( $mock_prodict_id, WC_Payments_Product_Service::get_wcpay_product_id( $this->mock_product ) );
+		$this->assertSame( $mock_product_id, $this->product_service->get_wcpay_product_id( $this->mock_product ) );
 	}
 }

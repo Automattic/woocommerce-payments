@@ -87,7 +87,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to get the WC Pay ID for.
 	 * @return string             The WC Pay product ID or an empty string.
 	 */
-	public static function get_wcpay_product_id( WC_Product $product ) : string {
+	public function get_wcpay_product_id( WC_Product $product ) : string {
 
 		// If the subscription product doesn't have a WC Pay product ID, create one.
 		if ( ! self::has_wcpay_product_id( $product ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
