@@ -257,6 +257,12 @@ class Compatibility {
 			}
 		}
 
+		// WCPay Subs does a check against the product price and the total, we need to return the actual product price for this check.
+		if ( $this->utils->is_call_in_backtrace( [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] )
+			&& $this->utils->is_call_in_backtrace( [ 'WC_Product->get_price' ] ) ) {
+			return false;
+		}
+
 		return true;
 	}
 
