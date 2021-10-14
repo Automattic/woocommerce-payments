@@ -123,10 +123,10 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 				],
 				[
 					'price_data' => [
-						'product'             => $mock_wcpay_product_id,
-						'currency'            => 'USD',
-						'unit_amount_decimal' => 1000.0,
-						'recurring'           => [
+						'product'     => $mock_wcpay_product_id,
+						'currency'    => 'USD',
+						'unit_amount' => 1000,
+						'recurring'   => [
 							'interval'       => 'month',
 							'interval_count' => 1,
 						],
@@ -451,10 +451,10 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 				],
 				[
 					'price_data' => [
-						'product'             => 'wcpay_prod_test123',
-						'currency'            => 'USD',
-						'unit_amount_decimal' => 1000.0,
-						'recurring'           => [
+						'product'     => 'wcpay_prod_test123',
+						'currency'    => 'USD',
+						'unit_amount' => 1000,
+						'recurring'   => [
 							'interval'       => 'month',
 							'interval_count' => 1,
 						],
@@ -668,20 +668,5 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$this->subscription_service->update_dates_to_match_wcpay_subscription( $wcpay_dates, $subscription );
 
 		$this->assertEquals( $next_payment_time, $subscription->get_time( 'next_payment' ) );
-	}
-
-	/**
-	 * Test WC_Payments_Subscription_Service::format_item_price_data().
-	 */
-	public function test_format_item_price_data() {
-		$expected = [
-			'currency'            => 'USD',
-			'product'             => '',
-			'unit_amount_decimal' => 1033.33,
-		];
-
-		$actual = WC_Payments_Subscription_Service::format_item_price_data( 'USD', '', 10.3333 );
-
-		$this->assertEquals( $expected, $actual );
 	}
 }
