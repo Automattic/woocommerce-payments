@@ -278,20 +278,29 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Updates a product in WC Pay.
+	 * Updates related products in WC Pay when a WC Product is updated.
 	 *
 	 * @param WC_Product $product The product to update.
 	 */
 	public function update_products( WC_Product $product ) {
-
-		// If the product doesn't have a WC Pay ID yet, create it instead.
-		if ( ! self::has_wcpay_product_id( $product ) ) {
-			$this->create_product( $product );
+		if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return;
 		}
 
-		$wcpay_product_id = $this->get_wcpay_product_id( $product );
-		$data             = [];
+		$wcpay_product_ids = $this->get_all_wcpay_product_ids( $product );
+		$test_mode         = WC_Payments::get_gateway()->is_in_test_mode();
+
+		// if the current environment doesn't have a product ID, make sure we create one.
+		if ( ! isset( $wcpay_product_ids[ $test_mode ? 'test' : 'live' ] ) ) {
+			$this->create_product( $product );
+		}
+
+		// Return when there's no products to update.
+		if ( empty( $wcpay_product_ids ) ) {
+			return;
+		}
+
+		$data = [];
 
 		if ( $this->product_needs_update( $product ) ) {
 			$data = array_merge( $data, $this->get_product_data( $product ) );
@@ -302,27 +311,29 @@ class WC_Payments_Product_Service {
 		}
 
 		if ( ! empty( $data ) ) {
+			$this->remove_product_update_listeners();
+
 			try {
-				$wcpay_product = $this->payments_api_client->update_product( $wcpay_product_id, $data );
+				// Update all versions of WCPay Products and Prices that need updating.
+				foreach ( $wcpay_product_ids as $environment => $wcpay_product_id ) {
+					$data['test_mode'] = 'live' === $environment ? false : true;
+					$wcpay_product     = $this->payments_api_client->update_product( $wcpay_product_id, $data );
 
-				$this->remove_product_update_listeners();
+					if ( isset( $wcpay_product['wcpay_price_id'] ) ) {
+						$old_wcpay_price_id = $this->get_wcpay_price_id( $product, $data['test_mode'] );
 
-				if ( isset( $wcpay_product['wcpay_product_id'] ) ) {
-					$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
+						$this->set_wcpay_price_id( $product, $wcpay_product['wcpay_price_id'], $data['test_mode'] );
+						$this->archive_price( $old_wcpay_price_id, $data['test_mode'] );
+					}
 				}
 
-				if ( isset( $wcpay_product['wcpay_price_id'] ) ) {
-					$old_wcpay_price_id = $this->get_wcpay_price_id( $product );
-
-					$this->set_wcpay_price_hash( $product, $this->get_price_hash( $product ) );
-					$this->set_wcpay_price_id( $product, $wcpay_product['wcpay_price_id'] );
-					$this->archive_price( $old_wcpay_price_id );
-				}
-
-				$this->add_product_update_listeners();
+				$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
+				$this->set_wcpay_price_hash( $product, $this->get_price_hash( $product ) );
 			} catch ( API_Exception $e ) {
 				Logger::log( 'There was a problem updating the product in WC Pay: ' . $e->getMessage() );
 			}
+
+			$this->add_product_update_listeners();
 		}
 	}
 
