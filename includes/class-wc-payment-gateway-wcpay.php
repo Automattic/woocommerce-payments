@@ -2352,7 +2352,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_upe_enabled_payment_method_statuses() {
 		$account_data = $this->account->get_cached_account_data();
-		return $account_data['capabilities'] ?? [];
+		return $account_data['capabilities'] ?? [
+			'card_payments' => 'active',
+		];
 	}
 
 	/**
