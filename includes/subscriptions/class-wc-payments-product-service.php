@@ -685,4 +685,20 @@ class WC_Payments_Product_Service {
 		$test_mode = null === $test_mode ? WC_Payments::get_gateway()->is_in_test_mode() : $test_mode;
 		return $test_mode ? self::TEST_PRICE_ID_KEY : self::LIVE_PRICE_ID_KEY;
 	}
+
+	/**
+	 * Gets all WCPay Product IDs linked to a WC Product (live and testmode products).
+	 *
+	 * @param WC_Product $product The product to fetch WCPay product IDs for.
+	 *
+	 * @return array Live and test WCPay Product IDs if they exist.
+	 */
+	private function get_all_wcpay_product_ids( WC_Product $product ) {
+		$environment_product_ids = [
+			'live' => self::has_wcpay_product_id( $product, false ) ? $this->get_wcpay_product_id( $product, false ) : null,
+			'test' => self::has_wcpay_product_id( $product, true ) ? $this->get_wcpay_product_id( $product, true ) : null,
+		];
+
+		return array_filter( $environment_product_ids );
+	}
 }
