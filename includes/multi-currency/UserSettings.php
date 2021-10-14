@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Payments Multi Currency User Settings
+ * WooCommerce Payments Multi-Currency User Settings
  *
  * @package WooCommerce\Payments
  */
@@ -10,7 +10,7 @@ namespace WCPay\MultiCurrency;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that add Multi Currency settings to user my account page.
+ * Class that add Multi-Currency settings to user my account page.
  */
 class UserSettings {
 

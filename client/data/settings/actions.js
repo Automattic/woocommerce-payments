@@ -24,6 +24,10 @@ export function updateIsSavedCardsEnabled( isEnabled ) {
 	return updateSettingsValues( { is_saved_cards_enabled: isEnabled } );
 }
 
+export function updateIsCardPresentEligible( isEnabled ) {
+	return updateSettingsValues( { is_card_present_eligible: isEnabled } );
+}
+
 export function updatePaymentRequestButtonType( type ) {
 	return updateSettingsValues( { payment_request_button_type: type } );
 }

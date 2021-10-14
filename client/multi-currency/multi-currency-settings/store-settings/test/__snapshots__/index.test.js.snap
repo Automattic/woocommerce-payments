@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Multi Currency Store Settings store settings task renders correctly: snapshot-multi-currency-store_settings 1`] = `
+exports[`Multi-Currency store settings store settings task renders correctly: snapshot-multi-currency-store_settings 1`] = `
 <div>
   <div
     class="settings-section multi-currency-settings-store-settings-section"

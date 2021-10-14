@@ -20,6 +20,7 @@ const productName = config.get( 'products.simple.name' );
 
 import {
 	fillCardDetailsWCB,
+	clearWCBCardDetails,
 	confirmCardAuthentication,
 } from '../../utils/payments';
 
@@ -37,9 +38,8 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 		} );
 
 		afterEach( async () => {
-			// Reload the page after every test so there are no messages
-			await page.reload();
-			await page.waitFor( 3000 );
+			// Clear card details for the next test
+			await clearWCBCardDetails();
 		} );
 
 		afterAll( async () => {

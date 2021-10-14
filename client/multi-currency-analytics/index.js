@@ -25,10 +25,10 @@ addFilter(
 				isNumeric: false,
 				isSortable: true,
 				key: 'customer_currency',
-				label: __( 'Customer Currency', 'woocommerce-payments' ),
+				label: __( 'Customer currency', 'woocommerce-payments' ),
 				required: false,
 				screenReaderLabel: __(
-					'Customer Currency',
+					'Customer currency',
 					'woocommerce-payments'
 				),
 			},
