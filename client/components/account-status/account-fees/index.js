@@ -68,8 +68,9 @@ const AccountFees = ( props ) => {
 					'base' === key ||
 					'discount' === key ||
 					0 === value.discount.length
-				)
+				) {
 					return null;
+				}
 
 				return (
 					<AccountFee

@@ -83,12 +83,10 @@ const AccountStatusDetails = ( props ) => {
 				0 === value.discount.length
 			)
 				return null;
-			// console.log(value.discount);
+
 			return value.discount;
 		} )
-		.filter( function ( el ) {
-			return null != el && 0 < el.length;
-		} );
+		.filter( ( e ) => e && e.length );
 
 	return (
 		<AccountStatusCard title={ cardTitle }>
@@ -106,7 +104,7 @@ const AccountStatusDetails = ( props ) => {
 					depositsStatus={ accountStatus.depositsStatus }
 				/>
 			</AccountStatusItem>
-			{ 0 < discounts.length ? (
+			{ discounts.length ? (
 				<h4>{ __( 'Active discounts', 'woocommerce-payments' ) }</h4>
 			) : (
 				''
