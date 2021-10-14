@@ -268,7 +268,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			Logger::debug( 'intent_id not found, using order_id to retrieve order' );
 			$metadata = $this->read_rest_property( $event_object, 'metadata' );
 			$order_id = $metadata['order_id'];
-			$order    = wc_get_order( ( $order_id ) );
+			$order    = $this->wcpay_db->order_from_order_id( $order_id );
 		}
 
 		if ( ! $order ) {
