@@ -290,14 +290,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_subscription' )
-			->with(
-				$mock_wcpay_subscription_id,
-				[
-					'default_payment_method' => $mock_wcpay_token_id,
-					'currency'               => 'usd',
-					'amount'                 => 5000,
-				]
-			)
+			->with( $mock_wcpay_subscription_id, [ 'default_payment_method' => $mock_wcpay_token_id ] )
 			->willReturn( [ 'id' => $mock_wcpay_subscription_id ] );
 
 		$this->subscription_service->update_wcpay_subscription_payment_method( 1, $token->get_id(), $token );

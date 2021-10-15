@@ -1114,7 +1114,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'payment_type'   => $payment_type,
 		];
 
-		// if the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).
+		// If the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).
 		if ( 'recurring' === (string) $payment_type && ! $this->is_subscriptions_plugin_active() ) {
 			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
 
