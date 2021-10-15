@@ -373,11 +373,9 @@ const SingleCurrencySettings = () => {
 											</h4>
 											{ /* eslint-disable jsx-a11y/no-onchange */ }
 											<select
-												value={
-													parseFloat(
-														priceRoundingType
-													) || 'none'
-												}
+												value={ parseFloat(
+													priceRoundingType
+												) }
 												data-testid={ 'price_rounding' }
 												onChange={ ( event ) =>
 													setPriceRoundingType(
@@ -391,11 +389,9 @@ const SingleCurrencySettings = () => {
 												).map( ( value ) => {
 													return (
 														<option
-															value={
-																parseFloat(
-																	value
-																) || 'none'
-															}
+															value={ parseFloat(
+																value
+															) }
 															key={ value }
 														>
 															{
