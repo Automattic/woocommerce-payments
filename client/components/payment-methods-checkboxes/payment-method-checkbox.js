@@ -75,18 +75,6 @@ const PaymentMethodCheckbox = ( {
 				disabled={ disabled }
 			/>
 			<div className={ 'payment-method-checkbox__statuses' }>
-				{ 'pending' === status && (
-					<Tooltip
-						content={ __(
-							'This payment method is pending approval. Once approved, you will be able to use it.',
-							'woocommerce-payments'
-						) }
-					>
-						<Pill className={ 'payment-status-pending' }>
-							{ __( 'Pending', 'woocommerce-payments' ) }
-						</Pill>
-					</Tooltip>
-				) }
 				{ disabled && (
 					<Tooltip
 						content={ sprintf(

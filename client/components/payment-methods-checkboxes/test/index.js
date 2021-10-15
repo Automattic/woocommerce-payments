@@ -75,25 +75,6 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		expect( handleChange ).toHaveBeenNthCalledWith( 6, 'sofort', true );
 	} );
 
-	it( 'shows the pending notice pill on payment methods with pending statuses', () => {
-		const handleChange = () => {};
-		const page = render(
-			<PaymentMethodsCheckboxes>
-				<PaymentMethodsCheckbox
-					key={ 'sofort' }
-					onChange={ handleChange }
-					checked={ 1 }
-					name={ 'sofort' }
-					status={ 'pending' }
-				/>
-			</PaymentMethodsCheckboxes>
-		);
-
-		expect( page.container ).toContainHTML(
-			'<span class="wcpay-pill payment-status-pending">Pending</span>'
-		);
-	} );
-
 	it( 'can click the checkbox on payment methods with pending statuses', () => {
 		const handleChange = jest.fn();
 		render(
@@ -158,7 +139,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		expect( sofortCheckbox ).not.toBeChecked();
 	} );
 
-	it( 'doesnt show the pending and disabled notice pill on payment methods with active and unrequested statuses', () => {
+	it( 'doesnt show the disabled notice pill on payment methods with active and unrequested statuses', () => {
 		const handleChange = () => {};
 		const page = render(
 			<PaymentMethodsCheckboxes>
@@ -179,9 +160,6 @@ describe( 'PaymentMethodsCheckboxes', () => {
 			</PaymentMethodsCheckboxes>
 		);
 
-		expect( page.container ).not.toContainHTML(
-			'<span class="wcpay-pill payment-status-pending">Pending</span>'
-		);
 		expect( page.container ).not.toContainHTML(
 			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
 		);
