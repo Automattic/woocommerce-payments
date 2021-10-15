@@ -10,7 +10,6 @@
 * Fix - Inconsistent shipping options in Payment Request popup.
 * Update - Remove unused "wcpay_deposits_summary_empty_state_click" track.
 * Fix - Applied sentence case on all strings
-* Fix - Changed stripe_ to wcpay_ inside subscriptions related code 
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
