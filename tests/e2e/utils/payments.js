@@ -7,27 +7,58 @@ const { shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 // WooCommerce Checkout
 export async function fillCardDetails( page, card ) {
-	await page.waitForSelector( '.__PrivateStripeElement' );
-	const frameHandle = await page.waitForSelector(
-		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
-	);
-	const stripeFrame = await frameHandle.contentFrame();
+	if ( await page.$( '#payment #wcpay-upe-element' ) ) {
+		const frameHandle = await page.waitForSelector(
+			'#payment #wcpay-upe-element iframe'
+		);
 
-	const cardNumberInput = await stripeFrame.waitForSelector(
-		'[name="cardnumber"]',
-		{ timeout: 30000 }
-	);
-	await cardNumberInput.type( card.number, { delay: 20 } );
+		const stripeFrame = await frameHandle.contentFrame();
 
-	const cardDateInput = await stripeFrame.waitForSelector(
-		'[name="exp-date"]'
-	);
-	await cardDateInput.type( card.expires.month + card.expires.year, {
-		delay: 20,
-	} );
+		const cardNumberInput = await stripeFrame.waitForSelector(
+			'[name="number"]',
+			{ timeout: 30000 }
+		);
 
-	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
-	await cardCvcInput.type( card.cvc, { delay: 20 } );
+		await cardNumberInput.type( card.number, { delay: 20 } );
+
+		const cardDateInput = await stripeFrame.waitForSelector(
+			'[name="expiry"]'
+		);
+
+		await cardDateInput.type( card.expires.month + card.expires.year, {
+			delay: 20,
+		} );
+
+		const cardCvcInput = await stripeFrame.waitForSelector(
+			'[name="cvc"]'
+		);
+		await cardCvcInput.type( card.cvc, { delay: 20 } );
+	} else {
+		await page.waitForSelector( '.__PrivateStripeElement' );
+		const frameHandle = await page.waitForSelector(
+			'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
+		);
+		const stripeFrame = await frameHandle.contentFrame();
+
+		const cardNumberInput = await stripeFrame.waitForSelector(
+			'[name="cardnumber"]',
+			{ timeout: 30000 }
+		);
+		await cardNumberInput.type( card.number, { delay: 20 } );
+
+		const cardDateInput = await stripeFrame.waitForSelector(
+			'[name="exp-date"]'
+		);
+
+		await cardDateInput.type( card.expires.month + card.expires.year, {
+			delay: 20,
+		} );
+
+		const cardCvcInput = await stripeFrame.waitForSelector(
+			'[name="cvc"]'
+		);
+		await cardCvcInput.type( card.cvc, { delay: 20 } );
+	}
 }
 
 // Clear WC Checkout Card Details
