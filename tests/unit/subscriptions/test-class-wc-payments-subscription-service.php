@@ -151,7 +151,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_wcpay_price_id );
 
 		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_stripe_product_id_for_item' )
+			->method( 'get_wcpay_product_id_for_item' )
 			->willReturn( $mock_wcpay_product_id );
 
 		$this->mock_api_client->expects( $this->once() )
@@ -427,7 +427,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->willReturn( 'wcpay_price_test123' );
 
 		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_stripe_product_id_for_item' )
+			->method( 'get_wcpay_product_id_for_item' )
 			->willReturn( 'wcpay_prod_test123' );
 
 		$expected_result = [
