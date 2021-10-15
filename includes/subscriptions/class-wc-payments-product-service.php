@@ -67,6 +67,7 @@ class WC_Payments_Product_Service {
 		add_action( 'shutdown', [ $this, 'create_or_update_products' ] );
 		add_action( 'wp_trash_post', [ $this, 'maybe_archive_product' ] );
 		add_action( 'untrashed_post', [ $this, 'maybe_unarchive_product' ] );
+		add_filter( 'woocommerce_duplicate_product_exclude_meta', [ $this, 'exclude_meta_wcpay_product' ] );
 
 		$this->add_product_update_listeners();
 	}
@@ -131,7 +132,7 @@ class WC_Payments_Product_Service {
 	 * @param string $type The item type to create a product for.
 	 * return string       The item's WCPay product id.
 	 */
-	public function get_stripe_product_id_for_item( string $type ) : string {
+	public function get_wcpay_product_id_for_item( string $type ) : string {
 		if ( ! get_option( self::PRODUCT_ID_KEY . '_' . $type ) ) {
 			$this->create_product_for_item_type( $type );
 		}
@@ -147,6 +148,16 @@ class WC_Payments_Product_Service {
 	 */
 	public static function has_wcpay_product_id( WC_Product $product ) : string {
 		return (bool) $product->get_meta( self::PRODUCT_ID_KEY, true );
+	}
+
+	/**
+	 * Prevents duplicate WC Pay product IDs and hashes when duplicating a subscription product.
+	 *
+	 * @param array $meta_keys The keys to exclude from the duplicate.
+	 * @return array Keys to exclude.
+	 */
+	public static function exclude_meta_wcpay_product( $meta_keys ) {
+		return array_merge( $meta_keys, [ self::PRODUCT_ID_KEY, self::PRODUCT_HASH_KEY, self::PRICE_ID_KEY, self::PRICE_HASH_KEY ] );
 	}
 
 	/**
