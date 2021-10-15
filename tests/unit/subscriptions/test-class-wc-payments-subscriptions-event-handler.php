@@ -163,7 +163,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	 * Test handle_invoice_paid when the incoming webhook belongs to a subscription that doesn't exist.
 	 */
 	public function test_handle_invoice_paid_exception() {
-		$test_body = $this->get_mock_test_body( 'sub_ID_no_invoice_paid', 'cus_test1234', 'ii_testInvoiceID' );
+		$test_body = $this->get_mock_test_body( 'sub_ID_no_invoice_paid', 'cus_test1234', 'ii_testInvoiceID', 'payment_intent' );
 
 		$this->expectException( Rest_Request_Exception::class );
 		$this->expectExceptionMessage( 'Cannot find subscription for the incoming "invoice.paid" event.' );
@@ -331,14 +331,15 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 		return [
 			'data' => [
 				'object' => [
-					'attempt_count' => $attempt_count,
-					'customer'      => $customer_id,
-					'discounts'     => [],
-					'id'            => $invoice_id,
-					'lines'         => [
+					'attempt_count'  => $attempt_count,
+					'customer'       => $customer_id,
+					'discounts'      => [],
+					'id'             => $invoice_id,
+					'payment_intent' => 'pi_xxxx',
+					'lines'          => [
 						'data' => [],
 					],
-					'subscription'  => $subscription_id,
+					'subscription'   => $subscription_id,
 				],
 			],
 		];
