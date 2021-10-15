@@ -53,10 +53,12 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
 					'display_name' => [
-						'type' => 'string',
+						'type'     => 'string',
+						'required' => false,
 					],
 					'address'      => [
-						'type' => 'object',
+						'type'     => 'object',
+						'required' => false,
 					],
 				],
 			]
@@ -141,104 +143,58 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 		}
 
 		try {
-			// Load the cached locations or retrieve them from the API.
-			$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
-			if ( ! $locations ) {
-				$locations = $this->api_client->get_terminal_locations();
-				set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
-			}
-
 			// Check the existing locations to see if one of them matches the store.
 			$name = get_bloginfo();
-			foreach ( $locations as $location ) {
+			foreach ( $this->fetch_locations() as $location ) {
 				if (
 					$location['display_name'] === $name
 					&& count( array_intersect( $location['address'], $location_address ) ) === count( $location_address )
 				) {
-					return $this->format_location_response( $location );
+					return rest_ensure_response( $this->extract_location_fields( $location ) );
 				}
 			}
 
-			// Create a new location, and add it to the cached list.
-			$location    = $this->api_client->create_terminal_location( $name, $location_address );
-			$locations[] = $location;
-			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
+			// If the location is missing, Create a new one and actualize the transient.
+			$location = $this->api_client->create_terminal_location( $name, $location_address );
+			$this->reload_locations();
 
-			return $this->format_location_response( $location );
+			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
-	}
-
-	/**
-	 * Formats a Stripe terminal location object into a correct response.
-	 *
-	 * @param array $location The location.
-	 * @return WP_REST_Response
-	 */
-	private function format_location_response( $location ) {
-		return rest_ensure_response( $this->extract_location_fields( $location ) );
-	}
-
-	/**
-	 * Extracts the relevant fields from a terminal location object.
-	 *
-	 * @param array $location The location.
-	 * @return array The picked fields from location object.
-	 */
-	private function extract_location_fields( $location ) {
-		return [
-			'id'           => $location['id'],
-			'address'      => $location['address'],
-			'display_name' => $location['display_name'],
-			'livemode'     => $location['livemode'],
-		];
 	}
 
 	/**
 	 * Proxies the delete location request to the server.
 	 *
 	 * @param WP_REST_REQUEST $request Request object.
-	 *
-	 * @throws API_Exception - If the downstream call fails.
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function delete_location( $request ) {
 		try {
-			$deletion_response = $this->api_client->delete_terminal_location(
-				$request->get_param( 'location_id' )
-			);
+			// Delete the location and reload the transient.
+			$location = $this->api_client->delete_terminal_location( $request->get_param( 'location_id' ) );
+			$this->reload_locations();
 
-			// Delete the transient in case the delete call goes through to avoid caching side effects.
-			if ( true === $deletion_response['deleted'] ?? false ) {
-				delete_transient( self::STORE_LOCATIONS_TRANSIENT_KEY );
-			}
-
-			return $deletion_response;
+			return rest_ensure_response( $location );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
-
 	}
 
 	/**
 	 * Proxies the update location request to the server.
 	 *
 	 * @param WP_REST_REQUEST $request Request object.
-	 *
-	 * @throws API_Exception - If the downstream call fails.
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function update_location( $request ) {
 		try {
-			$location_id  = $request->get_param( 'location_id' );
-			$display_name = $request['display_name'];
-			$address      = $request['address'];
+			// Update the location and reload the transient.
+			$location = $this->api_client->update_terminal_location( $request->get_param( 'location_id' ), $request['display_name'], $request['address'] );
+			$this->reload_locations();
 
-			$updation_response = $this->api_client->update_terminal_location( $location_id, $display_name, $address );
-
-			// Delete the transient in case the update call goes through to avoid caching side effects.
-			delete_transient( self::STORE_LOCATIONS_TRANSIENT_KEY );
-
-			return $this->format_location_response( $updation_response );
+			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
@@ -248,29 +204,23 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * Proxies the get location request to the server.
 	 *
 	 * @param WP_REST_REQUEST $request Request object.
-	 *
-	 * @throws API_Exception - If the downstream call fails.
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_location( $request ) {
 		try {
-			$locations   = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
+			// Check if the location is already in the transient.
 			$location_id = $request->get_param( 'location_id' );
-
-			// Check if the location exists in cache before making the request.
-			if ( $locations ) {
-				foreach ( $locations as $location ) {
-					if ( $location['id'] === $location_id ) {
-						return $this->format_location_response( $location );
-					}
+			foreach ( $this->fetch_locations() as $location ) {
+				if ( $location['id'] === $location_id ) {
+					return rest_ensure_response( $this->extract_location_fields( $location ) );
 				}
 			}
 
-			// Fetch the location from server and update the cache to include it.
-			$location    = $this->api_client->get_terminal_location( $location_id );
-			$locations[] = $location;
-			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
+			// If the location is missing, fetch it individually and reload the transient.
+			$location = $this->api_client->get_terminal_location( $location_id );
+			$this->reload_locations();
 
-			return $this->format_location_response( $location );
+			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
@@ -280,22 +230,15 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * Proxies the create location request to the server.
 	 *
 	 * @param WP_REST_REQUEST $request Request object.
-	 *
-	 * @throws API_Exception - If the downstream call fails.
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function create_location( $request ) {
 		try {
-			$display_name = $request['display_name'];
-			$address      = $request['address'];
+			// Create location and reload the transient.
+			$location = $this->api_client->create_terminal_location( $request['display_name'], $request['address'] );
+			$this->reload_locations();
 
-			$location = $this->api_client->create_terminal_location( $display_name, $address );
-
-			// Update the transient with the newly created location.
-			$locations   = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
-			$locations[] = $location;
-			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
-
-			return $this->format_location_response( $location );
+			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
@@ -305,29 +248,55 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * Proxies the get all locations request to the server.
 	 *
 	 * @param WP_REST_REQUEST $request Request object.
-	 *
-	 * @throws API_Exception - If the downstream call fails.
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_all_locations( $request ) {
 		try {
-			// Check if locations are cached already and return them if present.
-			$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
-
-			// Fetch from downstream in case of a cache miss and update cache for subsequent calls.
-			if ( ! $locations ) {
-				$locations = $this->api_client->get_terminal_locations();
-				set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
-			}
-
-			// Format the response to pick the required fields.
-			$formatted_location_response = [];
-			foreach ( $locations as $location ) {
-				$formatted_location_response[] = $this->extract_location_fields( $location );
-			}
-
-			return rest_ensure_response( $formatted_location_response );
+			return rest_ensure_response( array_map( [ $this, 'extract_location_fields' ], $this->fetch_locations() ) );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
+	}
+
+	/**
+	 * Extracts the relevant fields from a terminal location object.
+	 *
+	 * @param array $location The location.
+	 * @return array          The picked fields from location object.
+	 */
+	private function extract_location_fields( array $location ): array {
+		return [
+			'id'           => $location['id'],
+			'address'      => $location['address'],
+			'display_name' => $location['display_name'],
+			'livemode'     => $location['livemode'],
+		];
+	}
+
+	/**
+	 * Attempts to read locations from transient and re-populates it if needed.
+	 *
+	 * @return array         Terminal locations.
+	 * @throws API_Exception If request to server fails.
+	 */
+	private function fetch_locations(): array {
+		$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
+		if ( ! $locations ) {
+			$locations = $this->api_client->get_terminal_locations();
+			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
+		}
+
+		return $locations;
+	}
+
+	/**
+	 * Refreshes the locations stored in transient.
+	 *
+	 * @return void
+	 * @throws API_Exception If request to server fails.
+	 */
+	private function reload_locations() {
+		$locations = $this->api_client->get_terminal_locations();
+		set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 	}
 }
