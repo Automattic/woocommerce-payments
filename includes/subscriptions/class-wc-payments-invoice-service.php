@@ -49,10 +49,16 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client  WooCommerce Payments API client.
 	 * @param WC_Payments_Product_Service $product_service      Product Service.
+	 * @param WC_Payment_Gateway_WCPay    $gateway              WC payments Payment Gateway.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Product_Service $product_service ) {
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Product_Service $product_service,
+		WC_Payment_Gateway_WCPay $gateway
+	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->product_service     = $product_service;
+		$this->gateway             = $gateway;
 
 		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_record_first_invoice_payment' ], 10, 3 );
 	}
@@ -216,6 +222,31 @@ class WC_Payments_Invoice_Service {
 	public function set_subscription_invoice_id( WC_Subscription $subscription, string $parent_invoice_id ) {
 		$subscription->update_meta_data( self::ORDER_INVOICE_ID_KEY, $parent_invoice_id );
 		$subscription->save();
+	}
+
+	/**
+	 * Retrieves the intent object and adds its data to the order.
+	 *
+	 * @param WC_Order $order The order to update.
+	 * @param string   $intent_id The intent ID.
+	 */
+	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
+		try {
+			$intent_object = $this->payments_api_client->get_intent( $intent_id );
+		} catch ( API_Exception $e ) {
+			$order->add_order_note( __( 'The payment info couldn\'t be added to the order.', 'woocommerce-payments' ) );
+			return;
+		}
+
+		$this->gateway->attach_intent_info_to_order(
+			$order,
+			$intent_id,
+			$intent_object->get_status(),
+			$intent_object->get_payment_method_id(),
+			$intent_object->get_customer_id(),
+			$intent_object->get_charge_id(),
+			$intent_object->get_currency()
+		);
 	}
 
 	/**

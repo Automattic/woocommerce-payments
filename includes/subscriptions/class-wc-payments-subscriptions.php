@@ -57,8 +57,8 @@ class WC_Payments_Subscriptions {
 		include_once __DIR__ . '/class-wc-payments-subscription-change-payment-method-handler.php';
 
 		self::$product_service      = new WC_Payments_Product_Service( $api_client );
-		self::$invoice_service      = new WC_Payments_Invoice_Service( $api_client, self::$product_service );
-		self::$subscription_service = new WC_Payments_Subscription_Service( $api_client, $customer_service, self::$product_service, self::$invoice_service, $card_gateway );
+		self::$invoice_service      = new WC_Payments_Invoice_Service( $api_client, self::$product_service, $card_gateway );
+		self::$subscription_service = new WC_Payments_Subscription_Service( $api_client, $customer_service, self::$product_service, self::$invoice_service );
 
 		// Load the subscription and invoice incoming event handler.
 		include_once __DIR__ . '/class-wc-payments-subscriptions-event-handler.php';
