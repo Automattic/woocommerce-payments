@@ -104,10 +104,8 @@ const AccountStatusDetails = ( props ) => {
 					depositsStatus={ accountStatus.depositsStatus }
 				/>
 			</AccountStatusItem>
-			{ discounts.length ? (
+			{ discounts.length && (
 				<h4>{ __( 'Active discounts', 'woocommerce-payments' ) }</h4>
-			) : (
-				''
 			) }
 			<AccountFees accountFees={ accountFees } />
 		</AccountStatusCard>
