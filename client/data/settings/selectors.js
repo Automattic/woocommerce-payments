@@ -86,3 +86,11 @@ export const getSavingError = ( state ) => {
 export const getIsCardPresentEligible = ( state ) => {
 	return getSettings( state ).is_card_present_eligible || false;
 };
+
+export const getIsWCPaySubscriptionsEnabled = ( state ) => {
+	return getSettings( state ).is_wcpay_subscriptions_enabled || false;
+};
+
+export const getIsWCPaySubscriptionsAvailable = ( state ) => {
+	return getSettings( state ).is_wcpay_subscriptions_available || false;
+};

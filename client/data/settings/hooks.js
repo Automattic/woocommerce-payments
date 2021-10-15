@@ -93,6 +93,29 @@ export const useMultiCurrency = () => {
 	);
 };
 
+export const useWCPaySubscriptions = () => {
+	const { updateIsWCPaySubscriptionsEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const {
+				getIsWCPaySubscriptionsEnabled,
+				getIsWCPaySubscriptionsAvailable,
+			} = select( STORE_NAME );
+
+			const isWCPaySubscriptionsEnabled = getIsWCPaySubscriptionsEnabled();
+			const isWCPaySubscriptionsAvailable = getIsWCPaySubscriptionsAvailable();
+
+			return [
+				isWCPaySubscriptionsEnabled,
+				isWCPaySubscriptionsAvailable,
+				updateIsWCPaySubscriptionsEnabled,
+			];
+		},
+		[ updateIsWCPaySubscriptionsEnabled ]
+	);
+};
+
 export const useAccountStatementDescriptor = () => {
 	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
 
