@@ -163,7 +163,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	 * Test handle_invoice_paid when the incoming webhook belongs to a subscription that doesn't exist.
 	 */
 	public function test_handle_invoice_paid_exception() {
-		$test_body = $this->get_mock_test_body( 'sub_ID_no_invoice_paid', 'cus_test1234', 'ii_testInvoiceID', 'payment_intent' );
+		$test_body = $this->get_mock_test_body( 'sub_ID_no_invoice_paid', 'cus_test1234', 'ii_testInvoiceID' );
 
 		$this->expectException( Rest_Request_Exception::class );
 		$this->expectExceptionMessage( 'Cannot find subscription for the incoming "invoice.paid" event.' );
@@ -196,7 +196,8 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 		$wcpay_subscription_id = 'sub_invoiceUpcoming';
 		$wcpay_customer_id     = 'cus_test1234';
 		$wcpay_invoiceid       = 'ii_testInvoiceID';
-		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoiceid );
+		$wcpay_intent_id       = 'pi_testPaymentIntentID';
+		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoiceid, $wcpay_intent_id );
 		$mock_renewal_order    = WC_Helper_Order::create_order();
 		$mock_subscription     = new WC_Subscription();
 
@@ -220,6 +221,11 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 		$this->mock_invoice_service->expects( $this->once() )
 			->method( 'mark_pending_invoice_paid_for_subscription' )
 			->with( $mock_subscription )
+			->willReturn( null );
+
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'get_and_attach_intent_info_to_order' )
+			->with( $mock_renewal_order, $wcpay_intent_id )
 			->willReturn( null );
 
 		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
@@ -246,7 +252,8 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 		$wcpay_subscription_id = 'sub_invoiceFailed';
 		$wcpay_customer_id     = 'cus_failed1234';
 		$wcpay_invoice_id      = 'ii_failedInvoiceID';
-		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoice_id, 1 );
+		$wcpay_intent_id       = 'pi_failed';
+		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoice_id, $wcpay_intent_id, 1 );
 		$mock_order            = WC_Helper_Order::create_order();
 		$mock_subscription     = new WC_Subscription();
 		$mock_subscription->set_parent( $mock_order );
@@ -285,7 +292,8 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 		$wcpay_subscription_id = 'sub_invoiceFailed';
 		$wcpay_customer_id     = 'cus_failed1234';
 		$wcpay_invoice_id      = 'ii_failedInvoiceID';
-		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoice_id, 4 );
+		$wcpay_intent_id       = 'pi_failed';
+		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoice_id, $wcpay_intent_id, 4 );
 		$mock_order            = WC_Helper_Order::create_order();
 		$mock_subscription     = new WC_Subscription();
 		$mock_subscription->set_parent( $mock_order );
@@ -327,7 +335,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	 *
 	 * @return array
 	 */
-	private function get_mock_test_body( $subscription_id = 'sub_test1234', $customer_id = 'cust_test1234', $invoice_id = 'ii_test1234', $attempt_count = 1 ) {
+	private function get_mock_test_body( $subscription_id = 'sub_test1234', $customer_id = 'cust_test1234', $invoice_id = 'ii_test1234', $payment_intent_id = 'pi_test1234', $attempt_count = 1 ) {
 		return [
 			'data' => [
 				'object' => [
@@ -335,7 +343,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 					'customer'       => $customer_id,
 					'discounts'      => [],
 					'id'             => $invoice_id,
-					'payment_intent' => 'pi_xxxx',
+					'payment_intent' => $payment_intent_id,
 					'lines'          => [
 						'data' => [],
 					],
