@@ -99,7 +99,7 @@ const SingleCurrencySettings = () => {
 				currencySettings[ currency ].manual_rate || initialManualRate
 			);
 			setPriceRoundingType(
-				currencySettings[ currency ].price_rounding ||
+				currencySettings[ currency ].price_rounding ??
 					initialPriceRoundingType
 			);
 			setPriceCharmType(
@@ -374,11 +374,9 @@ const SingleCurrencySettings = () => {
 											{ /* eslint-disable jsx-a11y/no-onchange */ }
 											<select
 												value={
-													'none' === priceRoundingType
-														? 'none'
-														: parseFloat(
-																priceRoundingType
-														  )
+													parseFloat(
+														priceRoundingType
+													) || 'none'
 												}
 												data-testid={ 'price_rounding' }
 												onChange={ ( event ) =>
@@ -394,11 +392,9 @@ const SingleCurrencySettings = () => {
 													return (
 														<option
 															value={
-																'none' === value
-																	? value
-																	: parseFloat(
-																			value
-																	  )
+																parseFloat(
+																	value
+																) || 'none'
 															}
 															key={ value }
 														>
