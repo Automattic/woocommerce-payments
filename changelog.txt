@@ -11,6 +11,7 @@
 * Update - Remove unused "wcpay_deposits_summary_empty_state_click" track.
 * Fix - Applied sentence case on all strings
 * Fix - Missing customer information after guest checkout via Checkout Block
+* Fix - Show correct payment method name during checkout using upe methods.
 * Fix - Allow payment_intent_succeeded webhook to handle orders without intent_id attached.
 
 = 3.1.0 - 2021-10-06 =
