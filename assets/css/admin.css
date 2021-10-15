@@ -119,3 +119,7 @@
 	border: 1px solid #ddd;
 	border-radius: 2px;
 }
+
+.woocommerce-payments-page .woocommerce-inbox-message .components-dropdown {
+	position: absolute;
+}

@@ -106,6 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Inconsistent shipping options in Payment Request popup.
 * Fix - Border style not being applied properly on Multi-Currency block widget.
 * Fix - Applied sentence case on all strings
+* Fix - Missing customer information after guest checkout via Checkout Block
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
