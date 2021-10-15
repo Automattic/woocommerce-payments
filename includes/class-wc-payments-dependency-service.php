@@ -36,16 +36,17 @@ class WC_Payments_Dependency_Service {
 		try {
 
 			self::is_woo_core_active();
-			self::is_woo_core_outdated();
+			self::is_woo_core_version_compatible();
 			self::is_wc_admin_enabled();
-			self::is_wc_admin_outdated();
-			self::is_wp_outdated();
+			self::is_wc_admin_version_compatible();
+			self::is_wp_version_compatible();
 		} catch ( Invalid_Dependency_Exception $e ) {
 			$res['passed']  = false;
 			$res['message'] = $e->getMessage();
 		} finally {
 			return $res;
 		}
+
 	}
 
 	/**
@@ -90,7 +91,7 @@ class WC_Payments_Dependency_Service {
 	 *
 	 * @throws Invalid_Dependency_Exception If this dependency check does not pass.
 	 */
-	public static function is_woo_core_outdated() {
+	public static function is_woo_core_version_compatible() {
 
 		$plugin_headers = WC_Payments::get_plugin_headers();
 		$wc_version     = $plugin_headers['WCRequires'];
@@ -132,8 +133,8 @@ class WC_Payments_Dependency_Service {
 			if ( ! self::has_cached_account_connection() ) {
 				throw new Invalid_Dependency_Exception( $error_message );
 			};
-			return $res;
 		}
+		return true;
 	}
 
 	/**
@@ -166,11 +167,11 @@ class WC_Payments_Dependency_Service {
 	 *
 	 * @throws Invalid_Dependency_Exception If this dependency check does not pass.
 	 */
-	public static function is_wc_admin_outdated() {
+	public static function is_wc_admin_version_compatible() {
 
 		// Check if the version of WooCommerce Admin is compatible with WooCommerce Payments.
 		if ( version_compare( WC_ADMIN_VERSION_NUMBER, WCPAY_MIN_WC_ADMIN_VERSION, '<' ) ) {
-			$res['message'] = WC_Payments_Utils::esc_interpolated_html(
+			$error_message = WC_Payments_Utils::esc_interpolated_html(
 				sprintf(
 					/* translators: %1: required WC-Admin version number, %2: currently installed WC-Admin version number */
 					__( 'WooCommerce Payments requires <strong>WooCommerce Admin %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
@@ -181,11 +182,11 @@ class WC_Payments_Dependency_Service {
 			);
 
 			// Let's assume for now that any WC-Admin version bundled with WooCommerce will meet our minimum requirements.
-			$res['message'] .= ' ' . __( 'There is a newer version of WooCommerce Admin bundled with WooCommerce.', 'woocommerce-payments' );
+			$error_message .= ' ' . __( 'There is a newer version of WooCommerce Admin bundled with WooCommerce.', 'woocommerce-payments' );
 
 			if ( current_user_can( 'deactivate_plugins' ) ) {
-				$deactivate_url  = wp_nonce_url( admin_url( 'plugins.php?action=deactivate&plugin=woocommerce-admin/woocommerce-admin.php' ), 'deactivate-plugin_woocommerce-admin/woocommerce-admin.php' );
-				$res['message'] .= ' <a href="' . $deactivate_url . '">' . __( 'Use the bundled version of WooCommerce Admin', 'woocommerce-payments' ) . '</a>';
+				$deactivate_url = wp_nonce_url( admin_url( 'plugins.php?action=deactivate&plugin=woocommerce-admin/woocommerce-admin.php' ), 'deactivate-plugin_woocommerce-admin/woocommerce-admin.php' );
+				$error_message .= ' <a href="' . $deactivate_url . '">' . __( 'Use the bundled version of WooCommerce Admin', 'woocommerce-payments' ) . '</a>';
 			}
 
 			/**
@@ -194,9 +195,11 @@ class WC_Payments_Dependency_Service {
 			 *
 			 * @since 3.1.0
 			 */
-			$res['passed'] = self::has_cached_account_connection();
-			return $res;
+			if ( ! self::has_cached_account_connection() ) {
+				throw new Invalid_Dependency_Exception( $error_message );
+			};
 		}
+		return true;
 	}
 
 	/**
@@ -206,7 +209,7 @@ class WC_Payments_Dependency_Service {
 	 *
 	 * @throws Invalid_Dependency_Exception If this dependency check does not pass.
 	 */
-	public static function is_wp_outdated() {
+	public static function is_wp_version_compatible() {
 
 		$plugin_headers = WC_Payments::get_plugin_headers();
 		$wp_version     = $plugin_headers['RequiresWP'];

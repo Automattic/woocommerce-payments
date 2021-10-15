@@ -155,6 +155,8 @@ class WC_Payments {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
+
+		include_once __DIR__ . '/exceptions/class-invalid-dependency-exception.php';
 		include_once __DIR__ . '/class-wc-payments-dependency-service.php';
 
 		$check   = WC_Payments_Dependency_Service::check_plugin_dependencies();
