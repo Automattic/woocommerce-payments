@@ -281,7 +281,7 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 			new DateTime(),
 			'succeeded', // Intent status.
 			'charge_id',
-			'client_secret',
+			'client_secret'
 		);
 
 		$this->mock_api_client
