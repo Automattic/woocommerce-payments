@@ -251,9 +251,9 @@ class WC_Payments_Subscription_Service {
 	 */
 	public static function format_item_price_data( string $currency, string $wcpay_product_id, float $unit_amount, string $interval = '', int $interval_count = 0 ) : array {
 		$data = [
-			'currency'    => $currency,
-			'product'     => $wcpay_product_id,
-			'unit_amount' => (int) $unit_amount * 100,
+			'currency'            => $currency,
+			'product'             => $wcpay_product_id,
+			'unit_amount_decimal' => $unit_amount * 100,
 		];
 
 		if ( $interval && $interval_count ) {
@@ -670,7 +670,7 @@ class WC_Payments_Subscription_Service {
 		$additional_items = array_merge( $subscription->get_fees(), $subscription->get_shipping_methods() );
 
 		foreach ( $additional_items as $item ) {
-			$wcpay_item_id = $this->product_service->get_stripe_product_id_for_item( $item->get_type() );
+			$wcpay_item_id = $this->product_service->get_wcpay_product_id_for_item( $item->get_type() );
 			$unit_amount   = $item->get_total();
 
 			if ( $unit_amount ) {
@@ -710,7 +710,7 @@ class WC_Payments_Subscription_Service {
 			$one_time_shipping = WC_Subscriptions_Product::needs_one_time_shipping( $product );
 
 			if ( $sign_up_fee ) {
-				$wcpay_item_id = $this->product_service->get_stripe_product_id_for_item( 'sign_up_fee' );
+				$wcpay_item_id = $this->product_service->get_wcpay_product_id_for_item( 'sign_up_fee' );
 				$data[]        = [
 					'price_data' => $this->format_item_price_data( $currency, $wcpay_item_id, $sign_up_fee ),
 					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
@@ -718,7 +718,7 @@ class WC_Payments_Subscription_Service {
 			}
 
 			if ( $one_time_shipping ) {
-				$wcpay_item_id = $this->product_service->get_stripe_product_id_for_item( 'shipping' );
+				$wcpay_item_id = $this->product_service->get_wcpay_product_id_for_item( 'shipping' );
 				$shipping      = 0;
 
 				foreach ( $subscription->get_parent()->get_shipping_methods() as $shipping_method ) {
