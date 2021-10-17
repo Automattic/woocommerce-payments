@@ -11,7 +11,6 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies.
  */
-import createAdditionalMethodsSetupTask from '../../additional-methods-setup/task';
 import createMultiCurrencySetupTask from '../../multi-currency-setup/task';
 import wcpayTracks from 'tracks';
 
@@ -30,7 +29,6 @@ const getDisputesToResolve = ( disputes ) => {
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
-	additionalMethodsSetup = {},
 	multiCurrencySetup = {},
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
@@ -132,8 +130,6 @@ export const getTasks = ( {
 				isDismissable: true,
 				allowRemindMeLater: true,
 			},
-		additionalMethodsSetup.isTaskVisible &&
-			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
 		multiCurrencySetup.isTaskVisible &&
 			createMultiCurrencySetupTask( multiCurrencySetup ),
 		isDisputeTaskVisible && {
