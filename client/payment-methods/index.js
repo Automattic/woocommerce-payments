@@ -67,7 +67,7 @@ const UpeSetupBanner = () => {
 		setIsUpeEnabled( true ).then( () => {
 			window.location.href = addQueryArgs( 'admin.php', {
 				page: 'wc-admin',
-				task: 'woocommerce-payments--additional-payment-methods',
+				path: '/payments/additional-payment-methods',
 			} );
 		} );
 	};
