@@ -22,6 +22,7 @@ import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
 import DisputeDetailsPage from 'disputes/details';
 import DisputeEvidencePage from 'disputes/evidence';
+import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
 import OverviewPage from 'overview';
 import { getTasks } from 'overview/task-list/tasks';
 
@@ -137,6 +138,15 @@ addFilter(
 					__( 'Disputes', 'woocommerce-payments' ),
 				],
 				__( 'Challenge dispute', 'woocommerce-payments' ),
+			],
+		} );
+		pages.push( {
+			container: AdditionalMethodsPage,
+			path: '/payments/additional-payment-methods',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Add additional payment methods', 'woocommerce-payments' ),
 			],
 		} );
 		return pages;
