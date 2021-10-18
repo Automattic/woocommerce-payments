@@ -205,6 +205,7 @@ const composeFeeString = ( event ) => {
 		percentage,
 		fixed,
 		fixed_currency: fixedCurrency,
+		history,
 	} = event.fee_rates;
 	let feeAmount = event.fee;
 	let feeCurrency = event.currency;
@@ -214,11 +215,22 @@ const composeFeeString = ( event ) => {
 		feeCurrency = event.transaction_details.store_currency;
 	}
 
+	const baseFeeLabel = isBaseFeeOnly( event )
+		? __( 'Base fee', 'woocommerce-payments' )
+		: __( 'Fee', 'woocommerce-payments' );
+
+	if ( isBaseFeeOnly( event ) && history[ 0 ].capped ) {
+		return sprintf(
+			'%1$s (capped at %2$s): %3$s',
+			baseFeeLabel,
+			formatCurrency( fixed, fixedCurrency ),
+			formatCurrency( -feeAmount, feeCurrency )
+		);
+	}
+
 	return sprintf(
 		'%1$s (%2$f%% + %3$s): %4$s',
-		isBaseFeeOnly( event )
-			? __( 'Base fee', 'woocommerce-payments' )
-			: __( 'Fee', 'woocommerce-payments' ),
+		baseFeeLabel,
 		formatFee( percentage ),
 		formatCurrency( fixed, fixedCurrency ),
 		formatCurrency( -feeAmount, feeCurrency )
