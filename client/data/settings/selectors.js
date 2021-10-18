@@ -91,6 +91,10 @@ export const getIsWCPaySubscriptionsEnabled = ( state ) => {
 	return getSettings( state ).is_wcpay_subscriptions_enabled || false;
 };
 
-export const getIsWCPaySubscriptionsAvailable = ( state ) => {
-	return getSettings( state ).is_wcpay_subscriptions_available || false;
+export const getIsWCPaySubscriptionsEligible = ( state ) => {
+	return getSettings( state ).is_wcpay_subscriptions_eligible || false;
+};
+
+export const getIsSubscriptionsPluginActive = ( state ) => {
+	return getSettings( state ).is_subscriptions_plugin_active || false;
 };

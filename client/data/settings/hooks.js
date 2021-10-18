@@ -100,15 +100,18 @@ export const useWCPaySubscriptions = () => {
 		( select ) => {
 			const {
 				getIsWCPaySubscriptionsEnabled,
-				getIsWCPaySubscriptionsAvailable,
+				getIsWCPaySubscriptionsEligible,
+				getIsSubscriptionsPluginActive,
 			} = select( STORE_NAME );
 
 			const isWCPaySubscriptionsEnabled = getIsWCPaySubscriptionsEnabled();
-			const isWCPaySubscriptionsAvailable = getIsWCPaySubscriptionsAvailable();
+			const isWCPaySubscriptionsEligible = getIsWCPaySubscriptionsEligible();
+			const isSubscriptionsPluginActive = getIsSubscriptionsPluginActive();
 
 			return [
 				isWCPaySubscriptionsEnabled,
-				isWCPaySubscriptionsAvailable,
+				isWCPaySubscriptionsEligible,
+				isSubscriptionsPluginActive,
 				updateIsWCPaySubscriptionsEnabled,
 			];
 		},

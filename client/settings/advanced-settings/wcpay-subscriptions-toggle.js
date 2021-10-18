@@ -14,7 +14,8 @@ import interpolateComponents from 'interpolate-components';
 const WCPaySubscriptionsToggle = () => {
 	const [
 		isWCPaySubscriptionsEnabled,
-		isWCPaySubscriptionsAvailable,
+		isWCPaySubscriptionsEligible,
+		isSubscriptionsPluginActive,
 		updateIsWCPaySubscriptionsEnabled,
 	] = useWCPaySubscriptions();
 
@@ -30,7 +31,8 @@ const WCPaySubscriptionsToggle = () => {
 		updateIsWCPaySubscriptionsEnabled( value );
 	};
 
-	return isWCPaySubscriptionsAvailable || isWCPaySubscriptionsEnabled ? (
+	return ! isSubscriptionsPluginActive &&
+		( isWCPaySubscriptionsEligible || isWCPaySubscriptionsEnabled ) ? (
 		<CheckboxControl
 			label={ __(
 				'Enable Subscriptions with WooCommerce Payments',
