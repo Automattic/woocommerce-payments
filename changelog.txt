@@ -9,8 +9,8 @@
 * Update - Fee breakdown when there's only a base fee
 * Fix - Inconsistent shipping options in Payment Request popup.
 * Update - Remove unused "wcpay_deposits_summary_empty_state_click" track.
-* Fix - Applied sentence case on all strings
-* Fix - Missing customer information after guest checkout via Checkout Block
+* Fix - Applied sentence case on all strings.
+* Fix - Missing customer information after guest checkout via Checkout Block.
 * Fix - Show correct payment method name during checkout using upe methods.
 * Update - display fees per payment method on overview page.
 

@@ -49,10 +49,16 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client  WooCommerce Payments API client.
 	 * @param WC_Payments_Product_Service $product_service      Product Service.
+	 * @param WC_Payment_Gateway_WCPay    $gateway              WC payments Payment Gateway.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Product_Service $product_service ) {
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Product_Service $product_service,
+		WC_Payment_Gateway_WCPay $gateway
+	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->product_service     = $product_service;
+		$this->gateway             = $gateway;
 
 		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'maybe_record_invoice_payment' ], 10, 1 );
 		add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'maybe_record_invoice_payment' ], 11, 1 );
@@ -223,6 +229,31 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
+	 * Retrieves the intent object and adds its data to the order.
+	 *
+	 * @param WC_Order $order The order to update.
+	 * @param string   $intent_id The intent ID.
+	 */
+	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
+		try {
+			$intent_object = $this->payments_api_client->get_intent( $intent_id );
+		} catch ( API_Exception $e ) {
+			$order->add_order_note( __( 'The payment info couldn\'t be added to the order.', 'woocommerce-payments' ) );
+			return;
+		}
+
+		$this->gateway->attach_intent_info_to_order(
+			$order,
+			$intent_id,
+			$intent_object->get_status(),
+			$intent_object->get_payment_method_id(),
+			$intent_object->get_customer_id(),
+			$intent_object->get_charge_id(),
+			$intent_object->get_currency()
+		);
+	}
+
+	/**
 	 * Sets the subscription last invoice ID meta for WC subscription.
 	 *
 	 * @param WC_Subscription $subscription The subscription.
@@ -279,7 +310,7 @@ class WC_Payments_Invoice_Service {
 				} else {
 					$repair_data[ $subscription_item_id ]['price_data'] = WC_Payments_Subscription_Service::format_item_price_data(
 						$subscription->get_currency(),
-						$this->product_service->get_stripe_product_id_for_item( $item->get_type() ),
+						$this->product_service->get_wcpay_product_id_for_item( $item->get_type() ),
 						$item->get_total(),
 						$subscription->get_billing_period(),
 						$subscription->get_billing_interval()
