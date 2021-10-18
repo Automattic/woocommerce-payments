@@ -73,7 +73,7 @@ class WC_Payments_Subscriptions_Plugin_Notice_Manager {
 	 */
 	public function output_notice_template() {
 		if ( $this->is_admin_plugins_screen() ) {
-			wc_get_template( 'html-subscriptions-plugin-notice.php', '', [], dirname( __DIR__ ) . '/subscriptions/templates/' );
+			wc_get_template( 'html-subscriptions-plugin-notice.php', [], '', dirname( __DIR__ ) . '/subscriptions/templates/' );
 		}
 	}
 }
