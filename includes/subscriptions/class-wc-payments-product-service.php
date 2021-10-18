@@ -187,7 +187,17 @@ class WC_Payments_Product_Service {
 	 * @return array Keys to exclude.
 	 */
 	public static function exclude_meta_wcpay_product( $meta_keys ) {
-		return array_merge( $meta_keys, [ self::PRODUCT_ID_KEY, self::PRODUCT_HASH_KEY, self::PRICE_ID_KEY, self::PRICE_HASH_KEY ] );
+		return array_merge(
+			$meta_keys,
+			[
+				self::PRODUCT_HASH_KEY,
+				self::LIVE_PRODUCT_ID_KEY,
+				self::TEST_PRODUCT_ID_KEY,
+				self::PRICE_HASH_KEY,
+				self::LIVE_PRICE_ID_KEY,
+				self::TEST_PRICE_ID_KEY,
+			]
+		);
 	}
 
 	/**
