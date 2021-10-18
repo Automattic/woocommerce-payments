@@ -5,6 +5,7 @@
 * Add - UPE track on upgrade and on setting toggle.
 * Fix - Prevent currency switcher to show when enabled currencies list is empty.
 * Fix - Show currency switcher notice until customer explicitly dismisses it.
+* Update - Switch the PaymentIntent ID and the Charge ID in the order notes and transaction details pages.
 * Fix - Track 'wcpay_payment_request_settings_change' for when updating the Payment Requests setting not being recorded.
 * Update - Fee breakdown when there's only a base fee
 * Fix - Inconsistent shipping options in Payment Request popup.
