@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Fee breakdown when there's only a base fee
 * Fix - Inconsistent shipping options in Payment Request popup.
 * Fix - Missing customer information after guest checkout via Checkout Block
+* Update - display fees per payment method on overview page.
 * Fix - Allow payment_intent_succeeded webhook to handle orders without intent_id attached.
 
 = 3.1.0 - 2021-10-06 =
