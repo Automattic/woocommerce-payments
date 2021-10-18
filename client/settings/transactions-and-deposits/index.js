@@ -21,6 +21,7 @@ import {
 	useManualCapture,
 	useGetSavingError,
 	useSavedCards,
+	useCardPresentEligible,
 } from '../../data';
 import './style.scss';
 
@@ -41,6 +42,7 @@ const TransactionsAndDeposits = () => {
 	] = useAccountStatementDescriptor();
 	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
 		?.account_statement_descriptor?.message;
+	const [ isCardPresentEligible ] = useCardPresentEligible();
 
 	return (
 		<Card className="transactions-and-deposits">
@@ -68,11 +70,22 @@ const TransactionsAndDeposits = () => {
 						'Issue an authorization on checkout, and capture later',
 						'woocommerce-payments'
 					) }
-					help={ __(
-						'Charge must be captured on the order details screen within 7 days of authorization, ' +
-							'otherwise the authorization and order will be canceled.',
-						'woocommerce-payments'
-					) }
+					help={
+						<span>
+							{ __(
+								'Charge must be captured on the order details screen within 7 days of authorization, ' +
+									'otherwise the authorization and order will be canceled.',
+								'woocommerce-payments'
+							) }
+							{ isCardPresentEligible
+								? __(
+										' The setting is not applied to In-Person Payments ' +
+											'(please note that In-Person Payments should be captured within 2 days of authorization).',
+										'woocommerce-payments'
+								  )
+								: '' }
+						</span>
+					}
 				/>
 				{ customerBankStatementErrorMessage && (
 					<Notice status="error" isDismissible={ false }>

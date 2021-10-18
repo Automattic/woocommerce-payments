@@ -15,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Payments_Features {
 	const UPE_FLAG_NAME = '_wcpay_feature_upe';
 
+	const WCPAY_SUBSCRIPTIONS_FLAG_NAME = '_wcpay_feature_subscriptions';
+
 	/**
 	 * Checks whether the Giropay gateway feature is enabled
 	 *
@@ -70,7 +72,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the customer multi-currency feature is enabled
+	 * Checks whether the customer Multi-Currency feature is enabled
 	 *
 	 * @return bool
 	 */
@@ -85,6 +87,15 @@ class WC_Payments_Features {
 	 */
 	public static function is_account_overview_task_list_enabled() {
 		return get_option( '_wcpay_feature_account_overview_task_list' );
+	}
+
+	/**
+	 * Checks whether WCPay Subscriptions is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_wcpay_subscriptions_enabled() {
+		return '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
 	}
 
 	/**

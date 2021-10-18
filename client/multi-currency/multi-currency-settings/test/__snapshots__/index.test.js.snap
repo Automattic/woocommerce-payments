@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Multi Currency Settings page renders correctly: snapshot-multi-currency-setup-wizard 1`] = `
+exports[`Multi-Currency Settings page renders correctly: snapshot-multi-currency-setup-wizard 1`] = `
 Object {
   "asFragment": [Function],
   "baseElement": <body>
@@ -33,10 +33,10 @@ Object {
         class="wcpay-settings-layout"
       >
         <p>
-          Enabled Currencies List
+          Enabled currencies list
         </p>
         <p>
-          Store Settings Form
+          Store settings form
         </p>
       </div>
     </div>
@@ -46,10 +46,10 @@ Object {
       class="wcpay-settings-layout"
     >
       <p>
-        Enabled Currencies List
+        Enabled currencies list
       </p>
       <p>
-        Store Settings Form
+        Store settings form
       </p>
     </div>
   </div>,

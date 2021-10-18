@@ -119,7 +119,7 @@ const SetupComplete = () => {
 							isTertiary
 						>
 							{ __(
-								'Go to multi-currency settings',
+								'Go to Multi-Currency settings',
 								'woocommerce-payments'
 							) }
 						</Button>

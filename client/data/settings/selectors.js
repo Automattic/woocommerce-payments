@@ -82,3 +82,7 @@ export const getIsSavedCardsEnabled = ( state ) => {
 export const getSavingError = ( state ) => {
 	return getSettingsState( state ).savingError;
 };
+
+export const getIsCardPresentEligible = ( state ) => {
+	return getSettings( state ).is_card_present_eligible || false;
+};
