@@ -28,8 +28,7 @@ class WC_Payments_Dependency_Service {
 			'passed'  => true,
 		];
 
-		// @TODO remove false from check
-		if ( false && defined( 'WCPAY_TEST_ENV' ) && WCPAY_TEST_ENV ) {
+		if ( defined( 'WCPAY_TEST_ENV' ) && WCPAY_TEST_ENV ) {
 			return $res;
 		}
 
