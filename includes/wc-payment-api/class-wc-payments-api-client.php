@@ -304,6 +304,7 @@ class WC_Payments_API_Client {
 	 * @param array   $level3                    - Level 3 data.
 	 * @param string  $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
 	 * @param ?string $payment_country           - The payment two-letter iso country code or null.
+	 * @param array   $additional_parameters     - An array of any additional request parameters.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -317,7 +318,8 @@ class WC_Payments_API_Client {
 		$metadata = [],
 		$level3 = [],
 		$selected_upe_payment_type = '',
-		$payment_country = null
+		$payment_country = null,
+		$additional_parameters = []
 	) {
 		// 'receipt_email' is set to prevent Stripe from sending receipts (when intent is created outside WCPay).
 		$request = [
@@ -328,6 +330,8 @@ class WC_Payments_API_Client {
 			'level3'        => $level3,
 			'description'   => $this->get_intent_description( $metadata['order_number'] ?? 0 ),
 		];
+
+		$request = array_merge( $request, $additional_parameters );
 
 		if ( '' !== $selected_upe_payment_type ) {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.

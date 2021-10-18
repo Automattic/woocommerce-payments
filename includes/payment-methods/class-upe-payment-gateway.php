@@ -442,6 +442,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						'fraud_prevention_enabled'
 					);
 				}
+				$additional_api_parameters = $this->maybe_add_mandate_to_order_payment( $order );
 
 				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
 					// Throwing an exception instead of adding an error notice
