@@ -127,7 +127,7 @@
     </UndefinedDocblockClass>
   </file>
   <file src="includes/subscriptions/class-wc-payments-product-service.php">
-    <UndefinedClass occurrences="9">
+    <UndefinedClass occurrences="10">
       <code>WC_Subscriptions_Product</code>
     </UndefinedClass>
   </file>
@@ -151,7 +151,7 @@
       <code>WC_Subscription</code>
     </UndefinedClass>
     <UndefinedFunction occurrences="1">
-      <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' =&gt; 'parent' ] )</code>
+      <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' =&gt; [ 'parent', 'renewal' ] ] )</code>
     </UndefinedFunction>
   </file>
   <file src="includes/subscriptions/class-wc-payments-subscription-service.php">
@@ -161,8 +161,9 @@
     <UndefinedDocblockClass occurrences="2">
       <code>WC_Subscription|bool</code>
     </UndefinedDocblockClass>
-    <UndefinedFunction occurrences="3">
+    <UndefinedFunction occurrences="4">
       <code>wcs_get_subscription</code>
+      <code>wcs_get_subscriptions_for_renewal_order( $order_id )</code>
     </UndefinedFunction>
   </file>
   <file src="includes/subscriptions/class-wc-payments-subscriptions-event-handler.php">
