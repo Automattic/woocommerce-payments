@@ -856,9 +856,7 @@ class MultiCurrency {
 	 * @return float The adjusted price.
 	 */
 	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
-		if ( 'none' !== $currency->get_rounding() ) {
-			$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
-		}
+		$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
 
 		if ( $apply_charm_pricing ) {
 			$price += floatval( $currency->get_charm() );
