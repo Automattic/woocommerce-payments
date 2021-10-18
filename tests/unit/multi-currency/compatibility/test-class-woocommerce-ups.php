@@ -10,7 +10,7 @@ use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
 /**
- * WCPay\MultiCurrency\Compatibility unit tests.
+ * WCPay\MultiCurrency\Compatibility\WooCommerceUPS unit tests.
  */
 class WCPay_Multi_Currency_WooCommerceUPS_Tests extends WP_UnitTestCase {
 
@@ -29,9 +29,9 @@ class WCPay_Multi_Currency_WooCommerceUPS_Tests extends WP_UnitTestCase {
 	private $mock_utils;
 
 	/**
-	 * WCPay\MultiCurrency\WooCommerceUPS instance.
+	 * WCPay\MultiCurrency\Compatibility\WooCommerceUPS instance.
 	 *
-	 * @var WCPay\MultiCurrency\WooCommerceUPS
+	 * @var WCPay\MultiCurrency\Compatibility\WooCommerceUPS
 	 */
 	private $woocommerce_ups;
 
