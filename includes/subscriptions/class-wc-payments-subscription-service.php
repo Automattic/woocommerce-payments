@@ -262,7 +262,7 @@ class WC_Payments_Subscription_Service {
 		$data = [
 			'currency'            => $currency,
 			'product'             => $wcpay_product_id,
-			'unit_amount_decimal' => $unit_amount * 100,
+			'unit_amount_decimal' => round( $unit_amount, wc_get_rounding_precision() ) * 100,
 		];
 
 		if ( $interval && $interval_count ) {
@@ -297,6 +297,10 @@ class WC_Payments_Subscription_Service {
 		}
 
 		$tax_inclusive = wc_prices_include_tax();
+
+		if ( is_a( $item, 'WC_Order_Item_Shipping' ) ) {
+			$tax_inclusive = false;
+		}
 
 		foreach ( $subscription->get_taxes() as $tax ) {
 			if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) ) {
@@ -725,10 +729,14 @@ class WC_Payments_Subscription_Service {
 				$item_data['price_data'] = $this->format_item_price_data(
 					$subscription->get_currency(),
 					$this->product_service->get_wcpay_product_id( $product ),
-					$item_total,
+					$item->get_total() / $item->get_quantity(),
 					$subscription_period,
 					$subscription_interval
 				);
+
+				foreach ( $item_data['tax_rates'] as $index => $tax_data ) {
+					$item_data['tax_rates'][ $index ]['inclusive'] = false;
+				}
 			}
 
 			$data[] = $item_data;
