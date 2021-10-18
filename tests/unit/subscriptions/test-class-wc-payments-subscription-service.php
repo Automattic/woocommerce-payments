@@ -173,7 +173,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_wcpay_price_id );
 
 		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_stripe_product_id_for_item' )
+			->method( 'get_wcpay_product_id_for_item' )
 			->willReturn( $mock_wcpay_product_id );
 
 		$this->mock_api_client->expects( $this->once() )
@@ -451,7 +451,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->willReturn( 'wcpay_price_test123' );
 
 		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_stripe_product_id_for_item' )
+			->method( 'get_wcpay_product_id_for_item' )
 			->willReturn( 'wcpay_prod_test123' );
 
 		$expected_result = [
@@ -692,5 +692,20 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$this->subscription_service->update_dates_to_match_wcpay_subscription( $wcpay_dates, $subscription );
 
 		$this->assertEquals( $next_payment_time, $subscription->get_time( 'next_payment' ) );
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service::format_item_price_data().
+	 */
+	public function test_format_item_price_data() {
+		$expected = [
+			'currency'            => 'USD',
+			'product'             => '',
+			'unit_amount_decimal' => 1033.33,
+		];
+
+		$actual = WC_Payments_Subscription_Service::format_item_price_data( 'USD', '', 10.3333 );
+
+		$this->assertEquals( $expected, $actual );
 	}
 }

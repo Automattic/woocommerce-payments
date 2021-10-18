@@ -1217,7 +1217,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							]
 						),
 						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-						$intent_id
+						$charge_id
 					);
 					$order->add_order_note( $note );
 				}
@@ -1950,7 +1950,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								]
 							),
 							WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $order->get_currency() ] ), $order ),
-							$intent_id
+							$intent->get_charge_id()
 						);
 						$order->add_order_note( $note );
 
