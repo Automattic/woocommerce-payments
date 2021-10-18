@@ -128,6 +128,7 @@ class WC_Payments_Subscription_Service {
 		// Save the new token on the WCPay subscription when it's added to a WC subscription.
 		add_action( 'woocommerce_payment_token_added_to_order', [ $this, 'update_wcpay_subscription_payment_method' ], 10, 3 );
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'prevent_wcpay_subscription_changes' ], 10, 3 );
+		add_filter( 'woocommerce_order_actions', [ $this, 'prevent_wcpay_manual_renewal' ], 11, 1 );
 
 		add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
 	}
@@ -568,6 +569,21 @@ class WC_Payments_Subscription_Service {
 		}
 
 		return in_array( $feature, $this->supports, true ) || isset( $this->feature_support_exceptions[ $subscription->get_id() ][ $feature ] );
+	}
+
+	/**
+	 * Remove pending renewal order creation from admin edit subscriptions page.
+	 *
+	 * @param array $actions Array of available actions.
+	 * @return array Array of updated actions.
+	 */
+	public function prevent_wcpay_manual_renewal( array $actions ) {
+		global $theorder;
+
+		if ( wcs_is_subscription( $theorder ) && self::is_wcpay_subscription( $theorder ) ) {
+			unset( $actions['wcs_create_pending_renewal'] );
+		}
+		return $actions;
 	}
 
 	/**
