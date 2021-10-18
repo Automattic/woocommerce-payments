@@ -29,11 +29,11 @@ class WCPay_Multi_Currency_WooCommerceUPS_Tests extends WP_UnitTestCase {
 	private $mock_utils;
 
 	/**
-	 * WCPay\MultiCurrency\Compatibility instance.
+	 * WCPay\MultiCurrency\WooCommerceUPS instance.
 	 *
-	 * @var WCPay\MultiCurrency\Compatibility
+	 * @var WCPay\MultiCurrency\WooCommerceUPS
 	 */
-	private $compatibility;
+	private $woocommerce_ups;
 
 	/**
 	 * Pre-test setup
@@ -43,11 +43,7 @@ class WCPay_Multi_Currency_WooCommerceUPS_Tests extends WP_UnitTestCase {
 
 		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
 		$this->mock_utils          = $this->createMock( Utils::class );
-		$this->woocommerce_ups     = new WCPay\MultiCurrency\Compatibility\WooCommerceUPS( $this->mock_multi_currency, $this->mock_utils );
-	}
-
-	public function test_registers_filters_properly() {
-		$this->assertEquals( 10, has_filter( 'wcpay_multi_currency_should_return_store_currency', [ $this->woocommerce_ups, 'should_return_store_currency' ] ) );
+		$this->woocommerce_ups     = new WooCommerceUPS( $this->mock_multi_currency, $this->mock_utils );
 	}
 
 	// If true is passed, it should automatically return true.
