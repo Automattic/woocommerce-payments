@@ -99,3 +99,18 @@ export const formatMethodFeesDescription = ( methodFees ) => {
 		displayBaseFeeIfDifferent: false,
 	} );
 };
+
+export const getTransactionsPaymentMethodName = ( paymentMethod ) => {
+	switch ( paymentMethod ) {
+		case 'card':
+			return __( 'Card transactions', 'woocommerce-payments' );
+		case 'card_present':
+			return __( 'In-person transactions', 'woocommerce-payments' );
+		case 'giropay':
+			return __( 'GiroPay transactions', 'woocommerce-payments' );
+		case 'sofort':
+			return __( 'Sofort transactions', 'woocommerce-payments' );
+		default:
+			return __( 'Unknown transactions', 'woocommerce-payments' );
+	}
+};
