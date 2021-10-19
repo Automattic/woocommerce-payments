@@ -186,5 +186,10 @@
       <code>wcs_get_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) )</code>
     </UndefinedFunction>
   </file>
+  <file src="includes/class-wc-payment-gateway-wcpay.php">
+    <UndefinedFunction occurrences="1">
+      <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] )</code>
+    </UndefinedFunction>
+  </file>
 </files>
 
