@@ -51,7 +51,7 @@ class WC_Payments_Dependency_Service {
 		}
 
 		// Return cached result, if available.
-		if ( isset( $this->has_valid_dependencies ) ) {
+		if ( is_bool( $this->has_valid_dependencies ) ) {
 			return $this->has_valid_dependencies;
 		}
 
@@ -89,7 +89,7 @@ class WC_Payments_Dependency_Service {
 			return;
 		}
 
-		if ( ! $this->has_valid_dependencies() ) {
+		if ( false === $this->has_valid_dependencies() ) {
 			WC_Payments::display_admin_error( $this->get_notice_for_exception_code( $this->invalid_dependency ) );
 		}
 	}
