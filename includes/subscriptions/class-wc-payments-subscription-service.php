@@ -296,7 +296,7 @@ class WC_Payments_Subscription_Service {
 			return $tax_rates;
 		}
 
-		$tax_inclusive = wc_prices_include_tax();
+		$tax_inclusive = $subscription->get_prices_include_tax();
 
 		if ( is_a( $item, 'WC_Order_Item_Shipping' ) ) {
 			$tax_inclusive = false;
@@ -661,7 +661,7 @@ class WC_Payments_Subscription_Service {
 	private function prepare_wcpay_subscription_data( string $wcpay_customer_id, WC_Subscription $subscription ) {
 		$recurring_items = $this->get_recurring_item_data_for_subscription( $subscription );
 		$one_time_items  = $this->get_one_time_item_data_for_subscription( $subscription );
-		$discount_items  = self::get_discount_item_data_for_subscription( $subscription, true );
+		$discount_items  = self::get_discount_item_data_for_subscription( $subscription, (bool) $subscription->get_parent_id() );
 		$data            = [
 			'customer' => $wcpay_customer_id,
 			'items'    => $recurring_items,
