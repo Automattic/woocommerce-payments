@@ -572,7 +572,7 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Remove pending renewal order creation from admin edit subscriptions page.
+	 * Remove pending parent and renewal order creation from admin edit subscriptions page.
 	 *
 	 * @param array $actions Array of available actions.
 	 * @return array Array of updated actions.
@@ -581,7 +581,9 @@ class WC_Payments_Subscription_Service {
 		global $theorder;
 
 		if ( wcs_is_subscription( $theorder ) && self::is_wcpay_subscription( $theorder ) ) {
+			unset( $actions['wcs_create_pending_parent'] );
 			unset( $actions['wcs_create_pending_renewal'] );
+			unset( $actions['wcs_process_renewal'] );
 		}
 		return $actions;
 	}
