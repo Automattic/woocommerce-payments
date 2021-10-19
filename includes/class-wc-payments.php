@@ -114,6 +114,13 @@ class WC_Payments {
 	private static $localization_service;
 
 	/**
+	 * Instance of WC_Payments_Dependency_Service, created in init function
+	 *
+	 * @var WC_Payments_Dependency_Service
+	 */
+	private static $dependency_service;
+
+	/**
 	 * Instance of WC_Payments_Fraud_Service, created in init function
 	 *
 	 * @var WC_Payments_Fraud_Service
@@ -159,25 +166,9 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-invalid-dependency-exception.php';
 		include_once __DIR__ . '/class-wc-payments-dependency-service.php';
 
-		$check   = WC_Payments_Dependency_Service::check_plugin_dependencies();
-		$message = $check['message'];
-		$passed  = $check['passed'];
+		self::$dependency_service = new WC_Payments_Dependency_Service();
 
-		if ( null !== $message ) {
-			add_action(
-				'admin_notices',
-				function() use ( $message ) {
-					// Do not show alerts while installing plugins.
-					if ( self::is_at_plugin_install_page() ) {
-						return;
-					}
-
-					self::display_admin_error( $message );
-				}
-			);
-		}
-
-		if ( false === $passed ) {
+		if ( false === self::$dependency_service->has_valid_dependencies() ) {
 			return;
 		}
 
@@ -387,16 +378,6 @@ class WC_Payments {
 			);
 		}
 		return self::$plugin_headers;
-	}
-
-	/**
-	 * Checks if current page is plugin installation process page.
-	 *
-	 * @return bool True when installing plugin.
-	 */
-	private static function is_at_plugin_install_page() {
-		$cur_screen = get_current_screen();
-		return 'update' === $cur_screen->id && 'plugins' === $cur_screen->parent_base;
 	}
 
 	/**
