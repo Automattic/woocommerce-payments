@@ -20,6 +20,16 @@ export const useSavedCards = () => {
 	return [ isSavedCardsEnabled, updateIsSavedCardsEnabled ];
 };
 
+export const useCardPresentEligible = () => {
+	const { updateIsCardPresentEligible } = useDispatch( STORE_NAME );
+
+	const isCardPresentEligible = useSelect( ( select ) => {
+		return select( STORE_NAME ).getIsCardPresentEligible();
+	}, [] );
+
+	return [ isCardPresentEligible, updateIsCardPresentEligible ];
+};
+
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
@@ -80,6 +90,32 @@ export const useMultiCurrency = () => {
 			return [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ];
 		},
 		[ updateIsMultiCurrencyEnabled ]
+	);
+};
+
+export const useWCPaySubscriptions = () => {
+	const { updateIsWCPaySubscriptionsEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const {
+				getIsWCPaySubscriptionsEnabled,
+				getIsWCPaySubscriptionsEligible,
+				getIsSubscriptionsPluginActive,
+			} = select( STORE_NAME );
+
+			const isWCPaySubscriptionsEnabled = getIsWCPaySubscriptionsEnabled();
+			const isWCPaySubscriptionsEligible = getIsWCPaySubscriptionsEligible();
+			const isSubscriptionsPluginActive = getIsSubscriptionsPluginActive();
+
+			return [
+				isWCPaySubscriptionsEnabled,
+				isWCPaySubscriptionsEligible,
+				isSubscriptionsPluginActive,
+				updateIsWCPaySubscriptionsEnabled,
+			];
+		},
+		[ updateIsWCPaySubscriptionsEnabled ]
 	);
 };
 

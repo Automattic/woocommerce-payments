@@ -10,7 +10,7 @@ namespace WCPay\MultiCurrency;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that controls Multi Currency Tracking functionality.
+ * Class that controls Multi-Currency Tracking functionality.
  */
 class Tracking {
 	/**
@@ -132,7 +132,7 @@ class Tracking {
 				LEFT JOIN
 					{$wpdb->prefix}postmeta order_meta ON order_meta.post_id = orders.id
                 INNER JOIN
-					{$wpdb->prefix}postmeta mc_meta ON mc_meta.post_id = orders.id 
+					{$wpdb->prefix}postmeta mc_meta ON mc_meta.post_id = orders.id
                     AND mc_meta.meta_key = '_wcpay_multi_currency_order_exchange_rate'
 				WHERE orders.post_type = 'shop_order'
 					AND orders.post_status in ( 'wc-completed', 'wc-processing', 'wc-refunded' )

@@ -80,6 +80,13 @@ class CurrencySwitcherWidget extends WC_Widget {
 		if ( $this->compatibility->should_hide_widgets() ) {
 			return;
 		}
+
+		$enabled_currencies = $this->multi_currency->get_enabled_currencies();
+
+		if ( 1 === count( $enabled_currencies ) ) {
+			return;
+		}
+
 		$instance = wp_parse_args(
 			$instance,
 			self::DEFAULT_SETTINGS
@@ -101,7 +108,7 @@ class CurrencySwitcherWidget extends WC_Widget {
 				onchange="this.form.submit()"
 			>
 				<?php
-				foreach ( $this->multi_currency->get_enabled_currencies() as $currency ) {
+				foreach ( $enabled_currencies as $currency ) {
 					$this->display_currency_option( $currency, $instance['symbol'], $instance['flag'] );
 				}
 				?>

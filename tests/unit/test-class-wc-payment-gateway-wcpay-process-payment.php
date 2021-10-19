@@ -231,10 +231,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'add_order_note' )
 			->with(
 				$this->callback(
-					function( $note ) use ( $intent_id, $total ) {
+					function( $note ) use ( $charge_id, $total ) {
 						return (
 						strpos( $note, 'successfully charged' )
-						&& strpos( $note, $intent_id )
+						&& strpos( $note, $charge_id )
 						&& strpos( $note, strval( $total ) )
 						);
 					}

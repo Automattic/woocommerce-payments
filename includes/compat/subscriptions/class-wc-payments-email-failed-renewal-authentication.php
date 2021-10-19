@@ -29,7 +29,7 @@ class WC_Payments_Email_Failed_Renewal_Authentication extends WC_Email {
 	 */
 	public function __construct( $email_classes = [] ) {
 		$this->id             = 'failed_renewal_authentication';
-		$this->title          = __( 'Failed Subscription Renewal SCA Authentication', 'woocommerce-payments' );
+		$this->title          = __( 'Failed subscription renewal SCA authentication', 'woocommerce-payments' );
 		$this->description    = __( 'Sent to a customer when a renewal fails because the transaction requires an SCA verification. The email contains renewal order information and payment links.', 'woocommerce-payments' );
 		$this->customer_email = true;
 
@@ -113,7 +113,7 @@ class WC_Payments_Email_Failed_Renewal_Authentication extends WC_Email {
 
 		$this->form_fields = [
 			'enabled'    => [
-				'title'   => _x( 'Enable/Disable', 'an email notification', 'woocommerce-payments' ),
+				'title'   => _x( 'Enable/disable', 'an email notification', 'woocommerce-payments' ),
 				'type'    => 'checkbox',
 				'label'   => __( 'Enable this email notification', 'woocommerce-payments' ),
 				'default' => 'yes',

@@ -674,7 +674,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
               aria-busy="true"
               class="is-loadable-placeholder"
             >
-              Payment ID: ch_xxxxxxxxxxxxxxxxxxxxxxxx
+              Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx
             </span>
           </div>
         </div>

@@ -190,6 +190,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get card present eligible flag account
+	 *
+	 * @return bool
+	 */
+	public function is_card_present_eligible() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['card_present_eligible'] ) ? $account['card_present_eligible'] : false;
+	}
+
+	/**
 	 * Gets the current account fees for rendering on the settings page.
 	 *
 	 * @return array Fees.

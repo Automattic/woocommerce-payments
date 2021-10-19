@@ -121,32 +121,28 @@ exports[`AccountStatus renders normal status 1`] = `
           </span>
         </div>
       </div>
-      <div
-        class="components-flex woocommerce-account-status-item css-1k5rnjg-Flex eboqfv50"
-        direction="row"
-      >
-        <div
-          class="components-flex__item item-label css-1s295sp-Item eboqfv51"
+      <h4>
+        Active discounts
+      </h4>
+      <p>
+        Card transactions
+        :
+      </p>
+      Euro 
+      (EUR) 
+      <s>
+        2.9% + €0,00 per transaction
+      </s>
+       2.9% + €0,30 per transaction
+      <p>
+        <a
+          href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
+          rel="noopener noreferrer"
+          target="_blank"
         >
-          Base Fee:
-        </div>
-        <div
-          class="components-flex__block item-value css-yr442k-Item-Block eboqfv52"
-        >
-          Euro 
-          (EUR) 
-          2.9% + €0,00 per transaction
-          <p>
-            <a
-              href="https://docs.woocommerce.com/document/payments/faq/fees/"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Learn more
-            </a>
-          </p>
-        </div>
-      </div>
+          Learn more
+        </a>
+      </p>
     </div>
   </div>
 </div>

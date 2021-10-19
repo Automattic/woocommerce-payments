@@ -45,6 +45,11 @@ class WC_Payments_API_Client {
 	const PAYMENT_METHODS_API    = 'payment_methods';
 	const SETUP_INTENTS_API      = 'setup_intents';
 	const TRACKING_API           = 'tracking';
+	const PRODUCTS_API           = 'products';
+	const PRICES_API             = 'products/prices';
+	const INVOICES_API           = 'invoices';
+	const SUBSCRIPTIONS_API      = 'subscriptions';
+	const SUBSCRIPTION_ITEMS_API = 'subscriptions/items';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -980,6 +985,179 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Create a product.
+	 *
+	 * @param array $product_data Product data.
+	 *
+	 * @return array The created product's product and price IDs.
+	 *
+	 * @throws API_Exception Error creating the product.
+	 */
+	public function create_product( array $product_data ): array {
+		return $this->request(
+			$product_data,
+			self::PRODUCTS_API,
+			self::POST
+		);
+	}
+
+	/**
+	 * Update a product.
+	 *
+	 * @param string $product_id    ID of product to update.
+	 * @param array  $product_data  Data to be updated.
+	 *
+	 * @return array The updated product's product and/or price IDs.
+	 *
+	 * @throws API_Exception Error updating product.
+	 */
+	public function update_product( string $product_id, array $product_data = [] ) : array {
+		if ( null === $product_id || '' === trim( $product_id ) ) {
+			throw new API_Exception(
+				__( 'Product ID is required', 'woocommerce-payments' ),
+				'wcpay_mandatory_product_id_missing',
+				400
+			);
+		}
+
+		return $this->request(
+			$product_data,
+			self::PRODUCTS_API . '/' . $product_id,
+			self::POST
+		);
+	}
+
+	/**
+	 * Update a price.
+	 *
+	 * @param string $price_id    ID of price to update.
+	 * @param array  $price_data  Data to be updated.
+	 *
+	 * @throws API_Exception Error updating price.
+	 */
+	public function update_price( string $price_id, array $price_data = [] ) {
+		if ( null === $price_id || '' === trim( $price_id ) ) {
+			throw new API_Exception(
+				__( 'Price ID is required', 'woocommerce-payments' ),
+				'wcpay_mandatory_price_id_missing',
+				400
+			);
+		}
+
+		$this->request(
+			$price_data,
+			self::PRICES_API . '/' . $price_id,
+			self::POST
+		);
+	}
+
+	/**
+	 * Charges an invoice.
+	 *
+	 * Calling this function charges the customer. Pass the param 'paid_out_of_band' => true to mark the invoice as paid without charging the customer.
+	 *
+	 * @param string $invoice_id ID of the invoice to charge.
+	 * @param array  $data       Parameters to send to the invoice /pay endpoint. Optional. Default is an empty array.
+	 * @return array
+	 *
+	 * @throws API_Exception Error charging the invoice.
+	 */
+	public function charge_invoice( string $invoice_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::INVOICES_API . '/' . $invoice_id . '/pay',
+			self::POST
+		);
+	}
+
+	/**
+	 * Fetch a WCPay subscription.
+	 *
+	 * @param string $wcpay_subscription_id Data used to create subscription.
+	 *
+	 * @return array The WCPay subscription.
+	 *
+	 * @throws API_Exception If fetching the subscription fails.
+	 */
+	public function get_subscription( string $wcpay_subscription_id ) {
+		return $this->request(
+			[],
+			self::SUBSCRIPTIONS_API . '/' . $wcpay_subscription_id,
+			self::GET
+		);
+	}
+
+	/**
+	 * Create a WCPay subscription.
+	 *
+	 * @param array $data Data used to create subscription.
+	 *
+	 * @return array New WCPay subscription.
+	 *
+	 * @throws API_Exception If creating the subscription fails.
+	 */
+	public function create_subscription( array $data = [] ) {
+		return $this->request(
+			$data,
+			self::SUBSCRIPTIONS_API,
+			self::POST
+		);
+	}
+
+	/**
+	 * Update a WCPay subscription.
+	 *
+	 * @param string $wcpay_subscription_id WCPay subscription ID.
+	 * @param array  $data                  Update subscription data.
+	 *
+	 * @return array Updated WCPay subscription response from server.
+	 *
+	 * @throws API_Exception If updating the WCPay subscription fails.
+	 */
+	public function update_subscription( $wcpay_subscription_id, $data ) {
+		return $this->request(
+			$data,
+			self::SUBSCRIPTIONS_API . '/' . $wcpay_subscription_id,
+			self::POST
+		);
+	}
+
+	/**
+	 * Cancel a WC Pay subscription.
+	 *
+	 * @param string $wcpay_subscription_id WCPay subscription ID.
+	 *
+	 * @return array Canceled subscription.
+	 *
+	 * @throws API_Exception If canceling the subscription fails.
+	 */
+	public function cancel_subscription( string $wcpay_subscription_id ) {
+		return $this->request(
+			[],
+			self::SUBSCRIPTIONS_API . '/' . $wcpay_subscription_id,
+			self::DELETE
+		);
+	}
+
+	/**
+	 * Update a WCPay subscription item.
+	 *
+	 * @param string $wcpay_subscription_item_id WCPay subscription item ID.
+	 * @param array  $data                       Update subscription item data.
+	 *
+	 * @return array Updated WCPay subscription item response from server.
+	 *
+	 * @throws API_Exception If updating the WCPay subscription item fails.
+	 */
+	public function update_subscription_item( $wcpay_subscription_item_id, $data ) {
+		return $this->request(
+			$data,
+			self::SUBSCRIPTION_ITEMS_API . '/' . $wcpay_subscription_item_id,
+			self::POST
+		);
+	}
+
+	/**
 	 * Get payment method details.
 	 *
 	 * @param string $payment_method_id Payment method ID.
@@ -1309,8 +1487,12 @@ class WC_Payments_API_Client {
 
 		$body = null;
 
-		if ( self::GET === $method ) {
-			$url .= '?' . http_build_query( $params );
+		$redacted_params = WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT );
+		$redacted_url    = $url;
+
+		if ( in_array( $method, [ self::GET, self::DELETE ], true ) ) {
+			$url          .= '?' . http_build_query( $params );
+			$redacted_url .= '?' . http_build_query( $redacted_params );
 		} else {
 			// Encode the request body as JSON.
 			$body = wp_json_encode( $params );
@@ -1328,11 +1510,11 @@ class WC_Payments_API_Client {
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
 		$headers['User-Agent']   = $this->user_agent;
 
-		Logger::log( "REQUEST $method $url" );
-		if ( 'POST' === $method || 'PUT' === $method ) {
+		Logger::log( "REQUEST $method $redacted_url" );
+		if ( null !== $body ) {
 			Logger::log(
 				'BODY: '
-				. var_export( WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+				. var_export( $redacted_params, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 			);
 		}
 
