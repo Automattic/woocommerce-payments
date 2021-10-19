@@ -680,7 +680,7 @@ class WC_Payments_Subscription_Service {
 		}
 
 		if ( $this->is_creating_subscription_from_update_payment_method ) {
-			$data['backdate_start_date']  = max( $subscription->get_time( 'last_order_date_created' ), $subscription->get_time( 'last_order_date_paid' ) );
+			$data['backdate_start_date']  = max( $subscription->get_time( 'start' ), $subscription->get_time( 'last_order_date_created' ), $subscription->get_time( 'last_order_date_paid' ) );
 			$data['billing_cycle_anchor'] = $subscription->get_time( 'next_payment' );
 		}
 
