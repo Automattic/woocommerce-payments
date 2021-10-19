@@ -159,4 +159,63 @@ describe( 'PaymentDetailsTimeline', () => {
 
 		expect( container ).toMatchSnapshot();
 	} );
+
+	test( 'renders subscription fee correctly', () => {
+		// Mock all the possible events.
+		useTimeline.mockReturnValue( {
+			timeline: [
+				{
+					type: 'captured',
+					amount: 100,
+					fee: 34,
+					fee_rates: {
+						percentage: 0.039,
+						fixed: 30,
+						fixed_currency: 'USD',
+						history: [
+							{
+								type: 'base',
+								percentage_rate: 0.029,
+								fixed_rate: 30,
+								currency: 'usd',
+							},
+							{
+								type: 'additional',
+								additional_type: 'wcpay-subscription',
+								percentage_rate: 0.01,
+								fixed_rate: 0,
+								currency: 'usd',
+							},
+						],
+					},
+					currency: 'USD',
+					datetime: 1633375102,
+					deposit: null,
+					transaction_id: 'txn_3Jgwg6R3oniasQM30OzCiu0j',
+					transaction_details: {
+						customer_currency: 'USD',
+						customer_amount: 100,
+						customer_fee: 34,
+						store_currency: 'USD',
+						store_amount: 100,
+						store_fee: 34,
+					},
+				},
+				{
+					type: 'authorized',
+					datetime: 1633375102,
+					amount: 100,
+					currency: 'USD',
+				},
+			],
+			timelineError: null,
+			isLoading: false,
+		} );
+
+		const { container } = render(
+			<PaymentDetailsTimeline chargeId={ 'ch_test' } />
+		);
+
+		expect( container ).toMatchSnapshot();
+	} );
 } );
