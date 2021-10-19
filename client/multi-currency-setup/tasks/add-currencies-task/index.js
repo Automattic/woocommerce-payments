@@ -67,7 +67,7 @@ const ContinueButton = ( {
 			isPrimary
 		>
 			{ 0 === selectedCurrencyCodesLength
-				? __( 'Add Currencies', 'woocommerce-payments' )
+				? __( 'Add currencies', 'woocommerce-payments' )
 				: sprintf(
 						_n(
 							'Add %s currency',
@@ -263,7 +263,7 @@ const AddCurrenciesTask = () => {
 											<li>
 												<h4>
 													{ __(
-														'Recommended Currencies',
+														'Recommended currencies',
 														'woocommerce-payments'
 													) }
 												</h4>
@@ -284,7 +284,7 @@ const AddCurrenciesTask = () => {
 										<li className="add-currencies-task__available-currencies">
 											<h4>
 												{ __(
-													'All Currencies',
+													'All currencies',
 													'woocommerce-payments'
 												) }
 											</h4>

@@ -13,11 +13,12 @@
     },
     "require": {
       "php": "7.*",
-      "automattic/jetpack-connection": "1.20.0",
+      "automattic/jetpack-connection": "1.30.5",
       "automattic/jetpack-config": "1.4.3",
       "automattic/jetpack-autoloader": "2.8.0",
       "myclabs/php-enum": "1.7.7",
-      "ext-json": "*"
+      "ext-json": "*",
+      "woocommerce/subscriptions-core": "1.0.0"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
@@ -29,7 +30,7 @@
       "php-stubs/wordpress-stubs": "5.7.2",
       "php-stubs/woocommerce-stubs": "5.5.0",
       "rregeer/phpunit-coverage-check": "0.3.1",
-      "yoast/phpunit-polyfills": "^1.0"
+      "yoast/phpunit-polyfills": "1.0.1"
     },
     "scripts": {
       "test": [
@@ -58,5 +59,11 @@
       "psr-4": {
         "WCPay\\MultiCurrency\\": "includes/multi-currency"
       }
-    }
+    },
+    "repositories": [
+      {
+        "type": "vcs",
+        "url": "https://github.com/automattic/woocommerce-subscriptions-core.git"
+      }
+    ]
 }

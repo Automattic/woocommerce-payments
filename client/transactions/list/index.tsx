@@ -260,7 +260,7 @@ export const TransactionsList = (
 				),
 			},
 			type: {
-				value: txn.type,
+				value: displayType[ txn.type ],
 				display: clickable(
 					displayType[ txn.type ] || formatStringValue( txn.type )
 				),

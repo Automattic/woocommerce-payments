@@ -27,7 +27,6 @@ if ( PHP_VERSION_ID >= 80000 && file_exists( $_tests_dir . '/includes/phpunit7/M
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
 
-
 /**
  * Manually load the plugin being tested.
  */
@@ -42,6 +41,15 @@ function _manually_load_plugin() {
 	// Set a default currency to be used for the multi-currency tests because the default
 	// is not loaded even though it's set during the tests setup.
 	update_option( 'woocommerce_currency', 'USD' );
+
+	// Enable the WCPay Subscriptions feature flag in tests to ensure we can test
+	// subscriptions funtionality.
+	add_filter(
+		'pre_option__wcpay_feature_subscriptions',
+		function() {
+			return '1';
+		}
+	);
 
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
@@ -77,10 +85,22 @@ function _manually_load_plugin() {
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
+// Need those polyfills to run tests in CI.
+require_once dirname( __FILE__ ) . '/../../vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
+
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
 
 // We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
 	error_reporting( error_reporting() ^ E_DEPRECATED ); // phpcs:ignore
+}
+
+/**
+ * Don't init the subscriptions-core package when running WCPAY unit tests.
+ *
+ * Init'ing the subscriptions-core loads all subscriptions class and hooks, which breaks existing WCPAY unit tests.
+ * WCPAY already mocks the WC Subscriptions classes/functions it needs so there's no need to load them anyway.
+ */
+function wcpay_init_subscriptions_core() {
 }

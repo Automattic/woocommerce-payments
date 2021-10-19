@@ -32,7 +32,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 
 			for ( const productName of productNames ) {
 				const productId = await merchantWCP.createSubscriptionProduct(
-					productName
+					productName,
+					'month'
 				);
 				productIds.push( productId );
 			}

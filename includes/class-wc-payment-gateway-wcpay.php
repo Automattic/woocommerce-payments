@@ -155,8 +155,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 			],
 			'saved_cards'                      => [
-				'title'       => __( 'Saved Cards', 'woocommerce-payments' ),
-				'label'       => __( 'Enable Payment via Saved Cards', 'woocommerce-payments' ),
+				'title'       => __( 'Saved cards', 'woocommerce-payments' ),
+				'label'       => __( 'Enable payment via saved cards', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'If enabled, users will be able to pay with a saved card during checkout. Card details are saved on our platform, not on your store.', 'woocommerce-payments' ),
 				'default'     => 'yes',
@@ -186,7 +186,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
 				'label'       => sprintf(
 					/* translators: 1) br tag 2) Stripe anchor tag 3) Apple anchor tag */
-					__( 'Enable payment request buttons (Apple Pay, Google Pay, and more). %1$sBy using Apple Pay, you agree to %2$s and %3$s\'s terms of service.', 'woocommerce-payments' ),
+					__( 'Enable payment request buttons (Apple Pay, Google Pay, and more). %1$sBy using Apple Pay, you agree to %2$s and %3$s\'s Terms of Service.', 'woocommerce-payments' ),
 					'<br />',
 					'<a href="https://stripe.com/apple-pay/legal" target="_blank">Stripe</a>',
 					'<a href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/" target="_blank">Apple</a>'
@@ -493,6 +493,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Check if account is eligible for card present.
+	 *
+	 * @param false $empty_value - Default return value.
+	 * @return bool
+	 */
+	public function is_card_present_eligible( $empty_value = false ) {
+		try {
+			return $this->account->is_card_present_eligible();
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account card present eligible .' . $e );
+			return $empty_value;
+		}
+	}
+
+	/**
 	 * Checks if the account country is compatible with the current currency.
 	 *
 	 * @return bool Whether the currency is supported in the country set in the account.
@@ -627,7 +642,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		wp_register_script(
 			'WCPAY_CHECKOUT',
 			plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout' ],
+			[ 'stripe', 'wc-checkout', 'woocommerce-tokenization-form' ],
 			WC_Payments::get_file_version( 'dist/checkout.js' ),
 			true
 		);
@@ -701,13 +716,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $prepared_customer_data;
 	}
 	/**
-	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
+	 * Renders the credit card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
 		try {
-			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
+			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
 
 			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
 			wp_enqueue_script( 'WCPAY_CHECKOUT' );
@@ -956,7 +971,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 						/* translators: %1: the last 4 digit of the credit card */
-						__( 'Payment method is changed to: <strong>Credit Card ending in %1$s</strong>.', 'woocommerce-payments' ),
+						__( 'Payment method is changed to: <strong>Credit card ending in %1$s</strong>.', 'woocommerce-payments' ),
 						[
 							'strong' => '<strong>',
 						]
@@ -964,7 +979,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_information->get_payment_token()->get_last4()
 				);
 				$order->add_order_note( $note );
+
+				do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $payment_information->get_payment_token() );
 			}
+
+			$order->set_payment_method_title( __( 'Credit / Debit Card', 'woocommerce-payments' ) );
+			$order->save();
 
 			return [
 				'result'   => 'success',
@@ -1071,10 +1091,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$cart->empty_cart();
 		}
 
+		if ( $payment_needed ) {
+			$payment_method_details = $intent->get_payment_method_details();
+			$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+		} else {
+			$payment_method_details = false;
+			$payment_method_options = isset( $intent['payment_method_options'] ) ? array_keys( $intent['payment_method_options'] ) : null;
+			$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
+		}
+
+		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+
 		return [
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		];
+	}
+
+	/**
+	 * By default this function does not do anything. But it can be overriden by child classes.
+	 * It is used to set a formatted readable payment method title for order,
+	 * using payment method details from accompanying charge.
+	 *
+	 * @param WC_Order   $order WC Order being processed.
+	 * @param string     $payment_method_type Stripe payment method key.
+	 * @param array|bool $payment_method_details Array of payment method details from charge or false.
+	 */
+	public function set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details ) {
 	}
 
 	/**
@@ -1086,10 +1129,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Array of keyed metadata values.
 	 */
 	protected function get_metadata_from_order( $order, $payment_type ) {
-		$name  = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
-		$email = sanitize_email( $order->get_billing_email() );
-
-		return [
+		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+		$email    = sanitize_email( $order->get_billing_email() );
+		$metadata = [
 			'customer_name'  => $name,
 			'customer_email' => $email,
 			'site_url'       => esc_url( get_site_url() ),
@@ -1097,6 +1139,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'order_key'      => $order->get_order_key(),
 			'payment_type'   => $payment_type,
 		];
+
+		// If the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).
+		if ( 'recurring' === (string) $payment_type && ! $this->is_subscriptions_plugin_active() ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+
+			foreach ( $subscriptions as $subscription ) {
+				if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
+					$metadata['payment_context'] = 'wcpay_subscription';
+					break;
+				}
+			}
+		}
+
+		return $metadata;
 	}
 
 	/**
@@ -1174,7 +1230,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							]
 						),
 						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-						$intent_id
+						$charge_id
 					);
 					$order->add_order_note( $note );
 				}
@@ -1293,7 +1349,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return new WP_Error(
 				'uncaptured-payment',
 				/* translators: an error message which will appear if a user tries to refund an order which is has been authorized but not yet charged. */
-				__( "This payment is not captured yet. To cancel this order, please go to 'Order Actions' > 'Cancel Authorization'. To proceed with a refund, please go to 'Order Actions' > 'Capture charge' to charge the payment card, and then trigger a refund via the 'Refund' button.", 'woocommerce-payments' )
+				__( "This payment is not captured yet. To cancel this order, please go to 'Order Actions' > 'Cancel authorization'. To proceed with a refund, please go to 'Order Actions' > 'Capture charge' to charge the payment card, and then trigger a refund via the 'Refund' button.", 'woocommerce-payments' )
 			);
 		}
 
@@ -1527,7 +1583,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$error_message    = $this->account->update_stripe_account( $account_settings );
 
 		if ( is_string( $error_message ) ) {
-			$msg = __( 'Failed to update Statement descriptor. ', 'woocommerce-payments' ) . $error_message;
+			$msg = __( 'Failed to update statement descriptor. ', 'woocommerce-payments' ) . $error_message;
 			$this->add_error( $msg );
 		}
 	}
@@ -1907,7 +1963,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								]
 							),
 							WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $order->get_currency() ] ), $order ),
-							$intent_id
+							$intent->get_charge_id()
 						);
 						$order->add_order_note( $note );
 
@@ -2306,6 +2362,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'card',
 			]
 		);
+	}
+
+	/**
+	 * Returns the list of enabled payment method types that will function with the current checkout.
+	 *
+	 * @param string $order_id optional Order ID.
+	 * @return string[]
+	 */
+	public function get_upe_enabled_at_checkout_payment_method_ids( $order_id = null ) {
+		$capture                    = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
+		$capturable_payment_methods = $capture ? $this->get_upe_enabled_payment_method_ids() : [ 'card' ];
+		$enabled_payment_methods    = [];
+		foreach ( $capturable_payment_methods as $payment_method_id ) {
+			if ( isset( $this->payment_methods[ $payment_method_id ] )
+				&& $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id )
+				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() ) ) {
+				$enabled_payment_methods[] = $payment_method_id;
+			}
+		}
+		return $enabled_payment_methods;
 	}
 
 	/**

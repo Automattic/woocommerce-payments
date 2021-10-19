@@ -7,22 +7,91 @@ const { shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 // WooCommerce Checkout
 export async function fillCardDetails( page, card ) {
+	if ( await page.$( '#payment #wcpay-upe-element' ) ) {
+		const frameHandle = await page.waitForSelector(
+			'#payment #wcpay-upe-element iframe'
+		);
+
+		const stripeFrame = await frameHandle.contentFrame();
+
+		const cardNumberInput = await stripeFrame.waitForSelector(
+			'[name="number"]',
+			{ timeout: 30000 }
+		);
+
+		await cardNumberInput.type( card.number, { delay: 20 } );
+
+		const cardDateInput = await stripeFrame.waitForSelector(
+			'[name="expiry"]'
+		);
+
+		await cardDateInput.type( card.expires.month + card.expires.year, {
+			delay: 20,
+		} );
+
+		const cardCvcInput = await stripeFrame.waitForSelector(
+			'[name="cvc"]'
+		);
+		await cardCvcInput.type( card.cvc, { delay: 20 } );
+	} else {
+		await page.waitForSelector( '.__PrivateStripeElement' );
+		const frameHandle = await page.waitForSelector(
+			'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
+		);
+		const stripeFrame = await frameHandle.contentFrame();
+
+		const cardNumberInput = await stripeFrame.waitForSelector(
+			'[name="cardnumber"]',
+			{ timeout: 30000 }
+		);
+		await cardNumberInput.type( card.number, { delay: 20 } );
+
+		const cardDateInput = await stripeFrame.waitForSelector(
+			'[name="exp-date"]'
+		);
+
+		await cardDateInput.type( card.expires.month + card.expires.year, {
+			delay: 20,
+		} );
+
+		const cardCvcInput = await stripeFrame.waitForSelector(
+			'[name="cvc"]'
+		);
+		await cardCvcInput.type( card.cvc, { delay: 20 } );
+	}
+}
+
+// Clear WC Checkout Card Details
+export async function clearCardDetails() {
 	const frameHandle = await page.waitForSelector(
 		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
-	const inputs = await stripeFrame.$$( '.InputElement.Input' );
+	const cardNumberInput = await stripeFrame.waitForSelector(
+		'[name="cardnumber"]'
+	);
+	const cardDateInput = await stripeFrame.waitForSelector(
+		'[name="exp-date"]'
+	);
+	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
 
-	const [ cardNumberInput, cardDateInput, cardCvcInput ] = inputs;
-	await cardNumberInput.type( card.number, { delay: 20 } );
-	await cardDateInput.type( card.expires.month + card.expires.year, {
-		delay: 20,
-	} );
-	await cardCvcInput.type( card.cvc, { delay: 20 } );
+	await cardNumberInput.click();
+	await page.waitFor( 1000 );
+	await cardNumberInput.click( { clickCount: 3 } );
+	await page.keyboard.press( 'Backspace' );
+
+	await page.waitFor( 1000 );
+	await cardDateInput.click( { clickCount: 3 } );
+	await page.keyboard.press( 'Backspace' );
+
+	await page.waitFor( 1000 );
+	await cardCvcInput.click( { clickCount: 3 } );
+	await page.keyboard.press( 'Backspace' );
 }
 
 // WooCommerce Blocks Checkout
 export async function fillCardDetailsWCB( page, card ) {
+	await page.waitForSelector( '.__PrivateStripeElement' );
 	const frameHandle = await page.waitForSelector(
 		'#payment-method .wcpay-card-mounted iframe[name^="__privateStripeFrame"]'
 	);
@@ -35,6 +104,28 @@ export async function fillCardDetailsWCB( page, card ) {
 		delay: 20,
 	} );
 	await cardCvcInput.type( card.cvc, { delay: 20 } );
+}
+
+// Clear WC Checkout Card Details
+export async function clearWCBCardDetails() {
+	const frameHandle = await page.waitForSelector(
+		'#payment-method .wcpay-card-mounted iframe[name^="__privateStripeFrame"]'
+	);
+	const stripeFrame = await frameHandle.contentFrame();
+	const inputs = await stripeFrame.$$( '.InputElement.Input' );
+	const [ cardNumberInput, cardDateInput, cardCvcInput ] = inputs;
+
+	await page.waitFor( 1000 );
+	await cardNumberInput.click( { clickCount: 3 } );
+	await page.keyboard.press( 'Backspace' );
+
+	await page.waitFor( 1000 );
+	await cardDateInput.click( { clickCount: 3 } );
+	await page.keyboard.press( 'Backspace' );
+
+	await page.waitFor( 1000 );
+	await cardCvcInput.click( { clickCount: 3 } );
+	await page.keyboard.press( 'Backspace' );
 }
 
 export async function confirmCardAuthentication(
@@ -104,6 +195,7 @@ export async function setupProductCheckout(
 			// Make sure that the number of items in the cart is incremented first before adding another item.
 			await expect( page ).toMatchElement( cartItemsCounter, {
 				text: new RegExp( `${ ++cartSize } items?` ),
+				timeout: 30000,
 			} );
 		}
 	}

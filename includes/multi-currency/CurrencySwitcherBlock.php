@@ -35,7 +35,7 @@ class CurrencySwitcherBlock {
 	/**
 	 * Constructor.
 	 *
-	 * @param MultiCurrency $multi_currency Instance of Multi Currency.
+	 * @param MultiCurrency $multi_currency Instance of Multi-Currency.
 	 * @param Compatibility $compatibility  Instance of Compatibility.
 	 */
 	public function __construct( MultiCurrency $multi_currency, Compatibility $compatibility ) {
@@ -52,7 +52,13 @@ class CurrencySwitcherBlock {
 	 */
 	public function init_block_widget() {
 		// Automatically load dependencies and version.
-		$asset_file = include WCPAY_ABSPATH . 'dist/multi-currency-switcher-block.asset.php';
+		$asset_file_path = WCPAY_ABSPATH . 'dist/multi-currency-switcher-block.asset.php';
+		$asset_file      = file_exists( $asset_file_path )
+			? require_once $asset_file_path
+			: [
+				'dependencies' => [],
+				'version'      => false,
+			];
 
 		wp_register_script(
 			'woocommerce-payments/multi-currency-switcher',
