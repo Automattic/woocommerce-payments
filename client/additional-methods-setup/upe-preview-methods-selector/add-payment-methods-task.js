@@ -29,7 +29,7 @@ import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/p
 import { LoadableBlock } from '../../components/loadable';
 import LoadableSettingsSection from '../../settings/loadable-settings-section';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
-import { upeMethods } from '../constants';
+import { upeCapabilityStatuses, upeMethods } from '../constants';
 import paymentMethodsMap from '../../payment-methods-map';
 
 const usePaymentMethodsCheckboxState = () => {
@@ -214,7 +214,8 @@ const AddPaymentMethodsTask = () => {
 															paymentMethodsMap[
 																key
 															].stripe_key
-														] ?? 'unrequested'
+														] ??
+														upeCapabilityStatuses.UNREQUESTED
 													}
 													onChange={
 														handlePaymentMethodChange

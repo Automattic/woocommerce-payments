@@ -21,6 +21,7 @@ import ConfirmationModal from '../../components/confirmation-modal';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import PaymentMethodsMap from '../../payment-methods-map';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 const AddPaymentMethodsModal = ( { onClose } ) => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
@@ -102,7 +103,7 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 						status={
 							paymentMethodStatuses[
 								PaymentMethodsMap[ method ].stripe_key
-							] ?? 'unrequested'
+							] ?? upeCapabilityStatuses.UNREQUESTED
 						}
 					/>
 				) ) }

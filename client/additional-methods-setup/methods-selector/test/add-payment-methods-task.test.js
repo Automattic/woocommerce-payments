@@ -18,6 +18,7 @@ import {
 	useGetPaymentMethodStatuses,
 	useSettings,
 } from '../../../data';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 jest.mock( '../../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
@@ -57,13 +58,13 @@ describe( 'AddPaymentMethodsTask', () => {
 			isSaving: false,
 		} );
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: 'active',
-			bancontact_payments: 'active',
-			giropay_payments: 'active',
-			ideal_payments: 'active',
-			p24_payments: 'active',
-			sepa_debit_payments: 'active',
-			sofort_payments: 'active',
+			card_payments: upeCapabilityStatuses.ACTIVE,
+			bancontact_payments: upeCapabilityStatuses.ACTIVE,
+			giropay_payments: upeCapabilityStatuses.ACTIVE,
+			ideal_payments: upeCapabilityStatuses.ACTIVE,
+			p24_payments: upeCapabilityStatuses.ACTIVE,
+			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
+			sofort_payments: upeCapabilityStatuses.ACTIVE,
 		} );
 	} );
 
@@ -107,13 +108,13 @@ describe( 'AddPaymentMethodsTask', () => {
 
 	it( 'should render the active and pending payment methods checkboxes with default values', () => {
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: 'active',
-			bancontact_payments: 'inactive',
-			giropay_payments: 'pending',
-			ideal_payments: 'inactive',
-			p24_payments: 'active',
-			sepa_debit_payments: 'inactive',
-			sofort_payments: 'pending',
+			card_payments: upeCapabilityStatuses.ACTIVE,
+			bancontact_payments: upeCapabilityStatuses.INACTIVE,
+			giropay_payments: upeCapabilityStatuses.PENDING_APPROVAL,
+			ideal_payments: upeCapabilityStatuses.INACTIVE,
+			p24_payments: upeCapabilityStatuses.ACTIVE,
+			sepa_debit_payments: upeCapabilityStatuses.INACTIVE,
+			sofort_payments: upeCapabilityStatuses.PENDING_VERIFICATION,
 		} );
 
 		render(

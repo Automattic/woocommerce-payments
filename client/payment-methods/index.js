@@ -41,6 +41,7 @@ import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
 import CardBody from '../settings/card-body';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
@@ -195,7 +196,7 @@ const PaymentMethods = () => {
 										paymentMethodStatuses[
 											methodsConfiguration[ id ]
 												.stripe_key
-										] ?? 'unrequested'
+										] ?? upeCapabilityStatuses.UNREQUESTED
 									}
 									onDeleteClick={
 										1 < enabledMethods.length

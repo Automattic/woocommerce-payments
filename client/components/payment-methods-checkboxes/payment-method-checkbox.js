@@ -10,13 +10,14 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
+import { formatMethodFeesDescription } from '../../utils/account-fees';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import PaymentMethodIcon from '../../settings/payment-method-icon';
 import PaymentMethodsMap from '../../payment-methods-map';
 import Pill from '../pill';
 import Tooltip from '../tooltip';
 import './payment-method-checkbox.scss';
-import WCPaySettingsContext from '../../settings/wcpay-settings-context';
-import { formatMethodFeesDescription } from '../../utils/account-fees';
 
 const PaymentMethodDescription = ( { name } ) => {
 	const description = PaymentMethodsMap[ name ]?.description;
@@ -53,7 +54,7 @@ const PaymentMethodCheckbox = ( {
 		[ name, onChange ]
 	);
 
-	const disabled = 'inactive' === status;
+	const disabled = upeCapabilityStatuses.INACTIVE === status;
 
 	// Uncheck payment method if checked and disabled.
 	useEffect( () => {
@@ -94,7 +95,7 @@ const PaymentMethodCheckbox = ( {
 					</Tooltip>
 				) }
 			</div>
-			{ 'active' === status && (
+			{ upeCapabilityStatuses.ACTIVE === status && (
 				<Tooltip
 					content={ __(
 						'Base transaction fees',

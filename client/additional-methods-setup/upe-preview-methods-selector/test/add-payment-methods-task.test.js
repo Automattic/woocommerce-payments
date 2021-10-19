@@ -20,6 +20,7 @@ import {
 	useEnabledCurrencies,
 } from '../../../data';
 import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 jest.mock( '../../../data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn(),
@@ -55,13 +56,13 @@ describe( 'AddPaymentMethodsTask', () => {
 			'sofort',
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: 'active',
-			bancontact_payments: 'active',
-			giropay_payments: 'active',
-			ideal_payments: 'active',
-			p24_payments: 'active',
-			sepa_debit_payments: 'active',
-			sofort_payments: 'active',
+			card_payments: upeCapabilityStatuses.ACTIVE,
+			bancontact_payments: upeCapabilityStatuses.ACTIVE,
+			giropay_payments: upeCapabilityStatuses.ACTIVE,
+			ideal_payments: upeCapabilityStatuses.ACTIVE,
+			p24_payments: upeCapabilityStatuses.ACTIVE,
+			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
+			sofort_payments: upeCapabilityStatuses.ACTIVE,
 		} );
 		useSettings.mockReturnValue( {
 			saveSettings: () => Promise.resolve( true ),
@@ -319,13 +320,13 @@ describe( 'AddPaymentMethodsTask', () => {
 
 	it( 'should not allow the inactive ones to be selected', async () => {
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: 'active',
-			bancontact_payments: 'inactive',
-			giropay_payments: 'pending',
-			ideal_payments: 'active',
-			p24_payments: 'inactive',
-			sepa_debit_payments: 'pending',
-			sofort_payments: 'active',
+			card_payments: upeCapabilityStatuses.ACTIVE,
+			bancontact_payments: upeCapabilityStatuses.INACTIVE,
+			giropay_payments: upeCapabilityStatuses.PENDING_APPROVAL,
+			ideal_payments: upeCapabilityStatuses.ACTIVE,
+			p24_payments: upeCapabilityStatuses.INACTIVE,
+			sepa_debit_payments: upeCapabilityStatuses.PENDING_VERIFICATION,
+			sofort_payments: upeCapabilityStatuses.ACTIVE,
 		} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[

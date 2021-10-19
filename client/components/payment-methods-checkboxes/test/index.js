@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event';
  */
 import PaymentMethodsCheckboxes from '..';
 import PaymentMethodsCheckbox from '../payment-method-checkbox';
+import { upeCapabilityStatuses } from '../../../additional-methods-setup/constants';
 
 describe( 'PaymentMethodsCheckboxes', () => {
 	it( 'triggers the onChange when clicking the checkbox', () => {
@@ -33,7 +34,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 						onChange={ handleChange }
 						checked={ key[ 1 ] }
 						name={ key[ 0 ] }
-						status={ 'active' }
+						status={ upeCapabilityStatuses.ACTIVE }
 					/>
 				) ) }
 			</PaymentMethodsCheckboxes>
@@ -84,7 +85,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					onChange={ handleChange }
 					checked={ 0 }
 					name={ 'sofort' }
-					status={ 'pending' }
+					status={ upeCapabilityStatuses.PENDING_APPROVAL }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
@@ -107,7 +108,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					onChange={ handleChange }
 					checked={ 1 }
 					name={ 'sofort' }
-					status={ 'inactive' }
+					status={ upeCapabilityStatuses.INACTIVE }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
@@ -126,7 +127,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					onChange={ handleChange }
 					checked={ 0 }
 					name={ 'sofort' }
-					status={ 'inactive' }
+					status={ upeCapabilityStatuses.INACTIVE }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
@@ -148,14 +149,14 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					onChange={ handleChange }
 					checked={ 1 }
 					name={ 'sofort' }
-					status={ 'active' }
+					status={ upeCapabilityStatuses.ACTIVE }
 				/>
 				<PaymentMethodsCheckbox
 					key={ 'giropay' }
 					onChange={ handleChange }
 					checked={ 1 }
 					name={ 'giropay' }
-					status={ 'unrequested' }
+					status={ upeCapabilityStatuses.UNREQUESTED }
 				/>
 			</PaymentMethodsCheckboxes>
 		);

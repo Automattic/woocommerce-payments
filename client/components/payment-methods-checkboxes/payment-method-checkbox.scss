@@ -60,17 +60,15 @@
 
 .wcpay-pill {
 	margin-left: $gap-smaller;
-	text-transform: uppercase;
-	&.payment-status-pending {
-		border: 1px solid $studio-orange;
-		color: $studio-orange;
-	}
-	&.payment-status-unrequested {
-		border: 1px solid $studio-red;
-		color: $studio-red;
+	&.payment-status-pending-approval,
+	&.payment-status-pending-verification {
+		border: 0 solid transparent;
+		background: #f0b849;
+		color: #1f1f1f;
 	}
 	&.payment-status-inactive {
-		border: 1px solid $studio-red;
-		color: $studio-red;
+		border: 0 solid transparent;
+		background: #cc1818;
+		color: #fff;
 	}
 }

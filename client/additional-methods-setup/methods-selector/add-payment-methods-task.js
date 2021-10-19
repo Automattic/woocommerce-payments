@@ -32,7 +32,7 @@ import wcpayTracks from '../../tracks';
 import './add-payment-methods-task.scss';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 import paymentMethodsMap from 'wcpay/payment-methods-map';
-import { upeMethods } from '../constants';
+import { upeCapabilityStatuses, upeMethods } from '../constants';
 
 const useGetCountryName = () => {
 	const generalSettings = useSelect(
@@ -213,7 +213,7 @@ const AddPaymentMethodsTask = () => {
 									status={
 										paymentMethodStatuses[
 											paymentMethodsMap.card.stripe_key
-										] ?? 'unrequested'
+										] ?? upeCapabilityStatuses.UNREQUESTED
 									}
 								/>
 							) }
@@ -240,7 +240,8 @@ const AddPaymentMethodsTask = () => {
 												paymentMethodStatuses[
 													paymentMethodsMap[ key ]
 														.stripe_key
-												] ?? 'unrequested'
+												] ??
+												upeCapabilityStatuses.UNREQUESTED
 											}
 											onChange={
 												handlePaymentMethodChange

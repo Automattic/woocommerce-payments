@@ -9,6 +9,7 @@ import user from '@testing-library/user-event';
  * Internal dependencies
  */
 import PaymentMethodsSelector from '..';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 import {
 	useEnabledPaymentMethodIds,
@@ -37,13 +38,13 @@ describe( 'PaymentMethodsSelector', () => {
 			'sofort',
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: 'active',
-			bancontact_payments: 'active',
-			giropay_payments: 'active',
-			ideal_payments: 'active',
-			p24_payments: 'active',
-			sepa_debit_payments: 'active',
-			sofort_payments: 'active',
+			card_payments: upeCapabilityStatuses.ACTIVE,
+			bancontact_payments: upeCapabilityStatuses.ACTIVE,
+			giropay_payments: upeCapabilityStatuses.ACTIVE,
+			ideal_payments: upeCapabilityStatuses.ACTIVE,
+			p24_payments: upeCapabilityStatuses.ACTIVE,
+			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
+			sofort_payments: upeCapabilityStatuses.ACTIVE,
 		} );
 	} );
 
