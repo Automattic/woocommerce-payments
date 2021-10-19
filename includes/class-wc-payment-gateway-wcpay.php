@@ -1129,10 +1129,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Array of keyed metadata values.
 	 */
 	protected function get_metadata_from_order( $order, $payment_type ) {
-		$name  = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
-		$email = sanitize_email( $order->get_billing_email() );
-
-		return [
+		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+		$email    = sanitize_email( $order->get_billing_email() );
+		$metadata = [
 			'customer_name'  => $name,
 			'customer_email' => $email,
 			'site_url'       => esc_url( get_site_url() ),
@@ -1140,6 +1139,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'order_key'      => $order->get_order_key(),
 			'payment_type'   => $payment_type,
 		];
+
+		// If the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).
+		if ( 'recurring' === (string) $payment_type && ! $this->is_subscriptions_plugin_active() ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+
+			foreach ( $subscriptions as $subscription ) {
+				if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
+					$metadata['payment_context'] = 'wcpay_subscription';
+					break;
+				}
+			}
+		}
+
+		return $metadata;
 	}
 
 	/**
