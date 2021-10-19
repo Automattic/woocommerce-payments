@@ -708,7 +708,7 @@ class WC_Payments_Account {
 	private function cache_account( $account, int $expiration = null ) {
 		// Default expiration to 2 hours if not set.
 		if ( null === $expiration ) {
-			$expiration = 2 * HOUR_IN_SECONDS;
+			$expiration = 2.5 * HOUR_IN_SECONDS;
 		}
 
 		// Add the account data and expiry time to the array we're caching.
