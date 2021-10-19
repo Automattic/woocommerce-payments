@@ -99,6 +99,16 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Returns whether WCPay Subscriptions is eligible, based on the stores base country.
+	 *
+	 * @return bool
+	 */
+	public static function is_wcpay_subscriptions_eligible() {
+		$store_base_location = wc_get_base_location();
+		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
