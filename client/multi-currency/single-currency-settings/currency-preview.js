@@ -24,11 +24,10 @@ const CurrencyPreview = ( {
 			const converted =
 				amount *
 				parseFloat( currencyRate ? currencyRate : targetCurrency.rate );
-			const rounded =
-				'none' === roundingValue
-					? converted
-					: Math.ceil( converted / parseFloat( roundingValue ) ) *
-					  parseFloat( roundingValue );
+			const rounded = parseFloat( roundingValue )
+				? Math.ceil( converted / parseFloat( roundingValue ) ) *
+				  parseFloat( roundingValue )
+				: converted;
 			const charmed = rounded + parseFloat( charmValue );
 			return isNaN( charmed )
 				? __( 'Please enter a valid number', 'woocommerce-payments' )

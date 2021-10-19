@@ -120,7 +120,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                       data-testid="price_rounding"
                     >
                       <option
-                        value="none"
+                        value="0"
                       >
                         None
                       </option>
