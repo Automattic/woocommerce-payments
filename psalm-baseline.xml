@@ -127,7 +127,7 @@
     </UndefinedDocblockClass>
   </file>
   <file src="includes/subscriptions/class-wc-payments-product-service.php">
-    <UndefinedClass occurrences="9">
+    <UndefinedClass occurrences="10">
       <code>WC_Subscriptions_Product</code>
     </UndefinedClass>
   </file>
@@ -155,7 +155,7 @@
     </UndefinedFunction>
   </file>
   <file src="includes/subscriptions/class-wc-payments-subscription-service.php">
-    <UndefinedClass occurrences="25">
+    <UndefinedClass occurrences="26">
       <code>WC_Subscription</code>
     </UndefinedClass>
     <UndefinedDocblockClass occurrences="2">
@@ -184,6 +184,11 @@
     <UndefinedFunction occurrences="3">
       <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] )</code>
       <code>wcs_get_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) )</code>
+    </UndefinedFunction>
+  </file>
+  <file src="includes/class-wc-payment-gateway-wcpay.php">
+    <UndefinedFunction occurrences="1">
+      <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] )</code>
     </UndefinedFunction>
   </file>
 </files>
