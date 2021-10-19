@@ -50,6 +50,11 @@ describe( 'PaymentMethods', () => {
 			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
 			sofort_payments: upeCapabilityStatuses.ACTIVE,
 		} );
+		global.wcSettings = {
+			currentUserData: {
+				email: 'admin@example.com',
+			},
+		};
 	} );
 
 	test( 'does not render the "Add payment method" button when there is only one payment method available', () => {
