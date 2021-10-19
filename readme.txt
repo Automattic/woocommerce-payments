@@ -107,7 +107,6 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Missing customer information after guest checkout via Checkout Block
 * Update - display fees per payment method on overview page.
 * Fix - Multi-Currency settings rounding option and preview.
-* Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
