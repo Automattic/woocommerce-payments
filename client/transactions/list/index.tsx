@@ -244,6 +244,33 @@ export const TransactionsList = (
 		);
 		const currency = txn.currency.toUpperCase();
 
+		const dataType = txn.metadata ? txn.metadata.charge_type : txn.type;
+		const formatAmount = () => {
+			if ( txn.metadata ) {
+				return { value: 0, display: clickable( <div>N/A</div> ) };
+			}
+
+			return {
+				value: txn.amount / 100,
+				display: clickable(
+					<ConvertedAmount
+						amount={ txn.amount }
+						currency={ currency }
+						fromAmount={ txn.customer_amount }
+						fromCurrency={ txn.customer_currency.toUpperCase() }
+					/>
+				),
+			};
+		};
+
+		const formatFees = () => {
+			const fees = txn.metadata ? txn.amount : txn.fees * -1;
+			return {
+				value: fees / 100,
+				display: clickable( formatCurrency( fees, currency ) ),
+			};
+		};
+
 		// Map transaction into table row.
 		const data = {
 			transaction_id: {
@@ -260,9 +287,9 @@ export const TransactionsList = (
 				),
 			},
 			type: {
-				value: displayType[ txn.type ],
+				value: displayType[ dataType ],
 				display: clickable(
-					displayType[ txn.type ] || formatStringValue( txn.type )
+					displayType[ dataType ] || formatStringValue( dataType )
 				),
 			},
 			source: {
@@ -293,22 +320,9 @@ export const TransactionsList = (
 				value: txn.customer_country,
 				display: clickable( txn.customer_country ),
 			},
-			amount: {
-				value: txn.amount / 100,
-				display: clickable(
-					<ConvertedAmount
-						amount={ txn.amount }
-						currency={ currency }
-						fromAmount={ txn.customer_amount }
-						fromCurrency={ txn.customer_currency.toUpperCase() }
-					/>
-				),
-			},
+			amount: formatAmount(),
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
-			fees: {
-				value: txn.fees / 100,
-				display: clickable( formatCurrency( txn.fees * -1, currency ) ),
-			},
+			fees: formatFees(),
 			net: {
 				value: txn.net / 100,
 				display: clickable(
