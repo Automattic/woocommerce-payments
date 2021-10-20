@@ -983,6 +983,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $payment_information->get_payment_token() );
 			}
 
+			$order->set_payment_method_title( __( 'Credit / Debit Card', 'woocommerce-payments' ) );
+			$order->save();
+
 			return [
 				'result'   => 'success',
 				'redirect' => $this->get_return_url( $order ),
@@ -1088,10 +1091,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$cart->empty_cart();
 		}
 
+		if ( $payment_needed ) {
+			$payment_method_details = $intent->get_payment_method_details();
+			$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+		} else {
+			$payment_method_details = false;
+			$payment_method_options = isset( $intent['payment_method_options'] ) ? array_keys( $intent['payment_method_options'] ) : null;
+			$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
+		}
+
+		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+
 		return [
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		];
+	}
+
+	/**
+	 * By default this function does not do anything. But it can be overriden by child classes.
+	 * It is used to set a formatted readable payment method title for order,
+	 * using payment method details from accompanying charge.
+	 *
+	 * @param WC_Order   $order WC Order being processed.
+	 * @param string     $payment_method_type Stripe payment method key.
+	 * @param array|bool $payment_method_details Array of payment method details from charge or false.
+	 */
+	public function set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details ) {
 	}
 
 	/**
@@ -1103,10 +1129,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Array of keyed metadata values.
 	 */
 	protected function get_metadata_from_order( $order, $payment_type ) {
-		$name  = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
-		$email = sanitize_email( $order->get_billing_email() );
-
-		return [
+		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+		$email    = sanitize_email( $order->get_billing_email() );
+		$metadata = [
 			'customer_name'  => $name,
 			'customer_email' => $email,
 			'site_url'       => esc_url( get_site_url() ),
@@ -1114,6 +1139,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'order_key'      => $order->get_order_key(),
 			'payment_type'   => $payment_type,
 		];
+
+		// If the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).
+		if ( 'recurring' === (string) $payment_type && ! $this->is_subscriptions_plugin_active() ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+
+			foreach ( $subscriptions as $subscription ) {
+				if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
+					$metadata['payment_context'] = 'wcpay_subscription';
+					break;
+				}
+			}
+		}
+
+		return $metadata;
 	}
 
 	/**
@@ -1191,7 +1230,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							]
 						),
 						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-						$intent_id
+						$charge_id
 					);
 					$order->add_order_note( $note );
 				}
@@ -1924,7 +1963,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								]
 							),
 							WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $order->get_currency() ] ), $order ),
-							$intent_id
+							$intent->get_charge_id()
 						);
 						$order->add_order_note( $note );
 
