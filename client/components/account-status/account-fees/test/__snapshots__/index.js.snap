@@ -2,6 +2,10 @@
 
 exports[`AccountFees renders discounted base fee 1`] = `
 <div>
+  <p>
+    Card transactions
+    :
+  </p>
   United States (US) dollar 
   (USD) 
   <s>
@@ -49,6 +53,10 @@ exports[`AccountFees renders discounted base fee 1`] = `
 
 exports[`AccountFees renders discounted fee with USD volume currency and non-USD base fee 1`] = `
 <div>
+  <p>
+    Card transactions
+    :
+  </p>
   Pound sterling 
   (GBP) 
   <s>
@@ -96,6 +104,10 @@ exports[`AccountFees renders discounted fee with USD volume currency and non-USD
 
 exports[`AccountFees renders discounted fee with end date 1`] = `
 <div>
+  <p>
+    Card transactions
+    :
+  </p>
   United States (US) dollar 
   (USD) 
   <s>
@@ -121,6 +133,10 @@ exports[`AccountFees renders discounted fee with end date 1`] = `
 
 exports[`AccountFees renders discounted fee with volume limit 1`] = `
 <div>
+  <p>
+    Card transactions
+    :
+  </p>
   United States (US) dollar 
   (USD) 
   <s>
@@ -168,6 +184,10 @@ exports[`AccountFees renders discounted fee with volume limit 1`] = `
 
 exports[`AccountFees renders discounted fee with volume limit and end date 1`] = `
 <div>
+  <p>
+    Card transactions
+    :
+  </p>
   United States (US) dollar 
   (USD) 
   <s>
@@ -215,6 +235,10 @@ exports[`AccountFees renders discounted fee with volume limit and end date 1`] =
 
 exports[`AccountFees renders discounted fee without volume limit 1`] = `
 <div>
+  <p>
+    Card transactions
+    :
+  </p>
   United States (US) dollar 
   (USD) 
   <s>
@@ -235,6 +259,10 @@ exports[`AccountFees renders discounted fee without volume limit 1`] = `
 
 exports[`AccountFees renders discounted non-USD base fee 1`] = `
 <div>
+  <p>
+    Card transactions
+    :
+  </p>
   Pound sterling 
   (GBP) 
   <s>
@@ -280,8 +308,74 @@ exports[`AccountFees renders discounted non-USD base fee 1`] = `
 </div>
 `;
 
+exports[`AccountFees renders discounts multiple payment methods 1`] = `
+<div>
+  <p>
+    Card transactions
+    :
+  </p>
+  United States (US) dollar 
+  (USD) 
+  <s>
+    2.9% + $0.30 per transaction
+  </s>
+   1.4% + $0.25 per transaction
+  <p>
+    <a
+      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      Learn more
+    </a>
+  </p>
+  <p>
+    GiroPay transactions
+    :
+  </p>
+  United States (US) dollar 
+  (USD) 
+  <s>
+    1.4% + $0.30 per transaction
+  </s>
+   1.4% + $0.25 per transaction
+  <p>
+    <a
+      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      Learn more
+    </a>
+  </p>
+  <p>
+    Sofort transactions
+    :
+  </p>
+  United States (US) dollar 
+  (USD) 
+  <s>
+    1.4% + $0.30 per transaction
+  </s>
+   1.4% + $0.25 per transaction
+  <p>
+    <a
+      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      Learn more
+    </a>
+  </p>
+</div>
+`;
+
 exports[`AccountFees renders first discounted fee ignoring the rest 1`] = `
 <div>
+  <p>
+    Card transactions
+    :
+  </p>
   United States (US) dollar 
   (USD) 
   <s>
@@ -302,12 +396,19 @@ exports[`AccountFees renders first discounted fee ignoring the rest 1`] = `
 
 exports[`AccountFees renders non-USD base fee 1`] = `
 <div>
+  <p>
+    Card transactions
+    :
+  </p>
   Euro 
   (EUR) 
-  2.9% + €0,25 per transaction
+  <s>
+    2.9% + €0,25 per transaction
+  </s>
+   2.9% + €0,30 per transaction
   <p>
     <a
-      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
       rel="noopener noreferrer"
       target="_blank"
     >
@@ -319,12 +420,19 @@ exports[`AccountFees renders non-USD base fee 1`] = `
 
 exports[`AccountFees renders normal base fee 1`] = `
 <div>
+  <p>
+    Card transactions
+    :
+  </p>
   United States (US) dollar 
   (USD) 
-  2.9% + $0.30 per transaction
+  <s>
+    2.9% + $0.30 per transaction
+  </s>
+   2.9% + $0.30 per transaction
   <p>
     <a
-      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
       rel="noopener noreferrer"
       target="_blank"
     >
@@ -333,3 +441,5 @@ exports[`AccountFees renders normal base fee 1`] = `
   </p>
 </div>
 `;
+
+exports[`AccountFees renders without any discounts 1`] = `<div />`;

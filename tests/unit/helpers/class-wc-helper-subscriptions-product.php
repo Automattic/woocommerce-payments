@@ -19,7 +19,7 @@ class WC_Subscriptions_Product extends WC_Product {
 	public static $subscription_product_period = null;
 
 	/**
-	 * Subsscription product interval.
+	 * Subscription product interval.
 	 *
 	 * @var int
 	 */

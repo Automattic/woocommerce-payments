@@ -5,6 +5,7 @@
 * Add - UPE track on upgrade and on setting toggle.
 * Fix - Prevent currency switcher to show when enabled currencies list is empty.
 * Fix - Show currency switcher notice until customer explicitly dismisses it.
+* Update - Switch the PaymentIntent ID and the Charge ID in the order notes and transaction details pages.
 * Fix - Track 'wcpay_payment_request_settings_change' for when updating the Payment Requests setting not being recorded.
 * Update - Fee breakdown when there's only a base fee
 * Fix - Inconsistent shipping options in Payment Request popup.
@@ -13,6 +14,9 @@
 * Fix - Applied sentence case on all strings
 * Fix - Missing customer information after guest checkout via Checkout Block.
 * Fix - Show correct payment method name during checkout using upe methods.
+* Update - display fees per payment method on overview page.
+* Fix - Multi-Currency settings rounding option and preview.
+* Fix - Payment failure on checkout block with UPE when phone number field is hidden
 
 
 = 3.1.0 - 2021-10-06 =
