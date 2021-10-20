@@ -9,20 +9,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\Invalid_Dependency_Exception;
-
 /**
  * Validates dependencies (core, plugins, versions) for WCPAY
  * Used in the plugin main class for validation.
  */
 class WC_Payments_Dependency_Service {
 
-	/**
-	 * Cached result of dependency check.
-	 *
-	 * @var bool | null
-	 */
-	private $has_valid_dependencies;
+	const WOOCORE_NOT_FOUND     = 'woocore_disabled';
+	const WOOCORE_INCOMPATIBLE  = 'woocore_outdated';
+	const WOOADMIN_NOT_FOUND    = 'wc_admin_not_found';
+	const WOOADMIN_INCOMPATIBLE = 'wc_admin_outdated';
+	const WP_INCOMPATIBLE       = 'wp_outdated';
 
 	/**
 	 * Cached result of the first invalid dependency.
@@ -50,26 +47,37 @@ class WC_Payments_Dependency_Service {
 			return true;
 		}
 
-		$passed = true;
-
-		try {
-
-			$this->is_woo_core_active();
-			$this->is_woo_core_version_compatible();
-			$this->is_wc_admin_enabled();
-			$this->is_wc_admin_version_compatible();
-			$this->is_wp_version_compatible();
-		} catch ( Invalid_Dependency_Exception $e ) {
-			$passed = false;
-
+		if ( ! $this->is_woo_core_active() ) {
 			// save invalid dependency to use on admin notice.
-			$this->invalid_dependency = $e->getMessage();
-		} finally {
-			// cache result before returning it.
-			$this->has_valid_dependencies = $passed;
-
-			return $passed;
+			$this->invalid_dependency = self::WOOCORE_NOT_FOUND;
+			return false;
 		}
+
+		if ( ! $this->is_woo_core_version_compatible() ) {
+			// save invalid dependency to use on admin notice.
+			$this->invalid_dependency = self::WOOCORE_INCOMPATIBLE;
+			return false;
+		}
+
+		if ( ! $this->is_wc_admin_enabled() ) {
+			// save invalid dependency to use on admin notice.
+			$this->invalid_dependency = self::WOOADMIN_NOT_FOUND;
+			return false;
+		}
+
+		if ( ! $this->is_wc_admin_version_compatible() ) {
+			// save invalid dependency to use on admin notice.
+			$this->invalid_dependency = self::WOOADMIN_INCOMPATIBLE;
+			return false;
+		}
+
+		if ( ! $this->is_wp_version_compatible() ) {
+			// save invalid dependency to use on admin notice.
+			$this->invalid_dependency = self::WP_INCOMPATIBLE;
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -85,7 +93,7 @@ class WC_Payments_Dependency_Service {
 		}
 
 		if ( false === $this->has_valid_dependencies() ) {
-			WC_Payments::display_admin_error( $this->get_notice_for_exception_code( $this->invalid_dependency ) );
+			WC_Payments::display_admin_error( $this->get_notice_for_invalid_dependency( $this->invalid_dependency ) );
 		}
 	}
 
@@ -93,24 +101,16 @@ class WC_Payments_Dependency_Service {
 	 * Checks if WooCommerce is installed and activated.
 	 *
 	 * @return bool True if WooCommerce is installed and activated.
-	 *
-	 * @throws Invalid_Dependency_Exception If this dependency check does not pass.
 	 */
 	public function is_woo_core_active() {
 		// Check if WooCommerce is installed and active.
-		if ( ! class_exists( 'WooCommerce' ) ) {
-			throw new Invalid_Dependency_Exception( Invalid_Dependency_Exception::WOOCORE_NOT_FOUND );
-		}
-
-		return true;
+		return class_exists( 'WooCommerce' );
 	}
 
 	/**
 	 * Checks if the version of WooCommerce is compatible with WooCommerce Payments.
 	 *
 	 * @return bool True if WooCommerce version is greater than or equal the minimum accepted
-	 *
-	 * @throws Invalid_Dependency_Exception If this dependency check does not pass.
 	 */
 	public function is_woo_core_version_compatible() {
 
@@ -126,9 +126,7 @@ class WC_Payments_Dependency_Service {
 			 *
 			 * @since 3.1.0
 			 */
-			if ( ! $this->has_cached_account_connection() ) {
-				throw new Invalid_Dependency_Exception( Invalid_Dependency_Exception::WOOCORE_INCOMPATIBLE );
-			};
+			return $this->has_cached_account_connection();
 		}
 		return true;
 	}
@@ -138,14 +136,12 @@ class WC_Payments_Dependency_Service {
 	 * but it's disabled using a filter.
 	 *
 	 * @return bool True if WC Admin is found
-	 *
-	 * @throws Invalid_Dependency_Exception If this dependency check does not pass.
 	 */
 	public function is_wc_admin_enabled() {
 
 		// Check if the current WooCommerce version has WooCommerce Admin bundled (WC 4.0+) but it's disabled using a filter.
 		if ( ! defined( 'WC_ADMIN_VERSION_NUMBER' ) || apply_filters( 'woocommerce_admin_disabled', false ) ) {
-			throw new Invalid_Dependency_Exception( Invalid_Dependency_Exception::WOOADMIN_NOT_FOUND );
+			return false;
 		}
 
 		return true;
@@ -155,8 +151,6 @@ class WC_Payments_Dependency_Service {
 	 * Checks if the version of WC Admin is compatible with WooCommerce Payments.
 	 *
 	 * @return bool True if WC Admin version is greater than or equal the minimum accepted
-	 *
-	 * @throws Invalid_Dependency_Exception If this dependency check does not pass.
 	 */
 	public function is_wc_admin_version_compatible() {
 
@@ -168,9 +162,7 @@ class WC_Payments_Dependency_Service {
 			 *
 			 * @since 3.1.0
 			 */
-			if ( ! $this->has_cached_account_connection() ) {
-				throw new Invalid_Dependency_Exception( Invalid_Dependency_Exception::WOOADMIN_INCOMPATIBLE );
-			};
+			return $this->has_cached_account_connection();
 		}
 		return true;
 	}
@@ -179,8 +171,6 @@ class WC_Payments_Dependency_Service {
 	 * Checks if the version of WordPress is compatible with WooCommerce Payments.
 	 *
 	 * @return bool True if WordPress version is greater than or equal the minimum accepted
-	 *
-	 * @throws Invalid_Dependency_Exception If this dependency check does not pass.
 	 */
 	public function is_wp_version_compatible() {
 
@@ -188,20 +178,20 @@ class WC_Payments_Dependency_Service {
 		$wp_version     = $plugin_headers['RequiresWP'];
 
 		if ( version_compare( get_bloginfo( 'version' ), $wp_version, '<' ) ) {
-			throw new Invalid_Dependency_Exception( Invalid_Dependency_Exception::WP_INCOMPATIBLE );
+			return false;
 		}
 
 		return true;
 	}
 
 	/**
-	 * Get an error message from Invalid_Dependency_Exception and translate it to HTML to be used in an Admin Notice.
+	 * Get the error constant of an invalid dependency, and transforms it into HTML to be used in an Admin Notice.
 	 *
-	 * @param string $code - Invalid_Dependency_Exception message.
+	 * @param string $code - invalid dependency constant.
 	 *
 	 * @return string HTML to render admin notice for the unmet dependency.
 	 */
-	private function get_notice_for_exception_code( $code ) {
+	private function get_notice_for_invalid_dependency( $code ) {
 
 		$plugin_headers = WC_Payments::get_plugin_headers();
 		$wp_version     = $plugin_headers['RequiresWP'];
@@ -210,7 +200,7 @@ class WC_Payments_Dependency_Service {
 		$error_message = '';
 
 		switch ( $code ) {
-			case Invalid_Dependency_Exception::WOOCORE_NOT_FOUND:
+			case self::WOOCORE_NOT_FOUND:
 				$error_message = WC_Payments_Utils::esc_interpolated_html(
 					__( 'WooCommerce Payments requires <a>WooCommerce</a> to be installed and active.', 'woocommerce-payments' ),
 					[ 'a' => '<a href="https://wordpress.org/plugins/woocommerce">' ]
@@ -230,7 +220,7 @@ class WC_Payments_Dependency_Service {
 				}
 
 				break;
-			case Invalid_Dependency_Exception::WOOCORE_INCOMPATIBLE:
+			case self::WOOCORE_INCOMPATIBLE:
 				$error_message = WC_Payments_Utils::esc_interpolated_html(
 					sprintf(
 						/* translators: %1: current WooCommerce Payment version, %2: required WC version number, %3: currently installed WC version number */
@@ -258,14 +248,14 @@ class WC_Payments_Dependency_Service {
 				}
 
 				break;
-			case Invalid_Dependency_Exception::WOOADMIN_NOT_FOUND:
+			case self::WOOADMIN_NOT_FOUND:
 				$error_message = WC_Payments_Utils::esc_interpolated_html(
 					__( 'WooCommerce Payments requires WooCommerce Admin to be enabled. Please remove the <code>woocommerce_admin_disabled</code> filter to use WooCommerce Payments.', 'woocommerce-payments' ),
 					[ 'code' => '<code>' ]
 				);
 
 				break;
-			case Invalid_Dependency_Exception::WOOADMIN_INCOMPATIBLE:
+			case self::WOOADMIN_INCOMPATIBLE:
 				$error_message = WC_Payments_Utils::esc_interpolated_html(
 					sprintf(
 						/* translators: %1: required WC-Admin version number, %2: currently installed WC-Admin version number */
@@ -285,7 +275,7 @@ class WC_Payments_Dependency_Service {
 				}
 
 				break;
-			case Invalid_Dependency_Exception::WP_INCOMPATIBLE:
+			case self::WP_INCOMPATIBLE:
 				$error_message = WC_Payments_Utils::esc_interpolated_html(
 					sprintf(
 						/* translators: %1: required WP version number, %2: currently installed WP version number */

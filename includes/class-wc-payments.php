@@ -163,7 +163,6 @@ class WC_Payments {
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
 
-		include_once __DIR__ . '/exceptions/class-invalid-dependency-exception.php';
 		include_once __DIR__ . '/class-wc-payments-dependency-service.php';
 
 		self::$dependency_service = new WC_Payments_Dependency_Service();
