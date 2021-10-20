@@ -279,9 +279,9 @@ const feeBreakdown = ( event ) => {
 		fee_rates: { history },
 	} = event;
 
-	const feeLabelMapping = ( fixedRate, capped ) => ( {
+	const feeLabelMapping = ( fixedRate, isCapped ) => ( {
 		base: ( () => {
-			if ( capped ) {
+			if ( isCapped ) {
 				/* translators: %2$s is the capped fee */
 				return __( 'Base fee: capped at %2$s', 'woocommerce-payments' );
 			}
@@ -350,7 +350,7 @@ const feeBreakdown = ( event ) => {
 			percentage_rate: percentageRate,
 			fixed_rate: fixedRate,
 			currency,
-			capped,
+			capped: isCapped,
 		} = fee;
 
 		const percentageRateFormatted = formatFee( percentageRate );
@@ -359,7 +359,7 @@ const feeBreakdown = ( event ) => {
 		return (
 			<li key={ labelKey }>
 				{ sprintf(
-					feeLabelMapping( fixedRate, capped )[ labelKey ],
+					feeLabelMapping( fixedRate, isCapped )[ labelKey ],
 					percentageRateFormatted,
 					fixedRateFormatted
 				) }
