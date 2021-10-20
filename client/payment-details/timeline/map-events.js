@@ -219,7 +219,7 @@ const composeFeeString = ( event ) => {
 		? __( 'Base fee', 'woocommerce-payments' )
 		: __( 'Fee', 'woocommerce-payments' );
 
-	if ( isBaseFeeOnly( event ) && history[ 0 ].capped ) {
+	if ( isBaseFeeOnly( event ) && history[ 0 ]?.capped ) {
 		return sprintf(
 			'%1$s (capped at %2$s): %3$s',
 			baseFeeLabel,
