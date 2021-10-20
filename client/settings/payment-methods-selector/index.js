@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React, { useContext, useState, useCallback } from 'react';
-import { __ } from '@wordpress/i18n';
+import { sprintf, __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 
 /**
@@ -17,8 +17,78 @@ import {
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import ConfirmationModal from '../../components/confirmation-modal';
+import PaymentMethodsMap from 'wcpay/payment-methods-map';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 import WCPaySettingsContext from '../wcpay-settings-context';
+import PaymentConfirmIllustration from 'wcpay/components/payment-confirm-illustration';
+import interpolateComponents from 'interpolate-components';
+import './style.scss';
+
+const ConfirmPaymentMethodActivationModal = ( {
+	paymentMethod,
+	onClose,
+	onConfirmClose,
+} ) => {
+	const handleConfirmationClick = () => {
+		onConfirmClose();
+	};
+	return (
+		<ConfirmationModal
+			title={ sprintf(
+				__( 'One more step to enable %s', 'woocommerce_payments' ),
+				PaymentMethodsMap[ paymentMethod ].label
+			) }
+			shouldCloseOnClickOutside={ false }
+			onRequestClose={ onClose }
+			className={ 'wcpay-payment-method-confirmation-modal' }
+			actions={
+				<>
+					<Button isSecondary onClick={ onClose }>
+						{ __( 'Cancel', 'woocommerce-payments' ) }
+					</Button>
+					<Button isPrimary onClick={ handleConfirmationClick }>
+						{ __( 'Continue', 'woocommerce-payments' ) }
+					</Button>
+				</>
+			}
+		>
+			<PaymentConfirmIllustration
+				Icon={ PaymentMethodsMap[ paymentMethod ].Icon }
+				hasBorder={ 'card' !== PaymentMethodsMap[ paymentMethod ].id }
+			/>
+			<p>
+				{ sprintf(
+					__(
+						'You need to provide more information to enable %s on your checkout:',
+						'woocommerce-payments'
+					),
+					PaymentMethodsMap[ paymentMethod ].label
+				) }
+			</p>
+			<ul className={ 'payment-method-requirements-list' }>
+				{ PaymentMethodsMap[ paymentMethod ].requirements.map(
+					( requirement, index ) => (
+						<li key={ 'requirement' + index }>{ requirement }</li>
+					)
+				) }
+			</ul>
+			<p>
+				{ interpolateComponents( {
+					mixedString: __(
+						'If you choose to continue, our payment partner Stripe will send an e-mail ' +
+							'to {{merchantEmail /}} to collect the required information',
+						'woocommerce-payments'
+					),
+					components: {
+						merchantEmail: (
+							<b>{ wcSettings.currentUserData.email ?? '' }</b>
+						),
+					},
+				} ) }
+			</p>
+		</ConfirmationModal>
+	);
+};
 
 const AddPaymentMethodsModal = ( { onClose } ) => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
@@ -35,13 +105,42 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 		[]
 	);
 
+	const [ modalPaymentMethod, setModalPaymentMethod ] = useState( null );
+
+	const handleModalOpen = useCallback(
+		( paymentMethod ) => {
+			setModalPaymentMethod( paymentMethod );
+		},
+		[ setModalPaymentMethod ]
+	);
+
+	const handleModalClose = useCallback( () => {
+		setModalPaymentMethod( null );
+	}, [ setModalPaymentMethod ] );
+
+	const handleModalConfirmClose = useCallback( () => {
+		setSelectedPaymentMethods( ( oldPaymentMethods ) => [
+			...oldPaymentMethods,
+			modalPaymentMethod,
+		] );
+		setModalPaymentMethod( null );
+	}, [
+		setModalPaymentMethod,
+		setSelectedPaymentMethods,
+		modalPaymentMethod,
+	] );
+
 	const handleCheckboxClick = ( paymentMethod, isSelected ) => {
 		if ( isSelected ) {
-			setSelectedPaymentMethods( ( oldPaymentMethods ) => [
-				...oldPaymentMethods,
-				paymentMethod,
-			] );
-			return;
+			if ( PaymentMethodsMap[ paymentMethod ].requirements ) {
+				handleModalOpen( paymentMethod );
+			} else {
+				setSelectedPaymentMethods( ( oldPaymentMethods ) => [
+					...oldPaymentMethods,
+					paymentMethod,
+				] );
+				return;
+			}
 		}
 
 		setSelectedPaymentMethods( ( oldPaymentMethods ) => {
@@ -102,6 +201,13 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 			<CurrencyInformationForMethods
 				selectedMethods={ selectedPaymentMethods }
 			/>
+			{ modalPaymentMethod && (
+				<ConfirmPaymentMethodActivationModal
+					paymentMethod={ modalPaymentMethod }
+					onClose={ handleModalClose }
+					onConfirmClose={ handleModalConfirmClose }
+				/>
+			) }
 		</ConfirmationModal>
 	);
 };

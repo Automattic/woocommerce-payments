@@ -23,7 +23,7 @@ const PaymentConfirmIllustration = ( { hasBorder, Icon = () => null } ) => {
 					) }
 				/>
 				<Gridicon
-					icon="cross-circle"
+					icon="help"
 					className="payment-confirm-illustration__payment-question-mark-icon"
 				/>
 			</div>
