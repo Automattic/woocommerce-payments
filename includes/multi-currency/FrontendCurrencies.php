@@ -85,6 +85,7 @@ class FrontendCurrencies {
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
 		add_action( 'woocommerce_account_view-order_endpoint', [ $this, 'init_order_currency' ], 9 );
 		add_filter( 'woocommerce_cart_hash', [ $this, 'add_currency_to_cart_hash' ], 50 );
+		add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'fix_price_decimals_for_shipping_rates' ], 50, 2 );
 	}
 
 	/**
@@ -212,6 +213,20 @@ class FrontendCurrencies {
 		$this->order_currency = $order->get_currency();
 
 		return $order->get_id();
+	}
+
+	/**
+	 * Fixes the decimals for the store currency when shipping rates are being determined.
+	 * Our `wc_get_price_decimals` filter returns the decimals for the selected currency during this calculation, which leads to incorrect results.
+	 *
+	 * @param array $args   The argument array to be filtered.
+	 * @param obj   $method The shipping method being calculated.
+	 *
+	 * @return array
+	 */
+	public function fix_price_decimals_for_shipping_rates( array $args, $method ): array {
+		$args['price_decimals'] = absint( $this->localization_service->get_currency_format( $this->get_store_currency()->get_code() )['num_decimals'] );
+		return $args;
 	}
 
 	/**
