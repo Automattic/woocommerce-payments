@@ -22,13 +22,6 @@ class WC_Payments_Dependency_Service {
 	const WP_INCOMPATIBLE       = 'wp_outdated';
 
 	/**
-	 * Cached result of the first invalid dependency.
-	 *
-	 * @var string | null
-	 */
-	private $invalid_dependency;
-
-	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -47,37 +40,8 @@ class WC_Payments_Dependency_Service {
 			return true;
 		}
 
-		if ( ! $this->is_woo_core_active() ) {
-			// save invalid dependency to use on admin notice.
-			$this->invalid_dependency = self::WOOCORE_NOT_FOUND;
-			return false;
-		}
+		return empty( $this->get_invalid_dependencies() );
 
-		if ( ! $this->is_woo_core_version_compatible() ) {
-			// save invalid dependency to use on admin notice.
-			$this->invalid_dependency = self::WOOCORE_INCOMPATIBLE;
-			return false;
-		}
-
-		if ( ! $this->is_wc_admin_enabled() ) {
-			// save invalid dependency to use on admin notice.
-			$this->invalid_dependency = self::WOOADMIN_NOT_FOUND;
-			return false;
-		}
-
-		if ( ! $this->is_wc_admin_version_compatible() ) {
-			// save invalid dependency to use on admin notice.
-			$this->invalid_dependency = self::WOOADMIN_INCOMPATIBLE;
-			return false;
-		}
-
-		if ( ! $this->is_wp_version_compatible() ) {
-			// save invalid dependency to use on admin notice.
-			$this->invalid_dependency = self::WP_INCOMPATIBLE;
-			return false;
-		}
-
-		return true;
 	}
 
 	/**
@@ -92,9 +56,44 @@ class WC_Payments_Dependency_Service {
 			return;
 		}
 
-		if ( false === $this->has_valid_dependencies() ) {
-			WC_Payments::display_admin_error( $this->get_notice_for_invalid_dependency( $this->invalid_dependency ) );
+		$invalid_dependencies = $this->get_invalid_dependencies();
+
+		if ( ! empty( $invalid_dependencies ) ) {
+			WC_Payments::display_admin_error( $this->get_notice_for_invalid_dependency( $invalid_dependencies[0] ) );
 		}
+	}
+
+	/**
+	 * Return an array of invalid dependencies
+	 *
+	 * @return array of invalid dependencies as string constants.
+	 */
+	public function get_invalid_dependencies() {
+
+		$invalid_dependencies = [];
+
+		if ( ! $this->is_woo_core_active() ) {
+			$invalid_dependencies[] = self::WOOCORE_NOT_FOUND;
+		}
+
+		if ( ! $this->is_woo_core_version_compatible() ) {
+			$invalid_dependencies[] = self::WOOCORE_INCOMPATIBLE;
+		}
+
+		if ( ! $this->is_wc_admin_enabled() ) {
+			$invalid_dependencies[] = self::WOOADMIN_NOT_FOUND;
+		}
+
+		if ( ! $this->is_wc_admin_version_compatible() ) {
+			$invalid_dependencies[] = self::WOOADMIN_INCOMPATIBLE;
+		}
+
+		if ( ! $this->is_wp_version_compatible() ) {
+			$invalid_dependencies[] = self::WP_INCOMPATIBLE;
+		}
+
+		return $invalid_dependencies;
+
 	}
 
 	/**
