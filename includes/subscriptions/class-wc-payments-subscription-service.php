@@ -290,7 +290,7 @@ class WC_Payments_Subscription_Service {
 			return $tax_rates;
 		}
 
-		$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
+		$tax_rate_ids = $item->get_taxes()['total'];
 
 		if ( ! $tax_rate_ids ) {
 			return $tax_rates;
@@ -303,12 +303,22 @@ class WC_Payments_Subscription_Service {
 		}
 
 		foreach ( $subscription->get_taxes() as $tax ) {
-			if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) ) {
-				$tax_rates[] = [
+
+			if ( isset( $tax_rate_ids[ $tax->get_rate_id() ] ) ) {
+				$tax_rate = [
 					'display_name' => $tax->get_name(),
 					'inclusive'    => $tax_inclusive,
 					'percentage'   => $tax->get_rate_percent(),
 				];
+
+				// Tax rates cannot be applied to WCPay Subscriptions in a compounding way so we need to reverse engineer the rate ourselves.
+				if ( $tax->is_compound() ) {
+					$tax_rate['inclusive']  = false; // Compounding tax rates are calculated as exclusive rates.
+					$tax_amount             = $tax_rate_ids[ $tax->get_rate_id() ];
+					$tax_rate['percentage'] = round( ( $tax_amount / $item->get_total() ) * 100, 4 );
+				}
+
+				$tax_rates[] = $tax_rate;
 			}
 		}
 
