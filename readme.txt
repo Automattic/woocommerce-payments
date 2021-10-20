@@ -107,6 +107,8 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Missing customer information after guest checkout via Checkout Block
 * Update - display fees per payment method on overview page.
 * Fix - Multi-Currency settings rounding option and preview.
+* Fix - Payment failure on checkout block with UPE when phone number field is hidden
+* Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
 * Add - Add compatibility between Multi-Currency and WooCommerce FedEx shipping extension.
 
 = 3.1.0 - 2021-10-06 =
