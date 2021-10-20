@@ -34,6 +34,11 @@ describe( 'PaymentMethodsSelector', () => {
 			'sepa_debit',
 			'sofort',
 		] );
+		global.wcSettings = {
+			currentUserData: {
+				email: 'test@example.com',
+			},
+		};
 	} );
 
 	test( 'Displays "Add payment Method" button, modal is not visible', () => {
@@ -264,6 +269,13 @@ describe( 'PaymentMethodsSelector', () => {
 			name: 'iDEAL',
 		} );
 		user.click( idealCheckbox );
+
+		// iDeal displays a confirmation modal and then checks the checkbox
+		const continueButton = screen.getByRole( 'button', {
+			name: 'Continue',
+		} );
+		user.click( continueButton );
+
 		const addSelectedButton = screen.getByRole( 'button', {
 			name: 'Add selected',
 		} );
