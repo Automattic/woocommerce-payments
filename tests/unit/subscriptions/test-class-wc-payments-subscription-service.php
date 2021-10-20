@@ -76,6 +76,24 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Mock get_period static method.
+	 *
+	 * @param string $period Subscription period.
+	 */
+	private function mock_get_period( $period ) {
+		WC_Subscriptions_Product::set_period( $period );
+	}
+
+	/**
+	 * Mock get_interval static method.
+	 *
+	 * @param int $interval Subscription interval.
+	 */
+	private function mock_get_interval( $interval ) {
+		WC_Subscriptions_Product::set_interval( $interval );
+	}
+
+	/**
 	 * Test WC_Payments_Subscription_Service->get_wcpay_subscription().
 	 */
 	public function test_get_wcpay_subscription() {
@@ -99,7 +117,11 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	 * Test WC_Payments_Subscription_Service->create_subscription()
 	 */
 	public function test_create_subscription() {
-		$mock_subscription_product = new WC_Subscriptions_Product();
+		$mock_subscription            = new WC_Subscription();
+		$mock_subscription->trial_end = 0;
+		$mock_subscription_product    = new WC_Subscriptions_Product();
+		$this->mock_get_period( 'month' );
+		$this->mock_get_interval( 1 );
 		$mock_subscription_product->save();
 		$mock_order         = WC_Helper_Order::create_order( 1, 50, $mock_subscription_product );
 		$mock_line_item     = array_values( $mock_order->get_items() )[0];
@@ -218,7 +240,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->willReturn( 'wcpay_price_test123' );
 
 		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_stripe_product_id_for_item' )
+			->method( 'get_wcpay_product_id_for_item' )
 			->willReturn( 'wcpay_prod_test123' );
 
 		$this->mock_api_client->expects( $this->once() )
@@ -259,7 +281,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->method( 'get_wcpay_price_id' );
 
 		$this->mock_product_service->expects( $this->never() )
-			->method( 'get_stripe_product_id_for_item' );
+			->method( 'get_wcpay_product_id_for_item' );
 
 		$this->mock_api_client->expects( $this->never() )
 			->method( 'create_subscription' );
@@ -405,6 +427,8 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$mock_subscription            = new WC_Subscription();
 		$mock_subscription->trial_end = 0;
 		$mock_subscription_product    = new WC_Subscriptions_Product();
+		$this->mock_get_period( 'month' );
+		$this->mock_get_interval( 1 );
 		$mock_subscription_product->save();
 		$mock_order         = WC_Helper_Order::create_order( 1, 50, $mock_subscription_product );
 		$mock_line_item     = array_values( $mock_order->get_items() )[0];
