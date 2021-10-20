@@ -50,11 +50,6 @@ class WC_Payments_Dependency_Service {
 			return true;
 		}
 
-		// Return cached result, if available.
-		if ( is_bool( $this->has_valid_dependencies ) ) {
-			return $this->has_valid_dependencies;
-		}
-
 		$passed = true;
 
 		try {
@@ -147,8 +142,9 @@ class WC_Payments_Dependency_Service {
 	 * @throws Invalid_Dependency_Exception If this dependency check does not pass.
 	 */
 	public function is_wc_admin_enabled() {
+
 		// Check if the current WooCommerce version has WooCommerce Admin bundled (WC 4.0+) but it's disabled using a filter.
-		if ( ! defined( 'WC_ADMIN_VERSION_NUMBER' ) ) {
+		if ( ! defined( 'WC_ADMIN_VERSION_NUMBER' ) || apply_filters( 'woocommerce_admin_disabled', false ) ) {
 			throw new Invalid_Dependency_Exception( Invalid_Dependency_Exception::WOOADMIN_NOT_FOUND );
 		}
 
