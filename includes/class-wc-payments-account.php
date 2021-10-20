@@ -1002,15 +1002,12 @@ class WC_Payments_Account {
 
 	/**
 	 * Schedule an ActionScheduler job to refresh the cached account data. When the account cache is
-	 * expired, we schedule a job to refresh the cache in 2 hours.
+	 * expired, we schedule a job to refresh the cache in 2 hours. The only time this function gets called is
+	 * when we are saving to the cache, so we always want to re-schedule the job even if it already exists.
 	 */
 	private function schedule_account_cache_refresh() {
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->payments_api_client );
 		$action_hook              = self::ACCOUNT_CACHE_REFRESH_ACTION;
-
-		if ( $action_scheduler_service->pending_action_exists( $action_hook ) ) {
-			return;
-		}
 
 		$action_time = time() + ( 2 * HOUR_IN_SECONDS );
 		$action_scheduler_service->schedule_job( $action_time, $action_hook );
