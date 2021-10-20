@@ -482,7 +482,10 @@ class WC_Payments_Subscription_Service {
 			$subscription,
 			[
 				'cancel_at_period_end' => 'false',
-				'pause_collection'     => '',
+				'pause_collection'     => [
+					'behavior'   => 'void',
+					'resumes_at' => time(),
+				],
 			]
 		);
 	}
