@@ -205,13 +205,13 @@ class WC_Payments_Product_Service {
 	 *
 	 * @since x.x.x
 	 *
-	 * @param int        $product_id The ID of the product to handle.
-	 * @param WC_Product $product    The product object to handle. Only subscription products will be created or updated in WC Pay.
+	 * @param int $product_id The ID of the product to handle.
 	 */
-	public function maybe_schedule_product_create_or_update( int $product_id, WC_Product $product ) {
+	public function maybe_schedule_product_create_or_update( int $product_id ) {
 
 		// Skip products which have already been scheduled or aren't subscriptions.
-		if ( isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+		$product = wc_get_product( $product_id );
+		if ( ! $product || isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return;
 		}
 
@@ -477,16 +477,14 @@ class WC_Payments_Product_Service {
 	 * Attaches the callbacks used to update product changes in WC Pay.
 	 */
 	private function add_product_update_listeners() {
-		add_action( 'woocommerce_update_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
-		add_action( 'woocommerce_update_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
+		add_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 	}
 
 	/**
 	 * Removes the callbacks used to update product changes in WC Pay.
 	 */
 	private function remove_product_update_listeners() {
-		remove_action( 'woocommerce_update_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 10 );
-		remove_action( 'woocommerce_update_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10 );
+		remove_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 	}
 
 	/**
