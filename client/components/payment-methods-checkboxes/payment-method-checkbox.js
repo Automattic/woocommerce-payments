@@ -75,7 +75,7 @@ const PaymentMethodCheckbox = ( {
 				label={ label }
 				disabled={ disabled }
 			/>
-			<div className={ 'payment-method-checkbox__statuses' }>
+			<div className={ 'payment-method-checkbox__pills' }>
 				{ disabled && (
 					<Tooltip
 						content={ sprintf(
@@ -94,8 +94,6 @@ const PaymentMethodCheckbox = ( {
 						</Pill>
 					</Tooltip>
 				) }
-			</div>
-			{ upeCapabilityStatuses.ACTIVE === status && (
 				<Tooltip
 					content={ __(
 						'Base transaction fees',
@@ -103,7 +101,6 @@ const PaymentMethodCheckbox = ( {
 					) }
 				>
 					<Pill
-						className="payment-method-checkbox__fees"
 						aria-label={ sprintf(
 							__(
 								'Base transaction fees: %s',
@@ -119,8 +116,8 @@ const PaymentMethodCheckbox = ( {
 						</span>
 					</Pill>
 				</Tooltip>
-			) }
-			<PaymentMethodDescription name={ name } />
+				<PaymentMethodDescription name={ name } />
+			</div>
 		</li>
 	);
 };

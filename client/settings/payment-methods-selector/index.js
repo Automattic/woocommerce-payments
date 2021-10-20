@@ -22,6 +22,7 @@ import CurrencyInformationForMethods from '../../components/currency-information
 import WCPaySettingsContext from '../wcpay-settings-context';
 import PaymentMethodsMap from '../../payment-methods-map';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import './style.scss';
 
 const AddPaymentMethodsModal = ( { onClose } ) => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
@@ -72,6 +73,7 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 			// using this because when the tooltips inside the modal are clicked, they cause the modal to close
 			shouldCloseOnClickOutside={ false }
 			onRequestClose={ onClose }
+			className={ 'wcpay-payment-methods-add-modal' }
 			actions={
 				<>
 					<Button isSecondary onClick={ onClose }>
