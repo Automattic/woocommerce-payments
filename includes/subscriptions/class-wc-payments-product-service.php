@@ -464,7 +464,7 @@ class WC_Payments_Product_Service {
 	 * @param bool|null $test_mode      Is WC Pay in test/dev mode.
 	 */
 	public function unarchive_price( string $wcpay_price_id, $test_mode = null ) {
-		$data = [ 'active' => 'false' ];
+		$data = [ 'active' => 'true' ];
 
 		if ( null !== $test_mode ) {
 			$data['test_mode'] = $test_mode;
