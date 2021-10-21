@@ -105,7 +105,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @return string             The WC Pay product ID or an empty string.
 	 */
-	public static function get_wcpay_product_id( WC_Product $product, $test_mode = null ) : string {
+	public function get_wcpay_product_id( WC_Product $product, $test_mode = null ) : string {
 		// If the subscription product doesn't have a WC Pay product ID, create one.
 		if ( ! self::has_wcpay_product_id( $product, $test_mode ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
 			$is_current_environment = null === $test_mode || WC_Payments::get_gateway()->is_in_test_mode() === $test_mode;
@@ -469,7 +469,7 @@ class WC_Payments_Product_Service {
 	 * @param bool|null $test_mode      Is WC Pay in test/dev mode.
 	 */
 	public function unarchive_price( string $wcpay_price_id, $test_mode = null ) {
-		$data = [ 'active' => 'false' ];
+		$data = [ 'active' => 'true' ];
 
 		if ( null !== $test_mode ) {
 			$data['test_mode'] = $test_mode;

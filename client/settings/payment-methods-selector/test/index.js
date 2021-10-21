@@ -9,10 +9,12 @@ import user from '@testing-library/user-event';
  * Internal dependencies
  */
 import PaymentMethodsSelector from '..';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
+	useGetPaymentMethodStatuses,
 } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
@@ -20,6 +22,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
 	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
+	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
 } ) );
 
 describe( 'PaymentMethodsSelector', () => {
@@ -34,6 +37,15 @@ describe( 'PaymentMethodsSelector', () => {
 			'sepa_debit',
 			'sofort',
 		] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: upeCapabilityStatuses.ACTIVE,
+			bancontact_payments: upeCapabilityStatuses.ACTIVE,
+			giropay_payments: upeCapabilityStatuses.ACTIVE,
+			ideal_payments: upeCapabilityStatuses.ACTIVE,
+			p24_payments: upeCapabilityStatuses.ACTIVE,
+			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
+			sofort_payments: upeCapabilityStatuses.ACTIVE,
+		} );
 	} );
 
 	test( 'Displays "Add payment Method" button, modal is not visible', () => {

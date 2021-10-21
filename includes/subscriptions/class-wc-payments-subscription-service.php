@@ -137,6 +137,7 @@ class WC_Payments_Subscription_Service {
 		// Save the new token on the WCPay subscription when it's added to a WC subscription.
 		add_action( 'woocommerce_payment_token_added_to_order', [ $this, 'update_wcpay_subscription_payment_method' ], 10, 3 );
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'prevent_wcpay_subscription_changes' ], 10, 3 );
+		add_filter( 'woocommerce_order_actions', [ $this, 'prevent_wcpay_manual_renewal' ], 11, 1 );
 
 		add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
 	}
@@ -621,6 +622,23 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
+	 * Remove pending parent and renewal order creation from admin edit subscriptions page.
+	 *
+	 * @param array $actions Array of available actions.
+	 * @return array Array of updated actions.
+	 */
+	public function prevent_wcpay_manual_renewal( array $actions ) {
+		global $theorder;
+
+		if ( wcs_is_subscription( $theorder ) && self::is_wcpay_subscription( $theorder ) ) {
+			unset( $actions['wcs_create_pending_parent'] );
+			unset( $actions['wcs_create_pending_renewal'] );
+			unset( $actions['wcs_process_renewal'] );
+		}
+		return $actions;
+	}
+
+	/**
 	 * Updates a subscription's next payment date to match the WCPay subscription's payment date.
 	 *
 	 * @param array           $wcpay_subscription The WCPay Subscription data.
@@ -716,38 +734,21 @@ class WC_Payments_Subscription_Service {
 
 			$item_data = [
 				'metadata'  => [ 'wc_item_id' => $item->get_id() ],
-				'price'     => $this->product_service->get_wcpay_price_id( $product ),
 				'quantity'  => $item->get_quantity(),
 				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
 			];
 
-			$product_price         = (float) $product->get_price();
-			$product_interval      = (int) WC_Subscriptions_Product::get_interval( $product );
-			$product_period        = WC_Subscriptions_Product::get_period( $product );
-			$inclusive_taxes       = $subscription->get_prices_include_tax() ? array_sum( $item->get_taxes()['total'] ) : 0;
-			$item_total            = floatval( $item->get_total() + $inclusive_taxes ) / $item->get_quantity();
-			$subscription_interval = (int) $subscription->get_billing_interval();
-			$subscription_period   = $subscription->get_billing_period();
-
-			if (
-				$product_price !== $item_total ||
-				$product_interval !== $subscription_interval ||
-				$product_period !== $subscription_period
-			) {
-				unset( $item_data['price'] );
-
-				$item_data['price_data'] = $this->format_item_price_data(
-					$subscription->get_currency(),
-					$this->product_service->get_wcpay_product_id( $product ),
-					$item->get_total() / $item->get_quantity(),
-					$subscription_period,
-					$subscription_interval
-				);
-
-				foreach ( $item_data['tax_rates'] as $index => $tax_data ) {
-					$item_data['tax_rates'][ $index ]['inclusive'] = false;
-				}
+			foreach ( $item_data['tax_rates'] as $index => $tax_data ) {
+				$item_data['tax_rates'][ $index ]['inclusive'] = false;
 			}
+
+			$item_data['price_data'] = $this->format_item_price_data(
+				$subscription->get_currency(),
+				$this->product_service->get_wcpay_product_id( $product ),
+				$item->get_total() / $item->get_quantity(),
+				$subscription->get_billing_period(),
+				$subscription->get_billing_interval()
+			);
 
 			$data[] = $item_data;
 		}

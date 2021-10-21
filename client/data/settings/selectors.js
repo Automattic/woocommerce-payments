@@ -27,6 +27,10 @@ export const getAvailablePaymentMethodIds = ( state ) => {
 	return getSettings( state ).available_payment_method_ids || EMPTY_ARR;
 };
 
+export const getPaymentMethodStatuses = ( state ) => {
+	return getSettings( state ).payment_method_statuses || EMPTY_ARR;
+};
+
 export const isSavingSettings = ( state ) => {
 	return getSettingsState( state ).isSaving || false;
 };
