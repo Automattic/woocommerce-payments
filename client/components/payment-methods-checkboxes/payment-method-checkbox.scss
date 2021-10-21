@@ -26,15 +26,28 @@
 
 	.components-base-control__field {
 		margin-bottom: 0;
+		@include breakpoint( '<660px' ) {
+			display: flex;
+			margin: 4px 0;
+		}
 	}
 
-	&__fees {
+	&__pills {
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: center;
+		gap: 5px;
 		margin-left: auto;
 		margin-right: 3px;
 		text-transform: uppercase;
 
+		.wcpay-pill {
+			margin: 0;
+		}
+
 		@include breakpoint( '<660px' ) {
 			margin-left: 40px;
+			flex-wrap: wrap;
 		}
 	}
 
@@ -49,7 +62,22 @@
 .woocommerce-payments__payment-method-icon {
 	@include breakpoint( '<660px' ) {
 		svg {
-			display: none;
+			margin-right: 4px;
 		}
+	}
+}
+
+.wcpay-pill {
+	margin-left: $gap-smaller;
+	&.payment-status-pending-approval,
+	&.payment-status-pending-verification {
+		border: 0 solid transparent;
+		background: #f0b849;
+		color: #1f1f1f;
+	}
+	&.payment-status-inactive {
+		border: 0 solid transparent;
+		background: #cc1818;
+		color: #fff;
 	}
 }
