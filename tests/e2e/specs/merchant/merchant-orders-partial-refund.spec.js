@@ -189,7 +189,7 @@ describe.each( dataTable )(
 					text: `$${ refundTotalString } USD will be deducted from a future deposit.`,
 				} ),
 				expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-					text: 'Payment status changed to Partial Refund.',
+					text: 'Payment status changed to partial refund.',
 				} ),
 			] );
 		} );

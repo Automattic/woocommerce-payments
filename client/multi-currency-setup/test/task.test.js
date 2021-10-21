@@ -20,7 +20,7 @@ jest.mock( '@woocommerce/navigation', () => ( {
 
 describe( 'createMultiCurrencySetupTask()', () => {
 	beforeEach( () => {
-		MultiCurrencySetup.mockReturnValue( <p>Multi Currency Setup Task</p> );
+		MultiCurrencySetup.mockReturnValue( <p>Multi-Currency setup task</p> );
 	} );
 
 	afterEach( () => {
@@ -57,7 +57,7 @@ describe( 'createMultiCurrencySetupTask()', () => {
 			'Sell worldwide in multiple currencies'
 		);
 		expect(
-			screen.queryByText( 'Multi Currency Setup Task' )
+			screen.queryByText( 'Multi-Currency setup task' )
 		).toBeInTheDocument();
 	} );
 

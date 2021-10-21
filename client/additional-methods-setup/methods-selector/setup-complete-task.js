@@ -80,7 +80,7 @@ const SetupComplete = () => {
 				<div className="setup-complete-task__buttons">
 					<Button onClick={ handleGoHome } isPrimary>
 						{ __(
-							'Go to WooCommerce Home',
+							'Go to WooCommerce home',
 							'woocommerce-payments'
 						) }
 					</Button>

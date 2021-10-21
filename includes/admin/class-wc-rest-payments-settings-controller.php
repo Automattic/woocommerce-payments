@@ -91,7 +91,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_multi_currency_enabled'         => [
-						'description'       => __( 'WooCommerce Payments multi currency feature flag setting.', 'woocommerce-payments' ),
+						'description'       => __( 'WooCommerce Payments Multi-Currency feature flag setting.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'is_wcpay_subscription_enabled'     => [
+						'description'       => __( 'WooCommerce Payments Subscriptions feature flag setting.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
@@ -190,6 +195,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_test_mode_enabled'              => $this->wcpay_gateway->is_in_test_mode(),
 				'is_dev_mode_enabled'               => $this->wcpay_gateway->is_in_dev_mode(),
 				'is_multi_currency_enabled'         => WC_Payments_Features::is_customer_multi_currency_enabled(),
+				'is_wcpay_subscriptions_enabled'    => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
+				'is_wcpay_subscriptions_eligible'   => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
+				'is_subscriptions_plugin_active'    => $this->wcpay_gateway->is_subscriptions_plugin_active(),
 				'account_statement_descriptor'      => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
 				'is_payment_request_enabled'        => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
 				'is_debug_log_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
@@ -198,6 +206,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_type'       => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
 				'payment_request_button_theme'      => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
 				'is_saved_cards_enabled'            => $this->wcpay_gateway->is_saved_cards_enabled(),
+				'is_card_present_eligible'          => $this->wcpay_gateway->is_card_present_eligible(),
 			]
 		);
 	}
@@ -214,6 +223,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_test_mode_enabled( $request );
 		$this->update_is_debug_log_enabled( $request );
 		$this->update_is_multi_currency_enabled( $request );
+		$this->update_is_wcpay_subscriptions_enabled( $request );
 		$this->update_account_statement_descriptor( $request );
 		$this->update_is_payment_request_enabled( $request );
 		$this->update_payment_request_enabled_locations( $request );
@@ -323,7 +333,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates Customer multi currency feature status.
+	 * Updates customer Multi-Currency feature status.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
@@ -335,6 +345,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_multi_currency_enabled = $request->get_param( 'is_multi_currency_enabled' );
 
 		update_option( '_wcpay_feature_customer_multi_currency', $is_multi_currency_enabled ? '1' : '0' );
+	}
+
+	/**
+	 * Updates the WCPay Subscriptions feature status.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_wcpay_subscriptions_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_wcpay_subscriptions_enabled' ) ) {
+			return;
+		}
+
+		$is_wcpay_subscriptions_enabled = $request->get_param( 'is_wcpay_subscriptions_enabled' );
+
+		update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, $is_wcpay_subscriptions_enabled ? '1' : '0' );
 	}
 
 	/**

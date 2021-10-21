@@ -19,7 +19,7 @@ use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that controls Multi Currency functionality.
+ * Class that controls Multi-Currency functionality.
  */
 class MultiCurrency {
 
@@ -229,7 +229,7 @@ class MultiCurrency {
 
 	/**
 	 * Called after the WooCommerce session has been initialized. Initialises the available currencies,
-	 * default currency and enabled currencies for the multi currency plugin.
+	 * default currency and enabled currencies for the Multi-Currency plugin.
 	 *
 	 * @return void
 	 */
@@ -255,7 +255,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 
@@ -856,9 +856,7 @@ class MultiCurrency {
 	 * @return float The adjusted price.
 	 */
 	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
-		if ( 'none' !== $currency->get_rounding() ) {
-			$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
-		}
+		$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
 
 		if ( $apply_charm_pricing ) {
 			$price += floatval( $currency->get_charm() );
@@ -1273,7 +1271,7 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Gets the multi currency onboarding preview overrides from the querystring.
+	 * Gets the Multi-Currency onboarding preview overrides from the querystring.
 	 *
 	 * @return  array  Override variables
 	 */
@@ -1369,7 +1367,7 @@ class MultiCurrency {
 
 	/**
 	 * Checks if the currently displayed page is the WooCommerce Payments
-	 * settings page for the multi currency settings.
+	 * settings page for the Multi-Currency settings.
 	 *
 	 * @return bool
 	 */

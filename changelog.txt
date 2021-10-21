@@ -5,19 +5,28 @@
 * Add - UPE track on upgrade and on setting toggle.
 * Fix - Prevent currency switcher to show when enabled currencies list is empty.
 * Fix - Show currency switcher notice until customer explicitly dismisses it.
+* Update - Switch the PaymentIntent ID and the Charge ID in the order notes and transaction details pages.
+* Fix - Track 'wcpay_payment_request_settings_change' for when updating the Payment Requests setting not being recorded.
 * Update - Fee breakdown when there's only a base fee
 * Fix - Inconsistent shipping options in Payment Request popup.
+* Update - Remove unused "wcpay_deposits_summary_empty_state_click" track.
+* Fix - Applied sentence case on all strings.
+* Fix - Missing customer information after guest checkout via Checkout Block.
+* Fix - Show correct payment method name during checkout using upe methods.
+* Update - display fees per payment method on overview page.
+* Fix - Multi-Currency settings rounding option and preview.
+* Fix - Payment failure on checkout block with UPE when phone number field is hidden
+* Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
 * Add - Customer multi-currency onboarding flow.
-* Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
+* Add - Checkbox toggle for disabling customer Multi-Currency feature in Advanced Settings.
 * Add - Update layout of the Multi-currency settings screen.
 * Fix - Fixed missing file error for removed CSS file.
 * Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
 * Fix - Currency switcher does not affect order confirmation screen prices.
 * Fix - Error when attempting to change the payment method for a subscription with UPE enabled.
-* Fix - Track for when updating the Payment Requests setting not being recorded.
 * Add - Multi-Currency track currency added.
 * Fix - Fill missing order_intent_info even if an exception occurs.
 * Fix - Authorize and capture payments later with new credit cards.

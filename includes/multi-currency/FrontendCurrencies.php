@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Payments Multi Currency Frontend Currencies
+ * WooCommerce Payments Multi-Currency Frontend Currencies
  *
  * @package WooCommerce\Payments
  */
@@ -13,7 +13,7 @@ use WC_Payments_Localization_Service;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that formats Multi Currency currencies on the frontend.
+ * Class that formats Multi-Currency currencies on the frontend.
  */
 class FrontendCurrencies {
 	/**
@@ -38,6 +38,13 @@ class FrontendCurrencies {
 	protected $utils;
 
 	/**
+	 * Multi-currency compatibility instance.
+	 *
+	 * @var Compatibility
+	 */
+	protected $compatibility;
+
+	/**
 	 * Multi-Currency currency formatting map.
 	 *
 	 * @var array
@@ -58,11 +65,13 @@ class FrontendCurrencies {
 	 * @param MultiCurrency                    $multi_currency       The MultiCurrency instance.
 	 * @param WC_Payments_Localization_Service $localization_service The Localization Service instance.
 	 * @param Utils                            $utils                Utils instance.
+	 * @param Compatibility                    $compatibility        Compatibility instance.
 	 */
-	public function __construct( MultiCurrency $multi_currency, WC_Payments_Localization_Service $localization_service, Utils $utils ) {
+	public function __construct( MultiCurrency $multi_currency, WC_Payments_Localization_Service $localization_service, Utils $utils, Compatibility $compatibility ) {
 		$this->multi_currency       = $multi_currency;
 		$this->localization_service = $localization_service;
 		$this->utils                = $utils;
+		$this->compatibility        = $compatibility;
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			// Currency hooks.
@@ -93,6 +102,9 @@ class FrontendCurrencies {
 	 * @return string The code of the currency to be used.
 	 */
 	public function get_woocommerce_currency(): string {
+		if ( $this->compatibility->should_return_store_currency() ) {
+			return $this->multi_currency->get_default_currency()->get_code();
+		}
 		return $this->multi_currency->get_selected_currency()->get_code();
 	}
 
