@@ -171,6 +171,13 @@ export const useGetAvailablePaymentMethodIds = () =>
 		return getAvailablePaymentMethodIds();
 	} );
 
+export const useGetPaymentMethodStatuses = () =>
+	useSelect( ( select ) => {
+		const { getPaymentMethodStatuses } = select( STORE_NAME );
+
+		return getPaymentMethodStatuses();
+	} );
+
 export const useSettings = () => {
 	const { saveSettings } = useDispatch( STORE_NAME );
 
