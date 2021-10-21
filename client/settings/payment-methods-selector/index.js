@@ -23,7 +23,6 @@ import CurrencyInformationForMethods from '../../components/currency-information
 import WCPaySettingsContext from '../wcpay-settings-context';
 import PaymentConfirmIllustration from 'wcpay/components/payment-confirm-illustration';
 import interpolateComponents from 'interpolate-components';
-import PaymentMethodsMap from '../../payment-methods-map';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import './style.scss';
 
