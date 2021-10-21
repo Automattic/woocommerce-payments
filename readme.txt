@@ -109,7 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Multi-Currency settings rounding option and preview.
 * Fix - Payment failure on checkout block with UPE when phone number field is hidden
 * Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
-* Add - Add SEPA Debit to available UPE payment methods.
+* Add - Early access: allow your store to collect payments with SEPA Direct Debit. Enable the feature in settings!
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
