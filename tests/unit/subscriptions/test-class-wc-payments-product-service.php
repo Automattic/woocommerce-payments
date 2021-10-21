@@ -13,9 +13,9 @@ use WCPay\Exceptions\API_Exception;
  */
 class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 
-	const PRODUCT_HASH_KEY = '_wcpay_product_hash';
-	const PRODUCT_ID_KEY   = '_wcpay_product_id';
-	const PRICE_ID_KEY     = '_wcpay_product_price_id';
+	const LIVE_PRODUCT_ID_KEY = '_wcpay_product_id_live';
+	const TEST_PRODUCT_ID_KEY = '_wcpay_product_id_test';
+	const LIVE_PRICE_ID_KEY   = '_wcpay_product_price_id_live';
 
 	/**
 	 * System under test.
@@ -42,6 +42,10 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$this->product_service = new WC_Payments_Product_Service( $this->mock_api_client );
 	}
 
+	public function tearDown() {
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
+	}
+
 	/**
 	 * Test create product.
 	 */
@@ -59,22 +63,22 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$this->mock_get_period( 'month' );
 		$this->mock_get_interval( 3 );
 		$this->product_service->create_product( $this->mock_product );
-		$this->assertEquals( 'prod_test123', $this->mock_product->get_meta( self::PRODUCT_ID_KEY, true ) );
-		$this->assertEquals( 'price_test123', $this->mock_product->get_meta( self::PRICE_ID_KEY, true ) );
+		$this->assertEquals( 'prod_test123', $this->mock_product->get_meta( self::LIVE_PRODUCT_ID_KEY, true ) );
+		$this->assertEquals( 'price_test123', $this->mock_product->get_meta( self::LIVE_PRICE_ID_KEY, true ) );
 	}
 
 	/**
 	 * Test update product.
 	 */
-	public function test_update_product() {
-		$this->mock_product->update_meta_data( self::PRODUCT_ID_KEY, 'prod_test123' );
+	public function test_update_products_live_only() {
+		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY, 'prod_test123' );
 		$this->mock_product->save();
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_product' )
 			->with(
 				'prod_test123',
-				$this->get_mock_product_data()
+				$this->get_mock_product_data( [ 'test_mode' => false ] )
 			)
 			->willReturn(
 				[
@@ -85,7 +89,39 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_get_period( 'month' );
 		$this->mock_get_interval( 3 );
-		$this->product_service->update_product( $this->mock_product );
+		$this->product_service->update_products( $this->mock_product );
+	}
+
+	/**
+	 * Test update product.
+	 */
+	public function test_update_products_live_and_test() {
+		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY, 'prod_test123_live' );
+		$this->mock_product->update_meta_data( self::TEST_PRODUCT_ID_KEY, 'prod_test123_test' );
+		$this->mock_product->save();
+
+		$this->mock_api_client->expects( $this->exactly( 2 ) )
+			->method( 'update_product' )
+			->withConsecutive(
+				[
+					'prod_test123_live',
+					$this->get_mock_product_data( [ 'test_mode' => false ] ),
+				],
+				[
+					'prod_test123_test',
+					$this->get_mock_product_data( [ 'test_mode' => true ] ),
+				]
+			)
+			->willReturn(
+				[
+					'wcpay_product_id' => 'dummy',
+					'wcpay_price_id'   => 'dummy',
+				]
+			);
+
+		$this->mock_get_period( 'month' );
+		$this->mock_get_interval( 3 );
+		$this->product_service->update_products( $this->mock_product );
 	}
 
 	/**
@@ -94,15 +130,18 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 	 * Note: This also tests unarchive_product
 	 */
 	public function test_archive_product() {
-		$this->mock_product->update_meta_data( self::PRODUCT_ID_KEY, 'prod_test123' );
-		$this->mock_product->update_meta_data( self::PRICE_ID_KEY, 'price_test123' );
+		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY, 'prod_test123' );
+		$this->mock_product->update_meta_data( self::LIVE_PRICE_ID_KEY, 'price_test123' );
 		$this->mock_product->save();
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_price' )
 			->with(
 				'price_test123',
-				[ 'active' => 'false' ]
+				[
+					'active'    => 'false',
+					'test_mode' => false,
+				]
 			)
 			->willReturn(
 				[
@@ -115,7 +154,10 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 			->method( 'update_product' )
 			->with(
 				'prod_test123',
-				[ 'active' => 'false' ]
+				[
+					'active'    => 'false',
+					'test_mode' => false,
+				]
 			)
 			->willReturn(
 				[
@@ -212,12 +254,12 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$ref->setValue( null, $this->product_service );
 
 		$mock_price_id = 'wcpay_test_price_id';
-		$this->mock_product->update_meta_data( WC_Payments_Product_Service::PRICE_ID_KEY, $mock_price_id );
+		$this->mock_product->update_meta_data( WC_Payments_Product_Service::LIVE_PRICE_ID_KEY, $mock_price_id );
 
 		$this->assertSame( $mock_price_id, $this->product_service->get_wcpay_price_id( $this->mock_product ) );
 
 		// Test that deleting the price will cause the product to be created.
-		$this->mock_product->delete_meta_data( WC_Payments_Product_Service::PRICE_ID_KEY );
+		$this->mock_product->delete_meta_data( WC_Payments_Product_Service::LIVE_PRICE_ID_KEY );
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_product' )
 			->with( $this->get_mock_product_data() )
@@ -245,19 +287,19 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$ref->setAccessible( true );
 		$ref->setValue( null, $this->product_service );
 
-		$mock_prodict_id = 'prod_123_wcpay_test_product_id';
-		$this->mock_product->update_meta_data( WC_Payments_Product_Service::PRODUCT_ID_KEY, $mock_prodict_id );
+		$mock_product_id = 'prod_123_wcpay_test_product_id';
+		$this->mock_product->update_meta_data( WC_Payments_Product_Service::LIVE_PRODUCT_ID_KEY, $mock_product_id );
 
-		$this->assertSame( $mock_prodict_id, WC_Payments_Product_Service::get_wcpay_product_id( $this->mock_product ) );
+		$this->assertSame( $mock_product_id, $this->product_service->get_wcpay_product_id( $this->mock_product ) );
 
 		// Test that deleting the price will cause the product to be created.
-		$this->mock_product->delete_meta_data( WC_Payments_Product_Service::PRODUCT_ID_KEY );
+		$this->mock_product->delete_meta_data( WC_Payments_Product_Service::LIVE_PRODUCT_ID_KEY );
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_product' )
 			->with( $this->get_mock_product_data() )
 			->willReturn(
 				[
-					'wcpay_product_id' => $mock_prodict_id,
+					'wcpay_product_id' => $mock_product_id,
 					'wcpay_price_id'   => 'price_test123',
 				]
 			);
@@ -265,6 +307,28 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$this->mock_get_period( 'month' );
 		$this->mock_get_interval( 3 );
 
-		$this->assertSame( $mock_prodict_id, WC_Payments_Product_Service::get_wcpay_product_id( $this->mock_product ) );
+		$this->assertSame( $mock_product_id, $this->product_service->get_wcpay_product_id( $this->mock_product ) );
+	}
+
+	/**
+	 * Tests for WC_Payments_Product_Service::get_wcpay_product_id_option()
+	 */
+	public function test_get_wcpay_product_id_option() {
+		$this->assertSame( '_wcpay_product_id_live', WC_Payments_Product_Service::get_wcpay_product_id_option() );
+
+		// set to testmode.
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		$this->assertSame( '_wcpay_product_id_test', WC_Payments_Product_Service::get_wcpay_product_id_option() );
+	}
+
+	/**
+	 * Tests for WC_Payments_Product_Service::get_wcpay_price_id_option()
+	 */
+	public function test_get_wcpay_price_id_option() {
+		$this->assertSame( '_wcpay_product_price_id_live', WC_Payments_Product_Service::get_wcpay_price_id_option() );
+
+		// set to testmode.
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		$this->assertSame( '_wcpay_product_price_id_test', WC_Payments_Product_Service::get_wcpay_price_id_option() );
 	}
 }

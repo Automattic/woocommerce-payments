@@ -255,7 +255,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 
@@ -856,9 +856,7 @@ class MultiCurrency {
 	 * @return float The adjusted price.
 	 */
 	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
-		if ( 'none' !== $currency->get_rounding() ) {
-			$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
-		}
+		$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
 
 		if ( $apply_charm_pricing ) {
 			$price += floatval( $currency->get_charm() );

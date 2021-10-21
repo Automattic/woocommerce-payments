@@ -76,6 +76,24 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Mock get_period static method.
+	 *
+	 * @param string $period Subscription period.
+	 */
+	private function mock_get_period( $period ) {
+		WC_Subscriptions_Product::set_period( $period );
+	}
+
+	/**
+	 * Mock get_interval static method.
+	 *
+	 * @param int $interval Subscription interval.
+	 */
+	private function mock_get_interval( $interval ) {
+		WC_Subscriptions_Product::set_interval( $interval );
+	}
+
+	/**
 	 * Test WC_Payments_Subscription_Service->get_wcpay_subscription().
 	 */
 	public function test_get_wcpay_subscription() {
@@ -100,6 +118,14 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_create_subscription() {
 		$mock_subscription_product = new WC_Subscriptions_Product();
+		$this->mock_get_period( 'month' );
+		$this->mock_get_interval( 1 );
+		$mock_subscription_product->set_props(
+			[
+				'regular_price' => 10,
+				'price'         => 10,
+			]
+		);
 		$mock_subscription_product->save();
 		$mock_order         = WC_Helper_Order::create_order( 1, 50, $mock_subscription_product );
 		$mock_line_item     = array_values( $mock_order->get_items() )[0];
@@ -107,26 +133,33 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$mock_subscription  = new WC_Subscription();
 		$mock_subscription->set_parent( $mock_order );
 		$mock_wcpay_product_id           = 'wcpay_prod_test123';
-		$mock_wcpay_price_id             = 'wcpay_price_test123';
 		$mock_wcpay_subscription_id      = 'wcpay_subscription_test12345';
 		$mock_wcpay_subscription_item_id = 'wcpay_subscription_item_test12345';
 		$mock_subscription_data          = [
 			'customer' => '1',
 			'items'    => [
 				[
-					'price'     => $mock_wcpay_price_id,
-					'quantity'  => 4,
-					'metadata'  => [
+					'quantity'   => 4,
+					'metadata'   => [
 						'wc_item_id' => $mock_line_item->get_id(),
 					],
-					'tax_rates' => [],
+					'tax_rates'  => [],
+					'price_data' => [
+						'currency'            => 'USD',
+						'product'             => '',
+						'unit_amount_decimal' => 1000.0,
+						'recurring'           => [
+							'interval'       => 'month',
+							'interval_count' => 1,
+						],
+					],
 				],
 				[
 					'price_data' => [
-						'product'     => $mock_wcpay_product_id,
-						'currency'    => 'USD',
-						'unit_amount' => 1000,
-						'recurring'   => [
+						'product'             => $mock_wcpay_product_id,
+						'currency'            => 'USD',
+						'unit_amount_decimal' => 1000.0,
+						'recurring'           => [
 							'interval'       => 'month',
 							'interval_count' => 1,
 						],
@@ -147,11 +180,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_subscription_data['customer'] );
 
 		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_wcpay_price_id' )
-			->willReturn( $mock_wcpay_price_id );
-
-		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_stripe_product_id_for_item' )
+			->method( 'get_wcpay_product_id_for_item' )
 			->willReturn( $mock_wcpay_product_id );
 
 		$this->mock_api_client->expects( $this->once() )
@@ -214,11 +243,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->willReturn( 'wcpay_cus_test123' );
 
 		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_wcpay_price_id' )
-			->willReturn( 'wcpay_price_test123' );
-
-		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_stripe_product_id_for_item' )
+			->method( 'get_wcpay_product_id_for_item' )
 			->willReturn( 'wcpay_prod_test123' );
 
 		$this->mock_api_client->expects( $this->once() )
@@ -259,7 +284,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->method( 'get_wcpay_price_id' );
 
 		$this->mock_product_service->expects( $this->never() )
-			->method( 'get_stripe_product_id_for_item' );
+			->method( 'get_wcpay_product_id_for_item' );
 
 		$this->mock_api_client->expects( $this->never() )
 			->method( 'create_subscription' );
@@ -345,10 +370,12 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	 * Test WC_Payments_Subscription_Service->update_wcpay_subscription_payment_method()
 	 */
 	public function test_update_wcpay_subscription_payment_method() {
+		$mock_order                 = WC_Helper_Order::create_order();
 		$subscription               = new WC_Subscription();
 		$mock_wcpay_subscription_id = 'wcpay_subscription_test12345';
 		$mock_wcpay_token_id        = 'wcpay_test_token1234';
 		$token                      = WC_Helper_Token::create_token( $mock_wcpay_token_id, 1 );
+		$subscription->set_parent( $mock_order );
 
 		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $mock_wcpay_subscription_id );
 
@@ -403,6 +430,14 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$mock_subscription            = new WC_Subscription();
 		$mock_subscription->trial_end = 0;
 		$mock_subscription_product    = new WC_Subscriptions_Product();
+		$this->mock_get_period( 'month' );
+		$this->mock_get_interval( 1 );
+		$mock_subscription_product->set_props(
+			[
+				'regular_price' => 10,
+				'price'         => 10,
+			]
+		);
 		$mock_subscription_product->save();
 		$mock_order         = WC_Helper_Order::create_order( 1, 50, $mock_subscription_product );
 		$mock_line_item     = array_values( $mock_order->get_items() )[0];
@@ -423,11 +458,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		update_user_option( 1, WC_Payments_Customer_Service::WCPAY_LIVE_CUSTOMER_ID_OPTION, $mock_wcpay_customer_id );
 
 		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_wcpay_price_id' )
-			->willReturn( 'wcpay_price_test123' );
-
-		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_stripe_product_id_for_item' )
+			->method( 'get_wcpay_product_id_for_item' )
 			->willReturn( 'wcpay_prod_test123' );
 
 		$expected_result = [
@@ -442,19 +473,27 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			],
 			'items'     => [
 				[
-					'metadata'  => [
+					'metadata'   => [
 						'wc_item_id' => $mock_line_item->get_id(),
 					],
-					'price'     => 'wcpay_price_test123',
-					'quantity'  => 4,
-					'tax_rates' => [],
+					'quantity'   => 4,
+					'tax_rates'  => [],
+					'price_data' => [
+						'currency'            => 'USD',
+						'product'             => '',
+						'unit_amount_decimal' => 1000.0,
+						'recurring'           => [
+							'interval'       => 'month',
+							'interval_count' => 1,
+						],
+					],
 				],
 				[
 					'price_data' => [
-						'product'     => 'wcpay_prod_test123',
-						'currency'    => 'USD',
-						'unit_amount' => 1000,
-						'recurring'   => [
+						'product'             => 'wcpay_prod_test123',
+						'currency'            => 'USD',
+						'unit_amount_decimal' => 1000.0,
+						'recurring'           => [
 							'interval'       => 'month',
 							'interval_count' => 1,
 						],
@@ -668,5 +707,20 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$this->subscription_service->update_dates_to_match_wcpay_subscription( $wcpay_dates, $subscription );
 
 		$this->assertEquals( $next_payment_time, $subscription->get_time( 'next_payment' ) );
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service::format_item_price_data().
+	 */
+	public function test_format_item_price_data() {
+		$expected = [
+			'currency'            => 'USD',
+			'product'             => '',
+			'unit_amount_decimal' => 1033.33,
+		];
+
+		$actual = WC_Payments_Subscription_Service::format_item_price_data( 'USD', '', 10.3333 );
+
+		$this->assertEquals( $expected, $actual );
 	}
 }
