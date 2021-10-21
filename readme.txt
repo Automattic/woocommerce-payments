@@ -108,6 +108,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - display fees per payment method on overview page.
 * Fix - Multi-Currency settings rounding option and preview.
 * Fix - Payment failure on checkout block with UPE when phone number field is hidden
+* Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
 * Fix - Improve error messages when the minimum order amount has not been reached and allow UPE fields to be displayed with less than the minimum amount.
 
 = 3.1.0 - 2021-10-06 =
