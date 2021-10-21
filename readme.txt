@@ -112,6 +112,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Add compatibility between Multi-Currency and WooCommerce FedEx shipping extension.
 * Fix - Fix decimal error with shipping calculations with Multi-Currency.
 * Fix - Allow payment_intent_succeeded webhook to handle orders without intent_id attached.
+* Add - Add compatibility between Multi-Currency and WooCommerce Product Add Ons version 4.3.0 and higher.
 * Add - Enable P24 UPE method.
 
 = 3.1.0 - 2021-10-06 =
