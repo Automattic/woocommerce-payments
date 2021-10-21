@@ -143,7 +143,6 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 					'metadata'   => [
 						'wc_item_id' => $mock_line_item->get_id(),
 					],
-					'tax_rates'  => [],
 					'price_data' => [
 						'currency'            => 'USD',
 						'product'             => '',
@@ -166,8 +165,8 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 					],
 					'metadata'   => [
 						'wc_item_id' => $mock_shipping_item->get_id(),
+						'method'     => $mock_shipping_item->get_name(),
 					],
-					'tax_rates'  => [],
 				],
 			],
 		];
@@ -477,7 +476,6 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 						'wc_item_id' => $mock_line_item->get_id(),
 					],
 					'quantity'   => 4,
-					'tax_rates'  => [],
 					'price_data' => [
 						'currency'            => 'USD',
 						'product'             => '',
@@ -500,8 +498,8 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 					],
 					'metadata'   => [
 						'wc_item_id' => $mock_shipping_item->get_id(),
+						'method'     => $mock_shipping_item->get_name(),
 					],
-					'tax_rates'  => [],
 				],
 			],
 		];
