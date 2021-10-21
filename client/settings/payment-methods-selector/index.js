@@ -13,15 +13,20 @@ import {
 	useCurrencies,
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
+	useGetPaymentMethodStatuses,
 } from 'wcpay/data';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import ConfirmationModal from '../../components/confirmation-modal';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 import WCPaySettingsContext from '../wcpay-settings-context';
+import PaymentMethodsMap from '../../payment-methods-map';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import './style.scss';
 
 const AddPaymentMethodsModal = ( { onClose } ) => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
+	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 
 	const [
 		enabledPaymentMethods,
@@ -68,6 +73,7 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 			// using this because when the tooltips inside the modal are clicked, they cause the modal to close
 			shouldCloseOnClickOutside={ false }
 			onRequestClose={ onClose }
+			className={ 'wcpay-payment-methods-add-modal' }
 			actions={
 				<>
 					<Button isSecondary onClick={ onClose }>
@@ -96,6 +102,11 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 						checked={ selectedPaymentMethods.includes( method ) }
 						onChange={ handleCheckboxClick }
 						name={ method }
+						status={
+							paymentMethodStatuses[
+								PaymentMethodsMap[ method ].stripe_key
+							] ?? upeCapabilityStatuses.UNREQUESTED
+						}
 					/>
 				) ) }
 			</PaymentMethodCheckboxes>

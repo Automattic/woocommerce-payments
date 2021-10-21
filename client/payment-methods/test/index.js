@@ -15,15 +15,18 @@ import PaymentMethods from '..';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
+	useGetPaymentMethodStatuses,
 } from 'wcpay/data';
 import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
 import WcPayUpeContext from '../../settings/wcpay-upe-toggle/context';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 jest.mock( '../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
 	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
+	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
 } ) );
 
 describe( 'PaymentMethods', () => {
@@ -38,6 +41,20 @@ describe( 'PaymentMethods', () => {
 			'sepa_debit',
 			'sofort',
 		] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: upeCapabilityStatuses.ACTIVE,
+			bancontact_payments: upeCapabilityStatuses.ACTIVE,
+			giropay_payments: upeCapabilityStatuses.ACTIVE,
+			ideal_payments: upeCapabilityStatuses.ACTIVE,
+			p24_payments: upeCapabilityStatuses.ACTIVE,
+			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
+			sofort_payments: upeCapabilityStatuses.ACTIVE,
+		} );
+		global.wcSettings = {
+			currentUserData: {
+				email: 'admin@example.com',
+			},
+		};
 	} );
 
 	test( 'does not render the "Add payment method" button when there is only one payment method available', () => {
@@ -193,6 +210,42 @@ describe( 'PaymentMethods', () => {
 			'sepa_debit',
 			'sofort',
 		] );
+	} );
+
+	test( 'inactive and pending payment methods have notice pills', () => {
+		const updateEnabledMethodsMock = jest.fn( () => {} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[
+				'card',
+				'bancontact',
+				'giropay',
+				'ideal',
+				'p24',
+				'sepa_debit',
+				'sofort',
+			],
+			updateEnabledMethodsMock,
+		] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: upeCapabilityStatuses.ACTIVE,
+			bancontact_payments: upeCapabilityStatuses.INACTIVE,
+			giropay_payments: upeCapabilityStatuses.PENDING_APPROVAL,
+			ideal_payments: upeCapabilityStatuses.INACTIVE,
+			p24_payments: upeCapabilityStatuses.INACTIVE,
+			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
+			sofort_payments: upeCapabilityStatuses.PENDING_VERIFICATION,
+		} );
+
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+
+		expect( screen.queryAllByText( /Pending/i ).length ).toEqual( 2 );
+		expect(
+			screen.queryAllByText( /Contact WooCommerce Support/i ).length
+		).toEqual( 3 );
 	} );
 
 	test( 'express payments rendered when UPE preview feture flag is enabled', () => {

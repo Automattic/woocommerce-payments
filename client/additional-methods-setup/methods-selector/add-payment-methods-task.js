@@ -24,13 +24,15 @@ import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/p
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
+	useGetPaymentMethodStatuses,
 	useSettings,
 	usePaymentRequestEnabledSettings,
 } from '../../data';
 import wcpayTracks from '../../tracks';
 import './add-payment-methods-task.scss';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
-import { upeMethods } from '../constants';
+import paymentMethodsMap from 'wcpay/payment-methods-map';
+import { upeCapabilityStatuses, upeMethods } from '../constants';
 
 const useGetCountryName = () => {
 	const generalSettings = useSelect(
@@ -161,6 +163,7 @@ const AddPaymentMethodsTask = () => {
 	] );
 
 	const countryName = useGetCountryName();
+	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 
 	return (
 		<WizardTaskItem
@@ -207,6 +210,11 @@ const AddPaymentMethodsTask = () => {
 									checked={ paymentMethodsState.card }
 									onChange={ handlePaymentMethodChange }
 									name="card"
+									status={
+										paymentMethodStatuses[
+											paymentMethodsMap.card.stripe_key
+										] ?? upeCapabilityStatuses.UNREQUESTED
+									}
 								/>
 							) }
 						</PaymentMethodCheckboxes>
@@ -227,6 +235,13 @@ const AddPaymentMethodsTask = () => {
 											key={ key }
 											checked={
 												paymentMethodsState[ key ]
+											}
+											status={
+												paymentMethodStatuses[
+													paymentMethodsMap[ key ]
+														.stripe_key
+												] ??
+												upeCapabilityStatuses.UNREQUESTED
 											}
 											onChange={
 												handlePaymentMethodChange
