@@ -478,6 +478,7 @@ class WC_Payments_Product_Service {
 	 */
 	private function add_product_update_listeners() {
 		add_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		add_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
 	/**
@@ -485,6 +486,7 @@ class WC_Payments_Product_Service {
 	 */
 	private function remove_product_update_listeners() {
 		remove_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		remove_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
 	/**
