@@ -117,7 +117,7 @@ class WC_Payments_Dependency_Service {
 		$wc_version     = $plugin_headers['WCRequires'];
 
 		// Check if the version of WooCommerce is compatible with WooCommerce Payments.
-		if ( version_compare( WC_VERSION, $wc_version, '<' ) ) {
+		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, $wc_version, '<' ) ) {
 
 			/**
 			 * If WCPay account is connected, still silently load the plugin.
