@@ -161,7 +161,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		}
 
 		// Translators: %d Number of failed renewal attempts.
-		$subscription->add_order_note( sprintf( __( 'WCPay subscription renewal attempt %d failed.', 'woocommerce-payments' ), $attempts ) );
+		$subscription->add_order_note( sprintf( _n( 'WCPay subscription renewal attempt %d failed.', 'WCPay subscription renewal attempt %d failed.', $attempts, 'woocommerce-payments' ), $attempts ) );
 
 		if ( self::MAX_RETRIES > $attempts ) {
 			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
