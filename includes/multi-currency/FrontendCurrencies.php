@@ -219,8 +219,8 @@ class FrontendCurrencies {
 	 * Fixes the decimals for the store currency when shipping rates are being determined.
 	 * Our `wc_get_price_decimals` filter returns the decimals for the selected currency during this calculation, which leads to incorrect results.
 	 *
-	 * @param array $args   The argument array to be filtered.
-	 * @param obj   $method The shipping method being calculated.
+	 * @param array  $args   The argument array to be filtered.
+	 * @param object $method The shipping method being calculated.
 	 *
 	 * @return array
 	 */
