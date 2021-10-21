@@ -9,6 +9,7 @@ namespace WCPay\MultiCurrency;
 
 use WC_Order;
 use WC_Order_Refund;
+use WCPay\MultiCurrency\Compatibility\WooCommerceFedEx;
 use WCPay\MultiCurrency\Compatibility\WooCommerceUPS;
 
 defined( 'ABSPATH' ) || exit;
@@ -62,6 +63,7 @@ class Compatibility {
 			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
 		}
 
+		$compatibility_classes[] = new WooCommerceFedEx( $multi_currency, $utils );
 		$compatibility_classes[] = new WooCommerceUPS( $multi_currency, $utils );
 	}
 

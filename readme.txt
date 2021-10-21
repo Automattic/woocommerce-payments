@@ -109,6 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Multi-Currency settings rounding option and preview.
 * Fix - Payment failure on checkout block with UPE when phone number field is hidden
 * Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
+* Add - Add compatibility between Multi-Currency and WooCommerce FedEx shipping extension.
 * Fix - Fix decimal error with shipping calculations with Multi-Currency.
 
 = 3.1.0 - 2021-10-06 =
