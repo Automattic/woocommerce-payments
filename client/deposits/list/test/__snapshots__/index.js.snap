@@ -79,8 +79,9 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
         class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
         <h2
-          class="css-1ahfdc3-Text e15wbhsk0"
-          size="20"
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
           Deposit history
         </h2>
@@ -591,8 +592,9 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
         class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
         <h2
-          class="css-1ahfdc3-Text e15wbhsk0"
-          size="20"
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
           Deposit history
         </h2>

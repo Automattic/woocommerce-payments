@@ -79,8 +79,9 @@ exports[`Transactions list renders correctly when can filter by several currenci
         class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
         <h2
-          class="css-1ahfdc3-Text e15wbhsk0"
-          size="20"
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
           Transactions
         </h2>
@@ -797,8 +798,9 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
         class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
         <h2
-          class="css-1ahfdc3-Text e15wbhsk0"
-          size="20"
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
           Transactions
         </h2>
@@ -1490,8 +1492,9 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
         class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
         <h2
-          class="css-1ahfdc3-Text e15wbhsk0"
-          size="20"
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
           Deposit transactions
         </h2>
@@ -2095,8 +2098,9 @@ exports[`Transactions list subscription column renders correctly 1`] = `
         class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
         <h2
-          class="css-1ahfdc3-Text e15wbhsk0"
-          size="20"
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
           Transactions
         </h2>
@@ -2857,8 +2861,9 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
         class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
         <h2
-          class="css-1ahfdc3-Text e15wbhsk0"
-          size="20"
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
           Transactions
         </h2>
@@ -3590,8 +3595,9 @@ exports[`Transactions list when not filtered by deposit renders table summary on
         class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
         <h2
-          class="css-1ahfdc3-Text e15wbhsk0"
-          size="20"
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
           Transactions
         </h2>
