@@ -425,7 +425,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	 * Test WC_Payments_Subscription_Service->prepare_wcpay_subscription_data()
 	 */
 	public function test_prepare_wcpay_subscription_data() {
-
+		$mock_wcpay_customer_id       = 'wcpay_prepare_cus12345';
 		$mock_subscription            = new WC_Subscription();
 		$mock_subscription->trial_end = 0;
 		$mock_subscription_product    = new WC_Subscriptions_Product();
@@ -449,16 +449,27 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			]
 		);
 		$mock_order->add_item( $mock_coupon_item );
-		$mock_subscription->set_parent( $mock_order );
+		$mock_tax_item = new WC_Order_Item_Tax();
+		$mock_tax_item->set_props(
+			[
+				'rate_id'            => 1,
+				'tax_total'          => 5,
+				'shipping_tax_total' => 3,
+				'rate_code'          => 'tax',
+				'label'              => 'tax',
+				'compound'           => false,
+				'rate_percent'       => 10,
+			]
+		);
+		$mock_order->add_item( $mock_tax_item );
 
-		$mock_wcpay_subscription_id = 'wcpay_prepare_sub12345';
-		$mock_wcpay_customer_id     = 'wcpay_prepare_cus12345';
+		$mock_subscription->set_parent( $mock_order );
 
 		update_user_option( 1, WC_Payments_Customer_Service::WCPAY_LIVE_CUSTOMER_ID_OPTION, $mock_wcpay_customer_id );
 
-		$this->mock_product_service->expects( $this->once() )
+		$this->mock_product_service->expects( $this->exactly( 2 ) )
 			->method( 'get_wcpay_product_id_for_item' )
-			->willReturn( 'wcpay_prod_test123' );
+			->willReturnOnConsecutiveCalls( 'wcpay_prod_test123', 'wcpay_prod_test456' );
 
 		$expected_result = [
 			'customer'  => $mock_wcpay_customer_id,
@@ -499,6 +510,22 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 					'metadata'   => [
 						'wc_item_id' => $mock_shipping_item->get_id(),
 						'method'     => $mock_shipping_item->get_name(),
+					],
+				],
+				[
+					'price_data' => [
+						'product'             => 'wcpay_prod_test456',
+						'currency'            => 'USD',
+						'unit_amount_decimal' => 800.0,
+						'recurring'           => [
+							'interval'       => 'month',
+							'interval_count' => 1,
+						],
+					],
+					'metadata'   => [
+						'wc_item_id'  => $mock_tax_item->get_id(),
+						'rate'        => $mock_tax_item->get_rate_percent(),
+						'is_compound' => 'no',
 					],
 				],
 			],
