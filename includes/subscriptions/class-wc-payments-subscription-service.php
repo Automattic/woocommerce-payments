@@ -731,7 +731,7 @@ class WC_Payments_Subscription_Service {
 
 		foreach ( $additional_items as $item ) {
 			if ( is_a( $item, 'WC_Order_Item_Tax' ) ) {
-				$item_name   = $item->get_name();
+				$item_name   = $item->get_label();
 				$unit_amount = $item->get_tax_total() + $item->get_shipping_tax_total();
 			} else {
 				$item_name   = $item->get_type();
@@ -910,6 +910,8 @@ class WC_Payments_Subscription_Service {
 
 		switch ( $item->get_type() ) {
 			case 'tax':
+				$metadata['wc_rate_id']  = $item->get_rate_id();
+				$metadata['code']        = $item->get_rate_code();
 				$metadata['rate']        = $item->get_rate_percent();
 				$metadata['is_compound'] = wc_bool_to_string( $item->is_compound() );
 				break;
