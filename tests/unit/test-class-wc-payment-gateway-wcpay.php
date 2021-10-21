@@ -1579,6 +1579,36 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertFalse( $this->wcpay_gateway->is_available_for_current_currency() );
 	}
 
+	public function test_get_upe_enabled_payment_method_statuses_with_empty_cache() {
+		$this->mock_wcpay_account
+		->expects( $this->any() )
+		->method( 'get_cached_account_data' )
+		->willReturn( [] );
+
+		$this->assertEquals(
+			[ 'card_payments' => 'active' ],
+			$this->wcpay_gateway->get_upe_enabled_payment_method_statuses()
+		);
+	}
+
+	public function test_get_upe_enabled_payment_method_statuses_with_cache() {
+		$caps = [
+			'card_payments'       => 'active',
+			'sepa_debit_payments' => 'active',
+		];
+		$this->mock_wcpay_account
+		->expects( $this->any() )
+		->method( 'get_cached_account_data' )
+		->willReturn(
+			[ 'capabilities' => $caps ]
+		);
+
+		$this->assertEquals(
+			$caps,
+			$this->wcpay_gateway->get_upe_enabled_payment_method_statuses()
+		);
+	}
+
 	public function test_attach_intent_info_to_order_fails_payment_complete() {
 		// test if metadata needed for refunds is being saved despite the payment_complete method.
 		$order = $this->getMockBuilder( WC_Order::class )

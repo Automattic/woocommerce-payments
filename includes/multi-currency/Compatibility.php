@@ -9,6 +9,8 @@ namespace WCPay\MultiCurrency;
 
 use WC_Order;
 use WC_Order_Refund;
+use WCPay\MultiCurrency\Compatibility\WooCommerceFedEx;
+use WCPay\MultiCurrency\Compatibility\WooCommerceUPS;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -16,6 +18,9 @@ defined( 'ABSPATH' ) || exit;
  * Class that controls Multi-Currency Compatibility.
  */
 class Compatibility {
+
+	const FILTER_PREFIX = 'wcpay_multi_currency_';
+
 	/**
 	 * Subscription switch cart item.
 	 *
@@ -57,6 +62,9 @@ class Compatibility {
 		if ( defined( 'DOING_CRON' ) ) {
 			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
 		}
+
+		$compatibility_classes[] = new WooCommerceFedEx( $multi_currency, $utils );
+		$compatibility_classes[] = new WooCommerceUPS( $multi_currency, $utils );
 	}
 
 	/**
@@ -258,6 +266,15 @@ class Compatibility {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Determines if the store currency should be returned or not.
+	 *
+	 * @return bool
+	 */
+	public function should_return_store_currency(): bool {
+		return apply_filters( self::FILTER_PREFIX . 'should_return_store_currency', false );
 	}
 
 	/**
