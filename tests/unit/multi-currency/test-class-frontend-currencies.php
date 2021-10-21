@@ -89,6 +89,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 			[ 'wc_get_price_thousand_separator', 'get_price_thousand_separator' ],
 			[ 'woocommerce_price_format', 'get_woocommerce_price_format' ],
 			[ 'woocommerce_cart_hash', 'add_currency_to_cart_hash' ],
+			[ 'woocommerce_shipping_method_add_rate_args', 'fix_price_decimals_for_shipping_rates' ],
 		];
 	}
 
@@ -256,6 +257,14 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->assertSame(
 			md5( 'cart_hashGBP0.71' ),
 			$this->frontend_currencies->add_currency_to_cart_hash( 'cart_hash' )
+		);
+	}
+
+	public function test_fix_price_decimals_for_shipping_rates() {
+		$this->mock_localization_service->method( 'get_currency_format' )->willReturn( [ 'num_decimals' => 2 ] );
+		$this->assertSame(
+			[ 'price_decimals' => 2 ],
+			$this->frontend_currencies->fix_price_decimals_for_shipping_rates( [ 'price_decimals' => 42 ], null )
 		);
 	}
 }
