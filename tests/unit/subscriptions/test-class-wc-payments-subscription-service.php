@@ -526,6 +526,8 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 						'wc_item_id'  => $mock_tax_item->get_id(),
 						'rate'        => $mock_tax_item->get_rate_percent(),
 						'is_compound' => 'no',
+						'wc_rate_id'  => $mock_tax_item->get_rate_id(),
+						'code'        => $mock_tax_item->get_rate_code(),
 					],
 				],
 			],
