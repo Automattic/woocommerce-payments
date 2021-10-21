@@ -290,7 +290,7 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$mock_product_id = 'prod_123_wcpay_test_product_id';
 		$this->mock_product->update_meta_data( WC_Payments_Product_Service::LIVE_PRODUCT_ID_KEY, $mock_product_id );
 
-		$this->assertSame( $mock_product_id, WC_Payments_Product_Service::get_wcpay_product_id( $this->mock_product ) );
+		$this->assertSame( $mock_product_id, $this->product_service->get_wcpay_product_id( $this->mock_product ) );
 
 		// Test that deleting the price will cause the product to be created.
 		$this->mock_product->delete_meta_data( WC_Payments_Product_Service::LIVE_PRODUCT_ID_KEY );
@@ -307,7 +307,7 @@ class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
 		$this->mock_get_period( 'month' );
 		$this->mock_get_interval( 3 );
 
-		$this->assertSame( $mock_product_id, WC_Payments_Product_Service::get_wcpay_product_id( $this->mock_product ) );
+		$this->assertSame( $mock_product_id, $this->product_service->get_wcpay_product_id( $this->mock_product ) );
 	}
 
 	/**

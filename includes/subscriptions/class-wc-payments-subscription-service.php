@@ -716,38 +716,21 @@ class WC_Payments_Subscription_Service {
 
 			$item_data = [
 				'metadata'  => [ 'wc_item_id' => $item->get_id() ],
-				'price'     => $this->product_service->get_wcpay_price_id( $product ),
 				'quantity'  => $item->get_quantity(),
 				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
 			];
 
-			$product_price         = (float) $product->get_price();
-			$product_interval      = (int) WC_Subscriptions_Product::get_interval( $product );
-			$product_period        = WC_Subscriptions_Product::get_period( $product );
-			$inclusive_taxes       = $subscription->get_prices_include_tax() ? array_sum( $item->get_taxes()['total'] ) : 0;
-			$item_total            = floatval( $item->get_total() + $inclusive_taxes ) / $item->get_quantity();
-			$subscription_interval = (int) $subscription->get_billing_interval();
-			$subscription_period   = $subscription->get_billing_period();
-
-			if (
-				$product_price !== $item_total ||
-				$product_interval !== $subscription_interval ||
-				$product_period !== $subscription_period
-			) {
-				unset( $item_data['price'] );
-
-				$item_data['price_data'] = $this->format_item_price_data(
-					$subscription->get_currency(),
-					$this->product_service->get_wcpay_product_id( $product ),
-					$item->get_total() / $item->get_quantity(),
-					$subscription_period,
-					$subscription_interval
-				);
-
-				foreach ( $item_data['tax_rates'] as $index => $tax_data ) {
-					$item_data['tax_rates'][ $index ]['inclusive'] = false;
-				}
+			foreach ( $item_data['tax_rates'] as $index => $tax_data ) {
+				$item_data['tax_rates'][ $index ]['inclusive'] = false;
 			}
+
+			$item_data['price_data'] = $this->format_item_price_data(
+				$subscription->get_currency(),
+				$this->product_service->get_wcpay_product_id( $product ),
+				$item->get_total() / $item->get_quantity(),
+				$subscription->get_billing_period(),
+				$subscription->get_billing_interval()
+			);
 
 			$data[] = $item_data;
 		}
