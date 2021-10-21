@@ -92,6 +92,14 @@ class WC_Payments_Subscription_Service {
 	private $feature_support_exceptions = [];
 
 	/**
+	 * Whether the current request is creating a WCPay subscription when
+	 * updating the subscription payment method from the "My account" page.
+	 *
+	 * @var bool
+	 */
+	private $is_creating_subscription_from_update_payment_method = false;
+
+	/**
 	 * WC Payments Subscriptions Constructor
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WC payments API Client.
@@ -115,6 +123,7 @@ class WC_Payments_Subscription_Service {
 		if ( ! $this->is_subscriptions_plugin_active() ) {
 			add_action( 'woocommerce_checkout_subscription_created', [ $this, 'create_subscription' ] );
 			add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'create_subscription_for_manual_renewal' ] );
+			add_action( 'woocommerce_subscription_payment_method_updated', [ $this, 'maybe_create_subscription_from_update_payment_method' ], 10, 2 );
 		}
 
 		add_action( 'woocommerce_subscription_status_cancelled', [ $this, 'cancel_subscription' ] );
@@ -253,7 +262,7 @@ class WC_Payments_Subscription_Service {
 		$data = [
 			'currency'            => $currency,
 			'product'             => $wcpay_product_id,
-			'unit_amount_decimal' => $unit_amount * 100,
+			'unit_amount_decimal' => round( $unit_amount, wc_get_rounding_precision() ) * 100,
 		];
 
 		if ( $interval && $interval_count ) {
@@ -281,21 +290,35 @@ class WC_Payments_Subscription_Service {
 			return $tax_rates;
 		}
 
-		$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
+		$tax_rate_ids = $item->get_taxes()['total'];
 
 		if ( ! $tax_rate_ids ) {
 			return $tax_rates;
 		}
 
-		$tax_inclusive = wc_prices_include_tax();
+		$tax_inclusive = $subscription->get_prices_include_tax();
+
+		if ( is_a( $item, 'WC_Order_Item_Shipping' ) ) {
+			$tax_inclusive = false;
+		}
 
 		foreach ( $subscription->get_taxes() as $tax ) {
-			if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) ) {
-				$tax_rates[] = [
+
+			if ( isset( $tax_rate_ids[ $tax->get_rate_id() ] ) ) {
+				$tax_rate = [
 					'display_name' => $tax->get_name(),
 					'inclusive'    => $tax_inclusive,
 					'percentage'   => $tax->get_rate_percent(),
 				];
+
+				// Tax rates cannot be applied to WCPay Subscriptions in a compounding way so we need to reverse engineer the rate ourselves.
+				if ( $tax->is_compound() ) {
+					$tax_rate['inclusive']  = false; // Compounding tax rates are calculated as exclusive rates.
+					$tax_amount             = $tax_rate_ids[ $tax->get_rate_id() ];
+					$tax_rate['percentage'] = round( ( $tax_amount / $item->get_total() ) * 100, 4 );
+				}
+
+				$tax_rates[] = $tax_rate;
 			}
 		}
 
@@ -380,11 +403,38 @@ class WC_Payments_Subscription_Service {
 				$this->set_wcpay_discount_ids( $subscription, $response['discounts'] );
 			}
 
-			$this->invoice_service->set_subscription_invoice_id( $subscription, $response['latest_invoice'] );
+			if ( ! empty( $response['latest_invoice'] ) ) {
+				$this->invoice_service->set_subscription_invoice_id( $subscription, $response['latest_invoice'] );
+			}
 		} catch ( API_Exception $e ) {
 			Logger::log( sprintf( 'There was a problem creating the WCPay subscription %s', $e->getMessage() ) );
 			throw new Exception( $checkout_error_message );
 		}
+	}
+
+	/**
+	 * Conditionally creates a WCPay subscription when a subscriber
+	 * updates the subscription payment method from their account page.
+	 *
+	 * @param WC_Subscription $subscription       An instance of a WC_Subscription object.
+	 * @param string          $new_payment_method The ID of the new payment method.
+	 *
+	 * @return void
+	 */
+	public function maybe_create_subscription_from_update_payment_method( WC_Subscription $subscription, string $new_payment_method ) {
+		// Not changing the subscription payment method to WooCommerce Payments, bail.
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
+			return;
+		}
+
+		// We already have a WCPay subscription ID, bail.
+		if ( (bool) self::get_wcpay_subscription_id( $subscription ) ) {
+			return;
+		}
+
+		$this->is_creating_subscription_from_update_payment_method = true;
+
+		$this->create_subscription( $subscription );
 	}
 
 	/**
@@ -621,7 +671,7 @@ class WC_Payments_Subscription_Service {
 	private function prepare_wcpay_subscription_data( string $wcpay_customer_id, WC_Subscription $subscription ) {
 		$recurring_items = $this->get_recurring_item_data_for_subscription( $subscription );
 		$one_time_items  = $this->get_one_time_item_data_for_subscription( $subscription );
-		$discount_items  = self::get_discount_item_data_for_subscription( $subscription, true );
+		$discount_items  = self::get_discount_item_data_for_subscription( $subscription, (bool) $subscription->get_parent_id() );
 		$data            = [
 			'customer' => $wcpay_customer_id,
 			'items'    => $recurring_items,
@@ -637,6 +687,11 @@ class WC_Payments_Subscription_Service {
 
 		if ( ! empty( $discount_items ) ) {
 			$data['discounts'] = $discount_items;
+		}
+
+		if ( $this->is_creating_subscription_from_update_payment_method ) {
+			$data['backdate_start_date']  = max( $subscription->get_time( 'start' ), $subscription->get_time( 'last_order_date_created' ), $subscription->get_time( 'last_order_date_paid' ) );
+			$data['billing_cycle_anchor'] = $subscription->get_time( 'next_payment' );
 		}
 
 		return apply_filters( 'wcpay_subscriptions_prepare_subscription_data', $data );
@@ -659,12 +714,25 @@ class WC_Payments_Subscription_Service {
 				continue;
 			}
 
-			$data[] = [
+			$item_data = [
 				'metadata'  => [ 'wc_item_id' => $item->get_id() ],
-				'price'     => $this->product_service->get_wcpay_price_id( $product ),
 				'quantity'  => $item->get_quantity(),
 				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
 			];
+
+			foreach ( $item_data['tax_rates'] as $index => $tax_data ) {
+				$item_data['tax_rates'][ $index ]['inclusive'] = false;
+			}
+
+			$item_data['price_data'] = $this->format_item_price_data(
+				$subscription->get_currency(),
+				$this->product_service->get_wcpay_product_id( $product ),
+				$item->get_total() / $item->get_quantity(),
+				$subscription->get_billing_period(),
+				$subscription->get_billing_interval()
+			);
+
+			$data[] = $item_data;
 		}
 
 		$additional_items = array_merge( $subscription->get_fees(), $subscription->get_shipping_methods() );
