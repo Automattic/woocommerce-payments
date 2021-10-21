@@ -704,7 +704,7 @@ class WC_Payments_Subscription_Service {
 	 *
 	 * @return array WCPay recurring item data.
 	 */
-	private function get_recurring_item_data_for_subscription( WC_Subscription $subscription ) : array {
+	public function get_recurring_item_data_for_subscription( WC_Subscription $subscription ) : array {
 		$data = [];
 
 		foreach ( $subscription->get_items() as $item ) {
