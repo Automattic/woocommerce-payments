@@ -14,11 +14,13 @@ import AddPaymentMethodsTask from '../add-payment-methods-task';
 import {
 	useGetAvailablePaymentMethodIds,
 	useEnabledPaymentMethodIds,
+	useGetPaymentMethodStatuses,
 	useSettings,
 	useCurrencies,
 	useEnabledCurrencies,
 } from '../../../data';
 import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 jest.mock( '../../../data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn(),
@@ -26,6 +28,7 @@ jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn(),
 	useCurrencies: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
+	useGetPaymentMethodStatuses: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/a11y', () => ( {
@@ -52,6 +55,15 @@ describe( 'AddPaymentMethodsTask', () => {
 			'sepa_debit',
 			'sofort',
 		] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: upeCapabilityStatuses.ACTIVE,
+			bancontact_payments: upeCapabilityStatuses.ACTIVE,
+			giropay_payments: upeCapabilityStatuses.ACTIVE,
+			ideal_payments: upeCapabilityStatuses.ACTIVE,
+			p24_payments: upeCapabilityStatuses.ACTIVE,
+			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
+			sofort_payments: upeCapabilityStatuses.ACTIVE,
+		} );
 		useSettings.mockReturnValue( {
 			saveSettings: () => Promise.resolve( true ),
 			isSaving: false,
@@ -304,5 +316,66 @@ describe( 'AddPaymentMethodsTask', () => {
 				'setup-complete'
 			)
 		);
+	} );
+
+	it( 'should not allow the inactive ones to be selected', async () => {
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: upeCapabilityStatuses.ACTIVE,
+			bancontact_payments: upeCapabilityStatuses.INACTIVE,
+			giropay_payments: upeCapabilityStatuses.PENDING_APPROVAL,
+			ideal_payments: upeCapabilityStatuses.ACTIVE,
+			p24_payments: upeCapabilityStatuses.INACTIVE,
+			sepa_debit_payments: upeCapabilityStatuses.PENDING_VERIFICATION,
+			sofort_payments: upeCapabilityStatuses.ACTIVE,
+		} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[
+				'card',
+				'bancontact',
+				'giropay',
+				'p24',
+				'ideal',
+				'sepa_debit',
+				'sofort',
+			],
+			() => null,
+		] );
+		render(
+			<SettingsContextProvider>
+				<WizardTaskContext.Provider
+					value={ { setCompleted: () => null, isActive: true } }
+				>
+					<AddPaymentMethodsTask />
+				</WizardTaskContext.Provider>
+			</SettingsContextProvider>
+		);
+		// The payment methods should all be checked.
+		const expectedToBeChecked = [
+			'giropay',
+			'iDEAL',
+			'SEPA Direct Debit',
+			'Sofort',
+		];
+
+		expectedToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).toBeChecked();
+		} );
+
+		const expectedToBeUnchecked = [ 'Bancontact', 'Przelewy24 (P24)' ];
+
+		expectedToBeUnchecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).not.toBeChecked();
+			// Click the inactive checkbox, to see if it gets enabled.
+			userEvent.click(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			);
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).not.toBeChecked();
+		} );
 	} );
 } );

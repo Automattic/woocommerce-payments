@@ -13,7 +13,7 @@ use WC_Payments_Utils;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Multi Currency Currency object.
+ * Multi-Currency Currency object.
  */
 class Currency implements \JsonSerializable {
 
@@ -171,7 +171,7 @@ class Currency implements \JsonSerializable {
 	 * @return string Rounding rate.
 	 */
 	public function get_rounding(): string {
-		return is_null( $this->rounding ) ? 'none' : $this->rounding;
+		return $this->rounding ?? '0';
 	}
 
 	/**

@@ -12,6 +12,7 @@ const {
 	evalAndClick,
 	uiUnblocked,
 	clearAndFillInput,
+	setCheckbox,
 } = require( '@woocommerce/e2e-utils' );
 const {
 	fillCardDetails,
@@ -38,6 +39,9 @@ const WC_SUBSCRIPTIONS_PAGE =
 const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
 const WP_ADMIN_PAGES = baseUrl + 'wp-admin/edit.php?post_type=page';
 const WCB_CHECKOUT = baseUrl + 'checkout-wcb/';
+const WCPAY_DEV_TOOLS = `${ config.get(
+	'url'
+) }wp-admin/admin.php?page=wcpaydev`;
 
 export const RUN_SUBSCRIPTIONS_TESTS =
 	'1' !== process.env.SKIP_WC_SUBSCRIPTIONS_TESTS;
@@ -117,24 +121,34 @@ export const shopperWCP = {
 	 * @param {*} card Card object that you want to add as the new payment method.
 	 */
 	addNewPaymentMethod: async ( cardType, card ) => {
-		const cardIs3DS =
-			cardType.toUpperCase().includes( '3DS' ) &&
-			! cardType.toLowerCase().includes( 'declined' );
-
 		await expect( page ).toClick( 'a', {
 			text: 'Add payment method',
 		} );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
+
+		if (
+			null !==
+			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) )
+		) {
+			await setCheckbox( '#wc-woocommerce_payments-payment-token-new' );
+		}
+
 		await fillCardDetails( page, card );
+
 		await expect( page ).toClick( 'button', {
 			text: 'Add payment method',
 		} );
 
+		const cardIs3DS =
+			cardType.toUpperCase().includes( '3DS' ) &&
+			! cardType.toLowerCase().includes( 'declined' );
+
 		if ( cardIs3DS ) {
 			await confirmCardAuthentication( page, cardType );
 		}
+
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
@@ -169,11 +183,86 @@ export const shopperWCP = {
 			customerShippingDetails.postcode
 		);
 	},
+
+	fillBillingDetailsWCB: async ( customerBillingDetails ) => {
+		await clearAndFillInput( '#email', customerBillingDetails.email );
+		await clearAndFillInput(
+			'#billing-first_name',
+			customerBillingDetails.firstname
+		);
+		await clearAndFillInput(
+			'#billing-last_name',
+			customerBillingDetails.lastname
+		);
+		await clearAndFillInput(
+			'#billing-address_1',
+			customerBillingDetails.addressfirstline
+		);
+		await clearAndFillInput( '#billing-city', customerBillingDetails.city );
+		await clearAndFillInput(
+			'#billing-postcode',
+			customerBillingDetails.postcode
+		);
+	},
 };
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
 export const merchantWCP = {
+	activateUpe: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( ! ( await page.$( '#_wcpay_feature_upe:checked' ) ) ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Enable UPE checkout',
+			} );
+		}
+
+		const isAdditionalPaymentsActive = await page.$(
+			'#_wcpay_feature_upe_additional_payment_methods:checked'
+		);
+
+		if ( ! isAdditionalPaymentsActive ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Add UPE additional payment methods',
+			} );
+		}
+
+		await expect( page ).toClick( 'input[type="submit"]' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	deactivateUpe: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( await page.$( '#_wcpay_feature_upe:checked' ) ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Enable UPE checkout',
+			} );
+		}
+
+		const isAdditionalPaymentsActive = await page.$(
+			'#_wcpay_feature_upe_additional_payment_methods:checked'
+		);
+
+		if ( isAdditionalPaymentsActive ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Add UPE additional payment methods',
+			} );
+		}
+
+		await expect( page ).toClick( 'input[type="submit"]' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
 	openDisputeDetails: async ( disputeDetailsLink ) => {
 		await Promise.all( [
 			page.goto( WC_ADMIN_BASE_URL + disputeDetailsLink, {

@@ -108,19 +108,19 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                 </ul>
               </fieldset>
               <h3>
-                Formatting Rules
+                Formatting rules
               </h3>
               <fieldset>
                 <ul>
                   <li>
                     <h4>
-                      Price Rounding
+                      Price rounding
                     </h4>
                     <select
                       data-testid="price_rounding"
                     >
                       <option
-                        value="none"
+                        value="0"
                       >
                         None
                       </option>
@@ -164,7 +164,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                   </li>
                   <li>
                     <h4>
-                      Charm Pricing
+                      Charm pricing
                     </h4>
                     <select
                       data-testid="price_charm"

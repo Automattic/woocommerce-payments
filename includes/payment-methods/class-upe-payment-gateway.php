@@ -111,7 +111,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		wp_register_script(
 			'wcpay-upe-checkout',
 			plugins_url( 'dist/upe_checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout' ],
+			[ 'stripe', 'wc-checkout', 'woocommerce-tokenization-form' ],
 			WC_Payments::get_file_version( 'dist/upe_checkout.js' ),
 			true
 		);
@@ -243,13 +243,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return $this->create_setup_intent();
 		}
 
-		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] );
+		$capture_method          = empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] ? 'automatic' : 'manual';
+		$enabled_payment_methods = $this->get_upe_enabled_at_checkout_payment_method_ids( $order_id );
 
 		$payment_intent = $this->payments_api_client->create_intention(
 			$converted_amount,
 			strtolower( $currency ),
 			array_values( $enabled_payment_methods ),
-			$order_id ?? 0
+			$order_id ?? 0,
+			$capture_method
 		);
 		return [
 			'id'            => $payment_intent->get_id(),
@@ -686,7 +688,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function payment_fields() {
 		try {
-			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
+			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
 
 			$payment_fields = $this->get_payment_fields_js_config();
 			wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $payment_fields );
@@ -829,7 +831,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	private function get_enabled_payment_method_config() {
 		$settings                = [];
-		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_at_checkout' ] );
+		$enabled_payment_methods = $this->get_upe_enabled_at_checkout_payment_method_ids();
 
 		if ( $this->is_subscriptions_enabled() && $this->is_changing_payment_method_for_subscription() ) {
 			$enabled_payment_methods = array_filter( $enabled_payment_methods, [ $this, 'is_enabled_for_saved_payments' ] );
@@ -843,22 +845,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 
 		return $settings;
-	}
-
-	/**
-	 * Function to be used with array_filter
-	 * to filter UPE payment methods supported with current checkout
-	 *
-	 * @param string $payment_method_id Stripe payment method.
-	 *
-	 * @return bool
-	 */
-	private function is_enabled_at_checkout( $payment_method_id ) {
-		if ( ! isset( $this->payment_methods[ $payment_method_id ] ) ) {
-			return false;
-		}
-		return $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout()
-			&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() );
 	}
 
 	/**

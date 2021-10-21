@@ -20,6 +20,16 @@ export const useSavedCards = () => {
 	return [ isSavedCardsEnabled, updateIsSavedCardsEnabled ];
 };
 
+export const useCardPresentEligible = () => {
+	const { updateIsCardPresentEligible } = useDispatch( STORE_NAME );
+
+	const isCardPresentEligible = useSelect( ( select ) => {
+		return select( STORE_NAME ).getIsCardPresentEligible();
+	}, [] );
+
+	return [ isCardPresentEligible, updateIsCardPresentEligible ];
+};
+
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
@@ -83,6 +93,32 @@ export const useMultiCurrency = () => {
 	);
 };
 
+export const useWCPaySubscriptions = () => {
+	const { updateIsWCPaySubscriptionsEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const {
+				getIsWCPaySubscriptionsEnabled,
+				getIsWCPaySubscriptionsEligible,
+				getIsSubscriptionsPluginActive,
+			} = select( STORE_NAME );
+
+			const isWCPaySubscriptionsEnabled = getIsWCPaySubscriptionsEnabled();
+			const isWCPaySubscriptionsEligible = getIsWCPaySubscriptionsEligible();
+			const isSubscriptionsPluginActive = getIsSubscriptionsPluginActive();
+
+			return [
+				isWCPaySubscriptionsEnabled,
+				isWCPaySubscriptionsEligible,
+				isSubscriptionsPluginActive,
+				updateIsWCPaySubscriptionsEnabled,
+			];
+		},
+		[ updateIsWCPaySubscriptionsEnabled ]
+	);
+};
+
 export const useAccountStatementDescriptor = () => {
 	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
 
@@ -133,6 +169,13 @@ export const useGetAvailablePaymentMethodIds = () =>
 		const { getAvailablePaymentMethodIds } = select( STORE_NAME );
 
 		return getAvailablePaymentMethodIds();
+	} );
+
+export const useGetPaymentMethodStatuses = () =>
+	useSelect( ( select ) => {
+		const { getPaymentMethodStatuses } = select( STORE_NAME );
+
+		return getPaymentMethodStatuses();
 	} );
 
 export const useSettings = () => {

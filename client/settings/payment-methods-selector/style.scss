@@ -1,0 +1,11 @@
+@include breakpoint( '<660px' ) {
+	.wcpay-payment-methods-add-modal {
+		.components-modal__content {
+			display: flex;
+			flex-direction: column;
+			ul {
+				flex: 1;
+			}
+		}
+	}
+}

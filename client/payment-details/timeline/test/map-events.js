@@ -214,6 +214,37 @@ describe( 'mapTimelineEvents', () => {
 			).toMatchSnapshot();
 		} );
 
+		test( 'formats captured events with just the base fee', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 6300,
+						currency: 'USD',
+						datetime: 1585751874,
+						deposit: {
+							arrival_date: 1585838274,
+							id: 'dummy_po_5eaada696b281',
+						},
+						fee: 350,
+						fee_rates: {
+							percentage: 0.0195,
+							fixed: 15,
+							fixed_currency: 'USD',
+							history: [
+								{
+									type: 'base',
+									percentage_rate: 0.014,
+									fixed_rate: 20,
+									currency: 'gbp',
+								},
+							],
+						},
+						type: 'captured',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
 		test( 'formats dispute_needs_response events', () => {
 			expect(
 				mapTimelineEvents( [
@@ -297,7 +328,7 @@ describe( 'mapTimelineEvents', () => {
 		} );
 	} );
 
-	describe( 'multi currency events', () => {
+	describe( 'Multi-Currency events', () => {
 		test( 'formats captured events without fee details', () => {
 			expect(
 				mapTimelineEvents( [
