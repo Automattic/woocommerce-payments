@@ -748,6 +748,34 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				(object) [
 					'product_code'        => 30,
 					'product_description' => 'Beanie with Logo',
+					'unit_cost'           => 450,
+					'quantity'            => 4,
+					'tax_amount'          => 270,
+					'discount_amount'     => 0,
+				],
+			],
+			'shipping_address_zip' => '98012',
+			'shipping_from_zip'    => '94110',
+		];
+
+		update_option( 'woocommerce_store_postcode', '94110' );
+
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
+		$mock_order   = $this->mock_level_3_order( '98012', false, 3.7 );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
+
+		$this->assertEquals( $expected_data, $level_3_data );
+	}
+
+	public function test_full_level3_data_with_float_quantity_zero() {
+		$expected_data = [
+			'merchant_reference'   => '210',
+			'customer_reference'   => '210',
+			'shipping_amount'      => 3800,
+			'line_items'           => [
+				(object) [
+					'product_code'        => 30,
+					'product_description' => 'Beanie with Logo',
 					'unit_cost'           => 1800,
 					'quantity'            => 1,
 					'tax_amount'          => 270,
@@ -761,7 +789,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		update_option( 'woocommerce_store_postcode', '94110' );
 
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
-		$mock_order   = $this->mock_level_3_order( '98012', false, 3.7 );
+		$mock_order   = $this->mock_level_3_order( '98012', false, 0.4 );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
 		$this->assertEquals( $expected_data, $level_3_data );
