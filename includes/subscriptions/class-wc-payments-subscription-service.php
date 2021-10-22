@@ -330,25 +330,27 @@ class WC_Payments_Subscription_Service {
 	 * Prepares discount data used to create a WCPay subscription.
 	 *
 	 * @param WC_Subscription $subscription The WC subscription used to create the subscription on server.
-	 * @param bool            $parent       Whether to get data from subscription parent.
 	 *
 	 * @return array WCPay discount item data.
 	 */
-	public static function get_discount_item_data_for_subscription( WC_Subscription $subscription, bool $parent = false ) : array {
-		$data  = [];
-		$items = $parent ? $subscription->get_parent()->get_items( 'coupon' ) : $subscription->get_items( 'coupon' );
+	public static function get_discount_item_data_for_subscription( WC_Subscription $subscription ) : array {
+		$data = [];
 
-		foreach ( $items as $item ) {
+		foreach ( $subscription->get_items( 'coupon' ) as $item ) {
 			$code     = $item->get_code();
 			$coupon   = new WC_Coupon( $code );
 			$duration = in_array( $coupon->get_discount_type(), [ 'recurring_fee', 'recurring_percent' ], true ) ? 'forever' : 'once';
-			$data[]   = [
-				'amount_off' => $item->get_discount() * 100,
-				'currency'   => $subscription->get_currency(),
-				'duration'   => $duration,
-				// Translators: %s Coupon code.
-				'name'       => sprintf( __( 'Coupon - %s', 'woocommerce-payments' ), $code ),
-			];
+			$discount = $item->get_discount();
+
+			if ( $discount ) {
+				$data[] = [
+					'amount_off' => $discount * 100,
+					'currency'   => $subscription->get_currency(),
+					'duration'   => $duration,
+					// Translators: %s Coupon code.
+					'name'       => sprintf( __( 'Coupon - %s', 'woocommerce-payments' ), $code ),
+				];
+			}
 		}
 
 		return $data;
@@ -689,7 +691,7 @@ class WC_Payments_Subscription_Service {
 	private function prepare_wcpay_subscription_data( string $wcpay_customer_id, WC_Subscription $subscription ) {
 		$recurring_items = $this->get_recurring_item_data_for_subscription( $subscription );
 		$one_time_items  = $this->get_one_time_item_data_for_subscription( $subscription );
-		$discount_items  = self::get_discount_item_data_for_subscription( $subscription, (bool) $subscription->get_parent_id() );
+		$discount_items  = self::get_discount_item_data_for_subscription( $subscription );
 		$data            = [
 			'customer' => $wcpay_customer_id,
 			'items'    => $recurring_items,
