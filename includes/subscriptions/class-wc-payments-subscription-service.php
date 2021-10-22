@@ -495,7 +495,7 @@ class WC_Payments_Subscription_Service {
 
 		$subscription = wcs_get_subscription( $post_id );
 
-		if ( ! self::is_wcpay_subscription( $subscription ) ) {
+		if ( ! self::get_wcpay_subscription_id( $subscription ) ) {
 			return;
 		}
 
