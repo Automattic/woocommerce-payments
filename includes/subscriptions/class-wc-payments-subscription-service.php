@@ -740,7 +740,7 @@ class WC_Payments_Subscription_Service {
 				'price_data' => $this->format_item_price_data(
 					$subscription->get_currency(),
 					$this->product_service->get_wcpay_product_id( $product ),
-					$item->get_total() / $item->get_quantity(),
+					$item->get_subtotal() / $item->get_quantity(),
 					$subscription->get_billing_period(),
 					$subscription->get_billing_interval()
 				),
