@@ -137,6 +137,7 @@ class WC_Payments_Subscription_Service {
 		// Save the new token on the WCPay subscription when it's added to a WC subscription.
 		add_action( 'woocommerce_payment_token_added_to_order', [ $this, 'update_wcpay_subscription_payment_method' ], 10, 3 );
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'prevent_wcpay_subscription_changes' ], 10, 3 );
+		add_filter( 'woocommerce_order_actions', [ $this, 'prevent_wcpay_manual_renewal' ], 11, 1 );
 
 		add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
 	}
@@ -623,6 +624,23 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
+	 * Remove pending parent and renewal order creation from admin edit subscriptions page.
+	 *
+	 * @param array $actions Array of available actions.
+	 * @return array Array of updated actions.
+	 */
+	public function prevent_wcpay_manual_renewal( array $actions ) {
+		global $theorder;
+
+		if ( wcs_is_subscription( $theorder ) && self::is_wcpay_subscription( $theorder ) ) {
+			unset( $actions['wcs_create_pending_parent'] );
+			unset( $actions['wcs_create_pending_renewal'] );
+			unset( $actions['wcs_process_renewal'] );
+		}
+		return $actions;
+	}
+
+	/**
 	 * Updates a subscription's next payment date to match the WCPay subscription's payment date.
 	 *
 	 * @param array           $wcpay_subscription The WCPay Subscription data.
@@ -716,46 +734,40 @@ class WC_Payments_Subscription_Service {
 				continue;
 			}
 
-			$item_data = [
-				'metadata'  => [ 'wc_item_id' => $item->get_id() ],
-				'quantity'  => $item->get_quantity(),
-				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
-			];
-
-			foreach ( $item_data['tax_rates'] as $index => $tax_data ) {
-				$item_data['tax_rates'][ $index ]['inclusive'] = false;
-			}
-
-			$item_data['price_data'] = $this->format_item_price_data(
-				$subscription->get_currency(),
-				$this->product_service->get_wcpay_product_id( $product ),
-				$item->get_total() / $item->get_quantity(),
-				$subscription->get_billing_period(),
-				$subscription->get_billing_interval()
-			);
-
-			$data[] = $item_data;
-		}
-
-		$additional_items = array_merge( $subscription->get_fees(), $subscription->get_shipping_methods() );
-
-		foreach ( $additional_items as $item ) {
-			$wcpay_item_id = $this->product_service->get_wcpay_product_id_for_item( $item->get_type() );
-			$unit_amount   = $item->get_total();
-
-			if ( $unit_amount ) {
-				$price_data = self::format_item_price_data(
+			$data[] = [
+				'metadata'   => $this->get_item_metadata( $item ),
+				'quantity'   => $item->get_quantity(),
+				'price_data' => $this->format_item_price_data(
 					$subscription->get_currency(),
-					$wcpay_item_id,
-					$unit_amount,
+					$this->product_service->get_wcpay_product_id( $product ),
+					$item->get_total() / $item->get_quantity(),
 					$subscription->get_billing_period(),
 					$subscription->get_billing_interval()
-				);
+				),
+			];
+		}
 
+		$additional_items = array_merge( $subscription->get_fees(), $subscription->get_shipping_methods(), $subscription->get_taxes() );
+
+		foreach ( $additional_items as $item ) {
+			if ( is_a( $item, 'WC_Order_Item_Tax' ) ) {
+				$item_name   = $item->get_label();
+				$unit_amount = $item->get_tax_total() + $item->get_shipping_tax_total();
+			} else {
+				$item_name   = $item->get_type();
+				$unit_amount = $item->get_total();
+			}
+
+			if ( $unit_amount ) {
 				$data[] = [
-					'metadata'   => [ 'wc_item_id' => $item->get_id() ],
-					'price_data' => $price_data,
-					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
+					'metadata'   => $this->get_item_metadata( $item ),
+					'price_data' => self::format_item_price_data(
+						$subscription->get_currency(),
+						$this->product_service->get_wcpay_product_id_for_item( $item_name ),
+						$unit_amount,
+						$subscription->get_billing_period(),
+						$subscription->get_billing_interval()
+					),
 				];
 			}
 		}
@@ -783,7 +795,6 @@ class WC_Payments_Subscription_Service {
 				$wcpay_item_id = $this->product_service->get_wcpay_product_id_for_item( 'sign_up_fee' );
 				$data[]        = [
 					'price_data' => self::format_item_price_data( $currency, $wcpay_item_id, $sign_up_fee ),
-					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
 				];
 			}
 
@@ -797,7 +808,6 @@ class WC_Payments_Subscription_Service {
 
 				$data[] = [
 					'price_data' => self::format_item_price_data( $currency, $wcpay_item_id, $shipping ),
-					'tax_rates'  => $this->get_tax_rates_for_item( $item, $subscription ),
 				];
 			}
 		}
@@ -907,5 +917,32 @@ class WC_Payments_Subscription_Service {
 	 */
 	private function clear_feature_support_exception( WC_Subscription $subscription, string $feature ) {
 		unset( $this->feature_support_exceptions[ $subscription->get_id() ][ $feature ] );
+	}
+
+	/**
+	 * Generates the metadata for a given WC_Order_Item
+	 *
+	 * @param WC_Order_Item $item The order item to generate the meta data for. Can be any order item type including tax, shipping and fees.
+	 * @return array Item metadata.
+	 */
+	private function get_item_metadata( WC_Order_Item $item ) {
+		$metadata = [ 'wc_item_id' => $item->get_id() ];
+
+		switch ( $item->get_type() ) {
+			case 'tax':
+				$metadata['wc_rate_id']  = $item->get_rate_id();
+				$metadata['code']        = $item->get_rate_code();
+				$metadata['rate']        = $item->get_rate_percent();
+				$metadata['is_compound'] = wc_bool_to_string( $item->is_compound() );
+				break;
+			case 'shipping':
+				$metadata['method'] = $item->get_name();
+				break;
+			case 'fee':
+				$metadata['type'] = $item->get_name();
+				break;
+		}
+
+		return $metadata;
 	}
 }

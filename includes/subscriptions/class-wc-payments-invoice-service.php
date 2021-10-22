@@ -344,7 +344,7 @@ class WC_Payments_Invoice_Service {
 	/**
 	 * Gets repair data for WCPay invoice discounts.
 	 *
-	 * @param array           $wcpay_discount_data The WCPay disounts.
+	 * @param array           $wcpay_discount_data The WCPay discounts.
 	 * @param WC_Subscription $subscription        The WC Subscription object.
 	 *
 	 * @return mixed
