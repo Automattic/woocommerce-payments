@@ -276,7 +276,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		);
 
 		$this->wcpay_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
-		$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
+		if ( $payment_method_ids_to_enable ) {
+			$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
+		}
 	}
 
 	/**
@@ -291,9 +293,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$cache_needs_refresh     = false;
 		foreach ( $payment_method_ids_to_enable as $payment_method_id_to_enable ) {
 			$stripe_key = $payment_method_id_to_enable . '_payments';
-			if ( 'unrequested' === $payment_method_statuses[ $stripe_key ]['status'] ) {
-				$request_result      = $this->api_client->request_capability( $stripe_key, true );
-				$cache_needs_refresh = $cache_needs_refresh || 'unrequested' !== $request_result['status'];
+			if ( array_key_exists( $stripe_key, $payment_method_statuses ) ) {
+				if ( 'unrequested' === $payment_method_statuses[ $stripe_key ]['status'] ) {
+					$request_result      = $this->api_client->request_capability( $stripe_key, true );
+					$cache_needs_refresh = $cache_needs_refresh || 'unrequested' !== $request_result['status'];
+				}
 			}
 		}
 

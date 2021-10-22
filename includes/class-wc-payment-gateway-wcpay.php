@@ -2404,12 +2404,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
-		return $statuses ?? [
+		return 0 === count( $statuses ) ? [
 			'card_payments' => [
 				'status'       => 'active',
 				'requirements' => [],
 			],
-		];
+		] : $statuses;
 	}
 
 	/**
