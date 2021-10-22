@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WooCommerceUPS
+ * Class WooCommerceFedEx
  *
  * @package WCPay\MultiCurrency\Compatibility
  */
@@ -12,9 +12,9 @@ use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
 /**
- * Class that controls Multi Currency Compatibility with WooCommerce UPS Plugin.
+ * Class that controls Multi Currency Compatibility with WooCommerce FedEx Plugin.
  */
-class WooCommerceUPS {
+class WooCommerceFedEx {
 
 	const FILTER_PREFIX = 'wcpay_multi_currency_';
 
@@ -50,7 +50,7 @@ class WooCommerceUPS {
 	 * @return  void
 	 */
 	protected function initialize_hooks() {
-		if ( class_exists( 'WC_Shipping_UPS_Init' ) ) {
+		if ( class_exists( 'WC_Shipping_Fedex_Init' ) ) {
 			add_filter( self::FILTER_PREFIX . 'should_return_store_currency', [ $this, 'should_return_store_currency' ] );
 		}
 	}
@@ -69,9 +69,12 @@ class WooCommerceUPS {
 		}
 
 		$calls = [
-			'WC_Shipping_UPS->per_item_shipping',
-			'WC_Shipping_UPS->box_shipping',
-			'WC_Shipping_UPS->calculate_shipping',
+			'WC_Shipping_Fedex->set_settings',
+			'WC_Shipping_Fedex->per_item_shipping',
+			'WC_Shipping_Fedex->box_shipping',
+			'WC_Shipping_Fedex->get_fedex_api_request',
+			'WC_Shipping_Fedex->get_fedex_requests',
+			'WC_Shipping_Fedex->process_result',
 		];
 		if ( $this->utils->is_call_in_backtrace( $calls ) ) {
 			return true;
