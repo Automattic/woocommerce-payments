@@ -19,6 +19,7 @@ import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import ConfirmationModal from '../../components/confirmation-modal';
 import PaymentMethodsMap from 'wcpay/payment-methods-map';
+import RequirementsMap from 'wcpay/requirements-map';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import PaymentConfirmIllustration from 'wcpay/components/payment-confirm-illustration';
@@ -28,6 +29,7 @@ import './style.scss';
 
 const ConfirmPaymentMethodActivationModal = ( {
 	paymentMethod,
+	requirements,
 	onClose,
 	onConfirmClose,
 } ) => {
@@ -68,11 +70,11 @@ const ConfirmPaymentMethodActivationModal = ( {
 				) }
 			</p>
 			<ul className={ 'payment-method-requirements-list' }>
-				{ PaymentMethodsMap[ paymentMethod ].requirements.map(
-					( requirement, index ) => (
-						<li key={ 'requirement' + index }>{ requirement }</li>
-					)
-				) }
+				{ requirements.map( ( requirement, index ) => (
+					<li key={ 'requirement' + index }>
+						{ RequirementsMap[ requirement ] ?? requirement }
+					</li>
+				) ) }
 			</ul>
 			<p>
 				{ interpolateComponents( {
@@ -111,8 +113,8 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 	const [ modalPaymentMethod, setModalPaymentMethod ] = useState( null );
 
 	const handleModalOpen = useCallback(
-		( paymentMethod ) => {
-			setModalPaymentMethod( paymentMethod );
+		( paymentMethod, requirements ) => {
+			setModalPaymentMethod( { paymentMethod, requirements } );
 		},
 		[ setModalPaymentMethod ]
 	);
@@ -135,8 +137,14 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 
 	const handleCheckboxClick = ( paymentMethod, isSelected ) => {
 		if ( isSelected ) {
-			if ( PaymentMethodsMap[ paymentMethod ].requirements ) {
-				handleModalOpen( paymentMethod );
+			const stripeKey = PaymentMethodsMap[ paymentMethod ].stripe_key;
+			const stripeStatus = paymentMethodStatuses[ stripeKey ] ?? [];
+			if (
+				stripeStatus &&
+				'unrequested' === stripeStatus.status &&
+				0 < stripeStatus.requirements.length
+			) {
+				handleModalOpen( paymentMethod, stripeStatus.requirements );
 			} else {
 				setSelectedPaymentMethods( ( oldPaymentMethods ) => [
 					...oldPaymentMethods,
@@ -212,7 +220,8 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 			/>
 			{ modalPaymentMethod && (
 				<ConfirmPaymentMethodActivationModal
-					paymentMethod={ modalPaymentMethod }
+					paymentMethod={ modalPaymentMethod.paymentMethod }
+					requirements={ modalPaymentMethod.requirements }
 					onClose={ handleModalClose }
 					onConfirmClose={ handleModalConfirmClose }
 				/>

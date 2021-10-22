@@ -24,7 +24,6 @@ export default {
 		),
 		Icon: CreditCardIcon,
 		currencies: [],
-		requirements: false,
 		stripe_key: 'card_payments',
 	},
 	bancontact: {
@@ -36,7 +35,6 @@ export default {
 		),
 		Icon: BancontactIcon,
 		currencies: [ 'EUR' ],
-		requirements: false,
 		stripe_key: 'bancontact_payments',
 	},
 	giropay: {
@@ -48,7 +46,6 @@ export default {
 		),
 		Icon: GiropayIcon,
 		currencies: [ 'EUR' ],
-		requirements: false,
 		stripe_key: 'giropay_payments',
 	},
 	ideal: {
@@ -60,10 +57,6 @@ export default {
 		),
 		Icon: IdealIcon,
 		currencies: [ 'EUR' ],
-		requirements: [
-			__( 'Tax ID', 'woocommerce-payments' ),
-			__( 'Business URL', 'woocommerce-payments' ),
-		],
 		stripe_key: 'ideal_payments',
 	},
 	p24: {
@@ -75,7 +68,6 @@ export default {
 		),
 		Icon: P24Icon,
 		currencies: [ 'EUR', 'PLN' ],
-		requirements: false,
 		stripe_key: 'p24_payments',
 	},
 	sepa_debit: {
@@ -87,7 +79,6 @@ export default {
 		),
 		Icon: SepaIcon,
 		currencies: [ 'EUR' ],
-		requirements: false,
 		stripe_key: 'sepa_debit_payments',
 	},
 	sofort: {
@@ -99,7 +90,6 @@ export default {
 		),
 		Icon: SofortIcon,
 		currencies: [ 'EUR' ],
-		requirements: false,
 		stripe_key: 'sofort_payments',
 	},
 };
