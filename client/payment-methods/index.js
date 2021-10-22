@@ -196,7 +196,8 @@ const PaymentMethods = () => {
 										paymentMethodStatuses[
 											methodsConfiguration[ id ]
 												.stripe_key
-										] ?? upeCapabilityStatuses.UNREQUESTED
+										].status ??
+										upeCapabilityStatuses.UNREQUESTED
 									}
 									onDeleteClick={
 										1 < enabledMethods.length

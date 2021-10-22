@@ -276,6 +276,28 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		);
 
 		$this->wcpay_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
+		$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
+	}
+
+	/**
+	 * Requests the capabilities of unrequested payment methods
+	 *
+	 * @param   array $payment_method_ids_to_enable  Enabled Payment method ID's.
+	 *
+	 * @return  void
+	 */
+	private function request_unrequested_payment_methods( $payment_method_ids_to_enable ) {
+		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();
+		foreach ( $payment_method_ids_to_enable as $payment_method_id_to_enable ) {
+			$stripe_key = $payment_method_id_to_enable . '_payments';
+			if ( 'unrequested' === $payment_method_statuses[ $stripe_key ]['status'] ) {
+				$request_result = $this->api_client->request_capability( $stripe_key, true );
+				if ( true === $request_result['requested'] && 'inactive' === $request_result['status'] ) {
+					$this->wcpay_gateway->update_account_payment_method_capability_status( $payment_method_id_to_enable . '_payments', 'pending_verification' );
+				}
+			}
+		}
+
 	}
 
 	/**

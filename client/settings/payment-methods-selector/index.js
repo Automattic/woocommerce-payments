@@ -126,7 +126,7 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 	const handleModalConfirmClose = useCallback( () => {
 		setSelectedPaymentMethods( ( oldPaymentMethods ) => [
 			...oldPaymentMethods,
-			modalPaymentMethod,
+			modalPaymentMethod.paymentMethod,
 		] );
 		setModalPaymentMethod( null );
 	}, [
@@ -138,13 +138,17 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 	const handleCheckboxClick = ( paymentMethod, isSelected ) => {
 		if ( isSelected ) {
 			const stripeKey = PaymentMethodsMap[ paymentMethod ].stripe_key;
-			const stripeStatus = paymentMethodStatuses[ stripeKey ] ?? [];
+			const stripeStatusContainer =
+				paymentMethodStatuses[ stripeKey ] ?? [];
 			if (
-				stripeStatus &&
-				'unrequested' === stripeStatus.status &&
-				0 < stripeStatus.requirements.length
+				stripeStatusContainer &&
+				'unrequested' === stripeStatusContainer.status &&
+				0 < stripeStatusContainer.requirements.length
 			) {
-				handleModalOpen( paymentMethod, stripeStatus.requirements );
+				handleModalOpen(
+					paymentMethod,
+					stripeStatusContainer.requirements
+				);
 			} else {
 				setSelectedPaymentMethods( ( oldPaymentMethods ) => [
 					...oldPaymentMethods,
@@ -210,7 +214,7 @@ const AddPaymentMethodsModal = ( { onClose } ) => {
 						status={
 							paymentMethodStatuses[
 								PaymentMethodsMap[ method ].stripe_key
-							] ?? upeCapabilityStatuses.UNREQUESTED
+							].status ?? upeCapabilityStatuses.UNREQUESTED
 						}
 					/>
 				) ) }
