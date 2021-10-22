@@ -277,56 +277,6 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Prepare tax rates for a subscription item.
-	 *
-	 * @param WC_Order_Item   $item         Subscription order item.
-	 * @param WC_Subscription $subscription A Subscription to get tax rate information from.
-	 *
-	 * @return array
-	 */
-	public static function get_tax_rates_for_item( WC_Order_Item $item, WC_Subscription $subscription ) {
-		$tax_rates = [];
-
-		if ( ! wc_tax_enabled() || ! $item->get_taxes() ) {
-			return $tax_rates;
-		}
-
-		$tax_rate_ids = $item->get_taxes()['total'];
-
-		if ( ! $tax_rate_ids ) {
-			return $tax_rates;
-		}
-
-		$tax_inclusive = $subscription->get_prices_include_tax();
-
-		if ( is_a( $item, 'WC_Order_Item_Shipping' ) ) {
-			$tax_inclusive = false;
-		}
-
-		foreach ( $subscription->get_taxes() as $tax ) {
-
-			if ( isset( $tax_rate_ids[ $tax->get_rate_id() ] ) ) {
-				$tax_rate = [
-					'display_name' => $tax->get_name(),
-					'inclusive'    => $tax_inclusive,
-					'percentage'   => $tax->get_rate_percent(),
-				];
-
-				// Tax rates cannot be applied to WCPay Subscriptions in a compounding way so we need to reverse engineer the rate ourselves.
-				if ( $tax->is_compound() ) {
-					$tax_rate['inclusive']  = false; // Compounding tax rates are calculated as exclusive rates.
-					$tax_amount             = $tax_rate_ids[ $tax->get_rate_id() ];
-					$tax_rate['percentage'] = round( ( $tax_amount / $item->get_total() ) * 100, 4 );
-				}
-
-				$tax_rates[] = $tax_rate;
-			}
-		}
-
-		return $tax_rates;
-	}
-
-	/**
 	 * Prepares discount data used to create a WCPay subscription.
 	 *
 	 * @param WC_Subscription $subscription The WC subscription used to create the subscription on server.
@@ -724,7 +674,7 @@ class WC_Payments_Subscription_Service {
 	 *
 	 * @return array WCPay recurring item data.
 	 */
-	private function get_recurring_item_data_for_subscription( WC_Subscription $subscription ) : array {
+	public function get_recurring_item_data_for_subscription( WC_Subscription $subscription ) : array {
 		$data = [];
 
 		foreach ( $subscription->get_items() as $item ) {
