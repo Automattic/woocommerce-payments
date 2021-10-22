@@ -1054,6 +1054,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$next_action   = $intent['next_action'];
 		}
 
+		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+		$this->attach_exchange_info_to_order( $order, $charge_id );
+
 		if ( ! empty( $intent ) ) {
 			if ( ! in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				$intent_failed = true;
@@ -1098,9 +1101,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 		}
-
-		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
-		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( isset( $response ) ) {
 			return $response;
@@ -1865,7 +1865,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			$description     = substr( $item->get_name(), 0, 26 );
-			$quantity        = $item->get_quantity();
+			$quantity        = ceil( $item->get_quantity() );
 			$unit_cost       = WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency );
 			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
 			$discount_amount = WC_Payments_Utils::prepare_amount( $subtotal - $item->get_total(), $currency );

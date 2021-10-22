@@ -301,7 +301,8 @@ class WC_Payments_API_Client {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
 		}
-		if ( $payment_country ) {
+		if ( $payment_country && ! WC_Payments::get_gateway()->is_in_dev_mode() ) {
+			// Do not update on dev mode, Stripe tests cards don't return the appropriate country.
 			$request['payment_country'] = $payment_country;
 		}
 		if ( $customer_id ) {
