@@ -25,7 +25,7 @@ class WC_Payments_DB {
 		$order_id = $this->order_id_from_meta_key_value( self::META_KEY_CHARGE_ID, $charge_id );
 
 		if ( $order_id ) {
-			return wc_get_order( $order_id );
+			return $this->order_from_order_id( $order_id );
 		}
 		return false;
 	}
@@ -41,7 +41,7 @@ class WC_Payments_DB {
 		$order_id = $this->order_id_from_meta_key_value( self::META_KEY_INTENT_ID, $intent_id );
 
 		if ( $order_id ) {
-			return wc_get_order( $order_id );
+			return $this->order_from_order_id( $order_id );
 		}
 		return false;
 	}
@@ -66,5 +66,16 @@ class WC_Payments_DB {
 			)
 		);
 		return $order_id;
+	}
+
+	/**
+	 * Retrieve an order using order ID.
+	 *
+	 * @param string $order_id       WC Order Id.
+	 *
+	 * @return null|WC_Order
+	 */
+	public function order_from_order_id( $order_id ) {
+		return wc_get_order( ( $order_id ) );
 	}
 }
