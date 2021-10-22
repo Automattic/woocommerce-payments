@@ -2415,13 +2415,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Updates the account cache with the new payment method status, until it gets fetched again from the server.
 	 *
-	 * @param  string $capability_id  The capability ID to Update.
-	 * @param  string $status         The new status of the capability.
-	 *
 	 * @return  void
 	 */
-	public function update_account_payment_method_capability_status( $capability_id, $status ) {
-		// TODO: this will change the cache or refresh it.
+	public function refresh_cached_account_data() {
+		$this->account->refresh_account_data();
 	}
 
 	/**
