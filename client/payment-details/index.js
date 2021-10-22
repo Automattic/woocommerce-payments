@@ -13,9 +13,18 @@ import PaymentDetailsTimeline from './timeline';
 import PaymentDetailsPaymentMethod from './payment-method';
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
+import PaymentReaderChargeDetails from './readers';
 
 const PaymentDetails = ( props ) => {
-	const chargeId = props.query.id;
+	if ( 'card_reader_fee' === props.query.type ) {
+		return <PaymentReaderChargeDetails chargeId={ props.query.id } />;
+	}
+
+	return <PaymentChargeDetails chargeId={ props.query.id } />;
+};
+
+const PaymentChargeDetails = ( props ) => {
+	const chargeId = props.chargeId;
 	const { charge, isLoading, chargeError } = useCharge( chargeId );
 	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
 

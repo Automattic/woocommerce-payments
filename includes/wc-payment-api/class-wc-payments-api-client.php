@@ -49,6 +49,7 @@ class WC_Payments_API_Client {
 	const INVOICES_API           = 'invoices';
 	const SUBSCRIPTIONS_API      = 'subscriptions';
 	const SUBSCRIPTION_ITEMS_API = 'subscriptions/items';
+	const READERS_CHARGE_SUMMARY = 'reader-charges/summary';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1777,5 +1778,15 @@ class WC_Payments_API_Client {
 			$domain_name,
 			null !== $blog_id ? " blog_id $blog_id" : ''
 		);
+	}
+
+
+	/**
+	 * Fetch readers charge summary.
+	 *
+	 * @return array reader objects.
+	 */
+	public function get_readers_charge_summary() {
+		return $this->request( [], self::READERS_CHARGE_SUMMARY, self::GET );
 	}
 }
