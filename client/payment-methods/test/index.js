@@ -227,13 +227,34 @@ describe( 'PaymentMethods', () => {
 			updateEnabledMethodsMock,
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: upeCapabilityStatuses.ACTIVE,
-			bancontact_payments: upeCapabilityStatuses.INACTIVE,
-			giropay_payments: upeCapabilityStatuses.PENDING_APPROVAL,
-			ideal_payments: upeCapabilityStatuses.INACTIVE,
-			p24_payments: upeCapabilityStatuses.INACTIVE,
-			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
-			sofort_payments: upeCapabilityStatuses.PENDING_VERIFICATION,
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			bancontact_payments: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			giropay_payments: {
+				status: upeCapabilityStatuses.PENDING_APPROVAL,
+				requirements: [],
+			},
+			ideal_payments: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			p24_payments: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			sepa_debit_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sofort_payments: {
+				status: upeCapabilityStatuses.PENDING_VERIFICATION,
+				requirements: [ 'individual.identification_number' ],
+			},
 		} );
 
 		render(
@@ -242,7 +263,8 @@ describe( 'PaymentMethods', () => {
 			</WcPayUpeContextProvider>
 		);
 
-		expect( screen.queryAllByText( /Pending/i ).length ).toEqual( 2 );
+		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 2 );
+
 		expect(
 			screen.queryAllByText( /Contact WooCommerce Support/i ).length
 		).toEqual( 3 );
