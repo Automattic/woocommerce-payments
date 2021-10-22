@@ -33,6 +33,10 @@ const ConfirmPaymentMethodActivationModal = ( {
 	onClose,
 	onConfirmClose,
 } ) => {
+	const requirementsToDisplay = requirements.filter( ( requirement ) => {
+		return RequirementsMap.hasOwnProperty( requirement );
+	} );
+
 	const handleConfirmationClick = () => {
 		onConfirmClose();
 	};
@@ -60,22 +64,37 @@ const ConfirmPaymentMethodActivationModal = ( {
 				Icon={ PaymentMethodsMap[ paymentMethod ].Icon }
 				hasBorder={ 'card' !== PaymentMethodsMap[ paymentMethod ].id }
 			/>
-			<p>
-				{ sprintf(
-					__(
-						'You need to provide more information to enable %s on your checkout:',
-						'woocommerce-payments'
-					),
-					PaymentMethodsMap[ paymentMethod ].label
-				) }
-			</p>
-			<ul className={ 'payment-method-requirements-list' }>
-				{ requirements.map( ( requirement, index ) => (
-					<li key={ 'requirement' + index }>
-						{ RequirementsMap[ requirement ] ?? requirement }
-					</li>
-				) ) }
-			</ul>
+			{ 0 < requirementsToDisplay.length ? (
+				<>
+					<p>
+						{ sprintf(
+							__(
+								'You need to provide more information to enable %s on your checkout:',
+								'woocommerce-payments'
+							),
+							PaymentMethodsMap[ paymentMethod ].label
+						) }
+					</p>
+					<ul className={ 'payment-method-requirements-list' }>
+						{ requirementsToDisplay.map( ( requirement, index ) => (
+							<li key={ 'requirement' + index }>
+								{ RequirementsMap[ requirement ] ??
+									requirement }
+							</li>
+						) ) }
+					</ul>
+				</>
+			) : (
+				<p>
+					{ sprintf(
+						__(
+							'You need to provide more information to enable %s on your checkout.',
+							'woocommerce-payments'
+						),
+						PaymentMethodsMap[ paymentMethod ].label
+					) }
+				</p>
+			) }
 			<p>
 				{ interpolateComponents( {
 					mixedString: __(
