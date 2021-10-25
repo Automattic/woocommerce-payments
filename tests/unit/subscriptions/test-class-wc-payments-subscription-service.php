@@ -422,6 +422,30 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test WC_Payments_Subscription_Service->maybe_update_date_for_subscription() with non-wcpay-subscriptions.
+	 */
+	public function test_maybe_update_date_for_subscription_non_wcpay_subscriptions() {
+		$this->assertTrue( true );
+		$subscription            = new WC_Subscription();
+		$mock_subscription_id    = 1;
+		$subscription->trial_end = 0;
+
+		$_POST['woocommerce_meta_nonce']  = wp_create_nonce( 'woocommerce_save_data' );
+		$_POST['trial_end_timestamp_utc'] = time();
+
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $subscription ) {
+				return $subscription;
+			}
+		);
+
+		$this->mock_api_client->expects( $this->never() )
+							->method( 'update_subscription' );
+
+		$this->subscription_service->maybe_update_date_for_subscription( $mock_subscription_id );
+	}
+
+	/**
 	 * Test WC_Payments_Subscription_Service->prepare_wcpay_subscription_data()
 	 */
 	public function test_prepare_wcpay_subscription_data() {
@@ -580,6 +604,27 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			->method( 'update_subscription' )
 			->with( $mock_wcpay_subscription_id, [ 'trial_end' => $mock_trial_end ] )
 			->willReturn( [ 'updated_trial_end' => $mock_trial_end ] );
+
+		PHPUnit_Utils::call_method(
+			$this->subscription_service,
+			'set_trial_end_for_subscription',
+			[ $mock_subscription, $mock_trial_end ]
+		);
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service->set_trial_end_for_subscription() with empty trial end
+	 */
+	public function test_set_empty_trial_end_for_subscription() {
+		$mock_subscription          = new WC_Subscription();
+		$mock_wcpay_subscription_id = 'wcpay_set_trial12345';
+		$mock_trial_end             = 0;
+
+		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $mock_wcpay_subscription_id );
+
+		$this->mock_api_client->expects( $this->once() )
+							->method( 'update_subscription' )
+							->with( $mock_wcpay_subscription_id, [ 'trial_end' => 'now' ] );
 
 		PHPUnit_Utils::call_method(
 			$this->subscription_service,

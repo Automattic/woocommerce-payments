@@ -495,16 +495,20 @@ class WC_Payments_Subscription_Service {
 
 		$subscription = wcs_get_subscription( $post_id );
 
+		if ( ! self::get_wcpay_subscription_id( $subscription ) ) {
+			return;
+		}
+
 		// Check for new trial end date.
 		if ( array_key_exists( 'trial_end_timestamp_utc', $_POST ) && (int) $_POST['trial_end_timestamp_utc'] !== $subscription->get_time( 'trial_end' ) ) {
-			$timestamp = empty( $_POST['trial_end_timestamp_utc'] ) ? 'now' : (int) $_POST['trial_end_timestamp_utc'];
+			$timestamp = empty( $_POST['trial_end_timestamp_utc'] ) ? 0 : (int) $_POST['trial_end_timestamp_utc'];
 			$this->set_trial_end_for_subscription( $subscription, $timestamp );
 			return; // Trial end should be equal to next payment, so we can return early.
 		}
 
 		// Check for new next payment date.
 		if ( array_key_exists( 'next_payment_timestamp_utc', $_POST ) && (int) $_POST['next_payment_timestamp_utc'] !== $subscription->get_time( 'next_payment' ) ) {
-			$timestamp = empty( $_POST['next_payment_timestamp_utc'] ) ? 'now' : (int) $_POST['next_payment_timestamp_utc'];
+			$timestamp = empty( $_POST['next_payment_timestamp_utc'] ) ? 0 : (int) $_POST['next_payment_timestamp_utc'];
 			$this->set_trial_end_for_subscription( $subscription, $timestamp );
 		}
 	}
@@ -800,7 +804,8 @@ class WC_Payments_Subscription_Service {
 	 * @return void
 	 */
 	private function set_trial_end_for_subscription( WC_Subscription $subscription, int $timestamp ) {
-		$this->update_subscription( $subscription, [ 'trial_end' => $timestamp ] );
+		$trial_end = 0 === $timestamp ? 'now' : $timestamp;
+		$this->update_subscription( $subscription, [ 'trial_end' => $trial_end ] );
 	}
 
 	/**
