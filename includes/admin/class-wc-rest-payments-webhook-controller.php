@@ -258,7 +258,6 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		$event_data   = $this->read_rest_property( $event_body, 'data' );
 		$event_object = $this->read_rest_property( $event_data, 'object' );
 		$intent_id    = $this->read_rest_property( $event_object, 'id' );
-		$invoice_id   = $this->read_rest_property( $event_object, 'invoice' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
@@ -271,7 +270,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			if ( isset( $metadata['order_id'] ) ) {
 				$order_id = $metadata['order_id'];
 				$order    = $this->wcpay_db->order_from_order_id( $order_id );
-			} elseif ( $invoice_id ) {
+			} elseif ( ! empty( $event_object['invoice'] ) ) {
 				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
 				return;
 			}
