@@ -67,6 +67,7 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 				],
 			];
 		}
+		$account['card_present_eligible'] = false;
 
 		if ( false !== $account ) {
 			// Add extra properties to account if necessary.
