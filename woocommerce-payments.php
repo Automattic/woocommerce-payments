@@ -110,21 +110,22 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 			return;
 		}
 
-		$subscriptions_plugin_name = 'woocommerce-subscriptions';
-		$wcs_core_plugin_name      = 'woocommerce-subscriptions-core';
-		$subscriptions_plugin_slug = "$subscriptions_plugin_name/$subscriptions_plugin_name.php";
-		$wcs_core_plugin_slug      = "$wcs_core_plugin_name/$wcs_core_plugin_name.php";
+		$is_plugin_active = function( $plugin_name ) {
+			$plugin_slug = "$plugin_name/$plugin_name.php";
 
-		$is_plugin_being_activated_by_request = function( $plugin_slug ) {
-			return isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $plugin_slug === $_GET['plugin']; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $plugin_slug === $_GET['plugin'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				return true;
+			}
+
+			if ( defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) && 4 >= count( $GLOBALS['argv'] ) && 'plugin' === $GLOBALS['argv'][1] && 'activate' === $GLOBALS['argv'][2] && $plugin_name === $GLOBALS['argv'][3] ) {
+				return true;
+			}
+
+			return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $plugin_slug );
 		};
 
-		$is_plugin_being_activated_by_cli = function( $plugin_name ) {
-			return defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) && 4 >= count( $GLOBALS['argv'] ) && 'plugin' === $GLOBALS['argv'][1] && 'activate' === $GLOBALS['argv'][2] && $plugin_name === $GLOBALS['argv'][3];
-		};
-
-		$is_subscriptions_active = $is_plugin_being_activated_by_request( $subscriptions_plugin_slug ) || $is_plugin_being_activated_by_cli( $subscriptions_plugin_name ) || Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $subscriptions_plugin_slug );
-		$is_wcs_core_active      = $is_plugin_being_activated_by_request( $wcs_core_plugin_slug ) || $is_plugin_being_activated_by_cli( $wcs_core_plugin_name ) || Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $wcs_core_plugin_slug );
+		$is_subscriptions_active = $is_plugin_active( 'woocommerce-subscriptions' );
+		$is_wcs_core_active      = $is_plugin_active( 'woocommerce-subscriptions-core' );
 		$wcs_core_path           = $is_wcs_core_active ? WP_PLUGIN_DIR . '/woocommerce-subscriptions-core/' : WCPAY_SUBSCRIPTIONS_ABSPATH;
 
 		/**
