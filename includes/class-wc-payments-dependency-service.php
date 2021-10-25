@@ -68,15 +68,19 @@ class WC_Payments_Dependency_Service {
 	 *
 	 * @return array of invalid dependencies as string constants.
 	 */
-	public function get_invalid_dependencies() {
+	public function get_invalid_dependencies( bool $check_account_connection ) {
 
 		$invalid_dependencies = [];
+		
+		// Either ignore the account connection check or check if there's a cached account connection
+		// TODO: maybe there's a better name for this?
+		$account_check_result = ! $check_account_connection || ! $this->has_cached_account_connection();
 
 		if ( ! $this->is_woo_core_active() ) {
 			$invalid_dependencies[] = self::WOOCORE_NOT_FOUND;
 		}
 
-		if ( ! $this->is_woo_core_version_compatible() ) {
+		if ( $account_check_result && ! $this->is_woo_core_version_compatible() ) {
 			$invalid_dependencies[] = self::WOOCORE_INCOMPATIBLE;
 		}
 
@@ -84,11 +88,11 @@ class WC_Payments_Dependency_Service {
 			$invalid_dependencies[] = self::WOOADMIN_NOT_FOUND;
 		}
 
-		if ( ! $this->is_wc_admin_version_compatible() ) {
+		if ( $account_check_result && ! $this->is_wc_admin_version_compatible() ) {
 			$invalid_dependencies[] = self::WOOADMIN_INCOMPATIBLE;
 		}
 
-		if ( ! $this->is_wp_version_compatible() ) {
+		if ( $account_check_result && ! $this->is_wp_version_compatible() ) {
 			$invalid_dependencies[] = self::WP_INCOMPATIBLE;
 		}
 
