@@ -107,13 +107,6 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $billing_interval = 1;
 
 	/**
-	 * Taxes.
-	 *
-	 * @var array
-	 */
-	public $taxes = [];
-
-	/**
 	 * A helper function for handling function calls not yet implimented on this helper.
 	 *
 	 * Attempts to get the value by checking if it has been set as an object property.
@@ -201,10 +194,6 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		foreach ( $dates as $date_type => $date_string ) {
 			$this->{$date_type} = strtotime( $date_string );
 		}
-	}
-
-	public function get_taxes() {
-		return $this->taxes;
 	}
 
 	public function get_currency() {

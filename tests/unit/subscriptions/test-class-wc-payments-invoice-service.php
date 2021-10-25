@@ -42,7 +42,8 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client      = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_product_service = $this->createMock( WC_Payments_Product_Service::class );
-		$this->invoice_service      = new WC_Payments_Invoice_Service( $this->mock_api_client, $this->mock_product_service );
+		$this->mock_gateway         = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->invoice_service      = new WC_Payments_Invoice_Service( $this->mock_api_client, $this->mock_product_service, $this->mock_gateway );
 	}
 
 	/**
@@ -174,22 +175,38 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, [ 'sub_test123' ] );
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, [ 'di_test123' ] );
 
-		foreach ( $mock_order->get_items( 'line_item', 'fee', 'shipping' ) as $item ) {
-			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123' );
+		foreach ( $mock_order->get_items( [ 'line_item', 'fee', 'shipping' ] ) as $item ) {
+			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123_' . $item->get_type() );
 		}
 
 		$mock_item_data = [
 			[
-				'subscription_item' => 'si_test123',
-				'amount'            => 4000,
+				'subscription_item' => 'si_test123_line_item',
 				'quantity'          => 4,
-				'tax_rates'         => [],
+				'price'             =>
+				[
+					'unit_amount_decimal' => 1000,
+					'currency'            => 'usd',
+					'recurring'           =>
+					[
+						'interval'       => 'month',
+						'interval_count' => 1,
+					],
+				],
 			],
 			[
-				'subscription_item' => 'si_test123',
-				'amount'            => 4000,
-				'quantity'          => 4,
-				'tax_rates'         => [],
+				'subscription_item' => 'si_test123_shipping',
+				'quantity'          => 1,
+				'price'             =>
+				[
+					'unit_amount_decimal' => 1000,
+					'currency'            => 'usd',
+					'recurring'           =>
+					[
+						'interval'       => 'month',
+						'interval_count' => 1,
+					],
+				],
 			],
 		];
 
@@ -216,33 +233,49 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, [ 'di_test123' ] );
 
-		foreach ( $mock_order->get_items( 'line_item', 'fee', 'shipping' ) as $item ) {
-			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123' );
+		foreach ( $mock_order->get_items( [ 'line_item', 'fee', 'shipping' ] ) as $item ) {
+			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123_' . $item->get_type() );
 		}
 
 		$mock_item_data = [
 			[
-				'subscription_item' => 'si_test123',
-				'amount'            => 1000,
+				'subscription_item' => 'si_test123_line_item',
 				'quantity'          => 1,
-				'tax_rates'         => [],
+				'price'             =>
+				[
+					'unit_amount_decimal' => 1000,
+					'currency'            => 'usd',
+					'recurring'           =>
+					[
+						'interval'       => 'month',
+						'interval_count' => 1,
+					],
+				],
+			],
+			[
+				'subscription_item' => 'si_test123_shipping',
+				'quantity'          => 1,
+				'price'             =>
+				[
+					'unit_amount_decimal' => 1000,
+					'currency'            => 'usd',
+					'recurring'           =>
+					[
+						'interval'       => 'month',
+						'interval_count' => 1,
+					],
+				],
 			],
 		];
 
 		$mock_discount_data = [ 'di_test456' ];
 
-		$this->mock_product_service
-			->expects( $this->once() )
-			->method( 'get_wcpay_price_id' )
-			->willReturn( 'price_test123' );
-
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'update_subscription_item' )
 			->with(
-				'si_test123',
+				'si_test123_line_item',
 				[
-					'price'    => 'price_test123',
 					'quantity' => 4,
 				]
 			);
@@ -263,6 +296,61 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 		$this->invoice_service->validate_invoice( $mock_item_data, $mock_discount_data, $mock_subscription );
 		$this->assertSame( [], $mock_subscription->get_meta( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, true ) );
 	}
+
+	/**
+	 * Tests WC_Payments_Invoice_Service::get_and_attach_intent_info_to_order() with a valid Intention object.
+	 */
+	public function test_get_and_attach_intent_info_to_order() {
+		$mock_order = WC_Helper_Order::create_order();
+		$intent_id  = 'pi_paymentIntentID';
+
+		$intent = new WC_Payments_API_Intention(
+			$intent_id,
+			'10',
+			'USD',
+			'customer_id',
+			'payment_method_id',
+			new DateTime(),
+			'succeeded', // Intent status.
+			'charge_id',
+			'client_secret'
+		);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->with( $intent_id )
+			->willReturn( $intent );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' )
+			->willReturn( null );
+
+		$this->invoice_service->get_and_attach_intent_info_to_order( $mock_order, $intent_id );
+	}
+
+	/**
+	 * Tests WC_Payments_Invoice_Service::get_and_attach_intent_info_to_order() with a thrown exception when retrieving the PaymentIntent.
+	 */
+	public function test_get_and_attach_intent_info_to_order_with_exception() {
+		$mock_order = WC_Helper_Order::create_order();
+		$intent_id  = 'pi_paymentIntentID';
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->with( $intent_id )
+			->will( $this->throwException( new API_Exception( 'whoops', 'mock_error', 403 ) ) );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' )
+			->willReturn( null );
+
+		$this->invoice_service->get_and_attach_intent_info_to_order( $mock_order, $intent_id );
+	}
+
 	/**
 	 * Mocks the wcs_order_contains_subscription function return.
 	 *
