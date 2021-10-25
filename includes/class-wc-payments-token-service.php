@@ -126,7 +126,7 @@ class WC_Payments_Token_Service {
 		}
 
 		$payment_methods = [];
-		foreach ( WC_Payments::get_gateway()->get_upe_enabled_at_checkout_payment_method_ids() as $type ) {
+		foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
 			$payment_methods += $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
 		}
 
