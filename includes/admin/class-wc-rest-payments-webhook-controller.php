@@ -257,8 +257,8 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	private function process_webhook_payment_intent_succeeded( $event_body ) {
 		$event_data   = $this->read_rest_property( $event_body, 'data' );
 		$event_object = $this->read_rest_property( $event_data, 'object' );
-
-		$intent_id = $this->read_rest_property( $event_object, 'id' );
+		$intent_id    = $this->read_rest_property( $event_object, 'id' );
+		$invoice_id   = $this->read_rest_property( $event_body, 'invoice' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
@@ -267,8 +267,14 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			// Retrieving order with order_id in case intent_id was not properly set.
 			Logger::debug( 'intent_id not found, using order_id to retrieve order' );
 			$metadata = $this->read_rest_property( $event_object, 'metadata' );
-			$order_id = $metadata['order_id'];
-			$order    = $this->wcpay_db->order_from_order_id( $order_id );
+
+			if ( isset( $metadata['order_id'] ) ) {
+				$order_id = $metadata['order_id'];
+				$order    = $this->wcpay_db->order_from_order_id( $order_id );
+			} elseif ( $invoice_id ) {
+				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
+				return;
+			}
 		}
 
 		if ( ! $order ) {
