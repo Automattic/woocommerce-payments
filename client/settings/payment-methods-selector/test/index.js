@@ -37,14 +37,40 @@ describe( 'PaymentMethodsSelector', () => {
 			'sepa_debit',
 			'sofort',
 		] );
+		global.wcSettings = {
+			currentUserData: {
+				email: 'test@example.com',
+			},
+		};
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: upeCapabilityStatuses.ACTIVE,
-			bancontact_payments: upeCapabilityStatuses.ACTIVE,
-			giropay_payments: upeCapabilityStatuses.ACTIVE,
-			ideal_payments: upeCapabilityStatuses.ACTIVE,
-			p24_payments: upeCapabilityStatuses.ACTIVE,
-			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
-			sofort_payments: upeCapabilityStatuses.ACTIVE,
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			bancontact_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			giropay_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			ideal_payments: {
+				status: upeCapabilityStatuses.UNREQUESTED,
+				requirements: [ 'individual.identification_number' ],
+			},
+			p24_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sepa_debit_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sofort_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
 		} );
 	} );
 
@@ -276,6 +302,13 @@ describe( 'PaymentMethodsSelector', () => {
 			name: 'iDEAL',
 		} );
 		user.click( idealCheckbox );
+
+		// iDeal will display a confirmation modal because of the pending requirement and then checks the checkbox
+		const continueButton = screen.getByRole( 'button', {
+			name: 'Continue',
+		} );
+		user.click( continueButton );
+
 		const addSelectedButton = screen.getByRole( 'button', {
 			name: 'Add selected',
 		} );
