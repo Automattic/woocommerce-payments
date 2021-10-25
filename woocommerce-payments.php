@@ -110,10 +110,12 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 			return;
 		}
 
-		$subscriptions_plugin_slug = 'woocommerce-subscriptions/woocommerce-subscriptions.php';
-		$wcs_core_plugin_slug      = 'woocommerce-subscriptions-core/woocommerce-subscriptions-core.php';
-		$is_subscriptions_active   = ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $subscriptions_plugin_slug === $_GET['plugin'] ) || Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $subscriptions_plugin_slug ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$is_wcs_core_active        = ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $wcs_core_plugin_slug === $_GET['plugin'] ) || Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $wcs_core_plugin_slug ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$subscriptions_plugin_name = 'woocommerce-subscriptions';
+		$wcs_core_plugin_name      = 'woocommerce-subscriptions-core';
+		$subscriptions_plugin_slug = "woocommerce-subscriptions/$subscriptions_plugin_name.php";
+		$wcs_core_plugin_slug      = "woocommerce-subscriptions-core/$wcs_core_plugin_name.php";
+		$is_subscriptions_active   = ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $subscriptions_plugin_slug === $_GET['plugin'] ) || ( defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) && 4 >= count( $GLOBALS['argv'] ) && [ 1 ] && 'plugin' === $GLOBALS['argv'][1] && 'activate' === $GLOBALS['argv'][2] && $subscriptions_plugin_name === $GLOBALS['argv'][3] ) || Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $subscriptions_plugin_slug ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$is_wcs_core_active        = ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $wcs_core_plugin_slug === $_GET['plugin'] ) || ( defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) && 4 >= count( $GLOBALS['argv'] ) && [ 1 ] && 'plugin' === $GLOBALS['argv'][1] && 'activate' === $GLOBALS['argv'][2] && $wcs_core_plugin_name === $GLOBALS['argv'][3] ) || Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $wcs_core_plugin_slug ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$wcs_core_path             = $is_wcs_core_active ? WP_PLUGIN_DIR . '/woocommerce-subscriptions-core/' : WCPAY_SUBSCRIPTIONS_ABSPATH;
 
 		/**

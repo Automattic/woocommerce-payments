@@ -161,6 +161,25 @@ cli wp plugin install wordpress-importer --activate
 echo "Importing some sample data..."
 cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip
 
+# TODO: Build a zip and use it to install plugin to make sure production build is under test.
+echo "Activating the WooCommerce Payments plugin..."
+cli wp plugin activate woocommerce-payments
+
+echo "Setting up WooCommerce Payments..."
+if [[ "0" == "$(cli wp option list --search=woocommerce_woocommerce_payments_settings --format=count)" ]]; then
+	echo "Creating WooCommerce Payments settings"
+	cli wp option add woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
+else
+	echo "Updating WooCommerce Payments settings"
+	cli wp option update woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
+fi
+
+echo "Activating dev tools plugin"
+cli wp plugin activate $DEV_TOOLS_DIR
+
+echo "Setting Jetpack blog_id"
+cli wp wcpay_dev set_blog_id $BLOG_ID
+
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	echo "Install and activate the latest release of WooCommerce Subscriptions"
 	cd "$E2E_ROOT"/deps
@@ -214,25 +233,6 @@ if [[ ! ${SKIP_WC_BLOCKS_TESTS} ]]; then
 else
 	echo "Skipping install of WooCommerce Blocks"
 fi
-
-# TODO: Build a zip and use it to install plugin to make sure production build is under test.
-echo "Activating the WooCommerce Payments plugin..."
-cli wp plugin activate woocommerce-payments
-
-echo "Setting up WooCommerce Payments..."
-if [[ "0" == "$(cli wp option list --search=woocommerce_woocommerce_payments_settings --format=count)" ]]; then
-	echo "Creating WooCommerce Payments settings"
-	cli wp option add woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
-else
-	echo "Updating WooCommerce Payments settings"
-	cli wp option update woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
-fi
-
-echo "Activating dev tools plugin"
-cli wp plugin activate $DEV_TOOLS_DIR
-
-echo "Setting Jetpack blog_id"
-cli wp wcpay_dev set_blog_id $BLOG_ID
 
 echo "Installing basic auth plugin for interfacing with the API"
 cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
