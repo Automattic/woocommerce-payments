@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b855278826cb064bddb6d422ded5b90b",
+    "content-hash": "3f7781ef0f1206b7c3dc0471c0bc8a48",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -281,16 +281,16 @@
         },
         {
             "name": "automattic/jetpack-heartbeat",
-            "version": "v1.3.12",
+            "version": "v1.3.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-heartbeat.git",
-                "reference": "89aa8de4786cebea1d153fe11de6c4c45007e508"
+                "reference": "cce7b6910a3ee2ad7bad3c8fea3905774f9198df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-heartbeat/zipball/89aa8de4786cebea1d153fe11de6c4c45007e508",
-                "reference": "89aa8de4786cebea1d153fe11de6c4c45007e508",
+                "url": "https://api.github.com/repos/Automattic/jetpack-heartbeat/zipball/cce7b6910a3ee2ad7bad3c8fea3905774f9198df",
+                "reference": "cce7b6910a3ee2ad7bad3c8fea3905774f9198df",
                 "shasum": ""
             },
             "require": {
@@ -322,9 +322,9 @@
             ],
             "description": "This adds a cronjob that sends a batch of internal automattic stats to wp.com once a day",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-heartbeat/tree/v1.3.12"
+                "source": "https://github.com/Automattic/jetpack-heartbeat/tree/v1.3.13"
             },
-            "time": "2021-10-13T17:11:24+00:00"
+            "time": "2021-10-19T10:39:52+00:00"
         },
         {
             "name": "automattic/jetpack-options",
@@ -822,16 +822,16 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "c54970df24cb40f2d0c5ffa0fadc97e949324923"
+                "reference": "47276614b726a46a5a4ee176307d4234b901dde1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/c54970df24cb40f2d0c5ffa0fadc97e949324923",
-                "reference": "c54970df24cb40f2d0c5ffa0fadc97e949324923",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/47276614b726a46a5a4ee176307d4234b901dde1",
+                "reference": "47276614b726a46a5a4ee176307d4234b901dde1",
                 "shasum": ""
             },
             "require": {
@@ -861,10 +861,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.0.0",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.0.1",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2021-10-18T06:45:29+00:00"
+            "time": "2021-10-25T00:38:00+00:00"
         }
     ],
     "packages-dev": [
@@ -3491,7 +3491,6 @@
                     "type": "github"
                 }
             ],
-            "abandoned": true,
             "time": "2020-11-30T07:30:19+00:00"
         },
         {
