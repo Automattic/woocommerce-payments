@@ -258,7 +258,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		$event_data   = $this->read_rest_property( $event_body, 'data' );
 		$event_object = $this->read_rest_property( $event_data, 'object' );
 		$intent_id    = $this->read_rest_property( $event_object, 'id' );
-		$invoice_id   = $this->read_rest_property( $event_body, 'invoice' );
+		$invoice_id   = $this->read_rest_property( $event_object, 'invoice' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
