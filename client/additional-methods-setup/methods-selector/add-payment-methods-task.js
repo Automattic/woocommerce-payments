@@ -213,7 +213,8 @@ const AddPaymentMethodsTask = () => {
 									status={
 										paymentMethodStatuses[
 											paymentMethodsMap.card.stripe_key
-										] ?? upeCapabilityStatuses.UNREQUESTED
+										].status ??
+										upeCapabilityStatuses.UNREQUESTED
 									}
 								/>
 							) }
@@ -240,7 +241,7 @@ const AddPaymentMethodsTask = () => {
 												paymentMethodStatuses[
 													paymentMethodsMap[ key ]
 														.stripe_key
-												] ??
+												].status ??
 												upeCapabilityStatuses.UNREQUESTED
 											}
 											onChange={
