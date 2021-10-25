@@ -826,12 +826,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "c338cbe4a8cf19cdc18cbaa23a0cf59cdc880bed"
+                "reference": "47276614b726a46a5a4ee176307d4234b901dde1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/c338cbe4a8cf19cdc18cbaa23a0cf59cdc880bed",
-                "reference": "c338cbe4a8cf19cdc18cbaa23a0cf59cdc880bed",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/47276614b726a46a5a4ee176307d4234b901dde1",
+                "reference": "47276614b726a46a5a4ee176307d4234b901dde1",
                 "shasum": ""
             },
             "require": {
@@ -864,7 +864,7 @@
                 "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.0.1",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2021-10-22T09:00:42+00:00"
+            "time": "2021-10-25T00:38:00+00:00"
         }
     ],
     "packages-dev": [
@@ -3491,7 +3491,6 @@
                     "type": "github"
                 }
             ],
-            "abandoned": true,
             "time": "2020-11-30T07:30:19+00:00"
         },
         {
