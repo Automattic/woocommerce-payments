@@ -40,7 +40,7 @@ class WC_Payments_Dependency_Service {
 			return true;
 		}
 
-		return empty( $this->get_invalid_dependencies() );
+		return empty( $this->get_invalid_dependencies( true ) );
 
 	}
 
@@ -66,28 +66,22 @@ class WC_Payments_Dependency_Service {
 	/**
 	 * Returns an array of invalid dependencies
 	 *
-	 * @param bool $check_account_connection - bypass dependencies versions validation if there is an account connected.
+	 * @param bool $check_account_connection - if should bypass dependency version validation when an account is connected.
 	 *
 	 * @return array of invalid dependencies as string constants.
 	 */
-	public function get_invalid_dependencies( bool $check_account_connection ) {
+	public function get_invalid_dependencies( bool $check_account_connection = false ) {
 
 		$invalid_dependencies = [];
 
-		// Either ignore the account connection check or check if there's a cached account connection
-		// TODO: maybe there's a better name for this?
-		/**
-		 * If WCPay account is connected, still silently load the plugin.
-		 *
-		 * @since 3.1.0
-		 */
-		$account_check_result = ! $check_account_connection || ! $this->has_cached_account_connection();
+		// Either ignore the account connection check or check if there's a cached account connection.
+		$ignore_when_account_is_connected = $check_account_connection && $this->has_cached_account_connection();
 
 		if ( ! $this->is_woo_core_active() ) {
 			$invalid_dependencies[] = self::WOOCORE_NOT_FOUND;
 		}
 
-		if ( $account_check_result && ! $this->is_woo_core_version_compatible() ) {
+		if ( ! $ignore_when_account_is_connected && ! $this->is_woo_core_version_compatible() ) {
 			$invalid_dependencies[] = self::WOOCORE_INCOMPATIBLE;
 		}
 
@@ -95,11 +89,11 @@ class WC_Payments_Dependency_Service {
 			$invalid_dependencies[] = self::WOOADMIN_NOT_FOUND;
 		}
 
-		if ( $account_check_result && ! $this->is_wc_admin_version_compatible() ) {
+		if ( ! $ignore_when_account_is_connected && ! $this->is_wc_admin_version_compatible() ) {
 			$invalid_dependencies[] = self::WOOADMIN_INCOMPATIBLE;
 		}
 
-		if ( $account_check_result && ! $this->is_wp_version_compatible() ) {
+		if ( ! $ignore_when_account_is_connected && ! $this->is_wp_version_compatible() ) {
 			$invalid_dependencies[] = self::WP_INCOMPATIBLE;
 		}
 
@@ -128,17 +122,7 @@ class WC_Payments_Dependency_Service {
 		$wc_version     = $plugin_headers['WCRequires'];
 
 		// Check if the version of WooCommerce is compatible with WooCommerce Payments.
-		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, $wc_version, '<' ) ) {
-
-			/**
-			 * If WCPay account is connected, still silently load the plugin.
-			 * Can not use $this->$account->is_stripe_connected() as many dependencies are not loaded at this point.
-			 *
-			 * @since 3.1.0
-			 */
-			return $this->has_cached_account_connection();
-		}
-		return true;
+		return ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, $wc_version, '>=' ) );
 	}
 
 	/**
@@ -165,16 +149,7 @@ class WC_Payments_Dependency_Service {
 	public function is_wc_admin_version_compatible() {
 
 		// Check if the version of WooCommerce Admin is compatible with WooCommerce Payments.
-		if ( ! defined( 'WC_ADMIN_VERSION_NUMBER' ) || version_compare( WC_ADMIN_VERSION_NUMBER, WCPAY_MIN_WC_ADMIN_VERSION, '<' ) ) {
-			/**
-			 * If WCPay account is connected, still silently load the plugin.
-			 * Can not use $this->$account->is_stripe_connected() as many dependencies are not loaded at this point.
-			 *
-			 * @since 3.1.0
-			 */
-			return $this->has_cached_account_connection();
-		}
-		return true;
+		return ( defined( 'WC_ADMIN_VERSION_NUMBER' ) && version_compare( WC_ADMIN_VERSION_NUMBER, WCPAY_MIN_WC_ADMIN_VERSION, '>=' ) );
 	}
 
 	/**
@@ -187,11 +162,7 @@ class WC_Payments_Dependency_Service {
 		$plugin_headers = WC_Payments::get_plugin_headers();
 		$wp_version     = $plugin_headers['RequiresWP'];
 
-		if ( version_compare( get_bloginfo( 'version' ), $wp_version, '<' ) ) {
-			return false;
-		}
-
-		return true;
+		return version_compare( get_bloginfo( 'version' ), $wp_version, '>=' );
 	}
 
 	/**
