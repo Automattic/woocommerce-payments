@@ -650,22 +650,27 @@ class WC_Payments_Account {
 	/**
 	 * Gets and caches the data for the account connected to this site.
 	 *
+	 * @param bool $force_refresh Forces data to be fetched from the server, rather than using the cache.
+	 *
 	 * @return array|bool Account data or false if failed to retrieve account data.
 	 */
-	public function get_cached_account_data() {
+	public function get_cached_account_data( bool $force_refresh = false ) {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
 
-		$account = $this->read_account_from_cache();
+		// If we want to force a refresh, we can skip this logic and go straight to the server request.
+		if ( ! $force_refresh ) {
+			$account = $this->read_account_from_cache();
 
-		if ( $this->is_valid_cached_account( $account ) ) {
-			return $account;
-		}
+			if ( $this->is_valid_cached_account( $account ) ) {
+				return $account;
+			}
 
-		// If the option contains the error value, return false early and do not attempt another API call.
-		if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
-			return false;
+			// If the option contains the error value, return false early and do not attempt another API call.
+			if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
+				return false;
+			}
 		}
 
 		try {
@@ -960,7 +965,7 @@ class WC_Payments_Account {
 	 * then fetch the account data from the server, also forcing it to be re-cached.
 	 */
 	public function handle_account_cache_refresh() {
-		$this->refresh_account_data();
+		$this->get_cached_account_data( true );
 	}
 
 	/**

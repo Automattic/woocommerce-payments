@@ -709,6 +709,46 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertTrue( $action_scheduler_service->pending_action_exists( $action_hook ) );
 	}
 
+	public function test_get_cached_account_data_with_force_refresh() {
+		$cached_account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+			'statement_descriptor'     => 'WCPAY',
+		];
+
+		add_option(
+			WC_Payments_Account::ACCOUNT_OPTION,
+			[
+				'account' => $cached_account,
+				'expires' => time() + 2 * HOUR_IN_SECONDS,
+			]
+		);
+
+		// Wire up the API client mock to return updated account data.
+		$updated_account                         = $cached_account;
+		$updated_account['statement_descriptor'] = 'NEW_DESCRIPTOR';
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_account_data' )
+			->will( $this->returnValue( $updated_account ) );
+
+		// Fetch the account. Because force refresh is true, we expect a request to the server.
+		$account = $this->wcpay_account->get_cached_account_data( true );
+
+		// Assert that we see the new account information instead of the cached information.
+		$this->assertSame( $updated_account, $account );
+
+		// Test to see if scheduled action was created.
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
+		$action_hook              = WC_Payments_Account::ACCOUNT_CACHE_REFRESH_ACTION;
+		$this->assertTrue( $action_scheduler_service->pending_action_exists( $action_hook ) );
+	}
+
 	public function test_handle_instant_deposits_inbox_note() {
 
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
