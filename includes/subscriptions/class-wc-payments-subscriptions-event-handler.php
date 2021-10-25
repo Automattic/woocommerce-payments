@@ -115,6 +115,8 @@ class WC_Payments_Subscriptions_Event_Handler {
 				throw new Rest_Request_Exception( __( 'Unable to generate renewal order for subscription on the "invoice.paid" event.', 'woocommerce-payments' ) );
 			} else {
 				$this->invoice_service->set_order_invoice_id( $order, $wcpay_invoice_id );
+				$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+				$order->save();
 			}
 		}
 
