@@ -104,6 +104,8 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Show currency switcher notice until customer explicitly dismisses it.
 * Update - Fee breakdown when there's only a base fee
 * Fix - Inconsistent shipping options in Payment Request popup.
+* Fix - Border style not being applied properly on Multi-Currency block widget.
+* Fix - Applied sentence case on all strings
 * Fix - Missing customer information after guest checkout via Checkout Block
 * Update - display fees per payment method on overview page.
 * Fix - Multi-Currency settings rounding option and preview.
