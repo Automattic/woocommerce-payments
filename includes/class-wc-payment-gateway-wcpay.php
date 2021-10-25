@@ -2438,7 +2438,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				&& $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id )
 				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() )
 				&& isset( $active_payment_methods[ $payment_method_capability_key ] )
-				&& 'active' === $active_payment_methods[ $payment_method_capability_key ] ) {
+				&& 'active' === $active_payment_methods[ $payment_method_capability_key ]['status']
+			) {
 				$enabled_payment_methods[] = $payment_method_id;
 			}
 		}
