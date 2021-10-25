@@ -9,6 +9,7 @@
 * Fix - Track 'wcpay_payment_request_settings_change' for when updating the Payment Requests setting not being recorded.
 * Update - Fee breakdown when there's only a base fee
 * Fix - Inconsistent shipping options in Payment Request popup.
+* Fix - Payment methods checkbox UI looking off when Gutenberg is active.
 * Update - Remove unused "wcpay_deposits_summary_empty_state_click" track.
 * Fix - Border style not being applied properly on Multi-Currency block widget.
 * Fix - Applied sentence case on all strings
@@ -17,6 +18,17 @@
 * Update - display fees per payment method on overview page.
 * Fix - Multi-Currency settings rounding option and preview.
 * Fix - Payment failure on checkout block with UPE when phone number field is hidden
+* Update - Adds a scheduled action which makes updating the account cache more efficient
+* Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
+* Add - Add compatibility between Multi-Currency and WooCommerce FedEx shipping extension.
+* Fix - Fix decimal error with shipping calculations with Multi-Currency.
+* Add - Add support for float type values for quantity.
+* Fix - Allow payment_intent_succeeded webhook to handle orders without intent_id attached.
+* Add - Add compatibility between Multi-Currency and WooCommerce Product Add Ons version 4.3.0 and higher.
+* Add - Enable Bancontact UPE method.
+* Add - Enable P24 UPE method.
+* Add - Enable iDeal UPE method.
+* Add - Payment method activation requirements modal and API integration.
 
 
 = 3.1.0 - 2021-10-06 =

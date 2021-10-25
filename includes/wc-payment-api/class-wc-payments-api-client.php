@@ -27,6 +27,7 @@ class WC_Payments_API_Client {
 	const API_TIMEOUT_SECONDS = 70;
 
 	const ACCOUNTS_API           = 'accounts';
+	const CAPABILITIES_API       = 'accounts/capabilities';
 	const APPLE_PAY_API          = 'apple_pay';
 	const CHARGES_API            = 'charges';
 	const CONN_TOKENS_API        = 'terminal/connection_tokens';
@@ -300,7 +301,8 @@ class WC_Payments_API_Client {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
 		}
-		if ( $payment_country ) {
+		if ( $payment_country && ! WC_Payments::get_gateway()->is_in_dev_mode() ) {
+			// Do not update on dev mode, Stripe tests cards don't return the appropriate country.
 			$request['payment_country'] = $payment_country;
 		}
 		if ( $customer_id ) {
@@ -887,6 +889,27 @@ class WC_Payments_API_Client {
 		return $this->request(
 			$stripe_account_settings,
 			self::ACCOUNTS_API,
+			self::POST,
+			true,
+			true
+		);
+	}
+
+	/**
+	 * Request capability activation from the server
+	 *
+	 * @param   string $capability_id  Capability ID.
+	 * @param   bool   $requested      State.
+	 *
+	 * @return  array                   Request result.
+	 */
+	public function request_capability( string $capability_id, bool $requested ) {
+		return $this->request(
+			[
+				'capability_id' => $capability_id,
+				'requested'     => $requested,
+			],
+			self::CAPABILITIES_API,
 			self::POST,
 			true,
 			true

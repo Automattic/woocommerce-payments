@@ -105,7 +105,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @return string             The WC Pay product ID or an empty string.
 	 */
-	public static function get_wcpay_product_id( WC_Product $product, $test_mode = null ) : string {
+	public function get_wcpay_product_id( WC_Product $product, $test_mode = null ) : string {
 		// If the subscription product doesn't have a WC Pay product ID, create one.
 		if ( ! self::has_wcpay_product_id( $product, $test_mode ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
 			$is_current_environment = null === $test_mode || WC_Payments::get_gateway()->is_in_test_mode() === $test_mode;
@@ -205,19 +205,24 @@ class WC_Payments_Product_Service {
 	 *
 	 * @since x.x.x
 	 *
-	 * @param int        $product_id The ID of the product to handle.
-	 * @param WC_Product $product    The product object to handle. Only subscription products will be created or updated in WC Pay.
+	 * @param int $product_id The ID of the product to handle.
 	 */
-	public function maybe_schedule_product_create_or_update( int $product_id, WC_Product $product ) {
+	public function maybe_schedule_product_create_or_update( int $product_id ) {
 
 		// Skip products which have already been scheduled or aren't subscriptions.
-		if ( isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+		$product = wc_get_product( $product_id );
+		if ( ! $product || isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return;
 		}
 
 		foreach ( $this->get_products_to_update( $product ) as $product_to_update ) {
 			// Skip products already scheduled.
 			if ( isset( $this->products_to_update[ $product_to_update->get_id() ] ) ) {
+				continue;
+			}
+
+			// Skip product variations that don't have a price set.
+			if ( $product_to_update->is_type( 'subscription_variation' ) && '' === $product_to_update->get_price() ) {
 				continue;
 			}
 
@@ -464,7 +469,7 @@ class WC_Payments_Product_Service {
 	 * @param bool|null $test_mode      Is WC Pay in test/dev mode.
 	 */
 	public function unarchive_price( string $wcpay_price_id, $test_mode = null ) {
-		$data = [ 'active' => 'false' ];
+		$data = [ 'active' => 'true' ];
 
 		if ( null !== $test_mode ) {
 			$data['test_mode'] = $test_mode;
@@ -477,79 +482,16 @@ class WC_Payments_Product_Service {
 	 * Attaches the callbacks used to update product changes in WC Pay.
 	 */
 	private function add_product_update_listeners() {
-		add_action( 'woocommerce_update_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
-		add_action( 'woocommerce_update_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
+		add_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		add_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
 	/**
 	 * Removes the callbacks used to update product changes in WC Pay.
 	 */
 	private function remove_product_update_listeners() {
-		remove_action( 'woocommerce_update_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 10 );
-		remove_action( 'woocommerce_update_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10 );
-	}
-
-	/**
-	 * Gets product data from a subscription needed to create a WCPay subscription.
-	 *
-	 * @param WC_Subscription $subscription The WC subscription to fetch product data from.
-	 *
-	 * @return array|null WCPay Product data or null on error.
-	 */
-	public function get_product_data_for_subscription( WC_Subscription $subscription ) {
-		$product_data = [];
-
-		foreach ( $subscription->get_items() as $item ) {
-			$product = $item->get_product();
-
-			if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
-				continue;
-			}
-
-			$product_data[] = [
-				'price'     => $this->get_wcpay_price_id( $product ),
-				'quantity'  => $item->get_quantity(),
-				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
-			];
-		}
-
-		return $product_data;
-	}
-
-	/**
-	 * Prepare tax rates for a subscription item.
-	 *
-	 * @param WC_Order_Item   $item         Subscription order item.
-	 * @param WC_Subscription $subscription A Subscription to get tax rate information from.
-	 *
-	 * @return array
-	 */
-	public function get_tax_rates_for_item( WC_Order_Item $item, WC_Subscription $subscription ) {
-		$tax_rates = [];
-
-		if ( ! wc_tax_enabled() || ! $item->get_taxes() ) {
-			return $tax_rates;
-		}
-
-		$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
-
-		if ( ! $tax_rate_ids ) {
-			return $tax_rates;
-		}
-
-		$tax_inclusive = wc_prices_include_tax();
-
-		foreach ( $subscription->get_taxes() as $tax ) {
-			if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) ) {
-				$tax_rates[] = [
-					'display_name' => $tax->get_name(),
-					'inclusive'    => $tax_inclusive,
-					'percentage'   => $tax->get_rate_percent(),
-				];
-			}
-		}
-
-		return $tax_rates;
+		remove_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		remove_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
 	/**
