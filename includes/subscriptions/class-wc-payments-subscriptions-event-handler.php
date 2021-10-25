@@ -114,6 +114,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 			if ( is_wp_error( $order ) ) {
 				throw new Rest_Request_Exception( __( 'Unable to generate renewal order for subscription on the "invoice.paid" event.', 'woocommerce-payments' ) );
 			} else {
+				$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 				$this->invoice_service->set_order_invoice_id( $order, $wcpay_invoice_id );
 			}
 		}
@@ -156,12 +157,13 @@ class WC_Payments_Subscriptions_Event_Handler {
 			if ( is_wp_error( $order ) ) {
 				throw new Rest_Request_Exception( __( 'Unable to generate renewal order for subscription to record the incoming "invoice.payment_failed" event.', 'woocommerce-payments' ) );
 			} else {
+				$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 				$this->invoice_service->set_order_invoice_id( $order, $wcpay_invoice_id );
 			}
 		}
 
 		// Translators: %d Number of failed renewal attempts.
-		$subscription->add_order_note( sprintf( __( 'WCPay subscription renewal attempt %d failed.', 'woocommerce-payments' ), $attempts ) );
+		$subscription->add_order_note( sprintf( _n( 'WCPay subscription renewal attempt %d failed.', 'WCPay subscription renewal attempt %d failed.', $attempts, 'woocommerce-payments' ), $attempts ) );
 
 		if ( self::MAX_RETRIES > $attempts ) {
 			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
