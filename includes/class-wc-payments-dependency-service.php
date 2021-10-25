@@ -64,16 +64,23 @@ class WC_Payments_Dependency_Service {
 	}
 
 	/**
-	 * Return an array of invalid dependencies
+	 * Returns an array of invalid dependencies
+	 *
+	 * @param bool $check_account_connection - bypass dependencies versions validation if there is an account connected.
 	 *
 	 * @return array of invalid dependencies as string constants.
 	 */
 	public function get_invalid_dependencies( bool $check_account_connection ) {
 
 		$invalid_dependencies = [];
-		
+
 		// Either ignore the account connection check or check if there's a cached account connection
 		// TODO: maybe there's a better name for this?
+		/**
+		 * If WCPay account is connected, still silently load the plugin.
+		 *
+		 * @since 3.1.0
+		 */
 		$account_check_result = ! $check_account_connection || ! $this->has_cached_account_connection();
 
 		if ( ! $this->is_woo_core_active() ) {
@@ -158,7 +165,7 @@ class WC_Payments_Dependency_Service {
 	public function is_wc_admin_version_compatible() {
 
 		// Check if the version of WooCommerce Admin is compatible with WooCommerce Payments.
-		if ( version_compare( WC_ADMIN_VERSION_NUMBER, WCPAY_MIN_WC_ADMIN_VERSION, '<' ) ) {
+		if ( ! defined( 'WC_ADMIN_VERSION_NUMBER' ) || version_compare( WC_ADMIN_VERSION_NUMBER, WCPAY_MIN_WC_ADMIN_VERSION, '<' ) ) {
 			/**
 			 * If WCPay account is connected, still silently load the plugin.
 			 * Can not use $this->$account->is_stripe_connected() as many dependencies are not loaded at this point.
