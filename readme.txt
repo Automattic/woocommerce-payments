@@ -112,6 +112,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Payment failure on checkout block with UPE when phone number field is hidden
 * Update - Adds a scheduled action which makes updating the account cache more efficient
 * Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
+* Add - Early access: allow your store to collect payments with SEPA Direct Debit. Enable the feature in settings!
 * Add - Add compatibility between Multi-Currency and WooCommerce FedEx shipping extension.
 * Fix - Fix decimal error with shipping calculations with Multi-Currency.
 * Add - Add support for float type values for quantity.
