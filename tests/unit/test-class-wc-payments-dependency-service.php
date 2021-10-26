@@ -19,41 +19,48 @@ class WC_Payments_Dependency_Service_Test extends WP_UnitTestCase {
 		$this->dependency_service = new WC_Payments_Dependency_Service();
 	}
 
-	/**
-	 * 1. test dependencies
-	 * 2. test get invalid dependencies
-	 */
+	public function test_get_invalid_dependencies() {
 
-	public function test_woocommerce_active_check() {
+		// Create a partial mock, leaving out the method under test.
+		$dependency_service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setConstructorArgs( [] )
+			->setMethodsExcept( [ 'get_invalid_dependencies' ] )
+			->getMock();
 
-		// loaded on bootstrap.php.
-		$this->assertTrue( $this->dependency_service->is_woo_core_active() );
-	}
+		// Mock the is_ functions.
+		$dependency_service
+			->expects( $this->once() )
+			->method( 'is_woo_core_active' )
+			->willReturn( false );
+		$dependency_service
+			->expects( $this->once() )
+			->method( 'is_woo_core_version_compatible' )
+			->willReturn( true );
+		$dependency_service
+			->expects( $this->once() )
+			->method( 'is_wc_admin_enabled' )
+			->willReturn( false );
+		$dependency_service
+			->expects( $this->once() )
+			->method( 'is_wc_admin_version_compatible' )
+			->willReturn( true );
+		$dependency_service
+			->expects( $this->once() )
+			->method( 'is_wp_version_compatible' )
+			->willReturn( false );
 
-	public function test_individual_checks_return_bool() {
-		$this->assertIsBool( $this->dependency_service->is_woo_core_active() );
-		$this->assertIsBool( $this->dependency_service->is_woo_core_version_compatible() );
-		$this->assertIsBool( $this->dependency_service->is_wc_admin_enabled() );
-		$this->assertIsBool( $this->dependency_service->is_wc_admin_version_compatible() );
-		$this->assertIsBool( $this->dependency_service->is_wp_version_compatible() );
+		// Call the unmocked method.
+		$invalid_deps = $dependency_service->get_invalid_dependencies();
 
-	}
+		// Perform assertions...
+		$this->assertIsArray( $invalid_deps );
+		$this->assertEquals( 3, count( $invalid_deps ) );
+		$this->assertContains( WC_Payments_Dependency_Service::WOOCORE_NOT_FOUND, $invalid_deps );
+		$this->assertNotContains( WC_Payments_Dependency_Service::WOOCORE_INCOMPATIBLE, $invalid_deps );
+		$this->assertContains( WC_Payments_Dependency_Service::WOOADMIN_NOT_FOUND, $invalid_deps );
+		$this->assertNotContains( WC_Payments_Dependency_Service::WOOADMIN_INCOMPATIBLE, $invalid_deps );
+		$this->assertContains( WC_Payments_Dependency_Service::WP_INCOMPATIBLE, $invalid_deps );
 
-	public function test_woocommerce_admin_disabled() {
-
-		add_filter( 'woocommerce_admin_disabled', '__return_true' );
-		$this->assertFalse( $this->dependency_service->is_wc_admin_enabled() );
-
-		remove_filter( 'woocommerce_admin_disabled', '__return_true' );
-		$this->assertTrue( $this->dependency_service->is_wc_admin_enabled() );
-	}
-
-	public function test_get_invalid_dependencies_return_array() {
-		$this->assertIsArray( $this->dependency_service->get_invalid_dependencies() );
-	}
-
-	public function test_has_valid_dependencies_return_bool() {
-		$this->assertIsBool( $this->dependency_service->has_valid_dependencies() );
 	}
 
 }
