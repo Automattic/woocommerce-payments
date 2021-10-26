@@ -254,7 +254,7 @@ class WC_Payments_Customer_Service {
 			return; // No need to do anything, payment methods will never be cached in this case.
 		}
 		$customer_id = $this->get_customer_id_by_user_id( $user_id );
-		foreach ( WC_Payments::get_gateway()->get_upe_enabled_at_checkout_payment_method_ids() as $type ) {
+		foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
 			delete_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id . '_' . $type );
 		}
 	}
