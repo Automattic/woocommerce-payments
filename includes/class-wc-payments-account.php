@@ -193,6 +193,20 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the business name for rendering on the settings page.
+	 *
+	 * @return string Business profile name.
+	 */
+	public function get_business_name() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account )
+				&& isset( $account['business_profile'] )
+				&& isset( $account['business_profile']['name'] )
+				? $account['business_profile']['name']
+				: '';
+	}
+
+	/**
 	 * Get card present eligible flag account
 	 *
 	 * @return bool

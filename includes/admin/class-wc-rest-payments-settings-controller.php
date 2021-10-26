@@ -105,6 +105,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'string',
 						'validate_callback' => [ $this, 'validate_statement_descriptor' ],
 					],
+					'account_business_name'             => [
+						'description' => __( 'The customer-facing business name.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
 					'is_payment_request_enabled'        => [
 						'description'       => __( 'If WooCommerce Payments express checkouts should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
@@ -200,6 +204,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_wcpay_subscriptions_eligible'   => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
 				'is_subscriptions_plugin_active'    => $this->wcpay_gateway->is_subscriptions_plugin_active(),
 				'account_statement_descriptor'      => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
+				'account_business_name'             => $this->wcpay_gateway->get_option( 'account_business_name' ),
 				'is_payment_request_enabled'        => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
 				'is_debug_log_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
 				'payment_request_enabled_locations' => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
@@ -226,6 +231,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_multi_currency_enabled( $request );
 		$this->update_is_wcpay_subscriptions_enabled( $request );
 		$this->update_account_statement_descriptor( $request );
+		$this->update_account_business_name( $request );
 		$this->update_is_payment_request_enabled( $request );
 		$this->update_payment_request_enabled_locations( $request );
 		$this->update_payment_request_appearance( $request );
@@ -376,6 +382,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$account_statement_descriptor = $request->get_param( 'account_statement_descriptor' );
 
 		$this->wcpay_gateway->update_option( 'account_statement_descriptor', $account_statement_descriptor );
+	}
+
+	/**
+	 * Updates WooCommerce Payments account business name.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_account_business_name( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'account_business_name' ) ) {
+			return;
+		}
+
+		$account_business_name = $request->get_param( 'account_business_name' );
+
+		$this->wcpay_gateway->update_option( 'account_business_name', $account_business_name );
 	}
 
 	/**
