@@ -826,6 +826,24 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		);
 	}
 
+	public function test_set_new_customer_currency_meta_updates_user_meta_from_session() {
+		$expected = 'GBP';
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, $expected );
+
+		$this->multi_currency->set_new_customer_currency_meta( self::LOGGED_IN_USER_ID, [], '' );
+		$this->assertSame( $expected, get_user_meta( self::LOGGED_IN_USER_ID, MultiCurrency::CURRENCY_META_KEY, true ) );
+	}
+
+	public function test_set_new_customer_currency_meta_does_not_update_user_meta_if_no_user_passed() {
+		$this->multi_currency->set_new_customer_currency_meta( 0, [], '' );
+		$this->assertSame( '', get_user_meta( self::LOGGED_IN_USER_ID, MultiCurrency::CURRENCY_META_KEY, true ) );
+	}
+
+	public function test_set_new_customer_currency_meta_does_not_update_user_meta_if_no_session_currency() {
+		$this->multi_currency->set_new_customer_currency_meta( self::LOGGED_IN_USER_ID, [], '' );
+		$this->assertSame( '', get_user_meta( self::LOGGED_IN_USER_ID, MultiCurrency::CURRENCY_META_KEY, true ) );
+	}
+
 	public function get_price_provider() {
 		return [
 			[ '5.2499', '0.00', 5.2499 ],
