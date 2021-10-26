@@ -123,7 +123,7 @@ class WC_Payments_Explicit_Price_Formatter {
 	 *
 	 * @return string
 	 */
-	public static function get_explicit_price( string $price, WC_Order $order = null ) {
+	public static function get_explicit_price( string $price, WC_Abstract_Order $order = null ) {
 		if ( false === static::should_output_explicit_price() ) {
 			return $price;
 		}
