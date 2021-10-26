@@ -1511,6 +1511,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return parent::get_option( static::METHOD_ENABLED_KEY, $empty_value );
 			case 'account_statement_descriptor':
 				return $this->get_account_statement_descriptor();
+			case 'account_business_name':
+				return $this->get_account_business_name();
 			default:
 				return parent::get_option( $key, $empty_value );
 		}
@@ -1567,10 +1569,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Sanitized settings.
 	 */
 	public function sanitize_plugin_settings( $settings ) {
+		$account_settings = [];
+
 		if ( isset( $settings['account_statement_descriptor'] ) ) {
-			$this->update_statement_descriptor( $settings['account_statement_descriptor'] );
+			$account_settings['statement_descriptor'] = $settings['account_statement_descriptor'];
 			unset( $settings['account_statement_descriptor'] );
 		}
+
+		if ( isset( $settings['account_business_name'] ) ) {
+			$account_settings['business_name'] = $settings['account_business_name'];
+			unset( $settings['account_business_name'] );
+		}
+
+		$this->update_account( $account_settings );
 
 		return $settings;
 	}
@@ -1596,24 +1607,44 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Handles statement descriptor update when plugin settings saved.
+	 * Gets connected account business name.
+	 *
+	 * @param mixed $default_value Value to return when not connected or failed to fetch business name.
+	 *
+	 * @return string Business name or default value.
+	 */
+	protected function get_account_business_name( $default_value = '' ) {
+		try {
+			if ( ! $this->is_connected() ) {
+				return $default_value;
+			}
+
+			return $this->account->get_business_name();
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+			return $default_value;
+		}
+	}
+
+	/**
+	 * Handles connected account update when plugin settings saved.
 	 *
 	 * Adds error message to display in admin notices in case of failure.
 	 *
-	 * @param string $statement_descriptor Statement descriptor value.
+	 * @param array $account_settings Stripe account settings.
+	 * Supported: statement_descriptor, business_name, business_url, business_support_address,
+	 * business_support_email, business_support_phone, branding_logo, branding_icon,
+	 * branding_primary_color, branding_secondary_color.
 	 */
-	private function update_statement_descriptor( $statement_descriptor ) {
-		if ( empty( $statement_descriptor ) ) {
+	private function update_account( $account_settings ) {
+		if ( empty( $account_settings ) ) {
 			return;
 		}
 
-		$account_settings = [
-			'statement_descriptor' => $statement_descriptor,
-		];
-		$error_message    = $this->account->update_stripe_account( $account_settings );
+		$error_message = $this->account->update_stripe_account( $account_settings );
 
 		if ( is_string( $error_message ) ) {
-			$msg = __( 'Failed to update statement descriptor. ', 'woocommerce-payments' ) . $error_message;
+			$msg = __( 'Failed to update Stripe account. ', 'woocommerce-payments' ) . $error_message;
 			$this->add_error( $msg );
 		}
 	}
