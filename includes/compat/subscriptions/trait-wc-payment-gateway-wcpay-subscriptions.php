@@ -141,6 +141,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		 */
 		add_action( 'template_redirect', [ $this, 'remove_order_pay_var' ], 99 );
 		add_action( 'template_redirect', [ $this, 'restore_order_pay_var' ], 101 );
+		add_action( 'wp_ajax_wcs_get_saved_credit_cards', [ $this, 'get_saved_cards' ] );
 	}
 
 	/**
@@ -478,8 +479,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @param string          $field_value  The field_value to be selected by default.
 	 */
 	public function render_custom_payment_meta_input( $subscription, $field_id, $field_value ) {
-		$tokens         = $this->get_user_formatted_tokens_array( $subscription->get_user_id() );
-		$is_valid_value = false;
+		$tokens = [];
+		if ( $subscription->get_user_id() ) {
+			$tokens         = $this->get_user_formatted_tokens_array( $subscription->get_user_id() );
+			$is_valid_value = false;
+		}
 
 		foreach ( $tokens as $token ) {
 			$is_valid_value = $is_valid_value || (int) $field_value === $token['tokenId'];
@@ -495,6 +499,24 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			echo '<option value="' . esc_attr( $token['tokenId'] ) . '" ' . esc_attr( $is_selected ) . '>' . esc_html( $token['displayName'] ) . '</option>';
 		}
 		echo '</select>';
+	}
+
+	/**
+	 * Returns the saved cards tokens as a json to be used during creation
+	 * of a new subscription via admin
+	 */
+	public function get_saved_cards() {
+
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( wc_clean( wp_unslash( $_POST['nonce'] ) ), 'get_cards_tokens_nonce' ) ) {
+			return;
+		}
+
+		$data = $_POST;
+
+		$tokens = $this->get_user_formatted_tokens_array( $data['customer'] );
+
+		echo wp_json_encode( $tokens );
+		die();
 	}
 
 	/**

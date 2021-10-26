@@ -564,6 +564,24 @@ class WC_Payments_Admin {
 				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
 			}
 		}
+
+		if ( 'shop_subscription' === $screen->id ) {
+			wp_enqueue_script(
+				'WCPAY_ADMIN',
+				plugins_url( 'dist/admin.js', WCPAY_PLUGIN_FILE ),
+				[ 'jquery' ],
+				\WC_Payments::get_file_version( 'dist/admin.js' ),
+				true
+			);
+
+			wp_localize_script(
+				'WCPAY_ADMIN',
+				'wcpay_admin',
+				[
+					'get_cards_tokens_nonce' => wp_create_nonce( 'get_cards_tokens_nonce' ),
+				]
+			);
+		}
 	}
 
 	/**
