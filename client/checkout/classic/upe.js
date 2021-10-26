@@ -431,9 +431,9 @@ jQuery( function ( $ ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
 			const { error } = await api.getStripe().confirmPayment( {
 				element: upeElement,
-				confirmParams: {
-					return_url: '',
-				},
+				// although redirect is set, in reality it should never redirect as we are
+				// calling confirmPayment with incomplete fields
+				redirect: 'if_required',
 			} );
 			$form.removeClass( 'processing' ).unblock();
 			showError( error.message );
