@@ -36,7 +36,7 @@ const OnboardingLocationCheckModal = ( {
 		return null;
 	}
 
-	const countries2 = countries.map( ( country ) => {
+	const countriesListItems = countries.map( ( country ) => {
 		return (
 			<ExperimentalListItem disableGutters={ true } key={ country.title }>
 				{ country.title }
@@ -66,7 +66,7 @@ const OnboardingLocationCheckModal = ( {
 		),
 		components: {
 			link: <LearnMoreLink />,
-			list: <ExperimentalList children={ countries2 } />,
+			list: <ExperimentalList children={ countriesListItems } />,
 		},
 	} );
 
