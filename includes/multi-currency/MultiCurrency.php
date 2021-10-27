@@ -224,7 +224,7 @@ class MultiCurrency {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
 			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
 			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
-			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ], 10, 3 );
+			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
 		}
 	}
 
@@ -829,13 +829,11 @@ class MultiCurrency {
 	 * Sets a new customer's currency meta to what's in their session.
 	 * This is needed for when a new user/customer is created during the checkout process.
 	 *
-	 * @param int    $customer_id        The user/customer id.
-	 * @param array  $new_customer_data  The data associated with the customer.
-	 * @param string $password_generated The password generated for the customer.
+	 * @param int $customer_id The user/customer id.
 	 *
 	 * @return void
 	 */
-	public function set_new_customer_currency_meta( $customer_id, $new_customer_data, $password_generated ) {
+	public function set_new_customer_currency_meta( $customer_id ) {
 		$code = 0 !== $customer_id && WC()->session ? WC()->session->get( self::CURRENCY_SESSION_KEY ) : false;
 		if ( $code ) {
 			update_user_meta( $customer_id, self::CURRENCY_META_KEY, $code );
