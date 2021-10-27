@@ -511,8 +511,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
-		$data = $_POST;
-
+		$data   = $_POST;
 		$tokens = $this->get_user_formatted_tokens_array( $data['customer'] );
 
 		echo wp_json_encode( $tokens );
