@@ -124,6 +124,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Payment method activation requirements modal and API integration.
 * Add - Add state handling for UPE methods for better merchant notification on what methods are able to be used.
 * Fix - Order currency incorrect if new user/customer created during checkout.
+* Fix - Validation now works when adding a new payment method, or paying for an order.
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
