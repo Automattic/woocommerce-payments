@@ -1,7 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
 = 3.3.0 - 2021-xx-xx =
-
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
 
 = 3.2.0 - 2021-xx-xx =

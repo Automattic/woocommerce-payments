@@ -99,7 +99,6 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 3.3.0 - 2021-xx-xx =
-
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
 
 = 3.2.0 - 2021-xx-xx =
