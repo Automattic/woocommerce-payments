@@ -10,6 +10,7 @@ namespace WCPay\MultiCurrency;
 use WC_Order;
 use WC_Order_Refund;
 use WC_Product;
+use WCPay\MultiCurrency\Compatibility\WooCommerceBookings;
 use WCPay\MultiCurrency\Compatibility\WooCommerceFedEx;
 use WCPay\MultiCurrency\Compatibility\WooCommerceUPS;
 
@@ -55,6 +56,7 @@ class Compatibility {
 		$this->utils          = $utils;
 		$this->init_filters();
 
+		$compatibility_classes[] = new WooCommerceBookings( $multi_currency, $utils );
 		$compatibility_classes[] = new WooCommerceFedEx( $multi_currency, $utils );
 		$compatibility_classes[] = new WooCommerceUPS( $multi_currency, $utils );
 	}
@@ -268,7 +270,7 @@ class Compatibility {
 			return false;
 		}
 
-		return true;
+		return apply_filters( self::FILTER_PREFIX . 'should_convert_product_price', true );
 	}
 
 	/**
