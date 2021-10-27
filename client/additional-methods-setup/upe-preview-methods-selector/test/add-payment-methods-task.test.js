@@ -56,13 +56,34 @@ describe( 'AddPaymentMethodsTask', () => {
 			'sofort',
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: upeCapabilityStatuses.ACTIVE,
-			bancontact_payments: upeCapabilityStatuses.ACTIVE,
-			giropay_payments: upeCapabilityStatuses.ACTIVE,
-			ideal_payments: upeCapabilityStatuses.ACTIVE,
-			p24_payments: upeCapabilityStatuses.ACTIVE,
-			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
-			sofort_payments: upeCapabilityStatuses.ACTIVE,
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			bancontact_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			giropay_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			ideal_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			p24_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sepa_debit_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sofort_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
 		} );
 		useSettings.mockReturnValue( {
 			saveSettings: () => Promise.resolve( true ),
@@ -320,13 +341,34 @@ describe( 'AddPaymentMethodsTask', () => {
 
 	it( 'should not allow the inactive ones to be selected', async () => {
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: upeCapabilityStatuses.ACTIVE,
-			bancontact_payments: upeCapabilityStatuses.INACTIVE,
-			giropay_payments: upeCapabilityStatuses.PENDING_APPROVAL,
-			ideal_payments: upeCapabilityStatuses.ACTIVE,
-			p24_payments: upeCapabilityStatuses.INACTIVE,
-			sepa_debit_payments: upeCapabilityStatuses.PENDING_VERIFICATION,
-			sofort_payments: upeCapabilityStatuses.ACTIVE,
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			bancontact_payments: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			giropay_payments: {
+				status: upeCapabilityStatuses.PENDING_APPROVAL,
+				requirements: [],
+			},
+			ideal_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			p24_payments: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			sepa_debit_payments: {
+				status: upeCapabilityStatuses.PENDING_VERIFICATION,
+				requirements: [],
+			},
+			sofort_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
 		} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[

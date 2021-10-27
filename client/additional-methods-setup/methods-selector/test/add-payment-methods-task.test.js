@@ -58,13 +58,34 @@ describe( 'AddPaymentMethodsTask', () => {
 			isSaving: false,
 		} );
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: upeCapabilityStatuses.ACTIVE,
-			bancontact_payments: upeCapabilityStatuses.ACTIVE,
-			giropay_payments: upeCapabilityStatuses.ACTIVE,
-			ideal_payments: upeCapabilityStatuses.ACTIVE,
-			p24_payments: upeCapabilityStatuses.ACTIVE,
-			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
-			sofort_payments: upeCapabilityStatuses.ACTIVE,
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			bancontact_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			giropay_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			ideal_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			p24_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sepa_debit_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sofort_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
 		} );
 	} );
 
@@ -108,13 +129,34 @@ describe( 'AddPaymentMethodsTask', () => {
 
 	it( 'should render the active and pending payment methods checkboxes with default values', () => {
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: upeCapabilityStatuses.ACTIVE,
-			bancontact_payments: upeCapabilityStatuses.INACTIVE,
-			giropay_payments: upeCapabilityStatuses.PENDING_APPROVAL,
-			ideal_payments: upeCapabilityStatuses.INACTIVE,
-			p24_payments: upeCapabilityStatuses.ACTIVE,
-			sepa_debit_payments: upeCapabilityStatuses.INACTIVE,
-			sofort_payments: upeCapabilityStatuses.PENDING_VERIFICATION,
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			bancontact_payments: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			giropay_payments: {
+				status: upeCapabilityStatuses.PENDING_APPROVAL,
+				requirements: [],
+			},
+			ideal_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			p24_payments: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			sepa_debit_payments: {
+				status: upeCapabilityStatuses.PENDING_VERIFICATION,
+				requirements: [],
+			},
+			sofort_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
 		} );
 
 		render(
@@ -123,7 +165,11 @@ describe( 'AddPaymentMethodsTask', () => {
 			</WizardTaskContext.Provider>
 		);
 
-		const expectedToBeChecked = [ 'Credit card / debit card', 'giropay' ];
+		const expectedToBeChecked = [
+			'Credit card / debit card',
+			'giropay',
+			'SEPA Direct Debit',
+		];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
 			expect(
@@ -132,7 +178,6 @@ describe( 'AddPaymentMethodsTask', () => {
 		} );
 
 		const expectedNotToBeChecked = [
-			'SEPA Direct Debit',
 			'Sofort',
 			'Bancontact',
 			'iDEAL',
@@ -146,11 +191,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			).not.toBeChecked();
 		} );
 
-		const expectedToBeDisabled = [
-			'SEPA Direct Debit',
-			'Bancontact',
-			'iDEAL',
-		];
+		const expectedToBeDisabled = [ 'Przelewy24 (P24)', 'Bancontact' ];
 
 		expectedToBeDisabled.forEach( function ( checkboxName ) {
 			expect(
