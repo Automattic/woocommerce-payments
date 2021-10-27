@@ -450,24 +450,27 @@ jQuery( function ( $ ) {
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handleUPEOrderPay = async ( $form ) => {
-		const isUPEFormValid = await checkUPEForm( $( '#order_review' ) );
+		const isSavingPaymentMethod = $(
+			'#wc-woocommerce_payments-new-payment-method'
+		).is( ':checked' );
+		const savePaymentMethod = isSavingPaymentMethod ? 'yes' : 'no';
+
+		const returnUrl =
+			getConfig( 'orderReturnURL' ) +
+			`&save_payment_method=${ savePaymentMethod }`;
+
+		const orderId = getConfig( 'orderId' );
+
+		const isUPEFormValid = await checkUPEForm(
+			$( '#order_review' ),
+			returnUrl
+		);
 		if ( ! isUPEFormValid ) {
 			return;
 		}
 		blockUI( $form );
 
 		try {
-			const isSavingPaymentMethod = $(
-				'#wc-woocommerce_payments-new-payment-method'
-			).is( ':checked' );
-			const savePaymentMethod = isSavingPaymentMethod ? 'yes' : 'no';
-
-			const returnUrl =
-				getConfig( 'orderReturnURL' ) +
-				`&save_payment_method=${ savePaymentMethod }`;
-
-			const orderId = getConfig( 'orderId' );
-
 			// Update payment intent with level3 data, customer and maybe setup for future use.
 			await api.updateIntent(
 				paymentIntentId,
