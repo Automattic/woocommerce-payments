@@ -59,135 +59,114 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
       class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+        class="woocommerce-experimental-list--horizontal wcpayments-horizontal-list"
       >
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
+              Date
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              Sep 19, 2019, 5:24pm
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
+              Customer
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
               >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
+                Customer name
+              </a>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
+              Order
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              <a
+                data-link-type="external"
+                href="https://somerandomorderurl.com/?edit_order=45981"
               >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
+                45981
+              </a>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
+            >
+              Payment method
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
             >
               <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+                class="payment-method-details"
               >
                 <span
-                  class="payment-method-details"
-                >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
-                </span>
+                  class="payment-method__brand payment-method__brand--visa"
+                />
+                 •••• 
+                4242
               </span>
-            </div>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
-            </div>
+              Risk evaluation
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              Normal
+            </span>
           </div>
         </li>
       </ul>
@@ -255,162 +234,137 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
       class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+        class="woocommerce-experimental-list--horizontal wcpayments-horizontal-list"
       >
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
+              Date
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              Sep 19, 2019, 5:24pm
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
+              Customer
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
               >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
+                Customer name
+              </a>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
+              Order
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              <a
+                data-link-type="external"
+                href="https://somerandomorderurl.com/?edit_order=45981"
               >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
+                45981
+              </a>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
+              Subscription
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              <a
+                data-link-type="external"
+                href="https://example.com/subscription/246"
               >
-                Subscription
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://example.com/subscription/246"
-                >
-                  246
-                </a>
-              </span>
-            </div>
+                246
+              </a>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
+            >
+              Payment method
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
             >
               <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+                class="payment-method-details"
               >
                 <span
-                  class="payment-method-details"
-                >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
-                </span>
+                  class="payment-method__brand payment-method__brand--visa"
+                />
+                 •••• 
+                4242
               </span>
-            </div>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
-            </div>
+              Risk evaluation
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              Normal
+            </span>
           </div>
         </li>
       </ul>
@@ -481,135 +435,114 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
       class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+        class="woocommerce-experimental-list--horizontal wcpayments-horizontal-list"
       >
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
+              Date
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              Sep 19, 2019, 5:24pm
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
+              Customer
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
               >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
+                Customer name
+              </a>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
+              Order
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              <a
+                data-link-type="external"
+                href="https://somerandomorderurl.com/?edit_order=45981"
               >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
+                45981
+              </a>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
+            >
+              Payment method
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
             >
               <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+                class="payment-method-details"
               >
                 <span
-                  class="payment-method-details"
-                >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
-                </span>
+                  class="payment-method__brand payment-method__brand--visa"
+                />
+                 •••• 
+                4242
               </span>
-            </div>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
-            </div>
+              Risk evaluation
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              Normal
+            </span>
           </div>
         </li>
       </ul>
@@ -760,135 +693,114 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
       class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+        class="woocommerce-experimental-list--horizontal wcpayments-horizontal-list"
       >
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
+              Date
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              Sep 19, 2019, 5:24pm
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
+              Customer
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
               >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
+                Customer name
+              </a>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
+              Order
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              <a
+                data-link-type="external"
+                href="https://somerandomorderurl.com/?edit_order=45981"
               >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
+                45981
+              </a>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
+            >
+              Payment method
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
             >
               <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+                class="payment-method-details"
               >
                 <span
-                  class="payment-method-details"
-                >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
-                </span>
+                  class="payment-method__brand payment-method__brand--visa"
+                />
+                 •••• 
+                4242
               </span>
-            </div>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
-            </div>
+              Risk evaluation
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              Normal
+            </span>
           </div>
         </li>
       </ul>
@@ -959,135 +871,114 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
       class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+        class="woocommerce-experimental-list--horizontal wcpayments-horizontal-list"
       >
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
+              Date
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              Sep 19, 2019, 5:24pm
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
+              Customer
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
               >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
+                Customer name
+              </a>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
+              Order
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              <a
+                data-link-type="external"
+                href="https://somerandomorderurl.com/?edit_order=45981"
               >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
+                45981
+              </a>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
+            >
+              Payment method
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
             >
               <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+                class="payment-method-details"
               >
                 <span
-                  class="payment-method-details"
-                >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
-                </span>
+                  class="payment-method__brand payment-method__brand--visa"
+                />
+                 •••• 
+                4242
               </span>
-            </div>
+            </span>
           </div>
         </li>
         <li
-          class="woocommerce-list__item"
+          class="woocommerce-experimental-list__item has-gutters transitions-disabled "
         >
           <div
-            class="woocommerce-list__item-inner"
+            class="woocommerce-experimental-list__item-inner"
           >
-            <div
-              class="woocommerce-list__item-text"
+            <span
+              class="woocommerce-experimental-list__item-title"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
-            </div>
+              Risk evaluation
+            </span>
+            <span
+              class="woocommerce-experimental-list__item-content"
+            >
+              Normal
+            </span>
           </div>
         </li>
       </ul>

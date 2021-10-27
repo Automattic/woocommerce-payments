@@ -73,22 +73,20 @@ exports[`Transactions list renders correctly when can filter by several currenci
       </div>
     </div>
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card transactions-list woocommerce-report-table has-search has-menu has-action"
+      class="components-card is-size-medium woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
+        <h2
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Transactions
-          </h2>
-        </div>
+          Transactions
+        </h2>
         <div
-          class="woocommerce-card__action woocommerce-card__header-item"
+          class="woocommerce-table__actions"
         >
           <div>
             <div>
@@ -98,20 +96,23 @@ exports[`Transactions list renders correctly when can filter by several currenci
                 <div
                   class="components-base-control woocommerce-select-control__control empty"
                 >
-                  <i
-                    class="material-icons-outlined"
+                  <svg
+                    aria-hidden="true"
+                    class="woocommerce-select-control__control-icon"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    search
-                  </i>
+                    <path
+                      d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                    />
+                  </svg>
                   <div
                     class="components-base-control__field"
                   >
-                    <label
-                      class="components-base-control__label"
-                      for="woocommerce-select-control-13__control-input"
-                    >
-                      Search by order number, customer name, or billing email
-                    </label>
                     <input
                       aria-autocomplete="list"
                       aria-expanded="false"
@@ -160,54 +161,36 @@ exports[`Transactions list renders correctly when can filter by several currenci
           </button>
         </div>
         <div
-          class="woocommerce-card__menu woocommerce-card__header-item"
+          class="woocommerce-ellipsis-menu"
         >
           <div
-            class="woocommerce-ellipsis-menu"
+            class="components-dropdown"
           >
-            <div
-              class="components-dropdown"
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-ellipsis-menu__toggle"
+              title="Choose which values to display"
+              type="button"
             >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
-                title="Choose which values to display"
-                type="button"
+              <svg
+                class="gridicon gridicons-ellipsis"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <svg
-                  aria-hidden="true"
-                  class="dashicon dashicons-ellipsis"
-                  focusable="false"
-                  height="20"
-                  role="img"
-                  viewBox="0 0 20 20"
-                  width="20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                <g>
                   <path
-                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    d="M7 12c0 1.104-.896 2-2 2s-2-.896-2-2 .896-2 2-2 2 .896 2 2zm12-2c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-7 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2z"
                   />
-                </svg>
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  height="24"
-                  role="img"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
-                  />
-                </svg>
-              </button>
-            </div>
+                </g>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           aria-hidden="false"
@@ -409,7 +392,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -425,7 +408,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-center-aligned"
+                  class="woocommerce-table__header is-center-aligned is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -536,7 +519,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     data-link-type="external"
@@ -546,7 +529,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-center-aligned"
+                  class="woocommerce-table__item is-center-aligned is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -658,7 +641,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     data-link-type="external"
@@ -668,7 +651,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-center-aligned"
+                  class="woocommerce-table__item is-center-aligned is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -707,8 +690,13 @@ exports[`Transactions list renders correctly when can filter by several currenci
             </tbody>
           </table>
         </div>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-medium e1q7k77g4 css-5hda2c-Flex-FooterUI eboqfv50"
+      >
         <ul
           class="woocommerce-table__summary"
+          role="complementary"
         >
           <li
             class="woocommerce-table__summary-item"
@@ -804,22 +792,20 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
       </div>
     </div>
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card transactions-list woocommerce-report-table has-search has-menu has-action"
+      class="components-card is-size-medium woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
+        <h2
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Transactions
-          </h2>
-        </div>
+          Transactions
+        </h2>
         <div
-          class="woocommerce-card__action woocommerce-card__header-item"
+          class="woocommerce-table__actions"
         >
           <div>
             <div>
@@ -829,20 +815,23 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                 <div
                   class="components-base-control woocommerce-select-control__control empty"
                 >
-                  <i
-                    class="material-icons-outlined"
+                  <svg
+                    aria-hidden="true"
+                    class="woocommerce-select-control__control-icon"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    search
-                  </i>
+                    <path
+                      d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                    />
+                  </svg>
                   <div
                     class="components-base-control__field"
                   >
-                    <label
-                      class="components-base-control__label"
-                      for="woocommerce-select-control-14__control-input"
-                    >
-                      Search by order number, customer name, or billing email
-                    </label>
                     <input
                       aria-autocomplete="list"
                       aria-expanded="false"
@@ -891,54 +880,36 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
           </button>
         </div>
         <div
-          class="woocommerce-card__menu woocommerce-card__header-item"
+          class="woocommerce-ellipsis-menu"
         >
           <div
-            class="woocommerce-ellipsis-menu"
+            class="components-dropdown"
           >
-            <div
-              class="components-dropdown"
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-ellipsis-menu__toggle"
+              title="Choose which values to display"
+              type="button"
             >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
-                title="Choose which values to display"
-                type="button"
+              <svg
+                class="gridicon gridicons-ellipsis"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <svg
-                  aria-hidden="true"
-                  class="dashicon dashicons-ellipsis"
-                  focusable="false"
-                  height="20"
-                  role="img"
-                  viewBox="0 0 20 20"
-                  width="20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                <g>
                   <path
-                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    d="M7 12c0 1.104-.896 2-2 2s-2-.896-2-2 .896-2 2-2 2 .896 2 2zm12-2c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-7 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2z"
                   />
-                </svg>
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  height="24"
-                  role="img"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
-                  />
-                </svg>
-              </button>
-            </div>
+                </g>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           aria-hidden="false"
@@ -1140,7 +1111,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -1156,7 +1127,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-center-aligned"
+                  class="woocommerce-table__header is-center-aligned is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -1267,7 +1238,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     data-link-type="external"
@@ -1277,7 +1248,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-center-aligned"
+                  class="woocommerce-table__item is-center-aligned is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -1389,7 +1360,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     data-link-type="external"
@@ -1399,7 +1370,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-center-aligned"
+                  class="woocommerce-table__item is-center-aligned is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -1438,8 +1409,13 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
             </tbody>
           </table>
         </div>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-medium e1q7k77g4 css-5hda2c-Flex-FooterUI eboqfv50"
+      >
         <ul
           class="woocommerce-table__summary"
+          role="complementary"
         >
           <li
             class="woocommerce-table__summary-item"
@@ -1510,22 +1486,20 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
     class=" woocommerce-payments-page"
   >
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card transactions-list woocommerce-report-table has-search has-menu has-action"
+      class="components-card is-size-medium woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
+        <h2
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Deposit transactions
-          </h2>
-        </div>
+          Deposit transactions
+        </h2>
         <div
-          class="woocommerce-card__action woocommerce-card__header-item"
+          class="woocommerce-table__actions"
         >
           <div>
             <div>
@@ -1535,20 +1509,23 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                 <div
                   class="components-base-control woocommerce-select-control__control empty"
                 >
-                  <i
-                    class="material-icons-outlined"
+                  <svg
+                    aria-hidden="true"
+                    class="woocommerce-select-control__control-icon"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    search
-                  </i>
+                    <path
+                      d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                    />
+                  </svg>
                   <div
                     class="components-base-control__field"
                   >
-                    <label
-                      class="components-base-control__label"
-                      for="woocommerce-select-control-0__control-input"
-                    >
-                      Search by order number, customer name, or billing email
-                    </label>
                     <input
                       aria-autocomplete="list"
                       aria-expanded="false"
@@ -1597,54 +1574,36 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
           </button>
         </div>
         <div
-          class="woocommerce-card__menu woocommerce-card__header-item"
+          class="woocommerce-ellipsis-menu"
         >
           <div
-            class="woocommerce-ellipsis-menu"
+            class="components-dropdown"
           >
-            <div
-              class="components-dropdown"
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-ellipsis-menu__toggle"
+              title="Choose which values to display"
+              type="button"
             >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
-                title="Choose which values to display"
-                type="button"
+              <svg
+                class="gridicon gridicons-ellipsis"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <svg
-                  aria-hidden="true"
-                  class="dashicon dashicons-ellipsis"
-                  focusable="false"
-                  height="20"
-                  role="img"
-                  viewBox="0 0 20 20"
-                  width="20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                <g>
                   <path
-                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    d="M7 12c0 1.104-.896 2-2 2s-2-.896-2-2 .896-2 2-2 2 .896 2 2zm12-2c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-7 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2z"
                   />
-                </svg>
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  height="24"
-                  role="img"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
-                  />
-                </svg>
-              </button>
-            </div>
+                </g>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           aria-hidden="false"
@@ -1846,7 +1805,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -1862,7 +1821,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-center-aligned"
+                  class="woocommerce-table__header is-center-aligned is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -1979,7 +1938,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     data-link-type="external"
@@ -1989,7 +1948,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-center-aligned"
+                  class="woocommerce-table__item is-center-aligned is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -2016,8 +1975,13 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
             </tbody>
           </table>
         </div>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-medium e1q7k77g4 css-5hda2c-Flex-FooterUI eboqfv50"
+      >
         <ul
           class="woocommerce-table__summary"
+          role="complementary"
         >
           <li
             class="woocommerce-table__summary-item"
@@ -2128,22 +2092,20 @@ exports[`Transactions list subscription column renders correctly 1`] = `
       </div>
     </div>
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card transactions-list woocommerce-report-table has-search has-menu has-action"
+      class="components-card is-size-medium woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
+        <h2
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Transactions
-          </h2>
-        </div>
+          Transactions
+        </h2>
         <div
-          class="woocommerce-card__action woocommerce-card__header-item"
+          class="woocommerce-table__actions"
         >
           <div>
             <div>
@@ -2153,20 +2115,23 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                 <div
                   class="components-base-control woocommerce-select-control__control empty"
                 >
-                  <i
-                    class="material-icons-outlined"
+                  <svg
+                    aria-hidden="true"
+                    class="woocommerce-select-control__control-icon"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    search
-                  </i>
+                    <path
+                      d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                    />
+                  </svg>
                   <div
                     class="components-base-control__field"
                   >
-                    <label
-                      class="components-base-control__label"
-                      for="woocommerce-select-control-12__control-input"
-                    >
-                      Search by order number, subscription number, customer name, or billing email
-                    </label>
                     <input
                       aria-autocomplete="list"
                       aria-expanded="false"
@@ -2215,54 +2180,36 @@ exports[`Transactions list subscription column renders correctly 1`] = `
           </button>
         </div>
         <div
-          class="woocommerce-card__menu woocommerce-card__header-item"
+          class="woocommerce-ellipsis-menu"
         >
           <div
-            class="woocommerce-ellipsis-menu"
+            class="components-dropdown"
           >
-            <div
-              class="components-dropdown"
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-ellipsis-menu__toggle"
+              title="Choose which values to display"
+              type="button"
             >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
-                title="Choose which values to display"
-                type="button"
+              <svg
+                class="gridicon gridicons-ellipsis"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <svg
-                  aria-hidden="true"
-                  class="dashicon dashicons-ellipsis"
-                  focusable="false"
-                  height="20"
-                  role="img"
-                  viewBox="0 0 20 20"
-                  width="20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                <g>
                   <path
-                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    d="M7 12c0 1.104-.896 2-2 2s-2-.896-2-2 .896-2 2-2 2 .896 2 2zm12-2c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-7 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2z"
                   />
-                </svg>
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  height="24"
-                  role="img"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
-                  />
-                </svg>
-              </button>
-            </div>
+                </g>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           aria-hidden="false"
@@ -2464,7 +2411,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -2480,7 +2427,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -2496,7 +2443,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-center-aligned"
+                  class="woocommerce-table__header is-center-aligned is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -2607,7 +2554,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     data-link-type="external"
@@ -2617,7 +2564,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     data-link-type="external"
@@ -2627,7 +2574,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-center-aligned"
+                  class="woocommerce-table__item is-center-aligned is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -2739,7 +2686,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     data-link-type="external"
@@ -2749,10 +2696,10 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 />
                 <td
-                  class="woocommerce-table__item is-center-aligned"
+                  class="woocommerce-table__item is-center-aligned is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -2791,8 +2738,13 @@ exports[`Transactions list subscription column renders correctly 1`] = `
             </tbody>
           </table>
         </div>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-medium e1q7k77g4 css-5hda2c-Flex-FooterUI eboqfv50"
+      >
         <ul
           class="woocommerce-table__summary"
+          role="complementary"
         >
           <li
             class="woocommerce-table__summary-item"
@@ -2903,22 +2855,20 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
       </div>
     </div>
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card transactions-list woocommerce-report-table has-search has-menu has-action"
+      class="components-card is-size-medium woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
+        <h2
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Transactions
-          </h2>
-        </div>
+          Transactions
+        </h2>
         <div
-          class="woocommerce-card__action woocommerce-card__header-item"
+          class="woocommerce-table__actions"
         >
           <div>
             <div>
@@ -2928,20 +2878,23 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 <div
                   class="components-base-control woocommerce-select-control__control empty"
                 >
-                  <i
-                    class="material-icons-outlined"
+                  <svg
+                    aria-hidden="true"
+                    class="woocommerce-select-control__control-icon"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    search
-                  </i>
+                    <path
+                      d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                    />
+                  </svg>
                   <div
                     class="components-base-control__field"
                   >
-                    <label
-                      class="components-base-control__label"
-                      for="woocommerce-select-control-1__control-input"
-                    >
-                      Search by order number, customer name, or billing email
-                    </label>
                     <input
                       aria-autocomplete="list"
                       aria-expanded="false"
@@ -2990,54 +2943,36 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
           </button>
         </div>
         <div
-          class="woocommerce-card__menu woocommerce-card__header-item"
+          class="woocommerce-ellipsis-menu"
         >
           <div
-            class="woocommerce-ellipsis-menu"
+            class="components-dropdown"
           >
-            <div
-              class="components-dropdown"
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-ellipsis-menu__toggle"
+              title="Choose which values to display"
+              type="button"
             >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
-                title="Choose which values to display"
-                type="button"
+              <svg
+                class="gridicon gridicons-ellipsis"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <svg
-                  aria-hidden="true"
-                  class="dashicon dashicons-ellipsis"
-                  focusable="false"
-                  height="20"
-                  role="img"
-                  viewBox="0 0 20 20"
-                  width="20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                <g>
                   <path
-                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    d="M7 12c0 1.104-.896 2-2 2s-2-.896-2-2 .896-2 2-2 2 .896 2 2zm12-2c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-7 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2z"
                   />
-                </svg>
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  height="24"
-                  role="img"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
-                  />
-                </svg>
-              </button>
-            </div>
+                </g>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           aria-hidden="false"
@@ -3239,7 +3174,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -3255,7 +3190,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-center-aligned"
+                  class="woocommerce-table__header is-center-aligned is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -3366,7 +3301,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     data-link-type="external"
@@ -3376,7 +3311,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-center-aligned"
+                  class="woocommerce-table__item is-center-aligned is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -3488,7 +3423,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     data-link-type="external"
@@ -3498,7 +3433,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-center-aligned"
+                  class="woocommerce-table__item is-center-aligned is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -3537,8 +3472,13 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
             </tbody>
           </table>
         </div>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-medium e1q7k77g4 css-5hda2c-Flex-FooterUI eboqfv50"
+      >
         <ul
           class="woocommerce-table__summary"
+          role="complementary"
         >
           <li
             class="woocommerce-table__summary-item"
@@ -3649,22 +3589,20 @@ exports[`Transactions list when not filtered by deposit renders table summary on
       </div>
     </div>
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card transactions-list woocommerce-report-table has-search has-menu has-action"
+      class="components-card is-size-medium woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
+        <h2
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Transactions
-          </h2>
-        </div>
+          Transactions
+        </h2>
         <div
-          class="woocommerce-card__action woocommerce-card__header-item"
+          class="woocommerce-table__actions"
         >
           <div>
             <div>
@@ -3674,20 +3612,23 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                 <div
                   class="components-base-control woocommerce-select-control__control empty"
                 >
-                  <i
-                    class="material-icons-outlined"
+                  <svg
+                    aria-hidden="true"
+                    class="woocommerce-select-control__control-icon"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    search
-                  </i>
+                    <path
+                      d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                    />
+                  </svg>
                   <div
                     class="components-base-control__field"
                   >
-                    <label
-                      class="components-base-control__label"
-                      for="woocommerce-select-control-11__control-input"
-                    >
-                      Search by order number, customer name, or billing email
-                    </label>
                     <input
                       aria-autocomplete="list"
                       aria-expanded="false"
@@ -3736,54 +3677,36 @@ exports[`Transactions list when not filtered by deposit renders table summary on
           </button>
         </div>
         <div
-          class="woocommerce-card__menu woocommerce-card__header-item"
+          class="woocommerce-ellipsis-menu"
         >
           <div
-            class="woocommerce-ellipsis-menu"
+            class="components-dropdown"
           >
-            <div
-              class="components-dropdown"
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-ellipsis-menu__toggle"
+              title="Choose which values to display"
+              type="button"
             >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
-                title="Choose which values to display"
-                type="button"
+              <svg
+                class="gridicon gridicons-ellipsis"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <svg
-                  aria-hidden="true"
-                  class="dashicon dashicons-ellipsis"
-                  focusable="false"
-                  height="20"
-                  role="img"
-                  viewBox="0 0 20 20"
-                  width="20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                <g>
                   <path
-                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    d="M7 12c0 1.104-.896 2-2 2s-2-.896-2-2 .896-2 2-2 2 .896 2 2zm12-2c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-7 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2z"
                   />
-                </svg>
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  height="24"
-                  role="img"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
-                  />
-                </svg>
-              </button>
-            </div>
+                </g>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           aria-hidden="false"
@@ -3985,7 +3908,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -4001,7 +3924,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-center-aligned"
+                  class="woocommerce-table__header is-center-aligned is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -4112,7 +4035,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     data-link-type="external"
@@ -4122,7 +4045,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-center-aligned"
+                  class="woocommerce-table__item is-center-aligned is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -4234,7 +4157,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     data-link-type="external"
@@ -4244,7 +4167,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-center-aligned"
+                  class="woocommerce-table__item is-center-aligned is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -4283,8 +4206,13 @@ exports[`Transactions list when not filtered by deposit renders table summary on
             </tbody>
           </table>
         </div>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-medium e1q7k77g4 css-5hda2c-Flex-FooterUI eboqfv50"
+      >
         <ul
           class="woocommerce-table__summary"
+          role="complementary"
         >
           <li
             class="woocommerce-table__summary-item"
