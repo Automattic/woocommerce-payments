@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event';
  */
 import PaymentMethodsCheckboxes from '..';
 import PaymentMethodsCheckbox from '../payment-method-checkbox';
+import { upeCapabilityStatuses } from '../../../additional-methods-setup/constants';
 
 describe( 'PaymentMethodsCheckboxes', () => {
 	it( 'triggers the onChange when clicking the checkbox', () => {
@@ -33,6 +34,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 						onChange={ handleChange }
 						checked={ key[ 1 ] }
 						name={ key[ 0 ] }
+						status={ upeCapabilityStatuses.ACTIVE }
 					/>
 				) ) }
 			</PaymentMethodsCheckboxes>
@@ -72,5 +74,95 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		expect( handleChange ).toHaveBeenNthCalledWith( 4, 'p24', true );
 		expect( handleChange ).toHaveBeenNthCalledWith( 5, 'sepa_debit', true );
 		expect( handleChange ).toHaveBeenNthCalledWith( 6, 'sofort', true );
+	} );
+
+	it( 'can click the checkbox on payment methods with pending statuses', () => {
+		const handleChange = jest.fn();
+		render(
+			<PaymentMethodsCheckboxes>
+				<PaymentMethodsCheckbox
+					key={ 'sofort' }
+					onChange={ handleChange }
+					checked={ 0 }
+					name={ 'sofort' }
+					status={ upeCapabilityStatuses.PENDING_APPROVAL }
+				/>
+			</PaymentMethodsCheckboxes>
+		);
+
+		const sofortCheckbox = screen.getByRole( 'checkbox', {
+			name: 'Sofort',
+		} );
+		expect( sofortCheckbox ).not.toBeChecked();
+		userEvent.click( sofortCheckbox );
+		expect( handleChange ).toHaveBeenCalledTimes( 1 );
+		expect( handleChange ).toHaveBeenNthCalledWith( 1, 'sofort', true );
+	} );
+
+	it( 'shows the disabled notice pill on payment methods with disabled statuses', () => {
+		const handleChange = () => {};
+		const page = render(
+			<PaymentMethodsCheckboxes>
+				<PaymentMethodsCheckbox
+					key={ 'sofort' }
+					onChange={ handleChange }
+					checked={ 1 }
+					name={ 'sofort' }
+					status={ upeCapabilityStatuses.INACTIVE }
+				/>
+			</PaymentMethodsCheckboxes>
+		);
+
+		expect( page.container ).toContainHTML(
+			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
+		);
+	} );
+
+	it( 'can not click the payment methods checkbox with disabled statuses', () => {
+		const handleChange = jest.fn();
+		render(
+			<PaymentMethodsCheckboxes>
+				<PaymentMethodsCheckbox
+					key={ 'sofort' }
+					onChange={ handleChange }
+					checked={ 0 }
+					name={ 'sofort' }
+					status={ upeCapabilityStatuses.INACTIVE }
+				/>
+			</PaymentMethodsCheckboxes>
+		);
+		const sofortCheckbox = screen.getByRole( 'checkbox', {
+			name: 'Sofort',
+		} );
+		expect( sofortCheckbox ).not.toBeChecked();
+		userEvent.click( sofortCheckbox );
+		expect( handleChange ).toHaveBeenCalledTimes( 0 ); // Because the input is disabled.
+		expect( sofortCheckbox ).not.toBeChecked();
+	} );
+
+	it( 'doesnt show the disabled notice pill on payment methods with active and unrequested statuses', () => {
+		const handleChange = () => {};
+		const page = render(
+			<PaymentMethodsCheckboxes>
+				<PaymentMethodsCheckbox
+					key={ 'sofort' }
+					onChange={ handleChange }
+					checked={ 1 }
+					name={ 'sofort' }
+					status={ upeCapabilityStatuses.ACTIVE }
+				/>
+				<PaymentMethodsCheckbox
+					key={ 'giropay' }
+					onChange={ handleChange }
+					checked={ 1 }
+					name={ 'giropay' }
+					status={ upeCapabilityStatuses.UNREQUESTED }
+				/>
+			</PaymentMethodsCheckboxes>
+		);
+
+		expect( page.container ).not.toContainHTML(
+			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
+		);
 	} );
 } );

@@ -104,7 +104,26 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Show currency switcher notice until customer explicitly dismisses it.
 * Update - Fee breakdown when there's only a base fee
 * Fix - Inconsistent shipping options in Payment Request popup.
+* Fix - Border style not being applied properly on Multi-Currency block widget.
+* Fix - Applied sentence case on all strings
 * Fix - Missing customer information after guest checkout via Checkout Block
+* Update - display fees per payment method on overview page.
+* Fix - Multi-Currency settings rounding option and preview.
+* Fix - Payment failure on checkout block with UPE when phone number field is hidden
+* Update - Adds a scheduled action which makes updating the account cache more efficient
+* Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
+* Add - Early access: allow your store to collect payments with SEPA Direct Debit. Enable the feature in settings!
+* Add - Add compatibility between Multi-Currency and WooCommerce FedEx shipping extension.
+* Fix - Fix decimal error with shipping calculations with Multi-Currency.
+* Add - Add support for float type values for quantity.
+* Fix - Allow payment_intent_succeeded webhook to handle orders without intent_id attached.
+* Add - Add compatibility between Multi-Currency and WooCommerce Product Add Ons version 4.3.0 and higher.
+* Add - Enable Bancontact UPE method.
+* Add - Enable P24 UPE method.
+* Add - Enable iDeal UPE method.
+* Add - Payment method activation requirements modal and API integration.
+* Add - Add state handling for UPE methods for better merchant notification on what methods are able to be used.
+* Fix - Order currency incorrect if new user/customer created during checkout.
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
