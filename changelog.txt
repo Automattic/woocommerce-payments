@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 3.3.0 - 2021-xx-xx =
+* Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
+
 = 3.2.0 - 2021-xx-xx =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
 * Add - UPE track on upgrade and on setting toggle.
@@ -32,7 +35,6 @@
 * Add - Payment method activation requirements modal and API integration.
 * Add - Add state handling for UPE methods for better merchant notification on what methods are able to be used.
 * Fix - Order currency incorrect if new user/customer created during checkout.
-* Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
