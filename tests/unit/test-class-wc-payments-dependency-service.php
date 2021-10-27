@@ -63,4 +63,28 @@ class WC_Payments_Dependency_Service_Test extends WP_UnitTestCase {
 
 	}
 
+	public function test_display_admin_notices() {
+
+		// Create a partial mock, leaving out the method under test.
+		$dependency_service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setConstructorArgs( [] )
+			->setMethodsExcept( [ 'display_admin_notices' ] )
+			->getMock();
+
+		$dependency_service
+			->expects( $this->once() )
+			->method( 'get_invalid_dependencies' )
+			->willReturn( [ WC_Payments_Dependency_Service::WOOADMIN_NOT_FOUND, WC_Payments_Dependency_Service::WP_INCOMPATIBLE ] );
+
+		// Call the unmocked method.
+		ob_start();
+		$dependency_service->display_admin_notices();
+		$result = ob_get_clean();
+
+		// Perform assertions...
+		$this->assertIsString( $result );
+		$this->assertStringContainsStringIgnoringCase( 'WooCommerce Payments requires WooCommerce Admin to be enabled', $result );
+
+	}
+
 }
