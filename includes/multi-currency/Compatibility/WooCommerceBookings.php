@@ -33,6 +33,13 @@ class WooCommerceBookings {
 	private $utils;
 
 	/**
+	 * FrontendCurrencies class.
+	 *
+	 * @var FrontendCurrencies
+	 */
+	private $frontend_currencies;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param MultiCurrency $multi_currency MultiCurrency class.
@@ -41,24 +48,30 @@ class WooCommerceBookings {
 	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
 		$this->multi_currency = $multi_currency;
 		$this->utils          = $utils;
-		$this->initialize_hooks();
+		add_action( 'init', [ $this, 'init' ], 11 );
 	}
 
 	/**
-	 * Adds compatibility filters if the plugin exists and loaded
+	 * Adds additional properties and compatibility filters if the plugin exists and is loaded.
 	 *
-	 * @return  void
+	 * @return void
 	 */
-	protected function initialize_hooks() {
+	public function init() {
 		if ( class_exists( 'WC_Bookings' ) ) {
-			add_filter( 'woocommerce_product_get_block_cost', [ $this, 'get_price' ], 50, 1 );
-			add_filter( 'woocommerce_product_get_cost', [ $this, 'get_price' ], 50, 1 );
-			add_filter( 'woocommerce_product_get_display_cost', [ $this, 'get_price' ], 50, 1 );
-			add_filter( 'woocommerce_product_booking_person_type_get_block_cost', [ $this, 'get_price' ], 50, 1 );
-			add_filter( 'woocommerce_product_booking_person_type_get_cost', [ $this, 'get_price' ], 50, 1 );
-			add_filter( 'woocommerce_product_get_resource_base_costs', [ $this, 'get_resource_prices' ], 50, 1 );
-			add_filter( 'woocommerce_product_get_resource_block_costs', [ $this, 'get_resource_prices' ], 50, 1 );
-			add_filter( self::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ] );
+			$this->frontend_currencies = $this->multi_currency->get_frontend_currencies();
+
+			if ( ! is_admin() || wp_doing_ajax() ) {
+				add_filter( 'woocommerce_product_get_block_cost', [ $this, 'get_price' ], 50, 1 );
+				add_filter( 'woocommerce_product_get_cost', [ $this, 'get_price' ], 50, 1 );
+				add_filter( 'woocommerce_product_get_display_cost', [ $this, 'get_price' ], 50, 1 );
+				add_filter( 'woocommerce_product_booking_person_type_get_block_cost', [ $this, 'get_price' ], 50, 1 );
+				add_filter( 'woocommerce_product_booking_person_type_get_cost', [ $this, 'get_price' ], 50, 1 );
+				add_filter( 'woocommerce_product_get_resource_base_costs', [ $this, 'get_resource_prices' ], 50, 1 );
+				add_filter( 'woocommerce_product_get_resource_block_costs', [ $this, 'get_resource_prices' ], 50, 1 );
+				add_filter( self::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ] );
+				add_action( 'wp_ajax_wc_bookings_calculate_costs', [ $this, 'add_wc_price_args_filter_for_ajax' ], 9 );
+				add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', [ $this, 'add_wc_price_args_filter_for_ajax' ], 9 );
+			}
 		}
 	}
 
@@ -123,5 +136,34 @@ class WooCommerceBookings {
 		}
 
 		return $return;
+	}
+
+	/**
+	 * Adds a filter for when there is an ajax call to calculate the booking cost.
+	 *
+	 * @return void
+	 */
+	public function add_wc_price_args_filter_for_ajax() {
+		add_filter( 'wc_price_args', [ $this, 'filter_wc_price_args' ], 100 );
+	}
+
+	/**
+	 * Returns the formatting arguments to use when a booking price is calculated on the product.
+	 *
+	 * @param array $args Original args from wc_price().
+	 *
+	 * @return array New arguments matching the selected currency.
+	 */
+	public function filter_wc_price_args( $args ): array {
+		return wp_parse_args(
+			[
+				'currency'           => $this->multi_currency->get_selected_currency()->get_code(),
+				'decimal_separator'  => $this->frontend_currencies->get_price_decimal_separator( $args['decimal_separator'] ),
+				'thousand_separator' => $this->frontend_currencies->get_price_thousand_separator( $args['thousand_separator'] ),
+				'decimals'           => $this->frontend_currencies->get_price_decimals( $args['decimals'] ),
+				'price_format'       => $this->frontend_currencies->get_woocommerce_price_format( $args['price_format'] ),
+			],
+			$args
+		);
 	}
 }

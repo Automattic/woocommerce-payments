@@ -6,6 +6,8 @@
  */
 
 use WCPay\MultiCurrency\Compatibility\WooCommerceBookings;
+use WCPay\MultiCurrency\Currency;
+use WCPay\MultiCurrency\FrontendCurrencies;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
@@ -13,6 +15,13 @@ use WCPay\MultiCurrency\Utils;
  * WCPay\MultiCurrency\Compatibility\WooCommerceBookings unit tests.
  */
 class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WP_UnitTestCase {
+
+	/**
+	 * Mock WCPay\MultiCurrency\FrontendCurrencies.
+	 *
+	 * @var WCPay\MultiCurrency\FrontendCurrencies|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_frontend_currencies;
 
 	/**
 	 * Mock WCPay\MultiCurrency\MultiCurrency.
@@ -124,5 +133,25 @@ class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WP_UnitTestCase {
 			->withConsecutive( [ $first_calls ], [ $third_calls ] )
 			->willReturn( false, false );
 		$this->assertTrue( $this->woocommerce_bookings->should_convert_product_price( true ) );
+	}
+
+	public function test_filter_wc_price_args_returns_expected_results() {
+		$expected = [
+			'currency'           => 'CAD',
+			'decimal_separator'  => '.',
+			'thousand_separator' => ',',
+			'decimals'           => 2,
+			'price_format'       => '%1$s%2$s',
+		];
+
+		$this->mock_frontend_currencies = $this->createMock( FrontendCurrencies::class );
+
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $expected['currency'] ) );
+		$this->mock_frontend_currencies->method( 'get_price_decimal_separator' )->willReturn( $expected['decimal_separator'] );
+		$this->mock_frontend_currencies->method( 'get_price_thousand_separator' )->willReturn( $expected['thousand_separator'] );
+		$this->mock_frontend_currencies->method( 'get_price_decimals' )->willReturn( $expected['decimals'] );
+		$this->mock_frontend_currencies->method( 'get_woocommerce_price_format' )->willReturn( $expected['price_format'] );
+
+		$this->assertSame( $expected, $this->woocommerce_bookings->filter_wc_price_args( [] ) );
 	}
 }
