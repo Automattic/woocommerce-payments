@@ -545,21 +545,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertTrue( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
 	}
 
-	public function test_does_not_add_custom_payment_meta_input_fallback_for_subs_3_0_8() {
-		remove_all_actions( 'woocommerce_admin_order_data_after_billing_address' );
-
-		WC_Subscriptions::$version = '3.0.8';
-		new \WC_Payment_Gateway_WCPay(
-			$this->mock_api_client,
-			$this->wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_token_service,
-			$this->mock_action_scheduler_service
-		);
-
-		$this->assertFalse( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
-	}
-
 	public function test_add_payment_method_select_to_subscription_edit_when_subscription() {
 		$subscription = WC_Helper_Order::create_order( self::USER_ID );
 		$this->mock_wcs_is_subscription( true );
