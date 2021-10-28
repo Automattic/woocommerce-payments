@@ -105,6 +105,7 @@ class WooCommerceBookings {
 			return $return;
 		}
 
+		// This prevents a double conversion of the price in the cart.
 		if ( $this->utils->is_call_in_backtrace( [ 'WC_Product_Booking->get_price' ] ) ) {
 			$calls = [
 				'WC_Cart_Totals->calculate_item_totals',
@@ -114,6 +115,11 @@ class WooCommerceBookings {
 			if ( $this->utils->is_call_in_backtrace( $calls ) ) {
 				return false;
 			}
+		}
+
+		// Fixes price display on product page and in shop.
+		if ( $this->utils->is_call_in_backtrace( [ 'WC_Product_Booking->get_price_html' ] ) ) {
+			return false;
 		}
 
 		return $return;
