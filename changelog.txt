@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.2.0 - 2021-xx-xx =
+= 3.2.0 - 2021-10-28 =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
 * Add - UPE track on upgrade and on setting toggle.
 * Fix - Prevent currency switcher to show when enabled currencies list is empty.
