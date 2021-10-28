@@ -102,12 +102,26 @@ export const formatMethodFeesDescription = ( methodFees ) => {
 
 export const getTransactionsPaymentMethodName = ( paymentMethod ) => {
 	switch ( paymentMethod ) {
+		case 'bancontact':
+			return __( 'Bancontact transactions', 'woocommerce-payments' );
 		case 'card':
 			return __( 'Card transactions', 'woocommerce-payments' );
 		case 'card_present':
 			return __( 'In-person transactions', 'woocommerce-payments' );
 		case 'giropay':
 			return __( 'GiroPay transactions', 'woocommerce-payments' );
+		case 'ideal':
+			return __( 'iDeal transactions', 'woocommerce-payments' );
+		case 'p24':
+			return __(
+				'Przelewy24 (P24) transactions',
+				'woocommerce-payments'
+			);
+		case 'sepa_debit':
+			return __(
+				'SEPA Direct Debit transactions',
+				'woocommerce-payments'
+			);
 		case 'sofort':
 			return __( 'Sofort transactions', 'woocommerce-payments' );
 		default:

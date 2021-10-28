@@ -64,11 +64,7 @@ const AccountFees = ( props ) => {
 		<>
 			{ Object.entries( accountFees ).map( ( [ key, value ] ) => {
 				//ignore base and discount fields - still used for backwards compatibilityss
-				if (
-					'base' === key ||
-					'discount' === key ||
-					0 === value.discount.length
-				) {
+				if ( 'base' === key || 'discount' === key ) {
 					return null;
 				}
 
