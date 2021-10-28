@@ -63,7 +63,6 @@ if ( wcpaySubscriptionEdit.shouldAddWCPayCards ) {
 jQuery( function ( $ ) {
 	//Loads the saved credit cards after customer is selected
 	//when editing/creating a subscription
-	//needs to be done with jquery because
 	$( '#woocommerce-subscription-data #customer_user' ).change( function () {
 		const data = new FormData();
 
