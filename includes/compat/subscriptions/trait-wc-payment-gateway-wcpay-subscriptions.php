@@ -126,12 +126,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		add_filter( 'woocommerce_subscription_note_old_payment_method_title', [ $this, 'get_specific_old_payment_method_title' ], 10, 3 );
 		add_filter( 'woocommerce_subscription_note_new_payment_method_title', [ $this, 'get_specific_new_payment_method_title' ], 10, 3 );
-
-		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
-		// Enqueue JS hack when Subscriptions does not provide the meta input filter.
-		if ( $this->is_subscriptions_plugin_active() && version_compare( $this->get_subscriptions_plugin_version(), '3.0.7', '<=' ) ) {
-			add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
-		}
+		add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
 
 		/*
 		 * WC subscriptions hooks into the "template_redirect" hook with priority 100.
@@ -431,16 +426,17 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
 			'wcpaySubscriptionEdit',
 			[
-				'gateway'           => $this->id,
-				'table'             => self::$payment_method_meta_table,
-				'metaKey'           => self::$payment_method_meta_key,
-				'tokens'            => $this->get_user_formatted_tokens_array( $order->get_user_id() ),
-				'defaultOptionText' => __( 'Please select a payment method', 'woocommerce-payments' ),
+				'gateway'                => $this->id,
+				'table'                  => self::$payment_method_meta_table,
+				'metaKey'                => self::$payment_method_meta_key,
+				'tokens'                 => $order->get_user_id() ? $this->get_user_formatted_tokens_array( $order->get_user_id() ) : [],
+				'defaultOptionText'      => __( 'Please select a payment method', 'woocommerce-payments' ),
+				'shouldAddWCPayCards'    => $this->is_subscriptions_plugin_active() && version_compare( $this->get_subscriptions_plugin_version(), '3.0.7', '<=' ),
+				'get_cards_tokens_nonce' => wp_create_nonce( 'get_cards_tokens_nonce' ),
 			]
 		);
 
 		wp_set_script_translations( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'woocommerce-payments' );
-
 		wp_enqueue_script( 'WCPAY_SUBSCRIPTION_EDIT_PAGE' );
 	}
 
