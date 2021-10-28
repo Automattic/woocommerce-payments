@@ -1559,18 +1559,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Sanitized settings.
 	 */
 	public function sanitize_plugin_settings( $settings ) {
-		$account_settings = [];
-
-		if ( isset( $settings['account_statement_descriptor'] ) ) {
-			$account_settings['statement_descriptor'] = $settings['account_statement_descriptor'];
-			unset( $settings['account_statement_descriptor'] );
-		}
-
-		if ( isset( $settings['account_business_name'] ) ) {
-			$account_settings['business_name'] = $settings['account_business_name'];
-			unset( $settings['account_business_name'] );
-		}
-
+		$account_settings = $this->extract_account_settings( $settings );
 		$this->update_account( $account_settings );
 
 		return $settings;
@@ -1636,6 +1625,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$msg = __( 'Failed to update Stripe account. ', 'woocommerce-payments' ) . $error_message;
 			$this->add_error( $msg );
 		}
+	}
+
+	/**
+	 * Extracts and returns account-specific settings from all of plugin's settings.
+	 *
+	 * Additionally, unsets the extracted settings from all settings.
+	 *
+	 * @param array $settings Plugin settings.
+	 */
+	private function extract_account_settings( $settings ) {
+		$setting_names    = [
+			'account_statement_descriptor' => 'statement_descriptor',
+			'account_business_name'        => 'business_name',
+		];
+		$account_settings = [];
+
+		foreach ( $setting_names as $name => $account_key ) {
+			if ( isset( $settings[ $name ] ) ) {
+				$account_settings[ $account_key ] = $settings[ $name ];
+				unset( $settings[ $name ] );
+			}
+		}
+
+		return $account_settings;
 	}
 
 	/**
