@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
 Tested up to: 5.8.1
 Requires PHP: 7.0
-Stable tag: 3.2.0
+Stable tag: 3.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.2.1 - 2021-xx-xx =
+= 3.2.1 - 2021-10-28 =
 * Fix - PHP 7.2 compatibility - remove trailing commas from function args in subscriptions-core.
 
 = 3.2.0 - 2021-10-28 =
