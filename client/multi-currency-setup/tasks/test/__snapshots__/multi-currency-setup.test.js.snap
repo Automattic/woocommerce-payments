@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Multi Currency enabled currencies list wizard renders correctly: snapshot-multi-currency-setup-wizard 1`] = `
+exports[`Multi-Currency enabled currencies list wizard renders correctly: snapshot-multi-currency-setup-wizard 1`] = `
 <div>
   <div
     class="components-card is-size-medium multi-currency-setup-wizard css-1xs3c37-CardUI e1q7k77g0"
@@ -11,13 +11,13 @@ exports[`Multi Currency enabled currencies list wizard renders correctly: snapsh
       <div>
         <ul>
           <p>
-            Currency Selector
+            Currency selector
           </p>
           <p>
-            Store Settings Form
+            Store settings form
           </p>
           <p>
-            Setup Complete Screen
+            Setup complete screen
           </p>
         </ul>
       </div>

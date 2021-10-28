@@ -458,6 +458,20 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->expectOutputString( '' );
 	}
 
+	public function test_display_geolocation_currency_update_notice_does_not_display_if_using_other_currency_than_geolocated() {
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'US';
+			}
+		);
+
+		$this->multi_currency->display_geolocation_currency_update_notice();
+
+		$this->expectOutputString( '' );
+	}
+
 	public function test_get_price_returns_price_in_default_currency() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, get_woocommerce_currency() );
 
@@ -810,6 +824,24 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			],
 			$this->multi_currency->get_multi_currency_onboarding_simulation_variables()
 		);
+	}
+
+	public function test_set_new_customer_currency_meta_updates_user_meta_from_session() {
+		$expected = 'GBP';
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, $expected );
+
+		$this->multi_currency->set_new_customer_currency_meta( self::LOGGED_IN_USER_ID, [], '' );
+		$this->assertSame( $expected, get_user_meta( self::LOGGED_IN_USER_ID, MultiCurrency::CURRENCY_META_KEY, true ) );
+	}
+
+	public function test_set_new_customer_currency_meta_does_not_update_user_meta_if_no_user_passed() {
+		$this->multi_currency->set_new_customer_currency_meta( 0, [], '' );
+		$this->assertSame( '', get_user_meta( self::LOGGED_IN_USER_ID, MultiCurrency::CURRENCY_META_KEY, true ) );
+	}
+
+	public function test_set_new_customer_currency_meta_does_not_update_user_meta_if_no_session_currency() {
+		$this->multi_currency->set_new_customer_currency_meta( self::LOGGED_IN_USER_ID, [], '' );
+		$this->assertSame( '', get_user_meta( self::LOGGED_IN_USER_ID, MultiCurrency::CURRENCY_META_KEY, true ) );
 	}
 
 	public function get_price_provider() {

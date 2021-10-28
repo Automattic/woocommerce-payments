@@ -39,7 +39,7 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Payment methods transient. Used in conjunction with the customer_id to cache a customer's payment methods.
 	 */
-	const PAYMENT_METHODS_TRANSIENT = 'wcpay_payment_methods_';
+	const PAYMENT_METHODS_TRANSIENT = 'wcpay_pm_';
 
 	/**
 	 * Key used to store customer id for non logged in users in WooCommerce Session.
@@ -197,10 +197,11 @@ class WC_Payments_Customer_Service {
 		}
 
 		$cache_payment_methods = ! WC_Payments::is_network_saved_cards_enabled();
+		$transient_key         = self::PAYMENT_METHODS_TRANSIENT . $customer_id . '_' . $type;
 
 		if ( $cache_payment_methods ) {
-			$payment_methods = get_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id );
-			if ( $payment_methods ) {
+			$payment_methods = get_transient( $transient_key );
+			if ( is_array( $payment_methods ) ) {
 				return $payment_methods;
 			}
 		}
@@ -208,7 +209,7 @@ class WC_Payments_Customer_Service {
 		try {
 			$payment_methods = $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
 			if ( $cache_payment_methods ) {
-				set_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id, $payment_methods, DAY_IN_SECONDS );
+				set_transient( $transient_key, $payment_methods, DAY_IN_SECONDS );
 			}
 			return $payment_methods;
 
@@ -253,7 +254,9 @@ class WC_Payments_Customer_Service {
 			return; // No need to do anything, payment methods will never be cached in this case.
 		}
 		$customer_id = $this->get_customer_id_by_user_id( $user_id );
-		delete_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id );
+		foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
+			delete_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id . '_' . $type );
+		}
 	}
 
 	/**
@@ -372,5 +375,31 @@ class WC_Payments_Customer_Service {
 				Logger::error( 'Failed to store new customer ID for user ' . $user_id . '; legacy customer was kept.' );
 			}
 		}
+	}
+
+	/**
+	 * Get the WCPay customer ID associated with an order, or create one if none found.
+	 *
+	 * @param WC_Order $order WC Order object.
+	 *
+	 * @return string WCPay customer ID.
+	 *
+	 * @throws API_Exception If there's an error creating customer.
+	 */
+	public function get_customer_id_for_order( $order ) {
+		$customer_id = null;
+		$user        = $order->get_user();
+
+		if ( false !== $user ) {
+			// Determine the customer making the payment, create one if we don't have one already.
+			$customer_id = $this->get_customer_id_by_user_id( $user->ID );
+
+			if ( null === $customer_id ) {
+				$customer_data = self::map_customer_data( $order, new WC_Customer( $user->ID ) );
+				$customer_id   = $this->create_customer_for_user( $user, $customer_data );
+			}
+		}
+
+		return $customer_id;
 	}
 }

@@ -24,6 +24,7 @@ import './style.scss';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
+	useGetPaymentMethodStatuses,
 } from 'wcpay/data';
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
@@ -40,15 +41,16 @@ import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
 import CardBody from '../settings/card-body';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
 		<DropdownMenu
 			icon={ moreVertical }
-			label={ __( 'Add Feedback or Disable', 'woocommerce-payments' ) }
+			label={ __( 'Add feedback or disable', 'woocommerce-payments' ) }
 			controls={ [
 				{
-					title: __( 'Provide Feedback', 'woocommerce-payments' ),
+					title: __( 'Provide feedback', 'woocommerce-payments' ),
 					onClick: () => setOpenModal( 'survey' ),
 				},
 				{
@@ -114,6 +116,8 @@ const PaymentMethods = () => {
 		enabledMethodIds,
 		updateEnabledMethodIds,
 	] = useEnabledPaymentMethodIds();
+
+	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 	const enabledMethods = availablePaymentMethodIds
@@ -188,6 +192,13 @@ const PaymentMethods = () => {
 								<PaymentMethod
 									key={ id }
 									Icon={ Icon }
+									status={
+										paymentMethodStatuses[
+											methodsConfiguration[ id ]
+												.stripe_key
+										].status ??
+										upeCapabilityStatuses.UNREQUESTED
+									}
 									onDeleteClick={
 										1 < enabledMethods.length
 											? handleDeleteClick

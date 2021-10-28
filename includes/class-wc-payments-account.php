@@ -19,12 +19,14 @@ use WCPay\Logger;
 class WC_Payments_Account {
 
 	// ACCOUNT_TRANSIENT is only used in the supporting dev tools plugin, it can be removed once everyone has upgraded.
-	const ACCOUNT_TRANSIENT              = 'wcpay_account_data';
-	const ACCOUNT_OPTION                 = 'wcpay_account_data';
-	const ACCOUNT_RETRIEVAL_ERROR        = 'ERROR';
-	const ON_BOARDING_DISABLED_TRANSIENT = 'wcpay_on_boarding_disabled';
-	const ON_BOARDING_STARTED_TRANSIENT  = 'wcpay_on_boarding_started';
-	const ERROR_MESSAGE_TRANSIENT        = 'wcpay_error_message';
+	const ACCOUNT_TRANSIENT                = 'wcpay_account_data';
+	const ACCOUNT_OPTION                   = 'wcpay_account_data';
+	const ACCOUNT_RETRIEVAL_ERROR          = 'ERROR';
+	const ON_BOARDING_DISABLED_TRANSIENT   = 'wcpay_on_boarding_disabled';
+	const ON_BOARDING_STARTED_TRANSIENT    = 'wcpay_on_boarding_started';
+	const ERROR_MESSAGE_TRANSIENT          = 'wcpay_error_message';
+	const ACCOUNT_CACHE_REFRESH_ACTION     = 'wcpay_refresh_account_cache';
+	const INSTANT_DEPOSITS_REMINDER_ACTION = 'wcpay_instant_deposit_reminder';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -44,7 +46,8 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
-		add_action( 'wcpay_instant_deposit_reminder', [ $this, 'handle_instant_deposits_inbox_reminder' ] );
+		add_action( self::INSTANT_DEPOSITS_REMINDER_ACTION, [ $this, 'handle_instant_deposits_inbox_reminder' ] );
+		add_action( self::ACCOUNT_CACHE_REFRESH_ACTION, [ $this, 'handle_account_cache_refresh' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_filter( 'woocommerce_debug_tools', [ $this, 'debug_tool' ] );
@@ -187,6 +190,16 @@ class WC_Payments_Account {
 	public function get_statement_descriptor() {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['statement_descriptor'] ) ? $account['statement_descriptor'] : '';
+	}
+
+	/**
+	 * Get card present eligible flag account
+	 *
+	 * @return bool
+	 */
+	public function is_card_present_eligible() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['card_present_eligible'] ) ? $account['card_present_eligible'] : false;
 	}
 
 	/**
@@ -637,22 +650,27 @@ class WC_Payments_Account {
 	/**
 	 * Gets and caches the data for the account connected to this site.
 	 *
+	 * @param bool $force_refresh Forces data to be fetched from the server, rather than using the cache.
+	 *
 	 * @return array|bool Account data or false if failed to retrieve account data.
 	 */
-	public function get_cached_account_data() {
+	public function get_cached_account_data( bool $force_refresh = false ) {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
 
-		$account = $this->read_account_from_cache();
+		// If we want to force a refresh, we can skip this logic and go straight to the server request.
+		if ( ! $force_refresh ) {
+			$account = $this->read_account_from_cache();
 
-		if ( $this->is_valid_cached_account( $account ) ) {
-			return $account;
-		}
+			if ( $this->is_valid_cached_account( $account ) ) {
+				return $account;
+			}
 
-		// If the option contains the error value, return false early and do not attempt another API call.
-		if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
-			return false;
+			// If the option contains the error value, return false early and do not attempt another API call.
+			if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
+				return false;
+			}
 		}
 
 		try {
@@ -696,9 +714,9 @@ class WC_Payments_Account {
 	 * @param int|null     $expiration - The length of time to cache the account data, expressed in seconds.
 	 */
 	private function cache_account( $account, int $expiration = null ) {
-		// Default expiration to 2 hours if not set.
+		// Default expiration to 2.5 hours if not set.
 		if ( null === $expiration ) {
-			$expiration = 2 * HOUR_IN_SECONDS;
+			$expiration = 2.5 * HOUR_IN_SECONDS;
 		}
 
 		// Add the account data and expiry time to the array we're caching.
@@ -712,6 +730,9 @@ class WC_Payments_Account {
 		} else {
 			$result = update_option( self::ACCOUNT_OPTION, $account_cache, 'no' );
 		}
+
+		// Schedule the account cache to be refreshed in 2 hours.
+		$this->schedule_account_cache_refresh();
 
 		return $result;
 	}
@@ -929,7 +950,7 @@ class WC_Payments_Account {
 	 */
 	public function maybe_add_instant_deposit_note_reminder() {
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->payments_api_client );
-		$action_hook              = 'wcpay_instant_deposit_reminder';
+		$action_hook              = self::INSTANT_DEPOSITS_REMINDER_ACTION;
 
 		if ( $action_scheduler_service->pending_action_exists( $action_hook ) ) {
 			return;
@@ -937,6 +958,14 @@ class WC_Payments_Account {
 
 		$reminder_time = time() + ( 90 * DAY_IN_SECONDS );
 		$action_scheduler_service->schedule_job( $reminder_time, $action_hook );
+	}
+
+	/**
+	 * Handles action scheduler job to refresh the account cache. Will clear the cache, and
+	 * then fetch the account data from the server, also forcing it to be re-cached.
+	 */
+	public function handle_account_cache_refresh() {
+		$this->get_cached_account_data( true );
 	}
 
 	/**
@@ -974,5 +1003,18 @@ class WC_Payments_Account {
 
 		// We have fresh account data in the cache, so return it.
 		return $account_cache['account'];
+	}
+
+	/**
+	 * Schedule an ActionScheduler job to refresh the cached account data. When the account cache is
+	 * expired, we schedule a job to refresh the cache in 2 hours. The only time this function gets called is
+	 * when we are saving to the cache, so we always want to re-schedule the job even if it already exists.
+	 */
+	private function schedule_account_cache_refresh() {
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->payments_api_client );
+		$action_hook              = self::ACCOUNT_CACHE_REFRESH_ACTION;
+
+		$action_time = time() + ( 2 * HOUR_IN_SECONDS );
+		$action_scheduler_service->schedule_job( $action_time, $action_hook );
 	}
 }

@@ -36,11 +36,6 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await merchant.login();
 			await merchantWCP.addNewPageCheckoutWCB();
 			await merchant.logout();
-			await shopper.login();
-		} );
-
-		afterAll( async () => {
-			await shopper.logout();
 		} );
 
 		it( 'using a basic card', async () => {
