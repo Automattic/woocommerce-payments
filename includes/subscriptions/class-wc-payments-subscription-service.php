@@ -140,6 +140,7 @@ class WC_Payments_Subscription_Service {
 		add_filter( 'woocommerce_order_actions', [ $this, 'prevent_wcpay_manual_renewal' ], 11, 1 );
 
 		add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
+		add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'show_wcpay_subscription_id' ] );
 	}
 
 	/**
@@ -592,6 +593,24 @@ class WC_Payments_Subscription_Service {
 			unset( $actions['wcs_process_renewal'] );
 		}
 		return $actions;
+	}
+
+	/**
+	 * Show WCPay Subscription ID on Edit Subscription page.
+	 *
+	 * @param WC_Order $order The order object.
+	 */
+	public function show_wcpay_subscription_id( WC_Order $order ) {
+		if ( ! wcs_is_subscription( $order ) || ! self::is_wcpay_subscription( $order ) ) {
+			return;
+		}
+
+		$wcpay_subscription_id = self::get_wcpay_subscription_id( $order );
+		if ( ! $wcpay_subscription_id ) {
+			return;
+		}
+
+		echo '<p><strong>' . esc_html__( 'WooCommerce Payments Subscription ID', 'woocommerce-payments' ) . ':</strong> ' . esc_html( $wcpay_subscription_id ) . '</p>';
 	}
 
 	/**
