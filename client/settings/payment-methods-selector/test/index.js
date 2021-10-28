@@ -9,10 +9,12 @@ import user from '@testing-library/user-event';
  * Internal dependencies
  */
 import PaymentMethodsSelector from '..';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
+	useGetPaymentMethodStatuses,
 } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
@@ -20,6 +22,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
 	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
+	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
 } ) );
 
 describe( 'PaymentMethodsSelector', () => {
@@ -34,6 +37,41 @@ describe( 'PaymentMethodsSelector', () => {
 			'sepa_debit',
 			'sofort',
 		] );
+		global.wcSettings = {
+			currentUserData: {
+				email: 'test@example.com',
+			},
+		};
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			bancontact_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			giropay_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			ideal_payments: {
+				status: upeCapabilityStatuses.UNREQUESTED,
+				requirements: [ 'individual.identification_number' ],
+			},
+			p24_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sepa_debit_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sofort_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+		} );
 	} );
 
 	test( 'Displays "Add payment Method" button, modal is not visible', () => {
@@ -264,6 +302,13 @@ describe( 'PaymentMethodsSelector', () => {
 			name: 'iDEAL',
 		} );
 		user.click( idealCheckbox );
+
+		// iDeal will display a confirmation modal because of the pending requirement and then checks the checkbox
+		const continueButton = screen.getByRole( 'button', {
+			name: 'Continue',
+		} );
+		user.click( continueButton );
+
 		const addSelectedButton = screen.getByRole( 'button', {
 			name: 'Add selected',
 		} );

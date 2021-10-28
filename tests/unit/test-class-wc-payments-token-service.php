@@ -104,7 +104,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
 
-		$this->assertEquals( 'woocommerce_payments_sepa', $token->get_gateway_id() );
+		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
 		$this->assertEquals( 1, $token->get_user_id() );
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( '3000', $token->get_last4() );
@@ -223,40 +223,12 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	}
 
 	public function test_woocommerce_get_customer_payment_tokens() {
-		$token = new WC_Payment_Token_CC();
-		$token->set_gateway_id( 'woocommerce_payments' );
-		$token->set_token( 'pm_mock0' );
-		$token->set_card_type( 'visa' );
-		$token->set_last4( '4242' );
-		$token->set_expiry_month( 1 );
-		$token->set_expiry_year( 2023 );
-		$token->set_user_id( 1 );
-		$token->set_default( true );
-		$token->save();
-
+		$token  = $this->generate_sepa_token( 'pm_mock0' );
 		$tokens = [ $token ];
 
 		$mock_payment_methods = [
-			[
-				'id'   => 'pm_mock1',
-				'type' => 'card',
-				'card' => [
-					'brand'     => 'visa',
-					'last4'     => '4242',
-					'exp_month' => 6,
-					'exp_year'  => 2026,
-				],
-			],
-			[
-				'id'   => 'pm_mock2',
-				'type' => 'card',
-				'card' => [
-					'brand'     => 'master',
-					'last4'     => '5665',
-					'exp_month' => 4,
-					'exp_year'  => 2031,
-				],
-			],
+			$this->generate_card_pm_response( 'pm_mock1' ),
+			$this->generate_card_pm_response( 'pm_mock2' ),
 		];
 
 		$this->mock_customer_service
@@ -275,6 +247,52 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );
 		$this->assertEquals( 'pm_mock1', $result_tokens[1]->get_token() );
 		$this->assertEquals( 'pm_mock2', $result_tokens[2]->get_token() );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_multiple_tokens_multiple_types() {
+		$customer_id     = 'cus_12345';
+		$payment_methods = [ Payment_Method::CARD, Payment_Method::SEPA ];
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->settings['upe_enabled_payment_method_ids'] = $payment_methods;
+
+		// Array keys should match the database ID of the token.
+		$tokens = [
+			1 => $this->generate_card_token( 'pm_111', 1 ),
+			2 => $this->generate_card_token( 'pm_222', 2 ),
+			3 => $this->generate_sepa_token( 'pm_333', 3 ),
+			4 => $this->generate_sepa_token( 'pm_444', 4 ),
+		];
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( $customer_id );
+
+		// Expect a call for each payment method, and return an array with consecutive keys.
+		$this->mock_customer_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_payment_methods_for_customer' )
+			->withConsecutive(
+				[ $customer_id, Payment_Method::CARD ],
+				[ $customer_id, Payment_Method::SEPA ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					$this->generate_card_pm_response( 'pm_111' ),
+					$this->generate_card_pm_response( 'pm_222' ),
+				],
+				[
+					$this->generate_sepa_pm_response( 'pm_333' ),
+					$this->generate_sepa_pm_response( 'pm_444' ),
+				]
+			);
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, 'woocommerce_payments' );
+		$this->assertSame(
+			array_keys( $tokens ),
+			array_keys( $result )
+		);
 	}
 
 	public function test_woocommerce_get_customer_payment_tokens_not_logged() {
@@ -308,5 +326,53 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 
 		$result = $this->token_service->woocommerce_get_customer_payment_tokens( [ new WC_Payment_Token_CC() ], 1, 'woocommerce_payments' );
 		$this->assertEquals( [ new WC_Payment_Token_CC() ], $result );
+	}
+
+	private function generate_card_pm_response( $stripe_id ) {
+		return [
+			'type' => Payment_Method::CARD,
+			'id'   => $stripe_id,
+			'card' => [
+				'brand'     => 'visa',
+				'last4'     => '4242',
+				'exp_month' => 6,
+				'exp_year'  => '2111',
+			],
+		];
+	}
+
+	private function generate_sepa_pm_response( $stripe_id ) {
+		return [
+			'type'       => Payment_Method::SEPA,
+			'id'         => $stripe_id,
+			'sepa_debit' => [
+				'last4' => '1234',
+			],
+		];
+	}
+
+	private function generate_card_token( $stripe_id, $wp_id = 0 ) {
+		$token = new WC_Payment_Token_CC();
+		$token->set_id( $wp_id );
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( $stripe_id );
+		$token->set_card_type( 'visa' );
+		$token->set_last4( '4242' );
+		$token->set_expiry_month( 1 );
+		$token->set_expiry_year( 2023 );
+		$token->set_user_id( 1 );
+		$token->set_default( true );
+		$token->save();
+		return $token;
+	}
+
+	private function generate_sepa_token( $stripe_id, $wp_id = 0 ) {
+		$token = new WC_Payment_Token_WCPay_SEPA();
+		$token->set_id( $wp_id );
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( $stripe_id );
+		$token->set_last4( '3000' );
+		$token->save();
+		return $token;
 	}
 }

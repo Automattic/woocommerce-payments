@@ -9,9 +9,9 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 4.4
- * WC tested up to: 5.7.1
+ * WC tested up to: 5.8.0
  * Requires WP: 5.6
- * Version: 3.1.0
+ * Version: 3.2.0
  *
  * @package WooCommerce\Payments
  */
@@ -110,11 +110,23 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 			return;
 		}
 
-		$subscriptions_plugin_slug = 'woocommerce-subscriptions/woocommerce-subscriptions.php';
-		$wcs_core_plugin_slug      = 'woocommerce-subscriptions-core/woocommerce-subscriptions-core.php';
-		$is_subscriptions_active   = ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $subscriptions_plugin_slug === $_GET['plugin'] ) || Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $subscriptions_plugin_slug ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$is_wcs_core_active        = ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $wcs_core_plugin_slug === $_GET['plugin'] ) || Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $wcs_core_plugin_slug ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$wcs_core_path             = $is_wcs_core_active ? WP_PLUGIN_DIR . '/woocommerce-subscriptions-core/' : WCPAY_SUBSCRIPTIONS_ABSPATH;
+		$is_plugin_active = function( $plugin_name ) {
+			$plugin_slug = "$plugin_name/$plugin_name.php";
+
+			if ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $plugin_slug === $_GET['plugin'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				return true;
+			}
+
+			if ( defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) && 4 >= count( $GLOBALS['argv'] ) && 'plugin' === $GLOBALS['argv'][1] && 'activate' === $GLOBALS['argv'][2] && $plugin_name === $GLOBALS['argv'][3] ) {
+				return true;
+			}
+
+			return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $plugin_slug );
+		};
+
+		$is_subscriptions_active = $is_plugin_active( 'woocommerce-subscriptions' );
+		$is_wcs_core_active      = $is_plugin_active( 'woocommerce-subscriptions-core' );
+		$wcs_core_path           = $is_wcs_core_active ? WP_PLUGIN_DIR . '/woocommerce-subscriptions-core/' : WCPAY_SUBSCRIPTIONS_ABSPATH;
 
 		/**
 		 * If the current request is to activate subscriptions, don't load the subscriptions-core package.

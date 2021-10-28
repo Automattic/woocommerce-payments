@@ -94,6 +94,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $failed_transaction_rate_limiter;
 
 	/**
+	 * Mapping between capability keys and payment type keys
+	 *
+	 * @var array
+	 */
+	protected $payment_method_capability_key_map;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
@@ -307,6 +314,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 			];
 		}
+
+		// Capabilities have different keys than the payment method ID's,
+		// so instead of appending '_payments' to the end of the ID, it'll be better
+		// to have a map for it instead, just in case the pattern changes.
+		$this->payment_method_capability_key_map = [
+			'sofort'     => 'sofort_payments',
+			'giropay'    => 'giropay_payments',
+			'bancontact' => 'bancontact_payments',
+			'ideal'      => 'ideal_payments',
+			'p24'        => 'p24_payments',
+			'card'       => 'card_payments',
+			'sepa_debit' => 'sepa_debit_payments',
+		];
 
 		// Load the settings.
 		$this->init_settings();
@@ -1034,6 +1054,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$next_action   = $intent['next_action'];
 		}
 
+		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+		$this->attach_exchange_info_to_order( $order, $charge_id );
+
 		if ( ! empty( $intent ) ) {
 			if ( ! in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				$intent_failed = true;
@@ -1078,9 +1101,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 		}
-
-		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
-		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( isset( $response ) ) {
 			return $response;
@@ -1129,10 +1149,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Array of keyed metadata values.
 	 */
 	protected function get_metadata_from_order( $order, $payment_type ) {
-		$name  = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
-		$email = sanitize_email( $order->get_billing_email() );
-
-		return [
+		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+		$email    = sanitize_email( $order->get_billing_email() );
+		$metadata = [
 			'customer_name'  => $name,
 			'customer_email' => $email,
 			'site_url'       => esc_url( get_site_url() ),
@@ -1140,6 +1159,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'order_key'      => $order->get_order_key(),
 			'payment_type'   => $payment_type,
 		];
+
+		// If the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).
+		if ( 'recurring' === (string) $payment_type && ! $this->is_subscriptions_plugin_active() ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+
+			foreach ( $subscriptions as $subscription ) {
+				if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
+					$metadata['payment_context'] = 'wcpay_subscription';
+					break;
+				}
+			}
+		}
+
+		return $metadata;
 	}
 
 	/**
@@ -1217,7 +1250,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							]
 						),
 						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-						$intent_id
+						$charge_id
 					);
 					$order->add_order_note( $note );
 				}
@@ -1832,7 +1865,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			$description     = substr( $item->get_name(), 0, 26 );
-			$quantity        = $item->get_quantity();
+			$quantity        = ceil( $item->get_quantity() );
 			$unit_cost       = WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency );
 			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
 			$discount_amount = WC_Payments_Utils::prepare_amount( $subtotal - $item->get_total(), $currency );
@@ -1950,7 +1983,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								]
 							),
 							WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $order->get_currency() ] ), $order ),
-							$intent_id
+							$intent->get_charge_id()
 						);
 						$order->add_order_note( $note );
 
@@ -2352,6 +2385,43 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Returns the list of statuses and capabilities available for UPE payment methods in the cached account.
+	 *
+	 * @return  string[]  The payment method statuses.
+	 */
+	public function get_upe_enabled_payment_method_statuses() {
+		$account_data = $this->account->get_cached_account_data();
+		$capabilities = $account_data['capabilities'] ?? [];
+		$requirements = $account_data['capability_requirements'] ?? [];
+		$statuses     = [];
+
+		if ( $capabilities ) {
+			foreach ( $capabilities as $capability_id => $status ) {
+				$statuses[ $capability_id ] = [
+					'status'       => $status,
+					'requirements' => $requirements[ $capability_id ] ?? [],
+				];
+			}
+		}
+
+		return 0 === count( $statuses ) ? [
+			'card_payments' => [
+				'status'       => 'active',
+				'requirements' => [],
+			],
+		] : $statuses;
+	}
+
+	/**
+	 * Updates the account cache with the new payment method status, until it gets fetched again from the server.
+	 *
+	 * @return  void
+	 */
+	public function refresh_cached_account_data() {
+		$this->account->refresh_account_data();
+	}
+
+	/**
 	 * Returns the list of enabled payment method types that will function with the current checkout.
 	 *
 	 * @param string $order_id optional Order ID.
@@ -2361,13 +2431,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$capture                    = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
 		$capturable_payment_methods = $capture ? $this->get_upe_enabled_payment_method_ids() : [ 'card' ];
 		$enabled_payment_methods    = [];
+		$active_payment_methods     = $this->get_upe_enabled_payment_method_statuses();
 		foreach ( $capturable_payment_methods as $payment_method_id ) {
+			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
 			if ( isset( $this->payment_methods[ $payment_method_id ] )
 				&& $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id )
-				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() ) ) {
+				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() )
+				&& isset( $active_payment_methods[ $payment_method_capability_key ] )
+				&& 'active' === $active_payment_methods[ $payment_method_capability_key ]['status']
+			) {
 				$enabled_payment_methods[] = $payment_method_id;
 			}
 		}
+
 		return $enabled_payment_methods;
 	}
 

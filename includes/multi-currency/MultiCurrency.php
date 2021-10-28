@@ -224,6 +224,7 @@ class MultiCurrency {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
 			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
 			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
+			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
 		}
 	}
 
@@ -255,7 +256,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 
@@ -825,6 +826,21 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Sets a new customer's currency meta to what's in their session.
+	 * This is needed for when a new user/customer is created during the checkout process.
+	 *
+	 * @param int $customer_id The user/customer id.
+	 *
+	 * @return void
+	 */
+	public function set_new_customer_currency_meta( $customer_id ) {
+		$code = 0 !== $customer_id && WC()->session ? WC()->session->get( self::CURRENCY_SESSION_KEY ) : false;
+		if ( $code ) {
+			update_user_meta( $customer_id, self::CURRENCY_META_KEY, $code );
+		}
+	}
+
+	/**
 	 * Adds Multi-Currency notes to the WC-Admin inbox.
 	 *
 	 * @return void
@@ -856,9 +872,7 @@ class MultiCurrency {
 	 * @return float The adjusted price.
 	 */
 	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
-		if ( 'none' !== $currency->get_rounding() ) {
-			$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
-		}
+		$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
 
 		if ( $apply_charm_pricing ) {
 			$price += floatval( $currency->get_charm() );
