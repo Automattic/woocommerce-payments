@@ -417,10 +417,11 @@ jQuery( function ( $ ) {
 	/**
 	 * Checks if UPE form is filled out. Displays errors if not.
 	 *
-	 * @param {Object} $form The jQuery object for the form.
+	 * @param {Object} $form     The jQuery object for the form.
+	 * @param {string} returnUrl The `return_url` param. (optional)
 	 * @return {boolean} false if incomplete.
 	 */
-	const checkUPEForm = async ( $form ) => {
+	const checkUPEForm = async ( $form, returnUrl = '' ) => {
 		if ( ! upeElement ) {
 			showError( 'Your payment information is incomplete.' );
 			return false;
@@ -430,7 +431,7 @@ jQuery( function ( $ ) {
 			const { error } = await api.getStripe().confirmPayment( {
 				element: upeElement,
 				confirmParams: {
-					return_url: '',
+					return_url: returnUrl,
 				},
 			} );
 			$form.removeClass( 'processing' ).unblock();
@@ -447,24 +448,27 @@ jQuery( function ( $ ) {
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handleUPEOrderPay = async ( $form ) => {
-		const isUPEFormValid = await checkUPEForm( $( '#order_review' ) );
+		const isSavingPaymentMethod = $(
+			'#wc-woocommerce_payments-new-payment-method'
+		).is( ':checked' );
+		const savePaymentMethod = isSavingPaymentMethod ? 'yes' : 'no';
+
+		const returnUrl =
+			getConfig( 'orderReturnURL' ) +
+			`&save_payment_method=${ savePaymentMethod }`;
+
+		const orderId = getConfig( 'orderId' );
+
+		const isUPEFormValid = await checkUPEForm(
+			$( '#order_review' ),
+			returnUrl
+		);
 		if ( ! isUPEFormValid ) {
 			return;
 		}
 		blockUI( $form );
 
 		try {
-			const isSavingPaymentMethod = $(
-				'#wc-woocommerce_payments-new-payment-method'
-			).is( ':checked' );
-			const savePaymentMethod = isSavingPaymentMethod ? 'yes' : 'no';
-
-			const returnUrl =
-				getConfig( 'orderReturnURL' ) +
-				`&save_payment_method=${ savePaymentMethod }`;
-
-			const orderId = getConfig( 'orderId' );
-
 			// Update payment intent with level3 data, customer and maybe setup for future use.
 			await api.updateIntent(
 				paymentIntentId,
@@ -497,7 +501,9 @@ jQuery( function ( $ ) {
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handleUPEAddPayment = async ( $form ) => {
-		const isUPEFormValid = await checkUPEForm( $form );
+		const returnUrl = getConfig( 'addPaymentReturnURL' );
+		const isUPEFormValid = await checkUPEForm( $form, returnUrl );
+
 		if ( ! isUPEFormValid ) {
 			return;
 		}
@@ -505,8 +511,6 @@ jQuery( function ( $ ) {
 		blockUI( $form );
 
 		try {
-			const returnUrl = getConfig( 'addPaymentReturnURL' );
-
 			const { error } = await api.getStripe().confirmSetup( {
 				element: upeElement,
 				confirmParams: {

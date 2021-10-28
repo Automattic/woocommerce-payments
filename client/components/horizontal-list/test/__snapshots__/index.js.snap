@@ -3,95 +3,78 @@
 exports[`HorizontalList correctly renders a List element with horizontal class modifier 1`] = `
 <div>
   <ul
-    class="woocommerce-list woocommerce-list--horizontal"
-    role="menu"
+    class="woocommerce-experimental-list--horizontal wcpayments-horizontal-list"
   >
     <li
-      class="woocommerce-list__item"
+      class="woocommerce-experimental-list__item has-gutters transitions-disabled "
     >
       <div
-        class="woocommerce-list__item-inner"
+        class="woocommerce-experimental-list__item-inner"
       >
-        <div
-          class="woocommerce-list__item-text"
+        <span
+          class="woocommerce-experimental-list__item-title"
         >
-          <span
-            class="woocommerce-list__item-title"
-          >
-            Item 1
-          </span>
-          <span
-            class="woocommerce-list__item-content"
-          >
-            Item 1 content
-          </span>
-        </div>
+          Item 1
+        </span>
+        <span
+          class="woocommerce-experimental-list__item-content"
+        >
+          Item 1 content
+        </span>
       </div>
     </li>
     <li
-      class="woocommerce-list__item"
+      class="woocommerce-experimental-list__item has-gutters transitions-disabled "
     >
       <div
-        class="woocommerce-list__item-inner"
+        class="woocommerce-experimental-list__item-inner"
       >
-        <div
-          class="woocommerce-list__item-text"
+        <span
+          class="woocommerce-experimental-list__item-title"
         >
-          <span
-            class="woocommerce-list__item-title"
-          >
-            Item 2
-          </span>
-          <span
-            class="woocommerce-list__item-content"
-          >
-            Item 2 content
-          </span>
-        </div>
+          Item 2
+        </span>
+        <span
+          class="woocommerce-experimental-list__item-content"
+        >
+          Item 2 content
+        </span>
       </div>
     </li>
     <li
-      class="woocommerce-list__item"
+      class="woocommerce-experimental-list__item has-gutters transitions-disabled "
     >
       <div
-        class="woocommerce-list__item-inner"
+        class="woocommerce-experimental-list__item-inner"
       >
-        <div
-          class="woocommerce-list__item-text"
+        <span
+          class="woocommerce-experimental-list__item-title"
         >
-          <span
-            class="woocommerce-list__item-title"
-          >
-            Item 3
-          </span>
-          <span
-            class="woocommerce-list__item-content"
-          >
-            Item 3 content
-          </span>
-        </div>
+          Item 3
+        </span>
+        <span
+          class="woocommerce-experimental-list__item-content"
+        >
+          Item 3 content
+        </span>
       </div>
     </li>
     <li
-      class="woocommerce-list__item"
+      class="woocommerce-experimental-list__item has-gutters transitions-disabled "
     >
       <div
-        class="woocommerce-list__item-inner"
+        class="woocommerce-experimental-list__item-inner"
       >
-        <div
-          class="woocommerce-list__item-text"
+        <span
+          class="woocommerce-experimental-list__item-title"
         >
-          <span
-            class="woocommerce-list__item-title"
-          >
-            Item 4
-          </span>
-          <span
-            class="woocommerce-list__item-content"
-          >
-            Item 4 content
-          </span>
-        </div>
+          Item 4
+        </span>
+        <span
+          class="woocommerce-experimental-list__item-content"
+        >
+          Item 4 content
+        </span>
       </div>
     </li>
   </ul>

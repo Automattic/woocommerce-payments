@@ -205,8 +205,9 @@ class WC_Payments_API_Client {
 
 		$available_payment_methods = WC_Payments::get_gateway()->get_upe_available_payment_methods();
 		if (
-			WC_Payments_Features::is_sepa_enabled()
-			|| in_array( Payment_Method::SEPA, $available_payment_methods, true )
+			'eur' === $currency_code &&
+			( WC_Payments_Features::is_sepa_enabled()
+			|| in_array( Payment_Method::SEPA, $available_payment_methods, true ) )
 		) {
 			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
 			$request['mandate_data']         = [
