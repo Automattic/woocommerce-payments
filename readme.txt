@@ -107,7 +107,6 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Border style not being applied properly on Multi-Currency block widget.
 * Fix - Applied sentence case on all strings
 * Fix - Missing customer information after guest checkout via Checkout Block
-* Update - display fees per payment method on overview page.
 * Fix - Multi-Currency settings rounding option and preview.
 * Fix - Payment failure on checkout block with UPE when phone number field is hidden
 * Update - Adds a scheduled action which makes updating the account cache more efficient
