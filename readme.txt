@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.2.1 - 2021-xx-xx =
+* Fix - PHP 7.2 compatibility - remove trailing commas from function args in subscriptions-core.
+
 = 3.2.0 - 2021-10-28 =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
 * Fix - Prevent currency switcher to show when enabled currencies list is empty.
