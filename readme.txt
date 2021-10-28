@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
 Tested up to: 5.8.1
 Requires PHP: 7.0
-Stable tag: 3.1.0
+Stable tag: 3.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 = 3.3.0 - 2021-xx-xx =
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
 
-= 3.2.0 - 2021-xx-xx =
+= 3.2.0 - 2021-10-28 =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
 * Fix - Prevent currency switcher to show when enabled currencies list is empty.
 * Fix - Show currency switcher notice until customer explicitly dismisses it.
@@ -110,7 +110,6 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Border style not being applied properly on Multi-Currency block widget.
 * Fix - Applied sentence case on all strings
 * Fix - Missing customer information after guest checkout via Checkout Block
-* Update - display fees per payment method on overview page.
 * Fix - Multi-Currency settings rounding option and preview.
 * Fix - Payment failure on checkout block with UPE when phone number field is hidden
 * Update - Adds a scheduled action which makes updating the account cache more efficient
@@ -127,6 +126,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Payment method activation requirements modal and API integration.
 * Add - Add state handling for UPE methods for better merchant notification on what methods are able to be used.
 * Fix - Order currency incorrect if new user/customer created during checkout.
+* Fix - Validation now works when adding a new payment method, or paying for an order.
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
