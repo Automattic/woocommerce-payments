@@ -1609,21 +1609,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Gets connected account business name.
 	 *
-	 * @param mixed $default_value Value to return when not connected or failed to fetch business name.
+	 * @param string $default_value Value to return when not connected or failed to fetch business name.
 	 *
 	 * @return string Business name or default value.
 	 */
-	protected function get_account_business_name( $default_value = '' ) {
+	protected function get_account_business_name( $default_value = '' ): string {
 		try {
-			if ( ! $this->is_connected() ) {
-				return $default_value;
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_name();
 			}
-
-			return $this->account->get_business_name();
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to get account business name.' . $e );
-			return $default_value;
 		}
+
+		return $default_value;
 	}
 
 	/**
