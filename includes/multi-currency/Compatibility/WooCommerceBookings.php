@@ -10,6 +10,7 @@ namespace WCPay\MultiCurrency\Compatibility;
 use WC_Product;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
+use WCPay\MultiCurrency\FrontendCurrencies;
 
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Bookings Plugin.
@@ -42,13 +43,15 @@ class WooCommerceBookings {
 	/**
 	 * Constructor.
 	 *
-	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils Utils class.
+	 * @param MultiCurrency      $multi_currency MultiCurrency class.
+	 * @param Utils              $utils Utils class.
+	 * @param FrontendCurrencies $frontend_currencies FrontendCurrencies class.
 	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		$this->multi_currency = $multi_currency;
-		$this->utils          = $utils;
-		add_action( 'init', [ $this, 'init' ], 11 );
+	public function __construct( MultiCurrency $multi_currency, Utils $utils, FrontendCurrencies $frontend_currencies ) {
+		$this->multi_currency      = $multi_currency;
+		$this->utils               = $utils;
+		$this->frontend_currencies = $frontend_currencies;
+		$this->initialize_hooks();
 	}
 
 	/**
@@ -56,10 +59,8 @@ class WooCommerceBookings {
 	 *
 	 * @return void
 	 */
-	public function init() {
+	public function initialize_hooks() {
 		if ( class_exists( 'WC_Bookings' ) ) {
-			$this->frontend_currencies = $this->multi_currency->get_frontend_currencies();
-
 			if ( ! is_admin() || wp_doing_ajax() ) {
 				add_filter( 'woocommerce_product_get_block_cost', [ $this, 'get_price' ], 50, 1 );
 				add_filter( 'woocommerce_product_get_cost', [ $this, 'get_price' ], 50, 1 );

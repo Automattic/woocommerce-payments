@@ -56,9 +56,18 @@ class Compatibility {
 		$this->utils          = $utils;
 		$this->init_filters();
 
-		$compatibility_classes[] = new WooCommerceBookings( $multi_currency, $utils );
-		$compatibility_classes[] = new WooCommerceFedEx( $multi_currency, $utils );
-		$compatibility_classes[] = new WooCommerceUPS( $multi_currency, $utils );
+		add_action( 'init', [ $this, 'init_compatibility_classes' ], 11 );
+	}
+
+	/**
+	 * Initializes our compatibility classes.
+	 *
+	 * @return void
+	 */
+	public function init_compatibility_classes() {
+		$compatibility_classes[] = new WooCommerceBookings( $this->multi_currency, $this->utils, $this->multi_currency->get_frontend_currencies() );
+		$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
+		$compatibility_classes[] = new WooCommerceUPS( $this->multi_currency, $this->utils );
 	}
 
 	/**
