@@ -9,7 +9,7 @@ namespace WCPay\MultiCurrency;
 
 use WC_Order;
 use WC_Order_Refund;
-use WC_Product;
+use WCPay\MultiCurrency\Compatibility\BaseCompatibility;
 use WCPay\MultiCurrency\Compatibility\WooCommerceBookings;
 use WCPay\MultiCurrency\Compatibility\WooCommerceFedEx;
 use WCPay\MultiCurrency\Compatibility\WooCommerceProductAddOns;
@@ -21,36 +21,25 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class that controls Multi-Currency Compatibility.
  */
-class Compatibility {
-
-	const FILTER_PREFIX = 'wcpay_multi_currency_';
+class Compatibility extends BaseCompatibility {
 
 	/**
 	 * MultiCurrency class.
 	 *
 	 * @var MultiCurrency
 	 */
-	private $multi_currency;
-
-	/**
-	 * Utils class.
-	 *
-	 * @var Utils
-	 */
-	private $utils;
+	protected $multi_currency;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils Utils class.
 	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
+	public function __construct( MultiCurrency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
-		$this->utils          = $utils;
 		$this->init_filters();
 
-		add_action( 'init', [ $this, 'init_compatibility_classes' ], 11 );
+		add_action( 'init', [ $this, 'init' ], 11 );
 	}
 
 	/**
@@ -58,12 +47,14 @@ class Compatibility {
 	 *
 	 * @return void
 	 */
-	public function init_compatibility_classes() {
-		$compatibility_classes[] = new WooCommerceBookings( $this->multi_currency, $this->utils, $this->multi_currency->get_frontend_currencies() );
-		$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommerceSubscriptions( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommerceUPS( $this->multi_currency, $this->utils );
+	public function init() {
+		parent::__construct( $this->multi_currency );
+
+		$compatibility_classes[] = new WooCommerceBookings( $this->multi_currency );
+		$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency );
+		$compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency );
+		$compatibility_classes[] = new WooCommerceSubscriptions( $this->multi_currency );
+		$compatibility_classes[] = new WooCommerceUPS( $this->multi_currency );
 	}
 
 	/**

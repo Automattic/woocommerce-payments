@@ -43,7 +43,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 
 		$this->mock_multi_currency       = $this->createMock( MultiCurrency::class );
 		$this->mock_utils                = $this->createMock( Utils::class );
-		$this->woocommerce_subscriptions = new WooCommerceSubscriptions( $this->mock_multi_currency, $this->mock_utils );
+		$this->woocommerce_subscriptions = new WooCommerceSubscriptions( $this->mock_multi_currency );
 
 		$this->mock_meta_data = $this->createMock( \WC_Meta_Data::class );
 

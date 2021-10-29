@@ -43,7 +43,7 @@ class WCPay_Multi_Currency_WooCommerceFedEx_Tests extends WP_UnitTestCase {
 
 		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
 		$this->mock_utils          = $this->createMock( Utils::class );
-		$this->woocommerce_fedex   = new WooCommerceFedEx( $this->mock_multi_currency, $this->mock_utils );
+		$this->woocommerce_fedex   = new WooCommerceFedEx( $this->mock_multi_currency );
 	}
 
 	// If true is passed, it should automatically return true.

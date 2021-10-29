@@ -53,7 +53,7 @@ class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WP_UnitTestCase {
 		$this->mock_multi_currency      = $this->createMock( MultiCurrency::class );
 		$this->mock_utils               = $this->createMock( Utils::class );
 		$this->mock_frontend_currencies = $this->createMock( FrontendCurrencies::class );
-		$this->woocommerce_bookings     = new WooCommerceBookings( $this->mock_multi_currency, $this->mock_utils, $this->mock_frontend_currencies );
+		$this->woocommerce_bookings     = new WooCommerceBookings( $this->mock_multi_currency );
 	}
 
 	public function test_get_price_returns_empty_string() {

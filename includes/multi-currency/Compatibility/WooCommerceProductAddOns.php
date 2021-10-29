@@ -9,39 +9,21 @@ namespace WCPay\MultiCurrency\Compatibility;
 
 use WC_Product;
 use WCPay\MultiCurrency\MultiCurrency;
-use WCPay\MultiCurrency\Utils;
 
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Product Add Ons Plugin.
  */
-class WooCommerceProductAddOns {
+class WooCommerceProductAddOns extends BaseCompatibility {
 
 	const ADDONS_CONVERTED_META_KEY = '_wcpay_multi_currency_addons_converted';
-	const FILTER_PREFIX             = 'wcpay_multi_currency_';
-
-	/**
-	 * MultiCurrency class.
-	 *
-	 * @var MultiCurrency
-	 */
-	private $multi_currency;
-
-	/**
-	 * Utils class.
-	 *
-	 * @var Utils
-	 */
-	private $utils;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils Utils class.
 	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		$this->multi_currency = $multi_currency;
-		$this->utils          = $utils;
+	public function __construct( MultiCurrency $multi_currency ) {
+		parent::__construct( $multi_currency );
 		$this->initialize_hooks();
 	}
 
