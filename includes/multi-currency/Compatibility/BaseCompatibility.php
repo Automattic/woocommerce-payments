@@ -45,6 +45,19 @@ class BaseCompatibility {
 	public function __construct( MultiCurrency $multi_currency ) {
 		$this->multi_currency      = $multi_currency;
 		$this->frontend_currencies = $multi_currency->get_frontend_currencies();
-		$this->utils               = $multi_currency->get_utils();
+		$this->utils               = $this->get_utils();
+	}
+
+	/**
+	 * Returns the Utils class.
+	 *
+	 * @return Utils
+	 */
+	public function get_utils() {
+		if ( $this->utils ) {
+			return $this->utils;
+		}
+		$this->utils = $this->multi_currency->get_utils();
+		return $this->utils;
 	}
 }

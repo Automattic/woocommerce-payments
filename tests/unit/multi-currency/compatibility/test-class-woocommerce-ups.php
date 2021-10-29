@@ -45,6 +45,7 @@ class WCPay_Multi_Currency_WooCommerceUPS_Tests extends WP_UnitTestCase {
 		$this->mock_multi_currency->method( 'get_utils' )->willReturn( $this->createMock( Utils::class ) );
 
 		$this->woocommerce_ups = new WooCommerceUPS( $this->mock_multi_currency );
+		$this->mock_utils      = $this->woocommerce_ups->get_utils();
 	}
 
 	// If true is passed, it should automatically return true.
@@ -60,7 +61,7 @@ class WCPay_Multi_Currency_WooCommerceUPS_Tests extends WP_UnitTestCase {
 			'WC_Shipping_UPS->box_shipping',
 			'WC_Shipping_UPS->calculate_shipping',
 		];
-		$this->woocommerce_ups->utils
+		$this->mock_utils
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
 			->with( $calls )
