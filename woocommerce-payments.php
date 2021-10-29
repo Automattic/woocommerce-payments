@@ -121,6 +121,13 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 				return true;
 			}
 
+			if ( is_multisite() ) {
+				$plugins = get_site_option( 'active_sitewide_plugins' );
+				if ( isset( $plugins[ $plugin_slug ] ) ) {
+					return true;
+				}
+			}
+
 			return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $plugin_slug );
 		};
 
