@@ -2,6 +2,7 @@
 
 = 3.3.0 - 2021-xx-xx =
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
+* Fix - Show a specific message instead of a generic one in the checkout block when non-UPE payment processing fails.
 
 = 3.2.2 - 2021-10-29 =
 * Fix - Multisite compatibility - don't load subscriptions-core if already loaded by another multisite plugin.
