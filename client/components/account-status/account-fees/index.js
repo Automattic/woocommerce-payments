@@ -63,16 +63,14 @@ const AccountFees = ( props ) => {
 	return (
 		<>
 			{ Object.entries( accountFees ).map( ( [ key, value ] ) => {
-				//ignore base and discount fields - still used for backwards compatibilityss
-				if ( 'base' === key || 'discount' === key ) {
+				if ( 0 === value.fee.discount.length ) {
 					return null;
 				}
-
 				return (
 					<AccountFee
 						key={ key }
-						paymentMethod={ key }
-						accountFee={ value }
+						paymentMethod={ value.payment_method }
+						accountFee={ value.fee }
 					/>
 				);
 			} ) }
