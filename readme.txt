@@ -100,6 +100,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 3.3.0 - 2021-xx-xx =
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
+* Fix - Use configured domain instead of current domain for Apple Pay verification.
 
 = 3.2.1 - 2021-10-28 =
 * Fix - PHP 7.2 compatibility - remove trailing commas from function args in subscriptions-core.
