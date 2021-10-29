@@ -53,7 +53,6 @@ class WooCommerceProductAddOns {
 	protected function initialize_hooks() {
 		if ( class_exists( 'WC_Product_Addons' ) ) {
 			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
-				// Product Add-Ons filters.
 				add_filter( 'woocommerce_product_addons_option_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
 				add_filter( 'woocommerce_product_addons_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
 				add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );
@@ -64,7 +63,6 @@ class WooCommerceProductAddOns {
 			}
 
 			if ( wp_doing_ajax() ) {
-				// Product Add-Ons filters.
 				add_filter( 'woocommerce_product_addons_ajax_get_product_price_including_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
 				add_filter( 'woocommerce_product_addons_ajax_get_product_price_excluding_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
 			}
