@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.2.2 - 2021-xx-xx =
+= 3.2.2 - 2021-10-29 =
 * Fix - Multisite compatibility - don't load subscriptions-core if already loaded by another multisite plugin.
 * Fix - Errors when attempting to get the WooCommerce Subscriptions Core version during PayPal requests.
 
