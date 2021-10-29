@@ -33,7 +33,7 @@ class Compatibility extends BaseCompatibility {
 		parent::__construct( $multi_currency, $utils );
 		$this->init_filters();
 
-		add_action( 'init', [ $this, 'init' ], 11 );
+		add_action( 'init', [ $this, 'init_compatibility_classes' ], 11 );
 	}
 
 	/**
@@ -41,7 +41,7 @@ class Compatibility extends BaseCompatibility {
 	 *
 	 * @return void
 	 */
-	public function init() {
+	public function init_compatibility_classes() {
 		$compatibility_classes[] = new WooCommerceBookings( $this->multi_currency, $this->utils, $this->multi_currency->get_frontend_currencies() );
 		$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
 		$compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency, $this->utils );
