@@ -24,19 +24,13 @@ defined( 'ABSPATH' ) || exit;
 class Compatibility extends BaseCompatibility {
 
 	/**
-	 * MultiCurrency class.
-	 *
-	 * @var MultiCurrency
-	 */
-	protected $multi_currency;
-
-	/**
 	 * Constructor.
 	 *
 	 * @param MultiCurrency $multi_currency MultiCurrency class.
+	 * @param Utils         $utils          Utils class.
 	 */
-	public function __construct( MultiCurrency $multi_currency ) {
-		$this->multi_currency = $multi_currency;
+	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
+		parent::__construct( $multi_currency, $utils );
 		$this->init_filters();
 
 		add_action( 'init', [ $this, 'init' ], 11 );
@@ -48,13 +42,11 @@ class Compatibility extends BaseCompatibility {
 	 * @return void
 	 */
 	public function init() {
-		parent::__construct( $this->multi_currency );
-
-		$compatibility_classes[] = new WooCommerceBookings( $this->multi_currency );
-		$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency );
-		$compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency );
-		$compatibility_classes[] = new WooCommerceSubscriptions( $this->multi_currency );
-		$compatibility_classes[] = new WooCommerceUPS( $this->multi_currency );
+		$compatibility_classes[] = new WooCommerceBookings( $this->multi_currency, $this->utils, $this->multi_currency->get_frontend_currencies() );
+		$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
+		$compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency, $this->utils );
+		$compatibility_classes[] = new WooCommerceSubscriptions( $this->multi_currency, $this->utils );
+		$compatibility_classes[] = new WooCommerceUPS( $this->multi_currency, $this->utils );
 	}
 
 	/**

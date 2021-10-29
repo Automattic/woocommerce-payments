@@ -42,10 +42,8 @@ class WCPay_Multi_Currency_WooCommerceUPS_Tests extends WP_UnitTestCase {
 		parent::setUp();
 
 		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
-		$this->mock_multi_currency->method( 'get_utils' )->willReturn( $this->createMock( Utils::class ) );
-
-		$this->woocommerce_ups = new WooCommerceUPS( $this->mock_multi_currency );
-		$this->mock_utils      = $this->woocommerce_ups->get_utils();
+		$this->mock_utils          = $this->createMock( Utils::class );
+		$this->woocommerce_ups     = new WooCommerceUPS( $this->mock_multi_currency, $this->mock_utils );
 	}
 
 	// If true is passed, it should automatically return true.

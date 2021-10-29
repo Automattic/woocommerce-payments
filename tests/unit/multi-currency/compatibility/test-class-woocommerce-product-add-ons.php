@@ -43,7 +43,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WP_UnitTestCas
 
 		$this->mock_multi_currency         = $this->createMock( MultiCurrency::class );
 		$this->mock_utils                  = $this->createMock( Utils::class );
-		$this->woocommerce_product_add_ons = new WooCommerceProductAddOns( $this->mock_multi_currency );
+		$this->woocommerce_product_add_ons = new WooCommerceProductAddOns( $this->mock_multi_currency, $this->mock_utils );
 	}
 
 	/**

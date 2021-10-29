@@ -8,6 +8,7 @@
 namespace WCPay\MultiCurrency\Compatibility;
 
 use WCPay\MultiCurrency\MultiCurrency;
+use WCPay\MultiCurrency\Utils;
 
 /**
  * Class that sets up base options for compatibility classes.
@@ -15,13 +16,6 @@ use WCPay\MultiCurrency\MultiCurrency;
 class BaseCompatibility {
 
 	const FILTER_PREFIX = 'wcpay_multi_currency_';
-
-	/**
-	 * FrontendCurrencies class.
-	 *
-	 * @var FrontendCurrencies
-	 */
-	protected $frontend_currencies;
 
 	/**
 	 * MultiCurrency class.
@@ -41,23 +35,10 @@ class BaseCompatibility {
 	 * Constructor.
 	 *
 	 * @param MultiCurrency $multi_currency MultiCurrency class.
+	 * @param Utils         $utils          Utils class.
 	 */
-	public function __construct( MultiCurrency $multi_currency ) {
-		$this->multi_currency      = $multi_currency;
-		$this->frontend_currencies = $multi_currency->get_frontend_currencies();
-		$this->utils               = $this->get_utils();
-	}
-
-	/**
-	 * Returns the Utils class.
-	 *
-	 * @return Utils
-	 */
-	public function get_utils() {
-		if ( $this->utils ) {
-			return $this->utils;
-		}
-		$this->utils = $this->multi_currency->get_utils();
-		return $this->utils;
+	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
+		$this->multi_currency = $multi_currency;
+		$this->utils          = $utils;
 	}
 }

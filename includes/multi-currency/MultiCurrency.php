@@ -203,7 +203,7 @@ class MultiCurrency {
 		$this->localization_service    = $localization_service;
 		$this->geolocation             = new Geolocation( $this->localization_service );
 		$this->utils                   = new Utils();
-		$this->compatibility           = new Compatibility( $this );
+		$this->compatibility           = new Compatibility( $this, $this->utils );
 		$this->analytics               = new Analytics( $this );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
 
@@ -432,15 +432,6 @@ class MultiCurrency {
 	 */
 	public function get_storefront_integration() {
 		return $this->storefront_integration;
-	}
-
-	/**
-	 * Returns the Utils instance.
-	 *
-	 * @return Utils
-	 */
-	public function get_utils(): Utils {
-		return $this->utils;
 	}
 
 	/**

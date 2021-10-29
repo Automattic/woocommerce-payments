@@ -7,7 +7,9 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
+use WCPay\MultiCurrency\FrontendCurrencies;
 use WCPay\MultiCurrency\MultiCurrency;
+use WCPay\MultiCurrency\Utils;
 
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Bookings Plugin.
@@ -17,10 +19,13 @@ class WooCommerceBookings extends BaseCompatibility {
 	/**
 	 * Constructor.
 	 *
-	 * @param MultiCurrency $multi_currency MultiCurrency class.
+	 * @param MultiCurrency      $multi_currency      MultiCurrency class.
+	 * @param Utils              $utils               Utils class.
+	 * @param FrontendCurrencies $frontend_currencies FrontendCurrencies class.
 	 */
-	public function __construct( MultiCurrency $multi_currency ) {
-		parent::__construct( $multi_currency );
+	public function __construct( MultiCurrency $multi_currency, Utils $utils, FrontendCurrencies $frontend_currencies ) {
+		parent::__construct( $multi_currency, $utils );
+		$this->frontend_currencies = $frontend_currencies;
 		$this->initialize_hooks();
 	}
 
