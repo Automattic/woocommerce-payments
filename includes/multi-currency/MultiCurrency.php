@@ -203,7 +203,7 @@ class MultiCurrency {
 		$this->localization_service    = $localization_service;
 		$this->geolocation             = new Geolocation( $this->localization_service );
 		$this->utils                   = new Utils();
-		$this->compatibility           = new Compatibility( $this, $this->utils );
+		$this->compatibility           = new Compatibility( $this );
 		$this->analytics               = new Analytics( $this );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
 
@@ -423,6 +423,15 @@ class MultiCurrency {
 	 */
 	public function get_frontend_currencies(): FrontendCurrencies {
 		return $this->frontend_currencies;
+	}
+
+	/**
+	 * Returns the Utils instance.
+	 *
+	 * @return Utils
+	 */
+	public function get_utils(): Utils {
+		return $this->utils;
 	}
 
 	/**
