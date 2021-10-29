@@ -11,7 +11,7 @@
  * WC requires at least: 4.4
  * WC tested up to: 5.8.0
  * Requires WP: 5.6
- * Version: 3.2.1
+ * Version: 3.2.2
  *
  * @package WooCommerce\Payments
  */
@@ -119,6 +119,13 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 
 			if ( defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) && 4 >= count( $GLOBALS['argv'] ) && 'plugin' === $GLOBALS['argv'][1] && 'activate' === $GLOBALS['argv'][2] && $plugin_name === $GLOBALS['argv'][3] ) {
 				return true;
+			}
+
+			if ( is_multisite() ) {
+				$plugins = get_site_option( 'active_sitewide_plugins' );
+				if ( isset( $plugins[ $plugin_slug ] ) ) {
+					return true;
+				}
 			}
 
 			return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $plugin_slug );
