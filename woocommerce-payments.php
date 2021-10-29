@@ -80,6 +80,22 @@ function wcpay_jetpack_init() {
 			'name' => __( 'WooCommerce Payments', 'woocommerce-payments' ),
 		]
 	);
+
+	// TODO - may need be aware if the full Jetpack plugin is active
+	// then we may not need this filter.
+	add_filter(
+		'jetpack_sync_modules',
+		function () {
+			// Interested in these modules only so that Woo Mobile can work.
+			return [
+				'Automattic\\Jetpack\\Sync\\Modules\\Options',
+				'Automattic\\Jetpack\\Sync\\Modules\\Plugins',
+			];
+		},
+		100 // This priority is similar to https://github.com/Automattic/jetpack/blob/0e6a3b4d81cc032ba1f55f725c0cd67604ccb16b/projects/plugins/jetpack/uninstall.php#L43-L43.
+	);
+
+	$jetpack_config->ensure( 'sync' );
 }
 // Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
 Automattic\Jetpack\Connection\Rest_Authentication::init();
