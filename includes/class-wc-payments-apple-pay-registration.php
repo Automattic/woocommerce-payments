@@ -73,7 +73,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$this->gateway                 = $gateway;
 
 		add_action( 'init', [ $this, 'add_domain_association_rewrite_rule' ], 5 );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_if_configured' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_on_update' ] );
 		add_action( 'init', [ $this, 'init' ] );
 	}
 
@@ -121,6 +121,15 @@ class WC_Payments_Apple_Pay_Registration {
 	public function verify_domain_on_domain_name_change() {
 		$verified_domain = $this->gateway->get_option( 'apple_pay_verified_domain' );
 		if ( $this->domain_name !== $verified_domain ) {
+			$this->verify_domain_if_configured();
+		}
+	}
+
+	/**
+	 * Verify domain upon plugin update only in case the domain association file has changed.
+	 */
+	public function verify_domain_on_update() {
+		if ( ! $this->is_hosted_domain_association_file_up_to_date() ) {
 			$this->verify_domain_if_configured();
 		}
 	}
