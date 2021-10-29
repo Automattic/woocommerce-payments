@@ -100,6 +100,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 3.2.2 - 2021-xx-xx =
 * Fix - Multisite compatibility - don't load subscriptions-core if already loaded by another multisite plugin.
+* Fix - Errors when attempting to get the plugin version during PayPal requests.
 
 = 3.2.1 - 2021-10-28 =
 * Fix - PHP 7.2 compatibility - remove trailing commas from function args in subscriptions-core.
