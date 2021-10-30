@@ -485,6 +485,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
+
 		// Act: process payment.
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
 		$result_order = wc_get_order( $order->get_id() );
@@ -536,6 +539,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
+
 		// Act: process payment.
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
 		$result_order = wc_get_order( $order->get_id() );
@@ -566,6 +572,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'is_limited' )
 			->willReturn( true );
+
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
 
 		// Act: process payment.
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
@@ -603,6 +612,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 					)
 				)
 			);
+
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
 
 		// Act: process payment.
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
@@ -896,6 +908,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->will( $this->returnValue( new WC_Payment_Token_CC() ) );
 
 		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
+
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
+
 		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
@@ -957,6 +973,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 					}
 				)
 			);
+
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
