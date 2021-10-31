@@ -111,7 +111,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$script_dependencies = [ 'stripe', 'wc-checkout' ];
 
 		if ( $this->supports( 'tokenization' ) ) {
-			$script_dependencies = array_merge( $script_dependencies, [ 'woocommerce-tokenization-form' ] );
+			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
 
 		wp_register_script(
