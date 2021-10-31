@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.2.3 - 2021-xx-xx =
+* Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
+
 = 3.2.2 - 2021-10-29 =
 * Fix - Multisite compatibility - don't load subscriptions-core if already loaded by another multisite plugin.
 * Fix - Errors when attempting to get the WooCommerce Subscriptions Core version during PayPal requests.
