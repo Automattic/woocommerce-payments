@@ -479,9 +479,77 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
+	 * Prevents the subscription interval to be greater than 1 for yearly subscriptions.
+	 *
+	 * @param int $product_id Post ID of the product.
+	 */
+	public function limit_yearly_subscription_intervals_on_save_product( $product_id ) {
+		// Skip products that aren't subscriptions.
+		$product = wc_get_product( $product_id );
+		if (
+			! $product ||
+			! WC_Subscriptions_Product::is_subscription( $product ) ||
+			empty( $_POST['_wcsnonce'] ) ||
+			! wp_verify_nonce( sanitize_key( $_POST['_wcsnonce'] ), 'wcs_subscription_meta' )
+		) {
+			return;
+		}
+
+		if (
+			isset( $_REQUEST['_subscription_period'] ) &&
+			'year' === $_REQUEST['_subscription_period'] &&
+			isset( $_REQUEST['_subscription_period_interval'] ) &&
+			'1' !== $_REQUEST['_subscription_period_interval']
+		) {
+			// Prevent WC Subs Core from saving the interval when it's invalid.
+			$_REQUEST['_subscription_period_interval'] = '1';
+
+			// Add an admin notice to let the merchant know about this limitation.
+			wcs_add_admin_notice( __( "The period interval of a subscription can't be greater than a year.", 'woocommerce-payments' ), 'error' );
+		}
+	}
+
+	/**
+	 * Prevents the subscription interval to be greater than 1 for yearly subscription variations.
+	 *
+	 * @param int $product_id Post ID of the variation.
+	 * @param int $index Variation index in the incoming array.
+	 */
+	public function limit_yearly_subscription_intervals_on_save_product_variation( $product_id, $index ) {
+		// Skip products that aren't subscriptions.
+		$product = wc_get_product( $product_id );
+		if (
+			! $product ||
+			! WC_Subscriptions_Product::is_subscription( $product ) ||
+			empty( $_POST['_wcsnonce_save_variations'] ) ||
+			! wp_verify_nonce( sanitize_key( $_POST['_wcsnonce_save_variations'] ), 'wcs_subscription_variations' )
+		) {
+			return;
+		}
+
+		if (
+			isset( $_POST['variable_subscription_period'][ $index ] ) &&
+			'year' === $_POST['variable_subscription_period'][ $index ] &&
+			isset( $_POST['variable_subscription_period_interval'][ $index ] ) &&
+			'1' !== $_POST['variable_subscription_period_interval'][ $index ]
+		) {
+			// Prevent WC Subs Core from saving the interval when it's invalid.
+			$_POST['variable_subscription_period_interval'][ $index ] = '1';
+
+			// Add an admin notice to let the merchant know about this limitation.
+			wcs_add_admin_notice( __( "The period interval of a subscription can't be greater than a year.", 'woocommerce-payments' ), 'error' );
+		}
+	}
+
+	/**
 	 * Attaches the callbacks used to update product changes in WC Pay.
 	 */
 	private function add_product_update_listeners() {
+		// This needs to run before WC_Subscriptions_Admin::save_subscription_meta(), which has a priority of 11.
+		add_action( 'save_post', [ $this, 'limit_yearly_subscription_intervals_on_save_product' ], 10 );
+		// This needs to run before WC_Subscriptions_Admin::save_product_variation(), which has a priority of 20.
+		add_action( 'woocommerce_save_product_variation', [ $this, 'limit_yearly_subscription_intervals_on_save_product_variation' ], 19, 2 );
+
 		add_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 		add_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
@@ -490,6 +558,9 @@ class WC_Payments_Product_Service {
 	 * Removes the callbacks used to update product changes in WC Pay.
 	 */
 	private function remove_product_update_listeners() {
+		remove_action( 'save_post', [ $this, 'limit_yearly_subscription_intervals_on_save_product' ], 10 );
+		remove_action( 'woocommerce_save_product_variation', [ $this, 'limit_yearly_subscription_intervals_on_save_product_variation' ], 19, 2 );
+
 		remove_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 		remove_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
