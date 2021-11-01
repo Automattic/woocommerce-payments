@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
 Tested up to: 5.8.1
 Requires PHP: 7.0
-Stable tag: 3.2.2
+Stable tag: 3.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.2.3 - 2021-xx-xx =
+= 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
 
 = 3.2.2 - 2021-10-29 =
