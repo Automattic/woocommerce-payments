@@ -483,7 +483,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @param int $product_id Post ID of the product.
 	 */
-	public function limit_yearly_subscription_intervals_on_save_product( $product_id ) {
+	public function limit_subscription_product_intervals( $product_id ) {
 		// Skip products that aren't subscriptions.
 		$product = wc_get_product( $product_id );
 		if (
@@ -515,7 +515,7 @@ class WC_Payments_Product_Service {
 	 * @param int $product_id Post ID of the variation.
 	 * @param int $index Variation index in the incoming array.
 	 */
-	public function limit_yearly_subscription_intervals_on_save_product_variation( $product_id, $index ) {
+	public function limit_subscription_variation_intervals( $product_id, $index ) {
 		// Skip products that aren't subscriptions.
 		$product = wc_get_product( $product_id );
 		if (
@@ -546,9 +546,9 @@ class WC_Payments_Product_Service {
 	 */
 	private function add_product_update_listeners() {
 		// This needs to run before WC_Subscriptions_Admin::save_subscription_meta(), which has a priority of 11.
-		add_action( 'save_post', [ $this, 'limit_yearly_subscription_intervals_on_save_product' ], 10 );
+		add_action( 'save_post', [ $this, 'limit_subscription_product_intervals' ], 10 );
 		// This needs to run before WC_Subscriptions_Admin::save_product_variation(), which has a priority of 20.
-		add_action( 'woocommerce_save_product_variation', [ $this, 'limit_yearly_subscription_intervals_on_save_product_variation' ], 19, 2 );
+		add_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19, 2 );
 
 		add_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 		add_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
@@ -558,8 +558,8 @@ class WC_Payments_Product_Service {
 	 * Removes the callbacks used to update product changes in WC Pay.
 	 */
 	private function remove_product_update_listeners() {
-		remove_action( 'save_post', [ $this, 'limit_yearly_subscription_intervals_on_save_product' ], 10 );
-		remove_action( 'woocommerce_save_product_variation', [ $this, 'limit_yearly_subscription_intervals_on_save_product_variation' ], 19, 2 );
+		remove_action( 'save_post', [ $this, 'limit_subscription_product_intervals' ], 10 );
+		remove_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19 );
 
 		remove_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 		remove_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
