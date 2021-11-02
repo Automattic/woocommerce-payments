@@ -15,7 +15,7 @@ import {
 	RUN_WC_BLOCKS_TESTS,
 } from '../../utils';
 
-const shippingDetails = config.get( 'addresses.customer.shipping' );
+const billingDetails = config.get( 'addresses.customer.billing' );
 const productName = config.get( 'products.simple.name' );
 
 import {
@@ -34,7 +34,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await shopper.goToShop();
 			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
-			await shopperWCP.fillShippingDetailsWCB( shippingDetails );
+			await shopperWCP.fillBillingDetailsWCB( billingDetails );
 		} );
 
 		afterEach( async () => {
