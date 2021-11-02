@@ -203,6 +203,10 @@ export const shopperWCP = {
 			'#billing-postcode',
 			customerBillingDetails.postcode
 		);
+		await clearAndFillInput(
+			'#billing-state input',
+			customerBillingDetails.state
+		);
 	},
 };
 
