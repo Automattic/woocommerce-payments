@@ -85,6 +85,12 @@ export function updateIsMultiCurrencyEnabled( isEnabled ) {
 	return updateSettingsValues( { is_multi_currency_enabled: isEnabled } );
 }
 
+export function updateIsWCPaySubscriptionsEnabled( isEnabled ) {
+	return updateSettingsValues( {
+		is_wcpay_subscriptions_enabled: isEnabled,
+	} );
+}
+
 export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	return updateSettingsValues( {
 		account_statement_descriptor: accountStatementDescriptor,

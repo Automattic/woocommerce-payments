@@ -27,6 +27,10 @@ export const getAvailablePaymentMethodIds = ( state ) => {
 	return getSettings( state ).available_payment_method_ids || EMPTY_ARR;
 };
 
+export const getPaymentMethodStatuses = ( state ) => {
+	return getSettings( state ).payment_method_statuses || EMPTY_ARR;
+};
+
 export const isSavingSettings = ( state ) => {
 	return getSettingsState( state ).isSaving || false;
 };
@@ -85,4 +89,16 @@ export const getSavingError = ( state ) => {
 
 export const getIsCardPresentEligible = ( state ) => {
 	return getSettings( state ).is_card_present_eligible || false;
+};
+
+export const getIsWCPaySubscriptionsEnabled = ( state ) => {
+	return getSettings( state ).is_wcpay_subscriptions_enabled || false;
+};
+
+export const getIsWCPaySubscriptionsEligible = ( state ) => {
+	return getSettings( state ).is_wcpay_subscriptions_eligible || false;
+};
+
+export const getIsSubscriptionsPluginActive = ( state ) => {
+	return getSettings( state ).is_subscriptions_plugin_active || false;
 };
