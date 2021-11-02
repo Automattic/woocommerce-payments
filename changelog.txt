@@ -3,6 +3,7 @@
 = 3.3.0 - 2021-xx-xx =
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
 * Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
+* Add - Add compatibility between Multi-Currency and WooCommerce Pre-Orders.
 
 = 3.2.0 - 2021-10-28 =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
