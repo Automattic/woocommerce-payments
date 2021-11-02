@@ -106,7 +106,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 	 * Initialise subscriptions-core if WC Subscriptions (the plugin) isn't loaded
 	 */
 	function wcpay_init_subscriptions_core() {
-		if ( ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+		if ( ! class_exists( 'Automattic\WooCommerce\Admin\PluginsHelper' ) || ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			return;
 		}
 
