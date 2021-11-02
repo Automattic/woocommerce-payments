@@ -2,6 +2,9 @@
 
 exports[`AccountFees renders discounted base fee 1`] = `
 <div>
+  <h4>
+    Active discounts
+  </h4>
   <p>
     Card transactions
     :
@@ -53,6 +56,9 @@ exports[`AccountFees renders discounted base fee 1`] = `
 
 exports[`AccountFees renders discounted fee with USD volume currency and non-USD base fee 1`] = `
 <div>
+  <h4>
+    Active discounts
+  </h4>
   <p>
     Card transactions
     :
@@ -104,6 +110,9 @@ exports[`AccountFees renders discounted fee with USD volume currency and non-USD
 
 exports[`AccountFees renders discounted fee with end date 1`] = `
 <div>
+  <h4>
+    Active discounts
+  </h4>
   <p>
     Card transactions
     :
@@ -133,6 +142,9 @@ exports[`AccountFees renders discounted fee with end date 1`] = `
 
 exports[`AccountFees renders discounted fee with volume limit 1`] = `
 <div>
+  <h4>
+    Active discounts
+  </h4>
   <p>
     Card transactions
     :
@@ -184,6 +196,9 @@ exports[`AccountFees renders discounted fee with volume limit 1`] = `
 
 exports[`AccountFees renders discounted fee with volume limit and end date 1`] = `
 <div>
+  <h4>
+    Active discounts
+  </h4>
   <p>
     Card transactions
     :
@@ -235,6 +250,9 @@ exports[`AccountFees renders discounted fee with volume limit and end date 1`] =
 
 exports[`AccountFees renders discounted fee without volume limit 1`] = `
 <div>
+  <h4>
+    Active discounts
+  </h4>
   <p>
     Card transactions
     :
@@ -259,6 +277,9 @@ exports[`AccountFees renders discounted fee without volume limit 1`] = `
 
 exports[`AccountFees renders discounted non-USD base fee 1`] = `
 <div>
+  <h4>
+    Active discounts
+  </h4>
   <p>
     Card transactions
     :
@@ -310,6 +331,9 @@ exports[`AccountFees renders discounted non-USD base fee 1`] = `
 
 exports[`AccountFees renders discounts multiple payment methods 1`] = `
 <div>
+  <h4>
+    Active discounts
+  </h4>
   <p>
     Card transactions
     :
@@ -321,15 +345,6 @@ exports[`AccountFees renders discounts multiple payment methods 1`] = `
   </s>
    1.4% + $0.25 per transaction
   <p>
-    <a
-      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      Learn more
-    </a>
-  </p>
-  <p>
     GiroPay transactions
     :
   </p>
@@ -339,15 +354,6 @@ exports[`AccountFees renders discounts multiple payment methods 1`] = `
     1.4% + $0.30 per transaction
   </s>
    1.4% + $0.25 per transaction
-  <p>
-    <a
-      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      Learn more
-    </a>
-  </p>
   <p>
     Sofort transactions
     :
@@ -372,6 +378,9 @@ exports[`AccountFees renders discounts multiple payment methods 1`] = `
 
 exports[`AccountFees renders first discounted fee ignoring the rest 1`] = `
 <div>
+  <h4>
+    Active discounts
+  </h4>
   <p>
     Card transactions
     :
@@ -396,6 +405,9 @@ exports[`AccountFees renders first discounted fee ignoring the rest 1`] = `
 
 exports[`AccountFees renders non-USD base fee 1`] = `
 <div>
+  <h4>
+    Active discounts
+  </h4>
   <p>
     Card transactions
     :
@@ -420,6 +432,9 @@ exports[`AccountFees renders non-USD base fee 1`] = `
 
 exports[`AccountFees renders normal base fee 1`] = `
 <div>
+  <h4>
+    Active discounts
+  </h4>
   <p>
     Card transactions
     :
