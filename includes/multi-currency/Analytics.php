@@ -17,6 +17,8 @@ defined( 'ABSPATH' ) || exit;
  * Class that contains Multi-Currency related support for WooCommerce analytics.
  */
 class Analytics {
+	const FILTER_PREFIX = 'wcpay_multi_currency_';
+
 	const PRIORITY_EARLY   = 1;
 	const PRIORITY_DEFAULT = 10;
 	const PRIORITY_LATE    = 20;
@@ -164,6 +166,10 @@ class Analytics {
 			return $clauses;
 		}
 
+		if ( apply_filters( self::FILTER_PREFIX . 'disable_filter_select_clauses', false ) ) {
+			return $clauses;
+		}
+
 		$context_parts = explode( '_', $context );
 		$context_page  = $context_parts[0] ?? 'generic';
 		$context_type  = $context_parts[1] ?? null;
@@ -203,7 +209,7 @@ class Analytics {
 			$new_clauses[] = ', wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value AS stripe_exchange_rate';
 		}
 
-		return $new_clauses;
+		return apply_filters( self::FILTER_PREFIX . 'filter_select_clauses', $new_clauses );
 	}
 
 	/**
@@ -216,6 +222,10 @@ class Analytics {
 	 */
 	public function filter_join_clauses( array $clauses, $context ): array {
 		global $wpdb;
+
+		if ( apply_filters( self::FILTER_PREFIX . 'disable_filter_join_clauses', false ) ) {
+			return $clauses;
+		}
 
 		$context_parts = explode( '_', $context );
 		$context_page  = $context_parts[0] ?? 'generic';
@@ -234,7 +244,7 @@ class Analytics {
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.post_id AND ${stripe_exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
 		}
 
-		return $clauses;
+		return apply_filters( self::FILTER_PREFIX . 'filter_join_clauses', $clauses );
 	}
 
 	/**
