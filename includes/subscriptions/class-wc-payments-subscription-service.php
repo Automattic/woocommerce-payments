@@ -555,7 +555,7 @@ class WC_Payments_Subscription_Service {
 
 				// Reinstate the "is request to change payment method" flag.
 				WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment = $is_change_payment_request;
-				wc_add_notice( __( "We've successully collected payment for your subscription using your new payment method.", 'woocommerce-payments' ) );
+				wc_add_notice( __( "We've successfully collected payment for your subscription using your new payment method.", 'woocommerce-payments' ) );
 			}
 		}
 	}
