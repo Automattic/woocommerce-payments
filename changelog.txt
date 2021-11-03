@@ -3,6 +3,7 @@
 = 3.3.0 - 2021-xx-xx =
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
 * Fix - Do not show default currency selector on Account Details page when only one currency is available.
+* Fix - Display risk for payment methods without risk assessment
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
