@@ -49,7 +49,7 @@ class WooCommerceDeposits {
 	protected function initialize_hooks() {
 		if ( class_exists( 'WC_Deposits' ) ) {
 			// Add compatibility filters here.
-			add_filter( 'woocommerce_deposits_get_deposit_amount', [ $this, 'get_converted_deposit_amount' ], 10, 2 );
+			add_filter( 'woocommerce_deposits_get_deposit_amount', [ $this, 'get_converted_deposit_amount' ] );
 			add_action( 'woocommerce_deposits_create_order', [ $this, 'modify_order_currency' ] );
 		}
 	}
@@ -57,14 +57,15 @@ class WooCommerceDeposits {
 	/**
 	 * Converts deposit amounts to the customer currency
 	 *
-	 * @param   string     $deposit_amount  The deposit amount for the item.
-	 * @param   WC_Product $product         The product which the deposit price needs to be converted.
+	 * @param   string $deposit_amount  The deposit amount for the item.
 	 *
 	 * @return  float The converted price.
 	 */
-	public function get_converted_deposit_amount( $deposit_amount, $product ) {
-		$deposit_amount = floatval( $deposit_amount );
-		return $this->multi_currency->get_price( $deposit_amount, 'tax' );
+	public function get_converted_deposit_amount( $deposit_amount ) {
+		$deposit_amount  = floatval( $deposit_amount );
+		$converted_price = $this->multi_currency->get_price( $deposit_amount, 'tax' );
+
+		return $converted_price;
 	}
 
 	/**
