@@ -15,8 +15,10 @@ import {
 	useEnabledPaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	useGetAvailablePaymentMethodIds,
+	useGetPaymentMethodStatuses,
 	useSettings,
 } from '../../../data';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 jest.mock( '../../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
@@ -25,6 +27,7 @@ jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn(),
 	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
 	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
+	useGetPaymentMethodStatuses: jest.fn(),
 } ) );
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
@@ -53,6 +56,36 @@ describe( 'AddPaymentMethodsTask', () => {
 		useSettings.mockReturnValue( {
 			saveSettings: jest.fn().mockResolvedValue( true ),
 			isSaving: false,
+		} );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			bancontact_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			giropay_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			ideal_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			p24_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sepa_debit_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sofort_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
 		} );
 	} );
 
@@ -91,6 +124,79 @@ describe( 'AddPaymentMethodsTask', () => {
 			expect(
 				screen.getByRole( 'checkbox', { name: checkboxName } )
 			).not.toBeChecked();
+		} );
+	} );
+
+	it( 'should render the active and pending payment methods checkboxes with default values', () => {
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			bancontact_payments: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			giropay_payments: {
+				status: upeCapabilityStatuses.PENDING_APPROVAL,
+				requirements: [],
+			},
+			ideal_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			p24_payments: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			sepa_debit_payments: {
+				status: upeCapabilityStatuses.PENDING_VERIFICATION,
+				requirements: [],
+			},
+			sofort_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+		} );
+
+		render(
+			<WizardTaskContext.Provider value={ {} }>
+				<AddPaymentMethodsTask />
+			</WizardTaskContext.Provider>
+		);
+
+		const expectedToBeChecked = [
+			'Credit card / debit card',
+			'giropay',
+			'SEPA Direct Debit',
+		];
+
+		expectedToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).toBeChecked();
+		} );
+
+		const expectedNotToBeChecked = [
+			'Sofort',
+			'Bancontact',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'Enable Apple Pay & Google Pay',
+		];
+
+		expectedNotToBeChecked.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).not.toBeChecked();
+		} );
+
+		const expectedToBeDisabled = [ 'Przelewy24 (P24)', 'Bancontact' ];
+
+		expectedToBeDisabled.forEach( function ( checkboxName ) {
+			expect(
+				screen.getByRole( 'checkbox', { name: checkboxName } )
+			).toBeDisabled();
 		} );
 	} );
 

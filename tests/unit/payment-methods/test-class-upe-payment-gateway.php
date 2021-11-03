@@ -213,6 +213,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 					'get_return_url',
 					'manage_customer_details_for_order',
 					'parent_process_payment',
+					'get_upe_enabled_payment_method_statuses',
 				]
 			)
 			->getMock();
@@ -229,6 +230,18 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->method( 'parent_process_payment' )
 			->will(
 				$this->returnValue( $this->mock_payment_result )
+			);
+		$this->mock_upe_gateway
+			->expects( $this->any() )
+			->method( 'get_upe_enabled_payment_method_statuses' )
+			->will(
+				$this->returnValue(
+					[
+						'card_payments' => [
+							'status' => 'active',
+						],
+					]
+				)
 			);
 
 		// Arrange: Define a $_POST array which includes the payment method,

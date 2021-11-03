@@ -73,22 +73,20 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
       </div>
     </div>
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card wcpay-deposits-list woocommerce-report-table has-menu has-action"
+      class="components-card is-size-medium woocommerce-table wcpay-deposits-list woocommerce-report-table has-actions has-menu css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
+        <h2
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Deposit history
-          </h2>
-        </div>
+          Deposit history
+        </h2>
         <div
-          class="woocommerce-card__action woocommerce-card__header-item"
+          class="woocommerce-table__actions"
         >
           <button
             class="components-button woocommerce-table__download-button"
@@ -115,54 +113,36 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
           </button>
         </div>
         <div
-          class="woocommerce-card__menu woocommerce-card__header-item"
+          class="woocommerce-ellipsis-menu"
         >
           <div
-            class="woocommerce-ellipsis-menu"
+            class="components-dropdown"
           >
-            <div
-              class="components-dropdown"
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-ellipsis-menu__toggle"
+              title="Choose which values to display"
+              type="button"
             >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
-                title="Choose which values to display"
-                type="button"
+              <svg
+                class="gridicon gridicons-ellipsis"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <svg
-                  aria-hidden="true"
-                  class="dashicon dashicons-ellipsis"
-                  focusable="false"
-                  height="20"
-                  role="img"
-                  viewBox="0 0 20 20"
-                  width="20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                <g>
                   <path
-                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    d="M7 12c0 1.104-.896 2-2 2s-2-.896-2-2 .896-2 2-2 2 .896 2 2zm12-2c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-7 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2z"
                   />
-                </svg>
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  height="24"
-                  role="img"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
-                  />
-                </svg>
-              </button>
-            </div>
+                </g>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           aria-hidden="false"
@@ -490,8 +470,13 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
             </tbody>
           </table>
         </div>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-medium e1q7k77g4 css-5hda2c-Flex-FooterUI eboqfv50"
+      >
         <ul
           class="woocommerce-table__summary"
+          role="complementary"
         >
           <li
             class="woocommerce-table__summary-item"
@@ -601,22 +586,20 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
       </div>
     </div>
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card wcpay-deposits-list woocommerce-report-table has-menu has-action"
+      class="components-card is-size-medium woocommerce-table wcpay-deposits-list woocommerce-report-table has-actions has-menu css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
+        <h2
+          class="css-1f0yw52-Text e15wbhsk0"
+          color="#23282d"
+          size="16"
         >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Deposit history
-          </h2>
-        </div>
+          Deposit history
+        </h2>
         <div
-          class="woocommerce-card__action woocommerce-card__header-item"
+          class="woocommerce-table__actions"
         >
           <button
             class="components-button woocommerce-table__download-button"
@@ -643,54 +626,36 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
           </button>
         </div>
         <div
-          class="woocommerce-card__menu woocommerce-card__header-item"
+          class="woocommerce-ellipsis-menu"
         >
           <div
-            class="woocommerce-ellipsis-menu"
+            class="components-dropdown"
           >
-            <div
-              class="components-dropdown"
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-ellipsis-menu__toggle"
+              title="Choose which values to display"
+              type="button"
             >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
-                title="Choose which values to display"
-                type="button"
+              <svg
+                class="gridicon gridicons-ellipsis"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <svg
-                  aria-hidden="true"
-                  class="dashicon dashicons-ellipsis"
-                  focusable="false"
-                  height="20"
-                  role="img"
-                  viewBox="0 0 20 20"
-                  width="20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                <g>
                   <path
-                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    d="M7 12c0 1.104-.896 2-2 2s-2-.896-2-2 .896-2 2-2 2 .896 2 2zm12-2c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-7 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2z"
                   />
-                </svg>
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  height="24"
-                  role="img"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
-                  />
-                </svg>
-              </button>
-            </div>
+                </g>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           aria-hidden="false"
@@ -1018,8 +983,13 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
             </tbody>
           </table>
         </div>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-medium e1q7k77g4 css-5hda2c-Flex-FooterUI eboqfv50"
+      >
         <ul
           class="woocommerce-table__summary"
+          role="complementary"
         >
           <li
             class="woocommerce-table__summary-item"

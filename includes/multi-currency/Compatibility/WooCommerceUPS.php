@@ -62,7 +62,7 @@ class WooCommerceUPS {
 	 *
 	 * @return bool
 	 */
-	public function should_return_store_currency( bool $return ) {
+	public function should_return_store_currency( bool $return ): bool {
 		// If it's already true, return it.
 		if ( $return ) {
 			return $return;
