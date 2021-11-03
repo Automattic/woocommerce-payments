@@ -102,6 +102,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
 * Fix - Do not show default currency selector on Account Details page when only one currency is available.
 * Fix - Improve error messages when the minimum order amount has not been reached and allow UPE fields to be displayed with less than the minimum amount.
+* Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
