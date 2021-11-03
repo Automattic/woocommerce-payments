@@ -495,14 +495,17 @@ class WC_Payments_Product_Service {
 			return;
 		}
 
-		if (
-			isset( $_REQUEST['_subscription_period'] ) &&
-			'year' === $_REQUEST['_subscription_period'] &&
-			isset( $_REQUEST['_subscription_period_interval'] ) &&
-			'1' !== $_REQUEST['_subscription_period_interval']
-		) {
-			// Prevent WC Subs Core from saving the interval when it's invalid.
-			$_REQUEST['_subscription_period_interval'] = '1';
+		// If we don't have both the period and the interval, there's nothing to do here.
+		if ( empty( $_REQUEST['_subscription_period'] ) || empty( $_REQUEST['_subscription_period_interval'] ) ) {
+			return;
+		}
+
+		$period   = sanitize_text_field( wp_unslash( $_REQUEST['_subscription_period'] ) );
+		$interval = absint( wp_unslash( $_REQUEST['_subscription_period_interval'] ) );
+
+		// Prevent WC Subs Core from saving the interval when it's invalid.
+		if ( ! $this->is_valid_billing_cycle( $period, $interval ) ) {
+			$_REQUEST['_subscription_period_interval'] = strval( $this->get_period_interval_limit( $period ) );
 
 			// Add an admin notice to let the merchant know about this limitation.
 			wcs_add_admin_notice( __( "The period interval of a subscription can't be greater than a year.", 'woocommerce-payments' ), 'error' );
@@ -527,14 +530,17 @@ class WC_Payments_Product_Service {
 			return;
 		}
 
-		if (
-			isset( $_POST['variable_subscription_period'][ $index ] ) &&
-			'year' === $_POST['variable_subscription_period'][ $index ] &&
-			isset( $_POST['variable_subscription_period_interval'][ $index ] ) &&
-			'1' !== $_POST['variable_subscription_period_interval'][ $index ]
-		) {
-			// Prevent WC Subs Core from saving the interval when it's invalid.
-			$_POST['variable_subscription_period_interval'][ $index ] = '1';
+		// If we don't have both the period and the interval, there's nothing to do here.
+		if ( empty( $_POST['variable_subscription_period'][ $index ] ) || empty( $_POST['variable_subscription_period_interval'][ $index ] ) ) {
+			return;
+		}
+
+		$period   = sanitize_text_field( wp_unslash( $_POST['variable_subscription_period'][ $index ] ) );
+		$interval = absint( wp_unslash( $_POST['variable_subscription_period_interval'][ $index ] ) );
+
+		// Prevent WC Subs Core from saving the interval when it's invalid.
+		if ( ! $this->is_valid_billing_cycle( $period, $interval ) ) {
+			$_POST['variable_subscription_period_interval'][ $index ] = strval( $this->get_period_interval_limit( $period ) );
 
 			// Add an admin notice to let the merchant know about this limitation.
 			wcs_add_admin_notice( __( "The period interval of a subscription can't be greater than a year.", 'woocommerce-payments' ), 'error' );
@@ -734,5 +740,36 @@ class WC_Payments_Product_Service {
 		];
 
 		return array_filter( $environment_product_ids );
+	}
+
+	/**
+	 * Returns whether the billing cycle is valid, given its period and interval.
+	 *
+	 * @param string $period Cycle period.
+	 * @param int    $interval Cycle interval.
+	 * @return boolean
+	 */
+	private function is_valid_billing_cycle( $period, $interval ) {
+		$interval_limit = $this->get_period_interval_limit( $period );
+
+		// A cycle is valid when we have a defined limit, and the given interval isn't 0 nor greater than the limit.
+		return $interval_limit && ! empty( $interval ) && $interval <= $interval_limit;
+	}
+
+	/**
+	 * Returns the interval limit for the given period.
+	 *
+	 * @param string $period The period to get the interval limit for.
+	 * @return int|bool The interval limit for the period, or false if not defined.
+	 */
+	private function get_period_interval_limit( $period ) {
+		$max_intervals = [
+			'year'  => 1,
+			'month' => 12,
+			'week'  => 52,
+			'day'   => 365,
+		];
+
+		return ! empty( $max_intervals[ $period ] ) ? $max_intervals[ $period ] : false;
 	}
 }
