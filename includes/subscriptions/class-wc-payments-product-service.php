@@ -505,11 +505,11 @@ class WC_Payments_Product_Service {
 
 		// Prevent WC Subs Core from saving the interval when it's invalid.
 		if ( ! $this->is_valid_billing_cycle( $period, $interval ) ) {
-			$new_interval = $this->get_period_interval_limit( $period );
-
+			$new_interval                              = $this->get_period_interval_limit( $period );
 			$_REQUEST['_subscription_period_interval'] = strval( $new_interval );
 
-			$this->add_invalid_interval_notice( $period, $new_interval );
+			/* translators: %1$s Opening strong tag, %2$s Closing strong tag, %3$s The subscription renewal interval (every x time) */
+			wcs_add_admin_notice( sprintf( __( '%1$sThere was an issue saving your product!%2$s A subscription product\'s billing period cannot be longer than one year. We have updated this product to renew every %3$s.', 'woocommerce-payments' ), '<strong>', '</strong>', wcs_get_subscription_period_strings( $new_interval, $period ) ), 'error' );
 		}
 	}
 
@@ -521,7 +521,9 @@ class WC_Payments_Product_Service {
 	 */
 	public function limit_subscription_variation_intervals( $product_id, $index ) {
 		// Skip products that aren't subscriptions.
-		$product = wc_get_product( $product_id );
+		$product           = wc_get_product( $product_id );
+		$admin_notice_sent = false;
+
 		if (
 			! $product ||
 			! WC_Subscriptions_Product::is_subscription( $product ) ||
@@ -542,10 +544,14 @@ class WC_Payments_Product_Service {
 		// Prevent WC Subs Core from saving the interval when it's invalid.
 		if ( ! $this->is_valid_billing_cycle( $period, $interval ) ) {
 			$new_interval = $this->get_period_interval_limit( $period );
-
 			$_POST['variable_subscription_period_interval'][ $index ] = strval( $new_interval );
 
-			$this->add_invalid_interval_notice( $period, $new_interval );
+			if ( false === $admin_notice_sent ) {
+				$admin_notice_sent = true;
+
+				/* translators: %1$s Opening strong tag, %2$s Closing strong tag */
+				wcs_add_admin_notice( sprintf( __( '%1$sThere was an issue saving your variations!%2$s A subscription product\'s billing period cannot be longer than one year. We have updated one or more of this product\'s variations to renew every %3$s.', 'woocommerce-payments' ), '<strong>', '</strong>', wcs_get_subscription_period_strings( $new_interval, $period ) ), 'error' );
+			}
 		}
 	}
 
@@ -773,26 +779,5 @@ class WC_Payments_Product_Service {
 		];
 
 		return ! empty( $max_intervals[ $period ] ) ? $max_intervals[ $period ] : false;
-	}
-
-	/**
-	 * Adds an admin error notice informing the merchant about the updated billing cycle.
-	 *
-	 * @param string $period Billing cycle period.
-	 * @param int    $new_interval Billing cycle interval.
-	 */
-	private function add_invalid_interval_notice( $period, $new_interval ) {
-		$subscription_period = wcs_get_subscription_period_strings( $new_interval, $period );
-
-		// Fallback in (the strange and unlikely) case the given period isn't defined in wcs_get_subscription_period_strings().
-		$period_string = is_string( $subscription_period ) ? $subscription_period : $new_interval . ' ' . $period;
-
-		$message = sprintf(
-			/* translators: %s is the subscription renewal interval (every x time)  */
-			__( 'The subscription billing cycle cannot be longer than one year. We have set this product to renew every %s.', 'woocommerce-payments' ),
-			$period_string
-		);
-
-		wcs_add_admin_notice( $message, 'error' );
 	}
 }
