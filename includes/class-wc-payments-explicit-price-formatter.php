@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Payments_Explicit_Price_Formatter {
 
 	/**
-	 * The multi currency instance for checking the number of enabled currencies
+	 * The Multi-Currency instance for checking the number of enabled currencies
 	 *
 	 * @var MultiCurrency
 	 */
@@ -61,7 +61,7 @@ class WC_Payments_Explicit_Price_Formatter {
 
 		// Only apply this for frontend.
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! $is_backend_request ) {
-			// If customer multi currency is disabled, don't use explicit currencies on frontend.
+			// If customer Multi-Currency is disabled, don't use explicit currencies on frontend.
 			// Because it'll have only the store currency active, same as count == 1.
 			if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {
 				return false;
@@ -118,12 +118,12 @@ class WC_Payments_Explicit_Price_Formatter {
 	/**
 	 * Returns the price suffixed with the appropriate currency code, if not already.
 	 *
-	 * @param string        $price The price.
-	 * @param WC_Order|null $order The order.
+	 * @param string                 $price The price.
+	 * @param WC_Abstract_Order|null $order The order.
 	 *
 	 * @return string
 	 */
-	public static function get_explicit_price( string $price, WC_Order $order = null ) {
+	public static function get_explicit_price( string $price, WC_Abstract_Order $order = null ) {
 		if ( false === static::should_output_explicit_price() ) {
 			return $price;
 		}

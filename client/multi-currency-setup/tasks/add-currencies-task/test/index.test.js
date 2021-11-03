@@ -206,7 +206,7 @@ const createContainer = () => {
 	return container;
 };
 
-describe( 'Multi Currency enabled currencies list', () => {
+describe( 'Multi-Currency enabled currencies list', () => {
 	beforeEach( () => {
 		global.wcpaySettings = { zeroDecimalCurrencies: [] };
 	} );
@@ -338,7 +338,7 @@ describe( 'Multi Currency enabled currencies list', () => {
 
 		expect(
 			screen.getByRole( 'button', {
-				name: /Add ([a-z0-9]+ )?Currencies/,
+				name: /Add ([a-z0-9]+ )?currencies/,
 			} )
 		).toBeDisabled();
 	} );
@@ -416,7 +416,7 @@ describe( 'Multi Currency enabled currencies list', () => {
 
 		expect( screen.queryAllByRole( 'checkbox' ).length ).toBe( 0 );
 		expect(
-			screen.queryByText( /Recommended Currencies/ )
+			screen.queryByText( /Recommended currencies/ )
 		).not.toBeInTheDocument();
 
 		expect(

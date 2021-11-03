@@ -19,7 +19,7 @@ use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that controls Multi Currency functionality.
+ * Class that controls Multi-Currency functionality.
  */
 class MultiCurrency {
 
@@ -224,12 +224,13 @@ class MultiCurrency {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
 			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
 			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
+			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
 		}
 	}
 
 	/**
 	 * Called after the WooCommerce session has been initialized. Initialises the available currencies,
-	 * default currency and enabled currencies for the multi currency plugin.
+	 * default currency and enabled currencies for the Multi-Currency plugin.
 	 *
 	 * @return void
 	 */
@@ -255,7 +256,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 
@@ -676,18 +677,28 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function update_selected_currency_by_geolocation() {
-		// We only want to automatically set the currency if it's already not set.
-		if ( $this->is_using_auto_currency_switching() && ! $this->get_stored_currency_code() ) {
-			$currency = $this->geolocation->get_currency_by_customer_location();
-			// Update currency and display notice if enabled.
-			if ( ! empty( $this->get_enabled_currencies()[ $currency ] ) ) {
-				$this->update_selected_currency( $currency );
-				// Prevent duplicates in simulation.
-				if ( ! has_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] ) ) {
-					add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
-				}
-			}
+		// We only want to automatically set the currency if this option is enabled.
+		if ( ! $this->is_using_auto_currency_switching() ) {
+			return;
 		}
+
+		// Display notice, prevent duplicates in simulation.
+		if ( ! has_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] ) ) {
+			add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
+		}
+
+		// Update currency only if it's already not set.
+		if ( $this->get_stored_currency_code() ) {
+			return;
+		}
+
+		$currency = $this->geolocation->get_currency_by_customer_location();
+
+		if ( empty( $this->get_enabled_currencies()[ $currency ] ) ) {
+			return;
+		}
+
+		$this->update_selected_currency( $currency );
 	}
 
 	/**
@@ -775,14 +786,23 @@ class MultiCurrency {
 	 * automatic currency switch.
 	 */
 	public function display_geolocation_currency_update_notice() {
-		$current_currency = $this->get_selected_currency();
-		$store_currency   = get_option( 'woocommerce_currency' );
-		$country          = $this->geolocation->get_country_by_customer_location();
-		$currencies       = get_woocommerce_currencies();
+		$current_currency    = $this->get_selected_currency();
+		$store_currency      = get_option( 'woocommerce_currency' );
+		$country             = $this->geolocation->get_country_by_customer_location();
+		$geolocated_currency = $this->geolocation->get_currency_by_customer_location();
+		$currencies          = get_woocommerce_currencies();
 
-		// Do not display notice if using the store's default currency.
-		if ( $store_currency === $current_currency->get_code() && ! $this->is_simulation_enabled() ) {
-			return;
+		// Don't run next checks if simulation is enabled.
+		if ( ! $this->is_simulation_enabled() ) {
+			// Do not display notice if using the store's default currency.
+			if ( $store_currency === $current_currency->get_code() ) {
+				return;
+			}
+
+			// Do not display notice for other currencies than geolocated.
+			if ( $current_currency->get_code() !== $geolocated_currency ) {
+				return;
+			}
 		}
 
 		$message = sprintf(
@@ -803,6 +823,21 @@ class MultiCurrency {
 			]
 		);
 		echo ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
+	}
+
+	/**
+	 * Sets a new customer's currency meta to what's in their session.
+	 * This is needed for when a new user/customer is created during the checkout process.
+	 *
+	 * @param int $customer_id The user/customer id.
+	 *
+	 * @return void
+	 */
+	public function set_new_customer_currency_meta( $customer_id ) {
+		$code = 0 !== $customer_id && WC()->session ? WC()->session->get( self::CURRENCY_SESSION_KEY ) : false;
+		if ( $code ) {
+			update_user_meta( $customer_id, self::CURRENCY_META_KEY, $code );
+		}
 	}
 
 	/**
@@ -837,9 +872,7 @@ class MultiCurrency {
 	 * @return float The adjusted price.
 	 */
 	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
-		if ( 'none' !== $currency->get_rounding() ) {
-			$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
-		}
+		$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
 
 		if ( $apply_charm_pricing ) {
 			$price += floatval( $currency->get_charm() );
@@ -1254,7 +1287,7 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Gets the multi currency onboarding preview overrides from the querystring.
+	 * Gets the Multi-Currency onboarding preview overrides from the querystring.
 	 *
 	 * @return  array  Override variables
 	 */
@@ -1350,7 +1383,7 @@ class MultiCurrency {
 
 	/**
 	 * Checks if the currently displayed page is the WooCommerce Payments
-	 * settings page for the multi currency settings.
+	 * settings page for the Multi-Currency settings.
 	 *
 	 * @return bool
 	 */

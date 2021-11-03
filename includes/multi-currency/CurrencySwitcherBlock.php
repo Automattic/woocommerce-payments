@@ -35,7 +35,7 @@ class CurrencySwitcherBlock {
 	/**
 	 * Constructor.
 	 *
-	 * @param MultiCurrency $multi_currency Instance of Multi Currency.
+	 * @param MultiCurrency $multi_currency Instance of Multi-Currency.
 	 * @param Compatibility $compatibility  Instance of Compatibility.
 	 */
 	public function __construct( MultiCurrency $multi_currency, Compatibility $compatibility ) {
@@ -208,7 +208,7 @@ class CurrencySwitcherBlock {
 			],
 			'select' => [
 				'padding'          => '2px',
-				'border'           => isset( $block_attributes['border'] ) ? '1px solid' : '0px solid',
+				'border'           => isset( $block_attributes['border'] ) && $block_attributes['border'] ? '1px solid' : '0px solid',
 				'border-radius'    => isset( $block_attributes['borderRadius'] ) ? $block_attributes['borderRadius'] . 'px' : '3px',
 				'border-color'     => $block_attributes['borderColor'] ?? '#000000',
 				'font-size'        => isset( $block_attributes['fontSize'] ) ? $block_attributes['fontSize'] . 'px' : '11px',

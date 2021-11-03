@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Payments Multi Currency User Settings
+ * WooCommerce Payments Multi-Currency User Settings
  *
  * @package WooCommerce\Payments
  */
@@ -10,7 +10,7 @@ namespace WCPay\MultiCurrency;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that add Multi Currency settings to user my account page.
+ * Class that add Multi-Currency settings to user my account page.
  */
 class UserSettings {
 
@@ -29,8 +29,11 @@ class UserSettings {
 	public function __construct( MultiCurrency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
 
-		add_action( 'woocommerce_edit_account_form', [ $this, 'add_presentment_currency_switch' ] );
-		add_action( 'woocommerce_save_account_details', [ $this, 'save_presentment_currency' ] );
+		// Only show currency selector if more than one currency is enabled.
+		if ( 1 < count( $this->multi_currency->get_enabled_currencies() ) ) {
+			add_action( 'woocommerce_edit_account_form', [ $this, 'add_presentment_currency_switch' ] );
+			add_action( 'woocommerce_save_account_details', [ $this, 'save_presentment_currency' ] );
+		}
 	}
 
 	/**

@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Payments Multi Currency Frontend Currencies
+ * WooCommerce Payments Multi-Currency Frontend Currencies
  *
  * @package WooCommerce\Payments
  */
@@ -13,7 +13,7 @@ use WC_Payments_Localization_Service;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that formats Multi Currency currencies on the frontend.
+ * Class that formats Multi-Currency currencies on the frontend.
  */
 class FrontendCurrencies {
 	/**
@@ -38,6 +38,13 @@ class FrontendCurrencies {
 	protected $utils;
 
 	/**
+	 * Multi-currency compatibility instance.
+	 *
+	 * @var Compatibility
+	 */
+	protected $compatibility;
+
+	/**
 	 * Multi-Currency currency formatting map.
 	 *
 	 * @var array
@@ -58,11 +65,13 @@ class FrontendCurrencies {
 	 * @param MultiCurrency                    $multi_currency       The MultiCurrency instance.
 	 * @param WC_Payments_Localization_Service $localization_service The Localization Service instance.
 	 * @param Utils                            $utils                Utils instance.
+	 * @param Compatibility                    $compatibility        Compatibility instance.
 	 */
-	public function __construct( MultiCurrency $multi_currency, WC_Payments_Localization_Service $localization_service, Utils $utils ) {
+	public function __construct( MultiCurrency $multi_currency, WC_Payments_Localization_Service $localization_service, Utils $utils, Compatibility $compatibility ) {
 		$this->multi_currency       = $multi_currency;
 		$this->localization_service = $localization_service;
 		$this->utils                = $utils;
+		$this->compatibility        = $compatibility;
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			// Currency hooks.
@@ -76,6 +85,7 @@ class FrontendCurrencies {
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
 		add_action( 'woocommerce_account_view-order_endpoint', [ $this, 'init_order_currency' ], 9 );
 		add_filter( 'woocommerce_cart_hash', [ $this, 'add_currency_to_cart_hash' ], 50 );
+		add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'fix_price_decimals_for_shipping_rates' ], 50, 2 );
 	}
 
 	/**
@@ -93,6 +103,9 @@ class FrontendCurrencies {
 	 * @return string The code of the currency to be used.
 	 */
 	public function get_woocommerce_currency(): string {
+		if ( $this->compatibility->should_return_store_currency() ) {
+			return $this->multi_currency->get_default_currency()->get_code();
+		}
 		return $this->multi_currency->get_selected_currency()->get_code();
 	}
 
@@ -200,6 +213,20 @@ class FrontendCurrencies {
 		$this->order_currency = $order->get_currency();
 
 		return $order->get_id();
+	}
+
+	/**
+	 * Fixes the decimals for the store currency when shipping rates are being determined.
+	 * Our `wc_get_price_decimals` filter returns the decimals for the selected currency during this calculation, which leads to incorrect results.
+	 *
+	 * @param array  $args   The argument array to be filtered.
+	 * @param object $method The shipping method being calculated.
+	 *
+	 * @return array
+	 */
+	public function fix_price_decimals_for_shipping_rates( array $args, $method ): array {
+		$args['price_decimals'] = absint( $this->localization_service->get_currency_format( $this->get_store_currency()->get_code() )['num_decimals'] );
+		return $args;
 	}
 
 	/**

@@ -72,7 +72,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the customer multi-currency feature is enabled
+	 * Checks whether the customer Multi-Currency feature is enabled
 	 *
 	 * @return bool
 	 */
@@ -95,7 +95,25 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_wcpay_subscriptions_enabled() {
-		return '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
+		$enabled = get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, null );
+
+		// Enable the feature by default for stores that are eligible.
+		if ( null === $enabled && function_exists( 'wc_get_base_location' ) && self::is_wcpay_subscriptions_eligible() ) {
+			$enabled = '1';
+			update_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, $enabled );
+		}
+
+		return '1' === $enabled;
+	}
+
+	/**
+	 * Returns whether WCPay Subscriptions is eligible, based on the stores base country.
+	 *
+	 * @return bool
+	 */
+	public static function is_wcpay_subscriptions_eligible() {
+		$store_base_location = wc_get_base_location();
+		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
 	}
 
 	/**

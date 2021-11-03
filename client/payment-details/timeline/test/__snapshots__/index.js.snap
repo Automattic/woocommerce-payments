@@ -392,7 +392,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Payment status changed to Partial Refund.
+                      Payment status changed to Partial refund.
                     </span>
                   </div>
                   <span
@@ -523,7 +523,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Payment status changed to Disputed: In Review.
+                      Payment status changed to Disputed: In review.
                     </span>
                   </div>
                   <span
@@ -613,7 +613,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Payment status changed to Disputed: Needs Response.
+                      Payment status changed to Disputed: Needs response.
                     </span>
                   </div>
                   <span
@@ -970,7 +970,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Payment status changed to Authorization Expired.
+                      Payment status changed to Authorization expired.
                     </span>
                   </div>
                   <span
@@ -1048,7 +1048,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Payment status changed to Authorization Voided.
+                      Payment status changed to Authorization voided.
                     </span>
                   </div>
                   <span
@@ -1277,6 +1277,259 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
           Block placeholder
         </p>
       </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
+<div>
+  <div
+    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      Timeline
+    </div>
+    <div
+      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div
+        class="woocommerce-timeline"
+      >
+        <ul>
+          <li
+            class="woocommerce-timeline-group"
+          >
+            <p
+              class="woocommerce-timeline-group__title"
+            >
+              October 4, 2021
+            </p>
+            <ul>
+              <li
+                class="woocommerce-timeline-item"
+              >
+                <div
+                  class="woocommerce-timeline-item__top-border"
+                />
+                <div
+                  class="woocommerce-timeline-item__title"
+                >
+                  <div
+                    class="woocommerce-timeline-item__headline"
+                  >
+                    <svg
+                      class="gridicon gridicons-sync"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M23.5 13.5l-3.086 3.086L19 18l-4.5-4.5 1.414-1.414L18 14.172V12c0-3.308-2.692-6-6-6V4c4.418 0 8 3.582 8 8v2.172l2.086-2.086L23.5 13.5zM6 12V9.828l2.086 2.086L9.5 10.5 5 6 3.586 7.414.5 10.5l1.414 1.414L4 9.828V12c0 4.418 3.582 8 8 8v-2c-3.308 0-6-2.692-6-6z"
+                        />
+                      </g>
+                    </svg>
+                    <span>
+                      Payment status changed to Paid.
+                    </span>
+                  </div>
+                  <span
+                    class="woocommerce-timeline-item__timestamp"
+                  >
+                    3:18pm
+                  </span>
+                </div>
+                <div
+                  class="woocommerce-timeline-item__body"
+                />
+              </li>
+              <li
+                class="woocommerce-timeline-item"
+              >
+                <div
+                  class="woocommerce-timeline-item__top-border"
+                />
+                <div
+                  class="woocommerce-timeline-item__title"
+                >
+                  <div
+                    class="woocommerce-timeline-item__headline"
+                  >
+                    <svg
+                      class="gridicon gridicons-plus"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M21 13h-8v8h-2v-8H3v-2h8V3h2v8h8v2z"
+                        />
+                      </g>
+                    </svg>
+                    <span>
+                      $0.66 USD will be added to a future deposit.
+                    </span>
+                  </div>
+                  <span
+                    class="woocommerce-timeline-item__timestamp"
+                  >
+                    3:18pm
+                  </span>
+                </div>
+                <div
+                  class="woocommerce-timeline-item__body"
+                />
+              </li>
+              <li
+                class="woocommerce-timeline-item"
+              >
+                <div
+                  class="woocommerce-timeline-item__top-border"
+                />
+                <div
+                  class="woocommerce-timeline-item__title"
+                >
+                  <div
+                    class="woocommerce-timeline-item__headline"
+                  >
+                    <svg
+                      class="gridicon gridicons-checkmark is-success"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M9 19.414l-6.707-6.707 1.414-1.414L9 16.586 20.293 5.293l1.414 1.414"
+                        />
+                      </g>
+                    </svg>
+                    <span>
+                      A payment of $1.00 USD was successfully charged.
+                    </span>
+                  </div>
+                  <span
+                    class="woocommerce-timeline-item__timestamp"
+                  >
+                    3:18pm
+                  </span>
+                </div>
+                <div
+                  class="woocommerce-timeline-item__body"
+                >
+                  <span />
+                  <span>
+                    Fee (3.9% + $0.30): $-0.34
+                  </span>
+                  <span>
+                    <ul
+                      class="fee-breakdown-list"
+                    >
+                       
+                      <li>
+                        Base fee: 2.9% + $0.30
+                      </li>
+                      <li>
+                        Recurring transaction fee: 1%
+                      </li>
+                       
+                    </ul>
+                  </span>
+                  <span>
+                    Net deposit: $0.66 USD
+                  </span>
+                </div>
+              </li>
+              <li
+                class="woocommerce-timeline-item"
+              >
+                <div
+                  class="woocommerce-timeline-item__top-border"
+                />
+                <div
+                  class="woocommerce-timeline-item__title"
+                >
+                  <div
+                    class="woocommerce-timeline-item__headline"
+                  >
+                    <svg
+                      class="gridicon gridicons-sync"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M23.5 13.5l-3.086 3.086L19 18l-4.5-4.5 1.414-1.414L18 14.172V12c0-3.308-2.692-6-6-6V4c4.418 0 8 3.582 8 8v2.172l2.086-2.086L23.5 13.5zM6 12V9.828l2.086 2.086L9.5 10.5 5 6 3.586 7.414.5 10.5l1.414 1.414L4 9.828V12c0 4.418 3.582 8 8 8v-2c-3.308 0-6-2.692-6-6z"
+                        />
+                      </g>
+                    </svg>
+                    <span>
+                      Payment status changed to Authorized.
+                    </span>
+                  </div>
+                  <span
+                    class="woocommerce-timeline-item__timestamp"
+                  >
+                    3:18pm
+                  </span>
+                </div>
+                <div
+                  class="woocommerce-timeline-item__body"
+                />
+              </li>
+              <li
+                class="woocommerce-timeline-item"
+              >
+                <div
+                  class="woocommerce-timeline-item__top-border"
+                />
+                <div
+                  class="woocommerce-timeline-item__title"
+                >
+                  <div
+                    class="woocommerce-timeline-item__headline"
+                  >
+                    <svg
+                      class="gridicon gridicons-checkmark is-warning"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M9 19.414l-6.707-6.707 1.414-1.414L9 16.586 20.293 5.293l1.414 1.414"
+                        />
+                      </g>
+                    </svg>
+                    <span>
+                      A payment of $1.00 USD was successfully authorized.
+                    </span>
+                  </div>
+                  <span
+                    class="woocommerce-timeline-item__timestamp"
+                  >
+                    3:18pm
+                  </span>
+                </div>
+                <div
+                  class="woocommerce-timeline-item__body"
+                />
+              </li>
+            </ul>
+            <hr />
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
