@@ -9,10 +9,10 @@
 		margin: 0 0 24px 0;
 	}
 
-	.woocommerce-list {
+	.woocommerce-experimental-list {
 		margin: 0.75rem 1rem;
 
-		.woocommerce-list__item {
+		.woocommerce-experimental-list__item {
 			display: list-item;
 			list-style: disc;
 			padding: 0;
@@ -22,18 +22,18 @@
 				background: none;
 			}
 
-			.woocommerce-list__item-inner {
+			.woocommerce-experimental-list__item-inner {
 				margin: 0;
 				padding: 0;
 			}
 
-			.woocommerce-list__item-title {
+			.woocommerce-experimental-list__item-title {
 				color: $studio-gray-60;
 				margin-top: 0;
 				@include font-size( 14 );
 			}
 
-			.woocommerce-list__item-content {
+			.woocommerce-experimental-list__item-content {
 				color: $studio-gray-80;
 				margin-top: 0;
 				@include font-size( 14 );

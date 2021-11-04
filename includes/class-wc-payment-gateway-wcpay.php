@@ -659,10 +659,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			true
 		);
 
+		$script_dependencies = [ 'stripe', 'wc-checkout' ];
+
+		if ( $this->supports( 'tokenization' ) ) {
+			$script_dependencies[] = 'woocommerce-tokenization-form';
+		}
+
 		wp_register_script(
 			'WCPAY_CHECKOUT',
 			plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout', 'woocommerce-tokenization-form' ],
+			$script_dependencies,
 			WC_Payments::get_file_version( 'dist/checkout.js' ),
 			true
 		);
@@ -2385,15 +2391,40 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Returns the list of statuses available for UPE payment methods for the cached account.
+	 * Returns the list of statuses and capabilities available for UPE payment methods in the cached account.
 	 *
 	 * @return  string[]  The payment method statuses.
 	 */
 	public function get_upe_enabled_payment_method_statuses() {
 		$account_data = $this->account->get_cached_account_data();
-		return $account_data['capabilities'] ?? [
-			'card_payments' => 'active',
-		];
+		$capabilities = $account_data['capabilities'] ?? [];
+		$requirements = $account_data['capability_requirements'] ?? [];
+		$statuses     = [];
+
+		if ( $capabilities ) {
+			foreach ( $capabilities as $capability_id => $status ) {
+				$statuses[ $capability_id ] = [
+					'status'       => $status,
+					'requirements' => $requirements[ $capability_id ] ?? [],
+				];
+			}
+		}
+
+		return 0 === count( $statuses ) ? [
+			'card_payments' => [
+				'status'       => 'active',
+				'requirements' => [],
+			],
+		] : $statuses;
+	}
+
+	/**
+	 * Updates the account cache with the new payment method status, until it gets fetched again from the server.
+	 *
+	 * @return  void
+	 */
+	public function refresh_cached_account_data() {
+		$this->account->refresh_account_data();
 	}
 
 	/**
@@ -2413,7 +2444,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				&& $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id )
 				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() )
 				&& isset( $active_payment_methods[ $payment_method_capability_key ] )
-				&& 'active' === $active_payment_methods[ $payment_method_capability_key ] ) {
+				&& 'active' === $active_payment_methods[ $payment_method_capability_key ]['status']
+			) {
 				$enabled_payment_methods[] = $payment_method_id;
 			}
 		}

@@ -233,7 +233,13 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->expects( $this->any() )
 			->method( 'get_upe_enabled_payment_method_statuses' )
 			->will(
-				$this->returnValue( [ 'card_payments' => 'active' ] )
+				$this->returnValue(
+					[
+						'card_payments' => [
+							'status' => 'active',
+						],
+					]
+				)
 			);
 
 		// Arrange: Define a $_POST array which includes the payment method,

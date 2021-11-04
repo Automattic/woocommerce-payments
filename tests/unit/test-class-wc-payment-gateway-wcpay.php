@@ -1642,25 +1642,46 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		->willReturn( [] );
 
 		$this->assertEquals(
-			[ 'card_payments' => 'active' ],
+			[
+				'card_payments' => [
+					'status'       => 'active',
+					'requirements' => [],
+				],
+			],
 			$this->wcpay_gateway->get_upe_enabled_payment_method_statuses()
 		);
 	}
 
 	public function test_get_upe_enabled_payment_method_statuses_with_cache() {
-		$caps = [
+		$caps             = [
 			'card_payments'       => 'active',
 			'sepa_debit_payments' => 'active',
+		];
+		$cap_requirements = [
+			'card_payments'       => [],
+			'sepa_debit_payments' => [],
 		];
 		$this->mock_wcpay_account
 		->expects( $this->any() )
 		->method( 'get_cached_account_data' )
 		->willReturn(
-			[ 'capabilities' => $caps ]
+			[
+				'capabilities'            => $caps,
+				'capability_requirements' => $cap_requirements,
+			]
 		);
 
 		$this->assertEquals(
-			$caps,
+			[
+				'card_payments'       => [
+					'status'       => 'active',
+					'requirements' => [],
+				],
+				'sepa_debit_payments' => [
+					'status'       => 'active',
+					'requirements' => [],
+				],
+			],
 			$this->wcpay_gateway->get_upe_enabled_payment_method_statuses()
 		);
 	}

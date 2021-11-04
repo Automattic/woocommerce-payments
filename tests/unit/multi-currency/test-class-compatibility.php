@@ -148,7 +148,12 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 
 	// Test should convert product price due to the backtrace check returns true but the cart contains renewal/resubscribe return checks false.
 	public function test_get_subscription_product_price_converts_price_if_only_backtrace_found() {
-		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->with( [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] )
+			->willReturn( false );
+
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_cart_contains_resubscribe( false );
 		$this->mock_multi_currency->method( 'get_price' )->with( 10.0, 'product' )->willReturn( 25.0 );
@@ -400,7 +405,12 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_should_convert_product_price_return_true_with_no_subscription_actions_in_cart() {
-		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->with( [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] )
+			->willReturn( false );
+
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_cart_contains_resubscribe( false );
 		$this->assertTrue( $this->compatibility->should_convert_product_price( $this->mock_product ) );
@@ -411,6 +421,22 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->mock_wcs_cart_contains_renewal( true );
 		$this->mock_wcs_cart_contains_resubscribe( true );
 		$this->assertTrue( $this->compatibility->should_convert_product_price( null ) );
+	}
+
+	// Test for when WCPay Subs is getting the product's price for the sub creation.
+	public function test_product_price_return_false_when_get_recurring_item_data_for_subscription() {
+		$this->mock_utils
+			->expects( $this->exactly( 2 ) )
+			->method( 'is_call_in_backtrace' )
+			->withConsecutive(
+				[ [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] ],
+				[ [ 'WC_Product->get_price' ] ]
+			)
+			->willReturn( true, true );
+
+		$this->mock_wcs_cart_contains_renewal( false );
+		$this->mock_wcs_cart_contains_resubscribe( false );
+		$this->assertFalse( $this->compatibility->should_convert_product_price( $this->mock_coupon ) );
 	}
 
 	public function test_should_convert_product_price_return_false_when_product_meta_addons_converted_set() {
