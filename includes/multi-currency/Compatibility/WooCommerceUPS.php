@@ -16,8 +16,6 @@ use WCPay\MultiCurrency\Utils;
  */
 class WooCommerceUPS {
 
-	const FILTER_PREFIX = 'wcpay_multi_currency_';
-
 	/**
 	 * MultiCurrency class.
 	 *
@@ -51,7 +49,7 @@ class WooCommerceUPS {
 	 */
 	protected function initialize_hooks() {
 		if ( class_exists( 'WC_Shipping_UPS_Init' ) ) {
-			add_filter( self::FILTER_PREFIX . 'should_return_store_currency', [ $this, 'should_return_store_currency' ] );
+			add_filter( MultiCurrency::FILTER_PREFIX . 'should_return_store_currency', [ $this, 'should_return_store_currency' ] );
 		}
 	}
 
