@@ -343,7 +343,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				$message = 'Payment dispute funds have been reinstated';
 				break;
 			default:
-				$message = 'Payment dispute updated';
+				$message = 'Payment dispute has been updated';
 		}
 
 		$note = sprintf(
