@@ -22,7 +22,6 @@ defined( 'ABSPATH' ) || exit;
 class Compatibility {
 
 	const ADDONS_CONVERTED_META_KEY = '_wcpay_multi_currency_addons_converted';
-	const FILTER_PREFIX             = 'wcpay_multi_currency_';
 
 	/**
 	 * Subscription switch cart item.
@@ -279,7 +278,7 @@ class Compatibility {
 			return false;
 		}
 
-		return apply_filters( self::FILTER_PREFIX . 'should_convert_product_price', true );
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', true );
 	}
 
 	/**
@@ -288,7 +287,7 @@ class Compatibility {
 	 * @return bool
 	 */
 	public function should_return_store_currency(): bool {
-		return apply_filters( self::FILTER_PREFIX . 'should_return_store_currency', false );
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_return_store_currency', false );
 	}
 
 	/**
