@@ -275,7 +275,7 @@ class Compatibility {
 			return false;
 		}
 
-		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', true );
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', true, $product );
 	}
 
 	/**
