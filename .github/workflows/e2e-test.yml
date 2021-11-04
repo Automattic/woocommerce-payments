@@ -5,7 +5,7 @@ on:
     - cron: '0 */6 * * *'
   pull_request:
     branches:
-      - release/*
+      - trunk
 
 env:
   E2E_GH_TOKEN:                                ${{ secrets.E2E_GH_TOKEN }}
