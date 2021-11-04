@@ -117,8 +117,11 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				case 'charge.refund.updated':
 					$this->process_webhook_refund_updated( $body );
 					break;
-				case 'charge.dispute.created':
 				case 'charge.dispute.closed':
+				case 'charge.dispute.created':
+				case 'charge.dispute.funds_reinstated':
+				case 'charge.dispute.funds_withdrawn':
+				case 'charge.dispute.updated':
 					$this->process_webhook_dispute( $body );
 					break;
 				case 'charge.expired':
@@ -219,45 +222,6 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Process webhook dispute created.
-	 *
-	 * @param array $event_body The event that triggered the webhook.
-	 *
-	 * @throws Rest_Request_Exception           Required parameters not found.
-	 */
-	private function process_webhook_dispute( $event_body ) {
-		$event_data   = $this->read_rest_property( $event_body, 'data' );
-		$event_object = $this->read_rest_property( $event_data, 'object' );
-		$dispute_id   = $this->read_rest_property( $event_object, 'id' );
-		$charge_id    = $this->read_rest_property( $event_object, 'charge' );
-		$reason       = $this->read_rest_property( $event_object, 'reason' );
-		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
-
-		if ( ! $order ) {
-			throw new Rest_Request_Exception(
-				sprintf(
-					/* translators: %1: charge ID */
-					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
-					$charge_id
-				),
-				'order_not_found'
-			);
-		}
-
-		$note = sprintf(
-			/* translators: %1: the dispute reason, %2: the dispute page URL */
-			__( 'Payment disputed as %1$s. See <a href="%2$s">dispute overview</a> for more details', 'woocommerce-payments' ),
-			$reason,
-			add_query_arg(
-				[ 'id' => $dispute_id ],
-				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
-			)
-		);
-
-		$order->add_order_note( $note );
-	}
-
-	/**
 	 * Process webhook for an expired uncaptured payment.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
@@ -336,6 +300,63 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		if ( ! $order->has_status( [ 'processing', 'completed' ] ) ) {
 			$order->payment_complete();
 		}
+	}
+
+	/**
+	 * Process webhook dispute created.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Rest_Request_Exception           Required parameters not found.
+	 */
+	private function process_webhook_dispute( $event_body ) {
+		$event_type   = $this->read_rest_property( $event_body, 'type' );
+		$event_data   = $this->read_rest_property( $event_body, 'data' );
+		$event_object = $this->read_rest_property( $event_data, 'object' );
+		$dispute_id   = $this->read_rest_property( $event_object, 'id' );
+		$charge_id    = $this->read_rest_property( $event_object, 'charge' );
+		$reason       = $this->read_rest_property( $event_object, 'reason' );
+		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
+
+		if ( ! $order ) {
+			throw new Rest_Request_Exception(
+				sprintf(
+					/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				),
+				'order_not_found'
+			);
+		}
+
+		switch ( $event_type ) {
+			case 'charge.dispute.created':
+				$message = 'Payment has been disputed as ' . $reason;
+				break;
+			case 'charge.dispute.closed':
+				$message = 'Payment dispute has been closed';
+				break;
+			case 'charge.dispute.funds_withdrawn':
+				$message = 'Payment dispute funds have been withdrawn';
+				break;
+			case 'charge.dispute.funds_reinstated':
+				$message = 'Payment dispute funds have been reinstated';
+				break;
+			default:
+				$message = 'Payment dispute updated';
+		}
+
+		$note = sprintf(
+			/* translators: %1: the dispute message, %2: the dispute page URL */
+			__( '%1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
+			$message,
+			add_query_arg(
+				[ 'id' => $dispute_id ],
+				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
+			)
+		);
+
+		$order->add_order_note( $note );
 	}
 
 	/**
