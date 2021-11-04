@@ -7,7 +7,6 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
-use WC_Product;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
@@ -49,23 +48,28 @@ class WooCommerceDeposits {
 	protected function initialize_hooks() {
 		if ( class_exists( 'WC_Deposits' ) ) {
 			// Add compatibility filters here.
-			add_filter( 'woocommerce_deposits_get_deposit_amount', [ $this, 'get_converted_deposit_amount' ] );
 			add_action( 'woocommerce_deposits_create_order', [ $this, 'modify_order_currency' ] );
+			add_filter( 'woocommerce_get_cart_contents', [ $this, 'modify_cart_item_deposit_amounts' ] );
 		}
 	}
 
 	/**
-	 * Converts deposit amounts to the customer currency
+	 * Converts the currency for deposit amounts of each cart item
 	 *
-	 * @param   string $deposit_amount  The deposit amount for the item.
+	 * @param array $cart_contents The current tax definitions.
 	 *
-	 * @return  float The converted price.
+	 * @return array $tax Array of altered taxes.
 	 */
-	public function get_converted_deposit_amount( $deposit_amount ) {
-		$deposit_amount  = floatval( $deposit_amount );
-		$converted_price = $this->multi_currency->get_price( $deposit_amount, 'tax' );
+	public function modify_cart_item_deposit_amounts( $cart_contents ) {
 
-		return $converted_price;
+		foreach ( $cart_contents as $cart_item_key => $cart_item ) {
+			if ( isset( $cart_item['deposit_amount'] ) ) {
+				$deposit_amount                                    = floatval( $cart_item['deposit_amount'] );
+				$cart_contents[ $cart_item_key ]['deposit_amount'] = $this->multi_currency->get_price( $deposit_amount, 'product' );
+			}
+		}
+
+		return $cart_contents;
 	}
 
 	/**
