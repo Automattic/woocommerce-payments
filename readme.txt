@@ -101,6 +101,8 @@ Please note that our support for the checkout block is still experimental and th
 = 3.3.0 - 2021-xx-xx =
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
 * Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
+* Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
+* Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
