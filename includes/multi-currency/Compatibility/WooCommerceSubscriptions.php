@@ -16,8 +16,6 @@ use WCPay\MultiCurrency\Utils;
  */
 class WooCommerceSubscriptions {
 
-	const FILTER_PREFIX = 'wcpay_multi_currency_';
-
 	/**
 	 * Subscription switch cart item.
 	 *
@@ -63,10 +61,10 @@ class WooCommerceSubscriptions {
 				add_filter( 'woocommerce_product_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
 				add_filter( 'woocommerce_product_variation_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
 				add_filter( 'option_woocommerce_subscriptions_multiple_purchase', [ $this, 'maybe_disable_mixed_cart' ], 50 );
-				add_filter( self::FILTER_PREFIX . 'override_selected_currency', [ $this, 'override_selected_currency' ], 50 );
-				add_filter( self::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
-				add_filter( self::FILTER_PREFIX . 'should_convert_coupon_amount', [ $this, 'should_convert_coupon_amount' ], 50, 2 );
-				add_filter( self::FILTER_PREFIX . 'should_hide_widgets', [ $this, 'should_hide_widgets' ], 50 );
+				add_filter( MultiCurrency::FILTER_PREFIX . 'override_selected_currency', [ $this, 'override_selected_currency' ], 50 );
+				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
+				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_coupon_amount', [ $this, 'should_convert_coupon_amount' ], 50, 2 );
+				add_filter( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', [ $this, 'should_hide_widgets' ], 50 );
 			}
 		}
 	}

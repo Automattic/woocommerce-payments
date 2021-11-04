@@ -70,7 +70,7 @@ class Compatibility {
 	 * @return mixed Three letter currency code or false if not.
 	 */
 	public function override_selected_currency() {
-		return apply_filters( self::FILTER_PREFIX . 'override_selected_currency', false );
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'override_selected_currency', false );
 	}
 
 	/**
@@ -79,7 +79,7 @@ class Compatibility {
 	 * @return bool False if it shouldn't be hidden, true if it should.
 	 */
 	public function should_hide_widgets(): bool {
-		return apply_filters( self::FILTER_PREFIX . 'should_hide_widgets', false );
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', false );
 	}
 
 	/**
@@ -94,7 +94,7 @@ class Compatibility {
 			return true;
 		}
 
-		return apply_filters( self::FILTER_PREFIX . 'should_convert_coupon_amount', true, $coupon );
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_coupon_amount', true, $coupon );
 	}
 
 	/**
@@ -109,7 +109,7 @@ class Compatibility {
 			return true;
 		}
 
-		return apply_filters( self::FILTER_PREFIX . 'should_convert_product_price', true, $product );
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', true, $product );
 	}
 
 	/**
