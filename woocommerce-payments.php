@@ -106,7 +106,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 	 * Initialise subscriptions-core if WC Subscriptions (the plugin) isn't loaded
 	 */
 	function wcpay_init_subscriptions_core() {
-		if ( ! class_exists( 'Automattic\WooCommerce\Admin\PluginsHelper' ) || ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			return;
 		}
 
@@ -128,7 +128,15 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 				}
 			}
 
-			return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $plugin_slug );
+			if ( class_exists( 'Automattic\WooCommerce\Admin\PluginsHelper' ) ) {
+				return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $plugin_slug );
+			} else {
+				if ( ! function_exists( 'is_plugin_active' ) ) {
+					include_once ABSPATH . 'wp-admin/includes/plugin.php';
+				}
+
+				return is_plugin_active( $plugin_slug . '/' . $plugin_slug . '.php' );
+			}
 		};
 
 		$is_subscriptions_active = $is_plugin_active( 'woocommerce-subscriptions' );
