@@ -245,6 +245,13 @@ class Compatibility {
 			return true;
 		}
 
+		if ( class_exists( 'WC_Deposits_Product_Manager' )
+			&& call_user_func( [ 'WC_Deposits_Product_Manager', 'deposits_enabled' ], $product )
+			&& $this->utils->is_call_in_backtrace( [ 'WC_Cart->calculate_totals' ] )
+		) {
+			return false;
+		}
+
 		// Check for cart items to see if they have already been converted.
 		if ( 1 === $product->get_meta( self::ADDONS_CONVERTED_META_KEY ) ) {
 			return false;
