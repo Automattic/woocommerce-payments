@@ -1261,7 +1261,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$order->add_order_note( $note );
 				}
 				try {
-					$order->payment_complete( $intent_id );
+					// Get an updated instance of the order to avoid race conditions when the paid webhook was handled during this request.
+					$order = wc_get_order( $order->get_id() );
+
+					if ( ! $order->has_status( [ 'processing', 'completed' ] ) ) {
+						$order->payment_complete( $intent_id );
+					}
 				} catch ( Exception $e ) {
 					// continue further, something unexpected happened, but we can't really do nothing with that.
 					Logger::log( 'Error when completing payment for order: ' . $e->getMessage() );
