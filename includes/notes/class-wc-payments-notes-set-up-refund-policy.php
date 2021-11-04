@@ -23,7 +23,7 @@ class WC_Payments_Notes_Set_Up_Refund_Policy {
 	/**
 	 * Name of the note for use in the database.
 	 */
-	const NOTE_DOCUMENTATION_URL = 'https://docs.woocommerce.com/document/woocommerce-refunds#refund-policy-howto';
+	const NOTE_DOCUMENTATION_URL = 'https://woocommerce.com/document/woocommerce-refunds#refund-policy-howto';
 
 	/**
 	 * Get the note.
