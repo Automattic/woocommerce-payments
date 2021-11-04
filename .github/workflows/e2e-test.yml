@@ -1,10 +1,10 @@
 name: E2E tests
 
 on:
+  schedule:
+    - cron: '*/30 * * * *'
   pull_request:
     branches:
-      - trunk
-      - develop
       - release/*
 
 env:
