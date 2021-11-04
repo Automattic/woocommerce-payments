@@ -22,8 +22,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class Compatibility {
 
-	const ADDONS_CONVERTED_META_KEY = '_wcpay_multi_currency_addons_converted';
-
 	/**
 	 * Subscription switch cart item.
 	 *
