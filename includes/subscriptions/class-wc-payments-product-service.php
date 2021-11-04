@@ -479,9 +479,91 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
+	 * Prevents the subscription interval to be greater than 1 for yearly subscriptions.
+	 *
+	 * @param int $product_id Post ID of the product.
+	 */
+	public function limit_subscription_product_intervals( $product_id ) {
+		// Skip products that aren't subscriptions.
+		$product = wc_get_product( $product_id );
+		if (
+			! $product ||
+			! WC_Subscriptions_Product::is_subscription( $product ) ||
+			empty( $_POST['_wcsnonce'] ) ||
+			! wp_verify_nonce( sanitize_key( $_POST['_wcsnonce'] ), 'wcs_subscription_meta' )
+		) {
+			return;
+		}
+
+		// If we don't have both the period and the interval, there's nothing to do here.
+		if ( empty( $_REQUEST['_subscription_period'] ) || empty( $_REQUEST['_subscription_period_interval'] ) ) {
+			return;
+		}
+
+		$period   = sanitize_text_field( wp_unslash( $_REQUEST['_subscription_period'] ) );
+		$interval = absint( wp_unslash( $_REQUEST['_subscription_period_interval'] ) );
+
+		// Prevent WC Subs Core from saving the interval when it's invalid.
+		if ( ! $this->is_valid_billing_cycle( $period, $interval ) ) {
+			$new_interval                              = $this->get_period_interval_limit( $period );
+			$_REQUEST['_subscription_period_interval'] = strval( $new_interval );
+
+			/* translators: %1$s Opening strong tag, %2$s Closing strong tag, %3$s The subscription renewal interval (every x time) */
+			wcs_add_admin_notice( sprintf( __( '%1$sThere was an issue saving your product!%2$s A subscription product\'s billing period cannot be longer than one year. We have updated this product to renew every %3$s.', 'woocommerce-payments' ), '<strong>', '</strong>', wcs_get_subscription_period_strings( $new_interval, $period ) ), 'error' );
+		}
+	}
+
+	/**
+	 * Prevents the subscription interval to be greater than 1 for yearly subscription variations.
+	 *
+	 * @param int $product_id Post ID of the variation.
+	 * @param int $index Variation index in the incoming array.
+	 */
+	public function limit_subscription_variation_intervals( $product_id, $index ) {
+		// Skip products that aren't subscriptions.
+		$product           = wc_get_product( $product_id );
+		$admin_notice_sent = false;
+
+		if (
+			! $product ||
+			! WC_Subscriptions_Product::is_subscription( $product ) ||
+			empty( $_POST['_wcsnonce_save_variations'] ) ||
+			! wp_verify_nonce( sanitize_key( $_POST['_wcsnonce_save_variations'] ), 'wcs_subscription_variations' )
+		) {
+			return;
+		}
+
+		// If we don't have both the period and the interval, there's nothing to do here.
+		if ( empty( $_POST['variable_subscription_period'][ $index ] ) || empty( $_POST['variable_subscription_period_interval'][ $index ] ) ) {
+			return;
+		}
+
+		$period   = sanitize_text_field( wp_unslash( $_POST['variable_subscription_period'][ $index ] ) );
+		$interval = absint( wp_unslash( $_POST['variable_subscription_period_interval'][ $index ] ) );
+
+		// Prevent WC Subs Core from saving the interval when it's invalid.
+		if ( ! $this->is_valid_billing_cycle( $period, $interval ) ) {
+			$new_interval = $this->get_period_interval_limit( $period );
+			$_POST['variable_subscription_period_interval'][ $index ] = strval( $new_interval );
+
+			if ( false === $admin_notice_sent ) {
+				$admin_notice_sent = true;
+
+				/* translators: %1$s Opening strong tag, %2$s Closing strong tag */
+				wcs_add_admin_notice( sprintf( __( '%1$sThere was an issue saving your variations!%2$s A subscription product\'s billing period cannot be longer than one year. We have updated one or more of this product\'s variations to renew every %3$s.', 'woocommerce-payments' ), '<strong>', '</strong>', wcs_get_subscription_period_strings( $new_interval, $period ) ), 'error' );
+			}
+		}
+	}
+
+	/**
 	 * Attaches the callbacks used to update product changes in WC Pay.
 	 */
 	private function add_product_update_listeners() {
+		// This needs to run before WC_Subscriptions_Admin::save_subscription_meta(), which has a priority of 11.
+		add_action( 'save_post', [ $this, 'limit_subscription_product_intervals' ], 10 );
+		// This needs to run before WC_Subscriptions_Admin::save_product_variation(), which has a priority of 20.
+		add_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19, 2 );
+
 		add_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 		add_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
@@ -490,6 +572,9 @@ class WC_Payments_Product_Service {
 	 * Removes the callbacks used to update product changes in WC Pay.
 	 */
 	private function remove_product_update_listeners() {
+		remove_action( 'save_post', [ $this, 'limit_subscription_product_intervals' ], 10 );
+		remove_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19 );
+
 		remove_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 		remove_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
@@ -663,5 +748,36 @@ class WC_Payments_Product_Service {
 		];
 
 		return array_filter( $environment_product_ids );
+	}
+
+	/**
+	 * Returns whether the billing cycle is valid, given its period and interval.
+	 *
+	 * @param string $period Cycle period.
+	 * @param int    $interval Cycle interval.
+	 * @return boolean
+	 */
+	private function is_valid_billing_cycle( $period, $interval ) {
+		$interval_limit = $this->get_period_interval_limit( $period );
+
+		// A cycle is valid when we have a defined limit, and the given interval isn't 0 nor greater than the limit.
+		return $interval_limit && ! empty( $interval ) && $interval <= $interval_limit;
+	}
+
+	/**
+	 * Returns the interval limit for the given period.
+	 *
+	 * @param string $period The period to get the interval limit for.
+	 * @return int|bool The interval limit for the period, or false if not defined.
+	 */
+	private function get_period_interval_limit( $period ) {
+		$max_intervals = [
+			'year'  => 1,
+			'month' => 12,
+			'week'  => 52,
+			'day'   => 365,
+		];
+
+		return ! empty( $max_intervals[ $period ] ) ? $max_intervals[ $period ] : false;
 	}
 }
