@@ -101,6 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 = 3.3.0 - 2021-xx-xx =
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
 * Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
+* Add - Add filters to disable or filter Multi-Currency sql query clauses for analytics.
 * Fix - Display risk for payment methods without risk assessment
 
 = 3.2.3 - 2021-11-01 =
