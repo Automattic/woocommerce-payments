@@ -60,9 +60,9 @@ class WooCommerceDeposits {
 	/**
 	 * Converts the currency for deposit amounts of each cart item, only applies if deposits are enabled on the product.
 	 *
-	 * @param array $cart_contents The current tax definitions.
+	 * @param array $cart_contents The items on the cart.
 	 *
-	 * @return array $tax Array of altered taxes.
+	 * @return array
 	 */
 	public function modify_cart_item_deposit_amounts( $cart_contents ) {
 		foreach ( $cart_contents as $cart_item_key => $cart_item ) {
@@ -78,9 +78,10 @@ class WooCommerceDeposits {
 	/**
 	 * Converts the currency for deposit amounts of each cart item, only applies if deposits are enabled on the product.
 	 *
-	 * @param array $cart_contents The current tax definitions.
+	 * @param float       $amount The amount to convert.
+	 * @param \WC_Product $product The product to check for.
 	 *
-	 * @return array $tax Array of altered taxes.
+	 * @return array
 	 */
 	public function modify_cart_item_deposit_amount_meta( $amount, $product ) {
 		if ( $this->utils->is_call_in_backtrace( [ 'WC_Deposits_Cart_Manager->deposits_form_output' ] )
