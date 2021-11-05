@@ -81,13 +81,13 @@ function wcpay_jetpack_init() {
 		]
 	);
 
-	// TODO - may need be aware if the full Jetpack plugin is active
-	// then we may not need this filter.
+	// TODO - if the full Jetpack plugin is active, we do not need this filter.
 	add_filter(
 		'jetpack_sync_modules',
 		function () {
 			// Interested in these modules only so that Woo Mobile can work.
 			return [
+				'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
 				'Automattic\\Jetpack\\Sync\\Modules\\Options',
 				'Automattic\\Jetpack\\Sync\\Modules\\Plugins',
 			];
