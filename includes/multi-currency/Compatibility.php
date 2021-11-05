@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Deposits;
+use WC_Deposits_Product_Manager;
 use WC_Order;
 use WC_Order_Refund;
 use WC_Product;
@@ -245,13 +247,6 @@ class Compatibility {
 			return true;
 		}
 
-		if ( class_exists( 'WC_Deposits_Product_Manager' )
-			&& call_user_func( [ 'WC_Deposits_Product_Manager', 'deposits_enabled' ], $product )
-			&& $this->utils->is_call_in_backtrace( [ 'WC_Cart->calculate_totals' ] )
-		) {
-			return false;
-		}
-
 		// Check for cart items to see if they have already been converted.
 		if ( 1 === $product->get_meta( self::ADDONS_CONVERTED_META_KEY ) ) {
 			return false;
@@ -274,6 +269,14 @@ class Compatibility {
 		// WCPay Subs does a check against the product price and the total, we need to return the actual product price for this check.
 		if ( $this->utils->is_call_in_backtrace( [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] )
 			&& $this->utils->is_call_in_backtrace( [ 'WC_Product->get_price' ] ) ) {
+			return false;
+		}
+
+		if ( class_exists( 'WC_Deposits_Product_Manager' )
+			&& call_user_func( [ 'WC_Deposits_Product_Manager', 'deposits_enabled' ], $product )
+			&& 'plan' === call_user_func( [ 'WC_Deposits_Product_Manager', 'get_deposit_type' ], $product )
+			&& $this->utils->is_call_in_backtrace( [ 'WC_Cart->calculate_totals' ] )
+		) {
 			return false;
 		}
 
