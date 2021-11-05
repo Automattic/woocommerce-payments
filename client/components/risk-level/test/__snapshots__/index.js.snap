@@ -29,3 +29,11 @@ exports[`RiskLevel Renders normal risk correctly. 1`] = `
   </span>
 </div>
 `;
+
+exports[`RiskLevel Renders not assessed risk correctly. 1`] = `
+<div>
+  <span>
+    N/A
+  </span>
+</div>
+`;

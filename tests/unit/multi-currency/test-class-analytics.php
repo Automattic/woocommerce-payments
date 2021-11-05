@@ -191,6 +191,24 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 		];
 	}
 
+	public function test_filter_select_clauses_disable_filter() {
+		$expected = [ 'Santa Claus', 'Mrs. Claus' ];
+		add_filter( 'wcpay_multi_currency_disable_filter_select_clauses', '__return_true' );
+		$this->assertEquals( $expected, $this->analytics->filter_select_clauses( $expected, 'orders_stats' ) );
+	}
+
+	public function test_filter_select_clauses_return_filter() {
+		$clauses  = [ 'Santa Claus', 'Mrs. Claus' ];
+		$expected = array_reverse( $clauses );
+		add_filter(
+			'wcpay_multi_currency_filter_select_clauses',
+			function( $new_clauses ) use ( $clauses ) {
+				return array_reverse( $clauses );
+			}
+		);
+		$this->assertEquals( $expected, $this->analytics->filter_select_clauses( $clauses, 'orders_stats' ) );
+	}
+
 	/**
 	 * @group underTest
 	 * @dataProvider join_clause_provider
@@ -228,6 +246,24 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 				],
 			],
 		];
+	}
+
+	public function test_filter_join_clauses_disable_filter() {
+		$expected = [ 'Santa Claus', 'Mrs. Claus' ];
+		add_filter( 'wcpay_multi_currency_disable_filter_join_clauses', '__return_true' );
+		$this->assertEquals( $expected, $this->analytics->filter_join_clauses( $expected, 'orders_stats' ) );
+	}
+
+	public function test_filter_join_clauses_return_filter() {
+		$clauses  = [ 'Santa Claus', 'Mrs. Claus' ];
+		$expected = array_reverse( $clauses );
+		add_filter(
+			'wcpay_multi_currency_filter_join_clauses',
+			function( $new_clauses ) use ( $clauses ) {
+				return array_reverse( $clauses );
+			}
+		);
+		$this->assertEquals( $expected, $this->analytics->filter_join_clauses( $clauses, 'orders_stats' ) );
 	}
 
 	private function order_args_provider( $order_id, $parent_id, $num_items_sold, $total_sales, $tax_total, $shipping_total, $net_total ) {
