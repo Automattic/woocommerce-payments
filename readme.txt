@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
 * Add - Add filters to disable or filter Multi-Currency sql query clauses for analytics.
 * Fix - Display risk for payment methods without risk assessment
+* Fix - Use configured domain instead of current domain for Apple Pay verification.
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
