@@ -2,7 +2,12 @@
 
 = 3.3.0 - 2021-xx-xx =
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
+* Update - Avoid having invalid intervals (greater than 1 year) in subscription products.
+* Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
 * Fix - Do not show default currency selector on Account Details page when only one currency is available.
+* Add - Add filters to disable or filter Multi-Currency sql query clauses for analytics.
+* Fix - Display risk for payment methods without risk assessment
+* Fix - Use configured domain instead of current domain for Apple Pay verification.
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
@@ -13,6 +18,7 @@
 
 = 3.2.1 - 2021-10-28 =
 * Fix - PHP 7.2 compatibility - remove trailing commas from function args in subscriptions-core.
+
 
 = 3.2.0 - 2021-10-28 =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
