@@ -331,19 +331,23 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		switch ( $event_type ) {
 			case 'charge.dispute.created':
-				$message = 'Payment has been disputed as ' . $reason;
+				$message = sprintf(
+					/* translators: %1: the dispute reason */
+					__( 'Payment has been disputed as %1$s', 'woocommerce-payments' ),
+					$reason
+				);
 				break;
 			case 'charge.dispute.closed':
-				$message = 'Payment dispute has been closed';
+				$message = __( 'Payment dispute has been closed', 'woocommerce-payments' );
 				break;
 			case 'charge.dispute.funds_withdrawn':
-				$message = 'Payment dispute funds have been withdrawn';
+				$message = __( 'Payment dispute funds have been withdrawn', 'woocommerce-payments' );
 				break;
 			case 'charge.dispute.funds_reinstated':
-				$message = 'Payment dispute funds have been reinstated';
+				$message = __( 'Payment dispute funds have been reinstated', 'woocommerce-payments' );
 				break;
 			default:
-				$message = 'Payment dispute has been updated';
+				$message = __( 'Payment dispute has been updated', 'woocommerce-payments' );
 		}
 
 		$note = sprintf(
