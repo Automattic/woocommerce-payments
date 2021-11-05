@@ -23,7 +23,7 @@ const LearnMoreLink = ( { accountFees } ) => {
 				href={
 					accountFees.discount.length
 						? 'https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/'
-						: 'https://docs.woocommerce.com/document/payments/faq/fees/'
+						: 'https://woocommerce.com/document/payments/faq/fees/'
 				}
 				target="_blank"
 				rel="noopener noreferrer"
