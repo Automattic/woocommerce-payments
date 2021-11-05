@@ -55,7 +55,7 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WP_UnitTestCase {
 				}
 			);
 
-		$cart_contents_mock     = [
+		$cart_contents_mock = [
 			[
 				'is_deposit'     => true,
 				'deposit_amount' => 250,
