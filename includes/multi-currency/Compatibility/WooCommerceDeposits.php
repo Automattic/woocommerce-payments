@@ -7,6 +7,7 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
+use WC_Deposits_Product_Manager;
 use WC_Product;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
@@ -51,7 +52,7 @@ class WooCommerceDeposits {
 			// Add compatibility filters here.
 			add_action( 'woocommerce_deposits_create_order', [ $this, 'modify_order_currency' ] );
 			add_filter( 'woocommerce_get_cart_contents', [ $this, 'modify_cart_item_deposit_amounts' ] );
-			add_filter( 'woocommerce_product_get__wc_deposit_amount', [ $this, 'modify_cart_item_deposit_amount_meta' ] );
+			add_filter( 'woocommerce_product_get__wc_deposit_amount', [ $this, 'modify_cart_item_deposit_amount_meta' ], 10, 2 );
 			add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'maybe_convert_product_prices_for_deposits' ], 10, 2 );
 		}
 	}
@@ -81,8 +82,9 @@ class WooCommerceDeposits {
 	 *
 	 * @return array $tax Array of altered taxes.
 	 */
-	public function modify_cart_item_deposit_amount_meta( $amount ) {
-		if ( $this->utils->is_call_in_backtrace( [ 'WC_Deposits_Cart_Manager->deposits_form_output' ] ) ) {
+	public function modify_cart_item_deposit_amount_meta( $amount, $product ) {
+		if ( $this->utils->is_call_in_backtrace( [ 'WC_Deposits_Cart_Manager->deposits_form_output' ] )
+		&& 'percent' !== WC_Deposits_Product_Manager::get_deposit_type( $product ) ) {
 			return $this->multi_currency->get_price( $amount, 'product' );
 		}
 		return $amount;
