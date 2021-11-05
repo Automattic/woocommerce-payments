@@ -54,7 +54,7 @@ class WooCommerceDeposits {
 	}
 
 	/**
-	 * Converts the currency for deposit amounts of each cart item
+	 * Converts the currency for deposit amounts of each cart item, only applies if deposits are enabled on the product.
 	 *
 	 * @param array $cart_contents The current tax definitions.
 	 *
@@ -62,13 +62,9 @@ class WooCommerceDeposits {
 	 */
 	public function modify_cart_item_deposit_amounts( $cart_contents ) {
 		foreach ( $cart_contents as $cart_item_key => $cart_item ) {
-			if ( $cart_item['is_deposit'] ) {
-				if ( isset( $cart_item['deposit_amount'] )
-				&& $this->multi_currency->is_initialized()
-				) {
+			if ( isset( $cart_item['is_deposit'] ) && $cart_item['is_deposit'] && isset( $cart_item['deposit_amount'] ) ) {
 					$deposit_amount                                    = floatval( $cart_item['deposit_amount'] );
 					$cart_contents[ $cart_item_key ]['deposit_amount'] = $this->multi_currency->get_price( $deposit_amount, 'product' );
-				}
 			}
 		}
 
@@ -85,16 +81,16 @@ class WooCommerceDeposits {
 	 */
 	public function modify_order_currency( $order_id ) {
 		// We need to get the original order from the first item meta.
-		$order       = wc_get_order( $order_id );
-		$order_items = $order->get_items();
-		$order_item  = 0 < count( $order_items ) ? reset( $order_items ) : null;
+		$order            = wc_get_order( $order_id );
+		$order_items      = $order->get_items();
+		$first_order_item = 0 < count( $order_items ) ? reset( $order_items ) : null;
 
-		if ( ! $order_item ) {
+		if ( ! $first_order_item ) {
 			return;
 		}
 
 		// Check if the original order ID is attached to the order item.
-		$original_order_id = wc_get_order_item_meta( $order_item->get_id(), '_original_order_id', true );
+		$original_order_id = wc_get_order_item_meta( $first_order_item->get_id(), '_original_order_id', true );
 		if ( ! $original_order_id ) {
 			return;
 		}
