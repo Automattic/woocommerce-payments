@@ -27,6 +27,7 @@ class MultiCurrency {
 	const CURRENCY_META_KEY               = 'wcpay_currency';
 	const CURRENCY_CACHE_OPTION           = 'wcpay_multi_currency_cached_currencies';
 	const CURRENCY_RETRIEVAL_ERROR_OPTION = 'wcpay_multi_currency_retrieval_error';
+	const FILTER_PREFIX                   = 'wcpay_multi_currency_';
 
 	/**
 	 * The plugin's ID.
