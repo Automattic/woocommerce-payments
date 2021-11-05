@@ -1261,8 +1261,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$order->add_order_note( $note );
 				}
 				try {
-					// Get an updated instance of the order to avoid race conditions when the paid webhook was handled during this request.
-					$order = wc_get_order( $order->get_id() );
+					// Read the latest order properties from the database to avoid race conditions when the paid webhook was handled during this request.
+					$order->get_data_store()->read( $order );
 
 					if ( ! $order->has_status( [ 'processing', 'completed' ] ) ) {
 						$order->payment_complete( $intent_id );
