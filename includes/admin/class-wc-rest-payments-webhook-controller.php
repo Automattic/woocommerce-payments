@@ -324,8 +324,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 					/* translators: %1: charge ID */
 					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
 					$charge_id
-				),
-				'order_not_found'
+				)
 			);
 		}
 
