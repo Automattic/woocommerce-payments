@@ -70,7 +70,7 @@ class Compatibility {
 		$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
 		$compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency, $this->utils );
 		$compatibility_classes[] = new WooCommerceUPS( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommerceDeposits( $multi_currency, $utils );
+		$compatibility_classes[] = new WooCommerceDeposits( $this->multi_currency, $this->utils );
 	}
 
 	/**
