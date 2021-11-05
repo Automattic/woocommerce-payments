@@ -7,6 +7,7 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
+use WC_Product;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
@@ -50,6 +51,7 @@ class WooCommerceDeposits {
 			// Add compatibility filters here.
 			add_action( 'woocommerce_deposits_create_order', [ $this, 'modify_order_currency' ] );
 			add_filter( 'woocommerce_get_cart_contents', [ $this, 'modify_cart_item_deposit_amounts' ] );
+			add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'maybe_convert_product_prices_for_deposits' ], 10, 2 );
 		}
 	}
 
@@ -69,6 +71,26 @@ class WooCommerceDeposits {
 		}
 
 		return $cart_contents;
+	}
+
+	/**
+	 * Defines if the product prices need to be converted when calculating totals,
+	 * if the product's deposit type is a payment plan, then it shouldn't convert it.
+	 *
+	 * @param   bool        $result   The previous flag for converting the price.
+	 * @param   \WC_Product $product  The product to check for.
+	 *
+	 * @return  bool                        Whether the price should be converted or not.
+	 */
+	public function maybe_convert_product_prices_for_deposits( $result, $product ) {
+		if ( class_exists( 'WC_Deposits_Product_Manager' )
+			&& call_user_func( [ 'WC_Deposits_Product_Manager', 'deposits_enabled' ], $product )
+			&& 'plan' === call_user_func( [ 'WC_Deposits_Product_Manager', 'get_deposit_type' ], $product )
+			&& $this->utils->is_call_in_backtrace( [ 'WC_Cart->calculate_totals' ] )
+		) {
+			return false;
+		}
+		return $result;
 	}
 
 	/**

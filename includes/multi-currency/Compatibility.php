@@ -277,14 +277,6 @@ class Compatibility {
 			return false;
 		}
 
-		if ( class_exists( 'WC_Deposits_Product_Manager' )
-			&& call_user_func( [ 'WC_Deposits_Product_Manager', 'deposits_enabled' ], $product )
-			&& 'plan' === call_user_func( [ 'WC_Deposits_Product_Manager', 'get_deposit_type' ], $product )
-			&& $this->utils->is_call_in_backtrace( [ 'WC_Cart->calculate_totals' ] )
-		) {
-			return false;
-		}
-
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', true, $product );
 	}
 
