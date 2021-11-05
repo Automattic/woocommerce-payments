@@ -101,6 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 = 3.3.0 - 2021-xx-xx =
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
 * Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
+* Add - Add filters to disable or filter Multi-Currency sql query clauses for analytics.
+* Fix - Display risk for payment methods without risk assessment
+* Fix - Use configured domain instead of current domain for Apple Pay verification.
 * Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
 * Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
 
