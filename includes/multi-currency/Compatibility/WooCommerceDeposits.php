@@ -84,8 +84,7 @@ class WooCommerceDeposits {
 	 * @return array
 	 */
 	public function modify_cart_item_deposit_amount_meta( $amount, $product ) {
-		if ( $this->utils->is_call_in_backtrace( [ 'WC_Deposits_Cart_Manager->deposits_form_output' ] )
-		&& 'percent' !== WC_Deposits_Product_Manager::get_deposit_type( $product ) ) {
+		if ( 'percent' === $this->get_product_deposit_type( $product ) && $this->utils->is_call_in_backtrace( [ 'WC_Deposits_Cart_Manager->deposits_form_output' ] ) ) {
 			return $this->multi_currency->get_price( $amount, 'product' );
 		}
 		return $amount;
@@ -101,11 +100,7 @@ class WooCommerceDeposits {
 	 * @return  bool                        Whether the price should be converted or not.
 	 */
 	public function maybe_convert_product_prices_for_deposits( $result, $product ) {
-		if ( class_exists( 'WC_Deposits_Product_Manager' )
-		&& call_user_func( [ 'WC_Deposits_Product_Manager', 'deposits_enabled' ], $product )
-		&& 'plan' === call_user_func( [ 'WC_Deposits_Product_Manager', 'get_deposit_type' ], $product )
-		&& $this->utils->is_call_in_backtrace( [ 'WC_Cart->calculate_totals' ] )
-		) {
+		if ( 'plan' === $this->get_product_deposit_type( $product ) && $this->utils->is_call_in_backtrace( [ 'WC_Cart->calculate_totals' ] ) ) {
 			return false;
 		}
 		return $result;
@@ -148,5 +143,20 @@ class WooCommerceDeposits {
 			$order->set_currency( $original_currency );
 			$order->save();
 		}
+	}
+
+	/**
+	 * Gets the deposit type of a product if deposits are enabled for the product.
+	 *
+	 * @param   \WC_Product $product  The product to check.
+	 *
+	 * @return  string|false The product deposit type if deposits are enabled on it, or false.
+	 */
+	private function get_product_deposit_type( $product ) {
+		$product_has_deposit = class_exists( 'WC_Deposits_Product_Manager' ) && call_user_func( [ 'WC_Deposits_Product_Manager', 'deposits_enabled' ], $product );
+		if ( $product_has_deposit ) {
+			return call_user_func( [ 'WC_Deposits_Product_Manager', 'get_deposit_type' ], $product );
+		}
+		return false;
 	}
 }
