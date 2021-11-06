@@ -27,7 +27,6 @@ const PaymentMethod = ( {
 	onCheckClick,
 	onUncheckClick,
 	className,
-	fees,
 } ) => {
 	const disabled = upeCapabilityStatuses.INACTIVE === status;
 	const { accountFees } = useContext( WCPaySettingsContext );
@@ -132,30 +131,34 @@ const PaymentMethod = ( {
 						{ description }
 					</div>
 				</div>
-				<div className="payment-method__fees">
-					<Tooltip
-						content={ __(
-							'Base transaction fees',
-							'woocommerce-payments'
-						) }
-					>
-						<Pill
-							aria-label={ sprintf(
-								__(
-									'Base transaction fees: %s',
-									'woocommerce-payments'
-								),
-								fees
+				{ accountFees && accountFees[ id ] && (
+					<div className="payment-method__fees">
+						<Tooltip
+							content={ __(
+								'Base transaction fees',
+								'woocommerce-payments'
 							) }
 						>
-							<span>
-								{ formatMethodFeesDescription(
-									accountFees[ id ]
+							<Pill
+								aria-label={ sprintf(
+									__(
+										'Base transaction fees: %s',
+										'woocommerce-payments'
+									),
+									formatMethodFeesDescription(
+										accountFees[ id ]
+									)
 								) }
-							</span>
-						</Pill>
-					</Tooltip>
-				</div>
+							>
+								<span>
+									{ formatMethodFeesDescription(
+										accountFees[ id ]
+									) }
+								</span>
+							</Pill>
+						</Tooltip>
+					</div>
+				) }
 			</div>
 		</li>
 	);

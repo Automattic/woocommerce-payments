@@ -19,51 +19,33 @@ describe( 'PaymentMethod', () => {
 		expect( screen.queryByText( 'Bar' ) ).toBeInTheDocument();
 	} );
 
-	test( 'does not render "Delete" when the handler is not provided', () => {
-		render( <PaymentMethod label="Foo" onDeleteClick={ undefined } /> );
-
-		const deleteButton = screen.queryByRole( 'button', {
-			name: 'Delete Foo from checkout',
-		} );
-
-		expect( deleteButton ).not.toBeInTheDocument();
-	} );
-
-	test( 'clicking the "Delete" button with confirmation calls onDeleteClick()', () => {
-		const handleDeleteClickMock = jest.fn();
+	test( 'clicking an unchecked checkbox calls onCheckClick() and onUnCheckClick', () => {
+		const handleOnCheckClickMock = jest.fn();
+		const handleOnUnCheckClickMock = jest.fn();
 		render(
 			<PaymentMethod
 				label="Foo"
 				id="foo"
-				onDeleteClick={ handleDeleteClickMock }
+				onCheckClick={ handleOnCheckClickMock }
+				onUnCheckClick={ handleOnUnCheckClickMock }
 			/>
 		);
 
 		user.click(
-			screen.getByRole( 'button', {
-				name: 'Delete Foo from checkout',
+			screen.getByRole( 'checkbox', {
+				name: 'Foo',
 			} )
 		);
+		expect( handleOnCheckClickMock ).toHaveBeenCalledTimes( 1 );
+		expect( handleOnCheckClickMock ).toHaveBeenCalledWith( 'foo' );
+
 		user.click(
-			screen.getByRole( 'button', {
-				name: 'Cancel',
+			screen.getByRole( 'checkbox', {
+				name: 'Foo',
 			} )
 		);
 
-		expect( handleDeleteClickMock ).not.toHaveBeenCalled();
-
-		user.click(
-			screen.getByRole( 'button', {
-				name: 'Delete Foo from checkout',
-			} )
-		);
-		user.click(
-			screen.getByRole( 'button', {
-				name: 'Remove',
-			} )
-		);
-
-		expect( handleDeleteClickMock ).toHaveBeenCalledTimes( 1 );
-		expect( handleDeleteClickMock ).toHaveBeenCalledWith( 'foo' );
+		expect( handleOnUnCheckClickMock ).toHaveBeenCalledTimes( 1 );
+		expect( handleOnUnCheckClickMock ).toHaveBeenCalledWith( 'foo' );
 	} );
 } );
