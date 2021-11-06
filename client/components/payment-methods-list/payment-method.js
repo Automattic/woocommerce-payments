@@ -2,6 +2,7 @@
 /**
  * External dependencies
  */
+import { useContext } from 'react';
 import classNames from 'classnames';
 
 /**
@@ -9,13 +10,12 @@ import classNames from 'classnames';
  */
 import Pill from '../pill';
 import Tooltip from '../tooltip';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
+import LoadableCheckboxControl from '../loadable-checkbox';
 import { __, sprintf } from '@wordpress/i18n';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import './payment-method.scss';
-import LoadableCheckboxControl from '../loadable-checkbox';
 import { formatMethodFeesDescription } from 'wcpay/utils/account-fees';
-import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
-import { useContext, useState } from 'react';
+import './payment-method.scss';
 
 const PaymentMethod = ( {
 	id,
@@ -30,14 +30,11 @@ const PaymentMethod = ( {
 } ) => {
 	const disabled = upeCapabilityStatuses.INACTIVE === status;
 	const { accountFees } = useContext( WCPaySettingsContext );
-	const [ isChecked, setChecked ] = useState( checked );
 
 	const handleChange = ( newStatus ) => {
 		if ( newStatus ) {
-			setChecked( true );
 			return onCheckClick();
 		}
-		setChecked( false );
 		return onUncheckClick();
 	};
 
@@ -54,7 +51,8 @@ const PaymentMethod = ( {
 					checked={ checked }
 					onChange={ handleChange }
 					disabled={ disabled }
-					delayMs={ ! isChecked ? 1500 : 0 }
+					delayMsOnCheck={ 1500 }
+					delayMsOnUncheck={ 0 }
 				/>
 			</div>
 			<div className="payment-method__icon">

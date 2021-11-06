@@ -248,11 +248,7 @@ const PaymentMethods = () => {
 									key={ id }
 									Icon={ Icon }
 									status={
-										paymentMethodStatuses[
-											methodsConfiguration[ id ]
-												.stripe_key
-										].status ??
-										upeCapabilityStatuses.UNREQUESTED
+										getStatusAndRequirements( id ).status
 									}
 									checked={ enabledMethodIds.includes( id ) }
 									onUncheckClick={ () => {

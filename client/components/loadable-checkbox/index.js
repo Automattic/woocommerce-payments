@@ -15,15 +15,22 @@ const LoadableCheckboxControl = ( {
 	disabled,
 	checked,
 	heading,
-	delayMs = 1500,
+	delayMsOnCheck = 1500,
+	delayMsOnUncheck = 0,
 } ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const handleOnChange = ( status ) => {
-		setLoading( true );
-		setTimeout( () => {
+		const timeout = status ? delayMsOnCheck : delayMsOnUncheck;
+		if ( timeout ) {
+			setLoading( true );
+			setTimeout( () => {
+				onChange( status );
+				setLoading( false );
+			}, timeout );
+		} else {
+			// Don't show the loading indicator if there's no delay.
 			onChange( status );
-			setLoading( false );
-		}, delayMs );
+		}
 	};
 
 	return (
