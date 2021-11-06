@@ -33,7 +33,7 @@ const methods = {
 				<p>
 					<ExternalLink href="https://developer.apple.com/design/human-interface-guidelines/apple-pay/overview/introduction/">
 						{ __(
-							'View Apple Pay Guidelines',
+							'View Apple Pay guidelines',
 							'woocommerce-payments'
 						) }
 					</ExternalLink>
@@ -41,7 +41,7 @@ const methods = {
 				<p>
 					<ExternalLink href="https://developers.google.com/pay/api/web/guides/brand-guidelines">
 						{ __(
-							'View Google Pay Guidelines',
+							'View Google Pay guidelines',
 							'woocommerce-payments'
 						) }
 					</ExternalLink>

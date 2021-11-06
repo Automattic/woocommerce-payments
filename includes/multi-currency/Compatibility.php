@@ -9,13 +9,19 @@ namespace WCPay\MultiCurrency;
 
 use WC_Order;
 use WC_Order_Refund;
+use WC_Product;
+use WCPay\MultiCurrency\Compatibility\WooCommerceBookings;
+use WCPay\MultiCurrency\Compatibility\WooCommerceFedEx;
+use WCPay\MultiCurrency\Compatibility\WooCommerceProductAddOns;
+use WCPay\MultiCurrency\Compatibility\WooCommerceUPS;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that controls Multi Currency Compatibility.
+ * Class that controls Multi-Currency Compatibility.
  */
 class Compatibility {
+
 	/**
 	 * Subscription switch cart item.
 	 *
@@ -46,17 +52,21 @@ class Compatibility {
 	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
 		$this->multi_currency = $multi_currency;
 		$this->utils          = $utils;
+		$this->init_filters();
 
-		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
-			add_filter( 'option_woocommerce_subscriptions_multiple_purchase', [ $this, 'maybe_disable_mixed_cart' ], 50 );
-			add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
-			add_filter( 'woocommerce_product_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
-			add_filter( 'woocommerce_product_variation_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
-		}
+		add_action( 'init', [ $this, 'init_compatibility_classes' ], 11 );
+	}
 
-		if ( defined( 'DOING_CRON' ) ) {
-			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
-		}
+	/**
+	 * Initializes our compatibility classes.
+	 *
+	 * @return void
+	 */
+	public function init_compatibility_classes() {
+		$compatibility_classes[] = new WooCommerceBookings( $this->multi_currency, $this->utils, $this->multi_currency->get_frontend_currencies() );
+		$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
+		$compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency, $this->utils );
+		$compatibility_classes[] = new WooCommerceUPS( $this->multi_currency, $this->utils );
 	}
 
 	/**
@@ -257,7 +267,22 @@ class Compatibility {
 			}
 		}
 
-		return true;
+		// WCPay Subs does a check against the product price and the total, we need to return the actual product price for this check.
+		if ( $this->utils->is_call_in_backtrace( [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] )
+			&& $this->utils->is_call_in_backtrace( [ 'WC_Product->get_price' ] ) ) {
+			return false;
+		}
+
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', true, $product );
+	}
+
+	/**
+	 * Determines if the store currency should be returned or not.
+	 *
+	 * @return bool
+	 */
+	public function should_return_store_currency(): bool {
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_return_store_currency', false );
 	}
 
 	/**
@@ -319,6 +344,24 @@ class Compatibility {
 		return $results;
 	}
 
+	/**
+	 * Initializes our filters for compatibility.
+	 *
+	 * @return void
+	 */
+	private function init_filters() {
+		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
+			// Subscriptions filters.
+			add_filter( 'option_woocommerce_subscriptions_multiple_purchase', [ $this, 'maybe_disable_mixed_cart' ], 50 );
+			add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_product_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
+			add_filter( 'woocommerce_product_variation_get__subscription_sign_up_fee', [ $this, 'get_subscription_product_signup_fee' ], 50, 2 );
+		}
+
+		if ( defined( 'DOING_CRON' ) ) {
+			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
+		}
+	}
 
 	/**
 	 * Checks the cart to see if it contains a subscription product renewal.

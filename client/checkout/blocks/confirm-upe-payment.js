@@ -17,7 +17,8 @@ export default async function confirmUPEPayment(
 	billingData,
 	emitResponse
 ) {
-	const name = `${ billingData.first_name } ${ billingData.last_name }`.trim();
+	const name =
+		`${ billingData.first_name } ${ billingData.last_name }`.trim() || '-';
 
 	try {
 		const confirmParams = {
@@ -25,15 +26,15 @@ export default async function confirmUPEPayment(
 			payment_method_data: {
 				billing_details: {
 					name,
-					email: billingData.email,
-					phone: billingData.phone,
+					email: billingData.email || '-',
+					phone: billingData.phone || '-',
 					address: {
-						country: billingData.country,
-						postal_code: billingData.postcode,
-						state: billingData.state,
-						city: billingData.city,
-						line1: billingData.address_1,
-						line2: billingData.address_2,
+						country: billingData.country || '-',
+						postal_code: billingData.postcode || '-',
+						state: billingData.state || '-',
+						city: billingData.city || '-',
+						line1: billingData.address_1 || '-',
+						line2: billingData.address_2 || '-',
 					},
 				},
 			},

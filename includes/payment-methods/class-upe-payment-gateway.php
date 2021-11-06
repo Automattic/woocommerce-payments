@@ -108,10 +108,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			true
 		);
 
+		$script_dependencies = [ 'stripe', 'wc-checkout' ];
+
+		if ( $this->supports( 'tokenization' ) ) {
+			$script_dependencies[] = 'woocommerce-tokenization-form';
+		}
+
 		wp_register_script(
 			'wcpay-upe-checkout',
 			plugins_url( 'dist/upe_checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout', 'woocommerce-tokenization-form' ],
+			$script_dependencies,
 			WC_Payments::get_file_version( 'dist/upe_checkout.js' ),
 			true
 		);
@@ -720,7 +726,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a>here</a>.', 'woocommerce-payments' ),
 						[
 							'strong' => '<strong>',
-							'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+							'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
 						]
 					);
 				?>
@@ -775,8 +781,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function get_upe_available_payment_methods() {
 		$methods = parent::get_upe_available_payment_methods();
 
+		$methods[] = 'bancontact';
 		$methods[] = 'giropay';
+		$methods[] = 'ideal';
 		$methods[] = 'sofort';
+		$methods[] = 'sepa_debit';
+		$methods[] = 'p24';
 
 		return array_values(
 			apply_filters(

@@ -10,6 +10,8 @@ use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Tracker;
+
 /**
  * Class WC_Payments_Notes_Additional_Payment_Methods
  */
@@ -61,7 +63,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		$note       = new $note_class();
 
 		$note->set_title( __( 'Boost your sales by accepting new payment methods', 'woocommerce-payments' ) );
-		$note->set_content( __( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments. <a href="https://docs.woocommerce.com/document/payments/additional-payment-methods/" target="wcpay_upe_learn_more">Learn more</a>', 'woocommerce-payments' ) );
+		$note->set_content( __( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments. <a href="https://woocommerce.com/document/payments/additional-payment-methods/" target="wcpay_upe_learn_more">Learn more</a>', 'woocommerce-payments' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( $note_class::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );
@@ -110,9 +112,17 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 			}
 		}
 
+		// Track enabling UPE if it wasn't enabled before.
+		if ( ! WC_Payments_Features::is_upe_enabled() && class_exists( 'WC_Tracks' ) ) {
+			// We're not using Tracker::track_admin() here because
+			// WC_Pay\record_tracker_events() is never triggered due to the redirect below.
+			WC_Tracks::record_event( 'wcpay_upe_enabled' );
+		}
+
 		// Enable UPE, deletes the note and redirect to onboarding task.
 		update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
 		self::possibly_delete_note();
+
 		$wcpay_settings_url = admin_url( 'admin.php?page=wc-admin&task=woocommerce-payments--additional-payment-methods' );
 		wp_safe_redirect( $wcpay_settings_url );
 		exit;

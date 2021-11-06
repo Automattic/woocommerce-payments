@@ -49,12 +49,19 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client  WooCommerce Payments API client.
 	 * @param WC_Payments_Product_Service $product_service      Product Service.
+	 * @param WC_Payment_Gateway_WCPay    $gateway              WC payments Payment Gateway.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Product_Service $product_service ) {
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Product_Service $product_service,
+		WC_Payment_Gateway_WCPay $gateway
+	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->product_service     = $product_service;
+		$this->gateway             = $gateway;
 
-		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_record_first_invoice_payment' ], 10, 3 );
+		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'maybe_record_invoice_payment' ], 10, 1 );
+		add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'maybe_record_invoice_payment' ], 11, 1 );
 	}
 
 	/**
@@ -132,35 +139,38 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
-	 * Marks the initial subscription invoice as paid after a parent order is completed.
+	 * Marks a subscription invoice as paid after a parent or renewal order is completed.
 	 *
 	 * When a subscription's parent order goes from a pending payment status to a payment completed status,
+	 * or when a subscription with no corresponding Stripe subscription is manually renewed,
 	 * make sure the invoice is marked as paid (without charging the customer since it was charged on checkout).
 	 *
-	 * @param int    $order_id   The order which is updating status.
-	 * @param string $old_status The order's old status.
-	 * @param string $new_status The order's new status.
+	 * @param int $order_id The WC order ID.
 	 */
-	public function maybe_record_first_invoice_payment( int $order_id, string $old_status, string $new_status ) {
+	public function maybe_record_invoice_payment( int $order_id ) {
 		$order = wc_get_order( $order_id );
 
-		if ( ! $order ) {
+		if ( ! $order || self::get_order_invoice_id( $order ) ) {
 			return;
 		}
 
-		$needed_payment  = in_array( $old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', [ 'pending', 'on-hold', 'failed' ], $order ), true );
-		$order_completed = in_array( $new_status, [ apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ], true );
+		foreach ( wcs_get_subscriptions_for_order( $order, [ 'order_type' => [ 'parent', 'renewal' ] ] ) as $subscription ) {
+			$invoice_id = self::get_subscription_invoice_id( $subscription );
 
-		if ( $needed_payment && $order_completed ) {
-			foreach ( wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'parent' ] ) as $subscription ) {
-				$invoice_id = self::get_subscription_invoice_id( $subscription );
+			if ( ! $invoice_id ) {
+				continue;
+			}
 
-				if ( ! $invoice_id ) {
-					continue;
-				}
+			// Update the status of the invoice to paid but don't charge the customer by using paid_out_of_band parameter.
+			$this->payments_api_client->charge_invoice( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
 
-				// Update the status of the invoice to paid but don't charge the customer by using paid_out_of_band parameter.
-				$this->payments_api_client->charge_invoice( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
+			if ( $subscription->is_manual() ) {
+				$subscription->set_requires_manual_renewal( false );
+				$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+				// Copy the payment token used to pay for the order to the subscription.
+				WC_Payments::get_gateway()->update_failing_payment_method( $subscription, $order );
+				$subscription->save();
 			}
 		}
 	}
@@ -219,6 +229,31 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
+	 * Retrieves the intent object and adds its data to the order.
+	 *
+	 * @param WC_Order $order The order to update.
+	 * @param string   $intent_id The intent ID.
+	 */
+	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
+		try {
+			$intent_object = $this->payments_api_client->get_intent( $intent_id );
+		} catch ( API_Exception $e ) {
+			$order->add_order_note( __( 'The payment info couldn\'t be added to the order.', 'woocommerce-payments' ) );
+			return;
+		}
+
+		$this->gateway->attach_intent_info_to_order(
+			$order,
+			$intent_id,
+			$intent_object->get_status(),
+			$intent_object->get_payment_method_id(),
+			$intent_object->get_customer_id(),
+			$intent_object->get_charge_id(),
+			$intent_object->get_currency()
+		);
+	}
+
+	/**
 	 * Sets the subscription last invoice ID meta for WC subscription.
 	 *
 	 * @param WC_Subscription $subscription The subscription.
@@ -240,66 +275,53 @@ class WC_Payments_Invoice_Service {
 	 * @throws Rest_Request_Exception WCPay invoice items do not match WC subscription items.
 	 */
 	private function get_repair_data_for_wcpay_items( array $wcpay_item_data, WC_Subscription $subscription ) : array {
-		$repair_data = [];
-		$wcpay_items = [];
+		$repair_data        = [];
+		$wcpay_items        = [];
+		$subscription_items = $subscription->get_items( [ 'line_item', 'fee', 'shipping', 'tax' ] );
 
 		foreach ( $wcpay_item_data as $item ) {
 			$wcpay_subscription_item_id = $item['subscription_item'];
 
 			$wcpay_items[ $wcpay_subscription_item_id ] = [
-				'amount'    => $item['amount'],
-				'quantity'  => $item['quantity'],
-				'tax_rates' => array_column( $item['tax_rates'], 'percentage' ),
+				'unit_amount'      => $item['price']['unit_amount_decimal'],
+				'billing_period'   => $item['price']['recurring']['interval'],
+				'billing_interval' => $item['price']['recurring']['interval_count'],
+				'currency'         => $item['price']['currency'],
+				'quantity'         => $item['quantity'],
 			];
 		}
 
-		foreach ( $subscription->get_items( [ 'line_item', 'fee', 'shipping' ] ) as $item ) {
-			$subscription_item_id = WC_Payments_Subscription_Service::get_wcpay_subscription_item_id( $item );
+		// Generate any repair data necessary to update the WCPay Subscription so it matches the WC subscription.
+		foreach ( WC_Payments_Subscriptions::get_subscription_service()->get_recurring_item_data_for_subscription( $subscription ) as $recurring_item_data ) {
+			$item_id       = $recurring_item_data['metadata']['wc_item_id'];
+			$item          = $subscription_items[ $item_id ];
+			$wcpay_item_id = WC_Payments_Subscription_Service::get_wcpay_subscription_item_id( $item );
 
-			if ( ! $subscription_item_id ) {
-				continue;
-			}
-
-			if ( ! in_array( $subscription_item_id, array_keys( $wcpay_items ), true ) ) {
-				$message = __( 'The WCPay invoice items do not match WC subscription items', 'woocommerce-payments' );
+			if ( ! isset( $wcpay_items[ $wcpay_item_id ] ) ) {
+				$message = __( 'The WCPay invoice items do not match WC subscription items.', 'woocommerce-payments' );
 				Logger::error( $message );
 				throw new Rest_Request_Exception( $message );
 			}
 
-			$item_data = $wcpay_items[ $subscription_item_id ];
-
-			if ( (int) $item->get_total() * 100 !== $item_data['amount'] ) {
-				if ( $item->is_type( 'line_item' ) ) {
-					$product                                       = $item->get_product();
-					$repair_data[ $subscription_item_id ]['price'] = $this->product_service->get_wcpay_price_id( $product );
-				} else {
-					$repair_data[ $subscription_item_id ]['price_data'] = WC_Payments_Subscription_Service::format_item_price_data(
-						$subscription->get_currency(),
-						$this->product_service->get_stripe_product_id_for_item( $item->get_type() ),
-						$item->get_total(),
-						$subscription->get_billing_period(),
-						$subscription->get_billing_interval()
-					);
-				}
+			// Check the quantity matches between WC and WCPay.
+			if ( $item->is_type( 'line_item' ) && $wcpay_items[ $wcpay_item_id ]['quantity'] !== $recurring_item_data['quantity'] ) {
+				$repair_data[ $wcpay_item_id ]['quantity'] = $recurring_item_data['quantity'];
 			}
 
-			if ( $item->get_quantity() !== $item_data['quantity'] ) {
-				$repair_data[ $subscription_item_id ]['quantity'] = $item->get_quantity();
-			}
+			// Confirm the line item amount matches between WC and WCPay.
+			$unit_amounts_match = (string) $wcpay_items[ $wcpay_item_id ]['unit_amount'] === (string) $recurring_item_data['price_data']['unit_amount_decimal'];
 
-			if ( ! empty( $item->get_taxes() ) ) {
-				$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
+			if ( ! $unit_amounts_match ) {
+				$price_data = $recurring_item_data['price_data'];
 
-				if ( count( $tax_rate_ids ) !== count( $item_data['tax_rates'] ) ) {
-					$repair_data[ $subscription_item_id ]['tax_rates'] = WC_Payments_Subscription_Service::get_tax_rates_for_item( $item, $subscription );
-				} else {
-					foreach ( $subscription->get_taxes() as $tax ) {
-						if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) && ! in_array( (int) $tax->get_rate_percent(), $item_data['tax_rates'], true ) ) {
-							$repair_data[ $subscription_item_id ]['tax_rates'] = WC_Payments_Subscription_Service::get_tax_rates_for_item( $item, $subscription );
-							break;
-						}
-					}
-				}
+				// We need to maintain the WCPay subscription's billing terms and currency. ie We cannot update the recurring period, interval or currency mid term.
+				$price_data['currency']  = $wcpay_items[ $wcpay_item_id ]['currency'];
+				$price_data['recurring'] = [
+					'interval'       => $wcpay_items[ $wcpay_item_id ]['billing_period'],
+					'interval_count' => $wcpay_items[ $wcpay_item_id ]['billing_interval'],
+				];
+
+				$repair_data[ $wcpay_item_id ]['price_data'] = $price_data;
 			}
 		}
 
@@ -309,7 +331,7 @@ class WC_Payments_Invoice_Service {
 	/**
 	 * Gets repair data for WCPay invoice discounts.
 	 *
-	 * @param array           $wcpay_discount_data The WCPay disounts.
+	 * @param array           $wcpay_discount_data The WCPay discounts.
 	 * @param WC_Subscription $subscription        The WC Subscription object.
 	 *
 	 * @return mixed

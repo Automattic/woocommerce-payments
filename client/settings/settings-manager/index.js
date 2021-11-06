@@ -58,7 +58,7 @@ const PaymentRequestDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://docs.woocommerce.com/document/payments/apple-pay/">
+		<ExternalLink href="https://woocommerce.com/document/payments/apple-pay/">
 			{ __( 'How it works?', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
@@ -85,8 +85,8 @@ const TransactionsAndDepositsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://docs.woocommerce.com/document/payments/faq/">
-			{ __( 'View Frequently Asked Questions', 'woocommerce-payments' ) }
+		<ExternalLink href="https://woocommerce.com/document/payments/faq/">
+			{ __( 'View frequently asked questions', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
 );

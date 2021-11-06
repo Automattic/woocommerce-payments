@@ -19,7 +19,7 @@ use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that controls Multi Currency functionality.
+ * Class that controls Multi-Currency functionality.
  */
 class MultiCurrency {
 
@@ -27,6 +27,7 @@ class MultiCurrency {
 	const CURRENCY_META_KEY               = 'wcpay_currency';
 	const CURRENCY_CACHE_OPTION           = 'wcpay_multi_currency_cached_currencies';
 	const CURRENCY_RETRIEVAL_ERROR_OPTION = 'wcpay_multi_currency_retrieval_error';
+	const FILTER_PREFIX                   = 'wcpay_multi_currency_';
 
 	/**
 	 * The plugin's ID.
@@ -224,12 +225,13 @@ class MultiCurrency {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
 			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
 			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
+			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
 		}
 	}
 
 	/**
 	 * Called after the WooCommerce session has been initialized. Initialises the available currencies,
-	 * default currency and enabled currencies for the multi currency plugin.
+	 * default currency and enabled currencies for the Multi-Currency plugin.
 	 *
 	 * @return void
 	 */
@@ -255,7 +257,7 @@ class MultiCurrency {
 		new UserSettings( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 
@@ -825,6 +827,21 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Sets a new customer's currency meta to what's in their session.
+	 * This is needed for when a new user/customer is created during the checkout process.
+	 *
+	 * @param int $customer_id The user/customer id.
+	 *
+	 * @return void
+	 */
+	public function set_new_customer_currency_meta( $customer_id ) {
+		$code = 0 !== $customer_id && WC()->session ? WC()->session->get( self::CURRENCY_SESSION_KEY ) : false;
+		if ( $code ) {
+			update_user_meta( $customer_id, self::CURRENCY_META_KEY, $code );
+		}
+	}
+
+	/**
 	 * Adds Multi-Currency notes to the WC-Admin inbox.
 	 *
 	 * @return void
@@ -856,9 +873,7 @@ class MultiCurrency {
 	 * @return float The adjusted price.
 	 */
 	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
-		if ( 'none' !== $currency->get_rounding() ) {
-			$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
-		}
+		$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
 
 		if ( $apply_charm_pricing ) {
 			$price += floatval( $currency->get_charm() );
@@ -1273,7 +1288,7 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Gets the multi currency onboarding preview overrides from the querystring.
+	 * Gets the Multi-Currency onboarding preview overrides from the querystring.
 	 *
 	 * @return  array  Override variables
 	 */
@@ -1369,7 +1384,7 @@ class MultiCurrency {
 
 	/**
 	 * Checks if the currently displayed page is the WooCommerce Payments
-	 * settings page for the multi currency settings.
+	 * settings page for the Multi-Currency settings.
 	 *
 	 * @return bool
 	 */
