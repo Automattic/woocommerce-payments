@@ -12,10 +12,69 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
 import { formatCurrency } from 'utils/currency';
 import { formatFee } from 'utils/fees';
 
+const getFeeDescriptionString = ( fee ) => {
+	if ( fee.fixed_rate && fee.percentage_rate ) {
+		return sprintf(
+			'%1$f%% + %2$s',
+			formatFee( fee.percentage_rate ),
+			formatCurrency( fee.fixed_rate, fee.currency )
+		);
+	} else if ( fee.fixed_rate ) {
+		return sprintf(
+			'%2$s',
+			formatFee( fee.percentage_rate ),
+			formatCurrency( fee.fixed_rate, fee.currency )
+		);
+	} else if ( fee.percentage_rate ) {
+		return sprintf(
+			'%1$f%%',
+			formatFee( fee.percentage_rate ),
+			formatCurrency( fee.fixed_rate, fee.currency )
+		);
+	}
+	return '';
+};
+
 export const getCurrentFee = ( accountFees ) => {
 	return accountFees.discount.length
 		? accountFees.discount[ 0 ]
 		: accountFees.base;
+};
+
+export const formatMethodFeesTooltip = ( accountFees ) => {
+	const total = {
+		percentage_rate:
+			accountFees.base.percentage_rate +
+			accountFees.additional.percentage_rate +
+			accountFees.fx.percentage_rate,
+		fixed_rate:
+			accountFees.base.fixed_rate +
+			accountFees.additional.fixed_rate +
+			accountFees.fx.fixed_rate,
+		currency: accountFees.base.currency,
+	};
+	return (
+		<div className={ 'wcpay-fees-tooltip' }>
+			<div>
+				<div>Base fee</div>
+				<div>{ getFeeDescriptionString( accountFees.base ) }</div>
+			</div>
+			<div>
+				<div>International payment method fee</div>
+				<div>{ getFeeDescriptionString( accountFees.additional ) }</div>
+			</div>
+			<div>
+				<div>Foreign exchange fee</div>
+				<div>{ getFeeDescriptionString( accountFees.fx ) }</div>
+			</div>
+			<div>
+				<div>Total per transaction</div>
+				<div className={ 'wcpay-fees-tooltip__bold' }>
+					{ getFeeDescriptionString( total ) }
+				</div>
+			</div>
+		</div>
+	);
 };
 
 export const formatAccountFeesDescription = (
@@ -23,6 +82,8 @@ export const formatAccountFeesDescription = (
 	customFormats = {}
 ) => {
 	const baseFee = accountFees.base;
+	const additionalFee = accountFees.additional;
+	const fxFee = accountFees.fx;
 	const currentFee = getCurrentFee( accountFees );
 
 	// Default formats will be used if no matching field was passed in the `formats` parameter.
@@ -37,8 +98,15 @@ export const formatAccountFeesDescription = (
 
 	let feeDescription = sprintf(
 		formats.fee,
-		formatFee( baseFee.percentage_rate ),
-		formatCurrency( baseFee.fixed_rate, baseFee.currency )
+		formatFee(
+			baseFee.percentage_rate +
+				additionalFee.percentage_rate +
+				fxFee.percentage_rate
+		),
+		formatCurrency(
+			baseFee.fixed_rate + additionalFee.fixed_rate + fxFee.fixed_rate,
+			baseFee.currency
+		)
 	);
 
 	if ( currentFee !== baseFee ) {

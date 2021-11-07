@@ -14,7 +14,10 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import LoadableCheckboxControl from '../loadable-checkbox';
 import { __, sprintf } from '@wordpress/i18n';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import { formatMethodFeesDescription } from 'wcpay/utils/account-fees';
+import {
+	formatMethodFeesDescription,
+	formatMethodFeesTooltip,
+} from 'wcpay/utils/account-fees';
 import './payment-method.scss';
 
 const PaymentMethod = ( {
@@ -132,9 +135,9 @@ const PaymentMethod = ( {
 				{ accountFees && accountFees[ id ] && (
 					<div className="payment-method__fees">
 						<Tooltip
-							content={ __(
-								'Base transaction fees',
-								'woocommerce-payments'
+							maxWidth={ '300px' }
+							content={ formatMethodFeesTooltip(
+								accountFees[ id ]
 							) }
 						>
 							<Pill
