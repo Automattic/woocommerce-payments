@@ -201,8 +201,12 @@ export const TransactionsList = (
 	const rows = transactions.map( ( txn ) => {
 		const detailsURL =
 			getDetailsURL( txn.charge_id, 'transactions' ) +
+			'&transaction_id=' +
+			txn.transaction_id +
 			'&type=' +
-			( txn.metadata ? txn.metadata.charge_type : txn.type );
+			( txn.metadata && 'card_reader_fee' === txn.metadata.charge_type
+				? txn.metadata.charge_type
+				: txn.type );
 		const clickable = ( children: JSX.Element | string ) => (
 			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 		);

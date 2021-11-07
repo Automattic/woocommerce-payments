@@ -18,10 +18,13 @@ import { useReaderStats } from 'wcpay/data';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import Page from 'components/page';
 import DownloadButton from 'components/download-button';
+import * as React from 'react';
+import { formatExplicitCurrency } from 'utils/currency';
 
 const PaymentReaderChargeDetails = ( props ) => {
 	const { readers, chargeError, isLoading } = useReaderStats(
-		props.chargeId
+		props.chargeId,
+		props.transactionId
 	);
 	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
 
@@ -86,8 +89,13 @@ const PaymentReaderChargeDetails = ( props ) => {
 							display: reader.count,
 						},
 						{
-							value: reader.fee ? reader.fee.amount : 0,
-							display: reader.fee ? reader.fee.amount : 0,
+							value: reader.fee ? reader.fee.amount / 100 : 0,
+							display: reader.fee
+								? formatExplicitCurrency(
+										reader.fee.amount,
+										reader.fee.currency
+								  )
+								: 0,
 						},
 					];
 			  } )

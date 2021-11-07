@@ -5,7 +5,7 @@
 import { useSelect } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
-export const useReaderStats = ( chargeId ) =>
+export const useReaderStats = ( chargeId, transactionId ) =>
 	useSelect(
 		( select ) => {
 			const { getReaderStats, getReaderStatsError, isResolving } = select(
@@ -13,10 +13,13 @@ export const useReaderStats = ( chargeId ) =>
 			);
 
 			return {
-				readers: getReaderStats( chargeId ),
+				readers: getReaderStats( chargeId, transactionId ),
 				chargeError: getReaderStatsError( chargeId ),
-				isLoading: isResolving( 'getReaderStats', [ chargeId ] ),
+				isLoading: isResolving( 'getReaderStats', [
+					chargeId,
+					transactionId,
+				] ),
 			};
 		},
-		[ chargeId ]
+		[ chargeId, transactionId ]
 	);

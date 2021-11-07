@@ -17,7 +17,12 @@ import PaymentReaderChargeDetails from './readers';
 
 const PaymentDetails = ( props ) => {
 	if ( 'card_reader_fee' === props.query.type ) {
-		return <PaymentReaderChargeDetails chargeId={ props.query.id } />;
+		return (
+			<PaymentReaderChargeDetails
+				chargeId={ props.query.id }
+				transactionId={ props.query.transaction_id }
+			/>
+		);
 	}
 
 	return <PaymentChargeDetails chargeId={ props.query.id } />;

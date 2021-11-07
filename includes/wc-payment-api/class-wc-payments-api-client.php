@@ -1784,9 +1784,11 @@ class WC_Payments_API_Client {
 	/**
 	 * Fetch readers charge summary.
 	 *
+	 * @param string $charge_date Charge date for readers.
+	 *
 	 * @return array reader objects.
 	 */
-	public function get_readers_charge_summary() {
-		return $this->request( [], self::READERS_CHARGE_SUMMARY, self::GET );
+	public function get_readers_charge_summary( string $charge_date ) : array {
+		return $this->request( [ 'charge_date' => $charge_date ], self::READERS_CHARGE_SUMMARY, self::GET );
 	}
 }
