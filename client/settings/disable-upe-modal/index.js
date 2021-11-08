@@ -29,7 +29,7 @@ const NeedHelpBarSection = () => {
 				components: {
 					docsLink: (
 						// eslint-disable-next-line max-len
-						<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#introduction">
+						<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#introduction">
 							{ __(
 								'WooCommerce Payments docs',
 								'woocommerce-payments'

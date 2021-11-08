@@ -40,7 +40,7 @@ const MultiCurrencyToggle = () => {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
-						<ExternalLink href="https://docs.woocommerce.com/document/payments/currencies/multi-currency-setup" />
+						<ExternalLink href="https://woocommerce.com/document/payments/currencies/multi-currency-setup" />
 					),
 				},
 			} ) }
