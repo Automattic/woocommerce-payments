@@ -69,7 +69,7 @@ exports[`Instant deposit button and modal modal renders correctly 1`] = `
     <p>
       Need cash in a hurry? Instant deposits are available within 30 minutes for a nominal 1.5% service fee. 
       <a
-        href="https://docs.woocommerce.com/document/payments/instant-deposits/"
+        href="https://woocommerce.com/document/payments/instant-deposits/"
         rel="noopener noreferrer"
         target="_blank"
       >
