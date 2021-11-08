@@ -24,16 +24,16 @@ defined( 'ABSPATH' ) || exit;
 class Compatibility extends BaseCompatibility {
 
 	/**
-	 * Constructor.
+	 * Init the class.
 	 *
-	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils          Utils class.
+	 * @return void
 	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		parent::__construct( $multi_currency, $utils );
-		$this->init_filters();
-
+	protected function init() {
 		add_action( 'init', [ $this, 'init_compatibility_classes' ], 11 );
+
+		if ( defined( 'DOING_CRON' ) ) {
+			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
+		}
 	}
 
 	/**
@@ -163,16 +163,5 @@ class Compatibility extends BaseCompatibility {
 		remove_filter( 'woocommerce_order_query', [ $this, 'convert_order_prices' ] );
 
 		return $results;
-	}
-
-	/**
-	 * Initializes our filters for compatibility.
-	 *
-	 * @return void
-	 */
-	private function init_filters() {
-		if ( defined( 'DOING_CRON' ) ) {
-			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
-		}
 	}
 }

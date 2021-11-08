@@ -16,22 +16,12 @@ use WCPay\MultiCurrency\Utils;
 class WooCommerceUPS extends BaseCompatibility {
 
 	/**
-	 * Constructor.
-	 *
-	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils          Utils class.
-	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		parent::__construct( $multi_currency, $utils );
-		$this->initialize_hooks();
-	}
-
-	/**
-	 * Adds compatibility filters if the plugin exists and loaded
+	 * Init the class.
 	 *
 	 * @return  void
 	 */
-	protected function initialize_hooks() {
+	protected function init() {
+		// Add needed actions and filters if UPS is active.
 		if ( class_exists( 'WC_Shipping_UPS_Init' ) ) {
 			add_filter( MultiCurrency::FILTER_PREFIX . 'should_return_store_currency', [ $this, 'should_return_store_currency' ] );
 		}

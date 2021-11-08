@@ -40,5 +40,14 @@ class BaseCompatibility {
 	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
 		$this->multi_currency = $multi_currency;
 		$this->utils          = $utils;
+		$this->init();
+	}
+
+	/**
+	 * Init the class.
+	 *
+	 * @return void
+	 */
+	protected function init() {
 	}
 }

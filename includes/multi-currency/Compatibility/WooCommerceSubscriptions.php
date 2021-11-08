@@ -24,22 +24,12 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	public $switch_cart_item = '';
 
 	/**
-	 * Constructor.
-	 *
-	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils          Utils class.
-	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		parent::__construct( $multi_currency, $utils );
-		$this->initialize_hooks();
-	}
-
-	/**
-	 * Adds compatibility filters if the plugin exists and loaded
+	 * Init the class.
 	 *
 	 * @return  void
 	 */
-	protected function initialize_hooks() {
+	protected function init() {
+		// Add needed actions and filters if WC Subscriptions or WCPay Subscriptions are active.
 		if ( class_exists( 'WC_Subscriptions' ) || WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 				add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
