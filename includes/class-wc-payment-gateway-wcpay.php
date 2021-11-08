@@ -858,7 +858,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						WC_Payments_Utils::esc_interpolated_html(
 							/* translators: %1: the failed payment amount, %2: error message  */
 							__(
-								'A payment of %1$s <strong>failed</strong>. %2$s.',
+								'A payment of %1$s <strong>failed</strong>. %2$s',
 								'woocommerce-payments'
 							),
 							[

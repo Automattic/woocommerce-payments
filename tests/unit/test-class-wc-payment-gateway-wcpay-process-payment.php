@@ -625,6 +625,48 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$this->assertEquals( '', $result['redirect'] );
 	}
 
+	public function test_incorrect_zip_exception_thrown() {
+		$error_message = 'Test error.';
+		$error_notice  = 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.';
+		$error_note    = 'We couldn’t verify the postal code in the billing address. If the issue persists, suggest the customer to reach out to the card issuing bank.';
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->throwException(
+					new API_Exception(
+						$error_message,
+						'incorrect_zip',
+						400,
+						'card_error'
+					)
+				)
+			);
+
+		// Act: process payment.
+		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		$result_order = wc_get_order( $order->get_id() );
+
+		// Assert: No order note was added, besides the status change and failed transaction details.
+		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+
+		// Assert: Correct order notes are added.
+		$this->assertCount( 2, $notes );
+		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+		$this->assertContains( "A payment of &#36;50.00 USD failed. $error_note", strip_tags( $notes[0]->content, '' ) );
+
+		// Assert: A WooCommerce notice was added.
+		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
+
+		// Assert: Error notice was changed.
+		$notices      = wc_get_notices( 'error' );
+		$order_notice = end( $notices );
+
+		$this->assertEquals( $error_notice, $order_notice['notice'] );
+	}
 
 	/**
 	 * Test processing payment with the status "requires_action".
