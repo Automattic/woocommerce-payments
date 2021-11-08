@@ -53,20 +53,35 @@ export const formatMethodFeesTooltip = ( accountFees ) => {
 			accountFees.fx.fixed_rate,
 		currency: accountFees.base.currency,
 	};
+
+	const hasFees = ( fee ) => {
+		return fee.fixed_rate || fee.percentage_rate;
+	};
+
 	return (
 		<div className={ 'wcpay-fees-tooltip' }>
 			<div>
 				<div>Base fee</div>
 				<div>{ getFeeDescriptionString( accountFees.base ) }</div>
 			</div>
-			<div>
-				<div>International payment method fee</div>
-				<div>{ getFeeDescriptionString( accountFees.additional ) }</div>
-			</div>
-			<div>
-				<div>Foreign exchange fee</div>
-				<div>{ getFeeDescriptionString( accountFees.fx ) }</div>
-			</div>
+			{ hasFees( accountFees.additional ) ? (
+				<div>
+					<div>International payment method fee</div>
+					<div>
+						{ getFeeDescriptionString( accountFees.additional ) }
+					</div>
+				</div>
+			) : (
+				''
+			) }
+			{ hasFees( accountFees.fx ) ? (
+				<div>
+					<div>Foreign exchange fee</div>
+					<div>{ getFeeDescriptionString( accountFees.fx ) }</div>
+				</div>
+			) : (
+				''
+			) }
 			<div>
 				<div>Total per transaction</div>
 				<div className={ 'wcpay-fees-tooltip__bold' }>
