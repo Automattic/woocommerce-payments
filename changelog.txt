@@ -20,7 +20,6 @@
 = 3.2.1 - 2021-10-28 =
 * Fix - PHP 7.2 compatibility - remove trailing commas from function args in subscriptions-core.
 
-
 = 3.2.0 - 2021-10-28 =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
 * Add - UPE track on upgrade and on setting toggle.
