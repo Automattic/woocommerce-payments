@@ -214,3 +214,6 @@ configure_wp
 install_test_suite
 install_gutenberg
 install_woocommerce
+
+echo "HERE!"
+wp plugin list
