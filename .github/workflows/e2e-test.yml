@@ -10,6 +10,7 @@ on:
     branches:
       - develop
       - trunk
+  workflow_dispatch:
 
 env:
   E2E_GH_TOKEN:                                ${{ secrets.E2E_GH_TOKEN }}
