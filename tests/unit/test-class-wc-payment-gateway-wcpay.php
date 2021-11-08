@@ -6,7 +6,9 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Payment_Information;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -80,6 +82,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'capture_intention',
 					'cancel_intention',
 					'get_intent',
+					'create_and_confirm_intention',
 					'create_and_confirm_setup_intent',
 					'get_setup_intent',
 					'get_payment_method',
@@ -1416,6 +1419,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$result = $this->wcpay_gateway->add_payment_method();
 
 		$this->assertEquals( 'error', $result['result'] );
+		wc_clear_notices();
 	}
 
 	public function test_schedule_order_tracking_with_wrong_payment_gateway() {
@@ -1633,6 +1637,48 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			)
 		);
 		$this->assertFalse( $this->wcpay_gateway->is_available_for_current_currency() );
+	}
+
+	public function test_process_payment_for_order_rejects_with_cached_minimum_amount() {
+		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 0.45 );
+		$order->save();
+
+		$pi = new Payment_Information( 'pm_test', $order );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'The selected payment method requires a total amount of at least $0.50.' );
+		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {
+		delete_transient( 'wcpay_minimum_amount_usd' );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0.45 );
+		$order->save();
+
+		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_and_confirm_intention' )
+			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 'usd', 400 ) ) );
+
+		$this->expectException( Exception::class );
+		$price   = html_entity_decode( wp_strip_all_tags( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
+		$message = 'The selected payment method requires a total amount of at least ' . $price . '.';
+		$this->expectExceptionMessage( $message );
+
+		try {
+			$this->wcpay_gateway->process_payment( $order->get_id() );
+		} catch ( Exception $e ) {
+			$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
+			throw $e;
+		}
 	}
 
 	public function test_get_upe_enabled_payment_method_statuses_with_empty_cache() {
