@@ -4,8 +4,8 @@
 		.payment-method-requirements-list {
 			list-style-type: disc;
 			list-style-position: inside;
-    }
-  }
+		}
+	}
 }
 @include breakpoint( '<660px' ) {
 	.wcpay-payment-methods-add-modal {
