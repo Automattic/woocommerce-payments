@@ -543,7 +543,7 @@ class WC_Payments_Utils {
 			$currency       = $e->get_currency();
 
 			// Cache the result.
-			set_transient( 'wcpay_minimum_amount_' . $e->get_currency(), $minimum_amount, DAY_IN_SECONDS );
+			static::cache_minimum_amount( $currency, $minimum_amount );
 			$interpreted_amount = self::interpret_stripe_amount( $minimum_amount, $currency );
 			$price              = wc_price( $interpreted_amount, [ 'currency' => strtoupper( $currency ) ] );
 
@@ -562,6 +562,16 @@ class WC_Payments_Utils {
 		}
 
 		return $error_message;
+	}
+
+	/**
+	 * Saves the minimum amount required for transactions in a given currency.
+	 *
+	 * @param string $currency The currency.
+	 * @param int    $amount   The minimum amount.
+	 */
+	public static function cache_minimum_amount( $currency, $amount ) {
+		set_transient( 'wcpay_minimum_amount_' . strtolower( $currency ), $amount, DAY_IN_SECONDS );
 	}
 
 	/**

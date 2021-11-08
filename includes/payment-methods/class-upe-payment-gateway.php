@@ -26,6 +26,7 @@ use WC_Payments_Utils;
 use Session_Rate_Limiter;
 
 use Exception;
+use WCPay\Core\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 
 
@@ -249,16 +250,44 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return $this->create_setup_intent();
 		}
 
+		$minimum_amount = WC_Payments_Utils::get_cached_minimum_amount( $currency );
+		if ( ! is_null( $minimum_amount ) && $converted_amount < $minimum_amount ) {
+			// Use the minimum amount in order to create an intent and display fields.
+			$converted_amount = $minimum_amount;
+		}
+
 		$capture_method          = empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] ? 'automatic' : 'manual';
 		$enabled_payment_methods = $this->get_upe_enabled_at_checkout_payment_method_ids( $order_id );
 
-		$payment_intent = $this->payments_api_client->create_intention(
-			$converted_amount,
-			strtolower( $currency ),
-			array_values( $enabled_payment_methods ),
-			$order_id ?? 0,
-			$capture_method
-		);
+		try {
+			$payment_intent = $this->payments_api_client->create_intention(
+				$converted_amount,
+				strtolower( $currency ),
+				array_values( $enabled_payment_methods ),
+				$order_id ?? 0,
+				$capture_method
+			);
+		} catch ( Amount_Too_Small_Exception $e ) {
+			$minimum_amount = $e->get_minimum_amount();
+
+			WC_Payments_Utils::cache_minimum_amount( $e->get_currency(), $minimum_amount );
+
+			/**
+			 * Try to create a new payment intent with the minimum amount
+			 * in order to display fields om the checkout page and allow
+			 * customers to select a shipping method, which might make
+			 * the total amount of the order higher than the minimum
+			 * amount for the API.
+			 */
+			$payment_intent = $this->payments_api_client->create_intention(
+				$minimum_amount,
+				strtolower( $currency ),
+				array_values( $enabled_payment_methods ),
+				$order_id ?? 0,
+				$capture_method
+			);
+		}
+
 		return [
 			'id'            => $payment_intent->get_id(),
 			'client_secret' => $payment_intent->get_client_secret(),
