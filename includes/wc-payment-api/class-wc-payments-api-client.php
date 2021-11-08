@@ -10,6 +10,7 @@ defined( 'ABSPATH' ) || exit;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
+use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -1705,7 +1706,7 @@ class WC_Payments_API_Client {
 						'page'      => 'wc-admin',
 						'path'      => '/customers',
 						'filter'    => 'single_customer',
-						'customers' => $order->get_customer_id(),
+						'customers' => DataStore::get_existing_customer_id_from_order( $order ),
 					],
 					'admin.php'
 				),
