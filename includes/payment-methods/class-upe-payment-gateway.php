@@ -26,7 +26,7 @@ use WC_Payments_Utils;
 use Session_Rate_Limiter;
 
 use Exception;
-use WCPay\Core\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 
 
@@ -365,6 +365,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param int $order_id Order ID to process the payment for.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 *
+	 * @throws Exception Whenever the payment processing fails.
 	 */
 	public function process_payment( $order_id ) {
 		$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -391,17 +393,30 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					];
 				}
 
-				$updated_payment_intent  = $this->payments_api_client->update_intention(
-					$payment_intent_id,
-					$converted_amount,
-					strtolower( $currency ),
-					$save_payment_method,
-					$customer_id,
-					$this->get_metadata_from_order( $order, $payment_type ),
-					$this->get_level3_data_from_order( $order ),
-					$selected_upe_payment_type,
-					$payment_country
-				);
+				// Try catching the error without reaching the API.
+				$minimum_amount = WC_Payments_Utils::get_cached_minimum_amount( $currency );
+				if ( $minimum_amount > $converted_amount ) {
+					$exception = new Amount_Too_Small_Exception( 'Amount too small', $minimum_amount, $currency, 400 );
+					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
+				}
+
+				try {
+					$updated_payment_intent = $this->payments_api_client->update_intention(
+						$payment_intent_id,
+						$converted_amount,
+						strtolower( $currency ),
+						$save_payment_method,
+						$customer_id,
+						$this->get_metadata_from_order( $order, $payment_type ),
+						$this->get_level3_data_from_order( $order ),
+						$selected_upe_payment_type,
+						$payment_country
+					);
+				} catch ( Amount_Too_Small_Exception $e ) {
+					// This code would only be reached if the cache has already expired.
+					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+				}
+
 				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
 				if ( 'card_declined' === $last_payment_error_code ) {
 					// UPE method gives us the error of the previous payment attempt, so we use that for the Rate Limiter.
