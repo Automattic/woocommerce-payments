@@ -76,7 +76,7 @@ describe.each( dataTable )(
 
 			// Login as merchant
 			await merchant.login();
-		}, 120000 );
+		}, 200000 );
 
 		afterAll( async () => {
 			await merchant.logout();
@@ -189,7 +189,7 @@ describe.each( dataTable )(
 					text: `$${ refundTotalString } USD will be deducted from a future deposit.`,
 				} ),
 				expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-					text: 'Payment status changed to partial refund.',
+					text: 'Payment status changed to Partial refund.',
 				} ),
 			] );
 		} );
