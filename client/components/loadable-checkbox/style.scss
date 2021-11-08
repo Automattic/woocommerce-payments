@@ -1,12 +1,12 @@
 .loadable-checkbox {
+	position: relative;
 	&__spinner {
 		background: var( --wp-admin-theme-color );
-		width: 18px;
-		height: 18px;
-		margin: 1px 0 0 -16px;
+		width: 20px;
+		height: 20px;
 		position: absolute;
 		z-index: 1;
-		border-radius: 1px;
+		border-radius: 2px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -14,8 +14,12 @@
 			background: none;
 			display: block;
 			shape-rendering: auto;
-			width: 20px;
-			height: 20px;
+			width: 100%;
+			height: 100%;
 		}
+	}
+	.components-checkbox-control__input[type='checkbox']:focus {
+		box-shadow: none;
+		outline: none;
 	}
 }

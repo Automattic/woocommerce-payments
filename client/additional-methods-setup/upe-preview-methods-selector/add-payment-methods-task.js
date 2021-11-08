@@ -31,6 +31,7 @@ import LoadableSettingsSection from '../../settings/loadable-settings-section';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 import { upeCapabilityStatuses, upeMethods } from '../constants';
 import paymentMethodsMap from '../../payment-methods-map';
+import ConfirmPaymentMethodActivationModal from 'wcpay/payment-methods/activation-modal';
 
 const usePaymentMethodsCheckboxState = () => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
@@ -151,6 +152,7 @@ const AddPaymentMethodsTask = () => {
 		paymentMethodsState,
 		handlePaymentMethodChange,
 	] = usePaymentMethodsCheckboxState();
+
 	const selectedMethods = useMemo(
 		() =>
 			Object.entries( paymentMethodsState )
@@ -158,6 +160,51 @@ const AddPaymentMethodsTask = () => {
 				.filter( Boolean ),
 		[ paymentMethodsState ]
 	);
+
+	const [ activationModalParams, handleActivationModalOpen ] = useState(
+		null
+	);
+
+	const completeActivation = ( itemId ) => {
+		paymentMethodsState[ itemId ] = true;
+		handlePaymentMethodChange( paymentMethodsState );
+		handleActivationModalOpen( null );
+	};
+
+	const getStatusAndRequirements = ( itemId ) => {
+		const stripeKey = paymentMethodsMap[ itemId ].stripe_key;
+		const stripeStatusContainer = paymentMethodStatuses[ stripeKey ] ?? [];
+		if ( ! stripeStatusContainer ) {
+			return {
+				status: upeCapabilityStatuses.UNREQUESTED,
+				requirements: [],
+			};
+		}
+		return {
+			status: stripeStatusContainer.status,
+			requirements: stripeStatusContainer.requirements,
+		};
+	};
+
+	const handleCheckClick = ( itemId, status ) => {
+		if ( status ) {
+			const statusAndRequirements = getStatusAndRequirements( itemId );
+			if (
+				'unrequested' === statusAndRequirements.status &&
+				0 < statusAndRequirements.requirements.length
+			) {
+				handleActivationModalOpen( {
+					id: itemId,
+					requirements: statusAndRequirements.requirements,
+				} );
+			} else {
+				completeActivation( itemId );
+			}
+		} else {
+			paymentMethodsState[ itemId ] = false;
+			handlePaymentMethodChange( paymentMethodsState );
+		}
+	};
 
 	return (
 		<WizardTaskItem
@@ -210,16 +257,19 @@ const AddPaymentMethodsTask = () => {
 														]
 													}
 													status={
-														paymentMethodStatuses[
-															paymentMethodsMap[
-																key
-															].stripe_key
-														].status ??
-														upeCapabilityStatuses.UNREQUESTED
+														getStatusAndRequirements(
+															key
+														).status
 													}
-													onChange={
-														handlePaymentMethodChange
-													}
+													onChange={ (
+														name,
+														status
+													) => {
+														handleCheckClick(
+															name,
+															status
+														);
+													} }
 													name={ key }
 												/>
 											)
@@ -227,6 +277,22 @@ const AddPaymentMethodsTask = () => {
 								</PaymentMethodCheckboxes>
 							</LoadableSettingsSection>
 						</LoadableBlock>
+						{ activationModalParams && (
+							<ConfirmPaymentMethodActivationModal
+								onClose={ () => {
+									handleActivationModalOpen( null );
+								} }
+								onConfirmClose={ () => {
+									completeActivation(
+										activationModalParams.id
+									);
+								} }
+								requirements={
+									activationModalParams.requirements
+								}
+								paymentMethod={ activationModalParams.id }
+							/>
+						) }
 					</CardBody>
 				</Card>
 				<CurrencyInformationForMethods

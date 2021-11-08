@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React, { useContext, useEffect } from 'react';
-import { CheckboxControl, Icon, VisuallyHidden } from '@wordpress/components';
+import { Icon, VisuallyHidden } from '@wordpress/components';
 import { useCallback, useMemo } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -11,7 +11,11 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
-import { formatMethodFeesDescription } from '../../utils/account-fees';
+import {
+	formatMethodFeesDescription,
+	formatMethodFeesTooltip,
+} from '../../utils/account-fees';
+import LoadableCheckboxControl from 'components/loadable-checkbox';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import PaymentMethodIcon from '../../settings/payment-method-icon';
 import PaymentMethodsMap from '../../payment-methods-map';
@@ -69,11 +73,13 @@ const PaymentMethodCheckbox = ( {
 
 	return (
 		<li className="payment-method-checkbox">
-			<CheckboxControl
+			<LoadableCheckboxControl
 				checked={ checked }
 				onChange={ handleChange }
 				label={ label }
 				disabled={ disabled }
+				delayMsOnCheck={ 1500 }
+				delayMsOnUncheck={ 0 }
 			/>
 			<div className={ 'payment-method-checkbox__pills' }>
 				{ disabled && (
@@ -95,10 +101,8 @@ const PaymentMethodCheckbox = ( {
 					</Tooltip>
 				) }
 				<Tooltip
-					content={ __(
-						'Base transaction fees',
-						'woocommerce-payments'
-					) }
+					content={ formatMethodFeesTooltip( accountFees[ name ] ) }
+					maxWidth={ '300px' }
 				>
 					<Pill
 						aria-label={ sprintf(

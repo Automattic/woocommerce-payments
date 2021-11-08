@@ -34,7 +34,7 @@ const LoadableCheckboxControl = ( {
 	};
 
 	return (
-		<>
+		<div className={ 'loadable-checkbox' }>
 			{ isLoading && (
 				<div className={ 'loadable-checkbox__spinner' }>
 					<svg
@@ -73,7 +73,7 @@ const LoadableCheckboxControl = ( {
 				checked={ checked }
 				heading={ heading }
 			/>
-		</>
+		</div>
 	);
 };
 
