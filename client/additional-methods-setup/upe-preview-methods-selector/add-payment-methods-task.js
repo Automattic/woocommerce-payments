@@ -180,7 +180,7 @@ const AddPaymentMethodsTask = () => {
 						components: {
 							learnMoreLink: (
 								// eslint-disable-next-line max-len
-								<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
+								<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
 							),
 						},
 					} ) }

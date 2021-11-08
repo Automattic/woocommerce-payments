@@ -34,7 +34,7 @@ class WooCommerceFedEx extends BaseCompatibility {
 	 */
 	protected function initialize_hooks() {
 		if ( class_exists( 'WC_Shipping_Fedex_Init' ) ) {
-			add_filter( self::FILTER_PREFIX . 'should_return_store_currency', [ $this, 'should_return_store_currency' ] );
+			add_filter( MultiCurrency::FILTER_PREFIX . 'should_return_store_currency', [ $this, 'should_return_store_currency' ] );
 		}
 	}
 

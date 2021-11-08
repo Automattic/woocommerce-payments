@@ -14,7 +14,7 @@ exports[`Multi-Currency store settings store settings task renders correctly: sn
       <p>
         Store settings allow your customers to choose which currency they would like to use when shopping at your store. 
         <a
-          href="https://docs.woocommerce.com/document/payments/currencies/multi-currency-setup/"
+          href="https://woocommerce.com/document/payments/currencies/multi-currency-setup/"
           rel="noreferrer"
           target="_blank"
         >
