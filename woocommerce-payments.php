@@ -106,7 +106,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 	 * Initialise subscriptions-core if WC Subscriptions (the plugin) isn't loaded
 	 */
 	function wcpay_init_subscriptions_core() {
-		if ( ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+		if ( ! class_exists( 'WooCommerce' ) || ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			return;
 		}
 
@@ -128,7 +128,15 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 				}
 			}
 
-			return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $plugin_slug );
+			if ( class_exists( 'Automattic\WooCommerce\Admin\PluginsHelper' ) ) {
+				return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $plugin_slug );
+			} else {
+				if ( ! function_exists( 'is_plugin_active' ) ) {
+					include_once ABSPATH . 'wp-admin/includes/plugin.php';
+				}
+
+				return is_plugin_active( $plugin_slug );
+			}
 		};
 
 		$is_subscriptions_active = $is_plugin_active( 'woocommerce-subscriptions' );
@@ -149,7 +157,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 		new WC_Subscriptions_Core_Plugin();
 	}
 }
-wcpay_init_subscriptions_core();
+add_action( 'plugins_loaded', 'wcpay_init_subscriptions_core', 0 );
 
 /**
  * Check if WCPay is installed alongside an old version of Jetpack (8.1 or earlier). Due to the autoloader code in those old

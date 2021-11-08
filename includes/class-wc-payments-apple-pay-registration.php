@@ -66,14 +66,14 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @param WC_Payment_Gateway_WCPay $gateway WooCommerce Payments gateway.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
-		$this->domain_name             = $_SERVER['HTTP_HOST'] ?? str_replace( [ 'https://', 'http://' ], '', get_site_url() ); // @codingStandardsIgnoreLine
+		$this->domain_name             = str_replace( [ 'https://', 'http://' ], '', get_site_url() ); // @codingStandardsIgnoreLine
 		$this->apple_pay_verify_notice = '';
 		$this->payments_api_client     = $payments_api_client;
 		$this->account                 = $account;
 		$this->gateway                 = $gateway;
 
 		add_action( 'init', [ $this, 'add_domain_association_rewrite_rule' ], 5 );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_if_configured' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_on_update' ] );
 		add_action( 'init', [ $this, 'init' ] );
 	}
 
@@ -121,6 +121,15 @@ class WC_Payments_Apple_Pay_Registration {
 	public function verify_domain_on_domain_name_change() {
 		$verified_domain = $this->gateway->get_option( 'apple_pay_verified_domain' );
 		if ( $this->domain_name !== $verified_domain ) {
+			$this->verify_domain_if_configured();
+		}
+	}
+
+	/**
+	 * Verify domain upon plugin update only in case the domain association file has changed.
+	 */
+	public function verify_domain_on_update() {
+		if ( ! $this->is_hosted_domain_association_file_up_to_date() ) {
 			$this->verify_domain_if_configured();
 		}
 	}

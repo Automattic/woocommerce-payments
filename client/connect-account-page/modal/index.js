@@ -17,7 +17,7 @@ import { ExperimentalList } from '@woocommerce/experimental/build/experimental-l
 const LearnMoreLink = ( props ) => (
 	<Link
 		{ ...props }
-		href="https://docs.woocommerce.com/document/payments/countries/"
+		href="https://woocommerce.com/document/payments/countries/"
 		target="_blank"
 		rel="noopener noreferrer"
 		type="external"

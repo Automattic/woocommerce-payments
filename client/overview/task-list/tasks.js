@@ -123,7 +123,7 @@ export const getTasks = ( {
 				completed: false,
 				onClick: () => {
 					window.open(
-						'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
+						'https://woocommerce.com/document/ssl-and-https/#section-7',
 						'_blank'
 					);
 				},

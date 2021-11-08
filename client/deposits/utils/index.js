@@ -90,7 +90,7 @@ export const getDepositScheduleDescriptor = ( {
 } ) => {
 	if ( disabled || 'manual' === schedule.interval ) {
 		const learnMoreHref =
-			'https://docs.woocommerce.com/document/payments/faq/deposits-suspended/';
+			'https://woocommerce.com/document/payments/faq/deposits-suspended/';
 		return createInterpolateElement(
 			/* translators: <a> - suspended accounts FAQ URL */
 			__(
@@ -112,7 +112,7 @@ export const getDepositScheduleDescriptor = ( {
 
 	if ( ! last ) {
 		const learnMoreHref =
-			'https://docs.woocommerce.com/document/payments/faq/deposit-schedule/';
+			'https://woocommerce.com/document/payments/faq/deposit-schedule/';
 		return createInterpolateElement(
 			sprintf(
 				/** translators: %s - deposit schedule, <a> - waiting period doc URL */
