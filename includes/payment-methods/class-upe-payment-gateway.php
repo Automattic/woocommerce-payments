@@ -852,7 +852,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$title                   = $this->checkout_title;
 			$enabled_payment_methods = $this->get_upe_enabled_at_checkout_payment_method_ids();
 
-			if ( 0 === count( $enabled_payment_methods ) || ( 0 === count( $enabled_payment_methods ) && 'card' === $enabled_payment_methods[0] ) ) {
+			if ( 1 === count( $enabled_payment_methods ) ) {
+				$title = $this->payment_methods[ $enabled_payment_methods[0] ]->get_title();
+			}
+
+			if ( 0 === count( $enabled_payment_methods ) ) {
 				$title = $this->payment_methods['card']->get_title();
 			}
 		}
