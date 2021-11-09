@@ -15,39 +15,14 @@ use WCPay\MultiCurrency\Utils;
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Deposits Plugin.
  */
-class WooCommerceDeposits {
-	/**
-	 * MultiCurrency class.
-	 *
-	 * @var MultiCurrency
-	 */
-	private $multi_currency;
+class WooCommerceDeposits extends BaseCompatibility {
 
 	/**
-	 * Utils class.
+	 * Init the class.
 	 *
-	 * @var Utils
+	 * @return void
 	 */
-	private $utils;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils Utils class.
-	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		$this->multi_currency = $multi_currency;
-		$this->utils          = $utils;
-		$this->initialize_hooks();
-	}
-
-	/**
-	 * Adds compatibility filters if the plugin exists and loaded
-	 *
-	 * @return  void
-	 */
-	protected function initialize_hooks() {
+	protected function init() {
 		if ( class_exists( 'WC_Deposits' ) ) {
 			// Add compatibility filters here.
 			add_action( 'woocommerce_deposits_create_order', [ $this, 'modify_order_currency' ] );
