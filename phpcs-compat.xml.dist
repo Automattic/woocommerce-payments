@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<ruleset name="WooCommerce Payments PHP Compatibility">
+	<description>WooCommerce Compatibility PHP_CodeSniffer ruleset.</description>
+
+	<arg value="ps"/>
+	<arg name="parallel" value="20"/>
+
+    <!-- Exclude paths -->
+	<exclude-pattern>./dist/*</exclude-pattern>
+	<exclude-pattern>./release/*</exclude-pattern>
+	<exclude-pattern>./docker/*</exclude-pattern>
+	<exclude-pattern>./node_modules/*</exclude-pattern>
+	<exclude-pattern>./vendor/*</exclude-pattern>
+	<exclude-pattern>tests/</exclude-pattern>
+	<exclude-pattern>*\.(?!php$)</exclude-pattern>
+
+	<!-- Configs -->
+	<config name="minimum_supported_wp_version" value="7.0" />
+	<config name="testVersion" value="7.0-" />
+
+	<rule ref="PHPCompatibility" />
+</ruleset>
