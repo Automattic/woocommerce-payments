@@ -140,6 +140,7 @@ class WC_Payments_Subscription_Service {
 		add_filter( 'woocommerce_order_actions', [ $this, 'prevent_wcpay_manual_renewal' ], 11, 1 );
 
 		add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
+		add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'show_wcpay_subscription_id' ] );
 	}
 
 	/**
@@ -337,6 +338,17 @@ class WC_Payments_Subscription_Service {
 	 * @throws Exception Throws an exception to stop checkout processing and display message to customer.
 	 */
 	public function create_subscription( WC_Subscription $subscription ) {
+		/*
+		 * Bail early if the subscription payment method is not WooCommerce Payments.
+		 * WCPay Subscriptions are not created in the following scenarios:
+		 *
+		 * - A different payment gateway was used to purchase the subscription (e.g. PayPal).
+		 * - The subscription is free (i.e. $0) and payment details were not captured during checkout.
+		 */
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $subscription->get_payment_method() ) {
+			return;
+		}
+
 		$checkout_error_message = __( 'There was a problem creating your subscription. Please try again or contact us for assistance.', 'woocommerce-payments' );
 		$wcpay_customer_id      = $this->customer_service->get_customer_id_for_order( $subscription );
 
@@ -554,7 +566,7 @@ class WC_Payments_Subscription_Service {
 
 				// Reinstate the "is request to change payment method" flag.
 				WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment = $is_change_payment_request;
-				wc_add_notice( __( "We've successully collected payment for your subscription using your new payment method.", 'woocommerce-payments' ) );
+				wc_add_notice( __( "We've successfully collected payment for your subscription using your new payment method.", 'woocommerce-payments' ) );
 			}
 		}
 	}
@@ -592,6 +604,24 @@ class WC_Payments_Subscription_Service {
 			unset( $actions['wcs_process_renewal'] );
 		}
 		return $actions;
+	}
+
+	/**
+	 * Show WCPay Subscription ID on Edit Subscription page.
+	 *
+	 * @param WC_Order $order The order object.
+	 */
+	public function show_wcpay_subscription_id( WC_Order $order ) {
+		if ( ! wcs_is_subscription( $order ) || ! self::is_wcpay_subscription( $order ) ) {
+			return;
+		}
+
+		$wcpay_subscription_id = self::get_wcpay_subscription_id( $order );
+		if ( ! $wcpay_subscription_id ) {
+			return;
+		}
+
+		echo '<p><strong>' . esc_html__( 'WooCommerce Payments Subscription ID', 'woocommerce-payments' ) . ':</strong> ' . esc_html( $wcpay_subscription_id ) . '</p>';
 	}
 
 	/**

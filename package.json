@@ -83,7 +83,7 @@
     "@typescript-eslint/eslint-plugin": "4.15.2",
     "@typescript-eslint/parser": "4.15.2",
     "@woocommerce/api": "0.2.0",
-    "@woocommerce/components": "5.1.2",
+    "@woocommerce/components": "8.1.1",
     "@woocommerce/currency": "3.0.0",
     "@woocommerce/date": "2.1.0",
     "@woocommerce/e2e-utils": "0.1.5",

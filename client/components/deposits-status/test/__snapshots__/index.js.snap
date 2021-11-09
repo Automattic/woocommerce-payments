@@ -66,7 +66,7 @@ exports[`DepositsStatus renders manual status 1`] = `
     </svg>
     Temporarily suspended (
     <a
-      href="https://docs.woocommerce.com/document/payments/faq/deposits-suspended/"
+      href="https://woocommerce.com/document/payments/faq/deposits-suspended/"
       rel="noopener noreferrer"
       target="_blank"
     >

@@ -213,7 +213,7 @@ class WC_Payments_Utils {
 
 	/**
 	 * List of countries enabled for Stripe platform account. See also
-	 * https://docs.woocommerce.com/document/payments/countries/ for the most actual status.
+	 * https://woocommerce.com/document/payments/countries/ for the most actual status.
 	 *
 	 * @return string[]
 	 */
