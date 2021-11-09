@@ -13,9 +13,7 @@ use WCPay\MultiCurrency\Utils;
 /**
  * Class that sets up base options for compatibility classes.
  */
-class BaseCompatibility {
-
-	const FILTER_PREFIX = 'wcpay_multi_currency_';
+abstract class BaseCompatibility {
 
 	/**
 	 * MultiCurrency class.
@@ -48,6 +46,5 @@ class BaseCompatibility {
 	 *
 	 * @return void
 	 */
-	protected function init() {
-	}
+	abstract protected function init();
 }
