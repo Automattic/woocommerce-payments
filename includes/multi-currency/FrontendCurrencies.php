@@ -223,7 +223,9 @@ class FrontendCurrencies {
 	 */
 	public function init_order_currency_from_query_vars() {
 		global $wp;
-		$this->init_order_currency( $wp->query_vars['order-pay'] );
+		if ( ! empty( $wp->query_vars['order-pay'] ) ) {
+			$this->init_order_currency( $wp->query_vars['order-pay'] );
+		}
 	}
 
 	/**
