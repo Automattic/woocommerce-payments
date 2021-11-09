@@ -1,11 +1,16 @@
 name: E2E tests
 
 on:
+  schedule:
+    - cron: '0 */6 * * *'
   pull_request:
     branches:
       - trunk
+  push:
+    branches:
       - develop
-      - release/*
+      - trunk
+  workflow_dispatch:
 
 env:
   E2E_GH_TOKEN:                                ${{ secrets.E2E_GH_TOKEN }}

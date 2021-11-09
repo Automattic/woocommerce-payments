@@ -26,15 +26,15 @@ class WooCommerceBookings extends BaseCompatibility {
 	public function __construct( MultiCurrency $multi_currency, Utils $utils, FrontendCurrencies $frontend_currencies ) {
 		parent::__construct( $multi_currency, $utils );
 		$this->frontend_currencies = $frontend_currencies;
-		$this->initialize_hooks();
 	}
 
 	/**
-	 * Adds additional properties and compatibility filters if the plugin exists and is loaded.
+	 * Init the class.
 	 *
 	 * @return void
 	 */
-	public function initialize_hooks() {
+	protected function init() {
+		// Add needed actions and filters if Bookings is active.
 		if ( class_exists( 'WC_Bookings' ) ) {
 			if ( ! is_admin() || wp_doing_ajax() ) {
 				add_filter( 'woocommerce_product_get_block_cost', [ $this, 'get_price' ], 50, 1 );
@@ -44,7 +44,7 @@ class WooCommerceBookings extends BaseCompatibility {
 				add_filter( 'woocommerce_product_booking_person_type_get_cost', [ $this, 'get_price' ], 50, 1 );
 				add_filter( 'woocommerce_product_get_resource_base_costs', [ $this, 'get_resource_prices' ], 50, 1 );
 				add_filter( 'woocommerce_product_get_resource_block_costs', [ $this, 'get_resource_prices' ], 50, 1 );
-				add_filter( self::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ] );
+				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ] );
 				add_action( 'wp_ajax_wc_bookings_calculate_costs', [ $this, 'add_wc_price_args_filter_for_ajax' ], 9 );
 				add_action( 'wp_ajax_nopriv_wc_bookings_calculate_costs', [ $this, 'add_wc_price_args_filter_for_ajax' ], 9 );
 			}

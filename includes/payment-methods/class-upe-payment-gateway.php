@@ -108,10 +108,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			true
 		);
 
+		$script_dependencies = [ 'stripe', 'wc-checkout' ];
+
+		if ( $this->supports( 'tokenization' ) ) {
+			$script_dependencies[] = 'woocommerce-tokenization-form';
+		}
+
 		wp_register_script(
 			'wcpay-upe-checkout',
 			plugins_url( 'dist/upe_checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout', 'woocommerce-tokenization-form' ],
+			$script_dependencies,
 			WC_Payments::get_file_version( 'dist/upe_checkout.js' ),
 			true
 		);
@@ -231,13 +237,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function create_payment_intent( $order_id = null ) {
-		$amount = WC()->cart->get_total( false );
-		$order  = wc_get_order( $order_id );
+		$amount   = WC()->cart->get_total( false );
+		$currency = get_woocommerce_currency();
+		$order    = wc_get_order( $order_id );
 		if ( is_a( $order, 'WC_Order' ) ) {
-			$amount = $order->get_total();
+			$amount   = $order->get_total();
+			$currency = $order->get_currency();
 		}
 
-		$currency         = get_woocommerce_currency();
 		$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );
 		if ( 1 > $converted_amount ) {
 			return $this->create_setup_intent();
@@ -720,7 +727,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a>here</a>.', 'woocommerce-payments' ),
 						[
 							'strong' => '<strong>',
-							'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+							'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
 						]
 					);
 				?>

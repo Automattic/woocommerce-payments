@@ -25,16 +25,16 @@ defined( 'ABSPATH' ) || exit;
 class Compatibility extends BaseCompatibility {
 
 	/**
-	 * Constructor.
+	 * Init the class.
 	 *
-	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils          Utils class.
+	 * @return void
 	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		parent::__construct( $multi_currency, $utils );
-		$this->init_filters();
-
+	protected function init() {
 		add_action( 'init', [ $this, 'init_compatibility_classes' ], 11 );
+
+		if ( defined( 'DOING_CRON' ) ) {
+			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
+		}
 	}
 
 	/**
@@ -57,7 +57,7 @@ class Compatibility extends BaseCompatibility {
 	 * @return mixed Three letter currency code or false if not.
 	 */
 	public function override_selected_currency() {
-		return apply_filters( self::FILTER_PREFIX . 'override_selected_currency', false );
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'override_selected_currency', false );
 	}
 
 	/**
@@ -66,7 +66,7 @@ class Compatibility extends BaseCompatibility {
 	 * @return bool False if it shouldn't be hidden, true if it should.
 	 */
 	public function should_hide_widgets(): bool {
-		return apply_filters( self::FILTER_PREFIX . 'should_hide_widgets', false );
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', false );
 	}
 
 	/**
@@ -81,7 +81,7 @@ class Compatibility extends BaseCompatibility {
 			return true;
 		}
 
-		return apply_filters( self::FILTER_PREFIX . 'should_convert_coupon_amount', true, $coupon );
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_coupon_amount', true, $coupon );
 	}
 
 	/**
@@ -96,7 +96,7 @@ class Compatibility extends BaseCompatibility {
 			return true;
 		}
 
-		return apply_filters( self::FILTER_PREFIX . 'should_convert_product_price', true, $product );
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', true, $product );
 	}
 
 	/**
@@ -105,7 +105,7 @@ class Compatibility extends BaseCompatibility {
 	 * @return bool
 	 */
 	public function should_return_store_currency(): bool {
-		return apply_filters( self::FILTER_PREFIX . 'should_return_store_currency', false );
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_return_store_currency', false );
 	}
 
 	/**
@@ -165,16 +165,5 @@ class Compatibility extends BaseCompatibility {
 		remove_filter( 'woocommerce_order_query', [ $this, 'convert_order_prices' ] );
 
 		return $results;
-	}
-
-	/**
-	 * Initializes our filters for compatibility.
-	 *
-	 * @return void
-	 */
-	private function init_filters() {
-		if ( defined( 'DOING_CRON' ) ) {
-			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
-		}
 	}
 }

@@ -13,9 +13,7 @@ use WCPay\MultiCurrency\Utils;
 /**
  * Class that sets up base options for compatibility classes.
  */
-class BaseCompatibility {
-
-	const FILTER_PREFIX = 'wcpay_multi_currency_';
+abstract class BaseCompatibility {
 
 	/**
 	 * MultiCurrency class.
@@ -40,5 +38,13 @@ class BaseCompatibility {
 	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
 		$this->multi_currency = $multi_currency;
 		$this->utils          = $utils;
+		$this->init();
 	}
+
+	/**
+	 * Init the class.
+	 *
+	 * @return void
+	 */
+	abstract protected function init();
 }

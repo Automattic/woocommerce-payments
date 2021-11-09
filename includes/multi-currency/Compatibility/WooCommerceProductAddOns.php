@@ -19,22 +19,12 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 	const ADDONS_CONVERTED_META_KEY = '_wcpay_multi_currency_addons_converted';
 
 	/**
-	 * Constructor.
-	 *
-	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils          Utils class.
-	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		parent::__construct( $multi_currency, $utils );
-		$this->initialize_hooks();
-	}
-
-	/**
-	 * Adds compatibility filters if the plugin exists and loaded
+	 * Init the class.
 	 *
 	 * @return  void
 	 */
-	protected function initialize_hooks() {
+	protected function init() {
+		// Add needed actions and filters if Product Add Ons is active.
 		if ( class_exists( 'WC_Product_Addons' ) ) {
 			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 				add_filter( 'woocommerce_product_addons_option_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
@@ -43,7 +33,7 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 				add_filter( 'woocommerce_product_addons_get_item_data', [ $this, 'get_item_data' ], 50, 3 );
 				add_filter( 'woocommerce_product_addons_update_product_price', [ $this, 'update_product_price' ], 50, 4 );
 				add_filter( 'woocommerce_product_addons_order_line_item_meta', [ $this, 'order_line_item_meta' ], 50, 4 );
-				add_filter( self::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
+				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
 			}
 
 			if ( wp_doing_ajax() ) {
