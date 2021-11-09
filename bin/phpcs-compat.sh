@@ -1,6 +1,9 @@
 # Remove the old `vendor-dist` if present.
 rm -rf vendor-dist
 
+# Install Composer normally to load PHPCS.
+composer install --no-progress
+
 # Install non-dev dependencies in a separate folder (because we need phpcs, which is a dev dependency).
 COMPOSER_VENDOR_DIR=vendor-dist composer install --no-dev
 
