@@ -161,7 +161,7 @@
     <UndefinedDocblockClass occurrences="2">
       <code>WC_Subscription|bool</code>
     </UndefinedDocblockClass>
-    <UndefinedFunction occurrences="5">
+    <UndefinedFunction occurrences="6">
       <code>wcs_get_subscription</code>
       <code>wcs_get_subscriptions_for_renewal_order( $order_id )</code>
     </UndefinedFunction>

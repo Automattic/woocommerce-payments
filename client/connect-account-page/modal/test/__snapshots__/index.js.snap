@@ -53,48 +53,23 @@ exports[`Onboarding: location check dialog renders correctly when continue butto
       >
         It appears you're attempting to set up WooCommerce Payments from an unsupported country. In order to complete the set up of WooCommerce Payments, your store is required to have a business entity in one of the following countries: 
         <ul
-          class="woocommerce-list"
-          role="menu"
+          class="woocommerce-experimental-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="woocommerce-experimental-list__item transitions-disabled "
           >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  United Kingdom (UK)
-                </span>
-              </div>
-            </div>
+            United Kingdom (UK)
           </li>
           <li
-            class="woocommerce-list__item"
+            class="woocommerce-experimental-list__item transitions-disabled "
           >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  United States (US)
-                </span>
-              </div>
-            </div>
+            United States (US)
           </li>
         </ul>
          
         <a
           data-link-type="external"
-          href="https://docs.woocommerce.com/document/payments/countries/"
+          href="https://woocommerce.com/document/payments/countries/"
           rel="noopener noreferrer"
           target="_blank"
         >
@@ -175,48 +150,23 @@ exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
       >
         It appears you're attempting to set up WooCommerce Payments from an unsupported country. In order to complete the set up of WooCommerce Payments, your store is required to have a business entity in one of the following countries: 
         <ul
-          class="woocommerce-list"
-          role="menu"
+          class="woocommerce-experimental-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="woocommerce-experimental-list__item transitions-disabled "
           >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  United Kingdom (UK)
-                </span>
-              </div>
-            </div>
+            United Kingdom (UK)
           </li>
           <li
-            class="woocommerce-list__item"
+            class="woocommerce-experimental-list__item transitions-disabled "
           >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  United States (US)
-                </span>
-              </div>
-            </div>
+            United States (US)
           </li>
         </ul>
          
         <a
           data-link-type="external"
-          href="https://docs.woocommerce.com/document/payments/countries/"
+          href="https://woocommerce.com/document/payments/countries/"
           rel="noopener noreferrer"
           target="_blank"
         >

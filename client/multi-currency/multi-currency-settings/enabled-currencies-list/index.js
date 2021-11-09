@@ -25,7 +25,7 @@ import SettingsSection from 'wcpay/settings/settings-section';
 
 const EnabledCurrenciesSettingsDescription = () => {
 	const LEARN_MORE_URL =
-		'https://docs.woocommerce.com/document/payments/currencies/multi-currency-setup/';
+		'https://woocommerce.com/document/payments/currencies/multi-currency-setup/';
 
 	return (
 		<>
