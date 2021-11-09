@@ -724,6 +724,11 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 				)
 			);
 
+		$mock_order
+			->expects( $this->once() )
+			->method( 'update_status' )
+			->with( 'on-hold' );
+
 		$this->mock_db_wrapper
 			->expects( $this->once() )
 			->method( 'order_from_charge_id' )
@@ -743,7 +748,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->request_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
-			'reason' => 'test_reason',
+			'status' => 'test_status',
 		];
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
@@ -754,9 +759,14 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			->method( 'add_order_note' )
 			->with(
 				$this->matchesRegularExpression(
-					'/Payment dispute has been closed/'
+					'/Payment dispute has been closed with status test_status/'
 				)
 			);
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'update_status' )
+			->with( 'completed' );
 
 		$this->mock_db_wrapper
 			->expects( $this->once() )
@@ -777,7 +787,6 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->request_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
-			'reason' => 'test_reason',
 		];
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
@@ -811,7 +820,6 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->request_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
-			'reason' => 'test_reason',
 		];
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
@@ -845,7 +853,6 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->request_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
-			'reason' => 'test_reason',
 		];
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
