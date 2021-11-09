@@ -30,12 +30,11 @@ jobs:
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      # setup PHP, but without debug extensions for reasonable performance
+      # setup PHP
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           tools:       composer
-          coverage:    none
       # TODO move this run back when we fix the edge case with PHP 7.0. See #2970.
       # run: if [[ "${{ matrix.php }}" == '7.0' ]]; then wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar; fi;
       # run CI checks
