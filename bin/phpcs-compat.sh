@@ -1,3 +1,8 @@
+#!/bin/bash
+
+# set strict mode for bash
+set -euo pipefail
+
 # Remove the old `vendor-dist` if present.
 rm -rf vendor-dist
 
