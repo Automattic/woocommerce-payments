@@ -7,10 +7,8 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
-use WC_Deposits_Product_Manager;
 use WC_Product;
 use WCPay\MultiCurrency\MultiCurrency;
-use WCPay\MultiCurrency\Utils;
 
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Deposits Plugin.
