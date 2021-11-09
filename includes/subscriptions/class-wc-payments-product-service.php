@@ -203,7 +203,7 @@ class WC_Payments_Product_Service {
 	/**
 	 * Schedules a subscription product to be created or updated in WC Pay on shutdown.
 	 *
-	 * @since x.x.x
+	 * @since 3.2.0
 	 *
 	 * @param int $product_id The ID of the product to handle.
 	 */
@@ -237,7 +237,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * Hooked onto shutdown so all products which have been changed in the current request can be updated once.
 	 *
-	 * @since x.x.x
+	 * @since 3.2.0
 	 */
 	public function create_or_update_products() {
 		foreach ( $this->products_to_update as $product_id ) {
@@ -305,7 +305,7 @@ class WC_Payments_Product_Service {
 		$wcpay_product_ids = $this->get_all_wcpay_product_ids( $product );
 		$test_mode         = WC_Payments::get_gateway()->is_in_test_mode();
 
-		// if the current environment doesn't have a product ID, make sure we create one.
+		// If the current environment doesn't have a product ID, make sure we create one.
 		if ( ! isset( $wcpay_product_ids[ $test_mode ? 'test' : 'live' ] ) ) {
 			$this->create_product( $product );
 		}
@@ -355,7 +355,7 @@ class WC_Payments_Product_Service {
 	/**
 	 * Archives a subscription product in WC Pay.
 	 *
-	 * @since x.x.x
+	 * @since 3.2.0
 	 *
 	 * @param int $post_id The ID of the post to handle. Only subscription product IDs will be archived in WC Pay.
 	 */
@@ -372,7 +372,7 @@ class WC_Payments_Product_Service {
 	/**
 	 * Unarchives a subscription product in WC Pay.
 	 *
-	 * @since x.x.x
+	 * @since 3.2.0
 	 *
 	 * @param int $post_id The ID of the post to handle. Only Subscription product post IDs will be unarchived in WC Pay.
 	 */
@@ -643,7 +643,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Checks if a prouduct needs to be updated in WC Pay.
+	 * Checks if a product needs to be updated in WC Pay.
 	 *
 	 * @param WC_Product $product The product to check updates for.
 	 *
@@ -654,7 +654,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Checks if a prouduct price needs to be updated in WC Pay.
+	 * Checks if a product price needs to be updated in WC Pay.
 	 *
 	 * @param WC_Product $product The product to check updates for.
 	 *
