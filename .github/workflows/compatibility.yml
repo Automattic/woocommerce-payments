@@ -45,9 +45,6 @@ jobs:
   php-compatibility:
     name: PHP Compatibility
     runs-on: ubuntu-18.04
-    env:
-      WP_VERSION: '5.6.0',
-      WC_VERSION: '4.4.0'
     steps:
       - uses: actions/checkout@v2
       - uses: shivammathur/setup-php@v2
