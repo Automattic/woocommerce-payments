@@ -419,7 +419,7 @@ const SingleCurrencySettings = () => {
 													isLink
 													onClick={ () => {
 														open(
-															'http://docs.woocommerce.com/document/payments/' +
+															'http://woocommerce.com/document/payments/' +
 																'currencies/multi-currency-setup/#price-rounding',
 															'_blank'
 														);
@@ -484,7 +484,7 @@ const SingleCurrencySettings = () => {
 													isLink
 													onClick={ () => {
 														open(
-															'http://docs.woocommerce.com/document/payments/' +
+															'http://woocommerce.com/document/payments/' +
 																'currencies/multi-currency-setup/#price-charm',
 															'_blank'
 														);

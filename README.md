@@ -38,7 +38,7 @@ Install the following plugins:
 
 ## Test account setup
 
-For setting up a test account follow [these instructions](https://docs.woocommerce.com/document/payments/testing/dev-mode/).
+For setting up a test account follow [these instructions](https://woocommerce.com/document/payments/testing/dev-mode/).
 
 You will need a externally accessible URL to set up the plugin. You can use ngrok for this.
 
