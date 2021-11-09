@@ -310,7 +310,7 @@ class WC_Payments_Dependency_Service {
 	 */
 	private static function is_at_plugin_install_page() {
 		$cur_screen = get_current_screen();
-		return 'update' === $cur_screen->id && 'plugins' === $cur_screen->parent_base;
+		return $cur_screen && 'update' === $cur_screen->id && 'plugins' === $cur_screen->parent_base;
 	}
 
 	/**
