@@ -385,7 +385,10 @@ class WC_Payments_Product_Service {
 			try {
 				$test_mode = 'live' === $environment ? false : true;
 
-				$this->archive_price( $this->get_wcpay_price_id( $product, $test_mode ), $test_mode );
+				if ( $this->has_wcpay_price_id( $product ) ) {
+					$this->archive_price( $this->get_wcpay_price_id( $product, $test_mode ), $test_mode );
+				}
+
 				$this->payments_api_client->update_product(
 					$wcpay_product_id,
 					[
@@ -415,7 +418,10 @@ class WC_Payments_Product_Service {
 			try {
 				$test_mode = 'live' === $environment ? false : true;
 
-				$this->unarchive_price( $this->get_wcpay_price_id( $product, $test_mode ), $test_mode );
+				if ( $this->has_wcpay_price_id( $product ) ) {
+					$this->unarchive_price( $this->get_wcpay_price_id( $product, $test_mode ), $test_mode );
+				}
+
 				$this->payments_api_client->update_product(
 					$wcpay_product_id,
 					[
@@ -762,5 +768,15 @@ class WC_Payments_Product_Service {
 		];
 
 		return ! empty( $max_intervals[ $period ] ) ? $max_intervals[ $period ] : false;
+	}
+
+	/**
+	 * Determines if a product has a price ID.
+	 *
+	 * @param WC_Product $product The WC Product object to check for a price ID.
+	 * @return bool Whether the product has a price ID.
+	 */
+	private function has_wcpay_price_id( $product ) {
+		return $product->meta_exists( self::get_wcpay_price_id_option() );
 	}
 }
