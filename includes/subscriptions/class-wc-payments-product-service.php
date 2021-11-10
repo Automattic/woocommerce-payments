@@ -679,7 +679,9 @@ class WC_Payments_Product_Service {
 				}
 
 				// Now that the price has been archived, delete the record of it.
+				$product->delete_meta_data( self::PRICE_HASH_KEY );
 				$product->delete_meta_data( $price_id_meta_key );
+				$product->save();
 			}
 		}
 	}
