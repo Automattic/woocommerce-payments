@@ -1684,6 +1684,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
 
 		try {
+			// TODO: Add metadata to intent; this data is displayed in transactions list.
+			// See https://github.com/woocommerce/woocommerce-ios/issues/4077.
+
 			$intent = $this->payments_api_client->capture_intention(
 				$order->get_transaction_id(),
 				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
