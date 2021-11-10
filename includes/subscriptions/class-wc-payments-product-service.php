@@ -395,6 +395,22 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
+	 * Archives a WC Pay price object.
+	 *
+	 * @param string    $wcpay_price_id The price object's ID to archive.
+	 * @param bool|null $test_mode      Is WC Pay in test/dev mode.
+	 */
+	public function archive_price( string $wcpay_price_id, $test_mode = null ) {
+		$data = [ 'active' => 'false' ];
+
+		if ( null !== $test_mode ) {
+			$data['test_mode'] = $test_mode;
+		}
+
+		$this->payments_api_client->update_price( $wcpay_price_id, $data );
+	}
+
+	/**
 	 * Prevents the subscription interval to be greater than 1 for yearly subscriptions.
 	 *
 	 * @param int $product_id Post ID of the product.
@@ -578,6 +594,18 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
+	 * Returns the name of the price id option meta, taking test mode into account.
+	 *
+	 * @param bool|null $test_mode Is WC Pay in test/dev mode.
+	 *
+	 * @return string The price hash option name.
+	 */
+	public static function get_wcpay_price_id_option( $test_mode = null ) : string {
+		$test_mode = null === $test_mode ? WC_Payments::get_gateway()->is_in_test_mode() : $test_mode;
+		return $test_mode ? self::TEST_PRICE_ID_KEY : self::LIVE_PRICE_ID_KEY;
+	}
+
+	/**
 	 * Gets all WCPay Product IDs linked to a WC Product (live and testmode products).
 	 *
 	 * @param WC_Product $product The product to fetch WCPay product IDs for.
@@ -625,10 +653,6 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * WCPay Price IDs Functions
-	 */
-
-	/**
 	 * Deletes and archives a product WCPay Price IDs.
 	 *
 	 * @param WC_Product $product The WC Product object to delete and archive the a price IDs.
@@ -653,32 +677,8 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Returns the name of the price id option meta, taking test mode into account.
-	 *
-	 * @param bool|null $test_mode Is WC Pay in test/dev mode.
-	 *
-	 * @return string The price hash option name.
+	 * Deprecated functions
 	 */
-	public static function get_wcpay_price_id_option( $test_mode = null ) : string {
-		$test_mode = null === $test_mode ? WC_Payments::get_gateway()->is_in_test_mode() : $test_mode;
-		return $test_mode ? self::TEST_PRICE_ID_KEY : self::LIVE_PRICE_ID_KEY;
-	}
-
-	/**
-	 * Archives a WC Pay price object.
-	 *
-	 * @param string    $wcpay_price_id The price object's ID to archive.
-	 * @param bool|null $test_mode      Is WC Pay in test/dev mode.
-	 */
-	public function archive_price( string $wcpay_price_id, $test_mode = null ) {
-		$data = [ 'active' => 'false' ];
-
-		if ( null !== $test_mode ) {
-			$data['test_mode'] = $test_mode;
-		}
-
-		$this->payments_api_client->update_price( $wcpay_price_id, $data );
-	}
 
 	/**
 	 * Unarchives a WC Pay Price object.
