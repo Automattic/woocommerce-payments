@@ -287,6 +287,9 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
+		// Get an updated set of order properties to avoid race conditions when the server sends the paid webhook before we've finished processing the original payment request.
+		$order->get_data_store()->read( $order );
+
 		if ( ! $order->has_status( [ 'processing', 'completed' ] ) ) {
 			$order->payment_complete();
 		}
