@@ -16,7 +16,7 @@
       "automattic/jetpack-connection": "1.30.5",
       "automattic/jetpack-config": "1.4.3",
       "automattic/jetpack-autoloader": "2.8.0",
-      "automattic/jetpack-sync": "^1.27.1",
+      "automattic/jetpack-sync": "1.27.2",
       "myclabs/php-enum": "1.7.7",
       "ext-json": "*",
       "woocommerce/subscriptions-core": "1.0.3"

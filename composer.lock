@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8cd0d4366b4d2407544e76cebacbb8b0",
+    "content-hash": "75fd9a8c5e3f3d94eec7db6ba9715790",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -328,16 +328,16 @@
         },
         {
             "name": "automattic/jetpack-identity-crisis",
-            "version": "v0.3.1",
+            "version": "v0.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-identity-crisis.git",
-                "reference": "a44edff408c94182fc1ddbe46e1fcc571b76f9b7"
+                "reference": "7b4f96011d2bd10f937ad69020dcee693a32ab53"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-identity-crisis/zipball/a44edff408c94182fc1ddbe46e1fcc571b76f9b7",
-                "reference": "a44edff408c94182fc1ddbe46e1fcc571b76f9b7",
+                "url": "https://api.github.com/repos/Automattic/jetpack-identity-crisis/zipball/7b4f96011d2bd10f937ad69020dcee693a32ab53",
+                "reference": "7b4f96011d2bd10f937ad69020dcee693a32ab53",
                 "shasum": ""
             },
             "require": {
@@ -364,7 +364,7 @@
                     "link-template": "https://github.com/Automattic/jetpack-identity-crisis/compare/v${old}...v${new}"
                 },
                 "branch-alias": {
-                    "dev-master": "0.3.x-dev"
+                    "dev-master": "0.4.x-dev"
                 }
             },
             "autoload": {
@@ -378,9 +378,9 @@
             ],
             "description": "Identity Crisis.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-identity-crisis/tree/v0.3.1"
+                "source": "https://github.com/Automattic/jetpack-identity-crisis/tree/v0.4.0"
             },
-            "time": "2021-11-02T14:07:34+00:00"
+            "time": "2021-11-09T15:47:30+00:00"
         },
         {
             "name": "automattic/jetpack-logo",
@@ -661,23 +661,23 @@
         },
         {
             "name": "automattic/jetpack-sync",
-            "version": "v1.27.1",
+            "version": "v1.27.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-sync.git",
-                "reference": "d651320187fba6e88e065e715fea72f10c7314e5"
+                "reference": "342f684eef52bebaf00a0b3094491270bd2ea135"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-sync/zipball/d651320187fba6e88e065e715fea72f10c7314e5",
-                "reference": "d651320187fba6e88e065e715fea72f10c7314e5",
+                "url": "https://api.github.com/repos/Automattic/jetpack-sync/zipball/342f684eef52bebaf00a0b3094491270bd2ea135",
+                "reference": "342f684eef52bebaf00a0b3094491270bd2ea135",
                 "shasum": ""
             },
             "require": {
                 "automattic/jetpack-connection": "^1.30",
                 "automattic/jetpack-constants": "^1.6",
                 "automattic/jetpack-heartbeat": "^1.3",
-                "automattic/jetpack-identity-crisis": "^0.3",
+                "automattic/jetpack-identity-crisis": "^0.4",
                 "automattic/jetpack-options": "^1.13",
                 "automattic/jetpack-password-checker": "^0.1",
                 "automattic/jetpack-roles": "^1.4",
@@ -713,9 +713,9 @@
             ],
             "description": "Everything needed to allow syncing to the WP.com infrastructure.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-sync/tree/v1.27.1"
+                "source": "https://github.com/Automattic/jetpack-sync/tree/v1.27.2"
             },
-            "time": "2021-11-02T14:07:39+00:00"
+            "time": "2021-11-09T15:47:38+00:00"
         },
         {
             "name": "automattic/jetpack-terms-of-service",
