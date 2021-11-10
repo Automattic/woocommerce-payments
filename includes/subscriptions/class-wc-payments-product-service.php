@@ -636,7 +636,7 @@ class WC_Payments_Product_Service {
 	 * @param int    $interval Cycle interval.
 	 * @return boolean
 	 */
-	private function is_valid_billing_cycle( $period, $interval ) {
+	public function is_valid_billing_cycle( $period, $interval ) {
 		$interval_limit = $this->get_period_interval_limit( $period );
 
 		// A cycle is valid when we have a defined limit, and the given interval isn't 0 nor greater than the limit.
