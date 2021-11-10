@@ -287,9 +287,13 @@ class WC_Payments_Product_Service {
 		}
 
 		$data = $this->get_product_data( $product );
+
 		$this->remove_product_update_listeners();
 
 		try {
+			// Validate that we have enough data to create the product.
+			$this->validate_product_data( $data );
+
 			// Update all versions of WCPay Products that need updating.
 			foreach ( $wcpay_product_ids as $environment => $wcpay_product_id ) {
 				$data['test_mode'] = 'live' === $environment ? false : true;
@@ -297,8 +301,8 @@ class WC_Payments_Product_Service {
 			}
 
 			$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
-		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem updating the product in WC Pay: ' . $e->getMessage() );
+		} catch ( \Exception $e ) {
+			Logger::log( sprintf( 'There was a problem updating the product #%s in WC Pay: %s', $product->get_id(), $e->getMessage() ) );
 		}
 
 		$this->add_product_update_listeners();
@@ -677,6 +681,18 @@ class WC_Payments_Product_Service {
 				// Now that the price has been archived, delete the record of it.
 				$product->delete_meta_data( $price_id_meta_key );
 			}
+		}
+	}
+
+	/**
+	 * Validates that we have the data necessary to create a product in WCPay.
+	 *
+	 * @param  array $product_data Data used to create/update the product in WCPay.
+	 * @throws Exception If the product data doesn't contain the 'name' argument as the 'name' property is a required field.
+	 */
+	private function validate_product_data( $product_data ) {
+		if ( empty( $product_data['name'] ) ) {
+			throw new Exception( 'The product "name" is required.' );
 		}
 	}
 
