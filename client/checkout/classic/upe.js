@@ -271,8 +271,15 @@ jQuery( function ( $ ) {
 	 * @param {boolean} isSetupIntent {Boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
 	 */
 	const mountUPEElement = function ( isSetupIntent = false ) {
-		// Do not mount UPE twice.
-		if ( upeElement || paymentIntentId ) {
+		const upeLoadingSelector = '#wc-woocommerce_payments-upe-form';
+		const upeContainer = '#wcpay-upe-element';
+
+		blockUI( $( upeLoadingSelector ) );
+
+		// Do not recreate UPE element unnecessarily.
+		if ( upeElement ) {
+			upeElement.unmount();
+			upeElement.mount( upeContainer );
 			return;
 		}
 
@@ -299,14 +306,12 @@ jQuery( function ( $ ) {
 			? api.initSetupIntent()
 			: api.createIntent( orderId );
 
-		const $upeContainer = $( '#wcpay-upe-element' );
-		blockUI( $upeContainer );
-
 		intentAction
 			.then( ( response ) => {
-				// I repeat, do NOT mount UPE twice.
+				// I repeat, do NOT recreate UPE element unnecessarily.
 				if ( upeElement || paymentIntentId ) {
-					unblockUI( $upeContainer );
+					upeElement.unmount();
+					upeElement.mount( upeContainer );
 					return;
 				}
 
@@ -340,8 +345,10 @@ jQuery( function ( $ ) {
 				}
 
 				upeElement = elements.create( 'payment', upeSettings );
-				upeElement.mount( '#wcpay-upe-element' );
-				unblockUI( $upeContainer );
+				upeElement.mount( upeContainer );
+				upeElement.on( 'ready', () => {
+					unblockUI( $( upeLoadingSelector ) );
+				} );
 				upeElement.on( 'change', ( event ) => {
 					const selectedUPEPaymentType = event.value.type;
 					const isPaymentMethodReusable =
@@ -354,7 +361,7 @@ jQuery( function ( $ ) {
 				} );
 			} )
 			.catch( ( error ) => {
-				unblockUI( $upeContainer );
+				unblockUI( $( upeLoadingSelector ) );
 				showError( error.message );
 				const gatewayErrorMessage =
 					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
@@ -378,8 +385,7 @@ jQuery( function ( $ ) {
 		if (
 			$( '#wcpay-upe-element' ).length &&
 			! $( '#wcpay-upe-element' ).children().length &&
-			isUPEEnabled &&
-			! upeElement
+			isUPEEnabled
 		) {
 			renameGatewayTitle();
 			mountUPEElement();
