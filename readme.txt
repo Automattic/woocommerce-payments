@@ -112,6 +112,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Do not create WooCommerce Payments Subscriptions when using payment methods other than WooCommerce Payments.
 * Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
 * Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
+* Fix - UPE element not remounting on checkout update
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
