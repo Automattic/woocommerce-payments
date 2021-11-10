@@ -8,6 +8,10 @@
 * Add - Add filters to disable or filter Multi-Currency sql query clauses for analytics.
 * Fix - Display risk for payment methods without risk assessment
 * Fix - Use configured domain instead of current domain for Apple Pay verification.
+* Fix - Fatal error when deactivating the WooCommerce plugin when WCPay Subscriptions is enabled.
+* Fix - Error where url parameters would get cleared on order-pay page if currency switcher block used.
+* Fix - Currency format on order-pay page if currency was changed via switcher.
+* Fix - Do not create WooCommerce Payments Subscriptions when using payment methods other than WooCommerce Payments.
 * Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
 * Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
 
@@ -20,7 +24,6 @@
 
 = 3.2.1 - 2021-10-28 =
 * Fix - PHP 7.2 compatibility - remove trailing commas from function args in subscriptions-core.
-
 
 = 3.2.0 - 2021-10-28 =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.

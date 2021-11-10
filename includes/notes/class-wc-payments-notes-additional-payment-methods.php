@@ -63,7 +63,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		$note       = new $note_class();
 
 		$note->set_title( __( 'Boost your sales by accepting new payment methods', 'woocommerce-payments' ) );
-		$note->set_content( __( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments. <a href="https://docs.woocommerce.com/document/payments/additional-payment-methods/" target="wcpay_upe_learn_more">Learn more</a>', 'woocommerce-payments' ) );
+		$note->set_content( __( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments. <a href="https://woocommerce.com/document/payments/additional-payment-methods/" target="wcpay_upe_learn_more">Learn more</a>', 'woocommerce-payments' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( $note_class::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );

@@ -338,6 +338,17 @@ class WC_Payments_Subscription_Service {
 	 * @throws Exception Throws an exception to stop checkout processing and display message to customer.
 	 */
 	public function create_subscription( WC_Subscription $subscription ) {
+		/*
+		 * Bail early if the subscription payment method is not WooCommerce Payments.
+		 * WCPay Subscriptions are not created in the following scenarios:
+		 *
+		 * - A different payment gateway was used to purchase the subscription (e.g. PayPal).
+		 * - The subscription is free (i.e. $0) and payment details were not captured during checkout.
+		 */
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $subscription->get_payment_method() ) {
+			return;
+		}
+
 		$checkout_error_message = __( 'There was a problem creating your subscription. Please try again or contact us for assistance.', 'woocommerce-payments' );
 		$wcpay_customer_id      = $this->customer_service->get_customer_id_for_order( $subscription );
 

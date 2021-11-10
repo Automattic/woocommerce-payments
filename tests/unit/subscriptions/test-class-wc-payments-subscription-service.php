@@ -132,6 +132,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$mock_shipping_item = array_values( $mock_order->get_items( 'shipping' ) )[0];
 		$mock_subscription  = new WC_Subscription();
 		$mock_subscription->set_parent( $mock_order );
+		$mock_subscription->set_props( [ 'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID ] );
 		$mock_wcpay_product_id           = 'wcpay_prod_test123';
 		$mock_wcpay_subscription_id      = 'wcpay_subscription_test12345';
 		$mock_wcpay_subscription_item_id = 'wcpay_subscription_item_test12345';
@@ -229,6 +230,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$mock_subscription = new WC_Subscription();
 		$mock_subscription->set_requires_manual_renewal( true );
 		$mock_subscription->set_parent( $mock_order );
+		$mock_subscription->set_props( [ 'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID ] );
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
 			function ( $id ) use ( $mock_subscription ) {
