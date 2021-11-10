@@ -229,18 +229,6 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->will(
 				$this->returnValue( $this->mock_payment_result )
 			);
-		$this->mock_upe_gateway
-			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_statuses' )
-			->will(
-				$this->returnValue(
-					[
-						'card_payments' => [
-							'status' => 'active',
-						],
-					]
-				)
-			);
 
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
@@ -251,6 +239,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 
 	public function test_payment_fields_outputs_fields() {
 		$this->set_cart_contains_subscription_items( false );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 		$this->mock_upe_gateway->payment_fields();
 
 		$this->expectOutputRegex( '/<div id="wcpay-upe-element"><\/div>/' );
@@ -473,6 +462,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->with( 5000, 'usd', [ 'card' ] )
 			->willReturn( $intent );
 		$this->set_cart_contains_subscription_items( false );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
 		$result = $this->mock_upe_gateway->create_payment_intent( $order_id );
 	}
@@ -492,6 +482,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				'automatic'
 			)
 			->willReturn( $intent );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
 		$this->mock_upe_gateway->create_payment_intent( $order_id );
 	}
 
@@ -511,6 +503,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				'automatic'
 			)
 			->willReturn( $intent );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
 		$this->mock_upe_gateway->create_payment_intent( $order_id );
 	}
 
@@ -530,6 +524,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				'manual'
 			)
 			->willReturn( $intent );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
 		$this->mock_upe_gateway->create_payment_intent( $order_id );
 	}
 
@@ -1260,6 +1256,59 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * @dataProvider maybe_filter_gateway_title_data_provider
+	 */
+	public function test_maybe_filter_gateway_title( $data ) {
+		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
+		self::$mock_site_currency = $data['currency'];
+		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
+		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
+	}
+
+	public function maybe_filter_gateway_title_data_provider() {
+		$method_title   = 'WooCommerce Payments';
+		$checkout_title = 'Popular payment methods';
+		$card_title     = '';
+
+		$return_data   = [];
+		$return_data[] = [
+			'methods'  => [
+				'card',
+				'bancontact',
+			],
+			'statuses' => [
+				'card_payments'       => [
+					'status' => 'active',
+				],
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'EUR',
+			'title'    => $method_title,
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => $checkout_title,
+		];
+		$return_data[] = [
+			'methods'  => [
+				'card',
+			],
+			'statuses' => [
+				'card_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'EUR',
+			'title'    => $method_title,
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => $card_title,
+		];
+		return [ $return_data ];
+	}
+
+	/**
 	 * Helper function to mock subscriptions for internal UPE payment methods.
 	 */
 	private function set_cart_contains_subscription_items( $cart_contains_subscriptions ) {
@@ -1281,4 +1330,17 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		];
 	}
 
+	private function set_get_upe_enabled_payment_method_statuses_return_value( $return_value = null ) {
+		if ( null === $return_value ) {
+			$return_value = [
+				'card_payments' => [
+					'status' => 'active',
+				],
+			];
+		}
+		$this->mock_upe_gateway
+			->expects( $this->any() )
+			->method( 'get_upe_enabled_payment_method_statuses' )
+			->will( $this->returnValue( $return_value ) );
+	}
 }
