@@ -634,14 +634,14 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The WC Product object to delete and archive the a price IDs.
 	 */
 	private function delete_all_wcpay_price_ids( $product ) {
-
 		// Delete and archive all price IDs for all environments.
 		foreach ( [ 'test', 'live' ] as $environment ) {
-			$price_id_meta_key = self::get_wcpay_price_id_option( $environment );
+			$test_mode         = 'test' === $environment;
+			$price_id_meta_key = self::get_wcpay_price_id_option( $test_mode );
 
 			if ( $product->meta_exists( $price_id_meta_key ) ) {
 				try {
-					$this->archive_price( $product->get_meta( $price_id_meta_key, true ), $environment );
+					$this->archive_price( $product->get_meta( $price_id_meta_key, true ), $test_mode );
 				} catch ( API_Exception $e ) {
 					Logger::log( 'There was a problem archiving the ' . $environment . 'product price ID in WC Pay: ' . $e->getMessage() );
 				}
@@ -683,10 +683,13 @@ class WC_Payments_Product_Service {
 	/**
 	 * Unarchives a WC Pay Price object.
 	 *
+	 * @deprecated 3.3.0
+	 *
 	 * @param string    $wcpay_price_id The Price object's ID to unarchive.
 	 * @param bool|null $test_mode      Is WC Pay in test/dev mode.
 	 */
 	public function unarchive_price( string $wcpay_price_id, $test_mode = null ) {
+		wc_deprecated_function( __FUNCTION__, '3.3.0' );
 		$data = [ 'active' => 'true' ];
 
 		if ( null !== $test_mode ) {
@@ -699,22 +702,28 @@ class WC_Payments_Product_Service {
 	/**
 	 * Gets the WC Pay price hash associated with a WC product.
 	 *
+	 * @deprecated 3.3.0
+	 *
 	 * @param WC_Product $product The product to get the hash for.
 	 * @return string             The product's price hash or an empty string.
 	 */
 	public static function get_wcpay_price_hash( WC_Product $product ) : string {
+		wc_deprecated_function( __FUNCTION__, '3.3.0' );
 		return $product->get_meta( self::PRICE_HASH_KEY, true );
 	}
 
 	/**
 	 * Gets the WC Pay price ID associated with a WC product.
 	 *
+	 * @deprecated 3.3.0
+	 *
 	 * @param WC_Product $product   The product to get the WC Pay price ID for.
 	 * @param bool|null  $test_mode Is WC Pay in test/dev mode.
 	 *
-	 * @return string             The product's WC Pay price ID or an empty string.
+	 * @return string The product's WC Pay price ID or an empty string.
 	 */
 	public function get_wcpay_price_id( WC_Product $product, $test_mode = null ) : string {
+		wc_deprecated_function( __FUNCTION__, '3.3.0' );
 		$price_id = $product->get_meta( self::get_wcpay_price_id_option( $test_mode ), true );
 
 		// If the subscription product doesn't have a WC Pay price ID, create one now.
