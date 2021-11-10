@@ -223,15 +223,19 @@ class WC_Payments_Product_Service {
 	 */
 	public function create_product( WC_Product $product ) {
 		try {
-			$product_data  = $this->get_product_data( $product );
+			$product_data = $this->get_product_data( $product );
+
+			// Validate that we have enough data to create the product.
+			$this->validate_product_data( $product_data );
+
 			$wcpay_product = $this->payments_api_client->create_product( $product_data );
 
 			$this->remove_product_update_listeners();
 			$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
 			$this->set_wcpay_product_id( $product, $wcpay_product['wcpay_product_id'] );
 			$this->add_product_update_listeners();
-		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem creating the product in WC Pay: ' . $e->getMessage() );
+		} catch ( \Exception $e ) {
+			Logger::log( sprintf( 'There was a problem creating the product #%s in WC Pay: %s', $product->get_id(), $e->getMessage() ) );
 		}
 	}
 
