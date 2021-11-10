@@ -286,7 +286,7 @@ class WC_Payments_Product_Service {
 		$this->remove_product_update_listeners();
 
 		try {
-			// Update all versions of WCPay Products and Prices that need updating.
+			// Update all versions of WCPay Products that need updating.
 			foreach ( $wcpay_product_ids as $environment => $wcpay_product_id ) {
 				$data['test_mode'] = 'live' === $environment ? false : true;
 				$this->payments_api_client->update_product( $wcpay_product_id, $data );
@@ -526,7 +526,7 @@ class WC_Payments_Product_Service {
 	 * Used to compare WC changes with WC Pay data.
 	 *
 	 * @param WC_Product $product The product to generate the hash for.
-	 * @return string             The product's price hash.
+	 * @return string             The product's hash.
 	 */
 	private function get_product_hash( WC_Product $product ) : string {
 		return md5( implode( $this->get_product_data( $product ) ) );
@@ -570,7 +570,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @param bool|null $test_mode Is WC Pay in test/dev mode.
 	 *
-	 * @return string The price hash option name.
+	 * @return string The WCPay product ID meta key/option name.
 	 */
 	public static function get_wcpay_product_id_option( $test_mode = null ) : string {
 		$test_mode = null === $test_mode ? WC_Payments::get_gateway()->is_in_test_mode() : $test_mode;
