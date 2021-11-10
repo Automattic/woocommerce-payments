@@ -418,10 +418,6 @@ class WC_Payments_Product_Service {
 			try {
 				$test_mode = 'live' === $environment ? false : true;
 
-				if ( $this->has_wcpay_price_id( $product ) ) {
-					$this->unarchive_price( $this->get_wcpay_price_id( $product, $test_mode ), $test_mode );
-				}
-
 				$this->payments_api_client->update_product(
 					$wcpay_product_id,
 					[
