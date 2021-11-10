@@ -5,7 +5,10 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\MultiCurrency\Compatibility;
 use WCPay\MultiCurrency\Currency;
+use WCPay\MultiCurrency\MultiCurrency;
+use WCPay\MultiCurrency\Utils;
 
 /**
  * WCPay\MultiCurrency\Compatibility unit tests.
@@ -38,9 +41,9 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
-		$this->mock_utils          = $this->createMock( WCPay\MultiCurrency\Utils::class );
-		$this->compatibility       = new WCPay\MultiCurrency\Compatibility( $this->mock_multi_currency, $this->mock_utils );
+		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
+		$this->mock_utils          = $this->createMock( Utils::class );
+		$this->compatibility       = new Compatibility( $this->mock_multi_currency, $this->mock_utils );
 	}
 
 	public function test_should_convert_coupon_amount_return_true_on_null_coupon() {

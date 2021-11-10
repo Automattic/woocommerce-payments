@@ -8,6 +8,9 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Rest_Request_Exception;
 
+// Need to use WC_Mock_Data_Store.
+require_once dirname( __FILE__, 2 ) . '/helpers/class-wc-mock-wc-data-store.php';
+
 /**
  * WC_REST_Payments_Webhook_Controller unit tests.
  */
@@ -552,6 +555,10 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			->with( 'pi_123123123123123' )
 			->willReturn( $mock_order );
 
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
 		// Run the test.
 		$response = $this->controller->handle_webhook( $this->request );
 
@@ -602,6 +609,10 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			->with( 'id_1323' )
 			->willReturn( $mock_order );
 
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
 		// Run the test.
 		$response = $this->controller->handle_webhook( $this->request );
 
@@ -645,6 +656,10 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			->method( 'order_from_intent_id' )
 			->with( 'pi_123123123123123' )
 			->willReturn( $mock_order );
+
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
 
 		// Run the test.
 		$response = $this->controller->handle_webhook( $this->request );
