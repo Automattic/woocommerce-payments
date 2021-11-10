@@ -205,6 +205,7 @@ const composeFeeString = ( event ) => {
 		percentage,
 		fixed,
 		fixed_currency: fixedCurrency,
+		history,
 	} = event.fee_rates;
 	let feeAmount = event.fee;
 	let feeCurrency = event.currency;
@@ -214,11 +215,22 @@ const composeFeeString = ( event ) => {
 		feeCurrency = event.transaction_details.store_currency;
 	}
 
+	const baseFeeLabel = isBaseFeeOnly( event )
+		? __( 'Base fee', 'woocommerce-payments' )
+		: __( 'Fee', 'woocommerce-payments' );
+
+	if ( isBaseFeeOnly( event ) && history[ 0 ]?.capped ) {
+		return sprintf(
+			'%1$s (capped at %2$s): %3$s',
+			baseFeeLabel,
+			formatCurrency( fixed, fixedCurrency ),
+			formatCurrency( -feeAmount, feeCurrency )
+		);
+	}
+
 	return sprintf(
 		'%1$s (%2$f%% + %3$s): %4$s',
-		isBaseFeeOnly( event )
-			? __( 'Base fee', 'woocommerce-payments' )
-			: __( 'Fee', 'woocommerce-payments' ),
+		baseFeeLabel,
 		formatFee( percentage ),
 		formatCurrency( fixed, fixedCurrency ),
 		formatCurrency( -feeAmount, feeCurrency )
@@ -267,34 +279,43 @@ const feeBreakdown = ( event ) => {
 		fee_rates: { history },
 	} = event;
 
-	const feeLabelMapping = ( fixedRate ) => ( {
-		base:
-			0 !== fixedRate
-				? /* translators: %1$s% is the fee amount and %2$s is the fixed rate */
-				  __( 'Base fee: %1$s%% + %2$s', 'woocommerce-payments' )
-				: /* translators: %1$s% is the fee amount */
-				  __( 'Base fee: %1$s%%', 'woocommerce-payments' ),
+	const feeLabelMapping = ( fixedRate, isCapped ) => ( {
+		base: ( () => {
+			if ( isCapped ) {
+				/* translators: %2$s is the capped fee */
+				return __( 'Base fee: capped at %2$s', 'woocommerce-payments' );
+			}
+
+			if ( 0 !== fixedRate ) {
+				/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
+				return __( 'Base fee: %1$s%% + %2$s', 'woocommerce-payments' );
+			}
+
+			/* translators: %1$s% is the fee percentage */
+			return __( 'Base fee: %1$s%%', 'woocommerce-payments' );
+		} )(),
+
 		'additional-international':
 			0 !== fixedRate
 				? __(
-						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
+						/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
 						'International card fee: %1$s%% + %2$s',
 						'woocommerce-payments'
 				  )
 				: __(
-						/* translators: %1$s% is the fee amount */
+						/* translators: %1$s% is the fee percentage */
 						'International card fee: %1$s%%',
 						'woocommerce-payments'
 				  ),
 		'additional-fx':
 			0 !== fixedRate
 				? __(
-						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
+						/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
 						'Foreign exchange fee: %1$s%% + %2$s',
 						'woocommerce-payments'
 				  )
 				: __(
-						/* translators: %1$s% is the fee amount */
+						/* translators: %1$s% is the fee percentage */
 						'Foreign exchange fee: %1$s%%',
 						'woocommerce-payments'
 				  ),
@@ -302,12 +323,12 @@ const feeBreakdown = ( event ) => {
 			0 !== fixedRate
 				? __(
 						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
-						'Recurring transaction fee: %1$s%% + %2$s',
+						'Subscription transaction fee: %1$s%% + %2$s',
 						'woocommerce-payments'
 				  )
 				: __(
 						/* translators: %1$s% is the fee amount */
-						'Recurring transaction fee: %1$s%%',
+						'Subscription transaction fee: %1$s%%',
 						'woocommerce-payments'
 				  ),
 		discount: __( 'Discount', 'woocommerce-payments' ),
@@ -341,6 +362,7 @@ const feeBreakdown = ( event ) => {
 			percentage_rate: percentageRate,
 			fixed_rate: fixedRate,
 			currency,
+			capped: isCapped,
 		} = fee;
 
 		const percentageRateFormatted = formatFee( percentageRate );
@@ -349,7 +371,7 @@ const feeBreakdown = ( event ) => {
 		return (
 			<li key={ labelKey }>
 				{ sprintf(
-					feeLabelMapping( fixedRate )[ labelKey ],
+					feeLabelMapping( fixedRate, isCapped )[ labelKey ],
 					percentageRateFormatted,
 					fixedRateFormatted
 				) }

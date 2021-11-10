@@ -74,7 +74,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase
 		$this->assertStringContainsString( '<form>', $result );
 
 		// Attributes are set with defaults in CurrencySwitcherBlock if they are not set, so we need to check them.
-		$border_attribute        = isset( $attributes['border'] ) ? '1px solid' : '0px solid';
+		$border_attribute        = isset( $attributes['border'] ) && $attributes['border'] ? '1px solid' : '0px solid';
 		$border_radius_attribute = isset( $attributes['borderRadius'] ) ? $attributes['borderRadius'] . 'px' : '3px';
 		$border_color_attribute  = $attributes['borderColor'] ?? '#000000';
 
@@ -115,33 +115,48 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase
 
 	public function block_widget_attributes_provider(): array {
 		return [
-			'with_defaults'        => [
+			'with_defaults'                 => [
 				[],
 				false,
 			],
-			'with_flag'            => [
+			'with_flag'                     => [
 				[
 					'symbol' => false,
 					'flag'   => true,
 				],
 				false,
 			],
-			'with_symbol'          => [
+			'with_symbol'                   => [
 				[
 					'symbol' => true,
 					'flag'   => false,
 				],
 				false,
 			],
-			'with_flag_and_symbol' => [
+			'with_flag_and_symbol'          => [
 				[
 					'symbol' => true,
 					'flag'   => true,
 				],
 				false,
 			],
-			'with_styles_applied'  => [
+			'with_styles_applied'           => [
 				[
+					'border'          => true,
+					'borderRadius'    => 3,
+					'symbol'          => false,
+					'flag'            => false,
+					'fontLineHeight'  => 1.2,
+					'fontSize'        => 34,
+					'fontColor'       => '#B00F0F',
+					'backgroundColor' => '#E5FFCC',
+				],
+				true,
+			],
+			'with_styles_applied_no_border' => [
+				[
+					'border'          => false,
+					'borderRadius'    => 2,
 					'symbol'          => false,
 					'flag'            => false,
 					'fontLineHeight'  => 1.2,
@@ -152,5 +167,33 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase
 				true,
 			],
 		];
+	}
+
+	public function test_widget_renders_hidden_input() {
+		$_GET       = [
+			'test_name'  => 'test_value',
+			'test_array' => [ 0 => [ 0 => 'test_array_value' ] ],
+			'named_key'  => [ 'key' => 'value' ],
+		];
+		$attributes = [
+			[
+				'symbol' => false,
+				'flag'   => true,
+			],
+			false,
+		];
+
+		$this->mock_compatibility->expects( $this->once() )
+			->method( 'should_hide_widgets' )
+			->willReturn( false );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_enabled_currencies' )
+			->willReturn( $this->mock_currencies );
+
+		$result = $this->currency_switcher_block->render_block_widget( $attributes, '' );
+		$this->assertStringContainsString( '<input type="hidden" name="test_name" value="test_value" />', $result );
+		$this->assertStringContainsString( '<input type="hidden" name="test_array[0][0]" value="test_array_value" />', $result );
+		$this->assertStringContainsString( '<input type="hidden" name="named_key[key]" value="value" />', $result );
 	}
 }

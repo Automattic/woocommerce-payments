@@ -6,7 +6,8 @@
 		"wpcalypso/react",
 		"plugin:jsx-a11y/recommended",
 		"prettier",
-		"plugin:@woocommerce/eslint-plugin/recommended"
+		"plugin:@woocommerce/eslint-plugin/recommended",
+		"plugin:import/typescript"
 	],
 	"plugins": [ "jsx-a11y", "jest", "jsdoc-alignment" ],
 	"env": {

@@ -8,6 +8,9 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Rest_Request_Exception;
 
+// Need to use WC_Mock_Data_Store.
+require_once dirname( __FILE__, 2 ) . '/helpers/class-wc-mock-wc-data-store.php';
+
 /**
  * WC_REST_Payments_Webhook_Controller unit tests.
  */
@@ -58,7 +61,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 			->disableOriginalConstructor()
-			->setMethods( [ 'order_from_charge_id', 'order_from_intent_id' ] )
+			->setMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
 			->getMock();
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
@@ -552,6 +555,64 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			->with( 'pi_123123123123123' )
 			->willReturn( $mock_order );
 
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		// Run the test.
+		$response = $this->controller->handle_webhook( $this->request );
+
+		// Check the response.
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
+	}
+
+	/**
+	 * Tests that a payment_intent.succeeded event will complete the order even if the intent was not properly attached into the order.
+	 */
+	public function test_payment_intent_successful_and_completes_order_without_intent_id() {
+		$this->request_body['type']           = 'payment_intent.succeeded';
+		$this->request_body['data']['object'] = [
+			'id'       => 'pi_123123123123123', // payment_intent's ID.
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [],
+			'currency' => 'eur',
+			'metadata' => [ 'order_id' => 'id_1323' ], // Using order_id inside of the intent metadata to find the order.
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( [ 'processing', 'completed' ] )
+			->willReturn( false );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( null );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_order_id' )
+			->with( 'id_1323' )
+			->willReturn( $mock_order );
+
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
 		// Run the test.
 		$response = $this->controller->handle_webhook( $this->request );
 
@@ -595,6 +656,10 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			->method( 'order_from_intent_id' )
 			->with( 'pi_123123123123123' )
 			->willReturn( $mock_order );
+
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
 
 		// Run the test.
 		$response = $this->controller->handle_webhook( $this->request );

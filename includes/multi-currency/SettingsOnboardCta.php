@@ -18,7 +18,7 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 	 *
 	 * @var string
 	 */
-	const LEARN_MORE_URL = 'https://docs.woocommerce.com/document/payments/currencies/multi-currency-setup/';
+	const LEARN_MORE_URL = 'https://woocommerce.com/document/payments/currencies/multi-currency-setup/';
 
 	/**
 	 * Constructor.

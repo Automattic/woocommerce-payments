@@ -23,6 +23,9 @@ use WCPay\Payment_Information;
 use WP_UnitTestCase;
 use WP_User;
 
+// Need to use WC_Mock_Data_Store.
+require_once dirname( __FILE__, 2 ) . '/helpers/class-wc-mock-wc-data-store.php';
+
 /**
  * WCPay\Payment_Gateway\Sepa Unit tests
  */
@@ -158,6 +161,11 @@ class Sepa_Payment_Gateway_Test extends WP_UnitTestCase {
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a order data store.
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
 
 		// Arrange: Set a good return value for order ID.
 		$mock_order

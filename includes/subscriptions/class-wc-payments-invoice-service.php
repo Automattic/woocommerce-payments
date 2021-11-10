@@ -146,6 +146,7 @@ class WC_Payments_Invoice_Service {
 	 * make sure the invoice is marked as paid (without charging the customer since it was charged on checkout).
 	 *
 	 * @param int $order_id The WC order ID.
+	 * @throws API_Exception If the request to mark the invoice as paid fails.
 	 */
 	public function maybe_record_invoice_payment( int $order_id ) {
 		$order = wc_get_order( $order_id );
@@ -161,8 +162,17 @@ class WC_Payments_Invoice_Service {
 				continue;
 			}
 
-			// Update the status of the invoice to paid but don't charge the customer by using paid_out_of_band parameter.
-			$this->payments_api_client->charge_invoice( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
+			try {
+				// Set the invoice status to paid but don't charge the customer by using paid_out_of_band parameter.
+				$this->payments_api_client->charge_invoice( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
+			} catch ( API_Exception $e ) {
+				// If the invoice was already paid, silently handle that error. Throw all other exceptions.
+				if ( WP_Http::BAD_REQUEST === $e->get_http_code() && false !== strpos( strtolower( $e->getMessage() ), 'invoice is already paid' ) ) {
+					Logger::info( sprintf( 'Invoice for subscription #%s has already been paid.', $subscription->get_id() ) );
+				} else {
+					throw $e;
+				}
+			}
 
 			if ( $subscription->is_manual() ) {
 				$subscription->set_requires_manual_renewal( false );
@@ -275,66 +285,53 @@ class WC_Payments_Invoice_Service {
 	 * @throws Rest_Request_Exception WCPay invoice items do not match WC subscription items.
 	 */
 	private function get_repair_data_for_wcpay_items( array $wcpay_item_data, WC_Subscription $subscription ) : array {
-		$repair_data = [];
-		$wcpay_items = [];
+		$repair_data        = [];
+		$wcpay_items        = [];
+		$subscription_items = $subscription->get_items( [ 'line_item', 'fee', 'shipping', 'tax' ] );
 
 		foreach ( $wcpay_item_data as $item ) {
 			$wcpay_subscription_item_id = $item['subscription_item'];
 
 			$wcpay_items[ $wcpay_subscription_item_id ] = [
-				'amount'    => $item['amount'],
-				'quantity'  => $item['quantity'],
-				'tax_rates' => array_column( $item['tax_rates'], 'percentage' ),
+				'unit_amount'      => $item['price']['unit_amount_decimal'],
+				'billing_period'   => $item['price']['recurring']['interval'],
+				'billing_interval' => $item['price']['recurring']['interval_count'],
+				'currency'         => $item['price']['currency'],
+				'quantity'         => $item['quantity'],
 			];
 		}
 
-		foreach ( $subscription->get_items( [ 'line_item', 'fee', 'shipping' ] ) as $item ) {
-			$subscription_item_id = WC_Payments_Subscription_Service::get_wcpay_subscription_item_id( $item );
+		// Generate any repair data necessary to update the WCPay Subscription so it matches the WC subscription.
+		foreach ( WC_Payments_Subscriptions::get_subscription_service()->get_recurring_item_data_for_subscription( $subscription ) as $recurring_item_data ) {
+			$item_id       = $recurring_item_data['metadata']['wc_item_id'];
+			$item          = $subscription_items[ $item_id ];
+			$wcpay_item_id = WC_Payments_Subscription_Service::get_wcpay_subscription_item_id( $item );
 
-			if ( ! $subscription_item_id ) {
-				continue;
-			}
-
-			if ( ! in_array( $subscription_item_id, array_keys( $wcpay_items ), true ) ) {
-				$message = __( 'The WCPay invoice items do not match WC subscription items', 'woocommerce-payments' );
+			if ( ! isset( $wcpay_items[ $wcpay_item_id ] ) ) {
+				$message = __( 'The WCPay invoice items do not match WC subscription items.', 'woocommerce-payments' );
 				Logger::error( $message );
 				throw new Rest_Request_Exception( $message );
 			}
 
-			$item_data = $wcpay_items[ $subscription_item_id ];
-
-			if ( (int) $item->get_total() * 100 !== $item_data['amount'] ) {
-				if ( $item->is_type( 'line_item' ) ) {
-					$product                                       = $item->get_product();
-					$repair_data[ $subscription_item_id ]['price'] = $this->product_service->get_wcpay_price_id( $product );
-				} else {
-					$repair_data[ $subscription_item_id ]['price_data'] = WC_Payments_Subscription_Service::format_item_price_data(
-						$subscription->get_currency(),
-						$this->product_service->get_wcpay_product_id_for_item( $item->get_type() ),
-						$item->get_total(),
-						$subscription->get_billing_period(),
-						$subscription->get_billing_interval()
-					);
-				}
+			// Check the quantity matches between WC and WCPay.
+			if ( $item->is_type( 'line_item' ) && $wcpay_items[ $wcpay_item_id ]['quantity'] !== $recurring_item_data['quantity'] ) {
+				$repair_data[ $wcpay_item_id ]['quantity'] = $recurring_item_data['quantity'];
 			}
 
-			if ( $item->get_quantity() !== $item_data['quantity'] ) {
-				$repair_data[ $subscription_item_id ]['quantity'] = $item->get_quantity();
-			}
+			// Confirm the line item amount matches between WC and WCPay.
+			$unit_amounts_match = (string) $wcpay_items[ $wcpay_item_id ]['unit_amount'] === (string) $recurring_item_data['price_data']['unit_amount_decimal'];
 
-			if ( ! empty( $item->get_taxes() ) ) {
-				$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
+			if ( ! $unit_amounts_match ) {
+				$price_data = $recurring_item_data['price_data'];
 
-				if ( count( $tax_rate_ids ) !== count( $item_data['tax_rates'] ) ) {
-					$repair_data[ $subscription_item_id ]['tax_rates'] = WC_Payments_Subscription_Service::get_tax_rates_for_item( $item, $subscription );
-				} else {
-					foreach ( $subscription->get_taxes() as $tax ) {
-						if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) && ! in_array( (int) $tax->get_rate_percent(), $item_data['tax_rates'], true ) ) {
-							$repair_data[ $subscription_item_id ]['tax_rates'] = WC_Payments_Subscription_Service::get_tax_rates_for_item( $item, $subscription );
-							break;
-						}
-					}
-				}
+				// We need to maintain the WCPay subscription's billing terms and currency. ie We cannot update the recurring period, interval or currency mid term.
+				$price_data['currency']  = $wcpay_items[ $wcpay_item_id ]['currency'];
+				$price_data['recurring'] = [
+					'interval'       => $wcpay_items[ $wcpay_item_id ]['billing_period'],
+					'interval_count' => $wcpay_items[ $wcpay_item_id ]['billing_interval'],
+				];
+
+				$repair_data[ $wcpay_item_id ]['price_data'] = $price_data;
 			}
 		}
 
@@ -344,7 +341,7 @@ class WC_Payments_Invoice_Service {
 	/**
 	 * Gets repair data for WCPay invoice discounts.
 	 *
-	 * @param array           $wcpay_discount_data The WCPay disounts.
+	 * @param array           $wcpay_discount_data The WCPay discounts.
 	 * @param WC_Subscription $subscription        The WC Subscription object.
 	 *
 	 * @return mixed

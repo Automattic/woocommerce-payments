@@ -14,7 +14,6 @@ import { getCurrency, formatCurrencyName } from 'utils/currency';
 import {
 	formatAccountFeesDescription,
 	getCurrentFee,
-	getTransactionsPaymentMethodName,
 } from 'utils/account-fees';
 
 const LearnMoreLink = ( { accountFees } ) => {
@@ -24,7 +23,7 @@ const LearnMoreLink = ( { accountFees } ) => {
 				href={
 					accountFees.discount.length
 						? 'https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/'
-						: 'https://docs.woocommerce.com/document/payments/faq/fees/'
+						: 'https://woocommerce.com/document/payments/faq/fees/'
 				}
 				target="_blank"
 				rel="noopener noreferrer"
@@ -35,51 +34,24 @@ const LearnMoreLink = ( { accountFees } ) => {
 	);
 };
 
-const AccountFee = ( props ) => {
-	const { accountFee, paymentMethod } = props;
-	const baseFee = accountFee.base;
+const AccountFees = ( props ) => {
+	const { accountFees } = props;
+	const baseFee = accountFees.base;
+
 	const currency = getCurrency( baseFee.currency );
 	const currencyName = formatCurrencyName( baseFee.currency );
 	const currencyCode = currency?.getCurrencyConfig()?.code;
-	const feeDescription = formatAccountFeesDescription( accountFee );
-	const currentFee = getCurrentFee( accountFee );
+	const feeDescription = formatAccountFeesDescription( accountFees );
+	const currentFee = getCurrentFee( accountFees );
 
 	return (
 		<>
-			<p>{ getTransactionsPaymentMethodName( paymentMethod ) }:</p>
 			{ currencyName ? `${ currencyName } ` : null }
 			{ currencyCode ? `(${ currencyCode }) ` : null }
 			{ feeDescription }
 			<ExpirationBar feeData={ currentFee } />
 			<ExpirationDescription feeData={ currentFee } />
-			<LearnMoreLink accountFees={ accountFee } />
-		</>
-	);
-};
-
-const AccountFees = ( props ) => {
-	const { accountFees } = props;
-
-	return (
-		<>
-			{ Object.entries( accountFees ).map( ( [ key, value ] ) => {
-				//ignore base and discount fields - still used for backwards compatibilityss
-				if (
-					'base' === key ||
-					'discount' === key ||
-					0 === value.discount.length
-				) {
-					return null;
-				}
-
-				return (
-					<AccountFee
-						key={ key }
-						paymentMethod={ key }
-						accountFee={ value }
-					/>
-				);
-			} ) }
+			<LearnMoreLink accountFees={ accountFees } />
 		</>
 	);
 };

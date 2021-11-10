@@ -36,33 +36,7 @@ describe( 'AccountStatus', () => {
 					percentage_rate: 0.029,
 					fixed_rate: 0.3,
 				},
-				discount: [
-					{
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-						percentage_rate: 0.029,
-						fixed_rate: 30,
-					},
-				],
-				card: {
-					base: {
-						currency: 'EUR',
-						percentage_rate: 0.029,
-						fixed_rate: 0.3,
-					},
-					discount: [
-						{
-							end_time: null,
-							volume_allowance: null,
-							volume_currency: null,
-							current_volume: null,
-							percentage_rate: 0.029,
-							fixed_rate: 30,
-						},
-					],
-				},
+				discount: [],
 			}
 		);
 		expect( accountStatus ).toMatchSnapshot();

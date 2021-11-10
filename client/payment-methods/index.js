@@ -24,6 +24,7 @@ import './style.scss';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
+	useGetPaymentMethodStatuses,
 } from 'wcpay/data';
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
@@ -40,6 +41,7 @@ import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
 import CardBody from '../settings/card-body';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
@@ -100,7 +102,7 @@ const UpeSetupBanner = () => {
 							) }
 						</Button>
 					</span>
-					<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/">
+					<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/">
 						{ __( 'Learn more', 'woocommerce-payments' ) }
 					</ExternalLink>
 				</div>
@@ -114,6 +116,8 @@ const PaymentMethods = () => {
 		enabledMethodIds,
 		updateEnabledMethodIds,
 	] = useEnabledPaymentMethodIds();
+
+	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 	const enabledMethods = availablePaymentMethodIds
@@ -188,6 +192,13 @@ const PaymentMethods = () => {
 								<PaymentMethod
 									key={ id }
 									Icon={ Icon }
+									status={
+										paymentMethodStatuses[
+											methodsConfiguration[ id ]
+												.stripe_key
+										].status ??
+										upeCapabilityStatuses.UNREQUESTED
+									}
 									onDeleteClick={
 										1 < enabledMethods.length
 											? handleDeleteClick

@@ -105,7 +105,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @return string             The WC Pay product ID or an empty string.
 	 */
-	public static function get_wcpay_product_id( WC_Product $product, $test_mode = null ) : string {
+	public function get_wcpay_product_id( WC_Product $product, $test_mode = null ) : string {
 		// If the subscription product doesn't have a WC Pay product ID, create one.
 		if ( ! self::has_wcpay_product_id( $product, $test_mode ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
 			$is_current_environment = null === $test_mode || WC_Payments::get_gateway()->is_in_test_mode() === $test_mode;
@@ -205,19 +205,24 @@ class WC_Payments_Product_Service {
 	 *
 	 * @since x.x.x
 	 *
-	 * @param int        $product_id The ID of the product to handle.
-	 * @param WC_Product $product    The product object to handle. Only subscription products will be created or updated in WC Pay.
+	 * @param int $product_id The ID of the product to handle.
 	 */
-	public function maybe_schedule_product_create_or_update( int $product_id, WC_Product $product ) {
+	public function maybe_schedule_product_create_or_update( int $product_id ) {
 
 		// Skip products which have already been scheduled or aren't subscriptions.
-		if ( isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+		$product = wc_get_product( $product_id );
+		if ( ! $product || isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return;
 		}
 
 		foreach ( $this->get_products_to_update( $product ) as $product_to_update ) {
 			// Skip products already scheduled.
 			if ( isset( $this->products_to_update[ $product_to_update->get_id() ] ) ) {
+				continue;
+			}
+
+			// Skip product variations that don't have a price set.
+			if ( $product_to_update->is_type( 'subscription_variation' ) && '' === $product_to_update->get_price() ) {
 				continue;
 			}
 
@@ -464,7 +469,7 @@ class WC_Payments_Product_Service {
 	 * @param bool|null $test_mode      Is WC Pay in test/dev mode.
 	 */
 	public function unarchive_price( string $wcpay_price_id, $test_mode = null ) {
-		$data = [ 'active' => 'false' ];
+		$data = [ 'active' => 'true' ];
 
 		if ( null !== $test_mode ) {
 			$data['test_mode'] = $test_mode;
@@ -474,82 +479,104 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
+	 * Prevents the subscription interval to be greater than 1 for yearly subscriptions.
+	 *
+	 * @param int $product_id Post ID of the product.
+	 */
+	public function limit_subscription_product_intervals( $product_id ) {
+		// Skip products that aren't subscriptions.
+		$product = wc_get_product( $product_id );
+		if (
+			! $product ||
+			! WC_Subscriptions_Product::is_subscription( $product ) ||
+			empty( $_POST['_wcsnonce'] ) ||
+			! wp_verify_nonce( sanitize_key( $_POST['_wcsnonce'] ), 'wcs_subscription_meta' )
+		) {
+			return;
+		}
+
+		// If we don't have both the period and the interval, there's nothing to do here.
+		if ( empty( $_REQUEST['_subscription_period'] ) || empty( $_REQUEST['_subscription_period_interval'] ) ) {
+			return;
+		}
+
+		$period   = sanitize_text_field( wp_unslash( $_REQUEST['_subscription_period'] ) );
+		$interval = absint( wp_unslash( $_REQUEST['_subscription_period_interval'] ) );
+
+		// Prevent WC Subs Core from saving the interval when it's invalid.
+		if ( ! $this->is_valid_billing_cycle( $period, $interval ) ) {
+			$new_interval                              = $this->get_period_interval_limit( $period );
+			$_REQUEST['_subscription_period_interval'] = strval( $new_interval );
+
+			/* translators: %1$s Opening strong tag, %2$s Closing strong tag, %3$s The subscription renewal interval (every x time) */
+			wcs_add_admin_notice( sprintf( __( '%1$sThere was an issue saving your product!%2$s A subscription product\'s billing period cannot be longer than one year. We have updated this product to renew every %3$s.', 'woocommerce-payments' ), '<strong>', '</strong>', wcs_get_subscription_period_strings( $new_interval, $period ) ), 'error' );
+		}
+	}
+
+	/**
+	 * Prevents the subscription interval to be greater than 1 for yearly subscription variations.
+	 *
+	 * @param int $product_id Post ID of the variation.
+	 * @param int $index Variation index in the incoming array.
+	 */
+	public function limit_subscription_variation_intervals( $product_id, $index ) {
+		// Skip products that aren't subscriptions.
+		$product           = wc_get_product( $product_id );
+		$admin_notice_sent = false;
+
+		if (
+			! $product ||
+			! WC_Subscriptions_Product::is_subscription( $product ) ||
+			empty( $_POST['_wcsnonce_save_variations'] ) ||
+			! wp_verify_nonce( sanitize_key( $_POST['_wcsnonce_save_variations'] ), 'wcs_subscription_variations' )
+		) {
+			return;
+		}
+
+		// If we don't have both the period and the interval, there's nothing to do here.
+		if ( empty( $_POST['variable_subscription_period'][ $index ] ) || empty( $_POST['variable_subscription_period_interval'][ $index ] ) ) {
+			return;
+		}
+
+		$period   = sanitize_text_field( wp_unslash( $_POST['variable_subscription_period'][ $index ] ) );
+		$interval = absint( wp_unslash( $_POST['variable_subscription_period_interval'][ $index ] ) );
+
+		// Prevent WC Subs Core from saving the interval when it's invalid.
+		if ( ! $this->is_valid_billing_cycle( $period, $interval ) ) {
+			$new_interval = $this->get_period_interval_limit( $period );
+			$_POST['variable_subscription_period_interval'][ $index ] = strval( $new_interval );
+
+			if ( false === $admin_notice_sent ) {
+				$admin_notice_sent = true;
+
+				/* translators: %1$s Opening strong tag, %2$s Closing strong tag */
+				wcs_add_admin_notice( sprintf( __( '%1$sThere was an issue saving your variations!%2$s A subscription product\'s billing period cannot be longer than one year. We have updated one or more of this product\'s variations to renew every %3$s.', 'woocommerce-payments' ), '<strong>', '</strong>', wcs_get_subscription_period_strings( $new_interval, $period ) ), 'error' );
+			}
+		}
+	}
+
+	/**
 	 * Attaches the callbacks used to update product changes in WC Pay.
 	 */
 	private function add_product_update_listeners() {
-		add_action( 'woocommerce_update_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
-		add_action( 'woocommerce_update_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
+		// This needs to run before WC_Subscriptions_Admin::save_subscription_meta(), which has a priority of 11.
+		add_action( 'save_post', [ $this, 'limit_subscription_product_intervals' ], 10 );
+		// This needs to run before WC_Subscriptions_Admin::save_product_variation(), which has a priority of 20.
+		add_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19, 2 );
+
+		add_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		add_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
 	/**
 	 * Removes the callbacks used to update product changes in WC Pay.
 	 */
 	private function remove_product_update_listeners() {
-		remove_action( 'woocommerce_update_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 10 );
-		remove_action( 'woocommerce_update_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10 );
-	}
+		remove_action( 'save_post', [ $this, 'limit_subscription_product_intervals' ], 10 );
+		remove_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19 );
 
-	/**
-	 * Gets product data from a subscription needed to create a WCPay subscription.
-	 *
-	 * @param WC_Subscription $subscription The WC subscription to fetch product data from.
-	 *
-	 * @return array|null WCPay Product data or null on error.
-	 */
-	public function get_product_data_for_subscription( WC_Subscription $subscription ) {
-		$product_data = [];
-
-		foreach ( $subscription->get_items() as $item ) {
-			$product = $item->get_product();
-
-			if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
-				continue;
-			}
-
-			$product_data[] = [
-				'price'     => $this->get_wcpay_price_id( $product ),
-				'quantity'  => $item->get_quantity(),
-				'tax_rates' => $this->get_tax_rates_for_item( $item, $subscription ),
-			];
-		}
-
-		return $product_data;
-	}
-
-	/**
-	 * Prepare tax rates for a subscription item.
-	 *
-	 * @param WC_Order_Item   $item         Subscription order item.
-	 * @param WC_Subscription $subscription A Subscription to get tax rate information from.
-	 *
-	 * @return array
-	 */
-	public function get_tax_rates_for_item( WC_Order_Item $item, WC_Subscription $subscription ) {
-		$tax_rates = [];
-
-		if ( ! wc_tax_enabled() || ! $item->get_taxes() ) {
-			return $tax_rates;
-		}
-
-		$tax_rate_ids = array_keys( $item->get_taxes()['total'] );
-
-		if ( ! $tax_rate_ids ) {
-			return $tax_rates;
-		}
-
-		$tax_inclusive = wc_prices_include_tax();
-
-		foreach ( $subscription->get_taxes() as $tax ) {
-			if ( in_array( $tax->get_rate_id(), $tax_rate_ids, true ) ) {
-				$tax_rates[] = [
-					'display_name' => $tax->get_name(),
-					'inclusive'    => $tax_inclusive,
-					'percentage'   => $tax->get_rate_percent(),
-				];
-			}
-		}
-
-		return $tax_rates;
+		remove_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		remove_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
 	/**
@@ -721,5 +748,36 @@ class WC_Payments_Product_Service {
 		];
 
 		return array_filter( $environment_product_ids );
+	}
+
+	/**
+	 * Returns whether the billing cycle is valid, given its period and interval.
+	 *
+	 * @param string $period Cycle period.
+	 * @param int    $interval Cycle interval.
+	 * @return boolean
+	 */
+	private function is_valid_billing_cycle( $period, $interval ) {
+		$interval_limit = $this->get_period_interval_limit( $period );
+
+		// A cycle is valid when we have a defined limit, and the given interval isn't 0 nor greater than the limit.
+		return $interval_limit && ! empty( $interval ) && $interval <= $interval_limit;
+	}
+
+	/**
+	 * Returns the interval limit for the given period.
+	 *
+	 * @param string $period The period to get the interval limit for.
+	 * @return int|bool The interval limit for the period, or false if not defined.
+	 */
+	private function get_period_interval_limit( $period ) {
+		$max_intervals = [
+			'year'  => 1,
+			'month' => 12,
+			'week'  => 52,
+			'day'   => 365,
+		];
+
+		return ! empty( $max_intervals[ $period ] ) ? $max_intervals[ $period ] : false;
 	}
 }
