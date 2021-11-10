@@ -226,7 +226,7 @@ class WC_Payments_Product_Service {
 				continue;
 			}
 
-			if ( ! self::has_wcpay_product_id( $product_to_update ) || $this->product_needs_update( $product_to_update ) || $this->price_needs_update( $product_to_update ) ) {
+			if ( ! self::has_wcpay_product_id( $product_to_update ) || $this->product_needs_update( $product_to_update ) ) {
 				$this->products_to_update[ $product_to_update->get_id() ] = $product_to_update->get_id();
 			}
 		}
