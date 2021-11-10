@@ -146,6 +146,7 @@ class WC_Payments_Invoice_Service {
 	 * make sure the invoice is marked as paid (without charging the customer since it was charged on checkout).
 	 *
 	 * @param int $order_id The WC order ID.
+	 * @throws API_Exception If the request to mark the invoice as paid fails.
 	 */
 	public function maybe_record_invoice_payment( int $order_id ) {
 		$order = wc_get_order( $order_id );
@@ -161,8 +162,17 @@ class WC_Payments_Invoice_Service {
 				continue;
 			}
 
-			// Update the status of the invoice to paid but don't charge the customer by using paid_out_of_band parameter.
-			$this->payments_api_client->charge_invoice( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
+			try {
+				// Set the invoice status to paid but don't charge the customer by using paid_out_of_band parameter.
+				$this->payments_api_client->charge_invoice( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
+			} catch ( API_Exception $e ) {
+				// If the invoice was already paid, silently handle that error. Throw all other exceptions.
+				if ( WP_Http::BAD_REQUEST === $e->get_http_code() && false !== strpos( strtolower( $e->getMessage() ), 'invoice is already paid' ) ) {
+					Logger::info( sprintf( 'Invoice for subscription #%s has already been paid.', $subscription->get_id() ) );
+				} else {
+					throw $e;
+				}
+			}
 
 			if ( $subscription->is_manual() ) {
 				$subscription->set_requires_manual_renewal( false );
