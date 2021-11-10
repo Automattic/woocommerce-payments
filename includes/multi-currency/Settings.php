@@ -15,13 +15,6 @@ defined( 'ABSPATH' ) || exit;
 class Settings extends \WC_Settings_Page {
 
 	/**
-	 * The id of the plugin.
-	 *
-	 * @var string
-	 */
-	public $id;
-
-	/**
 	 * The tab label.
 	 *
 	 * @var string
@@ -42,7 +35,6 @@ class Settings extends \WC_Settings_Page {
 	 */
 	public function __construct( MultiCurrency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
-		$this->id             = $this->multi_currency->id;
 		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
 		// TODO: We need to re-enable it on every screen we use emoji flags. Until WC Admin decide if they will enable it too: https://github.com/woocommerce/woocommerce-admin/issues/6388.
