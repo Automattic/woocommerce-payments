@@ -25,6 +25,9 @@ env:
   E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY:            ${{ secrets.E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY }}
   E2E_WCPAY_STRIPE_TEST_SECRET_KEY:            ${{ secrets.E2E_WCPAY_STRIPE_TEST_SECRET_KEY }}
   E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY: ${{ secrets.E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY }}
+  E2E_BLOG_ID:                                 ${{ secrets.E2E_BLOG_ID }}
+  E2E_BLOG_TOKEN:                              ${{ secrets.E2E_BLOG_TOKEN }}
+  E2E_USER_TOKEN:                              ${{ secrets.E2E_USER_TOKEN }}
 
 jobs:
   e2e:
