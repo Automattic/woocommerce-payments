@@ -666,7 +666,7 @@ class WC_Payments {
 	 * @return string The cache buster value to use for the given file.
 	 */
 	public static function get_file_version( $file ) {
-		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( WCPAY_ABSPATH . $file ) ) {
 			$file = trim( $file, '/' );
 			return filemtime( WCPAY_ABSPATH . $file );
 		}
