@@ -16,9 +16,13 @@ jobs:
         php:         [ '7.4' ]
         include:
           # Edge case: oldest dependencies compatibility
+          # TODO - should have only one edge case. Here is just for testing two options WP 5.5 and 5.6.
           - woocommerce: '4.4.0'
-            wordpress:   '5.4'
+            wordpress:   '5.5'
             php:         '7.1' # TODO This should be 7.0. Pending to fix in issue #2970.
+          - woocommerce: '4.4.0'
+            wordpress: '5.6'
+            php: '7.1' # TODO This should be 7.0. Pending to fix in issue #2970.  
     env:
       WP_VERSION: ${{ matrix.wordpress }}
       WC_VERSION: ${{ matrix.woocommerce }}
