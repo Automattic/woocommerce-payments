@@ -359,7 +359,9 @@ class WC_Payments_Subscription_Service {
 
 		try {
 			$subscription_data = $this->prepare_wcpay_subscription_data( $wcpay_customer_id, $subscription );
-			$response          = $this->payments_api_client->create_subscription( $subscription_data );
+			$this->validate_subscription_data( $subscription_data );
+
+			$response = $this->payments_api_client->create_subscription( $subscription_data );
 
 			$this->set_wcpay_subscription_id( $subscription, $response['id'] );
 			$this->set_wcpay_subscription_item_ids( $subscription, $response['items']['data'] );
@@ -371,8 +373,8 @@ class WC_Payments_Subscription_Service {
 			if ( ! empty( $response['latest_invoice'] ) ) {
 				$this->invoice_service->set_subscription_invoice_id( $subscription, $response['latest_invoice'] );
 			}
-		} catch ( API_Exception $e ) {
-			Logger::log( sprintf( 'There was a problem creating the WCPay subscription %s', $e->getMessage() ) );
+		} catch ( \Exception $e ) {
+			Logger::log( sprintf( 'There was a problem creating the WCPay subscription. %s', $e->getMessage() ) );
 			throw new Exception( $checkout_error_message );
 		}
 	}
@@ -929,5 +931,57 @@ class WC_Payments_Subscription_Service {
 		}
 
 		return $metadata;
+	}
+
+	/**
+	 * Validates that the data used to create the WCPay Subscription.
+	 *
+	 * @param array $subscription_data The data used to create a WCPay subscription.
+	 * @throws Exception If the subscription data contains invalid or missing data.
+	 */
+	private function validate_subscription_data( $subscription_data ) {
+
+		if ( empty( $subscription_data['customer'] ) ) {
+			throw new Exception( 'The "customer" arg is required to create the subscription.' );
+		}
+
+		if ( ! isset( $subscription_data['items'] ) ) {
+			throw new Exception( 'The "items" arg is required to create the subscription.' );
+		}
+
+		foreach ( $subscription_data['items'] as $item_data ) {
+			$required_price_keys  = [ 'currency', 'product', 'recurring' ];
+			$required_period_keys = [ 'interval', 'interval_count' ];
+			$errors               = [];
+
+			if ( ! isset( $item_data['price_data']['unit_amount_decimal'] ) ) {
+				$errors[] = 'unit_amount_decimal';
+			}
+
+			foreach ( $required_price_keys as $required_key ) {
+				if ( empty( $item_data['price_data'][ $required_key ] ) ) {
+					$errors[] = $required_key;
+				}
+			}
+
+			foreach ( $required_period_keys as $required_price_key ) {
+				if ( empty( $item_data['price_data']['recurring'][ $required_price_key ] ) ) {
+					$errors[] = $required_price_key;
+				}
+			}
+
+			if ( ! empty( $errors ) ) {
+				$error_message = count( $errors ) > 1 ? 'The "%s" line item properties are required to create the subscription.' : 'The "%s" line item property is required to create the subscription.';
+				throw new Exception( sprintf( $error_message, implode( '", "', $errors ) ) );
+			}
+
+			$billing_period   = $item_data['price_data']['recurring']['interval'];
+			$billing_interval = $item_data['price_data']['recurring']['interval_count'];
+
+			// Confirm the billing period is valid (no greater than 1 year in length).
+			if ( ! $this->product_service->is_valid_billing_cycle( $billing_period, $billing_interval ) ) {
+				throw new Exception( sprintf( 'The subscription billing period cannot be any longer than one year. A billing period of "every %s %s(s)" was given.', $billing_interval, $billing_period ) );
+			}
+		}
 	}
 }

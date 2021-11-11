@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Avoid having invalid intervals (greater than 1 year) in subscription products.
 * Update - The subscription fee label in the transaction timeline.
 * Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
+* Add - Add compatibility between Multi-Currency and WooCommerce Pre-Orders.
 * Add - Add filters to disable or filter Multi-Currency sql query clauses for analytics.
 * Fix - Display risk for payment methods without risk assessment
 * Fix - Use configured domain instead of current domain for Apple Pay verification.
@@ -113,6 +114,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
 * Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
 * Fix - UPE element not remounting on checkout update
+* Fix - Validate subscription product create and update args as well as subscription item data before submitting them to server.
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
