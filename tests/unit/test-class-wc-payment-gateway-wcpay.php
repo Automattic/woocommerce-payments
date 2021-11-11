@@ -10,6 +10,9 @@ use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Payment_Information;
 
+// Need to use WC_Mock_Data_Store.
+require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
+
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
@@ -1736,8 +1739,12 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// test if metadata needed for refunds is being saved despite the payment_complete method.
 		$order = $this->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
-			->setMethods( [ 'update_meta_data', 'save', 'payment_complete' ] )
+			->setMethods( [ 'update_meta_data', 'save', 'payment_complete', 'get_data_store' ] )
 			->getMock();
+
+		$order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
 
 		$intent_id      = 'pi_xxxxxxxxxxxxx';
 		$charge_id      = 'ch_yyyyyyyyyyyyy';

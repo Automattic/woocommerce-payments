@@ -8,6 +8,9 @@
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 
+// Need to use WC_Mock_Data_Store.
+require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
+
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
@@ -157,6 +160,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
 
+		// Arrange: Set a good return value for the order's data store.
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
 		// Arrange: Set a good return value for order ID.
 		$mock_order
 			->method( 'get_id' )
@@ -278,6 +286,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a good return value for the order's data store.
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
 
 		// Arrange: Set a good return value for order ID.
 		$mock_order

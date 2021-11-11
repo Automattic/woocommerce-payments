@@ -207,6 +207,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-ideal-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
+		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -320,6 +321,8 @@ class WC_Payments {
 
 			include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
 			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
+
+			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
 		}
 
 		// Load WCPay Subscriptions.
