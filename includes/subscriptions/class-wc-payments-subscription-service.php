@@ -971,7 +971,8 @@ class WC_Payments_Subscription_Service {
 			}
 
 			if ( ! empty( $errors ) ) {
-				throw new Exception( sprintf( 'The "%s" line item properties are required to create the subscription.', implode( '", "', $errors ) ) );
+				$error_message = count( $errors ) > 1 ? 'The "%s" line item properties are required to create the subscription.' : 'The "%s" line item property is required to create the subscription.';
+				throw new Exception( sprintf( $error_message, implode( '", "', $errors ) ) );
 			}
 
 			$billing_period   = $item_data['price_data']['recurring']['interval'];
