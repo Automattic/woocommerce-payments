@@ -101,25 +101,3 @@
 		color: #fff;
 	}
 }
-
-.wcpay-tooltip__tooltip-wrapper {
-	.wcpay-fees-tooltip {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		padding: 5px;
-		& > div {
-			display: flex;
-			text-align: left;
-			gap: 16px;
-			align-items: center;
-			justify-content: space-between;
-			& > div {
-				white-space: nowrap;
-			}
-		}
-		&__bold {
-			font-weight: 600;
-		}
-	}
-}

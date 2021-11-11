@@ -5,12 +5,45 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import interpolateComponents from 'interpolate-components';
+import './account-fees.scss';
 
 /**
  * Internal dependencies
  */
 import { formatCurrency } from 'utils/currency';
 import { formatFee } from 'utils/fees';
+
+const countryFeeStripeDocsBaseLink =
+	'https://woocommerce.com/document/payments/faq/fees/#section-';
+const countryFeeStripeDocsSectionNumbers = {
+	AU: 1,
+	AT: 2,
+	BE: 3,
+	CA: 4,
+	FR: 5,
+	DE: 6,
+	HK: 7,
+	IE: 8,
+	IT: 9,
+	NL: 10,
+	NZ: 11,
+	PL: 12,
+	PT: 13,
+	SG: 14,
+	ES: 15,
+	CH: 16,
+	UK: 17,
+	US: 18,
+};
+
+const getStripeFeeSectionUrl = ( country ) => {
+	return sprintf(
+		'%s%s',
+		countryFeeStripeDocsBaseLink,
+		countryFeeStripeDocsSectionNumbers[ country ]
+	);
+};
 
 const getFeeDescriptionString = ( fee ) => {
 	if ( fee.fixed_rate && fee.percentage_rate ) {
@@ -88,6 +121,38 @@ export const formatMethodFeesTooltip = ( accountFees ) => {
 					{ getFeeDescriptionString( total ) }
 				</div>
 			</div>
+			{ wcpaySettings &&
+			wcpaySettings.connect &&
+			wcpaySettings.connect.country ? (
+				<div className={ 'wcpay-fees-tooltip__hint-text' }>
+					<span>
+						{ interpolateComponents( {
+							mixedString: __(
+								'{{linkToStripePage /}} about WooCommerce Payments Fees in your country',
+								'woocommerce-payments'
+							),
+							components: {
+								linkToStripePage: (
+									<a
+										href={ getStripeFeeSectionUrl(
+											wcpaySettings.connect.country
+										) }
+										target={ '_blank' }
+										rel={ 'noreferrer' }
+									>
+										{ __(
+											'Learn more',
+											'woocommerce-payments'
+										) }
+									</a>
+								),
+							},
+						} ) }
+					</span>
+				</div>
+			) : (
+				''
+			) }
 		</div>
 	);
 };
