@@ -950,9 +950,13 @@ class WC_Payments_Subscription_Service {
 		}
 
 		foreach ( $subscription_data['items'] as $item_data ) {
-			$required_price_keys  = [ 'currency', 'product', 'unit_amount_decimal', 'recurring' ];
+			$required_price_keys  = [ 'currency', 'product', 'recurring' ];
 			$required_period_keys = [ 'interval', 'interval_count' ];
 			$errors               = [];
+
+			if ( ! isset( $item_data['price_data']['unit_amount_decimal'] ) ) {
+				$errors[] = 'unit_amount_decimal';
+			}
 
 			foreach ( $required_price_keys as $required_key ) {
 				if ( empty( $item_data['price_data'][ $required_key ] ) ) {
