@@ -212,5 +212,7 @@ install_wp
 install_db
 configure_wp
 install_test_suite
-install_gutenberg
+if [[ $SKIP_GUTENBERG == true ]]; then
+	install_gutenberg
+fi
 install_woocommerce
