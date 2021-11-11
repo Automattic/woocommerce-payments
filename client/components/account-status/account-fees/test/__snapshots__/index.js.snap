@@ -307,7 +307,7 @@ exports[`AccountFees renders non-USD base fee 1`] = `
   2.9% + €0,25 per transaction
   <p>
     <a
-      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      href="https://woocommerce.com/document/payments/faq/fees/"
       rel="noopener noreferrer"
       target="_blank"
     >
@@ -324,7 +324,7 @@ exports[`AccountFees renders normal base fee 1`] = `
   2.9% + $0.30 per transaction
   <p>
     <a
-      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      href="https://woocommerce.com/document/payments/faq/fees/"
       rel="noopener noreferrer"
       target="_blank"
     >

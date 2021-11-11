@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 
 /**
  * WC_Payments_Utils unit tests.
@@ -427,5 +428,18 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 			->getMock();
 
 		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
+	}
+
+	public function test_get_cached_minimum_amount_returns_amount() {
+		// Note: WP stores options as strings.
+		set_transient( 'wcpay_minimum_amount_usd', '500', DAY_IN_SECONDS );
+		$result = WC_Payments_Utils::get_cached_minimum_amount( 'usd' );
+		$this->assertSame( 500, $result );
+	}
+
+	public function test_get_cached_minimum_amount_returns_null_without_cache() {
+		delete_transient( 'wcpay_minimum_amount_usd' );
+		$result = WC_Payments_Utils::get_cached_minimum_amount( 'usd' );
+		$this->assertNull( $result );
 	}
 }

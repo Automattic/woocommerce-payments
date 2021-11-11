@@ -46,7 +46,7 @@ const WCPaySubscriptionsToggle = () => {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
-						<ExternalLink href="https://docs.woocommerce.com/document/payments/subscriptions/" />
+						<ExternalLink href="https://woocommerce.com/document/payments/subscriptions/" />
 					),
 				},
 			} ) }

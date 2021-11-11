@@ -2,6 +2,33 @@
 
 = 3.3.0 - 2021-xx-xx =
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
+* Update - Avoid having invalid intervals (greater than 1 year) in subscription products.
+* Update - The subscription fee label in the transaction timeline.
+* Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
+* Add - Add compatibility between Multi-Currency and WooCommerce Pre-Orders.
+* Fix - Do not show default currency selector on Account Details page when only one currency is available.
+* Add - Add filters to disable or filter Multi-Currency sql query clauses for analytics.
+* Fix - Display risk for payment methods without risk assessment
+* Fix - Use configured domain instead of current domain for Apple Pay verification.
+* Fix - Fatal error when deactivating the WooCommerce plugin when WCPay Subscriptions is enabled.
+* Fix - Error where url parameters would get cleared on order-pay page if currency switcher block used.
+* Fix - Currency format on order-pay page if currency was changed via switcher.
+* Fix - Do not create WooCommerce Payments Subscriptions when using payment methods other than WooCommerce Payments.
+* Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
+* Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
+* Fix - UPE element not remounting on checkout update
+* Fix - Validate subscription product create and update args before submitting them to server.
+* Fix - Improve error messages when the minimum order amount has not been reached and allow fields to be displayed with less than the minimum amount.
+
+= 3.2.3 - 2021-11-01 =
+* Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
+
+= 3.2.2 - 2021-10-29 =
+* Fix - Multisite compatibility - don't load subscriptions-core if already loaded by another multisite plugin.
+* Fix - Errors when attempting to get the WooCommerce Subscriptions Core version during PayPal requests.
+
+= 3.2.1 - 2021-10-28 =
+* Fix - PHP 7.2 compatibility - remove trailing commas from function args in subscriptions-core.
 
 = 3.2.0 - 2021-10-28 =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
