@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React, { useState } from 'react';
 import { uniq } from 'lodash';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
@@ -182,33 +182,10 @@ const getColumns = (
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
-function download( filename, downloadUrl ) {
-	const element = document.createElement( 'a' );
-	element.setAttribute( 'href', downloadUrl );
-	element.setAttribute( 'download', filename );
-
-	element.style.display = 'none';
-	document.body.appendChild( element );
-
-	element.click();
-
-	document.body.removeChild( element );
-}
-
-const exportCSV = async () => {
-	const path = getTransactionsCSV( getQuery() );
-
-	const { download_url: downloadUrl } = await apiFetch( {
-		path,
-		method: 'POST',
-		data: formatQueryFilters( getQuery() ),
-	} );
-	download( 'data_csv', downloadUrl );
-};
-
 export const TransactionsList = (
 	props: TransactionsListProps
 ): JSX.Element => {
+	const [ isDownloading, setIsDownloading ] = useState( false );
 	const { transactions, isLoading } = useTransactions(
 		getQuery(),
 		props.depositId ?? ''
@@ -412,15 +389,43 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const onDownload = () => {
-		// We destructure page and path to get the right params.
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { page, path, ...params } = getQuery();
+	const onDownload = async () => {
+		const {
+			date_before: dateBefore,
+			date_after: dateAfter,
+			date_between: dateBetween,
+		} = getQuery();
 
-		downloadCSVFile(
-			generateCSVFileName( title, params ),
-			generateCSVDataFromTable( columnsToDisplay, rows )
-		);
+		if ( !! dateBefore || !! dateAfter || !! dateBetween ) {
+			setIsDownloading( true );
+			const path = getTransactionsCSV( getQuery() );
+			const { download_url: downloadUrl } = await apiFetch( {
+				path,
+				method: 'POST',
+				data: formatQueryFilters( getQuery() ),
+			} );
+			const element = document.createElement( 'a' );
+
+			element.setAttribute( 'href', downloadUrl );
+			element.setAttribute( 'download', 'data_csv' );
+			element.style.display = 'none';
+
+			document.body.appendChild( element );
+
+			element.click();
+
+			document.body.removeChild( element );
+			setIsDownloading( false );
+		} else {
+			// We destructure page and path to get the right params.
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { page, path, ...params } = getQuery();
+
+			downloadCSVFile(
+				generateCSVFileName( title, params ),
+				generateCSVDataFromTable( columnsToDisplay, rows )
+			);
+		}
 
 		wcpayTracks.recordEvent( 'wcpay_transactions_download', {
 			exported_transactions: rows.length,
@@ -498,15 +503,6 @@ export const TransactionsList = (
 		transactionsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
 
-	const {
-		date_before: dateBefore,
-		date_after: dateAfter,
-		date_between: dateBetween,
-	} = getQuery();
-
-	const areDateAdvanceFiltersActive =
-		!! dateBefore || !! dateAfter || !! dateBetween;
-
 	return (
 		<Page>
 			{ showFilters && (
@@ -546,12 +542,8 @@ export const TransactionsList = (
 					downloadable && (
 						<DownloadButton
 							key="download"
-							isDisabled={ isLoading }
-							onClick={
-								areDateAdvanceFiltersActive
-									? exportCSV
-									: onDownload
-							}
+							isDisabled={ isLoading || isDownloading }
+							onClick={ onDownload }
 						/>
 					),
 				] }
