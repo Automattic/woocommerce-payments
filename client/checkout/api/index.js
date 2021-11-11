@@ -36,7 +36,6 @@ export default class WCPayAPI {
 	getStripe( forceAccountRequest = false ) {
 		const {
 			publishableKey,
-			accountId,
 			forceNetworkSavedCards,
 			locale,
 			isUPEEnabled,
@@ -52,7 +51,6 @@ export default class WCPayAPI {
 		if ( ! this.stripe ) {
 			if ( isUPEEnabled ) {
 				this.stripe = new Stripe( publishableKey, {
-					stripeAccount: accountId,
 					betas: [
 						'payment_element_beta_1',
 						'card_country_event_beta_1',
@@ -61,7 +59,6 @@ export default class WCPayAPI {
 				} );
 			} else {
 				this.stripe = new Stripe( publishableKey, {
-					stripeAccount: accountId,
 					locale,
 				} );
 			}
