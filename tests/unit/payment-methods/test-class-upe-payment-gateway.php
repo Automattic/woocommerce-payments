@@ -1259,6 +1259,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	 * @dataProvider maybe_filter_gateway_title_data_provider
 	 */
 	public function test_maybe_filter_gateway_title( $data ) {
+		$data           = $data[0];
 		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
 		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
 		self::$mock_site_currency = $data['currency'];
@@ -1270,10 +1271,9 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	public function maybe_filter_gateway_title_data_provider() {
 		$method_title   = 'WooCommerce Payments';
 		$checkout_title = 'Popular payment methods';
-		$card_title     = '';
+		$card_title     = 'Credit card / debit card';
 
-		$return_data   = [];
-		$return_data[] = [
+		$data_set[] = [ // Allows for $checkout_title due to UPE method and EUR.
 			'methods'  => [
 				'card',
 				'bancontact',
@@ -1291,7 +1291,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
 			'expected' => $checkout_title,
 		];
-		$return_data[] = [
+		$data_set[] = [ // No UPE method, only card, so $card_title is expected.
 			'methods'  => [
 				'card',
 			],
@@ -1305,7 +1305,86 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
 			'expected' => $card_title,
 		];
-		return [ $return_data ];
+		$data_set[] = [ // Only UPE method, so UPE method title is expected.
+			'methods'  => [
+				'bancontact',
+			],
+			'statuses' => [
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'EUR',
+			'title'    => $method_title,
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => 'Bancontact',
+		];
+		$data_set[] = [ // Card and UPE enabled, but USD, $card_title expected.
+			'methods'  => [
+				'card',
+				'bancontact',
+			],
+			'statuses' => [
+				'card_payments'       => [
+					'status' => 'active',
+				],
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'USD',
+			'title'    => $method_title,
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => $card_title,
+		];
+		$data_set[] = [ // Card and UPE enabled, but not our title, other title expected.
+			'methods'  => [
+				'card',
+				'bancontact',
+			],
+			'statuses' => [
+				'card_payments'       => [
+					'status' => 'active',
+				],
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'EUR',
+			'title'    => 'Some other title',
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => 'Some other title',
+		];
+		$data_set[] = [ // Card and UPE enabled, but not our id, $method_title expected.
+			'methods'  => [
+				'card',
+				'bancontact',
+			],
+			'statuses' => [
+				'card_payments'       => [
+					'status' => 'active',
+				],
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'USD',
+			'title'    => $method_title,
+			'id'       => 'some_other_id',
+			'expected' => $method_title,
+		];
+		$data_set[] = [ // No methods at all, so defaults to card, so $card_title is expected.
+			'methods'  => [],
+			'statuses' => [],
+			'currency' => 'EUR',
+			'title'    => $method_title,
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => $card_title,
+		];
+		foreach ( $data_set as $data ) {
+			$return_data[] = [ [ $data ] ];
+		}
+		return $return_data;
 	}
 
 	/**
