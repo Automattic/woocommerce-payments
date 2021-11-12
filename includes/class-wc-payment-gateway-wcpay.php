@@ -853,41 +853,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( ! empty( $payment_information ) ) {
+				/* translators: %1: the failed payment amount, %2: error message  */
+				$error_message = __(
+					'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+					'woocommerce-payments'
+				);
+
+				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
+
 				if ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() ) {
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the failed payment amount, %2: error message  */
-							__(
-								'A payment of %1$s <strong>failed</strong>. %2$s',
-								'woocommerce-payments'
-							),
-							[
-								'strong' => '<strong>',
-							]
-						),
-						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
-						__(
-							'We couldn’t verify the postal code in the billing address. If the issue persists, suggest the customer to reach out to the card issuing bank.',
-							'woocommerce-payments'
-						)
+					/* translators: %1: the failed payment amount, %2: error message  */
+					$error_message = __(
+						'A payment of %1$s <strong>failed</strong>. %2$s',
+						'woocommerce-payments'
 					);
-				} else {
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the failed payment amount, %2: error message  */
-							__(
-								'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-								'woocommerce-payments'
-							),
-							[
-								'strong' => '<strong>',
-								'code'   => '<code>',
-							]
-						),
-						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
-						esc_html( rtrim( $e->getMessage(), '.' ) )
+
+					$error_details = __(
+						'We couldn’t verify the postal code in the billing address. If the issue persists, suggest the customer to reach out to the card issuing bank.',
+						'woocommerce-payments'
 					);
 				}
+
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						$error_message,
+						[
+							'strong' => '<strong>',
+							'code'   => '<code>',
+						]
+					),
+					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
+					$error_details
+				);
+
 				$order->add_order_note( $note );
 			}
 
