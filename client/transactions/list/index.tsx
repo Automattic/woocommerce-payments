@@ -391,7 +391,7 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const onDownload = () => {
+	const onDownload = async () => {
 		const {
 			date_before: dateBefore,
 			date_after: dateAfter,
@@ -409,20 +409,29 @@ export const TransactionsList = (
 		) {
 			setIsDownloading( true );
 
-			apiFetch( {
+			const {
+				exported_transactions: exportedTransactions,
+				total_transactions: totalTransactions,
+			} = await apiFetch( {
 				path: getTransactionsCSV( getQuery() ),
 				method: 'POST',
 				data: formatQueryFilters( getQuery() ),
-			} ).then( () => {
-				createNotice(
-					'success',
-					__(
-						'Your export will be emailed to you.',
-						'woocommerce-payments'
-					)
-				);
+			} );
 
-				setIsDownloading( false );
+			createNotice(
+				'success',
+				__(
+					'Your export will be emailed to you.',
+					'woocommerce-payments'
+				)
+			);
+
+			setIsDownloading( false );
+
+			wcpayTracks.recordEvent( 'wcpay_transactions_download', {
+				exported_transactions: exportedTransactions,
+				total_transactions: totalTransactions,
+				download_type: 'endpoint',
 			} );
 		} else {
 			// We destructure page and path to get the right params.
