@@ -5,6 +5,7 @@
  */
 import React, { useState } from 'react';
 import { uniq } from 'lodash';
+import { useDispatch } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __, _n } from '@wordpress/i18n';
@@ -186,6 +187,7 @@ export const TransactionsList = (
 	props: TransactionsListProps
 ): JSX.Element => {
 	const [ isDownloading, setIsDownloading ] = useState( false );
+	const { createNotice } = useDispatch( 'core/notices' );
 	const { transactions, isLoading } = useTransactions(
 		getQuery(),
 		props.depositId ?? ''
@@ -389,33 +391,39 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const onDownload = async () => {
+	const onDownload = () => {
 		const {
 			date_before: dateBefore,
 			date_after: dateAfter,
 			date_between: dateBetween,
+			type_is: typeIs,
+			type_is_not: typeIsNot,
 		} = getQuery();
 
-		if ( !! dateBefore || !! dateAfter || !! dateBetween ) {
+		if (
+			!! dateBefore ||
+			!! dateAfter ||
+			!! dateBetween ||
+			!! typeIs ||
+			!! typeIsNot
+		) {
 			setIsDownloading( true );
-			const path = getTransactionsCSV( getQuery() );
-			const { download_url: downloadUrl } = await apiFetch( {
-				path,
+
+			apiFetch( {
+				path: getTransactionsCSV( getQuery() ),
 				method: 'POST',
 				data: formatQueryFilters( getQuery() ),
+			} ).then( () => {
+				createNotice(
+					'success',
+					__(
+						'Your export will be emailed to you.',
+						'woocommerce-payments'
+					)
+				);
+
+				setIsDownloading( false );
 			} );
-			const element = document.createElement( 'a' );
-
-			element.setAttribute( 'href', downloadUrl );
-			element.setAttribute( 'download', 'data_csv' );
-			element.style.display = 'none';
-
-			document.body.appendChild( element );
-
-			element.click();
-
-			document.body.removeChild( element );
-			setIsDownloading( false );
 		} else {
 			// We destructure page and path to get the right params.
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -425,12 +433,13 @@ export const TransactionsList = (
 				generateCSVFileName( title, params ),
 				generateCSVDataFromTable( columnsToDisplay, rows )
 			);
-		}
 
-		wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-			exported_transactions: rows.length,
-			total_transactions: transactionsSummary.count,
-		} );
+			wcpayTracks.recordEvent( 'wcpay_transactions_download', {
+				exported_transactions: rows.length,
+				total_transactions: transactionsSummary.count,
+				download_type: 'browser',
+			} );
+		}
 	};
 
 	if ( ! wcpaySettings.featureFlags.customSearch ) {
@@ -510,11 +519,7 @@ export const TransactionsList = (
 			) }
 			<TableCard
 				className="transactions-list woocommerce-report-table has-search"
-				title={
-					props.depositId
-						? __( 'Deposit transactions', 'woocommerce-payments' )
-						: __( 'Transactions', 'woocommerce-payments' )
-				}
+				title={ title }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
 				totalRows={ transactionsSummary.count || 0 }
