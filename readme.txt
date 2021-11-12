@@ -116,6 +116,10 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - UPE element not remounting on checkout update
 * Fix - Validate subscription product create and update args as well as subscription item data before submitting them to server.
 * Fix - Improve error messages when the minimum order amount has not been reached and allow fields to be displayed with less than the minimum amount.
+* Fix - Add consistent margins to the recurring taxes totals row on the Checkout and Cart block for subscription line items.
+* Fix - Fatal error due on subscription orders with no created date in order row template.
+* Fix - Fatal error on the customer payment page for subscription renewal orders with deleted products.
+* Fix - Misleading subscription order note on payment method change.
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
