@@ -826,7 +826,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws Process_Payment_Exception Error processing the payment.
-	 * @throws Exception Error proessing the payment.
+	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
