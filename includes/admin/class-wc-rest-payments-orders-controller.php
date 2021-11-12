@@ -111,7 +111,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Update the order: set the payment method and attach intent attributes.
 			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
-			$order->set_payment_method_title( __( 'WooCommerce Payments', 'woocommerce-payments' ) );
+			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
 			$this->gateway->attach_intent_info_to_order(
 				$order,
 				$intent->get_id(),

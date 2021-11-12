@@ -14,45 +14,19 @@ use WCPay\MultiCurrency\Utils;
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Product Add Ons Plugin.
  */
-class WooCommerceProductAddOns {
+class WooCommerceProductAddOns extends BaseCompatibility {
 
 	const ADDONS_CONVERTED_META_KEY = '_wcpay_multi_currency_addons_converted';
 
 	/**
-	 * MultiCurrency class.
-	 *
-	 * @var MultiCurrency
-	 */
-	private $multi_currency;
-
-	/**
-	 * Utils class.
-	 *
-	 * @var Utils
-	 */
-	private $utils;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils Utils class.
-	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		$this->multi_currency = $multi_currency;
-		$this->utils          = $utils;
-		$this->initialize_hooks();
-	}
-
-	/**
-	 * Adds compatibility filters if the plugin exists and loaded
+	 * Init the class.
 	 *
 	 * @return  void
 	 */
-	protected function initialize_hooks() {
+	protected function init() {
+		// Add needed actions and filters if Product Add Ons is active.
 		if ( class_exists( 'WC_Product_Addons' ) ) {
 			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
-				// Product Add-Ons filters.
 				add_filter( 'woocommerce_product_addons_option_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
 				add_filter( 'woocommerce_product_addons_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
 				add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );
@@ -63,7 +37,6 @@ class WooCommerceProductAddOns {
 			}
 
 			if ( wp_doing_ajax() ) {
-				// Product Add-Ons filters.
 				add_filter( 'woocommerce_product_addons_ajax_get_product_price_including_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
 				add_filter( 'woocommerce_product_addons_ajax_get_product_price_excluding_tax', [ $this, 'get_product_calculation_price' ], 50, 3 );
 			}
