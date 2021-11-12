@@ -46,6 +46,9 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
+		// There are checks for is_admin() along with tests for test requests, this allows them to pass.
+		set_current_screen( 'admin' );
+
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 
@@ -81,6 +84,11 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->request_body         = [];
 		$this->request_body['data'] = $event_data;
+	}
+
+	public function tearDown() {
+		set_current_screen( 'front' );
+		parent::tearDown();
 	}
 
 	/**
