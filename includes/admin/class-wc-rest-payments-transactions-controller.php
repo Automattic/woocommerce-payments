@@ -37,7 +37,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 			'/' . $this->rest_base . '/download',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'get_transactions_csv' ],
+				'callback'            => [ $this, 'get_transactions_export' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -86,11 +86,11 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	}
 
 	/**
-	 * Retrieve transactions to respond with via API.
+	 * Initiate transactions export via API.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function get_transactions_csv( $request ) {
+	public function get_transactions_export( $request ) {
 		$page       = (int) $request->get_param( 'page' );
 		$page_size  = (int) $request->get_param( 'pagesize' );
 		$sort       = $request->get_param( 'sort' );

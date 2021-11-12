@@ -392,6 +392,8 @@ export const TransactionsList = (
 	const downloadable = !! rows.length;
 
 	const onDownload = async () => {
+		setIsDownloading( true );
+
 		const {
 			date_before: dateBefore,
 			date_after: dateAfter,
@@ -407,30 +409,37 @@ export const TransactionsList = (
 			!! typeIs ||
 			!! typeIsNot
 		) {
-			setIsDownloading( true );
+			try {
+				const {
+					exported_transactions: exportedTransactions,
+				} = await apiFetch( {
+					path: getTransactionsCSV( getQuery() ),
+					method: 'POST',
+					data: formatQueryFilters( getQuery() ),
+				} );
 
-			const {
-				exported_transactions: exportedTransactions,
-			} = await apiFetch( {
-				path: getTransactionsCSV( getQuery() ),
-				method: 'POST',
-				data: formatQueryFilters( getQuery() ),
-			} );
+				createNotice(
+					'success',
+					__(
+						'Your export will be emailed to you.',
+						'woocommerce-payments'
+					)
+				);
 
-			createNotice(
-				'success',
-				__(
-					'Your export will be emailed to you.',
-					'woocommerce-payments'
-				)
-			);
-
-			setIsDownloading( false );
-
-			wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-				exported_transactions: exportedTransactions,
-				download_type: 'endpoint',
-			} );
+				wcpayTracks.recordEvent( 'wcpay_transactions_download', {
+					exported_transactions: exportedTransactions,
+					total_transactions: exportedTransactions,
+					download_type: 'endpoint',
+				} );
+			} catch {
+				createNotice(
+					'error',
+					__(
+						'There was a problem generating your export.',
+						'woocommerce-payments'
+					)
+				);
+			}
 		} else {
 			// We destructure page and path to get the right params.
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -447,6 +456,8 @@ export const TransactionsList = (
 				download_type: 'browser',
 			} );
 		}
+
+		setIsDownloading( false );
 	};
 
 	if ( ! wcpaySettings.featureFlags.customSearch ) {

@@ -25,13 +25,6 @@ jest.mock( 'data/index', () => ( {
 	useTransactionsSummary: jest.fn(),
 } ) );
 
-const mockUseTransactions = useTransactions as jest.MockedFunction<
-	typeof useTransactions
->;
-const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
-	typeof useTransactionsSummary
->;
-
 jest.mock( '@woocommerce/csv-export', () => {
 	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
 
@@ -40,6 +33,18 @@ jest.mock( '@woocommerce/csv-export', () => {
 		downloadCSVFile: jest.fn(),
 	};
 } );
+
+jest.mock( '@wordpress/data', () => ( {
+	...jest.requireActual( '@wordpress/data' ),
+	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
+} ) );
+
+const mockUseTransactions = useTransactions as jest.MockedFunction<
+	typeof useTransactions
+>;
+const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
+	typeof useTransactionsSummary
+>;
 
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile

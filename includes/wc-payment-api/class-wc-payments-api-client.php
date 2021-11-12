@@ -619,7 +619,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Initiates transactions export
+	 * Initiates transactions export via API.
 	 *
 	 * @param int    $page       The requested page.
 	 * @param int    $page_size  The size of the requested page.
@@ -629,6 +629,7 @@ class WC_Payments_API_Client {
 	 * @param string $deposit_id The deposit to filter on.
 	 *
 	 * @return array Export summary
+	 *
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
 	public function get_transactions_export( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [], $deposit_id = null ) {
