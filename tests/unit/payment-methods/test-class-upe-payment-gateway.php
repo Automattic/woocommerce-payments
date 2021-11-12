@@ -8,12 +8,14 @@
 namespace WCPay\Payment_Methods;
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Payment_Type;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
-
 use WCPay\Logger;
-use WCPay\Constants\Payment_Type;
+use WCPay\MultiCurrency\Currency;
+
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
@@ -1257,6 +1259,95 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			);
 
 		$this->assertEquals( $mock_token, $this->mock_upe_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
+	}
+
+
+
+
+	public function test_create_payment_intent_uses_cached_minimum_amount() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0.45 );
+		$order->save();
+
+		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 50, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_intention' )
+			->with( 50, 'usd', [ 'card' ] )
+			->willReturn( $intent );
+
+		$this->mock_upe_gateway->create_payment_intent( $order->get_id() );
+	}
+
+	public function test_create_payment_intent_creates_new_intent_with_minimum_amount() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 0.45 );
+		$order->save();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 50, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->exactly( 2 ) )
+			->method( 'create_intention' )
+			->withConsecutive(
+				[ 45, 'usd', [ 'card' ] ],
+				[ 50, 'usd', [ 'card' ] ]
+			)
+			->will(
+				$this->onConsecutiveCalls(
+					$this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $0.50 usd', 50, 'usd', 400 ) ),
+					$this->returnValue( $intent )
+				)
+			);
+
+		$result = $this->mock_upe_gateway->create_payment_intent( $order->get_id() );
+		$this->assertsame( 'client_secret_123', $result['client_secret'] );
+	}
+
+	public function test_process_payment_rejects_with_cached_minimum_acount() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 0.45 );
+		$order->save();
+
+		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
+
+		// Make sure that the payment was not actually processed.
+		$price   = wp_strip_all_tags( html_entity_decode( wc_price( 0.5, [ 'currency' => 'USD' ] ) ) );
+		$message = 'The selected payment method requires a total amount of at least ' . $price . '.';
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( $message );
+		$this->mock_upe_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0.45 );
+		$order->save();
+
+		delete_transient( 'wcpay_minimum_amount_usd' );
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_intention' )
+			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 'usd', 400 ) ) );
+
+		$price   = wp_strip_all_tags( html_entity_decode( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
+		$message = 'The selected payment method requires a total amount of at least ' . $price . '.';
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( $message );
+
+		try {
+			$this->mock_upe_gateway->process_payment( $order->get_id() );
+		} catch ( Exception $e ) {
+			$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
+			throw $e;
+		}
 	}
 
 	/**
