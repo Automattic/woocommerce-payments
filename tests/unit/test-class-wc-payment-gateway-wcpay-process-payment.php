@@ -968,9 +968,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
 
-		// Arrange: Prepare for the upcoming exception.
-		$this->expectException( 'Exception' );
-
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
@@ -1032,9 +1029,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 					}
 				)
 			);
-
-		// Arrange: Prepare for the upcoming exception.
-		$this->expectException( 'Exception' );
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
