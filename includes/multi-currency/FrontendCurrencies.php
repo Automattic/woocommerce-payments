@@ -80,6 +80,7 @@ class FrontendCurrencies {
 			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 50 );
 			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 50 );
 			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 50 );
+			add_action( 'before_woocommerce_pay', [ $this, 'init_order_currency_from_query_vars' ] );
 		}
 
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
@@ -216,6 +217,18 @@ class FrontendCurrencies {
 	}
 
 	/**
+	 * Gets the order id from the wp query_vars and then calls init_order_currency.
+	 *
+	 * @return void
+	 */
+	public function init_order_currency_from_query_vars() {
+		global $wp;
+		if ( ! empty( $wp->query_vars['order-pay'] ) ) {
+			$this->init_order_currency( $wp->query_vars['order-pay'] );
+		}
+	}
+
+	/**
 	 * Fixes the decimals for the store currency when shipping rates are being determined.
 	 * Our `wc_get_price_decimals` filter returns the decimals for the selected currency during this calculation, which leads to incorrect results.
 	 *
@@ -251,6 +264,7 @@ class FrontendCurrencies {
 			[
 				'WC_Shortcode_My_Account::view_order',
 				'WC_Shortcode_Checkout::order_received',
+				'WC_Shortcode_Checkout::order_pay',
 			]
 		);
 	}

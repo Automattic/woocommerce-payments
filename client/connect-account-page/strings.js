@@ -21,6 +21,10 @@ export default {
 			'With WooCommerce Payments, you can securely accept major cards, Apple Pay, and payments in over 100 currencies. Track cash flow and manage recurring revenue directly from your store’s dashboard - with no setup costs or monthly fees.',
 			'woocommerce-payments'
 		),
+		descriptionUS: __(
+			'With WooCommerce Payments, you can securely accept major cards, Apple Pay, and payments in over 100 currencies – with no setup costs or monthly fees – and you can now accept in-person payments with the Woo mobile app.',
+			'woocommerce-payments'
+		),
 	},
 
 	paymentMethodsHeading: __(

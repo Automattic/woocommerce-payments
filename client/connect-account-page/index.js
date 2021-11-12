@@ -149,7 +149,9 @@ const ConnectPageOnboarding = () => {
 		<>
 			<h2>{ strings.onboarding.heading }</h2>
 			<p>
-				{ strings.onboarding.description }
+				{ 'US' === country
+					? strings.onboarding.descriptionUS
+					: strings.onboarding.description }
 				<br />
 				<LearnMore />
 			</p>

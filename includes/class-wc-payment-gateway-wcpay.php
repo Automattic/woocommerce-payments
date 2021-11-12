@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -841,9 +841,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
-
-			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
-
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
 				$order->update_status( 'failed' );
 			}
@@ -906,10 +903,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_order_note( $note );
 			}
 
-			return [
-				'result'   => 'fail',
-				'redirect' => '',
-			];
+			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 		}
 	}
 
@@ -1037,10 +1031,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( $payment_needed ) {
+			$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() );
+			$currency         = strtolower( $order->get_currency() );
+
+			// Try catching the error without reaching the API.
+			$minimum_amount = WC_Payments_Utils::get_cached_minimum_amount( $currency );
+			if ( $minimum_amount > $converted_amount ) {
+				$e = new Amount_Too_Small_Exception( 'Amount too small', $minimum_amount, $currency, 400 );
+				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+			}
+
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 			$intent = $this->payments_api_client->create_and_confirm_intention(
-				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
-				strtolower( $order->get_currency() ),
+				$converted_amount,
+				$currency,
 				$payment_information->get_payment_method(),
 				$customer_id,
 				$payment_information->is_using_manual_capture(),
@@ -1279,7 +1283,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$order->add_order_note( $note );
 				}
 				try {
-					$order->payment_complete( $intent_id );
+					// Read the latest order properties from the database to avoid race conditions when the paid webhook was handled during this request.
+					$order->get_data_store()->read( $order );
+
+					if ( ! $order->has_status( [ 'processing', 'completed' ] ) ) {
+						$order->payment_complete( $intent_id );
+					}
 				} catch ( Exception $e ) {
 					// continue further, something unexpected happened, but we can't really do nothing with that.
 					Logger::log( 'Error when completing payment for order: ' . $e->getMessage() );
