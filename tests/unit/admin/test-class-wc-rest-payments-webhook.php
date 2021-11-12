@@ -159,6 +159,9 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
 	}
 
+	/**
+	 * Test a valid refund sets failed meta.
+	 */
 	public function test_valid_failed_refund_webhook_sets_failed_meta() {
 		// Setup test request data.
 		$this->request_body['type']           = 'charge.refund.updated';
@@ -202,6 +205,9 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->controller->handle_webhook( $this->request );
 	}
 
+	/**
+	 * Test a valid refund does not set failed meta.
+	 */
 	public function test_non_failed_refund_update_webhook_does_not_set_failed_meta() {
 		// Setup test request data.
 		$this->request_body['type']           = 'charge.refund.updated';
@@ -225,7 +231,6 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		// Run the test.
 		$this->controller->handle_webhook( $this->request );
-
 	}
 
 	/**
@@ -693,5 +698,182 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	public function test_invoice_payment_failed_webhook() {
 		// Stub.
 		$this->assertTrue( true );
+	}
+
+	/**
+	 * Tests that a dispute created event adds a respective order note.
+	 */
+	public function test_dispute_created_order_note() {
+		// Setup test request data.
+		$this->request_body['type']           = 'charge.dispute.created';
+		$this->request_body['data']['object'] = [
+			'id'     => 'test_dispute_id',
+			'charge' => 'test_charge_id',
+			'reason' => 'test_reason',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'/Payment has been disputed as test_reason/'
+				)
+			);
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'update_status' )
+			->with( 'on-hold' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$this->controller->handle_webhook( $this->request );
+	}
+
+	/**
+	 * Tests that a dispute closed event adds a respective order note.
+	 */
+	public function test_dispute_closed_order_note() {
+		// Setup test request data.
+		$this->request_body['type']           = 'charge.dispute.closed';
+		$this->request_body['data']['object'] = [
+			'id'     => 'test_dispute_id',
+			'charge' => 'test_charge_id',
+			'status' => 'test_status',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'/Payment dispute has been closed with status test_status/'
+				)
+			);
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'update_status' )
+			->with( 'completed' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$this->controller->handle_webhook( $this->request );
+	}
+
+	/**
+	 * Tests that a dispute updated event adds a respective order note.
+	 */
+	public function test_dispute_updated_order_note() {
+		// Setup test request data.
+		$this->request_body['type']           = 'charge.dispute.updated';
+		$this->request_body['data']['object'] = [
+			'id'     => 'test_dispute_id',
+			'charge' => 'test_charge_id',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'/Payment dispute has been updated/'
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$this->controller->handle_webhook( $this->request );
+	}
+
+	/**
+	 * Tests that a dispute funds withdrawn event adds a respective order note.
+	 */
+	public function test_dispute_funds_withdrawn_order_note() {
+		// Setup test request data.
+		$this->request_body['type']           = 'charge.dispute.funds_withdrawn';
+		$this->request_body['data']['object'] = [
+			'id'     => 'test_dispute_id',
+			'charge' => 'test_charge_id',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'/Payment dispute funds have been withdrawn/'
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$this->controller->handle_webhook( $this->request );
+	}
+
+	/**
+	 * Tests that a dispute funds reinstated event adds a respective order note.
+	 */
+	public function test_dispute_funds_reinstated_order_note() {
+		// Setup test request data.
+		$this->request_body['type']           = 'charge.dispute.funds_reinstated';
+		$this->request_body['data']['object'] = [
+			'id'     => 'test_dispute_id',
+			'charge' => 'test_charge_id',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'/Payment dispute funds have been reinstated/'
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$this->controller->handle_webhook( $this->request );
 	}
 }
