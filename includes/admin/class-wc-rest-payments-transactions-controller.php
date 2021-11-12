@@ -97,7 +97,8 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		$direction  = $request->get_param( 'direction' );
 		$deposit_id = $request->get_param( 'deposit_id' );
 		$filters    = $this->get_transactions_filters( $request );
-		return $this->forward_request( 'list_transactions_csv', [ $page, $page_size, $sort, $direction, $filters, $deposit_id ] );
+
+		return $this->forward_request( 'get_transactions_export', [ $page, $page_size, $sort, $direction, $filters, $deposit_id ] );
 	}
 
 	/**

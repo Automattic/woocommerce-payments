@@ -411,7 +411,6 @@ export const TransactionsList = (
 
 			const {
 				exported_transactions: exportedTransactions,
-				total_transactions: totalTransactions,
 			} = await apiFetch( {
 				path: getTransactionsCSV( getQuery() ),
 				method: 'POST',
@@ -430,7 +429,6 @@ export const TransactionsList = (
 
 			wcpayTracks.recordEvent( 'wcpay_transactions_download', {
 				exported_transactions: exportedTransactions,
-				total_transactions: totalTransactions,
 				download_type: 'endpoint',
 			} );
 		} else {
