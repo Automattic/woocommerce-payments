@@ -373,9 +373,8 @@ class WC_Payments {
 				[
 					// Mirrors the functionality on WooCommerce core: https://github.com/woocommerce/woocommerce/blob/ff2eadeccec64aa76abd02c931bf607dd819bbf0/includes/wc-core-functions.php#L1916 .
 					'WCRequires' => 'WC requires at least',
-					// The "Requires WP" plugin header is proposed and being implemented here: https://core.trac.wordpress.org/ticket/43992
-					// TODO: Check before release if the "Requires WP" header name has been accepted, or we should use a header on the readme.txt file instead.
-					'RequiresWP' => 'Requires WP',
+
+					'RequiresWP' => 'Requires at least',
 					'Version'    => 'Version',
 				]
 			);
