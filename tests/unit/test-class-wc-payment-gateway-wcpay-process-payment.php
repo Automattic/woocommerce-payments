@@ -504,7 +504,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
 		$this->assertCount( 2, $notes );
 		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( 'A payment of &#36;50.00 USD failed to complete with the following message: Error: No such customer: 123.', strip_tags( $notes[0]->content, '' ) );
+		$this->assertContains( 'A payment of &#36;50.00 failed to complete with the following message: Error: No such customer: 123.', strip_tags( $notes[0]->content, '' ) );
 
 		// Assert: A WooCommerce notice was added.
 		$this->assertTrue( wc_has_notice( $error_message, 'error' ) );
@@ -547,7 +547,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
 		$this->assertCount( 2, $notes );
 		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( 'A payment of &#36;50.00 USD failed to complete with the following message: Test error.', strip_tags( $notes[0]->content, '' ) );
+		$this->assertContains( 'A payment of &#36;50.00 failed to complete with the following message: Test error.', strip_tags( $notes[0]->content, '' ) );
 
 		// Assert: A WooCommerce notice was added.
 		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
@@ -578,7 +578,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
 		$this->assertCount( 2, $notes );
 		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( 'A payment of &#36;50.00 USD failed to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.', strip_tags( $notes[0]->content, '' ) );
+		$this->assertContains( 'A payment of &#36;50.00 failed to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.', strip_tags( $notes[0]->content, '' ) );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'fail', $result['result'] );
@@ -615,7 +615,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
 		$this->assertCount( 2, $notes );
 		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( "A payment of &#36;50.00 USD failed to complete with the following message: $error_message", strip_tags( $notes[0]->content, '' ) );
+		$this->assertContains( "A payment of &#36;50.00 failed to complete with the following message: $error_message", strip_tags( $notes[0]->content, '' ) );
 
 		// Assert: A WooCommerce notice was added.
 		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
