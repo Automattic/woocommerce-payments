@@ -106,7 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Use configured domain instead of current domain for Apple Pay verification.
 * Fix - Fatal error when deactivating the WooCommerce plugin when WCPay Subscriptions is enabled.
 * Fix - Do not create WooCommerce Payments Subscriptions when using payment methods other than WooCommerce Payments.
-* Fix - Use reports customer id for customers table. 
+* Fix - Incorrect customer links on Transactions page.
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
