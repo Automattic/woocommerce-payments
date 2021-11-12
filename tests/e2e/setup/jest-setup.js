@@ -31,6 +31,7 @@ const OBSERVED_CONSOLE_MESSAGE_TYPES = {
 
 const WP_CONTAINER = 'wcp_e2e_wordpress';
 const WP_CLI = `docker run --rm --user xfs --volumes-from ${ WP_CONTAINER } --network container:${ WP_CONTAINER } wordpress:cli`;
+const RESOURCE_TYPES_TO_BLOCK = [ 'image', 'font', 'media', 'other' ];
 
 async function setupBrowser() {
 	await setBrowserViewport( 'large' );
@@ -184,6 +185,17 @@ async function removeGuestUser() {
 	} );
 }
 
+function blockAssets() {
+	page.setRequestInterception( true );
+	page.on( 'request', ( req ) => {
+		if ( RESOURCE_TYPES_TO_BLOCK.includes( req.resourceType() ) ) {
+			req.abort();
+		} else {
+			req.continue();
+		}
+	} );
+}
+
 // Before every test suite run, delete all content created by the test. This ensures
 // other posts/comments/etc. aren't dirtying tests and tests don't depend on
 // each other's side-effects.
@@ -192,6 +204,7 @@ beforeAll( async () => {
 	enablePageDialogAccept();
 	observeConsoleLogging();
 	setTestTimeouts();
+	blockAssets();
 	await createCustomerUser();
 	await removeGuestUser();
 	await setupBrowser();
