@@ -12,6 +12,7 @@ use WC_Order_Refund;
 use WCPay\MultiCurrency\Compatibility\BaseCompatibility;
 use WCPay\MultiCurrency\Compatibility\WooCommerceBookings;
 use WCPay\MultiCurrency\Compatibility\WooCommerceFedEx;
+use WCPay\MultiCurrency\Compatibility\WooCommercePreOrders;
 use WCPay\MultiCurrency\Compatibility\WooCommerceProductAddOns;
 use WCPay\MultiCurrency\Compatibility\WooCommerceSubscriptions;
 use WCPay\MultiCurrency\Compatibility\WooCommerceUPS;
@@ -44,6 +45,7 @@ class Compatibility extends BaseCompatibility {
 	public function init_compatibility_classes() {
 		$compatibility_classes[] = new WooCommerceBookings( $this->multi_currency, $this->utils, $this->multi_currency->get_frontend_currencies() );
 		$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
+		$compatibility_classes[] = new WooCommercePreOrders( $this->multi_currency, $this->utils );
 		$compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency, $this->utils );
 		$compatibility_classes[] = new WooCommerceSubscriptions( $this->multi_currency, $this->utils );
 		$compatibility_classes[] = new WooCommerceUPS( $this->multi_currency, $this->utils );

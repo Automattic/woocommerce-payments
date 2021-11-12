@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
 
@@ -1653,7 +1654,14 @@ class WC_Payments_API_Client {
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
 			$error_type = null;
-			if ( isset( $response_body['error'] ) ) {
+			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
+				throw new Amount_Too_Small_Exception(
+					$response_body['message'],
+					$response_body['data']['minimum_amount'],
+					$response_body['data']['currency'],
+					$response_code
+				);
+			} elseif ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;
