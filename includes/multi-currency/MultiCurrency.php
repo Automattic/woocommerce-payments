@@ -86,13 +86,6 @@ class MultiCurrency {
 	protected $utils;
 
 	/**
-	 * Analytics instance.
-	 *
-	 * @var Analytics
-	 */
-	protected $analytics;
-
-	/**
 	 * FrontendPrices instance.
 	 *
 	 * @var FrontendPrices
@@ -205,7 +198,6 @@ class MultiCurrency {
 		$this->geolocation             = new Geolocation( $this->localization_service );
 		$this->utils                   = new Utils();
 		$this->compatibility           = new Compatibility( $this, $this->utils );
-		$this->analytics               = new Analytics( $this );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
 
 		if ( is_admin() ) {
@@ -255,6 +247,7 @@ class MultiCurrency {
 		new PaymentMethodsCompatibility( $this, WC_Payments::get_gateway() );
 		new AdminNotices();
 		new UserSettings( $this );
+		new Analytics( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
