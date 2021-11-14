@@ -498,6 +498,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
+
 		// Act: process payment.
 		$this->expectException( Exception::class );
 		try {
@@ -551,6 +554,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
+
 		// Act: process payment.
 		$this->expectException( Exception::class );
 		try {
@@ -583,6 +589,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'is_limited' )
 			->willReturn( true );
+
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
 
 		// Act: process payment.
 		$this->expectException( Exception::class );
@@ -623,6 +632,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
+
 		// Act: process payment.
 		$this->expectException( Exception::class );
 		try {
@@ -646,6 +658,44 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		}
 	}
 
+	public function test_incorrect_zip_exception_thrown() {
+		$error_message = 'Test error.';
+		$error_note    = 'We couldn’t verify the postal code in the billing address. If the issue persists, suggest the customer to reach out to the card issuing bank.';
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->throwException(
+					new API_Exception(
+						$error_message,
+						'incorrect_zip',
+						400,
+						'card_error'
+					)
+				)
+			);
+
+		// Act: process payment.
+		$this->expectException( Exception::class );
+		try {
+			$this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		} catch ( Exception $e ) {
+			$result_order = wc_get_order( $order->get_id() );
+
+			// Assert: No order note was added, besides the status change and failed transaction details.
+			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+
+			// Assert: Correct order notes are added.
+			$this->assertCount( 2, $notes );
+			$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+			$this->assertContains( "A payment of &#36;50.00 USD failed. $error_note", strip_tags( $notes[0]->content, '' ) );
+
+			throw $e;
+		}
+	}
 
 	/**
 	 * Test processing payment with the status "requires_action".
@@ -917,6 +967,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->will( $this->returnValue( new WC_Payment_Token_CC() ) );
 
 		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
+
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
