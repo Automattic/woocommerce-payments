@@ -13,12 +13,12 @@ import PaymentDetailsTimeline from './timeline';
 import PaymentDetailsPaymentMethod from './payment-method';
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
-import PaymentReaderChargeDetails from './readers';
+import PaymentCardReaderChargeDetails from './readers';
 
 const PaymentDetails = ( props ) => {
 	if ( 'card_reader_fee' === props.query.type ) {
 		return (
-			<PaymentReaderChargeDetails
+			<PaymentCardReaderChargeDetails
 				chargeId={ props.query.id }
 				transactionId={ props.query.transaction_id }
 			/>

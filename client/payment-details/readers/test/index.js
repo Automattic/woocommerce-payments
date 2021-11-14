@@ -10,14 +10,12 @@ import os from 'os';
 /**
  * Internal dependencies
  */
-import PaymentReaderChargeDetails from '../';
-import { useReaderStats } from 'wcpay/data';
+import PaymentCardReaderChargeDetails from '../';
+import { useCardReaderStats } from 'wcpay/data';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 
-//import { useReaderStats } from 'data/index';
-
 jest.mock( 'wcpay/data', () => ( {
-	useReaderStats: jest.fn(),
+	useCardReaderStats: jest.fn(),
 } ) );
 
 jest.mock( '@woocommerce/csv-export', () => {
@@ -29,10 +27,10 @@ jest.mock( '@woocommerce/csv-export', () => {
 	};
 } );
 
-const mockUseReaderStats = useReaderStats;
+const mockUseCardReaderStats = useCardReaderStats;
 const mockDownloadCSVFile = downloadCSVFile;
 
-describe( 'RenderPaymentReaderChargeDetails', () => {
+describe( 'RenderPaymentCardReaderChargeDetails', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
@@ -45,14 +43,14 @@ describe( 'RenderPaymentReaderChargeDetails', () => {
 	} );
 
 	test( 'renders without reader charges', () => {
-		mockUseReaderStats.mockReturnValue( {
+		mockUseCardReaderStats.mockReturnValue( {
 			readers: [],
 			chargeError: false,
 			isLoading: false,
 		} );
 
 		const { container } = render(
-			<PaymentReaderChargeDetails
+			<PaymentCardReaderChargeDetails
 				chargeId={ 'mock_charge_id' }
 				transactionId={ 'mock_transaction_id' }
 			/>
@@ -76,14 +74,14 @@ describe( 'RenderPaymentReaderChargeDetails', () => {
 			},
 		];
 
-		mockUseReaderStats.mockReturnValue( {
+		mockUseCardReaderStats.mockReturnValue( {
 			readers: readers,
 			chargeError: false,
 			isLoading: false,
 		} );
 
 		const { container } = render(
-			<PaymentReaderChargeDetails
+			<PaymentCardReaderChargeDetails
 				chargeId={ 'mock_charge_id' }
 				transactionId={ 'mock_transaction_id' }
 			/>
@@ -92,13 +90,13 @@ describe( 'RenderPaymentReaderChargeDetails', () => {
 	} );
 
 	test( 'renders loading state', () => {
-		mockUseReaderStats.mockReturnValue( {
+		mockUseCardReaderStats.mockReturnValue( {
 			readers: [],
 			chargeError: false,
 			isLoading: true,
 		} );
 		render(
-			<PaymentReaderChargeDetails
+			<PaymentCardReaderChargeDetails
 				chargeId={ 'mock_charge_id' }
 				transactionId={ 'mock_transaction_id' }
 			/>
@@ -110,13 +108,13 @@ describe( 'RenderPaymentReaderChargeDetails', () => {
 	} );
 
 	test( 'loading error', () => {
-		mockUseReaderStats.mockReturnValue( {
+		mockUseCardReaderStats.mockReturnValue( {
 			readers: [],
 			chargeError: new Error( 'test' ),
 			isLoading: false,
 		} );
 		render(
-			<PaymentReaderChargeDetails
+			<PaymentCardReaderChargeDetails
 				chargeId={ 'mock_charge_id' }
 				transactionId={ 'mock_transaction_id' }
 			/>
@@ -137,13 +135,13 @@ describe( 'RenderPaymentReaderChargeDetails', () => {
 			},
 		];
 
-		mockUseReaderStats.mockReturnValue( {
+		mockUseCardReaderStats.mockReturnValue( {
 			readers: readers,
 			chargeError: false,
 			isLoading: false,
 		} );
 		const { getByRole } = render(
-			<PaymentReaderChargeDetails
+			<PaymentCardReaderChargeDetails
 				chargeId={ 'mock_charge_id' }
 				transactionId={ 'mock_transaction_id' }
 			/>
@@ -169,13 +167,13 @@ describe( 'RenderPaymentReaderChargeDetails', () => {
 			},
 		];
 
-		mockUseReaderStats.mockReturnValue( {
+		mockUseCardReaderStats.mockReturnValue( {
 			readers: readers,
 			chargeError: false,
 			isLoading: false,
 		} );
 		const { getByRole, getAllByRole } = render(
-			<PaymentReaderChargeDetails
+			<PaymentCardReaderChargeDetails
 				chargeId={ 'mock_charge_id' }
 				transactionId={ 'mock_transaction_id' }
 			/>

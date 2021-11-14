@@ -9,15 +9,18 @@ import { apiFetch } from '@wordpress/data-controls';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
-import { updateErrorForReaderStats, updateReaderStats } from './actions';
+import {
+	updateErrorForCardReaderStats,
+	updateCardReaderStats,
+} from './actions';
 
-export function* getReaderStats( id, transactionId ) {
+export function* getCardReaderStats( id, transactionId ) {
 	try {
 		const results = yield apiFetch( {
 			path: `${ NAMESPACE }/reader-charges/summary/${ transactionId }`,
 		} );
-		yield updateReaderStats( id, results );
+		yield updateCardReaderStats( id, results );
 	} catch ( e ) {
-		yield updateErrorForReaderStats( id, null, e );
+		yield updateErrorForCardReaderStats( id, null, e );
 	}
 }

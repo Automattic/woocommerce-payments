@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`RenderPaymentReaderChargeDetails renders reader charges 1`] = `
+exports[`RenderPaymentCardReaderChargeDetails renders reader charges 1`] = `
 <div>
   <div
     class="wcpay-payment-details woocommerce-payments-page"
@@ -213,7 +213,7 @@ exports[`RenderPaymentReaderChargeDetails renders reader charges 1`] = `
 </div>
 `;
 
-exports[`RenderPaymentReaderChargeDetails renders without reader charges 1`] = `
+exports[`RenderPaymentCardReaderChargeDetails renders without reader charges 1`] = `
 <div>
   <div
     class="wcpay-payment-details woocommerce-payments-page"

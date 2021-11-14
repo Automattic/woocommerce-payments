@@ -14,15 +14,15 @@ import { TableCard } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { useReaderStats } from 'wcpay/data';
+import { useCardReaderStats } from 'wcpay/data';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import Page from 'components/page';
 import DownloadButton from 'components/download-button';
 import * as React from 'react';
 import { formatExplicitCurrency } from 'utils/currency';
 
-const PaymentReaderChargeDetails = ( props ) => {
-	const { readers, chargeError, isLoading } = useReaderStats(
+const PaymentCardReaderChargeDetails = ( props ) => {
+	const { readers, chargeError, isLoading } = useCardReaderStats(
 		props.chargeId,
 		props.transactionId
 	);
@@ -46,14 +46,14 @@ const PaymentReaderChargeDetails = ( props ) => {
 	}
 
 	return (
-		<RenderPaymentReaderChargeDetails
+		<RenderPaymentCardReaderChargeDetails
 			readers={ readers }
 			isLoading={ isLoading }
 		/>
 	);
 };
 
-const RenderPaymentReaderChargeDetails = ( props ) => {
+const RenderPaymentCardReaderChargeDetails = ( props ) => {
 	const readers = props.readers;
 	const isLoading = props.isLoading;
 	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
@@ -151,4 +151,4 @@ const RenderPaymentReaderChargeDetails = ( props ) => {
 	);
 };
 
-export default PaymentReaderChargeDetails;
+export default PaymentCardReaderChargeDetails;

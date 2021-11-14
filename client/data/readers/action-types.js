@@ -1,6 +1,0 @@
-/** @format */
-
-export default {
-	SET_READER_STATS: 'SET_READER_STATS',
-	SET_ERROR_FOR_READER_STATS: 'SET_ERROR_FOR_READER_STATS',
-};

@@ -15,7 +15,7 @@ import * as timeline from './timeline';
 import * as disputes from './disputes';
 import * as settings from './settings';
 import * as multiCurrency from './multi-currency';
-import * as readers from './readers';
+import * as readers from './card-readers';
 
 // Extracted into wrapper function to facilitate testing.
 export const initStore = () =>

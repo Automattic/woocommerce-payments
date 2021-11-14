@@ -19,4 +19,4 @@ export * from './timeline/hooks';
 export * from './disputes/hooks';
 export * from './settings/hooks';
 export * from './multi-currency';
-export * from './readers/hooks';
+export * from './card-readers/hooks';

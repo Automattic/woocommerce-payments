@@ -7,7 +7,7 @@ import TYPES from './action-types';
 
 const receiveCharges = ( state = {}, { type, id, data, error } ) => {
 	switch ( type ) {
-		case TYPES.SET_READER_STATS:
+		case TYPES.SET_CARD_READER_STATS:
 			state = {
 				...state,
 				[ id ]: {
@@ -16,7 +16,7 @@ const receiveCharges = ( state = {}, { type, id, data, error } ) => {
 				},
 			};
 			break;
-		case TYPES.SET_ERROR_FOR_READER_STATS:
+		case TYPES.SET_ERROR_FOR_CARD_READER_STATS:
 			state = {
 				...state,
 				[ id ]: {
