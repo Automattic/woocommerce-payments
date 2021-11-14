@@ -212,6 +212,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
+		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
@@ -665,7 +666,7 @@ class WC_Payments {
 	 * @return string The cache buster value to use for the given file.
 	 */
 	public static function get_file_version( $file ) {
-		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( WCPAY_ABSPATH . $file ) ) {
 			$file = trim( $file, '/' );
 			return filemtime( WCPAY_ABSPATH . $file );
 		}

@@ -20,6 +20,7 @@ class WC_Payments_Dependency_Service {
 	const WOOADMIN_NOT_FOUND    = 'wc_admin_not_found';
 	const WOOADMIN_INCOMPATIBLE = 'wc_admin_outdated';
 	const WP_INCOMPATIBLE       = 'wp_outdated';
+	const DEV_ASSETS_NOT_BUILT  = 'dev_assets_not_built';
 
 	/**
 	 * Constructor.
@@ -54,6 +55,11 @@ class WC_Payments_Dependency_Service {
 		// Do not show alerts while installing plugins.
 		if ( self::is_at_plugin_install_page() ) {
 			return;
+		}
+
+		// Show a message when assets are not built in a dev build.
+		if ( ! $this->are_assets_built() ) {
+			WC_Payments::display_admin_error( $this->get_notice_for_invalid_dependency( self::DEV_ASSETS_NOT_BUILT ) );
 		}
 
 		$invalid_dependencies = $this->get_invalid_dependencies();
@@ -166,6 +172,15 @@ class WC_Payments_Dependency_Service {
 	}
 
 	/**
+	 * Checks some of the asset files to confirm scripts and styles have been correctly built.
+	 *
+	 * @return bool TRUE if assets have been built or FALSE otherwise.
+	 */
+	public function are_assets_built() {
+		return ( file_exists( WCPAY_ABSPATH . 'dist/index.js' ) && file_exists( WCPAY_ABSPATH . 'dist/index.css' ) );
+	}
+
+	/**
 	 * Get the error constant of an invalid dependency, and transforms it into HTML to be used in an Admin Notice.
 	 *
 	 * @param string $code - invalid dependency constant.
@@ -270,6 +285,19 @@ class WC_Payments_Dependency_Service {
 					$error_message .= ' <a href="' . admin_url( 'update-core.php' ) . '">' . __( 'Update WordPress', 'woocommerce-payments' ) . '</a>';
 				}
 				break;
+			case self::DEV_ASSETS_NOT_BUILT:
+				$error_message = WC_Payments_Utils::esc_interpolated_html(
+					__(
+						'You have installed a development version of WooCommerce Payments which requires files to be built. From the plugin directory, run <code>npm run build:client</code> to build and minify assets. Alternatively, you can download a pre-built version of the plugin from the <a1>WordPress.org repository</a1> or by visiting the <a2>releases page in the GitHub repository</a2>.',
+						'woocommerce-payments'
+					),
+					[
+						'code' => '<code>',
+						'a1'   => '<a href="https://wordpress.org/plugins/woocommerce-payments/">',
+						'a2'   => '<a href="https://github.com/automattic/woocommerce-payments/releases/">',
+					]
+				);
+				break;
 		}
 
 		return $error_message;
@@ -282,7 +310,7 @@ class WC_Payments_Dependency_Service {
 	 */
 	private static function is_at_plugin_install_page() {
 		$cur_screen = get_current_screen();
-		return 'update' === $cur_screen->id && 'plugins' === $cur_screen->parent_base;
+		return $cur_screen && 'update' === $cur_screen->id && 'plugins' === $cur_screen->parent_base;
 	}
 
 	/**
