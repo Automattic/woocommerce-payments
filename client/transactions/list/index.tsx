@@ -269,12 +269,17 @@ export const TransactionsList = (
 				),
 			};
 		};
-
 		const formatFees = () => {
-			const fees = txn.metadata ? txn.amount : txn.fees * -1;
+			const isCardReader =
+				txn.metadata && txn.metadata.charge_type === 'card_reader_fee';
 			return {
-				value: fees / 100,
-				display: clickable( formatCurrency( fees, currency ) ),
+				value: ( isCardReader ? txn.amount : txn.fees ) / 100,
+				display: clickable(
+					formatCurrency(
+						isCardReader ? txn.amount : txn.fees * -1,
+						currency
+					)
+				),
 			};
 		};
 

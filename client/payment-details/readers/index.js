@@ -45,6 +45,19 @@ const PaymentReaderChargeDetails = ( props ) => {
 		);
 	}
 
+	return (
+		<RenderPaymentReaderChargeDetails
+			readers={ readers }
+			isLoading={ isLoading }
+		/>
+	);
+};
+
+const RenderPaymentReaderChargeDetails = ( props ) => {
+	const readers = props.readers;
+	const isLoading = props.isLoading;
+	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
+
 	const headers = [
 		{
 			key: 'reader_id',
