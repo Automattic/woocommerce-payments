@@ -122,6 +122,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Misleading subscription order note on payment method change.
 * Fix - Incorrect error message when card ZIP validation fails.
 * Fix - Incorrect prices in Payment Request Button for certain currencies.
+* Add - `Requires PHP` and `Requires at least` to the main plugin file.
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
