@@ -253,17 +253,15 @@ export const TransactionsList = (
 
 		const dataType = txn.metadata ? txn.metadata.charge_type : txn.type;
 		const formatAmount = () => {
-			if ( txn.metadata ) {
-				return { value: 0, display: clickable( <div>N/A</div> ) };
-			}
+			const amount = txn.metadata ? 0 : txn.amount;
 
 			return {
-				value: txn.amount / 100,
+				value: amount / 100,
 				display: clickable(
 					<ConvertedAmount
-						amount={ txn.amount }
+						amount={ amount }
 						currency={ currency }
-						fromAmount={ txn.customer_amount }
+						fromAmount={ amount }
 						fromCurrency={ txn.customer_currency.toUpperCase() }
 					/>
 				),

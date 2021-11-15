@@ -27,6 +27,7 @@
 * Fix - Fatal error on the customer payment page for subscription renewal orders with deleted products.
 * Fix - Misleading subscription order note on payment method change.
 * Fix - Incorrect error message when card ZIP validation fails.
+* Update - Display hardware costs for the period in the transaction list with link to the details page
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
