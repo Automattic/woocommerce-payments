@@ -788,8 +788,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			<?php
 
-			do_action( 'wc_payment_fields_wcpay_start', $this->id );
-
 			if ( $display_tokenization ) {
 				$this->tokenization_script();
 				echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

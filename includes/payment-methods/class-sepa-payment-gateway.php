@@ -99,8 +99,6 @@ class Sepa_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			<?php
 
-			do_action( 'wc_payment_fields_sepa_start', $this->id );
-
 			if ( $display_tokenization ) {
 				$this->tokenization_script();
 				$this->saved_payment_methods();

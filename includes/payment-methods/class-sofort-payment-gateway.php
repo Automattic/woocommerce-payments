@@ -176,7 +176,6 @@ class Sofort_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			<?php endif; ?>
 			<?php
 
-			do_action( 'wc_payment_fields_sofort_start', $this->id );
 			// Add saved payment methods & fieldset.
 
 			do_action( 'wcpay_payment_fields_sofort', $this->id );
