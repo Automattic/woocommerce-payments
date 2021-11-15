@@ -165,11 +165,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Updates payment intent to be able to save payment method.
 	 *
-	 * @param {string}  $payment_intent_id         The id of the payment intent to update.
-	 * @param {int}     $order_id                  The id of the order if intent created from Order.
-	 * @param {boolean} $save_payment_method       True if saving the payment method.
-	 * @param {string}  $selected_upe_payment_type The name of the selected UPE payment type or empty string.
-	 * @param {?string} $payment_country           The payment two-letter iso country code or null.
+	 * @param string  $payment_intent_id         The id of the payment intent to update.
+	 * @param int     $order_id                  The id of the order if intent created from Order.
+	 * @param boolean $save_payment_method       True if saving the payment method.
+	 * @param string  $selected_upe_payment_type The name of the selected UPE payment type or empty string.
+	 * @param ?string $payment_country           The payment two-letter iso country code or null.
 	 *
 	 * @return array|null An array with result of the update, or nothing
 	 */
@@ -237,7 +237,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Creates payment intent using current cart or order and store details.
 	 *
-	 * @param {int} $order_id The id of the order if intent created from Order.
+	 * @param int $order_id The id of the order if intent created from Order.
 	 *
 	 * @return array
 	 */
@@ -882,8 +882,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Sets the title on checkout correctly before the title is displayed.
 	 *
-	 * @param {string} $title The title of the gateway being filtered.
-	 * @param {string} $id    The id of the gateway being filtered.
+	 * @param string $title The title of the gateway being filtered.
+	 * @param string $id    The id of the gateway being filtered.
 	 *
 	 * @return string Filtered gateway title.
 	 */
