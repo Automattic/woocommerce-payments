@@ -809,7 +809,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			</fieldset>
 			<?php
 
-			do_action( 'wc_payment_fields_upe_end', $this->id );
+			do_action( 'wcpay_payment_fields_upe', $this->id );
 
 		} catch ( Exception $e ) {
 			// Output the error message.

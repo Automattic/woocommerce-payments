@@ -811,7 +811,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			</fieldset>
 			<?php
 
-			do_action( 'wc_payment_fields_wcpay_end', $this->id );
+			do_action( 'wcpay_payment_fields_wcpay', $this->id );
 
 		} catch ( Exception $e ) {
 			// Output the error message.
