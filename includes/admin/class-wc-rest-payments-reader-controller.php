@@ -12,14 +12,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * REST controller for reader charges.
  */
-class WC_REST_Payments_Reader_Charges_Controller extends WC_Payments_REST_Controller {
+class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Endpoint path.
 	 *
 	 * @var string
 	 */
-	protected $rest_base = 'payments/reader-charges';
+	protected $rest_base = 'payments/readers';
 
 	/**
 	 * Configure REST API routes.
@@ -27,7 +27,7 @@ class WC_REST_Payments_Reader_Charges_Controller extends WC_Payments_REST_Contro
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/summary/(?P<transaction_id>\w+)',
+			'/' . $this->rest_base . '/charges/(?P<transaction_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_summary' ],

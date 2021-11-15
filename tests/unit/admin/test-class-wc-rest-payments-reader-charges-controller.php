@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_REST_Payments_Reader_Charges_Controller_Test
+ * Class WC_REST_Payments_Reader_Controller_Test
  *
  * @package WooCommerce\Payments\Tests
  */
@@ -9,13 +9,13 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Rest_Request_Exception;
 
 /**
- * WC_REST_Payments_Reader_Charges_Controller_Test unit tests.
+ * WC_REST_Payments_Reader_Controller_Test unit tests.
  */
-class WC_REST_Payments_Reader_Charges_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 	/**
 	 * Controller under test.
 	 *
-	 * @var WC_REST_Payments_Reader_Charges_Controller
+	 * @var WC_REST_Payments_Reader_Controller
 	 */
 	private $controller;
 
@@ -28,7 +28,7 @@ class WC_REST_Payments_Reader_Charges_Controller_Test extends WP_UnitTestCase {
 		parent::setUp();
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
-		$this->controller      = new WC_REST_Payments_Reader_Charges_Controller( $this->mock_api_client );
+		$this->controller      = new WC_REST_Payments_Reader_Controller( $this->mock_api_client );
 	}
 
 	public function test_get_summary_no_transaction() {

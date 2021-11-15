@@ -17,7 +17,7 @@ import {
 export function* getCardReaderStats( id, transactionId ) {
 	try {
 		const results = yield apiFetch( {
-			path: `${ NAMESPACE }/reader-charges/summary/${ transactionId }`,
+			path: `${ NAMESPACE }/readers/charges/${ transactionId }`,
 		} );
 		yield updateCardReaderStats( id, results );
 	} catch ( e ) {
