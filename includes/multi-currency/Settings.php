@@ -15,6 +15,13 @@ defined( 'ABSPATH' ) || exit;
 class Settings extends \WC_Settings_Page {
 
 	/**
+	 * The id of the plugin.
+	 *
+	 * @var string
+	 */
+	public $id;
+
+	/**
 	 * The tab label.
 	 *
 	 * @var string
