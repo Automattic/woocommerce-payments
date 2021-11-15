@@ -498,6 +498,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
+
 		// Act: process payment.
 		$this->expectException( Exception::class );
 		try {
@@ -551,6 +554,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
+
 		// Act: process payment.
 		$this->expectException( Exception::class );
 		try {
@@ -583,6 +589,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'is_limited' )
 			->willReturn( true );
+
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
 
 		// Act: process payment.
 		$this->expectException( Exception::class );
@@ -622,6 +631,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 					)
 				)
 			);
+
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
 
 		// Act: process payment.
 		$this->expectException( Exception::class );
@@ -955,6 +967,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->will( $this->returnValue( new WC_Payment_Token_CC() ) );
 
 		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
+
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
