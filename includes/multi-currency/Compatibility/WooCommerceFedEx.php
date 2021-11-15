@@ -7,47 +7,21 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
-use WC_Product;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce FedEx Plugin.
  */
-class WooCommerceFedEx {
+class WooCommerceFedEx extends BaseCompatibility {
 
 	/**
-	 * MultiCurrency class.
+	 * Init the class.
 	 *
-	 * @var MultiCurrency
+	 * @return void
 	 */
-	private $multi_currency;
-
-	/**
-	 * Utils class.
-	 *
-	 * @var Utils
-	 */
-	private $utils;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils Utils class.
-	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		$this->multi_currency = $multi_currency;
-		$this->utils          = $utils;
-		$this->initialize_hooks();
-	}
-
-	/**
-	 * Adds compatibility filters if the plugin exists and loaded
-	 *
-	 * @return  void
-	 */
-	protected function initialize_hooks() {
+	protected function init() {
+		// Add needed actions and filters if FedEx is active.
 		if ( class_exists( 'WC_Shipping_Fedex_Init' ) ) {
 			add_filter( MultiCurrency::FILTER_PREFIX . 'should_return_store_currency', [ $this, 'should_return_store_currency' ] );
 		}

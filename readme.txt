@@ -100,12 +100,28 @@ Please note that our support for the checkout block is still experimental and th
 
 = 3.3.0 - 2021-xx-xx =
 * Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
+* Update - Avoid having invalid intervals (greater than 1 year) in subscription products.
+* Update - The subscription fee label in the transaction timeline.
 * Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
+* Add - Add compatibility between Multi-Currency and WooCommerce Pre-Orders.
 * Add - Add filters to disable or filter Multi-Currency sql query clauses for analytics.
 * Fix - Display risk for payment methods without risk assessment
 * Fix - Use configured domain instead of current domain for Apple Pay verification.
 * Fix - Fatal error when deactivating the WooCommerce plugin when WCPay Subscriptions is enabled.
+* Fix - Error where url parameters would get cleared on order-pay page if currency switcher block used.
+* Fix - Currency format on order-pay page if currency was changed via switcher.
 * Fix - Do not create WooCommerce Payments Subscriptions when using payment methods other than WooCommerce Payments.
+* Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
+* Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
+* Fix - UPE element not remounting on checkout update
+* Fix - Validate subscription product create and update args as well as subscription item data before submitting them to server.
+* Fix - Improve error messages when the minimum order amount has not been reached and allow fields to be displayed with less than the minimum amount.
+* Fix - Add consistent margins to the recurring taxes totals row on the Checkout and Cart block for subscription line items.
+* Fix - Fatal error due on subscription orders with no created date in order row template.
+* Fix - Fatal error on the customer payment page for subscription renewal orders with deleted products.
+* Fix - Misleading subscription order note on payment method change.
+* Fix - Incorrect error message when card ZIP validation fails.
+* Add - `Requires PHP` and `Requires at least` to the main plugin file.
 * Fix - Incorrect customer links on Transactions page.
 
 = 3.2.3 - 2021-11-01 =
