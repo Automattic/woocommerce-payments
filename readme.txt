@@ -111,6 +111,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Error where url parameters would get cleared on order-pay page if currency switcher block used.
 * Fix - Currency format on order-pay page if currency was changed via switcher.
 * Fix - Do not create WooCommerce Payments Subscriptions when using payment methods other than WooCommerce Payments.
+* Fix - Show proper payment gateway title on checkout load before updated by JavaScript.
 * Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
 * Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
 * Fix - UPE element not remounting on checkout update
@@ -121,6 +122,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fatal error on the customer payment page for subscription renewal orders with deleted products.
 * Fix - Misleading subscription order note on payment method change.
 * Fix - Incorrect error message when card ZIP validation fails.
+* Add - `Requires PHP` and `Requires at least` to the main plugin file.
 * Add - Allow UI customizations on checkout payment fields.
 
 = 3.2.3 - 2021-11-01 =
