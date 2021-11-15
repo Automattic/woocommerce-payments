@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
 
@@ -27,6 +28,7 @@ class WC_Payments_API_Client {
 	const API_TIMEOUT_SECONDS = 70;
 
 	const ACCOUNTS_API           = 'accounts';
+	const CAPABILITIES_API       = 'accounts/capabilities';
 	const APPLE_PAY_API          = 'apple_pay';
 	const CHARGES_API            = 'charges';
 	const CONN_TOKENS_API        = 'terminal/connection_tokens';
@@ -203,7 +205,12 @@ class WC_Payments_API_Client {
 		$request['level3']         = $level3;
 		$request['description']    = $this->get_intent_description( $metadata['order_id'] ?? 0 );
 
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
+		$available_payment_methods = WC_Payments::get_gateway()->get_upe_available_payment_methods();
+		if (
+			'eur' === $currency_code &&
+			( WC_Payments_Features::is_sepa_enabled()
+			|| in_array( Payment_Method::SEPA, $available_payment_methods, true ) )
+		) {
 			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
 			$request['mandate_data']         = [
 				'customer_acceptance' => [
@@ -301,7 +308,8 @@ class WC_Payments_API_Client {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
 		}
-		if ( $payment_country ) {
+		if ( $payment_country && ! WC_Payments::get_gateway()->is_in_dev_mode() ) {
+			// Do not update on dev mode, Stripe tests cards don't return the appropriate country.
 			$request['payment_country'] = $payment_country;
 		}
 		if ( $customer_id ) {
@@ -888,6 +896,27 @@ class WC_Payments_API_Client {
 		return $this->request(
 			$stripe_account_settings,
 			self::ACCOUNTS_API,
+			self::POST,
+			true,
+			true
+		);
+	}
+
+	/**
+	 * Request capability activation from the server
+	 *
+	 * @param   string $capability_id  Capability ID.
+	 * @param   bool   $requested      State.
+	 *
+	 * @return  array                   Request result.
+	 */
+	public function request_capability( string $capability_id, bool $requested ) {
+		return $this->request(
+			[
+				'capability_id' => $capability_id,
+				'requested'     => $requested,
+			],
+			self::CAPABILITIES_API,
 			self::POST,
 			true,
 			true
@@ -1485,7 +1514,10 @@ class WC_Payments_API_Client {
 		}
 		$url .= '/' . self::ENDPOINT_REST_BASE . '/' . $api;
 
-		$body = null;
+		$headers                 = [];
+		$headers['Content-Type'] = 'application/json; charset=utf-8';
+		$headers['User-Agent']   = $this->user_agent;
+		$body                    = null;
 
 		$redacted_params = WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT );
 		$redacted_url    = $url;
@@ -1494,8 +1526,8 @@ class WC_Payments_API_Client {
 			$url          .= '?' . http_build_query( $params );
 			$redacted_url .= '?' . http_build_query( $redacted_params );
 		} else {
-			// Encode the request body as JSON.
-			$body = wp_json_encode( $params );
+			$headers['Idempotency-Key'] = $this->uuid();
+			$body                       = wp_json_encode( $params );
 			if ( ! $body ) {
 				throw new API_Exception(
 					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' ),
@@ -1505,12 +1537,12 @@ class WC_Payments_API_Client {
 			}
 		}
 
-		// Create standard headers.
-		$headers                 = [];
-		$headers['Content-Type'] = 'application/json; charset=utf-8';
-		$headers['User-Agent']   = $this->user_agent;
-
 		Logger::log( "REQUEST $method $redacted_url" );
+		Logger::log(
+			'HEADERS: '
+			. var_export( $headers, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		);
+
 		if ( null !== $body ) {
 			Logger::log(
 				'BODY: '
@@ -1626,7 +1658,14 @@ class WC_Payments_API_Client {
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
 			$error_type = null;
-			if ( isset( $response_body['error'] ) ) {
+			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
+				throw new Amount_Too_Small_Exception(
+					$response_body['message'],
+					$response_body['data']['minimum_amount'],
+					$response_body['data']['currency'],
+					$response_code
+				);
+			} elseif ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;
@@ -1778,6 +1817,18 @@ class WC_Payments_API_Client {
 			$domain_name,
 			null !== $blog_id ? " blog_id $blog_id" : ''
 		);
+	}
+
+	/**
+	 * Returns a v4 UUID.
+	 *
+	 * @return string
+	 */
+	private function uuid() {
+		$arr    = array_values( unpack( 'N1a/n4b/N1c', random_bytes( 16 ) ) );
+		$arr[2] = ( $arr[2] & 0x0fff ) | 0x4000;
+		$arr[3] = ( $arr[3] & 0x3fff ) | 0x8000;
+		return vsprintf( '%08x-%04x-%04x-%04x-%04x%08x', $arr );
 	}
 
 

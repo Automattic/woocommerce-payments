@@ -26,6 +26,11 @@ describe( 'RiskLevel', () => {
 		expect( riskLevel ).toMatchSnapshot();
 	} );
 
+	test( 'Renders not assessed risk correctly.', () => {
+		const riskLevel = renderRisk( undefined );
+		expect( riskLevel ).toMatchSnapshot();
+	} );
+
 	function renderRisk( risk ) {
 		return render( <RiskLevel risk={ risk } /> ).container;
 	}

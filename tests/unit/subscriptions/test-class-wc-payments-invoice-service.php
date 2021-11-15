@@ -175,22 +175,38 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, [ 'sub_test123' ] );
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, [ 'di_test123' ] );
 
-		foreach ( $mock_order->get_items( 'line_item', 'fee', 'shipping' ) as $item ) {
-			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123' );
+		foreach ( $mock_order->get_items( [ 'line_item', 'fee', 'shipping' ] ) as $item ) {
+			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123_' . $item->get_type() );
 		}
 
 		$mock_item_data = [
 			[
-				'subscription_item' => 'si_test123',
-				'amount'            => 4000,
+				'subscription_item' => 'si_test123_line_item',
 				'quantity'          => 4,
-				'tax_rates'         => [],
+				'price'             =>
+				[
+					'unit_amount_decimal' => 1000,
+					'currency'            => 'usd',
+					'recurring'           =>
+					[
+						'interval'       => 'month',
+						'interval_count' => 1,
+					],
+				],
 			],
 			[
-				'subscription_item' => 'si_test123',
-				'amount'            => 4000,
-				'quantity'          => 4,
-				'tax_rates'         => [],
+				'subscription_item' => 'si_test123_shipping',
+				'quantity'          => 1,
+				'price'             =>
+				[
+					'unit_amount_decimal' => 1000,
+					'currency'            => 'usd',
+					'recurring'           =>
+					[
+						'interval'       => 'month',
+						'interval_count' => 1,
+					],
+				],
 			],
 		];
 
@@ -217,33 +233,49 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, [ 'di_test123' ] );
 
-		foreach ( $mock_order->get_items( 'line_item', 'fee', 'shipping' ) as $item ) {
-			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123' );
+		foreach ( $mock_order->get_items( [ 'line_item', 'fee', 'shipping' ] ) as $item ) {
+			$item->update_meta_data( self::SUBSCRIPTION_ITEM_ID_META_KEY, 'si_test123_' . $item->get_type() );
 		}
 
 		$mock_item_data = [
 			[
-				'subscription_item' => 'si_test123',
-				'amount'            => 1000,
+				'subscription_item' => 'si_test123_line_item',
 				'quantity'          => 1,
-				'tax_rates'         => [],
+				'price'             =>
+				[
+					'unit_amount_decimal' => 1000,
+					'currency'            => 'usd',
+					'recurring'           =>
+					[
+						'interval'       => 'month',
+						'interval_count' => 1,
+					],
+				],
+			],
+			[
+				'subscription_item' => 'si_test123_shipping',
+				'quantity'          => 1,
+				'price'             =>
+				[
+					'unit_amount_decimal' => 1000,
+					'currency'            => 'usd',
+					'recurring'           =>
+					[
+						'interval'       => 'month',
+						'interval_count' => 1,
+					],
+				],
 			],
 		];
 
 		$mock_discount_data = [ 'di_test456' ];
 
-		$this->mock_product_service
-			->expects( $this->once() )
-			->method( 'get_wcpay_price_id' )
-			->willReturn( 'price_test123' );
-
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'update_subscription_item' )
 			->with(
-				'si_test123',
+				'si_test123_line_item',
 				[
-					'price'    => 'price_test123',
 					'quantity' => 4,
 				]
 			);

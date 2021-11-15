@@ -27,6 +27,7 @@ class MultiCurrency {
 	const CURRENCY_META_KEY               = 'wcpay_currency';
 	const CURRENCY_CACHE_OPTION           = 'wcpay_multi_currency_cached_currencies';
 	const CURRENCY_RETRIEVAL_ERROR_OPTION = 'wcpay_multi_currency_retrieval_error';
+	const FILTER_PREFIX                   = 'wcpay_multi_currency_';
 
 	/**
 	 * The plugin's ID.
@@ -83,13 +84,6 @@ class MultiCurrency {
 	 * @var Utils
 	 */
 	protected $utils;
-
-	/**
-	 * Analytics instance.
-	 *
-	 * @var Analytics
-	 */
-	protected $analytics;
 
 	/**
 	 * FrontendPrices instance.
@@ -204,7 +198,6 @@ class MultiCurrency {
 		$this->geolocation             = new Geolocation( $this->localization_service );
 		$this->utils                   = new Utils();
 		$this->compatibility           = new Compatibility( $this, $this->utils );
-		$this->analytics               = new Analytics( $this );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
 
 		if ( is_admin() ) {
@@ -224,6 +217,7 @@ class MultiCurrency {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
 			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
 			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
+			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
 		}
 	}
 
@@ -253,9 +247,10 @@ class MultiCurrency {
 		new PaymentMethodsCompatibility( $this, WC_Payments::get_gateway() );
 		new AdminNotices();
 		new UserSettings( $this );
+		new Analytics( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 
@@ -822,6 +817,21 @@ class MultiCurrency {
 			]
 		);
 		echo ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
+	}
+
+	/**
+	 * Sets a new customer's currency meta to what's in their session.
+	 * This is needed for when a new user/customer is created during the checkout process.
+	 *
+	 * @param int $customer_id The user/customer id.
+	 *
+	 * @return void
+	 */
+	public function set_new_customer_currency_meta( $customer_id ) {
+		$code = 0 !== $customer_id && WC()->session ? WC()->session->get( self::CURRENCY_SESSION_KEY ) : false;
+		if ( $code ) {
+			update_user_meta( $customer_id, self::CURRENCY_META_KEY, $code );
+		}
 	}
 
 	/**

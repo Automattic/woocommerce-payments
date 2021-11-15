@@ -26,6 +26,7 @@ use WC_Payments_Utils;
 use Session_Rate_Limiter;
 
 use Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 
 
@@ -108,10 +109,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			true
 		);
 
+		$script_dependencies = [ 'stripe', 'wc-checkout' ];
+
+		if ( $this->supports( 'tokenization' ) ) {
+			$script_dependencies[] = 'woocommerce-tokenization-form';
+		}
+
 		wp_register_script(
 			'wcpay-upe-checkout',
 			plugins_url( 'dist/upe_checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout', 'woocommerce-tokenization-form' ],
+			$script_dependencies,
 			WC_Payments::get_file_version( 'dist/upe_checkout.js' ),
 			true
 		);
@@ -231,28 +238,57 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function create_payment_intent( $order_id = null ) {
-		$amount = WC()->cart->get_total( false );
-		$order  = wc_get_order( $order_id );
+		$amount   = WC()->cart->get_total( false );
+		$currency = get_woocommerce_currency();
+		$order    = wc_get_order( $order_id );
 		if ( is_a( $order, 'WC_Order' ) ) {
-			$amount = $order->get_total();
+			$amount   = $order->get_total();
+			$currency = $order->get_currency();
 		}
 
-		$currency         = get_woocommerce_currency();
 		$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );
 		if ( 1 > $converted_amount ) {
 			return $this->create_setup_intent();
 		}
 
+		$minimum_amount = WC_Payments_Utils::get_cached_minimum_amount( $currency );
+		if ( ! is_null( $minimum_amount ) && $converted_amount < $minimum_amount ) {
+			// Use the minimum amount in order to create an intent and display fields.
+			$converted_amount = $minimum_amount;
+		}
+
 		$capture_method          = empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] ? 'automatic' : 'manual';
 		$enabled_payment_methods = $this->get_upe_enabled_at_checkout_payment_method_ids( $order_id );
 
-		$payment_intent = $this->payments_api_client->create_intention(
-			$converted_amount,
-			strtolower( $currency ),
-			array_values( $enabled_payment_methods ),
-			$order_id ?? 0,
-			$capture_method
-		);
+		try {
+			$payment_intent = $this->payments_api_client->create_intention(
+				$converted_amount,
+				strtolower( $currency ),
+				array_values( $enabled_payment_methods ),
+				$order_id ?? 0,
+				$capture_method
+			);
+		} catch ( Amount_Too_Small_Exception $e ) {
+			$minimum_amount = $e->get_minimum_amount();
+
+			WC_Payments_Utils::cache_minimum_amount( $e->get_currency(), $minimum_amount );
+
+			/**
+			 * Try to create a new payment intent with the minimum amount
+			 * in order to display fields om the checkout page and allow
+			 * customers to select a shipping method, which might make
+			 * the total amount of the order higher than the minimum
+			 * amount for the API.
+			 */
+			$payment_intent = $this->payments_api_client->create_intention(
+				$minimum_amount,
+				strtolower( $currency ),
+				array_values( $enabled_payment_methods ),
+				$order_id ?? 0,
+				$capture_method
+			);
+		}
+
 		return [
 			'id'            => $payment_intent->get_id(),
 			'client_secret' => $payment_intent->get_client_secret(),
@@ -330,6 +366,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param int $order_id Order ID to process the payment for.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
 		$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -349,24 +386,35 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			if ( $payment_needed ) {
 				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
-					wc_add_notice( __( 'Your payment was not processed.', 'woocommerce-payments' ), 'error' );
-					return [
-						'result'       => 'fail',
-						'redirect_url' => '',
-					];
+					// Throwing an exception instead of adding an error notice
+					// makes the error notice show up both in the regular and block checkout.
+					throw new Exception( __( 'Your payment was not processed.', 'woocommerce-payments' ) );
 				}
 
-				$updated_payment_intent  = $this->payments_api_client->update_intention(
-					$payment_intent_id,
-					$converted_amount,
-					strtolower( $currency ),
-					$save_payment_method,
-					$customer_id,
-					$this->get_metadata_from_order( $order, $payment_type ),
-					$this->get_level3_data_from_order( $order ),
-					$selected_upe_payment_type,
-					$payment_country
-				);
+				// Try catching the error without reaching the API.
+				$minimum_amount = WC_Payments_Utils::get_cached_minimum_amount( $currency );
+				if ( $minimum_amount > $converted_amount ) {
+					$exception = new Amount_Too_Small_Exception( 'Amount too small', $minimum_amount, $currency, 400 );
+					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
+				}
+
+				try {
+					$updated_payment_intent = $this->payments_api_client->update_intention(
+						$payment_intent_id,
+						$converted_amount,
+						strtolower( $currency ),
+						$save_payment_method,
+						$customer_id,
+						$this->get_metadata_from_order( $order, $payment_type ),
+						$this->get_level3_data_from_order( $order ),
+						$selected_upe_payment_type,
+						$payment_country
+					);
+				} catch ( Amount_Too_Small_Exception $e ) {
+					// This code would only be reached if the cache has already expired.
+					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+				}
+
 				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
 				if ( 'card_declined' === $last_payment_error_code ) {
 					// UPE method gives us the error of the previous payment attempt, so we use that for the Rate Limiter.
@@ -720,7 +768,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a>here</a>.', 'woocommerce-payments' ),
 						[
 							'strong' => '<strong>',
-							'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+							'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
 						]
 					);
 				?>
@@ -775,8 +823,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function get_upe_available_payment_methods() {
 		$methods = parent::get_upe_available_payment_methods();
 
+		$methods[] = 'bancontact';
 		$methods[] = 'giropay';
+		$methods[] = 'ideal';
 		$methods[] = 'sofort';
+		$methods[] = 'sepa_debit';
+		$methods[] = 'p24';
 
 		return array_values(
 			apply_filters(

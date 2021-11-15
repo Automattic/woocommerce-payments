@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -94,6 +94,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $failed_transaction_rate_limiter;
 
 	/**
+	 * Mapping between capability keys and payment type keys
+	 *
+	 * @var array
+	 */
+	protected $payment_method_capability_key_map;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
@@ -144,7 +151,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
 				'description' => WC_Payments_Utils::esc_interpolated_html(
 					__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
-					[ 'a' => '<a href="https://docs.woocommerce.com/document/payments/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
+					[ 'a' => '<a href="https://woocommerce.com/document/payments/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
 				),
 			],
 			'manual_capture'                   => [
@@ -307,6 +314,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 			];
 		}
+
+		// Capabilities have different keys than the payment method ID's,
+		// so instead of appending '_payments' to the end of the ID, it'll be better
+		// to have a map for it instead, just in case the pattern changes.
+		$this->payment_method_capability_key_map = [
+			'sofort'     => 'sofort_payments',
+			'giropay'    => 'giropay_payments',
+			'bancontact' => 'bancontact_payments',
+			'ideal'      => 'ideal_payments',
+			'p24'        => 'p24_payments',
+			'card'       => 'card_payments',
+			'sepa_debit' => 'sepa_debit_payments',
+		];
 
 		// Load the settings.
 		$this->init_settings();
@@ -639,10 +659,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			true
 		);
 
+		$script_dependencies = [ 'stripe', 'wc-checkout' ];
+
+		if ( $this->supports( 'tokenization' ) ) {
+			$script_dependencies[] = 'woocommerce-tokenization-form';
+		}
+
 		wp_register_script(
 			'WCPAY_CHECKOUT',
 			plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout', 'woocommerce-tokenization-form' ],
+			$script_dependencies,
 			WC_Payments::get_file_version( 'dist/checkout.js' ),
 			true
 		);
@@ -753,7 +779,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
 						[
 							'strong' => '<strong>',
-							'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+							'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
 						]
 					);
 				?>
@@ -800,6 +826,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws Process_Payment_Exception Error processing the payment.
+	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
@@ -815,9 +842,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
-
-			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
-
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
 				$order->update_status( 'failed' );
 			}
@@ -827,21 +851,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( ! empty( $payment_information ) ) {
+				/* translators: %1: the failed payment amount, %2: error message  */
+				$error_message = __(
+					'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+					'woocommerce-payments'
+				);
+
+				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
+
+				if ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() ) {
+					/* translators: %1: the failed payment amount, %2: error message  */
+					$error_message = __(
+						'A payment of %1$s <strong>failed</strong>. %2$s',
+						'woocommerce-payments'
+					);
+
+					$error_details = __(
+						'We couldn’t verify the postal code in the billing address. If the issue persists, suggest the customer to reach out to the card issuing bank.',
+						'woocommerce-payments'
+					);
+				}
+
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the failed payment amount, %2: error message  */
-						__(
-							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-							'woocommerce-payments'
-						),
+						$error_message,
 						[
 							'strong' => '<strong>',
 							'code'   => '<code>',
 						]
 					),
 					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
-					esc_html( rtrim( $e->getMessage(), '.' ) )
+					$error_details
 				);
+
 				$order->add_order_note( $note );
 			}
 
@@ -862,10 +904,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_order_note( $note );
 			}
 
-			return [
-				'result'   => 'fail',
-				'redirect' => '',
-			];
+			// Re-throw the exception after setting everything up.
+			// This makes the error notice show up both in the regular and block checkout.
+			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 		}
 	}
 
@@ -993,10 +1034,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( $payment_needed ) {
+			$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() );
+			$currency         = strtolower( $order->get_currency() );
+
+			// Try catching the error without reaching the API.
+			$minimum_amount = WC_Payments_Utils::get_cached_minimum_amount( $currency );
+			if ( $minimum_amount > $converted_amount ) {
+				$e = new Amount_Too_Small_Exception( 'Amount too small', $minimum_amount, $currency, 400 );
+				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+			}
+
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 			$intent = $this->payments_api_client->create_and_confirm_intention(
-				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
-				strtolower( $order->get_currency() ),
+				$converted_amount,
+				$currency,
 				$payment_information->get_payment_method(),
 				$customer_id,
 				$payment_information->is_using_manual_capture(),
@@ -1033,6 +1084,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$currency      = $order->get_currency();
 			$next_action   = $intent['next_action'];
 		}
+
+		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( ! empty( $intent ) ) {
 			if ( ! in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
@@ -1078,9 +1132,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 		}
-
-		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
-		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( isset( $response ) ) {
 			return $response;
@@ -1235,7 +1286,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$order->add_order_note( $note );
 				}
 				try {
-					$order->payment_complete( $intent_id );
+					// Read the latest order properties from the database to avoid race conditions when the paid webhook was handled during this request.
+					$order->get_data_store()->read( $order );
+
+					if ( ! $order->has_status( [ 'processing', 'completed' ] ) ) {
+						$order->payment_complete( $intent_id );
+					}
 				} catch ( Exception $e ) {
 					// continue further, something unexpected happened, but we can't really do nothing with that.
 					Logger::log( 'Error when completing payment for order: ' . $e->getMessage() );
@@ -1845,7 +1901,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			$description     = substr( $item->get_name(), 0, 26 );
-			$quantity        = $item->get_quantity();
+			$quantity        = ceil( $item->get_quantity() );
 			$unit_cost       = WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency );
 			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
 			$discount_amount = WC_Payments_Utils::prepare_amount( $subtotal - $item->get_total(), $currency );
@@ -2365,6 +2421,43 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Returns the list of statuses and capabilities available for UPE payment methods in the cached account.
+	 *
+	 * @return  string[]  The payment method statuses.
+	 */
+	public function get_upe_enabled_payment_method_statuses() {
+		$account_data = $this->account->get_cached_account_data();
+		$capabilities = $account_data['capabilities'] ?? [];
+		$requirements = $account_data['capability_requirements'] ?? [];
+		$statuses     = [];
+
+		if ( $capabilities ) {
+			foreach ( $capabilities as $capability_id => $status ) {
+				$statuses[ $capability_id ] = [
+					'status'       => $status,
+					'requirements' => $requirements[ $capability_id ] ?? [],
+				];
+			}
+		}
+
+		return 0 === count( $statuses ) ? [
+			'card_payments' => [
+				'status'       => 'active',
+				'requirements' => [],
+			],
+		] : $statuses;
+	}
+
+	/**
+	 * Updates the account cache with the new payment method status, until it gets fetched again from the server.
+	 *
+	 * @return  void
+	 */
+	public function refresh_cached_account_data() {
+		$this->account->refresh_account_data();
+	}
+
+	/**
 	 * Returns the list of enabled payment method types that will function with the current checkout.
 	 *
 	 * @param string $order_id optional Order ID.
@@ -2374,13 +2467,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$capture                    = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
 		$capturable_payment_methods = $capture ? $this->get_upe_enabled_payment_method_ids() : [ 'card' ];
 		$enabled_payment_methods    = [];
+		$active_payment_methods     = $this->get_upe_enabled_payment_method_statuses();
 		foreach ( $capturable_payment_methods as $payment_method_id ) {
+			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
 			if ( isset( $this->payment_methods[ $payment_method_id ] )
 				&& $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id )
-				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() ) ) {
+				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() )
+				&& isset( $active_payment_methods[ $payment_method_capability_key ] )
+				&& 'active' === $active_payment_methods[ $payment_method_capability_key ]['status']
+			) {
 				$enabled_payment_methods[] = $payment_method_id;
 			}
 		}
+
 		return $enabled_payment_methods;
 	}
 

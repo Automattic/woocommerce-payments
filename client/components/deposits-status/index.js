@@ -31,7 +31,7 @@ const DepositsStatus = ( props ) => {
 		description = __( 'Monthly', 'woocommerce-payments' );
 	} else if ( 'manual' === depositsStatus ) {
 		const learnMoreHref =
-			'https://docs.woocommerce.com/document/payments/faq/deposits-suspended/';
+			'https://woocommerce.com/document/payments/faq/deposits-suspended/';
 		description = createInterpolateElement(
 			/* translators: <a> - suspended accounts FAQ URL */
 			__(
