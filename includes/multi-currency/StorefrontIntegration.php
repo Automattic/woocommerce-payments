@@ -13,12 +13,6 @@ defined( 'ABSPATH' ) || exit;
  * Class that controls Multi-Currency Storefront Integration.
  */
 class StorefrontIntegration {
-	/**
-	 * The plugin's ID.
-	 *
-	 * @var string
-	 */
-	public $id;
 
 	/**
 	 * Multi-Currency instance.
@@ -34,7 +28,6 @@ class StorefrontIntegration {
 	 */
 	public function __construct( MultiCurrency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
-		$this->id             = $this->multi_currency->id;
 		$this->init_actions_and_filters();
 	}
 
@@ -55,7 +48,7 @@ class StorefrontIntegration {
 
 		wp_add_inline_style(
 			'storefront-style',
-			apply_filters( $this->id . '_storefront_widget_css', $css )
+			apply_filters( MultiCurrency::FILTER_PREFIX . 'storefront_widget_css', $css )
 		);
 	}
 
@@ -68,9 +61,9 @@ class StorefrontIntegration {
 	 */
 	public function modify_breadcrumb_defaults( array $defaults ): array {
 		// Set the instance and args arrays for the widget.
-		$instance = apply_filters( $this->id . '_storefront_widget_instance', [] );
+		$instance = apply_filters( MultiCurrency::FILTER_PREFIX . 'storefront_widget_instance', [] );
 		$args     = apply_filters(
-			$this->id . '_storefront_widget_args',
+			MultiCurrency::FILTER_PREFIX . 'storefront_widget_args',
 			[
 				'before_widget' => '<div id="woocommerce-payments-multi-currency-storefront-widget" class="woocommerce-breadcrumb">',
 				'after_widget'  => '</div>',

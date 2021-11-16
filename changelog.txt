@@ -17,6 +17,7 @@
 * Fix - Error where url parameters would get cleared on order-pay page if currency switcher block used.
 * Fix - Currency format on order-pay page if currency was changed via switcher.
 * Fix - Do not create WooCommerce Payments Subscriptions when using payment methods other than WooCommerce Payments.
+* Fix - Show proper payment gateway title on checkout load before updated by JavaScript.
 * Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
 * Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
 * Fix - UPE element not remounting on checkout update
