@@ -100,11 +100,9 @@ function format_price_helper( $product, $currency ) {
 <body>
 	<div class="receipt">
 		<div class="receipt__header">
-			<!-- @psalm-suppress UndefinedGlobalVariable -->
 			<h1 class="title"><?php echo esc_html( $business_name ); ?></h1>
 			<hr />
 			<div class="store">
-				<!-- @psalm-suppress UndefinedGlobalVariable -->
 				<?php if ( $support_address ) { ?>
 				<div class="store__address">
 					<p><?php echo esc_html( $support_address['line1'] ); ?></p>
@@ -114,12 +112,10 @@ function format_price_helper( $product, $currency ) {
 				</div>
 				<?php } ?>
 				<p class="store__contact">
-					<!-- @psalm-suppress UndefinedGlobalVariable -->
 					<?php echo esc_html( sprintf( '%s %s', $support_phone, $support_email ) ); ?>
 				</p>
 			</div>
 			<div class="order">
-				<!-- @psalm-suppress UndefinedGlobalVariable -->
 				<p class="order__title"><?php echo esc_html( __( 'Order ', 'woocommerce-payments' ) . $order['id'] ); ?></p>
 			</div>
 		</div>
@@ -177,7 +173,6 @@ function format_price_helper( $product, $currency ) {
 			<table class="receipt-table">
 				<tr>
 					<td class="align-left"><b><?php echo esc_html( __( 'AMOUNT PAID', 'woocommerce-payments' ) ); ?></b>:</td>
-					<!-- @psalm-suppress UndefinedGlobalVariable -->
 					<td class="align-right"><b><?php echo wp_kses( wc_price( $charge['amount_captured'], [ 'currency' => $order['currency'] ] ), 'post' ); ?></b></td>
 				</tr>
 				<tr>

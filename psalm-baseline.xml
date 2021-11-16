@@ -191,5 +191,33 @@
       <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] )</code>
     </UndefinedFunction>
   </file>
+  <file src="includes/in-person-payments/templates/html-in-person-payment-receipt.php">
+    <UndefinedGlobalVariable occurrences="24">
+      <code>$business_name</code>
+      <code>$support_address</code>
+      <code>$support_phone</code>
+      <code>$support_email</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$charge</code>
+      <code>$charge</code>
+      <code>$charge</code>
+      <code>$charge</code>
+      <code>$charge</code>
+      <code>$charge</code>
+    </UndefinedGlobalVariable>
+  </file>
 </files>
 

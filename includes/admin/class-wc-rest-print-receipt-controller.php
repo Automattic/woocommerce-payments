@@ -11,6 +11,7 @@ defined( 'ABSPATH' ) || exit;
  * WC_REST_Print_Receipt_Controller
  */
 class WC_REST_Print_Receipt_Controller extends WC_Payments_REST_Controller {
+
 	/**
 	 * Doc rest_base
 	 *
