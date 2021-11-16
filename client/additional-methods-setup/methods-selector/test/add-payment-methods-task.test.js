@@ -19,6 +19,7 @@ import {
 	useSettings,
 } from '../../../data';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import { act } from 'react-dom/test-utils';
 
 jest.mock( '../../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
@@ -100,11 +101,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			</WizardTaskContext.Provider>
 		);
 
-		const expectedToBeChecked = [
-			'Credit card / debit card',
-			'giropay',
-			'SEPA Direct Debit',
-		];
+		const expectedToBeChecked = [ 'card', 'giropay', 'sepa_debit' ];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
 			expect(
@@ -113,10 +110,10 @@ describe( 'AddPaymentMethodsTask', () => {
 		} );
 
 		const expectedNotToBeChecked = [
-			'Bancontact',
-			'iDEAL',
-			'Przelewy24 (P24)',
-			'Sofort',
+			'bancontact',
+			'ideal',
+			'p24',
+			'sofort',
 			'Enable Apple Pay & Google Pay',
 		];
 
@@ -165,11 +162,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			</WizardTaskContext.Provider>
 		);
 
-		const expectedToBeChecked = [
-			'Credit card / debit card',
-			'giropay',
-			'SEPA Direct Debit',
-		];
+		const expectedToBeChecked = [ 'card', 'giropay', 'sepa_debit' ];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
 			expect(
@@ -178,10 +171,10 @@ describe( 'AddPaymentMethodsTask', () => {
 		} );
 
 		const expectedNotToBeChecked = [
-			'Sofort',
-			'Bancontact',
-			'iDEAL',
-			'Przelewy24 (P24)',
+			'sofort',
+			'bancontact',
+			'ideal',
+			'p24',
 			'Enable Apple Pay & Google Pay',
 		];
 
@@ -191,7 +184,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			).not.toBeChecked();
 		} );
 
-		const expectedToBeDisabled = [ 'Przelewy24 (P24)', 'Bancontact' ];
+		const expectedToBeDisabled = [ 'p24', 'bancontact' ];
 
 		expectedToBeDisabled.forEach( function ( checkboxName ) {
 			expect(
@@ -206,13 +199,14 @@ describe( 'AddPaymentMethodsTask', () => {
 			'giropay',
 		] );
 
-		render(
+		const { container } = render(
 			<WizardTaskContext.Provider value={ {} }>
 				<AddPaymentMethodsTask />
 			</WizardTaskContext.Provider>
 		);
+		expect( container ).toMatchSnapshot();
 
-		const expectedInDocument = [ 'Credit card / debit card', 'giropay' ];
+		const expectedInDocument = [ 'card', 'giropay' ];
 
 		expectedInDocument.forEach( function ( checkboxName ) {
 			expect(
@@ -221,11 +215,11 @@ describe( 'AddPaymentMethodsTask', () => {
 		} );
 
 		const expectedNotInDocument = [
-			'Bancontact',
-			'iDEAL',
-			'Przelewy24 (P24)',
-			'SEPA Direct Debit',
-			'Sofort',
+			'bancontact',
+			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
 		];
 
 		expectedNotInDocument.forEach( function ( checkboxName ) {
@@ -235,7 +229,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		} );
 	} );
 
-	it( 'should save the checkboxes state on "continue" click', async () => {
+	it( 'should save the checkboxes state on checkbox click', async () => {
 		const updatePaymentRequestEnabledMock = jest.fn();
 		usePaymentRequestEnabledSettings.mockReturnValue( [
 			false,
@@ -256,21 +250,24 @@ describe( 'AddPaymentMethodsTask', () => {
 		);
 
 		const checkboxesToClick = [
-			'Credit card / debit card', // Mark the CC payment method as un-checked.
-			'Bancontact', // Mark as checked.
+			'card', // Mark the CC payment method as un-checked.
+			'bancontact', // Mark as checked.
 			'giropay', // Mark as checked.
-			'iDEAL', // Mark as checked.
-			'SEPA Direct Debit',
-			'Przelewy24 (P24)', // Mark as checked.
+			'ideal', // Mark as checked.
+			'sepa_debit',
+			'p24', // Mark as checked.
 			'Enable Apple Pay & Google Pay', // Enable 1-click checkouts.
 		];
 
+		jest.useFakeTimers();
+
 		checkboxesToClick.forEach( function ( checkboxName ) {
-			userEvent.click(
-				screen.getByRole( 'checkbox', {
-					name: checkboxName,
-				} )
-			);
+			act( () => {
+				userEvent.click(
+					screen.getByRole( 'checkbox', { name: checkboxName } )
+				);
+				jest.runAllTimers();
+			} );
 		} );
 
 		expect( setCompletedMock ).not.toHaveBeenCalled();
@@ -293,5 +290,6 @@ describe( 'AddPaymentMethodsTask', () => {
 			'p24',
 		] );
 		expect( updatePaymentRequestEnabledMock ).toHaveBeenCalledWith( true );
+		jest.useRealTimers();
 	} );
 } );

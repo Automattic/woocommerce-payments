@@ -30,16 +30,15 @@ const PaymentMethod = ( {
 	onCheckClick,
 	onUncheckClick,
 	className,
-	skipDelay = false,
 } ) => {
 	const disabled = upeCapabilityStatuses.INACTIVE === status;
 	const { accountFees } = useContext( WCPaySettingsContext );
 
 	const handleChange = ( newStatus ) => {
 		if ( newStatus ) {
-			return onCheckClick();
+			return onCheckClick( id );
 		}
-		return onUncheckClick();
+		return onUncheckClick( id );
 	};
 
 	return (
@@ -52,13 +51,14 @@ const PaymentMethod = ( {
 		>
 			<div className="payment-method__checkbox">
 				<LoadableCheckboxControl
-					checked={ checked }
-					name={ label }
-					onChange={ handleChange }
+					id={ id }
 					label={ label }
+					checked={ checked }
 					disabled={ disabled }
-					delayMsOnCheck={ skipDelay ? 0 : 1500 }
+					onChange={ handleChange }
+					delayMsOnCheck={ 1500 }
 					delayMsOnUncheck={ 0 }
+					hideLabel
 				/>
 			</div>
 			<div className="payment-method__icon">

@@ -234,6 +234,9 @@ const AddPaymentMethodsTask = () => {
 									availablePaymentMethods.includes( key ) && (
 										<PaymentMethodCheckbox
 											key={ key }
+											label={
+												paymentMethodsMap[ key ].label
+											}
 											checked={
 												paymentMethodsState[ key ]
 											}

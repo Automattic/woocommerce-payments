@@ -48,7 +48,6 @@ const PaymentMethodCheckbox = ( {
 	checked = false,
 	fees,
 	status,
-	skipDelay = false,
 } ) => {
 	const { accountFees } = useContext( WCPaySettingsContext );
 
@@ -75,12 +74,14 @@ const PaymentMethodCheckbox = ( {
 	return (
 		<li className="payment-method-checkbox">
 			<LoadableCheckboxControl
-				checked={ checked }
-				onChange={ handleChange }
-				name={ PaymentMethodsMap[ name ].label }
+				id={ name }
 				label={ label }
+				checked={ checked }
 				disabled={ disabled }
-				delayMsOnCheck={ skipDelay ? 0 : 1500 }
+				onChange={ ( state ) => {
+					handleChange( state );
+				} }
+				delayMsOnCheck={ 1500 }
 				delayMsOnUncheck={ 0 }
 			/>
 			<div className={ 'payment-method-checkbox__pills' }>

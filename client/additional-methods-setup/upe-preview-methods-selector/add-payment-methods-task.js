@@ -252,9 +252,10 @@ const AddPaymentMethodsTask = () => {
 												<PaymentMethodCheckbox
 													key={ key }
 													checked={
-														paymentMethodsState[
+														upeCapabilityStatuses.INACTIVE !==
+														getStatusAndRequirements(
 															key
-														]
+														).status
 													}
 													status={
 														getStatusAndRequirements(

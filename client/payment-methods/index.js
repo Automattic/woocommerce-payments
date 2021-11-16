@@ -241,25 +241,25 @@ const PaymentMethods = () => {
 				) }
 
 				<CardBody size={ null }>
-					<PaymentMethodsList className="payment-methods__enabled-methods">
+					<PaymentMethodsList className="payment-methods__available-methods">
 						{ availableMethods.map(
 							( { id, label, description, Icon } ) => (
 								<PaymentMethod
+									id={ id }
 									key={ id }
+									label={ label }
+									description={ description }
+									checked={ enabledMethodIds.includes( id ) }
 									Icon={ Icon }
 									status={
 										getStatusAndRequirements( id ).status
 									}
-									checked={ enabledMethodIds.includes( id ) }
 									onUncheckClick={ () => {
 										handleUncheckClick( id );
 									} }
 									onCheckClick={ () => {
 										handleCheckClick( id );
 									} }
-									id={ id }
-									label={ label }
-									description={ description }
 								/>
 							)
 						) }

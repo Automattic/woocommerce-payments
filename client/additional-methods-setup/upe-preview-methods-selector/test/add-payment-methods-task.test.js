@@ -165,12 +165,12 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		// The payment methods should all be checked.
 		const expectedToBeChecked = [
-			'Bancontact',
+			'bancontact',
 			'giropay',
-			'iDEAL',
-			'Przelewy24 (P24)',
-			'SEPA Direct Debit',
-			'Sofort',
+			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
 		];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
@@ -231,12 +231,12 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		// The payment methods should all be checked.
 		const expectedToBeChecked = [
-			'Bancontact',
+			'bancontact',
 			'giropay',
-			'iDEAL',
-			'Przelewy24 (P24)',
-			'SEPA Direct Debit',
-			'Sofort',
+			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
 		];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
@@ -294,12 +294,12 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		// The payment methods should all be checked.
 		const expectedToBeChecked = [
-			'Bancontact',
+			'bancontact',
 			'giropay',
-			'iDEAL',
-			'Przelewy24 (P24)',
-			'SEPA Direct Debit',
-			'Sofort',
+			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
 		];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
@@ -310,11 +310,11 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		// Uncheck methods.
 		const methodsToUncheck = [
-			'Bancontact',
+			'bancontact',
 			'giropay',
-			'iDEAL',
-			'Przelewy24 (P24)',
-			'Sofort',
+			'ideal',
+			'p24',
+			'sofort',
 		];
 		methodsToUncheck.forEach( function ( checkboxName ) {
 			userEvent.click(
@@ -394,9 +394,9 @@ describe( 'AddPaymentMethodsTask', () => {
 		// The payment methods should all be checked.
 		const expectedToBeChecked = [
 			'giropay',
-			'iDEAL',
-			'SEPA Direct Debit',
-			'Sofort',
+			'ideal',
+			'sepa_debit',
+			'sofort',
 		];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
@@ -405,7 +405,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			).toBeChecked();
 		} );
 
-		const expectedToBeUnchecked = [ 'Bancontact', 'Przelewy24 (P24)' ];
+		const expectedToBeUnchecked = [ 'bancontact', 'p24' ];
 
 		expectedToBeUnchecked.forEach( function ( checkboxName ) {
 			expect(

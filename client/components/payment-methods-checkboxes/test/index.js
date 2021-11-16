@@ -12,6 +12,7 @@ import userEvent from '@testing-library/user-event';
 import PaymentMethodsCheckboxes from '..';
 import PaymentMethodsCheckbox from '../payment-method-checkbox';
 import { upeCapabilityStatuses } from '../../../additional-methods-setup/constants';
+import { act } from 'react-dom/test-utils';
 
 describe( 'PaymentMethodsCheckboxes', () => {
 	it( 'triggers the onChange when clicking the checkbox', () => {
@@ -55,12 +56,16 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		expect( sepa.getByRole( 'checkbox' ) ).not.toBeChecked();
 		expect( sofort.getByRole( 'checkbox' ) ).not.toBeChecked();
 
-		userEvent.click( bancontact.getByRole( 'checkbox' ) );
-		userEvent.click( giropay.getByRole( 'checkbox' ) );
-		userEvent.click( ideal.getByRole( 'checkbox' ) );
-		userEvent.click( p24.getByRole( 'checkbox' ) );
-		userEvent.click( sepa.getByRole( 'checkbox' ) );
-		userEvent.click( sofort.getByRole( 'checkbox' ) );
+		jest.useFakeTimers();
+		act( () => {
+			userEvent.click( bancontact.getByRole( 'checkbox' ) );
+			userEvent.click( giropay.getByRole( 'checkbox' ) );
+			userEvent.click( ideal.getByRole( 'checkbox' ) );
+			userEvent.click( p24.getByRole( 'checkbox' ) );
+			userEvent.click( sepa.getByRole( 'checkbox' ) );
+			userEvent.click( sofort.getByRole( 'checkbox' ) );
+			jest.runAllTimers();
+		} );
 
 		expect( handleChange ).toHaveBeenCalledTimes( upeMethods.length );
 
@@ -74,6 +79,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		expect( handleChange ).toHaveBeenNthCalledWith( 4, 'p24', true );
 		expect( handleChange ).toHaveBeenNthCalledWith( 5, 'sepa_debit', true );
 		expect( handleChange ).toHaveBeenNthCalledWith( 6, 'sofort', true );
+		jest.useRealTimers();
 	} );
 
 	it( 'can click the checkbox on payment methods with pending statuses', () => {
@@ -91,12 +97,17 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		);
 
 		const sofortCheckbox = screen.getByRole( 'checkbox', {
-			name: 'Sofort',
+			name: 'sofort',
 		} );
 		expect( sofortCheckbox ).not.toBeChecked();
-		userEvent.click( sofortCheckbox );
+		jest.useFakeTimers();
+		act( () => {
+			userEvent.click( sofortCheckbox );
+			jest.runAllTimers();
+		} );
 		expect( handleChange ).toHaveBeenCalledTimes( 1 );
 		expect( handleChange ).toHaveBeenNthCalledWith( 1, 'sofort', true );
+		jest.useRealTimers();
 	} );
 
 	it( 'shows the disabled notice pill on payment methods with disabled statuses', () => {
@@ -132,7 +143,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 			</PaymentMethodsCheckboxes>
 		);
 		const sofortCheckbox = screen.getByRole( 'checkbox', {
-			name: 'Sofort',
+			name: 'sofort',
 		} );
 		expect( sofortCheckbox ).not.toBeChecked();
 		userEvent.click( sofortCheckbox );
