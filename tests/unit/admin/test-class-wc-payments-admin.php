@@ -50,6 +50,7 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 
 	public function tearDown() {
 		unset( $_GET );
+		set_current_screen( 'front' );
 		parent::tearDown();
 	}
 

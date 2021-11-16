@@ -89,6 +89,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
 
 		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
+
+		if ( ! is_admin() ) {
+			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
+		}
 	}
 
 	/**
@@ -161,11 +165,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Updates payment intent to be able to save payment method.
 	 *
-	 * @param {string}  $payment_intent_id         The id of the payment intent to update.
-	 * @param {int}     $order_id                  The id of the order if intent created from Order.
-	 * @param {boolean} $save_payment_method       True if saving the payment method.
-	 * @param {string}  $selected_upe_payment_type The name of the selected UPE payment type or empty string.
-	 * @param {?string} $payment_country           The payment two-letter iso country code or null.
+	 * @param string  $payment_intent_id         The id of the payment intent to update.
+	 * @param int     $order_id                  The id of the order if intent created from Order.
+	 * @param boolean $save_payment_method       True if saving the payment method.
+	 * @param string  $selected_upe_payment_type The name of the selected UPE payment type or empty string.
+	 * @param ?string $payment_country           The payment two-letter iso country code or null.
 	 *
 	 * @return array|null An array with result of the update, or nothing
 	 */
@@ -233,7 +237,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Creates payment intent using current cart or order and store details.
 	 *
-	 * @param {int} $order_id The id of the order if intent created from Order.
+	 * @param int $order_id The id of the order if intent created from Order.
 	 *
 	 * @return array
 	 */
@@ -366,8 +370,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param int $order_id Order ID to process the payment for.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
-	 *
-	 * @throws Exception Whenever the payment processing fails.
+	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
 		$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -387,6 +390,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			if ( $payment_needed ) {
 				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+					// Throwing an exception instead of adding an error notice
+					// makes the error notice show up both in the regular and block checkout.
 					throw new Exception( __( 'Your payment was not processed.', 'woocommerce-payments' ) );
 				}
 
@@ -873,6 +878,30 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function clear_upe_appearance_transient() {
 		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
+	}
+
+	/**
+	 * Sets the title on checkout correctly before the title is displayed.
+	 *
+	 * @param string $title The title of the gateway being filtered.
+	 * @param string $id    The id of the gateway being filtered.
+	 *
+	 * @return string Filtered gateway title.
+	 */
+	public function maybe_filter_gateway_title( $title, $id ) {
+		if ( self::GATEWAY_ID === $id && $this->title === $title ) {
+			$title                   = $this->checkout_title;
+			$enabled_payment_methods = $this->get_upe_enabled_at_checkout_payment_method_ids();
+
+			if ( 1 === count( $enabled_payment_methods ) ) {
+				$title = $this->payment_methods[ $enabled_payment_methods[0] ]->get_title();
+			}
+
+			if ( 0 === count( $enabled_payment_methods ) ) {
+				$title = $this->payment_methods['card']->get_title();
+			}
+		}
+		return $title;
 	}
 
 	/**
