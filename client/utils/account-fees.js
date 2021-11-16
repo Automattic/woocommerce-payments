@@ -75,6 +75,8 @@ export const getCurrentFee = ( accountFees ) => {
 };
 
 export const formatMethodFeesTooltip = ( accountFees ) => {
+	if ( ! accountFees ) return;
+
 	const total = {
 		percentage_rate:
 			accountFees.base.percentage_rate +
@@ -161,9 +163,14 @@ export const formatAccountFeesDescription = (
 	accountFees,
 	customFormats = {}
 ) => {
+	const defaultFee = {
+		fixed_rate: 0,
+		percentage_rate: 0,
+		currency: 'USD',
+	};
 	const baseFee = accountFees.base;
-	const additionalFee = accountFees.additional;
-	const fxFee = accountFees.fx;
+	const additionalFee = accountFees.additional ?? defaultFee;
+	const fxFee = accountFees.fx ?? defaultFee;
 	const currentFee = getCurrentFee( accountFees );
 
 	// Default formats will be used if no matching field was passed in the `formats` parameter.
