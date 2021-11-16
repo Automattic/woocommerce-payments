@@ -30,6 +30,7 @@
 * Fix - Incorrect error message when card ZIP validation fails.
 * Update - Display hardware costs for the period in the transaction list with link to the details page
 * Add - `Requires PHP` and `Requires at least` to the main plugin file.
+* Fix - Prevent quick-pay buttons from showing up in Composite Product pages. 
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
