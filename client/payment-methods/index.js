@@ -38,6 +38,7 @@ import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
+import PaymentMethodsEmptyState from '../settings/payment-methods-empty-state';
 import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
 import CardBody from '../settings/card-body';
@@ -166,83 +167,95 @@ const PaymentMethods = () => {
 					'is-loading': 'pending' === status,
 				} ) }
 			>
-				{ isUpeEnabled && (
-					<CardHeader className="payment-methods__header">
-						<h4 className="payment-methods__heading">
-							<span>
-								{ __(
-									'Payment methods',
-									'woocommerce-payments'
-								) }
-							</span>{ ' ' }
-							<Pill>
-								{ __( 'Early access', 'woocommerce-payments' ) }
-							</Pill>
-						</h4>
-						<PaymentMethodsDropdownMenu
-							setOpenModal={ setOpenModalIdentifier }
-						/>
-					</CardHeader>
-				) }
-
-				<CardBody size={ null }>
-					<PaymentMethodsList className="payment-methods__enabled-methods">
-						{ enabledMethods.map(
-							( { id, label, description, Icon } ) => (
-								<PaymentMethod
-									key={ id }
-									Icon={ Icon }
-									status={
-										paymentMethodStatuses[
-											methodsConfiguration[ id ]
-												.stripe_key
-										].status ??
-										upeCapabilityStatuses.UNREQUESTED
-									}
-									onDeleteClick={
-										1 < enabledMethods.length
-											? handleDeleteClick
-											: undefined
-									}
-									id={ id }
-									label={ label }
-									description={ description }
-								/>
-							)
-						) }
-					</PaymentMethodsList>
-				</CardBody>
-				{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
-					<UpeSetupBanner />
-				) }
-
-				{ isUpeEnabled && 1 < availablePaymentMethodIds.length ? (
+				{ 0 < enabledMethods.length ? (
 					<>
-						<CardDivider />
-						<CardBody className="payment-methods__available-methods-container">
-							<PaymentMethodsSelector />
-							<ul className="payment-methods__available-methods">
-								{ disabledMethods.map(
-									( { id, label, Icon } ) => (
-										<li
+						{ isUpeEnabled && (
+							<CardHeader className="payment-methods__header">
+								<h4 className="payment-methods__heading">
+									<span>
+										{ __(
+											'Payment methods',
+											'woocommerce-payments'
+										) }
+									</span>{ ' ' }
+									<Pill>
+										{ __(
+											'Early access',
+											'woocommerce-payments'
+										) }
+									</Pill>
+								</h4>
+								<PaymentMethodsDropdownMenu
+									setOpenModal={ setOpenModalIdentifier }
+								/>
+							</CardHeader>
+						) }
+
+						<CardBody size={ null }>
+							<PaymentMethodsList className="payment-methods__enabled-methods">
+								{ enabledMethods.map(
+									( { id, label, description, Icon } ) => (
+										<PaymentMethod
 											key={ id }
-											className={ classNames(
-												'payment-methods__available-method',
-												{
-													'has-icon-border':
-														'card' !== id,
-												}
-											) }
-											aria-label={ label }
-										>
-											<Icon height="24" width="38" />
-										</li>
+											Icon={ Icon }
+											status={
+												paymentMethodStatuses[
+													methodsConfiguration[ id ]
+														.stripe_key
+												].status ??
+												upeCapabilityStatuses.UNREQUESTED
+											}
+											onDeleteClick={ handleDeleteClick }
+											id={ id }
+											label={ label }
+											description={ description }
+										/>
 									)
 								) }
-							</ul>
+							</PaymentMethodsList>
 						</CardBody>
+						{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
+							<UpeSetupBanner />
+						) }
+
+						{ isUpeEnabled &&
+						1 < availablePaymentMethodIds.length ? (
+							<>
+								<CardDivider />
+								<CardBody className="payment-methods__available-methods-container">
+									<PaymentMethodsSelector />
+									<ul className="payment-methods__available-methods">
+										{ disabledMethods.map(
+											( { id, label, Icon } ) => (
+												<li
+													key={ id }
+													className={ classNames(
+														'payment-methods__available-method',
+														{
+															'has-icon-border':
+																'card' !== id,
+														}
+													) }
+													aria-label={ label }
+												>
+													<Icon
+														height="24"
+														width="38"
+													/>
+												</li>
+											)
+										) }
+									</ul>
+								</CardBody>
+							</>
+						) : null }
 					</>
-				) : null }
+				) : (
+					<CardBody className="payment-methods__no-payment-methods">
+						<PaymentMethodsEmptyState />
+						<PaymentMethodsSelector />
+					</CardBody>
+				) }
 			</Card>
 		</>
 	);

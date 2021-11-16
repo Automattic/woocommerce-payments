@@ -1,0 +1,26 @@
+.wcpay-card-body.payment-methods__no-payment-methods {
+	&.is-size-medium {
+		// increasing the specificity of the styles to override the Gutenberg ones
+		&#{&} {
+			padding: 48px 24px 40px;
+		}
+	}
+}
+
+.payment-methods {
+	&__no-payment-methods {
+		text-align: center;
+
+		p {
+			width: 60%;
+			margin: 0 auto 2em auto;
+		}
+	}
+
+	&__no-payment-methods-illustration {
+		background: url( '../../../assets/images/lpm_empty_state.svg' )
+			no-repeat center;
+		height: 120px;
+		margin-bottom: 2em;
+	}
+}
