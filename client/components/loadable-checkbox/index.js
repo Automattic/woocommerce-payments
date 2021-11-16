@@ -11,11 +11,11 @@ const LoadableCheckboxControl = ( {
 	id,
 	key,
 	label,
+	name,
 	onChange,
 	disabled,
 	checked,
-	heading,
-	delayMsOnCheck = 1500,
+	delayMsOnCheck = 0,
 	delayMsOnUncheck = 0,
 } ) => {
 	const [ isLoading, setLoading ] = useState( false );
@@ -68,10 +68,10 @@ const LoadableCheckboxControl = ( {
 				id={ id }
 				key={ key }
 				label={ label }
+				aria-label={ name }
 				onChange={ handleOnChange }
 				disabled={ disabled }
 				checked={ checked }
-				heading={ heading }
 			/>
 		</div>
 	);
