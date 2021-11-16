@@ -124,6 +124,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Incorrect error message when card ZIP validation fails.
 * Update - Display hardware costs for the period in the transaction list with link to the details page
 * Add - `Requires PHP` and `Requires at least` to the main plugin file.
+* Add - Allow UI customizations on checkout payment fields.
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
