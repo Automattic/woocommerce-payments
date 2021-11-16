@@ -14,7 +14,7 @@ use WCPay\MultiCurrency\Utils;
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Subscriptions Plugin and WCPay Subscriptions.
  */
-class WooCommerceSubscriptions {
+class WooCommerceSubscriptions extends BaseCompatibility {
 
 	/**
 	 * Subscription switch cart item.
@@ -24,37 +24,12 @@ class WooCommerceSubscriptions {
 	public $switch_cart_item = '';
 
 	/**
-	 * MultiCurrency class.
-	 *
-	 * @var MultiCurrency
-	 */
-	private $multi_currency;
-
-	/**
-	 * Utils class.
-	 *
-	 * @var Utils
-	 */
-	private $utils;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils Utils class.
-	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		$this->multi_currency = $multi_currency;
-		$this->utils          = $utils;
-		$this->initialize_hooks();
-	}
-
-	/**
-	 * Adds compatibility filters if the plugin exists and loaded
+	 * Init the class.
 	 *
 	 * @return  void
 	 */
-	protected function initialize_hooks() {
+	protected function init() {
+		// Add needed actions and filters if WC Subscriptions or WCPay Subscriptions are active.
 		if ( class_exists( 'WC_Subscriptions' ) || WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 				add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
