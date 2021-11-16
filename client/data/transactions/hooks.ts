@@ -36,6 +36,11 @@ export interface Transaction {
 	date: string;
 	type: 'charge' | 'refund';
 	source: string;
+	metadata?: {
+		charge_type: 'card_reader_fee';
+		interval_from: string;
+		interval_to: string;
+	};
 }
 
 interface Transactions {
