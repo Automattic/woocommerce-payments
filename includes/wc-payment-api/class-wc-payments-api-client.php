@@ -52,6 +52,7 @@ class WC_Payments_API_Client {
 	const INVOICES_API           = 'invoices';
 	const SUBSCRIPTIONS_API      = 'subscriptions';
 	const SUBSCRIPTION_ITEMS_API = 'subscriptions/items';
+	const READERS_CHARGE_SUMMARY = 'reader-charges/summary';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1845,5 +1846,17 @@ class WC_Payments_API_Client {
 		$arr[2] = ( $arr[2] & 0x0fff ) | 0x4000;
 		$arr[3] = ( $arr[3] & 0x3fff ) | 0x8000;
 		return vsprintf( '%08x-%04x-%04x-%04x-%04x%08x', $arr );
+	}
+
+
+	/**
+	 * Fetch readers charge summary.
+	 *
+	 * @param string $charge_date Charge date for readers.
+	 *
+	 * @return array reader objects.
+	 */
+	public function get_readers_charge_summary( string $charge_date ) : array {
+		return $this->request( [ 'charge_date' => $charge_date ], self::READERS_CHARGE_SUMMARY, self::GET );
 	}
 }
