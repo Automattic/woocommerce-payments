@@ -9,19 +9,18 @@ import './style.scss';
 
 const LoadableCheckboxControl = ( {
 	id,
-	key,
 	label,
-	name,
-	onChange,
-	disabled,
 	checked,
+	disabled,
+	onChange,
+	hideLabel = false,
 	delayMsOnCheck = 0,
 	delayMsOnUncheck = 0,
 } ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const handleOnChange = ( status ) => {
 		const timeout = status ? delayMsOnCheck : delayMsOnUncheck;
-		if ( timeout ) {
+		if ( 0 < timeout ) {
 			setLoading( true );
 			setTimeout( () => {
 				onChange( status );
@@ -66,12 +65,13 @@ const LoadableCheckboxControl = ( {
 			) }
 			<CheckboxControl
 				id={ id }
-				key={ key }
-				label={ label }
-				aria-label={ name }
-				onChange={ handleOnChange }
+				label={ hideLabel ? '' : label }
+				aria-label={ id }
+				defaultChecked={ checked }
 				disabled={ disabled }
-				checked={ checked }
+				onChange={ ( status ) => {
+					handleOnChange( status );
+				} }
 			/>
 		</div>
 	);

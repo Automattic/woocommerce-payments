@@ -7,9 +7,8 @@
 		position: absolute;
 		z-index: 1;
 		border-radius: 2px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		margin-top: 1px;
+		cursor: pointer;
 		svg {
 			background: none;
 			display: block;
