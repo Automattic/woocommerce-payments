@@ -780,6 +780,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			<?php endif; ?>
 
 			<?php
+
 			if ( $display_tokenization ) {
 				$this->tokenization_script();
 				$this->saved_payment_methods();
@@ -805,6 +806,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			</fieldset>
 			<?php
+
+			do_action( 'wcpay_payment_fields_upe', $this->id );
+
 		} catch ( Exception $e ) {
 			// Output the error message.
 			Logger::log( 'Error: ' . $e->getMessage() );
