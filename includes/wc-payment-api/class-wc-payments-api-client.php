@@ -606,11 +606,24 @@ class WC_Payments_API_Client {
 
 		$transactions = $this->request( $query, self::TRANSACTIONS_API, self::GET );
 
+		$charge_ids = array_map(
+			function ( $transaction ) {
+				return $transaction['charge_id'];
+			},
+			$transactions['data']
+		);
+
+		$orders_with_charge_ids = $this->wcpay_db->orders_with_charge_id_from_charge_ids( $charge_ids );
+
 		// Add order information to each transaction available.
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
 		if ( isset( $transactions['data'] ) ) {
 			foreach ( $transactions['data'] as &$transaction ) {
-				$transaction = $this->add_order_info_to_object( $transaction['charge_id'], $transaction );
+				foreach ( $orders_with_charge_ids as $order_with_charge_id ) {
+					if ( $order_with_charge_id['charge_id'] === $transaction['charge_id'] ) {
+						$transaction['order'] = $this->build_order_info( $order_with_charge_id['order'] );
+					}
+				}
 			}
 		}
 
@@ -1709,34 +1722,46 @@ class WC_Payments_API_Client {
 		// If the order couldn't be retrieved, return an empty order.
 		$object['order'] = null;
 		if ( $order ) {
-			$object['order'] = [
-				'number'       => $order->get_order_number(),
-				'url'          => $order->get_edit_order_url(),
-				'customer_url' => add_query_arg(
-					[
-						'page'      => 'wc-admin',
-						'path'      => '/customers',
-						'filter'    => 'single_customer',
-						'customers' => $order->get_customer_id(),
-					],
-					'admin.php'
-				),
-			];
-
-			if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
-				$object['order']['subscriptions'] = [];
-
-				$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => [ 'parent', 'renewal' ] ] );
-				foreach ( $subscriptions as $subscription ) {
-					$object['order']['subscriptions'][] = [
-						'number' => $subscription->get_order_number(),
-						'url'    => $subscription->get_edit_order_url(),
-					];
-				}
-			}
+			$object['order'] = $this->build_order_info( $order );
 		}
 
 		return $object;
+	}
+
+
+	/**
+	 * Creates the array representing order for frontend.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return array
+	 */
+	private function build_order_info( $order ): array {
+		$order_info = [
+			'number'       => $order->get_order_number(),
+			'url'          => $order->get_edit_order_url(),
+			'customer_url' => add_query_arg(
+				[
+					'page'      => 'wc-admin',
+					'path'      => '/customers',
+					'filter'    => 'single_customer',
+					'customers' => $order->get_customer_id(),
+				],
+				'admin.php'
+			),
+		];
+
+		if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
+			$order_info['subscriptions'] = [];
+
+			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => [ 'parent', 'renewal' ] ] );
+			foreach ( $subscriptions as $subscription ) {
+				$order_info['subscriptions'][] = [
+					'number' => $subscription->get_order_number(),
+					'url'    => $subscription->get_edit_order_url(),
+				];
+			}
+		}
+		return $order_info;
 	}
 
 	/**
