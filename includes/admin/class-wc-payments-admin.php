@@ -594,9 +594,9 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		// If plugin activation date is less than 7 days, do not show the badge.
-		$past_7_days = time() - get_option( 'wcpay_activation_timestamp', 0 ) >= WEEK_IN_SECONDS;
-		if ( false === $past_7_days ) {
+		// If plugin activation date is less than 3 days, do not show the badge.
+		$past_3_days = time() - get_option( 'wcpay_activation_timestamp', 0 ) >= ( 3 * DAY_IN_SECONDS );
+		if ( false === $past_3_days ) {
 			return;
 		}
 
