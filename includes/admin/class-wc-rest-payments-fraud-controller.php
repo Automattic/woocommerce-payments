@@ -21,32 +21,7 @@ class WC_REST_Payments_Fraud_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Configure REST API routes.
 	 */
-	public function register_routes() {
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/forter_token',
-			[
-				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'send_forter_token' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-				'args'                => [
-					'token' => [
-						'required' => true,
-					],
-				],
-			]
-		);
-	}
-
-	/**
-	 * Forward token to Fraud Service.
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 */
-	public function send_forter_token( $request ) {
-		$token = $request['token'];
-		WC_Payments::get_fraud_service()->send_forter_token( $token );
-	}
+	public function register_routes() {}
 
 	/**
 	 * Verify access.

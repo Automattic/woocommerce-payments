@@ -1326,28 +1326,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Sends the contents of the "forterToken" cookie to the server.
-	 *
-	 * @param string $token Contents of the "forterToken" cookie, used to identify the current browsing session.
-	 *
-	 * @return array An array, containing a `success` flag.
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function send_forter_token( $token ) {
-		return $this->request(
-			[
-				'token'      => $token,
-				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-				'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-				'ip'         => WC_Geolocation::get_ip_address(),
-			],
-			self::TRACKING_API . '/forter-token',
-			self::POST
-		);
-	}
-
-	/**
 	 * Registers a new domain with Apple Pay.
 	 *
 	 * @param string $domain_name Domain name which to register for Apple Pay.
