@@ -238,7 +238,12 @@ const AddPaymentMethodsTask = () => {
 												paymentMethodsMap[ key ].label
 											}
 											checked={
-												paymentMethodsState[ key ]
+												paymentMethodsState[ key ] &&
+												upeCapabilityStatuses.INACTIVE !==
+													paymentMethodStatuses[
+														paymentMethodsMap[ key ]
+															.stripe_key
+													].status
 											}
 											status={
 												paymentMethodStatuses[
