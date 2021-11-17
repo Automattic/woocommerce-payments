@@ -50,8 +50,8 @@ describe( 'AddPaymentMethodsTask', () => {
 			'card',
 			'bancontact',
 			'giropay',
-			'p24',
 			'ideal',
+			'p24',
 			'sepa_debit',
 			'sofort',
 		] );
@@ -108,6 +108,11 @@ describe( 'AddPaymentMethodsTask', () => {
 				USD: { id: 'usd', code: 'USD' },
 			},
 		} );
+		wcSettings = {
+			currentUserData: {
+				email: 'admin@example.com',
+			},
+		};
 	} );
 
 	it( 'should not call the useSettings hook if the task is not active', () => {
@@ -165,29 +170,24 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		// The payment methods should all be checked.
 		const expectedToBeChecked = [
-			'bancontact',
+			'Bancontact',
 			'giropay',
-			'ideal',
-			'p24',
-			'sepa_debit',
-			'sofort',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'SEPA Direct Debit',
+			'Sofort',
 		];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
+			expect( screen.getByLabelText( checkboxName ) ).toBeChecked();
 		} );
 
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
 		).not.toBeInTheDocument();
 
-		// Unchecking the checkboxes and clicking "add payment methods" should display a notice.
 		expectedToBeChecked.forEach( function ( checkboxName ) {
-			userEvent.click(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			);
+			userEvent.click( screen.getByLabelText( checkboxName ) );
 		} );
 
 		// No add currency text when no elements are checked.
@@ -231,18 +231,16 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		// The payment methods should all be checked.
 		const expectedToBeChecked = [
-			'bancontact',
+			'Bancontact',
 			'giropay',
-			'ideal',
-			'p24',
-			'sepa_debit',
-			'sofort',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'SEPA Direct Debit',
+			'Sofort',
 		];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
+			expect( screen.getByLabelText( checkboxName ) ).toBeChecked();
 		} );
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
@@ -294,32 +292,28 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		// The payment methods should all be checked.
 		const expectedToBeChecked = [
-			'bancontact',
+			'Bancontact',
 			'giropay',
-			'ideal',
-			'p24',
-			'sepa_debit',
-			'sofort',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'SEPA Direct Debit',
+			'Sofort',
 		];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
+			expect( screen.getByLabelText( checkboxName ) ).toBeChecked();
 		} );
 
 		// Uncheck methods.
 		const methodsToUncheck = [
-			'bancontact',
+			'Bancontact',
 			'giropay',
-			'ideal',
-			'p24',
-			'sofort',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'Sofort',
 		];
 		methodsToUncheck.forEach( function ( checkboxName ) {
-			userEvent.click(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			);
+			userEvent.click( screen.getByLabelText( checkboxName ) );
 		} );
 
 		userEvent.click( screen.getByText( 'Add payment methods' ) );
@@ -370,6 +364,7 @@ describe( 'AddPaymentMethodsTask', () => {
 				requirements: [],
 			},
 		} );
+
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[
 				'card',
@@ -382,6 +377,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			],
 			() => null,
 		] );
+
 		render(
 			<SettingsContextProvider>
 				<WizardTaskContext.Provider
@@ -391,33 +387,26 @@ describe( 'AddPaymentMethodsTask', () => {
 				</WizardTaskContext.Provider>
 			</SettingsContextProvider>
 		);
+
 		// The payment methods should all be checked.
 		const expectedToBeChecked = [
 			'giropay',
-			'ideal',
-			'sepa_debit',
-			'sofort',
+			'iDEAL',
+			'SEPA Direct Debit',
+			'Sofort',
 		];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
+			expect( screen.getByLabelText( checkboxName ) ).toBeChecked();
 		} );
 
-		const expectedToBeUnchecked = [ 'bancontact', 'p24' ];
+		const expectedToBeUnchecked = [ 'Bancontact', 'Przelewy24 (P24)' ];
 
 		expectedToBeUnchecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).not.toBeChecked();
+			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
 			// Click the inactive checkbox, to see if it gets enabled.
-			userEvent.click(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			);
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).not.toBeChecked();
+			userEvent.click( screen.getByLabelText( checkboxName ) );
+			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
 		} );
 	} );
 } );
