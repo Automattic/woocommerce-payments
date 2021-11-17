@@ -249,7 +249,12 @@ const PaymentMethods = () => {
 									key={ id }
 									label={ label }
 									description={ description }
-									checked={ enabledMethodIds.includes( id ) }
+									checked={
+										enabledMethodIds.includes( id ) &&
+										upeCapabilityStatuses.INACTIVE !==
+											getStatusAndRequirements( id )
+												.status
+									}
 									Icon={ Icon }
 									status={
 										getStatusAndRequirements( id ).status
