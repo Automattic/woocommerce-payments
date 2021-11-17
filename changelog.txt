@@ -28,8 +28,10 @@
 * Fix - Fatal error on the customer payment page for subscription renewal orders with deleted products.
 * Fix - Misleading subscription order note on payment method change.
 * Fix - Incorrect error message when card ZIP validation fails.
+* Update - Display hardware costs for the period in the transaction list with link to the details page
 * Add - `Requires PHP` and `Requires at least` to the main plugin file.
 * Fix - Incorrect prices in Payment Request Button for certain currencies.
+* Add - Allow UI customizations on checkout payment fields.
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
@@ -59,6 +61,7 @@
 * Fix - Multi-Currency settings rounding option and preview.
 * Fix - Payment failure on checkout block with UPE when phone number field is hidden
 * Update - Adds a scheduled action which makes updating the account cache more efficient
+* Update - Show red setup badge after 3 days instead of 7
 * Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
 * Add - Early access: allow your store to collect payments with SEPA Direct Debit. Enable the feature in settings!
 * Add - Add compatibility between Multi-Currency and WooCommerce FedEx shipping extension.
