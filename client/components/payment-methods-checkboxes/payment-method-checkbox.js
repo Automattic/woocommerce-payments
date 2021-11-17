@@ -42,13 +42,7 @@ const PaymentMethodDescription = ( { name } ) => {
 	);
 };
 
-const PaymentMethodCheckbox = ( {
-	onChange,
-	name,
-	checked = false,
-	fees,
-	status,
-} ) => {
+const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 	const { accountFees } = useContext( WCPaySettingsContext );
 
 	const handleChange = useCallback(
@@ -85,45 +79,92 @@ const PaymentMethodCheckbox = ( {
 				delayMsOnUncheck={ 0 }
 			/>
 			<div className={ 'payment-method-checkbox__pills' }>
-				{ disabled && (
-					<Tooltip
-						content={ sprintf(
-							__(
-								'To use %s, please contact WooCommerce support.',
-								'woocommerce-payments'
-							),
-							PaymentMethodsMap[ name ].label
-						) }
-					>
-						<Pill className={ 'payment-status-' + status }>
-							{ __(
-								'Contact WooCommerce Support',
+				<div className={ 'payment-method-checkbox__pills-left' }>
+					{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
+						<Tooltip
+							content={ __(
+								'This payment method is pending approval. Once approved, you will be able to use it.',
 								'woocommerce-payments'
 							) }
+						>
+							<Pill
+								className={ 'payment-status-pending-approval' }
+							>
+								{ __(
+									'Pending approval',
+									'woocommerce-payments'
+								) }
+							</Pill>
+						</Tooltip>
+					) }
+					{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
+						<Tooltip
+							content={ sprintf(
+								__(
+									"%s won't be visible to your customers until you provide the required " +
+										'information. Follow the instructions sent by our partner Stripe to %s.',
+									'woocommerce-payments'
+								),
+								label,
+								wcSettings.currentUserData.email ?? null
+							) }
+						>
+							<Pill
+								className={
+									'payment-status-pending-verification'
+								}
+							>
+								{ __(
+									'Pending activation',
+									'woocommerce-payments'
+								) }
+							</Pill>
+						</Tooltip>
+					) }
+					{ disabled && (
+						<Tooltip
+							content={ sprintf(
+								__(
+									'To use %s, please contact WooCommerce support.',
+									'woocommerce-payments'
+								),
+								PaymentMethodsMap[ name ].label
+							) }
+						>
+							<Pill className={ 'payment-status-' + status }>
+								{ __(
+									'Contact WooCommerce Support',
+									'woocommerce-payments'
+								) }
+							</Pill>
+						</Tooltip>
+					) }
+				</div>
+				<div className={ 'payment-method-checkbox__pills-right' }>
+					<Tooltip
+						content={ formatMethodFeesTooltip(
+							accountFees[ name ]
+						) }
+						maxWidth={ '300px' }
+					>
+						<Pill
+							aria-label={ sprintf(
+								__(
+									'Base transaction fees: %s',
+									'woocommerce-payments'
+								),
+								fees
+							) }
+						>
+							<span>
+								{ formatMethodFeesDescription(
+									accountFees[ name ]
+								) }
+							</span>
 						</Pill>
 					</Tooltip>
-				) }
-				<Tooltip
-					content={ formatMethodFeesTooltip( accountFees[ name ] ) }
-					maxWidth={ '300px' }
-				>
-					<Pill
-						aria-label={ sprintf(
-							__(
-								'Base transaction fees: %s',
-								'woocommerce-payments'
-							),
-							fees
-						) }
-					>
-						<span>
-							{ formatMethodFeesDescription(
-								accountFees[ name ]
-							) }
-						</span>
-					</Pill>
-				</Tooltip>
-				<PaymentMethodDescription name={ name } />
+					<PaymentMethodDescription name={ name } />
+				</div>
 			</div>
 		</li>
 	);
