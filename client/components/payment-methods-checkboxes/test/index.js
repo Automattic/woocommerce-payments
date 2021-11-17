@@ -19,12 +19,12 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		const handleChange = jest.fn();
 
 		const upeMethods = [
-			[ 'bancontact', true ],
+			[ 'Bancontact', true ],
 			[ 'giropay', false ],
-			[ 'ideal', false ],
-			[ 'p24', false ],
-			[ 'sepa_debit', false ],
-			[ 'sofort', false ],
+			[ 'iDEAL', false ],
+			[ 'Przelewy24 (P24)', false ],
+			[ 'SEPA Direct Debit', false ],
+			[ 'Sofort', false ],
 		];
 
 		render(
@@ -71,14 +71,22 @@ describe( 'PaymentMethodsCheckboxes', () => {
 
 		expect( handleChange ).toHaveBeenNthCalledWith(
 			1,
-			'bancontact',
+			'Bancontact',
 			false
 		);
 		expect( handleChange ).toHaveBeenNthCalledWith( 2, 'giropay', true );
-		expect( handleChange ).toHaveBeenNthCalledWith( 3, 'ideal', true );
-		expect( handleChange ).toHaveBeenNthCalledWith( 4, 'p24', true );
-		expect( handleChange ).toHaveBeenNthCalledWith( 5, 'sepa_debit', true );
-		expect( handleChange ).toHaveBeenNthCalledWith( 6, 'sofort', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 3, 'iDEAL', true );
+		expect( handleChange ).toHaveBeenNthCalledWith(
+			4,
+			'Przelewy24 (P24)',
+			true
+		);
+		expect( handleChange ).toHaveBeenNthCalledWith(
+			5,
+			'SEPA Direct Debit',
+			true
+		);
+		expect( handleChange ).toHaveBeenNthCalledWith( 6, 'Sofort', true );
 		jest.useRealTimers();
 	} );
 
@@ -97,7 +105,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		);
 
 		const sofortCheckbox = screen.getByRole( 'checkbox', {
-			name: 'sofort',
+			name: 'Sofort',
 		} );
 		expect( sofortCheckbox ).not.toBeChecked();
 		jest.useFakeTimers();
@@ -143,7 +151,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 			</PaymentMethodsCheckboxes>
 		);
 		const sofortCheckbox = screen.getByRole( 'checkbox', {
-			name: 'sofort',
+			name: 'Sofort',
 		} );
 		expect( sofortCheckbox ).not.toBeChecked();
 		userEvent.click( sofortCheckbox );

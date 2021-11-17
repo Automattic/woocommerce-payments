@@ -16,9 +16,7 @@ describe( 'PaymentMethod', () => {
 	test( 'renders label and description', () => {
 		render( <PaymentMethod id="foo" label="Foo" description="Bar" /> );
 
-		expect(
-			screen.queryByRole( 'checkbox', { name: 'foo' } )
-		).toBeInTheDocument();
+		expect( screen.queryByLabelText( 'Foo' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Bar' ) ).toBeInTheDocument();
 	} );
 
@@ -35,7 +33,7 @@ describe( 'PaymentMethod', () => {
 		);
 		jest.useFakeTimers();
 		act( () => {
-			user.click( screen.getByRole( 'checkbox', { name: 'foo' } ) );
+			user.click( screen.getByLabelText( 'Foo' ) );
 			jest.runAllTimers();
 		} );
 
@@ -43,7 +41,7 @@ describe( 'PaymentMethod', () => {
 		expect( handleOnCheckClickMock ).toHaveBeenCalledWith( 'foo' );
 
 		act( () => {
-			user.click( screen.getByRole( 'checkbox', { name: 'foo' } ) );
+			user.click( screen.getByLabelText( 'Foo' ) );
 			jest.runAllTimers();
 		} );
 

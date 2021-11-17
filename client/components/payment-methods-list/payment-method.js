@@ -51,7 +51,6 @@ const PaymentMethod = ( {
 		>
 			<div className="payment-method__checkbox">
 				<LoadableCheckboxControl
-					id={ id }
 					label={ label }
 					checked={ checked }
 					disabled={ disabled }

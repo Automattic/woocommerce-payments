@@ -15,24 +15,18 @@ describe( 'Loadable checkbox', () => {
 		const container = render( <LoadableCheckbox label="Foo" id="foo" /> );
 		expect( container ).toMatchSnapshot();
 		expect( container.queryByText( 'Foo' ) ).toBeInTheDocument();
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).toBeInTheDocument();
+		expect( container.queryByLabelText( 'Foo' ) ).toBeInTheDocument();
 	} );
 
 	test( 'starts as unchecked', () => {
 		const container = render( <LoadableCheckbox label="Foo" id="foo" /> );
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).not.toBeChecked();
+		expect( container.queryByLabelText( 'Foo' ) ).not.toBeChecked();
 	} );
 	test( 'starts as checked', () => {
 		const container = render(
 			<LoadableCheckbox label="Foo" id="foo" checked={ true } />
 		);
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).toBeChecked();
+		expect( container.queryByLabelText( 'Foo' ) ).toBeChecked();
 	} );
 	test( 'clicking an unchecked checkbox changes the checkbox state to checked', () => {
 		const mockOnChangeEvent = jest.fn();
@@ -43,15 +37,13 @@ describe( 'Loadable checkbox', () => {
 				onChange={ mockOnChangeEvent }
 			/>
 		);
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).not.toBeChecked();
-		userEvent.click( container.queryByRole( 'checkbox', { name: 'foo' } ) );
+		expect( container.queryByLabelText( 'Foo' ) ).not.toBeChecked();
+		act( () => {
+			userEvent.click( container.queryByLabelText( 'Foo' ) );
+		} );
 		expect( mockOnChangeEvent ).toHaveBeenCalledTimes( 1 );
 		expect( mockOnChangeEvent ).toHaveBeenCalledWith( true );
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).toBeChecked();
+		expect( container.queryByLabelText( 'Foo' ) ).toBeChecked();
 	} );
 	test( 'clicking an checked checkbox changes the checkbox state to unchecked', () => {
 		const mockOnChangeEvent = jest.fn();
@@ -63,15 +55,13 @@ describe( 'Loadable checkbox', () => {
 				onChange={ mockOnChangeEvent }
 			/>
 		);
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).toBeChecked();
-		userEvent.click( container.queryByRole( 'checkbox', { name: 'foo' } ) );
+		expect( container.queryByLabelText( 'Foo' ) ).toBeChecked();
+		act( () => {
+			userEvent.click( container.queryByLabelText( 'Foo' ) );
+		} );
 		expect( mockOnChangeEvent ).toHaveBeenCalledTimes( 1 );
 		expect( mockOnChangeEvent ).toHaveBeenCalledWith( false );
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).not.toBeChecked();
+		expect( container.queryByLabelText( 'Foo' ) ).not.toBeChecked();
 	} );
 	test( 'clicking an disabled checkbox doesnt change the state', () => {
 		const mockOnChangeEvent = jest.fn();
@@ -84,14 +74,12 @@ describe( 'Loadable checkbox', () => {
 				onChange={ mockOnChangeEvent }
 			/>
 		);
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).not.toBeChecked();
-		userEvent.click( container.queryByRole( 'checkbox', { name: 'foo' } ) );
+		expect( container.queryByLabelText( 'Foo' ) ).not.toBeChecked();
+		act( () => {
+			userEvent.click( container.queryByLabelText( 'Foo' ) );
+		} );
 		expect( mockOnChangeEvent ).not.toHaveBeenCalled();
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).not.toBeChecked();
+		expect( container.queryByLabelText( 'Foo' ) ).not.toBeChecked();
 	} );
 	test( 'clicking a checkbox with delay waits before checking the input', () => {
 		const mockOnChangeEvent = jest.fn();
@@ -103,15 +91,11 @@ describe( 'Loadable checkbox', () => {
 				onChange={ mockOnChangeEvent }
 			/>
 		);
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).not.toBeChecked();
+		expect( container.queryByLabelText( 'Foo' ) ).not.toBeChecked();
 
 		jest.useFakeTimers();
 		act( () => {
-			userEvent.click(
-				container.queryByRole( 'checkbox', { name: 'foo' } )
-			);
+			userEvent.click( container.queryByLabelText( 'Foo' ) );
 			jest.runTimersToTime( 400 );
 		} );
 		expect( mockOnChangeEvent ).not.toHaveBeenCalled();
@@ -120,9 +104,7 @@ describe( 'Loadable checkbox', () => {
 			jest.runTimersToTime( 1200 );
 		} );
 		expect( mockOnChangeEvent ).toHaveBeenCalled();
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).toBeChecked();
+		expect( container.queryByLabelText( 'Foo' ) ).toBeChecked();
 
 		jest.useRealTimers();
 	} );
@@ -137,26 +119,21 @@ describe( 'Loadable checkbox', () => {
 				onChange={ mockOnChangeEvent }
 			/>
 		);
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).toBeChecked();
+		expect( container.queryByLabelText( 'Foo' ) ).toBeChecked();
 
 		jest.useFakeTimers();
 		act( () => {
-			userEvent.click(
-				container.queryByRole( 'checkbox', { name: 'foo' } )
-			);
+			userEvent.click( container.queryByLabelText( 'Foo' ) );
+
 			jest.runTimersToTime( 400 );
 		} );
 		expect( mockOnChangeEvent ).not.toHaveBeenCalled();
-
 		act( () => {
 			jest.runTimersToTime( 1200 );
 		} );
 		expect( mockOnChangeEvent ).toHaveBeenCalled();
-		expect(
-			container.queryByRole( 'checkbox', { name: 'foo' } )
-		).not.toBeChecked();
+
+		expect( container.queryByLabelText( 'Foo' ) ).not.toBeChecked();
 
 		jest.useRealTimers();
 	} );

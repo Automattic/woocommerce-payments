@@ -68,17 +68,21 @@ describe( 'PaymentMethods', () => {
 			</WcPayUpeContextProvider>
 		);
 
-		const cc = screen.getByRole( 'checkbox', { name: 'card' } );
-		const sepa = screen.getByRole( 'checkbox', { name: 'sepa_debit' } );
+		const cc = screen.getByRole( 'checkbox', {
+			name: 'Credit card / debit card',
+		} );
+		const sepa = screen.getByRole( 'checkbox', {
+			name: 'SEPA Direct Debit',
+		} );
 		const bancontact = screen.getByRole( 'checkbox', {
-			name: 'bancontact',
+			name: 'Bancontact',
 		} );
 		const giropay = screen.getByRole( 'checkbox', { name: 'giropay' } );
-		const sofort = screen.getByRole( 'checkbox', { name: 'sofort' } );
+		const sofort = screen.getByRole( 'checkbox', { name: 'Sofort' } );
 		const p24 = screen.getByRole( 'checkbox', {
-			name: 'p24',
+			name: 'Przelewy24 (P24)',
 		} );
-		const ideal = screen.getByRole( 'checkbox', { name: 'ideal' } );
+		const ideal = screen.getByRole( 'checkbox', { name: 'iDEAL' } );
 
 		const allMethods = [
 			bancontact,
@@ -110,13 +114,13 @@ describe( 'PaymentMethods', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[
-				'card',
-				'bancontact',
+				'Credit card / debit card',
+				'Bancontact',
 				'giropay',
-				'ideal',
-				'p24',
-				'sepa_debit',
-				'sofort',
+				'iDEAL',
+				'Przelewy24 (P24)',
+				'SEPA Direct Debit',
+				'Sofort',
 			],
 			updateEnabledMethodsMock,
 		] );

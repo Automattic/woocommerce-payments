@@ -17,4 +17,7 @@
 			height: 100%;
 		}
 	}
+	&.label-hidden label {
+		display: none;
+	}
 }

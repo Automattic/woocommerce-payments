@@ -6,9 +6,9 @@
 import React, { useState } from 'react';
 import { CheckboxControl } from '@wordpress/components';
 import './style.scss';
+import classNames from 'classnames';
 
 const LoadableCheckboxControl = ( {
-	id,
 	label,
 	checked,
 	disabled,
@@ -18,6 +18,8 @@ const LoadableCheckboxControl = ( {
 	delayMsOnUncheck = 0,
 } ) => {
 	const [ isLoading, setLoading ] = useState( false );
+	const [ checkedState, setCheckedState ] = useState( checked || false );
+
 	const handleOnChange = ( status ) => {
 		const timeout = status ? delayMsOnCheck : delayMsOnUncheck;
 		if ( 0 < timeout ) {
@@ -30,10 +32,16 @@ const LoadableCheckboxControl = ( {
 			// Don't show the loading indicator if there's no delay.
 			onChange( status );
 		}
+		setCheckedState( status );
 	};
 
 	return (
-		<div className={ 'loadable-checkbox' }>
+		<div
+			className={ classNames(
+				'loadable-checkbox',
+				hideLabel ? 'label-hidden' : ''
+			) }
+		>
 			{ isLoading && (
 				<div className={ 'loadable-checkbox__spinner' }>
 					<svg
@@ -64,14 +72,10 @@ const LoadableCheckboxControl = ( {
 				</div>
 			) }
 			<CheckboxControl
-				id={ id }
-				label={ hideLabel ? '' : label }
-				aria-label={ id }
-				defaultChecked={ checked }
+				label={ label }
+				checked={ checkedState }
 				disabled={ disabled }
-				onChange={ ( status ) => {
-					handleOnChange( status );
-				} }
+				onChange={ ( status ) => handleOnChange( status ) }
 			/>
 		</div>
 	);

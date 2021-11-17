@@ -42,9 +42,8 @@ Object {
               class="components-checkbox-control__input-container"
             >
               <input
-                aria-label="foo"
                 class="components-checkbox-control__input"
-                id="foo"
+                id="inspector-checkbox-control-0"
                 type="checkbox"
                 value="1"
               />
@@ -74,9 +73,8 @@ Object {
             class="components-checkbox-control__input-container"
           >
             <input
-              aria-label="foo"
               class="components-checkbox-control__input"
-              id="foo"
+              id="inspector-checkbox-control-0"
               type="checkbox"
               value="1"
             />

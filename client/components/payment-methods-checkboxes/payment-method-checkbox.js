@@ -68,7 +68,6 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 	return (
 		<li className="payment-method-checkbox">
 			<LoadableCheckboxControl
-				id={ name }
 				label={ label }
 				checked={ checked }
 				disabled={ disabled }
