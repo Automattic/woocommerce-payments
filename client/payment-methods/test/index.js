@@ -57,8 +57,9 @@ describe( 'PaymentMethods', () => {
 		};
 	} );
 
-	test( 'does not render the "Add payment method" button when there is only one payment method available', () => {
+	test( 'does not render the "Add payment method" button when there is only one payment method available and enabled', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
 		render(
 			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
@@ -71,6 +72,22 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		expect( addPaymentMethodButton ).not.toBeInTheDocument();
+	} );
+
+	test( 'renders the "Add payment method" button when there are 0 payment methods enabled but at least one available', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+
+		const addPaymentMethodButton = screen.queryByRole( 'button', {
+			name: 'Add payment method',
+		} );
+
+		expect( addPaymentMethodButton ).toBeInTheDocument();
 	} );
 
 	test( 'renders the "Add payment method" button when there are at least 2 payment methods', () => {
@@ -153,22 +170,6 @@ describe( 'PaymentMethods', () => {
 				name: 'Delete Credit card / debit card from checkout',
 			} )
 		).toBeInTheDocument();
-	} );
-
-	test( 'when only one enabled method is rendered, the "Delete" button is not visible', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
-
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-
-		expect(
-			screen.queryByRole( 'button', {
-				name: 'Delete Credit card / debit card from checkout',
-			} )
-		).not.toBeInTheDocument();
 	} );
 
 	test( 'clicking delete updates enabled method IDs', () => {
@@ -328,6 +329,8 @@ describe( 'PaymentMethods', () => {
 	);
 
 	test( 'renders the feedback elements when UPE is enabled', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
+
 		render(
 			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
 				<PaymentMethods />
