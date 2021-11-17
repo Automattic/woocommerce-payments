@@ -3,7 +3,6 @@
 = 3.3.0 - 2021-xx-xx =
 * Add - Add Idempotency Key to POST headers.
 * Add - Add dispute order notes to Edit Order page.
-* Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
 * Fix - Show a specific message instead of a generic one in the checkout block when non-UPE payment processing fails.
 * Update - Avoid having invalid intervals (greater than 1 year) in subscription products.
 * Update - The subscription fee label in the transaction timeline.
