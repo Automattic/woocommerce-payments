@@ -1,6 +1,7 @@
 *** WooCommerce Payments Changelog ***
 
 = 3.4.0 - 2021-xx-xx =
+* Add - Add support for larger transaction exports.
 * Add - Allow UI customizations on checkout payment fields.
 * Update - Display hardware costs for the period in the transaction list with link to the details page
 * Fix - Incorrect customer links on Transactions page.
