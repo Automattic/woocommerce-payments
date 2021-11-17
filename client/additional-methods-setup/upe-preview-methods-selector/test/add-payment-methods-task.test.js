@@ -252,8 +252,8 @@ describe( 'AddPaymentMethodsTask', () => {
 			'card',
 			'bancontact',
 			'giropay',
-			'p24',
 			'ideal',
+			'p24',
 			'sepa_debit',
 			'sofort',
 		] );
@@ -272,8 +272,8 @@ describe( 'AddPaymentMethodsTask', () => {
 			'card',
 			'bancontact',
 			'giropay',
-			'ideal',
 			'p24',
+			'ideal',
 			'sofort',
 		];
 		useEnabledPaymentMethodIds.mockReturnValue( [

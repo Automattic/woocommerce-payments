@@ -1,13 +1,7 @@
 /**
  * External dependencies
  */
-import React, {
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useState,
-} from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button, Card, CardBody, ExternalLink } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
@@ -33,24 +27,20 @@ import { upeCapabilityStatuses, upeMethods } from '../constants';
 import paymentMethodsMap from '../../payment-methods-map';
 import ConfirmPaymentMethodActivationModal from 'wcpay/payment-methods/activation-modal';
 
-const usePaymentMethodsCheckboxState = () => {
-	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
-	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {} );
-
-	useEffect( () => {
-		setPaymentMethodsState(
-			// by default, all the checkboxes should be "checked"
-			availablePaymentMethods
-				.filter( ( method ) => upeMethods.includes( method ) )
-				.reduce(
-					( map, paymentMethod ) => ( {
-						...map,
-						[ paymentMethod ]: true,
-					} ),
-					{}
-				)
+const usePaymentMethodsCheckboxState = ( availablePaymentMethods ) => {
+	const initialPaymentMethodsState = availablePaymentMethods
+		.filter( ( method ) => upeMethods.includes( method ) )
+		.reduce(
+			( map, paymentMethod ) => ( {
+				...map,
+				[ paymentMethod ]: true,
+			} ),
+			{}
 		);
-	}, [ availablePaymentMethods, setPaymentMethodsState ] );
+
+	const [ paymentMethodsState, setPaymentMethodsState ] = useState(
+		initialPaymentMethodsState
+	);
 
 	const handleChange = useCallback(
 		( paymentMethodName, enabled ) => {
@@ -151,7 +141,7 @@ const AddPaymentMethodsTask = () => {
 	const [
 		paymentMethodsState,
 		handlePaymentMethodChange,
-	] = usePaymentMethodsCheckboxState();
+	] = usePaymentMethodsCheckboxState( availablePaymentMethods );
 
 	const selectedMethods = useMemo(
 		() =>
