@@ -120,6 +120,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fatal error due on subscription orders with no created date in order row template.
 * Fix - Fatal error on the customer payment page for subscription renewal orders with deleted products.
 * Fix - Misleading subscription order note on payment method change.
+* Fix - Updates to fraud protection.
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
