@@ -58,8 +58,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
-					text:
-						'Something went wrong. Please contact us to get assistance.',
+					text: 'Your card was declined.',
 				}
 			);
 		} );
@@ -104,8 +103,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
-					text:
-						'Something went wrong. Please contact us to get assistance.',
+					text: 'Your card has insufficient funds.',
 				}
 			);
 		} );
@@ -121,8 +119,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
-					text:
-						'Something went wrong. Please contact us to get assistance.',
+					text: 'Your card has expired.',
 				}
 			);
 		} );
@@ -138,8 +135,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
-					text:
-						'Something went wrong. Please contact us to get assistance.',
+					text: "Your card's security code is incorrect.",
 				}
 			);
 		} );
@@ -158,7 +154,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
 					text:
-						'Something went wrong. Please contact us to get assistance.',
+						'An error occurred while processing your card. Try again in a little bit.',
 				}
 			);
 		} );

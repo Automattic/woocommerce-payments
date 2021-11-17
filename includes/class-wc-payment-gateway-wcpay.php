@@ -787,6 +787,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			<?php endif; ?>
 
 			<?php
+
 			if ( $display_tokenization ) {
 				$this->tokenization_script();
 				echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -807,6 +808,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			</fieldset>
 			<?php
+
+			do_action( 'wcpay_payment_fields_wcpay', $this->id );
+
 		} catch ( Exception $e ) {
 			// Output the error message.
 			?>
@@ -826,6 +830,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws Process_Payment_Exception Error processing the payment.
+	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
@@ -850,21 +855,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( ! empty( $payment_information ) ) {
+				/* translators: %1: the failed payment amount, %2: error message  */
+				$error_message = __(
+					'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+					'woocommerce-payments'
+				);
+
+				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
+
+				if ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() ) {
+					/* translators: %1: the failed payment amount, %2: error message  */
+					$error_message = __(
+						'A payment of %1$s <strong>failed</strong>. %2$s',
+						'woocommerce-payments'
+					);
+
+					$error_details = __(
+						'We couldn’t verify the postal code in the billing address. If the issue persists, suggest the customer to reach out to the card issuing bank.',
+						'woocommerce-payments'
+					);
+				}
+
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the failed payment amount, %2: error message  */
-						__(
-							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-							'woocommerce-payments'
-						),
+						$error_message,
 						[
 							'strong' => '<strong>',
 							'code'   => '<code>',
 						]
 					),
 					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
-					esc_html( rtrim( $e->getMessage(), '.' ) )
+					$error_details
 				);
+
 				$order->add_order_note( $note );
 			}
 
@@ -885,6 +908,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_order_note( $note );
 			}
 
+			// Re-throw the exception after setting everything up.
+			// This makes the error notice show up both in the regular and block checkout.
 			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 		}
 	}
