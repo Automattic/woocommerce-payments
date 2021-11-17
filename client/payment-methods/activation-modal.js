@@ -14,6 +14,7 @@ import PaymentConfirmIllustration from '../components/payment-confirm-illustrati
 import ConfirmationModal from '../components/confirmation-modal';
 import PaymentMethodsMap from '../payment-methods-map';
 import RequirementsMap from '../requirements-map';
+import './activation-modal.scss';
 
 const ConfirmPaymentMethodActivationModal = ( {
 	paymentMethod,
