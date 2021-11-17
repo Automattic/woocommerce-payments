@@ -88,6 +88,11 @@ describe( 'AddPaymentMethodsTask', () => {
 				requirements: [],
 			},
 		} );
+		wcSettings = {
+			currentUserData: {
+				email: 'admin@example.com',
+			},
+		};
 	} );
 
 	afterEach( () => {
@@ -101,26 +106,26 @@ describe( 'AddPaymentMethodsTask', () => {
 			</WizardTaskContext.Provider>
 		);
 
-		const expectedToBeChecked = [ 'card', 'giropay', 'sepa_debit' ];
+		const expectedToBeChecked = [
+			'Credit card / debit card',
+			'giropay',
+			'SEPA Direct Debit',
+		];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
+			expect( screen.getByLabelText( checkboxName ) ).toBeChecked();
 		} );
 
 		const expectedNotToBeChecked = [
-			'bancontact',
-			'ideal',
-			'p24',
-			'sofort',
+			'Bancontact',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'Sofort',
 			'Enable Apple Pay & Google Pay',
 		];
 
 		expectedNotToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).not.toBeChecked();
+			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
 		} );
 	} );
 
@@ -162,34 +167,32 @@ describe( 'AddPaymentMethodsTask', () => {
 			</WizardTaskContext.Provider>
 		);
 
-		const expectedToBeChecked = [ 'card', 'giropay', 'sepa_debit' ];
+		const expectedToBeChecked = [
+			'Credit card / debit card',
+			'giropay',
+			'SEPA Direct Debit',
+		];
 
 		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
+			expect( screen.getByLabelText( checkboxName ) ).toBeChecked();
 		} );
 
 		const expectedNotToBeChecked = [
-			'sofort',
-			'bancontact',
-			'ideal',
-			'p24',
+			'Sofort',
+			'Bancontact',
+			'iDEAL',
+			'Przelewy24 (P24)',
 			'Enable Apple Pay & Google Pay',
 		];
 
 		expectedNotToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).not.toBeChecked();
+			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
 		} );
 
-		const expectedToBeDisabled = [ 'p24', 'bancontact' ];
+		const expectedToBeDisabled = [ 'Przelewy24 (P24)', 'Bancontact' ];
 
 		expectedToBeDisabled.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeDisabled();
+			expect( screen.getByLabelText( checkboxName ) ).toBeDisabled();
 		} );
 	} );
 
@@ -199,32 +202,31 @@ describe( 'AddPaymentMethodsTask', () => {
 			'giropay',
 		] );
 
-		const { container } = render(
+		render(
 			<WizardTaskContext.Provider value={ {} }>
 				<AddPaymentMethodsTask />
 			</WizardTaskContext.Provider>
 		);
-		expect( container ).toMatchSnapshot();
 
-		const expectedInDocument = [ 'card', 'giropay' ];
+		const expectedInDocument = [ 'Credit card / debit card', 'giropay' ];
 
 		expectedInDocument.forEach( function ( checkboxName ) {
 			expect(
-				screen.queryByRole( 'checkbox', { name: checkboxName } )
+				screen.queryByLabelText( checkboxName )
 			).toBeInTheDocument();
 		} );
 
 		const expectedNotInDocument = [
-			'bancontact',
-			'ideal',
-			'p24',
-			'sepa_debit',
-			'sofort',
+			'Bancontact',
+			'iDEAL',
+			'Przelewy24 (P24)',
+			'SEPA Direct Debit',
+			'Sofort',
 		];
 
 		expectedNotInDocument.forEach( function ( checkboxName ) {
 			expect(
-				screen.queryByRole( 'checkbox', { name: checkboxName } )
+				screen.queryByLabelText( checkboxName )
 			).not.toBeInTheDocument();
 		} );
 	} );
@@ -250,12 +252,12 @@ describe( 'AddPaymentMethodsTask', () => {
 		);
 
 		const checkboxesToClick = [
-			'card', // Mark the CC payment method as un-checked.
-			'bancontact', // Mark as checked.
+			'Credit card / debit card', // Mark the CC payment method as un-checked.
+			'Bancontact', // Mark as checked.
 			'giropay', // Mark as checked.
-			'ideal', // Mark as checked.
-			'sepa_debit',
-			'p24', // Mark as checked.
+			'iDEAL', // Mark as checked.
+			'SEPA Direct Debit',
+			'Przelewy24 (P24)', // Mark as checked.
 			'Enable Apple Pay & Google Pay', // Enable 1-click checkouts.
 		];
 
@@ -263,9 +265,7 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		checkboxesToClick.forEach( function ( checkboxName ) {
 			act( () => {
-				userEvent.click(
-					screen.getByRole( 'checkbox', { name: checkboxName } )
-				);
+				userEvent.click( screen.getByLabelText( checkboxName ) );
 				jest.runAllTimers();
 			} );
 		} );
