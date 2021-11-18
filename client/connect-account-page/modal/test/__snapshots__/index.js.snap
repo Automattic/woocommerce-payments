@@ -94,7 +94,7 @@ exports[`Onboarding: location check dialog renders correctly when continue butto
          
         <a
           data-link-type="external"
-          href="https://docs.woocommerce.com/document/payments/countries/"
+          href="https://woocommerce.com/document/payments/countries/"
           rel="noopener noreferrer"
           target="_blank"
         >
@@ -216,7 +216,7 @@ exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
          
         <a
           data-link-type="external"
-          href="https://docs.woocommerce.com/document/payments/countries/"
+          href="https://woocommerce.com/document/payments/countries/"
           rel="noopener noreferrer"
           target="_blank"
         >

@@ -322,11 +322,9 @@ jQuery( function ( $ ) {
 					api.saveUPEAppearance( appearance );
 				}
 
-				const businessName = getConfig( 'accountDescriptor' );
 				const upeSettings = {
 					clientSecret,
 					appearance,
-					business: { name: businessName },
 				};
 
 				if ( getConfig( 'cartContainsSubscription' ) ) {
@@ -380,11 +378,14 @@ jQuery( function ( $ ) {
 		if (
 			$( '#wcpay-upe-element' ).length &&
 			! $( '#wcpay-upe-element' ).children().length &&
-			isUPEEnabled &&
-			! upeElement
+			isUPEEnabled
 		) {
+			if ( upeElement ) {
+				upeElement.mount( '#wcpay-upe-element' );
+			} else {
+				mountUPEElement();
+			}
 			renameGatewayTitle();
-			mountUPEElement();
 		}
 	} );
 
