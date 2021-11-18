@@ -108,10 +108,8 @@ describe( 'AddPaymentMethodsTask', () => {
 				USD: { id: 'usd', code: 'USD' },
 			},
 		} );
-		wcSettings = {
-			currentUserData: {
-				email: 'admin@example.com',
-			},
+		global.wcpaySettings = {
+			accountEmail: 'admin@example.com',
 		};
 	} );
 

@@ -96,7 +96,7 @@ const PaymentMethod = ( {
 										'woocommerce-payments'
 									),
 									label,
-									wcSettings.currentUserData.email ?? null
+									wcpaySettings?.accountEmail ?? ''
 								) }
 							>
 								<Pill

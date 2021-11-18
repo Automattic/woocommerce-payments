@@ -93,7 +93,7 @@ const ConfirmPaymentMethodActivationModal = ( {
 					),
 					components: {
 						merchantEmail: (
-							<b>{ wcSettings.currentUserData.email ?? '' }</b>
+							<b>{ wcpaySettings?.accountEmail ?? '' }</b>
 						),
 					},
 				} ) }

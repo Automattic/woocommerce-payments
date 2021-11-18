@@ -105,7 +105,7 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 									'woocommerce-payments'
 								),
 								label,
-								wcSettings.currentUserData.email ?? null
+								wcpaySettings?.accountEmail ?? ''
 							) }
 						>
 							<Pill

@@ -239,7 +239,7 @@ exports[`Activation Modal matches the snapshot 1`] = `
                   <p>
                     If you choose to continue, our payment partner Stripe will send an e-mail to 
                     <b>
-                      foo@bar.com
+                      admin@example.com
                     </b>
                      to collect the required information
                   </p>

@@ -88,10 +88,8 @@ describe( 'AddPaymentMethodsTask', () => {
 				requirements: [],
 			},
 		} );
-		wcSettings = {
-			currentUserData: {
-				email: 'admin@example.com',
-			},
+		global.wcpaySettings = {
+			accountEmail: 'admin@example.com',
 		};
 	} );
 

@@ -50,10 +50,8 @@ describe( 'PaymentMethods', () => {
 			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
 			sofort_payments: upeCapabilityStatuses.ACTIVE,
 		} );
-		global.wcSettings = {
-			currentUserData: {
-				email: 'admin@example.com',
-			},
+		global.wcpaySettings = {
+			accountEmail: 'admin@example.com',
 		};
 	} );
 

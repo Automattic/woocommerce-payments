@@ -18,10 +18,8 @@ const mockOnConfirm = jest.fn();
 
 describe( 'Activation Modal', () => {
 	beforeAll( () => {
-		wcSettings = {
-			currentUserData: {
-				email: 'foo@bar.com',
-			},
+		global.wcpaySettings = {
+			accountEmail: 'admin@example.com',
 		};
 	} );
 	afterEach( () => {

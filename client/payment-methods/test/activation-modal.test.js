@@ -17,10 +17,8 @@ const mockOnConfirm = jest.fn();
 
 describe( 'Activation Modal', () => {
 	beforeAll( () => {
-		wcSettings = {
-			currentUserData: {
-				email: 'foo@bar.com',
-			},
+		global.wcpaySettings = {
+			accountEmail: 'admin@example.com',
 		};
 	} );
 	afterEach( () => {
@@ -51,7 +49,7 @@ describe( 'Activation Modal', () => {
 
 	it( 'contains the email address of the current merchant', () => {
 		renderActivationModal( [ 'company.tax_id' ] );
-		expect( screen.queryByText( 'foo@bar.com' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'admin@example.com' ) ).toBeInTheDocument();
 	} );
 
 	it( 'doesnt contain the requirement text when there isnt a translation', () => {
