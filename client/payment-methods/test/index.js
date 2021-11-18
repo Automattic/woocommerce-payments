@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 
@@ -296,5 +296,91 @@ describe( 'PaymentMethods', () => {
 		expect( window.location.href ).toEqual(
 			'admin.php?page=wc-admin&task=woocommerce-payments--additional-payment-methods'
 		);
+	} );
+
+	it( 'should render the activation modal when requirements exist for the payment method', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: {
+				status: upeCapabilityStatuses.UNREQUESTED,
+				requirements: [ 'company.tax_id' ],
+			},
+		} );
+
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+
+		expect(
+			screen.queryByLabelText( 'Credit card / debit card' )
+		).toBeInTheDocument();
+
+		const cardCheckbox = screen.getByLabelText(
+			'Credit card / debit card'
+		);
+
+		expect( cardCheckbox ).not.toBeChecked();
+
+		jest.useFakeTimers();
+
+		act( () => {
+			// Enabling a PM with requirements should show the activation modal
+			user.click( cardCheckbox );
+			jest.runAllTimers();
+		} );
+
+		expect(
+			screen.queryByText(
+				/You need to provide more information to enable Credit card \/ debit card on your checkout/
+			)
+		).toBeInTheDocument();
+
+		jest.useRealTimers();
+	} );
+
+	it( 'should render the delete modal on an already active payment method', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ], jest.fn() ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+		} );
+
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+
+		expect(
+			screen.queryByLabelText( 'Credit card / debit card' )
+		).toBeInTheDocument();
+
+		const cardCheckbox = screen.getByLabelText(
+			'Credit card / debit card'
+		);
+
+		expect( cardCheckbox ).toBeChecked();
+
+		jest.useFakeTimers();
+
+		act( () => {
+			// Disabling an already active PM should show the delete modal
+			user.click( cardCheckbox );
+			jest.runAllTimers();
+		} );
+
+		expect(
+			screen.queryByText(
+				/Your customers will no longer be able to pay using Credit card \/ debit card\./
+			)
+		).toBeInTheDocument();
+
+		jest.useRealTimers();
 	} );
 } );

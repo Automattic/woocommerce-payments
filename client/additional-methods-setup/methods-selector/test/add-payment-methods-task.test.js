@@ -196,6 +196,49 @@ describe( 'AddPaymentMethodsTask', () => {
 		} );
 	} );
 
+	it( 'should render the activation modal when requirements exist for the payment method', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: {
+				status: upeCapabilityStatuses.UNREQUESTED,
+				requirements: [ 'company.tax_id' ],
+			},
+		} );
+
+		render(
+			<WizardTaskContext.Provider value={ {} }>
+				<AddPaymentMethodsTask />
+			</WizardTaskContext.Provider>
+		);
+
+		expect(
+			screen.queryByLabelText( 'Credit card / debit card' )
+		).toBeInTheDocument();
+
+		const cardCheckbox = screen.getByLabelText(
+			'Credit card / debit card'
+		);
+
+		expect( cardCheckbox ).not.toBeChecked();
+
+		jest.useFakeTimers();
+
+		act( () => {
+			// Enabling a PM with requirements should show the activation modal
+			userEvent.click( cardCheckbox );
+			jest.runAllTimers();
+		} );
+
+		expect(
+			screen.queryByText(
+				/You need to provide more information to enable Credit card \/ debit card on your checkout/
+			)
+		).toBeInTheDocument();
+
+		jest.useRealTimers();
+	} );
+
 	it( 'should not render the checkboxes that are not available', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',

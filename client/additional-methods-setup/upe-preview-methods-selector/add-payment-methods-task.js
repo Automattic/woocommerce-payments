@@ -33,20 +33,8 @@ import { upeCapabilityStatuses, upeMethods } from '../constants';
 import paymentMethodsMap from '../../payment-methods-map';
 import ConfirmPaymentMethodActivationModal from 'wcpay/payment-methods/activation-modal';
 
-const usePaymentMethodsCheckboxState = ( availablePaymentMethods ) => {
-	const initialPaymentMethodsState = availablePaymentMethods
-		.filter( ( method ) => upeMethods.includes( method ) )
-		.reduce(
-			( map, paymentMethod ) => ( {
-				...map,
-				[ paymentMethod ]: true,
-			} ),
-			{}
-		);
-
-	const [ paymentMethodsState, setPaymentMethodsState ] = useState(
-		initialPaymentMethodsState
-	);
+const usePaymentMethodsCheckboxState = () => {
+	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {} );
 
 	const handleChange = useCallback(
 		( paymentMethodName, enabled ) => {
@@ -153,7 +141,7 @@ const AddPaymentMethodsTask = () => {
 		availablePaymentMethods
 			.filter( ( method ) => upeMethods.includes( method ) )
 			.forEach( ( method ) => {
-				handlePaymentMethodChange( method, true );
+				handlePaymentMethodChange( method, false );
 			} );
 	}, [ availablePaymentMethods, handlePaymentMethodChange ] );
 
