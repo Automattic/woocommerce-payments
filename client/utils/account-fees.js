@@ -16,6 +16,8 @@ import { formatFee } from 'utils/fees';
 
 const countryFeeStripeDocsBaseLink =
 	'https://woocommerce.com/document/payments/faq/fees/#section-';
+const countryFeeStripeDocsBaseLinkNoCountry =
+	'https://woocommerce.com/document/payments/faq/fees';
 const countryFeeStripeDocsSectionNumbers = {
 	AU: 1,
 	AT: 2,
@@ -35,6 +37,10 @@ const countryFeeStripeDocsSectionNumbers = {
 	CH: 16,
 	UK: 17,
 	US: 18,
+};
+
+const stripeFeeSectionExistsForCountry = ( country ) => {
+	return countryFeeStripeDocsSectionNumbers.hasOwnProperty( country );
 };
 
 const getStripeFeeSectionUrl = ( country ) => {
@@ -128,28 +134,54 @@ export const formatMethodFeesTooltip = ( accountFees ) => {
 			wcpaySettings.connect.country ? (
 				<div className={ 'wcpay-fees-tooltip__hint-text' }>
 					<span>
-						{ interpolateComponents( {
-							mixedString: __(
-								'{{linkToStripePage /}} about WooCommerce Payments Fees in your country',
-								'woocommerce-payments'
-							),
-							components: {
-								linkToStripePage: (
-									<a
-										href={ getStripeFeeSectionUrl(
-											wcpaySettings.connect.country
-										) }
-										target={ '_blank' }
-										rel={ 'noreferrer' }
-									>
-										{ __(
-											'Learn more',
-											'woocommerce-payments'
-										) }
-									</a>
-								),
-							},
-						} ) }
+						{ stripeFeeSectionExistsForCountry(
+							wcpaySettings.connect.country
+						)
+							? interpolateComponents( {
+									mixedString: __(
+										'{{linkToStripePage /}} about WooCommerce Payments Fees in your country',
+										'woocommerce-payments'
+									),
+									components: {
+										linkToStripePage: (
+											<a
+												href={ getStripeFeeSectionUrl(
+													wcpaySettings.connect
+														.country
+												) }
+												target={ '_blank' }
+												rel={ 'noreferrer' }
+											>
+												{ __(
+													'Learn more',
+													'woocommerce-payments'
+												) }
+											</a>
+										),
+									},
+							  } )
+							: interpolateComponents( {
+									mixedString: __(
+										'{{linkToStripePage /}} about WooCommerce Payments Fees',
+										'woocommerce-payments'
+									),
+									components: {
+										linkToStripePage: (
+											<a
+												href={
+													countryFeeStripeDocsBaseLinkNoCountry
+												}
+												target={ '_blank' }
+												rel={ 'noreferrer' }
+											>
+												{ __(
+													'Learn more',
+													'woocommerce-payments'
+												) }
+											</a>
+										),
+									},
+							  } ) }
 					</span>
 				</div>
 			) : (
