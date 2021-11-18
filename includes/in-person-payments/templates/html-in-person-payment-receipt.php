@@ -1,18 +1,18 @@
 <?php
 /**
- * In Person Payments Print Receipt Template
+ * In Person Payments Receipt Template
  *
  * @package WooCommerce\Payments
  */
 
 /**
- * Doc format_price_helper
+ * Helper to generate markup to render a price.
  *
- * @param  mixed $product the product.
- * @param  mixed $currency the currency.
- * @return mixed
+ * @param  array  $product The product to display.
+ * @param  string $currency The currency to display.
+ * @return string
  */
-function format_price_helper( $product, $currency ) {
+function format_price_helper( array $product, string $currency ): string {
 	$active_price  = $product['price'];
 	$regular_price = $product['regular_price'];
 	$has_discount  = $active_price !== $regular_price;

@@ -34,7 +34,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
-		// TODO refactor when we implement #3021.
+		// TODO Definitive route definition when we implement the API in #3021.
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/receipt',
@@ -73,14 +73,14 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Retrieve HTML to print receipt
+	 * Renders HTML for a print receipt
 	 *
 	 * @return void
 	 */
 	public function generate_print_receipt() {
 		include_once WCPAY_ABSPATH . 'includes/in-person-payments/class-wc-payments-in-person-payments-receipt-service.php';
 
-		// TODO remove hard-coded values when we implement #3021.
+		// TODO remove hard-coded values when we implement the final API #3021.
 		$support_address = [
 			'city'        => 'Happytown',
 			'country'     => 'US',
@@ -175,7 +175,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 		];
 
 		header( 'Content-Type: text/html; charset=UTF-8' );
-		WC_Payments_In_Person_Payments_Receipt_Service::get_receipt_html( $settings, $order, $charge );
+		WC_Payments_In_Person_Payments_Receipt_Service::render_receipt( $settings, $order, $charge );
 		exit;
 	}
 
