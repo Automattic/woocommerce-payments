@@ -11,6 +11,7 @@
 * Fix - Show a specific message instead of a generic one in the checkout block when non-UPE payment processing fails.
 * Update - Avoid having invalid intervals (greater than 1 year) in subscription products.
 * Update - The subscription fee label in the transaction timeline.
+* Update - Show red setup badge after 3 days instead of 7
 * Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
 * Add - Add compatibility between Multi-Currency and WooCommerce Pre-Orders.
 * Fix - Do not show default currency selector on Account Details page when only one currency is available.
@@ -62,7 +63,6 @@
 * Fix - Multi-Currency settings rounding option and preview.
 * Fix - Payment failure on checkout block with UPE when phone number field is hidden
 * Update - Adds a scheduled action which makes updating the account cache more efficient
-* Update - Show red setup badge after 3 days instead of 7
 * Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
 * Add - Early access: allow your store to collect payments with SEPA Direct Debit. Enable the feature in settings!
 * Add - Add compatibility between Multi-Currency and WooCommerce FedEx shipping extension.

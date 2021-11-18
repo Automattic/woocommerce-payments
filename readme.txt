@@ -109,6 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Show a specific message instead of a generic one in the checkout block when non-UPE payment processing fails.
 * Update - Avoid having invalid intervals (greater than 1 year) in subscription products.
 * Update - The subscription fee label in the transaction timeline.
+* Update - Show red setup badge after 3 days instead of 7
 * Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
 * Add - Add compatibility between Multi-Currency and WooCommerce Pre-Orders.
 * Fix - Do not show default currency selector on Account Details page when only one currency is available.
