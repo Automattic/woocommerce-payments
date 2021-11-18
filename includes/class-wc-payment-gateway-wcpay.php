@@ -982,6 +982,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount   = $order->get_total();
 		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
+		Logger::log( 'Processing order: ' . $order_id );
+
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
 		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
@@ -1141,7 +1143,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $response;
 		}
 
-		wc_reduce_stock_levels( $order_id );
 		if ( isset( $cart ) ) {
 			$cart->empty_cart();
 		}
@@ -2111,7 +2112,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order->save();
 
 			if ( in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
-				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
 				if ( ! empty( $payment_method_id ) ) {
