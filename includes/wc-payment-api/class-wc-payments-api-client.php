@@ -206,7 +206,8 @@ class WC_Payments_API_Client {
 		$request['level3']         = $level3;
 		$request['description']    = $this->get_intent_description( $metadata['order_id'] ?? 0 );
 
-		$available_payment_methods = WC_Payments::get_gateway()->get_upe_available_payment_methods();
+		$available_payment_methods       = WC_Payments::get_gateway()->get_upe_available_payment_methods();
+		$request['payment_method_types'] = $available_payment_methods;
 
 		$request = array_merge( $request, $additional_parameters );
 
