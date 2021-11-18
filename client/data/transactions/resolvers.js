@@ -56,13 +56,10 @@ export function* getTransactions( query ) {
 }
 
 export function getTransactionsCSV( query ) {
-	const path = addQueryArgs( `${ NAMESPACE }/transactions/download`, {
-		page: query.paged,
-		pagesize: query.perPage,
-		sort: query.orderby,
-		direction: query.order,
-		...formatQueryFilters( query ),
-	} );
+	const path = addQueryArgs(
+		`${ NAMESPACE }/transactions/download`,
+		formatQueryFilters( query )
+	);
 
 	return path;
 }
