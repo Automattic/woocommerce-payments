@@ -122,7 +122,7 @@ function format_price_helper( $product, $currency ) {
 		<hr />
 		<div class="receipt__products">
 			<table class="receipt-table">
-				<?php foreach ( $order['line_items'] as $item ) { ?>
+				<?php foreach ( $line_items as $item ) { ?>
 				<tr>
 					<td class="align-left">
 						<div><?php echo esc_html( $item['name'] ); ?></div>
@@ -141,16 +141,16 @@ function format_price_helper( $product, $currency ) {
 					<td class="align-left"><b><?php echo esc_html__( 'SUBTOTAL', 'woocommerce-payments' ); ?></b></td>
 					<td class="align-right"><b><?php echo wp_kses( wc_price( $order['subtotal'], [ 'currency' => $order['currency'] ] ), 'post' ); ?></b></td>
 				</tr>
-				<?php foreach ( $order['coupon_lines'] as $order_coupon ) { ?>
+				<?php foreach ( $coupon_lines as $order_coupon ) { ?>
 				<tr>
 					<td class="align-left">
 						<div><?php echo sprintf( '%s: %s', esc_html__( 'Discount', 'woocommerce-payments' ), esc_html( $order_coupon['code'] ) ); ?></div>
 						<div><?php echo esc_html( $order_coupon['description'] ); ?></div>
 					</td>
-					<td class="align-right align-top">-<?php echo wp_kses( wc_price( $order_coupon['discount'], [ 'currency' => $order['currency'] ] ), 'post' ); ?></td>
+					<td class="align-right align-top"><?php echo wp_kses( wc_price( abs( $order_coupon['discount'] ) * -1, [ 'currency' => $order['currency'] ] ), 'post' ); ?></td>
 				</tr>
 				<?php } ?>
-				<?php foreach ( $order['tax_lines'] as $tax_line ) { ?>
+				<?php foreach ( $tax_lines as $tax_line ) { ?>
 				<tr>
 					<td class="align-left">
 						<div><?php echo esc_html__( 'Tax', 'woocommerce-payments' ); ?></div>
@@ -173,18 +173,18 @@ function format_price_helper( $product, $currency ) {
 			<table class="receipt-table">
 				<tr>
 					<td class="align-left"><b><?php echo esc_html__( 'AMOUNT PAID', 'woocommerce-payments' ); ?></b>:</td>
-					<td class="align-right"><b><?php echo wp_kses( wc_price( $charge['amount_captured'], [ 'currency' => $order['currency'] ] ), 'post' ); ?></b></td>
+					<td class="align-right"><b><?php echo wp_kses( wc_price( $amount_captured, [ 'currency' => $order['currency'] ] ), 'post' ); ?></b></td>
 				</tr>
 				<tr>
-					<td colspan="2" class="align-left"><?php echo esc_html( ucfirst( $charge['payment_method_details']['brand'] ) . ' - ' . $charge['payment_method_details']['last4'] ); ?></td>
+					<td colspan="2" class="align-left"><?php echo esc_html( sprintf( '%s - %s', ucfirst( $payment_method_details['brand'] ), $payment_method_details['last4'] ) ); ?></td>
 				</tr>
 			</table>
 		</div>
 		<hr />
 		<div class="receipt__transaction">
-			<p><?php echo sprintf( '%s: %s', esc_html__( 'Application name', 'woocommerce-payments' ), esc_html( ucfirst( $charge['payment_method_details']['application_preferred_name'] ) ) ); ?></p>
-			<p><?php echo sprintf( '%s: %s', esc_html__( 'AID', 'woocommerce-payments' ), esc_html( ucfirst( $charge['payment_method_details']['dedicated_file_name'] ) ) ); ?></p>
-			<p><?php echo sprintf( '%s: %s', esc_html__( 'Account Type', 'woocommerce-payments' ), esc_html( ucfirst( $charge['payment_method_details']['account_type'] ) ) ); ?></p>
+			<p><?php echo sprintf( '%s: %s', esc_html__( 'Application name', 'woocommerce-payments' ), esc_html( ucfirst( $payment_method_details['application_preferred_name'] ) ) ); ?></p>
+			<p><?php echo sprintf( '%s: %s', esc_html__( 'AID', 'woocommerce-payments' ), esc_html( ucfirst( $payment_method_details['dedicated_file_name'] ) ) ); ?></p>
+			<p><?php echo sprintf( '%s: %s', esc_html__( 'Account Type', 'woocommerce-payments' ), esc_html( ucfirst( $payment_method_details['account_type'] ) ) ); ?></p>
 		</div>
 	</div>
 </body>
