@@ -1,7 +1,13 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button, Card, CardBody, ExternalLink } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
@@ -142,6 +148,14 @@ const AddPaymentMethodsTask = () => {
 		paymentMethodsState,
 		handlePaymentMethodChange,
 	] = usePaymentMethodsCheckboxState( availablePaymentMethods );
+
+	useEffect( () => {
+		availablePaymentMethods
+			.filter( ( method ) => upeMethods.includes( method ) )
+			.forEach( ( method ) => {
+				handlePaymentMethodChange( method, true );
+			} );
+	}, [ availablePaymentMethods, handlePaymentMethodChange ] );
 
 	const selectedMethods = useMemo(
 		() =>
