@@ -3,22 +3,22 @@
 /**
  * External Dependencies
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CheckboxControl } from '@wordpress/components';
 import './style.scss';
 import classNames from 'classnames';
 
 const LoadableCheckboxControl = ( {
 	label,
-	checked,
-	disabled,
+	checked = false,
+	disabled = false,
 	onChange,
 	hideLabel = false,
 	delayMsOnCheck = 0,
 	delayMsOnUncheck = 0,
 } ) => {
 	const [ isLoading, setLoading ] = useState( false );
-	const [ checkedState, setCheckedState ] = useState( checked || false );
+	const [ checkedState, setCheckedState ] = useState( checked );
 
 	const handleOnChange = ( status ) => {
 		const timeout = status ? delayMsOnCheck : delayMsOnUncheck;
@@ -32,8 +32,11 @@ const LoadableCheckboxControl = ( {
 			// Don't show the loading indicator if there's no delay.
 			onChange( status );
 		}
-		setCheckedState( status );
 	};
+
+	useEffect( () => {
+		setCheckedState( checked );
+	}, [ setCheckedState, checked ] );
 
 	return (
 		<div
