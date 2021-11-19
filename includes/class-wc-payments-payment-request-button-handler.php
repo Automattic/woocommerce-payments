@@ -220,7 +220,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
-		$product = $this->get_product();
+		$product  = $this->get_product();
+		$currency = get_woocommerce_currency();
 
 		if ( 'variable' === $product->get_type() ) {
 			$variation_attributes = $product->get_variation_attributes();
@@ -248,7 +249,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$items[] = [
 			'label'  => $product->get_name(),
-			'amount' => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ) ),
+			'amount' => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ), $currency ),
 		];
 
 		if ( wc_tax_enabled() ) {
@@ -277,12 +278,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems'] = $items;
 		$data['total']        = [
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ) ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ), $currency ),
 			'pending' => true,
 		];
 
 		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
-		$data['currency']       = strtolower( get_woocommerce_currency() );
+		$data['currency']       = strtolower( $currency );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
@@ -797,7 +798,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 							'id'     => $rate->id,
 							'label'  => $rate->label,
 							'detail' => '',
-							'amount' => WC_Payments_Utils::prepare_amount( $rate->cost ),
+							'amount' => WC_Payments_Utils::prepare_amount( $rate->cost, get_woocommerce_currency() ),
 						];
 					}
 				}
@@ -897,6 +898,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$addon_value  = isset( $_POST['addon_value'] ) ? max( floatval( $_POST['addon_value'] ), 0 ) : 0;
 			$product      = wc_get_product( $product_id );
 			$variation_id = null;
+			$currency     = get_woocommerce_currency();
 
 			if ( ! is_a( $product, 'WC_Product' ) ) {
 				/* translators: product ID */
@@ -933,7 +935,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			$items[] = [
 				'label'  => $product->get_name() . $quantity_label,
-				'amount' => WC_Payments_Utils::prepare_amount( $total ),
+				'amount' => WC_Payments_Utils::prepare_amount( $total, $currency ),
 			];
 
 			if ( wc_tax_enabled() ) {
@@ -962,7 +964,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$data['displayItems'] = $items;
 			$data['total']        = [
 				'label'   => $this->get_total_label(),
-				'amount'  => WC_Payments_Utils::prepare_amount( $total ),
+				'amount'  => WC_Payments_Utils::prepare_amount( $total, $currency ),
 				'pending' => true,
 			];
 
@@ -1284,7 +1286,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'id'     => $method['id'],
 				'label'  => $method['label'],
 				'detail' => '',
-				'amount' => WC_Payments_Utils::prepare_amount( $method['amount']['value'] ),
+				'amount' => WC_Payments_Utils::prepare_amount( $method['amount']['value'], get_woocommerce_currency() ),
 			];
 		}
 
@@ -1304,6 +1306,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$items     = [];
 		$subtotal  = 0;
 		$discounts = 0;
+		$currency  = get_woocommerce_currency();
 
 		// Default show only subtotal instead of itemization.
 		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', true ) || $itemized_display_items ) {
@@ -1316,7 +1319,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 				$item = [
 					'label'  => $product_name . $quantity_label,
-					'amount' => WC_Payments_Utils::prepare_amount( $amount ),
+					'amount' => WC_Payments_Utils::prepare_amount( $amount, $currency ),
 				];
 
 				$items[] = $item;
@@ -1342,21 +1345,21 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( wc_tax_enabled() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Tax', 'woocommerce-payments' ) ),
-				'amount' => WC_Payments_Utils::prepare_amount( $tax ),
+				'amount' => WC_Payments_Utils::prepare_amount( $tax, $currency ),
 			];
 		}
 
 		if ( WC()->cart->needs_shipping() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Shipping', 'woocommerce-payments' ) ),
-				'amount' => WC_Payments_Utils::prepare_amount( $shipping ),
+				'amount' => WC_Payments_Utils::prepare_amount( $shipping, $currency ),
 			];
 		}
 
 		if ( WC()->cart->has_discount() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Discount', 'woocommerce-payments' ) ),
-				'amount' => WC_Payments_Utils::prepare_amount( $discounts ),
+				'amount' => WC_Payments_Utils::prepare_amount( $discounts, $currency ),
 			];
 		}
 
@@ -1370,7 +1373,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		foreach ( $cart_fees as $key => $fee ) {
 			$items[] = [
 				'label'  => $fee->name,
-				'amount' => WC_Payments_Utils::prepare_amount( $fee->amount ),
+				'amount' => WC_Payments_Utils::prepare_amount( $fee->amount, $currency ),
 			];
 		}
 
@@ -1378,7 +1381,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'displayItems' => $items,
 			'total'        => [
 				'label'   => $this->get_total_label(),
-				'amount'  => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total ), $order_total, WC()->cart ) ),
+				'amount'  => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total, $currency ), $order_total, WC()->cart ) ),
 				'pending' => false,
 			],
 		];
