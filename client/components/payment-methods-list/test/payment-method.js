@@ -5,6 +5,7 @@
  */
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
+import { act } from 'react-dom/test-utils';
 
 /**
  * Internal dependencies
@@ -12,58 +13,54 @@ import user from '@testing-library/user-event';
 import PaymentMethod from '../payment-method';
 
 describe( 'PaymentMethod', () => {
-	test( 'renders label and description', () => {
-		render( <PaymentMethod label="Foo" description="Bar" /> );
-
-		expect( screen.queryByText( 'Foo' ) ).toBeInTheDocument();
-		expect( screen.queryByText( 'Bar' ) ).toBeInTheDocument();
+	let checked = false;
+	const handleOnCheckClickMock = jest.fn( () => {
+		checked = true;
 	} );
-
-	test( 'does not render "Delete" when the handler is not provided', () => {
-		render( <PaymentMethod label="Foo" onDeleteClick={ undefined } /> );
-
-		const deleteButton = screen.queryByRole( 'button', {
-			name: 'Delete Foo from checkout',
-		} );
-
-		expect( deleteButton ).not.toBeInTheDocument();
+	const handleOnUnCheckClickMock = jest.fn( () => {
+		checked = false;
 	} );
-
-	test( 'clicking the "Delete" button with confirmation calls onDeleteClick()', () => {
-		const handleDeleteClickMock = jest.fn();
-		render(
+	const getComponent = () => {
+		return (
 			<PaymentMethod
 				label="Foo"
 				id="foo"
-				onDeleteClick={ handleDeleteClickMock }
+				checked={ checked }
+				onCheckClick={ handleOnCheckClickMock }
+				onUncheckClick={ handleOnUnCheckClickMock }
+				description="Bar"
 			/>
 		);
+	};
 
-		user.click(
-			screen.getByRole( 'button', {
-				name: 'Delete Foo from checkout',
-			} )
-		);
-		user.click(
-			screen.getByRole( 'button', {
-				name: 'Cancel',
-			} )
-		);
+	test( 'renders label and description', () => {
+		render( getComponent() );
 
-		expect( handleDeleteClickMock ).not.toHaveBeenCalled();
+		expect( screen.queryByLabelText( 'Foo' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Bar' ) ).toBeInTheDocument();
+	} );
 
-		user.click(
-			screen.getByRole( 'button', {
-				name: 'Delete Foo from checkout',
-			} )
-		);
-		user.click(
-			screen.getByRole( 'button', {
-				name: 'Remove',
-			} )
-		);
+	test( 'clicking a checkbox calls onCheckClick and onUnCheckClick', () => {
+		const component = render( getComponent() );
 
-		expect( handleDeleteClickMock ).toHaveBeenCalledTimes( 1 );
-		expect( handleDeleteClickMock ).toHaveBeenCalledWith( 'foo' );
+		act( () => {
+			user.click( screen.getByLabelText( 'Foo' ) );
+			jest.runAllTimers();
+			// Since we are using a variable instead of a state, we need to re-render the component on each variable change.
+			component.rerender( getComponent() );
+		} );
+
+		expect( handleOnCheckClickMock ).toHaveBeenCalledTimes( 1 );
+		expect( handleOnCheckClickMock ).toHaveBeenCalledWith( 'foo' );
+
+		act( () => {
+			user.click( screen.getByLabelText( 'Foo' ) );
+			jest.runAllTimers();
+			component.rerender( getComponent() );
+		} );
+
+		expect( handleOnUnCheckClickMock ).toHaveBeenCalledTimes( 1 );
+		expect( handleOnUnCheckClickMock ).toHaveBeenCalledWith( 'foo' );
+		jest.useRealTimers();
 	} );
 } );
