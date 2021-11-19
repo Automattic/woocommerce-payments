@@ -46,11 +46,7 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 import DownloadButton from 'components/download-button';
-
-import {
-	formatQueryFilters,
-	getTransactionsCSV,
-} from '../../data/transactions/resolvers';
+import { getTransactionsCSV } from '../../data/transactions/resolvers';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -400,6 +396,7 @@ export const TransactionsList = (
 			date_between: dateBetween,
 			type_is: typeIs,
 			type_is_not: typeIsNot,
+			search,
 		} = getQuery();
 
 		if (
@@ -407,15 +404,22 @@ export const TransactionsList = (
 			!! dateAfter ||
 			!! dateBetween ||
 			!! typeIs ||
-			!! typeIsNot
+			!! typeIsNot ||
+			!! search
 		) {
 			try {
 				const {
 					exported_transactions: exportedTransactions,
 				} = await apiFetch( {
-					path: getTransactionsCSV( getQuery() ),
+					path: getTransactionsCSV( {
+						dateAfter,
+						dateBefore,
+						dateBetween,
+						typeIs,
+						typeIsNot,
+						search,
+					} ),
 					method: 'POST',
-					data: formatQueryFilters( getQuery() ),
 				} );
 
 				createNotice(

@@ -621,35 +621,19 @@ class WC_Payments_API_Client {
 	/**
 	 * Initiates transactions export via API.
 	 *
-	 * @param int    $page       The requested page.
-	 * @param int    $page_size  The size of the requested page.
-	 * @param string $sort       The column to be used for sorting.
-	 * @param string $direction  The sorting direction.
-	 * @param array  $filters    The filters to be used in the query.
-	 * @param string $deposit_id The deposit to filter on.
+	 * @param array $filters The filters to be used in the query.
 	 *
 	 * @return array Export summary
 	 *
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_transactions_export( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [], $deposit_id = null ) {
+	public function get_transactions_export( $filters = [] ) {
 		// Map Order # terms to the actual charge id to be used in the server.
 		if ( ! empty( $filters['search'] ) ) {
 			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
 		}
 
-		$query = array_merge(
-			$filters,
-			[
-				'page'       => $page,
-				'pagesize'   => $page_size,
-				'sort'       => $sort,
-				'direction'  => $direction,
-				'deposit_id' => $deposit_id,
-			]
-		);
-
-		return $this->request( $query, self::TRANSACTIONS_API . '/download', self::POST );
+		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
 	}
 
 	/**
