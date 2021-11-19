@@ -40,7 +40,6 @@ const WCPayUPEFields = ( {
 	);
 	const [ paymentCountry, setPaymentCountry ] = useState( null );
 
-	const businessName = getConfig( 'accountDescriptor' );
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 	const testMode = getConfig( 'testMode' );
 	const testCopy = (
@@ -178,7 +177,6 @@ const WCPayUPEFields = ( {
 
 	const elementOptions = {
 		clientSecret,
-		business: { name: businessName },
 		fields: {
 			billingDetails: {
 				name: 'never',
@@ -196,9 +194,11 @@ const WCPayUPEFields = ( {
 		},
 	};
 
-	if ( getConfig( 'cartContainsSubscription' ) ) {
-		elementOptions.terms = getTerms( paymentMethodsConfig, 'always' );
-	}
+	const showTerms =
+		shouldSavePayment || getConfig( 'cartContainsSubscription' )
+			? 'always'
+			: 'never';
+	elementOptions.terms = getTerms( paymentMethodsConfig, showTerms );
 
 	const appearance = getConfig( 'upeAppearance' );
 	if ( appearance ) {

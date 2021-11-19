@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -50,19 +50,40 @@ describe( 'AddPaymentMethodsTask', () => {
 			'card',
 			'bancontact',
 			'giropay',
-			'p24',
 			'ideal',
+			'p24',
 			'sepa_debit',
 			'sofort',
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: upeCapabilityStatuses.ACTIVE,
-			bancontact_payments: upeCapabilityStatuses.ACTIVE,
-			giropay_payments: upeCapabilityStatuses.ACTIVE,
-			ideal_payments: upeCapabilityStatuses.ACTIVE,
-			p24_payments: upeCapabilityStatuses.ACTIVE,
-			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
-			sofort_payments: upeCapabilityStatuses.ACTIVE,
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			bancontact_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			giropay_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			ideal_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			p24_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sepa_debit_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			sofort_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
 		} );
 		useSettings.mockReturnValue( {
 			saveSettings: () => Promise.resolve( true ),
@@ -87,6 +108,13 @@ describe( 'AddPaymentMethodsTask', () => {
 				USD: { id: 'usd', code: 'USD' },
 			},
 		} );
+		global.wcpaySettings = {
+			accountEmail: 'admin@example.com',
+		};
+	} );
+
+	afterEach( () => {
+		jest.useRealTimers();
 	} );
 
 	it( 'should not call the useSettings hook if the task is not active', () => {
@@ -129,21 +157,10 @@ describe( 'AddPaymentMethodsTask', () => {
 			</SettingsContextProvider>
 		);
 
-		expect(
-			screen.queryByText(
-				/(we\'ll add|and) Euro \(€\) (and|to your store)/
-			)
-		).toBeInTheDocument();
-		expect(
-			screen.queryByText(
-				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
-			)
-		).toBeInTheDocument();
-		expect( screen.getByText( 'Add payment methods' ) ).toBeEnabled();
 		expect( useSettings ).toHaveBeenCalled();
 
 		// The payment methods should all be checked.
-		const expectedToBeChecked = [
+		const expectedToBeUnchecked = [
 			'Bancontact',
 			'giropay',
 			'iDEAL',
@@ -152,22 +169,13 @@ describe( 'AddPaymentMethodsTask', () => {
 			'Sofort',
 		];
 
-		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
+		expectedToBeUnchecked.forEach( function ( checkboxName ) {
+			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
 		} );
 
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
 		).not.toBeInTheDocument();
-
-		// Unchecking the checkboxes and clicking "add payment methods" should display a notice.
-		expectedToBeChecked.forEach( function ( checkboxName ) {
-			userEvent.click(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			);
-		} );
 
 		// No add currency text when no elements are checked.
 		expect(
@@ -204,12 +212,12 @@ describe( 'AddPaymentMethodsTask', () => {
 			screen.queryByText(
 				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
 			)
-		).toBeInTheDocument();
-		expect( screen.getByText( 'Add payment methods' ) ).toBeEnabled();
+		).not.toBeInTheDocument();
+		expect( screen.getByText( 'Add payment methods' ) ).not.toBeEnabled();
 		expect( useSettings ).toHaveBeenCalled();
 
 		// The payment methods should all be checked.
-		const expectedToBeChecked = [
+		const expectedToBeUnchecked = [
 			'Bancontact',
 			'giropay',
 			'iDEAL',
@@ -218,25 +226,32 @@ describe( 'AddPaymentMethodsTask', () => {
 			'Sofort',
 		];
 
-		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
+		expectedToBeUnchecked.forEach( function ( checkboxName ) {
+			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
 		} );
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
 		).not.toBeInTheDocument();
 
+		jest.useFakeTimers();
+		act( () => {
+			userEvent.click( screen.getByLabelText( 'Przelewy24 (P24)' ) );
+			jest.runAllTimers();
+		} );
+
+		expect( screen.getByText( 'Add payment methods' ) ).toBeEnabled();
+
+		expect(
+			screen.queryByText(
+				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
+			)
+		).toBeInTheDocument();
+
 		userEvent.click( screen.getByText( 'Add payment methods' ) );
 
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
-			'bancontact',
-			'giropay',
 			'p24',
-			'ideal',
-			'sepa_debit',
-			'sofort',
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
@@ -253,8 +268,8 @@ describe( 'AddPaymentMethodsTask', () => {
 			'card',
 			'bancontact',
 			'giropay',
-			'ideal',
 			'p24',
+			'ideal',
 			'sofort',
 		];
 		useEnabledPaymentMethodIds.mockReturnValue( [
@@ -272,7 +287,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		);
 
 		// The payment methods should all be checked.
-		const expectedToBeChecked = [
+		const expectedToBeUnchecked = [
 			'Bancontact',
 			'giropay',
 			'iDEAL',
@@ -281,24 +296,18 @@ describe( 'AddPaymentMethodsTask', () => {
 			'Sofort',
 		];
 
-		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
+		expectedToBeUnchecked.forEach( function ( checkboxName ) {
+			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
 		} );
 
+		jest.useFakeTimers();
 		// Uncheck methods.
-		const methodsToUncheck = [
-			'Bancontact',
-			'giropay',
-			'iDEAL',
-			'Przelewy24 (P24)',
-			'Sofort',
-		];
-		methodsToUncheck.forEach( function ( checkboxName ) {
-			userEvent.click(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			);
+		act( () => {
+			const methodsToCheck = [ 'Bancontact', 'giropay' ];
+			methodsToCheck.forEach( function ( checkboxName ) {
+				userEvent.click( screen.getByLabelText( checkboxName ) );
+				jest.runAllTimers();
+			} );
 		} );
 
 		userEvent.click( screen.getByText( 'Add payment methods' ) );
@@ -306,7 +315,8 @@ describe( 'AddPaymentMethodsTask', () => {
 		// Methods are removed.
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
-			'sepa_debit',
+			'bancontact',
+			'giropay',
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
@@ -320,26 +330,36 @@ describe( 'AddPaymentMethodsTask', () => {
 
 	it( 'should not allow the inactive ones to be selected', async () => {
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: upeCapabilityStatuses.ACTIVE,
-			bancontact_payments: upeCapabilityStatuses.INACTIVE,
-			giropay_payments: upeCapabilityStatuses.PENDING_APPROVAL,
-			ideal_payments: upeCapabilityStatuses.ACTIVE,
-			p24_payments: upeCapabilityStatuses.INACTIVE,
-			sepa_debit_payments: upeCapabilityStatuses.PENDING_VERIFICATION,
-			sofort_payments: upeCapabilityStatuses.ACTIVE,
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			bancontact_payments: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			giropay_payments: {
+				status: upeCapabilityStatuses.PENDING_APPROVAL,
+				requirements: [],
+			},
+			ideal_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			p24_payments: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			sepa_debit_payments: {
+				status: upeCapabilityStatuses.PENDING_VERIFICATION,
+				requirements: [],
+			},
+			sofort_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
 		} );
-		useEnabledPaymentMethodIds.mockReturnValue( [
-			[
-				'card',
-				'bancontact',
-				'giropay',
-				'p24',
-				'ideal',
-				'sepa_debit',
-				'sofort',
-			],
-			() => null,
-		] );
+
 		render(
 			<SettingsContextProvider>
 				<WizardTaskContext.Provider
@@ -349,33 +369,59 @@ describe( 'AddPaymentMethodsTask', () => {
 				</WizardTaskContext.Provider>
 			</SettingsContextProvider>
 		);
-		// The payment methods should all be checked.
-		const expectedToBeChecked = [
-			'giropay',
-			'iDEAL',
-			'SEPA Direct Debit',
-			'Sofort',
-		];
 
-		expectedToBeChecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).toBeChecked();
-		} );
+		const expectedToBeDisabled = [ 'Bancontact', 'Przelewy24 (P24)' ];
 
-		const expectedToBeUnchecked = [ 'Bancontact', 'Przelewy24 (P24)' ];
-
-		expectedToBeUnchecked.forEach( function ( checkboxName ) {
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).not.toBeChecked();
+		expectedToBeDisabled.forEach( function ( checkboxName ) {
+			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
+			expect( screen.getByLabelText( checkboxName ) ).toBeDisabled();
 			// Click the inactive checkbox, to see if it gets enabled.
-			userEvent.click(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			);
-			expect(
-				screen.getByRole( 'checkbox', { name: checkboxName } )
-			).not.toBeChecked();
+			userEvent.click( screen.getByLabelText( checkboxName ) );
+			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
 		} );
+	} );
+
+	it( 'should render the activation modal when requirements exist for the payment method', () => {
+		const setCompletedMock = jest.fn();
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ], jest.fn() ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'sofort' ] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			sofort_payments: {
+				status: upeCapabilityStatuses.UNREQUESTED,
+				requirements: [ 'company.tax_id' ],
+			},
+		} );
+
+		render(
+			<SettingsContextProvider>
+				<WizardTaskContext.Provider
+					value={ { setCompleted: setCompletedMock, isActive: true } }
+				>
+					<AddPaymentMethodsTask />
+				</WizardTaskContext.Provider>
+			</SettingsContextProvider>
+		);
+
+		expect( screen.queryByLabelText( 'Sofort' ) ).toBeInTheDocument();
+
+		const cardCheckbox = screen.getByLabelText( 'Sofort' );
+
+		expect( cardCheckbox ).not.toBeChecked();
+
+		jest.useFakeTimers();
+
+		act( () => {
+			// Enabling a PM with requirements should show the activation modal
+			userEvent.click( cardCheckbox );
+			jest.runAllTimers();
+		} );
+
+		expect(
+			screen.queryByText(
+				/You need to provide more information to enable Sofort on your checkout/
+			)
+		).toBeInTheDocument();
+
+		jest.useRealTimers();
 	} );
 } );

@@ -184,6 +184,11 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				</p>
 			<?php endif; ?>
 			<?php
+
+			// Add saved payment methods & fieldset.
+
+			do_action( 'wcpay_payment_fields_giropay', $this->id );
+
 		} catch ( \Exception $e ) {
 			// Output the error message.
 			?>

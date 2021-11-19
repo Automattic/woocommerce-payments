@@ -94,7 +94,6 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$event_object          = $this->get_event_property( $event_data, 'object' );
 		$wcpay_subscription_id = $this->get_event_property( $event_object, 'subscription' );
 		$wcpay_invoice_id      = $this->get_event_property( $event_object, 'id' );
-		$wcpay_intent_id       = $this->get_event_property( $event_object, 'payment_intent' );
 		$subscription          = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
 
 		if ( ! $subscription ) {
@@ -123,8 +122,10 @@ class WC_Payments_Subscriptions_Event_Handler {
 			$order->payment_complete();
 		}
 
-		// Add the payment intent data to the order.
-		$this->invoice_service->get_and_attach_intent_info_to_order( $order, $wcpay_intent_id );
+		if ( isset( $event_object['payment_intent'] ) ) {
+			// Add the payment intent data to the order.
+			$this->invoice_service->get_and_attach_intent_info_to_order( $order, $event_object['payment_intent'] );
+		}
 
 		// Remove pending invoice ID in case one was recorded for previous failed renewal attempts.
 		$this->invoice_service->mark_pending_invoice_paid_for_subscription( $subscription );

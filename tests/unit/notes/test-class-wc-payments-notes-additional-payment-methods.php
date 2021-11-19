@@ -28,7 +28,7 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WP_UnitTestCase 
 		$note = WC_Payments_Notes_Additional_Payment_Methods::get_note();
 
 		$this->assertSame( 'Boost your sales by accepting new payment methods', $note->get_title() );
-		$this->assertSame( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments. <a href="https://docs.woocommerce.com/document/payments/additional-payment-methods/" target="wcpay_upe_learn_more">Learn more</a>', $note->get_content() );
+		$this->assertSame( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments. <a href="https://woocommerce.com/document/payments/additional-payment-methods/" target="wcpay_upe_learn_more">Learn more</a>', $note->get_content() );
 		$this->assertSame( 'info', $note->get_type() );
 		$this->assertSame( 'wc-payments-notes-additional-payment-methods', $note->get_name() );
 		$this->assertSame( 'woocommerce-payments', $note->get_source() );

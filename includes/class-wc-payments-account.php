@@ -50,7 +50,6 @@ class WC_Payments_Account {
 		add_action( self::ACCOUNT_CACHE_REFRESH_ACTION, [ $this, 'handle_account_cache_refresh' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
-		add_filter( 'woocommerce_debug_tools', [ $this, 'debug_tool' ] );
 	}
 
 	/**
@@ -58,21 +57,6 @@ class WC_Payments_Account {
 	 */
 	public function clear_cache() {
 		delete_option( self::ACCOUNT_OPTION );
-	}
-
-	/**
-	 * Add clear account cache tool to WooCommerce debug tools.
-	 *
-	 * @param array $tools List of current available tools.
-	 */
-	public function debug_tool( $tools ) {
-		$tools['clear_wcpay_account_cache'] = [
-			'name'     => __( 'Clear WooCommerce Payments account cache', 'woocommerce-payments' ),
-			'button'   => __( 'Clear', 'woocommerce-payments' ),
-			'desc'     => __( 'This tool will clear the account cached values used in WooCommerce Payments.', 'woocommerce-payments' ),
-			'callback' => [ $this, 'refresh_account_data' ],
-		];
-		return $tools;
 	}
 
 	/**
@@ -210,6 +194,16 @@ class WC_Payments_Account {
 	public function get_fees() {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['fees'] ) ? $account['fees'] : [];
+	}
+
+	/**
+	 * Gets the current account email for rendering on the settings page.
+	 *
+	 * @return string Email.
+	 */
+	public function get_account_email() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['email'] ) ? $account['email'] : [];
 	}
 
 	/**
@@ -650,22 +644,27 @@ class WC_Payments_Account {
 	/**
 	 * Gets and caches the data for the account connected to this site.
 	 *
+	 * @param bool $force_refresh Forces data to be fetched from the server, rather than using the cache.
+	 *
 	 * @return array|bool Account data or false if failed to retrieve account data.
 	 */
-	public function get_cached_account_data() {
+	public function get_cached_account_data( bool $force_refresh = false ) {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
 
-		$account = $this->read_account_from_cache();
+		// If we want to force a refresh, we can skip this logic and go straight to the server request.
+		if ( ! $force_refresh ) {
+			$account = $this->read_account_from_cache();
 
-		if ( $this->is_valid_cached_account( $account ) ) {
-			return $account;
-		}
+			if ( $this->is_valid_cached_account( $account ) ) {
+				return $account;
+			}
 
-		// If the option contains the error value, return false early and do not attempt another API call.
-		if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
-			return false;
+			// If the option contains the error value, return false early and do not attempt another API call.
+			if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
+				return false;
+			}
 		}
 
 		try {
@@ -960,7 +959,7 @@ class WC_Payments_Account {
 	 * then fetch the account data from the server, also forcing it to be re-cached.
 	 */
 	public function handle_account_cache_refresh() {
-		$this->refresh_account_data();
+		$this->get_cached_account_data( true );
 	}
 
 	/**
