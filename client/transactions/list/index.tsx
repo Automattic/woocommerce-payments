@@ -228,13 +228,14 @@ export const TransactionsList = (
 				: [];
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 
-		const customerName = txn.order ? (
-			<Link href={ txn.order.customer_url ?? '' }>
-				{ txn.customer_name }
-			</Link>
-		) : (
-			txn.customer_name
-		);
+		const customerName =
+			txn.order && txn.order.customer_url ? (
+				<Link href={ txn.order.customer_url ?? '' }>
+					{ txn.customer_name }
+				</Link>
+			) : (
+				txn.customer_name
+			);
 		const customerEmail = txn.order ? (
 			<Link href={ txn.order.customer_url ?? '' }>
 				{ txn.customer_email }

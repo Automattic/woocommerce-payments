@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
 Tested up to: 5.8.1
 Requires PHP: 7.0
-Stable tag: 3.2.3
+Stable tag: 3.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,12 +98,22 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.3.0 - 2021-xx-xx =
-* Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
+= 3.4.0 - 2021-xx-xx =
+* Add - Allow UI customizations on checkout payment fields.
+* Update - Display hardware costs for the period in the transaction list with link to the details page
+* Fix - Incorrect customer links on Transactions page.
+* Fix - Incorrect prices in Payment Request Button for certain currencies.
+
+= 3.3.0 - 2021-11-18 =
+* Add - Add Idempotency Key to POST headers.
+* Add - Add dispute order notes to Edit Order page.
+* Fix - Show a specific message instead of a generic one in the checkout block when non-UPE payment processing fails.
 * Update - Avoid having invalid intervals (greater than 1 year) in subscription products.
 * Update - The subscription fee label in the transaction timeline.
+* Update - Show red setup badge after 3 days instead of 7
 * Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
 * Add - Add compatibility between Multi-Currency and WooCommerce Pre-Orders.
+* Fix - Do not show default currency selector on Account Details page when only one currency is available.
 * Add - Add filters to disable or filter Multi-Currency sql query clauses for analytics.
 * Fix - Display risk for payment methods without risk assessment
 * Fix - Use configured domain instead of current domain for Apple Pay verification.
@@ -115,17 +125,14 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
 * Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
 * Fix - UPE element not remounting on checkout update
-* Fix - Validate subscription product create and update args as well as subscription item data before submitting them to server.
+* Fix - Validate subscription product create and update args before submitting them to server.
 * Fix - Improve error messages when the minimum order amount has not been reached and allow fields to be displayed with less than the minimum amount.
 * Fix - Add consistent margins to the recurring taxes totals row on the Checkout and Cart block for subscription line items.
 * Fix - Fatal error due on subscription orders with no created date in order row template.
 * Fix - Fatal error on the customer payment page for subscription renewal orders with deleted products.
 * Fix - Misleading subscription order note on payment method change.
 * Fix - Incorrect error message when card ZIP validation fails.
-* Fix - Incorrect prices in Payment Request Button for certain currencies.
-* Update - Display hardware costs for the period in the transaction list with link to the details page
 * Add - `Requires PHP` and `Requires at least` to the main plugin file.
-* Add - Allow UI customizations on checkout payment fields.
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
