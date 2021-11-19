@@ -54,7 +54,7 @@ const EnableUpePreviewTask = () => {
 						components: {
 							learnMoreLink: (
 								// eslint-disable-next-line max-len
-								<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#introduction">
+								<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#introduction">
 									{ __(
 										'Learn more',
 										'woocommerce-payments'

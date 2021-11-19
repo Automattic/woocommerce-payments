@@ -9,9 +9,10 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 4.4
- * WC tested up to: 5.8.0
- * Requires WP: 5.6
- * Version: 3.2.3
+ * WC tested up to: 5.9.0
+ * Requires at least: 5.6
+ * Requires PHP: 7.0
+ * Version: 3.3.0
  *
  * @package WooCommerce\Payments
  */
@@ -106,7 +107,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 	 * Initialise subscriptions-core if WC Subscriptions (the plugin) isn't loaded
 	 */
 	function wcpay_init_subscriptions_core() {
-		if ( ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+		if ( ! class_exists( 'WooCommerce' ) || ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			return;
 		}
 
@@ -128,7 +129,15 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 				}
 			}
 
-			return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $plugin_slug );
+			if ( class_exists( 'Automattic\WooCommerce\Admin\PluginsHelper' ) ) {
+				return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $plugin_slug );
+			} else {
+				if ( ! function_exists( 'is_plugin_active' ) ) {
+					include_once ABSPATH . 'wp-admin/includes/plugin.php';
+				}
+
+				return is_plugin_active( $plugin_slug );
+			}
 		};
 
 		$is_subscriptions_active = $is_plugin_active( 'woocommerce-subscriptions' );
@@ -149,7 +158,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 		new WC_Subscriptions_Core_Plugin();
 	}
 }
-wcpay_init_subscriptions_core();
+add_action( 'plugins_loaded', 'wcpay_init_subscriptions_core', 0 );
 
 /**
  * Check if WCPay is installed alongside an old version of Jetpack (8.1 or earlier). Due to the autoloader code in those old

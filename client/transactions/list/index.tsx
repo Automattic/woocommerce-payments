@@ -199,7 +199,14 @@ export const TransactionsList = (
 	);
 
 	const rows = transactions.map( ( txn ) => {
-		const detailsURL = getDetailsURL( txn.charge_id, 'transactions' );
+		const detailsURL =
+			getDetailsURL( txn.charge_id, 'transactions' ) +
+			'&transaction_id=' +
+			txn.transaction_id +
+			'&type=' +
+			( txn.metadata && 'card_reader_fee' === txn.metadata.charge_type
+				? txn.metadata.charge_type
+				: txn.type );
 		const clickable = ( children: JSX.Element | string ) => (
 			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 		);
@@ -221,13 +228,14 @@ export const TransactionsList = (
 				: [];
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 
-		const customerName = txn.order ? (
-			<Link href={ txn.order.customer_url ?? '' }>
-				{ txn.customer_name }
-			</Link>
-		) : (
-			txn.customer_name
-		);
+		const customerName =
+			txn.order && txn.order.customer_url ? (
+				<Link href={ txn.order.customer_url ?? '' }>
+					{ txn.customer_name }
+				</Link>
+			) : (
+				txn.customer_name
+			);
 		const customerEmail = txn.order ? (
 			<Link href={ txn.order.customer_url ?? '' }>
 				{ txn.customer_email }
@@ -243,6 +251,36 @@ export const TransactionsList = (
 			/>
 		);
 		const currency = txn.currency.toUpperCase();
+
+		const dataType = txn.metadata ? txn.metadata.charge_type : txn.type;
+		const formatAmount = () => {
+			const amount = txn.metadata ? 0 : txn.amount;
+
+			return {
+				value: amount / 100,
+				display: clickable(
+					<ConvertedAmount
+						amount={ amount }
+						currency={ currency }
+						fromAmount={ amount }
+						fromCurrency={ txn.customer_currency.toUpperCase() }
+					/>
+				),
+			};
+		};
+		const formatFees = () => {
+			const isCardReader =
+				txn.metadata && txn.metadata.charge_type === 'card_reader_fee';
+			return {
+				value: ( isCardReader ? txn.amount : txn.fees ) / 100,
+				display: clickable(
+					formatCurrency(
+						isCardReader ? txn.amount : txn.fees * -1,
+						currency
+					)
+				),
+			};
+		};
 
 		// Map transaction into table row.
 		const data = {
@@ -260,9 +298,9 @@ export const TransactionsList = (
 				),
 			},
 			type: {
-				value: displayType[ txn.type ],
+				value: displayType[ dataType ],
 				display: clickable(
-					displayType[ txn.type ] || formatStringValue( txn.type )
+					displayType[ dataType ] || formatStringValue( dataType )
 				),
 			},
 			source: {
@@ -293,22 +331,9 @@ export const TransactionsList = (
 				value: txn.customer_country,
 				display: clickable( txn.customer_country ),
 			},
-			amount: {
-				value: txn.amount / 100,
-				display: clickable(
-					<ConvertedAmount
-						amount={ txn.amount }
-						currency={ currency }
-						fromAmount={ txn.customer_amount }
-						fromCurrency={ txn.customer_currency.toUpperCase() }
-					/>
-				),
-			},
+			amount: formatAmount(),
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
-			fees: {
-				value: txn.fees / 100,
-				display: clickable( formatCurrency( txn.fees * -1, currency ) ),
-			},
+			fees: formatFees(),
 			net: {
 				value: txn.net / 100,
 				display: clickable(
