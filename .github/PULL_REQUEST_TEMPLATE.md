@@ -35,7 +35,7 @@ Add as many details as possible to help others reproduce the issue and test the 
 
 -------------------
 
-- [ ] Added changelog entry (or does not apply)
+- [ ] Added changelog entries to both `readme.txt` and `changelog.txt` (or does not apply)
 - [ ] Covered with tests (or have a good reason not to test in description ☝️)
 - [ ] Tested on mobile (or does not apply)
 
