@@ -11,6 +11,7 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
+use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -1690,15 +1691,7 @@ class WC_Payments_API_Client {
 			$object['order'] = [
 				'number'       => $order->get_order_number(),
 				'url'          => $order->get_edit_order_url(),
-				'customer_url' => add_query_arg(
-					[
-						'page'      => 'wc-admin',
-						'path'      => '/customers',
-						'filter'    => 'single_customer',
-						'customers' => $order->get_customer_id(),
-					],
-					'admin.php'
-				),
+				'customer_url' => $this->get_customer_url( $order ),
 			];
 
 			if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
@@ -1715,6 +1708,30 @@ class WC_Payments_API_Client {
 		}
 
 		return $object;
+	}
+
+	/**
+	 * Generates url to single customer in analytics table.
+	 *
+	 * @param WC_Order $order The Order.
+	 * @return string|null
+	 */
+	private function get_customer_url( $order ) {
+		$customer_id = DataStore::get_existing_customer_id_from_order( $order );
+
+		if ( ! $customer_id ) {
+			return null;
+		}
+
+		return add_query_arg(
+			[
+				'page'      => 'wc-admin',
+				'path'      => '/customers',
+				'filter'    => 'single_customer',
+				'customers' => $customer_id,
+			],
+			'admin.php'
+		);
 	}
 
 	/**
