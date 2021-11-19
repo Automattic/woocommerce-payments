@@ -481,7 +481,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     Jan 2, 2020 / 12:46PM
@@ -493,7 +493,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     Refund
@@ -505,7 +505,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $10.00 USD
@@ -517,7 +517,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $-0.50
@@ -529,7 +529,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $9.50 USD
@@ -551,7 +551,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     <span
@@ -581,7 +581,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     Jan 4, 2020 / 11:22PM
@@ -593,7 +593,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     Charge
@@ -605,7 +605,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     <div
@@ -639,7 +639,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     $-0.50
@@ -651,7 +651,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     $14.50 USD
@@ -673,7 +673,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     <span
@@ -1212,7 +1212,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     Jan 2, 2020 / 12:46PM
@@ -1224,7 +1224,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     Refund
@@ -1236,7 +1236,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $10.00 USD
@@ -1248,7 +1248,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $-0.50
@@ -1260,7 +1260,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $9.50 USD
@@ -1282,7 +1282,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     <span
@@ -1312,7 +1312,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     Jan 4, 2020 / 11:22PM
@@ -1324,7 +1324,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     Charge
@@ -1336,7 +1336,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     <div
@@ -1370,7 +1370,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     $-0.50
@@ -1382,7 +1382,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     $14.50 USD
@@ -1404,7 +1404,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     <span
@@ -1902,7 +1902,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     Jan 4, 2020 / 11:22PM
@@ -1914,7 +1914,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     Charge
@@ -1926,7 +1926,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     <div
@@ -1960,7 +1960,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     $-0.50
@@ -1972,7 +1972,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     $14.50 USD
@@ -1994,7 +1994,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     <span
@@ -2552,7 +2552,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     Jan 2, 2020 / 12:46PM
@@ -2564,7 +2564,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     Refund
@@ -2576,7 +2576,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $10.00 USD
@@ -2588,7 +2588,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $-0.50
@@ -2600,7 +2600,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $9.50 USD
@@ -2632,7 +2632,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     <span
@@ -2662,7 +2662,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     Jan 4, 2020 / 11:22PM
@@ -2674,7 +2674,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     Charge
@@ -2686,7 +2686,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     <div
@@ -2720,7 +2720,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     $-0.50
@@ -2732,7 +2732,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     $14.50 USD
@@ -2757,7 +2757,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     <span
@@ -3311,7 +3311,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     Jan 2, 2020 / 12:46PM
@@ -3323,7 +3323,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     Refund
@@ -3335,7 +3335,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $10.00 USD
@@ -3347,7 +3347,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $-0.50
@@ -3359,7 +3359,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $9.50 USD
@@ -3381,7 +3381,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     <span
@@ -3411,7 +3411,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     Jan 4, 2020 / 11:22PM
@@ -3423,7 +3423,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     Charge
@@ -3435,7 +3435,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     <div
@@ -3469,7 +3469,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     $-0.50
@@ -3481,7 +3481,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     $14.50 USD
@@ -3503,7 +3503,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     <span
@@ -4057,7 +4057,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     Jan 2, 2020 / 12:46PM
@@ -4069,7 +4069,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     Refund
@@ -4081,7 +4081,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $10.00 USD
@@ -4093,7 +4093,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $-0.50
@@ -4105,7 +4105,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     $9.50 USD
@@ -4127,7 +4127,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&type=refund"
                     tabindex="-1"
                   >
                     <span
@@ -4157,7 +4157,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     Jan 4, 2020 / 11:22PM
@@ -4169,7 +4169,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     Charge
@@ -4181,7 +4181,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     <div
@@ -4215,7 +4215,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     $-0.50
@@ -4227,7 +4227,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     $14.50 USD
@@ -4249,7 +4249,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&type=charge"
                     tabindex="-1"
                   >
                     <span

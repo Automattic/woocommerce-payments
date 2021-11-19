@@ -1,12 +1,17 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.3.0 - 2021-xx-xx =
+= 3.4.0 - 2021-xx-xx =
+* Add - Allow UI customizations on checkout payment fields.
+* Update - Display hardware costs for the period in the transaction list with link to the details page
+* Fix - Incorrect customer links on Transactions page.
+
+= 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
 * Add - Add dispute order notes to Edit Order page.
-* Update - Updated @woocommerce/components to remove ' from negative numbers on csv files
 * Fix - Show a specific message instead of a generic one in the checkout block when non-UPE payment processing fails.
 * Update - Avoid having invalid intervals (greater than 1 year) in subscription products.
 * Update - The subscription fee label in the transaction timeline.
+* Update - Show red setup badge after 3 days instead of 7
 * Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
 * Add - Add compatibility between Multi-Currency and WooCommerce Pre-Orders.
 * Fix - Do not show default currency selector on Account Details page when only one currency is available.
@@ -17,6 +22,7 @@
 * Fix - Error where url parameters would get cleared on order-pay page if currency switcher block used.
 * Fix - Currency format on order-pay page if currency was changed via switcher.
 * Fix - Do not create WooCommerce Payments Subscriptions when using payment methods other than WooCommerce Payments.
+* Fix - Show proper payment gateway title on checkout load before updated by JavaScript.
 * Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
 * Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
 * Fix - UPE element not remounting on checkout update
