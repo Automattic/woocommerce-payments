@@ -24,6 +24,10 @@ export function updateIsSavedCardsEnabled( isEnabled ) {
 	return updateSettingsValues( { is_saved_cards_enabled: isEnabled } );
 }
 
+export function updateIsCardPresentEligible( isEnabled ) {
+	return updateSettingsValues( { is_card_present_eligible: isEnabled } );
+}
+
 export function updatePaymentRequestButtonType( type ) {
 	return updateSettingsValues( { payment_request_button_type: type } );
 }
@@ -79,6 +83,12 @@ export function updateIsDebugLogEnabled( isEnabled ) {
 
 export function updateIsMultiCurrencyEnabled( isEnabled ) {
 	return updateSettingsValues( { is_multi_currency_enabled: isEnabled } );
+}
+
+export function updateIsWCPaySubscriptionsEnabled( isEnabled ) {
+	return updateSettingsValues( {
+		is_wcpay_subscriptions_enabled: isEnabled,
+	} );
 }
 
 export function updateAccountStatementDescriptor( accountStatementDescriptor ) {

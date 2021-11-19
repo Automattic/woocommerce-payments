@@ -21,6 +21,7 @@ import WizardTaskItem from '../wizard/task-item';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
+	useGetPaymentMethodStatuses,
 	useSettings,
 } from '../../data';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
@@ -28,26 +29,12 @@ import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/p
 import { LoadableBlock } from '../../components/loadable';
 import LoadableSettingsSection from '../../settings/loadable-settings-section';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
-import { upeMethods } from '../constants';
+import { upeCapabilityStatuses, upeMethods } from '../constants';
+import paymentMethodsMap from '../../payment-methods-map';
+import ConfirmPaymentMethodActivationModal from 'wcpay/payment-methods/activation-modal';
 
 const usePaymentMethodsCheckboxState = () => {
-	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
 	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {} );
-
-	useEffect( () => {
-		setPaymentMethodsState(
-			// by default, all the checkboxes should be "checked"
-			availablePaymentMethods
-				.filter( ( method ) => upeMethods.includes( method ) )
-				.reduce(
-					( map, paymentMethod ) => ( {
-						...map,
-						[ paymentMethod ]: true,
-					} ),
-					{}
-				)
-		);
-	}, [ availablePaymentMethods, setPaymentMethodsState ] );
 
 	const handleChange = useCallback(
 		( paymentMethodName, enabled ) => {
@@ -138,6 +125,7 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 
 const AddPaymentMethodsTask = () => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
+	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 	const { isActive } = useContext( WizardTaskContext );
 
 	// I am using internal state in this component
@@ -147,7 +135,16 @@ const AddPaymentMethodsTask = () => {
 	const [
 		paymentMethodsState,
 		handlePaymentMethodChange,
-	] = usePaymentMethodsCheckboxState();
+	] = usePaymentMethodsCheckboxState( availablePaymentMethods );
+
+	useEffect( () => {
+		availablePaymentMethods
+			.filter( ( method ) => upeMethods.includes( method ) )
+			.forEach( ( method ) => {
+				handlePaymentMethodChange( method, false );
+			} );
+	}, [ availablePaymentMethods, handlePaymentMethodChange ] );
+
 	const selectedMethods = useMemo(
 		() =>
 			Object.entries( paymentMethodsState )
@@ -155,6 +152,51 @@ const AddPaymentMethodsTask = () => {
 				.filter( Boolean ),
 		[ paymentMethodsState ]
 	);
+
+	const [ activationModalParams, handleActivationModalOpen ] = useState(
+		null
+	);
+
+	const completeActivation = ( itemId ) => {
+		paymentMethodsState[ itemId ] = true;
+		handlePaymentMethodChange( paymentMethodsState );
+		handleActivationModalOpen( null );
+	};
+
+	const getStatusAndRequirements = ( itemId ) => {
+		const stripeKey = paymentMethodsMap[ itemId ].stripe_key;
+		const stripeStatusContainer = paymentMethodStatuses[ stripeKey ] ?? [];
+		if ( ! stripeStatusContainer ) {
+			return {
+				status: upeCapabilityStatuses.UNREQUESTED,
+				requirements: [],
+			};
+		}
+		return {
+			status: stripeStatusContainer.status,
+			requirements: stripeStatusContainer.requirements,
+		};
+	};
+
+	const handleCheckClick = ( itemId, status ) => {
+		if ( status ) {
+			const statusAndRequirements = getStatusAndRequirements( itemId );
+			if (
+				'unrequested' === statusAndRequirements.status &&
+				0 < statusAndRequirements.requirements.length
+			) {
+				handleActivationModalOpen( {
+					id: itemId,
+					requirements: statusAndRequirements.requirements,
+				} );
+			} else {
+				completeActivation( itemId );
+			}
+		} else {
+			paymentMethodsState[ itemId ] = false;
+			handlePaymentMethodChange( paymentMethodsState );
+		}
+	};
 
 	return (
 		<WizardTaskItem
@@ -177,7 +219,7 @@ const AddPaymentMethodsTask = () => {
 						components: {
 							learnMoreLink: (
 								// eslint-disable-next-line max-len
-								<ExternalLink href="https://docs.woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
+								<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
 							),
 						},
 					} ) }
@@ -204,11 +246,26 @@ const AddPaymentMethodsTask = () => {
 													checked={
 														paymentMethodsState[
 															key
-														]
+														] &&
+														upeCapabilityStatuses.INACTIVE !==
+															getStatusAndRequirements(
+																key
+															).status
 													}
-													onChange={
-														handlePaymentMethodChange
+													status={
+														getStatusAndRequirements(
+															key
+														).status
 													}
+													onChange={ (
+														name,
+														status
+													) => {
+														handleCheckClick(
+															name,
+															status
+														);
+													} }
 													name={ key }
 												/>
 											)
@@ -216,6 +273,22 @@ const AddPaymentMethodsTask = () => {
 								</PaymentMethodCheckboxes>
 							</LoadableSettingsSection>
 						</LoadableBlock>
+						{ activationModalParams && (
+							<ConfirmPaymentMethodActivationModal
+								onClose={ () => {
+									handleActivationModalOpen( null );
+								} }
+								onConfirmClose={ () => {
+									completeActivation(
+										activationModalParams.id
+									);
+								} }
+								requirements={
+									activationModalParams.requirements
+								}
+								paymentMethod={ activationModalParams.id }
+							/>
+						) }
 					</CardBody>
 				</Card>
 				<CurrencyInformationForMethods

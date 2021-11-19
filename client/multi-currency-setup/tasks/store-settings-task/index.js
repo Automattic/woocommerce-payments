@@ -2,13 +2,7 @@
  * External dependencies
  */
 import React, { useContext, useState, useEffect } from 'react';
-import {
-	Button,
-	Card,
-	CardBody,
-	CheckboxControl,
-	Modal,
-} from '@wordpress/components';
+import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from 'interpolate-components';
 
@@ -18,6 +12,7 @@ import interpolateComponents from 'interpolate-components';
 import WizardTaskContext from '../../../additional-methods-setup/wizard/task/context';
 import CollapsibleBody from '../../../additional-methods-setup/wizard/collapsible-body';
 import WizardTaskItem from '../../wizard/task-item';
+import PreviewModal from '../../../multi-currency/preview-modal';
 import './index.scss';
 
 import { useStoreSettings } from 'wcpay/data';
@@ -60,10 +55,6 @@ const StoreSettingsTask = () => {
 		setPreviewModalOpen( true );
 	};
 
-	const handlePreviewModalCloseClick = () => {
-		setPreviewModalOpen( false );
-	};
-
 	const handleIsAutomaticSwitchEnabledClick = ( value ) => {
 		setIsAutomaticSwitchEnabledValue( value );
 	};
@@ -94,7 +85,7 @@ const StoreSettingsTask = () => {
 				},
 			} ) }
 			visibleDescription={ __(
-				'These settings can be changed any time by visiting the multi-currency settings',
+				'These settings can be changed any time by visiting the Multi-Currency settings',
 				'woocommerce-payments'
 			) }
 			index={ 2 }
@@ -102,7 +93,7 @@ const StoreSettingsTask = () => {
 			<CollapsibleBody className="multi-currency-settings-task__body">
 				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ __(
-						'These settings can be changed any time by visiting the multi-currency settings',
+						'These settings can be changed any time by visiting the Multi-Currency settings',
 						'woocommerce-payments'
 					) }
 				</p>
@@ -164,26 +155,16 @@ const StoreSettingsTask = () => {
 				>
 					{ __( 'Preview', 'woocommerce-payments' ) }
 				</Button>
-				{ isPreviewModalOpen && (
-					<Modal
-						title={ __( 'Preview', 'woocommerce-payments' ) }
-						isDismissible={ true }
-						className="multi-currency-setup-preview-modal"
-						shouldCloseOnClickOutside={ false }
-						onRequestClose={ handlePreviewModalCloseClick }
-					>
-						<iframe
-							title={ __( 'Preview', 'woocommerce-payments' ) }
-							className={ 'multi-currency-setup-preview-iframe' }
-							src={
-								'/?is_mc_onboarding_simulation=1&enable_storefront_switcher=' +
-								isStorefrontSwitcherEnabledValue +
-								'&enable_auto_currency=' +
-								isAutomaticSwitchEnabledValue
-							}
-						></iframe>
-					</Modal>
-				) }
+				<PreviewModal
+					isPreviewModalOpen={ isPreviewModalOpen }
+					setPreviewModalOpen={ setPreviewModalOpen }
+					isStorefrontSwitcherEnabledValue={
+						isStorefrontSwitcherEnabledValue
+					}
+					isAutomaticSwitchEnabledValue={
+						isAutomaticSwitchEnabledValue
+					}
+				/>
 			</CollapsibleBody>
 		</WizardTaskItem>
 	);

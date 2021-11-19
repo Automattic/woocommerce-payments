@@ -75,16 +75,20 @@ export const getTasks = ( {
 					'Update WooCommerce Payments business details',
 					'woocommerce-payments'
 				),
-				additionalInfo: accountDetailsTaskDescription,
+				content: accountDetailsTaskDescription,
 				completed: 'complete' === status,
-				onClick:
+				action:
 					'complete' === status
 						? undefined
 						: () => {
 								window.open( accountLink, '_blank' );
 						  },
+				actionLabel: __( 'Update', 'woocommerce-payments' ),
 				visible: true,
 				type: 'extension',
+				expandable: true,
+				expanded: true,
+				showActionButton: true,
 			},
 		isAccountOverviewTasksEnabled &&
 			wpcomReconnectUrl && {
@@ -94,15 +98,19 @@ export const getTasks = ( {
 					'Reconnect WooCommerce Payments',
 					'woocommerce-payments'
 				),
-				additionalInfo: __(
+				content: __(
 					'WooCommerce Payments is missing a connected WordPress.com account. ' +
 						'Some functionality will be limited without a connected account.',
 					'woocommerce-payments'
 				),
 				completed: false,
-				onClick: () => {
+				action: () => {
 					window.location.href = wpcomReconnectUrl;
 				},
+				actionLabel: __( 'Reconnect', 'woocommerce-payments' ),
+				expandable: true,
+				expanded: true,
+				showActionButton: true,
 			},
 		isAccountOverviewTasksEnabled &&
 			needsHttpsSetup && {
@@ -115,7 +123,7 @@ export const getTasks = ( {
 				completed: false,
 				onClick: () => {
 					window.open(
-						'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
+						'https://woocommerce.com/document/ssl-and-https/#section-7',
 						'_blank'
 					);
 				},

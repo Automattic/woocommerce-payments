@@ -9,11 +9,12 @@ namespace WCPay\MultiCurrency;
 
 use WC_Order;
 use WC_Order_Refund;
+use WC_Payments;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that contains multi-currency related support for WooCommerce analytics.
+ * Class that contains Multi-Currency related support for WooCommerce analytics.
  */
 class Analytics {
 	const PRIORITY_EARLY   = 1;
@@ -26,7 +27,7 @@ class Analytics {
 
 
 	/**
-	 * SQL string replacements made by the analytics multi-currency extension.
+	 * SQL string replacements made by the analytics Multi-Currency extension.
 	 *
 	 * @var array
 	 */
@@ -57,6 +58,10 @@ class Analytics {
 	public function init() {
 		if ( is_admin() ) {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+		}
+
+		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+			add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 		}
 
 		add_filter( 'woocommerce_analytics_update_order_stats_data', [ $this, 'update_order_stats_data' ], self::PRIORITY_LATEST, 2 );
@@ -104,7 +109,19 @@ class Analytics {
 	}
 
 	/**
-	 * When an order is updated in the stats table, perform a check to see if it is a multi currency order
+	 * Disables report caching. Used for development of analytics related functionality.
+	 * To disable report caching
+	 *
+	 * @param array $args Filter arguments.
+	 *
+	 * @return boolean
+	 */
+	public function disable_report_caching( $args ): bool {
+		return false;
+	}
+
+	/**
+	 * When an order is updated in the stats table, perform a check to see if it is a Multi-Currency order
 	 * and convert the information into the store's default currency if it is.
 	 *
 	 * @param array    $args  - An array of the arguments to be inserted into the order stats table.
@@ -147,6 +164,10 @@ class Analytics {
 			return $clauses;
 		}
 
+		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_clauses', false ) ) {
+			return $clauses;
+		}
+
 		$context_parts = explode( '_', $context );
 		$context_page  = $context_parts[0] ?? 'generic';
 		$context_type  = $context_parts[1] ?? null;
@@ -186,7 +207,7 @@ class Analytics {
 			$new_clauses[] = ', wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value AS stripe_exchange_rate';
 		}
 
-		return $new_clauses;
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_select_clauses', $new_clauses );
 	}
 
 	/**
@@ -200,6 +221,10 @@ class Analytics {
 	public function filter_join_clauses( array $clauses, $context ): array {
 		global $wpdb;
 
+		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_join_clauses', false ) ) {
+			return $clauses;
+		}
+
 		$context_parts = explode( '_', $context );
 		$context_page  = $context_parts[0] ?? 'generic';
 
@@ -209,7 +234,7 @@ class Analytics {
 		$exchange_rate_tbl        = $prefix . 'exchange_rate_postmeta';
 		$stripe_exchange_rate_tbl = $prefix . 'stripe_exchange_rate_postmeta';
 
-		// If this is a suppotted context, add the joins. If this is an unsupported context, see if we can add the joins.
+		// If this is a supported context, add the joins. If this is an unsupported context, see if we can add the joins.
 		if ( $this->is_supported_context( $context ) && ( in_array( $context_page, self::SUPPORTED_CONTEXTS, true ) || $this->is_order_stats_table_used_in_clauses( $clauses ) ) ) {
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.post_id AND {$currency_tbl}.meta_key = '_order_currency'";
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.post_id AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
@@ -217,7 +242,7 @@ class Analytics {
 			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.post_id AND ${stripe_exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
 		}
 
-		return $clauses;
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_join_clauses', $clauses );
 	}
 
 	/**
@@ -256,7 +281,7 @@ class Analytics {
 
 	/**
 	 * Check whether the order stats table is referenced in the clauses, to work out whether
-	 * to add the JOIN columns for multi currency.
+	 * to add the JOIN columns for Multi-Currency.
 	 *
 	 * @param array $clauses The array containing the clauses used.
 	 *

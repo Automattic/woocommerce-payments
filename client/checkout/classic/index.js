@@ -212,6 +212,17 @@ jQuery( function ( $ ) {
 		if ( $( '#wcpay-sepa-element' ).length ) {
 			sepaElement.mount( '#wcpay-sepa-element' );
 		}
+
+		/*
+		 * Trigger this event to ensure the tokenization-form.js init
+		 * is executed.
+		 *
+		 * This script handles the radio input interaction when toggling
+		 * between the user's saved card / entering new card details.
+		 *
+		 * Ref: https://github.com/woocommerce/woocommerce/blob/2429498/assets/js/frontend/tokenization-form.js#L109
+		 */
+		$( document.body ).trigger( 'wc-credit-card-form-init' );
 	}
 
 	// Update the validation state based on the element's state.
@@ -506,6 +517,15 @@ jQuery( function ( $ ) {
 
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
+		if (
+			'woocommerce_payments' !==
+			$(
+				"#add_payment_method input:checked[name='payment_method']"
+			).val()
+		) {
+			return;
+		}
+
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
 			let paymentMethodDetails = cardPayment;
 			if ( isWCPaySepaChosen() ) {

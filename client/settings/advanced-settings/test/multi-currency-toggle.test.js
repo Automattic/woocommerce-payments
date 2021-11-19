@@ -25,12 +25,12 @@ describe( 'MultiCurrencyToggle', () => {
 		render( <MultiCurrencyToggle /> );
 
 		expect(
-			screen.queryByLabelText( 'Enable multi-currency' )
+			screen.queryByLabelText( 'Enable Multi-Currency' )
 		).toBeInTheDocument();
 	} );
 
 	it.each( [ [ true ], [ false ] ] )(
-		'updates multi currency enabled state to %s when toggling checkbox',
+		'updates Multi-Currency enabled state to %s when toggling checkbox',
 		( isEnabled ) => {
 			const updateIsMultiCurrencyEnabledMock = jest.fn();
 			useMultiCurrency.mockReturnValue( [
@@ -41,7 +41,7 @@ describe( 'MultiCurrencyToggle', () => {
 			render( <MultiCurrencyToggle /> );
 
 			const enableMultiCurrencyCheckbox = screen.getByLabelText(
-				'Enable multi-currency'
+				'Enable Multi-Currency'
 			);
 
 			userEvent.click( enableMultiCurrencyCheckbox );

@@ -131,7 +131,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
 		// Enqueue JS hack when Subscriptions does not provide the meta input filter.
-		if ( version_compare( WC_Subscriptions::$version, '3.0.7', '<=' ) ) {
+		if ( $this->is_subscriptions_plugin_active() && version_compare( $this->get_subscriptions_plugin_version(), '3.0.7', '<=' ) ) {
 			add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
 		}
 
@@ -371,10 +371,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	public function maybe_add_token_to_subscription_order( $order, $token ) {
 		if ( $this->is_subscriptions_enabled() ) {
 			$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
-			foreach ( $subscriptions as $subscription ) {
-				$payment_token = $this->get_payment_token( $subscription );
-				if ( is_null( $payment_token ) || $token->get_id() !== $payment_token->get_id() ) {
-					$subscription->add_payment_token( $token );
+			if ( is_array( $subscriptions ) ) {
+				foreach ( $subscriptions as $subscription ) {
+					$payment_token = $this->get_payment_token( $subscription );
+					if ( is_null( $payment_token ) || $token->get_id() !== $payment_token->get_id() ) {
+						$subscription->add_payment_token( $token );
+					}
 				}
 			}
 		}

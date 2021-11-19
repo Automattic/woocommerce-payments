@@ -40,6 +40,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			// Create subscription product without signup fee
 			await merchantWCP.createSubscriptionProduct(
 				productName,
+				'month',
 				false,
 				true
 			);

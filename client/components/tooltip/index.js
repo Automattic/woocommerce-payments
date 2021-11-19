@@ -42,6 +42,7 @@ const Tooltip = ( { isVisible, onHide = noop, ...props } ) => {
 			onFocus={ handleMouseEnter }
 			onBlur={ handleMouseLeave }
 			onClick={ handleMouseClick }
+			type={ 'button' }
 		>
 			<TooltipBase
 				{ ...props }

@@ -35,6 +35,71 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<location_id>\w+)',
+			[
+				'methods'             => WP_REST_Server::DELETABLE,
+				'callback'            => [ $this, 'delete_location' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<location_id>\w+)',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'update_location' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'display_name' => [
+						'type'     => 'string',
+						'required' => false,
+					],
+					'address'      => [
+						'type'     => 'object',
+						'required' => false,
+					],
+				],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<location_id>\w+)',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_location' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'create_location' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'display_name' => [
+						'type'     => 'string',
+						'required' => true,
+					],
+					'address'      => [
+						'type'     => 'object',
+						'required' => true,
+					],
+				],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_all_locations' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -45,59 +110,193 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_store_location( $request ) {
+		$store_address    = WC()->countries;
+		$location_address = array_filter(
+			[
+				'city'        => $store_address->get_base_city(),
+				'country'     => $store_address->get_base_country(),
+				'line1'       => $store_address->get_base_address(),
+				'line2'       => $store_address->get_base_address_2(),
+				'postal_code' => $store_address->get_base_postcode(),
+				'state'       => $store_address->get_base_state(),
+			]
+		);
+
+		// If address is not populated, emit an error and specify the URL where this can be done.
+		// See also https://tosbourn.com/list-of-countries-without-a-postcode/ when launching in new countries.
+		$is_address_populated = isset( $location_address['country'], $location_address['city'], $location_address['postal_code'], $location_address['line1'] );
+		if ( ! $is_address_populated ) {
+			return rest_ensure_response(
+				new \WP_Error(
+					'store_address_is_incomplete',
+					admin_url(
+						add_query_arg(
+							[
+								'page' => 'wc-settings',
+								'tab'  => 'general',
+							],
+							'admin.php'
+						)
+					)
+				)
+			);
+		}
+
 		try {
-			$name    = get_bloginfo();
-			$address = [
-				'city'        => WC()->countries->get_base_city(),
-				'country'     => WC()->countries->get_base_country(),
-				'line1'       => WC()->countries->get_base_address(),
-				'line2'       => WC()->countries->get_base_address_2(),
-				'postal_code' => WC()->countries->get_base_postcode(),
-				'state'       => WC()->countries->get_base_state(),
-			];
-
-			// Load the cached locations or retrieve them from the API.
-			$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
-			if ( ! $locations ) {
-				$locations = $this->api_client->get_terminal_locations();
-				set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
-			}
-
 			// Check the existing locations to see if one of them matches the store.
-			foreach ( $locations as $location ) {
+			$name = get_bloginfo();
+			foreach ( $this->fetch_locations() as $location ) {
 				if (
 					$location['display_name'] === $name
-					&& count( array_intersect( $location['address'], $address ) ) === count( $address )
+					&& count( array_intersect( $location['address'], $location_address ) ) === count( $location_address )
 				) {
-					return $this->format_location_response( $location );
+					return rest_ensure_response( $this->extract_location_fields( $location ) );
 				}
 			}
 
-			// Create a new location, and add it to the cached list.
-			$location    = $this->api_client->create_terminal_location( $name, $address );
-			$locations[] = $location;
-			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
+			// If the location is missing, Create a new one and actualize the transient.
+			$location = $this->api_client->create_terminal_location( $name, $location_address );
+			$this->reload_locations();
 
-			return $this->format_location_response( $location );
+			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
 	}
 
 	/**
-	 * Formats a Stripe terminal location object into a correct response.
+	 * Proxies the delete location request to the server.
+	 *
+	 * @param WP_REST_REQUEST $request Request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function delete_location( $request ) {
+		try {
+			// Delete the location and reload the transient.
+			$location = $this->api_client->delete_terminal_location( $request->get_param( 'location_id' ) );
+			$this->reload_locations();
+
+			return rest_ensure_response( $location );
+		} catch ( API_Exception $e ) {
+			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Proxies the update location request to the server.
+	 *
+	 * @param WP_REST_REQUEST $request Request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function update_location( $request ) {
+		try {
+			// Update the location and reload the transient.
+			$location = $this->api_client->update_terminal_location( $request->get_param( 'location_id' ), $request['display_name'], $request['address'] );
+			$this->reload_locations();
+
+			return rest_ensure_response( $this->extract_location_fields( $location ) );
+		} catch ( API_Exception $e ) {
+			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Proxies the get location request to the server.
+	 *
+	 * @param WP_REST_REQUEST $request Request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_location( $request ) {
+		try {
+			// Check if the location is already in the transient.
+			$location_id = $request->get_param( 'location_id' );
+			foreach ( $this->fetch_locations() as $location ) {
+				if ( $location['id'] === $location_id ) {
+					return rest_ensure_response( $this->extract_location_fields( $location ) );
+				}
+			}
+
+			// If the location is missing, fetch it individually and reload the transient.
+			$location = $this->api_client->get_terminal_location( $location_id );
+			$this->reload_locations();
+
+			return rest_ensure_response( $this->extract_location_fields( $location ) );
+		} catch ( API_Exception $e ) {
+			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Proxies the create location request to the server.
+	 *
+	 * @param WP_REST_REQUEST $request Request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_location( $request ) {
+		try {
+			// Create location and reload the transient.
+			$location = $this->api_client->create_terminal_location( $request['display_name'], $request['address'] );
+			$this->reload_locations();
+
+			return rest_ensure_response( $this->extract_location_fields( $location ) );
+		} catch ( API_Exception $e ) {
+			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Proxies the get all locations request to the server.
+	 *
+	 * @param WP_REST_REQUEST $request Request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_all_locations( $request ) {
+		try {
+			return rest_ensure_response( array_map( [ $this, 'extract_location_fields' ], $this->fetch_locations() ) );
+		} catch ( API_Exception $e ) {
+			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Extracts the relevant fields from a terminal location object.
 	 *
 	 * @param array $location The location.
-	 * @return WP_REST_Response
+	 * @return array          The picked fields from location object.
 	 */
-	private function format_location_response( $location ) {
-		return rest_ensure_response(
-			[
-				'id'           => $location['id'],
-				'address'      => $location['address'],
-				'display_name' => $location['display_name'],
-				'livemode'     => $location['livemode'],
-			]
-		);
+	private function extract_location_fields( array $location ): array {
+		return [
+			'id'           => $location['id'],
+			'address'      => $location['address'],
+			'display_name' => $location['display_name'],
+			'livemode'     => $location['livemode'],
+		];
+	}
+
+	/**
+	 * Attempts to read locations from transient and re-populates it if needed.
+	 *
+	 * @return array         Terminal locations.
+	 * @throws API_Exception If request to server fails.
+	 */
+	private function fetch_locations(): array {
+		$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
+		if ( ! $locations ) {
+			$locations = $this->api_client->get_terminal_locations();
+			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
+		}
+
+		return $locations;
+	}
+
+	/**
+	 * Refreshes the locations stored in transient.
+	 *
+	 * @return void
+	 * @throws API_Exception If request to server fails.
+	 */
+	private function reload_locations() {
+		$locations = $this->api_client->get_terminal_locations();
+		set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 	}
 }

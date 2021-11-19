@@ -31,7 +31,7 @@ const MultiCurrencyToggle = () => {
 
 	return (
 		<CheckboxControl
-			label={ __( 'Enable multi-currency', 'woocommerce-payments' ) }
+			label={ __( 'Enable Multi-Currency', 'woocommerce-payments' ) }
 			help={ interpolateComponents( {
 				mixedString: __(
 					'Allow customers to shop and pay in multiple currencies. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
@@ -40,7 +40,7 @@ const MultiCurrencyToggle = () => {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
-						<ExternalLink href="https://docs.woocommerce.com/document/payments/currencies/multi-currency-setup" />
+						<ExternalLink href="https://woocommerce.com/document/payments/currencies/multi-currency-setup" />
 					),
 				},
 			} ) }

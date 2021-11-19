@@ -136,6 +136,25 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 		$this->expectOutputString( '' );
 	}
 
+	public function test_widget_does_not_render_on_single_currency() {
+		$mock_compatibility  = $this->createMock( WCPay\MultiCurrency\Compatibility::class );
+		$mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+
+		$mock_compatibility->method( 'should_hide_widgets' )->willReturn( false );
+		$mock_multi_currency
+			->method( 'get_enabled_currencies' )
+			->willReturn(
+				[
+					new Currency( 'USD' ),
+				]
+			);
+
+		$this->currency_switcher_widget = new WCPay\MultiCurrency\CurrencySwitcherWidget( $mock_multi_currency, $mock_compatibility );
+
+		$this->render_widget();
+		$this->expectOutputString( '' );
+	}
+
 	public function test_update_method() {
 		$old_instance = [];
 		$new_instance = [

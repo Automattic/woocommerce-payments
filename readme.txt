@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
-Tested up to: 5.8
+Tested up to: 5.8.1
 Requires PHP: 7.0
-Stable tag: 3.0.0
+Stable tag: 3.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,13 +22,13 @@ See payments, track cash flow into your bank account, manage refunds, and stay o
 
 Features previously only available on your payment provider’s website are now part of your store’s **integrated payments dashboard**. This enables you to:
 
-- View the details of [payments, refunds, and other transactions](https://docs.woocommerce.com/document/payments/#section-4).
-- View and respond to [disputes and chargebacks](https://docs.woocommerce.com/document/payments/disputes/).
-- [Track deposits](https://docs.woocommerce.com/document/payments/#section-5) into your bank account or debit card.
+- View the details of [payments, refunds, and other transactions](https://woocommerce.com/document/payments/#section-4).
+- View and respond to [disputes and chargebacks](https://woocommerce.com/document/payments/disputes/).
+- [Track deposits](https://woocommerce.com/document/payments/#section-5) into your bank account or debit card.
 
 **Pay as you go**
 
-WooCommerce Payments is **free to install**, with **no setup fees or monthly fees**. Pay-as-you-go fees start at 2.9% + $0.30 per transaction for U.S.-issued cards. [Read more about transaction fees](https://docs.woocommerce.com/document/payments/faq/fees/).
+WooCommerce Payments is **free to install**, with **no setup fees or monthly fees**. Pay-as-you-go fees start at 2.9% + $0.30 per transaction for U.S.-issued cards. [Read more about transaction fees](https://woocommerce.com/document/payments/faq/fees/).
 
 **Supported by the WooCommerce team**
 
@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.6 or newer.
-* WooCommerce 5.4 or newer.
+* WooCommerce 5.5 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -56,7 +56,7 @@ Install and activate the WooCommerce and WooCommerce Payments plugins, if you ha
 
 = What countries and currencies are supported? =
 
-If you are an individual or business based in [one of these countries](https://docs.woocommerce.com/document/payments/countries/#section-1), you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world.
+If you are an individual or business based in [one of these countries](https://woocommerce.com/document/payments/countries/#section-1), you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world.
 
 We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooCommerce Payments launch next](https://woocommerce.com/payments/#request-invite).
 
@@ -66,15 +66,15 @@ WooCommerce Payments uses the WordPress.com connection to authenticate each requ
 
 = How do I set up a store for a client? =
 
-If you are setting up a store that will process real payments, have the site owner complete the WooCommerce Payments setup. This ensures that the correct business details are set on the account during [onboarding](https://docs.woocommerce.com/document/payments/#section-3).
+If you are setting up a store that will process real payments, have the site owner complete the WooCommerce Payments setup. This ensures that the correct business details are set on the account during [onboarding](https://woocommerce.com/document/payments/#section-3).
 
-After the store setup has been completed, you can use [Test Mode](https://docs.woocommerce.com/document/payments/testing/) to simulate payments, refunds, and disputes.
+After the store setup has been completed, you can use [Test Mode](https://woocommerce.com/document/payments/testing/) to simulate payments, refunds, and disputes.
 
-If you are setting up WooCommerce Payments on a development or test site that will **never need to process real payments**, try [Dev Mode](https://docs.woocommerce.com/document/payments/testing/dev-mode/#section-1).
+If you are setting up WooCommerce Payments on a development or test site that will **never need to process real payments**, try [Dev Mode](https://woocommerce.com/document/payments/testing/dev-mode/#section-1).
 
 = How is WooCommerce Payments related to Stripe? =
 
-WooCommerce Payments is proudly powered by [Stripe](https://stripe.com/). When you sign up for WooCommerce Payments, your personal and business information is verified with Stripe and stored in an account connected to the WooCommerce Payments service. This account is then used in the background for managing your business account information and activity via WooCommerce Payments. [Learn more](https://docs.woocommerce.com/document/payments/powered-by-stripe/).
+WooCommerce Payments is proudly powered by [Stripe](https://stripe.com/). When you sign up for WooCommerce Payments, your personal and business information is verified with Stripe and stored in an account connected to the WooCommerce Payments service. This account is then used in the background for managing your business account information and activity via WooCommerce Payments. [Learn more](https://woocommerce.com/document/payments/powered-by-stripe/).
 
 = Are there Terms of Service and data usage policies? =
 
@@ -98,16 +98,106 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.1.0 - 2021-xx-xx =
+= 3.4.0 - 2021-xx-xx =
+* Add - Allow UI customizations on checkout payment fields.
+* Update - Display hardware costs for the period in the transaction list with link to the details page
+* Fix - Incorrect customer links on Transactions page.
+* Fix - Incorrect prices in Payment Request Button for certain currencies.
+
+= 3.3.0 - 2021-11-18 =
+* Add - Add Idempotency Key to POST headers.
+* Add - Add dispute order notes to Edit Order page.
+* Fix - Show a specific message instead of a generic one in the checkout block when non-UPE payment processing fails.
+* Update - Avoid having invalid intervals (greater than 1 year) in subscription products.
+* Update - The subscription fee label in the transaction timeline.
+* Update - Show red setup badge after 3 days instead of 7
+* Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
+* Add - Add compatibility between Multi-Currency and WooCommerce Pre-Orders.
+* Fix - Do not show default currency selector on Account Details page when only one currency is available.
+* Add - Add filters to disable or filter Multi-Currency sql query clauses for analytics.
+* Fix - Display risk for payment methods without risk assessment
+* Fix - Use configured domain instead of current domain for Apple Pay verification.
+* Fix - Fatal error when deactivating the WooCommerce plugin when WCPay Subscriptions is enabled.
+* Fix - Error where url parameters would get cleared on order-pay page if currency switcher block used.
+* Fix - Currency format on order-pay page if currency was changed via switcher.
+* Fix - Do not create WooCommerce Payments Subscriptions when using payment methods other than WooCommerce Payments.
+* Fix - Show proper payment gateway title on checkout load before updated by JavaScript.
+* Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
+* Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
+* Fix - UPE element not remounting on checkout update
+* Fix - Validate subscription product create and update args before submitting them to server.
+* Fix - Improve error messages when the minimum order amount has not been reached and allow fields to be displayed with less than the minimum amount.
+* Fix - Add consistent margins to the recurring taxes totals row on the Checkout and Cart block for subscription line items.
+* Fix - Fatal error due on subscription orders with no created date in order row template.
+* Fix - Fatal error on the customer payment page for subscription renewal orders with deleted products.
+* Fix - Misleading subscription order note on payment method change.
+* Fix - Incorrect error message when card ZIP validation fails.
+* Add - `Requires PHP` and `Requires at least` to the main plugin file.
+
+= 3.2.3 - 2021-11-01 =
+* Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
+
+= 3.2.2 - 2021-10-29 =
+* Fix - Multisite compatibility - don't load subscriptions-core if already loaded by another multisite plugin.
+* Fix - Errors when attempting to get the WooCommerce Subscriptions Core version during PayPal requests.
+
+= 3.2.1 - 2021-10-28 =
+* Fix - PHP 7.2 compatibility - remove trailing commas from function args in subscriptions-core.
+
+= 3.2.0 - 2021-10-28 =
+* Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
+* Fix - Prevent currency switcher to show when enabled currencies list is empty.
+* Fix - Show currency switcher notice until customer explicitly dismisses it.
+* Update - Fee breakdown when there's only a base fee
+* Fix - Inconsistent shipping options in Payment Request popup.
+* Fix - Border style not being applied properly on Multi-Currency block widget.
+* Fix - Applied sentence case on all strings
+* Fix - Missing customer information after guest checkout via Checkout Block
+* Fix - Multi-Currency settings rounding option and preview.
+* Fix - Payment failure on checkout block with UPE when phone number field is hidden
+* Update - Adds a scheduled action which makes updating the account cache more efficient
+* Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
+* Add - Early access: allow your store to collect payments with SEPA Direct Debit. Enable the feature in settings!
+* Add - Add compatibility between Multi-Currency and WooCommerce FedEx shipping extension.
+* Fix - Fix decimal error with shipping calculations with Multi-Currency.
+* Add - Add support for float type values for quantity.
+* Fix - Allow payment_intent_succeeded webhook to handle orders without intent_id attached.
+* Add - Add compatibility between Multi-Currency and WooCommerce Product Add Ons version 4.3.0 and higher.
+* Add - Enable Bancontact UPE method.
+* Add - Enable P24 UPE method.
+* Add - Enable iDeal UPE method.
+* Add - Payment method activation requirements modal and API integration.
+* Add - Add state handling for UPE methods for better merchant notification on what methods are able to be used.
+* Fix - Order currency incorrect if new user/customer created during checkout.
+* Fix - Validation now works when adding a new payment method, or paying for an order.
+
+= 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
-* Add - Customer multi-currency onboarding flow.
-* Add - Checkbox toggle for disabling customer multi currency feature in Advanced Settings.
-* Add - Update layout of the Multi-currency settings screen.
+* Add - Customer Multi-Currency onboarding flow.
+* Add - Checkbox toggle for disabling customer Multi-Currency feature in Advanced Settings.
+* Add - Update layout of the Multi-Currency settings screen.
 * Fix - Fixed missing file error for removed CSS file.
 * Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
 * Fix - Currency switcher does not affect order confirmation screen prices.
 * Fix - Error when attempting to change the payment method for a subscription with UPE enabled.
 * Add - Multi-Currency track currency added.
+* Fix - Fill missing order_intent_info even if an exception occurs.
+* Fix - Authorize and capture payments later with new credit cards.
+* Add - Gutenberg Block Widget for Multi-Currency.
+* Update - WCPay logo.
+* Fix - Translations in transaction/deposit exports
+* Fix - Update shipping cost in payment sheet when changing payment method.
+* Fix - Transaction search with translated terms.
+* Update - Replace REST endpoint for onboarding initialization.
+* Fix - UPE missing international card fees.
+* Update - Bump minimum supported version of WooCommerce from 5.4 to 5.5.
+* Update - Bump minimum required version of WooCommerce from 4.0 to 4.4.
+* Fix - Add credit card on My Account using other payment gateways does not show "Your card number is incomplete" error.
+* Update - Continue loading WCPay if the account is connected.
+* Add - Message to suggest using the previous version of WooCommerce Payments for old Woo core versions.
+* Fix - Appearance of upload file buttons inside challenge dispute page.
+* Fix - Enable logging for UPE checkout errors.
+* Update - Composer package `automattic/jetpack-connection` from v1.20.0 to v1.30.5.
 
 = 3.0.0 - 2021-09-16 =
 * Add - Download deposits report in CSV.
@@ -290,13 +380,13 @@ Please note that our support for the checkout block is still experimental and th
 
 = 2.0.0 - 2021-02-22 =
 * Update - Render customer details in transactions list as text instead of link if order missing.
-* Update - Render transaction summary on details page for multi-currency transactions.
+* Update - Render transaction summary on details page for Multi-Currency transactions.
 * Update - Improvements to fraud prevention.
 * Fix - Added better notices for end users if there are connection errors when making payments.
 * Fix - If account is set to manual payouts display 'Temporarily suspended' under Payments > Settings.
 * Add - Add file dropzones to dispute evidence upload fields
 * Add - Currency conversion indicator to Transactions list.
-* Add - Transaction timeline details for multi-currency transactions.
+* Add - Transaction timeline details for Multi-Currency transactions.
 * Update - Link order note with transaction details page.
 * Fix - Updating payment method using saved payment for WC Subscriptions orders.
 

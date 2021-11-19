@@ -38,8 +38,8 @@ const WCPayUPEFields = ( {
 	const [ selectedUPEPaymentType, setSelectedUPEPaymentType ] = useState(
 		''
 	);
+	const [ paymentCountry, setPaymentCountry ] = useState( null );
 
-	const businessName = getConfig( 'accountDescriptor' );
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 	const testMode = getConfig( 'testMode' );
 	const testCopy = (
@@ -134,7 +134,8 @@ const WCPayUPEFields = ( {
 							paymentIntentId,
 							orderId,
 							shouldSavePayment ? 'yes' : 'no',
-							selectedUPEPaymentType
+							selectedUPEPaymentType,
+							paymentCountry
 						);
 
 						const paymentElement = elements.getElement(
@@ -163,6 +164,7 @@ const WCPayUPEFields = ( {
 			paymentIntentId,
 			shouldSavePayment,
 			selectedUPEPaymentType,
+			paymentCountry,
 		]
 	);
 
@@ -170,11 +172,11 @@ const WCPayUPEFields = ( {
 	const upeOnChange = ( event ) => {
 		setIsUPEComplete( event.complete );
 		setSelectedUPEPaymentType( event.value.type );
+		setPaymentCountry( event.value.country );
 	};
 
 	const elementOptions = {
 		clientSecret,
-		business: { name: businessName },
 		fields: {
 			billingDetails: {
 				name: 'never',
@@ -192,9 +194,11 @@ const WCPayUPEFields = ( {
 		},
 	};
 
-	if ( getConfig( 'cartContainsSubscription' ) ) {
-		elementOptions.terms = getTerms( paymentMethodsConfig, 'always' );
-	}
+	const showTerms =
+		shouldSavePayment || getConfig( 'cartContainsSubscription' )
+			? 'always'
+			: 'never';
+	elementOptions.terms = getTerms( paymentMethodsConfig, showTerms );
 
 	const appearance = getConfig( 'upeAppearance' );
 	if ( appearance ) {

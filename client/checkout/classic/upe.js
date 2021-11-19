@@ -236,6 +236,11 @@ jQuery( function ( $ ) {
 		$( '#wcpay_selected_upe_payment_type' ).val( paymentType );
 	};
 
+	// Set the payment country field
+	const setPaymentCountry = ( country ) => {
+		$( '#wcpay_payment_country' ).val( country );
+	};
+
 	/**
 	 * Converts form fields object into Stripe `billing_details` object.
 	 *
@@ -270,6 +275,17 @@ jQuery( function ( $ ) {
 		if ( upeElement || paymentIntentId ) {
 			return;
 		}
+
+		/*
+		 * Trigger this event to ensure the tokenization-form.js init
+		 * is executed.
+		 *
+		 * This script handles the radio input interaction when toggling
+		 * between the user's saved card / entering new card details.
+		 *
+		 * Ref: https://github.com/woocommerce/woocommerce/blob/2429498/assets/js/frontend/tokenization-form.js#L109
+		 */
+		$( document.body ).trigger( 'wc-credit-card-form-init' );
 
 		// If paying from order, we need to create Payment Intent from order not cart.
 		const isOrderPay = getConfig( 'isOrderPay' );
@@ -306,11 +322,9 @@ jQuery( function ( $ ) {
 					api.saveUPEAppearance( appearance );
 				}
 
-				const businessName = getConfig( 'accountDescriptor' );
 				const upeSettings = {
 					clientSecret,
 					appearance,
-					business: { name: businessName },
 				};
 
 				if ( getConfig( 'cartContainsSubscription' ) ) {
@@ -335,6 +349,7 @@ jQuery( function ( $ ) {
 							.isReusable;
 					showNewPaymentMethodCheckbox( isPaymentMethodReusable );
 					setSelectedUPEPaymentType( selectedUPEPaymentType );
+					setPaymentCountry( event.value.country );
 					isUPEComplete = event.complete;
 				} );
 			} )
@@ -363,11 +378,14 @@ jQuery( function ( $ ) {
 		if (
 			$( '#wcpay-upe-element' ).length &&
 			! $( '#wcpay-upe-element' ).children().length &&
-			isUPEEnabled &&
-			! upeElement
+			isUPEEnabled
 		) {
+			if ( upeElement ) {
+				upeElement.mount( '#wcpay-upe-element' );
+			} else {
+				mountUPEElement();
+			}
 			renameGatewayTitle();
-			mountUPEElement();
 		}
 	} );
 
@@ -402,10 +420,11 @@ jQuery( function ( $ ) {
 	/**
 	 * Checks if UPE form is filled out. Displays errors if not.
 	 *
-	 * @param {Object} $form The jQuery object for the form.
+	 * @param {Object} $form     The jQuery object for the form.
+	 * @param {string} returnUrl The `return_url` param. (optional)
 	 * @return {boolean} false if incomplete.
 	 */
-	const checkUPEForm = async ( $form ) => {
+	const checkUPEForm = async ( $form, returnUrl = '' ) => {
 		if ( ! upeElement ) {
 			showError( 'Your payment information is incomplete.' );
 			return false;
@@ -415,7 +434,7 @@ jQuery( function ( $ ) {
 			const { error } = await api.getStripe().confirmPayment( {
 				element: upeElement,
 				confirmParams: {
-					return_url: '',
+					return_url: returnUrl,
 				},
 			} );
 			$form.removeClass( 'processing' ).unblock();
@@ -432,30 +451,34 @@ jQuery( function ( $ ) {
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handleUPEOrderPay = async ( $form ) => {
-		const isUPEFormValid = await checkUPEForm( $( '#order_review' ) );
+		const isSavingPaymentMethod = $(
+			'#wc-woocommerce_payments-new-payment-method'
+		).is( ':checked' );
+		const savePaymentMethod = isSavingPaymentMethod ? 'yes' : 'no';
+
+		const returnUrl =
+			getConfig( 'orderReturnURL' ) +
+			`&save_payment_method=${ savePaymentMethod }`;
+
+		const orderId = getConfig( 'orderId' );
+
+		const isUPEFormValid = await checkUPEForm(
+			$( '#order_review' ),
+			returnUrl
+		);
 		if ( ! isUPEFormValid ) {
 			return;
 		}
 		blockUI( $form );
 
 		try {
-			const isSavingPaymentMethod = $(
-				'#wc-woocommerce_payments-new-payment-method'
-			).is( ':checked' );
-			const savePaymentMethod = isSavingPaymentMethod ? 'yes' : 'no';
-
-			const returnUrl =
-				getConfig( 'orderReturnURL' ) +
-				`&save_payment_method=${ savePaymentMethod }`;
-
-			const orderId = getConfig( 'orderId' );
-
 			// Update payment intent with level3 data, customer and maybe setup for future use.
 			await api.updateIntent(
 				paymentIntentId,
 				orderId,
 				savePaymentMethod,
-				$( '#wcpay_selected_upe_payment_type' ).val()
+				$( '#wcpay_selected_upe_payment_type' ).val(),
+				$( '#wcpay_payment_country' ).val()
 			);
 
 			const { error } = await api.getStripe().confirmPayment( {
@@ -481,7 +504,9 @@ jQuery( function ( $ ) {
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handleUPEAddPayment = async ( $form ) => {
-		const isUPEFormValid = await checkUPEForm( $form );
+		const returnUrl = getConfig( 'addPaymentReturnURL' );
+		const isUPEFormValid = await checkUPEForm( $form, returnUrl );
+
 		if ( ! isUPEFormValid ) {
 			return;
 		}
@@ -489,8 +514,6 @@ jQuery( function ( $ ) {
 		blockUI( $form );
 
 		try {
-			const returnUrl = getConfig( 'addPaymentReturnURL' );
-
 			const { error } = await api.getStripe().confirmSetup( {
 				element: upeElement,
 				confirmParams: {
@@ -549,7 +572,11 @@ jQuery( function ( $ ) {
 				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
 			}
 			if ( error ) {
-				throw error;
+				// Log payment errors on charge and then throw the error.
+				const logError = await api.logPaymentError( error.charge );
+				if ( logError ) {
+					throw error;
+				}
 			}
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
@@ -643,6 +670,15 @@ jQuery( function ( $ ) {
 
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
+		if (
+			'woocommerce_payments' !==
+			$(
+				"#add_payment_method input:checked[name='payment_method']"
+			).val()
+		) {
+			return;
+		}
+
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
 			if ( isUPEEnabled && paymentIntentId ) {
 				handleUPEAddPayment( $( this ) );
