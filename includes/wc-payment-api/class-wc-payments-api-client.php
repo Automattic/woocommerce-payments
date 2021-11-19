@@ -8,8 +8,10 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
+use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -50,6 +52,7 @@ class WC_Payments_API_Client {
 	const INVOICES_API           = 'invoices';
 	const SUBSCRIPTIONS_API      = 'subscriptions';
 	const SUBSCRIPTION_ITEMS_API = 'subscriptions/items';
+	const READERS_CHARGE_SUMMARY = 'reader-charges/summary';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1512,7 +1515,10 @@ class WC_Payments_API_Client {
 		}
 		$url .= '/' . self::ENDPOINT_REST_BASE . '/' . $api;
 
-		$body = null;
+		$headers                 = [];
+		$headers['Content-Type'] = 'application/json; charset=utf-8';
+		$headers['User-Agent']   = $this->user_agent;
+		$body                    = null;
 
 		$redacted_params = WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT );
 		$redacted_url    = $url;
@@ -1521,8 +1527,8 @@ class WC_Payments_API_Client {
 			$url          .= '?' . http_build_query( $params );
 			$redacted_url .= '?' . http_build_query( $redacted_params );
 		} else {
-			// Encode the request body as JSON.
-			$body = wp_json_encode( $params );
+			$headers['Idempotency-Key'] = $this->uuid();
+			$body                       = wp_json_encode( $params );
 			if ( ! $body ) {
 				throw new API_Exception(
 					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' ),
@@ -1532,12 +1538,12 @@ class WC_Payments_API_Client {
 			}
 		}
 
-		// Create standard headers.
-		$headers                 = [];
-		$headers['Content-Type'] = 'application/json; charset=utf-8';
-		$headers['User-Agent']   = $this->user_agent;
-
 		Logger::log( "REQUEST $method $redacted_url" );
+		Logger::log(
+			'HEADERS: '
+			. var_export( $headers, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		);
+
 		if ( null !== $body ) {
 			Logger::log(
 				'BODY: '
@@ -1653,7 +1659,14 @@ class WC_Payments_API_Client {
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
 			$error_type = null;
-			if ( isset( $response_body['error'] ) ) {
+			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
+				throw new Amount_Too_Small_Exception(
+					$response_body['message'],
+					$response_body['data']['minimum_amount'],
+					$response_body['data']['currency'],
+					$response_code
+				);
+			} elseif ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;
@@ -1700,15 +1713,7 @@ class WC_Payments_API_Client {
 			$object['order'] = [
 				'number'       => $order->get_order_number(),
 				'url'          => $order->get_edit_order_url(),
-				'customer_url' => add_query_arg(
-					[
-						'page'      => 'wc-admin',
-						'path'      => '/customers',
-						'filter'    => 'single_customer',
-						'customers' => $order->get_customer_id(),
-					],
-					'admin.php'
-				),
+				'customer_url' => $this->get_customer_url( $order ),
 			];
 
 			if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
@@ -1725,6 +1730,30 @@ class WC_Payments_API_Client {
 		}
 
 		return $object;
+	}
+
+	/**
+	 * Generates url to single customer in analytics table.
+	 *
+	 * @param WC_Order $order The Order.
+	 * @return string|null
+	 */
+	private function get_customer_url( $order ) {
+		$customer_id = DataStore::get_existing_customer_id_from_order( $order );
+
+		if ( ! $customer_id ) {
+			return null;
+		}
+
+		return add_query_arg(
+			[
+				'page'      => 'wc-admin',
+				'path'      => '/customers',
+				'filter'    => 'single_customer',
+				'customers' => $customer_id,
+			],
+			'admin.php'
+		);
 	}
 
 	/**
@@ -1805,5 +1834,29 @@ class WC_Payments_API_Client {
 			$domain_name,
 			null !== $blog_id ? " blog_id $blog_id" : ''
 		);
+	}
+
+	/**
+	 * Returns a v4 UUID.
+	 *
+	 * @return string
+	 */
+	private function uuid() {
+		$arr    = array_values( unpack( 'N1a/n4b/N1c', random_bytes( 16 ) ) );
+		$arr[2] = ( $arr[2] & 0x0fff ) | 0x4000;
+		$arr[3] = ( $arr[3] & 0x3fff ) | 0x8000;
+		return vsprintf( '%08x-%04x-%04x-%04x-%04x%08x', $arr );
+	}
+
+
+	/**
+	 * Fetch readers charge summary.
+	 *
+	 * @param string $charge_date Charge date for readers.
+	 *
+	 * @return array reader objects.
+	 */
+	public function get_readers_charge_summary( string $charge_date ) : array {
+		return $this->request( [ 'charge_date' => $charge_date ], self::READERS_CHARGE_SUMMARY, self::GET );
 	}
 }
