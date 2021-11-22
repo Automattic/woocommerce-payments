@@ -53,7 +53,7 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
 		$wcpay_settings    = [
 			'connectUrl'    => WC_Payments_Account::get_connect_url(),
-			'isConnected'   => ! $this->account->is_stripe_connected(),
+			'isConnected'   => $this->account->is_stripe_connected(),
 			'newProductUrl' => WC_Subscriptions_Admin::add_subscription_url(),
 		];
 
