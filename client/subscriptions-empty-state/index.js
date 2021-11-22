@@ -89,7 +89,7 @@ ReactDOM.render(
 	<div className="wcpay-empty-subscriptions__container">
 		{ renderImage( wcpay.isConnected ) }
 		{ renderDescription( wcpay.isConnected ) }
-		{ wcpay.isConnected ? '' : renderTOS() }
+		{ ! wcpay.isConnected && renderTOS() }
 		{ renderButtons( wcpay.isConnected ) }
 	</div>,
 	document.querySelector( '#wcpay_subscriptions_empty_state' )
