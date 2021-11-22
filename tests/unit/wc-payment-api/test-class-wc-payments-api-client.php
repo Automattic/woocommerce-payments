@@ -191,16 +191,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents' ),
 				wp_json_encode(
 					[
 						'test_mode'            => false,
@@ -260,16 +251,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents' ),
 				wp_json_encode(
 					[
 						'test_mode'            => false,
@@ -469,16 +451,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345' ),
 				wp_json_encode(
 					[
 						'test_mode'   => false,
@@ -578,16 +551,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/init',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/init' ),
 				wp_json_encode(
 					[
 						'test_mode'           => false,
@@ -650,16 +614,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts' ),
 				wp_json_encode(
 					array_merge(
 						[ 'test_mode' => false ],
@@ -689,16 +644,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/login_links',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/login_links' ),
 				wp_json_encode(
 					[
 						'test_mode'    => false,
@@ -728,16 +674,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/tos_agreements',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/tos_agreements' ),
 				wp_json_encode(
 					[
 						'test_mode' => false,
@@ -825,16 +762,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		->expects( $this->once() )
 		->method( 'remote_request' )
 		->with(
-			[
-				'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id,
-				'method'          => 'POST',
-				'headers'         => [
-					'Content-Type' => 'application/json; charset=utf-8',
-					'User-Agent'   => 'Unit Test Agent/0.1.0',
-				],
-				'timeout'         => 70,
-				'connect_timeout' => 70,
-			],
+			$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id ),
 			wp_json_encode(
 				[
 					'test_mode'   => false,
@@ -924,16 +852,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		->expects( $this->once() )
 		->method( 'remote_request' )
 		->with(
-			[
-				'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id,
-				'method'          => 'POST',
-				'headers'         => [
-					'Content-Type' => 'application/json; charset=utf-8',
-					'User-Agent'   => 'Unit Test Agent/0.1.0',
-				],
-				'timeout'         => 70,
-				'connect_timeout' => 70,
-			],
+			$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id ),
 			wp_json_encode(
 				[
 					'test_mode'            => false,
@@ -1354,7 +1273,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		return [
 			'delete' => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'DELETE' ],
-				2,
+				3,
 				[
 					$this->anything(),
 					$this->callback( $string_should_not_include_secret ),
@@ -1366,7 +1285,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			],
 			'get'    => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'GET' ],
-				2,
+				3,
 				[
 					$this->anything(),
 					$this->callback( $string_should_not_include_secret ),
@@ -1378,7 +1297,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			],
 			'post'   => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'POST' ],
-				3,
+				4,
 				[
 					$this->anything(),
 					$this->callback( $string_should_not_include_secret ),
