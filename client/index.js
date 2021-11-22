@@ -23,6 +23,7 @@ import DisputesPage from 'disputes';
 import DisputeDetailsPage from 'disputes/details';
 import DisputeEvidencePage from 'disputes/evidence';
 import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
+import CardReadersPage from 'card-readers';
 import OverviewPage from 'overview';
 import { getTasks } from 'overview/task-list/tasks';
 
@@ -149,6 +150,19 @@ addFilter(
 				__( 'Add additional payment methods', 'woocommerce-payments' ),
 			],
 		} );
+		pages.push( {
+			container: CardReadersPage,
+			path: '/payments/card-readers',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Card readers', 'woocommerce-payments' ),
+			],
+			navArgs: {
+				id: 'wc-payments-card-readers',
+			},
+		} );
+
 		return pages;
 	}
 );
