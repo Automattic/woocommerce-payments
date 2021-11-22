@@ -7,6 +7,7 @@
 * Fix - Incorrect customer links on Transactions page.
 * Fix - Incorrect prices in Payment Request Button for certain currencies.
 * Fix - Updates to fraud protection.
+* Update - Updated @woocommerce/experimental package to v2.1.0.
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
