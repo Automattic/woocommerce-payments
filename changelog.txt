@@ -5,6 +5,7 @@
 * Update - Display hardware costs for the period in the transaction list with link to the details page
 * Fix - Incorrect customer links on Transactions page.
 * Fix - Incorrect prices in Payment Request Button for certain currencies.
+* Fix - Prevent Payment Request buttons from showing up in Composite Product pages. 
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
@@ -35,7 +36,6 @@
 * Fix - Misleading subscription order note on payment method change.
 * Fix - Incorrect error message when card ZIP validation fails.
 * Add - `Requires PHP` and `Requires at least` to the main plugin file.
-* Fix - Prevent quick-pay buttons from showing up in Composite Product pages. 
 
 = 3.2.3 - 2021-11-01 =
 * Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
