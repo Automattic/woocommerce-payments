@@ -29,35 +29,6 @@
 		}
 	}
 
-	&__available-methods-container {
-		@include modal-footer-buttons-left;
-		align-items: center;
-	}
-
-	&__available-methods {
-		display: none;
-		margin: 0;
-
-		@include breakpoint( '>660px' ) {
-			display: flex;
-		}
-	}
-
-	&__available-method {
-		border-radius: 2px;
-		width: 38px;
-		height: 24px;
-		margin: 1px 5px 1px 1px; // 1px to accommodate for box-shadow
-
-		&.has-icon-border {
-			box-shadow: 0 0 0 1px #ddd;
-		}
-
-		&:last-child {
-			margin-right: 1px; // 1px to accommodate for box-shadow
-		}
-	}
-
 	&__express-checkouts {
 		background: url( '../../assets/images/upe_preview_illustration.svg' )
 			no-repeat right;
