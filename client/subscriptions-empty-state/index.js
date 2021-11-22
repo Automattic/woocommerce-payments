@@ -73,9 +73,7 @@ const renderTOS = () => {
 const renderButtons = ( isConnected ) => {
 	return (
 		<div className="wcpay-empty-subscriptions__button_container">
-			{ isConnected ? (
-				''
-			) : (
+			{ ! isConnected && (
 				<Button isPrimary href={ wcpay.connectUrl }>
 					{ __( 'Finish setup', 'woocommerce-payments' ) }
 				</Button>
