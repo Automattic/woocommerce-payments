@@ -684,30 +684,31 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return boolean
 	 */
 	private function is_product_supported() {
-		$product = $this->get_product();
+		$product      = $this->get_product();
+		$is_supported = true;
 
 		if ( ! is_object( $product ) || ! in_array( $product->get_type(), $this->supported_product_types(), true ) ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// Trial subscriptions with shipping are not supported.
 		if ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// Pre Orders charge upon release not supported.
 		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// Composite products are not supported on the product page.
 		if ( class_exists( 'WC_Composite_Products' ) && function_exists( 'is_composite_product' ) && is_composite_product() ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// Mix and match products are not supported on the product page.
 		if ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// File upload addon not supported.
@@ -715,12 +716,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
 			foreach ( $product_addons as $addon ) {
 				if ( 'file_upload' === $addon['type'] ) {
-					return false;
+					$is_supported = false;
 				}
 			}
 		}
 
-		return true;
+		return apply_filters( 'wcpay_payment_request_is_product_supported', $is_supported, $product );
 	}
 
 	/**
