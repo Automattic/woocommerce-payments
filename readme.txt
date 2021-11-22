@@ -107,7 +107,6 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Updates to fraud protection.
 * Add - Empty state flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
 
-
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
 * Add - Add dispute order notes to Edit Order page.
