@@ -1684,8 +1684,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
 
 		try {
-			// TODO: Add metadata to intent; this data is displayed in transactions list.
-			// See https://github.com/woocommerce/woocommerce-ios/issues/4077.
+			$intent_id = $order->get_transaction_id();
+			$intent    = $this->payments_api_client->get_intent( $intent_id );
+
+			$metadata_from_intent = $intent->get_metadata(); // mobile app may have set metadata.
+			$metadata_from_order  = $this->get_metadata_from_order( $order, $payment_type );
+			$merged_metadata      = array_merge( $metadata_from_order, $metadata_from_intent ); // prioritize metadata from mobile app.
+
+			$this->payments_api_client->update_intention_unrestricted(
+				$intent_id,
+				null,
+				null,
+				null,
+				null,
+				$merged_metadata
+			);
 
 			$intent = $this->payments_api_client->capture_intention(
 				$order->get_transaction_id(),
@@ -1705,6 +1718,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$http_code     = $e->get_http_code();
 
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
+				// TODO: Reuse the intent already fetched above.
 				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
 				if ( 'canceled' === $intent->get_status() ) {
 					$is_authorization_expired = true;

@@ -323,6 +323,67 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Updates an intention without assuming any mandatory params.
+	 *
+	 * @param string  $intention_id              - The ID of the intention to update.
+	 * @param ?int    $amount                    - Amount to charge.
+	 * @param ?string $currency_code             - Currency to charge in.
+	 * @param ?bool   $save_payment_method       - Whether to setup payment intent for future usage.
+	 * @param ?string $customer_id               - Stripe customer to associate payment intent with.
+	 * @param array   $metadata                  - Meta data values to be sent along with payment intent creation.
+	 * @param array   $level3                    - Level 3 data.
+	 * @param ?string $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
+	 * @param ?string $payment_country           - The payment two-letter iso country code or null.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function update_intention_unrestricted(
+		$intention_id,
+		$amount,
+		$currency_code,
+		$save_payment_method = false,
+		$customer_id = '',
+		$metadata = [],
+		$level3 = [],
+		$selected_upe_payment_type = '',
+		$payment_country = null
+	) {
+		$request = [];
+
+		if ( $amount ) {
+			$request['amount'] = $amount;
+		}
+		if ( $currency_code ) {
+			$request['currency'] = $currency_code;
+		}
+		if ( ! empty( $metadata ) ) {
+			$request['metadata'] = $metadata;
+		}
+		if ( ! empty( $level3 ) ) {
+			$request['level3'] = $level3;
+		}
+		if ( '' !== $selected_upe_payment_type ) {
+			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
+			$request['payment_method_types'] = [ $selected_upe_payment_type ];
+		}
+		if ( $payment_country && ! WC_Payments::get_gateway()->is_in_dev_mode() ) {
+			// Do not update on dev mode, Stripe tests cards don't return the appropriate country.
+			$request['payment_country'] = $payment_country;
+		}
+		if ( $customer_id ) {
+			$request['customer'] = $customer_id;
+		}
+		if ( $save_payment_method ) {
+			$request['setup_future_usage'] = 'off_session';
+		}
+
+		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id . '/unrestricted_update', self::POST );
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
 	 * Refund a charge
 	 *
 	 * @param string $charge_id - The charge to refund.
@@ -1769,6 +1830,7 @@ class WC_Payments_API_Client {
 		$charge             = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
 		$next_action        = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
 		$last_payment_error = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
+		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
@@ -1782,7 +1844,8 @@ class WC_Payments_API_Client {
 			$intention_array['client_secret'],
 			$next_action,
 			$last_payment_error,
-			$charge ? $charge['payment_method_details'] : null
+			$charge ? $charge['payment_method_details'] : null,
+			$metadata
 		);
 
 		return $intent;
