@@ -14,6 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_Subscriptions_Empty_State_Manager {
 
+	use WC_Payments_Subscriptions_Utilities;
+
 	/**
 	 * WC_Payments_Account instance to get information about the account.
 	 *
@@ -29,8 +31,10 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 	public function __construct( WC_Payments_Account $account ) {
 		$this->account = $account;
 
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts_and_styles' ] );
-		add_filter( 'woocommerce_subscriptions_not_found_label', [ $this, 'replace_subscriptions_empty_state' ] );
+		if ( ! $this->is_subscriptions_plugin_active() ) {
+			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts_and_styles' ] );
+			add_filter( 'woocommerce_subscriptions_not_found_label', [ $this, 'replace_subscriptions_empty_state' ] );
+		}
 	}
 
 	/**
