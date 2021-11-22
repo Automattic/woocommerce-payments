@@ -606,13 +606,7 @@ class WC_Payments_API_Client {
 
 		$transactions = $this->request( $query, self::TRANSACTIONS_API, self::GET );
 
-		$charge_ids = array_map(
-			function ( $transaction ) {
-				return $transaction['charge_id'];
-			},
-			$transactions['data']
-		);
-
+		$charge_ids             = array_column( $transactions, 'charge_id' );
 		$orders_with_charge_ids = $this->wcpay_db->orders_with_charge_id_from_charge_ids( $charge_ids );
 
 		// Add order information to each transaction available.
