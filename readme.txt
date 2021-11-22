@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Display hardware costs for the period in the transaction list with link to the details page
 * Fix - Incorrect customer links on Transactions page.
 * Fix - Incorrect prices in Payment Request Button for certain currencies.
+* Add - Empty state flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
