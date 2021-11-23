@@ -24,7 +24,8 @@
 	}
 	.wcpay-empty-subscriptions__button_container {
 		margin: 8px 0;
-		a:not( :first-child ) {
+
+		* + * {
 			margin-left: 10px;
 		}
 	}
