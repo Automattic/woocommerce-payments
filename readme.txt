@@ -100,9 +100,11 @@ Please note that our support for the checkout block is still experimental and th
 
 = 3.4.0 - 2021-xx-xx =
 * Add - Allow UI customizations on checkout payment fields.
+* Add - Introduce `wcpay_payment_request_is_product_supported` filter. Allow plugins to conditionally disable payment request buttons on products that do not support them.
 * Update - Display hardware costs for the period in the transaction list with link to the details page
 * Fix - Incorrect customer links on Transactions page.
 * Fix - Incorrect prices in Payment Request Button for certain currencies.
+* Fix - Updates to fraud protection.
 * Fix - Prevent Payment Request buttons from showing up in Composite Product pages. 
 
 = 3.3.0 - 2021-11-18 =
