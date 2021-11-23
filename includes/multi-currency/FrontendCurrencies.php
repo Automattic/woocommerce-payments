@@ -211,6 +211,10 @@ class FrontendCurrencies {
 			$order = wc_get_order( $order );
 		}
 
+		if ( false === $order ) {
+			return;
+		}
+
 		$this->order_currency = $order->get_currency();
 
 		return $order->get_id();
