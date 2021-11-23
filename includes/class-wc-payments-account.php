@@ -197,6 +197,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the current account email for rendering on the settings page.
+	 *
+	 * @return string Email.
+	 */
+	public function get_account_email() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['email'] ) ? $account['email'] : [];
+	}
+
+	/**
 	 * Gets the customer currencies supported by Stripe available for the account.
 	 *
 	 * @return array Currencies.
