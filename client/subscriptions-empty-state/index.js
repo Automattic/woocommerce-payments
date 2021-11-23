@@ -16,33 +16,25 @@ import './style.scss';
 const { wcpay } = window;
 
 const renderImage = ( isConnected ) => {
-	if ( isConnected ) {
-		return <img src={ connectedImage } alt="" />;
-	}
-
-	return <img src={ unconnectedImage } alt="" />;
+	return (
+		<img src={ isConnected ? connectedImage : unconnectedImage } alt="" />
+	);
 };
 
 const renderDescription = ( isConnected ) => {
-	let description = '';
-
-	if ( isConnected ) {
-		description = __(
-			'This is where you’ll see and manage all subscriptions in your store. Create a ' +
-				'subscription product to turn one-time purchases into a steady income.',
-			'woocommerce-payments'
-		);
-	} else {
-		description = __(
-			'Track recurring revenue and manage active subscriptions directly from your store’s ' +
-				'dashboard — powered by WooCommerce Payments.',
-			'woocommerce-payments'
-		);
-	}
-
 	return (
 		<p className="wcpay-empty-subscriptions__description">
-			{ description }
+			{ isConnected
+				? __(
+						'This is where you’ll see and manage all subscriptions in your store. Create a ' +
+							'subscription product to turn one-time purchases into a steady income.',
+						'woocommerce-payments'
+				  )
+				: __(
+						'Track recurring revenue and manage active subscriptions directly from your store’s ' +
+							'dashboard — powered by WooCommerce Payments.',
+						'woocommerce-payments'
+				  ) }
 		</p>
 	);
 };
