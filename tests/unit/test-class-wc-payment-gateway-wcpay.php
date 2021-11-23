@@ -1320,7 +1320,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			[],
 			[
 				'customer_name' => 'Test',
-			],
+			]
 		);
 		$merged_metadata = [
 			'customer_name'  => 'Test',
