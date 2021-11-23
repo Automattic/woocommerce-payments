@@ -1056,9 +1056,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$next_action   = $intent['next_action'];
 		}
 
-		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
-		$this->attach_exchange_info_to_order( $order, $charge_id );
-
 		if ( ! empty( $intent ) ) {
 			if ( ! in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				$intent_failed = true;
@@ -1103,6 +1100,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 		}
+
+		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( isset( $response ) ) {
 			return $response;

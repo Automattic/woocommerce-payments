@@ -589,10 +589,6 @@ class WC_Payments {
 		$accounts_controller = new WC_REST_Payments_Terminal_Locations_Controller( self::$api_client );
 		$accounts_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-fraud-controller.php';
-		$fraud_controller = new WC_REST_Payments_Fraud_Controller( self::$api_client );
-		$fraud_controller->register_routes();
-
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
 		$settings_controller->register_routes();

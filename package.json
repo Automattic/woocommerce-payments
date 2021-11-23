@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "3.2.3",
+  "version": "3.3.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -88,7 +88,7 @@
     "@woocommerce/date": "2.1.0",
     "@woocommerce/e2e-utils": "0.1.5",
     "@woocommerce/eslint-plugin": "1.1.0",
-    "@woocommerce/experimental": "2.0.3",
+    "@woocommerce/experimental": "2.1.0",
     "@wordpress/api-fetch": "5.1.1",
     "@wordpress/babel-plugin-makepot": "4.2.0",
     "@wordpress/babel-preset-default": "4.3.0",
