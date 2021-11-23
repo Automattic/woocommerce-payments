@@ -6,8 +6,8 @@
 * Update - Display hardware costs for the period in the transaction list with link to the details page
 * Fix - Incorrect customer links on Transactions page.
 * Fix - Incorrect prices in Payment Request Button for certain currencies.
-* Fix - Prevent Payment Request buttons from showing up in Composite Product pages. 
 * Fix - Updates to fraud protection.
+* Fix - Prevent Payment Request buttons from showing up in Composite Product pages. 
 * Update - Updated @woocommerce/experimental package to v2.1.0.
 
 = 3.3.0 - 2021-11-18 =
