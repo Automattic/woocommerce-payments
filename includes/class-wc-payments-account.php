@@ -417,7 +417,7 @@ class WC_Payments_Account {
 			admin_url( 'admin.php' )
 		);
 
-		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ], $connect_url ), 'wcpay-connect' );
+		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ], admin_url( 'admin.php' ) ), 'wcpay-connect' );
 	}
 
 	/**
