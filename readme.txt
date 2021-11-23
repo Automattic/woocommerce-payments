@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Display hardware costs for the period in the transaction list with link to the details page
 * Fix - Incorrect customer links on Transactions page.
 * Fix - Incorrect prices in Payment Request Button for certain currencies.
+* Fix - Prevent Payment Request buttons from showing up in Composite Product pages. 
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
@@ -132,7 +133,6 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fatal error on the customer payment page for subscription renewal orders with deleted products.
 * Fix - Misleading subscription order note on payment method change.
 * Fix - Incorrect error message when card ZIP validation fails.
-* Fix - Prevent Payment Request buttons from showing up in Composite Product pages. 
 * Add - `Requires PHP` and `Requires at least` to the main plugin file.
 
 = 3.2.3 - 2021-11-01 =
