@@ -130,7 +130,7 @@ export const getTasks = ( {
 				expanded: true,
 				isDeletable: true,
 				isDismissable: true,
-				allowRemindMeLater: true,
+				allowSnooze: true,
 			},
 		additionalMethodsSetup.isTaskVisible &&
 			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
@@ -154,7 +154,7 @@ export const getTasks = ( {
 			completed: 0 === disputesToResolve,
 			isDeletable: true,
 			isDismissable: true,
-			allowRemindMeLater: true,
+			allowSnooze: true,
 			onClick: () => {
 				wcpayTracks.recordEvent( 'wcpay_overview_task', {
 					task: 'dispute-resolution-task',
