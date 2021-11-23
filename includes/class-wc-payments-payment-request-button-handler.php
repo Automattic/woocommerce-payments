@@ -702,7 +702,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// Composite products are not supported on the product page.
-		if ( class_exists( 'WC_Composite_Products' ) && function_exists( 'is_composite_product' ) && $product->is_type( 'composite' ) ) {
+		if ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) {
 			$is_supported = false;
 		}
 
