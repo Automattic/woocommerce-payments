@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Constants\Payment_Type;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -1285,6 +1286,96 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertContains( 'expired', $note->content );
 		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'canceled' );
 		$this->assertEquals( $order->get_status(), 'cancelled' );
+	}
+
+	public function test_capture_charge_metadata() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', 'requires_capture' );
+		$order->update_status( 'on-hold' );
+
+		$mock_intent     = new WC_Payments_API_Intention(
+			$intent_id,
+			1500,
+			$order->get_currency(),
+			'cus_12345',
+			'pm_12345',
+			new DateTime(),
+			'requires_capture',
+			$charge_id,
+			'...',
+			[],
+			[],
+			[],
+			[
+				'customer_name' => 'Test',
+			],
+		);
+		$merged_metadata = [
+			'customer_name'  => 'Test',
+			'customer_email' => $order->get_billing_email(),
+			'site_url'       => esc_url( get_site_url() ),
+			'order_id'       => $order->get_id(),
+			'order_key'      => $order->get_order_key(),
+			'payment_type'   => Payment_Type::SINGLE(),
+		];
+
+		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
+			$this->returnValue( $mock_intent )
+		);
+		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_unrestricted' )->with( $intent_id, null, null, null, null, $merged_metadata )->will(
+			$this->returnValue( $mock_intent )
+		);
+		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
+			$this->returnValue(
+				new WC_Payments_API_Intention(
+					$intent_id,
+					1500,
+					$order->get_currency(),
+					'cus_12345',
+					'pm_12345',
+					new DateTime(),
+					'succeeded',
+					$charge_id,
+					'...'
+				)
+			)
+		);
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
+		$result = $this->wcpay_gateway->capture_charge( $order );
+
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+				'limit'    => 2,
+			]
+		);
+		$latest_wcpay_note = $notes[1]; // The latest note is the "status changed" message, we want the previous one.
+
+		// Assert the returned data contains fields required by the REST endpoint.
+		$this->assertEquals(
+			[
+				'status'    => 'succeeded',
+				'id'        => $intent_id,
+				'message'   => null,
+				'http_code' => 200,
+			],
+			$result
+		);
+		$this->assertContains( 'successfully captured', $latest_wcpay_note->content );
+		$this->assertContains( wc_price( $order->get_total() ), $latest_wcpay_note->content );
+		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'succeeded' );
+		$this->assertEquals( $order->get_status(), 'processing' );
 	}
 
 	public function test_cancel_authorization_handles_api_exception_when_canceling() {
