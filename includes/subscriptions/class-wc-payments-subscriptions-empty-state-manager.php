@@ -44,7 +44,7 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 		$screen = get_current_screen();
 
 		// Only enqueue the scripts on the admin subscriptions screen.
-		if ( ! $screen || 'edit-shop_subscription' !== $screen->id ) {
+		if ( ! $screen || 'edit-shop_subscription' !== $screen->id || wcs_do_subscriptions_exist() ) {
 			return;
 		}
 
@@ -85,9 +85,15 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 	/**
 	 * Replaces the default empty subscriptions state HTML with a wrapper for our content to be placed into.
 	 *
+	 * @param string $default_empty_state_html The default Subscriptions empty state HTML.
 	 * @return string The empty subscriptions sate wrapper.
 	 */
-	public function replace_subscriptions_empty_state() {
+	public function replace_subscriptions_empty_state( $default_empty_state_html ) {
+
+		if ( wcs_do_subscriptions_exist() ) {
+			return $default_empty_state_html;
+		}
+
 		return '<div id="wcpay_subscriptions_empty_state"></div>';
 	}
 }
