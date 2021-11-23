@@ -15,7 +15,7 @@ const colorMappings = {
 
 export function calculateRiskMapping( risk ) {
 	const riskLevel = riskOrder[ risk ];
-	return riskMappings[ riskLevel ];
+	return riskMappings[ riskLevel ] || riskMappings.not_assessed;
 }
 
 const RiskLevel = ( { risk } ) => {

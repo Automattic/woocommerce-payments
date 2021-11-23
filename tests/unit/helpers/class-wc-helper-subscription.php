@@ -79,6 +79,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $status;
 
 	/**
+	 * Helper variable for mocking the subscription manual check.
+	 *
+	 * @var bool
+	 */
+	public $manual;
+
+	/**
 	 * Currency.
 	 *
 	 * @var string
@@ -98,13 +105,6 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	 * @var string
 	 */
 	public $billing_interval = 1;
-
-	/**
-	 * Taxes.
-	 *
-	 * @var array
-	 */
-	public $taxes = [];
 
 	/**
 	 * A helper function for handling function calls not yet implimented on this helper.
@@ -130,16 +130,16 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		throw new Exception( "Call to undefined method WC_Subscription::{$name}()" );
 	}
 
-	public function set_parent( $parent_order ) {
-		$this->parent_order = $parent_order;
-	}
-
 	public function get_parent_id() {
 		return ! empty( $this->parent_order ) ? $this->parent_order->get_id() : 0;
 	}
 
 	public function get_parent() {
 		return ! empty( $this->parent_order ) ? $this->parent_order : false;
+	}
+
+	public function set_parent( $parent_order ) {
+		$this->parent_order = $parent_order;
 	}
 
 	public function get_items( $type = 'line_item' ) {
@@ -196,10 +196,6 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		}
 	}
 
-	public function get_taxes() {
-		return $this->taxes;
-	}
-
 	public function get_currency() {
 		return $this->currency;
 	}
@@ -226,5 +222,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function has_status( $status ) {
 		return ( is_array( $status ) && in_array( $this->get_status(), $status, true ) ) || $this->get_status() === $status;
+	}
+
+	public function is_manual() {
+		return $this->manual;
+	}
+
+	public function set_requires_manual_renewal( $bool ) {
+		$this->manual = $bool;
 	}
 }

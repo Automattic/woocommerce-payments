@@ -123,14 +123,14 @@ export const getTasks = ( {
 				completed: false,
 				onClick: () => {
 					window.open(
-						'https://docs.woocommerce.com/document/ssl-and-https/#section-7',
+						'https://woocommerce.com/document/ssl-and-https/#section-7',
 						'_blank'
 					);
 				},
 				expanded: true,
 				isDeletable: true,
 				isDismissable: true,
-				allowRemindMeLater: true,
+				allowSnooze: true,
 			},
 		additionalMethodsSetup.isTaskVisible &&
 			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
@@ -154,7 +154,7 @@ export const getTasks = ( {
 			completed: 0 === disputesToResolve,
 			isDeletable: true,
 			isDismissable: true,
-			allowRemindMeLater: true,
+			allowSnooze: true,
 			onClick: () => {
 				wcpayTracks.recordEvent( 'wcpay_overview_task', {
 					task: 'dispute-resolution-task',

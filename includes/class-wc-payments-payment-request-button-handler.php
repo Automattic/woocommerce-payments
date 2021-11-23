@@ -14,7 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\Tracker;
 
 /**
  * WC_Payments_Payment_Request_Button_Handler class.
@@ -53,9 +52,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  void
 	 */
 	public function init() {
-		// Add Track event on settings change.
-		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'track_payment_request_settings_change' ], 10, 2 );
-
 		// Checks if WCPay is enabled.
 		if ( ! $this->gateway->is_enabled() ) {
 			return;
@@ -101,26 +97,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// will be used to calculate it whenever the option value is retrieved instead.
 		// It's used for displaying inbox notifications.
 		add_filter( 'pre_option_wcpay_is_apple_pay_enabled', [ $this, 'get_option_is_apple_pay_enabled' ], 10, 1 );
-	}
-
-	/**
-	 * Track Payment Request settings activation/deactivation.
-	 *
-	 * @param array $prev_settings Settings before update.
-	 * @param array $settings      Settings after update.
-	 */
-	public function track_payment_request_settings_change( $prev_settings, $settings ) {
-		$prev_payment_request_enabled = 'yes' === ( $prev_settings['payment_request'] ?? 'no' );
-		$payment_request_enabled      = 'yes' === ( $settings['payment_request'] ?? 'no' );
-
-		if ( $prev_payment_request_enabled !== $payment_request_enabled ) {
-			Tracker::track_admin(
-				'wcpay_payment_request_settings_change',
-				[
-					'enabled' => $payment_request_enabled,
-				]
-			);
-		}
 	}
 
 	/**
@@ -244,7 +220,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
-		$product = $this->get_product();
+		$product  = $this->get_product();
+		$currency = get_woocommerce_currency();
 
 		if ( 'variable' === $product->get_type() ) {
 			$variation_attributes = $product->get_variation_attributes();
@@ -272,7 +249,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$items[] = [
 			'label'  => $product->get_name(),
-			'amount' => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ) ),
+			'amount' => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ), $currency ),
 		];
 
 		if ( wc_tax_enabled() ) {
@@ -283,7 +260,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			];
 		}
 
-		if ( wc_shipping_enabled() && $product->needs_shipping() ) {
+		if ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() ) {
 			$items[] = [
 				'label'   => __( 'Shipping', 'woocommerce-payments' ),
 				'amount'  => 0,
@@ -301,12 +278,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems'] = $items;
 		$data['total']        = [
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ) ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ), $currency ),
 			'pending' => true,
 		];
 
-		$data['needs_shipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
-		$data['currency']       = strtolower( get_woocommerce_currency() );
+		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
+		$data['currency']       = strtolower( $currency );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
@@ -707,30 +684,31 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return boolean
 	 */
 	private function is_product_supported() {
-		$product = $this->get_product();
+		$product      = $this->get_product();
+		$is_supported = true;
 
 		if ( ! is_object( $product ) || ! in_array( $product->get_type(), $this->supported_product_types(), true ) ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// Trial subscriptions with shipping are not supported.
 		if ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// Pre Orders charge upon release not supported.
 		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// Composite products are not supported on the product page.
-		if ( class_exists( 'WC_Composite_Products' ) && function_exists( 'is_composite_product' ) && is_composite_product() ) {
-			return false;
+		if ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) {
+			$is_supported = false;
 		}
 
 		// Mix and match products are not supported on the product page.
 		if ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// File upload addon not supported.
@@ -738,12 +716,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
 			foreach ( $product_addons as $addon ) {
 				if ( 'file_upload' === $addon['type'] ) {
-					return false;
+					$is_supported = false;
 				}
 			}
 		}
 
-		return true;
+		return apply_filters( 'wcpay_payment_request_is_product_supported', $is_supported, $product );
 	}
 
 	/**
@@ -820,7 +798,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 							'id'     => $rate->id,
 							'label'  => $rate->label,
 							'detail' => '',
-							'amount' => WC_Payments_Utils::prepare_amount( $rate->cost ),
+							'amount' => WC_Payments_Utils::prepare_amount( $rate->cost, get_woocommerce_currency() ),
 						];
 					}
 				}
@@ -920,6 +898,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$addon_value  = isset( $_POST['addon_value'] ) ? max( floatval( $_POST['addon_value'] ), 0 ) : 0;
 			$product      = wc_get_product( $product_id );
 			$variation_id = null;
+			$currency     = get_woocommerce_currency();
 
 			if ( ! is_a( $product, 'WC_Product' ) ) {
 				/* translators: product ID */
@@ -956,7 +935,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			$items[] = [
 				'label'  => $product->get_name() . $quantity_label,
-				'amount' => WC_Payments_Utils::prepare_amount( $total ),
+				'amount' => WC_Payments_Utils::prepare_amount( $total, $currency ),
 			];
 
 			if ( wc_tax_enabled() ) {
@@ -985,7 +964,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$data['displayItems'] = $items;
 			$data['total']        = [
 				'label'   => $this->get_total_label(),
-				'amount'  => WC_Payments_Utils::prepare_amount( $total ),
+				'amount'  => WC_Payments_Utils::prepare_amount( $total, $currency ),
 				'pending' => true,
 			];
 
@@ -1198,7 +1177,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			wc_add_notice(
 				sprintf(
 					/* translators: %s: country. */
-					__( 'The Payment Request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
+					__( 'The payment request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
 					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
 				),
 				'error'
@@ -1307,7 +1286,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'id'     => $method['id'],
 				'label'  => $method['label'],
 				'detail' => '',
-				'amount' => WC_Payments_Utils::prepare_amount( $method['amount']['value'] ),
+				'amount' => WC_Payments_Utils::prepare_amount( $method['amount']['value'], get_woocommerce_currency() ),
 			];
 		}
 
@@ -1327,6 +1306,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$items     = [];
 		$subtotal  = 0;
 		$discounts = 0;
+		$currency  = get_woocommerce_currency();
 
 		// Default show only subtotal instead of itemization.
 		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', true ) || $itemized_display_items ) {
@@ -1339,7 +1319,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 				$item = [
 					'label'  => $product_name . $quantity_label,
-					'amount' => WC_Payments_Utils::prepare_amount( $amount ),
+					'amount' => WC_Payments_Utils::prepare_amount( $amount, $currency ),
 				];
 
 				$items[] = $item;
@@ -1365,21 +1345,21 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( wc_tax_enabled() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Tax', 'woocommerce-payments' ) ),
-				'amount' => WC_Payments_Utils::prepare_amount( $tax ),
+				'amount' => WC_Payments_Utils::prepare_amount( $tax, $currency ),
 			];
 		}
 
 		if ( WC()->cart->needs_shipping() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Shipping', 'woocommerce-payments' ) ),
-				'amount' => WC_Payments_Utils::prepare_amount( $shipping ),
+				'amount' => WC_Payments_Utils::prepare_amount( $shipping, $currency ),
 			];
 		}
 
 		if ( WC()->cart->has_discount() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Discount', 'woocommerce-payments' ) ),
-				'amount' => WC_Payments_Utils::prepare_amount( $discounts ),
+				'amount' => WC_Payments_Utils::prepare_amount( $discounts, $currency ),
 			];
 		}
 
@@ -1393,7 +1373,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		foreach ( $cart_fees as $key => $fee ) {
 			$items[] = [
 				'label'  => $fee->name,
-				'amount' => WC_Payments_Utils::prepare_amount( $fee->amount ),
+				'amount' => WC_Payments_Utils::prepare_amount( $fee->amount, $currency ),
 			];
 		}
 
@@ -1401,7 +1381,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'displayItems' => $items,
 			'total'        => [
 				'label'   => $this->get_total_label(),
-				'amount'  => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total ), $order_total, WC()->cart ) ),
+				'amount'  => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total, $currency ), $order_total, WC()->cart ) ),
 				'pending' => false,
 			],
 		];

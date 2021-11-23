@@ -65,7 +65,7 @@ describe( 'WcPaySurveyContextProvider', () => {
 	} );
 
 	it( 'should render survey questions radio buttons and be clickable', () => {
-		// @todo: mock the setSurveySubmitted hook from useSurveySubmit to actually click Send Feedback.
+		// @todo: mock the setSurveySubmitted hook from useSurveySubmit to actually click send feedback.
 		const setOpenModalIdentifier = jest.fn().mockReturnValue( true );
 		render(
 			<WcPaySurveyContextProvider>

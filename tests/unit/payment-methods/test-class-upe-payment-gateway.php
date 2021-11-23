@@ -8,12 +8,14 @@
 namespace WCPay\Payment_Methods;
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Payment_Type;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
-
 use WCPay\Logger;
-use WCPay\Constants\Payment_Type;
+use WCPay\MultiCurrency\Currency;
+
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
@@ -211,6 +213,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 					'get_return_url',
 					'manage_customer_details_for_order',
 					'parent_process_payment',
+					'get_upe_enabled_payment_method_statuses',
 				]
 			)
 			->getMock();
@@ -238,6 +241,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 
 	public function test_payment_fields_outputs_fields() {
 		$this->set_cart_contains_subscription_items( false );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 		$this->mock_upe_gateway->payment_fields();
 
 		$this->expectOutputRegex( '/<div id="wcpay-upe-element"><\/div>/' );
@@ -460,6 +464,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->with( 5000, 'usd', [ 'card' ] )
 			->willReturn( $intent );
 		$this->set_cart_contains_subscription_items( false );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
 		$result = $this->mock_upe_gateway->create_payment_intent( $order_id );
 	}
@@ -479,6 +484,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				'automatic'
 			)
 			->willReturn( $intent );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
 		$this->mock_upe_gateway->create_payment_intent( $order_id );
 	}
 
@@ -498,6 +505,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				'automatic'
 			)
 			->willReturn( $intent );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
 		$this->mock_upe_gateway->create_payment_intent( $order_id );
 	}
 
@@ -517,6 +526,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				'manual'
 			)
 			->willReturn( $intent );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
 		$this->mock_upe_gateway->create_payment_intent( $order_id );
 	}
 
@@ -1246,6 +1257,229 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( $mock_token, $this->mock_upe_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 	}
 
+
+
+
+	public function test_create_payment_intent_uses_cached_minimum_amount() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0.45 );
+		$order->save();
+
+		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 50, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_intention' )
+			->with( 50, 'usd', [ 'card' ] )
+			->willReturn( $intent );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
+		$this->mock_upe_gateway->create_payment_intent( $order->get_id() );
+	}
+
+	public function test_create_payment_intent_creates_new_intent_with_minimum_amount() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 0.45 );
+		$order->save();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 50, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->exactly( 2 ) )
+			->method( 'create_intention' )
+			->withConsecutive(
+				[ 45, 'usd', [ 'card' ] ],
+				[ 50, 'usd', [ 'card' ] ]
+			)
+			->will(
+				$this->onConsecutiveCalls(
+					$this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $0.50 usd', 50, 'usd', 400 ) ),
+					$this->returnValue( $intent )
+				)
+			);
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
+		$result = $this->mock_upe_gateway->create_payment_intent( $order->get_id() );
+		$this->assertsame( 'client_secret_123', $result['client_secret'] );
+	}
+
+	public function test_process_payment_rejects_with_cached_minimum_acount() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 0.45 );
+		$order->save();
+
+		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
+
+		// Make sure that the payment was not actually processed.
+		$price   = wp_strip_all_tags( html_entity_decode( wc_price( 0.5, [ 'currency' => 'USD' ] ) ) );
+		$message = 'The selected payment method requires a total amount of at least ' . $price . '.';
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( $message );
+		$this->mock_upe_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0.45 );
+		$order->save();
+
+		delete_transient( 'wcpay_minimum_amount_usd' );
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_intention' )
+			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 'usd', 400 ) ) );
+
+		$price   = wp_strip_all_tags( html_entity_decode( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
+		$message = 'The selected payment method requires a total amount of at least ' . $price . '.';
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( $message );
+
+		try {
+			$this->mock_upe_gateway->process_payment( $order->get_id() );
+		} catch ( Exception $e ) {
+			$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
+			throw $e;
+		}
+	}
+
+	/**
+	 * @dataProvider maybe_filter_gateway_title_data_provider
+	 */
+	public function test_maybe_filter_gateway_title( $data ) {
+		$data           = $data[0];
+		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
+		self::$mock_site_currency = $data['currency'];
+		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
+		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
+	}
+
+	public function maybe_filter_gateway_title_data_provider() {
+		$method_title   = 'WooCommerce Payments';
+		$checkout_title = 'Popular payment methods';
+		$card_title     = 'Credit card / debit card';
+
+		$data_set[] = [ // Allows for $checkout_title due to UPE method and EUR.
+			'methods'  => [
+				'card',
+				'bancontact',
+			],
+			'statuses' => [
+				'card_payments'       => [
+					'status' => 'active',
+				],
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'EUR',
+			'title'    => $method_title,
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => $checkout_title,
+		];
+		$data_set[] = [ // No UPE method, only card, so $card_title is expected.
+			'methods'  => [
+				'card',
+			],
+			'statuses' => [
+				'card_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'EUR',
+			'title'    => $method_title,
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => $card_title,
+		];
+		$data_set[] = [ // Only UPE method, so UPE method title is expected.
+			'methods'  => [
+				'bancontact',
+			],
+			'statuses' => [
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'EUR',
+			'title'    => $method_title,
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => 'Bancontact',
+		];
+		$data_set[] = [ // Card and UPE enabled, but USD, $card_title expected.
+			'methods'  => [
+				'card',
+				'bancontact',
+			],
+			'statuses' => [
+				'card_payments'       => [
+					'status' => 'active',
+				],
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'USD',
+			'title'    => $method_title,
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => $card_title,
+		];
+		$data_set[] = [ // Card and UPE enabled, but not our title, other title expected.
+			'methods'  => [
+				'card',
+				'bancontact',
+			],
+			'statuses' => [
+				'card_payments'       => [
+					'status' => 'active',
+				],
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'EUR',
+			'title'    => 'Some other title',
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => 'Some other title',
+		];
+		$data_set[] = [ // Card and UPE enabled, but not our id, $method_title expected.
+			'methods'  => [
+				'card',
+				'bancontact',
+			],
+			'statuses' => [
+				'card_payments'       => [
+					'status' => 'active',
+				],
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'USD',
+			'title'    => $method_title,
+			'id'       => 'some_other_id',
+			'expected' => $method_title,
+		];
+		$data_set[] = [ // No methods at all, so defaults to card, so $card_title is expected.
+			'methods'  => [],
+			'statuses' => [],
+			'currency' => 'EUR',
+			'title'    => $method_title,
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => $card_title,
+		];
+		foreach ( $data_set as $data ) {
+			$return_data[] = [ [ $data ] ];
+		}
+		return $return_data;
+	}
+
 	/**
 	 * Helper function to mock subscriptions for internal UPE payment methods.
 	 */
@@ -1268,4 +1502,17 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		];
 	}
 
+	private function set_get_upe_enabled_payment_method_statuses_return_value( $return_value = null ) {
+		if ( null === $return_value ) {
+			$return_value = [
+				'card_payments' => [
+					'status' => 'active',
+				],
+			];
+		}
+		$this->mock_upe_gateway
+			->expects( $this->any() )
+			->method( 'get_upe_enabled_payment_method_statuses' )
+			->will( $this->returnValue( $return_value ) );
+	}
 }

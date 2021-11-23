@@ -24,17 +24,47 @@
 		}
 	}
 
-	.components-base-control__field {
-		margin-bottom: 0;
+	.loadable-checkbox__spinner {
+		margin-top: 2px;
 	}
 
-	&__fees {
-		margin-left: auto;
-		margin-right: 3px;
+	.components-base-control__field,
+	.loadable-checkbox__spinner {
+		margin-bottom: 0;
+		@include breakpoint( '<660px' ) {
+			display: flex;
+			margin: 4px 0;
+		}
+	}
+
+	&__pills {
+		display: flex;
+		flex-wrap: nowrap;
 		text-transform: uppercase;
+		flex: 1;
+
+		&-left,
+		&-right {
+			display: flex;
+			flex: 1 1 auto;
+			flex-wrap: nowrap;
+			gap: 5px;
+			align-items: center;
+			gap: 5px;
+			margin-right: 3px;
+		}
+
+		&-right {
+			justify-content: flex-end;
+		}
+
+		.wcpay-pill {
+			margin: 0;
+		}
 
 		@include breakpoint( '<660px' ) {
 			margin-left: 40px;
+			flex-wrap: wrap;
 		}
 	}
 
@@ -43,13 +73,43 @@
 			margin: 0;
 			color: $gray-600;
 		}
+
+		// To be removed when @wordpress/components is upgraded to 17.0.0.
+		.components-visually-hidden {
+			border: 0;
+			clip: rect( 1px, 1px, 1px, 1px );
+			-webkit-clip-path: inset( 50% );
+			clip-path: inset( 50% );
+			height: 1px;
+			margin: -1px;
+			overflow: hidden;
+			padding: 0;
+			position: absolute;
+			width: 1px;
+			word-wrap: normal;
+		}
 	}
 }
 
 .woocommerce-payments__payment-method-icon {
 	@include breakpoint( '<660px' ) {
 		svg {
-			display: none;
+			margin-right: 4px;
 		}
+	}
+}
+
+.wcpay-pill {
+	margin-left: $gap-smaller;
+	&.payment-status-pending-approval,
+	&.payment-status-pending-verification {
+		border: 0 solid transparent;
+		background: #f0b849;
+		color: #1f1f1f;
+	}
+	&.payment-status-inactive {
+		border: 0 solid transparent;
+		background: #cc1818;
+		color: #fff;
 	}
 }

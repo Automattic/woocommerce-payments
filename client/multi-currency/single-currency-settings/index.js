@@ -99,7 +99,7 @@ const SingleCurrencySettings = () => {
 				currencySettings[ currency ].manual_rate || initialManualRate
 			);
 			setPriceRoundingType(
-				currencySettings[ currency ].price_rounding ||
+				currencySettings[ currency ].price_rounding ??
 					initialPriceRoundingType
 			);
 			setPriceCharmType(
@@ -358,7 +358,7 @@ const SingleCurrencySettings = () => {
 								</fieldset>
 								<h3>
 									{ __(
-										'Formatting Rules',
+										'Formatting rules',
 										'woocommerce-payments'
 									) }
 								</h3>
@@ -367,19 +367,15 @@ const SingleCurrencySettings = () => {
 										<li>
 											<h4>
 												{ __(
-													'Price Rounding',
+													'Price rounding',
 													'woocommerce-payments'
 												) }
 											</h4>
 											{ /* eslint-disable jsx-a11y/no-onchange */ }
 											<select
-												value={
-													'none' === priceRoundingType
-														? 'none'
-														: parseFloat(
-																priceRoundingType
-														  )
-												}
+												value={ parseFloat(
+													priceRoundingType
+												) }
 												data-testid={ 'price_rounding' }
 												onChange={ ( event ) =>
 													setPriceRoundingType(
@@ -393,13 +389,9 @@ const SingleCurrencySettings = () => {
 												).map( ( value ) => {
 													return (
 														<option
-															value={
-																'none' === value
-																	? value
-																	: parseFloat(
-																			value
-																	  )
-															}
+															value={ parseFloat(
+																value
+															) }
 															key={ value }
 														>
 															{
@@ -427,7 +419,7 @@ const SingleCurrencySettings = () => {
 													isLink
 													onClick={ () => {
 														open(
-															'http://docs.woocommerce.com/document/payments/' +
+															'http://woocommerce.com/document/payments/' +
 																'currencies/multi-currency-setup/#price-rounding',
 															'_blank'
 														);
@@ -443,7 +435,7 @@ const SingleCurrencySettings = () => {
 										<li>
 											<h4>
 												{ __(
-													'Charm Pricing',
+													'Charm pricing',
 													'woocommerce-payments'
 												) }
 											</h4>
@@ -492,7 +484,7 @@ const SingleCurrencySettings = () => {
 													isLink
 													onClick={ () => {
 														open(
-															'http://docs.woocommerce.com/document/payments/' +
+															'http://woocommerce.com/document/payments/' +
 																'currencies/multi-currency-setup/#price-charm',
 															'_blank'
 														);

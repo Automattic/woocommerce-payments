@@ -167,7 +167,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 		$this->connection_manager->enable_plugin();
 
 		// Register the site to wp.com.
-		if ( ! $this->connection_manager->is_registered() ) {
+		if ( ! $this->connection_manager->is_connected() ) {
 			$result = $this->connection_manager->register();
 			if ( is_wp_error( $result ) ) {
 				throw new API_Exception( $result->get_error_message(), 'wcpay_jetpack_register_site_failed', 500 );

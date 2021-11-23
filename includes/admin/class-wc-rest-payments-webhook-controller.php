@@ -117,6 +117,17 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				case 'charge.refund.updated':
 					$this->process_webhook_refund_updated( $body );
 					break;
+				case 'charge.dispute.created':
+					$this->process_webhook_dispute_created( $body );
+					break;
+				case 'charge.dispute.closed':
+					$this->process_webhook_dispute_closed( $body );
+					break;
+				case 'charge.dispute.funds_reinstated':
+				case 'charge.dispute.funds_withdrawn':
+				case 'charge.dispute.updated':
+					$this->process_webhook_dispute_updated( $body );
+					break;
 				case 'charge.expired':
 					$this->process_webhook_expired_authorization( $body );
 					break;
@@ -257,11 +268,25 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	private function process_webhook_payment_intent_succeeded( $event_body ) {
 		$event_data   = $this->read_rest_property( $event_body, 'data' );
 		$event_object = $this->read_rest_property( $event_data, 'object' );
-
-		$intent_id = $this->read_rest_property( $event_object, 'id' );
+		$intent_id    = $this->read_rest_property( $event_object, 'id' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
+
+		if ( ! $order ) {
+			// Retrieving order with order_id in case intent_id was not properly set.
+			Logger::debug( 'intent_id not found, using order_id to retrieve order' );
+			$metadata = $this->read_rest_property( $event_object, 'metadata' );
+
+			if ( isset( $metadata['order_id'] ) ) {
+				$order_id = $metadata['order_id'];
+				$order    = $this->wcpay_db->order_from_order_id( $order_id );
+			} elseif ( ! empty( $event_object['invoice'] ) ) {
+				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
+				return;
+			}
+		}
+
 		if ( ! $order ) {
 			throw new Invalid_Payment_Method_Exception(
 				sprintf(
@@ -273,9 +298,153 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
+		// Get an updated set of order properties to avoid race conditions when the server sends the paid webhook before we've finished processing the original payment request.
+		$order->get_data_store()->read( $order );
+
 		if ( ! $order->has_status( [ 'processing', 'completed' ] ) ) {
 			$order->payment_complete();
 		}
+	}
+
+	/**
+	 * Process webhook dispute created.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Rest_Request_Exception Required parameters not found.
+	 */
+	private function process_webhook_dispute_created( $event_body ) {
+		$event_type   = $this->read_rest_property( $event_body, 'type' );
+		$event_data   = $this->read_rest_property( $event_body, 'data' );
+		$event_object = $this->read_rest_property( $event_data, 'object' );
+		$dispute_id   = $this->read_rest_property( $event_object, 'id' );
+		$charge_id    = $this->read_rest_property( $event_object, 'charge' );
+		$reason       = $this->read_rest_property( $event_object, 'reason' );
+		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
+
+		if ( ! $order ) {
+			throw new Rest_Request_Exception(
+				sprintf(
+					/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
+			);
+		}
+
+		$note = sprintf(
+			/* translators: %1: the dispute reason, %2: the dispute details URL */
+			__( 'Payment has been disputed as %1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
+			$reason,
+			add_query_arg(
+				[ 'id' => $dispute_id ],
+				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
+			)
+		);
+
+		$order->add_order_note( $note );
+		$order->update_status( 'on-hold' );
+	}
+
+	/**
+	 * Process webhook dispute closed.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Rest_Request_Exception Required parameters not found.
+	 */
+	private function process_webhook_dispute_closed( $event_body ) {
+		$event_type   = $this->read_rest_property( $event_body, 'type' );
+		$event_data   = $this->read_rest_property( $event_body, 'data' );
+		$event_object = $this->read_rest_property( $event_data, 'object' );
+		$dispute_id   = $this->read_rest_property( $event_object, 'id' );
+		$charge_id    = $this->read_rest_property( $event_object, 'charge' );
+		$status       = $this->read_rest_property( $event_object, 'status' );
+		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
+
+		if ( ! $order ) {
+			throw new Rest_Request_Exception(
+				sprintf(
+					/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
+			);
+		}
+
+		$note = sprintf(
+			/* translators: %1: the dispute status, %2: the dispute details URL */
+			__( 'Payment dispute has been closed with status %1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
+			$status,
+			add_query_arg(
+				[ 'id' => $dispute_id ],
+				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
+			)
+		);
+
+		$order->add_order_note( $note );
+
+		if ( 'lost' === $status ) {
+			wc_create_refund(
+				[
+					'amount'     => $order->get_total(),
+					'reason'     => __( 'dispute lost', 'woocommerce-payments' ),
+					'order_id'   => $order->get_id(),
+					'line_items' => $order->get_items(),
+				]
+			);
+		} else {
+			$order->update_status( 'completed' );
+		}
+	}
+
+	/**
+	 * Process webhook dispute updated.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Rest_Request_Exception Required parameters not found.
+	 */
+	private function process_webhook_dispute_updated( $event_body ) {
+		$event_type   = $this->read_rest_property( $event_body, 'type' );
+		$event_data   = $this->read_rest_property( $event_body, 'data' );
+		$event_object = $this->read_rest_property( $event_data, 'object' );
+		$dispute_id   = $this->read_rest_property( $event_object, 'id' );
+		$charge_id    = $this->read_rest_property( $event_object, 'charge' );
+		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
+
+		if ( ! $order ) {
+			throw new Rest_Request_Exception(
+				sprintf(
+					/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
+			);
+		}
+
+		switch ( $event_type ) {
+			case 'charge.dispute.funds_withdrawn':
+				$message = __( 'Payment dispute funds have been withdrawn', 'woocommerce-payments' );
+				break;
+			case 'charge.dispute.funds_reinstated':
+				$message = __( 'Payment dispute funds have been reinstated', 'woocommerce-payments' );
+				break;
+			default:
+				$message = __( 'Payment dispute has been updated', 'woocommerce-payments' );
+		}
+
+		$note = sprintf(
+			/* translators: %1: the dispute message, %2: the dispute details URL */
+			__( '%1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
+			$message,
+			add_query_arg(
+				[ 'id' => $dispute_id ],
+				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
+			)
+		);
+
+		$order->add_order_note( $note );
 	}
 
 	/**

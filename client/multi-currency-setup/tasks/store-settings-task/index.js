@@ -85,7 +85,7 @@ const StoreSettingsTask = () => {
 				},
 			} ) }
 			visibleDescription={ __(
-				'These settings can be changed any time by visiting the multi-currency settings',
+				'These settings can be changed any time by visiting the Multi-Currency settings',
 				'woocommerce-payments'
 			) }
 			index={ 2 }
@@ -93,7 +93,7 @@ const StoreSettingsTask = () => {
 			<CollapsibleBody className="multi-currency-settings-task__body">
 				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ __(
-						'These settings can be changed any time by visiting the multi-currency settings',
+						'These settings can be changed any time by visiting the Multi-Currency settings',
 						'woocommerce-payments'
 					) }
 				</p>
