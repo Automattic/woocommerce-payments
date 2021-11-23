@@ -7,48 +7,37 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Deposits;
+use WC_Deposits_Product_Manager;
 use WC_Order;
 use WC_Order_Refund;
-use WC_Product;
+use WCPay\MultiCurrency\Compatibility\BaseCompatibility;
 use WCPay\MultiCurrency\Compatibility\WooCommerceBookings;
 use WCPay\MultiCurrency\Compatibility\WooCommerceFedEx;
+use WCPay\MultiCurrency\Compatibility\WooCommercePreOrders;
 use WCPay\MultiCurrency\Compatibility\WooCommerceProductAddOns;
 use WCPay\MultiCurrency\Compatibility\WooCommerceSubscriptions;
 use WCPay\MultiCurrency\Compatibility\WooCommerceUPS;
+use WCPay\MultiCurrency\Compatibility\WooCommerceDeposits;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class that controls Multi-Currency Compatibility.
  */
-class Compatibility {
+class Compatibility extends BaseCompatibility {
 
 	/**
-	 * MultiCurrency class.
+	 * Init the class.
 	 *
-	 * @var MultiCurrency
+	 * @return void
 	 */
-	private $multi_currency;
-
-	/**
-	 * Utils class.
-	 *
-	 * @var Utils
-	 */
-	private $utils;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param MultiCurrency $multi_currency MultiCurrency class.
-	 * @param Utils         $utils Utils class.
-	 */
-	public function __construct( MultiCurrency $multi_currency, Utils $utils ) {
-		$this->multi_currency = $multi_currency;
-		$this->utils          = $utils;
-		$this->init_filters();
-
+	protected function init() {
 		add_action( 'init', [ $this, 'init_compatibility_classes' ], 11 );
+
+		if ( defined( 'DOING_CRON' ) ) {
+			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
+		}
 	}
 
 	/**
@@ -59,9 +48,11 @@ class Compatibility {
 	public function init_compatibility_classes() {
 		$compatibility_classes[] = new WooCommerceBookings( $this->multi_currency, $this->utils, $this->multi_currency->get_frontend_currencies() );
 		$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
+		$compatibility_classes[] = new WooCommercePreOrders( $this->multi_currency, $this->utils );
 		$compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency, $this->utils );
 		$compatibility_classes[] = new WooCommerceSubscriptions( $this->multi_currency, $this->utils );
 		$compatibility_classes[] = new WooCommerceUPS( $this->multi_currency, $this->utils );
+		$compatibility_classes[] = new WooCommerceDeposits( $this->multi_currency, $this->utils );
 	}
 
 	/**
@@ -178,16 +169,5 @@ class Compatibility {
 		remove_filter( 'woocommerce_order_query', [ $this, 'convert_order_prices' ] );
 
 		return $results;
-	}
-
-	/**
-	 * Initializes our filters for compatibility.
-	 *
-	 * @return void
-	 */
-	private function init_filters() {
-		if ( defined( 'DOING_CRON' ) ) {
-			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
-		}
 	}
 }

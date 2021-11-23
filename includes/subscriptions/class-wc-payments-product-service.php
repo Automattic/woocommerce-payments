@@ -120,41 +120,6 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Gets the WC Pay price hash associated with a WC product.
-	 *
-	 * @param WC_Product $product The product to get the hash for.
-	 * @return string             The product's price hash or an empty string.
-	 */
-	public static function get_wcpay_price_hash( WC_Product $product ) : string {
-		return $product->get_meta( self::PRICE_HASH_KEY, true );
-	}
-
-	/**
-	 * Gets the WC Pay price ID associated with a WC product.
-	 *
-	 * @param WC_Product $product   The product to get the WC Pay price ID for.
-	 * @param bool|null  $test_mode Is WC Pay in test/dev mode.
-	 *
-	 * @return string             The product's WC Pay price ID or an empty string.
-	 */
-	public function get_wcpay_price_id( WC_Product $product, $test_mode = null ) : string {
-		$price_id = $product->get_meta( self::get_wcpay_price_id_option( $test_mode ), true );
-
-		// If the subscription product doesn't have a WC Pay price ID, create one now.
-		if ( empty( $price_id ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
-			$is_current_environment = null === $test_mode || WC_Payments::get_gateway()->is_in_test_mode() === $test_mode;
-
-			// Only create WCPay Price object if we're trying to getch a wcpay price ID in the current environment.
-			if ( $is_current_environment ) {
-				WC_Payments_Subscriptions::get_product_service()->create_product( $product );
-				$price_id = $product->get_meta( self::get_wcpay_price_id_option(), true );
-			}
-		}
-
-		return $price_id;
-	}
-
-	/**
 	 * Gets the WC Pay product ID associated with a WC product.
 	 *
 	 * @param string $type The item type to create a product for.
@@ -203,7 +168,7 @@ class WC_Payments_Product_Service {
 	/**
 	 * Schedules a subscription product to be created or updated in WC Pay on shutdown.
 	 *
-	 * @since x.x.x
+	 * @since 3.2.0
 	 *
 	 * @param int $product_id The ID of the product to handle.
 	 */
@@ -226,7 +191,7 @@ class WC_Payments_Product_Service {
 				continue;
 			}
 
-			if ( ! self::has_wcpay_product_id( $product_to_update ) || $this->product_needs_update( $product_to_update ) || $this->price_needs_update( $product_to_update ) ) {
+			if ( ! self::has_wcpay_product_id( $product_to_update ) || $this->product_needs_update( $product_to_update ) ) {
 				$this->products_to_update[ $product_to_update->get_id() ] = $product_to_update->get_id();
 			}
 		}
@@ -237,7 +202,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * Hooked onto shutdown so all products which have been changed in the current request can be updated once.
 	 *
-	 * @since x.x.x
+	 * @since 3.2.0
 	 */
 	public function create_or_update_products() {
 		foreach ( $this->products_to_update as $product_id ) {
@@ -258,17 +223,19 @@ class WC_Payments_Product_Service {
 	 */
 	public function create_product( WC_Product $product ) {
 		try {
-			$product_data  = array_merge( $this->get_product_data( $product ), $this->get_price_data( $product ) );
+			$product_data = $this->get_product_data( $product );
+
+			// Validate that we have enough data to create the product.
+			$this->validate_product_data( $product_data );
+
 			$wcpay_product = $this->payments_api_client->create_product( $product_data );
 
 			$this->remove_product_update_listeners();
 			$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
 			$this->set_wcpay_product_id( $product, $wcpay_product['wcpay_product_id'] );
-			$this->set_wcpay_price_hash( $product, $this->get_price_hash( $product ) );
-			$this->set_wcpay_price_id( $product, $wcpay_product['wcpay_price_id'] );
 			$this->add_product_update_listeners();
-		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem creating the product in WC Pay: ' . $e->getMessage() );
+		} catch ( \Exception $e ) {
+			Logger::log( sprintf( 'There was a problem creating the product #%s in WC Pay: %s', $product->get_id(), $e->getMessage() ) );
 		}
 	}
 
@@ -305,7 +272,7 @@ class WC_Payments_Product_Service {
 		$wcpay_product_ids = $this->get_all_wcpay_product_ids( $product );
 		$test_mode         = WC_Payments::get_gateway()->is_in_test_mode();
 
-		// if the current environment doesn't have a product ID, make sure we create one.
+		// If the current environment doesn't have a product ID, make sure we create one.
 		if ( ! isset( $wcpay_product_ids[ $test_mode ? 'test' : 'live' ] ) ) {
 			$this->create_product( $product );
 		}
@@ -315,47 +282,36 @@ class WC_Payments_Product_Service {
 			return;
 		}
 
-		$data = [];
-
-		if ( $this->product_needs_update( $product ) ) {
-			$data = array_merge( $data, $this->get_product_data( $product ) );
+		if ( ! $this->product_needs_update( $product ) ) {
+			return;
 		}
 
-		if ( $this->price_needs_update( $product ) ) {
-			$data = array_merge( $data, $this->get_price_data( $product ) );
-		}
+		$data = $this->get_product_data( $product );
 
-		if ( ! empty( $data ) ) {
-			$this->remove_product_update_listeners();
+		$this->remove_product_update_listeners();
 
-			try {
-				// Update all versions of WCPay Products and Prices that need updating.
-				foreach ( $wcpay_product_ids as $environment => $wcpay_product_id ) {
-					$data['test_mode'] = 'live' === $environment ? false : true;
-					$wcpay_product     = $this->payments_api_client->update_product( $wcpay_product_id, $data );
+		try {
+			// Validate that we have enough data to create the product.
+			$this->validate_product_data( $data );
 
-					if ( isset( $wcpay_product['wcpay_price_id'] ) ) {
-						$old_wcpay_price_id = $this->get_wcpay_price_id( $product, $data['test_mode'] );
-
-						$this->set_wcpay_price_id( $product, $wcpay_product['wcpay_price_id'], $data['test_mode'] );
-						$this->archive_price( $old_wcpay_price_id, $data['test_mode'] );
-					}
-				}
-
-				$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
-				$this->set_wcpay_price_hash( $product, $this->get_price_hash( $product ) );
-			} catch ( API_Exception $e ) {
-				Logger::log( 'There was a problem updating the product in WC Pay: ' . $e->getMessage() );
+			// Update all versions of WCPay Products that need updating.
+			foreach ( $wcpay_product_ids as $environment => $wcpay_product_id ) {
+				$data['test_mode'] = 'live' === $environment ? false : true;
+				$this->payments_api_client->update_product( $wcpay_product_id, $data );
 			}
 
-			$this->add_product_update_listeners();
+			$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
+		} catch ( \Exception $e ) {
+			Logger::log( sprintf( 'There was a problem updating the product #%s in WC Pay: %s', $product->get_id(), $e->getMessage() ) );
 		}
+
+		$this->add_product_update_listeners();
 	}
 
 	/**
 	 * Archives a subscription product in WC Pay.
 	 *
-	 * @since x.x.x
+	 * @since 3.2.0
 	 *
 	 * @param int $post_id The ID of the post to handle. Only subscription product IDs will be archived in WC Pay.
 	 */
@@ -372,7 +328,7 @@ class WC_Payments_Product_Service {
 	/**
 	 * Unarchives a subscription product in WC Pay.
 	 *
-	 * @since x.x.x
+	 * @since 3.2.0
 	 *
 	 * @param int $post_id The ID of the post to handle. Only Subscription product post IDs will be unarchived in WC Pay.
 	 */
@@ -402,7 +358,8 @@ class WC_Payments_Product_Service {
 			try {
 				$test_mode = 'live' === $environment ? false : true;
 
-				$this->archive_price( $this->get_wcpay_price_id( $product, $test_mode ), $test_mode );
+				$this->delete_all_wcpay_price_ids( $product );
+
 				$this->payments_api_client->update_product(
 					$wcpay_product_id,
 					[
@@ -432,7 +389,6 @@ class WC_Payments_Product_Service {
 			try {
 				$test_mode = 'live' === $environment ? false : true;
 
-				$this->unarchive_price( $this->get_wcpay_price_id( $product, $test_mode ), $test_mode );
 				$this->payments_api_client->update_product(
 					$wcpay_product_id,
 					[
@@ -454,22 +410,6 @@ class WC_Payments_Product_Service {
 	 */
 	public function archive_price( string $wcpay_price_id, $test_mode = null ) {
 		$data = [ 'active' => 'false' ];
-
-		if ( null !== $test_mode ) {
-			$data['test_mode'] = $test_mode;
-		}
-
-		$this->payments_api_client->update_price( $wcpay_price_id, $data );
-	}
-
-	/**
-	 * Unarchives a WC Pay Price object.
-	 *
-	 * @param string    $wcpay_price_id The Price object's ID to unarchive.
-	 * @param bool|null $test_mode      Is WC Pay in test/dev mode.
-	 */
-	public function unarchive_price( string $wcpay_price_id, $test_mode = null ) {
-		$data = [ 'active' => 'true' ];
 
 		if ( null !== $test_mode ) {
 			$data['test_mode'] = $test_mode;
@@ -593,21 +533,6 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Gets price data relevant to WC Pay from a WC product.
-	 *
-	 * @param WC_Product $product The product to get data from.
-	 * @return array
-	 */
-	private function get_price_data( WC_Product $product ) : array {
-		return [
-			'currency'       => get_woocommerce_currency(),
-			'interval'       => WC_Subscriptions_Product::get_period( $product ),
-			'interval_count' => WC_Subscriptions_Product::get_interval( $product ),
-			'unit_amount'    => $product->get_price() * 100,
-		];
-	}
-
-	/**
 	 * Gets the products to update from a given product.
 	 *
 	 * If applicable, returns the product's variations otherwise returns the product by itself.
@@ -625,25 +550,14 @@ class WC_Payments_Product_Service {
 	 * Used to compare WC changes with WC Pay data.
 	 *
 	 * @param WC_Product $product The product to generate the hash for.
-	 * @return string             The product's price hash.
+	 * @return string             The product's hash.
 	 */
 	private function get_product_hash( WC_Product $product ) : string {
 		return md5( implode( $this->get_product_data( $product ) ) );
 	}
 
 	/**
-	 * Gets a hash of the product's price, period, and inverval.
-	 * Used to compare WC changes with WC Pay data.
-	 *
-	 * @param WC_Product $product The product to generate the hash for.
-	 * @return string             The product's price hash.
-	 */
-	private function get_price_hash( WC_Product $product ) : string {
-		return md5( implode( $this->get_price_data( $product ) ) );
-	}
-
-	/**
-	 * Checks if a prouduct needs to be updated in WC Pay.
+	 * Checks if a product needs to be updated in WC Pay.
 	 *
 	 * @param WC_Product $product The product to check updates for.
 	 *
@@ -652,18 +566,6 @@ class WC_Payments_Product_Service {
 	private function product_needs_update( WC_Product $product ) : bool {
 		return $this->get_product_hash( $product ) !== $this->get_wcpay_product_hash( $product );
 	}
-
-	/**
-	 * Checks if a prouduct price needs to be updated in WC Pay.
-	 *
-	 * @param WC_Product $product The product to check updates for.
-	 *
-	 * @return bool Whether the product price needs to be update in WC Pay.
-	 */
-	private function price_needs_update( WC_Product $product ) : bool {
-		return $this->get_price_hash( $product ) !== $this->get_wcpay_price_hash( $product );
-	}
-
 
 	/**
 	 * Sets a WC Pay product hash on a WC product.
@@ -688,34 +590,11 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Sets a WC Pay price hash on a WC product.
-	 *
-	 * @param WC_Product $product The product to set the WC Pay price hash for.
-	 * @param string     $value   The WC Pay product hash.
-	 */
-	private function set_wcpay_price_hash( WC_Product $product, string $value ) {
-		$product->update_meta_data( self::PRICE_HASH_KEY, $value );
-		$product->save();
-	}
-
-	/**
-	 * Set a WC Pay price ID on a WC product.
-	 *
-	 * @param WC_Product $product   The product to set the WC Pay price ID for.
-	 * @param string     $value     The WC Pay price ID.
-	 * @param bool|null  $test_mode Is WC Pay in test/dev mode.
-	 */
-	private function set_wcpay_price_id( WC_Product $product, string $value, $test_mode = null ) {
-		$product->update_meta_data( self::get_wcpay_price_id_option( $test_mode ), $value );
-		$product->save();
-	}
-
-	/**
 	 * Returns the name of the product id option meta, taking test mode into account.
 	 *
 	 * @param bool|null $test_mode Is WC Pay in test/dev mode.
 	 *
-	 * @return string The price hash option name.
+	 * @return string The WCPay product ID meta key/option name.
 	 */
 	public static function get_wcpay_product_id_option( $test_mode = null ) : string {
 		$test_mode = null === $test_mode ? WC_Payments::get_gateway()->is_in_test_mode() : $test_mode;
@@ -757,7 +636,7 @@ class WC_Payments_Product_Service {
 	 * @param int    $interval Cycle interval.
 	 * @return boolean
 	 */
-	private function is_valid_billing_cycle( $period, $interval ) {
+	public function is_valid_billing_cycle( $period, $interval ) {
 		$interval_limit = $this->get_period_interval_limit( $period );
 
 		// A cycle is valid when we have a defined limit, and the given interval isn't 0 nor greater than the limit.
@@ -779,5 +658,108 @@ class WC_Payments_Product_Service {
 		];
 
 		return ! empty( $max_intervals[ $period ] ) ? $max_intervals[ $period ] : false;
+	}
+
+	/**
+	 * Deletes and archives a product WCPay Price IDs.
+	 *
+	 * @param WC_Product $product The WC Product object to delete and archive the a price IDs.
+	 */
+	private function delete_all_wcpay_price_ids( $product ) {
+		// Delete and archive all price IDs for all environments.
+		foreach ( [ 'test', 'live' ] as $environment ) {
+			$test_mode         = 'test' === $environment;
+			$price_id_meta_key = self::get_wcpay_price_id_option( $test_mode );
+
+			if ( $product->meta_exists( $price_id_meta_key ) ) {
+				try {
+					$this->archive_price( $product->get_meta( $price_id_meta_key, true ), $test_mode );
+				} catch ( API_Exception $e ) {
+					Logger::log( 'There was a problem archiving the ' . $environment . 'product price ID in WC Pay: ' . $e->getMessage() );
+				}
+
+				// Now that the price has been archived, delete the record of it.
+				$product->delete_meta_data( $price_id_meta_key );
+			}
+		}
+
+		$product->delete_meta_data( self::PRICE_HASH_KEY );
+		$product->save();
+	}
+
+	/**
+	 * Validates that we have the data necessary to create a product in WCPay.
+	 *
+	 * @param  array $product_data Data used to create/update the product in WCPay.
+	 * @throws Exception If the product data doesn't contain the 'name' argument as the 'name' property is a required field.
+	 */
+	private function validate_product_data( $product_data ) {
+		if ( empty( $product_data['name'] ) ) {
+			throw new Exception( 'The product "name" is required.' );
+		}
+	}
+
+	/**
+	 * Deprecated functions
+	 */
+
+	/**
+	 * Unarchives a WC Pay Price object.
+	 *
+	 * @deprecated 3.3.0
+	 *
+	 * @param string    $wcpay_price_id The Price object's ID to unarchive.
+	 * @param bool|null $test_mode      Is WC Pay in test/dev mode.
+	 */
+	public function unarchive_price( string $wcpay_price_id, $test_mode = null ) {
+		wc_deprecated_function( __FUNCTION__, '3.3.0' );
+		$data = [ 'active' => 'true' ];
+
+		if ( null !== $test_mode ) {
+			$data['test_mode'] = $test_mode;
+		}
+
+		$this->payments_api_client->update_price( $wcpay_price_id, $data );
+	}
+
+	/**
+	 * Gets the WC Pay price hash associated with a WC product.
+	 *
+	 * @deprecated 3.3.0
+	 *
+	 * @param WC_Product $product The product to get the hash for.
+	 * @return string             The product's price hash or an empty string.
+	 */
+	public static function get_wcpay_price_hash( WC_Product $product ) : string {
+		wc_deprecated_function( __FUNCTION__, '3.3.0' );
+		return $product->get_meta( self::PRICE_HASH_KEY, true );
+	}
+
+	/**
+	 * Gets the WC Pay price ID associated with a WC product.
+	 *
+	 * @deprecated 3.3.0
+	 *
+	 * @param WC_Product $product   The product to get the WC Pay price ID for.
+	 * @param bool|null  $test_mode Is WC Pay in test/dev mode.
+	 *
+	 * @return string The product's WC Pay price ID or an empty string.
+	 */
+	public function get_wcpay_price_id( WC_Product $product, $test_mode = null ) : string {
+		wc_deprecated_function( __FUNCTION__, '3.3.0' );
+		$price_id = $product->get_meta( self::get_wcpay_price_id_option( $test_mode ), true );
+
+		// If the subscription product doesn't have a WC Pay price ID, create one now.
+		if ( empty( $price_id ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
+			$is_current_environment = null === $test_mode || WC_Payments::get_gateway()->is_in_test_mode() === $test_mode;
+
+			// Only create WCPay Price object if we're trying to getch a wcpay price ID in the current environment.
+			if ( $is_current_environment ) {
+				WC_Payments_Subscriptions::get_product_service()->create_product( $product );
+				$price_id = $product->get_meta( self::get_wcpay_price_id_option(), true );
+			}
+		}
+
+		return $price_id;
 	}
 }
