@@ -31,6 +31,8 @@ const OBSERVED_CONSOLE_MESSAGE_TYPES = {
 
 const WP_CONTAINER = 'wcp_e2e_wordpress';
 const WP_CLI = `docker run --rm --user xfs --volumes-from ${ WP_CONTAINER } --network container:${ WP_CONTAINER } wordpress:cli`;
+const RESOURCE_TYPES_TO_BLOCK = [ 'image', 'font', 'media', 'other' ];
+const STYLESHEETS_TO_LOAD = [ /\/style.css/, /chunk/, /blocks/ ];
 
 async function setupBrowser() {
 	await setBrowserViewport( 'large' );
@@ -97,6 +99,21 @@ function observeConsoleLogging() {
 		if (
 			text.includes( 'net::ERR_INTERNET_DISCONNECTED' ) &&
 			isOfflineMode()
+		) {
+			return;
+		}
+
+		// Since we block assets from loading intentionally, these messages
+		// might flood the console and can be ignored.
+		if ( text.includes( 'Failed to load resource' ) ) {
+			return;
+		}
+
+		// CSP report only issues for loading resources can be ignored.
+		if (
+			text.includes(
+				'violates the following Content Security Policy directive'
+			)
 		) {
 			return;
 		}
@@ -184,6 +201,23 @@ async function removeGuestUser() {
 	} );
 }
 
+function blockAssets() {
+	page.setRequestInterception( true );
+	page.on( 'request', ( req ) => {
+		const resourceType = req.resourceType();
+
+		if (
+			RESOURCE_TYPES_TO_BLOCK.includes( resourceType ) ||
+			( 'stylesheet' === resourceType &&
+				! STYLESHEETS_TO_LOAD.some( ( s ) => s.test( req.url() ) ) )
+		) {
+			req.abort();
+		} else {
+			req.continue();
+		}
+	} );
+}
+
 // Before every test suite run, delete all content created by the test. This ensures
 // other posts/comments/etc. aren't dirtying tests and tests don't depend on
 // each other's side-effects.
@@ -192,6 +226,7 @@ beforeAll( async () => {
 	enablePageDialogAccept();
 	observeConsoleLogging();
 	setTestTimeouts();
+	blockAssets();
 	await createCustomerUser();
 	await removeGuestUser();
 	await setupBrowser();

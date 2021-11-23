@@ -282,39 +282,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			],
 		];
 
-		// Giropay option hidden behind feature flag.
-		if ( WC_Payments_Features::is_giropay_enabled() ) {
-			$this->form_fields['giropay_enabled'] = [
-				'title'       => __( 'Enable/disable Giropay', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Giropay', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			];
-		}
-
-		// SEPA option hidden behind feature flag.
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
-			$this->form_fields['sepa_enabled'] = [
-				'title'       => __( 'Enable/disable SEPA', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce SEPA Direct Debit', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			];
-		}
-
-		// Sofort option hidden behind feature flag.
-		if ( WC_Payments_Features::is_sofort_enabled() ) {
-			$this->form_fields['sofort_enabled'] = [
-				'title'       => __( 'Enable/disable Sofort', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Sofort', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			];
-		}
-
 		// Capabilities have different keys than the payment method ID's,
 		// so instead of appending '_payments' to the end of the ID, it'll be better
 		// to have a map for it instead, just in case the pattern changes.
