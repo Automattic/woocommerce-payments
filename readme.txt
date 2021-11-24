@@ -106,6 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Incorrect prices in Payment Request Button for certain currencies.
 * Fix - Updates to fraud protection.
 * Fix - Prevent Payment Request buttons from showing up in Composite Product pages.
+* Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
 * Add - Error messages when dispute evidence exceeds Stripe limits.
 
 = 3.3.0 - 2021-11-18 =

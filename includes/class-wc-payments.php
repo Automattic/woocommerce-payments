@@ -288,7 +288,7 @@ class WC_Payments {
 		// Load WCPay Subscriptions.
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
-			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$card_gateway );
+			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$card_gateway, self::$account );
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
