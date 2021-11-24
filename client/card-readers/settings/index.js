@@ -4,14 +4,16 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, Card, CardBody, TextControl } from '@wordpress/components';
+import { Card, CardBody, TextControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import SettingsSection from 'wcpay/settings//settings-section';
-import SettingsLayout from 'wcpay/settings//settings-layout';
-import LoadableSettingsSection from 'wcpay/settings//loadable-settings-section';
+import SettingsSection from 'wcpay/settings/settings-section';
+import SettingsLayout from 'wcpay/settings/settings-layout';
+import LoadableSettingsSection from 'wcpay/settings/loadable-settings-section';
+import { useAccountBusinessName, useAccountBusinessURL } from '../../data';
+import SaveSettingsSection from 'wcpay/settings/save-settings-section';
 
 const ReadersSettingsDescription = () => (
 	<>
@@ -37,6 +39,16 @@ const ReadersSettingsDescription = () => (
 );
 
 const ReadersSettings = () => {
+	const [
+		accountBusinessName,
+		setAccountBusinessName,
+	] = useAccountBusinessName();
+
+	const [
+		accountBusinessURL,
+		setAccountBusinessURL,
+	] = useAccountBusinessURL();
+
 	return (
 		<SettingsLayout displayBanner={ false }>
 			<SettingsSection Description={ ReadersSettingsDescription }>
@@ -55,17 +67,23 @@ const ReadersSettings = () => {
 									'Business name',
 									'woocommerce-payments'
 								) }
-								value={ 'Woo Store Name' }
+								value={ accountBusinessName }
+								onChange={ setAccountBusinessName }
+							/>
+							<TextControl
+								className="card-readers-business-name-input"
+								label={ __(
+									'Business URL',
+									'woocommerce-payments'
+								) }
+								value={ accountBusinessURL }
+								onChange={ setAccountBusinessURL }
 							/>
 						</CardBody>
 					</Card>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SettingsSection className="card-readers-settings-save-settings-section">
-				<Button isPrimary>
-					{ __( 'Save changes', 'woocommerce-payments' ) }
-				</Button>
-			</SettingsSection>
+			<SaveSettingsSection />
 		</SettingsLayout>
 	);
 };

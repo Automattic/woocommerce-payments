@@ -112,7 +112,7 @@ class WC_Payments_Admin {
 			],
 		];
 
-		$this->admin_child_pages['wc-payments-disputes'] = [
+		$this->admin_child_pages['wc-payments-card-readers'] = [
 			'id'       => 'wc-payments-card-readers',
 			'title'    => __( 'Card Readers', 'woocommerce-payments' ),
 			'parent'   => 'wc-payments',
