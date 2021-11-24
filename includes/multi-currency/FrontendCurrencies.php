@@ -207,13 +207,13 @@ class FrontendCurrencies {
 			return $order;
 		}
 
-		if ( ! $order instanceof WC_Order ) {
-			$order = wc_get_order( $order );
-		}
-
 		if ( empty( $order ) ) {
 			$this->order_currency = $this->multi_currency->get_selected_currency();
 			return $order;
+		}
+
+		if ( ! $order instanceof WC_Order ) {
+			$order = wc_get_order( $order );
 		}
 
 		$this->order_currency = $order->get_currency();
