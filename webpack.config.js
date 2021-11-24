@@ -25,6 +25,8 @@ const webpackConfig = {
 		'multi-currency-analytics':
 			'./client/multi-currency-analytics/index.js',
 		order: './client/order/index.js',
+		'subscriptions-empty-state':
+			'./client/subscriptions-empty-state/index.js',
 	},
 	module: {
 		rules: [
