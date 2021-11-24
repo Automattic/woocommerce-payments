@@ -290,6 +290,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 			[ '' ],
 			[ '0' ],
 			[ false ],
+			[ '2020' ],
 		];
 	}
 
