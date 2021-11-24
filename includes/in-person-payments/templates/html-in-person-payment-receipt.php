@@ -52,12 +52,10 @@ function format_price_helper( array $product, string $currency ): string {
 		.receipt {
 			min-width: 130px;
 			max-width: 300px;
-			padding-left: 16px;
-			padding-right: 16px;
 			margin: 0 auto;
 			text-align: center;
 			font-family: SF Pro Text, sans-serif;
-			font-size: 8px;
+			font-size: 10px;
 
 		}
 
