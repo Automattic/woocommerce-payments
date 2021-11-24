@@ -20,6 +20,7 @@ jest.mock( '@wordpress/data', () => ( {
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
+	useSelect: jest.fn( () => ( { getNotices: jest.fn() } ) ),
 	withDispatch: jest.fn( () => jest.fn() ),
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );

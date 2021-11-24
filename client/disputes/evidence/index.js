@@ -5,7 +5,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import { useDispatch } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
@@ -60,6 +60,7 @@ export const DisputeEvidenceForm = ( props ) => {
 	} = props;
 
 	const { createErrorNotice } = useDispatch( 'core/notices' );
+	const { getNotices } = useSelect( 'core/notices' );
 
 	if ( ! fields || ! fields.length ) {
 		return null;
@@ -92,12 +93,17 @@ export const DisputeEvidenceForm = ( props ) => {
 		value: evidence[ field.key ] || '',
 		onChange: ( value ) => {
 			if ( ! isEvidenceWithinLengthLimit( field, value ) ) {
-				createErrorNotice(
-					__(
-						'Reached maximum character count for evidence',
-						'woocommerce-payments'
-					)
+				const errorMessage = __(
+					'Reached maximum character count for evidence',
+					'woocommerce-payments'
 				);
+				if (
+					! getNotices().some(
+						( notice ) => notice.content === errorMessage
+					)
+				) {
+					createErrorNotice( errorMessage );
+				}
 				return;
 			}
 			onChange( field.key, value );
