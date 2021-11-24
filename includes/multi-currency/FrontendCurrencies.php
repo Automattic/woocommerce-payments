@@ -204,15 +204,16 @@ class FrontendCurrencies {
 	 */
 	public function init_order_currency( $order ) {
 		if ( null !== $this->order_currency ) {
-			return;
+			return $order;
 		}
 
 		if ( ! $order instanceof WC_Order ) {
 			$order = wc_get_order( $order );
 		}
 
-		if ( false === $order ) {
-			return;
+		if ( empty( $order ) ) {
+			$this->order_currency = $this->multi_currency->get_selected_currency();
+			return $order;
 		}
 
 		$this->order_currency = $order->get_currency();
