@@ -541,7 +541,7 @@ class WC_Payments_Account {
 		switch ( $wcpay_connect_from ) {
 			case 'WCADMIN_PAYMENT_TASK':
 				return $this->get_payments_task_page_url();
-			case 'WC_SUBSCRIPTIONS':
+			case 'WC_SUBSCRIPTIONS_TABLE':
 				return admin_url( add_query_arg( [ 'post_type' => 'shop_subscription' ], 'edit.php' ) );
 			default:
 				return $this->get_overview_page_url();
