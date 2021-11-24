@@ -33,6 +33,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const METHOD_ENABLED_KEY = 'enabled';
 
+	const ACCOUNT_SETTINGS_MAPPING = [
+		'account_statement_descriptor'     => 'statement_descriptor',
+		'account_business_name'            => 'business_name',
+		'account_business_url'             => 'business_url',
+		'account_business_support_address' => 'business_support_address',
+		'account_business_support_email'   => 'business_support_email',
+		'account_business_support_phone'   => 'business_support_phone',
+		'account_branding_logo'            => 'branding_logo',
+		'account_branding_icon'            => 'branding_icon',
+		'account_branding_primary_color'   => 'branding_primary_color',
+		'account_branding_secondary_color' => 'branding_secondary_color',
+	];
+
 	/**
 	 * Stripe intents that are treated as successfully created.
 	 *
@@ -306,7 +319,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->supports = array_merge( $this->supports, [ 'tokenization', 'add_payment_method' ] );
 		}
 
-		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, [ $this, 'sanitize_plugin_settings' ] );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
@@ -1513,6 +1525,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_account_statement_descriptor();
 			case 'account_business_name':
 				return $this->get_account_business_name();
+			case 'account_business_url':
+				return $this->get_account_business_url();
+			case 'account_business_support_address':
+				return $this->get_account_business_support_address();
+			case 'account_business_support_email':
+				return $this->get_account_business_support_email();
+			case 'account_business_support_phone':
+				return $this->get_account_business_support_phone();
+			case 'account_branding_logo':
+				return $this->get_account_branding_logo();
+			case 'account_branding_icon':
+				return $this->get_account_branding_icon();
+			case 'account_branding_primary_color':
+				return $this->get_account_branding_primary_color();
+			case 'account_branding_secondary_color':
+				return $this->get_account_branding_secondary_color();
 			default:
 				return parent::get_option( $key, $empty_value );
 		}
@@ -1561,18 +1589,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Sanitizes plugin settings before saving them in site's DB.
-	 *
-	 * Filters out some values stored in connected account.
+	 * Map fields that need to be updated and update the fields server side.
 	 *
 	 * @param array $settings Plugin settings.
-	 * @return array Sanitized settings.
+	 * @return array Updated fields.
 	 */
-	public function sanitize_plugin_settings( $settings ) {
+	public function update_account_settings( $settings ) {
 		$account_settings = $this->extract_account_settings( $settings );
 		$this->update_account( $account_settings );
 
-		return $settings;
+		return $account_settings;
 	}
 
 	/**
@@ -1615,6 +1641,158 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Gets connected account business url.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business url.
+	 *
+	 * @return string Business url or default value.
+	 */
+	protected function get_account_business_url( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_url();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business address.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business address.
+	 *
+	 * @return array Business address or default value.
+	 */
+	protected function get_account_business_support_address( $default_value = [] ): array {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_support_address();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business support email.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business support email.
+	 *
+	 * @return string Business support email or default value.
+	 */
+	protected function get_account_business_support_email( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_support_email();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business support phone.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business support phone.
+	 *
+	 * @return string Business support phone or default value.
+	 */
+	protected function get_account_business_support_phone( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_support_phone();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding logo.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding logo.
+	 *
+	 * @return string Business support branding logo or default value.
+	 */
+	protected function get_account_branding_logo( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_branding_logo();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding icon.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding icon.
+	 *
+	 * @return string Business support branding icon or default value.
+	 */
+	protected function get_account_branding_icon( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_branding_icon();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding primary color.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding primary color.
+	 *
+	 * @return string Business support branding primary color or default value.
+	 */
+	protected function get_account_branding_primary_color( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_branding_primary_color();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding secondary color.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding secondary color.
+	 *
+	 * @return string Business support branding secondary color or default value.
+	 */
+	protected function get_account_branding_secondary_color( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_branding_secondary_color();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
 	 * Handles connected account update when plugin settings saved.
 	 *
 	 * Adds error message to display in admin notices in case of failure.
@@ -1624,7 +1802,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * business_support_email, business_support_phone, branding_logo, branding_icon,
 	 * branding_primary_color, branding_secondary_color.
 	 */
-	private function update_account( $account_settings ) {
+	public function update_account( $account_settings ) {
 		if ( empty( $account_settings ) ) {
 			return;
 		}
@@ -1644,21 +1822,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param array $settings Plugin settings.
 	 */
-	private function extract_account_settings( $settings ) {
-		$setting_names    = [
-			'account_statement_descriptor' => 'statement_descriptor',
-			'account_business_name'        => 'business_name',
-		];
-		$account_settings = [];
-
-		foreach ( $setting_names as $name => $account_key ) {
+	private function extract_account_settings( $settings ) : array {
+		foreach ( static::ACCOUNT_SETTINGS_MAPPING as $name => $account_key ) {
 			if ( isset( $settings[ $name ] ) ) {
 				$account_settings[ $account_key ] = $settings[ $name ];
 				unset( $settings[ $name ] );
 			}
 		}
 
-		return $account_settings;
+		return $account_settings ?? [];
 	}
 
 	/**

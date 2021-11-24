@@ -12,6 +12,19 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
+	const ACCOUNT_FIELDS_TO_UPDATE = [
+		'account_statement_descriptor',
+		'account_business_name',
+		'account_business_url',
+		'account_business_support_address',
+		'account_business_support_email',
+		'account_business_support_phone',
+		'account_branding_logo',
+		'account_branding_icon',
+		'account_branding_primary_color',
+		'account_branding_secondary_color',
+	];
+
 	/**
 	 * Endpoint path.
 	 *
@@ -109,6 +122,39 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'description' => __( 'The customer-facing business name.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
+					'account_business_url'              => [
+						'description' => __( 'The customer-facing business url.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_business_support_address'  => [
+						'description'       => __( 'The customer-facing business support address city.', 'woocommerce-payments' ),
+						'type'              => 'object',
+						'validate_callback' => [ $this, 'validate_business_support_address' ],
+					],
+					'account_business_support_email'    => [
+						'description' => __( 'The customer-facing business support email.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_business_support_phone'    => [
+						'description' => __( 'The customer-facing business support phone.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_branding_logo'             => [
+						'description' => __( 'The customer-facing branding logo.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_branding_icon'             => [
+						'description' => __( 'The customer-facing branding icon.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_branding_primary_color'    => [
+						'description' => __( 'The customer-facing branding primary color.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_branding_secondary_color'  => [
+						'description' => __( 'The customer-facing branding secondary color.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
 					'is_payment_request_enabled'        => [
 						'description'       => __( 'If WooCommerce Payments express checkouts should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
@@ -185,6 +231,32 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Validate the business support address.
+	 *
+	 * @param array           $value The value being validated.
+	 * @param WP_REST_Request $request The request made.
+	 * @param string          $param The parameter name, used in error messages.
+	 * @return true|WP_Error
+	 */
+	public function validate_business_support_address( array $value, WP_REST_Request $request, string $param ) {
+		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
+		if ( true !== $string_validation_result ) {
+			return $string_validation_result;
+		}
+
+		foreach ( $value as $field => $field_value ) {
+			if ( ! in_array( $field, [ 'city', 'country', 'line1', 'line2', 'postal_code', 'state' ], true ) ) {
+				return new WP_Error(
+					'rest_invalid_pattern',
+					'Invalid address format!'
+				);
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Retrieve settings.
 	 *
 	 * @return WP_REST_Response
@@ -205,6 +277,14 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_subscriptions_plugin_active'    => $this->wcpay_gateway->is_subscriptions_plugin_active(),
 				'account_statement_descriptor'      => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
 				'account_business_name'             => $this->wcpay_gateway->get_option( 'account_business_name' ),
+				'account_business_url'              => $this->wcpay_gateway->get_option( 'account_business_url' ),
+				'account_business_support_address'  => $this->wcpay_gateway->get_option( 'account_business_support_address' ),
+				'account_business_support_email'    => $this->wcpay_gateway->get_option( 'account_business_support_email' ),
+				'account_business_support_phone'    => $this->wcpay_gateway->get_option( 'account_business_support_phone' ),
+				'account_branding_logo'             => $this->wcpay_gateway->get_option( 'account_branding_logo' ),
+				'account_branding_icon'             => $this->wcpay_gateway->get_option( 'account_branding_icon' ),
+				'account_branding_primary_color'    => $this->wcpay_gateway->get_option( 'account_branding_primary_color' ),
+				'account_branding_secondary_color'  => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
 				'is_payment_request_enabled'        => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
 				'is_debug_log_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
 				'payment_request_enabled_locations' => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
@@ -230,12 +310,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_debug_log_enabled( $request );
 		$this->update_is_multi_currency_enabled( $request );
 		$this->update_is_wcpay_subscriptions_enabled( $request );
-		$this->update_account_statement_descriptor( $request );
-		$this->update_account_business_name( $request );
 		$this->update_is_payment_request_enabled( $request );
 		$this->update_payment_request_enabled_locations( $request );
 		$this->update_payment_request_appearance( $request );
 		$this->update_is_saved_cards_enabled( $request );
+		$this->update_account( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -398,33 +477,38 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates WooCommerce Payments account statement descriptor.
+	 * Filter account fields to be updated from request.
 	 *
 	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return array Fields to be updated.
 	 */
-	private function update_account_statement_descriptor( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'account_statement_descriptor' ) ) {
-			return;
+	private function get_fields_to_update( WP_REST_Request $request ) : array {
+		foreach ( static::ACCOUNT_FIELDS_TO_UPDATE as $field ) {
+			if ( ! $request->has_param( $field ) ) {
+				continue;
+			}
+
+			$field_value = $request->get_param( $field );
+
+			if ( $this->wcpay_gateway->get_option( $field ) === $field_value ) {
+				continue;
+			}
+
+			$fields_to_update[ $field ] = $field_value;
 		}
 
-		$account_statement_descriptor = $request->get_param( 'account_statement_descriptor' );
-
-		$this->wcpay_gateway->update_option( 'account_statement_descriptor', $account_statement_descriptor );
+		return $fields_to_update ?? [];
 	}
 
 	/**
-	 * Updates WooCommerce Payments account business name.
+	 * Updates WooCommerce Payments account fields
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
-	private function update_account_business_name( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'account_business_name' ) ) {
-			return;
-		}
-
-		$account_business_name = $request->get_param( 'account_business_name' );
-
-		$this->wcpay_gateway->update_option( 'account_business_name', $account_business_name );
+	private function update_account( WP_REST_Request $request ) {
+		$fields_to_update = $this->get_fields_to_update( $request );
+		$this->wcpay_gateway->update_account_settings( $fields_to_update );
 	}
 
 	/**
