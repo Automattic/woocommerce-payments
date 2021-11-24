@@ -13,6 +13,7 @@ import os from 'os';
  */
 import DisputesList from '../';
 import { useDisputes } from 'wcpay/data';
+import { formatStringValue } from 'utils';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDisputes: jest.fn(),
@@ -154,65 +155,52 @@ describe( 'Disputes list', () => {
 			expect( csvHeaderRow ).toEqual( expected );
 		} );
 
-		test( 'should match the visible rows', () => {
-			const { getByRole, getAllByRole } = render( <DisputesList /> );
+		test( 'file should have the correct content', () => {
+			const { getByRole } = render( <DisputesList /> );
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			const csvContent = downloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvRows = csvContent.split( os.EOL );
-			const displayRows = getAllByRole( 'row' );
+			const csvRows = csvContent.split( os.EOL ).slice( 1 );
 
-			expect( csvRows.length ).toEqual( displayRows.length );
+			expect( csvRows.length ).toEqual( mockDisputes.length );
 
-			const csvFirstDispute = csvRows[ 1 ].split( ',' );
-			const displayFirstDispute = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'td' )
-			).map( ( td ) => td.textContent );
+			const csvFirstDispute = csvRows[ 0 ].split( ',' );
+			const {
+				amount,
+				status,
+				reason,
+				order,
+				charge,
+				created,
+				evidence_details: evidenceDetails,
+			} = mockDisputes[ 0 ];
 
-			// Note:
-			//
-			// 1. CSV and display indexes are off by 1 because the first field in CSV is dispute id,
-			//    which is missing in display.
-			//
-			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
-			//    trailing zeros as in the display amount.
-			//
-
-			expect(
-				getUnformattedAmount( displayFirstDispute[ 0 ] ).indexOf(
-					csvFirstDispute[ 1 ]
-				)
-			).not.toBe( -1 ); // amount
+			expect( csvFirstDispute[ 1 ] ).toBe( ( amount / 100 ).toString() );
 
 			expect( csvFirstDispute[ 2 ] ).toBe(
-				`"${ displayFirstDispute[ 1 ] }"`
-			); //status
+				`"${ formatStringValue( status ) }"`
+			);
 
-			expect( csvFirstDispute[ 3 ] ).toBe( displayFirstDispute[ 2 ] ); // reason
+			expect( csvFirstDispute[ 3 ] ).toBe( formatStringValue( reason ) );
 
-			expect( csvFirstDispute[ 5 ] ).toBe( displayFirstDispute[ 4 ] ); // order
+			expect( csvFirstDispute[ 5 ] ).toBe(
+				formatStringValue( order.number )
+			);
 
 			expect( csvFirstDispute[ 6 ] ).toBe(
-				`"${ displayFirstDispute[ 5 ] }"`
-			); // customer
+				`"${ charge.billing_details.name }"`
+			);
 
-			expect( formatDate( csvFirstDispute[ 9 ], 'Y-m-d' ) ).toBe(
-				formatDate( displayFirstDispute[ 6 ], 'Y-m-d' )
-			); // date disputed on
+			expect( csvFirstDispute[ 9 ] ).toBe(
+				dateI18n( 'Y-m-d', moment( created * 1000 ).toISOString() )
+			);
 
-			expect( formatDate( csvFirstDispute[ 10 ], 'Y-m-d / g:iA' ) ).toBe(
-				formatDate( displayFirstDispute[ 7 ], 'Y-m-d / g:iA' )
-			); // date respond by
+			expect( csvFirstDispute[ 10 ] ).toBe(
+				`"${ dateI18n(
+					'Y-m-d / g:iA',
+					moment( evidenceDetails.due_by * 1000 ).toISOString()
+				) }"`
+			);
 		} );
 	} );
 } );
-
-function getUnformattedAmount( formattedAmount ) {
-	let amount = formattedAmount.replace( /[^0-9,.' ]/g, '' ).trim();
-	amount = amount.replace( ',', '.' ); // Euro fix
-	return amount;
-}
-
-function formatDate( date, format ) {
-	return dateI18n( format, moment( date ).toISOString() );
-}
