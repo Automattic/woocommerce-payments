@@ -6,7 +6,6 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
-import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import {
@@ -35,6 +34,7 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import wcpayTracks from 'tracks';
+import { getAdminUrl } from 'wcpay/utils';
 
 const PRODUCT_TYPE_META_KEY = '__product_type';
 
@@ -506,7 +506,7 @@ export default ( { query } ) => {
 		const message = submit
 			? __( 'Evidence submitted!', 'woocommerce-payments' )
 			: __( 'Evidence saved!', 'woocommerce-payments' );
-		const href = addQueryArgs( 'admin.php', {
+		const href = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/disputes',
 		} );
@@ -532,7 +532,7 @@ export default ( { query } ) => {
 								'Return to evidence submission',
 								'woocommerce-payments'
 						  ),
-					url: addQueryArgs( 'admin.php', {
+					url: getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/disputes/challenge',
 						id: query.id,
