@@ -206,8 +206,8 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 									? () => dismissTask( task, 'dismiss' )
 									: undefined
 							}
-							remindMeLater={
-								task.allowRemindMeLater
+							onSnooze={
+								task.allowSnooze
 									? () => remindTaskLater( task )
 									: undefined
 							}

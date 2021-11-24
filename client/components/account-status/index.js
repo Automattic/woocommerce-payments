@@ -74,20 +74,6 @@ const AccountStatusDetails = ( props ) => {
 		</>
 	);
 
-	const discounts = Object.entries( accountFees )
-		.map( ( [ key, value ] ) => {
-			//ignore base and discount fields - still used for backwards compatibilityss
-			if (
-				'base' === key ||
-				'discount' === key ||
-				0 === value.discount.length
-			)
-				return null;
-
-			return value.discount;
-		} )
-		.filter( ( e ) => e && e.length );
-
 	return (
 		<AccountStatusCard title={ cardTitle }>
 			<AccountStatusItem
@@ -104,17 +90,15 @@ const AccountStatusDetails = ( props ) => {
 					depositsStatus={ accountStatus.depositsStatus }
 				/>
 			</AccountStatusItem>
-			{ discounts.length && (
-				<h4>{ __( 'Active discounts', 'woocommerce-payments' ) }</h4>
+			{ 0 < accountFees.length && (
+				<AccountFees accountFees={ accountFees } />
 			) }
-			<AccountFees accountFees={ accountFees } />
 		</AccountStatusCard>
 	);
 };
 
 const AccountStatus = ( props ) => {
 	const { accountStatus } = props;
-
 	return accountStatus.error ? (
 		<AccountStatusError />
 	) : (

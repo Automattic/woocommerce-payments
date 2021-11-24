@@ -8,6 +8,7 @@
   "pin": {
     "automerge": true
   },
+  "rebaseWhen": "conflicted",
   "schedule": [
     "before 3am on Sunday"
   ]

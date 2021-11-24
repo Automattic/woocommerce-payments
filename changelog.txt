@@ -1,6 +1,57 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.2.0 - 2021-xx-xx =
+= 3.4.0 - 2021-xx-xx =
+* Add - Allow UI customizations on checkout payment fields.
+* Add - Introduce `wcpay_payment_request_is_product_supported` filter. Allow plugins to conditionally disable payment request buttons on products that do not support them.
+* Update - Display hardware costs for the period in the transaction list with link to the details page
+* Fix - Incorrect customer links on Transactions page.
+* Fix - Incorrect prices in Payment Request Button for certain currencies.
+* Fix - Updates to fraud protection.
+* Fix - Prevent Payment Request buttons from showing up in Composite Product pages.
+* Update - Updated @woocommerce/experimental package to v2.1.0.
+* Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
+
+= 3.3.0 - 2021-11-18 =
+* Add - Add Idempotency Key to POST headers.
+* Add - Add dispute order notes to Edit Order page.
+* Fix - Show a specific message instead of a generic one in the checkout block when non-UPE payment processing fails.
+* Update - Avoid having invalid intervals (greater than 1 year) in subscription products.
+* Update - The subscription fee label in the transaction timeline.
+* Update - Show red setup badge after 3 days instead of 7
+* Add - Add compatibility between Multi-Currency and WooCommerce Bookings.
+* Add - Add compatibility between Multi-Currency and WooCommerce Pre-Orders.
+* Fix - Do not show default currency selector on Account Details page when only one currency is available.
+* Add - Add filters to disable or filter Multi-Currency sql query clauses for analytics.
+* Fix - Display risk for payment methods without risk assessment
+* Fix - Use configured domain instead of current domain for Apple Pay verification.
+* Fix - Fatal error when deactivating the WooCommerce plugin when WCPay Subscriptions is enabled.
+* Fix - Error where url parameters would get cleared on order-pay page if currency switcher block used.
+* Fix - Currency format on order-pay page if currency was changed via switcher.
+* Fix - Do not create WooCommerce Payments Subscriptions when using payment methods other than WooCommerce Payments.
+* Fix - Show proper payment gateway title on checkout load before updated by JavaScript.
+* Fix - Prevent a race condition leading to duplicate order paid statuses transitions.
+* Fix - 'payment_intent not found' errors when attempting to process the first invoice for a subscription.
+* Fix - UPE element not remounting on checkout update
+* Fix - Validate subscription product create and update args before submitting them to server.
+* Fix - Improve error messages when the minimum order amount has not been reached and allow fields to be displayed with less than the minimum amount.
+* Fix - Add consistent margins to the recurring taxes totals row on the Checkout and Cart block for subscription line items.
+* Fix - Fatal error due on subscription orders with no created date in order row template.
+* Fix - Fatal error on the customer payment page for subscription renewal orders with deleted products.
+* Fix - Misleading subscription order note on payment method change.
+* Fix - Incorrect error message when card ZIP validation fails.
+* Add - `Requires PHP` and `Requires at least` to the main plugin file.
+
+= 3.2.3 - 2021-11-01 =
+* Fix - Card fields on checkout not shown when the 'Enable payments via saved cards' setting is disabled.
+
+= 3.2.2 - 2021-10-29 =
+* Fix - Multisite compatibility - don't load subscriptions-core if already loaded by another multisite plugin.
+* Fix - Errors when attempting to get the WooCommerce Subscriptions Core version during PayPal requests.
+
+= 3.2.1 - 2021-10-28 =
+* Fix - PHP 7.2 compatibility - remove trailing commas from function args in subscriptions-core.
+
+= 3.2.0 - 2021-10-28 =
 * Add - Add subscriptions functionality via Stripe Billing and WC Subscriptions core.
 * Add - UPE track on upgrade and on setting toggle.
 * Fix - Prevent currency switcher to show when enabled currencies list is empty.
@@ -11,19 +62,27 @@
 * Fix - Inconsistent shipping options in Payment Request popup.
 * Fix - Payment methods checkbox UI looking off when Gutenberg is active.
 * Update - Remove unused "wcpay_deposits_summary_empty_state_click" track.
-* Fix - Applied sentence case on all strings.
+* Fix - Border style not being applied properly on Multi-Currency block widget.
+* Fix - Applied sentence case on all strings
 * Fix - Missing customer information after guest checkout via Checkout Block.
 * Fix - Show correct payment method name during checkout using upe methods.
-* Update - display fees per payment method on overview page.
 * Fix - Multi-Currency settings rounding option and preview.
 * Fix - Payment failure on checkout block with UPE when phone number field is hidden
 * Update - Adds a scheduled action which makes updating the account cache more efficient
 * Add - Add compatibility between Multi-Currency and WooCommerce UPS shipping extension.
+* Add - Early access: allow your store to collect payments with SEPA Direct Debit. Enable the feature in settings!
 * Add - Add compatibility between Multi-Currency and WooCommerce FedEx shipping extension.
 * Fix - Fix decimal error with shipping calculations with Multi-Currency.
 * Add - Add support for float type values for quantity.
 * Fix - Allow payment_intent_succeeded webhook to handle orders without intent_id attached.
 * Add - Add compatibility between Multi-Currency and WooCommerce Product Add Ons version 4.3.0 and higher.
+* Add - Enable Bancontact UPE method.
+* Add - Enable P24 UPE method.
+* Add - Enable iDeal UPE method.
+* Add - Payment method activation requirements modal and API integration.
+* Add - Add state handling for UPE methods for better merchant notification on what methods are able to be used.
+* Fix - Order currency incorrect if new user/customer created during checkout.
+* Fix - Validation now works when adding a new payment method, or paying for an order.
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.

@@ -33,6 +33,7 @@ import './add-payment-methods-task.scss';
 import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
 import paymentMethodsMap from 'wcpay/payment-methods-map';
 import { upeCapabilityStatuses, upeMethods } from '../constants';
+import ConfirmPaymentMethodActivationModal from 'wcpay/payment-methods/activation-modal';
 
 const useGetCountryName = () => {
 	const generalSettings = useSelect(
@@ -165,6 +166,51 @@ const AddPaymentMethodsTask = () => {
 	const countryName = useGetCountryName();
 	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 
+	const [ activationModalParams, handleActivationModalOpen ] = useState(
+		null
+	);
+
+	const completeActivation = ( itemId ) => {
+		paymentMethodsState[ itemId ] = true;
+		handlePaymentMethodChange( paymentMethodsState );
+		handleActivationModalOpen( null );
+	};
+
+	const getStatusAndRequirements = ( itemId ) => {
+		const stripeKey = paymentMethodsMap[ itemId ].stripe_key;
+		const stripeStatusContainer = paymentMethodStatuses[ stripeKey ] ?? [];
+		if ( ! stripeStatusContainer ) {
+			return {
+				status: upeCapabilityStatuses.UNREQUESTED,
+				requirements: [],
+			};
+		}
+		return {
+			status: stripeStatusContainer.status,
+			requirements: stripeStatusContainer.requirements,
+		};
+	};
+
+	const handleCheckClick = ( itemId, status ) => {
+		if ( status ) {
+			const statusAndRequirements = getStatusAndRequirements( itemId );
+			if (
+				'unrequested' === statusAndRequirements.status &&
+				0 < statusAndRequirements.requirements.length
+			) {
+				handleActivationModalOpen( {
+					id: itemId,
+					requirements: statusAndRequirements.requirements,
+				} );
+			} else {
+				completeActivation( itemId );
+			}
+		} else {
+			paymentMethodsState[ itemId ] = false;
+			handlePaymentMethodChange( paymentMethodsState );
+		}
+	};
+
 	return (
 		<WizardTaskItem
 			className="add-payment-methods-task"
@@ -207,13 +253,19 @@ const AddPaymentMethodsTask = () => {
 						<PaymentMethodCheckboxes>
 							{ availablePaymentMethods.includes( 'card' ) && (
 								<PaymentMethodCheckbox
-									checked={ paymentMethodsState.card }
-									onChange={ handlePaymentMethodChange }
+									checked={
+										paymentMethodsState.card &&
+										upeCapabilityStatuses.INACTIVE !==
+											getStatusAndRequirements( 'card' )
+												.status
+									}
+									onChange={ ( name, status ) => {
+										handleCheckClick( name, status );
+									} }
 									name="card"
 									status={
-										paymentMethodStatuses[
-											paymentMethodsMap.card.stripe_key
-										] ?? upeCapabilityStatuses.UNREQUESTED
+										getStatusAndRequirements( 'card' )
+											.status
 									}
 								/>
 							) }
@@ -233,19 +285,26 @@ const AddPaymentMethodsTask = () => {
 									availablePaymentMethods.includes( key ) && (
 										<PaymentMethodCheckbox
 											key={ key }
+											label={
+												paymentMethodsMap[ key ].label
+											}
 											checked={
-												paymentMethodsState[ key ]
+												paymentMethodsState[ key ] &&
+												upeCapabilityStatuses.INACTIVE !==
+													getStatusAndRequirements(
+														key
+													).status
 											}
 											status={
-												paymentMethodStatuses[
-													paymentMethodsMap[ key ]
-														.stripe_key
-												] ??
-												upeCapabilityStatuses.UNREQUESTED
+												getStatusAndRequirements( key )
+													.status
 											}
-											onChange={
-												handlePaymentMethodChange
-											}
+											onChange={ ( name, status ) => {
+												handleCheckClick(
+													name,
+													status
+												);
+											} }
 											name={ key }
 										/>
 									)
@@ -331,6 +390,18 @@ const AddPaymentMethodsTask = () => {
 				>
 					{ __( 'Continue', 'woocommerce-payments' ) }
 				</Button>
+				{ activationModalParams && (
+					<ConfirmPaymentMethodActivationModal
+						onClose={ () => {
+							handleActivationModalOpen( null );
+						} }
+						onConfirmClose={ () => {
+							completeActivation( activationModalParams.id );
+						} }
+						requirements={ activationModalParams.requirements }
+						paymentMethod={ activationModalParams.id }
+					/>
+				) }
 			</CollapsibleBody>
 		</WizardTaskItem>
 	);

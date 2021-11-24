@@ -161,7 +161,7 @@
     <UndefinedDocblockClass occurrences="2">
       <code>WC_Subscription|bool</code>
     </UndefinedDocblockClass>
-    <UndefinedFunction occurrences="5">
+    <UndefinedFunction occurrences="6">
       <code>wcs_get_subscription</code>
       <code>wcs_get_subscriptions_for_renewal_order( $order_id )</code>
     </UndefinedFunction>
@@ -190,6 +190,14 @@
     <UndefinedFunction occurrences="1">
       <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] )</code>
     </UndefinedFunction>
+  </file>
+  <file src="includes/subscriptions/class-wc-payments-subscriptions-empty-state-manager.php">
+    <UndefinedFunction occurrences="2">
+      <code>wcs_do_subscriptions_exist()</code>
+    </UndefinedFunction>
+    <UndefinedClass occurrences="1">
+      <code>WC_Subscriptions_Admin</code>
+    </UndefinedClass>
   </file>
 </files>
 

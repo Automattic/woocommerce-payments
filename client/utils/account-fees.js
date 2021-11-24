@@ -5,6 +5,8 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import interpolateComponents from 'interpolate-components';
+import './account-fees.scss';
 
 /**
  * Internal dependencies
@@ -12,17 +14,195 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
 import { formatCurrency } from 'utils/currency';
 import { formatFee } from 'utils/fees';
 
+const countryFeeStripeDocsBaseLink =
+	'https://woocommerce.com/document/payments/faq/fees/#section-';
+const countryFeeStripeDocsBaseLinkNoCountry =
+	'https://woocommerce.com/document/payments/faq/fees';
+const countryFeeStripeDocsSectionNumbers = {
+	AU: 1,
+	AT: 2,
+	BE: 3,
+	CA: 4,
+	FR: 5,
+	DE: 6,
+	HK: 7,
+	IE: 8,
+	IT: 9,
+	NL: 10,
+	NZ: 11,
+	PL: 12,
+	PT: 13,
+	SG: 14,
+	ES: 15,
+	CH: 16,
+	UK: 17,
+	US: 18,
+};
+
+const stripeFeeSectionExistsForCountry = ( country ) => {
+	return countryFeeStripeDocsSectionNumbers.hasOwnProperty( country );
+};
+
+const getStripeFeeSectionUrl = ( country ) => {
+	return sprintf(
+		'%s%s',
+		countryFeeStripeDocsBaseLink,
+		countryFeeStripeDocsSectionNumbers[ country ]
+	);
+};
+
+const getFeeDescriptionString = ( fee ) => {
+	if ( fee.fixed_rate && fee.percentage_rate ) {
+		return sprintf(
+			'%1$f%% + %2$s',
+			formatFee( fee.percentage_rate ),
+			formatCurrency( fee.fixed_rate, fee.currency )
+		);
+	} else if ( fee.fixed_rate ) {
+		return sprintf(
+			'%2$s',
+			formatFee( fee.percentage_rate ),
+			formatCurrency( fee.fixed_rate, fee.currency )
+		);
+	} else if ( fee.percentage_rate ) {
+		return sprintf(
+			'%1$f%%',
+			formatFee( fee.percentage_rate ),
+			formatCurrency( fee.fixed_rate, fee.currency )
+		);
+	}
+	return '';
+};
+
 export const getCurrentFee = ( accountFees ) => {
 	return accountFees.discount.length
 		? accountFees.discount[ 0 ]
 		: accountFees.base;
 };
 
+export const formatMethodFeesTooltip = ( accountFees ) => {
+	if ( ! accountFees ) return;
+
+	const total = {
+		percentage_rate:
+			accountFees.base.percentage_rate +
+			accountFees.additional.percentage_rate +
+			accountFees.fx.percentage_rate,
+		fixed_rate:
+			accountFees.base.fixed_rate +
+			accountFees.additional.fixed_rate +
+			accountFees.fx.fixed_rate,
+		currency: accountFees.base.currency,
+	};
+
+	const hasFees = ( fee ) => {
+		return fee.fixed_rate || fee.percentage_rate;
+	};
+
+	return (
+		<div className={ 'wcpay-fees-tooltip' }>
+			<div>
+				<div>Base fee</div>
+				<div>{ getFeeDescriptionString( accountFees.base ) }</div>
+			</div>
+			{ hasFees( accountFees.additional ) ? (
+				<div>
+					<div>International payment method fee</div>
+					<div>
+						{ getFeeDescriptionString( accountFees.additional ) }
+					</div>
+				</div>
+			) : (
+				''
+			) }
+			{ hasFees( accountFees.fx ) ? (
+				<div>
+					<div>Foreign exchange fee</div>
+					<div>{ getFeeDescriptionString( accountFees.fx ) }</div>
+				</div>
+			) : (
+				''
+			) }
+			<div>
+				<div>Total per transaction</div>
+				<div className={ 'wcpay-fees-tooltip__bold' }>
+					{ getFeeDescriptionString( total ) }
+				</div>
+			</div>
+			{ wcpaySettings &&
+			wcpaySettings.connect &&
+			wcpaySettings.connect.country ? (
+				<div className={ 'wcpay-fees-tooltip__hint-text' }>
+					<span>
+						{ stripeFeeSectionExistsForCountry(
+							wcpaySettings.connect.country
+						)
+							? interpolateComponents( {
+									mixedString: __(
+										'{{linkToStripePage /}} about WooCommerce Payments Fees in your country',
+										'woocommerce-payments'
+									),
+									components: {
+										linkToStripePage: (
+											<a
+												href={ getStripeFeeSectionUrl(
+													wcpaySettings.connect
+														.country
+												) }
+												target={ '_blank' }
+												rel={ 'noreferrer' }
+											>
+												{ __(
+													'Learn more',
+													'woocommerce-payments'
+												) }
+											</a>
+										),
+									},
+							  } )
+							: interpolateComponents( {
+									mixedString: __(
+										'{{linkToStripePage /}} about WooCommerce Payments Fees',
+										'woocommerce-payments'
+									),
+									components: {
+										linkToStripePage: (
+											<a
+												href={
+													countryFeeStripeDocsBaseLinkNoCountry
+												}
+												target={ '_blank' }
+												rel={ 'noreferrer' }
+											>
+												{ __(
+													'Learn more',
+													'woocommerce-payments'
+												) }
+											</a>
+										),
+									},
+							  } ) }
+					</span>
+				</div>
+			) : (
+				''
+			) }
+		</div>
+	);
+};
+
 export const formatAccountFeesDescription = (
 	accountFees,
 	customFormats = {}
 ) => {
+	const defaultFee = {
+		fixed_rate: 0,
+		percentage_rate: 0,
+		currency: 'USD',
+	};
 	const baseFee = accountFees.base;
+	const additionalFee = accountFees.additional ?? defaultFee;
+	const fxFee = accountFees.fx ?? defaultFee;
 	const currentFee = getCurrentFee( accountFees );
 
 	// Default formats will be used if no matching field was passed in the `formats` parameter.
@@ -37,8 +217,15 @@ export const formatAccountFeesDescription = (
 
 	let feeDescription = sprintf(
 		formats.fee,
-		formatFee( baseFee.percentage_rate ),
-		formatCurrency( baseFee.fixed_rate, baseFee.currency )
+		formatFee(
+			baseFee.percentage_rate +
+				additionalFee.percentage_rate +
+				fxFee.percentage_rate
+		),
+		formatCurrency(
+			baseFee.fixed_rate + additionalFee.fixed_rate + fxFee.fixed_rate,
+			baseFee.currency
+		)
 	);
 
 	if ( currentFee !== baseFee ) {
@@ -102,12 +289,26 @@ export const formatMethodFeesDescription = ( methodFees ) => {
 
 export const getTransactionsPaymentMethodName = ( paymentMethod ) => {
 	switch ( paymentMethod ) {
+		case 'bancontact':
+			return __( 'Bancontact transactions', 'woocommerce-payments' );
 		case 'card':
 			return __( 'Card transactions', 'woocommerce-payments' );
 		case 'card_present':
 			return __( 'In-person transactions', 'woocommerce-payments' );
 		case 'giropay':
 			return __( 'GiroPay transactions', 'woocommerce-payments' );
+		case 'ideal':
+			return __( 'iDeal transactions', 'woocommerce-payments' );
+		case 'p24':
+			return __(
+				'Przelewy24 (P24) transactions',
+				'woocommerce-payments'
+			);
+		case 'sepa_debit':
+			return __(
+				'SEPA Direct Debit transactions',
+				'woocommerce-payments'
+			);
 		case 'sofort':
 			return __( 'Sofort transactions', 'woocommerce-payments' );
 		default:

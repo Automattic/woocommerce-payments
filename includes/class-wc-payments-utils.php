@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\{ API_Exception, Connection_Exception };
+use WCPay\Exceptions\{ Amount_Too_Small_Exception, API_Exception, Connection_Exception };
 
 /**
  * WC Payments Utils class
@@ -213,7 +213,7 @@ class WC_Payments_Utils {
 
 	/**
 	 * List of countries enabled for Stripe platform account. See also
-	 * https://docs.woocommerce.com/document/payments/countries/ for the most actual status.
+	 * https://woocommerce.com/document/payments/countries/ for the most actual status.
 	 *
 	 * @return string[]
 	 */
@@ -538,12 +538,53 @@ class WC_Payments_Utils {
 		// more generic messages instead of specific order/payment messages when the API Exception is redacted.
 		if ( $e instanceof Connection_Exception ) {
 			$error_message = __( 'There was an error while processing this request. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
+		} elseif ( $e instanceof Amount_Too_Small_Exception ) {
+			$minimum_amount = $e->get_minimum_amount();
+			$currency       = $e->get_currency();
+
+			// Cache the result.
+			static::cache_minimum_amount( $currency, $minimum_amount );
+			$interpreted_amount = self::interpret_stripe_amount( $minimum_amount, $currency );
+			$price              = wc_price( $interpreted_amount, [ 'currency' => strtoupper( $currency ) ] );
+
+			return sprintf(
+				// translators: %s a formatted price.
+				__(
+					'The selected payment method requires a total amount of at least %s.',
+					'woocommerce-payments'
+				),
+				wp_strip_all_tags( html_entity_decode( $price ) )
+			);
 		} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && ! empty( $e->get_error_type() ) && 'card_error' !== $e->get_error_type() ) {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
+		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() ) {
+			$error_message = __( 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', 'woocommerce-payments' );
 		}
 
 		return $error_message;
+	}
+
+	/**
+	 * Saves the minimum amount required for transactions in a given currency.
+	 *
+	 * @param string $currency The currency.
+	 * @param int    $amount   The minimum amount.
+	 */
+	public static function cache_minimum_amount( $currency, $amount ) {
+		set_transient( 'wcpay_minimum_amount_' . strtolower( $currency ), $amount, DAY_IN_SECONDS );
+	}
+
+	/**
+	 * Checks if there is a minimum amount required for transactions in a given currency.
+	 *
+	 * @param string $currency The currency to check for.
+	 *
+	 * @return int|null Either the minimum amount, or `null` if not available.
+	 */
+	public static function get_cached_minimum_amount( $currency ) {
+		$cached = get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
+		return intval( $cached ) ? intval( $cached ) : null;
 	}
 }

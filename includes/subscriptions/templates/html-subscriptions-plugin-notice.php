@@ -33,9 +33,9 @@
 								esc_html__( 'Existing subscriptions will %1$s%3$srenew manually%4$s%2$s - subscribers will need to log in to pay for renewal. Access to premium features will also be removed. %5$sLearn more.%4$s', 'woocommerce-payments' ),
 								'<strong>',
 								'</strong>',
-								'<a href="https://docs.woocommerce.com/document/subscriptions/renewal-process/#section-4">',
+								'<a href="https://woocommerce.com/document/subscriptions/renewal-process/#section-4">',
 								'</a>',
-								'<a href="http://docs.woocommerce.com/document/subscriptions/deactivation/">'
+								'<a href="http://woocommerce.com/document/subscriptions/deactivation/">'
 							);
 							?>
 					</p>

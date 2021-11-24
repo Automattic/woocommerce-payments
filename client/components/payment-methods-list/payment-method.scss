@@ -19,11 +19,22 @@
 	&__text {
 		flex: 1 1 100%;
 		order: 1;
+		display: flex;
+		flex-wrap: nowrap;
 
 		@include breakpoint( '>660px' ) {
 			flex: 1 1 auto;
-			margin-right: 25px;
 			order: 3;
+		}
+	}
+
+	&__checkbox {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		.components-base-control__field {
+			margin: 0 4px 0 0;
 		}
 	}
 
@@ -81,7 +92,30 @@
 		}
 	}
 
+	&__fees {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		white-space: nowrap;
+		margin-left: 16px;
+	}
+
 	&.has-icon-border &__icon {
 		box-shadow: 0 0 0 1px #ddd;
+	}
+
+	.wcpay-pill {
+		margin-left: $gap-smaller;
+		&.payment-status-pending-approval,
+		&.payment-status-pending-verification {
+			border: 0 solid transparent;
+			background: #f0b849;
+			color: #1f1f1f;
+		}
+		&.payment-status-inactive {
+			border: 0 solid transparent;
+			background: #cc1818;
+			color: #fff;
+		}
 	}
 }
