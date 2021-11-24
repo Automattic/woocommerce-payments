@@ -109,6 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
 * Fix - Fatal error on thank you page for deleted orders.
 * Add - Error messages when dispute evidence exceeds Stripe limits.
+* Add - IPP Styled Receipts: Merchant brand settings (API)
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
