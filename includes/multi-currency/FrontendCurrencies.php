@@ -198,7 +198,7 @@ class FrontendCurrencies {
 	/**
 	 * Inits order currency code.
 	 *
-	 * @param mixed $arg Either WC_Order or the id of an order asre expected, but can be empty.
+	 * @param mixed $arg Either WC_Order or the id of an order are expected, but can be empty.
 	 *
 	 * @return int The order id or what was passed as $arg.
 	 */
