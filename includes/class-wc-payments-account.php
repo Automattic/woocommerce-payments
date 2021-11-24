@@ -416,7 +416,8 @@ class WC_Payments_Account {
 	/**
 	 * Get Stripe connect url
 	 *
-	 * @param string $wcpay_connect_from A page ID representing where the user should be returned to after connecting.
+	 * @see WC_Payments_Account::get_onboarding_return_url(). The $wcpay_connect_from relies on this function.
+	 * @param string $wcpay_connect_from Optional. A page ID representing where the user should be returned to after connecting. Default is '1' - redirects back to the WC Payments overview page.
 	 *
 	 * @return string Stripe account login url.
 	 */
