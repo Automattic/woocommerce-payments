@@ -1652,7 +1652,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Gets connected account business address.
 	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch business address.
+	 * @param array $default_value Value to return when not connected or failed to fetch business address.
 	 *
 	 * @return array Business address or default value.
 	 */
