@@ -32,7 +32,7 @@ jobs:
       fail-fast:     false
       matrix:
         # Min WooCommerce | L-2 | L(atest) | beta
-        woocommerce: [ '4.4.0', '5.5.0', '5.7.0', 'beta' ]
+        woocommerce: [ '4.4.0', '5.7.0', '5.9.0', 'beta' ]
         wordpress:   [ 'latest' ]
         php:         [ '7.4' ]
         include:

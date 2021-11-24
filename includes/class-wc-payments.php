@@ -14,12 +14,9 @@ use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Gateway;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Gateway;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Gateway;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
@@ -35,27 +32,6 @@ class WC_Payments {
 	 * @var CC_Payment_Gateway
 	 */
 	private static $card_gateway;
-
-	/**
-	 * Instance of Giropay gateway, created in init function.
-	 *
-	 * @var Giropay_Payment_Gateway
-	 */
-	private static $giropay_gateway;
-
-	/**
-	 * Instance of SEPA gateway, created in init function.
-	 *
-	 * @var Sepa_Payment_Gateway
-	 */
-	private static $sepa_gateway;
-
-	/**
-	 * Instance of Sofort gateway, created in init function.
-	 *
-	 * @var Sofort_Payment_Gateway
-	 */
-	private static $sofort_gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -194,9 +170,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-giropay-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-sepa-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-sofort-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
@@ -245,11 +218,8 @@ class WC_Payments {
 		self::$localization_service            = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 
-		$card_class    = CC_Payment_Gateway::class;
-		$upe_class     = UPE_Payment_Gateway::class;
-		$giropay_class = Giropay_Payment_Gateway::class;
-		$sepa_class    = Sepa_Payment_Gateway::class;
-		$sofort_class  = Sofort_Payment_Gateway::class;
+		$card_class = CC_Payment_Gateway::class;
+		$upe_class  = UPE_Payment_Gateway::class;
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$payment_methods        = [];
@@ -269,16 +239,6 @@ class WC_Payments {
 			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter );
 		} else {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter );
-		}
-
-		if ( WC_Payments_Features::is_giropay_enabled() ) {
-			self::$giropay_gateway = new $giropay_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
-		}
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
-			self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
-		}
-		if ( WC_Payments_Features::is_sofort_enabled() ) {
-			self::$sofort_gateway = new $sofort_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 
 		// Payment Request and Apple Pay.
@@ -328,7 +288,7 @@ class WC_Payments {
 		// Load WCPay Subscriptions.
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
-			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$card_gateway );
+			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$card_gateway, self::$account );
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
@@ -373,9 +333,8 @@ class WC_Payments {
 				[
 					// Mirrors the functionality on WooCommerce core: https://github.com/woocommerce/woocommerce/blob/ff2eadeccec64aa76abd02c931bf607dd819bbf0/includes/wc-core-functions.php#L1916 .
 					'WCRequires' => 'WC requires at least',
-					// The "Requires WP" plugin header is proposed and being implemented here: https://core.trac.wordpress.org/ticket/43992
-					// TODO: Check before release if the "Requires WP" header name has been accepted, or we should use a header on the readme.txt file instead.
-					'RequiresWP' => 'Requires WP',
+
+					'RequiresWP' => 'Requires at least',
 					'Version'    => 'Version',
 				]
 			);
@@ -406,16 +365,6 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
-
-		if ( WC_Payments_Features::is_giropay_enabled() ) {
-			$gateways[] = self::$giropay_gateway;
-		}
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
-			$gateways[] = self::$sepa_gateway;
-		}
-		if ( WC_Payments_Features::is_sofort_enabled() ) {
-			$gateways[] = self::$sofort_gateway;
-		}
 
 		return $gateways;
 	}
@@ -640,13 +589,13 @@ class WC_Payments {
 		$accounts_controller = new WC_REST_Payments_Terminal_Locations_Controller( self::$api_client );
 		$accounts_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-fraud-controller.php';
-		$fraud_controller = new WC_REST_Payments_Fraud_Controller( self::$api_client );
-		$fraud_controller->register_routes();
-
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
 		$settings_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
+		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client );
+		$charges_controller->register_routes();
 
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
@@ -666,7 +615,7 @@ class WC_Payments {
 	 * @return string The cache buster value to use for the given file.
 	 */
 	public static function get_file_version( $file ) {
-		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( WCPAY_ABSPATH . $file ) ) {
 			$file = trim( $file, '/' );
 			return filemtime( WCPAY_ABSPATH . $file );
 		}
