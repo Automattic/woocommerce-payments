@@ -52,7 +52,7 @@ class WC_Payments_DB {
 		);
 
 		return array_map(
-			function ( $row ) {
+			function ( stdClass $row ) : array {
 				return [
 					'order'     => $this->order_from_order_id( $row->order_id ),
 					'charge_id' => $row->charge_id,
