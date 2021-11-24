@@ -14,12 +14,9 @@ use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Gateway;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Gateway;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Gateway;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
@@ -35,27 +32,6 @@ class WC_Payments {
 	 * @var CC_Payment_Gateway
 	 */
 	private static $card_gateway;
-
-	/**
-	 * Instance of Giropay gateway, created in init function.
-	 *
-	 * @var Giropay_Payment_Gateway
-	 */
-	private static $giropay_gateway;
-
-	/**
-	 * Instance of SEPA gateway, created in init function.
-	 *
-	 * @var Sepa_Payment_Gateway
-	 */
-	private static $sepa_gateway;
-
-	/**
-	 * Instance of Sofort gateway, created in init function.
-	 *
-	 * @var Sofort_Payment_Gateway
-	 */
-	private static $sofort_gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -194,9 +170,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-giropay-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-sepa-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-sofort-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
@@ -245,11 +218,8 @@ class WC_Payments {
 		self::$localization_service            = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 
-		$card_class    = CC_Payment_Gateway::class;
-		$upe_class     = UPE_Payment_Gateway::class;
-		$giropay_class = Giropay_Payment_Gateway::class;
-		$sepa_class    = Sepa_Payment_Gateway::class;
-		$sofort_class  = Sofort_Payment_Gateway::class;
+		$card_class = CC_Payment_Gateway::class;
+		$upe_class  = UPE_Payment_Gateway::class;
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$payment_methods        = [];
@@ -269,16 +239,6 @@ class WC_Payments {
 			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter );
 		} else {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter );
-		}
-
-		if ( WC_Payments_Features::is_giropay_enabled() ) {
-			self::$giropay_gateway = new $giropay_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
-		}
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
-			self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
-		}
-		if ( WC_Payments_Features::is_sofort_enabled() ) {
-			self::$sofort_gateway = new $sofort_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 
 		// Payment Request and Apple Pay.
@@ -405,16 +365,6 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
-
-		if ( WC_Payments_Features::is_giropay_enabled() ) {
-			$gateways[] = self::$giropay_gateway;
-		}
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
-			$gateways[] = self::$sepa_gateway;
-		}
-		if ( WC_Payments_Features::is_sofort_enabled() ) {
-			$gateways[] = self::$sofort_gateway;
-		}
 
 		return $gateways;
 	}
