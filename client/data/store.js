@@ -15,6 +15,7 @@ import * as timeline from './timeline';
 import * as disputes from './disputes';
 import * as settings from './settings';
 import * as multiCurrency from './multi-currency';
+import * as readers from './card-readers';
 
 // Extracted into wrapper function to facilitate testing.
 export const initStore = () =>
@@ -27,6 +28,7 @@ export const initStore = () =>
 			disputes: disputes.reducer,
 			settings: settings.reducer,
 			multiCurrency: multiCurrency.reducer,
+			readers: readers.reducer,
 		} ),
 		actions: {
 			...deposits.actions,
@@ -36,6 +38,7 @@ export const initStore = () =>
 			...disputes.actions,
 			...settings.actions,
 			...multiCurrency.actions,
+			...readers.actions,
 		},
 		controls,
 		selectors: {
@@ -46,6 +49,7 @@ export const initStore = () =>
 			...disputes.selectors,
 			...settings.selectors,
 			...multiCurrency.selectors,
+			...readers.selectors,
 		},
 		resolvers: {
 			...deposits.resolvers,
@@ -55,5 +59,6 @@ export const initStore = () =>
 			...disputes.resolvers,
 			...settings.resolvers,
 			...multiCurrency.resolvers,
+			...readers.resolvers,
 		},
 	} );

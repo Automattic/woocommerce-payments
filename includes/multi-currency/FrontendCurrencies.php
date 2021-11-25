@@ -80,6 +80,7 @@ class FrontendCurrencies {
 			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 50 );
 			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 50 );
 			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 50 );
+			add_action( 'before_woocommerce_pay', [ $this, 'init_order_currency_from_query_vars' ] );
 		}
 
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
@@ -197,22 +198,36 @@ class FrontendCurrencies {
 	/**
 	 * Inits order currency code.
 	 *
-	 * @param mixed $order Either WC_Order or the id of an order.
+	 * @param mixed $arg Either WC_Order or the id of an order are expected, but can be empty.
 	 *
-	 * @return int The order id.
+	 * @return int The order id or what was passed as $arg.
 	 */
-	public function init_order_currency( $order ) {
+	public function init_order_currency( $arg ) {
 		if ( null !== $this->order_currency ) {
-			return;
+			return $arg;
 		}
 
-		if ( ! $order instanceof WC_Order ) {
-			$order = wc_get_order( $order );
+		$order = ! $arg instanceof WC_Order ? wc_get_order( $arg ) : $arg;
+
+		if ( $order ) {
+			$this->order_currency = $order->get_currency();
+			return $order->get_id();
 		}
 
-		$this->order_currency = $order->get_currency();
+		$this->order_currency = $this->multi_currency->get_selected_currency();
+		return $arg;
+	}
 
-		return $order->get_id();
+	/**
+	 * Gets the order id from the wp query_vars and then calls init_order_currency.
+	 *
+	 * @return void
+	 */
+	public function init_order_currency_from_query_vars() {
+		global $wp;
+		if ( ! empty( $wp->query_vars['order-pay'] ) ) {
+			$this->init_order_currency( $wp->query_vars['order-pay'] );
+		}
 	}
 
 	/**
@@ -251,6 +266,7 @@ class FrontendCurrencies {
 			[
 				'WC_Shortcode_My_Account::view_order',
 				'WC_Shortcode_Checkout::order_received',
+				'WC_Shortcode_Checkout::order_pay',
 			]
 		);
 	}

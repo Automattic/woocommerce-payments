@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -281,39 +281,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				],
 			],
 		];
-
-		// Giropay option hidden behind feature flag.
-		if ( WC_Payments_Features::is_giropay_enabled() ) {
-			$this->form_fields['giropay_enabled'] = [
-				'title'       => __( 'Enable/disable Giropay', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Giropay', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			];
-		}
-
-		// SEPA option hidden behind feature flag.
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
-			$this->form_fields['sepa_enabled'] = [
-				'title'       => __( 'Enable/disable SEPA', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce SEPA Direct Debit', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			];
-		}
-
-		// Sofort option hidden behind feature flag.
-		if ( WC_Payments_Features::is_sofort_enabled() ) {
-			$this->form_fields['sofort_enabled'] = [
-				'title'       => __( 'Enable/disable Sofort', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Sofort', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			];
-		}
 
 		// Capabilities have different keys than the payment method ID's,
 		// so instead of appending '_payments' to the end of the ID, it'll be better
@@ -787,6 +754,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			<?php endif; ?>
 
 			<?php
+
 			if ( $display_tokenization ) {
 				$this->tokenization_script();
 				echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -807,6 +775,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			</fieldset>
 			<?php
+
+			do_action( 'wcpay_payment_fields_wcpay', $this->id );
+
 		} catch ( Exception $e ) {
 			// Output the error message.
 			?>
@@ -826,6 +797,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws Process_Payment_Exception Error processing the payment.
+	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
@@ -841,9 +813,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
-
-			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
-
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
 				$order->update_status( 'failed' );
 			}
@@ -853,21 +822,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( ! empty( $payment_information ) ) {
+				/* translators: %1: the failed payment amount, %2: error message  */
+				$error_message = __(
+					'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+					'woocommerce-payments'
+				);
+
+				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
+
+				if ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() ) {
+					/* translators: %1: the failed payment amount, %2: error message  */
+					$error_message = __(
+						'A payment of %1$s <strong>failed</strong>. %2$s',
+						'woocommerce-payments'
+					);
+
+					$error_details = __(
+						'We couldn’t verify the postal code in the billing address. If the issue persists, suggest the customer to reach out to the card issuing bank.',
+						'woocommerce-payments'
+					);
+				}
+
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the failed payment amount, %2: error message  */
-						__(
-							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-							'woocommerce-payments'
-						),
+						$error_message,
 						[
 							'strong' => '<strong>',
 							'code'   => '<code>',
 						]
 					),
 					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
-					esc_html( rtrim( $e->getMessage(), '.' ) )
+					$error_details
 				);
+
 				$order->add_order_note( $note );
 			}
 
@@ -888,10 +875,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_order_note( $note );
 			}
 
-			return [
-				'result'   => 'fail',
-				'redirect' => '',
-			];
+			// Re-throw the exception after setting everything up.
+			// This makes the error notice show up both in the regular and block checkout.
+			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 		}
 	}
 
@@ -1019,10 +1005,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( $payment_needed ) {
+			$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() );
+			$currency         = strtolower( $order->get_currency() );
+
+			// Try catching the error without reaching the API.
+			$minimum_amount = WC_Payments_Utils::get_cached_minimum_amount( $currency );
+			if ( $minimum_amount > $converted_amount ) {
+				$e = new Amount_Too_Small_Exception( 'Amount too small', $minimum_amount, $currency, 400 );
+				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+			}
+
+			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout();
+
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 			$intent = $this->payments_api_client->create_and_confirm_intention(
-				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
-				strtolower( $order->get_currency() ),
+				$converted_amount,
+				$currency,
 				$payment_information->get_payment_method(),
 				$customer_id,
 				$payment_information->is_using_manual_capture(),
@@ -1030,7 +1028,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$metadata,
 				$this->get_level3_data_from_order( $order ),
 				$payment_information->is_merchant_initiated(),
-				$additional_api_parameters
+				$additional_api_parameters,
+				$payment_methods
 			);
 
 			$intent_id     = $intent->get_id();
@@ -1059,9 +1058,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$currency      = $order->get_currency();
 			$next_action   = $intent['next_action'];
 		}
-
-		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
-		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( ! empty( $intent ) ) {
 			if ( ! in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
@@ -1107,6 +1103,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 		}
+
+		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( isset( $response ) ) {
 			return $response;
@@ -1261,7 +1260,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$order->add_order_note( $note );
 				}
 				try {
-					$order->payment_complete( $intent_id );
+					// Read the latest order properties from the database to avoid race conditions when the paid webhook was handled during this request.
+					$order->get_data_store()->read( $order );
+
+					if ( ! $order->has_status( [ 'processing', 'completed' ] ) ) {
+						$order->payment_complete( $intent_id );
+					}
 				} catch ( Exception $e ) {
 					// continue further, something unexpected happened, but we can't really do nothing with that.
 					Logger::log( 'Error when completing payment for order: ' . $e->getMessage() );
@@ -2433,24 +2437,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param string $order_id optional Order ID.
 	 * @return string[]
 	 */
-	public function get_upe_enabled_at_checkout_payment_method_ids( $order_id = null ) {
-		$capture                    = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
-		$capturable_payment_methods = $capture ? $this->get_upe_enabled_payment_method_ids() : [ 'card' ];
-		$enabled_payment_methods    = [];
-		$active_payment_methods     = $this->get_upe_enabled_payment_method_statuses();
-		foreach ( $capturable_payment_methods as $payment_method_id ) {
-			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
-			if ( isset( $this->payment_methods[ $payment_method_id ] )
-				&& $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id )
-				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() )
-				&& isset( $active_payment_methods[ $payment_method_capability_key ] )
-				&& 'active' === $active_payment_methods[ $payment_method_capability_key ]['status']
-			) {
-				$enabled_payment_methods[] = $payment_method_id;
-			}
-		}
-
-		return $enabled_payment_methods;
+	public function get_payment_method_ids_enabled_at_checkout( $order_id = null ) {
+		return [
+			'card',
+		];
 	}
 
 	/**
