@@ -264,7 +264,7 @@ class WC_Payments_API_Intention {
 	 *
 	 * @return array
 	 */
-	public function get_metadata() {
+	public function get_metadata(): array {
 		return $this->metadata;
 	}
 }
