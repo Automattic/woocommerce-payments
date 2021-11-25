@@ -267,4 +267,34 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 			$this->frontend_currencies->fix_price_decimals_for_shipping_rates( [ 'price_decimals' => 42 ], null )
 		);
 	}
+
+	public function test_init_order_currency_returns_order_if_order_currency_not_null() {
+		// Set the currency and then init the order_currency.
+		$currency = 'EUR';
+		$this->mock_order->set_currency( $currency );
+		$this->frontend_currencies->init_order_currency( $this->mock_order );
+
+		// Since the order_currency is already set, this should return what's passed, the full order.
+		$this->assertSame( $this->mock_order, $this->frontend_currencies->init_order_currency( $this->mock_order ) );
+	}
+
+	/**
+	 * @dataProvider empty_order_number_provider
+	 */
+	public function test_init_order_currency_returns_empty_order_numbers( $order_id ) {
+		$this->assertSame( $order_id, $this->frontend_currencies->init_order_currency( $order_id ) );
+	}
+
+	public function empty_order_number_provider() {
+		return [
+			[ '' ],
+			[ '0' ],
+			[ false ],
+			[ '2020' ],
+		];
+	}
+
+	public function test_init_order_currency_returns_order_id() {
+		$this->assertSame( $this->mock_order->get_id(), $this->frontend_currencies->init_order_currency( $this->mock_order ) );
+	}
 }
