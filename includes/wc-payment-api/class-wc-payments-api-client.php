@@ -192,34 +192,21 @@ class WC_Payments_API_Client {
 		$metadata = [],
 		$level3 = [],
 		$off_session = false,
-		$additional_parameters = []
+		$additional_parameters = [],
+		$payment_methods = null
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
-		$request                   = [];
-		$request['amount']         = $amount;
-		$request['currency']       = $currency_code;
-		$request['confirm']        = 'true';
-		$request['payment_method'] = $payment_method_id;
-		$request['customer']       = $customer_id;
-		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
-		$request['metadata']       = $metadata;
-		$request['level3']         = $level3;
-		$request['description']    = $this->get_intent_description( $metadata['order_id'] ?? 0 );
-
-		$available_payment_methods = WC_Payments::get_gateway()->get_upe_available_payment_methods();
-		$filtered_payment_methods  = [];
-		foreach ( $available_payment_methods as $available_payment_method ) {
-			$class_name = '\\WCPay\\Payment_Methods\\' . ucfirst( strtolower( $available_payment_method ) ) . '_Payment_Method';
-			if ( class_exists( $class_name ) ) {
-				$payment_method_class = new $class_name( null );
-				if ( in_array( strtoupper( $currency_code ), $payment_method_class->get_currencies(), true ) ) {
-					$filtered_payment_methods[] = $available_payment_method;
-				}
-			} elseif ( 'sepa_debit' !== $available_payment_method || 'eur' === strtolower( $currency_code ) ) {
-				$filtered_payment_methods[] = $available_payment_method;
-			}
-		}
-		$request['payment_method_types'] = $filtered_payment_methods;
+		$request                         = [];
+		$request['amount']               = $amount;
+		$request['currency']             = $currency_code;
+		$request['confirm']              = 'true';
+		$request['payment_method']       = $payment_method_id;
+		$request['customer']             = $customer_id;
+		$request['capture_method']       = $manual_capture ? 'manual' : 'automatic';
+		$request['metadata']             = $metadata;
+		$request['level3']               = $level3;
+		$request['description']          = $this->get_intent_description( $metadata['order_id'] ?? 0 );
+		$request['payment_method_types'] = $payment_methods ?? WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout();
 
 		$request = array_merge( $request, $additional_parameters );
 
