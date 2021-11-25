@@ -206,8 +206,20 @@ class WC_Payments_API_Client {
 		$request['level3']         = $level3;
 		$request['description']    = $this->get_intent_description( $metadata['order_id'] ?? 0 );
 
-		$available_payment_methods       = WC_Payments::get_gateway()->get_upe_available_payment_methods();
-		$request['payment_method_types'] = $available_payment_methods;
+		$available_payment_methods = WC_Payments::get_gateway()->get_upe_available_payment_methods();
+		$filtered_payment_methods  = [];
+		foreach ( $available_payment_methods as $available_payment_method ) {
+			$class_name = '\\WCPay\\Payment_Methods\\' . ucfirst( strtolower( $available_payment_method ) ) . '_Payment_Method';
+			if ( class_exists( $class_name ) ) {
+				$payment_method_class = new $class_name( null );
+				if ( in_array( strtoupper( $currency_code ), $payment_method_class->get_currencies(), true ) ) {
+					$filtered_payment_methods[] = $available_payment_method;
+				}
+			} elseif ( 'sepa_debit' !== $available_payment_method || 'eur' === strtolower( $currency_code ) ) {
+				$filtered_payment_methods[] = $available_payment_method;
+			}
+		}
+		$request['payment_method_types'] = $filtered_payment_methods;
 
 		$request = array_merge( $request, $additional_parameters );
 
@@ -295,7 +307,7 @@ class WC_Payments_API_Client {
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
 		}
 		if ( $payment_country && ! WC_Payments::get_gateway()->is_in_dev_mode() ) {
-			// Do not update on dev mode, Stripe tests cards don't return the appropriate country.
+			// Do not update on dev mode, Stripe tests cards don't return the appropriate country .
 			$request['payment_country'] = $payment_country;
 		}
 		if ( $customer_id ) {
