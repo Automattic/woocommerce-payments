@@ -48,9 +48,10 @@ describe( 'AdditionalMethodsPage', () => {
 
 			render( result.container );
 
-			expect( result.title ).toEqual(
-				'Set up additional payment methods'
-			);
+			expect(
+				screen.queryByText( 'Set up additional payment methods' )
+			).toBeInTheDocument();
+
 			expect(
 				screen.queryByText( 'Non-UPE method selector' )
 			).toBeInTheDocument();
@@ -65,9 +66,12 @@ describe( 'AdditionalMethodsPage', () => {
 
 			render( result.container );
 
-			expect( result.title ).toEqual(
-				'Boost your sales by accepting new payment methods'
-			);
+			expect(
+				screen.queryByText(
+					'Enable the new WooCommerce Payments checkout experience'
+				)
+			).toBeInTheDocument();
+
 			expect(
 				screen.queryByText( 'UPE preview method selector' )
 			).toBeInTheDocument();

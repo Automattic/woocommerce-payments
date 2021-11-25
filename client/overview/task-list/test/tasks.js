@@ -6,7 +6,7 @@
 import { getTasks, taskSort } from '../tasks';
 import createMultiCurrencySetupTask from '../../../multi-currency-setup/task';
 
-jest.mock( '../../../additional-methods-setup/task', () => jest.fn() );
+jest.mock( '../../../multi-currency-setup/task', () => jest.fn() );
 
 describe( 'getTasks()', () => {
 	it( 'should include business details when flag is set', () => {
@@ -262,6 +262,7 @@ describe( 'taskSort()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
+			multiCurrencySetup: { isTaskVisible: true },
 			isAccountOverviewTasksEnabled: true,
 			disputes,
 		} );
