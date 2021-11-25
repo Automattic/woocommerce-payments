@@ -58,6 +58,7 @@ class WC_Payments_Subscriptions {
 		include_once __DIR__ . '/class-wc-payments-subscription-change-payment-method-handler.php';
 		include_once __DIR__ . '/class-wc-payments-subscriptions-plugin-notice-manager.php';
 		include_once __DIR__ . '/class-wc-payments-subscriptions-empty-state-manager.php';
+		include_once __DIR__ . '/class-wc-payments-subscriptions-product-admin-manager.php';
 
 		self::$product_service      = new WC_Payments_Product_Service( $api_client );
 		self::$invoice_service      = new WC_Payments_Invoice_Service( $api_client, self::$product_service, $gateway );
@@ -71,6 +72,7 @@ class WC_Payments_Subscriptions {
 		new WC_Payments_Subscriptions_Plugin_Notice_Manager();
 
 		new WC_Payments_Subscriptions_Empty_State_Manager( $account );
+		new WC_Payments_Subscriptions_Product_Admin_Manager();
 	}
 
 	/**

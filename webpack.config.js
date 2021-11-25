@@ -27,6 +27,8 @@ const webpackConfig = {
 		order: './client/order/index.js',
 		'subscriptions-empty-state':
 			'./client/subscriptions-empty-state/index.js',
+		'subscriptions-product-admin':
+			'./client/subscriptions-product-admin/index.js',
 	},
 	module: {
 		rules: [
