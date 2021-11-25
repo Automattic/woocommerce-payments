@@ -14,6 +14,7 @@ import os from 'os';
 import DisputesList from '../';
 import { useDisputes } from 'wcpay/data';
 import { formatStringValue } from 'utils';
+import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDisputes: jest.fn(),
@@ -177,8 +178,8 @@ describe( 'Disputes list', () => {
 
 			expect( csvFirstDispute[ 1 ] ).toBe( ( amount / 100 ).toString() );
 
-			expect( csvFirstDispute[ 2 ] ).toBe(
-				`"${ formatStringValue( status ) }"`
+			expect( csvFirstDispute[ 2 ] ).not.toBe(
+				`"${ disputeStatusMapping[ status ].message }"`
 			);
 
 			expect( csvFirstDispute[ 3 ] ).toBe( formatStringValue( reason ) );
