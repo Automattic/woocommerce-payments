@@ -10,6 +10,7 @@
 * Fix - Prevent Payment Request buttons from showing up in Composite Product pages.
 * Update - Updated @woocommerce/experimental package to v2.1.0.
 * Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
+* Fix - Fatal error on thank you page for deleted orders.
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
