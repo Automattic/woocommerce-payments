@@ -20,11 +20,9 @@ const AdditionalMethodsPage = () => {
 	} = window.wcpaySettings.additionalMethodsSetup;
 
 	const additionalMethodsContent = isUpeSettingsPreviewEnabled ? (
-		<>
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ isUpeEnabled }>
-				<UpePreviewMethodSelector />
-			</WcPayUpeContextProvider>
-		</>
+		<WcPayUpeContextProvider defaultIsUpeEnabled={ isUpeEnabled }>
+			<UpePreviewMethodSelector />
+		</WcPayUpeContextProvider>
 	) : (
 		<MethodSelector />
 	);
