@@ -178,6 +178,7 @@ class WC_Payments_API_Client {
 	 * @param array  $level3                 - Level 3 data.
 	 * @param bool   $off_session            - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 * @param array  $additional_parameters  - An array of any additional request parameters, particularly for additional payment methods.
+	 * @param array  $payment_methods        - An array of payment methods that might be used for the payment.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
