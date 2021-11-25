@@ -5,10 +5,10 @@
  */
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import { addQueryArgs } from '@wordpress/url';
 import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import React from 'react';
+import { getAdminUrl } from 'wcpay/utils';
 
 interface DepositProps {
 	depositId?: string;
@@ -17,7 +17,7 @@ interface DepositProps {
 
 const Deposit = ( { depositId, dateAvailable }: DepositProps ): JSX.Element => {
 	if ( depositId && dateAvailable ) {
-		const depositUrl = addQueryArgs( 'admin.php', {
+		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/deposits/details',
 			id: depositId,

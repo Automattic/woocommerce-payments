@@ -191,5 +191,13 @@
       <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] )</code>
     </UndefinedFunction>
   </file>
+  <file src="includes/subscriptions/class-wc-payments-subscriptions-empty-state-manager.php">
+    <UndefinedFunction occurrences="2">
+      <code>wcs_do_subscriptions_exist()</code>
+    </UndefinedFunction>
+    <UndefinedClass occurrences="1">
+      <code>WC_Subscriptions_Admin</code>
+    </UndefinedClass>
+  </file>
 </files>
 
