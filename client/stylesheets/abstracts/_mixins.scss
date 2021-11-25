@@ -1,9 +1,11 @@
 /** @format */
 
+@use 'sass:math';
+
 // Rem output with px fallback
 @mixin font-size( $sizeValue: 16, $lineHeight: false ) {
 	font-size: $sizeValue + px;
-	font-size: ( $sizeValue / 16 ) + rem;
+	font-size: math.div( $sizeValue, 16 ) + rem;
 	@if ( $lineHeight ) {
 		line-height: $lineHeight;
 	}

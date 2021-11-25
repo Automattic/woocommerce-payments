@@ -7,13 +7,13 @@ import { apiFetch } from '@wordpress/data-controls';
 import { dispatch } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 import { formatCurrency } from 'utils/currency';
-import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal Dependencies
  */
 import TYPES from './action-types';
 import { STORE_NAME } from '../constants';
+import { getAdminUrl } from 'wcpay/utils';
 
 export function updateDeposit( data ) {
 	return {
@@ -135,7 +135,7 @@ export function* submitInstantDeposit( transactionIds ) {
 				actions: [
 					{
 						label: __( 'View details', 'woocommerce-payments' ),
-						url: addQueryArgs( 'admin.php', {
+						url: getAdminUrl( {
 							page: 'wc-admin',
 							path: '/payments/deposits/details',
 							id: deposit.id,
