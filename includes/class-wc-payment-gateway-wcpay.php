@@ -1015,6 +1015,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
+			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout();
+
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 			$intent = $this->payments_api_client->create_and_confirm_intention(
 				$converted_amount,
@@ -1026,7 +1028,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$metadata,
 				$this->get_level3_data_from_order( $order ),
 				$payment_information->is_merchant_initiated(),
-				$additional_api_parameters
+				$additional_api_parameters,
+				$payment_methods
 			);
 
 			$intent_id     = $intent->get_id();

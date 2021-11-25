@@ -197,17 +197,20 @@ class WC_Payments_API_Client {
 		$payment_methods = null
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
-		$request                         = [];
-		$request['amount']               = $amount;
-		$request['currency']             = $currency_code;
-		$request['confirm']              = 'true';
-		$request['payment_method']       = $payment_method_id;
-		$request['customer']             = $customer_id;
-		$request['capture_method']       = $manual_capture ? 'manual' : 'automatic';
-		$request['metadata']             = $metadata;
-		$request['level3']               = $level3;
-		$request['description']          = $this->get_intent_description( $metadata['order_id'] ?? 0 );
-		$request['payment_method_types'] = $payment_methods ?? WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout();
+		$request                   = [];
+		$request['amount']         = $amount;
+		$request['currency']       = $currency_code;
+		$request['confirm']        = 'true';
+		$request['payment_method'] = $payment_method_id;
+		$request['customer']       = $customer_id;
+		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
+		$request['metadata']       = $metadata;
+		$request['level3']         = $level3;
+		$request['description']    = $this->get_intent_description( $metadata['order_id'] ?? 0 );
+
+		if ( ! empty( $payment_methods ) ) {
+			$request['payment_method_types'] = $payment_methods;
+		}
 
 		$request = array_merge( $request, $additional_parameters );
 
