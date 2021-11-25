@@ -1515,6 +1515,8 @@ class WC_Payments_API_Client {
 			|| str_contains( $api, 'timeline' )
 			|| str_contains( $api, 'intention' )
 			|| str_contains( $api, 'charges' )
+			|| str_contains( $api, 'customer' )
+			|| str_contains( $api, 'transactions' )
 		) {
 			$url .= '/woopay/' . $api;
 		} else {
