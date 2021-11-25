@@ -327,16 +327,16 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Exception thrown on intention creation failure.
 	 */
 	public function update_intention_unrestricted(
-		string $intention_id,
-		int $amount,
-		string $currency_code,
-		bool $save_payment_method = false,
-		string $customer_id = '',
-		array $metadata = [],
-		array $level3 = [],
-		string $selected_upe_payment_type = '',
-		string $payment_country = null
-	): WC_Payments_API_Intention {
+		$intention_id,
+		$amount,
+		$currency_code,
+		$save_payment_method = false,
+		$customer_id = '',
+		$metadata = [],
+		$level3 = [],
+		$selected_upe_payment_type = '',
+		$payment_country = null
+	) {
 		$request = [];
 
 		if ( $amount ) {
