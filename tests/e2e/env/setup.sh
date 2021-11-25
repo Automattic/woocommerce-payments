@@ -13,7 +13,7 @@ BLOG_ID=${E2E_BLOG_ID-111}
 
 # Setup WCPay local server instance.
 # Only if E2E_USE_LOCAL_SERVER is present & equals to true.
-if [[ "$E2E_USE_LOCAL_SERVER" = true ]]; then
+if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$SERVER_PATH" ]]; then
 		step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
 
@@ -179,7 +179,7 @@ fi
 echo "Activating dev tools plugin"
 cli wp plugin activate $DEV_TOOLS_DIR
 
-if [[ "$E2E_USE_LOCAL_SERVER" = true ]]; then
+if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	echo "Setting redirection to local server"
 	# host.docker.internal is not available in linux. Use ip address for docker0 interface to redirect requests from container.
 	if [[ -n $CI ]]; then
