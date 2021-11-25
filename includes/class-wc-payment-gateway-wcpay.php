@@ -282,39 +282,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			],
 		];
 
-		// Giropay option hidden behind feature flag.
-		if ( WC_Payments_Features::is_giropay_enabled() ) {
-			$this->form_fields['giropay_enabled'] = [
-				'title'       => __( 'Enable/disable Giropay', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Giropay', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			];
-		}
-
-		// SEPA option hidden behind feature flag.
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
-			$this->form_fields['sepa_enabled'] = [
-				'title'       => __( 'Enable/disable SEPA', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce SEPA Direct Debit', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			];
-		}
-
-		// Sofort option hidden behind feature flag.
-		if ( WC_Payments_Features::is_sofort_enabled() ) {
-			$this->form_fields['sofort_enabled'] = [
-				'title'       => __( 'Enable/disable Sofort', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Sofort', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			];
-		}
-
 		// Capabilities have different keys than the payment method ID's,
 		// so instead of appending '_payments' to the end of the ID, it'll be better
 		// to have a map for it instead, just in case the pattern changes.
@@ -1089,9 +1056,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$next_action   = $intent['next_action'];
 		}
 
-		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
-		$this->attach_exchange_info_to_order( $order, $charge_id );
-
 		if ( ! empty( $intent ) ) {
 			if ( ! in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				$intent_failed = true;
@@ -1136,6 +1100,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 		}
+
+		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( isset( $response ) ) {
 			return $response;

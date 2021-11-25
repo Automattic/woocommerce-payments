@@ -61,7 +61,9 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 					);
 
 					const missingCurrencyInfo =
-						currencyInfo.available[ currency ] || null;
+						currencyInfo &&
+						currencyInfo.available &&
+						currencyInfo.available[ currency ];
 
 					const missingCurrencyLabel =
 						null != missingCurrencyInfo
