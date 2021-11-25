@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, TextControl } from '@wordpress/components';
+import { Card, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -12,8 +12,11 @@ import { Card, CardBody, TextControl } from '@wordpress/components';
 import SettingsSection from 'wcpay/settings/settings-section';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import LoadableSettingsSection from 'wcpay/settings/loadable-settings-section';
-import { useAccountBusinessName, useAccountBusinessURL } from '../../data';
 import SaveSettingsSection from 'wcpay/settings/save-settings-section';
+import BusinessDetailsSection from './sections/business-details';
+import ContactsDetailsSection from './sections/contacts-details';
+import AddressDetailsSection from './sections/address-details';
+import BrandingDetailsSection from './sections/branding-details';
 
 const ReadersSettingsDescription = () => (
 	<>
@@ -39,46 +42,16 @@ const ReadersSettingsDescription = () => (
 );
 
 const ReadersSettings = () => {
-	const [
-		accountBusinessName,
-		setAccountBusinessName,
-	] = useAccountBusinessName();
-
-	const [
-		accountBusinessURL,
-		setAccountBusinessURL,
-	] = useAccountBusinessURL();
-
 	return (
 		<SettingsLayout displayBanner={ false }>
 			<SettingsSection Description={ ReadersSettingsDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<Card className="card-readers-settings__wrapper">
 						<CardBody>
-							<h4>
-								{ __(
-									'Business details',
-									'woocommerce-payments'
-								) }
-							</h4>
-							<TextControl
-								className="card-readers-business-name-input"
-								label={ __(
-									'Business name',
-									'woocommerce-payments'
-								) }
-								value={ accountBusinessName }
-								onChange={ setAccountBusinessName }
-							/>
-							<TextControl
-								className="card-readers-business-name-input"
-								label={ __(
-									'Business URL',
-									'woocommerce-payments'
-								) }
-								value={ accountBusinessURL }
-								onChange={ setAccountBusinessURL }
-							/>
+							<BusinessDetailsSection />
+							<ContactsDetailsSection />
+							<AddressDetailsSection />
+							<BrandingDetailsSection />
 						</CardBody>
 					</Card>
 				</LoadableSettingsSection>

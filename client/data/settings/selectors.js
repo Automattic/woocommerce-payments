@@ -51,6 +51,28 @@ export const getAccountBusinessSupportAddress = ( state ) => {
 	return getSettings( state ).account_business_support_address || '';
 };
 
+export const getAccountBusinessSupportAddressCountry = ( state ) => {
+	return getSettings( state ).account_business_support_address.country || '';
+};
+
+export const getAccountBusinessSupportAddressLine1 = ( state ) => {
+	return getSettings( state ).account_business_support_address.line1 || '';
+};
+
+export const getAccountBusinessSupportAddressLine2 = ( state ) => {
+	return getSettings( state ).account_business_support_address.line2 || '';
+};
+
+export const getAccountBusinessSupportAddressCity = ( state ) => {
+	return getSettings( state ).account_business_support_address.city || '';
+};
+
+export const getAccountBusinessSupportAddressPostalCode = ( state ) => {
+	return (
+		getSettings( state ).account_business_support_address.postal_code || ''
+	);
+};
+
 export const getAccountBusinessSupportEmail = ( state ) => {
 	return getSettings( state ).account_business_support_email || '';
 };

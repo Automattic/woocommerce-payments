@@ -166,10 +166,22 @@ export const useAccountBusinessSupportAddress = () => {
 
 	return useSelect(
 		( select ) => {
-			const { getAccountBusinessSupportAddress } = select( STORE_NAME );
+			const {
+				getAccountBusinessSupportAddress,
+				getAccountBusinessSupportAddressCountry,
+				getAccountBusinessSupportAddressLine1,
+				getAccountBusinessSupportAddressLine2,
+				getAccountBusinessSupportAddressCity,
+				getAccountBusinessSupportAddressPostalCode,
+			} = select( STORE_NAME );
 
 			return [
 				getAccountBusinessSupportAddress(),
+				getAccountBusinessSupportAddressCountry(),
+				getAccountBusinessSupportAddressLine1(),
+				getAccountBusinessSupportAddressLine2(),
+				getAccountBusinessSupportAddressCity(),
+				getAccountBusinessSupportAddressPostalCode(),
 				updateAccountBusinessSupportAddress,
 			];
 		},
