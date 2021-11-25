@@ -142,6 +142,7 @@ class CurrencySwitcherBlock {
 		$select_styles = $this->implode_styles_array( $styles['select'] );
 
 		$widget_content  = '<form>';
+		$widget_content .= $this->get_get_params();
 		$widget_content .= '<div class="currency-switcher-holder" style="' . $div_styles . '">';
 		$widget_content .= '<select name="currency" onchange="this.form.submit()" style="' . $select_styles . '">';
 
@@ -216,5 +217,31 @@ class CurrencySwitcherBlock {
 				'background-color' => $block_attributes['backgroundColor'] ?? '#000000',
 			],
 		];
+	}
+
+	/**
+	 * Get hidden inputs for every $_GET param.
+	 * This prevents the switcher form to remove them on submit.
+	 *
+	 * @return void
+	 */
+	private function get_get_params() {
+		// phpcs:disable WordPress.Security.NonceVerification
+		if ( empty( $_GET ) ) {
+			return;
+		}
+		$params = explode( '&', urldecode( http_build_query( $_GET ) ) );
+		$return = '';
+		foreach ( $params as $param ) {
+			$name_value = explode( '=', $param );
+			$name       = $name_value[0];
+			$value      = $name_value[1];
+			if ( 'currency' === $name ) {
+				continue;
+			}
+			$return .= '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . esc_attr( $value ) . '" />';
+		}
+		return $return;
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 }

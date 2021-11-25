@@ -15,7 +15,6 @@ import {
 } from '@wordpress/components';
 import { moreVertical } from '@wordpress/icons';
 import classNames from 'classnames';
-import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -36,12 +35,14 @@ import SurveyModal from '../settings/survey-modal';
 import DisableUPEModal from '../settings/disable-upe-modal';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
-import PaymentMethodsSelector from 'settings/payment-methods-selector';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
 import CardBody from '../settings/card-body';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import ConfirmPaymentMethodActivationModal from './activation-modal';
+import ConfirmPaymentMethodDeleteModal from './delete-modal';
+import { getAdminUrl } from 'wcpay/utils';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
@@ -67,7 +68,7 @@ const UpeSetupBanner = () => {
 
 	const handleEnableUpeClick = () => {
 		setIsUpeEnabled( true ).then( () => {
-			window.location.href = addQueryArgs( 'admin.php', {
+			window.location.href = getAdminUrl( {
 				page: 'wc-admin',
 				path: '/payments/additional-payment-methods',
 			} );
@@ -120,18 +121,72 @@ const PaymentMethods = () => {
 	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
-	const enabledMethods = availablePaymentMethodIds
-		.filter( ( method ) => enabledMethodIds.includes( method ) )
-		.map( ( methodId ) => methodsConfiguration[ methodId ] );
 
-	const disabledMethods = availablePaymentMethodIds
-		.filter( ( methodId ) => ! enabledMethodIds.includes( methodId ) )
-		.map( ( methodId ) => methodsConfiguration[ methodId ] );
+	const availableMethods = availablePaymentMethodIds.map(
+		( methodId ) => methodsConfiguration[ methodId ]
+	);
 
-	const handleDeleteClick = ( itemId ) => {
-		updateEnabledMethodIds(
-			enabledMethodIds.filter( ( id ) => id !== itemId )
-		);
+	const [ activationModalParams, handleActivationModalOpen ] = useState(
+		null
+	);
+	const [ deleteModalParams, handleDeleteModalOpen ] = useState( null );
+
+	const completeActivation = ( itemId ) => {
+		updateEnabledMethodIds( [
+			...new Set( [ ...enabledMethodIds, itemId ] ),
+		] );
+		handleActivationModalOpen( null );
+	};
+
+	const completeDeleteAction = ( itemId ) => {
+		updateEnabledMethodIds( [
+			...enabledMethodIds.filter( ( id ) => id !== itemId ),
+		] );
+		handleDeleteModalOpen( null );
+	};
+
+	const getStatusAndRequirements = ( itemId ) => {
+		const stripeKey = methodsConfiguration[ itemId ].stripe_key;
+		const stripeStatusContainer = paymentMethodStatuses[ stripeKey ] ?? [];
+		if ( ! stripeStatusContainer ) {
+			return {
+				status: upeCapabilityStatuses.UNREQUESTED,
+				requirements: [],
+			};
+		}
+		return {
+			status: stripeStatusContainer.status,
+			requirements: stripeStatusContainer.requirements,
+		};
+	};
+
+	const handleCheckClick = ( itemId ) => {
+		const statusAndRequirements = getStatusAndRequirements( itemId );
+		if (
+			'unrequested' === statusAndRequirements.status &&
+			0 < statusAndRequirements.requirements.length
+		) {
+			handleActivationModalOpen( {
+				id: itemId,
+				requirements: statusAndRequirements.requirements,
+			} );
+		} else {
+			completeActivation( itemId );
+		}
+	};
+
+	const handleUncheckClick = ( itemId ) => {
+		const methodConfig = methodsConfiguration[ itemId ];
+		const statusAndRequirements = getStatusAndRequirements( itemId );
+		if ( methodConfig && 'active' === statusAndRequirements.status ) {
+			handleDeleteModalOpen( {
+				id: itemId,
+				label: methodConfig.label,
+				Icon: methodConfig.Icon,
+			} );
+		} else {
+			completeDeleteAction( itemId );
+		}
 	};
 
 	const {
@@ -186,27 +241,30 @@ const PaymentMethods = () => {
 				) }
 
 				<CardBody size={ null }>
-					<PaymentMethodsList className="payment-methods__enabled-methods">
-						{ enabledMethods.map(
+					<PaymentMethodsList className="payment-methods__available-methods">
+						{ availableMethods.map(
 							( { id, label, description, Icon } ) => (
 								<PaymentMethod
-									key={ id }
-									Icon={ Icon }
-									status={
-										paymentMethodStatuses[
-											methodsConfiguration[ id ]
-												.stripe_key
-										].status ??
-										upeCapabilityStatuses.UNREQUESTED
-									}
-									onDeleteClick={
-										1 < enabledMethods.length
-											? handleDeleteClick
-											: undefined
-									}
 									id={ id }
+									key={ id }
 									label={ label }
 									description={ description }
+									checked={
+										enabledMethodIds.includes( id ) &&
+										upeCapabilityStatuses.INACTIVE !==
+											getStatusAndRequirements( id )
+												.status
+									}
+									Icon={ Icon }
+									status={
+										getStatusAndRequirements( id ).status
+									}
+									onUncheckClick={ () => {
+										handleUncheckClick( id );
+									} }
+									onCheckClick={ () => {
+										handleCheckClick( id );
+									} }
 								/>
 							)
 						) }
@@ -215,35 +273,32 @@ const PaymentMethods = () => {
 				{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
 					<UpeSetupBanner />
 				) }
-
-				{ isUpeEnabled && 1 < availablePaymentMethodIds.length ? (
-					<>
-						<CardDivider />
-						<CardBody className="payment-methods__available-methods-container">
-							<PaymentMethodsSelector />
-							<ul className="payment-methods__available-methods">
-								{ disabledMethods.map(
-									( { id, label, Icon } ) => (
-										<li
-											key={ id }
-											className={ classNames(
-												'payment-methods__available-method',
-												{
-													'has-icon-border':
-														'card' !== id,
-												}
-											) }
-											aria-label={ label }
-										>
-											<Icon height="24" width="38" />
-										</li>
-									)
-								) }
-							</ul>
-						</CardBody>
-					</>
-				) : null }
 			</Card>
+			{ activationModalParams && (
+				<ConfirmPaymentMethodActivationModal
+					onClose={ () => {
+						handleActivationModalOpen( null );
+					} }
+					onConfirmClose={ () => {
+						completeActivation( activationModalParams.id );
+					} }
+					requirements={ activationModalParams.requirements }
+					paymentMethod={ activationModalParams.id }
+				/>
+			) }
+			{ deleteModalParams && (
+				<ConfirmPaymentMethodDeleteModal
+					id={ deleteModalParams.id }
+					label={ deleteModalParams.label }
+					Icon={ deleteModalParams.Icon }
+					onConfirm={ () => {
+						completeDeleteAction( deleteModalParams.id );
+					} }
+					onCancel={ () => {
+						handleDeleteModalOpen( null );
+					} }
+				/>
+			) }
 		</>
 	);
 };
