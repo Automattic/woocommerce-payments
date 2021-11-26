@@ -273,6 +273,14 @@ class WC_Payments_Admin {
 					'path'   => '/payments/additional-payment-methods',
 				]
 			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-multi-currency-available',
+					'parent' => 'woocommerce-settings-payments',
+					'title'  => __( 'Home', 'woocommerce-payments' ),
+					'path'   => '/payments/multi-currency-available',
+				]
+			);
 		}
 
 		wp_enqueue_style(

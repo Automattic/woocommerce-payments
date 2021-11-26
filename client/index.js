@@ -149,6 +149,12 @@ addFilter(
 				__( 'Add additional payment methods', 'woocommerce-payments' ),
 			],
 		} );
+		pages.push( {
+			container: AdditionalMethodsPage,
+			path: '/payments/multi-currency-available',
+			wpOpenMenu: menuID,
+			breadcrumbs: [ rootLink, __( 'Home', 'woocommerce-payments' ) ],
+		} );
 		return pages;
 	}
 );
