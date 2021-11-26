@@ -48,8 +48,9 @@ class WC_Payments_Subscriptions {
 	 * @param WC_Payments_API_Client       $api_client       WCPay API client.
 	 * @param WC_Payments_Customer_Service $customer_service WCPay Customer Service.
 	 * @param WC_Payment_Gateway_WCPay     $gateway          WCPay Payment Gateway.
+	 * @param WC_Payments_Account          $account          WCPay Payment Account..
 	 */
-	public static function init( WC_Payments_API_Client $api_client, WC_Payments_Customer_Service $customer_service, WC_Payment_Gateway_WCPay $gateway ) {
+	public static function init( WC_Payments_API_Client $api_client, WC_Payments_Customer_Service $customer_service, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
 		// Load Services.
 		include_once __DIR__ . '/class-wc-payments-product-service.php';
 		include_once __DIR__ . '/class-wc-payments-invoice-service.php';
@@ -70,7 +71,7 @@ class WC_Payments_Subscriptions {
 
 		// Load the Subscriptions Onboarding class.
 		include_once __DIR__ . '/class-wc-payments-subscriptions-onboarding-handler.php';
-		new WC_Payments_Subscriptions_Onboarding_Handler();
+		new WC_Payments_Subscriptions_Onboarding_Handler( $account );
 	}
 
 	/**

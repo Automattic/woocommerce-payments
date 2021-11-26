@@ -13,12 +13,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_Subscriptions_Onboarding_Handler {
 
-	/**
-	 * Transient to store subscription publish blocked error.
-	 *
-	 * @const string
-	 */
-	const WCPAY_SUBSCRIPTION_PUBLISH_BLOCKED_NOTICE = 'wcpay_subscription_onboarding_blocked_notice';
+	use WC_Payments_Subscriptions_Utilities;
 
 	/**
 	 * Option for holding an array of product id's to publish post onboarding.
@@ -28,26 +23,22 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 	const WCPAY_SUBSCRIPTION_AUTO_PUBLISH_PRODUCTS = 'wcpay_subscription_onboarding_products';
 
 	/**
-	 * Transient to store notice that subscriptions were auto published.
-	 *
-	 * @const string
-	 */
-	const WCPAY_SUBSCRIPTION_AUTO_PUBLISH_NOTICE = 'wcpay_subscription_onboarding_published_notice';
-
-	/**
 	 * The account service instance.
 	 *
-	 * @var WC_Payments_Account|null
+	 * @var WC_Payments_Account
 	 */
-	private static $account = null;
+	private $account;
 
 	/**
 	 * Constructor
+	 *
+	 * @param WC_Payments_Account $account account service instance.
 	 */
-	public function __construct() {
-		add_filter( 'publish_product', [ $this, 'product_published' ], 10, 3 );
-		add_action( 'admin_notices', [ $this, 'add_notices' ] );
+	public function __construct( WC_Payments_Account $account ) {
+		add_action( 'publish_product', [ $this, 'product_published' ] );
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'account_data_refreshed' ] );
+
+		$this->account = $account;
 	}
 
 	/**
@@ -55,8 +46,8 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 	 *
 	 * @param WC_Payments_Account $account account service instance.
 	 */
-	public static function set_account( WC_Payments_Account $account ) {
-		self::$account = $account;
+	public function set_account( WC_Payments_Account $account ) {
+		$this->account = $account;
 	}
 
 	/**
@@ -67,12 +58,12 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 	public function product_published( int $product_id ) {
 		// We can skip if the post is not yet marked as published.
 
-		if ( $this->is_onboarding_complete() ) {
+		if ( $this->account->is_stripe_connected() ) {
 			return;
 		}
 
 		// If Subscriptions plugin is installed we don't need to do this check.
-		if ( class_exists( 'WC_Subscriptions' ) ) {
+		if ( $this->is_subscriptions_plugin_active() ) {
 			return;
 		}
 
@@ -92,13 +83,8 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 	 */
 	private function convert_subscription_to_draft( WC_Product $product ) {
 		// Force into draft status.
-		wp_update_post(
-			[
-				'ID'          => $product->get_id(),
-				'post_status' => 'draft',
-			]
-		);
-		set_transient( self::WCPAY_SUBSCRIPTION_PUBLISH_BLOCKED_NOTICE, true, 30 );
+		$product->set_status( 'draft' );
+		$product->save();
 
 		$auto_publish_ids   = get_option( self::WCPAY_SUBSCRIPTION_AUTO_PUBLISH_PRODUCTS, [] );
 		$auto_publish_ids[] = $product->get_id();
@@ -108,41 +94,11 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 	}
 
 	/**
-	 * Add any notices required to the UI,
-	 */
-	public function add_notices() {
-		$publish_blocked_warning = get_transient( self::WCPAY_SUBSCRIPTION_PUBLISH_BLOCKED_NOTICE );
-
-		if ( $publish_blocked_warning ) {
-			echo '<div class="notice notice-warning wcpay-settings-notice"><p>' .
-				esc_html( __( 'WooCommerce Payments must be setup to publish a subscription product. Any subscription products will be automatically published when setup is complete.', 'woocommerce-payments' ) ) .
-			'</p></div>';
-			delete_transient( self::WCPAY_SUBSCRIPTION_PUBLISH_BLOCKED_NOTICE );
-		}
-
-		$products_published_info = get_transient( self::WCPAY_SUBSCRIPTION_AUTO_PUBLISH_NOTICE );
-
-		if ( $products_published_info ) {
-			echo '<div class="notice notice-info wcpay-settings-notice"><p>';
-			echo WC_Payments_Utils::esc_interpolated_html(
-			/* translators: link to Stripe testing page */
-				__( '<strong>Subscriptions Published:</strong> Your draft subscription products have now been published.', 'woocommerce-payments' ),
-				[
-					'strong' => '<strong>',
-				]
-			);
-			echo '</p></div>';
-			delete_transient( self::WCPAY_SUBSCRIPTION_AUTO_PUBLISH_NOTICE );
-		}
-
-	}
-
-	/**
 	 * Method to handle when account data is refreshed and onboarding may have been completed
 	 */
 	public function account_data_refreshed() {
 
-		if ( ! $this->is_onboarding_complete() ) {
+		if ( ! $this->account->is_stripe_connected() ) {
 			return;
 		}
 
@@ -161,33 +117,11 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 				continue;
 			}
 
-			wp_update_post(
-				[
-					'ID'          => $product->get_id(),
-					'post_status' => 'publish',
-				]
-			);
+			$product->set_status( 'publish' );
+			$product->save();
 		}
-
-		// Set transient to show a notice to inform user of auto-publish.
-		set_transient(
-			self::WCPAY_SUBSCRIPTION_AUTO_PUBLISH_NOTICE,
-			true,
-			180
-		);
 
 		// clear auto-published products from option.
 		delete_option( self::WCPAY_SUBSCRIPTION_AUTO_PUBLISH_PRODUCTS );
-	}
-
-	/**
-	 * Check whether onboarding is complete
-	 *
-	 * @return bool
-	 */
-	private function is_onboarding_complete(): bool {
-		$account = self::$account ?? WC_Payments::get_account_service();
-
-		return ( $account instanceof WC_Payments_Account ) && true === $account->is_stripe_connected();
 	}
 }
