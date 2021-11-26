@@ -4,20 +4,20 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
 import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import wcpayTracks from 'tracks';
+import { getAdminUrl } from 'wcpay/utils';
 
 const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 	if ( ! needsResponse && ! isSubmitted ) {
 		return null;
 	}
 
-	const challengeUrl = addQueryArgs( 'admin.php', {
+	const challengeUrl = getAdminUrl( {
 		page: 'wc-admin',
 		path: '/payments/disputes/challenge',
 		id,
