@@ -14,6 +14,9 @@ For running E2E tests locally, create a new file named `local.env` under `tests/
 WCP_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
 WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git'
 
+// Use WCPay server local instance (Default: true). To use live server, set value to false
+E2E_USE_LOCAL_SERVER=true
+
 // Optional to see verbose output
 DEBUG=true
 ```
@@ -30,9 +33,10 @@ DEBUG=true
 It is possible to use the live server or a local docker instance of WCPay server locally. On Github Actions, live server is used for tests. Add the following env variables to your `local.env` based on your preference (replace values as required).
 
 **Using Local Server on Docker**
-```
-E2E_USE_LOCAL_SERVER=true
 
+By default, the local E2E environment is configured to use WCPay local server instance. Add the following env variables to configure the local server instance.
+
+```
 // Stripe account data. Need to support level 3 data to run tests successfully.
 E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY=<stripe pk_test_xxx>
 E2E_WCPAY_STRIPE_TEST_SECRET_KEY=<stripe sk_test_xxx>
@@ -42,12 +46,14 @@ E2E_WCPAY_STRIPE_ACCOUNT_ID=<stripe acct_id>
 
 **Using Live Server**
 
-For using a live server, you'll need to Jetpack blog token, user token & blog id from one of your test sites connected to WooCommerce Payments live account. On a connected test site, you can use the code below to extract the blog id & tokens.
+For using a live server, you'll need to add Jetpack blog token, user token & blog id from one of your test sites connected to WooCommerce Payments live account. On a connected test site, you can use the code below to extract the blog id & tokens.
 ```
 Jetpack_Options::get_option( 'id' );
 Jetpack_Options::get_option( 'blog_token' );
 Jetpack_Options::get_option( 'user_tokens' );
 ```
+
+Set the value of `E2E_USE_LOCAL_SERVER` to `false` to enable live server.
 
 Once you have the blog id & tokens, add the following ev variables to your `local.env`.
 ```
