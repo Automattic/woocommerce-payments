@@ -36,7 +36,6 @@ E2E_USE_LOCAL_SERVER=true
 // Stripe account data. Need to support level 3 data to run tests successfully.
 E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY=<stripe pk_test_xxx>
 E2E_WCPAY_STRIPE_TEST_SECRET_KEY=<stripe sk_test_xxx>
-E2E_WCPAY_STRIPE_TEST_CLIENT_ID=<stripe ca_xxx>
 E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY=<stripe whsec_xxx>
 E2E_WCPAY_STRIPE_ACCOUNT_ID=<stripe acct_id>
 ```
