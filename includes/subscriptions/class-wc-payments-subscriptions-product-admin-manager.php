@@ -52,7 +52,9 @@ class WC_Payments_Subscriptions_Product_Admin_Manager {
 		wp_localize_script(
 			'wcpay-subscriptions-product-admin',
 			'wcpaySubscriptionsProductAdmin',
-			[ 'connectUrl' => WC_Payments_Account::get_connect_url() ]
+			[
+				'connectUrl' => WC_Payments_Account::get_connect_url( 'WC_SUBSCRIPTIONS_PUBLISH_PRODUCT' ),
+			]
 		);
 
 		wp_register_style(
