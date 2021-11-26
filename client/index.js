@@ -23,6 +23,7 @@ import DisputesPage from 'disputes';
 import DisputeDetailsPage from 'disputes/details';
 import DisputeEvidencePage from 'disputes/evidence';
 import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
+import MultiCurrencySetupPage from 'wcpay/multi-currency-setup';
 import OverviewPage from 'overview';
 import { getTasks } from 'overview/task-list/tasks';
 
@@ -150,7 +151,7 @@ addFilter(
 			],
 		} );
 		pages.push( {
-			container: AdditionalMethodsPage,
+			container: MultiCurrencySetupPage,
 			path: '/payments/multi-currency-available',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Home', 'woocommerce-payments' ) ],
