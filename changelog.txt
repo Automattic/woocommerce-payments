@@ -12,6 +12,7 @@
 * Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
 * Fix - Fatal error on thank you page for deleted orders.
 * Add - Error messages when dispute evidence exceeds Stripe limits.
+* Fix - Onboarding must be completed before Subscriptions products can be published.
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
