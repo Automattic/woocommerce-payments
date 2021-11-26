@@ -123,36 +123,36 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'        => 'string',
 					],
 					'account_business_url'              => [
-						'description' => __( 'The customer-facing business url.', 'woocommerce-payments' ),
+						'description' => __( 'The business’s publicly available website.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
 					'account_business_support_address'  => [
-						'description'       => __( 'The customer-facing business support address city.', 'woocommerce-payments' ),
+						'description'       => __( 'A publicly available mailing address for sending support issues to.', 'woocommerce-payments' ),
 						'type'              => 'object',
 						'validate_callback' => [ $this, 'validate_business_support_address' ],
 					],
 					'account_business_support_email'    => [
-						'description' => __( 'The customer-facing business support email.', 'woocommerce-payments' ),
+						'description' => __( 'A publicly available email address for sending support issues to.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
 					'account_business_support_phone'    => [
-						'description' => __( 'The customer-facing business support phone.', 'woocommerce-payments' ),
+						'description' => __( 'A publicly available phone number to call with support issues.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
 					'account_branding_logo'             => [
-						'description' => __( 'The customer-facing branding logo.', 'woocommerce-payments' ),
+						'description' => __( 'A logo id for the account that will be used in Checkout', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
 					'account_branding_icon'             => [
-						'description' => __( 'The customer-facing branding icon.', 'woocommerce-payments' ),
+						'description' => __( 'An icon for the account.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
 					'account_branding_primary_color'    => [
-						'description' => __( 'The customer-facing branding primary color.', 'woocommerce-payments' ),
+						'description' => __( 'A CSS hex color value representing the primary branding color for this account.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
 					'account_branding_secondary_color'  => [
-						'description' => __( 'The customer-facing branding secondary color.', 'woocommerce-payments' ),
+						'description' => __( 'A CSS hex color value representing the secondary branding color for this account.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
 					'is_payment_request_enabled'        => [
