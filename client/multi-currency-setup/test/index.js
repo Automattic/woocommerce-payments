@@ -9,7 +9,7 @@ import MultiCurrencySetup from '../tasks/multi-currency-setup';
 /**
  * Internal dependencies
  */
-import MultiCurrencySetupPage from '../';
+import MultiCurrencySetupPage from '..';
 
 jest.mock( '../tasks/multi-currency-setup', () => jest.fn() );
 
