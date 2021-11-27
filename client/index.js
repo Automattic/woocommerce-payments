@@ -187,14 +187,12 @@ addFilter(
 		const {
 			accountStatus,
 			showUpdateDetailsTask,
-			multiCurrencySetup,
 			featureFlags: { accountOverviewTaskList },
 		} = wcpaySettings;
 
 		const wcPayTasks = getTasks( {
 			accountStatus,
 			showUpdateDetailsTask,
-			multiCurrencySetup,
 			isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 		} );
 
