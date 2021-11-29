@@ -38,7 +38,7 @@ const ContactDetailsSection = () => {
 			/>
 			<TextControl
 				className="card-readers-business-phone-input"
-				label={ __( 'Support email', 'woocommerce-payments' ) }
+				label={ __( 'Support phone number', 'woocommerce-payments' ) }
 				value={ accountBusinessSupportPhone }
 				onChange={ setAccountBusinessSupportPhone }
 			/>

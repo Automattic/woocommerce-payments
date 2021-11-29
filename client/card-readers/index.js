@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import Page from 'components/page';
 import ReadersList from './list';
-import ReadersSettings from './settings';
+import ReceiptSettings from './settings';
 import { TabPanel } from '@wordpress/components';
 
 import './style.scss';
@@ -39,7 +39,7 @@ export const ConnectedReaders = () => {
 			>
 				{ ( tab ) => {
 					if ( 'receipt-details' === tab.name ) {
-						return <ReadersSettings />;
+						return <ReceiptSettings />;
 					}
 
 					return <ReadersList />;

@@ -41,7 +41,7 @@ const ReadersSettingsDescription = () => (
 	</>
 );
 
-const ReadersSettings = () => {
+const ReceiptSettings = () => {
 	return (
 		<SettingsLayout displayBanner={ false }>
 			<SettingsSection Description={ ReadersSettingsDescription }>
@@ -61,4 +61,4 @@ const ReadersSettings = () => {
 	);
 };
 
-export default ReadersSettings;
+export default ReceiptSettings;

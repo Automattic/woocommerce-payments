@@ -1,15 +1,20 @@
 /** @format */
+
+/* global jQuery */
+
 /**
  * External dependencies
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { ColorPaletteControl } from '@wordpress/block-editor';
-import BrandingFileUpload from '../file-upload';
+import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import BrandingFileUpload from '../file-upload';
+
 import {
 	useAccountBrandingPrimaryColor,
 	useAccountBrandingSecondaryColor,
@@ -38,9 +43,23 @@ const BrandingDetailsSection = () => {
 		setAccountBrandingIcon,
 	] = useAccountBrandingIcon();
 
+	useEffect( () => {
+		jQuery(
+			'.components-circular-option-picker__dropdown-link-action button'
+		).each( function ( index, element ) {
+			jQuery( element ).text( __( 'Edit', 'woocommerce-payments' ) );
+		} );
+	}, [] );
+
 	return (
 		<>
 			<h4>{ __( 'Branding', 'woocommerce-payments' ) }</h4>
+			<p className="wcpay-branding-help-label">
+				{ __(
+					'Your business’s logo, icon and colors will be used on recipts that are sent to customers via email.',
+					'woocommerce-payments'
+				) }
+			</p>
 
 			<BrandingFileUpload
 				fieldKey="branding-logo"
