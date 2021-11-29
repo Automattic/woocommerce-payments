@@ -1,0 +1,23 @@
+.loadable-checkbox {
+	position: relative;
+	&__spinner {
+		background: var( --wp-admin-theme-color );
+		width: 20px;
+		height: 20px;
+		position: absolute;
+		z-index: 1;
+		border-radius: 2px;
+		margin-top: 1px;
+		cursor: pointer;
+		svg {
+			background: none;
+			display: block;
+			shape-rendering: auto;
+			width: 100%;
+			height: 100%;
+		}
+	}
+	&.label-hidden label {
+		display: none;
+	}
+}

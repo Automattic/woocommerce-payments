@@ -123,7 +123,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
 		self::possibly_delete_note();
 
-		$wcpay_settings_url = admin_url( 'admin.php?page=wc-admin&task=woocommerce-payments--additional-payment-methods' );
+		$wcpay_settings_url = admin_url( 'admin.php?page=wc-admin&path=/payments/additional-payment-methods' );
 		wp_safe_redirect( $wcpay_settings_url );
 		exit;
 	}
