@@ -113,21 +113,23 @@ const BrandingFileUpload = ( props ) => {
 	const error = uploadError || '';
 
 	return (
-		<FileUploadControl
-			field={ {
-				key: fieldKey,
-				label: label,
-			} }
-			fileName={ fileID }
-			isLoading={ isLoading }
-			accept={ accept }
-			disabled={ disabled }
-			isDone={ isDone }
-			help={ help }
-			error={ error }
-			onFileChange={ handleFileChange }
-			onFileRemove={ handleFileRemove }
-		/>
+		<div className="wcpay-branding-upload-field__wrapper">
+			<FileUploadControl
+				field={ {
+					key: fieldKey,
+					label: label,
+				} }
+				fileName={ fileID }
+				isLoading={ isLoading }
+				accept={ accept }
+				disabled={ disabled }
+				isDone={ isDone }
+				help={ help }
+				error={ error }
+				onFileChange={ handleFileChange }
+				onFileRemove={ handleFileRemove }
+			/>
+		</div>
 	);
 };
 
