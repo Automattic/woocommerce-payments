@@ -12,6 +12,74 @@
 		}
 	}
 
+	.card-readers-settings__wrapper {
+		.wcpay-branding-upload-field__wrapper {
+			position: relative;
+
+			.upload-message.is-destructive {
+				font-style: normal;
+				font-weight: 400;
+				font-size: 12px;
+				line-height: 16px;
+				color: $studio-red-50;
+			}
+		}
+
+		.components-base-control__field {
+			margin-bottom: 15px;
+
+			.components-base-control__label {
+				width: 100%;
+			}
+
+			.components-text-control__input,
+			.components-input-control__container {
+				padding: 9px 8px;
+				max-width: 320px;
+			}
+
+			.components-input-control__container {
+				padding: 3px 0;
+			}
+
+			.block-editor-color-gradient-control__color-indicator {
+				.components-base-control__label {
+					margin-left: -2px;
+				}
+
+				.component-color-indicator {
+					position: relative;
+					top: 3px;
+					margin-left: 0.5rem;
+				}
+			}
+
+			.components-circular-option-picker {
+				.components-circular-option-picker__swatches {
+					display: none;
+				}
+
+				.components-circular-option-picker__custom-clear-wrapper {
+					display: block;
+					margin-top: 10px;
+				}
+
+				button {
+					text-decoration: none;
+				}
+			}
+		}
+
+		.wcpay-branding-help-label {
+			font-style: normal;
+			font-weight: 400;
+			font-size: 12px;
+			line-height: 16px;
+			color: $studio-gray-40;
+			margin-top: 8px;
+		}
+	}
+
 	.card-readers-settings-save-settings-section {
 		text-align: right;
 	}
