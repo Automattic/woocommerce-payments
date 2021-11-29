@@ -198,22 +198,24 @@ class FrontendCurrencies {
 	/**
 	 * Inits order currency code.
 	 *
-	 * @param mixed $order Either WC_Order or the id of an order.
+	 * @param mixed $arg Either WC_Order or the id of an order are expected, but can be empty.
 	 *
-	 * @return int The order id.
+	 * @return int The order id or what was passed as $arg.
 	 */
-	public function init_order_currency( $order ) {
+	public function init_order_currency( $arg ) {
 		if ( null !== $this->order_currency ) {
-			return;
+			return $arg;
 		}
 
-		if ( ! $order instanceof WC_Order ) {
-			$order = wc_get_order( $order );
+		$order = ! $arg instanceof WC_Order ? wc_get_order( $arg ) : $arg;
+
+		if ( $order ) {
+			$this->order_currency = $order->get_currency();
+			return $order->get_id();
 		}
 
-		$this->order_currency = $order->get_currency();
-
-		return $order->get_id();
+		$this->order_currency = $this->multi_currency->get_selected_currency();
+		return $arg;
 	}
 
 	/**

@@ -20,13 +20,15 @@ export const isInTestMode = ( fallback = false ) => {
 	return '1' === wcpaySettings.testMode || fallback;
 };
 
+export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
+
 /**
  * Returns the URL to the WooCommerce Payments settings.
  *
  * @return {string} URL to the WooCommerce Payments settings menu.
  */
 export const getPaymentSettingsUrl = () => {
-	return addQueryArgs( 'admin.php', {
+	return getAdminUrl( {
 		page: 'wc-settings',
 		tab: 'checkout',
 		section: 'woocommerce_payments',
@@ -41,7 +43,7 @@ export const getPaymentSettingsUrl = () => {
  * @return {string} URL to the payment method's settings page.
  */
 export const getPaymentMethodSettingsUrl = ( method ) => {
-	return addQueryArgs( 'admin.php', {
+	return getAdminUrl( {
 		page: 'wc-settings',
 		tab: 'checkout',
 		section: 'woocommerce_payments',
@@ -55,7 +57,7 @@ export const getPaymentMethodSettingsUrl = ( method ) => {
  * @return {string} URL to the list of payment methods page.
  */
 export const getPaymentMethodsUrl = () => {
-	return addQueryArgs( 'admin.php', {
+	return getAdminUrl( {
 		page: 'wc-settings',
 		tab: 'checkout',
 	} );
