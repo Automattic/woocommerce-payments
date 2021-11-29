@@ -27,6 +27,7 @@ class MultiCurrency {
 	const CURRENCY_META_KEY               = 'wcpay_currency';
 	const CURRENCY_CACHE_OPTION           = 'wcpay_multi_currency_cached_currencies';
 	const CURRENCY_RETRIEVAL_ERROR_OPTION = 'wcpay_multi_currency_retrieval_error';
+	const FILTER_PREFIX                   = 'wcpay_multi_currency_';
 
 	/**
 	 * The plugin's ID.
@@ -83,13 +84,6 @@ class MultiCurrency {
 	 * @var Utils
 	 */
 	protected $utils;
-
-	/**
-	 * Analytics instance.
-	 *
-	 * @var Analytics
-	 */
-	protected $analytics;
 
 	/**
 	 * FrontendPrices instance.
@@ -204,7 +198,6 @@ class MultiCurrency {
 		$this->geolocation             = new Geolocation( $this->localization_service );
 		$this->utils                   = new Utils();
 		$this->compatibility           = new Compatibility( $this, $this->utils );
-		$this->analytics               = new Analytics( $this );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
 
 		if ( is_admin() ) {
@@ -254,6 +247,7 @@ class MultiCurrency {
 		new PaymentMethodsCompatibility( $this, WC_Payments::get_gateway() );
 		new AdminNotices();
 		new UserSettings( $this );
+		new Analytics( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
@@ -452,8 +446,8 @@ class MultiCurrency {
 		ob_start();
 		the_widget(
 			spl_object_hash( $this->get_currency_switcher_widget() ),
-			apply_filters( $this->id . '_theme_widget_instance', $instance ),
-			apply_filters( $this->id . '_theme_widget_args', $args )
+			apply_filters( self::FILTER_PREFIX . 'theme_widget_instance', $instance ),
+			apply_filters( self::FILTER_PREFIX . 'theme_widget_args', $args )
 		);
 		return ob_get_clean();
 	}
@@ -707,7 +701,7 @@ class MultiCurrency {
 	 * @return mixed The configured value.
 	 */
 	public function get_apply_charm_only_to_products() {
-		return apply_filters( 'wcpay_multi_currency_apply_charm_only_to_products', true );
+		return apply_filters( self::FILTER_PREFIX . 'apply_charm_only_to_products', true );
 	}
 
 	/**
@@ -808,8 +802,8 @@ class MultiCurrency {
 		$message = sprintf(
 		/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name */
 			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a>Use %3$s instead.</a>', 'woocommerce-payments' ),
-			apply_filters( 'wcpay_multi_currency_override_notice_country', WC()->countries->countries[ $country ] ),
-			apply_filters( 'wcpay_multi_currency_override_notice_currency_name', $current_currency->get_name() ),
+			apply_filters( self::FILTER_PREFIX . 'override_notice_country', WC()->countries->countries[ $country ] ),
+			apply_filters( self::FILTER_PREFIX . 'override_notice_currency_name', $current_currency->get_name() ),
 			$currencies[ $store_currency ]
 		);
 
@@ -1089,7 +1083,7 @@ class MultiCurrency {
 		 * @param array $available_currencies Current available currencies. Calculated based on
 		 *                                    WC Pay's account currencies and WC currencies.
 		 */
-		return apply_filters( 'wcpay_multi_currency_available_currencies', array_intersect( $account_currencies, $wc_currencies ) );
+		return apply_filters( self::FILTER_PREFIX . 'available_currencies', array_intersect( $account_currencies, $wc_currencies ) );
 	}
 
 	/**

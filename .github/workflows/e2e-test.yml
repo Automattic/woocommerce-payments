@@ -1,11 +1,16 @@
 name: E2E tests
 
 on:
+  schedule:
+    - cron: '0 */6 * * *'
   pull_request:
     branches:
       - trunk
+  push:
+    branches:
       - develop
-      - release/*
+      - trunk
+  workflow_dispatch:
 
 env:
   E2E_GH_TOKEN:                                ${{ secrets.E2E_GH_TOKEN }}
@@ -15,11 +20,9 @@ env:
   WC_SUBSCRIPTIONS_REPO:                       ${{ secrets.WC_SUBSCRIPTIONS_REPO }}
   WC_ACTION_SCHEDULER_REPO:                    ${{ secrets.WC_ACTION_SCHEDULER_REPO }}
   WC_BLOCKS_REPO:                              ${{ secrets.WC_BLOCKS_REPO }}
-  E2E_WCPAY_STRIPE_ACCOUNT_ID:                 ${{ secrets.E2E_WCPAY_STRIPE_ACCOUNT_ID }}
-  E2E_WCPAY_STRIPE_TEST_CLIENT_ID:             ${{ secrets.E2E_WCPAY_STRIPE_TEST_CLIENT_ID }}
-  E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY:            ${{ secrets.E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY }}
-  E2E_WCPAY_STRIPE_TEST_SECRET_KEY:            ${{ secrets.E2E_WCPAY_STRIPE_TEST_SECRET_KEY }}
-  E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY: ${{ secrets.E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY }}
+  E2E_BLOG_ID:                                 ${{ secrets.E2E_BLOG_ID }}
+  E2E_BLOG_TOKEN:                              ${{ secrets.E2E_BLOG_TOKEN }}
+  E2E_USER_TOKEN:                              ${{ secrets.E2E_USER_TOKEN }}
 
 jobs:
   e2e:
@@ -29,7 +32,7 @@ jobs:
       fail-fast:     false
       matrix:
         # Min WooCommerce | L-2 | L(atest) | beta
-        woocommerce: [ '4.4.0', '5.5.0', '5.7.0', 'beta' ]
+        woocommerce: [ '4.4.0', '5.7.0', '5.9.0', 'beta' ]
         wordpress:   [ 'latest' ]
         php:         [ '7.4' ]
         include:

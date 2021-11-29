@@ -6,52 +6,96 @@ exports[`Disputes list renders correctly 1`] = `
     class=" woocommerce-payments-page"
   >
     <div
-      class="components-card is-size-medium woocommerce-table wcpay-disputes-list has-menu css-1xs3c37-CardUI e1q7k77g0"
+      class="woocommerce-card woocommerce-table woocommerce-analytics__card wcpay-disputes-list has-menu has-action"
     >
       <div
-        class="components-flex components-card__header is-size-medium e1q7k77g1 css-jsa6v9-Flex-HeaderUI eboqfv50"
+        class="woocommerce-card__header"
       >
-        <h2
-          class="css-1f0yw52-Text e15wbhsk0"
-          color="#23282d"
-          size="16"
+        <div
+          class="woocommerce-card__title-wrapper"
         >
-          Disputes
-        </h2>
+          <h2
+            class="woocommerce-card__title woocommerce-card__header-item"
+          >
+            Disputes
+          </h2>
+        </div>
         <div
-          class="woocommerce-table__actions"
-        />
+          class="woocommerce-card__action woocommerce-card__header-item"
+        >
+          <button
+            class="components-button woocommerce-table__download-button"
+            type="button"
+          >
+            <svg
+              class="gridicon gridicons-cloud-download"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M18 9c-.01 0-.017.002-.025.003C17.72 5.646 14.922 3 11.5 3 7.91 3 5 5.91 5 9.5c0 .524.07 1.03.186 1.52C5.123 11.015 5.064 11 5 11c-2.21 0-4 1.79-4 4 0 1.202.54 2.267 1.38 3h18.593C22.196 17.09 23 15.643 23 14c0-2.76-2.24-5-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
+                />
+              </g>
+            </svg>
+            <span
+              class="woocommerce-table__download-button__label"
+            >
+              Download
+            </span>
+          </button>
+        </div>
         <div
-          class="woocommerce-ellipsis-menu"
+          class="woocommerce-card__menu woocommerce-card__header-item"
         >
           <div
-            class="components-dropdown"
+            class="woocommerce-ellipsis-menu"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-ellipsis-menu__toggle"
-              title="Choose which values to display"
-              type="button"
+            <div
+              class="components-dropdown"
             >
-              <svg
-                class="gridicon gridicons-ellipsis"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
+                title="Choose which values to display"
+                type="button"
               >
-                <g>
+                <svg
+                  aria-hidden="true"
+                  class="dashicon dashicons-ellipsis"
+                  focusable="false"
+                  height="20"
+                  role="img"
+                  viewBox="0 0 20 20"
+                  width="20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
                   <path
-                    d="M7 12c0 1.104-.896 2-2 2s-2-.896-2-2 .896-2 2-2 2 .896 2 2zm12-2c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-7 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2z"
+                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
                   />
-                </g>
-              </svg>
-            </button>
+                </svg>
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  role="img"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
       <div
-        class="components-card__body css-xmjzce-BodyUI e1q7k77g3"
+        class="woocommerce-card__body"
       >
         <div
           aria-hidden="false"
@@ -78,7 +122,7 @@ exports[`Disputes list renders correctly 1`] = `
                   />
                 </th>
                 <th
-                  class="woocommerce-table__header is-left-aligned"
+                  class="woocommerce-table__header"
                   role="columnheader"
                   scope="col"
                 >
@@ -111,7 +155,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-center-aligned is-left-aligned"
+                  class="woocommerce-table__header is-center-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -122,7 +166,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-left-aligned"
+                  class="woocommerce-table__header"
                   role="columnheader"
                   scope="col"
                 >
@@ -191,7 +235,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </th>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -231,7 +275,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-center-aligned is-left-aligned"
+                  class="woocommerce-table__item is-center-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -245,7 +289,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item"
                 >
                   <a
                     data-link-type="external"
@@ -316,7 +360,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </th>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -356,7 +400,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-center-aligned is-left-aligned"
+                  class="woocommerce-table__item is-center-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -370,7 +414,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item"
                 />
                 <td
                   class="woocommerce-table__item is-left-aligned"
@@ -411,9 +455,6 @@ exports[`Disputes list renders correctly 1`] = `
           </table>
         </div>
       </div>
-      <div
-        class="components-flex components-card__footer is-size-medium e1q7k77g4 css-5hda2c-Flex-FooterUI eboqfv50"
-      />
     </div>
   </div>
 </div>

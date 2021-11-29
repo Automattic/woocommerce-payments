@@ -194,9 +194,11 @@ const WCPayUPEFields = ( {
 		},
 	};
 
-	if ( getConfig( 'cartContainsSubscription' ) ) {
-		elementOptions.terms = getTerms( paymentMethodsConfig, 'always' );
-	}
+	const showTerms =
+		shouldSavePayment || getConfig( 'cartContainsSubscription' )
+			? 'always'
+			: 'never';
+	elementOptions.terms = getTerms( paymentMethodsConfig, showTerms );
 
 	const appearance = getConfig( 'upeAppearance' );
 	if ( appearance ) {

@@ -8,7 +8,6 @@ import Gridicon from 'gridicons';
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import { addQueryArgs } from '@wordpress/url';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 import { Link } from '@woocommerce/components';
 
@@ -22,6 +21,7 @@ import {
 	formatExplicitCurrency,
 } from 'utils/currency';
 import { formatFee } from 'utils/fees';
+import { getAdminUrl } from 'wcpay/utils';
 
 /**
  * Creates a Gridicon
@@ -93,7 +93,7 @@ const getDepositTimelineItem = (
 			)
 		);
 
-		const depositUrl = addQueryArgs( 'admin.php', {
+		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/deposits/details',
 			id: event.deposit.id,
@@ -323,12 +323,12 @@ const feeBreakdown = ( event ) => {
 			0 !== fixedRate
 				? __(
 						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
-						'Recurring transaction fee: %1$s%% + %2$s',
+						'Subscription transaction fee: %1$s%% + %2$s',
 						'woocommerce-payments'
 				  )
 				: __(
 						/* translators: %1$s% is the fee amount */
-						'Recurring transaction fee: %1$s%%',
+						'Subscription transaction fee: %1$s%%',
 						'woocommerce-payments'
 				  ),
 		discount: __( 'Discount', 'woocommerce-payments' ),
@@ -570,7 +570,7 @@ const mapEventToTimelineItems = ( event ) => {
 				);
 			}
 
-			const disputeUrl = addQueryArgs( 'admin.php', {
+			const disputeUrl = getAdminUrl( {
 				page: 'wc-admin',
 				path: '/payments/disputes/details',
 				id: event.dispute_id,

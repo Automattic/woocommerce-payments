@@ -8,16 +8,14 @@ import interpolateComponents from 'interpolate-components';
  */
 import { Button, Modal } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { Link } from '@woocommerce/components';
+import { Link, List } from '@woocommerce/components';
 import { useState } from '@wordpress/element';
 import './style.scss';
-import { ExperimentalListItem } from '@woocommerce/experimental/build/experimental-list/experimental-list-item';
-import { ExperimentalList } from '@woocommerce/experimental/build/experimental-list/experimental-list';
 
 const LearnMoreLink = ( props ) => (
 	<Link
 		{ ...props }
-		href="https://docs.woocommerce.com/document/payments/countries/"
+		href="https://woocommerce.com/document/payments/countries/"
 		target="_blank"
 		rel="noopener noreferrer"
 		type="external"
@@ -35,14 +33,6 @@ const OnboardingLocationCheckModal = ( {
 	if ( ! isModalOpen ) {
 		return null;
 	}
-
-	const countriesListItems = countries.map( ( country ) => {
-		return (
-			<ExperimentalListItem disableGutters={ true } key={ country.title }>
-				{ country.title }
-			</ExperimentalListItem>
-		);
-	} );
 
 	// Declare hooks to handle button clicks
 	const handleConfirmedRequest = () => {
@@ -66,7 +56,7 @@ const OnboardingLocationCheckModal = ( {
 		),
 		components: {
 			link: <LearnMoreLink />,
-			list: <ExperimentalList children={ countriesListItems } />,
+			list: <List items={ countries } />,
 		},
 	} );
 

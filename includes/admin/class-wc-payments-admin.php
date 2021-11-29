@@ -265,6 +265,14 @@ class WC_Payments_Admin {
 					'path'   => '/payments/disputes/challenge',
 				]
 			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-additional-payment-methods',
+					'parent' => 'woocommerce-settings-payments',
+					'title'  => __( 'Add new payment methods', 'woocommerce-payments' ),
+					'path'   => '/payments/additional-payment-methods',
+				]
+			);
 		}
 
 		wp_enqueue_style(
@@ -318,6 +326,7 @@ class WC_Payments_Admin {
 			'isJetpackConnected'      => $this->payments_api_client->is_server_connected(),
 			'accountStatus'           => $this->account->get_account_status_data(),
 			'accountFees'             => $this->account->get_fees(),
+			'accountEmail'            => $this->account->get_account_email(),
 			'showUpdateDetailsTask'   => get_option( 'wcpay_show_update_business_details_task', 'no' ),
 			'wpcomReconnectUrl'       => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'additionalMethodsSetup'  => [
@@ -594,9 +603,9 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		// If plugin activation date is less than 7 days, do not show the badge.
-		$past_7_days = time() - get_option( 'wcpay_activation_timestamp', 0 ) >= WEEK_IN_SECONDS;
-		if ( false === $past_7_days ) {
+		// If plugin activation date is less than 3 days, do not show the badge.
+		$past_3_days = time() - get_option( 'wcpay_activation_timestamp', 0 ) >= ( 3 * DAY_IN_SECONDS );
+		if ( false === $past_3_days ) {
 			return;
 		}
 
