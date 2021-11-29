@@ -35,7 +35,8 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 	 * @param WC_Payments_Account $account account service instance.
 	 */
 	public function __construct( WC_Payments_Account $account ) {
-		add_action( 'publish_product', [ $this, 'product_published' ] );
+		// This action is triggered on product save but after other required subscriptions logic is triggered.
+		add_action( 'woocommerce_admin_process_product_object', [ $this, 'product_save' ] );
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'account_data_refreshed' ] );
 
 		$this->account = $account;
@@ -52,10 +53,11 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 
 	/**
 	 * Convert subscriptions to drafts when using WCPay (without subscriptions) and onboarding is not complete.
+	 * This should be triggered just prior to a $product->save() call so no need to call product->save()
 	 *
-	 * @param int $product_id Subscriptions Product id.
+	 * @param WC_Product $product Subscriptions Product.
 	 */
-	public function product_published( int $product_id ) {
+	public function product_save( WC_Product $product ) {
 		// We can skip if the post is not yet marked as published.
 
 		if ( $this->account->is_stripe_connected() ) {
@@ -68,8 +70,11 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 		}
 
 		// Skip products which have already been scheduled or aren't subscriptions.
-		$product = wc_get_product( $product_id );
-		if ( ! $product || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+		if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+			return;
+		}
+
+		if ( 'publish' !== $product->get_status() ) {
 			return;
 		}
 
