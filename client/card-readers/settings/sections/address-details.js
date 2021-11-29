@@ -22,16 +22,24 @@ const ReadersSettingsFields = () => {
 		setAccountBusinessSupportAddress,
 	] = useAccountBusinessSupportAddress();
 
-	const handleAddresPropertyChange = ( property, value ) => {
+	const handleAddressPropertyChange = ( property, value ) => {
 		setAccountBusinessSupportAddress( {
 			...accountBusinessSupportAddress,
 			[ property ]: value,
 		} );
 	};
 
-	const countriesOptions = Object.entries(
-		wcSettings.countries
-	).map( ( [ value, label ] ) => ( { label, value: value } ) );
+	const unescapeHtmlEntities = ( string ) => {
+		const doc = new DOMParser().parseFromString( string, 'text/html' );
+		return doc.documentElement.textContent;
+	};
+
+	const countriesOptions = Object.entries( wcSettings.countries ).map(
+		( [ value, label ] ) => ( {
+			label: unescapeHtmlEntities( label ),
+			value: value,
+		} )
+	);
 
 	return (
 		<>
@@ -40,7 +48,7 @@ const ReadersSettingsFields = () => {
 				label={ __( 'Country', 'woocommerce-payments' ) }
 				value={ accountBusinessSupportAddressCountry }
 				onChange={ ( value ) =>
-					handleAddresPropertyChange( 'country', value )
+					handleAddressPropertyChange( 'country', value )
 				}
 				options={ countriesOptions }
 			/>
@@ -49,7 +57,7 @@ const ReadersSettingsFields = () => {
 				label={ __( 'Address line 1', 'woocommerce-payments' ) }
 				value={ accountBusinessSupportAddressLine1 }
 				onChange={ ( value ) =>
-					handleAddresPropertyChange( 'line1', value )
+					handleAddressPropertyChange( 'line1', value )
 				}
 			/>
 			<TextControl
@@ -57,7 +65,7 @@ const ReadersSettingsFields = () => {
 				label={ __( 'Address line 2', 'woocommerce-payments' ) }
 				value={ accountBusinessSupportAddressLine2 }
 				onChange={ ( value ) =>
-					handleAddresPropertyChange( 'line2', value )
+					handleAddressPropertyChange( 'line2', value )
 				}
 			/>
 			<TextControl
@@ -65,7 +73,7 @@ const ReadersSettingsFields = () => {
 				label={ __( 'City', 'woocommerce-payments' ) }
 				value={ accountBusinessSupportAddressCity }
 				onChange={ ( value ) =>
-					handleAddresPropertyChange( 'city', value )
+					handleAddressPropertyChange( 'city', value )
 				}
 			/>
 			<TextControl
@@ -73,7 +81,7 @@ const ReadersSettingsFields = () => {
 				label={ __( 'Postal code', 'woocommerce-payments' ) }
 				value={ accountBusinessSupportAddressPostalCode }
 				onChange={ ( value ) =>
-					handleAddresPropertyChange( 'postal_code', value )
+					handleAddressPropertyChange( 'postal_code', value )
 				}
 			/>
 		</>
