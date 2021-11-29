@@ -13,26 +13,17 @@ import WcPayUpeContextProvider from '../settings/wcpay-upe-toggle/provider';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 
 const AdditionalMethodsPage = () => {
-	const {
-		isUpeSettingsPreviewEnabled,
-		isUpeEnabled,
-	} = window.wcpaySettings.additionalMethodsSetup;
+	const { isUpeEnabled } = window.wcpaySettings.additionalMethodsSetup;
 
-	if ( isUpeSettingsPreviewEnabled ) {
-		return (
-			<Page>
-				<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
-					<WcPayUpeContextProvider
-						defaultIsUpeEnabled={ isUpeEnabled }
-					>
-						<UpePreviewMethodSelector />
-					</WcPayUpeContextProvider>
-				</WCPaySettingsContext.Provider>
-			</Page>
-		);
-	}
-
-	return null;
+	return (
+		<Page>
+			<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
+				<WcPayUpeContextProvider defaultIsUpeEnabled={ isUpeEnabled }>
+					<UpePreviewMethodSelector />
+				</WcPayUpeContextProvider>
+			</WCPaySettingsContext.Provider>
+		</Page>
+	);
 };
 
 export default AdditionalMethodsPage;
