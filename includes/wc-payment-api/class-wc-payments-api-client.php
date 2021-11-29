@@ -11,6 +11,7 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
+use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -51,6 +52,7 @@ class WC_Payments_API_Client {
 	const INVOICES_API           = 'invoices';
 	const SUBSCRIPTIONS_API      = 'subscriptions';
 	const SUBSCRIPTION_ITEMS_API = 'subscriptions/items';
+	const READERS_CHARGE_SUMMARY = 'reader-charges/summary';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -176,6 +178,7 @@ class WC_Payments_API_Client {
 	 * @param array  $level3                 - Level 3 data.
 	 * @param bool   $off_session            - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 * @param array  $additional_parameters  - An array of any additional request parameters, particularly for additional payment methods.
+	 * @param array  $payment_methods        - An array of payment methods that might be used for the payment.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -190,7 +193,8 @@ class WC_Payments_API_Client {
 		$metadata = [],
 		$level3 = [],
 		$off_session = false,
-		$additional_parameters = []
+		$additional_parameters = [],
+		$payment_methods = null
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -204,22 +208,8 @@ class WC_Payments_API_Client {
 		$request['level3']         = $level3;
 		$request['description']    = $this->get_intent_description( $metadata['order_id'] ?? 0 );
 
-		$available_payment_methods = WC_Payments::get_gateway()->get_upe_available_payment_methods();
-		if (
-			'eur' === $currency_code &&
-			( WC_Payments_Features::is_sepa_enabled()
-			|| in_array( Payment_Method::SEPA, $available_payment_methods, true ) )
-		) {
-			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
-			$request['mandate_data']         = [
-				'customer_acceptance' => [
-					'type'   => 'online',
-					'online' => [
-						'ip_address' => WC_Geolocation::get_ip_address(),
-						'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? $this->user_agent, //phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-					],
-				],
-			];
+		if ( ! empty( $payment_methods ) ) {
+			$request['payment_method_types'] = $payment_methods;
 		}
 
 		$request = array_merge( $request, $additional_parameters );
@@ -432,19 +422,6 @@ class WC_Payments_API_Client {
 			'customer'       => $customer_id,
 			'confirm'        => 'true',
 		];
-
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
-			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
-			$request['mandate_data']         = [
-				'customer_acceptance' => [
-					'type'   => 'online',
-					'online' => [
-						'ip_address' => WC_Geolocation::get_ip_address(),
-						'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? $this->user_agent, //phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-					],
-				],
-			];
-		}
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
 	}
@@ -1326,28 +1303,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Sends the contents of the "forterToken" cookie to the server.
-	 *
-	 * @param string $token Contents of the "forterToken" cookie, used to identify the current browsing session.
-	 *
-	 * @return array An array, containing a `success` flag.
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function send_forter_token( $token ) {
-		return $this->request(
-			[
-				'token'      => $token,
-				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-				'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-				'ip'         => WC_Geolocation::get_ip_address(),
-			],
-			self::TRACKING_API . '/forter-token',
-			self::POST
-		);
-	}
-
-	/**
 	 * Registers a new domain with Apple Pay.
 	 *
 	 * @param string $domain_name Domain name which to register for Apple Pay.
@@ -1711,15 +1666,7 @@ class WC_Payments_API_Client {
 			$object['order'] = [
 				'number'       => $order->get_order_number(),
 				'url'          => $order->get_edit_order_url(),
-				'customer_url' => add_query_arg(
-					[
-						'page'      => 'wc-admin',
-						'path'      => '/customers',
-						'filter'    => 'single_customer',
-						'customers' => $order->get_customer_id(),
-					],
-					'admin.php'
-				),
+				'customer_url' => $this->get_customer_url( $order ),
 			];
 
 			if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
@@ -1736,6 +1683,30 @@ class WC_Payments_API_Client {
 		}
 
 		return $object;
+	}
+
+	/**
+	 * Generates url to single customer in analytics table.
+	 *
+	 * @param WC_Order $order The Order.
+	 * @return string|null
+	 */
+	private function get_customer_url( $order ) {
+		$customer_id = DataStore::get_existing_customer_id_from_order( $order );
+
+		if ( ! $customer_id ) {
+			return null;
+		}
+
+		return add_query_arg(
+			[
+				'page'      => 'wc-admin',
+				'path'      => '/customers',
+				'filter'    => 'single_customer',
+				'customers' => $customer_id,
+			],
+			'admin.php'
+		);
 	}
 
 	/**
@@ -1828,5 +1799,17 @@ class WC_Payments_API_Client {
 		$arr[2] = ( $arr[2] & 0x0fff ) | 0x4000;
 		$arr[3] = ( $arr[3] & 0x3fff ) | 0x8000;
 		return vsprintf( '%08x-%04x-%04x-%04x-%04x%08x', $arr );
+	}
+
+
+	/**
+	 * Fetch readers charge summary.
+	 *
+	 * @param string $charge_date Charge date for readers.
+	 *
+	 * @return array reader objects.
+	 */
+	public function get_readers_charge_summary( string $charge_date ) : array {
+		return $this->request( [ 'charge_date' => $charge_date ], self::READERS_CHARGE_SUMMARY, self::GET );
 	}
 }

@@ -9,7 +9,6 @@ namespace WCPay\Payment_Methods;
 
 use WP_User;
 use WC_Payments_Token_Service;
-use WC_Payment_Token_WCPay_SEPA;
 
 /**
  * Sofort Payment Method class extending UPE base class

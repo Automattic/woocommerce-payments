@@ -21,24 +21,24 @@ import InboxNotifications from './inbox-notifications';
 import { useDisputes } from 'data';
 
 import './style.scss';
+import { useSettings } from 'wcpay/data';
 
 const OverviewPage = () => {
 	const {
 		accountStatus,
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
-		additionalMethodsSetup,
 		multiCurrencySetup,
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 		needsHttpsSetup,
 	} = wcpaySettings;
 	const { disputes, isLoading } = useDisputes( getQuery() );
+	const { isLoading: settingsIsLoading, settings } = useSettings();
 
 	const tasksUnsorted = getTasks( {
 		accountStatus,
 		showUpdateDetailsTask,
-		additionalMethodsSetup,
 		multiCurrencySetup,
 		wpcomReconnectUrl,
 		needsHttpsSetup,
@@ -52,6 +52,27 @@ const OverviewPage = () => {
 		'1' === queryParams[ 'wcpay-connection-success' ];
 
 	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
+
+	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
+		.map( ( [ key, value ] ) => {
+			const isPaymentMethodEnabled =
+				! settingsIsLoading &&
+				0 <
+					settings.enabled_payment_method_ids.filter(
+						( enabledMethod ) => {
+							return enabledMethod === key;
+						}
+					).length;
+			if (
+				settingsIsLoading ||
+				! isPaymentMethodEnabled ||
+				0 === value.discount.length
+			) {
+				return null;
+			}
+			return { payment_method: key, fee: value };
+		} )
+		.filter( ( e ) => e && e.fee !== undefined );
 
 	return (
 		<Page isNarrow className="wcpay-overview">
@@ -85,7 +106,7 @@ const OverviewPage = () => {
 			<DepositsInformation />
 			<AccountStatus
 				accountStatus={ wcpaySettings.accountStatus }
-				accountFees={ wcpaySettings.accountFees }
+				accountFees={ activeAccountFees }
 			/>
 			{ !! accountOverviewTaskList && 0 < tasks.length && ! isLoading && (
 				<TaskList

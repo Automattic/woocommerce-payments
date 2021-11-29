@@ -22,7 +22,7 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 		$this->stripe_id   = 'card';
-		$this->title       = 'Credit card / debit card';
+		$this->title       = __( 'Credit card / debit card', 'woocommerce-payments' );
 		$this->is_reusable = true;
 		$this->currencies  = [];// All currencies are supported.
 	}
