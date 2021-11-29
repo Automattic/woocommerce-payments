@@ -92,7 +92,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'get_payment_method',
 					'refund_charge',
 					'get_charge',
-					'update_intention_unrestricted',
+					'update_intention_metadata',
 				]
 			)
 			->getMock();
@@ -1334,7 +1334,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
 		);
-		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_unrestricted' )->with( $intent_id, null, null, null, null, $merged_metadata )->will(
+		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_metadata' )->with( $intent_id, $merged_metadata )->will(
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
