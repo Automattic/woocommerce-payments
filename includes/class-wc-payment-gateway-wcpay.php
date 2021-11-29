@@ -1594,7 +1594,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param array $settings Plugin settings.
 	 * @return array Updated fields.
 	 */
-	public function update_account_settings( $settings ) {
+	public function update_account_settings( array $settings ) : array {
 		$account_settings = $this->extract_account_settings( $settings );
 		$this->update_account( $account_settings );
 
@@ -1822,11 +1822,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param array $settings Plugin settings.
 	 */
-	private function extract_account_settings( $settings ) : array {
+	private function extract_account_settings( array $settings ) : array {
 		foreach ( static::ACCOUNT_SETTINGS_MAPPING as $name => $account_key ) {
 			if ( isset( $settings[ $name ] ) ) {
 				$account_settings[ $account_key ] = $settings[ $name ];
-				unset( $settings[ $name ] );
 			}
 		}
 

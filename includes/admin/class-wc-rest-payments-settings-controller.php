@@ -477,37 +477,19 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Filter account fields to be updated from request.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 *
-	 * @return array Fields to be updated.
-	 */
-	private function get_fields_to_update( WP_REST_Request $request ) : array {
-		foreach ( static::ACCOUNT_FIELDS_TO_UPDATE as $field ) {
-			if ( ! $request->has_param( $field ) ) {
-				continue;
-			}
-
-			$field_value = $request->get_param( $field );
-
-			if ( $this->wcpay_gateway->get_option( $field ) === $field_value ) {
-				continue;
-			}
-
-			$fields_to_update[ $field ] = $field_value;
-		}
-
-		return $fields_to_update ?? [];
-	}
-
-	/**
 	 * Updates WooCommerce Payments account fields
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
 	private function update_account( WP_REST_Request $request ) {
-		$fields_to_update = $this->get_fields_to_update( $request );
+		$fields_to_update = array_filter(
+			$request->get_params(),
+			function ( $value, string $key ) {
+				return in_array( $key, static::ACCOUNT_FIELDS_TO_UPDATE, true ) &&
+						$this->wcpay_gateway->get_option( $key ) !== $value;
+			},
+			ARRAY_FILTER_USE_BOTH
+		);
 		$this->wcpay_gateway->update_account_settings( $fields_to_update );
 	}
 
