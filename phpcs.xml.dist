@@ -19,7 +19,7 @@
 
 	<!-- Rules -->
 	<rule ref="WooCommerce-Core" >
-		<exclude name="Generic.Commenting.Todo.TaskFound"/>
+		<exclude name="Generic.Commenting.Todo"/>
 
 		<!-- This rule is currently generating some false positives, it would be worth retrying after PHPCS upgrades -->
 		<exclude name="Squiz.Commenting.FunctionCommentThrowTag.WrongNumber"/>
@@ -57,6 +57,8 @@
 	<rule ref="Squiz.Commenting.FunctionComment">
 		<exclude-pattern>tests/</exclude-pattern>
 	</rule>
+
+	<rule ref="Squiz.Commenting.FunctionCommentThrowTag.Missing" />
 
 	<!-- We don't need to do nonce checks in unit test code -->
 	<rule ref="WordPress.Security.NonceVerification.Recommended">
