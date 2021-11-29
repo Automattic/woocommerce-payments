@@ -1692,7 +1692,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$metadata_from_intent = $intent->get_metadata(); // mobile app may have set metadata.
 			$metadata_from_order  = $this->get_metadata_from_order( $order, $payment_type );
 			$merged_metadata      = array_merge( (array) $metadata_from_order, (array) $metadata_from_intent ); // prioritize metadata from mobile app.
-			// $merged_metadata      = (array) $metadata_from_intent + (array) $metadata_from_order; // prioritize metadata from mobile app.
 
 			$this->payments_api_client->update_intention_metadata(
 				$intent_id,
@@ -1717,7 +1716,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$http_code     = $e->get_http_code();
 
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
-				// TODO: Reuse the intent already fetched above.
 				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
 				if ( 'canceled' === $intent->get_status() ) {
 					$is_authorization_expired = true;
