@@ -8,6 +8,11 @@ import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import {
+	downloadCSVFile,
+	generateCSVDataFromTable,
+	generateCSVFileName,
+} from '@woocommerce/csv-export';
 
 /**
  * Internal dependencies.
@@ -22,6 +27,8 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { reasons } from './strings';
 import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
+import DownloadButton from 'components/download-button';
+import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 
 import './style.scss';
 
@@ -190,6 +197,60 @@ export const DisputesList = () => {
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
 
+	const downloadable = !! rows.length;
+
+	function onDownload() {
+		const title = __( 'Disputes', 'woocommerce-payments' );
+		const { page, path, ...params } = getQuery();
+
+		const csvColumns = [
+			{
+				...headers[ 0 ],
+				label: __( 'Dispute Id', 'woocommerce-payments' ),
+			},
+			...headers.slice( 1 ),
+		];
+
+		const csvRows = rows.map( ( row ) => {
+			return [
+				...row.slice( 0, 2 ),
+				{
+					...row[ 2 ],
+					value: disputeStatusMapping[ row[ 2 ].value ].message,
+				},
+				{
+					...row[ 3 ],
+					value: formatStringValue( row[ 3 ].value ),
+				},
+				...row.slice( 4, 9 ),
+				{
+					...row[ 9 ],
+					value: dateI18n(
+						'Y-m-d',
+						moment( row[ 9 ].value ).toISOString()
+					),
+				},
+				{
+					...row[ 10 ],
+					value: dateI18n(
+						'Y-m-d / g:iA',
+						moment( row[ 10 ].value ).toISOString()
+					),
+				},
+			];
+		} );
+
+		downloadCSVFile(
+			generateCSVFileName( title, params ),
+			generateCSVDataFromTable( csvColumns, csvRows )
+		);
+
+		window.wcTracks.recordEvent( 'wcpay_disputes_download', {
+			exported_disputes: csvRows.length,
+			total_disputes: disputes.length,
+		} );
+	}
+
 	return (
 		<Page>
 			<TestModeNotice topic={ topics.disputes } />
@@ -203,6 +264,15 @@ export const DisputesList = () => {
 				rows={ rows }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				actions={ [
+					downloadable && (
+						<DownloadButton
+							key="download"
+							isDisabled={ isLoading }
+							onClick={ onDownload }
+						/>
+					),
+				] }
 			/>
 		</Page>
 	);

@@ -278,6 +278,14 @@ class WC_Payments_Admin {
 					'path'   => '/payments/disputes/challenge',
 				]
 			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-additional-payment-methods',
+					'parent' => 'woocommerce-settings-payments',
+					'title'  => __( 'Add new payment methods', 'woocommerce-payments' ),
+					'path'   => '/payments/additional-payment-methods',
+				]
+			);
 		}
 
 		wp_enqueue_style(

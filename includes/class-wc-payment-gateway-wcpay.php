@@ -1027,6 +1027,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
+			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout();
+
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 			$intent = $this->payments_api_client->create_and_confirm_intention(
 				$converted_amount,
@@ -1038,7 +1040,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$metadata,
 				$this->get_level3_data_from_order( $order ),
 				$payment_information->is_merchant_initiated(),
-				$additional_api_parameters
+				$additional_api_parameters,
+				$payment_methods
 			);
 
 			$intent_id     = $intent->get_id();
@@ -2649,24 +2652,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param string $order_id optional Order ID.
 	 * @return string[]
 	 */
-	public function get_upe_enabled_at_checkout_payment_method_ids( $order_id = null ) {
-		$capture                    = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
-		$capturable_payment_methods = $capture ? $this->get_upe_enabled_payment_method_ids() : [ 'card' ];
-		$enabled_payment_methods    = [];
-		$active_payment_methods     = $this->get_upe_enabled_payment_method_statuses();
-		foreach ( $capturable_payment_methods as $payment_method_id ) {
-			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
-			if ( isset( $this->payment_methods[ $payment_method_id ] )
-				&& $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id )
-				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() )
-				&& isset( $active_payment_methods[ $payment_method_capability_key ] )
-				&& 'active' === $active_payment_methods[ $payment_method_capability_key ]['status']
-			) {
-				$enabled_payment_methods[] = $payment_method_id;
-			}
-		}
-
-		return $enabled_payment_methods;
+	public function get_payment_method_ids_enabled_at_checkout( $order_id = null ) {
+		return [
+			'card',
+		];
 	}
 
 	/**
