@@ -1595,7 +1595,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Updated fields.
 	 */
 	public function update_account_settings( array $settings ) : array {
-		$account_settings = $this->extract_account_settings( $settings );
+		$account_settings = [];
+		foreach ( static::ACCOUNT_SETTINGS_MAPPING as $name => $account_key ) {
+			if ( isset( $settings[ $name ] ) ) {
+				$account_settings[ $account_key ] = $settings[ $name ];
+			}
+		}
 		$this->update_account( $account_settings );
 
 		return $account_settings;
@@ -1813,23 +1818,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$msg = __( 'Failed to update Stripe account. ', 'woocommerce-payments' ) . $error_message;
 			$this->add_error( $msg );
 		}
-	}
-
-	/**
-	 * Extracts and returns account-specific settings from all of plugin's settings.
-	 *
-	 * Additionally, unsets the extracted settings from all settings.
-	 *
-	 * @param array $settings Plugin settings.
-	 */
-	private function extract_account_settings( array $settings ) : array {
-		foreach ( static::ACCOUNT_SETTINGS_MAPPING as $name => $account_key ) {
-			if ( isset( $settings[ $name ] ) ) {
-				$account_settings[ $account_key ] = $settings[ $name ];
-			}
-		}
-
-		return $account_settings ?? [];
 	}
 
 	/**

@@ -482,15 +482,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 */
 	private function update_account( WP_REST_Request $request ) {
-		$fields_to_update = array_filter(
-			$request->get_params(),
-			function ( $value, string $key ) {
-				return in_array( $key, static::ACCOUNT_FIELDS_TO_UPDATE, true ) &&
-						$this->wcpay_gateway->get_option( $key ) !== $value;
-			},
-			ARRAY_FILTER_USE_BOTH
-		);
-		$this->wcpay_gateway->update_account_settings( $fields_to_update );
+		$updated_fields_callback = function ( $value, string $key ) {
+			return in_array( $key, static::ACCOUNT_FIELDS_TO_UPDATE, true ) &&
+					$this->wcpay_gateway->get_option( $key ) !== $value;
+		};
+		$updated_fields          = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
+		$this->wcpay_gateway->update_account_settings( $updated_fields );
 	}
 
 	/**
