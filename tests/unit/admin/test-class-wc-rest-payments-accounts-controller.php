@@ -61,7 +61,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 
 	public function test_get_account_data_with_connected_account() {
 		$this->mock_api_client
-			->expects( $this->once() )
+			->expects( $this->atLeastOnce() )
 			->method( 'is_server_connected' )
 			->willReturn( true );
 		$this->mock_api_client
@@ -88,7 +88,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 
 	public function test_get_account_data_without_connected_account_and_enabled_onboarding() {
 		$this->mock_api_client
-			->expects( $this->once() )
+			->expects( $this->atLeastOnce() )
 			->method( 'is_server_connected' )
 			->willReturn( true );
 		$this->mock_api_client
@@ -112,7 +112,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 
 	public function test_get_account_data_without_connected_account_and_disabled_onboarding() {
 		$this->mock_api_client
-			->expects( $this->once() )
+			->expects( $this->atLeastOnce() )
 			->method( 'is_server_connected' )
 			->willReturn( true );
 		$this->mock_api_client
@@ -135,7 +135,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 
 	public function test_get_account_data_with_card_eligible_present_true() {
 		$this->mock_api_client
-			->expects( $this->once() )
+			->expects( $this->atLeastOnce() )
 			->method( 'is_server_connected' )
 			->willReturn( true );
 		$this->mock_api_client
