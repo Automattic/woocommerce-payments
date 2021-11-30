@@ -427,7 +427,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$order_2->save();
 
 		$this->mock_db_wrapper
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'orders_with_charge_id_from_charge_ids' )
 			->with(
 				[
@@ -468,15 +468,19 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$this->mock_no_subscriptions_for_order();
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order ) {
+				return [];
+			}
+		);
 
 		$transactions = $this->payments_api_client->list_transactions();
 
-		$this->assertEquals( 'txn_test_1', $transactions['data'][0]['transaction_id'] );
-		$this->assertEquals( $order_1->get_order_number(), $transactions['data'][0]['order']['number'] );
+		$this->assertSame( 'txn_test_1', $transactions['data'][0]['transaction_id'] );
+		$this->assertSame( $order_1->get_order_number(), $transactions['data'][0]['order']['number'] );
 
-		$this->assertEquals( 'txn_test_2', $transactions['data'][1]['transaction_id'] );
-		$this->assertEquals( $order_2->get_order_number(), $transactions['data'][1]['order']['number'] );
+		$this->assertSame( 'txn_test_2', $transactions['data'][1]['transaction_id'] );
+		$this->assertSame( $order_2->get_order_number(), $transactions['data'][1]['order']['number'] );
 	}
 
 	/**
@@ -1413,11 +1417,4 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	/**
 	 * Set up mock for no subscriptions for order.
 	 */
-	private function mock_no_subscriptions_for_order() {
-		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) {
-				return [];
-			}
-		);
-	}
 }

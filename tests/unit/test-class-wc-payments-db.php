@@ -43,8 +43,10 @@ class WC_Payments_DB_Test extends WP_UnitTestCase {
 
 		$orders_with_charge_ids = $this->wcpay_db->orders_with_charge_id_from_charge_ids( array_merge( $existing_charge_ids, $non_existing_charge_ids ) );
 
-		$this->assertCount( count( $existing_charge_ids ), $orders_with_charge_ids );
-		$this->assertArrayHasKey( 'order', $orders_with_charge_ids[0] );
-		$this->assertArrayHasKey( 'charge_id', $orders_with_charge_ids[0] );
+		$this->assertCount( 2, $orders_with_charge_ids );
+		$this->assertIsArray( $orders_with_charge_ids[0] );
+		$this->assertSame( 'ch_1', $orders_with_charge_ids[0]['charge_id'] );
+		$this->assertIsArray( $orders_with_charge_ids[1] );
+		$this->assertSame( 'ch_2', $orders_with_charge_ids[1]['charge_id'] );
 	}
 }
