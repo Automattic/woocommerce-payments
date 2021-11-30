@@ -177,6 +177,96 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the business name.
+	 *
+	 * @return string Business profile name.
+	 */
+	public function get_business_name() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['business_profile']['name'] ) ? $account['business_profile']['name'] : '';
+	}
+
+	/**
+	 * Gets the business url.
+	 *
+	 * @return string Business profile url.
+	 */
+	public function get_business_url() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['business_profile']['url'] ) ? $account['business_profile']['url'] : '';
+	}
+
+	/**
+	 * Gets the business support address.
+	 *
+	 * @return string Business profile support address.
+	 */
+	public function get_business_support_address() : array {
+		$account = $this->get_cached_account_data();
+		return isset( $account['business_profile']['support_address'] ) ? $account['business_profile']['support_address'] : [];
+	}
+
+	/**
+	 * Gets the business support email.
+	 *
+	 * @return string Business profile support email.
+	 */
+	public function get_business_support_email() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['business_profile']['support_email'] ) ? $account['business_profile']['support_email'] : '';
+	}
+
+	/**
+	 * Gets the business support phone.
+	 *
+	 * @return string Business profile support phone.
+	 */
+	public function get_business_support_phone() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['business_profile']['support_phone'] ) ? $account['business_profile']['support_phone'] : '';
+	}
+
+	/**
+	 * Gets the branding logo.
+	 *
+	 * @return string branding logo.
+	 */
+	public function get_branding_logo() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['branding']['logo'] ) ? $account['branding']['logo'] : '';
+	}
+
+	/**
+	 * Gets the branding icon.
+	 *
+	 * @return string branding icon.
+	 */
+	public function get_branding_icon() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['branding']['icon'] ) ? $account['branding']['icon'] : '';
+	}
+
+	/**
+	 * Gets the branding primary color.
+	 *
+	 * @return string branding primary color.
+	 */
+	public function get_branding_primary_color() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['branding']['primary_color'] ) ? $account['branding']['primary_color'] : '';
+	}
+
+	/**
+	 * Gets the branding secondary color.
+	 *
+	 * @return string branding secondary color.
+	 */
+	public function get_branding_secondary_color() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['branding']['secondary_color'] ) ? $account['branding']['secondary_color'] : '';
+	}
+
+	/**
 	 * Get card present eligible flag account
 	 *
 	 * @return bool
