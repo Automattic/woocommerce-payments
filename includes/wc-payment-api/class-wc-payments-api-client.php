@@ -323,7 +323,7 @@ class WC_Payments_API_Client {
 	 */
 	public function update_intention_metadata(
 		$intention_id,
-		$metadata = []
+		$metadata
 	) {
 		$request = [
 			'metadata' => $metadata,
