@@ -130,10 +130,22 @@ There are two modes for running tests:
 1. **Headless mode**: `npm run test:e2e`. In headless mode test runner executes all or specified specs without launching Chromium interface. This mode is used in CI environment.
 2. **Dev mode**: `npm run test:e2e-dev`. Dev mode is interactive and launches Chromium UI. It's useful for developing, debugging and troubleshooting failing tests. There is a custom config used for `jest-puppeteer` to run tests in dev mode.
 
+**Running only a single test suite**
+
+If you would like to run only one test suite, you can pass the relative path to the test file along with any of the modes mentioned above. e.g. `npm run test:e2e-dev path/to/test`.
+
+**Running tests in group**
+
+By adding additional env variables, it is possible to run a group of tests. e.g.
+
+* `E2E_GROUP='wcpay' E2E_BRANCH='merchant' npm run test:e2e-dev` runs merchant tests for WCPay.
+* `E2E_GROUP='wcpay' E2E_BRANCH='shopper' npm run test:e2e-dev` runs shopper tests for WCPay.
+* `E2E_GROUP='wcpay' npm run test:e2e-dev` runs merchant & shopper tests for WCPay.
+
 Handy utility scripts for managing environment:
 
 * `npm run test:e2e-down` Stops E2E environment containers.
-* `npm run test:e2e-cleanup` Removes fetched dependencies and docker volumes
+* `npm run test:e2e-cleanup` Removes fetched dependencies and docker volumes.
 * `npm run test:e2e-reset` Stops containers and performs cleanup.
 * `npm run test:e2e-up` Starts containers without setting up again.
 
