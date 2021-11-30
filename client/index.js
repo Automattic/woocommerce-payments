@@ -142,6 +142,18 @@ addFilter(
 			],
 		} );
 		pages.push( {
+			container: CardReadersPage,
+			path: '/payments/card-readers',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Card readers', 'woocommerce-payments' ),
+			],
+			navArgs: {
+				id: 'wc-payments-card-readers',
+			},
+		} );
+		pages.push( {
 			container: AdditionalMethodsPage,
 			path: '/payments/additional-payment-methods',
 			wpOpenMenu: menuID,
