@@ -1511,12 +1511,12 @@ class WC_Payments_API_Client {
 			$url .= '/' . self::ENDPOINT_SITE_FRAGMENT;
 		}
 		if (
-			str_contains( $api, 'payment_methods' )
-			|| str_contains( $api, 'timeline' )
-			|| str_contains( $api, 'intention' )
-			|| str_contains( $api, 'charges' )
-			|| str_contains( $api, 'customer' )
-			|| str_contains( $api, 'transactions' )
+			strstr( $api, 'payment_methods' )
+			|| strstr( $api, 'timeline' )
+			|| strstr( $api, 'intention' )
+			|| strstr( $api, 'charges' )
+			|| strstr( $api, 'customer' )
+			|| strstr( $api, 'transactions' )
 		) {
 			$url .= '/woopay/' . $api;
 		} else {
