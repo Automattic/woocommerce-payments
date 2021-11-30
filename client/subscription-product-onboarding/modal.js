@@ -5,13 +5,14 @@ import React from 'react';
 
 import { Button, Icon, Modal } from '@wordpress/components';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
-import { useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
+import { removeQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 
 import './style.scss';
 
-const { connectUrl } = window.wcpaySubscriptionsProductAdmin;
+const { connectUrl } = window.wcpaySubscriptionProductOnboardingModal;
 
 const FinishSetupButton = () => {
 	const [ isFinishingSetup, setIsFinishingSetup ] = useState( false );
@@ -30,8 +31,21 @@ const FinishSetupButton = () => {
 };
 
 // TODO: a11y.
-const SubscriptionProductSavedAsDraftModal = () => {
+const SubscriptionProductOnboardingModal = () => {
 	const [ isOpen, setOpen ] = useState( true );
+
+	useEffect( () => {
+		if ( window?.history ) {
+			window.history.replaceState(
+				null,
+				null,
+				removeQueryArgs(
+					window.location.href,
+					'wcpay-subscription-saved-as-draft'
+				)
+			);
+		}
+	}, [] );
 
 	if ( ! isOpen ) {
 		return null;
@@ -89,8 +103,8 @@ const SubscriptionProductSavedAsDraftModal = () => {
 	);
 };
 
-registerPlugin( 'wcpay-subscriptions-product-admin', {
+registerPlugin( 'wcpay-subscription-product-onboarding-modal', {
 	icon: null,
-	render: SubscriptionProductSavedAsDraftModal,
+	render: SubscriptionProductOnboardingModal,
 	scope: 'woocommerce',
 } );
