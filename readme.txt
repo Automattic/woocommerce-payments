@@ -106,6 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Incorrect prices in Payment Request Button for certain currencies.
 * Fix - Updates to fraud protection.
 * Fix - Prevent Payment Request buttons from showing up in Composite Product pages. 
+* Add - Add support for suggested gateway methods in WC-Admin
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
