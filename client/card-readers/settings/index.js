@@ -18,6 +18,8 @@ import ContactsDetailsSection from './sections/contacts-details';
 import AddressDetailsSection from './sections/address-details';
 import BrandingDetailsSection from './sections/branding-details';
 
+const isBrandingEnabled = false;
+
 const ReadersSettingsDescription = () => (
 	<>
 		<h2>{ __( 'Card reader receipts', 'woocommerce-payments' ) }</h2>
@@ -51,7 +53,7 @@ const ReceiptSettings = () => {
 							<BusinessDetailsSection />
 							<ContactsDetailsSection />
 							<AddressDetailsSection />
-							<BrandingDetailsSection />
+							{ isBrandingEnabled && <BrandingDetailsSection /> }
 						</CardBody>
 					</Card>
 				</LoadableSettingsSection>
