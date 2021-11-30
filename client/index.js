@@ -162,7 +162,15 @@ addFilter(
 				id: 'wc-payments-card-readers',
 			},
 		} );
-
+		pages.push( {
+			container: AdditionalMethodsPage,
+			path: '/payments/additional-payment-methods',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Add additional payment methods', 'woocommerce-payments' ),
+			],
+		} );
 		return pages;
 	}
 );
