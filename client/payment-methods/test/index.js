@@ -292,7 +292,7 @@ describe( 'PaymentMethods', () => {
 		await user.click( enableInYourStoreButton );
 		expect( setIsUpeEnabledMock ).toHaveBeenCalledWith( true );
 		expect( window.location.href ).toEqual(
-			'admin.php?page=wc-admin&task=woocommerce-payments--additional-payment-methods'
+			'admin.php?page=wc-admin&path=%2Fpayments%2Fadditional-payment-methods'
 		);
 	} );
 

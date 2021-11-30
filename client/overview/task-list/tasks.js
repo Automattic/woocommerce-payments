@@ -6,14 +6,13 @@
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies.
  */
-import createAdditionalMethodsSetupTask from '../../additional-methods-setup/task';
 import createMultiCurrencySetupTask from '../../multi-currency-setup/task';
 import wcpayTracks from 'tracks';
+import { getAdminUrl } from 'wcpay/utils';
 
 const getDisputesToResolve = ( disputes ) => {
 	if ( ! disputes ) {
@@ -30,7 +29,6 @@ const getDisputesToResolve = ( disputes ) => {
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
-	additionalMethodsSetup = {},
 	multiCurrencySetup = {},
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
@@ -132,8 +130,6 @@ export const getTasks = ( {
 				isDismissable: true,
 				allowSnooze: true,
 			},
-		additionalMethodsSetup.isTaskVisible &&
-			createAdditionalMethodsSetupTask( additionalMethodsSetup ),
 		multiCurrencySetup.isTaskVisible &&
 			createMultiCurrencySetupTask( multiCurrencySetup ),
 		isDisputeTaskVisible && {
@@ -159,7 +155,7 @@ export const getTasks = ( {
 				wcpayTracks.recordEvent( 'wcpay_overview_task', {
 					task: 'dispute-resolution-task',
 				} );
-				window.location.href = addQueryArgs( 'admin.php', {
+				window.location.href = getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/disputes',
 				} );
