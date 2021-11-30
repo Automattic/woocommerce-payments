@@ -47,6 +47,9 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			// Fill CC details and purchase the product
 			const card = config.get( 'cards.basic' );
 			await fillCardDetailsWCB( page, card );
+			await page.waitForSelector(
+				'.wc-block-components-main button:not(:disabled)'
+			);
 			await expect( page ).toClick( 'button', { text: 'Place Order' } );
 			await page.waitForSelector( 'div.woocommerce-order' );
 			await expect( page ).toMatch( 'p', {
@@ -63,6 +66,9 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			// Fill CC details and purchase the product
 			const card = config.get( 'cards.3ds' );
 			await fillCardDetailsWCB( page, card );
+			await page.waitForSelector(
+				'.wc-block-components-main button:not(:disabled)'
+			);
 			await expect( page ).toClick( 'button', { text: 'Place Order' } );
 			await confirmCardAuthentication( page, '3DS' );
 			await page.waitForNavigation( {
