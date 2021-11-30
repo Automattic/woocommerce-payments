@@ -1,7 +1,4 @@
 /** @format */
-
-/* global jQuery */
-
 /**
  * External dependencies
  */
@@ -44,11 +41,13 @@ const BrandingDetailsSection = () => {
 	] = useAccountBrandingIcon();
 
 	useEffect( () => {
-		jQuery(
-			'.components-circular-option-picker__dropdown-link-action button'
-		).each( function ( index, element ) {
-			jQuery( element ).text( __( 'Edit', 'woocommerce-payments' ) );
-		} );
+		document
+			.querySelectorAll(
+				'.components-circular-option-picker__dropdown-link-action button'
+			)
+			.forEach( function ( el ) {
+				el.innerHTML = __( 'Edit', 'woocommerce-payments' );
+			} );
 	}, [] );
 
 	return (

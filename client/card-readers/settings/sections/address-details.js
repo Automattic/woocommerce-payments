@@ -11,7 +11,7 @@ import { TextControl, SelectControl } from '@wordpress/components';
  */
 import { useAccountBusinessSupportAddress } from '../../../data';
 
-const ReadersSettingsFields = () => {
+const AddressDetailsSection = () => {
 	const [
 		accountBusinessSupportAddress,
 		accountBusinessSupportAddressCountry,
@@ -88,4 +88,4 @@ const ReadersSettingsFields = () => {
 	);
 };
 
-export default ReadersSettingsFields;
+export default AddressDetailsSection;

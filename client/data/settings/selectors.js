@@ -52,22 +52,32 @@ export const getAccountBusinessSupportAddress = ( state ) => {
 };
 
 export const getAccountBusinessSupportAddressCountry = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
 	return getSettings( state ).account_business_support_address.country || '';
 };
 
 export const getAccountBusinessSupportAddressLine1 = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
 	return getSettings( state ).account_business_support_address.line1 || '';
 };
 
 export const getAccountBusinessSupportAddressLine2 = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
 	return getSettings( state ).account_business_support_address.line2 || '';
 };
 
 export const getAccountBusinessSupportAddressCity = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
 	return getSettings( state ).account_business_support_address.city || '';
 };
 
 export const getAccountBusinessSupportAddressPostalCode = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
 	return (
 		getSettings( state ).account_business_support_address.postal_code || ''
 	);
