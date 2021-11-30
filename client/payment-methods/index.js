@@ -15,7 +15,6 @@ import {
 } from '@wordpress/components';
 import { moreVertical } from '@wordpress/icons';
 import classNames from 'classnames';
-import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -43,6 +42,7 @@ import CardBody from '../settings/card-body';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
+import { getAdminUrl } from 'wcpay/utils';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
@@ -68,9 +68,9 @@ const UpeSetupBanner = () => {
 
 	const handleEnableUpeClick = () => {
 		setIsUpeEnabled( true ).then( () => {
-			window.location.href = addQueryArgs( 'admin.php', {
+			window.location.href = getAdminUrl( {
 				page: 'wc-admin',
-				task: 'woocommerce-payments--additional-payment-methods',
+				path: '/payments/additional-payment-methods',
 			} );
 		} );
 	};

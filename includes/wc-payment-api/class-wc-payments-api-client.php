@@ -178,6 +178,7 @@ class WC_Payments_API_Client {
 	 * @param array  $level3                 - Level 3 data.
 	 * @param bool   $off_session            - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 * @param array  $additional_parameters  - An array of any additional request parameters, particularly for additional payment methods.
+	 * @param array  $payment_methods        - An array of payment methods that might be used for the payment.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -192,7 +193,8 @@ class WC_Payments_API_Client {
 		$metadata = [],
 		$level3 = [],
 		$off_session = false,
-		$additional_parameters = []
+		$additional_parameters = [],
+		$payment_methods = null
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -206,8 +208,9 @@ class WC_Payments_API_Client {
 		$request['level3']         = $level3;
 		$request['description']    = $this->get_intent_description( $metadata['order_id'] ?? 0 );
 
-		$available_payment_methods       = WC_Payments::get_gateway()->get_upe_available_payment_methods();
-		$request['payment_method_types'] = $available_payment_methods;
+		if ( ! empty( $payment_methods ) ) {
+			$request['payment_method_types'] = $payment_methods;
+		}
 
 		$request = array_merge( $request, $additional_parameters );
 
