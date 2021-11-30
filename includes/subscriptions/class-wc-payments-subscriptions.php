@@ -73,6 +73,10 @@ class WC_Payments_Subscriptions {
 
 		new WC_Payments_Subscriptions_Empty_State_Manager( $account );
 		new WC_Payments_Subscriptions_Product_Admin_Manager();
+
+		// Load the Subscriptions Onboarding class.
+		include_once __DIR__ . '/class-wc-payments-subscriptions-onboarding-handler.php';
+		new WC_Payments_Subscriptions_Onboarding_Handler( $account );
 	}
 
 	/**
