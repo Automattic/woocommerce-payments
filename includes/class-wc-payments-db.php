@@ -35,12 +35,12 @@ class WC_Payments_DB {
 	 *
 	 * @param array $charge_ids List of charge IDs corresponding to an order ID.
 	 *
-	 * @return boolean|WC_Order|WC_Order_Refund
+	 * @return array[]
 	 */
-	public function orders_with_charge_id_from_charge_ids( $charge_ids ) {
+	public function orders_with_charge_id_from_charge_ids( array $charge_ids ): array {
 		global $wpdb;
 
-		$charge_id_placeholder = join( ',', array_fill( 0, count( $charge_ids ), '%s' ) );
+		$charge_id_placeholder = implode( ',', array_fill( 0, count( $charge_ids ), '%s' ) );
 
 		// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
 		$results = $wpdb->get_results(

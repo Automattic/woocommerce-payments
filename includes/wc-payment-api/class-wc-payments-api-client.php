@@ -620,6 +620,8 @@ class WC_Payments_API_Client {
 					}
 				}
 			}
+			// Securing future changes from modifying reference content.
+			unset( $transaction );
 		}
 
 		return $transactions;
@@ -1730,7 +1732,7 @@ class WC_Payments_API_Client {
 	 * @param WC_Order $order The order.
 	 * @return array
 	 */
-	private function build_order_info( $order ): array {
+	private function build_order_info( WC_Order $order ): array {
 		$order_info = [
 			'number'       => $order->get_order_number(),
 			'url'          => $order->get_edit_order_url(),
@@ -1757,7 +1759,7 @@ class WC_Payments_API_Client {
 	 * @param WC_Order $order The Order.
 	 * @return string|null
 	 */
-	private function get_customer_url( $order ) {
+	private function get_customer_url( WC_Order $order ) {
 		$customer_id = DataStore::get_existing_customer_id_from_order( $order );
 
 		if ( ! $customer_id ) {
