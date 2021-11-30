@@ -15,6 +15,7 @@
 * Add - Export Disputes to CSV
 * Update - Remove "Boost your sales by accepting new payment methods" from the overview tasks list.
 * Fix - Onboarding must be completed before Subscriptions products can be published.
+* Fix - Show the prices in the correct currency when using the "All Products" block.
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.

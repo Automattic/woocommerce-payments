@@ -110,6 +110,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fatal error on thank you page for deleted orders.
 * Add - Error messages when dispute evidence exceeds Stripe limits.
 * Fix - Onboarding must be completed before Subscriptions products can be published.
+* Fix - Show the prices in the correct currency when using the "All Products" block.
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
