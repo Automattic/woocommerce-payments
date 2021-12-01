@@ -117,6 +117,16 @@ class FrontendCurrencies {
 	}
 
 	/**
+	 * The selected currency changed. We discard some cache.
+	 *
+	 */
+	public function selected_currency_changed() {
+		$this->selected_currency_code = null;
+		$this->order_currency = null;
+		$this->store_currency = null;
+	}
+
+	/**
 	 * Gets the store currency.
 	 *
 	 * @return  Currency  The store currency wrapped as a Currency object

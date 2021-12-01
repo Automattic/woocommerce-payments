@@ -217,6 +217,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'currency_pos' => 'left' ] );
 
 		$this->mock_order->set_currency( 'EUR' );
+		$this->frontend_currencies->selected_currency_changed();
 		$this->frontend_currencies->init_order_currency( $this->mock_order );
 
 		$this->assertEquals( '%1$s%2$s', $this->frontend_currencies->get_woocommerce_price_format( '%2$s%1$s' ) );
