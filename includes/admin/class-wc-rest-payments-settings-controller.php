@@ -123,7 +123,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'        => 'string',
 					],
 					'account_business_url'              => [
-						'description' => __( 'git pu', 'woocommerce-payments' ),
+						'description' => __( 'The business’s publicly available website.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
 					'account_business_support_address'  => [
