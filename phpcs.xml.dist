@@ -23,6 +23,7 @@
 
 		<!-- This rule is currently generating some false positives, it would be worth retrying after PHPCS upgrades -->
 		<exclude name="Squiz.Commenting.FunctionCommentThrowTag.WrongNumber"/>
+		<exclude name="Squiz.Commenting.FunctionComment.EmptyThrows"/>
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax.Found"/>
 	</rule>
 
