@@ -394,9 +394,10 @@ export const TransactionsList = (
 			date_before: dateBefore,
 			date_after: dateAfter,
 			date_between: dateBetween,
+			match,
+			search,
 			type_is: typeIs,
 			type_is_not: typeIsNot,
-			search,
 		} = getQuery();
 
 		if (
@@ -415,9 +416,10 @@ export const TransactionsList = (
 						dateAfter,
 						dateBefore,
 						dateBetween,
+						match,
+						search,
 						typeIs,
 						typeIsNot,
-						search,
 					} ),
 					method: 'POST',
 				} );
