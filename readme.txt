@@ -111,6 +111,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Error messages when dispute evidence exceeds Stripe limits.
 * Fix - Onboarding must be completed before Subscriptions products can be published.
 * Add - Support business account branding settings
+* Update - Capture order-related metadata not captured by mobile app for in-person payment transactions.
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
