@@ -27,6 +27,10 @@ const webpackConfig = {
 		order: './client/order/index.js',
 		'subscriptions-empty-state':
 			'./client/subscriptions-empty-state/index.js',
+		'subscription-product-onboarding-modal':
+			'./client/subscription-product-onboarding/modal.js',
+		'subscription-product-onboarding-toast':
+			'./client/subscription-product-onboarding/toast.js',
 	},
 	module: {
 		rules: [
