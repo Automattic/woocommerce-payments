@@ -22,5 +22,8 @@
 		<!-- WP has sodium compatibility since https://wordpress.org/support/wordpress-version/version-5-2/ -->
 		<exclude name="PHPCompatibility.FunctionUse.NewFunctions.sodium_crypto_box_sealFound" />
 		<exclude name="PHPCompatibility.Classes.NewClasses.sodiumexceptionFound" />
+
+		<!-- Debug functions are rarely used in our extensions, and are simply there for logging. -->
+		<exclude name="PHPCompatibility.FunctionUse.ArgumentFunctionsReportCurrentValue.NeedsInspection" />
 	</rule>
 </ruleset>
