@@ -397,6 +397,11 @@ export const merchantWCP = {
 	},
 
 	addNewPageCheckoutWCB: async () => {
+		// Set a User Agent different than the "puppeteer-debug wp-e2e-test" one we use
+		// so the "Add block" button isn't disabled during -dev tests.
+		page.setUserAgent(
+			'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36'
+		);
 		await page.goto( WP_ADMIN_PAGES, {
 			waitUntil: 'networkidle0',
 		} );
