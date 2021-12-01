@@ -1437,7 +1437,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                         Base fee: 2.9% + $0.30
                       </li>
                       <li>
-                        Recurring transaction fee: 1%
+                        Subscription transaction fee: 1%
                       </li>
                        
                     </ul>

@@ -11,7 +11,7 @@ jobs:
       fail-fast:    false
       max-parallel: 10
       matrix:
-        woocommerce: [ '5.7.0' ]
+        woocommerce: [ '5.9.0' ]
         wordpress:   [ 'latest' ]
         php:         [ '7.4' ]
     env:
