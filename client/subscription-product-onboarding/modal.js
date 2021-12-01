@@ -30,7 +30,6 @@ const FinishSetupButton = () => {
 	);
 };
 
-// TODO: a11y.
 const SubscriptionProductOnboardingModal = () => {
 	const [ isOpen, setOpen ] = useState( true );
 
