@@ -84,7 +84,7 @@ class FrontendCurrencies {
 	 *
 	 * @var string
 	 */
-	private $currency_code;
+	private $selected_currency_code;
 
 	/**
 	 * Constructor.
@@ -138,7 +138,7 @@ class FrontendCurrencies {
 			if ( $this->compatibility->should_return_store_currency() ) {
 				$this->woocommerce_currency = $this->multi_currency->get_default_currency()->get_code();
 			} else {
-				$this->woocommerce_currency = $this->multi_currency->get_selected_currency()->get_code();
+				$this->woocommerce_currency = $this->get_selected_currency_code();
 			}
 		}
 		return $this->woocommerce_currency;
@@ -169,7 +169,7 @@ class FrontendCurrencies {
 
 	public function get_price_decimal_separator( $separator ): string {
 		if ( empty( $this->price_decimal_separator[ $separator ] ) ) {
-			$currency_code = $this->multi_currency->get_selected_currency()->get_code();
+			$currency_code = $this->get_selected_currency_code();
 			if ( $currency_code !== $this->get_store_currency()->get_code() ) {
 				$this->price_decimal_separator[ $separator ] = $this->localization_service->get_currency_format( $currency_code )['decimal_sep'];
 			} else {
@@ -289,14 +289,21 @@ class FrontendCurrencies {
 	 * @return string|null Three letter currency code.
 	 */
 	private function get_currency_code() {
-		if (empty ($this->currency_code)) {
-			if ( $this->should_override_currency_code() ) {
-				$this->currency_code = $this->order_currency;
-			} else{
-				$this->currency_code = $this->multi_currency->get_selected_currency()->get_code();
-			}
+		if ( $this->should_override_currency_code() ) {
+			return $this->order_currency;
 		}
-		return $this->currency_code;
+		return $this->selected_currency_code = $this->get_selected_currency_code();
+	}
+
+	/**
+	 * Helper function that "cache" the selected currency
+	 * @return string
+	 */
+	private function get_selected_currency_code() {
+		if ( empty( $this->selected_currency_code ) ) {
+			$this->selected_currency_code = $this->multi_currency->get_selected_currency()->get_code();
+		}
+		return $this->selected_currency_code;
 	}
 
 	/**
