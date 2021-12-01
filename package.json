@@ -107,6 +107,7 @@
     "@wordpress/i18n": "4.1.1",
     "@wordpress/icons": "2.10.3",
     "@wordpress/jest-preset-default": "4.0.0",
+    "@wordpress/plugins": "4.0.6",
     "@wordpress/scripts": "12.4.0",
     "archiver": "5.2.0",
     "babel-loader": "8.2.2",
