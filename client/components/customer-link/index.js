@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { Link } from '@woocommerce/components';
-import { addQueryArgs } from '@wordpress/url';
+import { getAdminUrl } from 'wcpay/utils';
 
 /**
  * Internal dependencies.
@@ -21,7 +21,7 @@ const CustomerLink = ( props ) => {
 	if ( customer.email ) {
 		searchTerm = `${ customer.name } (${ customer.email })`;
 	}
-	const url = addQueryArgs( 'admin.php', {
+	const url = getAdminUrl( {
 		page: 'wc-admin',
 		path: '/payments/transactions',
 		search: [ searchTerm ],
