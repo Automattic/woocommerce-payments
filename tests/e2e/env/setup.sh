@@ -161,6 +161,12 @@ cli wp wc --user=admin tool run install_pages
 echo "Importing some sample data..."
 cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip
 
+echo "Adding customer account ..."
+cli wp user create customer customer@woocommercecoree2etestsuite.com --role=customer --user_pass=password
+
+echo "Removing guest account if present ..."
+cli wp user delete guest@woocommercecoree2etestsuite.com --yes
+
 # TODO: Build a zip and use it to install plugin to make sure production build is under test.
 echo "Activating the WooCommerce Payments plugin..."
 cli wp plugin activate woocommerce-payments
