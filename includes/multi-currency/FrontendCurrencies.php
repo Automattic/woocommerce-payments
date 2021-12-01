@@ -52,13 +52,6 @@ class FrontendCurrencies {
 	protected $currency_format = [];
 
 	/**
-	 * Store Currency cache.
-	 *
-	 * @var Currency
-	 */
-	private $store_currency;
-
-	/**
 	 * Order currency code.
 	 *
 	 * @var string|null
@@ -73,11 +66,11 @@ class FrontendCurrencies {
 	private $woocommerce_currency;
 
 	/**
-	 * Price Decimal Separator.
+	 * Price Decimal Separator cache.
 	 *
-	 * @var array
+	 * @var string
 	 */
-	private $price_decimal_separator = [];
+	private $price_decimal_separator;
 
 	/**
 	 * Currency Code cache.
@@ -85,6 +78,13 @@ class FrontendCurrencies {
 	 * @var string
 	 */
 	private $selected_currency_code;
+
+	/**
+	 * Store Currency cache.
+	 *
+	 * @var Currency
+	 */
+	private $store_currency;
 
 	/**
 	 * Constructor.
@@ -121,9 +121,10 @@ class FrontendCurrencies {
 	 *
 	 */
 	public function selected_currency_changed() {
-		$this->selected_currency_code = null;
-		$this->order_currency = null;
-		$this->store_currency = null;
+		$this->selected_currency_code  = null;
+		$this->price_decimal_separator = null;
+		$this->woocommerce_currency    = null;
+		$this->store_currency          = null;
 	}
 
 	/**
@@ -178,15 +179,15 @@ class FrontendCurrencies {
 	 */
 
 	public function get_price_decimal_separator( $separator ): string {
-		if ( empty( $this->price_decimal_separator[ $separator ] ) ) {
+		if ( empty( $this->price_decimal_separator ) ) {
 			$currency_code = $this->get_selected_currency_code();
 			if ( $currency_code !== $this->get_store_currency()->get_code() ) {
-				$this->price_decimal_separator[ $separator ] = $this->localization_service->get_currency_format( $currency_code )['decimal_sep'];
+				$this->price_decimal_separator = $this->localization_service->get_currency_format( $currency_code )['decimal_sep'];
 			} else {
-				$this->price_decimal_separator[ $separator ] = $separator;
+				$this->price_decimal_separator = $separator;
 			}
 		}
-		return $this->price_decimal_separator[ $separator ];
+		return $this->price_decimal_separator;
 	}
 
 	/**
@@ -252,6 +253,7 @@ class FrontendCurrencies {
 	 * @return int The order id or what was passed as $arg.
 	 */
 	public function init_order_currency( $arg ) {
+		$this->selected_currency_changed();
 		if ( null !== $this->order_currency ) {
 			return $arg;
 		}
