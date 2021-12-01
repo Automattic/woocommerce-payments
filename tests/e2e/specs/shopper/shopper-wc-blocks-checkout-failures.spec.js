@@ -35,6 +35,9 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
 			await shopperWCP.fillBillingDetailsWCB( billingDetails );
+			await page.waitForSelector(
+				'.wc-block-components-main button:not(:disabled)'
+			);
 		} );
 
 		afterEach( async () => {
