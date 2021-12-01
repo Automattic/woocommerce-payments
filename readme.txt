@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Incorrect customer links on Transactions page.
 * Fix - Incorrect prices in Payment Request Button for certain currencies.
 * Fix - Updates to fraud protection.
+* Add - Add support for suggested gateway methods in WC-Admin.
 * Fix - Prevent Payment Request buttons from showing up in Composite Product pages.
 * Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
 * Fix - Fatal error on thank you page for deleted orders.
