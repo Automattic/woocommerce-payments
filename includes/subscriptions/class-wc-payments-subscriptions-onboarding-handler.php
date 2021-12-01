@@ -79,6 +79,7 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 			return;
 		}
 
+		// Change the default WP saved post URL to correctly reflect the draft status and to add our saved-as-draft flag.
 		add_filter(
 			'redirect_post_location',
 			function() use ( $product ) {
