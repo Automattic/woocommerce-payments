@@ -51,6 +51,12 @@ class FrontendCurrencies {
 	 */
 	protected $currency_format = [];
 
+	/**
+	 * Store Currency cache.
+	 *
+	 * @var Currency
+	 */
+	private $store_currency;
 
 	/**
 	 * Order currency code.
@@ -58,6 +64,27 @@ class FrontendCurrencies {
 	 * @var string|null
 	 */
 	protected $order_currency = null;
+
+	/**
+	 * WOO currency cache.
+	 *
+	 * @var string
+	 */
+	private $woocommerce_currency;
+
+	/**
+	 * Price Decimal Separator.
+	 *
+	 * @var array
+	 */
+	private $price_decimal_separator = [];
+
+	/**
+	 * Currency Code cache.
+	 *
+	 * @var string
+	 */
+	private $currency_code;
 
 	/**
 	 * Constructor.
@@ -95,7 +122,10 @@ class FrontendCurrencies {
 	 * @return  Currency  The store currency wrapped as a Currency object
 	 */
 	public function get_store_currency() {
-		return new Currency( get_option( 'woocommerce_currency' ) );
+		if ( empty( $this->store_currency ) ) {
+			$this->store_currency = new Currency( get_option( 'woocommerce_currency' ) );
+		}
+		return $this->store_currency;
 	}
 
 	/**
@@ -104,10 +134,14 @@ class FrontendCurrencies {
 	 * @return string The code of the currency to be used.
 	 */
 	public function get_woocommerce_currency(): string {
-		if ( $this->compatibility->should_return_store_currency() ) {
-			return $this->multi_currency->get_default_currency()->get_code();
+		if ( empty( $this->woocommerce_currency ) ) {
+			if ( $this->compatibility->should_return_store_currency() ) {
+				$this->woocommerce_currency = $this->multi_currency->get_default_currency()->get_code();
+			} else {
+				$this->woocommerce_currency = $this->multi_currency->get_selected_currency()->get_code();
+			}
 		}
-		return $this->multi_currency->get_selected_currency()->get_code();
+		return $this->woocommerce_currency;
 	}
 
 	/**
@@ -132,12 +166,17 @@ class FrontendCurrencies {
 	 *
 	 * @return string The decimal separator.
 	 */
+
 	public function get_price_decimal_separator( $separator ): string {
-		$currency_code = $this->get_currency_code();
-		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
-			return $this->localization_service->get_currency_format( $currency_code )['decimal_sep'];
+		if ( empty( $this->price_decimal_separator[ $separator ] ) ) {
+			$currency_code = $this->multi_currency->get_selected_currency()->get_code();
+			if ( $currency_code !== $this->get_store_currency()->get_code() ) {
+				$this->price_decimal_separator[ $separator ] = $this->localization_service->get_currency_format( $currency_code )['decimal_sep'];
+			} else {
+				$this->price_decimal_separator[ $separator ] = $separator;
+			}
 		}
-		return $separator;
+		return $this->price_decimal_separator[ $separator ];
 	}
 
 	/**
@@ -250,10 +289,14 @@ class FrontendCurrencies {
 	 * @return string|null Three letter currency code.
 	 */
 	private function get_currency_code() {
-		if ( $this->should_override_currency_code() ) {
-			return $this->order_currency;
+		if (empty ($this->currency_code)) {
+			if ( $this->should_override_currency_code() ) {
+				$this->currency_code = $this->order_currency;
+			} else{
+				$this->currency_code = $this->multi_currency->get_selected_currency()->get_code();
+			}
 		}
-		return $this->multi_currency->get_selected_currency()->get_code();
+		return $this->currency_code;
 	}
 
 	/**
