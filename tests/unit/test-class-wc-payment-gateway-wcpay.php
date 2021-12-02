@@ -1369,7 +1369,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$latest_wcpay_note = $notes[1]; // The latest note is the "status changed" message, we want the previous one.
 
 		// Assert the returned data contains fields required by the REST endpoint.
-		$this->assertEquals(
+		$this->assertSame(
 			[
 				'status'    => 'succeeded',
 				'id'        => $intent_id,
@@ -1380,8 +1380,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		);
 		$this->assertContains( 'successfully captured', $latest_wcpay_note->content );
 		$this->assertContains( wc_price( $order->get_total() ), $latest_wcpay_note->content );
-		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'succeeded' );
-		$this->assertEquals( $order->get_status(), 'processing' );
+		$this->assertSame( $order->get_meta( '_intention_status', true ), 'succeeded' );
+		$this->assertSame( $order->get_status(), 'processing' );
 	}
 
 	public function test_cancel_authorization_handles_api_exception_when_canceling() {

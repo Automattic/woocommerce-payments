@@ -324,10 +324,7 @@ class WC_Payments_API_Client {
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
 	 */
-	public function update_intention_metadata(
-		$intention_id,
-		$metadata
-	) {
+	public function update_intention_metadata( $intention_id, $metadata ) {
 		$request = [
 			'metadata' => $metadata,
 		];
