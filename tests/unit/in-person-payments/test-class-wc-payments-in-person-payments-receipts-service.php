@@ -87,6 +87,8 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 	public function provide_settings_validation_data() {
 		return [
 			[ [] ],
+			[ [ 'key' => 'value' ] ],
+			[ [ 'support_info' => 'Test' ] ],
 			[ [ 'support_info' => [ 'line1' => '42 Some Street' ] ] ],
 			[
 				[
@@ -118,6 +120,16 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 				[
 					'amount_captured'        => 100,
 					'payment_method_details' => [ 'card_present' => [] ],
+				],
+			],
+			[
+				[
+					'amount_captured'        => 100,
+					'payment_method_details' => [
+						'card_present' => [
+							'receipt' => [],
+						],
+					],
 				],
 			],
 		];

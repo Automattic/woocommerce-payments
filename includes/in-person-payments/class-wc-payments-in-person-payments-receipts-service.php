@@ -84,33 +84,22 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 * @return void
 	 * @throws \Exception Error validating settings.
 	 */
-	private function validate_settings( $settings ) {
+	private function validate_settings( array $settings ) {
 		if ( ! $settings ) {
-			throw new \Exception( 'You must provide settings information' );
+			throw new \Exception( 'You must provide settings information.' );
 		}
 
 		if ( ! array_key_exists( 'business_name', $settings ) ) {
-			throw new \Exception( 'You must provide a business name' );
+			throw new \Exception( 'You must provide a business name.' );
 		}
 
-		$this->validate_support_info( $settings['support_info'] );
-	}
-
-	/**
-	 * Validate support info
-	 *
-	 * @param  array $support_info Support info.
-	 * @return void
-	 * @throws \Exception Error validating support info.
-	 */
-	private function validate_support_info( $support_info ) {
-		if ( ! $support_info ) {
-			throw new Exception( 'You must provide support information.' );
+		if ( ! array_key_exists( 'support_info', $settings ) ) {
+			throw new \Exception( 'You must provide support information.' );
 		}
 
-		foreach ( $support_info as $key => $value ) {
+		foreach ( $settings['support_info'] as $key => $value ) {
 			if ( ! in_array( $key, [ 'address', 'email', 'phone' ], true ) ) {
-				throw new Exception( 'Invalid support information.' );
+				throw new Exception( sprintf( 'Error validating support information. Invalid key: %s', $key ) );
 			}
 		}
 	}
@@ -118,29 +107,29 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	/**
 	 * Validate charge information
 	 *
-	 * @param  mixed $charge Charge info.
+	 * @param  array $charge Charge info.
 	 * @return void
 	 * @throws \Exception Error validating charge info.
 	 */
-	private function validate_charge( $charge ) {
+	private function validate_charge( array $charge ) {
 		if ( ! $charge ) {
-			throw new Exception( 'You must provide charge information' );
+			throw new Exception( 'You must provide charge information.' );
 		}
 
 		if ( ! array_key_exists( 'amount_captured', $charge ) ) {
-			throw new Exception( 'You must provide a captured amount' );
+			throw new Exception( 'You must provide a captured amount.' );
 		}
 
-		if ( ! array_key_exists( 'payment_method_details', $charge ) ) {
-			throw new Exception( 'You must provide payment method details' );
+		if ( ! array_key_exists( 'payment_method_details', $charge ) || ! is_array( $charge['payment_method_details'] ) || ! $charge['payment_method_details'] ) {
+			throw new Exception( 'You must provide payment method details.' );
 		}
 
-		if ( ! array_key_exists( 'card_present', $charge['payment_method_details'] ) ) {
-			throw new Exception( 'You must provide card present details' );
+		if ( ! array_key_exists( 'card_present', $charge['payment_method_details'] ) || ! is_array( $charge['payment_method_details']['card_present'] ) || ! $charge['payment_method_details']['card_present'] ) {
+			throw new Exception( 'You must provide card present details.' );
 		}
 
-		if ( ! array_key_exists( 'receipt', $charge['payment_method_details']['card_present'] ) ) {
-			throw new Exception( 'You must provide card present details' );
+		if ( ! array_key_exists( 'receipt', $charge['payment_method_details']['card_present'] ) || ! is_array( $charge['payment_method_details']['card_present']['receipt'] ) || ! $charge['payment_method_details']['card_present']['receipt'] ) {
+			throw new Exception( 'You must provide receipt details.' );
 		}
 
 	}

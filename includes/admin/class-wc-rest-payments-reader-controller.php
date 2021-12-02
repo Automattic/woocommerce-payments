@@ -138,9 +138,15 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', __( 'There was a problem retrieving merchant settings.', 'woocommerce-payments' ), [ 'status' => 500 ] ) );
 		}
 
+		try {
+			$receipt_data = $this->receipts_service->get_receipt_markup( $settings, $order, $charge );
+		} catch ( \Throwable $th ) {
+			return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', $th->getMessage(), [ 'status' => 500 ] ) );
+		}
+
 		/**
 		 * WP_REST_Server will convert the response data to JSON prior to output it.
-		 * Using this filter to prevent it, and output the data from WP_HTTP_Responde instead.
+		 * Using this filter to prevent it, and output the data from WP_HTTP_Response instead.
 		 */
 		add_filter(
 			'rest_pre_serve_request',
@@ -152,12 +158,6 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			10,
 			2
 		);
-
-		try {
-			$receipt_data = $this->receipts_service->get_receipt_markup( $settings, $order, $charge );
-		} catch ( \Throwable $th ) {
-			return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', __( 'There was a problem generating the receipt.', 'woocommerce-payments' ), [ 'status' => 500 ] ) );
-		}
 
 		return new WP_HTTP_Response(
 			$receipt_data,
