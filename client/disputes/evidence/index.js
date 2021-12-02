@@ -5,8 +5,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import { useDispatch } from '@wordpress/data';
-import { addQueryArgs } from '@wordpress/url';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import {
@@ -35,7 +34,9 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import wcpayTracks from 'tracks';
+import { getAdminUrl } from 'wcpay/utils';
 
+const DISPUTE_EVIDENCE_MAX_LENGTH = 150000;
 const PRODUCT_TYPE_META_KEY = '__product_type';
 
 /* If description is an array, separate with newline elements. */
@@ -58,14 +59,55 @@ export const DisputeEvidenceForm = ( props ) => {
 		readOnly,
 	} = props;
 
+	const { createErrorNotice } = useDispatch( 'core/notices' );
+	const { getNotices } = useSelect( 'core/notices' );
+
 	if ( ! fields || ! fields.length ) {
 		return null;
 	}
 
+	const isEvidenceWithinLengthLimit = ( field, value ) => {
+		// Enforce character count for individual evidence field.
+		if ( field.maxLength && value.length >= field.maxLength ) {
+			return false;
+		}
+
+		// Enforce character count for combined evidence fields.
+		const totalLength = Object.values( {
+			...evidence,
+			[ field.key ]: value,
+		} ).reduce(
+			( acc, cur ) =>
+				'string' === typeof cur ? acc + cur.length : acc,
+			0
+		);
+		if ( totalLength >= DISPUTE_EVIDENCE_MAX_LENGTH ) {
+			return false;
+		}
+
+		return true;
+	};
+
 	const composeDefaultControlProps = ( field ) => ( {
 		label: field.label,
 		value: evidence[ field.key ] || '',
-		onChange: ( value ) => onChange( field.key, value ),
+		onChange: ( value ) => {
+			if ( ! isEvidenceWithinLengthLimit( field, value ) ) {
+				const errorMessage = __(
+					'Reached maximum character count for evidence',
+					'woocommerce-payments'
+				);
+				if (
+					! getNotices().some(
+						( notice ) => notice.content === errorMessage
+					)
+				) {
+					createErrorNotice( errorMessage );
+				}
+				return;
+			}
+			onChange( field.key, value );
+		},
 		disabled: readOnly,
 		help: expandHelp( field.description ),
 	} );
@@ -124,6 +166,7 @@ export const DisputeEvidenceForm = ( props ) => {
 				return (
 					<TextareaControl
 						key={ field.key }
+						maxLength={ field.maxLength }
 						{ ...composeDefaultControlProps( field ) }
 					/>
 				);
@@ -506,7 +549,7 @@ export default ( { query } ) => {
 		const message = submit
 			? __( 'Evidence submitted!', 'woocommerce-payments' )
 			: __( 'Evidence saved!', 'woocommerce-payments' );
-		const href = addQueryArgs( 'admin.php', {
+		const href = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/disputes',
 		} );
@@ -532,7 +575,7 @@ export default ( { query } ) => {
 								'Return to evidence submission',
 								'woocommerce-payments'
 						  ),
-					url: addQueryArgs( 'admin.php', {
+					url: getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/disputes/challenge',
 						id: query.id,

@@ -6,8 +6,6 @@
 import { render } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 import { downloadCSVFile } from '@woocommerce/csv-export';
-import { dateI18n } from '@wordpress/date';
-import moment from 'moment';
 import os from 'os';
 
 /**
@@ -15,6 +13,7 @@ import os from 'os';
  */
 import { DepositsList } from '../';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
+import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
@@ -227,7 +226,7 @@ describe( 'Deposits list', () => {
 			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
 			//    trailing zeros as in the display amount.
 			//
-			expect( formatDate( csvFirstDeposit[ 1 ] ) ).toBe(
+			expect( formatDate( csvFirstDeposit[ 1 ], 'M j, Y' ) ).toBe(
 				displayFirstDeposit[ 0 ]
 			); // date
 			expect( csvFirstDeposit[ 2 ] ).toBe( displayFirstDeposit[ 1 ] ); // type
@@ -243,13 +242,3 @@ describe( 'Deposits list', () => {
 		} );
 	} );
 } );
-
-function getUnformattedAmount( formattedAmount ) {
-	let amount = formattedAmount.replace( /[^0-9,.' ]/g, '' ).trim();
-	amount = amount.replace( ',', '.' ); // Euro fix
-	return amount;
-}
-
-function formatDate( date ) {
-	return dateI18n( 'M j, Y', moment.utc( date ).toISOString(), true );
-}

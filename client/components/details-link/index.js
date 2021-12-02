@@ -4,11 +4,11 @@
  * External dependencies
  */
 import Gridicon from 'gridicons';
-import { addQueryArgs } from '@wordpress/url';
 import { Link } from '@woocommerce/components';
+import { getAdminUrl } from 'wcpay/utils';
 
 export const getDetailsURL = ( id, parentSegment ) =>
-	addQueryArgs( 'admin.php', {
+	getAdminUrl( {
 		page: 'wc-admin',
 		path: `/payments/${ parentSegment }/details`,
 		id,
