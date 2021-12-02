@@ -10,6 +10,14 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@v2
+      # use the project's pinned Node.js version
+      - name: Read .nvmrc
+        run: echo ::set-output name=NODE_VERSION::$(cat .nvmrc)
+        id: nvm
+      - name: Use Node.js ${{ steps.nvm.outputs.NODE_VERSION }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ steps.nvm.outputs.NODE_VERSION }}
       # enable dependencies caching
       - uses: actions/cache@v2
         with:
@@ -28,6 +36,14 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@v2
+      # use the project's pinned Node.js version
+      - name: Read .nvmrc
+        run: echo ::set-output name=NODE_VERSION::$(cat .nvmrc)
+        id: nvm
+      - name: Use Node.js ${{ steps.nvm.outputs.NODE_VERSION }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ steps.nvm.outputs.NODE_VERSION }}
       # enable dependencies caching
       - uses: actions/cache@v2
         with:
