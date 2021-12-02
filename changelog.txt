@@ -9,6 +9,7 @@
 * Fix - Updates to fraud protection.
 * Fix - Prevent Payment Request buttons from showing up in Composite Product pages.
 * Update - Updated @woocommerce/experimental package to v2.1.0.
+* Add - Add support for suggested gateway methods in WC-Admin.
 * Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
 * Fix - Fatal error on thank you page for deleted orders.
 * Add - Error messages when dispute evidence exceeds Stripe limits.
