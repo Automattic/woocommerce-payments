@@ -17,20 +17,6 @@ exports[`ReceiptSettings Readers merchant settings page snapshot test 1`] = `
         <p>
           These details will appear on printed or emailed receipts for customers that pay in person using card readers. Updating the details here will not affect any other stores settings.
         </p>
-        <p>
-          <a
-            href="#preview-print"
-          >
-            Preview a printed receipt
-          </a>
-        </p>
-        <p>
-          <a
-            href="#preview-email"
-          >
-            Preview an emailed receipt
-          </a>
-        </p>
       </div>
       <div
         class="settings-section__controls"

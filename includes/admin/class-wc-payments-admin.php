@@ -20,6 +20,13 @@ class WC_Payments_Admin {
 	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>';
 
 	/**
+	 * Option name used to hide Card Readers page behind a feature flag.
+	 *
+	 * @var string
+	 */
+	const CARD_READERS_FLAG_NAME = '_wcpay_feature_card_readers';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
 	 * @var WC_Payments_API_Client
@@ -112,7 +119,7 @@ class WC_Payments_Admin {
 			],
 		];
 
-		if ( $this->account->is_card_present_eligible() ) {
+		if ( $this->account->is_card_present_eligible() && self::is_card_readers_page_enabled() ) {
 			$this->admin_child_pages['wc-payments-card-readers'] = [
 				'id'       => 'wc-payments-card-readers',
 				'title'    => __( 'Card Readers', 'woocommerce-payments' ),
@@ -124,6 +131,15 @@ class WC_Payments_Admin {
 				],
 			];
 		}
+	}
+
+	/**
+	 * Checks whether the UPE gateway is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_card_readers_page_enabled() {
+		return '1' === get_option( self::CARD_READERS_FLAG_NAME, '0' );
 	}
 
 	/**
