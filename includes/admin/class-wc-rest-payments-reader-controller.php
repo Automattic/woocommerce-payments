@@ -105,27 +105,24 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_HTTP_RESPONSE|WP_Error
+	 * @throws \RuntimeException Error collecting data.
 	 */
 	public function generate_print_receipt( $request ) {
 		try {
+			/* Collect the data, available on the server side. */
 			$payment_intent = $this->api_client->get_intent( $request->get_param( 'payment_id' ) );
-
 			if ( 'succeeded' !== $payment_intent->get_status() ) {
-				return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', __( 'Invalid payment', 'woocommerce-payments' ), [ 'status' => 500 ] ) );
+				throw new \RuntimeException( __( 'Invalid payment', 'woocommerce-payments' ) );
+			}
+			$charge = $this->api_client->get_charge( $payment_intent->get_charge_id() );
+
+			/* Collect receipt data, stored on the store side. */
+			$order = wc_get_order( $charge['order']['number'] );
+			if ( false === $order ) {
+				throw new \RuntimeException( __( 'Order not found', 'woocommerce-payments' ) );
 			}
 
-			$charge = $this->api_client->get_charge( $payment_intent->get_charge_id() );
-		} catch ( API_Exception $e ) {
-			return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', $e->getMessage(), [ 'status' => $e->get_http_code() ] ) );
-		}
-
-		$order = wc_get_order( $charge['order']['number'] );
-
-		if ( ! $order ) {
-			return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 500 ] ) );
-		}
-
-		try {
+			/* Collect merchant settings */
 			$settings = [
 				'business_name' => $this->wcpay_gateway->get_option( 'account_business_name' ),
 				'support_info'  => [
@@ -134,14 +131,12 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 					'email'   => $this->wcpay_gateway->get_option( 'account_business_support_email' ),
 				],
 			];
-		} catch ( Exception $e ) {
-			return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', __( 'There was a problem retrieving merchant settings.', 'woocommerce-payments' ), [ 'status' => 500 ] ) );
-		}
 
-		try {
+			/* Generate receipt */
 			$receipt_data = $this->receipts_service->get_receipt_markup( $settings, $order, $charge );
-		} catch ( \Throwable $th ) {
-			return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', $th->getMessage(), [ 'status' => 500 ] ) );
+		} catch ( \Throwable $e ) {
+			$error_status_code = $e instanceof API_Exception ? $e->get_http_code() : 500;
+			return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', $e->getMessage(), [ 'status' => $error_status_code ] ) );
 		}
 
 		/**
