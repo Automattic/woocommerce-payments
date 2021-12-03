@@ -85,15 +85,11 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 * @throws \Exception Error validating settings.
 	 */
 	private function validate_settings( array $settings ) {
-		if ( ! $settings ) {
-			throw new \Exception( 'Settings information needs to be provided.' );
-		}
-
 		if ( ! array_key_exists( 'business_name', $settings ) ) {
 			throw new \Exception( 'Business name needs to be provided.' );
 		}
 
-		if ( ! array_key_exists( 'support_info', $settings ) || ! is_array( $settings['support_info'] ) || empty( $settings['support_info'] ) ) {
+		if ( empty( $settings['support_info'] ) || ! is_array( $settings['support_info'] ) ) {
 			throw new \Exception( 'Support information needs to be provided.' );
 		}
 
@@ -112,31 +108,23 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 * @throws \Exception Error validating charge info.
 	 */
 	private function validate_charge( array $charge ) {
-		if ( ! $charge ) {
-			throw new Exception( 'Charge information needs to be provided.' );
-		}
-
 		if ( ! array_key_exists( 'amount_captured', $charge ) ) {
 			throw new Exception( 'Captured amount needs to be provided.' );
 		}
 
-		if ( ! array_key_exists( 'payment_method_details', $charge ) || ! is_array( $charge['payment_method_details'] ) || empty( $charge['payment_method_details'] ) ) {
+		if ( empty( $charge['payment_method_details'] ) || ! is_array( $charge['payment_method_details'] ) ) {
 			throw new Exception( 'Payment method details needs to be provided.' );
 		}
 
-		if ( ! array_key_exists( 'card_present', $charge['payment_method_details'] ) || ! is_array( $charge['payment_method_details']['card_present'] ) || empty( $charge['payment_method_details']['card_present'] ) ) {
+		if ( empty( $charge['payment_method_details']['card_present'] ) || ! is_array( $charge['payment_method_details']['card_present'] ) ) {
 			throw new Exception( 'Card present details needs to be provided.' );
 		}
 
 		$this->validate_required_fields(
-			[ 'brand', 'last4' ],
+			[ 'brand', 'last4', 'receipt' ],
 			$charge['payment_method_details']['card_present'],
 			'Error validating card present information'
 		);
-
-		if ( ! array_key_exists( 'receipt', $charge['payment_method_details']['card_present'] ) || ! is_array( $charge['payment_method_details']['card_present']['receipt'] ) || empty( $charge['payment_method_details']['card_present']['receipt'] ) ) {
-			throw new Exception( 'Receipt details need to be provided.' );
-		}
 
 		$this->validate_required_fields(
 			[ 'application_preferred_name', 'dedicated_file_name', 'account_type' ],
@@ -156,8 +144,9 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 * @throws \Exception Error validating required fields.
 	 */
 	private function validate_required_fields( array $required_fields, array $data, string $message ) {
+		$data_keys = array_keys( $data );
 		foreach ( $required_fields as $required_key ) {
-			if ( ! in_array( $required_key, array_keys( $data ), true ) ) {
+			if ( ! in_array( $required_key, $data_keys, true ) ) {
 				throw new Exception( sprintf( '%s. Missing key: %s', $message, $required_key ) );
 			}
 		}

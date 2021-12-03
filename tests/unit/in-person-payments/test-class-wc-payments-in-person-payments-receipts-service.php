@@ -88,7 +88,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 
 	public function provide_settings_validation_data() {
 		return [
-			[ [], 'Settings information needs to be provided.' ],
+			[ [], 'Business name needs to be provided.' ],
 			[ [ 'key' => 'value' ], 'Business name needs to be provided.' ],
 			[
 				[
@@ -137,7 +137,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 
 	public function provide_charge_validation_data() {
 		return [
-			[ [], 'Charge information needs to be provided.' ],
+			[ [], 'Captured amount needs to be provided.' ],
 			[ [ 'key' => 'value' ], 'Captured amount needs to be provided.' ],
 			[ [ 'amount_captured' => '42' ], 'Payment method details needs to be provided.' ],
 			[
@@ -199,20 +199,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 						],
 					],
 				],
-				'Receipt details need to be provided.',
-			],
-			[
-				[
-					'amount_captured'        => '42',
-					'payment_method_details' => [
-						'card_present' => [
-							'brand'   => 'test',
-							'last4'   => 'test',
-							'receipt' => 'test',
-						],
-					],
-				],
-				'Receipt details need to be provided.',
+				'Error validating card present information. Missing key: receipt',
 			],
 			[
 				[
@@ -222,22 +209,6 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 							'brand'   => 'test',
 							'last4'   => 'test',
 							'receipt' => [],
-						],
-					],
-				],
-				'Receipt details need to be provided.',
-			],
-			[
-				[
-					'amount_captured'        => '42',
-					'payment_method_details' => [
-						'card_present' => [
-							'brand'   => 'test',
-							'last4'   => 'test',
-							'receipt' => [
-								'dedicated_file_name' => 'test',
-								'account_type'        => 'test',
-							],
 						],
 					],
 				],
