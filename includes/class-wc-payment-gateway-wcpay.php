@@ -2444,6 +2444,58 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Create a payment intent without confirming the intent.
+	 *
+	 * @param WC_Order $order - Order based on which to create intent.
+	 * @param array    $payment_methods - A list of allowed payment methods. Eg. card, card_present.
+	 * @param ?string  $capture_method - Controls when the funds will be captured from the customer's account ("automatic" or "manual").
+	 * It must be "manual" for in-person (terminal) payments.
+	 *
+	 * @return array An array containing the status (succeeded/failed), id (intent ID), message (error message if any), and http code.
+	 *
+	 * @throws Exception - When an error occurs in intent creation.
+	 */
+	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method ) {
+		$amount           = $order->get_total();
+		$currency         = strtolower( $order->get_currency() );
+		$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );
+		$capture_method   = $capture_method ?? 'automatic';
+		$intent           = null;
+		$status           = null;
+		$error_message    = null;
+		$http_code        = null;
+
+		try {
+			$intent = $this->payments_api_client->create_intention(
+				$converted_amount,
+				$currency,
+				$payment_methods,
+				$order->get_id(),
+				$capture_method
+			);
+
+			$status    = 'created';
+			$http_code = 200;
+		} catch ( API_Exception $e ) {
+			$status        = 'failed';
+			$error_message = $e->getMessage();
+			$http_code     = $e->get_http_code();
+		}
+
+		$response = [
+			'status'    => $status,
+			'id'        => ! empty( $intent ) ? $intent->get_id() : null,
+			'http_code' => $http_code,
+		];
+
+		if ( isset( $error_message ) ) {
+			$response['error_message'] = $error_message;
+		}
+
+		return $response;
+	}
+
+	/**
 	 * Create a setup intent when adding cards using the my account page.
 	 *
 	 * @throws Exception - When an error occurs in setup intent creation.
