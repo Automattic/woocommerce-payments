@@ -12,12 +12,12 @@ jobs:
       - uses: actions/checkout@v2
       # use the project's pinned Node.js version
       - name: Read .nvmrc
-        run: echo ::set-output name=NODE_VERSION::$(cat .nvmrc)
+        run: echo ::set-output name=NVMRC::$(cat .nvmrc)
         id: nvm
-      - name: Use Node.js ${{ steps.nvm.outputs.NODE_VERSION }}
-        uses: actions/setup-node@v2
+      - name: Setup node
+        uses: actions/setup-node@v1
         with:
-          node-version: ${{ steps.nvm.outputs.NODE_VERSION }}
+          node-version: '${{ steps.nvm.outputs.NVMRC }}'
       # enable dependencies caching
       - uses: actions/cache@v2
         with:
@@ -38,12 +38,12 @@ jobs:
       - uses: actions/checkout@v2
       # use the project's pinned Node.js version
       - name: Read .nvmrc
-        run: echo ::set-output name=NODE_VERSION::$(cat .nvmrc)
+        run: echo ::set-output name=NVMRC::$(cat .nvmrc)
         id: nvm
-      - name: Use Node.js ${{ steps.nvm.outputs.NODE_VERSION }}
-        uses: actions/setup-node@v2
+      - name: Setup node
+        uses: actions/setup-node@v1
         with:
-          node-version: ${{ steps.nvm.outputs.NODE_VERSION }}
+          node-version: '${{ steps.nvm.outputs.NVMRC }}'
       # enable dependencies caching
       - uses: actions/cache@v2
         with:
