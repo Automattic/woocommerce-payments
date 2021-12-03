@@ -104,6 +104,13 @@ class WC_Payments {
 	private static $fraud_service;
 
 	/**
+	 * Instance of WC_Payments_In_Person_Payments_Receipts_Service, created in init function
+	 *
+	 * @var WC_Payments_In_Person_Payments_Receipts_Service
+	 */
+	private static $in_person_payments_receipts_service;
+
+	/**
 	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
 	 *
 	 * @var WC_Payments_Payment_Request_Button_Handler
@@ -200,6 +207,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
 		include_once __DIR__ . '/class-experimental-abtest.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
+		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -209,14 +217,15 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$account                         = new WC_Payments_Account( self::$api_client );
-		self::$customer_service                = new WC_Payments_Customer_Service( self::$api_client, self::$account );
-		self::$token_service                   = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
-		self::$remote_note_service             = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
-		self::$action_scheduler_service        = new WC_Payments_Action_Scheduler_Service( self::$api_client );
-		self::$fraud_service                   = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
-		self::$localization_service            = new WC_Payments_Localization_Service();
-		self::$failed_transaction_rate_limiter = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
+		self::$account                             = new WC_Payments_Account( self::$api_client );
+		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
+		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$remote_note_service                 = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client );
+		self::$fraud_service                       = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
+		self::$localization_service                = new WC_Payments_Localization_Service();
+		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
+		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 
 		$card_class = CC_Payment_Gateway::class;
 		$upe_class  = UPE_Payment_Gateway::class;
@@ -594,7 +603,7 @@ class WC_Payments {
 		$settings_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
-		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client );
+		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client, self::$card_gateway, self::$in_person_payments_receipts_service );
 		$charges_controller->register_routes();
 
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
