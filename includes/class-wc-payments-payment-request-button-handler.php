@@ -734,6 +734,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 			define( 'WOOCOMMERCE_CART', true );
 		}
 
+		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
+			define( 'WOOCOMMERCE_CHECKOUT', true );
+		}
+
 		WC()->cart->calculate_totals();
 
 		wp_send_json( array_merge( $this->build_display_items(), [ 'needs_shipping' => WC()->cart->needs_shipping() ] ) );

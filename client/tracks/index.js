@@ -43,6 +43,10 @@ const events = {
 		'wcpay_subscriptions_empty_state_finish_setup',
 	SUBSCRIPTIONS_EMPTY_STATE_CREATE_PRODUCT:
 		'wcpay_subscriptions_empty_state_create_product',
+	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_FINISH_SETUP:
+		'wcpay_subscriptions_account_not_connected_product_modal_finish_setup',
+	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS:
+		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
 };
 
 export default {

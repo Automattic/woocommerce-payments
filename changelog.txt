@@ -18,6 +18,7 @@
 * Update - Remove "Boost your sales by accepting new payment methods" from the overview tasks list.
 * Fix - Onboarding must be completed before Subscriptions products can be published.
 * Add - Support business account branding settings
+* Update - Capture order-related metadata not captured by mobile app for in-person payment transactions.
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.

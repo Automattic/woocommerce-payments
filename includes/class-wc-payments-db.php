@@ -31,6 +31,38 @@ class WC_Payments_DB {
 	}
 
 	/**
+	 * Retrieve orders from the DB using a list of corresponding Stripe charge IDs.
+	 *
+	 * @param array $charge_ids List of charge IDs corresponding to an order ID.
+	 *
+	 * @return array[]
+	 */
+	public function orders_with_charge_id_from_charge_ids( array $charge_ids ): array {
+		global $wpdb;
+
+		$charge_id_placeholder = implode( ',', array_fill( 0, count( $charge_ids ), '%s' ) );
+
+		// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+				"SELECT DISTINCT ID as order_id, meta.meta_value as charge_id FROM $wpdb->posts as posts LEFT JOIN $wpdb->postmeta as meta ON posts.ID = meta.post_id WHERE meta.meta_key = '_charge_id' AND meta.meta_value IN ($charge_id_placeholder)",
+				$charge_ids
+			)
+		);
+
+		return array_map(
+			function ( stdClass $row ) : array {
+				return [
+					'order'     => $this->order_from_order_id( $row->order_id ),
+					'charge_id' => $row->charge_id,
+				];
+			},
+			$results
+		);
+	}
+
+	/**
 	 * Retrieve an order from the DB using a corresponding Stripe intent ID.
 	 *
 	 * @param string $intent_id Intent ID corresponding to an order ID.
