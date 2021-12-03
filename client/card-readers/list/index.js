@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody } from '@wordpress/components';
+import { Card, CardBody, CardDivider, Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -12,6 +12,8 @@ import { Card, CardBody } from '@wordpress/components';
 import SettingsSection from 'wcpay/settings//settings-section';
 import SettingsLayout from 'wcpay/settings//settings-layout';
 import LoadableSettingsSection from 'wcpay/settings//loadable-settings-section';
+import CardReaderListItem from './list-item';
+import { useReaders } from 'wcpay/data';
 
 const ReadersListDescription = () => (
 	<>
@@ -27,12 +29,49 @@ const ReadersListDescription = () => (
 );
 
 const ReadersList = () => {
+	const { readers, isLoading } = useReaders( 10 );
+
 	return (
 		<SettingsLayout displayBanner={ false }>
 			<SettingsSection Description={ ReadersListDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<Card className="card-readers-list__wrapper">
-						<CardBody>List</CardBody>
+						<CardBody className="card-readers-list__header">
+							<div className="card-readers-list__header-id">
+								{ __( 'Reader ID', 'woocommerce-payments' ) }
+							</div>
+							<div className="card-readers-list__header-model">
+								{ __( 'Model', 'woocommerce-payments' ) }
+							</div>
+							<div className="card-readers-list__header-status">
+								{ __( 'Status', 'woocommerce-payments' ) }
+							</div>
+						</CardBody>
+						<CardDivider />
+						<CardBody size={ null }>
+							<ul>
+								{ ! isLoading &&
+									Object.entries(
+										readers
+									).map( ( [ index, reader ] ) => (
+										<CardReaderListItem
+											key={ index }
+											reader={ reader }
+										/>
+									) ) }
+							</ul>
+						</CardBody>
+						<CardBody
+							className="card-readers-add-new-reader"
+							size={ null }
+						>
+							<Button isSecondary>
+								{ __(
+									'Order a new card reader',
+									'woocommerce-payments'
+								) }
+							</Button>
+						</CardBody>
 					</Card>
 				</LoadableSettingsSection>
 			</SettingsSection>

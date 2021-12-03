@@ -83,4 +83,60 @@
 	.card-readers-settings-save-settings-section {
 		text-align: right;
 	}
+
+	.card-readers-list__wrapper {
+		.card-readers-list__header {
+			display: flex;
+
+			div {
+				flex: 1;
+			}
+
+			.card-readers-list__header-status {
+				max-width: 25%;
+				text-align: right;
+			}
+		}
+
+		.card-readers-add-new-reader {
+			padding: 20px 24px;
+		}
+
+		.card-readers-item {
+			border-bottom: 1px solid #dcdcde;
+			display: flex;
+			flex-wrap: wrap;
+			padding: 13px 24px;
+			margin: 0;
+
+			div {
+				flex: 1;
+
+				span {
+					line-height: 22px;
+				}
+			}
+
+			&__id,
+			&__type {
+				color: rgba( 60, 60, 67, 0.6 );
+			}
+
+			&__status {
+				text-align: right;
+				max-width: 25%;
+
+				span {
+					background: $studio-gray-5;
+					border-radius: 16px;
+					align-items: center;
+					padding: 2px 8px;
+				}
+
+				.active {
+					background: $studio-green-5;
+				}
+			}
+		}
+	}
 }
