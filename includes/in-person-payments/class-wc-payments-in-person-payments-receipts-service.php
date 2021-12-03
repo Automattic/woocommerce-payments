@@ -82,15 +82,15 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 *
 	 * @param  array $settings Settings.
 	 * @return void
-	 * @throws \Exception Error validating settings.
+	 * @throws \RuntimeException Error validating settings.
 	 */
 	private function validate_settings( array $settings ) {
 		if ( ! array_key_exists( 'business_name', $settings ) ) {
-			throw new \Exception( 'Business name needs to be provided.' );
+			throw new \RuntimeException( 'Business name needs to be provided.' );
 		}
 
 		if ( empty( $settings['support_info'] ) || ! is_array( $settings['support_info'] ) ) {
-			throw new \Exception( 'Support information needs to be provided.' );
+			throw new \RuntimeException( 'Support information needs to be provided.' );
 		}
 
 		$this->validate_required_fields(
@@ -105,25 +105,21 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 *
 	 * @param  array $charge Charge info.
 	 * @return void
-	 * @throws \Exception Error validating charge info.
+	 * @throws \RuntimeException Error validating charge info.
 	 */
 	private function validate_charge( array $charge ) {
 		if ( ! array_key_exists( 'amount_captured', $charge ) ) {
-			throw new Exception( 'Captured amount needs to be provided.' );
-		}
-
-		if ( empty( $charge['payment_method_details'] ) || ! is_array( $charge['payment_method_details'] ) ) {
-			throw new Exception( 'Payment method details needs to be provided.' );
+			throw new \RuntimeException( 'Captured amount needs to be provided.' );
 		}
 
 		if ( empty( $charge['payment_method_details']['card_present'] ) || ! is_array( $charge['payment_method_details']['card_present'] ) ) {
-			throw new Exception( 'Card present details needs to be provided.' );
+			throw new \RuntimeException( 'Payment method details needs to be provided.' );
 		}
 
 		$this->validate_required_fields(
 			[ 'brand', 'last4', 'receipt' ],
 			$charge['payment_method_details']['card_present'],
-			'Error validating card present information'
+			'Error validating payment information'
 		);
 
 		$this->validate_required_fields(
@@ -141,13 +137,12 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 * @param  array  $data Data to validate.
 	 * @param  string $message Error message.
 	 * @return void
-	 * @throws \Exception Error validating required fields.
+	 * @throws \RuntimeException Error validating required fields.
 	 */
 	private function validate_required_fields( array $required_fields, array $data, string $message ) {
-		$data_keys = array_keys( $data );
 		foreach ( $required_fields as $required_key ) {
-			if ( ! in_array( $required_key, $data_keys, true ) ) {
-				throw new Exception( sprintf( '%s. Missing key: %s', $message, $required_key ) );
+			if ( ! array_key_exists( $required_key, $data ) ) {
+				throw new \RuntimeException( sprintf( '%s. Missing key: %s', $message, $required_key ) );
 			}
 		}
 	}

@@ -105,12 +105,12 @@ function format_price_helper( array $product, string $currency ): string {
 				<div class="store__address">
 					<p><?php echo esc_html( $support_address['line1'] ); ?></p>
 					<p><?php echo esc_html( $support_address['line2'] ); ?></p>
-					<p><?php echo esc_html( sprintf( '%s, %s %s %s', $support_address['city'], $support_address['state'], $support_address['postal_code'], $support_address['country'] ) ); ?></p>
+					<p><?php echo esc_html( implode( ' ', [ $support_address['city'], $support_address['state'], $support_address['postal_code'], $support_address['country'] ] ) ); ?></p>
 					<?php echo esc_html( gmdate( 'Y/m/d - H:iA' ) ); ?>
 				</div>
 				<?php } ?>
 				<p class="store__contact">
-					<?php echo esc_html( sprintf( '%s %s', $support_phone, $support_email ) ); ?>
+					<?php echo esc_html( implode( ' ', [ $support_phone, $support_email ] ) ); ?>
 				</p>
 			</div>
 			<div class="order">

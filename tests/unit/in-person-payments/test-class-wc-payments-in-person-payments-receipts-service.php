@@ -71,7 +71,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 
 	public function test_get_receipt_markup_handles_charge_validation_errors( $input_charge, $expected_message ) {
 		$mock_order = WC_Helper_Order::create_order();
-		$this->expectException( Exception::class );
+		$this->expectException( \RuntimeException::class );
 		$this->expectExceptionMessage( $expected_message );
 		$this->receipts_service->get_receipt_markup( $this->mock_settings, $mock_order, $input_charge );
 	}
@@ -81,7 +81,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 	 */
 	public function test_get_receipt_markup_handles_settings_validation_errors( $input_settings, $expected_message ) {
 		$mock_order = WC_Helper_Order::create_order();
-		$this->expectException( Exception::class );
+		$this->expectException( \RuntimeException::class );
 		$this->expectExceptionMessage( $expected_message );
 		$this->receipts_service->get_receipt_markup( $input_settings, $mock_order, [] );
 	}
@@ -159,35 +159,35 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 					'amount_captured'        => '42',
 					'payment_method_details' => [ 'key' => 'value' ],
 				],
-				'Card present details needs to be provided.',
+				'Payment method details needs to be provided.',
 			],
 			[
 				[
 					'amount_captured'        => '42',
 					'payment_method_details' => [ 'card_present' => 'value' ],
 				],
-				'Card present details needs to be provided.',
+				'Payment method details needs to be provided.',
 			],
 			[
 				[
 					'amount_captured'        => '42',
 					'payment_method_details' => [ 'card_present' => [] ],
 				],
-				'Card present details needs to be provided.',
+				'Payment method details needs to be provided.',
 			],
 			[
 				[
 					'amount_captured'        => '42',
 					'payment_method_details' => [ 'card_present' => [ 'last4' => 'test' ] ],
 				],
-				'Error validating card present information. Missing key: brand',
+				'Error validating payment information. Missing key: brand',
 			],
 			[
 				[
 					'amount_captured'        => '42',
 					'payment_method_details' => [ 'card_present' => [ 'brand' => 'test' ] ],
 				],
-				'Error validating card present information. Missing key: last4',
+				'Error validating payment information. Missing key: last4',
 			],
 			[
 				[
@@ -199,7 +199,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 						],
 					],
 				],
-				'Error validating card present information. Missing key: receipt',
+				'Error validating payment information. Missing key: receipt',
 			],
 			[
 				[

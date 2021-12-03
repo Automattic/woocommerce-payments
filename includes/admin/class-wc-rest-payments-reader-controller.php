@@ -112,7 +112,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			/* Collect the data, available on the server side. */
 			$payment_intent = $this->api_client->get_intent( $request->get_param( 'payment_id' ) );
 			if ( 'succeeded' !== $payment_intent->get_status() ) {
-				throw new \RuntimeException( __( 'Invalid payment', 'woocommerce-payments' ) );
+				throw new \RuntimeException( __( 'Invalid payment intent', 'woocommerce-payments' ) );
 			}
 			$charge = $this->api_client->get_charge( $payment_intent->get_charge_id() );
 
