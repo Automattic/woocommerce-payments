@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, CardDivider, Button } from '@wordpress/components';
+import { Card, CardBody, CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -61,6 +61,7 @@ const ReadersList = () => {
 									) ) }
 							</ul>
 						</CardBody>
+						{ /*
 						<CardBody
 							className="card-readers-add-new-reader"
 							size={ null }
@@ -72,6 +73,7 @@ const ReadersList = () => {
 								) }
 							</Button>
 						</CardBody>
+						*/ }
 					</Card>
 				</LoadableSettingsSection>
 			</SettingsSection>
