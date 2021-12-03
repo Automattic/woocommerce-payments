@@ -97,6 +97,14 @@ class WC_Payments_API_Intention {
 	private $payment_method_details;
 
 	/**
+	 * Set of key-value pairs that can be useful for storing
+	 * additional information about the object in a structured format.
+	 *
+	 * @var array
+	 */
+	private $metadata;
+
+	/**
 	 * WC_Payments_API_Intention constructor.
 	 *
 	 * @param string      $id                     - ID of the intention.
@@ -111,6 +119,7 @@ class WC_Payments_API_Intention {
 	 * @param array       $next_action            - An array containing information for next action to take.
 	 * @param array       $last_payment_error     - An array containing details of any errors.
 	 * @param array       $payment_method_details - An array containing payment method details of associated charge.
+	 * @param array       $metadata               - An array containing additional metadata of associated charge or order.
 	 */
 	public function __construct(
 		$id,
@@ -124,7 +133,8 @@ class WC_Payments_API_Intention {
 		$client_secret,
 		$next_action = [],
 		$last_payment_error = [],
-		$payment_method_details = []
+		$payment_method_details = [],
+		$metadata = []
 	) {
 		$this->id                     = $id;
 		$this->amount                 = $amount;
@@ -138,6 +148,7 @@ class WC_Payments_API_Intention {
 		$this->customer_id            = $customer_id;
 		$this->payment_method_id      = $payment_method_id;
 		$this->payment_method_details = $payment_method_details;
+		$this->metadata               = $metadata;
 	}
 
 	/**
@@ -246,5 +257,14 @@ class WC_Payments_API_Intention {
 	 */
 	public function get_payment_method_details() {
 		return $this->payment_method_details;
+	}
+
+	/**
+	 * Returns the metadata associated with this intention
+	 *
+	 * @return array
+	 */
+	public function get_metadata() {
+		return $this->metadata;
 	}
 }

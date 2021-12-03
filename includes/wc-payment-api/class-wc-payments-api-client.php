@@ -314,6 +314,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Updates an intention's metadata.
+	 * Unlike `update_intention`, this method allows to update metadata without
+	 * requiring amount, currency, and other mandatory params to be present.
+	 *
+	 * @param string $intention_id - The ID of the intention to update.
+	 * @param array  $metadata     - Meta data values to be sent along with payment intent creation.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function update_intention_metadata( $intention_id, $metadata ) {
+		$request = [
+			'metadata' => $metadata,
+		];
+
+		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
 	 * Refund a charge
 	 *
 	 * @param string $charge_id - The charge to refund.
@@ -1751,6 +1772,7 @@ class WC_Payments_API_Client {
 		$charge             = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
 		$next_action        = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
 		$last_payment_error = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
+		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
@@ -1764,7 +1786,8 @@ class WC_Payments_API_Client {
 			$intention_array['client_secret'],
 			$next_action,
 			$last_payment_error,
-			$charge ? $charge['payment_method_details'] : null
+			$charge ? $charge['payment_method_details'] : null,
+			$metadata
 		);
 
 		return $intent;
