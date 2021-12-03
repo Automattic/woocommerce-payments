@@ -9,6 +9,7 @@ import { useEffect, useState } from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
 import { removeQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
+import wcpayTracks from '../tracks';
 
 import './style.scss';
 
@@ -23,7 +24,13 @@ const FinishSetupButton = () => {
 			href={ connectUrl }
 			isBusy={ isFinishingSetup }
 			isPrimary
-			onClick={ () => setIsFinishingSetup( true ) }
+			onClick={ () => {
+				wcpayTracks.recordEvent(
+					wcpayTracks.events
+						.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_FINISH_SETUP
+				);
+				setIsFinishingSetup( true );
+			} }
 		>
 			{ __( 'Finish setup', 'woocommerce-payments' ) }
 		</Button>
@@ -53,7 +60,13 @@ const SubscriptionProductOnboardingModal = () => {
 	return (
 		<Modal
 			className="wcpay-subscription-product-modal"
-			onRequestClose={ () => setOpen( false ) }
+			onRequestClose={ () => {
+				wcpayTracks.recordEvent(
+					wcpayTracks.events
+						.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS
+				);
+				setOpen( false );
+			} }
 			shouldCloseOnClickOutside={ false }
 		>
 			<p className="wcpay-subscription-product-modal__title">
