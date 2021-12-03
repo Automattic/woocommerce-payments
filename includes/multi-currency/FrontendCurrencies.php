@@ -183,8 +183,8 @@ class FrontendCurrencies {
 		$store_currency_code = $this->get_store_currency()->get_code();
 
 		if ( $currency_code === $store_currency_code ) {
-			$this->price_decimal_separators[ $currency_code ] = $separator;
 			$currency_code                                    = $store_currency_code;
+			$this->price_decimal_separators[ $currency_code ] = $separator;
 		}
 
 		if ( empty( $this->price_decimal_separators[ $currency_code ] ) ) {
