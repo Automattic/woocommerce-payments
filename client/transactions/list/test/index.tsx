@@ -6,9 +6,8 @@
 import * as React from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
-import { dateI18n } from '@wordpress/date';
-import { downloadCSVFile } from '@woocommerce/csv-export';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import os from 'os';
 
@@ -19,6 +18,20 @@ import { TransactionsList } from '../';
 import { useTransactions, useTransactionsSummary } from 'data/index';
 import type { Transaction } from 'data/transactions/hooks';
 
+import { downloadCSVFile } from '@woocommerce/csv-export';
+
+jest.mock( 'data/index', () => ( {
+	useTransactions: jest.fn(),
+	useTransactionsSummary: jest.fn(),
+} ) );
+
+const mockUseTransactions = useTransactions as jest.MockedFunction<
+	typeof useTransactions
+>;
+const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
+	typeof useTransactionsSummary
+>;
+
 jest.mock( '@woocommerce/csv-export', () => {
 	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
 
@@ -28,32 +41,8 @@ jest.mock( '@woocommerce/csv-export', () => {
 	};
 } );
 
-// Workaround for mocking @wordpress/data.
-// See https://github.com/WordPress/gutenberg/issues/15031
-jest.mock( '@wordpress/data', () => ( {
-	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
-	registerStore: jest.fn(),
-	select: jest.fn(),
-	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
-	withDispatch: jest.fn( () => jest.fn() ),
-	withSelect: jest.fn( () => jest.fn() ),
-} ) );
-
-jest.mock( 'data/index', () => ( {
-	useTransactions: jest.fn(),
-	useTransactionsSummary: jest.fn(),
-} ) );
-
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
->;
-
-const mockUseTransactions = useTransactions as jest.MockedFunction<
-	typeof useTransactions
->;
-const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
-	typeof useTransactionsSummary
 >;
 
 declare const global: {
@@ -424,6 +413,14 @@ describe( 'Transactions list', () => {
 				},
 				isLoading: false,
 			} );
+		} );
+
+		afterEach( () => {
+			jest.resetAllMocks();
+		} );
+
+		afterAll( () => {
+			jest.restoreAllMocks();
 		} );
 
 		test( 'should render expected columns in CSV when the download button is clicked', () => {
