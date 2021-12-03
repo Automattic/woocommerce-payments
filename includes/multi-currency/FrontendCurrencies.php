@@ -70,10 +70,10 @@ class FrontendCurrencies {
 	 *
 	 * @var string
 	 */
-	private $price_decimal_separator;
+	private $price_decimal_separators = [];
 
 	/**
-	 * Currency Code cache.
+	 * Selected Currency Code cache.
 	 *
 	 * @var string
 	 */
@@ -119,12 +119,13 @@ class FrontendCurrencies {
 	/**
 	 * The selected currency changed. We discard some cache.
 	 *
+	 * @return void
 	 */
 	public function selected_currency_changed() {
-		$this->selected_currency_code  = null;
-		$this->price_decimal_separator = null;
-		$this->woocommerce_currency    = null;
-		$this->store_currency          = null;
+		$this->selected_currency_code   = null;
+		$this->price_decimal_separators = [];
+		$this->woocommerce_currency     = null;
+		$this->store_currency           = null;
 	}
 
 	/**
@@ -132,9 +133,9 @@ class FrontendCurrencies {
 	 *
 	 * @return  Currency  The store currency wrapped as a Currency object
 	 */
-	public function get_store_currency() {
+	public function get_store_currency(): Currency {
 		if ( empty( $this->store_currency ) ) {
-			$this->store_currency = new Currency( get_option( 'woocommerce_currency' ) );
+			$this->store_currency = $this->multi_currency->get_default_currency();
 		}
 		return $this->store_currency;
 	}
@@ -145,12 +146,12 @@ class FrontendCurrencies {
 	 * @return string The code of the currency to be used.
 	 */
 	public function get_woocommerce_currency(): string {
+		if ( $this->compatibility->should_return_store_currency() ) {
+			return $this->get_store_currency()->get_code();
+		}
+
 		if ( empty( $this->woocommerce_currency ) ) {
-			if ( $this->compatibility->should_return_store_currency() ) {
-				$this->woocommerce_currency = $this->multi_currency->get_default_currency()->get_code();
-			} else {
-				$this->woocommerce_currency = $this->get_selected_currency_code();
-			}
+			$this->woocommerce_currency = $this->get_selected_currency_code();
 		}
 		return $this->woocommerce_currency;
 	}
@@ -177,17 +178,20 @@ class FrontendCurrencies {
 	 *
 	 * @return string The decimal separator.
 	 */
-
 	public function get_price_decimal_separator( $separator ): string {
-		if ( empty( $this->price_decimal_separator ) ) {
-			$currency_code = $this->get_selected_currency_code();
-			if ( $currency_code !== $this->get_store_currency()->get_code() ) {
-				$this->price_decimal_separator = $this->localization_service->get_currency_format( $currency_code )['decimal_sep'];
-			} else {
-				$this->price_decimal_separator = $separator;
-			}
+		$currency_code       = $this->get_currency_code();
+		$store_currency_code = $this->get_store_currency()->get_code();
+
+		if ( $currency_code === $store_currency_code ) {
+			$this->price_decimal_separators[ $currency_code ] = $separator;
+			$currency_code                                    = $store_currency_code;
 		}
-		return $this->price_decimal_separator;
+
+		if ( empty( $this->price_decimal_separators[ $currency_code ] ) ) {
+			$this->price_decimal_separators[ $currency_code ] = $this->localization_service->get_currency_format( $currency_code )['decimal_sep'];
+		}
+
+		return $this->price_decimal_separators[ $currency_code ];
 	}
 
 	/**
@@ -250,10 +254,9 @@ class FrontendCurrencies {
 	 *
 	 * @param mixed $arg Either WC_Order or the id of an order are expected, but can be empty.
 	 *
-	 * @return int The order id or what was passed as $arg.
+	 * @return int|mixed The order id or what was passed as $arg.
 	 */
 	public function init_order_currency( $arg ) {
-		$this->selected_currency_changed();
 		if ( null !== $this->order_currency ) {
 			return $arg;
 		}
@@ -301,17 +304,21 @@ class FrontendCurrencies {
 	 * @return string|null Three letter currency code.
 	 */
 	private function get_currency_code() {
-		if ( $this->should_override_currency_code() ) {
+		if ( $this->should_use_order_currency() ) {
 			return $this->order_currency;
 		}
-		return $this->selected_currency_code = $this->get_selected_currency_code();
+
+		$this->selected_currency_code = $this->get_selected_currency_code();
+
+		return $this->selected_currency_code;
 	}
 
 	/**
-	 * Helper function that "cache" the selected currency
+	 * Helper function to "cache" the selected currency.
+	 *
 	 * @return string
 	 */
-	private function get_selected_currency_code() {
+	private function get_selected_currency_code(): string {
 		if ( empty( $this->selected_currency_code ) ) {
 			$this->selected_currency_code = $this->multi_currency->get_selected_currency()->get_code();
 		}
@@ -323,7 +330,7 @@ class FrontendCurrencies {
 	 *
 	 * @return bool
 	 */
-	private function should_override_currency_code(): bool {
+	private function should_use_order_currency(): bool {
 		return $this->utils->is_call_in_backtrace(
 			[
 				'WC_Shortcode_My_Account::view_order',

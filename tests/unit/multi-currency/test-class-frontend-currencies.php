@@ -61,6 +61,10 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->mock_utils                = $this->createMock( Utils::class );
 		$this->mock_order                = WC_Helper_Order::create_order();
 
+		$this->mock_multi_currency
+			->method( 'get_default_currency' )
+			->willReturn( new Currency( 'USD' ) );
+
 		$this->frontend_currencies = new FrontendCurrencies( $this->mock_multi_currency, $this->mock_localization_service, $this->mock_utils, $this->mock_compatibility );
 	}
 
@@ -94,24 +98,14 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_woocommerce_currency_returns_selected_currency() {
-		$store_currency    = new Currency( 'USD' );
-		$selected_currency = new Currency( 'EUR' );
-		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $store_currency );
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $selected_currency );
-
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $selected_currency );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'EUR' ) );
 		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
 
 		$this->assertSame( 'EUR', $this->frontend_currencies->get_woocommerce_currency() );
 	}
 
 	public function test_get_woocommerce_currency_returns_store_currency() {
-		$store_currency    = new Currency( 'USD' );
-		$selected_currency = new Currency( 'EUR' );
-		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $store_currency );
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $selected_currency );
-
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $selected_currency );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'EUR' ) );
 		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( true );
 
 		$this->assertSame( 'USD', $this->frontend_currencies->get_woocommerce_currency() );

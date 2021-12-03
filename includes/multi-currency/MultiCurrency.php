@@ -613,7 +613,7 @@ class MultiCurrency {
 	public function get_selected_currency(): Currency {
 		$code = $this->get_stored_currency_code();
 
-		$code = $this->compatibility->override_selected_currency() ?: $code;
+		$code = $this->compatibility->override_selected_currency() ? $this->compatibility->override_selected_currency() : $code;
 
 		return $this->get_enabled_currencies()[ $code ] ?? $this->get_default_currency();
 	}
@@ -630,7 +630,7 @@ class MultiCurrency {
 		$user_id  = get_current_user_id();
 		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
 
-		// We discard the cache for the front-end
+		// We discard the cache for the front-end.
 		$this->frontend_currencies->selected_currency_changed();
 
 		if ( null === $currency ) {
