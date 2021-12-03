@@ -224,72 +224,6 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $setup_intent_id, $result['id'] );
 	}
-	/**
-	 * Test a successful call to create_and_confirm_setup_intent when SEPA is enabled.
-	 *
-	 * @throws Exception - In the event of test failure.
-	 */
-	public function test_create_and_confirm_setup_intent_with_SEPA() {
-		// Enable SEPA.
-		update_option( '_wcpay_feature_sepa', '1' );
-
-		$payment_method_id    = 'pm_mock';
-		$customer_id          = 'cus_test12345';
-		$payment_method_types = [ 'card', 'sepa_debit' ];
-		$mandate_data         = [
-			'customer_acceptance' => [
-				'type'   => 'online',
-				'online' => [
-					'ip_address' => '127.0.0.1',
-					'user_agent' => 'Unit Test Agent/0.1.0',
-				],
-			],
-		];
-
-		// Mock the HTTP client manually to assert we are adding mandate data.
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents' ),
-				wp_json_encode(
-					[
-						'test_mode'            => false,
-						'payment_method'       => $payment_method_id,
-						'customer'             => $customer_id,
-						'confirm'              => 'true',
-						'payment_method_types' => $payment_method_types,
-						'mandate_data'         => $mandate_data,
-					]
-				),
-				true,
-				false
-			)
-			->will(
-				$this->returnValue(
-					[
-						'body'     => wp_json_encode(
-							[
-								'id'             => 'seti_mock',
-								'object'         => 'setup_intent',
-								'payment_method' => $payment_method_id,
-							]
-						),
-						'response' => [
-							'code'    => 200,
-							'message' => 'OK',
-						],
-					]
-				)
-			);
-
-		$result = $this->payments_api_client->create_and_confirm_setup_intent( $payment_method_id, $customer_id );
-
-		$this->assertEquals( $payment_method_id, $result['payment_method'] );
-
-		// Disable SEPA.
-		update_option( '_wcpay_feature_sepa', '0' );
-	}
 
 	/**
 	 * Test a successful call to capture intention.
@@ -409,6 +343,78 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->expectExceptionMessage( "Error: $error_message" );
 
 		$this->payments_api_client->get_transaction( $transaction_id );
+	}
+
+	/**
+	 * Test a successful fetch of a single transaction.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_list_transactions_success() {
+
+		$order_1 = WC_Helper_Order::create_order();
+		$order_1->update_meta_data( '_charge_id', 'ch_test_1' );
+		$order_1->save();
+
+		$order_2 = WC_Helper_Order::create_order();
+		$order_2->update_meta_data( '_charge_id', 'ch_test_2' );
+		$order_2->save();
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'orders_with_charge_id_from_charge_ids' )
+			->with(
+				[
+					'ch_test_1',
+					'ch_test_2',
+				]
+			)
+			->will(
+				$this->returnValue(
+					[
+						[
+							'order'     => $order_1,
+							'charge_id' => 'ch_test_1',
+						],
+						[
+							'order'     => $order_2,
+							'charge_id' => 'ch_test_2',
+						],
+					]
+				)
+			);
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					[
+						'transaction_id' => 'txn_test_1',
+						'type'           => 'charge',
+						'charge_id'      => 'ch_test_1',
+					],
+					[
+						'transaction_id' => 'txn_test_2',
+						'type'           => 'charge',
+						'charge_id'      => 'ch_test_2',
+					],
+				],
+			]
+		);
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order ) {
+				return [];
+			}
+		);
+
+		$transactions = $this->payments_api_client->list_transactions();
+
+		$this->assertSame( 'txn_test_1', $transactions['data'][0]['transaction_id'] );
+		$this->assertSame( $order_1->get_order_number(), $transactions['data'][0]['order']['number'] );
+
+		$this->assertSame( 'txn_test_2', $transactions['data'][1]['transaction_id'] );
+		$this->assertSame( $order_2->get_order_number(), $transactions['data'][1]['order']['number'] );
 	}
 
 	/**
@@ -1341,4 +1347,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				)
 			);
 	}
+
+	/**
+	 * Set up mock for no subscriptions for order.
+	 */
 }

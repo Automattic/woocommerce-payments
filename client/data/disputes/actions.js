@@ -4,7 +4,6 @@
  * External dependencies
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
-import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -14,6 +13,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { NAMESPACE, STORE_NAME } from '../constants';
 import TYPES from './action-types';
 import wcpayTracks from 'tracks';
+import { getAdminUrl } from 'wcpay/utils';
 
 export function updateDispute( data ) {
 	return {
@@ -44,7 +44,7 @@ export function* acceptDispute( id ) {
 
 		// Redirect to Disputes list.
 		getHistory().push(
-			addQueryArgs( 'admin.php', {
+			getAdminUrl( {
 				page: 'wc-admin',
 				path: '/payments/disputes',
 			} )
