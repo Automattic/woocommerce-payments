@@ -151,9 +151,8 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 		add_filter(
 			'rest_pre_serve_request',
 			function ( bool $served, WP_HTTP_Response $response ) : bool {
-				$served = true;
 				echo $response->get_data(); // @codingStandardsIgnoreLine
-				return $served;
+				return true;
 			},
 			10,
 			2

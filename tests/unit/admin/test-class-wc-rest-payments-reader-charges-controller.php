@@ -170,7 +170,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$response = $this->controller->generate_print_receipt( $request );
 
 		$this->assertSame( $receipt, $response->get_data() );
-		$this->assertEquals( 200, $response->status );
+		$this->assertSame( 200, $response->status );
 	}
 
 	public function test_generate_print_receipt_invalid_payment_error() {
@@ -200,7 +200,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 500, $data['status'] );
+		$this->assertSame( 500, $data['status'] );
 	}
 
 	public function test_generate_print_receipt_handle_api_exceptions() {
@@ -230,7 +230,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 500, $data['status'] );
+		$this->assertSame( 500, $data['status'] );
 	}
 
 	public function test_generate_print_receipt_order_not_found() {
@@ -266,7 +266,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 500, $data['status'] );
+		$this->assertSame( 500, $data['status'] );
 	}
 
 	public function test_generate_print_receipt_handle_settings_exception() {
@@ -275,8 +275,6 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$payment_intent = $this->mock_payment_intent();
 
 		$charge = $this->mock_charge( $order->get_id() );
-
-		$settings = $this->mock_settings();
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -307,7 +305,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 500, $data['status'] );
+		$this->assertSame( 500, $data['status'] );
 	}
 
 	public function test_generate_print_receipt_handle_receipt_service_exception() {
@@ -350,7 +348,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 500, $data['status'] );
+		$this->assertSame( 500, $data['status'] );
 	}
 
 	private function mock_payment_intent( $status = 'succeeded' ) {

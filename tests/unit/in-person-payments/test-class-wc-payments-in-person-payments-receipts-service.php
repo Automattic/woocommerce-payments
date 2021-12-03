@@ -69,68 +69,211 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 	 * @dataProvider provide_charge_validation_data
 	 */
 
-	public function test_get_receipt_markup_handles_charge_validation_errors( $input_charge ) {
+	public function test_get_receipt_markup_handles_charge_validation_errors( $input_charge, $expected_message ) {
 		$mock_order = WC_Helper_Order::create_order();
 		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( $expected_message );
 		$this->receipts_service->get_receipt_markup( $this->mock_settings, $mock_order, $input_charge );
 	}
 
 	/**
 	 * @dataProvider provide_settings_validation_data
 	 */
-	public function test_get_receipt_markup_handles_settings_validation_errors( $input_settings ) {
+	public function test_get_receipt_markup_handles_settings_validation_errors( $input_settings, $expected_message ) {
 		$mock_order = WC_Helper_Order::create_order();
 		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( $expected_message );
 		$this->receipts_service->get_receipt_markup( $input_settings, $mock_order, [] );
 	}
 
 	public function provide_settings_validation_data() {
 		return [
-			[ [] ],
-			[ [ 'key' => 'value' ] ],
-			[ [ 'support_info' => 'Test' ] ],
-			[ [ 'support_info' => [ 'line1' => '42 Some Street' ] ] ],
+			[ [], 'Settings information needs to be provided.' ],
+			[ [ 'key' => 'value' ], 'Business name needs to be provided.' ],
+			[
+				[
+					'business_name' => 'test',
+					'support_info'  => 'Test',
+				],
+				'Support information needs to be provided.',
+			],
 			[
 				[
 					'business_name' => 'test',
 					'support_info'  => [],
 				],
+				'Support information needs to be provided.',
 			],
 			[
 				[
 					'business_name' => 'test',
 					'support_info'  => [ 'line1' => '42 Some Street' ],
 				],
+				'Error validating support information. Missing key: address',
+			],
+			[
+				[
+					'business_name' => 'test',
+					'support_info'  => [
+						'address' => 'Test',
+						'phone'   => '4242',
+					],
+				],
+				'Error validating support information. Missing key: email',
+			],
+			[
+				[
+					'business_name' => 'test',
+					'support_info'  => [
+						'address' => 'Test',
+						'line1'   => '42 Some Street',
+						'email'   => 'Test',
+					],
+				],
+				'Error validating support information. Missing key: phone',
 			],
 		];
 	}
 
 	public function provide_charge_validation_data() {
 		return [
-			[ [] ],
-			[ [ 'key' => 'value' ] ],
-			[ [ 'amount_captured' => 100 ] ],
+			[ [], 'Charge information needs to be provided.' ],
+			[ [ 'key' => 'value' ], 'Captured amount needs to be provided.' ],
+			[ [ 'amount_captured' => '42' ], 'Payment method details needs to be provided.' ],
 			[
 				[
-					'amount_captured'        => 100,
+					'amount_captured'        => '42',
+					'payment_method_details' => 'test',
+				],
+				'Payment method details needs to be provided.',
+			],
+			[
+				[
+					'amount_captured'        => '42',
 					'payment_method_details' => [],
 				],
+				'Payment method details needs to be provided.',
 			],
 			[
 				[
-					'amount_captured'        => 100,
+					'amount_captured'        => '42',
+					'payment_method_details' => [ 'key' => 'value' ],
+				],
+				'Card present details needs to be provided.',
+			],
+			[
+				[
+					'amount_captured'        => '42',
+					'payment_method_details' => [ 'card_present' => 'value' ],
+				],
+				'Card present details needs to be provided.',
+			],
+			[
+				[
+					'amount_captured'        => '42',
 					'payment_method_details' => [ 'card_present' => [] ],
 				],
+				'Card present details needs to be provided.',
 			],
 			[
 				[
-					'amount_captured'        => 100,
+					'amount_captured'        => '42',
+					'payment_method_details' => [ 'card_present' => [ 'last4' => 'test' ] ],
+				],
+				'Error validating card present information. Missing key: brand',
+			],
+			[
+				[
+					'amount_captured'        => '42',
+					'payment_method_details' => [ 'card_present' => [ 'brand' => 'test' ] ],
+				],
+				'Error validating card present information. Missing key: last4',
+			],
+			[
+				[
+					'amount_captured'        => '42',
 					'payment_method_details' => [
 						'card_present' => [
+							'brand' => 'test',
+							'last4' => 'test',
+						],
+					],
+				],
+				'Receipt details need to be provided.',
+			],
+			[
+				[
+					'amount_captured'        => '42',
+					'payment_method_details' => [
+						'card_present' => [
+							'brand'   => 'test',
+							'last4'   => 'test',
+							'receipt' => 'test',
+						],
+					],
+				],
+				'Receipt details need to be provided.',
+			],
+			[
+				[
+					'amount_captured'        => '42',
+					'payment_method_details' => [
+						'card_present' => [
+							'brand'   => 'test',
+							'last4'   => 'test',
 							'receipt' => [],
 						],
 					],
 				],
+				'Receipt details need to be provided.',
+			],
+			[
+				[
+					'amount_captured'        => '42',
+					'payment_method_details' => [
+						'card_present' => [
+							'brand'   => 'test',
+							'last4'   => 'test',
+							'receipt' => [
+								'dedicated_file_name' => 'test',
+								'account_type'        => 'test',
+							],
+						],
+					],
+				],
+				'Error validating receipt information. Missing key: application_preferred_name',
+			],
+			[
+				[
+					'amount_captured'        => '42',
+					'payment_method_details' => [
+						'card_present' => [
+							'brand'   => 'test',
+							'last4'   => 'test',
+							'receipt' => [
+								'application_preferred_name' => 'test',
+								'account_type' => 'test',
+							],
+						],
+					],
+				],
+				'Error validating receipt information. Missing key: dedicated_file_name',
+			],
+			[
+				[
+					'amount_captured'        => '42',
+					'payment_method_details' => [
+						'card_present' => [
+							'brand'   => 'test',
+							'last4'   => 'test',
+							'receipt' => [
+								'application_preferred_name' => 'test',
+								'dedicated_file_name' => 'test',
+							],
+						],
+					],
+				],
+				'Error validating receipt information. Missing key: account_type',
 			],
 		];
 	}

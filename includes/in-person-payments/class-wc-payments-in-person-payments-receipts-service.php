@@ -86,22 +86,22 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 */
 	private function validate_settings( array $settings ) {
 		if ( ! $settings ) {
-			throw new \Exception( 'You must provide settings information.' );
+			throw new \Exception( 'Settings information needs to be provided.' );
 		}
 
 		if ( ! array_key_exists( 'business_name', $settings ) ) {
-			throw new \Exception( 'You must provide a business name.' );
+			throw new \Exception( 'Business name needs to be provided.' );
 		}
 
-		if ( ! array_key_exists( 'support_info', $settings ) ) {
-			throw new \Exception( 'You must provide support information.' );
+		if ( ! array_key_exists( 'support_info', $settings ) || ! is_array( $settings['support_info'] ) || empty( $settings['support_info'] ) ) {
+			throw new \Exception( 'Support information needs to be provided.' );
 		}
 
-		foreach ( $settings['support_info'] as $key => $value ) {
-			if ( ! in_array( $key, [ 'address', 'email', 'phone' ], true ) ) {
-				throw new Exception( sprintf( 'Error validating support information. Invalid key: %s', $key ) );
-			}
-		}
+		$this->validate_required_fields(
+			[ 'address', 'email', 'phone' ],
+			$settings['support_info'],
+			'Error validating support information'
+		);
 	}
 
 	/**
@@ -113,24 +113,53 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 */
 	private function validate_charge( array $charge ) {
 		if ( ! $charge ) {
-			throw new Exception( 'You must provide charge information.' );
+			throw new Exception( 'Charge information needs to be provided.' );
 		}
 
 		if ( ! array_key_exists( 'amount_captured', $charge ) ) {
-			throw new Exception( 'You must provide a captured amount.' );
+			throw new Exception( 'Captured amount needs to be provided.' );
 		}
 
-		if ( ! array_key_exists( 'payment_method_details', $charge ) || ! is_array( $charge['payment_method_details'] ) || ! $charge['payment_method_details'] ) {
-			throw new Exception( 'You must provide payment method details.' );
+		if ( ! array_key_exists( 'payment_method_details', $charge ) || ! is_array( $charge['payment_method_details'] ) || empty( $charge['payment_method_details'] ) ) {
+			throw new Exception( 'Payment method details needs to be provided.' );
 		}
 
-		if ( ! array_key_exists( 'card_present', $charge['payment_method_details'] ) || ! is_array( $charge['payment_method_details']['card_present'] ) || ! $charge['payment_method_details']['card_present'] ) {
-			throw new Exception( 'You must provide card present details.' );
+		if ( ! array_key_exists( 'card_present', $charge['payment_method_details'] ) || ! is_array( $charge['payment_method_details']['card_present'] ) || empty( $charge['payment_method_details']['card_present'] ) ) {
+			throw new Exception( 'Card present details needs to be provided.' );
 		}
 
-		if ( ! array_key_exists( 'receipt', $charge['payment_method_details']['card_present'] ) || ! is_array( $charge['payment_method_details']['card_present']['receipt'] ) || ! $charge['payment_method_details']['card_present']['receipt'] ) {
-			throw new Exception( 'You must provide receipt details.' );
+		$this->validate_required_fields(
+			[ 'brand', 'last4' ],
+			$charge['payment_method_details']['card_present'],
+			'Error validating card present information'
+		);
+
+		if ( ! array_key_exists( 'receipt', $charge['payment_method_details']['card_present'] ) || ! is_array( $charge['payment_method_details']['card_present']['receipt'] ) || empty( $charge['payment_method_details']['card_present']['receipt'] ) ) {
+			throw new Exception( 'Receipt details need to be provided.' );
 		}
 
+		$this->validate_required_fields(
+			[ 'application_preferred_name', 'dedicated_file_name', 'account_type' ],
+			$charge['payment_method_details']['card_present']['receipt'],
+			'Error validating receipt information'
+		);
+
+	}
+
+	/**
+	 * Validate required field
+	 *
+	 * @param  array  $required_fields Required fields.
+	 * @param  array  $data Data to validate.
+	 * @param  string $message Error message.
+	 * @return void
+	 * @throws \Exception Error validating required fields.
+	 */
+	private function validate_required_fields( array $required_fields, array $data, string $message ) {
+		foreach ( $required_fields as $required_key ) {
+			if ( ! in_array( $required_key, array_keys( $data ), true ) ) {
+				throw new Exception( sprintf( '%s. Missing key: %s', $message, $required_key ) );
+			}
+		}
 	}
 }
