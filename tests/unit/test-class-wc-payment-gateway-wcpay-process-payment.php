@@ -617,7 +617,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			[ 'card_declined' ],
 			[ 'incorrect_number' ],
 			[ 'incorrect_cvc' ],
-			[ 'incorrect_zip' ],
 		];
 	}
 

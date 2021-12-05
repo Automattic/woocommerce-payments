@@ -2696,6 +2696,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the rate limiter should be bumped.
 	 */
 	protected function should_bump_rate_limiter( string $error_code ): bool {
-		return in_array( $error_code, [ 'card_declined', 'incorrect_number', 'incorrect_cvc', 'incorrect_zip' ], true );
+		return in_array( $error_code, [ 'card_declined', 'incorrect_number', 'incorrect_cvc' ], true );
 	}
 }
