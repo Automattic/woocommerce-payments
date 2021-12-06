@@ -306,7 +306,7 @@ class WC_Payments_Admin {
 				[
 					'id'     => 'wc-payments-multi-currency-setup',
 					'parent' => 'woocommerce-settings-payments',
-					'title'  => __( 'Home', 'woocommerce-payments' ),
+					'title'  => __( 'Set up multiple currencies', 'woocommerce-payments' ),
 					'path'   => '/payments/multi-currency-setup',
 				]
 			);

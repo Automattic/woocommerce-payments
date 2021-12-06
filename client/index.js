@@ -155,7 +155,10 @@ addFilter(
 			container: MultiCurrencySetupPage,
 			path: '/payments/multi-currency-setup',
 			wpOpenMenu: menuID,
-			breadcrumbs: [ rootLink, __( 'Home', 'woocommerce-payments' ) ],
+			breadcrumbs: [
+				rootLink,
+				__( 'Set up multiple currencies', 'woocommerce-payments' ),
+			],
 		} );
 		pages.push( {
 			container: CardReadersPage,
