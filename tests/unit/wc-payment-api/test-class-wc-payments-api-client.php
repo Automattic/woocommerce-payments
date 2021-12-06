@@ -346,6 +346,78 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test a successful fetch of a single transaction.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_list_transactions_success() {
+
+		$order_1 = WC_Helper_Order::create_order();
+		$order_1->update_meta_data( '_charge_id', 'ch_test_1' );
+		$order_1->save();
+
+		$order_2 = WC_Helper_Order::create_order();
+		$order_2->update_meta_data( '_charge_id', 'ch_test_2' );
+		$order_2->save();
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'orders_with_charge_id_from_charge_ids' )
+			->with(
+				[
+					'ch_test_1',
+					'ch_test_2',
+				]
+			)
+			->will(
+				$this->returnValue(
+					[
+						[
+							'order'     => $order_1,
+							'charge_id' => 'ch_test_1',
+						],
+						[
+							'order'     => $order_2,
+							'charge_id' => 'ch_test_2',
+						],
+					]
+				)
+			);
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					[
+						'transaction_id' => 'txn_test_1',
+						'type'           => 'charge',
+						'charge_id'      => 'ch_test_1',
+					],
+					[
+						'transaction_id' => 'txn_test_2',
+						'type'           => 'charge',
+						'charge_id'      => 'ch_test_2',
+					],
+				],
+			]
+		);
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order ) {
+				return [];
+			}
+		);
+
+		$transactions = $this->payments_api_client->list_transactions();
+
+		$this->assertSame( 'txn_test_1', $transactions['data'][0]['transaction_id'] );
+		$this->assertSame( $order_1->get_order_number(), $transactions['data'][0]['order']['number'] );
+
+		$this->assertSame( 'txn_test_2', $transactions['data'][1]['transaction_id'] );
+		$this->assertSame( $order_2->get_order_number(), $transactions['data'][1]['order']['number'] );
+	}
+
+	/**
 	 * Test creating a customer.
 	 *
 	 * @throws API_Exception
@@ -1275,4 +1347,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				)
 			);
 	}
+
+	/**
+	 * Set up mock for no subscriptions for order.
+	 */
 }

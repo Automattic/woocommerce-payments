@@ -829,7 +829,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->update_status( 'failed' );
 			}
 
-			if ( $e instanceof API_Exception && $e->get_error_code() === 'card_declined' ) {
+			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
 				$this->failed_transaction_rate_limiter->bump();
 			}
 
@@ -1890,8 +1890,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
 
 		try {
+			$intent_id    = $order->get_transaction_id();
+			$intent       = $this->payments_api_client->get_intent( $intent_id );
+			$payment_type = $this->is_payment_recurring( $order->get_id() ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
+
+			$metadata_from_intent = $intent->get_metadata(); // mobile app may have set metadata.
+			$metadata_from_order  = $this->get_metadata_from_order( $order, $payment_type );
+			$merged_metadata      = array_merge( (array) $metadata_from_order, (array) $metadata_from_intent ); // prioritize metadata from mobile app.
+
+			$this->payments_api_client->update_intention_metadata(
+				$intent_id,
+				$merged_metadata
+			);
+
 			$intent = $this->payments_api_client->capture_intention(
-				$order->get_transaction_id(),
+				$intent_id,
 				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
 				$this->get_level3_data_from_order( $order )
 			);
@@ -2655,5 +2668,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return [
 			'card',
 		];
+	}
+
+	/**
+	 * Text provided to users during onboarding setup.
+	 *
+	 * @return string
+	 */
+	public function get_setup_help_text() {
+		return __( 'Next we’ll ask you to share a few details about your business to create your account.', 'woocommerce-payments' );
+	}
+
+	/**
+	 * Get the oAuth connection URL.
+	 *
+	 * @return string Connection URL.
+	 */
+	public function get_connection_url() {
+		return html_entity_decode( WC_Payments_Account::get_connect_url() );
+	}
+
+	/**
+	 * Returns true if the code returned from the API represents an error that should be rate-limited.
+	 *
+	 * @param string $error_code The error code returned from the API.
+	 *
+	 * @return bool Whether the rate limiter should be bumped.
+	 */
+	protected function should_bump_rate_limiter( string $error_code ): bool {
+		return in_array( $error_code, [ 'card_declined', 'incorrect_number', 'incorrect_cvc' ], true );
 	}
 }
