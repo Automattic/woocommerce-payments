@@ -11,7 +11,6 @@
 * Update - Updated @woocommerce/experimental package to v2.1.0.
 * Add - Add support for suggested gateway methods in WC-Admin.
 * Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
-* Add - IPP Styled Receipts: Merchant brand settings (API).
 * Add - Card Reader receipt settings page.
 * Fix - Fatal error on thank you page for deleted orders.
 * Add - Error messages when dispute evidence exceeds Stripe limits.
