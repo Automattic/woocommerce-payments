@@ -15,14 +15,14 @@ jest.mock( '../tasks/multi-currency-setup', () => jest.fn() );
 
 describe( 'MultiCurrencySetupPage()', () => {
 	beforeEach( () => {
-		MultiCurrencySetup.mockReturnValue( <p>Multi-Currency setup task</p> );
+		MultiCurrencySetup.mockReturnValue( <p>Multi-Currency setup page</p> );
 	} );
 
 	afterEach( () => {
 		jest.restoreAllMocks();
 	} );
 
-	it( 'renders "Sell worldwide in multiple currencies" task', () => {
+	it( 'renders "Sell worldwide in multiple currencies" page', () => {
 		global.wcpaySettings = {
 			multiCurrencySetup: {
 				isSetupCompleted: true,
@@ -32,7 +32,7 @@ describe( 'MultiCurrencySetupPage()', () => {
 		render( <MultiCurrencySetupPage /> );
 
 		expect(
-			screen.queryByText( 'Multi-Currency setup task' )
+			screen.queryByText( 'Multi-Currency setup page' )
 		).toBeInTheDocument();
 	} );
 } );
