@@ -153,7 +153,7 @@ addFilter(
 		} );
 		pages.push( {
 			container: MultiCurrencySetupPage,
-			path: '/payments/multi-currency-available',
+			path: '/payments/multi-currency-setup',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Home', 'woocommerce-payments' ) ],
 		} );

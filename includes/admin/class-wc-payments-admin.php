@@ -304,10 +304,10 @@ class WC_Payments_Admin {
 			);
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-multi-currency-available',
+					'id'     => 'wc-payments-multi-currency-setup',
 					'parent' => 'woocommerce-settings-payments',
 					'title'  => __( 'Home', 'woocommerce-payments' ),
-					'path'   => '/payments/multi-currency-available',
+					'path'   => '/payments/multi-currency-setup',
 				]
 			);
 		}
