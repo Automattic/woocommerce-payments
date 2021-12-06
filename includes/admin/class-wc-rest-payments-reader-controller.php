@@ -178,7 +178,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 		return $readers;
 	}
 
-  /**
+	/**
 	 * Renders HTML for a print receipt
 	 *
 	 * @param WP_REST_Request $request Full data about the request.

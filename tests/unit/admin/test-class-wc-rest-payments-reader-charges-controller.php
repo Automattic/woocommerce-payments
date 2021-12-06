@@ -40,11 +40,11 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		parent::setUp();
 
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
-    $this->mock_wcpay_gateway    = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->mock_wcpay_gateway    = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$this->mock_receipts_service = $this->createMock( WC_Payments_In_Person_Payments_Receipts_Service::class );
 		$this->controller            = new WC_REST_Payments_Reader_Controller( $this->mock_api_client, $this->mock_wcpay_gateway, $this->mock_receipts_service );
 
-		$this->reader          = [
+		$this->reader = [
 			'id'          => 'tmr_P400-123-456-789',
 			'device_type' => 'verifone_P400',
 			'label'       => 'Blue Rabbit',
@@ -169,8 +169,8 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$result = $this->controller->get_all_readers( $request );
 
 		$this->assertEquals( [ $this->reader ], $result->get_data() );
-  }
-  
+	}
+
 	public function test_generate_print_receipt() {
 		$order = WC_Helper_Order::create_order();
 
