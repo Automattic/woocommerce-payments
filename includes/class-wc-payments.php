@@ -160,6 +160,13 @@ class WC_Payments {
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 
+		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
+			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
+			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
+			// Disable nonce checks for API calls. TODO This should be changed.
+			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		}
+
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
 
@@ -770,5 +777,66 @@ class WC_Payments {
 	 */
 	public static function is_network_saved_cards_enabled() {
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
+	}
+
+	/**
+	 * Used to initialize platform checkout session.
+	 *
+	 * @return void
+	 */
+	public static function ajax_init_platform_checkout() {
+		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
+
+		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
+		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
+		$body                   = [
+			'user_id'              => get_current_user_id(),
+			'session_cookie_name'  => $session_cookie_name,
+			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			'store_data'           => [
+				'store_name' => get_bloginfo( 'name' ),
+				'store_logo' => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
+				'blog_id'    => Jetpack_Options::get_option( 'id' ),
+			],
+		];
+		$args                   = [
+			'url'     => $url,
+			'method'  => 'POST',
+			'timeout' => 30,
+			'body'    => wp_json_encode( $body ),
+			'headers' => [
+				'Content-Type' => 'application/json',
+			],
+		];
+
+		$response_array     = wp_remote_request( $url, $args );
+		$response_body_json = wp_remote_retrieve_body( $response_array );
+
+		Logger::log( $response_body_json );
+		wp_send_json( json_decode( $response_body_json ) );
+	}
+
+	/**
+	 * Determine the current user
+	 *
+	 * @param WP_User|int $user The user to determine.
+	 */
+	public static function determine_current_user_for_platform_checkout( $user ) {
+		if ( $user ) {
+			return $user;
+		}
+		$headers = getallheaders();
+		if ( ! isset( $headers['X-Wcpay-Platform-Checkout-User'] ) || ! is_numeric( $headers['X-Wcpay-Platform-Checkout-User'] ) ) {
+			return $user;
+		}
+
+		add_filter(
+			'woocommerce_cookie',
+			function( string $cookie_hash ) {
+				return 'platform_checkout_session';
+			}
+		);
+
+		return (int) $headers['X-Wcpay-Platform-Checkout-User'];
 	}
 }

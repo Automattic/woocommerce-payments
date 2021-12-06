@@ -63,8 +63,8 @@
   "dependencies": {
     "@stripe/react-stripe-js": "1.4.1",
     "@stripe/stripe-js": "1.15.1",
-    "@woocommerce/explat": "^1.0.1",
-    "debug": "^4.1.1",
+    "@woocommerce/explat": "^1.1.0",
+    "debug": "^4.3.3",
     "interpolate-components": "^1.1.1",
     "lodash": "^4.17.14",
     "wordpress-element": "npm:@wordpress/element@2.11.0"

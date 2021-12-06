@@ -21,6 +21,7 @@ import { SavedTokenHandler } from './saved-token-handler';
 import request from './request.js';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
+import { platformCheckoutPaymentMethod } from 'wcpay/components/platform-checkout';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -54,6 +55,10 @@ registerPaymentMethod( {
 } );
 
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+
+if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
+	registerExpressPaymentMethod( platformCheckoutPaymentMethod( api ) );
+}
 
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );

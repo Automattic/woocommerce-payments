@@ -603,20 +603,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_payment_fields_js_config() {
 		return [
-			'publishableKey'           => $this->account->get_publishable_key( $this->is_in_test_mode() ),
-			'accountId'                => $this->account->get_stripe_account_id(),
-			'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
-			'wcAjaxUrl'                => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'createSetupIntentNonce'   => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'createPaymentIntentNonce' => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
-			'updatePaymentIntentNonce' => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
-			'genericErrorMessage'      => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
-			'fraudServices'            => $this->account->get_fraud_services_config(),
-			'features'                 => $this->supports,
-			'forceNetworkSavedCards'   => WC_Payments::is_network_saved_cards_enabled(),
-			'locale'                   => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-			'isUPEEnabled'             => WC_Payments_Features::is_upe_enabled(),
-			'isSavedCardsEnabled'      => $this->is_saved_cards_enabled(),
+			'publishableKey'            => $this->account->get_publishable_key( $this->is_in_test_mode() ),
+			'accountId'                 => $this->account->get_stripe_account_id(),
+			'ajaxUrl'                   => admin_url( 'admin-ajax.php' ),
+			'wcAjaxUrl'                 => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'createSetupIntentNonce'    => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
+			'createPaymentIntentNonce'  => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
+			'updatePaymentIntentNonce'  => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
+			'genericErrorMessage'       => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
+			'fraudServices'             => $this->account->get_fraud_services_config(),
+			'features'                  => $this->supports,
+			'forceNetworkSavedCards'    => WC_Payments::is_network_saved_cards_enabled(),
+			'locale'                    => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+			'isUPEEnabled'              => WC_Payments_Features::is_upe_enabled(),
+			'isSavedCardsEnabled'       => $this->is_saved_cards_enabled(),
+			'isPlatformCheckoutEnabled' => WC_Payments_Features::is_platform_checkout_enabled(),
 		];
 	}
 
