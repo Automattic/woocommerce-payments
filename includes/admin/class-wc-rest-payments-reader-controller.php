@@ -96,7 +96,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function is_reader_active( $readers, $id ) {
 		foreach ( $readers as $reader ) {
-			if ( $reader['reader_id'] === $id ) {
+			if ( $reader['reader_id'] === $id && 'active' === $reader['status'] ) {
 				return true;
 			}
 		}
@@ -134,7 +134,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 				];
 			}
 
-			set_transient( static::STORE_READERS_TRANSIENT_KEY, $readers, DAY_IN_SECONDS );
+			set_transient( static::STORE_READERS_TRANSIENT_KEY, $readers, 2 * HOUR_IN_SECONDS );
 		}
 
 		return $readers;
