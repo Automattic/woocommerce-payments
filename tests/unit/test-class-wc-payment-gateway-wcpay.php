@@ -1822,8 +1822,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			[
 				'status'        => 'failed',
 				'id'            => null,
-				'error_message' => 'test exception',
 				'http_code'     => 500,
+				'error_message' => 'test exception',
 			],
 			$result
 		);
