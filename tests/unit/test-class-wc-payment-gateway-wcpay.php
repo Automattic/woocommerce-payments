@@ -82,9 +82,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				[
 					'get_account_data',
 					'is_server_connected',
+					'get_blog_id',
 					'capture_intention',
 					'cancel_intention',
 					'get_intent',
+					'create_intention',
 					'create_and_confirm_intention',
 					'create_and_confirm_setup_intent',
 					'get_setup_intent',
@@ -95,6 +97,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			)
 			->getMock();
 		$this->mock_api_client->expects( $this->any() )->method( 'is_server_connected' )->willReturn( true );
+		$this->mock_api_client->expects( $this->any() )->method( 'get_blog_id' )->willReturn( 1234567 );
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
@@ -1761,5 +1764,68 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->expects( $this->once() )->method( 'save' );
 
 		$this->wcpay_gateway->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+	}
+
+	public function test_create_intent_success() {
+		$intent_id       = 'pi_xxxxxxxxxxxxx';
+		$charge_id       = 'ch_yyyyyyyyyyyyy';
+		$payment_methods = [ 'card_present' ];
+		$capture_method  = 'manual';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( 'on-hold' );
+
+		$this->mock_api_client->expects( $this->once() )->method( 'create_intention' )->will(
+			$this->returnValue(
+				new WC_Payments_API_Intention(
+					$intent_id,
+					1500,
+					$order->get_currency(),
+					'cus_12345',
+					'pm_12345',
+					new DateTime(),
+					'requires_payment_method',
+					$charge_id,
+					'...'
+				)
+			)
+		);
+
+		$result = $this->wcpay_gateway->create_intent( $order, $payment_methods, $capture_method );
+
+		// Assert the returned data contains fields required by the REST endpoint.
+		$this->assertSame(
+			[
+				'status'    => 'created',
+				'id'        => $intent_id,
+				'http_code' => 200,
+			],
+			$result
+		);
+	}
+
+	public function test_create_intent_api_failure() {
+		$payment_methods = [ 'card_present' ];
+		$capture_method  = 'manual';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( 'on-hold' );
+
+		$this->mock_api_client->expects( $this->once() )->method( 'create_intention' )->will(
+			$this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) )
+		);
+
+		$result = $this->wcpay_gateway->create_intent( $order, $payment_methods, $capture_method );
+
+		// Assert the returned data contains fields required by the REST endpoint.
+		$this->assertSame(
+			[
+				'status'        => 'failed',
+				'id'            => null,
+				'error_message' => 'test exception',
+				'http_code'     => 500,
+			],
+			$result
+		);
 	}
 }
