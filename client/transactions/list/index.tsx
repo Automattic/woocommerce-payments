@@ -3,8 +3,9 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React, { useState } from 'react';
 import { uniq } from 'lodash';
+import { useDispatch } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __, _n } from '@wordpress/i18n';
@@ -25,7 +26,7 @@ import {
 	generateCSVDataFromTable,
 	generateCSVFileName,
 } from '@woocommerce/csv-export';
-
+import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
@@ -46,6 +47,7 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 import DownloadButton from 'components/download-button';
+import { getTransactionsCSV } from '../../data/transactions/resolvers';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -186,6 +188,8 @@ const getColumns = (
 export const TransactionsList = (
 	props: TransactionsListProps
 ): JSX.Element => {
+	const [ isDownloading, setIsDownloading ] = useState( false );
+	const { createNotice } = useDispatch( 'core/notices' );
 	const { transactions, isLoading } = useTransactions(
 		getQuery(),
 		props.depositId ?? ''
@@ -397,20 +401,83 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const onDownload = () => {
-		// We destructure page and path to get the right params.
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { page, path, ...params } = getQuery();
+	const onDownload = async () => {
+		setIsDownloading( true );
 
-		downloadCSVFile(
-			generateCSVFileName( title, params ),
-			generateCSVDataFromTable( columnsToDisplay, rows )
-		);
+		const {
+			date_before: dateBefore,
+			date_after: dateAfter,
+			date_between: dateBetween,
+			match,
+			search,
+			type_is: typeIs,
+			type_is_not: typeIsNot,
+		} = getQuery();
 
-		wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-			exported_transactions: rows.length,
-			total_transactions: transactionsSummary.count,
-		} );
+		if (
+			!! dateBefore ||
+			!! dateAfter ||
+			!! dateBetween ||
+			!! typeIs ||
+			!! typeIsNot ||
+			!! search
+		) {
+			try {
+				const {
+					exported_transactions: exportedTransactions,
+				} = await apiFetch( {
+					path: getTransactionsCSV( {
+						dateAfter,
+						dateBefore,
+						dateBetween,
+						match,
+						search,
+						typeIs,
+						typeIsNot,
+					} ),
+					method: 'POST',
+				} );
+
+				createNotice(
+					'success',
+					__(
+						'Your export will be emailed to you.',
+						'woocommerce-payments'
+					)
+				);
+
+				wcpayTracks.recordEvent( 'wcpay_transactions_download', {
+					exported_transactions: exportedTransactions,
+					total_transactions: exportedTransactions,
+					download_type: 'endpoint',
+				} );
+			} catch {
+				createNotice(
+					'error',
+					__(
+						'There was a problem generating your export.',
+						'woocommerce-payments'
+					)
+				);
+			}
+		} else {
+			// We destructure page and path to get the right params.
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { page, path, ...params } = getQuery();
+
+			downloadCSVFile(
+				generateCSVFileName( title, params ),
+				generateCSVDataFromTable( columnsToDisplay, rows )
+			);
+
+			wcpayTracks.recordEvent( 'wcpay_transactions_download', {
+				exported_transactions: rows.length,
+				total_transactions: transactionsSummary.count,
+				download_type: 'browser',
+			} );
+		}
+
+		setIsDownloading( false );
 	};
 
 	if ( ! wcpaySettings.featureFlags.customSearch ) {
@@ -490,11 +557,7 @@ export const TransactionsList = (
 			) }
 			<TableCard
 				className="transactions-list woocommerce-report-table has-search"
-				title={
-					props.depositId
-						? __( 'Deposit transactions', 'woocommerce-payments' )
-						: __( 'Transactions', 'woocommerce-payments' )
-				}
+				title={ title }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
 				totalRows={ transactionsSummary.count || 0 }
@@ -522,7 +585,7 @@ export const TransactionsList = (
 					downloadable && (
 						<DownloadButton
 							key="download"
-							isDisabled={ isLoading }
+							isDisabled={ isLoading || isDownloading }
 							onClick={ onDownload }
 						/>
 					),
