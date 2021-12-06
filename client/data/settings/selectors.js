@@ -39,6 +39,74 @@ export const getAccountStatementDescriptor = ( state ) => {
 	return getSettings( state ).account_statement_descriptor || '';
 };
 
+export const getAccountBusinessName = ( state ) => {
+	return getSettings( state ).account_business_name || '';
+};
+
+export const getAccountBusinessURL = ( state ) => {
+	return getSettings( state ).account_business_url || '';
+};
+
+export const getAccountBusinessSupportAddress = ( state ) => {
+	return getSettings( state ).account_business_support_address || '';
+};
+
+export const getAccountBusinessSupportAddressCountry = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
+	return getSettings( state ).account_business_support_address.country || '';
+};
+
+export const getAccountBusinessSupportAddressLine1 = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
+	return getSettings( state ).account_business_support_address.line1 || '';
+};
+
+export const getAccountBusinessSupportAddressLine2 = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
+	return getSettings( state ).account_business_support_address.line2 || '';
+};
+
+export const getAccountBusinessSupportAddressCity = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
+	return getSettings( state ).account_business_support_address.city || '';
+};
+
+export const getAccountBusinessSupportAddressPostalCode = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
+	return (
+		getSettings( state ).account_business_support_address.postal_code || ''
+	);
+};
+
+export const getAccountBusinessSupportEmail = ( state ) => {
+	return getSettings( state ).account_business_support_email || '';
+};
+
+export const getAccountBusinessSupportPhone = ( state ) => {
+	return getSettings( state ).account_business_support_phone || '';
+};
+
+export const getAccountBrandingLogo = ( state ) => {
+	return getSettings( state ).account_branding_logo || '';
+};
+
+export const getAccountBrandingIcon = ( state ) => {
+	return getSettings( state ).account_branding_icon || '';
+};
+
+export const getAccountBrandingPrimaryColor = ( state ) => {
+	return getSettings( state ).account_branding_primary_color || '';
+};
+
+export const getAccountBrandingSecondaryColor = ( state ) => {
+	return getSettings( state ).account_branding_secondary_color || '';
+};
+
 export const getIsManualCaptureEnabled = ( state ) => {
 	return getSettings( state ).is_manual_capture_enabled || false;
 };

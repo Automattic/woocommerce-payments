@@ -3,10 +3,12 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { render, useState } from '@wordpress/element';
+import { render, useEffect, useState } from '@wordpress/element';
 
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 import { Button } from '@wordpress/components';
+
+import wcpayTracks from '../tracks';
 
 import connectedImage from '../../assets/images/subscriptions-empty-state-connected.svg';
 import unconnectedImage from '../../assets/images/subscriptions-empty-state-unconnected.svg';
@@ -70,7 +72,13 @@ const ActionButtons = () => {
 					href={ connectUrl }
 					isBusy={ isFinishingSetup }
 					isPrimary
-					onClick={ () => setIsFinishingSetup( true ) }
+					onClick={ () => {
+						wcpayTracks.recordEvent(
+							wcpayTracks.events
+								.SUBSCRIPTIONS_EMPTY_STATE_FINISH_SETUP
+						);
+						setIsFinishingSetup( true );
+					} }
 				>
 					{ __( 'Finish setup', 'woocommerce-payments' ) }
 				</Button>
@@ -80,7 +88,13 @@ const ActionButtons = () => {
 				href={ newProductUrl }
 				isBusy={ isCreatingProduct }
 				isSecondary
-				onClick={ () => setIsCreatingProduct( true ) }
+				onClick={ () => {
+					wcpayTracks.recordEvent(
+						wcpayTracks.events
+							.SUBSCRIPTIONS_EMPTY_STATE_CREATE_PRODUCT
+					);
+					setIsCreatingProduct( true );
+				} }
 			>
 				{ __( 'Create subscription product', 'woocommerce-payments' ) }
 			</Button>
@@ -88,12 +102,27 @@ const ActionButtons = () => {
 	);
 };
 
+const EmptyState = () => {
+	useEffect( () => {
+		wcpayTracks.recordEvent(
+			wcpayTracks.events.SUBSCRIPTIONS_EMPTY_STATE_VIEW,
+			{
+				is_connected: isConnected ? 'yes' : 'no',
+			}
+		);
+	}, [] );
+
+	return (
+		<div className="wcpay-empty-subscriptions__container">
+			<Image />
+			<Description />
+			{ ! isConnected && <TOS /> }
+			<ActionButtons />
+		</div>
+	);
+};
+
 render(
-	<div className="wcpay-empty-subscriptions__container">
-		<Image />
-		<Description />
-		{ ! isConnected && <TOS /> }
-		<ActionButtons />
-	</div>,
+	<EmptyState />,
 	document.querySelector( '#wcpay_subscriptions_empty_state' )
 );

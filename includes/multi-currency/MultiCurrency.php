@@ -898,15 +898,13 @@ class MultiCurrency {
 	 */
 	private function get_stored_currency_code() {
 		$user_id = get_current_user_id();
-		$code    = null;
 
-		if ( 0 === $user_id && WC()->session ) {
-			$code = WC()->session->get( self::CURRENCY_SESSION_KEY );
-		} elseif ( $user_id ) {
-			$code = get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
+		if ( $user_id ) {
+			return get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
+		} else {
+			WC()->initialize_session();
+			return WC()->session->get( self::CURRENCY_SESSION_KEY );
 		}
-
-		return $code;
 	}
 
 	/**
