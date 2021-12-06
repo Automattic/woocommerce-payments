@@ -2455,11 +2455,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @throws Exception - When an error occurs in intent creation.
 	 */
-	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method ) {
+	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method = 'automatic' ) {
 		$amount           = $order->get_total();
 		$currency         = strtolower( $order->get_currency() );
 		$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );
-		$capture_method   = $capture_method ?? 'automatic';
 		$intent           = null;
 		$status           = null;
 		$error_message    = null;

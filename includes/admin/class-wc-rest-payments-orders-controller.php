@@ -230,7 +230,6 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Create a new intention.
 			$result = $this->gateway->create_intent( $order, $payment_methods, $capture_method );
 			if ( 'created' !== $result['status'] ) {
-				$http_code = $result['http_code'] ?? 502;
 				return new WP_Error(
 					'wcpay_intent_creation_error',
 					sprintf(
@@ -238,7 +237,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 						__( 'Intent creation failed with the following message: %s', 'woocommerce-payments' ),
 						$result['error_message'] ?? __( 'Unknown error', 'woocommerce-payments' )
 					),
-					[ 'status' => $http_code ]
+					[ 'status' => $result['http_code'] ]
 				);
 			}
 
