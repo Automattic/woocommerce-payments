@@ -61,19 +61,6 @@ const ReadersList = () => {
 									) ) }
 							</ul>
 						</CardBody>
-						{ /*
-						<CardBody
-							className="card-readers-add-new-reader"
-							size={ null }
-						>
-							<Button isSecondary>
-								{ __(
-									'Order a new card reader',
-									'woocommerce-payments'
-								) }
-							</Button>
-						</CardBody>
-						*/ }
 					</Card>
 				</LoadableSettingsSection>
 			</SettingsSection>

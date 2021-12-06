@@ -30,18 +30,6 @@ const ReadersSettingsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		{ /*
-		<p>
-			<a href="#preview-print">
-				{ __( 'Preview a printed receipt', 'woocommerce-payments' ) }
-			</a>
-		</p>
-		<p>
-			<a href="#preview-email">
-				{ __( 'Preview an emailed receipt', 'woocommerce-payments' ) }
-			</a>
-		</p>
-		*/ }
 	</>
 );
 

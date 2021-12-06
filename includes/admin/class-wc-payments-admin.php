@@ -134,7 +134,7 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Checks whether the UPE gateway is enabled
+	 * Checks whether the Card Readers page is enabled.
 	 *
 	 * @return bool
 	 */

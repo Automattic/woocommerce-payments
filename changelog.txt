@@ -12,7 +12,7 @@
 * Add - Add support for suggested gateway methods in WC-Admin.
 * Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
 * Add - IPP Styled Receipts: Merchant brand settings (API).
-* Add - IPP Styled Receipts: Card readers page.
+* Add - Card Reader receipt settings page.
 * Fix - Fatal error on thank you page for deleted orders.
 * Add - Error messages when dispute evidence exceeds Stripe limits.
 * Add - Export Disputes to CSV
