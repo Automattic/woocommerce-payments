@@ -101,7 +101,7 @@ final class Experimental_Abtest {
 		}
 
 		// Make sure test name is a valid one.
-		if ( ! preg_match( '/^[A-Za-z0-9_]+$/', $test_name ) ) {
+		if ( ! preg_match( '/^\w+$/', $test_name ) ) {
 			return new \WP_Error( 'invalid_test_name', 'Invalid A/B test name.' );
 		}
 

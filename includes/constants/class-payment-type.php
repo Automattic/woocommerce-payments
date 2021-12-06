@@ -22,4 +22,4 @@ use MyCLabs\Enum\Enum;
 class Payment_Type extends Enum {
 	const SINGLE    = 'single';
 	const RECURRING = 'recurring';
-};
+}

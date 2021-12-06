@@ -54,7 +54,7 @@ class WC_Payments_Explicit_Price_Formatter {
 		// As is_admin() returns false for REST requests, we need to skip those checks for REST requests for backend too.
 		$is_backend_request = (
 			// Current URL is an admın URL.
-			( 0 === strpos( strtolower( wp_get_referer() ), strtolower( admin_url() ) ) )
+			( 0 === stripos( wp_get_referer(), admin_url() ) )
 			// The current request is a REST request.
 			&& WC()->is_rest_api_request()
 		);
@@ -73,7 +73,7 @@ class WC_Payments_Explicit_Price_Formatter {
 			}
 
 			// If the instance isn't initalized yet, skip the checks.
-			if ( false === self::$multi_currency_instance->is_initialized() ) {
+			if ( ! self::$multi_currency_instance->is_initialized() ) {
 				return false;
 			}
 

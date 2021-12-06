@@ -316,7 +316,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
 		if ( $this->is_saved_cards_enabled() ) {
-			$this->supports = array_merge( $this->supports, [ 'tokenization', 'add_payment_method' ] );
+			array_push( $this->supports, 'tokenization', 'add_payment_method' );
 		}
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
