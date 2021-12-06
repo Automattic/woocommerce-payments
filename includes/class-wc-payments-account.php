@@ -512,7 +512,7 @@ class WC_Payments_Account {
 	 * @return string Stripe account login url.
 	 */
 	public static function get_connect_url( $wcpay_connect_from = '1' ) {
-		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => $wcpay_connect_from ] ), 'wcpay-connect' );
+		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => $wcpay_connect_from ], admin_url( 'admin.php' ) ), 'wcpay-connect' );
 	}
 
 	/**
@@ -627,6 +627,19 @@ class WC_Payments_Account {
 	 * @return string
 	 */
 	private function get_onboarding_return_url( $wcpay_connect_from ) {
+		$is_from_subscription_product_publish = preg_match(
+			'/WC_SUBSCRIPTIONS_PUBLISH_PRODUCT_(\d+)/',
+			$wcpay_connect_from,
+			$matches
+		);
+
+		if ( 1 === $is_from_subscription_product_publish ) {
+			return add_query_arg(
+				[ 'wcpay-subscriptions-onboarded' => '1' ],
+				get_edit_post_link( $matches[1], 'url' )
+			);
+		}
+
 		// If connection originated on the WCADMIN payment task page, return there.
 		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
 		switch ( $wcpay_connect_from ) {

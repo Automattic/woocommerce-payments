@@ -9,6 +9,7 @@
 * Fix - Updates to fraud protection.
 * Fix - Prevent Payment Request buttons from showing up in Composite Product pages.
 * Update - Updated @woocommerce/experimental package to v2.1.0.
+* Add - Add support for suggested gateway methods in WC-Admin.
 * Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
 * Add - IPP Styled Receipts: Merchant brand settings (API).
 * Add - IPP Styled Receipts: Card readers page.
@@ -17,7 +18,10 @@
 * Add - Export Disputes to CSV
 * Update - Remove "Boost your sales by accepting new payment methods" from the overview tasks list.
 * Fix - Onboarding must be completed before Subscriptions products can be published.
-* Add - Support business account branding settings
+* Fix - Show the prices in the correct currency when using the "All Products" block.
+* Add - Support business account branding settings.
+* Update - Capture order-related metadata not captured by mobile app for in-person payment transactions.
+* Add - REST endpoint to print IPP receipts.
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
