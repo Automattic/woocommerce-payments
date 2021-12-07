@@ -123,6 +123,10 @@ configure_wp() {
 	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
 		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
 	fi
+
+    # MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versiosn
+	sed -i "/Happy publishing/i mysqli_report(MYSQLI_REPORT_OFF);\n" wp-config.php
+
 	wp core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --skip-email
 }
 
