@@ -64,11 +64,4 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 
 		return rest_ensure_response( $charge );
 	}
-
-	/**
-	 * Verify access.
-	 */
-	public function check_permission() {
-		return current_user_can( 'manage_woocommerce' );
-	}
 }

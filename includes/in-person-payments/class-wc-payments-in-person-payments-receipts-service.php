@@ -72,7 +72,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 			$item_data            = $item->get_data();
 			$item_data['product'] = $item->get_product()->get_data();
 			$line_items_data[]    = $item_data;
-		};
+		}
 
 		return $line_items_data;
 	}
