@@ -5,11 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-// Starting PHP 7.4 we are dealing with deprecation warnings and BC breaks, this blocks addresses some of them.
-if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
-	error_reporting( error_reporting() & ~E_DEPRECATED ); // phpcs:ignore
-}
-
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 if ( ! $_tests_dir ) {
@@ -96,6 +91,11 @@ require_once dirname( __FILE__ ) . '/../../vendor/yoast/phpunit-polyfills/phpuni
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
+
+// We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
+if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
+	error_reporting( error_reporting() ^ E_DEPRECATED ); // phpcs:ignore
+}
 
 /**
  * Don't init the subscriptions-core package when running WCPAY unit tests.
