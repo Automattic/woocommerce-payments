@@ -357,12 +357,8 @@ class WC_Payments_Utils {
 			'phone'   => $order->get_billing_phone(),
 		];
 
-		$remove_empty_entries = function ( $value ) {
-			return ! empty( $value );
-		};
-
-		$billing_details['address'] = array_filter( $billing_details['address'], $remove_empty_entries );
-		return array_filter( $billing_details, $remove_empty_entries );
+		$billing_details['address'] = array_filter( $billing_details['address'] );
+		return array_filter( $billing_details );
 	}
 
 	/**
@@ -585,6 +581,6 @@ class WC_Payments_Utils {
 	 */
 	public static function get_cached_minimum_amount( $currency ) {
 		$cached = get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
-		return intval( $cached ) ? intval( $cached ) : null;
+		return (int) $cached ? (int) $cached : null;
 	}
 }

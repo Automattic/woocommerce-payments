@@ -39,8 +39,8 @@ class WooCommerceDeposits extends BaseCompatibility {
 	 */
 	public function modify_cart_item_deposit_amounts( $cart_contents ) {
 		foreach ( $cart_contents as $cart_item_key => $cart_item ) {
-			if ( isset( $cart_item['is_deposit'] ) && $cart_item['is_deposit'] && isset( $cart_item['deposit_amount'] ) ) {
-					$deposit_amount                                    = floatval( $cart_item['deposit_amount'] );
+			if ( ! empty( $cart_item['is_deposit'] ) && isset( $cart_item['deposit_amount'] ) ) {
+					$deposit_amount                                    = (float) $cart_item['deposit_amount'];
 					$cart_contents[ $cart_item_key ]['deposit_amount'] = $this->multi_currency->get_price( $deposit_amount, 'product' );
 			}
 		}
