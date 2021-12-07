@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
 
 /**
@@ -217,7 +218,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function create_terminal_intent( $request ) {
 		$order_id        = $request['order_id'];
-		$payment_methods = [ 'card_present' ];
+		$payment_methods = [ Payment_Method::CARD_PRESENT ];
 		$capture_method  = 'manual';
 
 		// Do not process non-existing orders.
