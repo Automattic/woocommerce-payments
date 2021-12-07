@@ -59,7 +59,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 
 		$this->set_platform_checkout_enabled( false );
 
-		$request = new WP_REST_Request( 'GET', '/wc/v3/orders' );
+		$request = new WP_REST_Request( 'GET', '/wc/store/checkout' );
 
 		$response = rest_do_request( $request );
 
@@ -74,7 +74,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 
 		$this->set_platform_checkout_enabled( true );
 
-		$request = new WP_REST_Request( 'GET', '/wc/v3/orders' );
+		$request = new WP_REST_Request( 'GET', '/wc/store/checkout' );
 
 		$response = rest_do_request( $request );
 
