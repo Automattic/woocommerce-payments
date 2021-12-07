@@ -16,7 +16,6 @@
             <directory name="vendor" />
 			<!-- Not much logic there, but a lot of false-positives -->
             <directory name="includes/in-person-payments/templates" />
-            <directory name="includes/compat/subscriptions/emails" />
 			<!-- There are no stubs yet for Subscriptions, hence analysis is not usable there -->
 			<directory name="includes/subscriptions" />
 			<directory name="includes/compat/subscriptions" />
