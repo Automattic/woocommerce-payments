@@ -77,7 +77,6 @@ function woocommerce_admin_parse_pot( $file_name ) {
 
 /**
  * Generates a map with the mapping for 'original source file' -> final transpiled/minified file in the 'dist' folder.
- *
  * Format example:
  * [
  *   'client/card-readers/settings/file-upload.js' => [
@@ -85,7 +84,8 @@ function woocommerce_admin_parse_pot( $file_name ) {
  *     'dist/tos.js',
  *   ]
  * ]
- * @return array
+ *
+ * @return array Mapping of source js files and the generated files that use them.
  */
 function load_js_transpiling_source_maps() {
 	$mappings = [];
