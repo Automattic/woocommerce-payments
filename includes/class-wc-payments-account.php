@@ -291,9 +291,9 @@ class WC_Payments_Account {
 	 *
 	 * @return string Email.
 	 */
-	public function get_account_email() {
+	public function get_account_email(): string {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['email'] ) ? $account['email'] : [];
+		return $account['email'] ?? '';
 	}
 
 	/**

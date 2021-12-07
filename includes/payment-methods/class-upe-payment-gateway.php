@@ -48,7 +48,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Array mapping payment method string IDs to classes
 	 *
-	 * @var array
+	 * @var UPE_Payment_Method[]
 	 */
 	protected $payment_methods = [];
 
@@ -649,9 +649,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_fields['addPaymentReturnURL'] = esc_url_raw( home_url( add_query_arg( [] ) ) );
 
 				if ( $this->is_setup_intent_success_creation_redirection() && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wpnonce'] ) ) ) ) {
-					$setup_intent_id                  = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
-					$token                            = $this->create_token_from_setup_intent( $setup_intent_id, wp_get_current_user() );
-					$payment_fields['newTokenFormId'] = '#wc-' . $token->get_gateway_id() . '-payment-token-' . $token->get_id();
+					$setup_intent_id = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
+					$token           = $this->create_token_from_setup_intent( $setup_intent_id, wp_get_current_user() );
+					if ( null !== $token ) {
+						$payment_fields['newTokenFormId'] = '#wc-' . $token->get_gateway_id() . '-payment-token-' . $token->get_id();
+					}
 				}
 				return $payment_fields;
 			}
@@ -695,7 +697,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param string  $setup_intent_id ID of the setup intent.
 	 * @param WP_User $user            User to add token to.
 	 *
-	 * @return WC_Payment_Token_CC The added token.
+	 * @return WC_Payment_Token_CC|null The added token.
 	 */
 	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
 		try {
@@ -709,9 +711,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		} catch ( Exception $e ) {
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
 			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
-			return [
-				'result' => 'error',
-			];
 		}
 	}
 
@@ -837,13 +836,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$active_payment_methods     = $this->get_upe_enabled_payment_method_statuses();
 		foreach ( $capturable_payment_methods as $payment_method_id ) {
 			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
-			if ( isset( $this->payment_methods[ $payment_method_id ] )
-				&& $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id )
-				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() )
-				&& isset( $active_payment_methods[ $payment_method_capability_key ] )
-				&& 'active' === $active_payment_methods[ $payment_method_capability_key ]['status']
-			) {
-				$enabled_payment_methods[] = $payment_method_id;
+			if ( isset( $this->payment_methods[ $payment_method_id ] ) ) {
+				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
+				if ( $processing_payment_method->is_enabled_at_checkout() && ( is_admin() || $processing_payment_method->is_currency_valid() ) ) {
+					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
+					if ( 'active' === $status ) {
+						$enabled_payment_methods[] = $payment_method_id;
+					}
+				}
 			}
 		}
 

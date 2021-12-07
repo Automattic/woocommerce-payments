@@ -220,7 +220,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
-		/* @var WC_Product|WC_Product_Variable $product */ // phpcs:ignore
 		$product  = $this->get_product();
 		$currency = get_woocommerce_currency();
 
@@ -879,7 +878,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @param array $shipping_methods Array of selected shipping methods ids.
 	 */
 	public function update_shipping_method( $shipping_methods ) {
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+		$chosen_shipping_methods = (array) WC()->session->get( 'chosen_shipping_methods' );
 
 		if ( is_array( $shipping_methods ) ) {
 			foreach ( $shipping_methods as $i => $value ) {
