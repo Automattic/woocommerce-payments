@@ -116,7 +116,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return int The amount in cents.
 	 */
-	public static function prepare_amount( $amount, string $currency = 'USD' ): int {
+	public static function prepare_amount( $amount, $currency = 'USD' ): int {
 		$conversion_rate = 100;
 
 		if ( self::is_zero_decimal_currency( strtolower( $currency ) ) ) {
