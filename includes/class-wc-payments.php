@@ -160,12 +160,7 @@ class WC_Payments {
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 
-		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
-			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
-			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
-			// Disable nonce checks for API calls. TODO This should be changed.
-			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-		}
+		self::maybe_register_platform_checkout_hooks();
 
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
@@ -777,6 +772,18 @@ class WC_Payments {
 	 */
 	public static function is_network_saved_cards_enabled() {
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
+	}
+
+	/**
+	 * Registers platform checkout hooks if the platform checkout feature flag is enabled.
+	 */
+	public static function maybe_register_platform_checkout_hooks() {
+		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
+			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
+			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
+			// Disable nonce checks for API calls. TODO This should be changed.
+			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		}
 	}
 
 	/**
