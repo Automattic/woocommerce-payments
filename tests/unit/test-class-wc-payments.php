@@ -53,10 +53,6 @@ class WC_Payments_Test extends WP_UnitTestCase {
 	}
 
 	public function test_rest_endpoints_validate_nonce_if_platform_checkout_feature_flag_is_disabled() {
-		if ( ! did_action( 'woocommerce_blocks_loaded' ) ) {
-			$this->markTestSkipped( 'Cannot test X-WC-Store-API-Nonce without WC Blocks' );
-		}
-
 		$this->set_platform_checkout_enabled( false );
 
 		$request = new WP_REST_Request( 'GET', '/wc/store/checkout' );
@@ -68,10 +64,6 @@ class WC_Payments_Test extends WP_UnitTestCase {
 	}
 
 	public function test_rest_endpoints_do_not_validate_nonce_if_platform_checkout_feature_flag_is_enabled() {
-		if ( ! did_action( 'woocommerce_blocks_loaded' ) ) {
-			$this->markTestSkipped( 'Cannot test X-WC-Store-API-Nonce without WC Blocks' );
-		}
-
 		$this->set_platform_checkout_enabled( true );
 
 		$request = new WP_REST_Request( 'GET', '/wc/store/checkout' );
