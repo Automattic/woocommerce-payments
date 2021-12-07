@@ -11,4 +11,17 @@ define( 'ABSPATH', __DIR__ );
 define( 'WCPAY_ABSPATH', __DIR__ . '/' );
 define( 'WCPAY_PLUGIN_FILE', WCPAY_ABSPATH . 'woocommerce-payments.php' );
 
-require_once __DIR__ . '/includes/multi-currency/wc-payments-multi-currency.php';
+/* extract lines where files are included (order is important) */
+$files = array_filter(
+	file( __DIR__ . '/includes/class-wc-payments.php' ),
+	static function ( string $line ): bool {
+		return strpos( $line, 'include_once ' ) !== false;
+	}
+);
+/* normalize the paths and include them */
+foreach ( $files as $line ) {
+	$parts = explode( ' ', trim( $line ) );
+	$file  = __DIR__ . '/includes/' . trim( array_pop( $parts ), "';/");
+	$file  = str_replace( '/includes/includes/', '/includes/', $file );
+	require_once $file;
+}
