@@ -48,7 +48,7 @@ class BackendCurrencies {
 
 		// We need to check first if it's a request coming from the backend, frontend REST requests shouldn't be
 		// affected by this.
-		$is_backend_request = 0 === strpos( strtolower( wp_get_referer() ), strtolower( admin_url() ) );
+		$is_backend_request = 0 === stripos( wp_get_referer(), admin_url() );
 
 		// Add the filter if it's an admin request or a REST request from the admin side.
 		if ( ( is_admin() || ( WC()->is_rest_api_request() && $is_backend_request ) ) && ! defined( 'DOING_CRON' ) ) {

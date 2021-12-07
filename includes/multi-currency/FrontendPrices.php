@@ -190,7 +190,7 @@ class FrontendPrices {
 	 * @return array The shipping zone settings with converted min_amount.
 	 */
 	public function get_free_shipping_min_amount( $data ) {
-		if ( ! isset( $data['min_amount'] ) || ! $data['min_amount'] ) {
+		if ( empty( $data['min_amount'] ) ) {
 			return $data;
 		}
 
@@ -214,7 +214,7 @@ class FrontendPrices {
 		foreach ( $shipping_zones as $shipping_zone ) {
 			foreach ( $shipping_zone['shipping_methods'] as $shipping_method ) {
 				if ( 'free_shipping' === $shipping_method->id ) {
-					$option_name = 'option_woocommerce_' . trim( $shipping_method->id ) . '_' . intval( $shipping_method->instance_id ) . '_settings';
+					$option_name = 'option_woocommerce_' . trim( $shipping_method->id ) . '_' . (int) $shipping_method->instance_id . '_settings';
 					add_filter( $option_name, [ $this, 'get_free_shipping_min_amount' ], 50 );
 				}
 			}

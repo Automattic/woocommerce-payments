@@ -108,10 +108,14 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Add support for suggested gateway methods in WC-Admin.
 * Fix - Prevent Payment Request buttons from showing up in Composite Product pages.
 * Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
+* Add - Card Reader receipt settings page.
 * Fix - Fatal error on thank you page for deleted orders.
 * Add - Error messages when dispute evidence exceeds Stripe limits.
 * Fix - Onboarding must be completed before Subscriptions products can be published.
-* Add - Support business account branding settings
+* Fix - Show the prices in the correct currency when using the "All Products" block.
+* Add - Support business account branding settings.
+* Update - Capture order-related metadata not captured by mobile app for in-person payment transactions.
+* Add - REST endpoint to print IPP receipts.
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
