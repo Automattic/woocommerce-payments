@@ -11,6 +11,7 @@
 		<testsuite name="WCPay">
 			<directory suffix=".php">./tests/unit</directory>
 			<exclude>./tests/unit/multi-currency</exclude>
+			<exclude>./tests/unit/patches</exclude>
 		</testsuite>
 		<testsuite name="WCPayMultiCurrency">
 			<directory suffix=".php">./tests/unit/helpers</directory>
