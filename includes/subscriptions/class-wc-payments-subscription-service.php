@@ -613,7 +613,7 @@ class WC_Payments_Subscription_Service {
 	/**
 	 * Show WCPay Subscription ID on Edit Subscription page.
 	 *
-	 * @param WC_Order $order The order object.
+	 * @param WC_Order|WC_Subscription $order The order object.
 	 */
 	public function show_wcpay_subscription_id( WC_Order $order ) {
 		if ( ! wcs_is_subscription( $order ) || ! self::is_wcpay_subscription( $order ) ) {

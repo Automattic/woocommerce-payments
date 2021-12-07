@@ -9,7 +9,6 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 

@@ -116,14 +116,14 @@ class WC_Payments_Utils {
 	 *
 	 * @return int The amount in cents.
 	 */
-	public static function prepare_amount( $amount, $currency = 'USD' ) {
+	public static function prepare_amount( $amount, string $currency = 'USD' ): int {
 		$conversion_rate = 100;
 
 		if ( self::is_zero_decimal_currency( strtolower( $currency ) ) ) {
 			$conversion_rate = 1;
 		}
 
-		return round( (float) $amount * $conversion_rate );
+		return (int) round( (float) $amount * $conversion_rate );
 	}
 
 	/**
@@ -364,11 +364,11 @@ class WC_Payments_Utils {
 	/**
 	 * Redacts the provided array, removing the sensitive information, and limits its depth to LOG_MAX_RECURSION.
 	 *
-	 * @param array   $array The array to redact.
+	 * @param mixed   $array The array to redact.
 	 * @param array   $keys_to_redact The keys whose values need to be redacted.
 	 * @param integer $level The current recursion level.
 	 *
-	 * @return array The redacted array.
+	 * @return mixed The redacted array.
 	 */
 	public static function redact_array( $array, $keys_to_redact, $level = 0 ) {
 		if ( is_object( $array ) ) {

@@ -944,7 +944,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Process the payment for a given order.
 	 *
-	 * @param WC_Cart                   $cart Cart.
+	 * @param WC_Cart|null              $cart Cart.
 	 * @param WCPay\Payment_Information $payment_information Payment info.
 	 * @param array                     $additional_api_parameters Any additional fields required for payment method to pass to API.
 	 *
