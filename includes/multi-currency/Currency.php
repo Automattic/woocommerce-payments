@@ -171,7 +171,7 @@ class Currency implements \JsonSerializable {
 	 * @return string Rounding rate.
 	 */
 	public function get_rounding(): string {
-		return (string) ( $this->rounding ?? 0 );
+		return (string) ( $this->rounding ?? '0' );
 	}
 
 	/**
