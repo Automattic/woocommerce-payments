@@ -118,19 +118,6 @@ class WC_Payments_Admin {
 				],
 			],
 		];
-
-		if ( $this->account->is_card_present_eligible() && self::is_card_readers_page_enabled() ) {
-			$this->admin_child_pages['wc-payments-card-readers'] = [
-				'id'       => 'wc-payments-card-readers',
-				'title'    => __( 'Card Readers', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/card-readers',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 50,
-				],
-			];
-		}
 	}
 
 	/**
@@ -226,6 +213,18 @@ class WC_Payments_Admin {
 		);
 
 		if ( $should_render_full_menu ) {
+			if ( self::is_card_readers_page_enabled() && $this->account->is_card_present_eligible() ) {
+				$this->admin_child_pages['wc-payments-card-readers'] = [
+					'id'       => 'wc-payments-card-readers',
+					'title'    => __( 'Card Readers', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/card-readers',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 50,
+					],
+				];
+			}
 
 			/**
 			 * Please note that if any other page is registered first and it's
