@@ -25,6 +25,13 @@ const receiveCharges = ( state = {}, { type, id, data, error } ) => {
 				},
 			};
 			break;
+		case TYPES.SET_READERS:
+			state = {
+				...state,
+				list: data,
+			};
+
+			break;
 	}
 	return state;
 };

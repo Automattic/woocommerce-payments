@@ -98,7 +98,7 @@ class StorefrontIntegration {
 		if ( 0 < count( $simulation_variables ) && isset( $simulation_variables['enable_storefront_switcher'] ) ) {
 			// We have a incoming override request! Simulate the flag.
 			$simulation_enabled         = true;
-			$enable_storefront_switcher = boolval( $simulation_variables['enable_storefront_switcher'] );
+			$enable_storefront_switcher = (bool) $simulation_variables['enable_storefront_switcher'];
 			// If the Storefront switcher is not enabled on the onboarding page, hide it.
 			if ( ! $enable_storefront_switcher ) {
 				$simulation_hide_switcher = true;

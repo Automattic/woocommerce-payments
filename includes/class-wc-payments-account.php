@@ -730,8 +730,9 @@ class WC_Payments_Account {
 		delete_transient( 'wcpay_stripe_onboarding_state' );
 		$this->clear_cache();
 
-		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
-		WC_Payments::get_gateway()->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', 'yes' );
+		$gateway->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
 
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
@@ -1081,7 +1082,7 @@ class WC_Payments_Account {
 	 * @return bool
 	 */
 	private function is_instant_deposits_eligible( array $account ): bool {
-		if ( ! isset( $account['instant_deposits_eligible'] ) || ! $account['instant_deposits_eligible'] ) {
+		if ( empty( $account['instant_deposits_eligible'] ) ) {
 			return false;
 		}
 

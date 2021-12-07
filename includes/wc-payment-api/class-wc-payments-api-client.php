@@ -53,6 +53,7 @@ class WC_Payments_API_Client {
 	const SUBSCRIPTIONS_API      = 'subscriptions';
 	const SUBSCRIPTION_ITEMS_API = 'subscriptions/items';
 	const READERS_CHARGE_SUMMARY = 'reader-charges/summary';
+	const TERMINAL_READERS_API   = 'terminal/readers';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1362,6 +1363,18 @@ class WC_Payments_API_Client {
 	 */
 	public function get_terminal_locations() {
 		return $this->request( [], self::TERMINAL_LOCATIONS_API, self::GET );
+	}
+
+	/**
+	 * Retrieves a store's terminal readers.
+	 *
+	 * @return array[] Stripe terminal readers objects.
+	 * @see https://stripe.com/docs/api/terminal/readers/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_terminal_readers() {
+		return $this->request( [], self::TERMINAL_READERS_API, self::GET );
 	}
 
 	/**
