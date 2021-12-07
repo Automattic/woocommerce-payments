@@ -29,7 +29,7 @@ class WC_Payments {
 	/**
 	 * Instance of WC_Payment_Gateway_WCPay, created in init function.
 	 *
-	 * @var CC_Payment_Gateway
+	 * @var WC_Payment_Gateway_WCPay
 	 */
 	private static $card_gateway;
 
