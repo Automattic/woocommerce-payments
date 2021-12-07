@@ -223,13 +223,13 @@ class CurrencySwitcherBlock {
 	 * Get hidden inputs for every $_GET param.
 	 * This prevents the switcher form to remove them on submit.
 	 *
-	 * @return void
+	 * @return string|null
 	 */
 	private function get_get_params() {
-		// phpcs:disable WordPress.Security.NonceVerification
-		if ( empty( $_GET ) ) {
-			return;
+		if ( empty( $_GET ) ) { // phpcs:disable WordPress.Security.NonceVerification
+			return null;
 		}
+
 		$params = explode( '&', urldecode( http_build_query( $_GET ) ) );
 		$return = '';
 		foreach ( $params as $param ) {
@@ -242,6 +242,5 @@ class CurrencySwitcherBlock {
 			$return .= '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . esc_attr( $value ) . '" />';
 		}
 		return $return;
-		// phpcs:enable WordPress.Security.NonceVerification
 	}
 }

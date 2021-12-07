@@ -199,7 +199,7 @@ class WC_Payments_Account {
 	/**
 	 * Gets the business support address.
 	 *
-	 * @return string Business profile support address.
+	 * @return array Business profile support address.
 	 */
 	public function get_business_support_address() : array {
 		$account = $this->get_cached_account_data();
