@@ -1092,7 +1092,7 @@ class WC_Payments_Account {
 	/**
 	 * Read the account from the WP option we cache it in.
 	 *
-	 * @return array|string|bool
+	 * @return array|bool
 	 */
 	private function read_account_from_cache() {
 		$account_cache = get_option( self::ACCOUNT_OPTION );

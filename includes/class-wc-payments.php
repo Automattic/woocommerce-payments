@@ -623,12 +623,13 @@ class WC_Payments {
 	 * @param string $file Local path to the file.
 	 * @return string The cache buster value to use for the given file.
 	 */
-	public static function get_file_version( $file ) {
+	public static function get_file_version( $file ): string {
+		$version = WCPAY_VERSION_NUMBER;
 		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( WCPAY_ABSPATH . $file ) ) {
-			$file = trim( $file, '/' );
-			return filemtime( WCPAY_ABSPATH . $file );
+			$stamp   = filemtime( WCPAY_ABSPATH . trim( $file, '/' ) );
+			$version = $stamp ? (string) $stamp : $version;
 		}
-		return WCPAY_VERSION_NUMBER;
+		return $version;
 	}
 
 	/**

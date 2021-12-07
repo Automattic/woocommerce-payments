@@ -220,6 +220,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
+		/* @var WC_Product|WC_Product_Variable $product */ // phpcs:ignore
 		$product  = $this->get_product();
 		$currency = get_woocommerce_currency();
 
