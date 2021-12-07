@@ -167,7 +167,7 @@ class WC_Payments_Invoice_Service {
 				$this->payments_api_client->charge_invoice( $invoice_id, [ 'paid_out_of_band' => 'true' ] );
 			} catch ( API_Exception $e ) {
 				// If the invoice was already paid, silently handle that error. Throw all other exceptions.
-				if ( WP_Http::BAD_REQUEST === $e->get_http_code() && false !== strpos( strtolower( $e->getMessage() ), 'invoice is already paid' ) ) {
+				if ( WP_Http::BAD_REQUEST === $e->get_http_code() && false !== stripos( $e->getMessage(), 'invoice is already paid' ) ) {
 					Logger::info( sprintf( 'Invoice for subscription #%s has already been paid.', $subscription->get_id() ) );
 				} else {
 					throw $e;

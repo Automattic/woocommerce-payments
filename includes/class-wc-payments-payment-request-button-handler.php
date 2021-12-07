@@ -554,7 +554,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function is_available_at( $location ) {
 		$available_locations = $this->gateway->get_option( 'payment_request_button_locations' );
-		if ( is_array( $available_locations ) && count( $available_locations ) ) {
+		if ( $available_locations && is_array( $available_locations ) ) {
 			return in_array( $location, $available_locations, true );
 		}
 
@@ -717,6 +717,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			foreach ( $product_addons as $addon ) {
 				if ( 'file_upload' === $addon['type'] ) {
 					$is_supported = false;
+					break;
 				}
 			}
 		}
@@ -732,6 +733,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
+		}
+
+		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
+			define( 'WOOCOMMERCE_CHECKOUT', true );
 		}
 
 		WC()->cart->calculate_totals();
@@ -895,7 +900,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		try {
 			$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
 			$qty          = ! isset( $_POST['qty'] ) ? 1 : apply_filters( 'woocommerce_add_to_cart_quantity', absint( $_POST['qty'] ), $product_id );
-			$addon_value  = isset( $_POST['addon_value'] ) ? max( floatval( $_POST['addon_value'] ), 0 ) : 0;
+			$addon_value  = isset( $_POST['addon_value'] ) ? max( (float) $_POST['addon_value'], 0 ) : 0;
 			$product      = wc_get_product( $product_id );
 			$variation_id = null;
 			$currency     = get_woocommerce_currency();
@@ -1050,10 +1055,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function is_normalized_state( $state, $country ) {
 		$wc_states = WC()->countries->get_states( $country );
-		return (
-			is_array( $wc_states ) &&
-			in_array( $state, array_keys( $wc_states ), true )
-		);
+		return is_array( $wc_states ) && array_key_exists( $state, $wc_states );
 	}
 
 	/**

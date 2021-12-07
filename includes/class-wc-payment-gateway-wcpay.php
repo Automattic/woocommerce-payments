@@ -33,6 +33,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const METHOD_ENABLED_KEY = 'enabled';
 
+	const ACCOUNT_SETTINGS_MAPPING = [
+		'account_statement_descriptor'     => 'statement_descriptor',
+		'account_business_name'            => 'business_name',
+		'account_business_url'             => 'business_url',
+		'account_business_support_address' => 'business_support_address',
+		'account_business_support_email'   => 'business_support_email',
+		'account_business_support_phone'   => 'business_support_phone',
+		'account_branding_logo'            => 'branding_logo',
+		'account_branding_icon'            => 'branding_icon',
+		'account_branding_primary_color'   => 'branding_primary_color',
+		'account_branding_secondary_color' => 'branding_secondary_color',
+	];
+
 	/**
 	 * Stripe intents that are treated as successfully created.
 	 *
@@ -303,10 +316,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
 		if ( $this->is_saved_cards_enabled() ) {
-			$this->supports = array_merge( $this->supports, [ 'tokenization', 'add_payment_method' ] );
+			array_push( $this->supports, 'tokenization', 'add_payment_method' );
 		}
 
-		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, [ $this, 'sanitize_plugin_settings' ] );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
@@ -817,7 +829,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->update_status( 'failed' );
 			}
 
-			if ( $e instanceof API_Exception && $e->get_error_code() === 'card_declined' ) {
+			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
 				$this->failed_transaction_rate_limiter->bump();
 			}
 
@@ -1511,6 +1523,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return parent::get_option( static::METHOD_ENABLED_KEY, $empty_value );
 			case 'account_statement_descriptor':
 				return $this->get_account_statement_descriptor();
+			case 'account_business_name':
+				return $this->get_account_business_name();
+			case 'account_business_url':
+				return $this->get_account_business_url();
+			case 'account_business_support_address':
+				return $this->get_account_business_support_address();
+			case 'account_business_support_email':
+				return $this->get_account_business_support_email();
+			case 'account_business_support_phone':
+				return $this->get_account_business_support_phone();
+			case 'account_branding_logo':
+				return $this->get_account_branding_logo();
+			case 'account_branding_icon':
+				return $this->get_account_branding_icon();
+			case 'account_branding_primary_color':
+				return $this->get_account_branding_primary_color();
+			case 'account_branding_secondary_color':
+				return $this->get_account_branding_secondary_color();
 			default:
 				return parent::get_option( $key, $empty_value );
 		}
@@ -1559,20 +1589,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Sanitizes plugin settings before saving them in site's DB.
-	 *
-	 * Filters out some values stored in connected account.
+	 * Map fields that need to be updated and update the fields server side.
 	 *
 	 * @param array $settings Plugin settings.
-	 * @return array Sanitized settings.
+	 * @return array Updated fields.
 	 */
-	public function sanitize_plugin_settings( $settings ) {
-		if ( isset( $settings['account_statement_descriptor'] ) ) {
-			$this->update_statement_descriptor( $settings['account_statement_descriptor'] );
-			unset( $settings['account_statement_descriptor'] );
+	public function update_account_settings( array $settings ) : array {
+		$account_settings = [];
+		foreach ( static::ACCOUNT_SETTINGS_MAPPING as $name => $account_key ) {
+			if ( isset( $settings[ $name ] ) ) {
+				$account_settings[ $account_key ] = $settings[ $name ];
+			}
 		}
+		$this->update_account( $account_settings );
 
-		return $settings;
+		return $account_settings;
 	}
 
 	/**
@@ -1596,24 +1627,195 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Handles statement descriptor update when plugin settings saved.
+	 * Gets connected account business name.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business name.
+	 *
+	 * @return string Business name or default value.
+	 */
+	protected function get_account_business_name( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_name();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business url.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business url.
+	 *
+	 * @return string Business url or default value.
+	 */
+	protected function get_account_business_url( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_url();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business address.
+	 *
+	 * @param array $default_value Value to return when not connected or failed to fetch business address.
+	 *
+	 * @return array Business address or default value.
+	 */
+	protected function get_account_business_support_address( $default_value = [] ): array {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_support_address();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business support email.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business support email.
+	 *
+	 * @return string Business support email or default value.
+	 */
+	protected function get_account_business_support_email( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_support_email();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business support phone.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business support phone.
+	 *
+	 * @return string Business support phone or default value.
+	 */
+	protected function get_account_business_support_phone( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_support_phone();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding logo.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding logo.
+	 *
+	 * @return string Business support branding logo or default value.
+	 */
+	protected function get_account_branding_logo( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_branding_logo();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding icon.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding icon.
+	 *
+	 * @return string Business support branding icon or default value.
+	 */
+	protected function get_account_branding_icon( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_branding_icon();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding primary color.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding primary color.
+	 *
+	 * @return string Business support branding primary color or default value.
+	 */
+	protected function get_account_branding_primary_color( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_branding_primary_color();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding secondary color.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding secondary color.
+	 *
+	 * @return string Business support branding secondary color or default value.
+	 */
+	protected function get_account_branding_secondary_color( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_branding_secondary_color();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Handles connected account update when plugin settings saved.
 	 *
 	 * Adds error message to display in admin notices in case of failure.
 	 *
-	 * @param string $statement_descriptor Statement descriptor value.
+	 * @param array $account_settings Stripe account settings.
+	 * Supported: statement_descriptor, business_name, business_url, business_support_address,
+	 * business_support_email, business_support_phone, branding_logo, branding_icon,
+	 * branding_primary_color, branding_secondary_color.
 	 */
-	private function update_statement_descriptor( $statement_descriptor ) {
-		if ( empty( $statement_descriptor ) ) {
+	public function update_account( $account_settings ) {
+		if ( empty( $account_settings ) ) {
 			return;
 		}
 
-		$account_settings = [
-			'statement_descriptor' => $statement_descriptor,
-		];
-		$error_message    = $this->account->update_stripe_account( $account_settings );
+		$error_message = $this->account->update_stripe_account( $account_settings );
 
 		if ( is_string( $error_message ) ) {
-			$msg = __( 'Failed to update statement descriptor. ', 'woocommerce-payments' ) . $error_message;
+			$msg = __( 'Failed to update Stripe account. ', 'woocommerce-payments' ) . $error_message;
 			$this->add_error( $msg );
 		}
 	}
@@ -1688,8 +1890,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
 
 		try {
+			$intent_id    = $order->get_transaction_id();
+			$intent       = $this->payments_api_client->get_intent( $intent_id );
+			$payment_type = $this->is_payment_recurring( $order->get_id() ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
+
+			$metadata_from_intent = $intent->get_metadata(); // mobile app may have set metadata.
+			$metadata_from_order  = $this->get_metadata_from_order( $order, $payment_type );
+			$merged_metadata      = array_merge( (array) $metadata_from_order, (array) $metadata_from_intent ); // prioritize metadata from mobile app.
+
+			$this->payments_api_client->update_intention_metadata(
+				$intent_id,
+				$merged_metadata
+			);
+
 			$intent = $this->payments_api_client->capture_intention(
-				$order->get_transaction_id(),
+				$intent_id,
 				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
 				$this->get_level3_data_from_order( $order )
 			);
@@ -2453,5 +2668,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return [
 			'card',
 		];
+	}
+
+	/**
+	 * Text provided to users during onboarding setup.
+	 *
+	 * @return string
+	 */
+	public function get_setup_help_text() {
+		return __( 'Next we’ll ask you to share a few details about your business to create your account.', 'woocommerce-payments' );
+	}
+
+	/**
+	 * Get the oAuth connection URL.
+	 *
+	 * @return string Connection URL.
+	 */
+	public function get_connection_url() {
+		return html_entity_decode( WC_Payments_Account::get_connect_url() );
+	}
+
+	/**
+	 * Returns true if the code returned from the API represents an error that should be rate-limited.
+	 *
+	 * @param string $error_code The error code returned from the API.
+	 *
+	 * @return bool Whether the rate limiter should be bumped.
+	 */
+	protected function should_bump_rate_limiter( string $error_code ): bool {
+		return in_array( $error_code, [ 'card_declined', 'incorrect_number', 'incorrect_cvc' ], true );
 	}
 }
