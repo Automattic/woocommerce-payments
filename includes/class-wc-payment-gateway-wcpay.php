@@ -2612,7 +2612,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Returns the list of statuses and capabilities available for UPE payment methods in the cached account.
 	 *
-	 * @return  string[]  The payment method statuses.
+	 * @return mixed[] The payment method statuses.
 	 */
 	public function get_upe_enabled_payment_method_statuses() {
 		$account_data = $this->account->get_cached_account_data();
