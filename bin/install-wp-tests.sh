@@ -125,7 +125,7 @@ configure_wp() {
 	fi
 
     # MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versiosn
-	sed -i "/Happy publishing/i mysqli_report(MYSQLI_REPORT_OFF);\n" wp-config.php
+	sed -i "/Happy publishing/i mysqli_report(MYSQLI_REPORT_OFF);\n" "$WP_CORE_DIR/wp-config.php"
 
 	wp core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --skip-email
 }
