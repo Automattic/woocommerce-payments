@@ -17,11 +17,15 @@ if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
 }
 
 if ( PHP_VERSION_ID >= 80000 && file_exists( $_tests_dir . '/includes/phpunit7/MockObject' ) ) {
-	// WP Core test library includes patches for PHPUnit 7 to make it compatible with PHP8.
+	// WP Core test library includes patches for PHPUnit 7 to make it compatible with PHP8.0.
 	require_once $_tests_dir . '/includes/phpunit7/MockObject/Builder/NamespaceMatch.php';
 	require_once $_tests_dir . '/includes/phpunit7/MockObject/Builder/ParametersMatch.php';
 	require_once $_tests_dir . '/includes/phpunit7/MockObject/InvocationMocker.php';
 	require_once $_tests_dir . '/includes/phpunit7/MockObject/MockMethod.php';
+}
+if ( PHP_VERSION_ID >= 81000 ) {
+	// Our patches for PHPUnit 7 to make it compatible with PHP8.1.
+	require_once $_tests_dir . '/patches/PHPUnit7/Util/Configuration.php';
 }
 
 // Give access to tests_add_filter() function.
