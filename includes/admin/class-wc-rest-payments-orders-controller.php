@@ -216,17 +216,17 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function create_terminal_intent( $request ) {
+		$order_id        = $request['order_id'];
+		$payment_methods = [ 'card_present' ];
+		$capture_method  = 'manual';
+
+		// Do not process non-existing orders.
+		$order = wc_get_order( $order_id );
+		if ( false === $order ) {
+			return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
+		}
+
 		try {
-			$order_id        = $request['order_id'];
-			$payment_methods = [ 'card_present' ];
-			$capture_method  = 'manual';
-
-			// Do not process non-existing orders.
-			$order = wc_get_order( $order_id );
-			if ( false === $order ) {
-				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
-			}
-
 			// Create a new intention.
 			$result = $this->gateway->create_intent( $order, $payment_methods, $capture_method );
 			if ( 'created' !== $result['status'] ) {
