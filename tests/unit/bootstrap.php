@@ -7,7 +7,7 @@
 
 // Starting PHP 7.4 we are dealing with deprecation warnings and BC breaks, this blocks addresses some of them.
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
-	error_reporting( error_reporting() & ~E_DEPRECATED ); // phpcs:ignore
+	error_reporting( error_reporting() & ~E_DEPRECATED & ~E_NOTICE ); // phpcs:ignore
 }
 
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
