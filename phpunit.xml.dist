@@ -4,6 +4,8 @@
 	backupGlobals="false"
 	colors="true"
 	convertErrorsToExceptions="true"
+	convertNoticesToExceptions="true"
+	convertWarningsToExceptions="true"
 	>
 	<testsuites>
 		<testsuite name="WCPay">
