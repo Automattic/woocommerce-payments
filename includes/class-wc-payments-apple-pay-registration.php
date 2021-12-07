@@ -162,7 +162,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$well_known_dir = untrailingslashit( ABSPATH ) . '/' . self::DOMAIN_ASSOCIATION_FILE_DIR;
 		$fullpath       = $well_known_dir . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
 
-		if ( ! is_dir( $well_known_dir ) && ! mkdir( $well_known_dir, 0755 ) && ! is_dir( $well_known_dir ) ) {
+		if ( ! is_dir( $well_known_dir ) && ! @mkdir( $well_known_dir, 0755 ) && ! is_dir( $well_known_dir ) ) { // @codingStandardsIgnoreLine
 			return __( 'Unable to create domain association folder to domain root.', 'woocommerce-payments' );
 		}
 
