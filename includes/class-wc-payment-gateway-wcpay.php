@@ -2556,7 +2556,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			]
 		);
 		return array_map(
-			function ( $token ) {
+			static function ( WC_Payment_Token $token ): array {
 				return [
 					'tokenId'         => $token->get_id(),
 					'paymentMethodId' => $token->get_token(),

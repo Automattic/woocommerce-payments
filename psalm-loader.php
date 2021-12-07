@@ -9,7 +9,10 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 define( 'ABSPATH', __DIR__ );
 define( 'WCPAY_ABSPATH', __DIR__ . '/' );
-define( 'WCPAY_PLUGIN_FILE', WCPAY_ABSPATH . 'woocommerce-payments.php' );
+define( 'WCPAY_PLUGIN_FILE', __DIR__ . '/woocommerce-payments.php' );
+
+require_once __DIR__ . '/includes/class-wc-payments-features.php';
+require_once __DIR__ . '/includes/class-wc-payments.php';
 
 /* extract lines where files are included (order is important) */
 $files = array_filter(
