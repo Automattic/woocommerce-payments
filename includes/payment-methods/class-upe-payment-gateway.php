@@ -510,9 +510,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Processes redirect payments.
 	 *
-	 * @param int    $order_id The order ID being processed.
-	 * @param string $intent_id The Stripe setup/payment intent ID for the order payment.
-	 * @param bool   $save_payment_method Boolean representing whether payment method for order should be saved.
+	 * @param int|string $order_id The order ID being processed.
+	 * @param string     $intent_id The Stripe setup/payment intent ID for the order payment.
+	 * @param bool       $save_payment_method Boolean representing whether payment method for order should be saved.
 	 *
 	 * @throws Process_Payment_Exception When the payment intent has an error.
 	 */
