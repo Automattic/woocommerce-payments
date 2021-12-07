@@ -331,12 +331,35 @@ class FrontendCurrencies {
 	 * @return bool
 	 */
 	private function should_use_order_currency(): bool {
-		return $this->utils->is_call_in_backtrace(
-			[
-				'WC_Shortcode_My_Account::view_order',
-				'WC_Shortcode_Checkout::order_received',
-				'WC_Shortcode_Checkout::order_pay',
-			]
-		);
+		global $wp;
+
+		if ( $wp->query_vars ) {
+			if ( isset( $wp->query_vars['pagename'] ) ) {
+				$pages           = [ 'my-account', 'checkout' ];
+				$vars            = [ 'order-received', 'order-pay', 'order-received', 'orders' ];
+				$check_backtrace = false;
+
+				if ( in_array( $wp->query_vars['pagename'], $pages, true ) ) {
+					foreach ( $vars as $var ) {
+						$check_backtrace = isset( $wp->query_vars[ $var ] );
+						if ( $check_backtrace ) {
+							break;
+						}
+					}
+				}
+				if ( $check_backtrace ) {
+					return $this->utils->is_call_in_backtrace(
+						[
+							'WC_Shortcode_My_Account::view_order',
+							'WC_Shortcode_Checkout::order_received',
+							'WC_Shortcode_Checkout::order_pay',
+							'WC_Order->get_formatted_order_total',
+						]
+					);
+				}
+			}
+		}
+
+		return false;
 	}
 }

@@ -119,6 +119,11 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_decimals_returns_num_decimals_for_order_currency() {
+		global $wp;
+		$wp->query_vars = [
+			'pagename'       => 'checkout',
+			'order-received' => '42',
+		];
 		$this->mock_utils
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
@@ -147,6 +152,11 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_decimal_separator_returns_decimal_sep_for_order_currency() {
+		global $wp;
+		$wp->query_vars = [
+			'pagename'       => 'checkout',
+			'order-received' => '42',
+		];
 		$this->mock_utils
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
@@ -175,6 +185,11 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_thousand_separator_returns_thousand_sep_for_order_currency() {
+		global $wp;
+		$wp->query_vars = [
+			'pagename'       => 'checkout',
+			'order-received' => '42',
+		];
 		$this->mock_utils
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
@@ -203,6 +218,11 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_woocommerce_price_format_returns_format_for_order_currency_pos() {
+		global $wp;
+		$wp->query_vars = [
+			'pagename'       => 'checkout',
+			'order-received' => '42',
+		];
 		$this->mock_utils
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
