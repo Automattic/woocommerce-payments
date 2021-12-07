@@ -24,5 +24,6 @@
 		<ParadoxicalCondition errorLevel="suppress" />
 		<MissingFile errorLevel="suppress" />
 		<DuplicateClass errorLevel="suppress" />
+		<UndefinedDocblockClass errorLevel="suppress" />
 	</issueHandlers>
 </psalm>
