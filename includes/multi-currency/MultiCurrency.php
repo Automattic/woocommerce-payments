@@ -611,9 +611,9 @@ class MultiCurrency {
 	 * @return Currency
 	 */
 	public function get_selected_currency(): Currency {
-		$code = $this->get_stored_currency_code();
-
-		$code = $this->compatibility->override_selected_currency() ? $this->compatibility->override_selected_currency() : $code;
+		$code = $this->compatibility->override_selected_currency()
+			? $this->compatibility->override_selected_currency()
+			: $this->get_stored_currency_code();
 
 		return $this->get_enabled_currencies()[ $code ] ?? $this->get_default_currency();
 	}
@@ -1140,8 +1140,6 @@ class MultiCurrency {
 
 	/**
 	 * Apply client order currency format and reduces the rounding precision to 2.
-	 *
-	 * @psalm-suppress InvalidGlobal
 	 *
 	 * @return  void
 	 */

@@ -992,7 +992,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
-				$note = sprintf(
+				$payment_token = $payment_information->get_payment_token();
+				$note          = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 						/* translators: %1: the last 4 digit of the credit card */
 						__( 'Payment method is changed to: <strong>Credit card ending in %1$s</strong>.', 'woocommerce-payments' ),
@@ -1000,11 +1001,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'strong' => '<strong>',
 						]
 					),
-					$payment_information->get_payment_token()->get_last4()
+					$payment_token instanceof WC_Payment_Token_CC ? $payment_token->get_last4() : '----'
 				);
 				$order->add_order_note( $note );
 
-				do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $payment_information->get_payment_token() );
+				do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $payment_token );
 			}
 
 			$order->set_payment_method_title( __( 'Credit / Debit Card', 'woocommerce-payments' ) );
@@ -2556,7 +2557,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			]
 		);
 		return array_map(
-			static function ( WC_Payment_Token $token ): array {
+			static function ( WC_Payment_Token_CC $token ): array {
 				return [
 					'tokenId'         => $token->get_id(),
 					'paymentMethodId' => $token->get_token(),

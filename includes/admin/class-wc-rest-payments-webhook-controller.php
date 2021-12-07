@@ -189,7 +189,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		// Fetch the details of the failed refund so that we can find the associated order and write a note.
 		$charge_id = $this->read_rest_property( $event_object, 'charge' );
 		$refund_id = $this->read_rest_property( $event_object, 'id' );
-		$amount    = $this->read_rest_property( $event_object, 'amount' );
+		$amount    = (int) $this->read_rest_property( $event_object, 'amount' );
 		$currency  = $this->read_rest_property( $event_object, 'currency' );
 
 		// Look up the order related to this charge.

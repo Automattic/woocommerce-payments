@@ -57,7 +57,7 @@ class FrontendCurrencies {
 	 *
 	 * @var string|null
 	 */
-	protected $order_currency = null;
+	protected $order_currency;
 
 	/**
 	 * Constructor.
