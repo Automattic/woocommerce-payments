@@ -15,7 +15,7 @@ import {
 	formatAccountFeesDescription,
 	getCurrentFee,
 	getTransactionsPaymentMethodName,
-} from 'utils/account-fees';
+} from 'wcpay/utils/account-fees';
 
 const LearnMoreLink = () => {
 	return (

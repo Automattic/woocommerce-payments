@@ -7,4 +7,7 @@ declare const wcpaySettings: {
 	accountStatus: {
 		status: string;
 	};
+	connect: {
+		country: string;
+	};
 };

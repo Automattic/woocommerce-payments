@@ -13,12 +13,13 @@ import './account-fees.scss';
  */
 import { formatCurrency } from 'utils/currency';
 import { formatFee } from 'utils/fees';
+import React from 'react';
 
 const countryFeeStripeDocsBaseLink =
 	'https://woocommerce.com/document/payments/faq/fees/#section-';
 const countryFeeStripeDocsBaseLinkNoCountry =
 	'https://woocommerce.com/document/payments/faq/fees';
-const countryFeeStripeDocsSectionNumbers = {
+const countryFeeStripeDocsSectionNumbers: Record< string, number > = {
 	AU: 1,
 	AT: 2,
 	BE: 3,
@@ -39,11 +40,11 @@ const countryFeeStripeDocsSectionNumbers = {
 	US: 18,
 };
 
-const stripeFeeSectionExistsForCountry = ( country ) => {
+const stripeFeeSectionExistsForCountry = ( country: string ) => {
 	return countryFeeStripeDocsSectionNumbers.hasOwnProperty( country );
 };
 
-const getStripeFeeSectionUrl = ( country ) => {
+const getStripeFeeSectionUrl = ( country: string ) => {
 	return sprintf(
 		'%s%s',
 		countryFeeStripeDocsBaseLink,
@@ -51,7 +52,7 @@ const getStripeFeeSectionUrl = ( country ) => {
 	);
 };
 
-const getFeeDescriptionString = ( fee ) => {
+const getFeeDescriptionString = ( fee: BaseFee ) => {
 	if ( fee.fixed_rate && fee.percentage_rate ) {
 		return sprintf(
 			'%1$f%% + %2$s',
@@ -74,13 +75,15 @@ const getFeeDescriptionString = ( fee ) => {
 	return '';
 };
 
-export const getCurrentFee = ( accountFees ) => {
+export const getCurrentFee = ( accountFees: Fee ): BaseFee | DiscountFee => {
 	return accountFees.discount.length
 		? accountFees.discount[ 0 ]
 		: accountFees.base;
 };
 
-export const formatMethodFeesTooltip = ( accountFees ) => {
+export const formatMethodFeesTooltip = (
+	accountFees: Fee
+): JSX.Element | undefined => {
 	if ( ! accountFees ) return;
 
 	const total = {
@@ -95,7 +98,7 @@ export const formatMethodFeesTooltip = ( accountFees ) => {
 		currency: accountFees.base.currency,
 	};
 
-	const hasFees = ( fee ) => {
+	const hasFees = ( fee: BaseFee ) => {
 		return fee.fixed_rate || fee.percentage_rate;
 	};
 
@@ -192,9 +195,9 @@ export const formatMethodFeesTooltip = ( accountFees ) => {
 };
 
 export const formatAccountFeesDescription = (
-	accountFees,
+	accountFees: Fee,
 	customFormats = {}
-) => {
+): string => {
 	const defaultFee = {
 		fixed_rate: 0,
 		percentage_rate: 0,
@@ -232,10 +235,11 @@ export const formatAccountFeesDescription = (
 		// TODO: Figure out how the UI should work if there are several "discount" fees stacked.
 		let percentage, fixed;
 
-		if ( currentFee.discount ) {
+		if ( 'discount' in currentFee ) {
 			// Proper discount fee (XX% off)
-			percentage = baseFee.percentage_rate * ( 1 - currentFee.discount );
-			fixed = baseFee.fixed_rate * ( 1 - currentFee.discount );
+			percentage =
+				baseFee.percentage_rate * ( 1 - ( currentFee.discount || 0 ) );
+			fixed = baseFee.fixed_rate * ( 1 - ( currentFee.discount || 0 ) );
 		} else {
 			// Custom base fee (2% + $.20)
 			percentage = currentFee.percentage_rate;
@@ -258,10 +262,13 @@ export const formatAccountFeesDescription = (
 			);
 		}
 
-		if ( currentFee.discount && 0 < formats.discount.length ) {
+		if ( 'discount' in currentFee && 0 < formats.discount.length ) {
 			currentFeeDescription +=
 				' ' +
-				sprintf( formats.discount, formatFee( currentFee.discount ) );
+				sprintf(
+					formats.discount,
+					formatFee( currentFee.discount || 0 )
+				);
 		}
 
 		feeDescription = createInterpolateElement( currentFeeDescription, {
@@ -272,7 +279,7 @@ export const formatAccountFeesDescription = (
 	return feeDescription;
 };
 
-export const formatMethodFeesDescription = ( methodFees ) => {
+export const formatMethodFeesDescription = ( methodFees: Fee ): string => {
 	if ( ! methodFees ) {
 		return __( 'missing fees', 'woocommerce-payments' );
 	}
@@ -287,7 +294,9 @@ export const formatMethodFeesDescription = ( methodFees ) => {
 	} );
 };
 
-export const getTransactionsPaymentMethodName = ( paymentMethod ) => {
+export const getTransactionsPaymentMethodName = (
+	paymentMethod: TransactionPaymentMethodName
+): string => {
 	switch ( paymentMethod ) {
 		case 'bancontact':
 			return __( 'Bancontact transactions', 'woocommerce-payments' );

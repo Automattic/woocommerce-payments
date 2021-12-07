@@ -10,10 +10,10 @@ import {
 	formatAccountFeesDescription,
 	formatMethodFeesDescription,
 	getCurrentFee,
-} from '../account-fees';
-import { formatCurrency } from '../currency';
+} from '..';
+import { formatCurrency } from '../../currency';
 
-jest.mock( '../currency', () => ( {
+jest.mock( '../../currency', () => ( {
 	formatCurrency: jest.fn(),
 } ) );
 
