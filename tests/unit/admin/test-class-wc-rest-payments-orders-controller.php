@@ -677,36 +677,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_create_terminal_intent_error_when_creating() {
-		$order = $this->create_mock_order();
-
-		$this->mock_gateway
-			->expects( $this->once() )
-			->method( 'create_intent' )
-			->willReturn(
-				[
-					'status'        => 'failed',
-					'error_message' => 'Test error',
-					'http_code'     => 500,
-				]
-			);
-
-		$request = new WP_REST_Request( 'POST' );
-		$request->set_body_params(
-			[
-				'order_id' => $order->get_id(),
-			]
-		);
-
-		$response = $this->controller->create_terminal_intent( $request );
-
-		$this->assertInstanceOf( 'WP_Error', $response );
-		$data = $response->get_error_data();
-		$this->assertArrayHasKey( 'status', $data );
-		$this->assertSame( 500, $data['status'] );
-		$this->assertSame( 'Intent creation failed with the following message: Test error', $response->get_error_message() );
-	}
-
 	public function test_create_terminal_intent_order_not_found() {
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(

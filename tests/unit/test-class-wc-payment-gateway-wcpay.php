@@ -1796,9 +1796,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertSame(
 			[
-				'status'    => 'created',
-				'id'        => $intent_id,
-				'http_code' => 200,
+				'id' => $intent_id,
 			],
 			$result
 		);
@@ -1817,15 +1815,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$result = $this->wcpay_gateway->create_intent( $order, $payment_methods, $capture_method );
 
-		// Assert the returned data contains fields required by the REST endpoint.
-		$this->assertSame(
-			[
-				'status'        => 'failed',
-				'id'            => null,
-				'http_code'     => 500,
-				'error_message' => 'test exception',
-			],
-			$result
-		);
+		$this->assertInstanceOf( 'WP_Error', $result );
+		$data = $result->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 500, $data['status'] );
+		$this->assertSame( 'Intent creation failed with the following message: test exception', $result->get_error_message() );
 	}
 }

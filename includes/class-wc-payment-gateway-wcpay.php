@@ -2451,7 +2451,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param ?string  $capture_method - Controls when the funds will be captured from the customer's account ("automatic" or "manual").
 	 * It must be "manual" for in-person (terminal) payments.
 	 *
-	 * @return array An array containing the status (succeeded/failed), id (intent ID), message (error message if any), and http code.
+	 * @return array|WP_Error On success, an array containing info about the newly created intent. On failure, WP_Error object.
 	 *
 	 * @throws Exception - When an error occurs in intent creation.
 	 */
@@ -2460,9 +2460,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$currency         = strtolower( $order->get_currency() );
 		$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );
 		$intent           = null;
-		$status           = null;
-		$error_message    = null;
-		$http_code        = null;
 
 		try {
 			$intent = $this->payments_api_client->create_intention(
@@ -2473,25 +2470,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$capture_method
 			);
 
-			$status    = 'created';
-			$http_code = 200;
+			return [
+				'id' => ! empty( $intent ) ? $intent->get_id() : null,
+			];
 		} catch ( API_Exception $e ) {
-			$status        = 'failed';
-			$error_message = $e->getMessage();
-			$http_code     = $e->get_http_code();
+			return new WP_Error(
+				'wcpay_intent_creation_error',
+				sprintf(
+					// translators: %s: the error message.
+					__( 'Intent creation failed with the following message: %s', 'woocommerce-payments' ),
+					$e->getMessage() ?? __( 'Unknown error', 'woocommerce-payments' )
+				),
+				[ 'status' => $e->get_http_code() ]
+			);
 		}
-
-		$response = [
-			'status'    => $status,
-			'id'        => ! empty( $intent ) ? $intent->get_id() : null,
-			'http_code' => $http_code,
-		];
-
-		if ( isset( $error_message ) ) {
-			$response['error_message'] = $error_message;
-		}
-
-		return $response;
 	}
 
 	/**
