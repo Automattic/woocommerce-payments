@@ -95,6 +95,7 @@ require $_tests_dir . '/includes/bootstrap.php';
 // We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
 	error_reporting( error_reporting() ^ E_DEPRECATED ); // phpcs:ignore
+	mysqli_report( MYSQLI_REPORT_OFF ); // phpcs:ignore
 }
 
 /**
