@@ -125,6 +125,7 @@ configure_wp() {
 	fi
 
     # MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versions
+    sed -i "/Happy publishing/i error_reporting(error_reporting()^E_DEPRECATED);\n" "$WP_CORE_DIR/wp-config.php"
 	sed -i "/Happy publishing/i mysqli_report(MYSQLI_REPORT_OFF);\n" "$WP_CORE_DIR/wp-config.php"
 
 	wp core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --skip-email
@@ -150,6 +151,7 @@ install_test_suite() {
 		download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
 
 		# MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versions
+		sed -i "/youremptytestdbnamehere/i error_reporting(error_reporting()^E_DEPRECATED);\n" "$WP_TESTS_DIR/wp-tests-config.php"
 		sed -i "/youremptytestdbnamehere/i mysqli_report(MYSQLI_REPORT_OFF);\n" "$WP_TESTS_DIR/wp-tests-config.php"
 
 		# remove all forward slashes in the end

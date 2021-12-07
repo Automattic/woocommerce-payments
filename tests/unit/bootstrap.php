@@ -7,9 +7,7 @@
 
 // Starting PHP 7.4 we are dealing with deprecation warnings and BC breaks, this blocks addresses some of them.
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
-	echo 'Disabling deprecation warnings, setting backward-compatible mysqli mode', PHP_EOL;
 	error_reporting( error_reporting() ^ E_DEPRECATED ); // phpcs:ignore
-	mysqli_report( MYSQLI_REPORT_OFF ); // phpcs:ignore
 }
 
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
