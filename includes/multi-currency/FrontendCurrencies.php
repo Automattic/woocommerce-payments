@@ -341,8 +341,8 @@ class FrontendCurrencies {
 
 				if ( in_array( $wp->query_vars['pagename'], $pages, true ) ) {
 					foreach ( $vars as $var ) {
-						$check_backtrace = isset( $wp->query_vars[ $var ] );
-						if ( $check_backtrace ) {
+						if ( isset( $wp->query_vars[ $var ] ) ) {
+							$check_backtrace = true;
 							break;
 						}
 					}
