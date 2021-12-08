@@ -243,7 +243,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function create_payment_intent( $order_id = null ) {
-		$amount   = WC()->cart->get_total( false );
+		$amount   = WC()->cart->get_total( '' );
 		$currency = get_woocommerce_currency();
 		$order    = wc_get_order( $order_id );
 		if ( is_a( $order, 'WC_Order' ) ) {
