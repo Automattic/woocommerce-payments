@@ -31,7 +31,6 @@ export interface Transaction {
 	customer_currency: string;
 	deposit_id?: string;
 	deposit_status?:
-		| 'estimated'
 		| 'paid'
 		| 'pending'
 		| 'in_transit'
