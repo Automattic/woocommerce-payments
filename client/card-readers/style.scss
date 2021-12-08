@@ -1,0 +1,142 @@
+.wcpay-card-readers-page {
+	.components-tab-panel__tabs {
+		box-shadow: inset 0 -1px 0 #ccc;
+
+		.components-tab-panel__tabs-item {
+			&.active-tab,
+			&:focus {
+				box-shadow: inset 0 0 0 var( --wp-admin-border-width-focus )
+						transparent,
+					inset 0 -4px 0 0 var( --wp-admin-theme-color );
+			}
+		}
+	}
+
+	.card-readers-settings__wrapper {
+		.wcpay-branding-upload-field__wrapper {
+			position: relative;
+
+			.upload-message.is-destructive {
+				font-style: normal;
+				font-weight: 400;
+				font-size: 12px;
+				line-height: 16px;
+				color: $studio-red-50;
+			}
+		}
+
+		.components-base-control__field {
+			margin-bottom: 15px;
+
+			.components-base-control__label {
+				width: 100%;
+			}
+
+			.components-text-control__input,
+			.components-input-control__container {
+				padding: 9px 8px;
+				max-width: 320px;
+			}
+
+			.components-input-control__container {
+				padding: 3px 0;
+			}
+
+			.block-editor-color-gradient-control__color-indicator {
+				.components-base-control__label {
+					margin-left: -2px;
+				}
+
+				.component-color-indicator {
+					position: relative;
+					top: 3px;
+					margin-left: 0.5rem;
+				}
+			}
+
+			.components-circular-option-picker {
+				.components-circular-option-picker__swatches {
+					display: none;
+				}
+
+				.components-circular-option-picker__custom-clear-wrapper {
+					display: block;
+					margin-top: 10px;
+				}
+
+				button {
+					text-decoration: none;
+				}
+			}
+		}
+
+		.wcpay-branding-help-label {
+			font-style: normal;
+			font-weight: 400;
+			font-size: 12px;
+			line-height: 16px;
+			color: $studio-gray-40;
+			margin-top: 8px;
+		}
+	}
+
+	.card-readers-settings-save-settings-section {
+		text-align: right;
+	}
+
+	.card-readers-list__wrapper {
+		.card-readers-list__header {
+			display: flex;
+
+			div {
+				flex: 1;
+			}
+
+			.card-readers-list__header-status {
+				max-width: 25%;
+				text-align: right;
+			}
+		}
+
+		.card-readers-add-new-reader {
+			padding: 20px 24px;
+		}
+
+		.card-readers-item {
+			border-bottom: 1px solid #dcdcde;
+			display: flex;
+			flex-wrap: wrap;
+			padding: 13px 24px;
+			margin: 0;
+
+			div {
+				flex: 1;
+
+				span {
+					line-height: 22px;
+				}
+			}
+
+			&__id,
+			&__type {
+				color: rgba( 60, 60, 67, 0.6 );
+			}
+
+			&__status {
+				text-align: right;
+				max-width: 25%;
+
+				span {
+					background: $studio-gray-5;
+					border-radius: 16px;
+					align-items: center;
+					padding: 2px 8px;
+				}
+
+				.active {
+					background: $studio-green-5;
+				}
+			}
+		}
+	}
+}

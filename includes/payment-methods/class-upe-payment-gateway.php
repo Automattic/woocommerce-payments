@@ -262,7 +262,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 
 		$capture_method          = empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] ? 'automatic' : 'manual';
-		$enabled_payment_methods = $this->get_upe_enabled_at_checkout_payment_method_ids( $order_id );
+		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id );
 
 		try {
 			$payment_intent = $this->payments_api_client->create_intention(
@@ -420,7 +420,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 
 				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
-				if ( 'card_declined' === $last_payment_error_code ) {
+				if ( $this->should_bump_rate_limiter( $last_payment_error_code ) ) {
 					// UPE method gives us the error of the previous payment attempt, so we use that for the Rate Limiter.
 					$this->failed_transaction_rate_limiter->bump();
 				}
@@ -780,6 +780,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			<?php endif; ?>
 
 			<?php
+
 			if ( $display_tokenization ) {
 				$this->tokenization_script();
 				$this->saved_payment_methods();
@@ -805,6 +806,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			</fieldset>
 			<?php
+
+			do_action( 'wcpay_payment_fields_upe', $this->id );
+
 		} catch ( Exception $e ) {
 			// Output the error message.
 			Logger::log( 'Error: ' . $e->getMessage() );
@@ -816,6 +820,32 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			</div>
 			<?php
 		}
+	}
+
+	/**
+	 * Returns the list of enabled payment method types that will function with the current checkout.
+	 *
+	 * @param string $order_id optional Order ID.
+	 * @return string[]
+	 */
+	public function get_payment_method_ids_enabled_at_checkout( $order_id = null ) {
+		$capture                    = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
+		$capturable_payment_methods = $capture ? $this->get_upe_enabled_payment_method_ids() : [ 'card' ];
+		$enabled_payment_methods    = [];
+		$active_payment_methods     = $this->get_upe_enabled_payment_method_statuses();
+		foreach ( $capturable_payment_methods as $payment_method_id ) {
+			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
+			if ( isset( $this->payment_methods[ $payment_method_id ] )
+				&& $this->payment_methods[ $payment_method_id ]->is_enabled_at_checkout( $order_id )
+				&& ( is_admin() || $this->payment_methods[ $payment_method_id ]->is_currency_valid() )
+				&& isset( $active_payment_methods[ $payment_method_capability_key ] )
+				&& 'active' === $active_payment_methods[ $payment_method_capability_key ]['status']
+			) {
+				$enabled_payment_methods[] = $payment_method_id;
+			}
+		}
+
+		return $enabled_payment_methods;
 	}
 
 	/**
@@ -891,7 +921,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function maybe_filter_gateway_title( $title, $id ) {
 		if ( self::GATEWAY_ID === $id && $this->title === $title ) {
 			$title                   = $this->checkout_title;
-			$enabled_payment_methods = $this->get_upe_enabled_at_checkout_payment_method_ids();
+			$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout();
 
 			if ( 1 === count( $enabled_payment_methods ) ) {
 				$title = $this->payment_methods[ $enabled_payment_methods[0] ]->get_title();
@@ -911,7 +941,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	private function get_enabled_payment_method_config() {
 		$settings                = [];
-		$enabled_payment_methods = $this->get_upe_enabled_at_checkout_payment_method_ids();
+		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout();
 
 		if ( $this->is_subscriptions_enabled() && $this->is_changing_payment_method_for_subscription() ) {
 			$enabled_payment_methods = array_filter( $enabled_payment_methods, [ $this, 'is_enabled_for_saved_payments' ] );

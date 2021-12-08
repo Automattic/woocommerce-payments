@@ -1,12 +1,10 @@
 /**
  * Internal dependencies
  */
-import forter from './forter';
 import sift from './sift';
 import stripe from './stripe';
 
 const services = {
-	forter,
 	sift,
 	stripe,
 };

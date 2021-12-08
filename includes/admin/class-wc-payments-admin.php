@@ -20,6 +20,13 @@ class WC_Payments_Admin {
 	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>';
 
 	/**
+	 * Option name used to hide Card Readers page behind a feature flag.
+	 *
+	 * @var string
+	 */
+	const CARD_READERS_FLAG_NAME = '_wcpay_feature_card_readers';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
 	 * @var WC_Payments_API_Client
@@ -114,6 +121,15 @@ class WC_Payments_Admin {
 	}
 
 	/**
+	 * Checks whether the Card Readers page is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_card_readers_page_enabled() {
+		return '1' === get_option( self::CARD_READERS_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Add deposits and transactions menus for wcpay_empty_state_preview_mode_v1 experiment's treatment group.
 	 * This code can be removed once we're done with the experiment.
 	 */
@@ -197,6 +213,18 @@ class WC_Payments_Admin {
 		);
 
 		if ( $should_render_full_menu ) {
+			if ( self::is_card_readers_page_enabled() && $this->account->is_card_present_eligible() ) {
+				$this->admin_child_pages['wc-payments-card-readers'] = [
+					'id'       => 'wc-payments-card-readers',
+					'title'    => __( 'Card Readers', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/card-readers',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 50,
+					],
+				];
+			}
 
 			/**
 			 * Please note that if any other page is registered first and it's
@@ -265,6 +293,14 @@ class WC_Payments_Admin {
 					'path'   => '/payments/disputes/challenge',
 				]
 			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-additional-payment-methods',
+					'parent' => 'woocommerce-settings-payments',
+					'title'  => __( 'Add new payment methods', 'woocommerce-payments' ),
+					'path'   => '/payments/additional-payment-methods',
+				]
+			);
 		}
 
 		wp_enqueue_style(
@@ -318,6 +354,7 @@ class WC_Payments_Admin {
 			'isJetpackConnected'      => $this->payments_api_client->is_server_connected(),
 			'accountStatus'           => $this->account->get_account_status_data(),
 			'accountFees'             => $this->account->get_fees(),
+			'accountEmail'            => $this->account->get_account_email(),
 			'showUpdateDetailsTask'   => get_option( 'wcpay_show_update_business_details_task', 'no' ),
 			'wpcomReconnectUrl'       => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'additionalMethodsSetup'  => [

@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 
@@ -50,62 +50,12 @@ describe( 'PaymentMethods', () => {
 			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
 			sofort_payments: upeCapabilityStatuses.ACTIVE,
 		} );
-		global.wcSettings = {
-			currentUserData: {
-				email: 'admin@example.com',
-			},
+		global.wcpaySettings = {
+			accountEmail: 'admin@example.com',
 		};
 	} );
 
-	test( 'does not render the "Add payment method" button when there is only one payment method available', () => {
-		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
-
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-
-		const addPaymentMethodButton = screen.queryByRole( 'button', {
-			name: 'Add payment method',
-		} );
-
-		expect( addPaymentMethodButton ).not.toBeInTheDocument();
-	} );
-
-	test( 'renders the "Add payment method" button when there are at least 2 payment methods', () => {
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-
-		const addPaymentMethodButton = screen.queryByRole( 'button', {
-			name: 'Add payment method',
-		} );
-
-		expect( addPaymentMethodButton ).toBeInTheDocument();
-	} );
-
-	test( '"Add payment method" button opens the payment methods selector modal', () => {
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-
-		const addPaymentMethodButton = screen.getByRole( 'button', {
-			name: 'Add payment method',
-		} );
-
-		fireEvent.click( addPaymentMethodButton );
-
-		expect(
-			screen.queryByText( 'Add payment methods' )
-		).toBeInTheDocument();
-	} );
-
-	test( 'payment methods are rendered in expected lists', () => {
+	test( 'payment methods are rendered correctly', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'card', 'sepa_debit' ],
 		] );
@@ -116,113 +66,59 @@ describe( 'PaymentMethods', () => {
 			</WcPayUpeContextProvider>
 		);
 
-		const cc = screen.getByText( 'Credit card / debit card' );
-		const sepa = screen.getByText( 'SEPA Direct Debit' );
-		[ cc, sepa ].forEach( ( method ) => {
-			expect( method.closest( 'ul' ) ).toHaveClass(
-				'payment-methods__enabled-methods'
-			);
+		const cc = screen.getByRole( 'checkbox', {
+			name: 'Credit card / debit card',
 		} );
+		const sepa = screen.getByRole( 'checkbox', {
+			name: 'SEPA Direct Debit',
+		} );
+		const bancontact = screen.getByRole( 'checkbox', {
+			name: 'Bancontact',
+		} );
+		const giropay = screen.getByRole( 'checkbox', { name: 'giropay' } );
+		const sofort = screen.getByRole( 'checkbox', { name: 'Sofort' } );
+		const p24 = screen.getByRole( 'checkbox', {
+			name: 'Przelewy24 (P24)',
+		} );
+		const ideal = screen.getByRole( 'checkbox', { name: 'iDEAL' } );
 
-		const bancontact = screen.getByLabelText( 'Bancontact' );
-		const giropay = screen.getByLabelText( 'giropay' );
-		const sofort = screen.getByLabelText( 'Sofort' );
-		const p24 = screen.getByLabelText( 'Przelewy24 (P24)' );
-		const ideal = screen.getByLabelText( 'iDEAL' );
+		const allMethods = [
+			bancontact,
+			giropay,
+			sofort,
+			ideal,
+			p24,
+			cc,
+			sepa,
+		];
+		const enabledMethods = [ cc, sepa ];
 
-		[ bancontact, giropay, sofort, ideal, p24 ].forEach( ( method ) => {
+		enabledMethods.forEach( ( method ) => {
+			expect( method ).toBeChecked();
+		} );
+		allMethods.forEach( ( method ) => {
 			expect( method.closest( 'ul' ) ).toHaveClass(
 				'payment-methods__available-methods'
 			);
 		} );
-	} );
-
-	test( 'enabled methods are rendered with "Delete" buttons', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'sepa_debit' ],
-		] );
-
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-
-		expect(
-			screen.queryByRole( 'button', {
-				name: 'Delete Credit card / debit card from checkout',
-			} )
-		).toBeInTheDocument();
-	} );
-
-	test( 'when only one enabled method is rendered, the "Delete" button is not visible', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
-
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-
-		expect(
-			screen.queryByRole( 'button', {
-				name: 'Delete Credit card / debit card from checkout',
-			} )
-		).not.toBeInTheDocument();
-	} );
-
-	test( 'clicking delete updates enabled method IDs', () => {
-		const updateEnabledMethodsMock = jest.fn( () => {} );
-		useEnabledPaymentMethodIds.mockReturnValue( [
-			[
-				'card',
-				'bancontact',
-				'giropay',
-				'ideal',
-				'p24',
-				'sepa_debit',
-				'sofort',
-			],
-			updateEnabledMethodsMock,
-		] );
-
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-
-		const ccDeleteButton = screen.getByRole( 'button', {
-			name: 'Delete Credit card / debit card from checkout',
-		} );
-		user.click( ccDeleteButton );
-		user.click(
-			screen.getByRole( 'button', {
-				name: 'Remove',
-			} )
-		);
-
-		expect( updateEnabledMethodsMock ).toHaveBeenCalledWith( [
-			'bancontact',
-			'giropay',
-			'ideal',
-			'p24',
-			'sepa_debit',
-			'sofort',
-		] );
+		allMethods
+			.filter( ( method ) => ! enabledMethods.includes( method ) )
+			.forEach( ( method ) => {
+				expect( method ).not.toBeChecked();
+			} );
 	} );
 
 	test( 'inactive and pending payment methods have notice pills', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[
-				'card',
-				'bancontact',
+				'Credit card / debit card',
+				'Bancontact',
 				'giropay',
-				'ideal',
-				'p24',
-				'sepa_debit',
-				'sofort',
+				'iDEAL',
+				'Przelewy24 (P24)',
+				'SEPA Direct Debit',
+				'Sofort',
 			],
 			updateEnabledMethodsMock,
 		] );
@@ -396,7 +292,93 @@ describe( 'PaymentMethods', () => {
 		await user.click( enableInYourStoreButton );
 		expect( setIsUpeEnabledMock ).toHaveBeenCalledWith( true );
 		expect( window.location.href ).toEqual(
-			'admin.php?page=wc-admin&task=woocommerce-payments--additional-payment-methods'
+			'admin.php?page=wc-admin&path=%2Fpayments%2Fadditional-payment-methods'
 		);
+	} );
+
+	it( 'should render the activation modal when requirements exist for the payment method', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: {
+				status: upeCapabilityStatuses.UNREQUESTED,
+				requirements: [ 'company.tax_id' ],
+			},
+		} );
+
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+
+		expect(
+			screen.queryByLabelText( 'Credit card / debit card' )
+		).toBeInTheDocument();
+
+		const cardCheckbox = screen.getByLabelText(
+			'Credit card / debit card'
+		);
+
+		expect( cardCheckbox ).not.toBeChecked();
+
+		jest.useFakeTimers();
+
+		act( () => {
+			// Enabling a PM with requirements should show the activation modal
+			user.click( cardCheckbox );
+			jest.runAllTimers();
+		} );
+
+		expect(
+			screen.queryByText(
+				/You need to provide more information to enable Credit card \/ debit card on your checkout/
+			)
+		).toBeInTheDocument();
+
+		jest.useRealTimers();
+	} );
+
+	it( 'should render the delete modal on an already active payment method', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ], jest.fn() ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+		} );
+
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+
+		expect(
+			screen.queryByLabelText( 'Credit card / debit card' )
+		).toBeInTheDocument();
+
+		const cardCheckbox = screen.getByLabelText(
+			'Credit card / debit card'
+		);
+
+		expect( cardCheckbox ).toBeChecked();
+
+		jest.useFakeTimers();
+
+		act( () => {
+			// Disabling an already active PM should show the delete modal
+			user.click( cardCheckbox );
+			jest.runAllTimers();
+		} );
+
+		expect(
+			screen.queryByText(
+				/Your customers will no longer be able to pay using Credit card \/ debit card\./
+			)
+		).toBeInTheDocument();
+
+		jest.useRealTimers();
 	} );
 } );
