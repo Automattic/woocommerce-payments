@@ -832,8 +832,8 @@ class WC_Payments {
 		if ( $user ) {
 			return $user;
 		}
-		$headers = getallheaders();
-		if ( ! isset( $headers['X-Wcpay-Platform-Checkout-User'] ) || ! is_numeric( $headers['X-Wcpay-Platform-Checkout-User'] ) ) {
+
+		if ( ! isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) || ! is_numeric( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) ) {
 			return $user;
 		}
 
@@ -844,6 +844,6 @@ class WC_Payments {
 			}
 		);
 
-		return (int) $headers['X-Wcpay-Platform-Checkout-User'];
+		return (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'];
 	}
 }
