@@ -1515,9 +1515,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * Overrides parent method to retrieve some options from connected account.
 	 *
-	 * @param  string $key Option key.
+	 * @param  string $key         Option key.
 	 * @param  mixed  $empty_value Value when empty.
-	 * @return mixed The value specified for the option or a default value for the option.
+	 * @return string|array        The value specified for the option or a default value for the option.
 	 */
 	public function get_option( $key, $empty_value = null ) {
 		switch ( $key ) {
@@ -1611,21 +1611,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Gets connected account statement descriptor.
 	 *
-	 * @param mixed $empty_value Empty value to return when not connected or fails to fetch account descriptor.
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch account descriptor.
 	 *
 	 * @return string Statement descriptor of default value.
 	 */
-	protected function get_account_statement_descriptor( $empty_value = null ) {
+	protected function get_account_statement_descriptor( string $empty_value = '' ) {
 		try {
-			if ( ! $this->is_connected() ) {
-				return $empty_value;
+			if ( $this->is_connected() ) {
+				return $this->account->get_statement_descriptor();
 			}
-
-			return $this->account->get_statement_descriptor();
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to get account statement descriptor.' . $e );
-			return $empty_value;
 		}
+		return $empty_value;
 	}
 
 	/**

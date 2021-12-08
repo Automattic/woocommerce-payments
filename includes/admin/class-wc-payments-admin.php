@@ -586,18 +586,15 @@ class WC_Payments_Admin {
 	 *
 	 * @return bool True if the relationship is the one specified by the operator.
 	 */
-	private static function version_compare( $version1, $version2, $operator ) {
+	private static function version_compare( $version1, $version2, string $operator ): bool {
 		// Attempt to extract version numbers.
 		$version_regex = '/^([\d\.]+)(-.*)?$/';
-		if ( ! preg_match( $version_regex, $version1, $matches1 )
-			|| ! preg_match( $version_regex, $version2, $matches2 ) ) {
-			// Fall back to comparing the two versions as they are.
-			return version_compare( $version1, $version2, $operator );
+		if ( preg_match( $version_regex, $version1, $matches1 ) && preg_match( $version_regex, $version2, $matches2 ) ) {
+			// Only compare the numeric parts of the versions, ignore the bit after the dash.
+			$version1 = $matches1[1];
+			$version2 = $matches2[1];
 		}
-		// Only compare the numeric parts of the versions, ignore the bit after the dash.
-		$version1 = $matches1[1];
-		$version2 = $matches2[1];
-		return version_compare( $version1, $version2, $operator );
+		return (bool) version_compare( $version1, $version2, $operator );
 	}
 
 	/**
