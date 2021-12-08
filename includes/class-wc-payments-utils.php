@@ -364,13 +364,13 @@ class WC_Payments_Utils {
 	/**
 	 * Redacts the provided array, removing the sensitive information, and limits its depth to LOG_MAX_RECURSION.
 	 *
-	 * @param mixed   $array The array to redact.
-	 * @param array   $keys_to_redact The keys whose values need to be redacted.
-	 * @param integer $level The current recursion level.
+	 * @param object|array $array          The array to redact.
+	 * @param array        $keys_to_redact The keys whose values need to be redacted.
+	 * @param integer      $level          The current recursion level.
 	 *
-	 * @return mixed The redacted array.
+	 * @return string|array The redacted array.
 	 */
-	public static function redact_array( $array, $keys_to_redact, $level = 0 ) {
+	public static function redact_array( $array, array $keys_to_redact, int $level = 0 ) {
 		if ( is_object( $array ) ) {
 			// TODO: if we ever want to log objects, they could implement a method returning an array or a string.
 			return get_class( $array ) . '()';

@@ -239,7 +239,7 @@ class CurrencySwitcherBlock {
 			if ( 'currency' === $name ) {
 				continue;
 			}
-			$return .= '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . esc_attr( $value ) . '" />';
+			$return .= sprintf( '<input type="hidden" name="%s" value="%s" />', esc_attr( $name ), esc_attr( $value ) );
 		}
 		return $return;
 	}
