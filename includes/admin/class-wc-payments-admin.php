@@ -20,6 +20,13 @@ class WC_Payments_Admin {
 	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>';
 
 	/**
+	 * Option name used to hide Card Readers page behind a feature flag.
+	 *
+	 * @var string
+	 */
+	const CARD_READERS_FLAG_NAME = '_wcpay_feature_card_readers';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
 	 * @var WC_Payments_API_Client
@@ -111,6 +118,28 @@ class WC_Payments_Admin {
 				],
 			],
 		];
+
+		if ( $this->account->is_card_present_eligible() && self::is_card_readers_page_enabled() ) {
+			$this->admin_child_pages['wc-payments-card-readers'] = [
+				'id'       => 'wc-payments-card-readers',
+				'title'    => __( 'Card Readers', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/card-readers',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 50,
+				],
+			];
+		}
+	}
+
+	/**
+	 * Checks whether the Card Readers page is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_card_readers_page_enabled() {
+		return '1' === get_option( self::CARD_READERS_FLAG_NAME, '0' );
 	}
 
 	/**
@@ -263,6 +292,14 @@ class WC_Payments_Admin {
 					'title'  => __( 'Challenge dispute', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-disputes-details',
 					'path'   => '/payments/disputes/challenge',
+				]
+			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-additional-payment-methods',
+					'parent' => 'woocommerce-settings-payments',
+					'title'  => __( 'Add new payment methods', 'woocommerce-payments' ),
+					'path'   => '/payments/additional-payment-methods',
 				]
 			);
 		}
