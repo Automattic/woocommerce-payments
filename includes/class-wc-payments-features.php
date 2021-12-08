@@ -90,6 +90,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether platform checkout is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_platform_checkout_enabled() {
+		return '1' === get_option( '_wcpay_feature_platform_checkout', '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]

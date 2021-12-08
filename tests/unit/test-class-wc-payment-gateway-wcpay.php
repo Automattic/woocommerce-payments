@@ -1965,4 +1965,34 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->wcpay_gateway->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
 	}
+
+	public function test_is_platform_checkout_is_returned_as_true() {
+		update_option( '_wcpay_feature_platform_checkout', '1' );
+		$this->assertTrue( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+	}
+
+	/**
+	 * @dataProvider is_platform_checkout_falsy_value_provider
+	 */
+	public function test_is_platform_checkout_is_returned_as_false_if_not_equal_1() {
+		update_option( '_wcpay_feature_platform_checkout', '0' );
+		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+	}
+
+	public function test_is_platform_checkout_is_returned_as_false_if_missing() {
+		delete_option( '_wcpay_feature_platform_checkout' );
+		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+	}
+
+	public function is_platform_checkout_falsy_value_provider() {
+		return [
+			[ '0' ],
+			[ 0 ],
+			[ null ],
+			[ false ],
+			'(bool) true is not strictly equal to (int) 1' => [ true ],
+			[ 'foo' ],
+			[ [] ],
+		];
+	}
 }
