@@ -205,5 +205,36 @@
       <code>WC_Subscriptions_Admin</code>
     </UndefinedClass>
   </file>
+  <file src="includes/in-person-payments/templates/html-in-person-payment-receipt.php">
+    <UndefinedGlobalVariable occurrences="27">
+      <code>$business_name</code>
+      <code>$support_address</code>
+      <code>$support_phone</code>
+      <code>$support_email</code>
+	  <code>$line_items</code>
+      <code>$coupon_lines</code>
+      <code>$tax_lines</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$order</code>
+      <code>$amount_captured</code>
+      <code>$payment_method_details</code>
+      <code>$payment_method_details</code>
+      <code>$payment_method_details</code>
+      <code>$payment_method_details</code>
+      <code>$payment_method_details</code>
+      <code>$receipt</code>
+      <code>$receipt</code>
+      <code>$receipt</code>
+    </UndefinedGlobalVariable>
+  </file>
 </files>
 

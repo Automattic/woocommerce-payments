@@ -1,0 +1,56 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ReceiptSettings Readers merchant settings page snapshot test 1`] = `
+<div>
+  <div
+    class="wcpay-settings-layout"
+  >
+    <div
+      class="settings-section"
+    >
+      <div
+        class="settings-section__details"
+      >
+        <h2>
+          Card reader receipts
+        </h2>
+        <p>
+          These details will appear on printed or emailed receipts for customers that pay in person using card readers. Updating the details here will not affect any other stores settings.
+        </p>
+      </div>
+      <div
+        class="settings-section__controls"
+      >
+        <span
+          aria-busy="true"
+          class="is-loadable-placeholder is-block"
+        >
+          <p
+            style="line-height: 20;"
+          >
+            Block placeholder
+          </p>
+        </span>
+      </div>
+    </div>
+    <div
+      class="settings-section save-settings-section"
+    >
+      <div
+        class="settings-section__details"
+      />
+      <div
+        class="settings-section__controls"
+      >
+        <button
+          class="components-button is-primary"
+          disabled=""
+          type="button"
+        >
+          Save changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;

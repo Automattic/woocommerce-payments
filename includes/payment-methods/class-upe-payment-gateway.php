@@ -420,7 +420,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 
 				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
-				if ( 'card_declined' === $last_payment_error_code ) {
+				if ( $this->should_bump_rate_limiter( $last_payment_error_code ) ) {
 					// UPE method gives us the error of the previous payment attempt, so we use that for the Rate Limiter.
 					$this->failed_transaction_rate_limiter->bump();
 				}
@@ -683,8 +683,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return bool
 	 */
 	public function is_setup_intent_success_creation_redirection() {
-		return (
-			! empty( $_GET['setup_intent_client_secret'] ) & ! empty( $_GET['setup_intent'] ) & ! empty( $_GET['redirect_status'] ) && 'succeeded' === $_GET['redirect_status'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return ! empty( $_GET['setup_intent_client_secret'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			! empty( $_GET['setup_intent'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			! empty( $_GET['redirect_status'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			'succeeded' === $_GET['redirect_status']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**

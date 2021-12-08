@@ -97,6 +97,70 @@ export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	} );
 }
 
+export function updateAccountBusinessName( accountBusinessName ) {
+	return updateSettingsValues( {
+		account_business_name: accountBusinessName,
+	} );
+}
+
+export function updateAccountBusinessURL( accountBusinessURL ) {
+	return updateSettingsValues( {
+		account_business_url: accountBusinessURL,
+	} );
+}
+
+export function updateAccountBusinessSupportAddress(
+	accountBusinessSupportAddress
+) {
+	return updateSettingsValues( {
+		account_business_support_address: accountBusinessSupportAddress,
+	} );
+}
+
+export function updateAccountBusinessSupportEmail(
+	accountBusinessSupportEmail
+) {
+	return updateSettingsValues( {
+		account_business_support_email: accountBusinessSupportEmail,
+	} );
+}
+
+export function updateAccountBusinessSupportPhone(
+	accountBusinessSupportPhone
+) {
+	return updateSettingsValues( {
+		account_business_support_phone: accountBusinessSupportPhone,
+	} );
+}
+
+export function updateAccountBrandingLogo( accountBrandingLogo ) {
+	return updateSettingsValues( {
+		account_branding_logo: accountBrandingLogo,
+	} );
+}
+
+export function updateAccountBrandingIcon( accountBrandingIcon ) {
+	return updateSettingsValues( {
+		account_branding_icon: accountBrandingIcon,
+	} );
+}
+
+export function updateAccountBrandingPrimaryColor(
+	accountBrandingPrimaryColor
+) {
+	return updateSettingsValues( {
+		account_branding_primary_color: accountBrandingPrimaryColor,
+	} );
+}
+
+export function updateAccountBrandingSecondaryColor(
+	accountBrandingSecondaryColor
+) {
+	return updateSettingsValues( {
+		account_branding_secondary_color: accountBrandingSecondaryColor,
+	} );
+}
+
 export function* saveSettings() {
 	let error = null;
 	try {

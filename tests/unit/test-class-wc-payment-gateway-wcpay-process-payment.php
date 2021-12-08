@@ -580,6 +580,46 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		}
 	}
 
+	/**
+	 * Tests that the rawte limiter is bumped for certain error codes
+	 *
+	 * @dataProvider rate_limiter_error_code_provider
+	 */
+	public function test_failed_transaction_rate_limiter_bumped( $error_code ) {
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'bump' );
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->throwException(
+					new API_Exception(
+						'test error',
+						$error_code,
+						400,
+						'card_error'
+					)
+				)
+			);
+
+		$this->expectException( Exception::class );
+
+		// Act: process payment.
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function rate_limiter_error_code_provider() {
+		return [
+			[ 'card_declined' ],
+			[ 'incorrect_number' ],
+			[ 'incorrect_cvc' ],
+		];
+	}
+
 	public function test_failed_transaction_rate_limiter_is_limited() {
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
