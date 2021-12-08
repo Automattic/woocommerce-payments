@@ -5,8 +5,14 @@
  */
 import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
+import type { Dispute } from 'wcpay/data/disputes/definitions';
 
-export const useDispute = ( id ) => {
+export type UseDisputeObject = {
+	dispute: Dispute;
+	isLoading: boolean;
+	doAccept: () => void;
+};
+export const useDispute = ( id: string ): UseDisputeObject => {
 	const { dispute, isLoading } = useSelect(
 		( select ) => {
 			const { getDispute, isResolving } = select( STORE_NAME );
@@ -30,6 +36,8 @@ export const useDisputeEvidence = () => {
 	return { updateDispute };
 };
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export const useDisputes = ( { paged, per_page: perPage } ) =>
 	useSelect(
 		( select ) => {
