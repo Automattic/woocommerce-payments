@@ -214,7 +214,7 @@ class FrontendCurrencies {
 			return $order->get_id();
 		}
 
-		$this->order_currency = $this->multi_currency->get_selected_currency();
+		$this->order_currency = $this->multi_currency->get_selected_currency()->get_code();
 		return $arg;
 	}
 

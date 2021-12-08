@@ -611,11 +611,10 @@ class MultiCurrency {
 	 * @return Currency
 	 */
 	public function get_selected_currency(): Currency {
-		$code = $this->compatibility->override_selected_currency()
-			? $this->compatibility->override_selected_currency()
-			: $this->get_stored_currency_code();
+		$multi_currency_code = $this->compatibility->override_selected_currency();
+		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
 
-		return $this->get_enabled_currencies()[ $code ] ?? $this->get_default_currency();
+		return $this->get_enabled_currencies()[ $currency_code ] ?? $this->get_default_currency();
 	}
 
 	/**
@@ -901,10 +900,12 @@ class MultiCurrency {
 
 		if ( $user_id ) {
 			return get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
-		} else {
-			WC()->initialize_session();
-			return WC()->session->get( self::CURRENCY_SESSION_KEY );
 		}
+
+		WC()->initialize_session();
+		$currency_code = WC()->session->get( self::CURRENCY_SESSION_KEY );
+
+		return is_string( $currency_code ) ? $currency_code : null;
 	}
 
 	/**
