@@ -1,7 +1,7 @@
 // eslint-disable-next-line wpcalypso/import-docblock
 import { Order } from '@woocommerce/api';
 
-export type Evidence = {
+type Evidence = {
 	[ key: string ]:
 		| string
 		| Record< string, boolean >
