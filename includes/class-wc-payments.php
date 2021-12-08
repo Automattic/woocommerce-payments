@@ -29,7 +29,7 @@ class WC_Payments {
 	/**
 	 * Instance of WC_Payment_Gateway_WCPay, created in init function.
 	 *
-	 * @var CC_Payment_Gateway
+	 * @var WC_Payment_Gateway_WCPay
 	 */
 	private static $card_gateway;
 
@@ -518,10 +518,9 @@ class WC_Payments {
 
 		$http_class = self::get_wc_payments_http();
 
-		$api_client_class = apply_filters( 'wc_payments_api_client', 'WC_Payments_API_Client' );
-
-		if ( ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
-			$api_client_class = 'WC_Payments_API_Client';
+		$api_client_class = apply_filters( 'wc_payments_api_client', WC_Payments_API_Client::class );
+		if ( ! class_exists( $api_client_class ) || ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
+			$api_client_class = WC_Payments_API_Client::class;
 		}
 
 		return new $api_client_class(
@@ -625,10 +624,9 @@ class WC_Payments {
 	 * @param string $file Local path to the file.
 	 * @return string The cache buster value to use for the given file.
 	 */
-	public static function get_file_version( $file ) {
+	public static function get_file_version( $file ): string {
 		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( WCPAY_ABSPATH . $file ) ) {
-			$file = trim( $file, '/' );
-			return filemtime( WCPAY_ABSPATH . $file );
+			return (string) filemtime( WCPAY_ABSPATH . trim( $file, '/' ) );
 		}
 		return WCPAY_VERSION_NUMBER;
 	}

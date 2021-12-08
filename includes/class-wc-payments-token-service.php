@@ -52,9 +52,9 @@ class WC_Payments_Token_Service {
 	/**
 	 * Creates and add a token to an user, based on the payment_method object
 	 *
-	 * @param   array   $payment_method                         Payment method to be added.
-	 * @param   WP_User $user                                   User to attach payment method to.
-	 * @return  WC_Payment_Token_CC|WC_Payment_Token_WCPay_SEPA The WC object for the payment token.
+	 * @param   array   $payment_method                                          Payment method to be added.
+	 * @param   WP_User $user                                                    User to attach payment method to.
+	 * @return  WC_Payment_Token|WC_Payment_Token_CC|WC_Payment_Token_WCPay_SEPA The WC object for the payment token.
 	 */
 	public function add_token_to_user( $payment_method, $user ) {
 		// Clear cached payment methods.
@@ -195,9 +195,9 @@ class WC_Payments_Token_Service {
 	/**
 	 * Controls the output for SEPA on the my account page.
 	 *
-	 * @param  array            $item          Individual list item from woocommerce_saved_payment_methods_list.
-	 * @param  WC_Payment_Token $payment_token The payment token associated with this method entry.
-	 * @return array            Filtered item
+	 * @param  array                                        $item          Individual list item from woocommerce_saved_payment_methods_list.
+	 * @param  WC_Payment_Token|WC_Payment_Token_WCPay_SEPA $payment_token The payment token associated with this method entry.
+	 * @return array                                        Filtered item
 	 */
 	public function get_account_saved_payment_methods_list_item_sepa( $item, $payment_token ) {
 		if ( WC_Payment_Token_WCPay_SEPA::TYPE === strtolower( $payment_token->get_type() ) ) {

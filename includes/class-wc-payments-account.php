@@ -199,7 +199,7 @@ class WC_Payments_Account {
 	/**
 	 * Gets the business support address.
 	 *
-	 * @return string Business profile support address.
+	 * @return array Business profile support address.
 	 */
 	public function get_business_support_address() : array {
 		$account = $this->get_cached_account_data();
@@ -291,9 +291,9 @@ class WC_Payments_Account {
 	 *
 	 * @return string Email.
 	 */
-	public function get_account_email() {
+	public function get_account_email(): string {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['email'] ) ? $account['email'] : [];
+		return $account['email'] ?? '';
 	}
 
 	/**
@@ -1092,7 +1092,7 @@ class WC_Payments_Account {
 	/**
 	 * Read the account from the WP option we cache it in.
 	 *
-	 * @return array|string|bool
+	 * @return array|bool
 	 */
 	private function read_account_from_cache() {
 		$account_cache = get_option( self::ACCOUNT_OPTION );
