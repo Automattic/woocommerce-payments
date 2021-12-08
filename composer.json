@@ -26,11 +26,12 @@
       "woocommerce/woocommerce-sniffs": "0.1.0",
       "woocommerce/action-scheduler": "3.1.6",
       "kalessil/production-dependencies-guard": "dev-master",
-      "vimeo/psalm": "4.8.1",
-      "php-stubs/wordpress-stubs": "5.7.2",
-      "php-stubs/woocommerce-stubs": "5.5.0",
+      "vimeo/psalm": "4.13.1",
+      "php-stubs/wordpress-stubs": "5.8.2",
+      "php-stubs/woocommerce-stubs": "5.9.0",
       "rregeer/phpunit-coverage-check": "0.3.1",
-      "yoast/phpunit-polyfills": "1.0.1"
+      "yoast/phpunit-polyfills": "1.0.1",
+      "cweagans/composer-patches": "1.7.1"
     },
     "scripts": {
       "test": [
@@ -53,7 +54,13 @@
       "production-dependencies-guard": [
         "check-lock-file",
         "check-abandoned"
-      ]
+      ],
+      "composer-exit-on-patch-failure": true,
+      "patches": {
+        "phpunit/phpunit": {
+          "PHP 8.1 compatibility: globals": "tests/phpunit-patches/globals-usage-compatibility.diff"
+        }
+      }
     },
     "autoload": {
       "psr-4": {
