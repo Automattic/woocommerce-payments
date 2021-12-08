@@ -1,6 +1,5 @@
-export type Order = {
-	number: string;
-};
+// eslint-disable-next-line wpcalypso/import-docblock
+import { Order } from '@woocommerce/api';
 
 export type Evidence = {
 	[ key: string ]:
