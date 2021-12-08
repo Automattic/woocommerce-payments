@@ -72,8 +72,8 @@ class WC_Payments_Action_Scheduler_Service {
 	/**
 	 * Track an order by making a request to the Payments API.
 	 *
-	 * @param int  $order_id   The ID of the order which has been updated/created.
-	 * @param bool $is_update  Is this an update event. If false, it is assumed this is a creation event.
+	 * @param mixed $order_id  The ID of the order which has been updated/created.
+	 * @param bool  $is_update Is this an update event. If false, it is assumed this is a creation event.
 	 *
 	 * @return bool
 	 */
