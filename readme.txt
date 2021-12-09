@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.5.0 - 2021-xx-xx =
+* Fix - Error when renewing subscriptions with saved payment methods disabled.
+
 = 3.4.0 - 2021-12-08 =
 * Add - Allow UI customizations on checkout payment fields.
 * Add - Introduce `wcpay_payment_request_is_product_supported` filter. Allow plugins to conditionally disable payment request buttons on products that do not support them.
@@ -116,7 +119,6 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Support business account branding settings.
 * Update - Capture order-related metadata not captured by mobile app for in-person payment transactions.
 * Add - REST endpoint to print IPP receipts.
-* Fix - Error when renewing subscriptions with saved payment methods disabled.
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
