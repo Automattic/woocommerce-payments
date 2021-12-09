@@ -6,7 +6,7 @@
  * Internal dependencies
  */
 
-export type TransactionPaymentMethodName =
+export type FeePaymentMethod =
 	| 'bancontact'
 	| 'card'
 	| 'card_present'
@@ -17,7 +17,7 @@ export type TransactionPaymentMethodName =
 	| 'sofort';
 
 export interface BaseFee {
-	currency: string; // TODO: Should be a type, not string
+	currency: string;
 	percentage_rate: number;
 	fixed_rate: number;
 }
@@ -32,7 +32,7 @@ export interface DiscountFee {
 	discount?: number;
 }
 
-export interface Fee {
+export interface FeeStructure {
 	additional?: BaseFee;
 	base: BaseFee;
 	discount: DiscountFee[];

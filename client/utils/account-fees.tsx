@@ -17,9 +17,9 @@ import React from 'react';
 import {
 	BaseFee,
 	DiscountFee,
-	Fee,
-	TransactionPaymentMethodName,
-} from 'wcpay/components/account-status/account-fees/declarations';
+	FeeStructure,
+	FeePaymentMethod,
+} from 'wcpay/components/account-status/account-fees/account-fees';
 
 const countryFeeStripeDocsBaseLink =
 	'https://woocommerce.com/document/payments/faq/fees/#section-';
@@ -82,14 +82,16 @@ const getFeeDescriptionString = ( fee: BaseFee | undefined ) => {
 	return '';
 };
 
-export const getCurrentFee = ( accountFees: Fee ): BaseFee | DiscountFee => {
+export const getCurrentFee = (
+	accountFees: FeeStructure
+): BaseFee | DiscountFee => {
 	return accountFees.discount.length
 		? accountFees.discount[ 0 ]
 		: accountFees.base;
 };
 
 export const formatMethodFeesTooltip = (
-	accountFees: Fee
+	accountFees: FeeStructure
 ): JSX.Element | undefined => {
 	if ( ! accountFees ) return;
 
@@ -203,7 +205,7 @@ export const formatMethodFeesTooltip = (
 };
 
 export const formatAccountFeesDescription = (
-	accountFees: Fee,
+	accountFees: FeeStructure,
 	customFormats = {}
 ): string => {
 	const defaultFee = {
@@ -288,7 +290,7 @@ export const formatAccountFeesDescription = (
 };
 
 export const formatMethodFeesDescription = (
-	methodFees: Fee | undefined
+	methodFees: FeeStructure | undefined
 ): string => {
 	if ( ! methodFees ) {
 		return __( 'missing fees', 'woocommerce-payments' );
@@ -305,7 +307,7 @@ export const formatMethodFeesDescription = (
 };
 
 export const getTransactionsPaymentMethodName = (
-	paymentMethod: TransactionPaymentMethodName
+	paymentMethod: FeePaymentMethod
 ): string => {
 	switch ( paymentMethod ) {
 		case 'bancontact':
