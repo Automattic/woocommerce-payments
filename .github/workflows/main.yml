@@ -10,7 +10,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+  # This workflow contains a single job called "build-and-upload"
   build-and-upload:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -34,9 +34,9 @@ jobs:
       - name: FTP-Deploy-Action
         uses: SamKirkland/FTP-Deploy-Action@2.0.0
         env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_SERVER: ${{ secrets.TEST_SITE_FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.TEST_SITE_FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.TEST_SITE_FTP_PASS }}
           LOCAL_DIR: woocommerce-payments/
           server-dir: /htdocs/wp-content/plugins
           METHOD: sftp
