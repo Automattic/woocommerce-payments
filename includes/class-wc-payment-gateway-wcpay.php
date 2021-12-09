@@ -1615,7 +1615,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string Statement descriptor of default value.
 	 */
-	protected function get_account_statement_descriptor( string $empty_value = '' ) {
+	protected function get_account_statement_descriptor( string $empty_value = '' ): string {
 		try {
 			if ( $this->is_connected() ) {
 				return $this->account->get_statement_descriptor();
