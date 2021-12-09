@@ -5,7 +5,7 @@
  */
 import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
-import type { Dispute } from 'wcpay/data/disputes/definitions';
+import type { Dispute } from 'wcpay/types/disputes';
 
 export type UseDisputeObject = {
 	dispute: Dispute;

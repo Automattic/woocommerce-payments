@@ -1,8 +1,8 @@
 // eslint-disable-next-line wpcalypso/import-docblock
 import { Order } from '@woocommerce/api';
-import { Charge } from 'wcpay/data/charges/definitions';
+import { Charge } from './charges';
 
-type Evidence = {
+interface Evidence {
 	[ key: string ]:
 		| string
 		| Record< string, boolean >
@@ -10,14 +10,14 @@ type Evidence = {
 	isUploading: Record< string, boolean >;
 	metadata: Record< string, string >;
 	uploadingErrors: Record< string, string >;
-};
+}
 
-type EvidenceDetails = {
+interface EvidenceDetails {
 	has_evidence: boolean;
 	due_by: number;
-};
+}
 
-export type Dispute = {
+export interface Dispute {
 	status: string;
 	id: string;
 	evidence_details?: EvidenceDetails;
@@ -31,4 +31,4 @@ export type Dispute = {
 	amount: number;
 	currency: string;
 	created: number;
-};
+}

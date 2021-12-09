@@ -220,6 +220,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
+		/** @var WC_Product_Variable $product */ // phpcs:ignore
 		$product  = $this->get_product();
 		$currency = get_woocommerce_currency();
 
@@ -597,7 +598,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( empty( $url ) ) {
 			return $redirect;
 		}
-		wc_setcookie( 'wcpay_payment_request_redirect_url', null );
+		wc_setcookie( 'wcpay_payment_request_redirect_url', '' );
 
 		return $url;
 	}
@@ -878,7 +879,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @param array $shipping_methods Array of selected shipping methods ids.
 	 */
 	public function update_shipping_method( $shipping_methods ) {
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+		$chosen_shipping_methods = (array) WC()->session->get( 'chosen_shipping_methods' );
 
 		if ( is_array( $shipping_methods ) ) {
 			foreach ( $shipping_methods as $i => $value ) {
@@ -1342,7 +1343,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$tax         = wc_format_decimal( WC()->cart->tax_total + WC()->cart->shipping_tax_total, WC()->cart->dp );
 		$shipping    = wc_format_decimal( WC()->cart->shipping_total, WC()->cart->dp );
 		$items_total = wc_format_decimal( WC()->cart->cart_contents_total, WC()->cart->dp ) + $discounts;
-		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( false );
+		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( '' );
 
 		if ( wc_tax_enabled() ) {
 			$items[] = [

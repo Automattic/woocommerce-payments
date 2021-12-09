@@ -20,7 +20,7 @@ import { formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 import Loadable from 'components/loadable';
 import type { UseDisputeObject } from 'wcpay/data/disputes/hooks';
-import type { Dispute } from 'wcpay/data/disputes/definitions';
+import type { Dispute } from 'wcpay/types/disputes';
 
 const fields: { key: string; label: string }[] = [
 	{ key: 'created', label: __( 'Dispute date', 'woocommerce-payments' ) },

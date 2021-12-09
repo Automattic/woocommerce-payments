@@ -1,8 +1,8 @@
-type BillingDetails = {
+interface BillingDetails {
 	name: string;
-};
+}
 
-export type Charge = {
+export interface Charge {
 	id: string;
 	billing_details: BillingDetails;
-};
+}

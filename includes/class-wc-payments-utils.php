@@ -116,14 +116,14 @@ class WC_Payments_Utils {
 	 *
 	 * @return int The amount in cents.
 	 */
-	public static function prepare_amount( $amount, $currency = 'USD' ) {
+	public static function prepare_amount( $amount, $currency = 'USD' ): int {
 		$conversion_rate = 100;
 
 		if ( self::is_zero_decimal_currency( strtolower( $currency ) ) ) {
 			$conversion_rate = 1;
 		}
 
-		return round( (float) $amount * $conversion_rate );
+		return (int) round( (float) $amount * $conversion_rate );
 	}
 
 	/**
@@ -364,13 +364,13 @@ class WC_Payments_Utils {
 	/**
 	 * Redacts the provided array, removing the sensitive information, and limits its depth to LOG_MAX_RECURSION.
 	 *
-	 * @param array   $array The array to redact.
-	 * @param array   $keys_to_redact The keys whose values need to be redacted.
-	 * @param integer $level The current recursion level.
+	 * @param object|array $array          The array to redact.
+	 * @param array        $keys_to_redact The keys whose values need to be redacted.
+	 * @param integer      $level          The current recursion level.
 	 *
-	 * @return array The redacted array.
+	 * @return string|array The redacted array.
 	 */
-	public static function redact_array( $array, $keys_to_redact, $level = 0 ) {
+	public static function redact_array( $array, array $keys_to_redact, int $level = 0 ) {
 		if ( is_object( $array ) ) {
 			// TODO: if we ever want to log objects, they could implement a method returning an array or a string.
 			return get_class( $array ) . '()';

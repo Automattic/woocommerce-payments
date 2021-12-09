@@ -12,6 +12,13 @@ use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodTyp
  */
 class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	/**
+	 * The gateway instance.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
 	 * Initializes the class.
 	 */
 	public function initialize() {
