@@ -42,8 +42,7 @@ jobs:
           ftp-username: ${{ secrets.TEST_SITE_FTP_USERNAME }}
           ftp-password: ${{ secrets.TEST_SITE_FTP_PASS }}
           git-ftp-args: --insecure
-          LOCAL_DIR: woocommerce-payments/
-          server-dir: /htdocs/wp-content/plugins
+          local-dir: woocommerce-payments/wp-content/plugins
           known-hosts: "sftp.wp.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQAB\
           AAABAQDwfT/YEhOKO2Z0+XrjRqUS5Q2Ali6AlhOhZtzlIfMOvm03Sype\
           DJH70tlUHasS+nm0SnZ01fOiEeAXa91ZhMihIYUT3nTGuiA2J3uVYsyS\
