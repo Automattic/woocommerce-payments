@@ -119,14 +119,13 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_decimals_returns_num_decimals_for_order_currency() {
-		global $wp;
-		$wp->query_vars = [
-			'pagename'       => 'checkout',
-			'order-received' => '42',
-		];
 		$this->mock_utils
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
 			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'USD' ) );
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'num_decimals' => 3 ] );
@@ -152,14 +151,13 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_decimal_separator_returns_decimal_sep_for_order_currency() {
-		global $wp;
-		$wp->query_vars = [
-			'pagename'       => 'checkout',
-			'order-received' => '42',
-		];
 		$this->mock_utils
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
 			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'USD' ) );
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'decimal_sep' => '.' ] );
@@ -185,14 +183,13 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_price_thousand_separator_returns_thousand_sep_for_order_currency() {
-		global $wp;
-		$wp->query_vars = [
-			'pagename'       => 'checkout',
-			'order-received' => '42',
-		];
 		$this->mock_utils
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
 			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'USD' ) );
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'thousand_sep' => ',' ] );
@@ -218,14 +215,13 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_woocommerce_price_format_returns_format_for_order_currency_pos() {
-		global $wp;
-		$wp->query_vars = [
-			'pagename'       => 'checkout',
-			'order-received' => '42',
-		];
 		$this->mock_utils
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
 			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'USD' ) );
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'currency_pos' => 'left' ] );
