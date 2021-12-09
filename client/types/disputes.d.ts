@@ -1,6 +1,6 @@
 // eslint-disable-next-line wpcalypso/import-docblock
 import { Order } from '@woocommerce/api';
-import { Charge } from 'wcpay/data/charges/definitions';
+import { Charge } from './charges';
 
 interface Evidence {
 	[ key: string ]:
