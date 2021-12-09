@@ -105,7 +105,7 @@ class WC_Payments_DB {
 	 *
 	 * @param string $order_id       WC Order Id.
 	 *
-	 * @return null|WC_Order
+	 * @return bool|WC_Order|WC_Order_Refund
 	 */
 	public function order_from_order_id( $order_id ) {
 		return wc_get_order( ( $order_id ) );

@@ -139,10 +139,10 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product   The product to get the WC Pay ID for.
 	 * @param bool|null  $test_mode Is WC Pay in test/dev mode.
 	 *
-	 * @return string             The WC Pay product ID or an empty string.
+	 * @return bool                 The WC Pay product ID or an empty string.
 	 */
-	public static function has_wcpay_product_id( WC_Product $product, $test_mode = null ) : string {
-		return (bool) $product->get_meta( self::get_wcpay_product_id_option( $test_mode ), true );
+	public static function has_wcpay_product_id( WC_Product $product, $test_mode = null ) : bool {
+		return (bool) $product->get_meta( self::get_wcpay_product_id_option( $test_mode ) );
 	}
 
 	/**
@@ -533,7 +533,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * If applicable, returns the product's variations otherwise returns the product by itself.
 	 *
-	 * @param WC_Product $product The product.
+	 * @param WC_Product|WC_Product_Variable $product The product.
 	 *
 	 * @return array The products to update.
 	 */
