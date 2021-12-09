@@ -28,11 +28,6 @@ interface ChargeRefunds {
 
 export interface Charge {
 	id: string;
-	amount: number;
-	amount_captured: number;
-	amount_refunded: number;
-	application_fee_amount: number;
-	balance_transaction: BalanceTransaction;
 	billing_details: BillingDetails;
 	captured: boolean;
 	currency: string;
