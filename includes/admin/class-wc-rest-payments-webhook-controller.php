@@ -453,7 +453,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 * @param array  $array Array to read from.
 	 * @param string $key   ID to fetch on.
 	 *
-	 * @return string|array
+	 * @return string|array|int
 	 * @throws Rest_Request_Exception Thrown if ID not set.
 	 */
 	private function read_rest_property( $array, $key ) {

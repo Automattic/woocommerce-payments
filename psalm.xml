@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <psalm
-	errorLevel="7"
+	errorLevel="5"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns="https://getpsalm.org/schema/config"
 	xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
@@ -14,6 +14,11 @@
 			<directory name="client" />
 			<directory name="docker" />
             <directory name="vendor" />
+			<!-- Not much logic there, but a lot of false-positives -->
+            <directory name="includes/in-person-payments/templates" />
+			<!-- There are no stubs yet for Subscriptions, hence analysis is not usable there -->
+			<directory name="includes/subscriptions" />
+			<directory name="includes/compat/subscriptions" />
         </ignoreFiles>
     </projectFiles>
 
@@ -22,5 +27,6 @@
 		<ParadoxicalCondition errorLevel="suppress" />
 		<MissingFile errorLevel="suppress" />
 		<DuplicateClass errorLevel="suppress" />
+		<InvalidGlobal errorLevel="suppress" />
 	</issueHandlers>
 </psalm>

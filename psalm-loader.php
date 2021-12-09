@@ -7,8 +7,20 @@ require_once __DIR__ . '/vendor/php-stubs/woocommerce-stubs/woocommerce-packages
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+/* required in order to load the classes included later on */
 define( 'ABSPATH', __DIR__ );
 define( 'WCPAY_ABSPATH', __DIR__ . '/' );
-define( 'WCPAY_PLUGIN_FILE', WCPAY_ABSPATH . 'woocommerce-payments.php' );
+define( 'WCPAY_PLUGIN_FILE', __DIR__ . '/woocommerce-payments.php' );
 
-require_once __DIR__ . '/includes/multi-currency/wc-payments-multi-currency.php';
+require_once __DIR__ . '/includes/class-wc-payments-features.php';
+require_once __DIR__ . '/includes/class-wc-payments.php';
+
+/* here we extract all inclusions and including the files in the same order as WCPay does */
+foreach ( file( __DIR__ . '/includes/class-wc-payments.php' ) as $line ) {
+	if ( strpos( $line, 'include_once ' ) !== false ) {
+		$parts = explode( ' ', trim( $line ) );
+		$file  = __DIR__ . '/includes/' . trim( array_pop( $parts ), "';/" );
+		$file  = str_replace( '/includes/includes/', '/includes/', $file );
+		require_once $file;
+	}
+}

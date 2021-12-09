@@ -102,7 +102,7 @@ class WC_Payments_Account {
 	 *
 	 * @return bool True if the account is connected, false otherwise, $on_error on error.
 	 */
-	public function is_stripe_connected( $on_error = false ) {
+	public function is_stripe_connected( bool $on_error = false ): bool {
 		try {
 			return $this->try_is_stripe_connected();
 		} catch ( Exception $e ) {
@@ -116,19 +116,14 @@ class WC_Payments_Account {
 	 * @return bool      True if the account is connected, false otherwise.
 	 * @throws Exception Throws exception when unable to detect connection status.
 	 */
-	public function try_is_stripe_connected() {
+	public function try_is_stripe_connected(): bool {
 		$account = $this->get_cached_account_data();
-
 		if ( false === $account ) {
 			throw new Exception( __( 'Failed to detect connection status', 'woocommerce-payments' ) );
 		}
 
-		if ( is_array( $account ) && empty( $account ) ) {
-			// empty means no account.
-			return false;
-		}
-
-		return true;
+		// The empty array indicates that account is not connected yet.
+		return [] !== $account;
 	}
 
 	/**
@@ -171,7 +166,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Account statement descriptor.
 	 */
-	public function get_statement_descriptor() {
+	public function get_statement_descriptor() : string {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['statement_descriptor'] ) ? $account['statement_descriptor'] : '';
 	}
@@ -199,7 +194,7 @@ class WC_Payments_Account {
 	/**
 	 * Gets the business support address.
 	 *
-	 * @return string Business profile support address.
+	 * @return array Business profile support address.
 	 */
 	public function get_business_support_address() : array {
 		$account = $this->get_cached_account_data();
@@ -291,9 +286,9 @@ class WC_Payments_Account {
 	 *
 	 * @return string Email.
 	 */
-	public function get_account_email() {
+	public function get_account_email(): string {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['email'] ) ? $account['email'] : [];
+		return $account['email'] ?? '';
 	}
 
 	/**
@@ -1092,7 +1087,7 @@ class WC_Payments_Account {
 	/**
 	 * Read the account from the WP option we cache it in.
 	 *
-	 * @return array|string|bool
+	 * @return array|bool
 	 */
 	private function read_account_from_cache() {
 		$account_cache = get_option( self::ACCOUNT_OPTION );
