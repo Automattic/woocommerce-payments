@@ -29,7 +29,7 @@ jobs:
           node-version: '10.x'
 
       # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Build WC Payments plugin ZIP
         run: |
           npm install
           npm run build
@@ -38,9 +38,10 @@ jobs:
       - name: FTP-Deploy-Action
         uses: Automattic/FTP-Deploy-Action@3.0.1
         env:
-          FTP_SERVER: ${{ secrets.TEST_SITE_FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.TEST_SITE_FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.TEST_SITE_FTP_PASS }}
+          ftp-server: ${{ secrets.TEST_SITE_FTP_SERVER }}
+          ftp-username: ${{ secrets.TEST_SITE_FTP_USERNAME }}
+          ftp-password: ${{ secrets.TEST_SITE_FTP_PASS }}
+          git-ftp-args: --insecure
           LOCAL_DIR: woocommerce-payments/
           server-dir: /htdocs/wp-content/plugins
           known-hosts: "sftp.wp.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQAB\
