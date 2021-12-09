@@ -1,7 +1,7 @@
 // eslint-disable-next-line wpcalypso/import-docblock
 import { Order } from '@woocommerce/api';
 
-type Evidence = {
+interface Evidence {
 	[ key: string ]:
 		| string
 		| Record< string, boolean >
@@ -9,9 +9,9 @@ type Evidence = {
 	isUploading: Record< string, boolean >;
 	metadata: Record< string, string >;
 	uploadingErrors: Record< string, string >;
-};
+}
 
-export type Dispute = {
+export interface Dispute {
 	status: string;
 	id: string;
 	evidence_details?: {
@@ -23,4 +23,4 @@ export type Dispute = {
 	evidence: Evidence;
 	fileSize?: Record< string, number >;
 	reason: string;
-};
+}
