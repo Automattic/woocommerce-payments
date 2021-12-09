@@ -2461,8 +2461,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order - Order based on which to create intent.
 	 * @param array    $payment_methods - A list of allowed payment methods. Eg. card, card_present.
-	 * @param ?string  $capture_method - Controls when the funds will be captured from the customer's account ("automatic" or "manual").
-	 * It must be "manual" for in-person (terminal) payments.
+	 * @param string   $capture_method - Controls when the funds will be captured from the customer's account ("automatic" or "manual").
+	 *  It must be "manual" for in-person (terminal) payments.
 	 *
 	 * @return array|WP_Error On success, an array containing info about the newly created intent. On failure, WP_Error object.
 	 *
