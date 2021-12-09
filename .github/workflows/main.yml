@@ -17,7 +17,11 @@ jobs:
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/poc/sftp-autosync@v2
+      - name: Checkout develop branch
+      - uses: actions/checkout@v2
+        with:
+          ref: 'develop'
+          fetch-depth: 2
       
       - name: Use Node.js 10.x
         uses: actions/setup-node@v1
@@ -32,13 +36,18 @@ jobs:
           unzip woocommerce-payments.zip
       
       - name: FTP-Deploy-Action
-        uses: SamKirkland/FTP-Deploy-Action@2.0.0
+        uses: Automattic/FTP-Deploy-Action@3.0.1
         env:
           FTP_SERVER: ${{ secrets.TEST_SITE_FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.TEST_SITE_FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.TEST_SITE_FTP_PASS }}
           LOCAL_DIR: woocommerce-payments/
           server-dir: /htdocs/wp-content/plugins
-          METHOD: sftp
-          PORT: 22
-          ARGS: --delete
+          known-hosts: "sftp.wp.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQAB\
+          AAABAQDwfT/YEhOKO2Z0+XrjRqUS5Q2Ali6AlhOhZtzlIfMOvm03Sype\
+          DJH70tlUHasS+nm0SnZ01fOiEeAXa91ZhMihIYUT3nTGuiA2J3uVYsyS\
+          CJefvhWc0kg1FbEus3V3cVmx4e3XctdkzLbOgPNngypZocbP+8yCpbx6\
+          Kb9lihmgTjgGn2QzbK1enRSzsN/CbjVhej9jwukbrWqdCrQsKAsoZ2p6\
+          YCtcKbHS+Yy4RwcO9PxZUBkeMXUrejms027bRcdVfwf55hWSD9xYEHpE\
+          HupkSL4ofWs3UKeRGz+jCCzl7Nu0S6VSwK4Zzll0auHI0Hwh8WKTJbSn\
+          1gxCdF93/rmP"
