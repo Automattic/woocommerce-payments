@@ -37,8 +37,8 @@ jobs:
       
       - name: FTP-Deploy-Action
         uses: Automattic/FTP-Deploy-Action@3.0.1
-        env:
-          ftp-server: sftp://sftp.wp.com/htdocs/
+        with:
+          ftp-server: ${{ secrets.TEST_SITE_FTP_SERVER }}
           ftp-username: ${{ secrets.TEST_SITE_FTP_USERNAME }}
           ftp-password: ${{ secrets.TEST_SITE_FTP_PASS }}
           git-ftp-args: --insecure
