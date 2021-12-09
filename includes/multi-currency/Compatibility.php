@@ -46,13 +46,15 @@ class Compatibility extends BaseCompatibility {
 	 * @return void
 	 */
 	public function init_compatibility_classes() {
-		$compatibility_classes[] = new WooCommerceBookings( $this->multi_currency, $this->utils, $this->multi_currency->get_frontend_currencies() );
-		$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommercePreOrders( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommerceSubscriptions( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommerceUPS( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommerceDeposits( $this->multi_currency, $this->utils );
+		if ( 1 < count( $this->multi_currency->get_enabled_currencies() ) ) {
+			$compatibility_classes[] = new WooCommerceBookings( $this->multi_currency, $this->utils, $this->multi_currency->get_frontend_currencies() );
+			$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
+			$compatibility_classes[] = new WooCommercePreOrders( $this->multi_currency, $this->utils );
+			$compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency, $this->utils );
+			$compatibility_classes[] = new WooCommerceSubscriptions( $this->multi_currency, $this->utils );
+			$compatibility_classes[] = new WooCommerceUPS( $this->multi_currency, $this->utils );
+			$compatibility_classes[] = new WooCommerceDeposits( $this->multi_currency, $this->utils );
+		}
 	}
 
 	/**
