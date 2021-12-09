@@ -18,14 +18,14 @@ class WC_Payments_Email_Failed_Renewal_Authentication extends WC_Email {
 	/**
 	 * An instance of the email, which would normally be sent after a failed payment.
 	 *
-	 * @var WC_Email
+	 * @var WC_Email_Failed_Order
 	 */
 	public $original_email;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param WC_Email[] $email_classes All existing instances of WooCommerce emails.
+	 * @param WC_Email_Failed_Order[] $email_classes All existing instances of WooCommerce emails.
 	 */
 	public function __construct( $email_classes = [] ) {
 		$this->id             = 'failed_renewal_authentication';

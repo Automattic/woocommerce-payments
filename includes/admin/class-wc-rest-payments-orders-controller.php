@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
 
 /**
@@ -64,6 +65,15 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 						'required' => true,
 					],
 				],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			$this->rest_base . '/(?P<order_id>\w+)/create_terminal_intent',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'create_terminal_intent' ],
+				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
 		register_rest_route(
@@ -196,6 +206,28 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			);
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to create / update customer from order via REST API: ' . $e );
+			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
+		}
+	}
+
+	/**
+	 * Create a new in-person payment intent for the given order ID without confirming it.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function create_terminal_intent( $request ) {
+		// Do not process non-existing orders.
+		$order = wc_get_order( $request['order_id'] );
+		if ( false === $order ) {
+			return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
+		}
+
+		try {
+			$result = $this->gateway->create_intent( $order, [ Payment_Method::CARD_PRESENT ], 'manual' );
+			return rest_ensure_response( $result );
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Failed to create an intention via REST API: ' . $e );
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}
