@@ -135,16 +135,16 @@ class Analytics {
 		}
 
 		$stripe_exchange_rate = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true )
-			? floatval( $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true ) )
+			? (float) $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true )
 			: null;
-		$order_exchange_rate  = ( 1 / floatval( $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) ) );
+		$order_exchange_rate  = ( 1 / (float) $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) );
 
 		$exchange_rate = $stripe_exchange_rate ?? $order_exchange_rate;
 
 		$dp                     = wc_get_price_decimals();
-		$args['net_total']      = round( $this->convert_amount( floatval( $args['net_total'] ), $exchange_rate ), $dp );
-		$args['shipping_total'] = round( $this->convert_amount( floatval( $args['shipping_total'] ), $exchange_rate ), $dp );
-		$args['tax_total']      = round( $this->convert_amount( floatval( $args['tax_total'] ), $exchange_rate ), $dp );
+		$args['net_total']      = round( $this->convert_amount( (float) $args['net_total'], $exchange_rate ), $dp );
+		$args['shipping_total'] = round( $this->convert_amount( (float) $args['shipping_total'], $exchange_rate ), $dp );
+		$args['tax_total']      = round( $this->convert_amount( (float) $args['tax_total'], $exchange_rate ), $dp );
 		$args['total_sales']    = $args['net_total'] + $args['shipping_total'] + $args['tax_total'];
 
 		return $args;
@@ -181,7 +181,7 @@ class Analytics {
 		$sql_replacements = $this->get_sql_replacements();
 
 		foreach ( $clauses as $clause ) {
-			if ( ! in_array( $context_page, array_keys( $sql_replacements ), true ) ) {
+			if ( ! array_key_exists( $context_page, $sql_replacements ) ) {
 				$replacements_array = $sql_replacements['generic'] ?? [];
 			} else {
 				$replacements_array = $sql_replacements[ $context_page ] ?? [];
@@ -225,7 +225,7 @@ class Analytics {
 			return $clauses;
 		}
 
-		$context_parts = explode( '_', $context );
+		$context_parts = explode( '_', $context, 2 );
 		$context_page  = $context_parts[0] ?? 'generic';
 
 		$prefix                   = 'wcpay_multicurrency_';

@@ -214,6 +214,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 					'manage_customer_details_for_order',
 					'parent_process_payment',
 					'get_upe_enabled_payment_method_statuses',
+					'is_payment_recurring',
 				]
 			)
 			->getMock();
@@ -698,6 +699,62 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		unset( $_POST['wc_payment_intent_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		$this->assertEquals( 'success', $result['result'] );
+		$this->assertRegExp( "/order_id=$order_id/", $result['redirect_url'] );
+		$this->assertRegExp( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
+		$this->assertRegExp( '/save_payment_method=yes/', $result['redirect_url'] );
+	}
+
+	public function test_process_subscription_payment_passes_save_payment_method() {
+		$order                         = WC_Helper_Order::create_order();
+		$order_id                      = $order->get_id();
+		$_POST['wc_payment_intent_id'] = 'pi_abc123';
+		$intent_status                 = 'processing';
+		$charge_id                     = 'ch_mock';
+		$client_secret                 = 'cs_mock';
+		$customer_id                   = 'cus_mock';
+		$intent_id                     = 'pi_mock';
+		$payment_method_id             = 'pm_mock';
+		$payment_method_details        = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'credit',
+			],
+		];
+
+		$payment_intent = new WC_Payments_API_Intention(
+			$intent_id,
+			$order->get_total(),
+			$order->get_currency(),
+			$customer_id,
+			$payment_method_id,
+			new \DateTime( 'NOW' ),
+			$intent_status,
+			$charge_id,
+			$client_secret,
+			[],
+			[],
+			$payment_method_details
+		);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_intention' )
+			->willReturn(
+				$payment_intent
+			);
+
+		$this->mock_upe_gateway
+			->expects( $this->once() )
+			->method( 'is_payment_recurring' )
+			->willReturn( true );
+
+		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+
+		unset( $_POST['wc_payment_intent_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( true, $result['payment_needed'] );
 		$this->assertRegExp( "/order_id=$order_id/", $result['redirect_url'] );
 		$this->assertRegExp( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
 		$this->assertRegExp( '/save_payment_method=yes/', $result['redirect_url'] );

@@ -11,3 +11,7 @@ export const getCardReaderStatsError = ( state, id ) => {
 		? state.readers[ id ].error
 		: {};
 };
+
+export const getCardReaders = ( state ) => {
+	return state.readers && state.readers.list ? state.readers.list : {};
+};

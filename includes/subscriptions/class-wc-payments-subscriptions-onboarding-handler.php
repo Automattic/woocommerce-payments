@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Tracker;
+
 /**
  * A class to handle the onboarding of subscriptions products. Created subscription products will be set to draft until
  *   onboarding is completed.
@@ -111,6 +113,8 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 
 		// Save and prevent duplicates from multiple updates.
 		update_option( self::WCPAY_SUBSCRIPTION_AUTO_PUBLISH_PRODUCTS, array_unique( $auto_publish_ids ) );
+
+		Tracker::track_admin( 'wcpay_subscriptions_account_not_connected_save_product' );
 	}
 
 	/**
@@ -143,6 +147,8 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 
 		// clear auto-published products from option.
 		delete_option( self::WCPAY_SUBSCRIPTION_AUTO_PUBLISH_PRODUCTS );
+
+		Tracker::track_admin( 'wcpay_subscriptions_account_not_connected_publish_products' );
 	}
 
 	/**

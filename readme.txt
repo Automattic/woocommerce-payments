@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
 Tested up to: 5.8.1
 Requires PHP: 7.0
-Stable tag: 3.3.0
+Stable tag: 3.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,10 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.4.0 - 2021-xx-xx =
+= 3.5.0 - 2021-xx-xx =
+* Fix - Error when renewing subscriptions with saved payment methods disabled.
+
+= 3.4.0 - 2021-12-08 =
 * Add - Allow UI customizations on checkout payment fields.
 * Add - Introduce `wcpay_payment_request_is_product_supported` filter. Allow plugins to conditionally disable payment request buttons on products that do not support them.
 * Update - Display hardware costs for the period in the transaction list with link to the details page
@@ -108,10 +111,14 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Add support for suggested gateway methods in WC-Admin.
 * Fix - Prevent Payment Request buttons from showing up in Composite Product pages.
 * Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
+* Add - Card Reader receipt settings page.
 * Fix - Fatal error on thank you page for deleted orders.
 * Add - Error messages when dispute evidence exceeds Stripe limits.
 * Fix - Onboarding must be completed before Subscriptions products can be published.
-* Add - Support business account branding settings
+* Fix - Show the prices in the correct currency when using the "All Products" block.
+* Add - Support business account branding settings.
+* Update - Capture order-related metadata not captured by mobile app for in-person payment transactions.
+* Add - REST endpoint to print IPP receipts.
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.

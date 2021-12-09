@@ -39,8 +39,8 @@ class WooCommerceDeposits extends BaseCompatibility {
 	 */
 	public function modify_cart_item_deposit_amounts( $cart_contents ) {
 		foreach ( $cart_contents as $cart_item_key => $cart_item ) {
-			if ( isset( $cart_item['is_deposit'] ) && $cart_item['is_deposit'] && isset( $cart_item['deposit_amount'] ) ) {
-					$deposit_amount                                    = floatval( $cart_item['deposit_amount'] );
+			if ( ! empty( $cart_item['is_deposit'] ) && isset( $cart_item['deposit_amount'] ) ) {
+					$deposit_amount                                    = (float) $cart_item['deposit_amount'];
 					$cart_contents[ $cart_item_key ]['deposit_amount'] = $this->multi_currency->get_price( $deposit_amount, 'product' );
 			}
 		}
@@ -54,7 +54,7 @@ class WooCommerceDeposits extends BaseCompatibility {
 	 * @param float       $amount The amount to convert.
 	 * @param \WC_Product $product The product to check for.
 	 *
-	 * @return array
+	 * @return float
 	 */
 	public function modify_cart_item_deposit_amount_meta( $amount, $product ) {
 		if ( 'percent' === $this->get_product_deposit_type( $product ) && $this->utils->is_call_in_backtrace( [ 'WC_Deposits_Cart_Manager->deposits_form_output' ] ) ) {
