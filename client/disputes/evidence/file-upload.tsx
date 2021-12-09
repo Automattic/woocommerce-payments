@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	BaseControl,
@@ -11,28 +12,28 @@ import {
 } from '@wordpress/components';
 import Gridicon from 'gridicons';
 
-export const FileUploadControl = ( props ) => {
-	const {
-		fileName,
-		field,
-		disabled,
-		isDone,
-		isLoading,
-		accept,
-		error,
-		onFileChange,
-		onFileRemove,
-		help,
-	} = props;
-	const hasError = error && 0 < error.length;
-	const getIcon = () => {
-		return (
-			<Gridicon
-				icon={ isDone && ! hasError ? 'checkmark' : 'add-outline' }
-				size={ 18 }
-			/>
-		);
-	};
+import type { DisputeFileUpload } from 'wcpay/types/disputes';
+
+export const FileUploadControl = ( {
+	field,
+	fileName,
+	disabled,
+	isDone,
+	isLoading,
+	accept,
+	error,
+	onFileChange,
+	onFileRemove,
+	help,
+}: DisputeFileUpload ): JSX.Element => {
+	const hasError = ( error && 0 < error.length ) || undefined;
+
+	const getIcon = (
+		<Gridicon
+			icon={ isDone && ! hasError ? 'checkmark' : 'add-outline' }
+			size={ 18 }
+		/>
+	);
 
 	return (
 		<BaseControl
@@ -42,7 +43,7 @@ export const FileUploadControl = ( props ) => {
 		>
 			<DropZoneProvider>
 				<DropZone
-					onFilesDrop={ ( files ) =>
+					onFilesDrop={ ( files: Array< File > ) =>
 						onFileChange( field.key, files[ 0 ] )
 					}
 				/>
@@ -50,16 +51,20 @@ export const FileUploadControl = ( props ) => {
 			<div className="file-upload">
 				<FormFileUpload
 					id={ `form-file-upload-${ field.key }` }
-					className={ isDone && ! hasError ? 'is-success' : null }
+					className={ isDone && ! hasError ? 'is-success' : '' }
 					isSecondary
 					isDestructive={ hasError }
 					isBusy={ isLoading }
 					disabled={ disabled || isLoading }
-					icon={ getIcon() }
+					icon={ getIcon }
 					accept={ accept }
-					onChange={ ( event ) =>
-						onFileChange( field.key, event.target.files[ 0 ] )
-					}
+					onChange={ (
+						event: React.ChangeEvent< HTMLInputElement >
+					): void => {
+						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+						// @ts-ignore
+						onFileChange( field.key, event.target!.files[ 0 ] );
+					} }
 				>
 					{ __( 'Upload file', 'woocommerce-payments' ) }
 				</FormFileUpload>
