@@ -565,7 +565,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Get product from product page or product_page shortcode.
 	 *
-	 * @return WC_Product Product object.
+	 * @return WC_Product|false|null Product object.
 	 */
 	public function get_product() {
 		global $post;
@@ -575,12 +575,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		} elseif ( wc_post_content_has_shortcode( 'product_page' ) ) {
 			// Get id from product_page shortcode.
 			preg_match( '/\[product_page id="(?<id>\d+)"\]/', $post->post_content, $shortcode_match );
-
-			if ( ! isset( $shortcode_match['id'] ) ) {
-				return false;
+			if ( isset( $shortcode_match['id'] ) ) {
+				return wc_get_product( $shortcode_match['id'] );
 			}
-
-			return wc_get_product( $shortcode_match['id'] );
 		}
 
 		return false;
@@ -1433,7 +1430,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Settings array for the user authentication dialog and redirection.
 	 *
-	 * @return array
+	 * @return array|false
 	 */
 	public function get_login_confirmation_settings() {
 		if ( is_user_logged_in() || ! $this->is_authentication_required() ) {

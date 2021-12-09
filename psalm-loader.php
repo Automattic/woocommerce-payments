@@ -7,6 +7,7 @@ require_once __DIR__ . '/vendor/php-stubs/woocommerce-stubs/woocommerce-packages
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+/* required in order to load the classes included later on */
 define( 'ABSPATH', __DIR__ );
 define( 'WCPAY_ABSPATH', __DIR__ . '/' );
 define( 'WCPAY_PLUGIN_FILE', __DIR__ . '/woocommerce-payments.php' );
