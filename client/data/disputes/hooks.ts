@@ -36,9 +36,13 @@ export const useDisputeEvidence = () => {
 	return { updateDispute };
 };
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-export const useDisputes = ( { paged, per_page: perPage } ) =>
+export const useDisputes = ( {
+	paged,
+	per_page: perPage,
+}: {
+	paged: string;
+	per_page: string;
+} ) =>
 	useSelect(
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );

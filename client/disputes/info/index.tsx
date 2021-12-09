@@ -75,14 +75,14 @@ const Info = ( {
 					dispute.amount || 0,
 					dispute.currency || 'USD'
 				),
-				dueBy: dateI18n(
-					'M j, Y - g:iA',
-					moment(
-						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-						// @ts-ignore
-						dispute.evidence_details.due_by * 1000
-					).toISOString()
-				),
+				dueBy: dispute.evidence_details
+					? dateI18n(
+							'M j, Y - g:iA',
+							moment(
+								dispute.evidence_details.due_by * 1000
+							).toISOString()
+					  )
+					: null,
 				reason: composeDisputeReason( dispute ),
 				order: dispute.order ? (
 					<OrderLink order={ dispute.order } />
