@@ -80,6 +80,7 @@
     "@types/react": "16.14.5",
     "@types/wordpress__components": "9.8.6",
     "@types/wordpress__date": "3.3.2",
+    "@types/wordpress__element": "2.14.1",
     "@typescript-eslint/eslint-plugin": "4.15.2",
     "@typescript-eslint/parser": "4.15.2",
     "@woocommerce/api": "0.2.0",
