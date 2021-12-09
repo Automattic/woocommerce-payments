@@ -68,7 +68,7 @@ class FrontendCurrencies {
 	/**
 	 * Price Decimal Separator cache.
 	 *
-	 * @var string
+	 * @var array
 	 */
 	private $price_decimal_separators = [];
 
