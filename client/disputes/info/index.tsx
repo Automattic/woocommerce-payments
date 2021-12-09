@@ -22,7 +22,7 @@ import Loadable from 'components/loadable';
 import type { UseDisputeObject } from 'wcpay/data/disputes/hooks';
 import type { Dispute } from 'wcpay/data/disputes/definitions';
 
-const fields = [
+const fields: { key: string; label: string }[] = [
 	{ key: 'created', label: __( 'Dispute date', 'woocommerce-payments' ) },
 	{ key: 'amount', label: __( 'Disputed amount', 'woocommerce-payments' ) },
 	{ key: 'dueBy', label: __( 'Respond by', 'woocommerce-payments' ) },
@@ -45,9 +45,7 @@ const composeTransactionIdLink = ( dispute: Dispute ): JSX.Element => {
 	);
 };
 
-const composeDisputeReason = ( dispute: Dispute ) => {
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// @ts-ignore
+const composeDisputeReason = ( dispute: Dispute ): string => {
 	const reasonMapping = reasons[ dispute.reason ];
 	return reasonMapping
 		? reasonMapping.display
@@ -57,16 +55,8 @@ const composeDisputeReason = ( dispute: Dispute ) => {
 const Info = ( {
 	dispute,
 	isLoading,
-}: Omit< UseDisputeObject, 'doAccept' > ): JSX.Element => {
-	const data: {
-		created: string | Date;
-		amount: string;
-		dueBy: string;
-		reason: string;
-		order: string | JSX.Element | null;
-		customer: string | null;
-		transactionId: string | JSX.Element;
-	} = isLoading
+}: Pick< UseDisputeObject, 'dispute' | 'isLoading' > ): JSX.Element => {
+	const data: Record< string, string | JSX.Element | null > = isLoading
 		? {
 				created: 'Created date',
 				amount: 'Amount',
@@ -107,8 +97,6 @@ const Info = ( {
 	return (
 		<div className="wcpay-dispute-info">
 			{ fields.map( ( { key, label } ) => {
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
 				if ( null == data[ key ] ) {
 					return null;
 				}
@@ -117,8 +105,6 @@ const Info = ( {
 						<Loadable isLoading={ isLoading } display="inline">
 							<span className="wcpay-dispute-info-key">{ `${ label }: ` }</span>
 							<span className="wcpay-dispute-info-value">
-								{ /*eslint-disable-next-line @typescript-eslint/ban-ts-comment*/ }
-								{ /*@ts-ignore*/ }
 								{ data[ key ] }
 							</span>
 						</Loadable>
