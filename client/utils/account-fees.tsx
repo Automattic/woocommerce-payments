@@ -58,7 +58,8 @@ const getStripeFeeSectionUrl = ( country: string ) => {
 	);
 };
 
-const getFeeDescriptionString = ( fee: BaseFee ) => {
+const getFeeDescriptionString = ( fee: BaseFee | undefined ) => {
+	if ( ! fee ) return;
 	if ( fee.fixed_rate && fee.percentage_rate ) {
 		return sprintf(
 			'%1$f%% + %2$s',
@@ -95,16 +96,17 @@ export const formatMethodFeesTooltip = (
 	const total = {
 		percentage_rate:
 			accountFees.base.percentage_rate +
-			accountFees.additional.percentage_rate +
-			accountFees.fx.percentage_rate,
+			( accountFees.additional?.percentage_rate || 0 ) +
+			( accountFees.fx?.percentage_rate || 0 ),
 		fixed_rate:
 			accountFees.base.fixed_rate +
-			accountFees.additional.fixed_rate +
-			accountFees.fx.fixed_rate,
+			( accountFees.additional?.fixed_rate || 0 ) +
+			( accountFees.fx?.fixed_rate || 0 ),
 		currency: accountFees.base.currency,
 	};
 
-	const hasFees = ( fee: BaseFee ) => {
+	const hasFees = ( fee: BaseFee | undefined ) => {
+		if ( ! fee ) return;
 		return fee.fixed_rate || fee.percentage_rate;
 	};
 
@@ -285,7 +287,9 @@ export const formatAccountFeesDescription = (
 	return feeDescription;
 };
 
-export const formatMethodFeesDescription = ( methodFees: Fee ): string => {
+export const formatMethodFeesDescription = (
+	methodFees: Fee | undefined
+): string => {
 	if ( ! methodFees ) {
 		return __( 'missing fees', 'woocommerce-payments' );
 	}

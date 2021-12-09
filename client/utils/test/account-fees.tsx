@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { sprintf } from '@wordpress/i18n';
+import React from 'react';
 
 /**
  * Internal dependencies
@@ -14,16 +15,12 @@ import {
 import { formatCurrency } from '../currency';
 
 jest.mock( '../currency', () => ( {
-	formatCurrency: jest.fn(),
+	formatCurrency: jest.fn( ( amount: number ) => {
+		return sprintf( '$%.2f', amount / 100 );
+	} ),
 } ) );
 
 describe( 'Account fees utility functions', () => {
-	beforeEach( () => {
-		formatCurrency.mockImplementation( ( amount ) => {
-			return sprintf( '$%.2f', amount / 100 );
-		} );
-	} );
-
 	describe( 'getCurrentFee()', () => {
 		it( 'returns first discount regardless of amount', () => {
 			const accountFees = {
@@ -35,9 +32,13 @@ describe( 'Account fees utility functions', () => {
 				discount: [
 					{
 						discount: 0.1,
+						fixed_rate: 456.78,
+						percentage_rate: 0.123,
 					},
 					{
 						discount: 0.2,
+						fixed_rate: 456.78,
+						percentage_rate: 0.123,
 					},
 				],
 			};
@@ -87,9 +88,13 @@ describe( 'Account fees utility functions', () => {
 				discount: [
 					{
 						discount: 0.1,
+						fixed_rate: 456.78,
+						percentage_rate: 0.123,
 					},
 					{
 						discount: 0.2,
+						fixed_rate: 456.78,
+						percentage_rate: 0.123,
 					},
 				],
 			};
@@ -159,6 +164,8 @@ describe( 'Account fees utility functions', () => {
 				discount: [
 					{
 						discount: 0.1,
+						percentage_rate: 12.3,
+						fixed_rate: 4567.8,
 					},
 				],
 			};
@@ -200,6 +207,8 @@ describe( 'Account fees utility functions', () => {
 				discount: [
 					{
 						discount: 0.1,
+						percentage_rate: 0.123,
+						fixed_rate: 456.78,
 					},
 				],
 			};
@@ -227,6 +236,8 @@ describe( 'Account fees utility functions', () => {
 				discount: [
 					{
 						discount: 0.1,
+						percentage_rate: 0.123,
+						fixed_rate: 456.78,
 					},
 				],
 			};
@@ -273,6 +284,8 @@ describe( 'Account fees utility functions', () => {
 				discount: [
 					{
 						discount: 0.1,
+						percentage_rate: 0.123,
+						fixed_rate: 456.78,
 					},
 				],
 			};
