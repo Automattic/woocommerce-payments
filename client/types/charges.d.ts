@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { BalanceTransaction } from './balance_transactions';
+import { BalanceTransaction } from './balance-transactions';
 import { Dispute } from './disputes';
 
 interface BillingDetails {
