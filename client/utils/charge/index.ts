@@ -75,7 +75,7 @@ export const getChargeStatus = ( charge: Charge = {} as Charge ): string => {
  * Calculates display values for charge amounts in settlement currency.
  *
  * @param {Charge} charge The full charge object.
- * @return {Object} An object, containing the `currency`, `amount`, `net`, `fee`, and `refunded` amounts in Stripe format (*100).
+ * @return {ChargeAmounts} An object, containing the `currency`, `amount`, `net`, `fee`, and `refunded` amounts in Stripe format (*100).
  */
 export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	const balance = charge.balance_transaction
