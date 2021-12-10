@@ -14,42 +14,41 @@ import { Charge, ChargeAmounts } from 'types/charges';
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
 
-export const getDisputeStatus = ( dispute: Dispute = {} as Dispute ): string =>
+export const getDisputeStatus = ( dispute: Dispute = <Dispute>{} ): string =>
 	dispute.status || '';
 
-export const getChargeOutcomeType = ( charge: Charge = {} as Charge ): string =>
+export const getChargeOutcomeType = ( charge: Charge = <Charge>{} ): string =>
 	charge.outcome ? charge.outcome.type : '';
 
-export const isChargeSuccessful = ( charge: Charge = {} as Charge ): boolean =>
+export const isChargeSuccessful = ( charge: Charge = <Charge>{} ): boolean =>
 	'succeeded' === charge.status && true === charge.paid;
 
-export const isChargeFailed = ( charge: Charge = {} as Charge ): boolean =>
+export const isChargeFailed = ( charge: Charge = <Charge>{} ): boolean =>
 	'failed' === charge.status &&
 	failedOutcomeTypes.includes( getChargeOutcomeType( charge ) );
 
-export const isChargeBlocked = ( charge: Charge = {} as Charge ): boolean =>
+export const isChargeBlocked = ( charge: Charge = <Charge>{} ): boolean =>
 	'failed' === charge.status &&
 	blockedOutcomeTypes.includes( getChargeOutcomeType( charge ) );
 
-export const isChargeCaptured = ( charge: Charge = {} as Charge ): boolean =>
+export const isChargeCaptured = ( charge: Charge = <Charge>{} ): boolean =>
 	true === charge.captured;
 
-export const isChargeDisputed = ( charge: Charge = {} as Charge ): boolean =>
+export const isChargeDisputed = ( charge: Charge = <Charge>{} ): boolean =>
 	true === charge.disputed;
 
-export const isChargeRefunded = ( charge: Charge = {} as Charge ): boolean =>
+export const isChargeRefunded = ( charge: Charge = <Charge>{} ): boolean =>
 	0 < charge.amount_refunded;
 
-export const isChargeFullyRefunded = (
-	charge: Charge = {} as Charge
-): boolean => true === charge.refunded;
+export const isChargeFullyRefunded = ( charge: Charge = <Charge>{} ): boolean =>
+	true === charge.refunded;
 
 export const isChargePartiallyRefunded = (
-	charge: Charge = {} as Charge
+	charge: Charge = <Charge>{}
 ): boolean => isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
 
 /* TODO: implement authorization and SCA charge statuses */
-export const getChargeStatus = ( charge: Charge = {} as Charge ): string => {
+export const getChargeStatus = ( charge: Charge = <Charge>{} ): string => {
 	if ( isChargeFailed( charge ) ) {
 		return 'failed';
 	}
