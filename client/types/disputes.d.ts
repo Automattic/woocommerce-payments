@@ -1,5 +1,6 @@
 // eslint-disable-next-line wpcalypso/import-docblock
 import { Charge } from './charges';
+import { BalanceTransaction } from './balance-transactions';
 
 interface Evidence {
 	[ key: string ]:
@@ -58,6 +59,24 @@ export interface Dispute {
 	object: string;
 	is_charge_refundable: boolean;
 	livemode: boolean;
-	balance_transaction: number | null;
+	balance_transaction: BalanceTransaction[];
 	balance_transactions: Array< Record< string, string > >;
+}
+
+interface UploadFieldObject {
+	key: string;
+	label: string;
+}
+
+export interface DisputeFileUpload {
+	field: UploadFieldObject;
+	fileName: string;
+	disabled?: boolean;
+	isDone: boolean;
+	isLoading: boolean;
+	accept: string;
+	error?: string;
+	onFileChange( key: string, file: File ): any;
+	onFileRemove( key: string ): any;
+	help?: string;
 }

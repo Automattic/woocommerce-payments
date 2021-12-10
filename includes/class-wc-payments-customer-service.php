@@ -382,9 +382,8 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @param WC_Order $order WC Order object.
 	 *
-	 * @return string WCPay customer ID.
-	 *
-	 * @throws API_Exception If there's an error creating customer.
+	 * @return string|null    WCPay customer ID.
+	 * @throws API_Exception  If there's an error creating customer.
 	 */
 	public function get_customer_id_for_order( $order ) {
 		$customer_id = null;
