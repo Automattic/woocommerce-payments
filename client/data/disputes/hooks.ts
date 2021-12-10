@@ -13,11 +13,6 @@ interface DisputeObj {
 	doAccept: () => void;
 }
 
-interface DisputesParams {
-	paged: any;
-	per_page: any;
-}
-
 interface DisputesResponse {
 	disputes: unknown;
 	isLoading: unknown;
@@ -50,7 +45,10 @@ export const useDisputeEvidence = () => {
 export const useDisputes = ( {
 	paged,
 	per_page: perPage,
-}: DisputesParams ): DisputesResponse =>
+}: {
+	paged: string;
+	per_page: string;
+} ): DisputesResponse =>
 	useSelect(
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );

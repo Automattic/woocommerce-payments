@@ -18,28 +18,22 @@ import Paragraphs from 'components/paragraphs';
 import Page from 'components/page';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import LoadableBlock from 'components/loadable';
-
-// import  from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import '../style.scss';
 import { Loadable } from 'components/loadable/index';
 
-interface DisputeDetailsQueryParams {
-	id: string;
-	page?: string;
-	path?: string;
-}
-
-interface DisputeDetailsParams {
-	query: DisputeDetailsQueryParams;
+const DisputeDetails = ( {
+	query: { id: disputeId },
+}: {
+	query: {
+		id: string;
+		page?: string;
+		path?: string;
+	};
 	pathMatch?: string;
 	path?: string;
 	params?: Record< string, string >;
-}
-
-const DisputeDetails = ( {
-	query: { id: disputeId },
-}: DisputeDetailsParams ): JSX.Element => {
+} ): JSX.Element => {
 	const { dispute, isLoading, doAccept } = useDispute( disputeId );
 	const disputeIsAvailable = ! isLoading && dispute && dispute.id;
 
