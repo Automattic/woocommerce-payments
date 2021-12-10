@@ -229,18 +229,6 @@ describe( 'Account fees utility functions', () => {
 			);
 		} );
 
-		it( 'only describes discount if it is different than base fee', () => {
-			const accountFees = mockAccountFees( {
-				percentage_rate: 0.123,
-				fixed_rate: 456.78,
-				currency: 'USD',
-			} );
-
-			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
-				'12.3% + $4.57 per transaction'
-			);
-		} );
-
 		it( 'uses custom formats', () => {
 			const accountFees = mockAccountFees(
 				{
