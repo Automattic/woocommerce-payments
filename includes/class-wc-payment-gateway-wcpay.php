@@ -1515,9 +1515,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * Overrides parent method to retrieve some options from connected account.
 	 *
-	 * @param  string $key Option key.
+	 * @param  string $key         Option key.
 	 * @param  mixed  $empty_value Value when empty.
-	 * @return mixed The value specified for the option or a default value for the option.
+	 * @return string|array        The value specified for the option or a default value for the option.
 	 */
 	public function get_option( $key, $empty_value = null ) {
 		switch ( $key ) {
@@ -1611,21 +1611,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Gets connected account statement descriptor.
 	 *
-	 * @param mixed $empty_value Empty value to return when not connected or fails to fetch account descriptor.
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch account descriptor.
 	 *
 	 * @return string Statement descriptor of default value.
 	 */
-	protected function get_account_statement_descriptor( $empty_value = null ) {
+	protected function get_account_statement_descriptor( string $empty_value = '' ): string {
 		try {
-			if ( ! $this->is_connected() ) {
-				return $empty_value;
+			if ( $this->is_connected() ) {
+				return $this->account->get_statement_descriptor();
 			}
-
-			return $this->account->get_statement_descriptor();
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to get account statement descriptor.' . $e );
-			return $empty_value;
 		}
+		return $empty_value;
 	}
 
 	/**
@@ -2454,6 +2452,48 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				strtotime( '+5 seconds' ),
 				'wcpay_track_update_order',
 				[ 'order_id' => $order_id ]
+			);
+		}
+	}
+
+	/**
+	 * Create a payment intent without confirming the intent.
+	 *
+	 * @param WC_Order $order - Order based on which to create intent.
+	 * @param array    $payment_methods - A list of allowed payment methods. Eg. card, card_present.
+	 * @param string   $capture_method - Controls when the funds will be captured from the customer's account ("automatic" or "manual").
+	 *  It must be "manual" for in-person (terminal) payments.
+	 *
+	 * @return array|WP_Error On success, an array containing info about the newly created intent. On failure, WP_Error object.
+	 *
+	 * @throws Exception - When an error occurs in intent creation.
+	 */
+	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method = 'automatic' ) {
+		$currency         = strtolower( $order->get_currency() );
+		$converted_amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
+		$intent           = null;
+
+		try {
+			$intent = $this->payments_api_client->create_intention(
+				$converted_amount,
+				$currency,
+				$payment_methods,
+				$order->get_id(),
+				$capture_method
+			);
+
+			return [
+				'id' => ! empty( $intent ) ? $intent->get_id() : null,
+			];
+		} catch ( API_Exception $e ) {
+			return new WP_Error(
+				'wcpay_intent_creation_error',
+				sprintf(
+					// translators: %s: the error message.
+					__( 'Intent creation failed with the following message: %s', 'woocommerce-payments' ),
+					$e->getMessage() ?? __( 'Unknown error', 'woocommerce-payments' )
+				),
+				[ 'status' => $e->get_http_code() ]
 			);
 		}
 	}
