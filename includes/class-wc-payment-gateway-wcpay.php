@@ -2722,7 +2722,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Get the oAuth connection URL.
+	 * Get the connection URL.
 	 *
 	 * @return string Connection URL.
 	 */
