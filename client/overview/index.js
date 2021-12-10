@@ -29,7 +29,6 @@ const OverviewPage = () => {
 		accountStatus,
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
-		multiCurrencySetup,
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 		needsHttpsSetup,
@@ -40,7 +39,6 @@ const OverviewPage = () => {
 	const tasksUnsorted = getTasks( {
 		accountStatus,
 		showUpdateDetailsTask,
-		multiCurrencySetup,
 		wpcomReconnectUrl,
 		needsHttpsSetup,
 		disputes,
