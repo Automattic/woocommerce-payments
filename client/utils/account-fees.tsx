@@ -50,7 +50,7 @@ const stripeFeeSectionExistsForCountry = ( country: string ): boolean => {
 	return countryFeeStripeDocsSectionNumbers.hasOwnProperty( country );
 };
 
-const getStripeFeeSectionUrl = ( country: string ) => {
+const getStripeFeeSectionUrl = ( country: string ): string => {
 	return sprintf(
 		'%s%s',
 		countryFeeStripeDocsBaseLink,
@@ -58,8 +58,7 @@ const getStripeFeeSectionUrl = ( country: string ) => {
 	);
 };
 
-const getFeeDescriptionString = ( fee: BaseFee | undefined ): string => {
-	if ( ! fee ) return '';
+const getFeeDescriptionString = ( fee: BaseFee ): string => {
 	if ( fee.fixed_rate && fee.percentage_rate ) {
 		return sprintf(
 			'%1$f%% + %2$s',
@@ -92,22 +91,22 @@ export const getCurrentFee = (
 
 export const formatMethodFeesTooltip = (
 	accountFees: FeeStructure
-): JSX.Element | undefined => {
-	if ( ! accountFees ) return;
+): JSX.Element => {
+	if ( ! accountFees ) return <></>;
 
 	const total = {
 		percentage_rate:
 			accountFees.base.percentage_rate +
-			( accountFees.additional?.percentage_rate || 0 ) +
-			( accountFees.fx?.percentage_rate || 0 ),
+			accountFees.additional.percentage_rate +
+			accountFees.fx.percentage_rate,
 		fixed_rate:
 			accountFees.base.fixed_rate +
-			( accountFees.additional?.fixed_rate || 0 ) +
-			( accountFees.fx?.fixed_rate || 0 ),
+			accountFees.additional.fixed_rate +
+			accountFees.fx?.fixed_rate,
 		currency: accountFees.base.currency,
 	};
 
-	const hasFees = ( fee: BaseFee | undefined ): number | false => {
+	const hasFees = ( fee: BaseFee ): number | false => {
 		if ( ! fee ) return false;
 		return fee.fixed_rate || fee.percentage_rate;
 	};

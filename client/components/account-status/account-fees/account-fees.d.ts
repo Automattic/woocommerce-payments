@@ -22,19 +22,17 @@ export interface BaseFee {
 	fixed_rate: number;
 }
 
-export interface DiscountFee {
-	end_time?: string;
-	volume_allowance?: number;
-	volume_currency?: string;
-	current_volume?: number;
-	percentage_rate: number;
-	fixed_rate: number;
+export interface DiscountFee extends BaseFee {
+	end_time: string | null;
+	volume_allowance: number | null;
+	volume_currency: string | null;
+	current_volume: number | null;
 	discount?: number;
 }
 
 export interface FeeStructure {
-	additional?: BaseFee;
+	additional: BaseFee;
 	base: BaseFee;
 	discount: DiscountFee[];
-	fx?: BaseFee;
+	fx: BaseFee;
 }

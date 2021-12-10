@@ -12,6 +12,10 @@ import {
 	formatMethodFeesDescription,
 	getCurrentFee,
 } from '../account-fees';
+import {
+	BaseFee,
+	DiscountFee,
+} from 'wcpay/components/account-status/account-fees/account-fees';
 import { formatCurrency } from '../currency';
 
 jest.mock( '../currency', () => ( {
@@ -20,28 +24,56 @@ jest.mock( '../currency', () => ( {
 	} ),
 } ) );
 
+const mockAccountFees = (
+	base: BaseFee,
+	discount = [] as Array< DiscountFee >
+) => ( {
+	base,
+	discount,
+	additional: {
+		percentage_rate: 0,
+		fixed_rate: 0,
+		currency: 'USD',
+	},
+	fx: {
+		percentage_rate: 0,
+		fixed_rate: 0,
+		currency: 'USD',
+	},
+} );
+
 describe( 'Account fees utility functions', () => {
 	describe( 'getCurrentFee()', () => {
 		it( 'returns first discount regardless of amount', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
+				[
 					{
 						discount: 0.1,
 						fixed_rate: 456.78,
 						percentage_rate: 0.123,
+						end_time: null,
+						volume_allowance: null,
+						volume_currency: null,
+						current_volume: null,
+						currency: 'USD',
 					},
 					{
 						discount: 0.2,
 						fixed_rate: 456.78,
 						percentage_rate: 0.123,
+						end_time: null,
+						volume_allowance: null,
+						volume_currency: null,
+						current_volume: null,
+						currency: 'USD',
 					},
-				],
-			};
+				]
+			);
 
 			expect( getCurrentFee( accountFees ) ).toEqual(
 				accountFees.discount[ 0 ]
@@ -49,55 +81,57 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'returns base if no discounts are present', () => {
-			const accountFees = {
-				base: {
-					percentage_rate: 0.123,
-					fixed_rate: 456.78,
-					currency: 'USD',
-				},
-				discount: [],
-			};
-
+			const accountFees = mockAccountFees( {
+				percentage_rate: 0.123,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			} );
 			expect( getCurrentFee( accountFees ) ).toEqual( accountFees.base );
 		} );
 	} );
 
 	describe( 'formatAccountFeesDescription()', () => {
 		it( 'uses default formats if none specified', () => {
-			const accountFees = {
-				base: {
-					percentage_rate: 0.123,
-					fixed_rate: 456.78,
-					currency: 'USD',
-				},
-				discount: [],
-			};
-
+			const accountFees = mockAccountFees( {
+				percentage_rate: 0.123,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			} );
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
 				'12.3% + $4.57 per transaction'
 			);
 		} );
 
 		it( 'uses first discount regardless of discounted amount', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
+				[
 					{
 						discount: 0.1,
 						fixed_rate: 456.78,
 						percentage_rate: 0.123,
+						end_time: null,
+						volume_allowance: null,
+						volume_currency: null,
+						current_volume: null,
+						currency: 'USD',
 					},
 					{
 						discount: 0.2,
 						fixed_rate: 456.78,
 						percentage_rate: 0.123,
+						end_time: null,
+						volume_allowance: null,
+						volume_currency: null,
+						current_volume: null,
+						currency: 'USD',
 					},
-				],
-			};
+				]
+			);
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
 				<>
@@ -108,19 +142,24 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'uses percentage and fixed rate from discount object if no discount amount is available', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
+				[
 					{
 						percentage_rate: 12.3,
 						fixed_rate: 4567.8,
+						currency: 'USD',
+						end_time: null,
+						volume_allowance: null,
+						volume_currency: null,
+						current_volume: null,
 					},
-				],
-			};
+				]
+			);
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
 				<>
@@ -131,20 +170,25 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'uses discount amount if both it and percentage and fixed rate are available', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
+				[
 					{
 						discount: 0.1,
 						percentage_rate: 12.3,
 						fixed_rate: 4567.8,
+						currency: 'USD',
+						end_time: null,
+						volume_allowance: null,
+						volume_currency: null,
+						current_volume: null,
 					},
-				],
-			};
+				]
+			);
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
 				<>
@@ -155,20 +199,25 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'does not return discount percentage if discount format is empty', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
+				[
 					{
 						discount: 0.1,
 						percentage_rate: 12.3,
 						fixed_rate: 4567.8,
+						currency: 'USD',
+						end_time: null,
+						volume_allowance: null,
+						volume_currency: null,
+						current_volume: null,
 					},
-				],
-			};
+				]
+			);
 
 			expect(
 				formatAccountFeesDescription( accountFees, { discount: '' } )
@@ -181,16 +230,11 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'only describes discount if it is different than base fee', () => {
-			const fee = {
+			const accountFees = mockAccountFees( {
 				percentage_rate: 0.123,
 				fixed_rate: 456.78,
 				currency: 'USD',
-			};
-
-			const accountFees = {
-				base: fee,
-				discount: [ fee ],
-			};
+			} );
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
 				'12.3% + $4.57 per transaction'
@@ -198,20 +242,35 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'uses custom formats', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
+				[
 					{
 						discount: 0.1,
-						percentage_rate: 0.123,
 						fixed_rate: 456.78,
+						percentage_rate: 0.123,
+						end_time: null,
+						volume_allowance: null,
+						volume_currency: null,
+						current_volume: null,
+						currency: 'USD',
 					},
-				],
-			};
+					{
+						discount: 0.2,
+						fixed_rate: 456.78,
+						percentage_rate: 0.123,
+						end_time: null,
+						volume_allowance: null,
+						volume_currency: null,
+						current_volume: null,
+						currency: 'USD',
+					},
+				]
+			);
 
 			expect(
 				formatAccountFeesDescription( accountFees, {
@@ -227,20 +286,25 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'formats currencies using formatCurrency()', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
+				[
 					{
 						discount: 0.1,
 						percentage_rate: 0.123,
 						fixed_rate: 456.78,
+						end_time: null,
+						volume_allowance: null,
+						volume_currency: null,
+						current_volume: null,
+						currency: 'USD',
 					},
-				],
-			};
+				]
+			);
 
 			formatAccountFeesDescription( accountFees );
 
@@ -260,37 +324,49 @@ describe( 'Account fees utility functions', () => {
 
 	describe( 'formatMethodFeesDescription()', () => {
 		it( 'returns fees in short format', () => {
-			const methodFees = {
-				base: {
-					percentage_rate: 0.123,
-					fixed_rate: 456.78,
-					currency: 'USD',
-				},
-				discount: [],
-			};
+			const accountFees = mockAccountFees( {
+				percentage_rate: 0.123,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			} );
 
-			expect( formatMethodFeesDescription( methodFees ) ).toEqual(
+			expect( formatMethodFeesDescription( accountFees ) ).toEqual(
 				'12.3% + $4.57'
 			);
 		} );
 
 		it( 'returns discounted fees in short format (no discount % or base fee)', () => {
-			const methodFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
+				[
 					{
 						discount: 0.1,
-						percentage_rate: 0.123,
 						fixed_rate: 456.78,
+						percentage_rate: 0.123,
+						end_time: null,
+						volume_allowance: null,
+						volume_currency: null,
+						current_volume: null,
+						currency: 'USD',
 					},
-				],
-			};
+					{
+						discount: 0.2,
+						fixed_rate: 456.78,
+						percentage_rate: 0.123,
+						end_time: null,
+						volume_allowance: null,
+						volume_currency: null,
+						current_volume: null,
+						currency: 'USD',
+					},
+				]
+			);
 
-			expect( formatMethodFeesDescription( methodFees ) ).toEqual(
+			expect( formatMethodFeesDescription( accountFees ) ).toEqual(
 				<>11.07% + $4.11</>
 			);
 		} );
