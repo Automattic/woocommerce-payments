@@ -41,12 +41,12 @@ interface UploadFieldObject {
 export interface DisputeFileUpload {
 	field: UploadFieldObject;
 	fileName: string;
-	disabled: boolean;
+	disabled?: boolean;
 	isDone: boolean;
 	isLoading: boolean;
 	accept: string;
-	error: string;
+	error?: string;
 	onFileChange( key: string, file: File ): any;
 	onFileRemove( key: string ): any;
-	help: string;
+	help?: string;
 }
