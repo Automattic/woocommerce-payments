@@ -5,15 +5,32 @@
  */
 import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
+import { Dispute } from 'wcpay/types/disputes';
 
-export const useDispute = ( id ) => {
+interface DisputeObj {
+	isLoading: boolean;
+	dispute: Dispute;
+	doAccept: () => void;
+}
+
+interface DisputesParams {
+	paged: any;
+	per_page: any;
+}
+
+interface DisputesResponse {
+	disputes: unknown;
+	isLoading: unknown;
+}
+
+export const useDispute = ( id: string ): DisputeObj => {
 	const { dispute, isLoading } = useSelect(
 		( select ) => {
 			const { getDispute, isResolving } = select( STORE_NAME );
 
 			return {
-				dispute: getDispute( id ),
-				isLoading: isResolving( 'getDispute', [ id ] ),
+				dispute: <Dispute>getDispute( id ),
+				isLoading: <boolean>isResolving( 'getDispute', [ id ] ),
 			};
 		},
 		[ id ]
@@ -30,7 +47,10 @@ export const useDisputeEvidence = () => {
 	return { updateDispute };
 };
 
-export const useDisputes = ( { paged, per_page: perPage } ) =>
+export const useDisputes = ( {
+	paged,
+	per_page: perPage,
+}: DisputesParams ): DisputesResponse =>
 	useSelect(
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );

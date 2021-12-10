@@ -105,6 +105,20 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -112,8 +126,10 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -276,6 +292,20 @@ exports[`Dispute details screen renders correctly for charge_refunded dispute st
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -283,8 +313,10 @@ exports[`Dispute details screen renders correctly for charge_refunded dispute st
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -447,6 +479,20 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -454,8 +500,10 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -618,6 +666,20 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -625,8 +687,10 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -816,6 +880,20 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -823,8 +901,10 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -987,6 +1067,20 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -994,8 +1088,10 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -1158,6 +1254,20 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -1165,8 +1275,10 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -1362,6 +1474,20 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -1369,8 +1495,10 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -1563,6 +1691,20 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -1570,8 +1712,10 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -1741,6 +1885,20 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -1748,8 +1906,10 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -1912,6 +2072,20 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -1919,8 +2093,10 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -2083,6 +2259,20 @@ exports[`Dispute details screen renders correctly for lost dispute status 1`] = 
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -2090,8 +2280,10 @@ exports[`Dispute details screen renders correctly for lost dispute status 1`] = 
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -2254,6 +2446,20 @@ exports[`Dispute details screen renders correctly for needs_response dispute sta
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -2261,8 +2467,10 @@ exports[`Dispute details screen renders correctly for needs_response dispute sta
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -2455,6 +2663,20 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -2462,8 +2684,10 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -2653,6 +2877,20 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -2660,8 +2898,10 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -2860,6 +3100,20 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -2867,8 +3121,10 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -3061,6 +3317,20 @@ exports[`Dispute details screen renders correctly for under_review dispute statu
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -3068,8 +3338,10 @@ exports[`Dispute details screen renders correctly for under_review dispute statu
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -3232,6 +3504,20 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -3239,8 +3525,10 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -3430,6 +3718,20 @@ exports[`Dispute details screen renders correctly for warning_closed dispute sta
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -3437,8 +3739,10 @@ exports[`Dispute details screen renders correctly for warning_closed dispute sta
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -3601,6 +3905,20 @@ exports[`Dispute details screen renders correctly for warning_needs_response dis
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -3608,8 +3926,10 @@ exports[`Dispute details screen renders correctly for warning_needs_response dis
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -3802,6 +4122,20 @@ exports[`Dispute details screen renders correctly for warning_under_review dispu
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -3809,8 +4143,10 @@ exports[`Dispute details screen renders correctly for warning_under_review dispu
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>
@@ -3973,6 +4309,20 @@ exports[`Dispute details screen renders correctly for won dispute status 1`] = `
             <span
               class="wcpay-dispute-info-key"
             >
+              Customer: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              test
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
               Transaction ID: 
             </span>
             <span
@@ -3980,8 +4330,10 @@ exports[`Dispute details screen renders correctly for won dispute status 1`] = `
             >
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=id_test"
+              >
+                id_test
+              </a>
             </span>
           </div>
         </div>

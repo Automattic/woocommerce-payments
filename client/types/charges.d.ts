@@ -1,5 +1,5 @@
 interface BillingDetails {
-	name: string;
+	name?: string;
 }
 
 export interface Charge {

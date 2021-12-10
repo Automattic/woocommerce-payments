@@ -3,16 +3,26 @@
  * External dependencies
  */
 import { render } from '@testing-library/react';
+import * as React from 'react';
 
 /**
  * Internal dependencies
  */
 import DisputeDetails from '../';
-import { useDispute } from 'wcpay/data';
+import { useDispute } from 'data/index';
+import { ReasonType } from 'wcpay/types/disputes';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'data/index', () => ( {
 	useDispute: jest.fn(),
 } ) );
+
+const mockUseDispute = useDispute as jest.MockedFunction< typeof useDispute >;
+
+declare const global: {
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+	};
+};
 
 describe( 'Dispute details screen', () => {
 	beforeEach( () => {
@@ -50,6 +60,7 @@ describe( 'Dispute details screen', () => {
 	];
 
 	test.each( reasons )( 'renders correctly for %s dispute', ( reason ) => {
+		const doAccept = jest.fn();
 		const dispute = {
 			id: 'dp_asdfghjkl',
 			amount: 1000,
@@ -57,16 +68,44 @@ describe( 'Dispute details screen', () => {
 			created: 1572590800,
 			evidence_details: {
 				due_by: 1573199200,
+				has_evidence: true,
+				submission_count: 1,
 			},
-			reason,
+			reason: reason as ReasonType,
 			status: 'needs_response',
 			order: {
 				number: '1',
 				url: 'http://test.local/order/1',
+				customer_url: 'test',
+				subscriptions: [],
 			},
+			metadata: {},
+			productType: 'test',
+			evidence: {
+				key: 'test',
+				isUploading: { test: true },
+				metadata: { test: 'test' },
+				uploadingErrors: { test: 'test' },
+			},
+			charge: {
+				id: 'id_test',
+				billing_details: {
+					name: 'test',
+				},
+			},
+			payment_intent: 'test',
+			object: 'dispute',
+			is_charge_refundable: false,
+			livemode: false,
+			balance_transaction: null,
+			balance_transactions: [ {} ],
 		};
 
-		useDispute.mockReturnValue( { dispute, isLoading: false } );
+		mockUseDispute.mockReturnValue( {
+			dispute,
+			isLoading: false,
+			doAccept,
+		} );
 
 		const { container } = render(
 			<DisputeDetails query={ { id: 'dp_asdfghjkl' } } />
@@ -77,6 +116,7 @@ describe( 'Dispute details screen', () => {
 	test.each( statuses )(
 		'renders correctly for %s dispute status',
 		( status ) => {
+			const doAccept = jest.fn();
 			const dispute = {
 				id: 'dp_asdfghjkl',
 				amount: 1000,
@@ -84,16 +124,44 @@ describe( 'Dispute details screen', () => {
 				created: 1572590800,
 				evidence_details: {
 					due_by: 1573199200,
+					has_evidence: true,
+					submission_count: 0,
 				},
-				reason: 'fraudulent',
-				status,
+				reason: 'fraudulent' as ReasonType,
+				status: status,
 				order: {
 					number: '1',
 					url: 'http://test.local/order/1',
+					customer_url: 'test',
+					subscriptions: [],
 				},
+				metadata: {},
+				productType: 'test',
+				evidence: {
+					key: 'test',
+					isUploading: { test: true },
+					metadata: { test: 'test' },
+					uploadingErrors: { test: 'test' },
+				},
+				charge: {
+					id: 'id_test',
+					billing_details: {
+						name: 'test',
+					},
+				},
+				payment_intent: 'test',
+				object: 'dispute',
+				is_charge_refundable: false,
+				livemode: false,
+				balance_transaction: null,
+				balance_transactions: [ {} ],
 			};
 
-			useDispute.mockReturnValue( { dispute, isLoading: false } );
+			mockUseDispute.mockReturnValue( {
+				dispute,
+				isLoading: false,
+				doAccept,
+			} );
 
 			const { container } = render(
 				<DisputeDetails query={ { id: 'dp_asdfghjkl' } } />
