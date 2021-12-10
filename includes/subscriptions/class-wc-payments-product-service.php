@@ -501,7 +501,6 @@ class WC_Payments_Product_Service {
 		add_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19, 2 );
 
 		add_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
-		add_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
 	/**
@@ -512,7 +511,6 @@ class WC_Payments_Product_Service {
 		remove_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19 );
 
 		remove_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
-		remove_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
 	/**
