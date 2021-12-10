@@ -26,7 +26,7 @@ class NoteMultiCurrencyAvailable {
 	 * Url to start the setup process. Now redirects to the wizard page.
 	 */
 	// TODO: Proper url needed for setup process.
-	const NOTE_SETUP_URL = 'admin.php?page=wc-admin&task=woocommerce-payments--multi-currency-setup';
+	const NOTE_SETUP_URL = 'admin.php?page=wc-admin&path=/payments/multi-currency-setup';
 
 	/**
 	 * Get the note.
