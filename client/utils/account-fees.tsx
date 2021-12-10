@@ -46,7 +46,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, number > = {
 	US: 18,
 };
 
-const stripeFeeSectionExistsForCountry = ( country: string ) => {
+const stripeFeeSectionExistsForCountry = ( country: string ): boolean => {
 	return countryFeeStripeDocsSectionNumbers.hasOwnProperty( country );
 };
 
@@ -58,8 +58,8 @@ const getStripeFeeSectionUrl = ( country: string ) => {
 	);
 };
 
-const getFeeDescriptionString = ( fee: BaseFee | undefined ) => {
-	if ( ! fee ) return;
+const getFeeDescriptionString = ( fee: BaseFee | undefined ): string => {
+	if ( ! fee ) return '';
 	if ( fee.fixed_rate && fee.percentage_rate ) {
 		return sprintf(
 			'%1$f%% + %2$s',
@@ -107,8 +107,8 @@ export const formatMethodFeesTooltip = (
 		currency: accountFees.base.currency,
 	};
 
-	const hasFees = ( fee: BaseFee | undefined ) => {
-		if ( ! fee ) return;
+	const hasFees = ( fee: BaseFee | undefined ): number | false => {
+		if ( ! fee ) return false;
 		return fee.fixed_rate || fee.percentage_rate;
 	};
 
