@@ -35,7 +35,7 @@ class WC_Payments_Notes_Set_Https_For_Checkout {
 	public static function can_be_added() {
 		// This note only makes sense if HTTPS is not enforced yet.
 		if ( 'yes' === get_option( 'woocommerce_force_ssl_checkout' ) || wc_site_is_https() ) {
-			return;
+			return false;
 		}
 
 		return self::trait_can_be_added();
