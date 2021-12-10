@@ -11,10 +11,14 @@ import React from 'react';
  */
 import Info from '../';
 
+declare const global: {
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+	};
+};
+
 describe( 'Dispute info', () => {
 	beforeEach( () => {
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
 		};
