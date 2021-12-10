@@ -26,7 +26,7 @@ export const FileUploadControl = ( {
 	onFileRemove,
 	help,
 }: DisputeFileUpload ): JSX.Element => {
-	const hasError = ( error && 0 < error.length ) || undefined;
+	const hasError = ( error && 0 < error.length ) || false;
 
 	const getIcon = (
 		<Gridicon
@@ -61,11 +61,10 @@ export const FileUploadControl = ( {
 					onChange={ (
 						event: React.ChangeEvent< HTMLInputElement >
 					): void => {
-						if ( ! event.target?.files?.length ) {
-							return;
-						}
-
-						onFileChange( field.key, event.target.files[ 0 ] );
+						onFileChange(
+							field.key,
+							( event.target.files || new FileList() )[ 0 ]
+						);
 					} }
 				>
 					{ __( 'Upload file', 'woocommerce-payments' ) }
