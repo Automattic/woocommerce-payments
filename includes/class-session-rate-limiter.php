@@ -69,9 +69,8 @@ class Session_Rate_Limiter {
 			return;
 		}
 
-		$registry = WC()->session->get( $this->key ) ?? [];
-		$now      = time();
-		array_push( $registry, $now );
+		$registry   = WC()->session->get( $this->key ) ?? [];
+		$registry[] = time();
 		WC()->session->set( $this->key, $registry );
 	}
 

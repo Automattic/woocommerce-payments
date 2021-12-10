@@ -15,6 +15,12 @@ use WCPay\MultiCurrency\Utils;
  * Class that controls Multi Currency Compatibility with WooCommerce Bookings Plugin.
  */
 class WooCommerceBookings extends BaseCompatibility {
+	/**
+	 * Front-end currencies.
+	 *
+	 * @var FrontendCurrencies
+	 */
+	private $frontend_currencies;
 
 	/**
 	 * Constructor.

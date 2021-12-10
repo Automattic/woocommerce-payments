@@ -209,7 +209,7 @@ class CurrencySwitcherBlock {
 			],
 			'select' => [
 				'padding'          => '2px',
-				'border'           => isset( $block_attributes['border'] ) && $block_attributes['border'] ? '1px solid' : '0px solid',
+				'border'           => ! empty( $block_attributes['border'] ) ? '1px solid' : '0px solid',
 				'border-radius'    => isset( $block_attributes['borderRadius'] ) ? $block_attributes['borderRadius'] . 'px' : '3px',
 				'border-color'     => $block_attributes['borderColor'] ?? '#000000',
 				'font-size'        => isset( $block_attributes['fontSize'] ) ? $block_attributes['fontSize'] . 'px' : '11px',
@@ -223,13 +223,13 @@ class CurrencySwitcherBlock {
 	 * Get hidden inputs for every $_GET param.
 	 * This prevents the switcher form to remove them on submit.
 	 *
-	 * @return void
+	 * @return string|null
 	 */
 	private function get_get_params() {
-		// phpcs:disable WordPress.Security.NonceVerification
-		if ( empty( $_GET ) ) {
-			return;
+		if ( empty( $_GET ) ) { // phpcs:disable WordPress.Security.NonceVerification
+			return null;
 		}
+
 		$params = explode( '&', urldecode( http_build_query( $_GET ) ) );
 		$return = '';
 		foreach ( $params as $param ) {
@@ -239,9 +239,8 @@ class CurrencySwitcherBlock {
 			if ( 'currency' === $name ) {
 				continue;
 			}
-			$return .= '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . esc_attr( $value ) . '" />';
+			$return .= sprintf( '<input type="hidden" name="%s" value="%s" />', esc_attr( $name ), esc_attr( $value ) );
 		}
 		return $return;
-		// phpcs:enable WordPress.Security.NonceVerification
 	}
 }

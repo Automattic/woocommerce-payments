@@ -118,19 +118,6 @@ class WC_Payments_Admin {
 				],
 			],
 		];
-
-		if ( $this->account->is_card_present_eligible() && self::is_card_readers_page_enabled() ) {
-			$this->admin_child_pages['wc-payments-card-readers'] = [
-				'id'       => 'wc-payments-card-readers',
-				'title'    => __( 'Card Readers', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/card-readers',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 50,
-				],
-			];
-		}
 	}
 
 	/**
@@ -226,6 +213,18 @@ class WC_Payments_Admin {
 		);
 
 		if ( $should_render_full_menu ) {
+			if ( self::is_card_readers_page_enabled() && $this->account->is_card_present_eligible() ) {
+				$this->admin_child_pages['wc-payments-card-readers'] = [
+					'id'       => 'wc-payments-card-readers',
+					'title'    => __( 'Card Readers', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/card-readers',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 50,
+					],
+				];
+			}
 
 			/**
 			 * Please note that if any other page is registered first and it's
@@ -587,18 +586,15 @@ class WC_Payments_Admin {
 	 *
 	 * @return bool True if the relationship is the one specified by the operator.
 	 */
-	private static function version_compare( $version1, $version2, $operator ) {
+	private static function version_compare( $version1, $version2, string $operator ): bool {
 		// Attempt to extract version numbers.
 		$version_regex = '/^([\d\.]+)(-.*)?$/';
-		if ( ! preg_match( $version_regex, $version1, $matches1 )
-			|| ! preg_match( $version_regex, $version2, $matches2 ) ) {
-			// Fall back to comparing the two versions as they are.
-			return version_compare( $version1, $version2, $operator );
+		if ( preg_match( $version_regex, $version1, $matches1 ) && preg_match( $version_regex, $version2, $matches2 ) ) {
+			// Only compare the numeric parts of the versions, ignore the bit after the dash.
+			$version1 = $matches1[1];
+			$version2 = $matches2[1];
 		}
-		// Only compare the numeric parts of the versions, ignore the bit after the dash.
-		$version1 = $matches1[1];
-		$version2 = $matches2[1];
-		return version_compare( $version1, $version2, $operator );
+		return (bool) version_compare( $version1, $version2, $operator );
 	}
 
 	/**

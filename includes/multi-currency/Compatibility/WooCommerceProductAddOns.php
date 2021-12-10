@@ -125,12 +125,6 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 				// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
 				$price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
 			}
-			/**
-			 * The WC_Product_Addons_Helper is defined in Product Add Ons.
-			 * This method in WCPay is only called if Product Add Ons is installed and active.
-			 *
-			 * @psalm-suppress UndefinedClass
-			 */
 			$price = \WC_Product_Addons_Helper::get_product_addon_price_for_display( $price, $cart_item['data'] );
 			$name .= ' (' . wc_price( $price ) . ')';
 		} else {
@@ -251,15 +245,6 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 				// Convert all others.
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
 			}
-
-			/**
-			 * Get the display price.
-			 *
-			 * The WC_Product_Addons_Helper is defined in Product Add Ons.
-			 * This method in WCPay is only called if Product Add Ons is installed and active.
-			 *
-			 * @psalm-suppress UndefinedClass
-			 */
 			$price          = html_entity_decode(
 				wp_strip_all_tags( wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $values['data'] ) ) ),
 				ENT_QUOTES,

@@ -546,6 +546,15 @@ export default class WCPayAPI {
 		} );
 	}
 
+	initPlatformCheckout() {
+		return this.request(
+			getPaymentRequestAjaxURL( 'init_platform_checkout' ),
+			{
+				_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
+			}
+		);
+	}
+
 	/**
 	 * Log Payment Errors via Ajax.
 	 *

@@ -77,13 +77,13 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	/**
 	 * Queries the WordPress.com REST API with a user token.
 	 *
-	 * @param string $path REST API path.
-	 * @param string $version REST API version. Default is `2`.
-	 * @param array  $args Arguments to {@see WP_Http}. Default is `array()`.
-	 * @param string $body Body passed to {@see WP_Http}. Default is `null`.
-	 * @param string $base_api_path REST API root. Default is `wpcom`.
+	 * @param string       $path          REST API path.
+	 * @param string       $version       REST API version. Default is `2`.
+	 * @param array        $args          Arguments to {@see WP_Http}. Default is `array()`.
+	 * @param string|array $body          Body passed to {@see WP_Http}. Default is `null`.
+	 * @param string       $base_api_path REST API root. Default is `wpcom`.
 	 *
-	 * @return array|WP_Error $response Response data, else WP_Error on failure.
+	 * @return array|\WP_Error $response Response data, else WP_Error on failure.
 	 */
 	public function wpcom_json_api_request_as_user(
 		$path,
@@ -92,11 +92,6 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 		$body = null,
 		$base_api_path = 'wpcom'
 	) {
-		/**
-		 * Disabled because of internal typing issue within the Jetpack library.
-		 *
-		 * @psalm-suppress UndefinedDocblockClass
-		 */
 		return Automattic\Jetpack\Connection\Client::wpcom_json_api_request_as_user( $path, $version, $args, $body, $base_api_path );
 	}
 
@@ -112,7 +107,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	private static function make_request( $args, $body ) {
 		$response = Automattic\Jetpack\Connection\Client::remote_request( $args, $body );
 
-		if ( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) || ! is_array( $response ) ) {
 			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 			$message = sprintf(
 				// translators: %1: original error message.
