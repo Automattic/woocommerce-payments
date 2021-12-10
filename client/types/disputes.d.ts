@@ -1,6 +1,7 @@
 // eslint-disable-next-line wpcalypso/import-docblock
 import { Order } from '@woocommerce/api';
 import { Charge } from './charges';
+import { BalanceTransaction } from './balance-transactions';
 
 interface Evidence {
 	[ key: string ]:
@@ -30,6 +31,7 @@ export interface Dispute {
 	amount: number;
 	currency: string;
 	created: number;
+	balance_transactions: BalanceTransaction[];
 }
 
 interface UploadFieldObject {
