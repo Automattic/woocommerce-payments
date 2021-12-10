@@ -61,9 +61,11 @@ export const FileUploadControl = ( {
 					onChange={ (
 						event: React.ChangeEvent< HTMLInputElement >
 					): void => {
-						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-						// @ts-ignore
-						onFileChange( field.key, event.target!.files[ 0 ] );
+						if ( ! event.target?.files?.length ) {
+							return;
+						}
+
+						onFileChange( field.key, event.target.files[ 0 ] );
 					} }
 				>
 					{ __( 'Upload file', 'woocommerce-payments' ) }
