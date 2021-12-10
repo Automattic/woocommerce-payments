@@ -8,6 +8,7 @@ import * as React from 'react';
  * Internal dependencies
  */
 import enqueueFraudScripts from 'fraud-scripts';
+import ErrorBoundary from '../error-boundary';
 import './style.scss';
 
 interface PageProps {
@@ -40,7 +41,7 @@ const Page: React.FC< PageProps > = ( {
 
 	return (
 		<div className={ classNames.join( ' ' ) } style={ customStyle }>
-			{ children }
+			<ErrorBoundary>{ children }</ErrorBoundary>
 		</div>
 	);
 };
