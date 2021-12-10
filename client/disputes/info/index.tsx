@@ -19,8 +19,7 @@ import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 import Loadable from 'components/loadable';
-import type { UseDisputeObject } from 'wcpay/data/disputes/hooks';
-import type { Dispute } from 'wcpay/types/disputes';
+import { Dispute } from 'wcpay/types/disputes';
 
 const fields: { key: string; label: string }[] = [
 	{ key: 'created', label: __( 'Dispute date', 'woocommerce-payments' ) },
@@ -55,7 +54,10 @@ const composeDisputeReason = ( dispute: Dispute ): string => {
 const Info = ( {
 	dispute,
 	isLoading,
-}: Pick< UseDisputeObject, 'dispute' | 'isLoading' > ): JSX.Element => {
+}: {
+	dispute: Dispute;
+	isLoading: boolean;
+} ): JSX.Element => {
 	const data: Record< string, string | JSX.Element | null > = isLoading
 		? {
 				created: 'Created date',

@@ -7,12 +7,13 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 import type { Dispute } from 'wcpay/types/disputes';
 
-export type UseDisputeObject = {
+export const useDispute = (
+	id: string
+): {
 	dispute: Dispute;
 	isLoading: boolean;
 	doAccept: () => void;
-};
-export const useDispute = ( id: string ): UseDisputeObject => {
+} => {
 	const { dispute, isLoading } = useSelect(
 		( select ) => {
 			const { getDispute, isResolving } = select( STORE_NAME );
