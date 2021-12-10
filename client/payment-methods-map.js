@@ -13,6 +13,9 @@ import SofortIcon from './gateway-icons/sofort';
 import SepaIcon from './gateway-icons/sepa';
 import P24Icon from './gateway-icons/p24';
 import IdealIcon from './gateway-icons/ideal';
+import USBankAccountIcon from './gateway-icons/us-bank-account';
+
+// TODO: USBankAccountIcon needs to be its own icon, it's a copy of bancontact.
 
 export default {
 	card: {
@@ -91,5 +94,16 @@ export default {
 		Icon: SofortIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'sofort_payments',
+	},
+	us_bank_account: {
+		id: 'us_bank_account',
+		label: __( 'US Bank Account (ACH)', 'woocommerce-payments' ),
+		description: __(
+			'US Bank Account needs a description.',
+			'woocommerce-payments'
+		),
+		Icon: USBankAccountIcon,
+		currencies: [ 'USD' ],
+		stripe_key: 'us_bank_account_ach_payments',
 	},
 };

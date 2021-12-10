@@ -56,6 +56,7 @@ export default class WCPayAPI {
 					betas: [
 						'payment_element_beta_1',
 						'card_country_event_beta_1',
+						'us_bank_account_beta_2',
 					],
 					locale,
 				} );

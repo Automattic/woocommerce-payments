@@ -5,6 +5,7 @@ export const upeMethods = [
 	'p24',
 	'sepa_debit',
 	'sofort',
+	'us_bank_account',
 ];
 
 export const upeCapabilityStatuses = {

@@ -311,6 +311,11 @@ export const getTransactionsPaymentMethodName = ( paymentMethod ) => {
 			);
 		case 'sofort':
 			return __( 'Sofort transactions', 'woocommerce-payments' );
+		case 'us_bank_account':
+			return __(
+				'US Bank Account Direct Debit transactions',
+				'woocommerce-payments'
+			);
 		default:
 			return __( 'Unknown transactions', 'woocommerce-payments' );
 	}
