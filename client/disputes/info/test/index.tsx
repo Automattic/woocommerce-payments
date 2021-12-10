@@ -11,6 +11,7 @@ import React from 'react';
  */
 import Info from '../';
 import { Dispute, Evidence } from 'wcpay/types/disputes';
+import { Charge } from 'wcpay/types/charges';
 
 declare const global: {
 	wcpaySettings: {
@@ -47,10 +48,11 @@ describe( 'Dispute info', () => {
 				billing_details: {
 					name: 'Mock customer',
 				},
-			},
+			} as Charge,
 			amount: 1000,
 			currency: 'usd',
 			created: 1572590800,
+			balance_transactions: [],
 		};
 
 		const { container: info } = render(
