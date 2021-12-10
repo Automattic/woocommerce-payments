@@ -4,11 +4,19 @@
  * External dependencies
  */
 import { render } from '@testing-library/react';
+import React from 'react';
 
 /**
  * Internal dependencies
  */
 import Info from '../';
+import { Dispute, Evidence } from 'wcpay/types/disputes';
+
+declare const global: {
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+	};
+};
 
 describe( 'Dispute info', () => {
 	beforeEach( () => {
@@ -19,32 +27,42 @@ describe( 'Dispute info', () => {
 
 	test( 'renders correctly', () => {
 		const dispute = {
-			amount: 1000,
-			currency: 'usd',
-			created: 1572590800,
+			status: 'needs_response',
+			id: '',
 			evidence_details: {
+				has_evidence: true,
 				due_by: 1573199200,
 			},
-			reason: 'fraudulent',
-			status: 'needs_response',
+			metadata: {},
+			productType: '',
 			order: {
 				number: '1',
 				url: 'http://test.local/order/1',
-			},
+			} as unknown,
+			evidence: {} as Evidence,
+			fileSize: {},
+			reason: 'fraudulent',
 			charge: {
 				id: 'ch_mock',
 				billing_details: {
 					name: 'Mock customer',
 				},
 			},
+			amount: 1000,
+			currency: 'usd',
+			created: 1572590800,
 		};
 
-		const { container: info } = render( <Info dispute={ dispute } /> );
+		const { container: info } = render(
+			<Info dispute={ dispute as Dispute } isLoading={ false } />
+		);
 		expect( info ).toMatchSnapshot();
 	} );
 
 	test( 'renders loading state', () => {
-		const { container: info } = render( <Info isLoading={ true } /> );
+		const { container: info } = render(
+			<Info isLoading={ true } dispute={ {} as Dispute } />
+		);
 		expect( info ).toMatchSnapshot();
 	} );
 } );

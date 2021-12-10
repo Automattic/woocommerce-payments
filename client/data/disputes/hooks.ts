@@ -5,8 +5,15 @@
  */
 import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
+import type { Dispute } from 'wcpay/types/disputes';
 
-export const useDispute = ( id ) => {
+export const useDispute = (
+	id: string
+): {
+	dispute: Dispute;
+	isLoading: boolean;
+	doAccept: () => void;
+} => {
 	const { dispute, isLoading } = useSelect(
 		( select ) => {
 			const { getDispute, isResolving } = select( STORE_NAME );
@@ -30,7 +37,13 @@ export const useDisputeEvidence = () => {
 	return { updateDispute };
 };
 
-export const useDisputes = ( { paged, per_page: perPage } ) =>
+export const useDisputes = ( {
+	paged,
+	per_page: perPage,
+}: {
+	paged: string;
+	per_page: string;
+} ) =>
 	useSelect(
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );
