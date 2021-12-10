@@ -2,6 +2,7 @@
 
 = 3.5.0 - 2021-xx-xx =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
+* Add - JS error boundaries to admin screens.
 
 = 3.4.0 - 2021-12-08 =
 * Add - Allow UI customizations on checkout payment fields.
@@ -16,7 +17,6 @@
 * Add - Onboarding flows on the admin WooCommerce > Subscriptions screen for stores with no subscriptions yet.
 * Add - Card Reader receipt settings page.
 * Fix - Fatal error on thank you page for deleted orders.
-* Add - JS error boundaries to admin screens.
 * Add - Error messages when dispute evidence exceeds Stripe limits.
 * Add - Export Disputes to CSV
 * Update - Remove "Boost your sales by accepting new payment methods" from the overview tasks list.
