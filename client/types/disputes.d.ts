@@ -21,8 +21,7 @@ export interface Dispute {
 	status: string;
 	id: string;
 	evidence_details?: EvidenceDetails;
-	metadata: Record< string, string >;
-	productType: string;
+	metadata: Record< string, any >;
 	order?: Order;
 	evidence: Evidence;
 	fileSize?: Record< string, number >;

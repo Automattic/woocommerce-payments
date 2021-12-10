@@ -76,8 +76,7 @@ describe( 'FileUploadControl', () => {
 
 		// Note: FormFileUpload does not associate file input with label so workaround is required to select it.
 		const input = control.querySelector( 'input[type="file"]' );
-
-		if ( !! input ) {
+		if ( input !== null ) {
 			fireEvent.change( input, fakeEvent );
 		}
 
