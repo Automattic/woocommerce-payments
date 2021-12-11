@@ -102,7 +102,7 @@ class WC_Payments_Account {
 	 *
 	 * @return bool True if the account is connected, false otherwise, $on_error on error.
 	 */
-	public function is_stripe_connected( $on_error = false ) {
+	public function is_stripe_connected( bool $on_error = false ): bool {
 		try {
 			return $this->try_is_stripe_connected();
 		} catch ( Exception $e ) {
@@ -116,19 +116,14 @@ class WC_Payments_Account {
 	 * @return bool      True if the account is connected, false otherwise.
 	 * @throws Exception Throws exception when unable to detect connection status.
 	 */
-	public function try_is_stripe_connected() {
+	public function try_is_stripe_connected(): bool {
 		$account = $this->get_cached_account_data();
-
 		if ( false === $account ) {
 			throw new Exception( __( 'Failed to detect connection status', 'woocommerce-payments' ) );
 		}
 
-		if ( is_array( $account ) && empty( $account ) ) {
-			// empty means no account.
-			return false;
-		}
-
-		return true;
+		// The empty array indicates that account is not connected yet.
+		return [] !== $account;
 	}
 
 	/**
@@ -171,9 +166,99 @@ class WC_Payments_Account {
 	 *
 	 * @return string Account statement descriptor.
 	 */
-	public function get_statement_descriptor() {
+	public function get_statement_descriptor() : string {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['statement_descriptor'] ) ? $account['statement_descriptor'] : '';
+	}
+
+	/**
+	 * Gets the business name.
+	 *
+	 * @return string Business profile name.
+	 */
+	public function get_business_name() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['business_profile']['name'] ) ? $account['business_profile']['name'] : '';
+	}
+
+	/**
+	 * Gets the business url.
+	 *
+	 * @return string Business profile url.
+	 */
+	public function get_business_url() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['business_profile']['url'] ) ? $account['business_profile']['url'] : '';
+	}
+
+	/**
+	 * Gets the business support address.
+	 *
+	 * @return array Business profile support address.
+	 */
+	public function get_business_support_address() : array {
+		$account = $this->get_cached_account_data();
+		return isset( $account['business_profile']['support_address'] ) ? $account['business_profile']['support_address'] : [];
+	}
+
+	/**
+	 * Gets the business support email.
+	 *
+	 * @return string Business profile support email.
+	 */
+	public function get_business_support_email() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['business_profile']['support_email'] ) ? $account['business_profile']['support_email'] : '';
+	}
+
+	/**
+	 * Gets the business support phone.
+	 *
+	 * @return string Business profile support phone.
+	 */
+	public function get_business_support_phone() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['business_profile']['support_phone'] ) ? $account['business_profile']['support_phone'] : '';
+	}
+
+	/**
+	 * Gets the branding logo.
+	 *
+	 * @return string branding logo.
+	 */
+	public function get_branding_logo() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['branding']['logo'] ) ? $account['branding']['logo'] : '';
+	}
+
+	/**
+	 * Gets the branding icon.
+	 *
+	 * @return string branding icon.
+	 */
+	public function get_branding_icon() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['branding']['icon'] ) ? $account['branding']['icon'] : '';
+	}
+
+	/**
+	 * Gets the branding primary color.
+	 *
+	 * @return string branding primary color.
+	 */
+	public function get_branding_primary_color() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['branding']['primary_color'] ) ? $account['branding']['primary_color'] : '';
+	}
+
+	/**
+	 * Gets the branding secondary color.
+	 *
+	 * @return string branding secondary color.
+	 */
+	public function get_branding_secondary_color() : string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['branding']['secondary_color'] ) ? $account['branding']['secondary_color'] : '';
 	}
 
 	/**
@@ -201,9 +286,9 @@ class WC_Payments_Account {
 	 *
 	 * @return string Email.
 	 */
-	public function get_account_email() {
+	public function get_account_email(): string {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['email'] ) ? $account['email'] : [];
+		return $account['email'] ?? '';
 	}
 
 	/**
@@ -416,10 +501,13 @@ class WC_Payments_Account {
 	/**
 	 * Get Stripe connect url
 	 *
+	 * @see WC_Payments_Account::get_onboarding_return_url(). The $wcpay_connect_from param relies on this function returning the corresponding URL.
+	 * @param string $wcpay_connect_from Optional. A page ID representing where the user should be returned to after connecting. Default is '1' - redirects back to the WC Payments overview page.
+	 *
 	 * @return string Stripe account login url.
 	 */
-	public static function get_connect_url() {
-		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
+	public static function get_connect_url( $wcpay_connect_from = '1' ) {
+		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => $wcpay_connect_from ], admin_url( 'admin.php' ) ), 'wcpay-connect' );
 	}
 
 	/**
@@ -534,11 +622,29 @@ class WC_Payments_Account {
 	 * @return string
 	 */
 	private function get_onboarding_return_url( $wcpay_connect_from ) {
+		$is_from_subscription_product_publish = preg_match(
+			'/WC_SUBSCRIPTIONS_PUBLISH_PRODUCT_(\d+)/',
+			$wcpay_connect_from,
+			$matches
+		);
+
+		if ( 1 === $is_from_subscription_product_publish ) {
+			return add_query_arg(
+				[ 'wcpay-subscriptions-onboarded' => '1' ],
+				get_edit_post_link( $matches[1], 'url' )
+			);
+		}
+
 		// If connection originated on the WCADMIN payment task page, return there.
 		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
-		return 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_from
-			? $this->get_payments_task_page_url()
-			: $this->get_overview_page_url();
+		switch ( $wcpay_connect_from ) {
+			case 'WCADMIN_PAYMENT_TASK':
+				return $this->get_payments_task_page_url();
+			case 'WC_SUBSCRIPTIONS_TABLE':
+				return admin_url( add_query_arg( [ 'post_type' => 'shop_subscription' ], 'edit.php' ) );
+			default:
+				return $this->get_overview_page_url();
+		}
 	}
 
 	/**
@@ -619,8 +725,9 @@ class WC_Payments_Account {
 		delete_transient( 'wcpay_stripe_onboarding_state' );
 		$this->clear_cache();
 
-		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
-		WC_Payments::get_gateway()->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', 'yes' );
+		$gateway->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
 
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
@@ -970,7 +1077,7 @@ class WC_Payments_Account {
 	 * @return bool
 	 */
 	private function is_instant_deposits_eligible( array $account ): bool {
-		if ( ! isset( $account['instant_deposits_eligible'] ) || ! $account['instant_deposits_eligible'] ) {
+		if ( empty( $account['instant_deposits_eligible'] ) ) {
 			return false;
 		}
 
@@ -980,7 +1087,7 @@ class WC_Payments_Account {
 	/**
 	 * Read the account from the WP option we cache it in.
 	 *
-	 * @return array|string|bool
+	 * @return array|bool
 	 */
 	private function read_account_from_cache() {
 		$account_cache = get_option( self::ACCOUNT_OPTION );

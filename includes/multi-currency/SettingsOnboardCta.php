@@ -21,6 +21,13 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 	const LEARN_MORE_URL = 'https://woocommerce.com/document/payments/currencies/multi-currency-setup/';
 
 	/**
+	 * MultiCurrency instance.
+	 *
+	 * @var MultiCurrency
+	 */
+	private $multi_currency;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param MultiCurrency $multi_currency The MultiCurrency instance.

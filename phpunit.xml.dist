@@ -22,9 +22,6 @@
 	<filter>
 		<whitelist>
 			<directory suffix=".php">includes</directory>
-			<exclude>
-				<directory suffix=".php">includes/subscriptions/subscriptions-base</directory>
-			</exclude>
 		</whitelist>
 	</filter>
 

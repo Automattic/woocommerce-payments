@@ -9,6 +9,15 @@ import {
 	updateAccountStatementDescriptor,
 	updatePaymentRequestLocations,
 	updateIsPaymentRequestEnabled,
+	updateAccountBusinessName,
+	updateAccountBusinessURL,
+	updateAccountBusinessSupportAddress,
+	updateAccountBusinessSupportEmail,
+	updateAccountBusinessSupportPhone,
+	updateAccountBrandingLogo,
+	updateAccountBrandingIcon,
+	updateAccountBrandingPrimaryColor,
+	updateAccountBrandingSecondaryColor,
 } from '../actions';
 
 describe( 'Settings reducer tests', () => {
@@ -284,5 +293,100 @@ describe( 'Settings reducer tests', () => {
 				savingError: null,
 			} );
 		} );
+	} );
+
+	describe( 'SET_MERCHANT_SETTINGS', () => {
+		const merchantSettings = [
+			{
+				updateFunc: updateAccountBusinessName,
+				stateKey: 'account_business_name',
+				settingValue: 'Business name',
+			},
+			{
+				updateFunc: updateAccountBusinessURL,
+				stateKey: 'account_business_url',
+				settingValue: 'Business url',
+			},
+			{
+				updateFunc: updateAccountBusinessSupportAddress,
+				stateKey: 'account_business_support_address',
+				settingValue: 'Business address',
+			},
+			{
+				updateFunc: updateAccountBusinessSupportEmail,
+				stateKey: 'account_business_support_email',
+				settingValue: 'Business email',
+			},
+			{
+				updateFunc: updateAccountBusinessSupportPhone,
+				stateKey: 'account_business_support_phone',
+				settingValue: 'Business phone',
+			},
+			{
+				updateFunc: updateAccountBrandingLogo,
+				stateKey: 'account_branding_logo',
+				settingValue: 'Branding logo',
+			},
+			{
+				updateFunc: updateAccountBrandingIcon,
+				stateKey: 'account_branding_icon',
+				settingValue: 'Branding icon',
+			},
+			{
+				updateFunc: updateAccountBrandingPrimaryColor,
+				stateKey: 'account_branding_primary_color',
+				settingValue: 'Branding primary color',
+			},
+			{
+				updateFunc: updateAccountBrandingSecondaryColor,
+				stateKey: 'account_branding_secondary_color',
+				settingValue: 'Branding secondary color',
+			},
+		];
+
+		test.each( merchantSettings )( 'toggles `%j`', ( setting ) => {
+			const oldState = {
+				data: {
+					[ setting.stateKey ]: setting.settingValue,
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				setting.updateFunc( 'New ${setting.settingValue}' )
+			);
+
+			expect( state.data[ setting.stateKey ] ).toEqual(
+				'New ${setting.settingValue}'
+			);
+		} );
+
+		test.each( merchantSettings )(
+			'leaves other fields unchanged `%j`',
+			( setting ) => {
+				const oldState = {
+					foo: 'bar',
+					data: {
+						[ setting.stateKey ]: setting.settingValue,
+						baz: 'quux',
+					},
+					savingError: {},
+				};
+
+				const state = reducer(
+					oldState,
+					setting.updateFunc( 'New ${setting.settingValue}' )
+				);
+
+				expect( state ).toEqual( {
+					foo: 'bar',
+					savingError: null,
+					data: {
+						[ setting.stateKey ]: 'New ${setting.settingValue}',
+						baz: 'quux',
+					},
+				} );
+			}
+		);
 	} );
 } );

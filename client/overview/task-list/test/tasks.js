@@ -4,9 +4,6 @@
  * Internal dependencies
  */
 import { getTasks, taskSort } from '../tasks';
-import createAdditionalMethodsSetupTask from '../../../additional-methods-setup/task';
-
-jest.mock( '../../../additional-methods-setup/task', () => jest.fn() );
 
 describe( 'getTasks()', () => {
 	it( 'should include business details when flag is set', () => {
@@ -112,12 +109,7 @@ describe( 'getTasks()', () => {
 	} );
 
 	it( 'returns the expected keys when the account overview flag is enabled', () => {
-		createAdditionalMethodsSetupTask.mockReturnValue( {
-			key: 'woocommerce-payments--additional-payment-methods',
-		} );
-
 		const tasks = getTasks( {
-			additionalMethodsSetup: { isTaskVisible: true },
 			isAccountOverviewTasksEnabled: true,
 			showUpdateDetailsTask: 'yes',
 			wpcomReconnectUrl: 'http://example.com',
@@ -130,20 +122,12 @@ describe( 'getTasks()', () => {
 				expect.objectContaining( { key: 'update-business-details' } ),
 				expect.objectContaining( { key: 'reconnect-wpcom-user' } ),
 				expect.objectContaining( { key: 'force-secure-checkout' } ),
-				expect.objectContaining( {
-					key: 'woocommerce-payments--additional-payment-methods',
-				} ),
 			] )
 		);
 	} );
 
 	it( 'returns the expected keys when the account overview flag is disabled', () => {
-		createAdditionalMethodsSetupTask.mockReturnValue( {
-			key: 'woocommerce-payments--additional-payment-methods',
-		} );
-
 		const tasks = getTasks( {
-			additionalMethodsSetup: { isTaskVisible: true },
 			showUpdateDetailsTask: 'yes',
 			wpcomReconnectUrl: 'http://example.com',
 			accountStatus: {},
@@ -157,65 +141,8 @@ describe( 'getTasks()', () => {
 				expect.objectContaining( { key: 'force-secure-checkout' } ),
 			] )
 		);
-		expect( tasks ).toEqual(
-			expect.arrayContaining( [
-				expect.objectContaining( {
-					key: 'woocommerce-payments--additional-payment-methods',
-				} ),
-			] )
-		);
 	} );
 
-	describe( 'additional method setup task', () => {
-		beforeEach( () => {
-			createAdditionalMethodsSetupTask.mockReturnValue( {} );
-			window.wcpaySettings = { additionalMethodsSetup: {} };
-		} );
-
-		afterEach( () => {
-			jest.restoreAllMocks();
-		} );
-
-		it( 'renders task if `isTaskVisible` is true', () => {
-			createAdditionalMethodsSetupTask.mockReturnValue( {
-				key: 'woocommerce-payments--additional-payment-methods',
-			} );
-
-			const actual = getTasks( {
-				additionalMethodsSetup: { isTaskVisible: true },
-				accountStatus: {},
-				isAccountOverviewTasksEnabled: true,
-			} );
-
-			expect( actual ).toEqual(
-				expect.arrayContaining( [
-					expect.objectContaining( {
-						key: 'woocommerce-payments--additional-payment-methods',
-					} ),
-				] )
-			);
-		} );
-
-		it( 'does not render task if `isTaskVisible` is false', () => {
-			createAdditionalMethodsSetupTask.mockReturnValue( {
-				key: 'woocommerce-payments--additional-payment-methods',
-			} );
-
-			const actual = getTasks( {
-				additionalMethodsSetup: { isTaskVisible: false },
-				accountStatus: {},
-				isAccountOverviewTasksEnabled: true,
-			} );
-
-			expect( actual ).toEqual(
-				expect.not.arrayContaining( [
-					expect.objectContaining( {
-						key: 'woocommerce-payments--additional-payment-methods',
-					} ),
-				] )
-			);
-		} );
-	} );
 	it( 'should not include the dispute resolution task', () => {
 		const disputes = [];
 		const actual = getTasks( {
@@ -302,11 +229,6 @@ describe( 'getTasks()', () => {
 
 describe( 'taskSort()', () => {
 	it( 'should sort the tasks', () => {
-		createAdditionalMethodsSetupTask.mockReturnValue( {
-			key: 'test-element',
-			completed: true,
-			level: 3,
-		} );
 		/*eslint-disable camelcase*/
 		const disputes = [
 			{
@@ -332,9 +254,13 @@ describe( 'taskSort()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
-			additionalMethodsSetup: { isTaskVisible: true },
 			isAccountOverviewTasksEnabled: true,
 			disputes,
+		} );
+		unsortedTasks.unshift( {
+			key: 'test-element',
+			completed: true,
+			level: 3,
 		} );
 		expect( unsortedTasks[ 0 ] ).toEqual(
 			expect.objectContaining( {

@@ -5,8 +5,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import { useDispatch } from '@wordpress/data';
-import { addQueryArgs } from '@wordpress/url';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import {
@@ -31,11 +30,14 @@ import evidenceFields from './fields';
 import { FileUploadControl } from './file-upload';
 import Info from '../info';
 import Page from 'components/page';
+import ErrorBoundary from 'components/error-boundary';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import wcpayTracks from 'tracks';
+import { getAdminUrl } from 'wcpay/utils';
 
+const DISPUTE_EVIDENCE_MAX_LENGTH = 150000;
 const PRODUCT_TYPE_META_KEY = '__product_type';
 
 /* If description is an array, separate with newline elements. */
@@ -58,14 +60,55 @@ export const DisputeEvidenceForm = ( props ) => {
 		readOnly,
 	} = props;
 
+	const { createErrorNotice } = useDispatch( 'core/notices' );
+	const { getNotices } = useSelect( 'core/notices' );
+
 	if ( ! fields || ! fields.length ) {
 		return null;
 	}
 
+	const isEvidenceWithinLengthLimit = ( field, value ) => {
+		// Enforce character count for individual evidence field.
+		if ( field.maxLength && value.length >= field.maxLength ) {
+			return false;
+		}
+
+		// Enforce character count for combined evidence fields.
+		const totalLength = Object.values( {
+			...evidence,
+			[ field.key ]: value,
+		} ).reduce(
+			( acc, cur ) =>
+				'string' === typeof cur ? acc + cur.length : acc,
+			0
+		);
+		if ( totalLength >= DISPUTE_EVIDENCE_MAX_LENGTH ) {
+			return false;
+		}
+
+		return true;
+	};
+
 	const composeDefaultControlProps = ( field ) => ( {
 		label: field.label,
 		value: evidence[ field.key ] || '',
-		onChange: ( value ) => onChange( field.key, value ),
+		onChange: ( value ) => {
+			if ( ! isEvidenceWithinLengthLimit( field, value ) ) {
+				const errorMessage = __(
+					'Reached maximum character count for evidence',
+					'woocommerce-payments'
+				);
+				if (
+					! getNotices().some(
+						( notice ) => notice.content === errorMessage
+					)
+				) {
+					createErrorNotice( errorMessage );
+				}
+				return;
+			}
+			onChange( field.key, value );
+		},
 		disabled: readOnly,
 		help: expandHelp( field.description ),
 	} );
@@ -124,6 +167,7 @@ export const DisputeEvidenceForm = ( props ) => {
 				return (
 					<TextareaControl
 						key={ field.key }
+						maxLength={ field.maxLength }
 						{ ...composeDefaultControlProps( field ) }
 					/>
 				);
@@ -236,90 +280,96 @@ export const DisputeEvidencePage = ( props ) => {
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
 			{ testModeNotice }
-			<Card size="large">
-				<CardHeader>
-					{
-						<Loadable
-							isLoading={ isLoading }
-							value={ __(
-								'Challenge dispute',
-								'woocommerce-payments'
-							) }
-						/>
-					}
-				</CardHeader>
-				<CardBody>
-					<Info dispute={ dispute } isLoading={ isLoading } />
-				</CardBody>
-			</Card>
-			<Card size="large">
-				<CardHeader>
-					{
-						<Loadable
-							isLoading={ isLoading }
-							value={ __(
-								'Product type',
-								'woocommerce-payments'
-							) }
-						/>
-					}
-				</CardHeader>
-				<CardBody>
-					<LoadableBlock isLoading={ isLoading } numLines={ 2 }>
-						<SelectControl
-							value={ productType }
-							onChange={ onChangeProductType }
-							options={ [
-								{
-									label: __(
-										'Select one…',
-										'woocommerce-payments'
-									),
-									disabled: true,
-									value: '',
-								},
-								{
-									label: __(
-										'Physical product',
-										'woocommerce-payments'
-									),
-									value: 'physical_product',
-								},
-								{
-									label: __(
-										'Digital product or service',
-										'woocommerce-payments'
-									),
-									value: 'digital_product_or_service',
-								},
-								{
-									label: __(
-										'Offline service',
-										'woocommerce-payments'
-									),
-									value: 'offline_service',
-								},
-								{
-									label: __(
-										'Multiple product types',
-										'woocommerce-payments'
-									),
-									value: 'multiple',
-								},
-							] }
-							disabled={ readOnly }
-						/>
-					</LoadableBlock>
-				</CardBody>
-			</Card>
+			<ErrorBoundary>
+				<Card size="large">
+					<CardHeader>
+						{
+							<Loadable
+								isLoading={ isLoading }
+								value={ __(
+									'Challenge dispute',
+									'woocommerce-payments'
+								) }
+							/>
+						}
+					</CardHeader>
+					<CardBody>
+						<Info dispute={ dispute } isLoading={ isLoading } />
+					</CardBody>
+				</Card>
+			</ErrorBoundary>
+			<ErrorBoundary>
+				<Card size="large">
+					<CardHeader>
+						{
+							<Loadable
+								isLoading={ isLoading }
+								value={ __(
+									'Product type',
+									'woocommerce-payments'
+								) }
+							/>
+						}
+					</CardHeader>
+					<CardBody>
+						<LoadableBlock isLoading={ isLoading } numLines={ 2 }>
+							<SelectControl
+								value={ productType }
+								onChange={ onChangeProductType }
+								options={ [
+									{
+										label: __(
+											'Select one…',
+											'woocommerce-payments'
+										),
+										disabled: true,
+										value: '',
+									},
+									{
+										label: __(
+											'Physical product',
+											'woocommerce-payments'
+										),
+										value: 'physical_product',
+									},
+									{
+										label: __(
+											'Digital product or service',
+											'woocommerce-payments'
+										),
+										value: 'digital_product_or_service',
+									},
+									{
+										label: __(
+											'Offline service',
+											'woocommerce-payments'
+										),
+										value: 'offline_service',
+									},
+									{
+										label: __(
+											'Multiple product types',
+											'woocommerce-payments'
+										),
+										value: 'multiple',
+									},
+								] }
+								disabled={ readOnly }
+							/>
+						</LoadableBlock>
+					</CardBody>
+				</Card>
+			</ErrorBoundary>
 			{
 				// Don't render the form placeholder while the dispute is being loaded.
 				// The form content depends on the selected product type, hence placeholder might disappear after loading.
 				! isLoading && (
-					<DisputeEvidenceForm
-						{ ...evidenceFormProps }
-						readOnly={ readOnly }
-					/>
+					<ErrorBoundary>
+						<DisputeEvidenceForm
+							{ ...evidenceFormProps }
+							readOnly={ readOnly }
+						/>
+					</ErrorBoundary>
 				)
 			}
 		</Page>
@@ -506,7 +556,7 @@ export default ( { query } ) => {
 		const message = submit
 			? __( 'Evidence submitted!', 'woocommerce-payments' )
 			: __( 'Evidence saved!', 'woocommerce-payments' );
-		const href = addQueryArgs( 'admin.php', {
+		const href = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/disputes',
 		} );
@@ -532,7 +582,7 @@ export default ( { query } ) => {
 								'Return to evidence submission',
 								'woocommerce-payments'
 						  ),
-					url: addQueryArgs( 'admin.php', {
+					url: getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/disputes/challenge',
 						id: query.id,

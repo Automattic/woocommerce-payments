@@ -10,6 +10,15 @@ import {
 	isSavingSettings,
 	getPaymentRequestLocations,
 	getIsPaymentRequestEnabled,
+	getAccountBusinessName,
+	getAccountBusinessURL,
+	getAccountBusinessSupportAddress,
+	getAccountBusinessSupportEmail,
+	getAccountBusinessSupportPhone,
+	getAccountBrandingLogo,
+	getAccountBrandingIcon,
+	getAccountBrandingPrimaryColor,
+	getAccountBrandingSecondaryColor,
 } from '../selectors';
 
 describe( 'Settings selectors tests', () => {
@@ -199,6 +208,54 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: { data: {} } } ],
 		] )( 'returns [] if missing (tested state: %j)', ( state ) => {
 			expect( getPaymentRequestLocations( state ) ).toEqual( [] );
+		} );
+	} );
+
+	describe.each( [
+		{ getFunc: getAccountBusinessName, setting: 'account_business_name' },
+		{ getFunc: getAccountBusinessURL, setting: 'account_business_url' },
+		{
+			getFunc: getAccountBusinessSupportAddress,
+			setting: 'account_business_support_address',
+		},
+		{
+			getFunc: getAccountBusinessSupportEmail,
+			setting: 'account_business_support_email',
+		},
+		{
+			getFunc: getAccountBusinessSupportPhone,
+			setting: 'account_business_support_phone',
+		},
+		{ getFunc: getAccountBrandingLogo, setting: 'account_branding_logo' },
+		{ getFunc: getAccountBrandingIcon, setting: 'account_branding_icon' },
+		{
+			getFunc: getAccountBrandingPrimaryColor,
+			setting: 'account_branding_primary_color',
+		},
+		{
+			getFunc: getAccountBrandingSecondaryColor,
+			setting: 'account_branding_secondary_color',
+		},
+	] )( 'Test get method: %j', ( setting ) => {
+		test( 'returns the value of state.settings.data.${setting.setting}', () => {
+			const state = {
+				settings: {
+					data: {
+						[ setting.setting ]: setting.setting,
+					},
+				},
+			};
+
+			expect( setting.getFunc( state ) ).toEqual( setting.setting );
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns false if missing (tested state: %j)', ( state ) => {
+			expect( setting.getFunc( state ) ).toEqual( '' );
 		} );
 	} );
 } );

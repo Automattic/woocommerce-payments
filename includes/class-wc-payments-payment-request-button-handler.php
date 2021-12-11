@@ -220,6 +220,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
+		/** @var WC_Product_Variable $product */ // phpcs:ignore
 		$product  = $this->get_product();
 		$currency = get_woocommerce_currency();
 
@@ -554,7 +555,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function is_available_at( $location ) {
 		$available_locations = $this->gateway->get_option( 'payment_request_button_locations' );
-		if ( is_array( $available_locations ) && count( $available_locations ) ) {
+		if ( $available_locations && is_array( $available_locations ) ) {
 			return in_array( $location, $available_locations, true );
 		}
 
@@ -564,7 +565,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Get product from product page or product_page shortcode.
 	 *
-	 * @return WC_Product Product object.
+	 * @return WC_Product|false|null Product object.
 	 */
 	public function get_product() {
 		global $post;
@@ -574,12 +575,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		} elseif ( wc_post_content_has_shortcode( 'product_page' ) ) {
 			// Get id from product_page shortcode.
 			preg_match( '/\[product_page id="(?<id>\d+)"\]/', $post->post_content, $shortcode_match );
-
-			if ( ! isset( $shortcode_match['id'] ) ) {
-				return false;
+			if ( isset( $shortcode_match['id'] ) ) {
+				return wc_get_product( $shortcode_match['id'] );
 			}
-
-			return wc_get_product( $shortcode_match['id'] );
 		}
 
 		return false;
@@ -597,7 +595,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( empty( $url ) ) {
 			return $redirect;
 		}
-		wc_setcookie( 'wcpay_payment_request_redirect_url', null );
+		wc_setcookie( 'wcpay_payment_request_redirect_url', '' );
 
 		return $url;
 	}
@@ -684,30 +682,31 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return boolean
 	 */
 	private function is_product_supported() {
-		$product = $this->get_product();
+		$product      = $this->get_product();
+		$is_supported = true;
 
 		if ( ! is_object( $product ) || ! in_array( $product->get_type(), $this->supported_product_types(), true ) ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// Trial subscriptions with shipping are not supported.
 		if ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// Pre Orders charge upon release not supported.
 		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// Composite products are not supported on the product page.
-		if ( class_exists( 'WC_Composite_Products' ) && function_exists( 'is_composite_product' ) && is_composite_product() ) {
-			return false;
+		if ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) {
+			$is_supported = false;
 		}
 
 		// Mix and match products are not supported on the product page.
 		if ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) {
-			return false;
+			$is_supported = false;
 		}
 
 		// File upload addon not supported.
@@ -715,12 +714,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
 			foreach ( $product_addons as $addon ) {
 				if ( 'file_upload' === $addon['type'] ) {
-					return false;
+					$is_supported = false;
+					break;
 				}
 			}
 		}
 
-		return true;
+		return apply_filters( 'wcpay_payment_request_is_product_supported', $is_supported, $product );
 	}
 
 	/**
@@ -731,6 +731,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
+		}
+
+		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
+			define( 'WOOCOMMERCE_CHECKOUT', true );
 		}
 
 		WC()->cart->calculate_totals();
@@ -872,7 +876,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @param array $shipping_methods Array of selected shipping methods ids.
 	 */
 	public function update_shipping_method( $shipping_methods ) {
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+		$chosen_shipping_methods = (array) WC()->session->get( 'chosen_shipping_methods' );
 
 		if ( is_array( $shipping_methods ) ) {
 			foreach ( $shipping_methods as $i => $value ) {
@@ -894,7 +898,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		try {
 			$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
 			$qty          = ! isset( $_POST['qty'] ) ? 1 : apply_filters( 'woocommerce_add_to_cart_quantity', absint( $_POST['qty'] ), $product_id );
-			$addon_value  = isset( $_POST['addon_value'] ) ? max( floatval( $_POST['addon_value'] ), 0 ) : 0;
+			$addon_value  = isset( $_POST['addon_value'] ) ? max( (float) $_POST['addon_value'], 0 ) : 0;
 			$product      = wc_get_product( $product_id );
 			$variation_id = null;
 			$currency     = get_woocommerce_currency();
@@ -1049,10 +1053,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function is_normalized_state( $state, $country ) {
 		$wc_states = WC()->countries->get_states( $country );
-		return (
-			is_array( $wc_states ) &&
-			in_array( $state, array_keys( $wc_states ), true )
-		);
+		return is_array( $wc_states ) && array_key_exists( $state, $wc_states );
 	}
 
 	/**
@@ -1339,7 +1340,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$tax         = wc_format_decimal( WC()->cart->tax_total + WC()->cart->shipping_tax_total, WC()->cart->dp );
 		$shipping    = wc_format_decimal( WC()->cart->shipping_total, WC()->cart->dp );
 		$items_total = wc_format_decimal( WC()->cart->cart_contents_total, WC()->cart->dp ) + $discounts;
-		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( false );
+		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( '' );
 
 		if ( wc_tax_enabled() ) {
 			$items[] = [
@@ -1429,7 +1430,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Settings array for the user authentication dialog and redirection.
 	 *
-	 * @return array
+	 * @return array|false
 	 */
 	public function get_login_confirmation_settings() {
 		if ( is_user_logged_in() || ! $this->is_authentication_required() ) {

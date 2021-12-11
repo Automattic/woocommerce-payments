@@ -75,7 +75,7 @@ class Geolocation {
 	private function geolocate_customer() {
 		// Exclude common bots from geolocation by user agent.
 		$ua = wc_get_user_agent();
-		if ( stristr( $ua, 'bot' ) || stristr( $ua, 'spider' ) || stristr( $ua, 'crawl' ) ) {
+		if ( stripos( $ua, 'bot' ) !== false || stripos( $ua, 'spider' ) !== false || stripos( $ua, 'crawl' ) !== false ) {
 			return null;
 		}
 

@@ -18,33 +18,6 @@ class WC_Payments_Features {
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME = '_wcpay_feature_subscriptions';
 
 	/**
-	 * Checks whether the Giropay gateway feature is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_giropay_enabled() {
-		return '1' === get_option( '_wcpay_feature_giropay', '0' );
-	}
-
-	/**
-	 * Checks whether the Sepa gateway feature is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_sepa_enabled() {
-		return '1' === get_option( '_wcpay_feature_sepa', '0' );
-	}
-
-	/**
-	 * Checks whether the Sofort gateway feature is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_sofort_enabled() {
-		return '1' === get_option( '_wcpay_feature_sofort', '0' );
-	}
-
-	/**
 	 * Checks whether the UPE gateway is enabled
 	 *
 	 * @return bool
@@ -114,6 +87,15 @@ class WC_Payments_Features {
 	public static function is_wcpay_subscriptions_eligible() {
 		$store_base_location = wc_get_base_location();
 		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+	}
+
+	/**
+	 * Checks whether platform checkout is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_platform_checkout_enabled() {
+		return '1' === get_option( '_wcpay_feature_platform_checkout', '0' );
 	}
 
 	/**
