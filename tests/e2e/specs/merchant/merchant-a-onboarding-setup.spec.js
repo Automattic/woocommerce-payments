@@ -9,6 +9,10 @@ describe( 'Onboarding > Resetting to defaults', () => {
 		await merchant.login();
 	} );
 
+	afterAll( async () => {
+		await merchant.logout();
+	} );
+
 	it( 'can reset onboarding to default settings', async () => {
 		await withRestApi.resetOnboarding();
 	} );
