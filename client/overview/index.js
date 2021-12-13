@@ -15,6 +15,7 @@ import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
 import DepositsInformation from 'components/deposits-information';
+import ErrorBoundary from 'components/error-boundary';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
@@ -28,7 +29,6 @@ const OverviewPage = () => {
 		accountStatus,
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
-		multiCurrencySetup,
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 		needsHttpsSetup,
@@ -39,7 +39,6 @@ const OverviewPage = () => {
 	const tasksUnsorted = getTasks( {
 		accountStatus,
 		showUpdateDetailsTask,
-		multiCurrencySetup,
 		wpcomReconnectUrl,
 		needsHttpsSetup,
 		disputes,
@@ -103,18 +102,28 @@ const OverviewPage = () => {
 			) }
 
 			<TestModeNotice topic={ topics.overview } />
-			<DepositsInformation />
-			<AccountStatus
-				accountStatus={ wcpaySettings.accountStatus }
-				accountFees={ activeAccountFees }
-			/>
-			{ !! accountOverviewTaskList && 0 < tasks.length && ! isLoading && (
-				<TaskList
-					tasks={ tasks }
-					overviewTasksVisibility={ overviewTasksVisibility }
+
+			<ErrorBoundary>
+				<DepositsInformation />
+			</ErrorBoundary>
+
+			<ErrorBoundary>
+				<AccountStatus
+					accountStatus={ wcpaySettings.accountStatus }
+					accountFees={ activeAccountFees }
 				/>
+			</ErrorBoundary>
+			{ !! accountOverviewTaskList && 0 < tasks.length && ! isLoading && (
+				<ErrorBoundary>
+					<TaskList
+						tasks={ tasks }
+						overviewTasksVisibility={ overviewTasksVisibility }
+					/>
+				</ErrorBoundary>
 			) }
-			<InboxNotifications />
+			<ErrorBoundary>
+				<InboxNotifications />
+			</ErrorBoundary>
 		</Page>
 	);
 };
