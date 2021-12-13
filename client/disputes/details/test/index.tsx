@@ -10,8 +10,7 @@ import * as React from 'react';
  */
 import DisputeDetails from '../';
 import { useDispute } from 'data/index';
-import { Dispute, ReasonType } from 'wcpay/types/disputes';
-import { ChargeOutcome, ChargeRefunds } from 'wcpay/types/charges';
+import { ReasonType } from 'wcpay/types/disputes';
 
 jest.mock( 'data/index', () => ( {
 	useDispute: jest.fn(),
