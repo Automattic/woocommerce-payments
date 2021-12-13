@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
@@ -18,8 +19,9 @@ import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 import Loadable from 'components/loadable';
+import { Dispute } from 'wcpay/types/disputes';
 
-const fields = [
+const fields: { key: string; label: string }[] = [
 	{ key: 'created', label: __( 'Dispute date', 'woocommerce-payments' ) },
 	{ key: 'amount', label: __( 'Disputed amount', 'woocommerce-payments' ) },
 	{ key: 'dueBy', label: __( 'Respond by', 'woocommerce-payments' ) },
@@ -32,7 +34,7 @@ const fields = [
 	},
 ];
 
-const composeTransactionIdLink = ( dispute ) => {
+const composeTransactionIdLink = ( dispute: Dispute ): JSX.Element => {
 	const chargeId =
 		'object' === typeof dispute.charge ? dispute.charge.id : dispute.charge;
 	return (
@@ -42,15 +44,21 @@ const composeTransactionIdLink = ( dispute ) => {
 	);
 };
 
-const composeDisputeReason = ( dispute ) => {
+const composeDisputeReason = ( dispute: Dispute ): string => {
 	const reasonMapping = reasons[ dispute.reason ];
 	return reasonMapping
 		? reasonMapping.display
 		: formatStringValue( dispute.reason );
 };
 
-const Info = ( { dispute, isLoading } ) => {
-	const data = isLoading
+const Info = ( {
+	dispute,
+	isLoading,
+}: {
+	dispute: Dispute;
+	isLoading: boolean;
+} ): JSX.Element => {
+	const data: Record< string, string | JSX.Element | null > = isLoading
 		? {
 				created: 'Created date',
 				amount: 'Amount',
@@ -69,12 +77,14 @@ const Info = ( { dispute, isLoading } ) => {
 					dispute.amount || 0,
 					dispute.currency || 'USD'
 				),
-				dueBy: dateI18n(
-					'M j, Y - g:iA',
-					moment(
-						dispute.evidence_details.due_by * 1000
-					).toISOString()
-				),
+				dueBy: dispute.evidence_details
+					? dateI18n(
+							'M j, Y - g:iA',
+							moment(
+								dispute.evidence_details.due_by * 1000
+							).toISOString()
+					  )
+					: null,
 				reason: composeDisputeReason( dispute ),
 				order: dispute.order ? (
 					<OrderLink order={ dispute.order } />
