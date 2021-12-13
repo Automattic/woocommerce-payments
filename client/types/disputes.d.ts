@@ -8,9 +8,6 @@ interface Evidence {
 		| string
 		| Record< string, boolean >
 		| Record< string, string >;
-	isUploading: Record< string, boolean >;
-	metadata: Record< string, string >;
-	uploadingErrors: Record< string, string >;
 }
 
 interface EvidenceDetails {
