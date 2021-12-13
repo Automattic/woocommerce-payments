@@ -46,6 +46,24 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->compatibility       = new Compatibility( $this->mock_multi_currency, $this->mock_utils );
 	}
 
+	public function test_init_compatibility_classes_does_not_add_classes_if_one_enabled_currencies() {
+		$this->mock_multi_currency
+			->method( 'get_enabled_currencies' )
+			->willReturn( [ 'USD' ] );
+
+		$this->compatibility->init_compatibility_classes();
+		$this->assertEquals( 0, count( $this->compatibility->get_compatibility_classes() ) );
+	}
+
+	public function test_init_compatibility_classes_adds_classes_if_enabled_currencies() {
+		$this->mock_multi_currency
+			->method( 'get_enabled_currencies' )
+			->willReturn( [ 'USD', 'EUR' ] );
+
+		$this->compatibility->init_compatibility_classes();
+		$this->assertGreaterThan( 0, count( $this->compatibility->get_compatibility_classes() ) );
+	}
+
 	public function test_should_convert_coupon_amount_return_true_on_null_coupon() {
 		$this->assertTrue( $this->compatibility->should_convert_coupon_amount( null ) );
 	}
