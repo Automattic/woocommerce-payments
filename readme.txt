@@ -100,6 +100,9 @@ Please note that our support for the checkout block is still experimental and th
 
 = 3.5.0 - 2021-xx-xx =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
+* Add - JS error boundaries to admin screens.
+* Update - Remove task from the overview list for setting up multiple currencies
+* Update - Return to task "Set up payments" after finishing KYC from WC-Admin.
 
 = 3.4.0 - 2021-12-08 =
 * Add - Allow UI customizations on checkout payment fields.
