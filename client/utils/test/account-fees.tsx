@@ -13,31 +13,50 @@ import {
 	getCurrentFee,
 } from '../account-fees';
 import { formatCurrency } from '../currency';
-import { BaseFee, DiscountFee } from 'wcpay/types/fees';
+import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
 
 jest.mock( '../currency', () => ( {
-	formatCurrency: jest.fn( ( amount: number ) => {
+	formatCurrency: jest.fn( ( amount: number ): string => {
 		return sprintf( '$%.2f', amount / 100 );
 	} ),
 } ) );
 
 const mockAccountFees = (
 	base: BaseFee,
-	discount = [] as Array< DiscountFee >
-) => ( {
-	base,
-	discount,
-	additional: {
-		percentage_rate: 0,
-		fixed_rate: 0,
-		currency: 'USD',
-	},
-	fx: {
-		percentage_rate: 0,
-		fixed_rate: 0,
-		currency: 'USD',
-	},
-} );
+	discounts = [] as Array< any >
+): FeeStructure => {
+	const result = {
+		base: base,
+		discount: [],
+		additional: {
+			percentage_rate: 0,
+			fixed_rate: 0,
+			currency: 'USD',
+		},
+		fx: {
+			percentage_rate: 0,
+			fixed_rate: 0,
+			currency: 'USD',
+		},
+	} as FeeStructure;
+
+	for ( const index in discounts ) {
+		const providedDiscount = discounts[ index ];
+		const constructedDiscount = {
+			discount: providedDiscount.discount || 0,
+			fixed_rate: providedDiscount.fixed_rate || 0,
+			percentage_rate: providedDiscount.percentage_rate || 0,
+			end_time: providedDiscount.end_time || null,
+			volume_allowance: providedDiscount.volume_allowance || null,
+			volume_currency: providedDiscount.volume_currency || null,
+			current_volume: providedDiscount.current_volume || null,
+			currency: 'USD',
+		} as DiscountFee;
+		result.discount.push( constructedDiscount );
+	}
+
+	return result;
+};
 
 describe( 'Account fees utility functions', () => {
 	describe( 'getCurrentFee()', () => {
@@ -48,28 +67,7 @@ describe( 'Account fees utility functions', () => {
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				[
-					{
-						discount: 0.1,
-						fixed_rate: 456.78,
-						percentage_rate: 0.123,
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-						currency: 'USD',
-					},
-					{
-						discount: 0.2,
-						fixed_rate: 456.78,
-						percentage_rate: 0.123,
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-						currency: 'USD',
-					},
-				]
+				[ { discount: 0.1 }, { discount: 0.2 } ]
 			);
 
 			expect( getCurrentFee( accountFees ) ).toEqual(
@@ -106,28 +104,7 @@ describe( 'Account fees utility functions', () => {
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				[
-					{
-						discount: 0.1,
-						fixed_rate: 456.78,
-						percentage_rate: 0.123,
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-						currency: 'USD',
-					},
-					{
-						discount: 0.2,
-						fixed_rate: 456.78,
-						percentage_rate: 0.123,
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-						currency: 'USD',
-					},
-				]
+				[ { discount: 0.1 }, { discount: 0.2 } ]
 			);
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
@@ -145,17 +122,7 @@ describe( 'Account fees utility functions', () => {
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				[
-					{
-						percentage_rate: 12.3,
-						fixed_rate: 4567.8,
-						currency: 'USD',
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-					},
-				]
+				[ { percentage_rate: 12.3, fixed_rate: 4567.8 } ]
 			);
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
@@ -173,18 +140,7 @@ describe( 'Account fees utility functions', () => {
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				[
-					{
-						discount: 0.1,
-						percentage_rate: 12.3,
-						fixed_rate: 4567.8,
-						currency: 'USD',
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-					},
-				]
+				[ { discount: 0.1 } ]
 			);
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
@@ -202,18 +158,7 @@ describe( 'Account fees utility functions', () => {
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				[
-					{
-						discount: 0.1,
-						percentage_rate: 12.3,
-						fixed_rate: 4567.8,
-						currency: 'USD',
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-					},
-				]
+				[ { discount: 0.1 } ]
 			);
 
 			expect(
@@ -233,28 +178,7 @@ describe( 'Account fees utility functions', () => {
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				[
-					{
-						discount: 0.1,
-						fixed_rate: 456.78,
-						percentage_rate: 0.123,
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-						currency: 'USD',
-					},
-					{
-						discount: 0.2,
-						fixed_rate: 456.78,
-						percentage_rate: 0.123,
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-						currency: 'USD',
-					},
-				]
+				[ { discount: 0.1 }, { discount: 0.2 } ]
 			);
 
 			expect(
@@ -277,18 +201,7 @@ describe( 'Account fees utility functions', () => {
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				[
-					{
-						discount: 0.1,
-						percentage_rate: 0.123,
-						fixed_rate: 456.78,
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-						currency: 'USD',
-					},
-				]
+				[ { discount: 0.1 } ]
 			);
 
 			formatAccountFeesDescription( accountFees );
@@ -327,28 +240,7 @@ describe( 'Account fees utility functions', () => {
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				[
-					{
-						discount: 0.1,
-						fixed_rate: 456.78,
-						percentage_rate: 0.123,
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-						currency: 'USD',
-					},
-					{
-						discount: 0.2,
-						fixed_rate: 456.78,
-						percentage_rate: 0.123,
-						end_time: null,
-						volume_allowance: null,
-						volume_currency: null,
-						current_volume: null,
-						currency: 'USD',
-					},
-				]
+				[ { discount: 0.1 }, { discount: 0.2 } ]
 			);
 
 			expect( formatMethodFeesDescription( accountFees ) ).toEqual(
