@@ -234,7 +234,11 @@ export const formatAccountFeesDescription = (
 		)
 	);
 
-	if ( currentFee !== baseFee ) {
+	const isFormattingWithDiscount =
+		currentFee.percentage_rate !== baseFee.percentage_rate ||
+		currentFee.fixed_rate !== baseFee.fixed_rate ||
+		currentFee.currency !== baseFee.currency;
+	if ( isFormattingWithDiscount ) {
 		const discountFee = currentFee as DiscountFee;
 		// TODO: Figure out how the UI should work if there are several "discount" fees stacked.
 		let percentage, fixed;
