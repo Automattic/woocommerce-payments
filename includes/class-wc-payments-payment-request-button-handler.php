@@ -220,6 +220,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
+		/** @var WC_Product_Variable $product */ // phpcs:ignore
 		$product  = $this->get_product();
 		$currency = get_woocommerce_currency();
 
@@ -554,7 +555,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function is_available_at( $location ) {
 		$available_locations = $this->gateway->get_option( 'payment_request_button_locations' );
-		if ( is_array( $available_locations ) && count( $available_locations ) ) {
+		if ( $available_locations && is_array( $available_locations ) ) {
 			return in_array( $location, $available_locations, true );
 		}
 
@@ -564,7 +565,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Get product from product page or product_page shortcode.
 	 *
-	 * @return WC_Product Product object.
+	 * @return WC_Product|false|null Product object.
 	 */
 	public function get_product() {
 		global $post;
@@ -574,12 +575,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		} elseif ( wc_post_content_has_shortcode( 'product_page' ) ) {
 			// Get id from product_page shortcode.
 			preg_match( '/\[product_page id="(?<id>\d+)"\]/', $post->post_content, $shortcode_match );
-
-			if ( ! isset( $shortcode_match['id'] ) ) {
-				return false;
+			if ( isset( $shortcode_match['id'] ) ) {
+				return wc_get_product( $shortcode_match['id'] );
 			}
-
-			return wc_get_product( $shortcode_match['id'] );
 		}
 
 		return false;
@@ -597,7 +595,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( empty( $url ) ) {
 			return $redirect;
 		}
-		wc_setcookie( 'wcpay_payment_request_redirect_url', null );
+		wc_setcookie( 'wcpay_payment_request_redirect_url', '' );
 
 		return $url;
 	}
@@ -717,6 +715,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			foreach ( $product_addons as $addon ) {
 				if ( 'file_upload' === $addon['type'] ) {
 					$is_supported = false;
+					break;
 				}
 			}
 		}
@@ -732,6 +731,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
+		}
+
+		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
+			define( 'WOOCOMMERCE_CHECKOUT', true );
 		}
 
 		WC()->cart->calculate_totals();
@@ -873,7 +876,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @param array $shipping_methods Array of selected shipping methods ids.
 	 */
 	public function update_shipping_method( $shipping_methods ) {
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+		$chosen_shipping_methods = (array) WC()->session->get( 'chosen_shipping_methods' );
 
 		if ( is_array( $shipping_methods ) ) {
 			foreach ( $shipping_methods as $i => $value ) {
@@ -895,7 +898,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		try {
 			$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
 			$qty          = ! isset( $_POST['qty'] ) ? 1 : apply_filters( 'woocommerce_add_to_cart_quantity', absint( $_POST['qty'] ), $product_id );
-			$addon_value  = isset( $_POST['addon_value'] ) ? max( floatval( $_POST['addon_value'] ), 0 ) : 0;
+			$addon_value  = isset( $_POST['addon_value'] ) ? max( (float) $_POST['addon_value'], 0 ) : 0;
 			$product      = wc_get_product( $product_id );
 			$variation_id = null;
 			$currency     = get_woocommerce_currency();
@@ -1050,10 +1053,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function is_normalized_state( $state, $country ) {
 		$wc_states = WC()->countries->get_states( $country );
-		return (
-			is_array( $wc_states ) &&
-			in_array( $state, array_keys( $wc_states ), true )
-		);
+		return is_array( $wc_states ) && array_key_exists( $state, $wc_states );
 	}
 
 	/**
@@ -1340,7 +1340,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$tax         = wc_format_decimal( WC()->cart->tax_total + WC()->cart->shipping_tax_total, WC()->cart->dp );
 		$shipping    = wc_format_decimal( WC()->cart->shipping_total, WC()->cart->dp );
 		$items_total = wc_format_decimal( WC()->cart->cart_contents_total, WC()->cart->dp ) + $discounts;
-		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( false );
+		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( '' );
 
 		if ( wc_tax_enabled() ) {
 			$items[] = [
@@ -1430,7 +1430,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Settings array for the user authentication dialog and redirection.
 	 *
-	 * @return array
+	 * @return array|false
 	 */
 	public function get_login_confirmation_settings() {
 		if ( is_user_logged_in() || ! $this->is_authentication_required() ) {

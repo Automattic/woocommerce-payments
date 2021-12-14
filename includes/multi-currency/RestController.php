@@ -137,23 +137,22 @@ class RestController extends \WC_Payments_REST_Controller {
 	 * @return  array            The currency settings.
 	 */
 	public function update_currency_settings( $request ) {
-		$currency_code            = sanitize_key( strtolower( $request['currency_code'] ) );
-		$params                   = $request->get_params();
-		$available_currencies     = WC_Payments_Multi_Currency()->get_available_currencies();
-		$available_currency_codes = array_keys( $available_currencies );
+		$currency_code        = sanitize_key( strtolower( $request['currency_code'] ) );
+		$params               = $request->get_params();
+		$available_currencies = WC_Payments_Multi_Currency()->get_available_currencies();
 
-		if ( in_array( strtoupper( $currency_code ), $available_currency_codes, true ) ) {
+		if ( array_key_exists( strtoupper( $currency_code ), $available_currencies ) ) {
 			if ( isset( $params['exchange_rate_type'] ) && in_array( $params['exchange_rate_type'], [ 'automatic', 'manual' ], true ) ) {
 				update_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, esc_attr( $params['exchange_rate_type'] ) );
 			}
 			if ( 'manual' === $params['exchange_rate_type'] && isset( $params['manual_rate'] ) ) {
-				update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, floatval( $params['manual_rate'] ) );
+				update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, (float) $params['manual_rate'] );
 			}
 			if ( isset( $params['price_rounding'] ) ) {
-				update_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, floatval( $params['price_rounding'] ) );
+				update_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, (float) $params['price_rounding'] );
 			}
 			if ( isset( $params['price_charm'] ) ) {
-				update_option( 'wcpay_multi_currency_price_charm_' . $currency_code, floatval( $params['price_charm'] ) );
+				update_option( 'wcpay_multi_currency_price_charm_' . $currency_code, (float) $params['price_charm'] );
 			}
 		}
 

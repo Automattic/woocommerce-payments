@@ -7,7 +7,16 @@
 import { __ } from '@wordpress/i18n';
 
 // Mapping of dispute reason to strings.
-export const reasons = {
+export const reasons: Record<
+	string,
+	{
+		display: string;
+		overview?: string[];
+		summary?: string[];
+		required?: string[];
+		respond?: string[];
+	}
+> = {
 	bank_cannot_process: {
 		display: __( 'Bank cannot process', 'woocommerce-payments' ),
 	},

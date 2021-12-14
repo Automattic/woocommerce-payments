@@ -601,9 +601,11 @@ class WC_Payments_Subscription_Service {
 		global $theorder;
 
 		if ( wcs_is_subscription( $theorder ) && self::is_wcpay_subscription( $theorder ) ) {
-			unset( $actions['wcs_create_pending_parent'] );
-			unset( $actions['wcs_create_pending_renewal'] );
-			unset( $actions['wcs_process_renewal'] );
+			unset(
+				$actions['wcs_create_pending_parent'],
+				$actions['wcs_create_pending_renewal'],
+				$actions['wcs_process_renewal']
+			);
 		}
 		return $actions;
 	}
@@ -611,7 +613,7 @@ class WC_Payments_Subscription_Service {
 	/**
 	 * Show WCPay Subscription ID on Edit Subscription page.
 	 *
-	 * @param WC_Order $order The order object.
+	 * @param WC_Order|WC_Subscription $order The order object.
 	 */
 	public function show_wcpay_subscription_id( WC_Order $order ) {
 		if ( ! wcs_is_subscription( $order ) || ! self::is_wcpay_subscription( $order ) ) {
@@ -774,7 +776,7 @@ class WC_Payments_Subscription_Service {
 
 		foreach ( $subscription->get_items() as $item ) {
 			$product           = $item->get_product();
-			$sign_up_fee       = floatval( WC_Subscriptions_Product::get_sign_up_fee( $product ) );
+			$sign_up_fee       = (float) WC_Subscriptions_Product::get_sign_up_fee( $product );
 			$one_time_shipping = WC_Subscriptions_Product::needs_one_time_shipping( $product );
 
 			if ( $sign_up_fee ) {
@@ -909,7 +911,7 @@ class WC_Payments_Subscription_Service {
 	/**
 	 * Generates the metadata for a given WC_Order_Item
 	 *
-	 * @param WC_Order_Item $item The order item to generate the meta data for. Can be any order item type including tax, shipping and fees.
+	 * @param WC_Order_Item|WC_Order_Item_Tax $item The order item to generate the metadata for. Can be any order item type including tax, shipping and fees.
 	 * @return array Item metadata.
 	 */
 	private function get_item_metadata( WC_Order_Item $item ) {
