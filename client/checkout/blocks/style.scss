@@ -1,3 +1,15 @@
 .wcpay-payment-element {
 	margin-bottom: 2rem;
 }
+
+/* stylelint-disable-next-line selector-id-pattern */
+#express-payment-method-platform_checkout {
+	width: 100%;
+}
+
+.platform-checkout-sms-otp-iframe {
+	border: none;
+	height: 36rem;
+	margin-top: 1rem;
+	width: 100%;
+}
