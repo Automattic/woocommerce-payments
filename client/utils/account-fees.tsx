@@ -14,12 +14,8 @@ import './account-fees.scss';
 import { formatCurrency } from 'utils/currency';
 import { formatFee } from 'utils/fees';
 import React from 'react';
-import {
-	BaseFee,
-	DiscountFee,
-	FeeStructure,
-	FeePaymentMethod,
-} from 'wcpay/components/account-status/account-fees/account-fees';
+import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
+import { PaymentMethod } from 'wcpay/types/payment-methods';
 
 const countryFeeStripeDocsBaseLink =
 	'https://woocommerce.com/document/payments/faq/fees/#section-';
@@ -306,7 +302,7 @@ export const formatMethodFeesDescription = (
 };
 
 export const getTransactionsPaymentMethodName = (
-	paymentMethod: FeePaymentMethod
+	paymentMethod: PaymentMethod
 ): string => {
 	switch ( paymentMethod ) {
 		case 'bancontact':

@@ -12,11 +12,8 @@ import {
 	formatMethodFeesDescription,
 	getCurrentFee,
 } from '../account-fees';
-import {
-	BaseFee,
-	DiscountFee,
-} from 'wcpay/components/account-status/account-fees/account-fees';
 import { formatCurrency } from '../currency';
+import { BaseFee, DiscountFee } from 'wcpay/types/fees';
 
 jest.mock( '../currency', () => ( {
 	formatCurrency: jest.fn( ( amount: number ) => {

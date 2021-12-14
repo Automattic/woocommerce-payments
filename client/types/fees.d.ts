@@ -6,16 +6,6 @@
  * Internal dependencies
  */
 
-export type FeePaymentMethod =
-	| 'bancontact'
-	| 'card'
-	| 'card_present'
-	| 'giropay'
-	| 'ideal'
-	| 'p24'
-	| 'sepa_debit'
-	| 'sofort';
-
 export interface BaseFee {
 	currency: string;
 	percentage_rate: number;
