@@ -80,13 +80,12 @@ const getFeeDescriptionString = ( fee: BaseFee ): string => {
 export const getCurrentFee = (
 	accountFees: FeeStructure
 ): BaseFee | DiscountFee => {
-	return accountFees.discount.length
-		? accountFees.discount[ 0 ]
-		: accountFees.base;
+	const discountFees = accountFees.discount ?? [];
+	return discountFees.length ? accountFees.discount[ 0 ] : accountFees.base;
 };
 
 export const formatMethodFeesTooltip = (
-	accountFees: FeeStructure
+	accountFees: FeeStructure | undefined
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
 
@@ -98,13 +97,12 @@ export const formatMethodFeesTooltip = (
 		fixed_rate:
 			accountFees.base.fixed_rate +
 			accountFees.additional.fixed_rate +
-			accountFees.fx?.fixed_rate,
+			accountFees.fx.fixed_rate,
 		currency: accountFees.base.currency,
 	};
 
-	const hasFees = ( fee: BaseFee ): number | false => {
-		if ( ! fee ) return false;
-		return fee.fixed_rate || fee.percentage_rate;
+	const hasFees = ( fee: BaseFee ): number | undefined => {
+		return fee.fixed_rate || fee.percentage_rate || undefined;
 	};
 
 	return (
@@ -237,14 +235,14 @@ export const formatAccountFeesDescription = (
 	);
 
 	if ( currentFee !== baseFee ) {
+		const discountFee = currentFee as DiscountFee;
 		// TODO: Figure out how the UI should work if there are several "discount" fees stacked.
 		let percentage, fixed;
 
-		if ( 'discount' in currentFee ) {
+		if ( discountFee.discount ) {
 			// Proper discount fee (XX% off)
-			percentage =
-				baseFee.percentage_rate * ( 1 - ( currentFee.discount || 0 ) );
-			fixed = baseFee.fixed_rate * ( 1 - ( currentFee.discount || 0 ) );
+			percentage = baseFee.percentage_rate * ( 1 - discountFee.discount );
+			fixed = baseFee.fixed_rate * ( 1 - discountFee.discount );
 		} else {
 			// Custom base fee (2% + $.20)
 			percentage = currentFee.percentage_rate;
@@ -267,13 +265,10 @@ export const formatAccountFeesDescription = (
 			);
 		}
 
-		if ( 'discount' in currentFee && 0 < formats.discount.length ) {
+		if ( discountFee.discount && 0 < formats.discount.length ) {
 			currentFeeDescription +=
 				' ' +
-				sprintf(
-					formats.discount,
-					formatFee( currentFee.discount || 0 )
-				);
+				sprintf( formats.discount, formatFee( discountFee.discount ) );
 		}
 
 		return createInterpolateElement( currentFeeDescription, {
