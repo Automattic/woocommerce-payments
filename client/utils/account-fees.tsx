@@ -80,8 +80,9 @@ const getFeeDescriptionString = ( fee: BaseFee ): string => {
 export const getCurrentFee = (
 	accountFees: FeeStructure
 ): BaseFee | DiscountFee => {
-	const discountFees = accountFees.discount ?? [];
-	return discountFees.length ? accountFees.discount[ 0 ] : accountFees.base;
+	return accountFees.discount.length
+		? accountFees.discount[ 0 ]
+		: accountFees.base;
 };
 
 export const formatMethodFeesTooltip = (
@@ -101,8 +102,8 @@ export const formatMethodFeesTooltip = (
 		currency: accountFees.base.currency,
 	};
 
-	const hasFees = ( fee: BaseFee ): number | undefined => {
-		return fee.fixed_rate || fee.percentage_rate || undefined;
+	const hasFees = ( fee: BaseFee ): boolean => {
+		return fee.fixed_rate > 0.0 || fee.percentage_rate > 0.0;
 	};
 
 	return (
