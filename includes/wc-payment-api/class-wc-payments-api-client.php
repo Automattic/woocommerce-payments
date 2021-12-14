@@ -235,6 +235,7 @@ class WC_Payments_API_Client {
 	 * @param array  $payment_methods - Payment methods to include.
 	 * @param int    $order_id        - The order ID.
 	 * @param string $capture_method  - optional capture method (either `automatic` or `manual`).
+	 * @param string $customer_id     - The Stripe customer_id, if any.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -244,7 +245,8 @@ class WC_Payments_API_Client {
 		$currency_code,
 		$payment_methods,
 		$order_id,
-		$capture_method = 'automatic'
+		$capture_method = 'automatic',
+		$customer_id = null
 	) {
 		$request                         = [];
 		$request['amount']               = $amount;
@@ -252,6 +254,10 @@ class WC_Payments_API_Client {
 		$request['description']          = $this->get_intent_description( $order_id );
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
+
+		if ( ! empty( $customer_id ) ) {
+			$request['customer'] = $customer_id;
+		}
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 

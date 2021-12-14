@@ -262,8 +262,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$converted_amount = $minimum_amount;
 		}
 
-		$capture_method          = empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] ? 'automatic' : 'manual';
-		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id );
+		$capture_method             = empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] ? 'automatic' : 'manual';
+		$enabled_payment_methods    = $this->get_payment_method_ids_enabled_at_checkout( $order_id );
+		$customer_id = $this->get_customer_id_for_intention();
 
 		try {
 			$payment_intent = $this->payments_api_client->create_intention(
@@ -271,7 +272,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				strtolower( $currency ),
 				array_values( $enabled_payment_methods ),
 				$order_id ?? 0,
-				$capture_method
+				$capture_method,
+				$customer_id
 			);
 		} catch ( Amount_Too_Small_Exception $e ) {
 			$minimum_amount = $e->get_minimum_amount();
@@ -290,7 +292,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				strtolower( $currency ),
 				array_values( $enabled_payment_methods ),
 				$order_id ?? 0,
-				$capture_method
+				$capture_method,
+				$customer_id
 			);
 		}
 
@@ -298,6 +301,21 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			'id'            => $payment_intent->get_id(),
 			'client_secret' => $payment_intent->get_client_secret(),
 		];
+	}
+
+	/**
+	 * 
+	 */
+	protected function get_customer_id_for_intention() {
+		// Determine the customer adding the payment method, create one if we don't have one already.
+		$user        = wp_get_current_user();
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new \WC_Customer( $user->ID ) );
+			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data );
+		}
+
+		return $customer_id;
 	}
 
 	/**

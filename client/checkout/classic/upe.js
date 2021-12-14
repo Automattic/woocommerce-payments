@@ -113,6 +113,7 @@ jQuery( function ( $ ) {
 	} );
 
 	let upeElement = null;
+	let clientSecret = null;
 	let paymentIntentId = null;
 	let isUPEComplete = false;
 	const hiddenBillingFields = {
@@ -310,8 +311,9 @@ jQuery( function ( $ ) {
 					return;
 				}
 
-				const { client_secret: clientSecret, id: id } = response;
+				const { client_secret: secret, id: id } = response;
 				paymentIntentId = id;
+				clientSecret = secret;
 
 				let appearance = getConfig( 'upeAppearance' );
 
@@ -549,6 +551,35 @@ jQuery( function ( $ ) {
 			return obj;
 		}, {} );
 		try {
+			if ( 'us_bank_account' === $( '#wcpay_selected_upe_payment_type' ).val() ) {
+				console.log( clientSecret );
+				//const usBankResponse = await api.getStripe().collectUsBankAccountForPayment( clientSecret, {
+				api.getStripe().collectUsBankAccountForPayment( clientSecret, {
+					billing_details: {
+						name: 'Jesse Test',
+						email: 'j@local.test',
+					},
+				})
+				.then(({paymentIntent, error}) => {
+					// Connections modal has returned
+				
+					if (error) {
+					  console.error(error.message);
+					  // PaymentMethod collection failed for some reason.
+					} else if (paymentIntent.status === 'requires_payment_method') {
+					  // Customer canceled the Connections modal. Present them with other
+					  // payment method type options.
+					} else if (paymentIntent.status === 'requires_confirmation') {
+					  // We collected an account - possibly instantly verified, but possibly
+					  // manually-entered. Display payment method details and mandate text
+					  // to the customer and confirm the intent once they accept
+					  // the mandate.
+					  confirmationForm.show();
+					}
+				});
+				//console.log( usBankResponse );
+			}
+		//try {
 			const response = await api.processCheckout(
 				paymentIntentId,
 				formFields
