@@ -33,7 +33,7 @@ describe( 'Dispute info', () => {
 			evidence_details: {
 				has_evidence: true,
 				due_by: 1573199200,
-				submission_count: 0,
+				submission_count: 10,
 			},
 			metadata: {},
 			productType: '',
@@ -53,18 +53,12 @@ describe( 'Dispute info', () => {
 			amount: 1000,
 			currency: 'usd',
 			created: 1572590800,
+			balance_transactions: [],
 			payment_intent: 'test',
-			object: 'dispute',
+			object: 'test',
 			is_charge_refundable: false,
 			livemode: false,
-			balance_transaction: [
-				{
-					currency: 'US',
-					amount: 10,
-					fee: 0,
-				},
-			],
-			balance_transactions: [],
+			balance_transaction: [],
 		};
 
 		const { container: info } = render(
