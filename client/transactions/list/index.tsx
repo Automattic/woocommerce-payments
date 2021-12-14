@@ -8,7 +8,7 @@ import { uniq } from 'lodash';
 import { useDispatch } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
-import { __, _n } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import {
 	TableCard,
@@ -208,6 +208,7 @@ export const TransactionsList = (
 		[ props.depositId ]
 	);
 
+	const totalRows = transactionsSummary.count || 0;
 	const rows = transactions.map( ( txn ) => {
 		const detailsURL =
 			getDetailsURL( txn.charge_id, 'transactions' ) +
@@ -404,67 +405,84 @@ export const TransactionsList = (
 	const onDownload = async () => {
 		setIsDownloading( true );
 
-		const {
-			date_before: dateBefore,
-			date_after: dateAfter,
-			date_between: dateBetween,
-			match,
-			search,
-			type_is: typeIs,
-			type_is_not: typeIsNot,
-		} = getQuery();
+		// We destructure page and path to get the right params.
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { page, path, ...params } = getQuery();
+		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
-		if (
-			!! dateBefore ||
-			!! dateAfter ||
-			!! dateBetween ||
-			!! typeIs ||
-			!! typeIsNot ||
-			!! search
-		) {
-			try {
-				const {
-					exported_transactions: exportedTransactions,
-				} = await apiFetch( {
-					path: getTransactionsCSV( {
-						dateAfter,
-						dateBefore,
-						dateBetween,
-						match,
-						search,
-						typeIs,
-						typeIsNot,
-					} ),
-					method: 'POST',
-				} );
+		if ( 'endpoint' === downloadType ) {
+			const {
+				date_after: dateAfter,
+				date_before: dateBefore,
+				date_between: dateBetween,
+				match,
+				search,
+				type_is: typeIs,
+				type_is_not: typeIsNot,
+			} = params;
 
-				createNotice(
-					'success',
-					__(
-						'Your export will be emailed to you.',
-						'woocommerce-payments'
-					)
-				);
+			const isFiltered =
+				!! dateAfter ||
+				!! dateBefore ||
+				!! dateBetween ||
+				!! search ||
+				!! typeIs ||
+				!! typeIsNot;
 
-				wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-					exported_transactions: exportedTransactions,
-					total_transactions: exportedTransactions,
-					download_type: 'endpoint',
-				} );
-			} catch {
-				createNotice(
-					'error',
-					__(
-						'There was a problem generating your export.',
-						'woocommerce-payments'
-					)
-				);
+			const confirmThreshold = 1000;
+			const confirmMessage = sprintf(
+				__(
+					"You are about to export %d transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
+					'woocommerce-payments'
+				),
+				totalRows
+			);
+
+			if (
+				isFiltered ||
+				totalRows < confirmThreshold ||
+				window.confirm( confirmMessage )
+			) {
+				try {
+					const {
+						exported_transactions: exportedTransactions,
+					} = await apiFetch( {
+						path: getTransactionsCSV( {
+							dateAfter,
+							dateBefore,
+							dateBetween,
+							match,
+							search,
+							typeIs,
+							typeIsNot,
+						} ),
+						method: 'POST',
+					} );
+
+					createNotice(
+						'success',
+						__(
+							'Your export will be emailed to you.',
+							'woocommerce-payments'
+						)
+					);
+
+					wcpayTracks.recordEvent( 'wcpay_transactions_download', {
+						exported_transactions: exportedTransactions,
+						total_transactions: exportedTransactions,
+						download_type: downloadType,
+					} );
+				} catch {
+					createNotice(
+						'error',
+						__(
+							'There was a problem generating your export.',
+							'woocommerce-payments'
+						)
+					);
+				}
 			}
 		} else {
-			// We destructure page and path to get the right params.
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const { page, path, ...params } = getQuery();
-
 			downloadCSVFile(
 				generateCSVFileName( title, params ),
 				generateCSVDataFromTable( columnsToDisplay, rows )
@@ -473,7 +491,7 @@ export const TransactionsList = (
 			wcpayTracks.recordEvent( 'wcpay_transactions_download', {
 				exported_transactions: rows.length,
 				total_transactions: transactionsSummary.count,
-				download_type: 'browser',
+				download_type: downloadType,
 			} );
 		}
 
@@ -560,7 +578,7 @@ export const TransactionsList = (
 				title={ title }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
-				totalRows={ transactionsSummary.count || 0 }
+				totalRows={ totalRows }
 				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }

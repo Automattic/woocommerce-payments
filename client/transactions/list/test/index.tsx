@@ -415,7 +415,7 @@ describe( 'Transactions list', () => {
 
 			mockUseTransactionsSummary.mockReturnValue( {
 				transactionsSummary: {
-					count: 10,
+					count: 2,
 					currency: 'usd',
 					store_currencies: [ 'eur', 'usd' ],
 					fees: 100,
@@ -426,8 +426,28 @@ describe( 'Transactions list', () => {
 			} );
 		} );
 
+		test( 'should request confirmation when the download button is clicked', () => {
+			mockUseTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 2000,
+				},
+				isLoading: false,
+			} );
+
+			window.confirm = jest.fn();
+
+			const { getByRole } = render( <TransactionsList /> );
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
+			expect( window.confirm ).toHaveBeenCalledWith(
+				"You are about to export 2000 transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?"
+			);
+		} );
+
 		test( 'should render expected columns in CSV when the download button is clicked', () => {
 			const { getByRole } = render( <TransactionsList /> );
+
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			const expected = [
@@ -457,6 +477,7 @@ describe( 'Transactions list', () => {
 
 		test( 'should match the visible rows', () => {
 			const { getByRole, getAllByRole } = render( <TransactionsList /> );
+
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
