@@ -222,19 +222,19 @@ describe( 'Account fees utility functions', () => {
 
 	describe( 'formatMethodFeesDescription()', () => {
 		it( 'returns fees in short format', () => {
-			const accountFees = mockAccountFees( {
+			const methodFees = mockAccountFees( {
 				percentage_rate: 0.123,
 				fixed_rate: 456.78,
 				currency: 'USD',
 			} );
 
-			expect( formatMethodFeesDescription( accountFees ) ).toEqual(
+			expect( formatMethodFeesDescription( methodFees ) ).toEqual(
 				'12.3% + $4.57'
 			);
 		} );
 
 		it( 'returns discounted fees in short format (no discount % or base fee)', () => {
-			const accountFees = mockAccountFees(
+			const methodFees = mockAccountFees(
 				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
@@ -243,7 +243,7 @@ describe( 'Account fees utility functions', () => {
 				[ { discount: 0.1 }, { discount: 0.2 } ]
 			);
 
-			expect( formatMethodFeesDescription( accountFees ) ).toEqual(
+			expect( formatMethodFeesDescription( methodFees ) ).toEqual(
 				<>11.07% + $4.11</>
 			);
 		} );
