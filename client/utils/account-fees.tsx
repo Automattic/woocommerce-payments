@@ -4,7 +4,6 @@
  * External depencencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 import interpolateComponents from 'interpolate-components';
 import './account-fees.scss';
 
@@ -16,6 +15,7 @@ import { formatFee } from 'utils/fees';
 import React from 'react';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
 import { PaymentMethod } from 'wcpay/types/payment-methods';
+import { createInterpolateElement } from '@wordpress/element';
 
 const countryFeeStripeDocsBaseLink =
 	'https://woocommerce.com/document/payments/faq/fees/#section-';
@@ -202,7 +202,7 @@ export const formatMethodFeesTooltip = (
 export const formatAccountFeesDescription = (
 	accountFees: FeeStructure,
 	customFormats = {}
-): string => {
+): string | JSX.Element => {
 	const defaultFee = {
 		fixed_rate: 0,
 		percentage_rate: 0,
@@ -223,7 +223,7 @@ export const formatAccountFeesDescription = (
 		...customFormats,
 	};
 
-	let feeDescription = sprintf(
+	const feeDescription = sprintf(
 		formats.fee,
 		formatFee(
 			baseFee.percentage_rate +
@@ -276,7 +276,7 @@ export const formatAccountFeesDescription = (
 				);
 		}
 
-		feeDescription = createInterpolateElement( currentFeeDescription, {
+		return createInterpolateElement( currentFeeDescription, {
 			s: <s />,
 		} );
 	}
@@ -286,7 +286,7 @@ export const formatAccountFeesDescription = (
 
 export const formatMethodFeesDescription = (
 	methodFees: FeeStructure | undefined
-): string => {
+): string | JSX.Element => {
 	if ( ! methodFees ) {
 		return __( 'missing fees', 'woocommerce-payments' );
 	}
