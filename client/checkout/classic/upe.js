@@ -550,36 +550,43 @@ jQuery( function ( $ ) {
 			obj[ field.name ] = field.value;
 			return obj;
 		}, {} );
-		try {
-			if ( 'us_bank_account' === $( '#wcpay_selected_upe_payment_type' ).val() ) {
-				console.log( clientSecret );
-				//const usBankResponse = await api.getStripe().collectUsBankAccountForPayment( clientSecret, {
-				api.getStripe().collectUsBankAccountForPayment( clientSecret, {
-					billing_details: {
-						name: 'Jesse Test',
-						email: 'j@local.test',
-					},
-				})
-				.then(({paymentIntent, error}) => {
-					// Connections modal has returned
+		// try {
+			// if ( 'us_bank_account' === $( '#wcpay_selected_upe_payment_type' ).val() ) {
+			// 	const billing_details_name = formFields.billing_first_name + ' ' + formFields.billing_last_name;
+			// 	const billing_details_email = formFields.billing_email;
+			// 	console.log( 'billing_details_name' );console.log( billing_details_name );
+			// 	console.log( 'billing_details_email' );console.log( billing_details_email );
+			// 	console.log( 'clientSecret' );console.log( clientSecret );
+			// 	//const usBankResponse = await api.getStripe().collectUsBankAccountForPayment( clientSecret, {
+			// 	api.getStripe().collectUsBankAccountForPayment( clientSecret, {
+			// 		billing_details: {
+			// 			name: billing_details_name,
+			// 			email: billing_details_email,
+			// 		},
+			// 	})
+			// 	.then(({paymentIntent, error}) => {
+			// 		// Connections modal has returned
 				
-					if (error) {
-					  console.error(error.message);
-					  // PaymentMethod collection failed for some reason.
-					} else if (paymentIntent.status === 'requires_payment_method') {
-					  // Customer canceled the Connections modal. Present them with other
-					  // payment method type options.
-					} else if (paymentIntent.status === 'requires_confirmation') {
-					  // We collected an account - possibly instantly verified, but possibly
-					  // manually-entered. Display payment method details and mandate text
-					  // to the customer and confirm the intent once they accept
-					  // the mandate.
-					  confirmationForm.show();
-					}
-				});
-				//console.log( usBankResponse );
-			}
-		//try {
+			// 		if (error) {
+			// 		  console.error(error.message);
+			// 		  console.log( error );
+			// 		  // PaymentMethod collection failed for some reason.
+			// 		} else if (paymentIntent.status === 'requires_payment_method') {
+			// 			console.error(paymentIntent.status);
+			// 		  // Customer canceled the Connections modal. Present them with other
+			// 		  // payment method type options.
+			// 		} else if (paymentIntent.status === 'requires_confirmation') {
+			// 			console.error(paymentIntent.status);
+			// 		  // We collected an account - possibly instantly verified, but possibly
+			// 		  // manually-entered. Display payment method details and mandate text
+			// 		  // to the customer and confirm the intent once they accept
+			// 		  // the mandate.
+			// 		  confirmationForm.show();
+			// 		}
+			// 	});
+			// 	//console.log( usBankResponse );
+			// }
+		try {
 			const response = await api.processCheckout(
 				paymentIntentId,
 				formFields
