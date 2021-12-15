@@ -46,7 +46,6 @@ const DisputeDetails = ( {
 				'warning_needs_response' === dispute.status
 			}
 			isSubmitted={
-				dispute &&
 				dispute.evidence_details &&
 				0 < dispute.evidence_details.submission_count
 			}
@@ -78,17 +77,13 @@ const DisputeDetails = ( {
 					<CardHeader className="header-dispute-overview">
 						<LoadableBlock isLoading={ isLoading } numLines={ 1 }>
 							{ __( 'Dispute overview', 'woocommerce-payments' ) }
-							<DisputeStatusChip
-								status={ dispute && dispute.status }
-							/>
+							<DisputeStatusChip status={ dispute.status } />
 						</LoadableBlock>
 					</CardHeader>
 					<CardBody>
 						<Info dispute={ dispute } isLoading={ isLoading } />
 						<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
-							<Paragraphs>
-								{ mapping && mapping.overview }
-							</Paragraphs>
+							<Paragraphs>{ mapping.overview }</Paragraphs>
 						</LoadableBlock>
 					</CardBody>
 					<CardFooter>
@@ -104,7 +99,7 @@ const DisputeDetails = ( {
 						<Loadable
 							isLoading={ isLoading }
 							value={
-								mapping && mapping.display
+								mapping.display
 									? sprintf(
 											/* translators: heading for dispute category information section */
 											__(
@@ -122,13 +117,11 @@ const DisputeDetails = ( {
 					</CardHeader>
 					<CardBody>
 						<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
-							<Paragraphs>
-								{ mapping && mapping.summary }
-							</Paragraphs>
+							<Paragraphs>{ mapping.required }</Paragraphs>
 						</LoadableBlock>
 
 						<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-							{ mapping && mapping.required && (
+							{ mapping.required && (
 								<h3>
 									{ ' ' }
 									{ __(
@@ -143,7 +136,7 @@ const DisputeDetails = ( {
 						</LoadableBlock>
 
 						<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-							{ mapping && mapping.respond && (
+							{ mapping.respond && (
 								<h3>
 									{ __(
 										'How to respond',
@@ -151,9 +144,7 @@ const DisputeDetails = ( {
 									) }
 								</h3>
 							) }
-							<Paragraphs>
-								{ mapping && mapping.respond }
-							</Paragraphs>
+							<Paragraphs>{ mapping.respond }</Paragraphs>
 						</LoadableBlock>
 					</CardBody>
 					<CardFooter>

@@ -21,7 +21,7 @@ const Actions = ( {
 }: {
 	id: string;
 	needsResponse: boolean;
-	isSubmitted?: boolean | undefined;
+	isSubmitted: boolean | undefined;
 	onAccept: () => void;
 } ): JSX.Element => {
 	if ( ! needsResponse && ! isSubmitted ) {

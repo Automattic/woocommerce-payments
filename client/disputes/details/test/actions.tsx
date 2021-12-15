@@ -20,6 +20,7 @@ describe( 'Dispute details actions', () => {
 			<Actions
 				id="dp_mock"
 				needsResponse={ true }
+				isSubmitted={ false }
 				onAccept={ doAccept }
 			/>
 		);
@@ -37,6 +38,7 @@ describe( 'Dispute details actions', () => {
 			<Actions
 				id="dp_mock"
 				needsResponse={ true }
+				isSubmitted={ false }
 				onAccept={ doAccept }
 			/>
 		);
