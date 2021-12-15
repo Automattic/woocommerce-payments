@@ -35,6 +35,8 @@ jobs:
           npm run build
           git checkout package-lock.json
           unzip woocommerce-payments.zip
+          mkdir -p htdocs/wp-content/plugins
+          cp -R woocommerce-payments htdocs/wp-content/plugins
       
       - name: FTP-Deploy-Action
         uses: Automattic/FTP-Deploy-Action@3.0.1
@@ -42,5 +44,5 @@ jobs:
           ftp-server: ${{ secrets.TEST_SITE_FTP_SERVER }}
           ftp-username: ${{ secrets.TEST_SITE_FTP_USERNAME }}
           ftp-password: ${{ secrets.TEST_SITE_FTP_PASS }}
-          git-ftp-args: --insecure --remote-root htdocs/wp-content/plugins/woocommerce-payments/
-          local-dir: woocommerce-payments/
+          git-ftp-args: --insecure
+          local-dir: htdocs/
