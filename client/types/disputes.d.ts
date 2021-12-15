@@ -7,9 +7,6 @@ interface Evidence {
 		| string
 		| Record< string, boolean >
 		| Record< string, string >;
-	isUploading: Record< string, boolean >;
-	metadata: Record< string, string >;
-	uploadingErrors: Record< string, string >;
 }
 
 interface EvidenceDetails {
@@ -18,7 +15,7 @@ interface EvidenceDetails {
 	submission_count: number;
 }
 
-export type ReasonType =
+export type DisputeReason =
 	| 'bank_cannot_process'
 	| 'check_returned'
 	| 'credit_not_processed'
@@ -34,6 +31,16 @@ export type ReasonType =
 	| 'subscription_canceled'
 	| 'unrecognized';
 
+export type DisputeStatus =
+	| 'warning_needs_response'
+	| 'warning_under_review'
+	| 'warning_closed'
+	| 'needs_response'
+	| 'under_review'
+	| 'charge_refunded'
+	| 'won'
+	| 'lost';
+
 interface Order {
 	customer_url: string;
 	number: string;
@@ -42,25 +49,24 @@ interface Order {
 }
 
 export interface Dispute {
-	status: string;
+	status: DisputeStatus;
 	id: string;
 	evidence_details?: EvidenceDetails;
-	metadata: Record< string, string >;
+	metadata: Record< string, any >;
 	productType: string;
 	order?: Order;
 	evidence: Evidence;
 	fileSize?: Record< string, number >;
-	reason: ReasonType;
+	reason: DisputeReason;
 	charge: Charge;
 	amount: number;
 	currency: string;
 	created: number;
-	payment_intent: string;
-	object: string;
-	is_charge_refundable: boolean;
-	livemode: boolean;
-	balance_transaction: BalanceTransaction[];
-	balance_transactions: Array< Record< string, string > >;
+	// payment_intent: string;
+	// object: string;
+	// is_charge_refundable: boolean;
+	// livemode: boolean;
+	balance_transactions: BalanceTransaction[];
 }
 
 interface UploadFieldObject {

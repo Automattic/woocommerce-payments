@@ -10,7 +10,7 @@ import * as React from 'react';
  */
 import DisputeDetails from '../';
 import { useDispute } from 'data/index';
-import { ReasonType } from 'wcpay/types/disputes';
+import { DisputeReason } from 'wcpay/types/disputes';
 
 jest.mock( 'data/index', () => ( {
 	useDispute: jest.fn(),
@@ -71,7 +71,7 @@ describe( 'Dispute details screen', () => {
 				has_evidence: true,
 				submission_count: 1,
 			},
-			reason: reason as ReasonType,
+			reason: reason as DisputeReason,
 			status: 'needs_response',
 			order: {
 				number: '1',
@@ -168,7 +168,7 @@ describe( 'Dispute details screen', () => {
 					has_evidence: true,
 					submission_count: 0,
 				},
-				reason: 'fraudulent' as ReasonType,
+				reason: 'fraudulent' as DisputeReason,
 				status: status,
 				order: {
 					number: '1',
