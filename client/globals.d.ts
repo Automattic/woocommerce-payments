@@ -10,4 +10,7 @@ declare const wcpaySettings: {
 		error?: boolean;
 		status?: string;
 	};
+	connect: {
+		country: string;
+	};
 };

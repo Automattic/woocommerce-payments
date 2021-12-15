@@ -16,7 +16,7 @@ import config from 'config';
 import { merchantWCP } from '../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../utils/payments';
 
-const chkboxCaptureLaterOption = '#inspector-checkbox-control-7';
+const chkboxCaptureLaterOption = '#inspector-checkbox-control-8';
 let orderId;
 
 describe( 'Order > Manual Capture', () => {
