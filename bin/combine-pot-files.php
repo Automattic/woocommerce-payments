@@ -141,7 +141,7 @@ function add_transpiled_filepath_reference_to_comments( array $js_mappings, arra
 			}
 		}
 
-		// Search the
+		// Add the new file references to the top of the list.
 		if ( ! empty( $dist_js_to_add ) ) {
 			array_splice( $translations[ $message], 0, 0, array_unique( $dist_js_to_add ) );
 		}
