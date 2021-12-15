@@ -17,7 +17,7 @@ if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
 }
 
 if ( PHP_VERSION_ID >= 80000 && file_exists( $_tests_dir . '/includes/phpunit7/MockObject' ) ) {
-	// WP Core test library includes patches for PHPUnit 7 to make it compatible with PHP8.
+	// WP Core test library includes patches for PHPUnit 7 to make it compatible with PHP 8+.
 	require_once $_tests_dir . '/includes/phpunit7/MockObject/Builder/NamespaceMatch.php';
 	require_once $_tests_dir . '/includes/phpunit7/MockObject/Builder/ParametersMatch.php';
 	require_once $_tests_dir . '/includes/phpunit7/MockObject/InvocationMocker.php';
@@ -81,6 +81,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-survey-controller.php';
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
 	require_once $_plugin_dir . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );

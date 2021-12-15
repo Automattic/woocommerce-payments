@@ -21,6 +21,7 @@ import { SavedTokenHandler } from './saved-token-handler';
 import request from './request.js';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
+import { platformCheckoutPaymentMethod } from 'wcpay/components/platform-checkout';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -45,12 +46,19 @@ registerPaymentMethod( {
 	ariaLabel: __( 'WooCommerce Payments', 'woocommerce-payments' ),
 	supports: {
 		showSavedCards: getConfig( 'isSavedCardsEnabled' ) ?? false,
-		showSaveOption: getConfig( 'isSavedCardsEnabled' ) ?? false,
+		showSaveOption:
+			( getConfig( 'isSavedCardsEnabled' ) &&
+				! getConfig( 'cartContainsSubscription' ) ) ??
+			false,
 		features: getConfig( 'features' ),
 	},
 } );
 
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+
+if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
+	registerExpressPaymentMethod( platformCheckoutPaymentMethod( api ) );
+}
 
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );

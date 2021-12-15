@@ -8,8 +8,9 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
-use WCPay\Constants\Payment_Method;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Logger;
+use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -50,6 +51,8 @@ class WC_Payments_API_Client {
 	const INVOICES_API           = 'invoices';
 	const SUBSCRIPTIONS_API      = 'subscriptions';
 	const SUBSCRIPTION_ITEMS_API = 'subscriptions/items';
+	const READERS_CHARGE_SUMMARY = 'reader-charges/summary';
+	const TERMINAL_READERS_API   = 'terminal/readers';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -175,6 +178,7 @@ class WC_Payments_API_Client {
 	 * @param array  $level3                 - Level 3 data.
 	 * @param bool   $off_session            - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 * @param array  $additional_parameters  - An array of any additional request parameters, particularly for additional payment methods.
+	 * @param array  $payment_methods        - An array of payment methods that might be used for the payment.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -189,7 +193,8 @@ class WC_Payments_API_Client {
 		$metadata = [],
 		$level3 = [],
 		$off_session = false,
-		$additional_parameters = []
+		$additional_parameters = [],
+		$payment_methods = null
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -203,22 +208,8 @@ class WC_Payments_API_Client {
 		$request['level3']         = $level3;
 		$request['description']    = $this->get_intent_description( $metadata['order_id'] ?? 0 );
 
-		$available_payment_methods = WC_Payments::get_gateway()->get_upe_available_payment_methods();
-		if (
-			'eur' === $currency_code &&
-			( WC_Payments_Features::is_sepa_enabled()
-			|| in_array( Payment_Method::SEPA, $available_payment_methods, true ) )
-		) {
-			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
-			$request['mandate_data']         = [
-				'customer_acceptance' => [
-					'type'   => 'online',
-					'online' => [
-						'ip_address' => WC_Geolocation::get_ip_address(),
-						'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? $this->user_agent, //phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-					],
-				],
-			];
+		if ( ! empty( $payment_methods ) ) {
+			$request['payment_method_types'] = $payment_methods;
 		}
 
 		$request = array_merge( $request, $additional_parameters );
@@ -316,6 +307,27 @@ class WC_Payments_API_Client {
 		if ( $save_payment_method ) {
 			$request['setup_future_usage'] = 'off_session';
 		}
+
+		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
+	 * Updates an intention's metadata.
+	 * Unlike `update_intention`, this method allows to update metadata without
+	 * requiring amount, currency, and other mandatory params to be present.
+	 *
+	 * @param string $intention_id - The ID of the intention to update.
+	 * @param array  $metadata     - Meta data values to be sent along with payment intent creation.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function update_intention_metadata( $intention_id, $metadata ) {
+		$request = [
+			'metadata' => $metadata,
+		];
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
 
@@ -431,19 +443,6 @@ class WC_Payments_API_Client {
 			'customer'       => $customer_id,
 			'confirm'        => 'true',
 		];
-
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
-			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
-			$request['mandate_data']         = [
-				'customer_acceptance' => [
-					'type'   => 'online',
-					'online' => [
-						'ip_address' => WC_Geolocation::get_ip_address(),
-						'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? $this->user_agent, //phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-					],
-				],
-			];
-		}
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
 	}
@@ -604,12 +603,21 @@ class WC_Payments_API_Client {
 
 		$transactions = $this->request( $query, self::TRANSACTIONS_API, self::GET );
 
+		$charge_ids             = array_column( $transactions['data'], 'charge_id' );
+		$orders_with_charge_ids = $this->wcpay_db->orders_with_charge_id_from_charge_ids( $charge_ids );
+
 		// Add order information to each transaction available.
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
 		if ( isset( $transactions['data'] ) ) {
 			foreach ( $transactions['data'] as &$transaction ) {
-				$transaction = $this->add_order_info_to_object( $transaction['charge_id'], $transaction );
+				foreach ( $orders_with_charge_ids as $order_with_charge_id ) {
+					if ( $order_with_charge_id['charge_id'] === $transaction['charge_id'] ) {
+						$transaction['order'] = $this->build_order_info( $order_with_charge_id['order'] );
+					}
+				}
 			}
+			// Securing future changes from modifying reference content.
+			unset( $transaction );
 		}
 
 		return $transactions;
@@ -771,7 +779,7 @@ class WC_Payments_API_Client {
 	/**
 	 * Upload evidence and return file object.
 	 *
-	 * @param string $request request object received.
+	 * @param WP_REST_Request $request request object received.
 	 *
 	 * @return array file object.
 	 * @throws API_Exception - If request throws.
@@ -820,7 +828,7 @@ class WC_Payments_API_Client {
 	/**
 	 * Create a connection token.
 	 *
-	 * @param string $request request object received.
+	 * @param WP_REST_Request $request request object received.
 	 *
 	 * @return array
 	 * @throws API_Exception - If request throws.
@@ -1325,28 +1333,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Sends the contents of the "forterToken" cookie to the server.
-	 *
-	 * @param string $token Contents of the "forterToken" cookie, used to identify the current browsing session.
-	 *
-	 * @return array An array, containing a `success` flag.
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function send_forter_token( $token ) {
-		return $this->request(
-			[
-				'token'      => $token,
-				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-				'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-				'ip'         => WC_Geolocation::get_ip_address(),
-			],
-			self::TRACKING_API . '/forter-token',
-			self::POST
-		);
-	}
-
-	/**
 	 * Registers a new domain with Apple Pay.
 	 *
 	 * @param string $domain_name Domain name which to register for Apple Pay.
@@ -1376,6 +1362,18 @@ class WC_Payments_API_Client {
 	 */
 	public function get_terminal_locations() {
 		return $this->request( [], self::TERMINAL_LOCATIONS_API, self::GET );
+	}
+
+	/**
+	 * Retrieves a store's terminal readers.
+	 *
+	 * @return array[] Stripe terminal readers objects.
+	 * @see https://stripe.com/docs/api/terminal/readers/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_terminal_readers() {
+		return $this->request( [], self::TERMINAL_READERS_API, self::GET );
 	}
 
 	/**
@@ -1512,7 +1510,10 @@ class WC_Payments_API_Client {
 		}
 		$url .= '/' . self::ENDPOINT_REST_BASE . '/' . $api;
 
-		$body = null;
+		$headers                 = [];
+		$headers['Content-Type'] = 'application/json; charset=utf-8';
+		$headers['User-Agent']   = $this->user_agent;
+		$body                    = null;
 
 		$redacted_params = WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT );
 		$redacted_url    = $url;
@@ -1521,8 +1522,8 @@ class WC_Payments_API_Client {
 			$url          .= '?' . http_build_query( $params );
 			$redacted_url .= '?' . http_build_query( $redacted_params );
 		} else {
-			// Encode the request body as JSON.
-			$body = wp_json_encode( $params );
+			$headers['Idempotency-Key'] = $this->uuid();
+			$body                       = wp_json_encode( $params );
 			if ( ! $body ) {
 				throw new API_Exception(
 					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' ),
@@ -1532,12 +1533,12 @@ class WC_Payments_API_Client {
 			}
 		}
 
-		// Create standard headers.
-		$headers                 = [];
-		$headers['Content-Type'] = 'application/json; charset=utf-8';
-		$headers['User-Agent']   = $this->user_agent;
-
 		Logger::log( "REQUEST $method $redacted_url" );
+		Logger::log(
+			'HEADERS: '
+			. var_export( $headers, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		);
+
 		if ( null !== $body ) {
 			Logger::log(
 				'BODY: '
@@ -1653,7 +1654,14 @@ class WC_Payments_API_Client {
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
 			$error_type = null;
-			if ( isset( $response_body['error'] ) ) {
+			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
+				throw new Amount_Too_Small_Exception(
+					$response_body['message'],
+					$response_body['data']['minimum_amount'],
+					$response_body['data']['currency'],
+					$response_code
+				);
+			} elseif ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;
@@ -1697,34 +1705,62 @@ class WC_Payments_API_Client {
 		// If the order couldn't be retrieved, return an empty order.
 		$object['order'] = null;
 		if ( $order ) {
-			$object['order'] = [
-				'number'       => $order->get_order_number(),
-				'url'          => $order->get_edit_order_url(),
-				'customer_url' => add_query_arg(
-					[
-						'page'      => 'wc-admin',
-						'path'      => '/customers',
-						'filter'    => 'single_customer',
-						'customers' => $order->get_customer_id(),
-					],
-					'admin.php'
-				),
-			];
-
-			if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
-				$object['order']['subscriptions'] = [];
-
-				$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => [ 'parent', 'renewal' ] ] );
-				foreach ( $subscriptions as $subscription ) {
-					$object['order']['subscriptions'][] = [
-						'number' => $subscription->get_order_number(),
-						'url'    => $subscription->get_edit_order_url(),
-					];
-				}
-			}
+			$object['order'] = $this->build_order_info( $order );
 		}
 
 		return $object;
+	}
+
+
+	/**
+	 * Creates the array representing order for frontend.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return array
+	 */
+	private function build_order_info( WC_Order $order ): array {
+		$order_info = [
+			'number'       => $order->get_order_number(),
+			'url'          => $order->get_edit_order_url(),
+			'customer_url' => $this->get_customer_url( $order ),
+		];
+
+		if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
+			$order_info['subscriptions'] = [];
+
+			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => [ 'parent', 'renewal' ] ] );
+			foreach ( $subscriptions as $subscription ) {
+				$order_info['subscriptions'][] = [
+					'number' => $subscription->get_order_number(),
+					'url'    => $subscription->get_edit_order_url(),
+				];
+			}
+		}
+		return $order_info;
+	}
+
+	/**
+	 * Generates url to single customer in analytics table.
+	 *
+	 * @param WC_Order $order The Order.
+	 * @return string|null
+	 */
+	private function get_customer_url( WC_Order $order ) {
+		$customer_id = DataStore::get_existing_customer_id_from_order( $order );
+
+		if ( ! $customer_id ) {
+			return null;
+		}
+
+		return add_query_arg(
+			[
+				'page'      => 'wc-admin',
+				'path'      => '/customers',
+				'filter'    => 'single_customer',
+				'customers' => $customer_id,
+			],
+			'admin.php'
+		);
 	}
 
 	/**
@@ -1769,6 +1805,7 @@ class WC_Payments_API_Client {
 		$charge             = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
 		$next_action        = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
 		$last_payment_error = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
+		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
@@ -1782,7 +1819,8 @@ class WC_Payments_API_Client {
 			$intention_array['client_secret'],
 			$next_action,
 			$last_payment_error,
-			$charge ? $charge['payment_method_details'] : null
+			$charge ? $charge['payment_method_details'] : null,
+			$metadata
 		);
 
 		return $intent;
@@ -1805,5 +1843,29 @@ class WC_Payments_API_Client {
 			$domain_name,
 			null !== $blog_id ? " blog_id $blog_id" : ''
 		);
+	}
+
+	/**
+	 * Returns a v4 UUID.
+	 *
+	 * @return string
+	 */
+	private function uuid() {
+		$arr    = array_values( unpack( 'N1a/n4b/N1c', random_bytes( 16 ) ) );
+		$arr[2] = ( $arr[2] & 0x0fff ) | 0x4000;
+		$arr[3] = ( $arr[3] & 0x3fff ) | 0x8000;
+		return vsprintf( '%08x-%04x-%04x-%04x-%04x%08x', $arr );
+	}
+
+
+	/**
+	 * Fetch readers charge summary.
+	 *
+	 * @param string $charge_date Charge date for readers.
+	 *
+	 * @return array reader objects.
+	 */
+	public function get_readers_charge_summary( string $charge_date ) : array {
+		return $this->request( [ 'charge_date' => $charge_date ], self::READERS_CHARGE_SUMMARY, self::GET );
 	}
 }

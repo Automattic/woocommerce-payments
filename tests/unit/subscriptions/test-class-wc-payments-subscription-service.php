@@ -126,6 +126,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 				'price'         => 10,
 			]
 		);
+
 		$mock_subscription_product->save();
 		$mock_order         = WC_Helper_Order::create_order( 1, 50, $mock_subscription_product );
 		$mock_line_item     = array_values( $mock_order->get_items() )[0];
@@ -146,7 +147,7 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 					],
 					'price_data' => [
 						'currency'            => 'USD',
-						'product'             => '',
+						'product'             => $mock_wcpay_product_id,
 						'unit_amount_decimal' => 1000.0,
 						'recurring'           => [
 							'interval'       => 'month',
@@ -182,6 +183,12 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 		$this->mock_product_service->expects( $this->once() )
 			->method( 'get_wcpay_product_id_for_item' )
 			->willReturn( $mock_wcpay_product_id );
+
+		$this->mock_product_service->expects( $this->once() )
+			->method( 'get_wcpay_product_id' )
+			->willReturn( $mock_wcpay_product_id );
+
+		$this->mock_product_service->method( 'is_valid_billing_cycle' )->willReturn( true );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_subscription' )
@@ -225,9 +232,17 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_create_subscription_for_manual_renewal() {
 		$mock_subscription_product = new WC_Subscriptions_Product();
+		$mock_subscription_product->set_props(
+			[
+				'regular_price' => 10,
+				'price'         => 10,
+			]
+		);
 		$mock_subscription_product->save();
+
 		$mock_order        = WC_Helper_Order::create_order( 1, 50, $mock_subscription_product );
 		$mock_subscription = new WC_Subscription();
+
 		$mock_subscription->set_requires_manual_renewal( true );
 		$mock_subscription->set_parent( $mock_order );
 		$mock_subscription->set_props( [ 'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID ] );
@@ -238,6 +253,8 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 			}
 		);
 
+		$this->mock_product_service->method( 'is_valid_billing_cycle' )->willReturn( true );
+
 		$this->mock_customer_service->expects( $this->once() )
 			->method( 'get_customer_id_for_order' )
 			->with( $mock_subscription )
@@ -245,6 +262,10 @@ class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_product_service->expects( $this->once() )
 			->method( 'get_wcpay_product_id_for_item' )
+			->willReturn( 'wcpay_prod_test123' );
+
+		$this->mock_product_service->expects( $this->once() )
+			->method( 'get_wcpay_product_id' )
 			->willReturn( 'wcpay_prod_test123' );
 
 		$this->mock_api_client->expects( $this->once() )

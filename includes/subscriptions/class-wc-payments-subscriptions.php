@@ -48,14 +48,16 @@ class WC_Payments_Subscriptions {
 	 * @param WC_Payments_API_Client       $api_client       WCPay API client.
 	 * @param WC_Payments_Customer_Service $customer_service WCPay Customer Service.
 	 * @param WC_Payment_Gateway_WCPay     $gateway          WCPay Payment Gateway.
+	 * @param WC_Payments_Account          $account          WC_Payments_Account.
 	 */
-	public static function init( WC_Payments_API_Client $api_client, WC_Payments_Customer_Service $customer_service, WC_Payment_Gateway_WCPay $gateway ) {
+	public static function init( WC_Payments_API_Client $api_client, WC_Payments_Customer_Service $customer_service, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
 		// Load Services.
 		include_once __DIR__ . '/class-wc-payments-product-service.php';
 		include_once __DIR__ . '/class-wc-payments-invoice-service.php';
 		include_once __DIR__ . '/class-wc-payments-subscription-service.php';
 		include_once __DIR__ . '/class-wc-payments-subscription-change-payment-method-handler.php';
 		include_once __DIR__ . '/class-wc-payments-subscriptions-plugin-notice-manager.php';
+		include_once __DIR__ . '/class-wc-payments-subscriptions-empty-state-manager.php';
 
 		self::$product_service      = new WC_Payments_Product_Service( $api_client );
 		self::$invoice_service      = new WC_Payments_Invoice_Service( $api_client, self::$product_service, $gateway );
@@ -67,6 +69,12 @@ class WC_Payments_Subscriptions {
 
 		new WC_Payments_Subscription_Change_Payment_Method_Handler();
 		new WC_Payments_Subscriptions_Plugin_Notice_Manager();
+
+		new WC_Payments_Subscriptions_Empty_State_Manager( $account );
+
+		// Load the Subscriptions Onboarding class.
+		include_once __DIR__ . '/class-wc-payments-subscriptions-onboarding-handler.php';
+		new WC_Payments_Subscriptions_Onboarding_Handler( $account );
 	}
 
 	/**

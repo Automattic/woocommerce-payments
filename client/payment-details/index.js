@@ -12,10 +12,25 @@ import PaymentDetailsSummary from './summary';
 import PaymentDetailsTimeline from './timeline';
 import PaymentDetailsPaymentMethod from './payment-method';
 import Page from 'components/page';
+import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
+import PaymentCardReaderChargeDetails from './readers';
 
 const PaymentDetails = ( props ) => {
-	const chargeId = props.query.id;
+	if ( 'card_reader_fee' === props.query.type ) {
+		return (
+			<PaymentCardReaderChargeDetails
+				chargeId={ props.query.id }
+				transactionId={ props.query.transaction_id }
+			/>
+		);
+	}
+
+	return <PaymentChargeDetails chargeId={ props.query.id } />;
+};
+
+const PaymentChargeDetails = ( props ) => {
+	const chargeId = props.chargeId;
 	const { charge, isLoading, chargeError } = useCharge( chargeId );
 	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
 
@@ -39,14 +54,23 @@ const PaymentDetails = ( props ) => {
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
 			{ testModeNotice }
-			<PaymentDetailsSummary charge={ charge } isLoading={ isLoading } />
+			<ErrorBoundary>
+				<PaymentDetailsSummary
+					charge={ charge }
+					isLoading={ isLoading }
+				/>
+			</ErrorBoundary>
 			{ wcpaySettings.featureFlags.paymentTimeline && (
-				<PaymentDetailsTimeline chargeId={ chargeId } />
+				<ErrorBoundary>
+					<PaymentDetailsTimeline chargeId={ chargeId } />
+				</ErrorBoundary>
 			) }
-			<PaymentDetailsPaymentMethod
-				charge={ charge }
-				isLoading={ isLoading }
-			/>
+			<ErrorBoundary>
+				<PaymentDetailsPaymentMethod
+					charge={ charge }
+					isLoading={ isLoading }
+				/>
+			</ErrorBoundary>
 		</Page>
 	);
 };

@@ -90,19 +90,15 @@ const AccountStatusDetails = ( props ) => {
 					depositsStatus={ accountStatus.depositsStatus }
 				/>
 			</AccountStatusItem>
-			<AccountStatusItem
-				align={ 'flex-start' }
-				label={ __( 'Base fee:', 'woocommerce-payments' ) }
-			>
+			{ 0 < accountFees.length && (
 				<AccountFees accountFees={ accountFees } />
-			</AccountStatusItem>
+			) }
 		</AccountStatusCard>
 	);
 };
 
 const AccountStatus = ( props ) => {
 	const { accountStatus } = props;
-
 	return accountStatus.error ? (
 		<AccountStatusError />
 	) : (

@@ -61,7 +61,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 
 	public function test_get_account_data_with_connected_account() {
 		$this->mock_api_client
-			->expects( $this->once() )
+			->expects( $this->atLeastOnce() )
 			->method( 'is_server_connected' )
 			->willReturn( true );
 		$this->mock_api_client
@@ -88,7 +88,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 
 	public function test_get_account_data_without_connected_account_and_enabled_onboarding() {
 		$this->mock_api_client
-			->expects( $this->once() )
+			->expects( $this->atLeastOnce() )
 			->method( 'is_server_connected' )
 			->willReturn( true );
 		$this->mock_api_client
@@ -112,7 +112,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 
 	public function test_get_account_data_without_connected_account_and_disabled_onboarding() {
 		$this->mock_api_client
-			->expects( $this->once() )
+			->expects( $this->atLeastOnce() )
 			->method( 'is_server_connected' )
 			->willReturn( true );
 		$this->mock_api_client
@@ -131,5 +131,27 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 		// The default country and currency have changed in WC 5.3, hence multiple options in assertions.
 		$this->assertContains( $response_data['country'], [ 'US', 'GB' ] );
 		$this->assertContains( $response_data['store_currencies']['default'], [ 'USD', 'GBP' ] );
+	}
+
+	public function test_get_account_data_with_card_eligible_present_true() {
+		$this->mock_api_client
+			->expects( $this->atLeastOnce() )
+			->method( 'is_server_connected' )
+			->willReturn( true );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_account_data' )
+			->willReturn(
+				[
+					'card_present_eligible' => true,
+				]
+			);
+
+		$response      = $this->controller->get_account_data( new WP_REST_Request( 'GET' ) );
+		$response_data = $response->get_data();
+
+		$this->assertSame( 200, $response->status );
+		$this->assertTrue( $response_data['test_mode'] );
+		$this->assertFalse( $response_data['card_present_eligible'] );
 	}
 }

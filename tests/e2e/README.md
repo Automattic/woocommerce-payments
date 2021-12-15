@@ -1,42 +1,134 @@
 # WooCommerce Payments End-to-end tests
 
-E2E tests can be run locally or in Travis CI.
+E2E tests can be run locally or in GitHub Actions. Github Actions are already configured and doesn't require any changes to run the tests.
 
-## Setup
+## Setting up & running E2E tests
 
-Setup script requires the following env variables to be configured:
+For running E2E tests locally, create a new file named `local.env` under `tests/e2e/config` folder with the following env variables (replace values as required).
+
+<details>
+<summary>Required env variables</summary>
+<p>
 
 ```
 WCP_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
 WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git'
 
-// Stripe account data. Need to support level 3 data to run tests successfully.
-E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY=<stripe pk_test_xxx>
-E2E_WCPAY_STRIPE_TEST_SECRET_KEY=<stripe sk_test_xxx>
-E2E_WCPAY_STRIPE_TEST_CLIENT_ID=<stripe ca_xxx>
-E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY=<stripe whsec_xxx>
-E2E_WCPAY_STRIPE_ACCOUNT_ID=<stripe acct_id>
+// Use WCPay server local instance (Default: true). To use live server, set value to false
+E2E_USE_LOCAL_SERVER=true
 
 // Optional to see verbose output
 DEBUG=true
 ```
 
-For local setup:
+</p>
+</details>
 
-1. Create file `local.env` in the `tests/e2e/config` folder with required values.
-    * If you have access to the Subscriptions plugin, please follow the instructions from `tests/e2e/specs/README.md` before running the setup. Make sure to include also Action Scheduler & WooCommerce Blocks plugins from the same document as well.
-    * If you don't, you may skip those plugins setup and tests by adding `SKIP_WC_SUBSCRIPTIONS_TESTS=1`, `SKIP_WC_ACTION_SCHEDULER_TESTS=1` and `SKIP_WC_BLOCKS_TESTS=1` to your `local.env` in the `tests/e2e/config` folder.
+---
 
-1. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running setup script.
+<details>
+<summary>Choose WCPay Server instance</summary>
+<p>
 
-1. Run setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
+It is possible to use the live server or a local docker instance of WCPay server locally. On Github Actions, live server is used for tests. Add the following env variables to your `local.env` based on your preference (replace values as required).
 
-After you set the E2E environment up, you can access to the containers on:
+**Using Local Server on Docker**
 
-- WC E2E Client: http://localhost:8084
-- WC E2E Server: http://localhost:8088 
+By default, the local E2E environment is configured to use WCPay local server instance. Add the following env variables to configure the local server instance.
 
-**Note:** Be aware that the server port may change in the `docker-compose.e2e.yml` configuration, so when you can't access the server, try running `docker port woocommerce_payments_server_wordpress_e2e 80` to find out the bound port of the E2E server container.
+```
+// Stripe account data. Need to support level 3 data to run tests successfully.
+E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY=<stripe pk_test_xxx>
+E2E_WCPAY_STRIPE_TEST_SECRET_KEY=<stripe sk_test_xxx>
+E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY=<stripe whsec_xxx>
+E2E_WCPAY_STRIPE_ACCOUNT_ID=<stripe acct_id>
+```
+
+**Using Live Server**
+
+For using a live server, you'll need to add Jetpack blog token, user token & blog id from one of your test sites connected to WooCommerce Payments live account. On a connected test site, you can use the code below to extract the blog id & tokens.
+```
+Jetpack_Options::get_option( 'id' );
+Jetpack_Options::get_option( 'blog_token' );
+Jetpack_Options::get_option( 'user_tokens' );
+```
+
+Set the value of `E2E_USE_LOCAL_SERVER` to `false` to enable live server.
+
+Once you have the blog id & tokens, add the following ev variables to your `local.env`.
+```
+E2E_BLOG_TOKEN='<jetpack_blog_token>'
+E2E_USER_TOKEN='<jetpack_user_token>'
+E2E_BLOG_ID='<blog_id>'
+```
+
+</p>
+</details>
+
+---
+
+<details>
+<summary>Installing Plugins</summary>
+<p>
+
+If you wish to run E2E test for WC Subscriptions, Action Scheduler & WC Gutenberg Products Blocks, the following env variables needs to be added to your `local.env` (replace values as required).
+
+For the `E2E_GH_TOKEN`, follow [these instructions to generate a GitHub Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) and assign the `repo` scope to it.
+
+```
+E2E_GH_TOKEN='githubPersonalAccessToken'
+WC_SUBSCRIPTIONS_REPO='{owner}/{repo}'
+WC_ACTION_SCHEDULER_REPO='{owner}/{repo}'
+WC_BLOCKS_REPO='{owner}/{repo}'
+```
+
+</p>
+</details>
+
+---
+
+<details>
+<summary>Skipping Plugins</summary>
+<p>
+
+If you wish to skip E2E tests for WC Subscriptions, Action Scheduler or WC Gutenberg Products Blocks, the following env variables needs to be added to your `local.env`.
+```
+SKIP_WC_SUBSCRIPTIONS_TESTS=1
+SKIP_WC_ACTION_SCHEDULER_TESTS=1
+SKIP_WC_BLOCKS_TESTS=1
+```
+
+</p>
+</details>
+
+---
+
+<details>
+<summary>Initialize E2E docker environment</summary>
+<p>
+
+  1. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running setup script.
+  2. Run setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
+
+  After the E2E environment is up, you can access the containers on:
+
+  - WC E2E Client: http://localhost:8084
+  - WC E2E Server: http://localhost:8088 (Available only when using local server)
+
+  **Note:** Be aware that the server port may change in the `docker-compose.e2e.yml` configuration, so when you can't access the server, try running `docker port woocommerce_payments_server_wordpress_e2e 80` to find out the bound port of the E2E server container.
+
+</p>
+</details>
+
+---
+
+<details>
+<summary>Running tests</summary>
+<p>
+
+There are two modes for running tests:
+1. **Headless mode**: `npm run test:e2e`. In headless mode test runner executes all or specified specs without launching Chromium interface. This mode is used in CI environment.
+2. **Dev mode**: `npm run test:e2e-dev`. Dev mode is interactive and launches Chromium UI. It's useful for developing, debugging and troubleshooting failing tests. There is a custom config used for `jest-puppeteer` to run tests in dev mode.
 
 Handy utility scripts for managing environment:
 
@@ -45,13 +137,10 @@ Handy utility scripts for managing environment:
 * `npm run test:e2e-reset` Stops containers and performs cleanup.
 * `npm run test:e2e-up` Starts containers without setting up again.
 
-## Running tests
+</p>
+</details>
 
-There are two modes for running tests:
-
-1. Headless mode: `npm run test:e2e`. In headless mode test runner executes all or specified specs without launching Chromium interface. This mode is used in CI environment.
-
-2. Dev mode: `npm run test:e2e-dev`. Dev mode is interactive and launches Chromium UI. It's useful for developing, debugging and troubleshooting failing tests. There is a custom config used for `jest-puppeteer` to run tests in dev mode.
+<br>
 
 ## Writing tests
 

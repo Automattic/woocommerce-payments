@@ -14,12 +14,9 @@ use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Gateway;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Gateway;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Gateway;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
@@ -32,30 +29,9 @@ class WC_Payments {
 	/**
 	 * Instance of WC_Payment_Gateway_WCPay, created in init function.
 	 *
-	 * @var CC_Payment_Gateway
+	 * @var WC_Payment_Gateway_WCPay
 	 */
 	private static $card_gateway;
-
-	/**
-	 * Instance of Giropay gateway, created in init function.
-	 *
-	 * @var Giropay_Payment_Gateway
-	 */
-	private static $giropay_gateway;
-
-	/**
-	 * Instance of SEPA gateway, created in init function.
-	 *
-	 * @var Sepa_Payment_Gateway
-	 */
-	private static $sepa_gateway;
-
-	/**
-	 * Instance of Sofort gateway, created in init function.
-	 *
-	 * @var Sofort_Payment_Gateway
-	 */
-	private static $sofort_gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -128,6 +104,13 @@ class WC_Payments {
 	private static $fraud_service;
 
 	/**
+	 * Instance of WC_Payments_In_Person_Payments_Receipts_Service, created in init function
+	 *
+	 * @var WC_Payments_In_Person_Payments_Receipts_Service
+	 */
+	private static $in_person_payments_receipts_service;
+
+	/**
 	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
 	 *
 	 * @var WC_Payments_Payment_Request_Button_Handler
@@ -177,6 +160,8 @@ class WC_Payments {
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 
+		self::maybe_register_platform_checkout_hooks();
+
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
 
@@ -194,9 +179,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-giropay-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-sepa-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-sofort-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
@@ -212,6 +194,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
+		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
@@ -226,6 +209,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
 		include_once __DIR__ . '/class-experimental-abtest.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
+		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -235,20 +219,18 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$account                         = new WC_Payments_Account( self::$api_client );
-		self::$customer_service                = new WC_Payments_Customer_Service( self::$api_client, self::$account );
-		self::$token_service                   = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
-		self::$remote_note_service             = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
-		self::$action_scheduler_service        = new WC_Payments_Action_Scheduler_Service( self::$api_client );
-		self::$fraud_service                   = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
-		self::$localization_service            = new WC_Payments_Localization_Service();
-		self::$failed_transaction_rate_limiter = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
+		self::$account                             = new WC_Payments_Account( self::$api_client );
+		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
+		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$remote_note_service                 = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client );
+		self::$fraud_service                       = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
+		self::$localization_service                = new WC_Payments_Localization_Service();
+		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
+		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 
-		$card_class    = CC_Payment_Gateway::class;
-		$upe_class     = UPE_Payment_Gateway::class;
-		$giropay_class = Giropay_Payment_Gateway::class;
-		$sepa_class    = Sepa_Payment_Gateway::class;
-		$sofort_class  = Sofort_Payment_Gateway::class;
+		$card_class = CC_Payment_Gateway::class;
+		$upe_class  = UPE_Payment_Gateway::class;
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$payment_methods        = [];
@@ -268,16 +250,6 @@ class WC_Payments {
 			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter );
 		} else {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter );
-		}
-
-		if ( WC_Payments_Features::is_giropay_enabled() ) {
-			self::$giropay_gateway = new $giropay_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
-		}
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
-			self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
-		}
-		if ( WC_Payments_Features::is_sofort_enabled() ) {
-			self::$sofort_gateway = new $sofort_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 
 		// Payment Request and Apple Pay.
@@ -327,7 +299,7 @@ class WC_Payments {
 		// Load WCPay Subscriptions.
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
-			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$card_gateway );
+			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$card_gateway, self::$account );
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
@@ -372,9 +344,8 @@ class WC_Payments {
 				[
 					// Mirrors the functionality on WooCommerce core: https://github.com/woocommerce/woocommerce/blob/ff2eadeccec64aa76abd02c931bf607dd819bbf0/includes/wc-core-functions.php#L1916 .
 					'WCRequires' => 'WC requires at least',
-					// The "Requires WP" plugin header is proposed and being implemented here: https://core.trac.wordpress.org/ticket/43992
-					// TODO: Check before release if the "Requires WP" header name has been accepted, or we should use a header on the readme.txt file instead.
-					'RequiresWP' => 'Requires WP',
+
+					'RequiresWP' => 'Requires at least',
 					'Version'    => 'Version',
 				]
 			);
@@ -405,16 +376,6 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
-
-		if ( WC_Payments_Features::is_giropay_enabled() ) {
-			$gateways[] = self::$giropay_gateway;
-		}
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
-			$gateways[] = self::$sepa_gateway;
-		}
-		if ( WC_Payments_Features::is_sofort_enabled() ) {
-			$gateways[] = self::$sofort_gateway;
-		}
 
 		return $gateways;
 	}
@@ -557,10 +518,9 @@ class WC_Payments {
 
 		$http_class = self::get_wc_payments_http();
 
-		$api_client_class = apply_filters( 'wc_payments_api_client', 'WC_Payments_API_Client' );
-
-		if ( ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
-			$api_client_class = 'WC_Payments_API_Client';
+		$api_client_class = apply_filters( 'wc_payments_api_client', WC_Payments_API_Client::class );
+		if ( ! class_exists( $api_client_class ) || ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
+			$api_client_class = WC_Payments_API_Client::class;
 		}
 
 		return new $api_client_class(
@@ -639,13 +599,13 @@ class WC_Payments {
 		$accounts_controller = new WC_REST_Payments_Terminal_Locations_Controller( self::$api_client );
 		$accounts_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-fraud-controller.php';
-		$fraud_controller = new WC_REST_Payments_Fraud_Controller( self::$api_client );
-		$fraud_controller->register_routes();
-
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
 		$settings_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
+		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client, self::$card_gateway, self::$in_person_payments_receipts_service );
+		$charges_controller->register_routes();
 
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
@@ -664,10 +624,9 @@ class WC_Payments {
 	 * @param string $file Local path to the file.
 	 * @return string The cache buster value to use for the given file.
 	 */
-	public static function get_file_version( $file ) {
-		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
-			$file = trim( $file, '/' );
-			return filemtime( WCPAY_ABSPATH . $file );
+	public static function get_file_version( $file ): string {
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( WCPAY_ABSPATH . $file ) ) {
+			return (string) filemtime( WCPAY_ABSPATH . trim( $file, '/' ) );
 		}
 		return WCPAY_VERSION_NUMBER;
 	}
@@ -811,5 +770,78 @@ class WC_Payments {
 	 */
 	public static function is_network_saved_cards_enabled() {
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
+	}
+
+	/**
+	 * Registers platform checkout hooks if the platform checkout feature flag is enabled.
+	 */
+	public static function maybe_register_platform_checkout_hooks() {
+		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
+			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
+			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
+			// Disable nonce checks for API calls. TODO This should be changed.
+			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		}
+	}
+
+	/**
+	 * Used to initialize platform checkout session.
+	 *
+	 * @return void
+	 */
+	public static function ajax_init_platform_checkout() {
+		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
+
+		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
+		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
+		$body                   = [
+			'user_id'              => get_current_user_id(),
+			'session_cookie_name'  => $session_cookie_name,
+			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			'store_data'           => [
+				'store_name' => get_bloginfo( 'name' ),
+				'store_logo' => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
+				'blog_id'    => Jetpack_Options::get_option( 'id' ),
+			],
+		];
+		$args                   = [
+			'url'     => $url,
+			'method'  => 'POST',
+			'timeout' => 30,
+			'body'    => wp_json_encode( $body ),
+			'headers' => [
+				'Content-Type' => 'application/json',
+			],
+		];
+
+		$response_array     = wp_remote_request( $url, $args );
+		$response_body_json = wp_remote_retrieve_body( $response_array );
+
+		Logger::log( $response_body_json );
+		wp_send_json( json_decode( $response_body_json ) );
+	}
+
+	/**
+	 * Determine the current user
+	 *
+	 * @param WP_User|int $user The user to determine.
+	 */
+	public static function determine_current_user_for_platform_checkout( $user ) {
+		if ( $user ) {
+			return $user;
+		}
+
+		if ( ! isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) || ! is_numeric( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) ) {
+			return $user;
+		}
+
+		add_filter(
+			'woocommerce_cookie',
+			function( string $cookie_hash ) {
+				return 'platform_checkout_session';
+			}
+		);
+
+		return (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'];
 	}
 }

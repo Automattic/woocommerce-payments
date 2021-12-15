@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <files psalm-version="4.8.1@f73f2299dbc59a3e6c4d66cff4605176e728ee69">
+  <file src="includes/class-payment-information.php">
+    <InvalidArgument occurrences="1">
+      <code>wc_clean( $request[ $token_request_key ] )</code>
+    </InvalidArgument>
+  </file>
+  <file src="includes/class-wc-payment-gateway-wcpay.php">
+    <UndefinedFunction occurrences="1">
+      <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' =&gt; 'any' ] )</code>
+    </UndefinedFunction>
+    <UndefinedMethod occurrences="1">
+      <code>$intent</code>
+    </UndefinedMethod>
+  </file>
+  <file src="includes/class-wc-payments-fraud-service.php">
+    <InvalidArgument occurrences="1">
+      <code>[ $this, 'get_session_id' ]</code>
+    </InvalidArgument>
+  </file>
   <file src="includes/class-wc-payments-payment-request-button-handler.php">
     <UndefinedClass occurrences="3">
       <code>WC_Pre_Orders_Product</code>
@@ -7,135 +25,24 @@
       <code>WC_Subscriptions_Product</code>
     </UndefinedClass>
   </file>
-  <file src="includes/class-wc-payments.php">
-    <UndefinedClass occurrences="1"/>
-  </file>
-  <file src="includes/compat/subscriptions/class-wc-payments-email-failed-authentication-retry.php">
-    <UndefinedClass occurrences="1">
-      <code>WCS_Retry_Manager</code>
-    </UndefinedClass>
-  </file>
-  <file src="includes/compat/subscriptions/class-wc-payments-email-failed-renewal-authentication.php">
-    <UndefinedFunction occurrences="2">
-      <code>wcs_get_objects_property( $this-&gt;object, 'id' )</code>
-      <code>wcs_get_objects_property( $this-&gt;object, 'id' )</code>
-    </UndefinedFunction>
-  </file>
-  <file src="includes/compat/subscriptions/emails/failed-renewal-authentication-requested.php">
-    <UndefinedFunction occurrences="1">
-      <code>wcs_get_human_time_diff( $retry-&gt;get_time() )</code>
-    </UndefinedFunction>
-    <UndefinedGlobalVariable occurrences="18">
-      <code>$email</code>
-      <code>$email</code>
-      <code>$email</code>
-      <code>$email</code>
-      <code>$email</code>
-      <code>$email_heading</code>
-      <code>$order</code>
-      <code>$order</code>
-      <code>$order</code>
-      <code>$order</code>
-      <code>$order</code>
-      <code>$plain_text</code>
-      <code>$plain_text</code>
-      <code>$plain_text</code>
-      <code>$retry</code>
-      <code>$sent_to_admin</code>
-      <code>$sent_to_admin</code>
-      <code>$sent_to_admin</code>
-    </UndefinedGlobalVariable>
-  </file>
-  <file src="includes/compat/subscriptions/emails/failed-renewal-authentication.php">
-    <UndefinedGlobalVariable occurrences="8">
-      <code>$authorization_url</code>
-      <code>$email</code>
-      <code>$email</code>
-      <code>$email</code>
-      <code>$email_heading</code>
-      <code>$order</code>
-      <code>$plain_text</code>
-      <code>$sent_to_admin</code>
-    </UndefinedGlobalVariable>
-  </file>
-  <file src="includes/compat/subscriptions/emails/plain/failed-renewal-authentication-requested.php">
-    <UndefinedFunction occurrences="1">
-      <code>wcs_get_human_time_diff( $retry-&gt;get_time() )</code>
-    </UndefinedFunction>
-    <UndefinedGlobalVariable occurrences="16">
-      <code>$email</code>
-      <code>$email</code>
-      <code>$email</code>
-      <code>$email_heading</code>
-      <code>$order</code>
-      <code>$order</code>
-      <code>$order</code>
-      <code>$order</code>
-      <code>$order</code>
-      <code>$plain_text</code>
-      <code>$plain_text</code>
-      <code>$plain_text</code>
-      <code>$retry</code>
-      <code>$sent_to_admin</code>
-      <code>$sent_to_admin</code>
-      <code>$sent_to_admin</code>
-    </UndefinedGlobalVariable>
-  </file>
-  <file src="includes/compat/subscriptions/emails/plain/failed-renewal-authentication.php">
-    <UndefinedGlobalVariable occurrences="6">
-      <code>$authorization_url</code>
-      <code>$email</code>
-      <code>$email_heading</code>
-      <code>$order</code>
-      <code>$plain_text</code>
-      <code>$sent_to_admin</code>
-    </UndefinedGlobalVariable>
-  </file>
-  <file src="includes/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php">
-    <UndefinedClass occurrences="1">
-      <code>WC_Subscriptions</code>
-    </UndefinedClass>
-    <UndefinedDocblockClass occurrences="8">
-      <code>WC_Subscription</code>
-      <code>WC_Subscription</code>
-      <code>WC_Subscription</code>
-      <code>WC_Subscription</code>
-      <code>WC_Subscription</code>
-      <code>WC_Subscription</code>
-      <code>WC_Subscription</code>
-      <code>WC_Subscription</code>
-    </UndefinedDocblockClass>
-    <UndefinedFunction occurrences="2">
-      <code>wcs_get_subscriptions_for_order( $order-&gt;get_id() )</code>
-      <code>wcs_is_subscription( $order )</code>
-    </UndefinedFunction>
-  </file>
-  <file src="includes/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php">
-    <UndefinedClass occurrences="3">
-      <code>WC_Subscriptions_Cart</code>
-      <code>WC_Subscriptions_Cart</code>
-      <code>WC_Subscriptions_Core_Plugin</code>
-    </UndefinedClass>
-    <UndefinedFunction occurrences="2">
-      <code>wcs_is_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) )</code>
-      <code>wcs_order_contains_subscription( $order_id )</code>
-    </UndefinedFunction>
-  </file>
-  <file src="includes/subscriptions/class-wc-payments-subscriptions.php">
-    <UndefinedDocblockClass occurrences="1">
-      <code>WC_Payments_Tax_Service</code>
-    </UndefinedDocblockClass>
-  </file>
-  <file src="includes/subscriptions/class-wc-payments-product-service.php">
-    <UndefinedClass occurrences="10">
-      <code>WC_Subscriptions_Product</code>
+  <file src="includes/multi-currency/Compatibility/WooCommerceProductAddOns.php">
+    <UndefinedClass occurrences="2">
+      <code>\WC_Product_Addons_Helper</code>
+      <code>\WC_Product_Addons_Helper</code>
     </UndefinedClass>
   </file>
   <file src="includes/wc-payment-api/class-wc-payments-http.php">
-    <UndefinedDocblockClass occurrences="3">
+    <InvalidReturnStatement occurrences="1">
+      <code>Automattic\Jetpack\Connection\Client::wpcom_json_api_request_as_user( $path, $version, $args, $body, $base_api_path )</code>
+    </InvalidReturnStatement>
+    <InvalidReturnType occurrences="1">
+      <code>array|\WP_Error</code>
+    </InvalidReturnType>
+    <UndefinedDocblockClass occurrences="4">
       <code>$response</code>
       <code>$this-&gt;connection_manager-&gt;is_active()</code>
       <code>Automattic\Jetpack\Connection\Client::remote_request( $args, $body )</code>
+      <code>Automattic\Jetpack\Connection\Client::wpcom_json_api_request_as_user( $path, $version, $args, $body, $base_api_path )</code>
     </UndefinedDocblockClass>
   </file>
   <file src="woocommerce-payments.php">
@@ -143,53 +50,4 @@
       <code>WC_Subscriptions_Core_Plugin</code>
     </UndefinedClass>
   </file>
-  <file src="includes/subscriptions/class-wc-payments-invoice-service.php">
-    <UndefinedDocblockClass occurrences="8">
-      <code>WC_Subscription</code>
-    </UndefinedDocblockClass>
-    <UndefinedClass occurrences="9">
-      <code>WC_Subscription</code>
-    </UndefinedClass>
-    <UndefinedFunction occurrences="1">
-      <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' =&gt; [ 'parent', 'renewal' ] ] )</code>
-    </UndefinedFunction>
-  </file>
-  <file src="includes/subscriptions/class-wc-payments-subscription-service.php">
-    <UndefinedClass occurrences="27">
-      <code>WC_Subscription</code>
-    </UndefinedClass>
-    <UndefinedDocblockClass occurrences="2">
-      <code>WC_Subscription|bool</code>
-    </UndefinedDocblockClass>
-    <UndefinedFunction occurrences="6">
-      <code>wcs_get_subscription</code>
-      <code>wcs_get_subscriptions_for_renewal_order( $order_id )</code>
-    </UndefinedFunction>
-  </file>
-  <file src="includes/subscriptions/class-wc-payments-subscriptions-event-handler.php">
-    <UndefinedDocblockClass occurrences="9">
-      <code>WC_Subscription</code>
-    </UndefinedDocblockClass>
-    <UndefinedFunction occurrences="2">
-      <code>wcs_create_renewal_order( $subscription )</code>
-    </UndefinedFunction>
-  </file>
-  <file src="includes/subscriptions/class-wc-payments-subscription-change-payment-method-handler.php">
-    <UndefinedDocblockClass occurrences="3">
-      <code>WC_Subscription</code>
-    </UndefinedDocblockClass>
-    <UndefinedClass occurrences="3">
-      <code>WC_Subscription</code>
-    </UndefinedClass>
-    <UndefinedFunction occurrences="3">
-      <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] )</code>
-      <code>wcs_get_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) )</code>
-    </UndefinedFunction>
-  </file>
-  <file src="includes/class-wc-payment-gateway-wcpay.php">
-    <UndefinedFunction occurrences="1">
-      <code>wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] )</code>
-    </UndefinedFunction>
-  </file>
 </files>
-

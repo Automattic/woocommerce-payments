@@ -136,7 +136,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 
 		$result_order = wc_get_order( $order->get_id() );
 		$this->assertEquals( 'woocommerce_payments', $result_order->get_payment_method() );
-		$this->assertEquals( 'WooCommerce Payments', $result_order->get_payment_method_title() );
+		$this->assertEquals( 'WooCommerce In-Person Payments', $result_order->get_payment_method_title() );
 		$this->assertEquals( 'completed', $result_order->get_status() );
 	}
 
@@ -641,6 +641,56 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 
 		$result_order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'cus_new', $result_order->get_meta( '_stripe_customer_id' ) );
+	}
+
+	public function test_create_terminal_intent_success() {
+		$order = $this->create_mock_order();
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'create_intent' )
+			->with( $this->isInstanceOf( WC_Order::class ) )
+			->willReturn(
+				[
+					'status' => 'created',
+					'id'     => 'pi_abcxyz',
+				]
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		$response      = $this->controller->create_terminal_intent( $request );
+		$response_data = $response->get_data();
+
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
+			[
+				'status' => 'created',
+				'id'     => 'pi_abcxyz',
+			],
+			$response_data
+		);
+	}
+
+	public function test_create_terminal_intent_order_not_found() {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => 'not_an_id',
+			]
+		);
+
+		$response = $this->controller->create_terminal_intent( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 404, $data['status'] );
 	}
 
 	private function create_mock_order() {

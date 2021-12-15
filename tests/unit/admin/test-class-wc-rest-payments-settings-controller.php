@@ -65,8 +65,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		add_action( 'rest_api_init', [ $this, 'deregister_wc_blocks_rest_api' ], 5 );
-		remove_filter( 'woocommerce_settings_api_sanitized_fields_woocommerce_payments', [ WC_Payments::get_gateway(), 'sanitize_plugin_settings' ] );
+		require_once __DIR__ . '/../helpers/class-wc-blocks-rest-api-registration-preventer.php';
+		WC_Blocks_REST_API_Registration_Preventer::prevent();
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
@@ -109,6 +109,12 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->upe_gateway    = new UPE_Payment_Gateway( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $mock_payment_methods, $mock_rate_limiter );
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->upe_gateway );
+	}
+
+	public function tearDown() {
+		parent::tearDown();
+
+		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {
@@ -364,15 +370,37 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( true, $this->gateway->is_in_test_mode() );
 	}
 
-	public function test_update_settings_saves_account_statement_descriptor() {
-		$new_account_descriptor = 'new account descriptor';
-
+	public function test_update_settings_saves_account() {
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_account' )
-			->with( $this->equalTo( [ 'statement_descriptor' => $new_account_descriptor ] ) );
+			->with(
+				$this->equalTo(
+					[
+						'statement_descriptor'     => 'test statement descriptor',
+						'business_name'            => 'test business_name',
+						'business_url'             => 'test business_url',
+						'business_support_address' => 'test business_support_address',
+						'business_support_email'   => 'test business_support_email',
+						'business_support_phone'   => 'test business_support_phone',
+						'branding_logo'            => 'test branding_logo',
+						'branding_icon'            => 'test branding_icon',
+						'branding_primary_color'   => 'test branding_primary_color',
+						'branding_secondary_color' => 'test branding_secondary_color',
+					]
+				)
+			);
 
 		$request = new WP_REST_Request();
-		$request->set_param( 'account_statement_descriptor', $new_account_descriptor );
+		$request->set_param( 'account_statement_descriptor', 'test statement descriptor' );
+		$request->set_param( 'account_business_name', 'test business_name' );
+		$request->set_param( 'account_business_url', 'test business_url' );
+		$request->set_param( 'account_business_support_address', 'test business_support_address' );
+		$request->set_param( 'account_business_support_email', 'test business_support_email' );
+		$request->set_param( 'account_business_support_phone', 'test business_support_phone' );
+		$request->set_param( 'account_branding_logo', 'test branding_logo' );
+		$request->set_param( 'account_branding_icon', 'test branding_icon' );
+		$request->set_param( 'account_branding_primary_color', 'test branding_primary_color' );
+		$request->set_param( 'account_branding_secondary_color', 'test branding_secondary_color' );
 
 		$this->controller->update_settings( $request );
 	}
@@ -410,9 +438,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'book', $this->gateway->get_option( 'payment_request_button_type' ) );
 	}
 
-	public function test_update_settings_does_not_save_account_statement_descriptor_if_not_supplied() {
-		$status_before_request = $this->gateway->get_option( 'account_statement_descriptor' );
-
+	public function test_update_settings_does_not_save_account_if_not_supplied() {
 		$request = new WP_REST_Request();
 
 		$this->mock_api_client->expects( $this->never() )
@@ -488,6 +514,43 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
 		$this->assertTrue( $response->get_data()['is_card_present_eligible'] );
+	}
+
+	/**
+	 * Tests account business support address validator
+	 *
+	 * @dataProvider account_business_support_address_validation_provider
+	 */
+	public function test_validate_business_support_address( $value, $request, $param, $expected ) {
+		$return = $this->controller->validate_business_support_address( $value, $request, $param );
+		$this->assertEquals( $return, $expected );
+	}
+
+	/**
+	 * Provider for test_validate_business_support_address.
+	 * @return array[] test method params.
+	 */
+	public function account_business_support_address_validation_provider() {
+		$request = new WP_REST_Request();
+		return [
+			[
+				[
+					'city'    => 'test city',
+					'country' => 'US',
+				],
+				$request,
+				'account_business_support_address',
+				true,
+			],
+			[
+				[
+					'invalid_param' => 'value',
+				],
+				$request,
+				'account_business_support_address',
+				new WP_Error( 'rest_invalid_pattern', 'Invalid address format!' ),
+			],
+		];
 	}
 
 
