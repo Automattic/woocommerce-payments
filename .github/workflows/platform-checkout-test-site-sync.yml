@@ -7,7 +7,7 @@ on:
   # Triggers the workflow on push events for the develop branch.
   push:
     branches:
-      - develop
+      - add/test-site-sync
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout develop branch
         uses: actions/checkout@v2
         with:
-          ref: 'develop'
+          ref: 'add/test-site-sync'
           fetch-depth: 2
 
       - name: Use Node.js 10.x
