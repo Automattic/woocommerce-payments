@@ -19,17 +19,9 @@ export const reasons: Record<
 > = {
 	bank_cannot_process: {
 		display: __( 'Bank cannot process', 'woocommerce-payments' ),
-		overview: undefined,
-		summary: undefined,
-		required: undefined,
-		respond: undefined,
 	},
 	check_returned: {
 		display: __( 'Check returned', 'woocommerce-payments' ),
-		overview: undefined,
-		summary: undefined,
-		required: undefined,
-		respond: undefined,
 	},
 	credit_not_processed: {
 		display: __( 'Credit not processed', 'woocommerce-payments' ),
@@ -68,17 +60,9 @@ export const reasons: Record<
 	},
 	customer_initiated: {
 		display: __( 'Customer initiated', 'woocommerce-payments' ),
-		overview: undefined,
-		summary: undefined,
-		required: undefined,
-		respond: undefined,
 	},
 	debit_not_authorized: {
 		display: __( 'Debit not authorized', 'woocommerce-payments' ),
-		overview: undefined,
-		summary: undefined,
-		required: undefined,
-		respond: undefined,
 	},
 	duplicate: {
 		display: __( 'Duplicate', 'woocommerce-payments' ),
@@ -176,22 +160,12 @@ export const reasons: Record<
 				'woocommerce-payments'
 			),
 		],
-		required: undefined,
-		respond: undefined,
 	},
 	incorrect_account_details: {
 		display: __( 'Incorrect account details', 'woocommerce-payments' ),
-		overview: undefined,
-		summary: undefined,
-		required: undefined,
-		respond: undefined,
 	},
 	insufficient_funds: {
 		display: __( 'Insufficient funds', 'woocommerce-payments' ),
-		overview: undefined,
-		summary: undefined,
-		required: undefined,
-		respond: undefined,
 	},
 	product_not_received: {
 		display: __( 'Product not received', 'woocommerce-payments' ),

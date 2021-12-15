@@ -18,22 +18,14 @@ import Paragraphs from 'components/paragraphs';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import DisputeStatusChip from 'components/dispute-status-chip';
-import LoadableBlock from 'components/loadable';
+import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import '../style.scss';
-import { Loadable } from 'components/loadable/index';
 
 const DisputeDetails = ( {
 	query: { id: disputeId },
 }: {
-	query: {
-		id: string;
-		page?: string;
-		path?: string;
-	};
-	pathMatch?: string;
-	path?: string;
-	params?: Record< string, string >;
+	query: { id: string };
 } ): JSX.Element => {
 	const { dispute, isLoading, doAccept } = useDispute( disputeId );
 	const disputeIsAvailable = ! isLoading && dispute && dispute.id;
@@ -53,7 +45,7 @@ const DisputeDetails = ( {
 		/>
 	);
 
-	const mapping = reasons[ dispute && dispute.reason ];
+	const mapping = reasons[ dispute.reason ] || {};
 	const testModeNotice = <TestModeNotice topic={ topics.disputeDetails } />;
 
 	if ( ! isLoading && ! disputeIsAvailable ) {
@@ -117,7 +109,7 @@ const DisputeDetails = ( {
 					</CardHeader>
 					<CardBody>
 						<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
-							<Paragraphs>{ mapping.required }</Paragraphs>
+							<Paragraphs>{ mapping.summary }</Paragraphs>
 						</LoadableBlock>
 
 						<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
@@ -130,9 +122,7 @@ const DisputeDetails = ( {
 									) }{ ' ' }
 								</h3>
 							) }
-							<Paragraphs>
-								{ mapping && mapping.required }
-							</Paragraphs>
+							<Paragraphs>{ mapping.required }</Paragraphs>
 						</LoadableBlock>
 
 						<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
