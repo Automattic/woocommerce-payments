@@ -46,5 +46,5 @@ jobs:
           ftp-server: ${{ secrets.TEST_SITE_FTP_SERVER }}
           ftp-username: ${{ secrets.TEST_SITE_FTP_USERNAME }}
           ftp-password: ${{ secrets.TEST_SITE_FTP_PASS }}
-          git-ftp-args: --insecure
+          git-ftp-args: --insecure --all
           local-dir: wp-content/
