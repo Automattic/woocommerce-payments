@@ -55,26 +55,24 @@ describe( 'Dispute details actions', () => {
 	} );
 
 	test( 'renders correctly for closed dispute', () => {
-		const doAccept = jest.fn();
 		const { container } = render(
 			<Actions
 				id="dp_mock"
 				needsResponse={ false }
 				isSubmitted={ false }
-				onAccept={ doAccept }
+				onAccept={ jest.fn() }
 			/>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders correctly for dispute with evidence submitted', () => {
-		const doAccept = jest.fn();
 		const { container } = render(
 			<Actions
 				id="dp_mock"
 				needsResponse={ false }
 				isSubmitted={ true }
-				onAccept={ doAccept }
+				onAccept={ jest.fn() }
 			/>
 		);
 		expect( container ).toMatchSnapshot();

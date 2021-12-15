@@ -62,10 +62,6 @@ export interface Dispute {
 	amount: number;
 	currency: string;
 	created: number;
-	// payment_intent: string;
-	// object: string;
-	// is_charge_refundable: boolean;
-	// livemode: boolean;
 	balance_transactions: BalanceTransaction[];
 }
 

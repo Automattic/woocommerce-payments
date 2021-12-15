@@ -27,13 +27,12 @@ describe( 'Dispute info', () => {
 	} );
 
 	test( 'renders correctly', () => {
-		const dispute = {
+		const dispute: any = {
 			status: 'needs_response',
 			id: '',
 			evidence_details: {
 				has_evidence: true,
 				due_by: 1573199200,
-				submission_count: 10,
 			},
 			metadata: {},
 			productType: '',
@@ -54,11 +53,6 @@ describe( 'Dispute info', () => {
 			currency: 'usd',
 			created: 1572590800,
 			balance_transactions: [],
-			payment_intent: 'test',
-			object: 'test',
-			is_charge_refundable: false,
-			livemode: false,
-			balance_transaction: [],
 		};
 
 		const { container: info } = render(
