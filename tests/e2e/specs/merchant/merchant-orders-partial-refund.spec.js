@@ -186,9 +186,6 @@ describe.each( dataTable )(
 					text: `A payment of $${ refundTotalString } USD was successfully refunded.`,
 				} ),
 				expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-					text: `$${ refundTotalString } USD will be deducted from a future deposit.`,
-				} ),
-				expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
 					text: 'Payment status changed to Partial refund.',
 				} ),
 			] );
