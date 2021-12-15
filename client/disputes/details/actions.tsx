@@ -20,12 +20,12 @@ const Actions = ( {
 	onAccept,
 }: {
 	id: string;
-	needsResponse?: boolean;
-	isSubmitted?: boolean;
+	needsResponse: boolean;
+	isSubmitted?: boolean | undefined;
 	onAccept: () => void;
-} ): JSX.Element | null => {
+} ): JSX.Element => {
 	if ( ! needsResponse && ! isSubmitted ) {
-		return null;
+		return <></>;
 	}
 
 	const challengeUrl = getAdminUrl( {

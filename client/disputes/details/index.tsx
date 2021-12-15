@@ -40,10 +40,10 @@ const DisputeDetails = ( {
 
 	const actions = disputeIsAvailable && (
 		<Actions
-			id={ dispute && dispute.id }
+			id={ dispute.id }
 			needsResponse={
-				'needs_response' === ( dispute && dispute.status ) ||
-				'warning_needs_response' === ( dispute && dispute.status )
+				'needs_response' === dispute.status ||
+				'warning_needs_response' === dispute.status
 			}
 			isSubmitted={
 				dispute &&
