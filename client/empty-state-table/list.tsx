@@ -1,17 +1,21 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import { useState } from '@wordpress/element';
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { useState, createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import wcpayTracks from 'tracks';
 
-export const EmptyStateTableHeaders = [
+interface EmptyStateListProps {
+	listBanner: string;
+}
+
+export const EmptyStateTableHeaders: { text: string; classNames?: string }[] = [
 	{
 		text: 'Date',
 		classNames: 'is-left-aligned',
@@ -27,10 +31,10 @@ export const EmptyStateTableHeaders = [
 	},
 ];
 
-export const EmptyStateList = ( props ) => {
+export const EmptyStateList = ( props: EmptyStateListProps ): JSX.Element => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 
-	const handleSetup = () => {
+	const handleSetup = (): void => {
 		setSubmitted( true );
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
 			// eslint-disable-next-line camelcase

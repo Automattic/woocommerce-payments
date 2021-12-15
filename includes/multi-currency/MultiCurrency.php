@@ -629,6 +629,9 @@ class MultiCurrency {
 		$user_id  = get_current_user_id();
 		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
 
+		// We discard the cache for the front-end.
+		$this->frontend_currencies->selected_currency_changed();
+
 		if ( null === $currency ) {
 			return;
 		}

@@ -16,6 +16,7 @@ import PaymentRequestSettings from './payment-request-settings';
 import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
+import ErrorBoundary from '../../components/error-boundary';
 
 const methods = {
 	payment_request: {
@@ -78,7 +79,9 @@ const PaymentMethodSettings = ( { methodId } ) => {
 
 			<SettingsSection Description={ Description }>
 				<LoadableSettingsSection numLines={ 30 }>
-					<Controls />
+					<ErrorBoundary>
+						<Controls />
+					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
 

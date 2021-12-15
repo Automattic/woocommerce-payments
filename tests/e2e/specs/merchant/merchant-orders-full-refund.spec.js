@@ -117,9 +117,6 @@ describe( 'Order > Full refund', () => {
 				text: `A payment of ${ orderAmount } USD was successfully refunded.`,
 			} ),
 			expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-				text: `${ orderAmount } USD will be deducted from a future deposit.`,
-			} ),
-			expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
 				text: 'Payment status changed to Refunded.',
 			} ),
 		] );
