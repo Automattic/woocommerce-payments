@@ -32,7 +32,7 @@ const OBSERVED_CONSOLE_MESSAGE_TYPES = {
 const WP_CONTAINER = 'wcp_e2e_wordpress';
 const WP_CLI = `docker run --rm --user xfs --volumes-from ${ WP_CONTAINER } --network container:${ WP_CONTAINER } wordpress:cli`;
 const RESOURCE_TYPES_TO_BLOCK = [ 'image', 'font', 'media', 'other' ];
-const STYLESHEETS_TO_LOAD = [ /\/style.css/, /chunk/, /blocks/ ];
+const STYLESHEETS_TO_LOAD = [ /\/style.css/, /\/menu.css/, /chunk/, /blocks/ ];
 
 async function setupBrowser() {
 	await setBrowserViewport( 'large' );

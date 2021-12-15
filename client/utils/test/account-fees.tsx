@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { sprintf } from '@wordpress/i18n';
+import React from 'react';
 
 /**
  * Internal dependencies
@@ -12,35 +13,62 @@ import {
 	getCurrentFee,
 } from '../account-fees';
 import { formatCurrency } from '../currency';
+import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
 
 jest.mock( '../currency', () => ( {
-	formatCurrency: jest.fn(),
+	formatCurrency: jest.fn( ( amount: number ): string => {
+		return sprintf( '$%.2f', amount / 100 );
+	} ),
 } ) );
 
-describe( 'Account fees utility functions', () => {
-	beforeEach( () => {
-		formatCurrency.mockImplementation( ( amount ) => {
-			return sprintf( '$%.2f', amount / 100 );
-		} );
-	} );
+const mockAccountFees = (
+	base: BaseFee,
+	discounts = [] as Array< any >
+): FeeStructure => {
+	const result = {
+		base: base,
+		discount: [],
+		additional: {
+			percentage_rate: 0,
+			fixed_rate: 0,
+			currency: 'USD',
+		},
+		fx: {
+			percentage_rate: 0,
+			fixed_rate: 0,
+			currency: 'USD',
+		},
+	} as FeeStructure;
 
+	for ( const index in discounts ) {
+		const providedDiscount = discounts[ index ];
+		const constructedDiscount = {
+			discount: providedDiscount.discount || 0,
+			fixed_rate: providedDiscount.fixed_rate || 0,
+			percentage_rate: providedDiscount.percentage_rate || 0,
+			end_time: providedDiscount.end_time || null,
+			volume_allowance: providedDiscount.volume_allowance || null,
+			volume_currency: providedDiscount.volume_currency || null,
+			current_volume: providedDiscount.current_volume || null,
+			currency: 'USD',
+		} as DiscountFee;
+		result.discount.push( constructedDiscount );
+	}
+
+	return result;
+};
+
+describe( 'Account fees utility functions', () => {
 	describe( 'getCurrentFee()', () => {
 		it( 'returns first discount regardless of amount', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
-					{
-						discount: 0.1,
-					},
-					{
-						discount: 0.2,
-					},
-				],
-			};
+				[ { discount: 0.1 }, { discount: 0.2 } ]
+			);
 
 			expect( getCurrentFee( accountFees ) ).toEqual(
 				accountFees.discount[ 0 ]
@@ -48,51 +76,36 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'returns base if no discounts are present', () => {
-			const accountFees = {
-				base: {
-					percentage_rate: 0.123,
-					fixed_rate: 456.78,
-					currency: 'USD',
-				},
-				discount: [],
-			};
-
+			const accountFees = mockAccountFees( {
+				percentage_rate: 0.123,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			} );
 			expect( getCurrentFee( accountFees ) ).toEqual( accountFees.base );
 		} );
 	} );
 
 	describe( 'formatAccountFeesDescription()', () => {
 		it( 'uses default formats if none specified', () => {
-			const accountFees = {
-				base: {
-					percentage_rate: 0.123,
-					fixed_rate: 456.78,
-					currency: 'USD',
-				},
-				discount: [],
-			};
-
+			const accountFees = mockAccountFees( {
+				percentage_rate: 0.123,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			} );
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
 				'12.3% + $4.57 per transaction'
 			);
 		} );
 
 		it( 'uses first discount regardless of discounted amount', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
-					{
-						discount: 0.1,
-					},
-					{
-						discount: 0.2,
-					},
-				],
-			};
+				[ { discount: 0.1 }, { discount: 0.2 } ]
+			);
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
 				<>
@@ -103,19 +116,14 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'uses percentage and fixed rate from discount object if no discount amount is available', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
-					{
-						percentage_rate: 12.3,
-						fixed_rate: 4567.8,
-					},
-				],
-			};
+				[ { percentage_rate: 12.3, fixed_rate: 4567.8 } ]
+			);
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
 				<>
@@ -126,20 +134,14 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'uses discount amount if both it and percentage and fixed rate are available', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
-					{
-						discount: 0.1,
-						percentage_rate: 12.3,
-						fixed_rate: 4567.8,
-					},
-				],
-			};
+				[ { discount: 0.1 } ]
+			);
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
 				<>
@@ -150,18 +152,14 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'does not return discount percentage if discount format is empty', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
-					{
-						discount: 0.1,
-					},
-				],
-			};
+				[ { discount: 0.1 } ]
+			);
 
 			expect(
 				formatAccountFeesDescription( accountFees, { discount: '' } )
@@ -174,16 +172,14 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'only describes discount if it is different than base fee', () => {
-			const fee = {
-				percentage_rate: 0.123,
-				fixed_rate: 456.78,
-				currency: 'USD',
-			};
-
-			const accountFees = {
-				base: fee,
-				discount: [ fee ],
-			};
+			const accountFees = mockAccountFees(
+				{
+					percentage_rate: 0.123,
+					fixed_rate: 456.78,
+					currency: 'USD',
+				},
+				[ { percentage_rate: 0.123, fixed_rate: 456.78 } ]
+			);
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
 				'12.3% + $4.57 per transaction'
@@ -191,18 +187,14 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'uses custom formats', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
-					{
-						discount: 0.1,
-					},
-				],
-			};
+				[ { discount: 0.1 }, { discount: 0.2 } ]
+			);
 
 			expect(
 				formatAccountFeesDescription( accountFees, {
@@ -218,18 +210,14 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'formats currencies using formatCurrency()', () => {
-			const accountFees = {
-				base: {
+			const accountFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
-					{
-						discount: 0.1,
-					},
-				],
-			};
+				[ { discount: 0.1 } ]
+			);
 
 			formatAccountFeesDescription( accountFees );
 
@@ -249,14 +237,11 @@ describe( 'Account fees utility functions', () => {
 
 	describe( 'formatMethodFeesDescription()', () => {
 		it( 'returns fees in short format', () => {
-			const methodFees = {
-				base: {
-					percentage_rate: 0.123,
-					fixed_rate: 456.78,
-					currency: 'USD',
-				},
-				discount: [],
-			};
+			const methodFees = mockAccountFees( {
+				percentage_rate: 0.123,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			} );
 
 			expect( formatMethodFeesDescription( methodFees ) ).toEqual(
 				'12.3% + $4.57'
@@ -264,18 +249,14 @@ describe( 'Account fees utility functions', () => {
 		} );
 
 		it( 'returns discounted fees in short format (no discount % or base fee)', () => {
-			const methodFees = {
-				base: {
+			const methodFees = mockAccountFees(
+				{
 					percentage_rate: 0.123,
 					fixed_rate: 456.78,
 					currency: 'USD',
 				},
-				discount: [
-					{
-						discount: 0.1,
-					},
-				],
-			};
+				[ { discount: 0.1 }, { discount: 0.2 } ]
+			);
 
 			expect( formatMethodFeesDescription( methodFees ) ).toEqual(
 				<>11.07% + $4.11</>
