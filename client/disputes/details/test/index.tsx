@@ -18,17 +18,17 @@ jest.mock( 'data/index', () => ( {
 
 const mockUseDispute = useDispute as jest.MockedFunction< typeof useDispute >;
 
-// declare const global: {
-// 	wcpaySettings: {
-// 		zeroDecimalCurrencies: string[];
-// 	};
-// };
+declare const global: {
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+	};
+};
 
 describe( 'Dispute details screen', () => {
 	beforeEach( () => {
-		// global.wcpaySettings = {
-		// 	zeroDecimalCurrencies: [],
-		// };
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+		};
 	} );
 
 	const reasons = [
@@ -67,13 +67,78 @@ describe( 'Dispute details screen', () => {
 			created: 1572590800,
 			evidence_details: {
 				due_by: 1573199200,
+				has_evidence: true,
+				submission_count: 1,
 			},
 			reason: reason as DisputeReason,
 			status: 'needs_response' as DisputeStatus,
 			order: {
 				number: '1',
 				url: 'http://test.local/order/1',
+				customer_url: 'test',
+				subscriptions: [],
 			},
+			metadata: {},
+			productType: 'test',
+			evidence: {
+				key: 'test',
+				isUploading: { test: true },
+				metadata: { test: 'test' },
+				uploadingErrors: { test: 'test' },
+			},
+			charge: {
+				id: 'id_test',
+				billing_details: {
+					name: 'test',
+				},
+				amount: 10,
+				amount_captured: 10,
+				amount_refunded: 0,
+				application_fee_amount: 0,
+				balance_transaction: {
+					currency: 'US',
+					amount: 10,
+					fee: 0,
+				},
+				captured: true,
+				currency: 'US',
+				disputed: false,
+				outcome: {
+					network_status: 'test',
+					reason: 'test',
+					risk_level: 'test',
+					risk_score: 0,
+					rule: 'test',
+					seller_message: 'test',
+					type: 'test',
+				},
+				paid: false,
+				refunded: false,
+				refunds: {
+					data: [
+						{
+							balance_transaction: {
+								currency: 'US',
+								amount: 10,
+								fee: 0,
+							},
+						},
+					],
+				},
+				status: 'test',
+			},
+			payment_intent: 'test',
+			object: 'dispute',
+			is_charge_refundable: false,
+			livemode: false,
+			balance_transaction: [
+				{
+					currency: 'US',
+					amount: 10,
+					fee: 0,
+				},
+			],
+			balance_transactions: [ {} ],
 		};
 
 		mockUseDispute.mockReturnValue( {
@@ -98,12 +163,65 @@ describe( 'Dispute details screen', () => {
 				created: 1572590800,
 				evidence_details: {
 					due_by: 1573199200,
+					has_evidence: true,
+					submission_count: 0,
 				},
 				reason: 'fraudulent' as DisputeReason,
-				status: status,
+				status: status as DisputeStatus,
 				order: {
 					number: '1',
 					url: 'http://test.local/order/1',
+					customer_url: 'test',
+					subscriptions: [],
+				},
+				metadata: {},
+				productType: 'test',
+				evidence: {
+					key: 'test',
+					isUploading: { test: true },
+					metadata: { test: 'test' },
+					uploadingErrors: { test: 'test' },
+				},
+				charge: {
+					id: 'id_test',
+					billing_details: {
+						name: 'test',
+					},
+					amount: 10,
+					amount_captured: 10,
+					amount_refunded: 0,
+					application_fee_amount: 0,
+					balance_transaction: {
+						currency: 'US',
+						amount: 10,
+						fee: 0,
+					},
+					captured: true,
+					currency: 'US',
+					disputed: false,
+					outcome: {
+						network_status: 'test',
+						reason: 'test',
+						risk_level: 'test',
+						risk_score: 0,
+						rule: 'test',
+						seller_message: 'test',
+						type: 'test',
+					},
+					paid: false,
+					refunded: false,
+					refunds: {
+						data: [
+							{
+								balance_transaction: {
+									currency: 'US',
+									amount: 10,
+									fee: 0,
+								},
+							},
+						],
+					},
+					status: 'test',
 				},
 			};
 

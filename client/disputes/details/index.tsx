@@ -80,7 +80,7 @@ const DisputeDetails = ( {
 					</CardBody>
 					<CardFooter>
 						<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-							{ actions }
+							{ actions || [] }
 						</LoadableBlock>
 					</CardFooter>
 				</Card>
@@ -139,7 +139,7 @@ const DisputeDetails = ( {
 					</CardBody>
 					<CardFooter>
 						<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-							{ actions }
+							{ actions || [] }
 						</LoadableBlock>
 					</CardFooter>
 				</Card>
