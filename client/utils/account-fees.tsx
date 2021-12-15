@@ -4,7 +4,6 @@
  * External depencencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 import interpolateComponents from 'interpolate-components';
 import './account-fees.scss';
 
@@ -13,12 +12,16 @@ import './account-fees.scss';
  */
 import { formatCurrency } from 'utils/currency';
 import { formatFee } from 'utils/fees';
+import React from 'react';
+import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
+import { PaymentMethod } from 'wcpay/types/payment-methods';
+import { createInterpolateElement } from '@wordpress/element';
 
 const countryFeeStripeDocsBaseLink =
 	'https://woocommerce.com/document/payments/faq/fees/#section-';
 const countryFeeStripeDocsBaseLinkNoCountry =
 	'https://woocommerce.com/document/payments/faq/fees';
-const countryFeeStripeDocsSectionNumbers = {
+const countryFeeStripeDocsSectionNumbers: Record< string, number > = {
 	AU: 1,
 	AT: 2,
 	BE: 3,
@@ -39,11 +42,11 @@ const countryFeeStripeDocsSectionNumbers = {
 	US: 18,
 };
 
-const stripeFeeSectionExistsForCountry = ( country ) => {
+const stripeFeeSectionExistsForCountry = ( country: string ): boolean => {
 	return countryFeeStripeDocsSectionNumbers.hasOwnProperty( country );
 };
 
-const getStripeFeeSectionUrl = ( country ) => {
+const getStripeFeeSectionUrl = ( country: string ): string => {
 	return sprintf(
 		'%s%s',
 		countryFeeStripeDocsBaseLink,
@@ -51,7 +54,7 @@ const getStripeFeeSectionUrl = ( country ) => {
 	);
 };
 
-const getFeeDescriptionString = ( fee ) => {
+const getFeeDescriptionString = ( fee: BaseFee ): string => {
 	if ( fee.fixed_rate && fee.percentage_rate ) {
 		return sprintf(
 			'%1$f%% + %2$s',
@@ -74,14 +77,18 @@ const getFeeDescriptionString = ( fee ) => {
 	return '';
 };
 
-export const getCurrentFee = ( accountFees ) => {
+export const getCurrentFee = (
+	accountFees: FeeStructure
+): BaseFee | DiscountFee => {
 	return accountFees.discount.length
 		? accountFees.discount[ 0 ]
 		: accountFees.base;
 };
 
-export const formatMethodFeesTooltip = ( accountFees ) => {
-	if ( ! accountFees ) return;
+export const formatMethodFeesTooltip = (
+	accountFees: FeeStructure | undefined
+): JSX.Element => {
+	if ( ! accountFees ) return <></>;
 
 	const total = {
 		percentage_rate:
@@ -95,8 +102,8 @@ export const formatMethodFeesTooltip = ( accountFees ) => {
 		currency: accountFees.base.currency,
 	};
 
-	const hasFees = ( fee ) => {
-		return fee.fixed_rate || fee.percentage_rate;
+	const hasFees = ( fee: BaseFee ): boolean => {
+		return fee.fixed_rate > 0.0 || fee.percentage_rate > 0.0;
 	};
 
 	return (
@@ -192,9 +199,9 @@ export const formatMethodFeesTooltip = ( accountFees ) => {
 };
 
 export const formatAccountFeesDescription = (
-	accountFees,
+	accountFees: FeeStructure,
 	customFormats = {}
-) => {
+): string | JSX.Element => {
 	const defaultFee = {
 		fixed_rate: 0,
 		percentage_rate: 0,
@@ -215,7 +222,7 @@ export const formatAccountFeesDescription = (
 		...customFormats,
 	};
 
-	let feeDescription = sprintf(
+	const feeDescription = sprintf(
 		formats.fee,
 		formatFee(
 			baseFee.percentage_rate +
@@ -228,14 +235,19 @@ export const formatAccountFeesDescription = (
 		)
 	);
 
-	if ( currentFee !== baseFee ) {
+	const isFormattingWithDiscount =
+		currentFee.percentage_rate !== baseFee.percentage_rate ||
+		currentFee.fixed_rate !== baseFee.fixed_rate ||
+		currentFee.currency !== baseFee.currency;
+	if ( isFormattingWithDiscount ) {
+		const discountFee = currentFee as DiscountFee;
 		// TODO: Figure out how the UI should work if there are several "discount" fees stacked.
 		let percentage, fixed;
 
-		if ( currentFee.discount ) {
+		if ( discountFee.discount ) {
 			// Proper discount fee (XX% off)
-			percentage = baseFee.percentage_rate * ( 1 - currentFee.discount );
-			fixed = baseFee.fixed_rate * ( 1 - currentFee.discount );
+			percentage = baseFee.percentage_rate * ( 1 - discountFee.discount );
+			fixed = baseFee.fixed_rate * ( 1 - discountFee.discount );
 		} else {
 			// Custom base fee (2% + $.20)
 			percentage = currentFee.percentage_rate;
@@ -258,13 +270,13 @@ export const formatAccountFeesDescription = (
 			);
 		}
 
-		if ( currentFee.discount && 0 < formats.discount.length ) {
+		if ( discountFee.discount && 0 < formats.discount.length ) {
 			currentFeeDescription +=
 				' ' +
-				sprintf( formats.discount, formatFee( currentFee.discount ) );
+				sprintf( formats.discount, formatFee( discountFee.discount ) );
 		}
 
-		feeDescription = createInterpolateElement( currentFeeDescription, {
+		return createInterpolateElement( currentFeeDescription, {
 			s: <s />,
 		} );
 	}
@@ -272,7 +284,9 @@ export const formatAccountFeesDescription = (
 	return feeDescription;
 };
 
-export const formatMethodFeesDescription = ( methodFees ) => {
+export const formatMethodFeesDescription = (
+	methodFees: FeeStructure | undefined
+): string | JSX.Element => {
 	if ( ! methodFees ) {
 		return __( 'missing fees', 'woocommerce-payments' );
 	}
@@ -287,7 +301,9 @@ export const formatMethodFeesDescription = ( methodFees ) => {
 	} );
 };
 
-export const getTransactionsPaymentMethodName = ( paymentMethod ) => {
+export const getTransactionsPaymentMethodName = (
+	paymentMethod: PaymentMethod
+): string => {
 	switch ( paymentMethod ) {
 		case 'bancontact':
 			return __( 'Bancontact transactions', 'woocommerce-payments' );
