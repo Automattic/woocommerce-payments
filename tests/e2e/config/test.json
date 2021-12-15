@@ -35,7 +35,8 @@
         "countryandstate": "United States (US) — California",
         "city": "San Francisco",
         "state": "CA",
-        "postcode": "94110"
+        "postcode": "94110",
+        "email": "e2e-wcpay-admin@woocommerce.com"
       }
     },
     "customer": {

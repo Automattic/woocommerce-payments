@@ -63,6 +63,7 @@
   "dependencies": {
     "@stripe/react-stripe-js": "1.4.1",
     "@stripe/stripe-js": "1.15.1",
+    "@woocommerce/admin-e2e-tests": "^0.1.2",
     "@woocommerce/explat": "^1.0.1",
     "debug": "^4.1.1",
     "interpolate-components": "^1.1.1",
@@ -87,6 +88,7 @@
     "@woocommerce/components": "5.1.2",
     "@woocommerce/currency": "3.0.0",
     "@woocommerce/date": "2.1.0",
+    "@woocommerce/e2e-environment": "^0.2.3",
     "@woocommerce/e2e-utils": "0.1.5",
     "@woocommerce/eslint-plugin": "1.1.0",
     "@woocommerce/experimental": "2.1.0",
