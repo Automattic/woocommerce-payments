@@ -13,9 +13,10 @@
     },
     "require": {
       "php": "7.*",
-      "automattic/jetpack-connection": "1.30.13",
+      "automattic/jetpack-connection": "1.33.0",
       "automattic/jetpack-config": "1.5.3",
       "automattic/jetpack-autoloader": "2.10.10",
+      "automattic/jetpack-sync": "1.27.6",
       "myclabs/php-enum": "1.7.7",
       "ext-json": "*",
       "woocommerce/subscriptions-core": "1.1.0"
