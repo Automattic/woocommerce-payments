@@ -99,13 +99,15 @@ function wcpay_jetpack_init() {
 	$jetpack_config->ensure( 'sync' );
 
 	// Trigger the first Jetpack full-sync when updating from old WCPay versions,
-	// which do not support Jetpack Sync package.
+	// which do not have Jetpack Sync package.
 	add_action(
 		'woocommerce_woocommerce_payments_updated',
 		function () {
 			// TODO version 3.3.0 is temporary, the exact version will be discussed.
-			if ( version_compare( '3.3.0', get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) ) {
-				\Automattic\Jetpack\Sync\Actions::do_initial_sync();
+			$version_check = version_compare( '3.3.0', get_option( 'woocommerce_woocommerce_payments_version' ), '>' );
+			$method_check  = method_exists( '\Automattic\Jetpack\Sync\Actions', 'do_only_first_initial_sync' );
+			if ( $version_check && $method_check ) {
+				\Automattic\Jetpack\Sync\Actions::do_only_first_initial_sync();
 			}
 		}
 	);
