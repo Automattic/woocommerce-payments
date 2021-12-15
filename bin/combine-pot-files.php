@@ -87,9 +87,9 @@ function woocommerce_admin_parse_pot( $file_name ) {
  *
  * @return array Mapping of source js files and the generated files that use them.
  */
-function load_js_transpiling_source_maps() {
+function load_js_transpiling_source_maps(): array {
 	$mappings = [];
-	foreach ( glob( "dist/*.js.map" ) as $filename ) {
+	foreach ( glob( "dist/*.js.map", GLOB_NOSORT ) as $filename ) {
 		$file_content = file_get_contents( $filename );
 		if ( $file_content === false ) {
 			echo "[WARN] Unable to read file '". $filename . "'. Some translation strings might not have the correct references as a result.\n";
@@ -124,7 +124,7 @@ function load_js_transpiling_source_maps() {
  * @param array $js_mappings Mapping of source js files and the generated files that use them.
  * @param array $translations POT translations (including references/comments).
  */
-function add_transpiled_filepath_reference_to_comments( $js_mappings, $translations ) {
+function add_transpiled_filepath_reference_to_comments( array $js_mappings, array $translations ): array {
 	foreach ( $translations as $message => $references ) {
 		// Check references for js/jsx/ts/tsx files
 		$dist_js_to_add = [];
