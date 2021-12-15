@@ -2722,12 +2722,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Get the oAuth connection URL.
+	 * Get the connection URL.
 	 *
 	 * @return string Connection URL.
 	 */
 	public function get_connection_url() {
-		return html_entity_decode( WC_Payments_Account::get_connect_url() );
+		return html_entity_decode( WC_Payments_Account::get_connect_url( 'WCADMIN_PAYMENT_TASK' ) );
 	}
 
 	/**
