@@ -49,7 +49,7 @@ const Actions = ( {
 						needsResponse
 							? 'wcpay_dispute_challenge_clicked'
 							: 'wcpay_view_submitted_evidence_clicked',
-						null
+						{}
 					)
 				}
 			>

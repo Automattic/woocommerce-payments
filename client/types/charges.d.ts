@@ -5,7 +5,7 @@ import { BalanceTransaction } from './balance-transactions';
 import { Dispute } from './disputes';
 
 interface BillingDetails {
-	name?: string;
+	name: string;
 }
 
 interface ChargeOutcome {
