@@ -5,16 +5,10 @@
  *
  * @param {Array} Strings to render as separate paragraphs.
  *
- * @return	{ReactNode} Paragraph elements.
+ * @return	{Array} Paragraph elements.
  */
 const Paragraphs = ( { children = [] } ) => {
-	return (
-		<>
-			{ children.map( ( p, i ) => (
-				<p key={ i }>{ p }</p>
-			) ) }
-		</>
-	);
+	return children.map( ( p, i ) => <p key={ i }>{ p }</p> );
 };
 
 export default Paragraphs;
