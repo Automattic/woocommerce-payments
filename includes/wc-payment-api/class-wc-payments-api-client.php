@@ -259,14 +259,6 @@ class WC_Payments_API_Client {
 			$request['customer'] = $customer_id;
 		}
 
-		// if ( in_array( 'us_bank_account', $payment_methods, true ) ) {
-		// 	$request['payment_method_options'] = [
-		// 		'us_bank_account' => [
-		// 			'verification_method' => 'microdeposits',
-		// 		],
-		// 	];
-		// }
-
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );

@@ -262,9 +262,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$converted_amount = $minimum_amount;
 		}
 
-		$capture_method             = empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] ? 'automatic' : 'manual';
-		$enabled_payment_methods    = $this->get_payment_method_ids_enabled_at_checkout( $order_id );
-		$customer_id = $this->get_customer_id_for_intention();
+		$capture_method          = empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] ? 'automatic' : 'manual';
+		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id );
+		$customer_id             = $this->get_customer_id_for_intention();
 
 		try {
 			$payment_intent = $this->payments_api_client->create_intention(
@@ -304,10 +304,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * 
+	 * Retrieves the customer_id for intentions.
+	 *
+	 * @return string The customer_id.
 	 */
 	protected function get_customer_id_for_intention() {
-		// Determine the customer adding the payment method, create one if we don't have one already.
+		// Determine the customer the intention is for, create one if we don't have one already.
 		$user        = wp_get_current_user();
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
