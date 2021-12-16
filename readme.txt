@@ -100,6 +100,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 3.5.0 - 2021-xx-xx =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
+* Fix - Explicit currency formatting in customer-facing emails.
 
 = 3.4.0 - 2021-12-08 =
 * Add - Allow UI customizations on checkout payment fields.
