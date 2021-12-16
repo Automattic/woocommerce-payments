@@ -15,8 +15,9 @@ to catalog our packages and provide guidance to a developer who wants to test an
   packages early.
 * Following on from above, we use the `@wordpress/dependency-extraction-webpack-plugin` to make WebPack aware of what
   can be found globally at runtime. The configuration for this can be found in `webpack.config.js`. Any `wordpress/*`
-  packages are bundled by default, in addition to any packages listed in the configuration file. Returning `null` in the
-  configuration indicates that we want to bundle the package rather than using the globally available one.
+  packages are removed from the built bundle by default, in addition to any packages listed in the configuration file.
+  Returning `null` in the configuration indicates that we want to bundle the package rather than using the globally
+  available one.
 
 ## Review Process
 1. Check the tables below for the package you’re reviewing.
