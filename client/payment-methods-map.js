@@ -13,9 +13,7 @@ import SofortIcon from './gateway-icons/sofort';
 import SepaIcon from './gateway-icons/sepa';
 import P24Icon from './gateway-icons/p24';
 import IdealIcon from './gateway-icons/ideal';
-import USBankAccountIcon from './gateway-icons/us-bank-account';
-
-// TODO: USBankAccountIcon needs to be its own icon, it's a copy of bancontact.
+import BankDebitIcon from './gateway-icons/bank-debit';
 
 export default {
 	card: {
@@ -102,7 +100,7 @@ export default {
 			'US Bank Account needs a description.',
 			'woocommerce-payments'
 		),
-		Icon: USBankAccountIcon,
+		Icon: BankDebitIcon,
 		currencies: [ 'USD' ],
 		stripe_key: 'us_bank_account_ach_payments',
 	},
