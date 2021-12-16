@@ -6,6 +6,7 @@
 * Update - Remove task from the overview list for setting up multiple currencies.
 * Update - Return to task "Set up payments" after finishing KYC from WC-Admin.
 * Fix - Explicit currency formatting in customer-facing emails.
+* Fix - Prevent duplicate subscriptions from being created when submit button is spammed.
 
 = 3.4.0 - 2021-12-08 =
 * Add - Allow UI customizations on checkout payment fields.
