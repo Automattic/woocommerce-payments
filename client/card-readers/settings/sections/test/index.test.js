@@ -15,6 +15,20 @@ import BrandingFileUpload from '../../file-upload';
 jest.mock( '../../file-upload', () => jest.fn() );
 
 describe( 'Card Reader Business Details section', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			connect: {
+				country: 'US',
+				availableCountries: { US: 'United States (US)' },
+				states: [
+					{
+						US: [ 'Florida', 'California', 'Texas' ],
+					},
+				],
+			},
+		};
+	} );
+
 	test( 'Renders Business section', () => {
 		render( <BusinessDetailsSection /> );
 
