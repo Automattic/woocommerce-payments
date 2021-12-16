@@ -28,6 +28,13 @@ defined( 'ABSPATH' ) || exit;
 class Compatibility extends BaseCompatibility {
 
 	/**
+	 * Compatibility classes.
+	 *
+	 * @var array
+	 */
+	protected $compatibility_classes = [];
+
+	/**
 	 * Init the class.
 	 *
 	 * @return void
@@ -46,13 +53,24 @@ class Compatibility extends BaseCompatibility {
 	 * @return void
 	 */
 	public function init_compatibility_classes() {
-		$compatibility_classes[] = new WooCommerceBookings( $this->multi_currency, $this->utils, $this->multi_currency->get_frontend_currencies() );
-		$compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommercePreOrders( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommerceSubscriptions( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommerceUPS( $this->multi_currency, $this->utils );
-		$compatibility_classes[] = new WooCommerceDeposits( $this->multi_currency, $this->utils );
+		if ( 1 < count( $this->multi_currency->get_enabled_currencies() ) ) {
+			$this->compatibility_classes[] = new WooCommerceBookings( $this->multi_currency, $this->utils, $this->multi_currency->get_frontend_currencies() );
+			$this->compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
+			$this->compatibility_classes[] = new WooCommercePreOrders( $this->multi_currency, $this->utils );
+			$this->compatibility_classes[] = new WooCommerceProductAddOns( $this->multi_currency, $this->utils );
+			$this->compatibility_classes[] = new WooCommerceSubscriptions( $this->multi_currency, $this->utils );
+			$this->compatibility_classes[] = new WooCommerceUPS( $this->multi_currency, $this->utils );
+			$this->compatibility_classes[] = new WooCommerceDeposits( $this->multi_currency, $this->utils );
+		}
+	}
+
+	/**
+	 * Returns the compatibility classes.
+	 *
+	 * @return array
+	 */
+	public function get_compatibility_classes(): array {
+		return $this->compatibility_classes;
 	}
 
 	/**

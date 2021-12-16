@@ -118,21 +118,21 @@ class MultiCurrency {
 	 *
 	 * @var Currency[]|null
 	 */
-	protected $available_currencies = null;
+	protected $available_currencies;
 
 	/**
 	 * The default currency.
 	 *
 	 * @var Currency|null
 	 */
-	protected $default_currency = null;
+	protected $default_currency;
 
 	/**
 	 * The enabled currencies.
 	 *
 	 * @var Currency[]|null
 	 */
-	protected $enabled_currencies = null;
+	protected $enabled_currencies;
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -395,7 +395,7 @@ class MultiCurrency {
 	/**
 	 * Returns the Currency Switcher Widget instance.
 	 *
-	 * @return CurrencySwitcherWidget
+	 * @return CurrencySwitcherWidget|null
 	 */
 	public function get_currency_switcher_widget() {
 		return $this->currency_switcher_widget;
@@ -546,11 +546,11 @@ class MultiCurrency {
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_available_currencies(): array {
-		if ( null !== $this->available_currencies ) {
-			return $this->available_currencies;
+		if ( null === $this->available_currencies ) {
+			$this->init();
 		}
-		$this->init();
-		return $this->available_currencies;
+
+		return $this->available_currencies ?? [];
 	}
 
 	/**
@@ -559,11 +559,11 @@ class MultiCurrency {
 	 * @return Currency The store base currency.
 	 */
 	public function get_default_currency(): Currency {
-		if ( null !== $this->default_currency ) {
-			return $this->default_currency;
+		if ( null === $this->default_currency ) {
+			$this->init();
 		}
-		$this->init();
-		return $this->default_currency;
+
+		return $this->default_currency ?? new Currency( get_woocommerce_currency() );
 	}
 
 	/**
@@ -572,11 +572,11 @@ class MultiCurrency {
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_enabled_currencies(): array {
-		if ( null !== $this->enabled_currencies ) {
-			return $this->enabled_currencies;
+		if ( null === $this->enabled_currencies ) {
+			$this->init();
 		}
-		$this->init();
-		return $this->enabled_currencies;
+
+		return $this->enabled_currencies ?? [];
 	}
 
 	/**
@@ -628,6 +628,9 @@ class MultiCurrency {
 		$code     = strtoupper( $currency_code );
 		$user_id  = get_current_user_id();
 		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
+
+		// We discard the cache for the front-end.
+		$this->frontend_currencies->selected_currency_changed();
 
 		if ( null === $currency ) {
 			return;

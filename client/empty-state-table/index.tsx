@@ -1,13 +1,20 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import classNames from 'classnames';
 /**
  * Internal dependencis
  */
 import './style.scss';
 
-export const EmptyStateTable = ( props ) => {
+interface EmptyStateTableProps {
+	headers: { text: string; classNames?: string }[];
+	title: string;
+	content: JSX.Element;
+}
+
+export const EmptyStateTable = ( props: EmptyStateTableProps ): JSX.Element => {
 	return (
 		<div className="components-card empty-state-table is-size-medium woocommerce-table woocommerce-report-table has-menu">
 			<div className="components-flex components-card__header is-size-medium">
