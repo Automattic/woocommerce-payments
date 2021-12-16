@@ -1,4 +1,12 @@
 @import '@woocommerce/experimental/build-style/style.css';
+.woocommerce-inbox-message__wrapper {
+	.woocommerce-inbox-message__content {
+		padding-bottom: 24px;
+	}
+	.woocommerce-inbox-message__actions {
+		padding-top: 16px;
+	}
+}
 
 // Adapted from woocommerce-admin:client/homescreen/style.scss
 .components-card.woocommerce-task-card {
