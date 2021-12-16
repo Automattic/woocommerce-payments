@@ -82,6 +82,7 @@ class WC_Payments_Product_Service {
 		add_action( 'shutdown', [ $this, 'create_or_update_products' ] );
 		add_action( 'wp_trash_post', [ $this, 'maybe_archive_product' ] );
 		add_action( 'untrashed_post', [ $this, 'maybe_unarchive_product' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 		add_filter( 'woocommerce_duplicate_product_exclude_meta', [ $this, 'exclude_meta_wcpay_product' ] );
 
 		$this->add_product_update_listeners();
@@ -755,5 +756,39 @@ class WC_Payments_Product_Service {
 		}
 
 		return $price_id;
+	}
+
+	/**
+	 * Enqueues subscriptions product specific scripts.
+	 */
+	public function enqueue_scripts() {
+		if ( ! $this->is_admin_product_screen() ) {
+			return;
+		}
+
+		wp_register_script(
+			'wcpay-subscriptions-product',
+			plugins_url( 'includes/subscriptions/assets/js/product-page.js', WCPAY_PLUGIN_FILE ),
+			[ 'jquery' ],
+			WCPAY_VERSION_NUMBER,
+			true
+		);
+
+		wp_enqueue_script( 'wcpay-subscriptions-product' );
+	}
+
+	/**
+	 * Determines if the current screen is the edit product screen.
+	 *
+	 * @return bool Whether the current request is for the edit product screen.
+	 */
+	private function is_admin_product_screen() {
+		if ( ! is_admin() ) {
+			return false;
+		}
+
+		$screen = get_current_screen();
+
+		return $screen && 'product' === $screen->id;
 	}
 }
