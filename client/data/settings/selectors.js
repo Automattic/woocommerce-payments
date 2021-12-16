@@ -75,6 +75,12 @@ export const getAccountBusinessSupportAddressCity = ( state ) => {
 	return getSettings( state ).account_business_support_address.city || '';
 };
 
+export const getAccountBusinessSupportAddressState = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
+	return getSettings( state ).account_business_support_address.state || '';
+};
+
 export const getAccountBusinessSupportAddressPostalCode = ( state ) => {
 	if ( ! getSettings( state ).account_business_support_address ) return '';
 

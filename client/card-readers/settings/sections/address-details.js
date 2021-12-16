@@ -18,6 +18,7 @@ const AddressDetailsSection = () => {
 		accountBusinessSupportAddressLine1,
 		accountBusinessSupportAddressLine2,
 		accountBusinessSupportAddressCity,
+		accountBusinessSupportAddressState,
 		accountBusinessSupportAddressPostalCode,
 		setAccountBusinessSupportAddress,
 	] = useAccountBusinessSupportAddress();
@@ -38,6 +39,17 @@ const AddressDetailsSection = () => {
 		( [ value, label ] ) => ( {
 			label: unescapeHtmlEntities( label ),
 			value: value,
+		} )
+	);
+
+	const countryStates =
+		wcpaySettings.connect.states[ accountBusinessSupportAddressCountry ] ||
+		[];
+	const countryStatesOptions = Object.entries( countryStates ).map(
+		( [ value, label ] ) => ( {
+			label: unescapeHtmlEntities( label ),
+			value: unescapeHtmlEntities( label ),
+			country: value,
 		} )
 	);
 
@@ -76,6 +88,16 @@ const AddressDetailsSection = () => {
 					handleAddressPropertyChange( 'city', value )
 				}
 			/>
+			{ 0 < countryStatesOptions.length && (
+				<SelectControl
+					label={ __( 'State', 'woocommerce-payments' ) }
+					value={ accountBusinessSupportAddressState }
+					onChange={ ( value ) =>
+						handleAddressPropertyChange( 'state', value )
+					}
+					options={ countryStatesOptions }
+				/>
+			) }
 			<TextControl
 				className="card-readers-support-address-postcode"
 				label={ __( 'Postal code', 'woocommerce-payments' ) }
