@@ -585,26 +585,33 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Locks an order for payment intent processing for 5 minutes.
+	 * Check if order is locked for payment processing
 	 *
 	 * @param WC_Order $order  The order that is being paid.
 	 * @param string   $intent_id The id of the intent that is being processed.
-	 * @return bool            A flag that indicates whether the order is already locked.
+	 * @return bool    A flag that indicates whether the order is already locked.
 	 */
-	public static function lock_order_payment( $order, $intent_id = null ) {
+	public static function is_order_locked( $order, $intent_id = null ) {
 		$order_id       = $order->get_id();
 		$transient_name = 'wcpay_processing_intent_' . $order_id;
 		$processing     = get_transient( $transient_name );
 
 		// Block the process if the same intent is already being handled.
-		if ( '-1' === $processing || ( isset( $intent_id ) && $processing === $intent_id ) ) {
-			return true;
-		}
+		return ( '-1' === $processing || ( isset( $intent_id ) && $processing === $intent_id ) );
+	}
 
-		// Save the new intent as a transient, eventually overwriting another one.
+	/**
+	 * Lock an order for payment intent processing for 5 minutes.
+	 *
+	 * @param WC_Order $order  The order that is being paid.
+	 * @param string   $intent_id The id of the intent that is being processed.
+	 * @return void
+	 */
+	public static function lock_order_payment( $order, $intent_id = null ) {
+		$order_id       = $order->get_id();
+		$transient_name = 'wcpay_processing_intent_' . $order_id;
+
 		set_transient( $transient_name, empty( $intent_id ) ? '-1' : $intent_id, 5 * MINUTE_IN_SECONDS );
-
-		return false;
 	}
 
 	/**

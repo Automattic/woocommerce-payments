@@ -1281,10 +1281,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						return;
 					}
 
-					if ( WC_Payments_Utils::lock_order_payment( $order, $intent_id ) ) {
+					if ( WC_Payments_Utils::is_order_locked( $order, $intent_id ) ) {
 						return;
 					}
 
+					WC_Payments_Utils::lock_order_payment( $order, $intent_id );
 					$order->payment_complete( $intent_id );
 					WC_Payments_Utils::unlock_order_payment( $order );
 				} catch ( Exception $e ) {
