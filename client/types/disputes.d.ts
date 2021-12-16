@@ -53,7 +53,6 @@ export interface Dispute {
 	id: string;
 	evidence_details?: EvidenceDetails;
 	metadata: Record< string, any >;
-	productType: string;
 	order?: Order;
 	evidence: Evidence;
 	fileSize?: Record< string, number >;
