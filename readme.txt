@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - JS error boundaries to admin screens.
 * Update - Remove task from the overview list for setting up multiple currencies
 * Update - Return to task "Set up payments" after finishing KYC from WC-Admin.
+* Update - Update Payment Element from beta version to release version.
 
 = 3.4.0 - 2021-12-08 =
 * Add - Allow UI customizations on checkout payment fields.
