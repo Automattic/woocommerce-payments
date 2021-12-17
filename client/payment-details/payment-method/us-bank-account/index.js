@@ -23,7 +23,7 @@ const formatPaymentMethodDetails = ( charge ) => {
 		last4,
 		fingerprint,
 		country: countryCode,
-	} = charge.payment_method_details.sepa_debit;
+	} = charge.payment_method_details.us_bank_account;
 
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
 	// Use the full country name.

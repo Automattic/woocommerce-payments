@@ -1813,6 +1813,11 @@ class WC_Payments_API_Client {
 		$last_payment_error = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
 		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 
+		/**
+		 * Bank methods like us_bank_account can be verified by microdeposits in the customer account. When this happens the
+		 * 'charge' array is not populated with the payment method data, so we may have to pull it from elsewhere.
+		 */
+
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
@@ -1826,7 +1831,8 @@ class WC_Payments_API_Client {
 			$next_action,
 			$last_payment_error,
 			$charge ? $charge['payment_method_details'] : null,
-			$metadata
+			$metadata,
+			$intention_array['payment_method_types']
 		);
 
 		return $intent;

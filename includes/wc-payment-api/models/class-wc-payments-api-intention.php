@@ -105,6 +105,13 @@ class WC_Payments_API_Intention {
 	private $metadata;
 
 	/**
+	 * Array containing the payment method types associated with the intention.
+	 *
+	 * @var array
+	 */
+	private $payment_method_types;
+
+	/**
 	 * WC_Payments_API_Intention constructor.
 	 *
 	 * @param string      $id                     - ID of the intention.
@@ -120,6 +127,7 @@ class WC_Payments_API_Intention {
 	 * @param array       $last_payment_error     - An array containing details of any errors.
 	 * @param array       $payment_method_details - An array containing payment method details of associated charge.
 	 * @param array       $metadata               - An array containing additional metadata of associated charge or order.
+	 * @param array       $payment_method_types   - An array containing the payment method types associated with the intention.
 	 */
 	public function __construct(
 		$id,
@@ -134,7 +142,8 @@ class WC_Payments_API_Intention {
 		$next_action = [],
 		$last_payment_error = [],
 		$payment_method_details = [],
-		$metadata = []
+		$metadata = [],
+		$payment_method_types = []
 	) {
 		$this->id                     = $id;
 		$this->amount                 = $amount;
@@ -149,6 +158,7 @@ class WC_Payments_API_Intention {
 		$this->payment_method_id      = $payment_method_id;
 		$this->payment_method_details = $payment_method_details;
 		$this->metadata               = $metadata;
+		$this->payment_method_types   = $payment_method_types;
 	}
 
 	/**
@@ -266,5 +276,14 @@ class WC_Payments_API_Intention {
 	 */
 	public function get_metadata() {
 		return $this->metadata;
+	}
+
+	/**
+	 * Returns the payment_method_types associated with this intention.
+	 *
+	 * @return array
+	 */
+	public function get_payment_method_types() {
+		return $this->payment_method_types;
 	}
 }

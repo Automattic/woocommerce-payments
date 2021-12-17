@@ -567,6 +567,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_method_details = $intent->get_payment_method_details();
 				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
 				$error                  = $intent->get_last_payment_error();
+				$next_action            = $intent->get_next_action();
+				$payment_method_types   = $intent->get_payment_method_types();
 			} else {
 				$intent                 = $this->payments_api_client->get_setup_intent( $intent_id );
 				$client_secret          = $intent['client_secret'];
@@ -588,7 +590,20 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				);
 			} else {
 				if ( ! isset( $this->payment_methods[ $payment_method_type ] ) ) {
-					return;
+					/**
+					 * If it's a microdeposits method, then $payment_method_type is not set due to it's not returned
+					 * in the charges array in the intent. We check to see if the $next_action is set, and if it is
+					 * verify_with_microdeposits. Then if the $payment_method_types count is 1, which it should be
+					 * because we update the intent to only one method when submitting the checkout page.
+					 */
+					if ( isset( $next_action['type'] ) && 'verify_with_microdeposits' === $next_action['type']
+						&& 1 === count( $payment_method_types )
+						&& isset( $this->payment_methods[ $payment_method_types[0] ] ) ) {
+						$payment_method_type       = $payment_method_types[0];
+						$verify_with_microdeposits = true;
+					} else {
+						return;
+					}
 				}
 				$payment_method = $this->payment_methods[ $payment_method_type ];
 
@@ -606,9 +621,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 
-				if ( 'requires_action' === $status ) {
-					// I don't think this case should be possible, but just in case...
-					$next_action = $intent->get_next_action();
+				if ( 'requires_action' === $status && empty( $verify_with_microdeposits ) ) {
 					if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
 						wp_safe_redirect( $next_action['redirect_to_url']['url'] );
 						exit;
