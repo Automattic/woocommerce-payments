@@ -23,10 +23,11 @@ jobs:
         with:
           ref: 'develop'
 
-      - name: Use Node.js 10.x
+      - name: Use Node.js 12.x
         uses: actions/setup-node@v1
         with:
-          node-version: '10.x'
+          node-version: '12.x'
+          cache: 'npm'
 
       # Runs a set of commands using the runners shell
       - name: Build WC Payments plugin ZIP
