@@ -429,7 +429,7 @@ export const TransactionsList = (
 				!! typeIs ||
 				!! typeIsNot;
 
-			const confirmThreshold = 1000;
+			const confirmThreshold = 10000;
 			const confirmMessage = sprintf(
 				__(
 					"You are about to export %d transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",

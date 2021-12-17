@@ -4,8 +4,9 @@
  * External dependencies
  */
 import * as React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import user from '@testing-library/user-event';
+import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
@@ -28,6 +29,8 @@ jest.mock( '@woocommerce/csv-export', () => {
 	};
 } );
 
+jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+
 // Workaround for mocking @wordpress/data.
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
@@ -49,9 +52,12 @@ const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
 
+const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
+
 const mockUseTransactions = useTransactions as jest.MockedFunction<
 	typeof useTransactions
 >;
+
 const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
 	typeof useTransactionsSummary
 >;
@@ -426,22 +432,53 @@ describe( 'Transactions list', () => {
 			} );
 		} );
 
-		test( 'should request confirmation when the download button is clicked', () => {
+		test( 'should fetch export after confirmation when download button is selected for unfiltered exports larger than 10000.', async () => {
+			window.confirm = jest.fn( () => true );
 			mockUseTransactionsSummary.mockReturnValue( {
 				transactionsSummary: {
-					count: 2000,
+					count: 11000,
 				},
 				isLoading: false,
 			} );
 
-			window.confirm = jest.fn();
-
 			const { getByRole } = render( <TransactionsList /> );
+
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
-				"You are about to export 2000 transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?"
+				"You are about to export 11000 transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?"
+			);
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
+				expect( mockApiFetch ).toHaveBeenCalledWith( {
+					method: 'POST',
+					path: '/wc/v3/payments/transactions/download?',
+				} );
+			} );
+		} );
+
+		test( 'should not fetch export after cancel when download button is selected for unfiltered exports larger than 10000.', async () => {
+			window.confirm = jest.fn( () => false );
+			mockUseTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 11000,
+				},
+				isLoading: false,
+			} );
+
+			const { getByRole } = render( <TransactionsList /> );
+
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
+			expect( window.confirm ).toHaveBeenCalledWith(
+				"You are about to export 11000 transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?"
+			);
+
+			await waitFor( () =>
+				expect( mockApiFetch ).not.toHaveBeenCalled()
 			);
 		} );
 
