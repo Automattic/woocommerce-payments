@@ -305,7 +305,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			return;
 		}
 
-		// prevent parallel order processing attempts.
+		// Prevent parallel order processing attempts.
 		if ( WC_Payments_Utils::is_order_locked( $order, $intent_id ) ) {
 			return;
 		}
