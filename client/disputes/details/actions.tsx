@@ -5,6 +5,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
+import React from 'react';
 
 /**
  * Internal dependencies
@@ -12,9 +13,19 @@ import { Button } from '@wordpress/components';
 import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 
-const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
+const Actions = ( {
+	id,
+	needsResponse,
+	isSubmitted,
+	onAccept,
+}: {
+	id: string;
+	needsResponse: boolean;
+	isSubmitted: boolean | undefined;
+	onAccept: () => void;
+} ): JSX.Element => {
 	if ( ! needsResponse && ! isSubmitted ) {
-		return null;
+		return <></>;
 	}
 
 	const challengeUrl = getAdminUrl( {
@@ -37,7 +48,8 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 					wcpayTracks.recordEvent(
 						needsResponse
 							? 'wcpay_dispute_challenge_clicked'
-							: 'wcpay_view_submitted_evidence_clicked'
+							: 'wcpay_view_submitted_evidence_clicked',
+						{}
 					)
 				}
 			>

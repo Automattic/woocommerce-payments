@@ -19,8 +19,8 @@ export const useDispute = (
 			const { getDispute, isResolving } = select( STORE_NAME );
 
 			return {
-				dispute: getDispute( id ),
-				isLoading: isResolving( 'getDispute', [ id ] ),
+				dispute: <Dispute>getDispute( id ),
+				isLoading: <boolean>isResolving( 'getDispute', [ id ] ),
 			};
 		},
 		[ id ]
