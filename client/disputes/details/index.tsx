@@ -21,6 +21,7 @@ import DisputeStatusChip from 'components/dispute-status-chip';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import '../style.scss';
+import { Dispute } from 'wcpay/types/disputes';
 
 const DisputeDetails = ( {
 	query: { id: disputeId },
@@ -28,24 +29,25 @@ const DisputeDetails = ( {
 	query: { id: string };
 } ): JSX.Element => {
 	const { dispute, isLoading, doAccept } = useDispute( disputeId );
-	const disputeIsAvailable = ! isLoading && dispute && dispute.id;
+	const disputeObject = dispute || ( {} as Dispute );
+	const disputeIsAvailable = ! isLoading && dispute && disputeObject.id;
 
 	const actions = disputeIsAvailable && (
 		<Actions
-			id={ dispute.id }
+			id={ disputeObject.id }
 			needsResponse={
-				'needs_response' === dispute.status ||
-				'warning_needs_response' === dispute.status
+				'needs_response' === disputeObject.status ||
+				'warning_needs_response' === disputeObject.status
 			}
 			isSubmitted={
-				dispute.evidence_details &&
-				0 < dispute.evidence_details.submission_count
+				disputeObject.evidence_details &&
+				0 < disputeObject.evidence_details.submission_count
 			}
 			onAccept={ doAccept }
 		/>
 	);
 
-	const mapping = reasons[ dispute.reason ] || {};
+	const mapping = reasons[ disputeObject.reason ] || {};
 	const testModeNotice = <TestModeNotice topic={ topics.disputeDetails } />;
 
 	if ( ! isLoading && ! disputeIsAvailable ) {
@@ -69,11 +71,16 @@ const DisputeDetails = ( {
 					<CardHeader className="header-dispute-overview">
 						<LoadableBlock isLoading={ isLoading } numLines={ 1 }>
 							{ __( 'Dispute overview', 'woocommerce-payments' ) }
-							<DisputeStatusChip status={ dispute.status } />
+							<DisputeStatusChip
+								status={ disputeObject.status }
+							/>
 						</LoadableBlock>
 					</CardHeader>
 					<CardBody>
-						<Info dispute={ dispute } isLoading={ isLoading } />
+						<Info
+							dispute={ disputeObject }
+							isLoading={ isLoading }
+						/>
 						<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 							<Paragraphs>{ mapping.overview }</Paragraphs>
 						</LoadableBlock>
