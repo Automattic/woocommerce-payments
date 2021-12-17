@@ -5,6 +5,7 @@
 * Add - JS error boundaries to admin screens.
 * Update - Remove task from the overview list for setting up multiple currencies.
 * Update - Return to task "Set up payments" after finishing KYC from WC-Admin.
+* Fix - Explicit currency formatting in customer-facing emails.
 * Add - Introduce `wcpay_payment_request_payment_method_title_suffix` filter. Allows plugins to replace "(WooCommerce Payments)" suffix on title of payment request buttons.
 
 = 3.4.0 - 2021-12-08 =

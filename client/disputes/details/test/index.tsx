@@ -3,16 +3,26 @@
  * External dependencies
  */
 import { render } from '@testing-library/react';
+import * as React from 'react';
 
 /**
  * Internal dependencies
  */
 import DisputeDetails from '../';
-import { useDispute } from 'wcpay/data';
+import { useDispute } from 'data/index';
+import { DisputeReason, DisputeStatus } from 'wcpay/types/disputes';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'data/index', () => ( {
 	useDispute: jest.fn(),
 } ) );
+
+const mockUseDispute = useDispute as jest.MockedFunction< typeof useDispute >;
+
+declare const global: {
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+	};
+};
 
 describe( 'Dispute details screen', () => {
 	beforeEach( () => {
@@ -50,7 +60,7 @@ describe( 'Dispute details screen', () => {
 	];
 
 	test.each( reasons )( 'renders correctly for %s dispute', ( reason ) => {
-		const dispute = {
+		const dispute: any = {
 			id: 'dp_asdfghjkl',
 			amount: 1000,
 			currency: 'usd',
@@ -58,15 +68,19 @@ describe( 'Dispute details screen', () => {
 			evidence_details: {
 				due_by: 1573199200,
 			},
-			reason,
-			status: 'needs_response',
+			reason: reason as DisputeReason,
+			status: 'needs_response' as DisputeStatus,
 			order: {
 				number: '1',
 				url: 'http://test.local/order/1',
 			},
 		};
 
-		useDispute.mockReturnValue( { dispute, isLoading: false } );
+		mockUseDispute.mockReturnValue( {
+			dispute: dispute as any,
+			isLoading: false,
+			doAccept: jest.fn(),
+		} );
 
 		const { container } = render(
 			<DisputeDetails query={ { id: 'dp_asdfghjkl' } } />
@@ -85,15 +99,19 @@ describe( 'Dispute details screen', () => {
 				evidence_details: {
 					due_by: 1573199200,
 				},
-				reason: 'fraudulent',
-				status,
+				reason: 'fraudulent' as DisputeReason,
+				status: status as DisputeStatus,
 				order: {
 					number: '1',
 					url: 'http://test.local/order/1',
 				},
 			};
 
-			useDispute.mockReturnValue( { dispute, isLoading: false } );
+			mockUseDispute.mockReturnValue( {
+				dispute: dispute as any,
+				isLoading: false,
+				doAccept: jest.fn(),
+			} );
 
 			const { container } = render(
 				<DisputeDetails query={ { id: 'dp_asdfghjkl' } } />
