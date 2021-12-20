@@ -104,6 +104,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Remove task from the overview list for setting up multiple currencies
 * Update - Return to task "Set up payments" after finishing KYC from WC-Admin.
 * Fix - Improve race condition checks to prevent duplicate order status changes.
+* Fix - Explicit currency formatting in customer-facing emails.
 
 = 3.4.0 - 2021-12-08 =
 * Add - Allow UI customizations on checkout payment fields.
