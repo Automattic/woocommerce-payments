@@ -132,7 +132,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$intent->get_currency()
 			);
 
-			// Capture the intent and update order status.
+			// Capture the intent and update the order attributes.
 			$result = $this->gateway->capture_charge( $order );
 			if ( 'succeeded' !== $result['status'] ) {
 				$http_code = $result['http_code'] ?? 502;
@@ -146,6 +146,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 					[ 'status' => $http_code ]
 				);
 			}
+			$order->add_meta_data( 'receipt_url', get_rest_url( null, 'wc/v3/payments/readers/receipts/' . $intent->get_id() ) );
 			$order->update_status( 'completed' );
 
 			return rest_ensure_response(
