@@ -130,12 +130,12 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$this->assertSame(
 			[
 				'price'      => [
-					1 => 25.0,
-					2 => 30.0,
+					1 => '25',
+					2 => '30',
 				],
 				'sale_price' => [
-					1 => 15.0,
-					2 => 20.0,
+					1 => '15',
+					2 => '20',
 				],
 			],
 			$this->frontend_prices->get_variation_price_range( $base_variation_prices )
