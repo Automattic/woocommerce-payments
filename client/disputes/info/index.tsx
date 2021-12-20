@@ -58,7 +58,7 @@ const Info = ( {
 	dispute: Dispute;
 	isLoading: boolean;
 } ): JSX.Element => {
-	const data: Record< string, string | JSX.Element | null > = isLoading
+	const data: Record< string, any > = isLoading
 		? {
 				created: 'Created date',
 				amount: 'Amount',

@@ -1,7 +1,26 @@
+/** @format **/
+
+/**
+ * External dependencies
+ */
+import * as React from 'react';
+
 /**
  * Internal dependencies
  */
 import './style.scss';
+
+interface LoadableProps {
+	isLoading: boolean;
+	display?: string;
+	placeholder?: JSX.Element | string;
+	value?: string;
+	children?: any[] | JSX.Element;
+}
+
+interface LoadableBlockProps extends LoadableProps {
+	numLines: number;
+}
 
 /**
  * Renders placeholder while data are being loaded.
@@ -15,7 +34,13 @@ import './style.scss';
  *
  * @return {ReactNode} Loadable content
  */
-const Loadable = ( { isLoading, display, placeholder, value, children } ) =>
+const Loadable = ( {
+	isLoading,
+	display,
+	placeholder,
+	value,
+	children,
+}: LoadableProps ): JSX.Element =>
 	isLoading ? (
 		<span
 			className={
@@ -28,7 +53,7 @@ const Loadable = ( { isLoading, display, placeholder, value, children } ) =>
 			{ undefined === placeholder ? children || value : placeholder }
 		</span>
 	) : (
-		children || value || null
+		<>{ children || value }</>
 	);
 
 /**
@@ -39,16 +64,12 @@ const Loadable = ( { isLoading, display, placeholder, value, children } ) =>
  *
  * @return {ReactNode} Loadable content
  */
-export const LoadableBlock = ( { numLines = 1, ...loadableProps } ) => {
+export const LoadableBlock = ( props: LoadableBlockProps ): JSX.Element => {
 	const placeholder = (
-		<p style={ { lineHeight: numLines } }>Block placeholder</p>
+		<p style={ { lineHeight: props.numLines } }>Block placeholder</p>
 	);
 	return (
-		<Loadable
-			{ ...loadableProps }
-			placeholder={ placeholder }
-			display="block"
-		/>
+		<Loadable { ...props } placeholder={ placeholder } display="block" />
 	);
 };
 

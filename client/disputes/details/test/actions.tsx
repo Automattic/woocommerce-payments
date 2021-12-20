@@ -9,6 +9,7 @@ import { render, fireEvent } from '@testing-library/react';
  * Internal dependencies
  */
 import Actions from '../actions';
+import React from 'react';
 
 describe( 'Dispute details actions', () => {
 	test( 'renders correctly for dispute needing response, confirmation requested on submit', () => {
@@ -19,6 +20,7 @@ describe( 'Dispute details actions', () => {
 			<Actions
 				id="dp_mock"
 				needsResponse={ true }
+				isSubmitted={ false }
 				onAccept={ doAccept }
 			/>
 		);
@@ -36,6 +38,7 @@ describe( 'Dispute details actions', () => {
 			<Actions
 				id="dp_mock"
 				needsResponse={ true }
+				isSubmitted={ false }
 				onAccept={ doAccept }
 			/>
 		);
@@ -57,6 +60,7 @@ describe( 'Dispute details actions', () => {
 				id="dp_mock"
 				needsResponse={ false }
 				isSubmitted={ false }
+				onAccept={ jest.fn() }
 			/>
 		);
 		expect( container ).toMatchSnapshot();
@@ -68,6 +72,7 @@ describe( 'Dispute details actions', () => {
 				id="dp_mock"
 				needsResponse={ false }
 				isSubmitted={ true }
+				onAccept={ jest.fn() }
 			/>
 		);
 		expect( container ).toMatchSnapshot();
