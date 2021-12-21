@@ -5,6 +5,7 @@ const {
 	testAdminHomescreenTasklist,
 } = require( '@woocommerce/admin-e2e-tests' );
 
-describe( 'Onboarding > WooCommerce Setup Wizard & Task List', () => {
+// Unskip this when retries in individual tests are enabled to avoid flakiness.
+describe.skip( 'Onboarding > WooCommerce Setup Wizard & Task List', () => {
 	testAdminHomescreenTasklist();
 } );
