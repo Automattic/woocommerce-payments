@@ -28,7 +28,7 @@ const OBSERVED_CONSOLE_MESSAGE_TYPES = {
 };
 
 const RESOURCE_TYPES_TO_BLOCK = [ 'image', 'font', 'media', 'other' ];
-const STYLESHEETS_TO_LOAD = [ /\/style.css/, /chunk/, /blocks/ ];
+const STYLESHEETS_TO_LOAD = [ /\/style.css/, /\/menu.css/, /chunk/, /blocks/ ];
 
 async function setupBrowser() {
 	await setBrowserViewport( 'large' );

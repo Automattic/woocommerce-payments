@@ -1,0 +1,66 @@
+@import '../stylesheets/abstracts/variables';
+
+.wcpay-subscription-product-modal {
+	color: #1e1e1e;
+
+	@media ( min-width: 600px ) {
+		width: $modal-max-width;
+	}
+
+	.components-modal__content {
+		padding-bottom: 0;
+	}
+
+	.components-modal__header {
+		border: 0;
+		background-image: url( '../../assets/images/subscriptions-onboarding-modal.svg' );
+		background-size: cover;
+		padding-bottom: calc( ( 160 / 501 ) * 100% + 20px );
+
+		.components-button {
+			position: absolute;
+			left: auto;
+			right: 23px;
+			top: 17px;
+		}
+	}
+
+	&__title {
+		font-size: 16px;
+		font-weight: 600;
+		margin-bottom: $gap;
+	}
+
+	&__tos {
+		font-size: 11px;
+		color: #757575;
+		margin-top: 32px;
+
+		a {
+			text-decoration: none;
+		}
+	}
+
+	&__footer {
+		border-top: 1px solid #ddd;
+		display: flex;
+		margin: 32px -32px 0;
+		padding: 32px;
+		justify-content: space-between;
+
+		p {
+			font-size: 12px;
+			margin: 0;
+		}
+	}
+
+	&__saved-indicator {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+
+		.dashicon {
+			color: #4ab866;
+		}
+	}
+}

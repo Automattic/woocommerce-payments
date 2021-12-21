@@ -27,12 +27,15 @@ const filesToCopy = [
 
 // run npm dist
 rm( '-rf', 'dist' );
-exec( 'SOURCEMAP=none npm run build:client' );
+exec( 'SOURCEMAP=hidden npm run build:client' );
 
 // start with a clean release folder
 rm( '-rf', releaseFolder );
 mkdir( releaseFolder );
 mkdir( targetFolder );
+
+// remove the 'hidden' source maps; they are used to generate the POT file and are not referenced in the source files.
+rm( 'dist/*.map' );
 
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );

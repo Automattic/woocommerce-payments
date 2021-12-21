@@ -1,0 +1,43 @@
+Index: vendor/phpunit/phpunit/src/Util/Configuration.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/vendor/phpunit/phpunit/src/Util/Configuration.php b/vendor/phpunit/phpunit/src/Util/Configuration.php
+--- a/vendor/phpunit/phpunit/src/Util/Configuration.php	(revision c11ca0669038ac9990e56703211e4e79e99dc6cc)
++++ b/vendor/phpunit/phpunit/src/Util/Configuration.php	(date 1638870839009)
+@@ -561,26 +561,16 @@
+             }
+         }
+
+-        foreach (['var', 'post', 'get', 'cookie', 'server', 'files', 'request'] as $array) {
+-            /*
+-             * @see https://github.com/sebastianbergmann/phpunit/issues/277
+-             */
+-            switch ($array) {
+-                case 'var':
+-                    $target = &$GLOBALS;
+-
+-                    break;
+-
+-                case 'server':
+-                    $target = &$_SERVER;
+-
+-                    break;
++	    foreach ($configuration['var'] as $name => $data) {
++		    $GLOBALS[$name] = $data['value'];
++	    }
+
+-                default:
+-                    $target = &$GLOBALS['_' . \strtoupper($array)];
++	    foreach ($configuration['server'] as $name => $data) {
++		    $_SERVER[$name] = $data['value'];
++	    }
+
+-                    break;
+-            }
++	    foreach (['post', 'get', 'cookie', 'files', 'request'] as $array) {
++		    $target = &$GLOBALS['_' . strtoupper($array)];
+
+             foreach ($configuration[$array] as $name => $data) {
+                 $target[$name] = $data['value'];

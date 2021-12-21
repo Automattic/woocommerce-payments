@@ -65,7 +65,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		add_action( 'rest_api_init', [ $this, 'deregister_wc_blocks_rest_api' ], 5 );
+		require_once __DIR__ . '/../helpers/class-wc-blocks-rest-api-registration-preventer.php';
+		WC_Blocks_REST_API_Registration_Preventer::prevent();
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
@@ -108,6 +109,12 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->upe_gateway    = new UPE_Payment_Gateway( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $mock_payment_methods, $mock_rate_limiter );
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->upe_gateway );
+	}
+
+	public function tearDown() {
+		parent::tearDown();
+
+		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {

@@ -57,6 +57,7 @@ phpunit.xml
 
 # Composer
 /vendor/
+/vendor-dist/
 contributors.md
 
 # Screenshots for e2e tests failures
@@ -77,3 +78,6 @@ docker-compose.override.yml
 /coverage
 
 local.env
+
+# Screenshots created locally when running e2e tests
+tests/e2e/screenshots

@@ -12,6 +12,13 @@ use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodTyp
  */
 class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	/**
+	 * The gateway instance.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
 	 * Initializes the class.
 	 */
 	public function initialize() {
@@ -60,12 +67,21 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return array An associative array, containing all necessary values.
 	 */
 	public function get_payment_method_data() {
+		$platform_checkout_config = [];
+
+		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
+			$platform_checkout_config = [
+				'platformCheckoutHost' => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
+			];
+		}
+
 		return array_merge(
 			[
 				'title'       => $this->gateway->get_option( 'title', '' ),
 				'description' => $this->gateway->get_option( 'description', '' ),
 				'is_admin'    => is_admin(), // Used to display payment method preview in wp-admin.
 			],
+			$platform_checkout_config,
 			$this->gateway->get_payment_fields_js_config()
 		);
 	}

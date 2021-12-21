@@ -2,26 +2,45 @@
  * External dependencies
  */
 const {
-	merchant,
-	completeOnboardingWizard,
-	withRestApi,
-} = require( '@woocommerce/e2e-utils' );
+		merchant,
+		withRestApi,
+		IS_RETEST_MODE,
+	} = require( '@woocommerce/e2e-utils' ),
+	{ testAdminOnboardingWizard } = require( '@woocommerce/admin-e2e-tests' );
 
-describe( 'Onboarding > WooCommerce Setup Wizard & Task List', () => {
+describe( 'Onboarding > Resetting to defaults', () => {
 	beforeAll( async () => {
 		await merchant.login();
-		await withRestApi.resetOnboarding();
-		await withRestApi.deleteAllShippingZones();
-		await withRestApi.resetSettingsGroupToDefault( 'general' );
-		await withRestApi.resetSettingsGroupToDefault( 'products' );
-		await withRestApi.resetSettingsGroupToDefault( 'tax' );
 	} );
 
 	afterAll( async () => {
 		await merchant.logout();
 	} );
 
-	it( 'can complete onboarding when visiting the first time', async () => {
-		await completeOnboardingWizard();
+	it( 'can reset onboarding to default settings', async () => {
+		await withRestApi.resetOnboarding();
 	} );
+
+	it( 'can reset shipping zones to default settings', async () => {
+		await withRestApi.deleteAllShippingZones();
+	} );
+
+	it( 'can reset shipping classes', async () => {
+		await withRestApi.deleteAllShippingClasses();
+	} );
+
+	it( 'can reset to default settings', async () => {
+		await withRestApi.resetSettingsGroupToDefault( 'general' );
+		await withRestApi.resetSettingsGroupToDefault( 'products' );
+		await withRestApi.resetSettingsGroupToDefault( 'tax' );
+	} );
+} );
+
+describe( 'Onboarding > Start and complete onboarding', () => {
+	// Reset onboarding profile when re-running tests on a site
+	if ( IS_RETEST_MODE ) {
+		withRestApi.resetOnboarding();
+	}
+
+	testAdminOnboardingWizard();
 } );

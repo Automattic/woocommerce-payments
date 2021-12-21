@@ -167,7 +167,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	/**
 	 * Proxies the delete location request to the server.
 	 *
-	 * @param WP_REST_REQUEST $request Request object.
+	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function delete_location( $request ) {
@@ -185,7 +185,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	/**
 	 * Proxies the update location request to the server.
 	 *
-	 * @param WP_REST_REQUEST $request Request object.
+	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function update_location( $request ) {
@@ -203,7 +203,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	/**
 	 * Proxies the get location request to the server.
 	 *
-	 * @param WP_REST_REQUEST $request Request object.
+	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_location( $request ) {
@@ -229,7 +229,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	/**
 	 * Proxies the create location request to the server.
 	 *
-	 * @param WP_REST_REQUEST $request Request object.
+	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function create_location( $request ) {
@@ -247,7 +247,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	/**
 	 * Proxies the get all locations request to the server.
 	 *
-	 * @param WP_REST_REQUEST $request Request object.
+	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_all_locations( $request ) {
