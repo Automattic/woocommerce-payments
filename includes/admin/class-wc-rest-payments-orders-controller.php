@@ -147,7 +147,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				);
 			}
 			// Store receipt generation URL for mobile applications in order meta-data.
-			$order->add_meta_data( 'receipt_url', get_rest_url( null, 'wc/v3/payments/readers/receipts/' . $intent->get_id() ) );
+			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
 			// Actualize order status.
 			$order->update_status( 'completed' );
 
