@@ -37,30 +37,15 @@ const FinishSetupButton = () => {
 	);
 };
 
-const SubscriptionProductOnboardingModal = () => {
-	const [ isOpen, setOpen ] = useState( true );
-
+const SubscriptionProductOnboardingModalContent = ( {
+	onRequestClose = () => {},
+} ) => {
 	useEffect( () => {
-		if ( window?.history ) {
-			window.history.replaceState(
-				null,
-				null,
-				removeQueryArgs(
-					window.location.href,
-					'wcpay-subscription-saved-as-draft'
-				)
-			);
-		}
+		wcpayTracks.recordEvent(
+			wcpayTracks.events
+				.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_VIEW
+		);
 	}, [] );
-
-	if ( ! isOpen ) {
-		return null;
-	}
-
-	wcpayTracks.recordEvent(
-		wcpayTracks.events
-			.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_VIEW
-	);
 
 	return (
 		<Modal
@@ -70,7 +55,7 @@ const SubscriptionProductOnboardingModal = () => {
 					wcpayTracks.events
 						.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS
 				);
-				setOpen( false );
+				onRequestClose();
 			} }
 			shouldCloseOnClickOutside={ false }
 		>
@@ -117,6 +102,35 @@ const SubscriptionProductOnboardingModal = () => {
 				<FinishSetupButton />
 			</div>
 		</Modal>
+	);
+};
+
+const SubscriptionProductOnboardingModal = () => {
+	const [ isOpen, setOpen ] = useState( true );
+
+	useEffect( () => {
+		if ( window?.history ) {
+			window.history.replaceState(
+				null,
+				null,
+				removeQueryArgs(
+					window.location.href,
+					'wcpay-subscription-saved-as-draft'
+				)
+			);
+		}
+	}, [] );
+
+	if ( ! isOpen ) {
+		return null;
+	}
+
+	return (
+		<SubscriptionProductOnboardingModalContent
+			onRequestClose={ () => {
+				setOpen( false );
+			} }
+		/>
 	);
 };
 
