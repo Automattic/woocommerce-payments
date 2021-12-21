@@ -23,6 +23,7 @@ env:
   E2E_BLOG_ID:                                 ${{ secrets.E2E_BLOG_ID }}
   E2E_BLOG_TOKEN:                              ${{ secrets.E2E_BLOG_TOKEN }}
   E2E_USER_TOKEN:                              ${{ secrets.E2E_USER_TOKEN }}
+  E2E_RETEST:                                  1
 
 jobs:
   e2e:
