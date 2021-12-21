@@ -47,26 +47,26 @@ class WCPay_Multi_Currency_User_Settings_Tests extends WP_UnitTestCase {
 
 	public function test_add_presentment_currency_switch_renders_markup() {
 		$this->user_settings->add_presentment_currency_switch();
-		$this->expectOutputRegex( '/<p class="woocommerce-form-row woocommerce-form-row--first form-row form-row-first">/' );
-		$this->expectOutputRegex( '/<label for="wcpay_selected_currency">Default currency<\/label>/' );
-		$this->expectOutputRegex( '/<select.+name="wcpay_selected_currency"/s' );
-		$this->expectOutputRegex( '/<span><em>Select your preferred currency for shopping and payments.<\/em><\/span>/' );
-		$this->expectOutputRegex( '/<div class="clear"><\/div>/' );
+		$this->expectOutputRegex(
+			'/' .
+			'<p class="woocommerce-form-row woocommerce-form-row--first form-row form-row-first">' .
+			'.+<label for="wcpay_selected_currency">Default currency<\/label>' .
+			'.+<select.+name="wcpay_selected_currency"' .
+			'.+<span><em>Select your preferred currency for shopping and payments.<\/em><\/span>' .
+			'.+<div class="clear"><\/div>' .
+			'/s'
+		);
 	}
 
 	public function test_add_presentment_currency_switch_renders_enabled_currencies() {
 		$this->user_settings->add_presentment_currency_switch();
-		$this->expectOutputRegex( '/<option value="USD">&#36; USD<\/option>/' );
-		$this->expectOutputRegex( '/<option value="GBP">&pound; GBP<\/option>/' );
-		$this->expectOutputRegex( '/<option value="EUR">&euro; EUR<\/option>/' );
+		$this->expectOutputRegex( '/value="USD">&#36; USD.+value="GBP">&pound; GBP.+value="EUR">&euro; EUR/s' );
 	}
 
 	public function test_add_presentment_currency_switch_selects_selected_currency() {
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'EUR' ) );
 		$this->user_settings->add_presentment_currency_switch();
-		$this->expectOutputRegex( '/<option value="USD">&#36; USD<\/option>/' );
-		$this->expectOutputRegex( '/<option value="GBP">&pound; GBP<\/option>/' );
-		$this->expectOutputRegex( '/<option value="EUR" selected>&euro; EUR<\/option>/' );
+		$this->expectOutputRegex( '/<option value="GBP">&pound; GBP.+<option value="EUR" selected>&euro; EUR/s' );
 	}
 
 	public function test_save_presentment_currency() {
