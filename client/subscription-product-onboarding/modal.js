@@ -57,6 +57,11 @@ const SubscriptionProductOnboardingModal = () => {
 		return null;
 	}
 
+	wcpayTracks.recordEvent(
+		wcpayTracks.events
+			.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_VIEW
+	);
+
 	return (
 		<Modal
 			className="wcpay-subscription-product-modal"
