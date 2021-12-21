@@ -379,14 +379,14 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		foreach ( $payment_method_ids_to_enable as $payment_method_id_to_enable ) {
 			/**
 			 * TODO: Update these keys to match payment method id's sent from the client code.
-			 * ACH capability  = 'us_bank_account'
+			 * ACH capability  = 'us_bank_account_ach_payments'
 			 * BACS capability = 'bacs_debit_payments'
 			 * BECS capability = 'au_becs_debit_payments'
 			 */
 			$stripe_key = '';
 			switch ( $payment_method_id_to_enable ) {
-				case 'us_bank_account_ach_payments':
-					$stripe_key = 'us_bank_account';
+				case 'us_bank_account':
+					$stripe_key = 'us_bank_account_ach_payments';
 					break;
 				default:
 					$stripe_key = $payment_method_id_to_enable . '_payments';
