@@ -377,7 +377,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();
 		$cache_needs_refresh     = false;
 		foreach ( $payment_method_ids_to_enable as $payment_method_id_to_enable ) {
-			$stripe_key = $payment_method_id_to_enable . '_payments';
+			/**
+			 * TODO: Update these keys to match payment method id's sent from the client code.
+			 * ACH capability  = 'us_bank_account'
+			 * BACS capability = 'bacs_debit_payments'
+			 * BECS capability = 'au_becs_debit_payments'
+			 */
+			$stripe_key = '';
+			switch ( $payment_method_id_to_enable ) {
+				case 'us_bank_account_ach_payments':
+					$stripe_key = 'us_bank_account';
+					break;
+				default:
+					$stripe_key = $payment_method_id_to_enable . '_payments';
+					break;
+			}
 			if ( array_key_exists( $stripe_key, $payment_method_statuses ) ) {
 				if ( 'unrequested' === $payment_method_statuses[ $stripe_key ]['status'] ) {
 					$request_result      = $this->api_client->request_capability( $stripe_key, true );
