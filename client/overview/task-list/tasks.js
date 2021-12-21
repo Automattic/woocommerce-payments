@@ -10,7 +10,6 @@ import moment from 'moment';
 /**
  * Internal dependencies.
  */
-import createMultiCurrencySetupTask from '../../multi-currency-setup/task';
 import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 
@@ -29,7 +28,6 @@ const getDisputesToResolve = ( disputes ) => {
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
-	multiCurrencySetup = {},
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
 	needsHttpsSetup,
@@ -130,8 +128,6 @@ export const getTasks = ( {
 				isDismissable: true,
 				allowSnooze: true,
 			},
-		multiCurrencySetup.isTaskVisible &&
-			createMultiCurrencySetupTask( multiCurrencySetup ),
 		isDisputeTaskVisible && {
 			key: 'dispute-resolution-task',
 			level: 3,

@@ -613,7 +613,7 @@ class WC_Payments_Subscription_Service {
 	/**
 	 * Show WCPay Subscription ID on Edit Subscription page.
 	 *
-	 * @param WC_Order $order The order object.
+	 * @param WC_Order|WC_Subscription $order The order object.
 	 */
 	public function show_wcpay_subscription_id( WC_Order $order ) {
 		if ( ! wcs_is_subscription( $order ) || ! self::is_wcpay_subscription( $order ) ) {
@@ -911,7 +911,7 @@ class WC_Payments_Subscription_Service {
 	/**
 	 * Generates the metadata for a given WC_Order_Item
 	 *
-	 * @param WC_Order_Item $item The order item to generate the meta data for. Can be any order item type including tax, shipping and fees.
+	 * @param WC_Order_Item|WC_Order_Item_Tax $item The order item to generate the metadata for. Can be any order item type including tax, shipping and fees.
 	 * @return array Item metadata.
 	 */
 	private function get_item_metadata( WC_Order_Item $item ) {

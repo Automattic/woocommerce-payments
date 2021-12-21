@@ -9,7 +9,6 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 
@@ -780,7 +779,7 @@ class WC_Payments_API_Client {
 	/**
 	 * Upload evidence and return file object.
 	 *
-	 * @param string $request request object received.
+	 * @param WP_REST_Request $request request object received.
 	 *
 	 * @return array file object.
 	 * @throws API_Exception - If request throws.
@@ -829,7 +828,7 @@ class WC_Payments_API_Client {
 	/**
 	 * Create a connection token.
 	 *
-	 * @param string $request request object received.
+	 * @param WP_REST_Request $request request object received.
 	 *
 	 * @return array
 	 * @throws API_Exception - If request throws.

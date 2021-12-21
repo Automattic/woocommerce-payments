@@ -114,7 +114,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Proxies the get all readers request to the server.
 	 *
-	 * @param WP_REST_REQUEST $request Request object.
+	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_all_readers( $request ) {
@@ -182,13 +182,13 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	 * Renders HTML for a print receipt
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
-	 * @return WP_HTTP_RESPONSE|WP_Error
+	 * @return WP_HTTP_Response|WP_Error
 	 * @throws \RuntimeException Error collecting data.
 	 */
 	public function generate_print_receipt( $request ) {
 		try {
 			/* Collect the data, available on the server side. */
-			$payment_intent = $this->api_client->get_intent( $request->get_param( 'payment_id' ) );
+			$payment_intent = $this->api_client->get_intent( $request->get_param( 'payment_intent_id' ) );
 			if ( 'succeeded' !== $payment_intent->get_status() ) {
 				throw new \RuntimeException( __( 'Invalid payment intent', 'woocommerce-payments' ) );
 			}

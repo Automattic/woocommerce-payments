@@ -125,7 +125,7 @@ class WC_Payments_Translations_Loader {
 	 *
 	 * @param string $locale Locale being retrieved.
 	 *
-	 * @return array Combined translation chunk data.
+	 * @return array|WP_Error Combined translation chunk data.
 	 */
 	private static function get_translation_chunk_data( $locale ) {
 		global $wp_filesystem;

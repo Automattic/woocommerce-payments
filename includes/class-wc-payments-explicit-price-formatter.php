@@ -59,8 +59,10 @@ class WC_Payments_Explicit_Price_Formatter {
 			&& WC()->is_rest_api_request()
 		);
 
+		$is_customer_email = doing_action( 'woocommerce_email_order_details' );
+
 		// Only apply this for frontend.
-		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! $is_backend_request ) {
+		if ( ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! $is_backend_request ) || $is_customer_email ) {
 			// If customer Multi-Currency is disabled, don't use explicit currencies on frontend.
 			// Because it'll have only the store currency active, same as count == 1.
 			if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {

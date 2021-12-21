@@ -7,7 +7,12 @@ const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extr
 
 const webpackConfig = {
 	mode: NODE_ENV,
-	devtool: process.env.SOURCEMAP === 'none' ? undefined : 'source-map',
+	devtool:
+		process.env.SOURCEMAP === 'none'
+			? undefined
+			: process.env.SOURCEMAP === 'hidden'
+			? 'hidden-source-map'
+			: 'source-map',
 	entry: {
 		index: './client/index.js',
 		settings: './client/settings/index.js',

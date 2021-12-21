@@ -16,6 +16,7 @@ import WCPaySubscriptionsToggle from './wcpay-subscriptions-toggle';
 import useToggle from './use-toggle';
 import './style.scss';
 import CardBody from '../card-body';
+import ErrorBoundary from '../../components/error-boundary';
 
 const AdvancedSettings = () => {
 	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( false );
@@ -32,13 +33,15 @@ const AdvancedSettings = () => {
 			</SettingsSection>
 			{ isSectionExpanded && (
 				<SettingsSection>
-					<Card>
-						<CardBody>
-							<MultiCurrencyToggle />
-							<WCPaySubscriptionsToggle />
-							<DebugMode />
-						</CardBody>
-					</Card>
+					<ErrorBoundary>
+						<Card>
+							<CardBody>
+								<MultiCurrencyToggle />
+								<WCPaySubscriptionsToggle />
+								<DebugMode />
+							</CardBody>
+						</Card>
+					</ErrorBoundary>
 				</SettingsSection>
 			) }
 		</>

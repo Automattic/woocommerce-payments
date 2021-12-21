@@ -3,15 +3,17 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
 import { FileUploadControl } from '../file-upload';
+import type { DisputeFileUpload } from 'wcpay/types/disputes';
 
 describe( 'FileUploadControl', () => {
-	let props;
+	let props: DisputeFileUpload;
 	const field = {
 		key: 'field_key',
 		label: 'Upload file',
@@ -27,6 +29,8 @@ describe( 'FileUploadControl', () => {
 			fileName: '',
 			error: '',
 			disabled: false,
+			onFileChange: jest.fn(),
+			onFileRemove: jest.fn(),
 		};
 	} );
 
@@ -64,7 +68,6 @@ describe( 'FileUploadControl', () => {
 	} );
 
 	test( 'triggers onFileChange', () => {
-		props.onFileChange = jest.fn();
 		const { container: control } = render(
 			<FileUploadControl { ...props } />
 		);
@@ -73,7 +76,9 @@ describe( 'FileUploadControl', () => {
 
 		// Note: FormFileUpload does not associate file input with label so workaround is required to select it.
 		const input = control.querySelector( 'input[type="file"]' );
-		fireEvent.change( input, fakeEvent );
+		if ( input !== null ) {
+			fireEvent.change( input, fakeEvent );
+		}
 
 		expect( props.onFileChange ).toHaveBeenCalledTimes( 1 );
 		expect( props.onFileChange ).toHaveBeenCalledWith(
@@ -85,7 +90,6 @@ describe( 'FileUploadControl', () => {
 	test( 'triggers onFileRemove', () => {
 		props.fileName = 'file.pdf';
 		props.isDone = true;
-		props.onFileRemove = jest.fn();
 		const { getByRole } = render( <FileUploadControl { ...props } /> );
 		fireEvent.click( getByRole( 'button', { name: /remove file/i } ) );
 		expect( props.onFileRemove ).toHaveBeenCalledTimes( 1 );
