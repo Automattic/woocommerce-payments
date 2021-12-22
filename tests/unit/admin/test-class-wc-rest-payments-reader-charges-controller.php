@@ -171,6 +171,83 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( [ $this->reader ], $result->get_data() );
 	}
 
+	public function test_register_reader_succeeds() {
+		$reader = [
+			'id'                => 'tmr_P400-123-456-789',
+			'object'            => 'terminal.reader',
+			'device_sw_version' => null,
+			'device_type'       => 'verifone_P400',
+			'ip_address'        => '192.168.2.2',
+			'label'             => 'Blue Rabbit',
+			'livemode'          => false,
+			'location'          => 'tml_1234',
+			'metadata'          => [],
+			'serial_number'     => '123-456-789',
+			'status'            => 'online',
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'register_terminal_reader' )
+			->with( 'tml_1234', 'puppies-plug-could', 'Blue Rabbit' )
+			->willReturn( $reader );
+
+		$request = new WP_REST_Request(
+			'POST',
+			'/wc/v3/payments/readers',
+		);
+		$request->set_body_params(
+			[
+				'location'          => 'tml_1234',
+				'registration_code' => 'puppies-plug-could',
+				'label'             => 'Blue Rabbit',
+			]
+		);
+		$request->set_header( 'Content-Type', 'application/json' );
+
+		$result = $this->controller->register_reader( $request );
+
+		$this->assertSame(
+			[
+				'id'          => $reader['id'],
+				'livemode'    => $reader['livemode'],
+				'device_type' => $reader['device_type'],
+				'label'       => $reader['label'],
+				'location'    => $reader['location'],
+				'metadata'    => $reader['metadata'],
+				'status'      => $reader['status'],
+			],
+			$result->get_data()
+		);
+	}
+
+	public function test_register_reader_handles_api_exception() {
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'register_terminal_reader' )
+			->with( 'tml_1234', 'puppies-plug-could' )
+			->willThrowException( new API_Exception( 'Something bad happened', 'test error', 500 ) );
+
+		$request = new WP_REST_Request(
+			'POST',
+			'/wc/v3/payments/readers',
+		);
+		$request->set_body_params(
+			[
+				'location'          => 'tml_1234',
+				'registration_code' => 'puppies-plug-could',
+			]
+		);
+		$request->set_header( 'Content-Type', 'application/json' );
+
+		$response = $this->controller->register_reader( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 500, $data['status'] );
+	}
+
 	public function test_generate_print_receipt() {
 		$order = WC_Helper_Order::create_order();
 
