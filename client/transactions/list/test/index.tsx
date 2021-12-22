@@ -441,6 +441,7 @@ describe( 'Transactions list', () => {
 				'Country',
 				'"Risk level"',
 				'"Deposit date"',
+				'"Deposit status"',
 			];
 
 			// checking if columns in CSV are rendered correctly
