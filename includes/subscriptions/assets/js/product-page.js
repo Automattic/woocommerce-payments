@@ -7,7 +7,7 @@ jQuery( function ( $ ) {
 			$( '#publish' ).on( 'click', function ( e ) {
 				if (
 					$( 'select#product-type option:selected' )
-						.text()
+						.val()
 						.includes( 'subscription' )
 				) {
 					$( this ).attr( 'disabled', true );
