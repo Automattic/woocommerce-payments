@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - JS error boundaries to admin screens.
 * Update - Remove task from the overview list for setting up multiple currencies
 * Update - Return to task "Set up payments" after finishing KYC from WC-Admin.
+* Fix - Improve race condition checks to prevent duplicate order status changes.
 * Fix - Explicit currency formatting in customer-facing emails.
 * Fix - Update tooltip wording when deleting product variation.
 * Fix - Remove references to WooCommerce Subscriptions extension in the tooltips found on the Payment Methods settings table.
