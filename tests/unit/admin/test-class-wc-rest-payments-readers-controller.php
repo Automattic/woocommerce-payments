@@ -194,7 +194,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 
 		$request = new WP_REST_Request(
 			'POST',
-			'/wc/v3/payments/readers',
+			'/wc/v3/payments/readers'
 		);
 		$request->set_body_params(
 			[
@@ -230,7 +230,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 
 		$request = new WP_REST_Request(
 			'POST',
-			'/wc/v3/payments/readers',
+			'/wc/v3/payments/readers'
 		);
 		$request->set_body_params(
 			[
