@@ -1392,14 +1392,15 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If an error occurs.
 	 */
 	public function register_terminal_reader( string $location, string $registration_code, string $label = null, array $metadata = null ) {
-		$request                      = [];
-		$request['location']          = $location;
-		$request['registration_code'] = $registration_code;
+		$request = [
+			'location'          => $location,
+			'registration_code' => $registration_code,
+		];
 
-		if ( isset( $label ) ) {
+		if ( null !== $label ) {
 			$request['label'] = $label;
 		}
-		if ( isset( $metadata ) ) {
+		if ( null !== $metadata ) {
 			$request['metadata'] = $metadata;
 		}
 
