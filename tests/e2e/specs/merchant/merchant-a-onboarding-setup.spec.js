@@ -1,7 +1,11 @@
 /**
  * External dependencies
  */
-const { merchant, withRestApi } = require( '@woocommerce/e2e-utils' ),
+const {
+		merchant,
+		withRestApi,
+		IS_RETEST_MODE,
+	} = require( '@woocommerce/e2e-utils' ),
 	{ testAdminOnboardingWizard } = require( '@woocommerce/admin-e2e-tests' );
 
 describe( 'Onboarding > Resetting to defaults', () => {
@@ -21,6 +25,10 @@ describe( 'Onboarding > Resetting to defaults', () => {
 		await withRestApi.deleteAllShippingZones();
 	} );
 
+	it( 'can reset shipping classes', async () => {
+		await withRestApi.deleteAllShippingClasses();
+	} );
+
 	it( 'can reset to default settings', async () => {
 		await withRestApi.resetSettingsGroupToDefault( 'general' );
 		await withRestApi.resetSettingsGroupToDefault( 'products' );
@@ -29,5 +37,10 @@ describe( 'Onboarding > Resetting to defaults', () => {
 } );
 
 describe( 'Onboarding > Start and complete onboarding', () => {
+	// Reset onboarding profile when re-running tests on a site
+	if ( IS_RETEST_MODE ) {
+		withRestApi.resetOnboarding();
+	}
+
 	testAdminOnboardingWizard();
 } );
