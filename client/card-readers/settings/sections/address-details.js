@@ -4,12 +4,15 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { TextControl, SelectControl } from '@wordpress/components';
+import { TextControl, SelectControl, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { useAccountBusinessSupportAddress } from '../../../data';
+import {
+	useAccountBusinessSupportAddress,
+	useGetSavingError,
+} from '../../../data';
 
 const AddressDetailsSection = () => {
 	const [
@@ -22,6 +25,9 @@ const AddressDetailsSection = () => {
 		accountBusinessSupportAddressPostalCode,
 		setAccountBusinessSupportAddress,
 	] = useAccountBusinessSupportAddress();
+
+	const businessSuppotAddressErrorMessage = useGetSavingError()?.data?.details
+		?.account_business_support_address?.message;
 
 	const handleAddressPropertyChange = ( property, value ) => {
 		setAccountBusinessSupportAddress( {
@@ -56,6 +62,15 @@ const AddressDetailsSection = () => {
 	return (
 		<>
 			<h4>{ __( 'Business address', 'woocommerce-payments' ) }</h4>
+			{ businessSuppotAddressErrorMessage && (
+				<Notice status="error" isDismissible={ false }>
+					<span
+						dangerouslySetInnerHTML={ {
+							__html: businessSuppotAddressErrorMessage,
+						} }
+					/>
+				</Notice>
+			) }
 			<SelectControl
 				label={ __( 'Country', 'woocommerce-payments' ) }
 				value={ accountBusinessSupportAddressCountry }
