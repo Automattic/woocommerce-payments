@@ -20,7 +20,7 @@ describe( 'Card Reader Business Details section', () => {
 			connect: {
 				country: 'US',
 				availableCountries: { US: 'United States (US)' },
-				states: [
+				availableStates: [
 					{
 						US: [ 'Florida', 'California', 'Texas' ],
 					},

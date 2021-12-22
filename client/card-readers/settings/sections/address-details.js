@@ -49,8 +49,9 @@ const AddressDetailsSection = () => {
 	);
 
 	const countryStates =
-		wcpaySettings.connect.states[ accountBusinessSupportAddressCountry ] ||
-		[];
+		wcpaySettings.connect.availableStates[
+			accountBusinessSupportAddressCountry
+		] || [];
 	const countryStatesOptions = Object.entries( countryStates ).map(
 		( [ value, label ] ) => ( {
 			label: unescapeHtmlEntities( label ),
