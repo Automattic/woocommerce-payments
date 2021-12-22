@@ -302,7 +302,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return $string_validation_result;
 		}
 
-		if ( ! wp_http_validate_url( $value ) ) {
+		if ( ! empty( $value ) && ! wp_http_validate_url( $value ) ) {
 			return new WP_Error(
 				'rest_invalid_pattern',
 				__( 'Error: Invalid business URL: ', 'woocommerce-payments' ) . $value
