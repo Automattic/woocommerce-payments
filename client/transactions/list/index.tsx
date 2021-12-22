@@ -35,6 +35,7 @@ import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
+import { displayStatus as displayDepositStatus } from 'deposits/strings';
 import { formatStringValue } from 'utils';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import Deposit from './deposit';
@@ -175,6 +176,11 @@ const getColumns = (
 			cellClassName: 'deposit',
 			isLeftAligned: true,
 		},
+		includeDeposit && {
+			key: 'deposit_status',
+			label: __( 'Deposit status', 'woocommerce-payments' ),
+			visible: false,
+		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
 export const TransactionsList = (
@@ -282,6 +288,10 @@ export const TransactionsList = (
 			};
 		};
 
+		const depositStatus = txn.deposit_status
+			? displayDepositStatus[ txn.deposit_status ]
+			: '';
+
 		// Map transaction into table row.
 		const data = {
 			transaction_id: {
@@ -345,6 +355,10 @@ export const TransactionsList = (
 				display: clickable( riskLevel ),
 			},
 			deposit: { value: txn.available_on, display: deposit },
+			deposit_status: {
+				value: depositStatus,
+				display: depositStatus,
+			},
 		};
 
 		return columnsToDisplay.map(
