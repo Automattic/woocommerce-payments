@@ -18,7 +18,7 @@
       "automattic/jetpack-autoloader": "2.10.10",
       "myclabs/php-enum": "1.7.7",
       "ext-json": "*",
-      "woocommerce/subscriptions-core": "1.1.0"
+      "woocommerce/subscriptions-core": "1.3.0"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
