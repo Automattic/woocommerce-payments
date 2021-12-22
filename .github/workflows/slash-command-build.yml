@@ -1,0 +1,48 @@
+name: Slash Command Build
+on:
+  repository_dispatch:
+    types: [build-command]
+jobs:
+  slashCommandBuild:
+    runs-on: ubuntu-20.04
+    steps:
+      # Clone the repository
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.client_payload.pull_request.head.sha }}
+
+      # Use project specific node version
+      - uses: actions/setup-node@v2
+        with:
+          node-version-file: '.nvmrc'
+
+      # Enable dependencies caching (vendor and node_modules are wiped during build so they are ignored here)
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer/
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm/
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+
+      # Setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools:       composer
+          coverage:    none
+
+      # Build WooCommerce Payments.
+      - name: Build release
+        run: |
+          npm ci
+          npm run build
+
+      # Upload the built files as an artifact.
+      - uses: actions/upload-artifact@v2
+        with:
+          name: woocommerce-payments-pr-${{ github.event.client_payload.github.payload.issue.number }}
+          path: release/*
+          if-no-files-found: error

@@ -1,0 +1,19 @@
+name: Slash Command Dispatch
+on:
+  issue_comment:
+    types: [created]
+jobs:
+  slashCommandDispatch:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Slash Command Dispatch
+        uses: peter-evans/slash-command-dispatch@v2
+        with:
+          issue-type: pull-request
+          permission: write
+          # This token uses the public_repo scope to create repository_dispatch and workflow_dispatch events.
+          # This particular personal access token is tied to this account: https://github.com/aprea
+          # Note: GITHUB_TOKEN does not work here.
+          token: ${{ secrets.SLASH_COMMAND_ACCESS_TOKEN }}
+          commands: |
+            build

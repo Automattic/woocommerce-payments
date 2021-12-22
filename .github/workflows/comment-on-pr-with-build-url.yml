@@ -1,0 +1,29 @@
+name: Comment On PR With Build URL
+on:
+  workflow_run:
+    workflows: ['Slash Command Build']
+    types: [completed]
+jobs:
+  commentOnPrWithBuildUrl:
+    if: github.event.workflow_run.event == 'repository_dispatch' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Fetch artifact
+        id: fetch_artifact
+        run: |
+          artifact=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${{github.repository}}/actions/runs/${{github.event.workflow_run.id}}/artifacts | jq .artifacts[0])
+          artifact_id=$(jq -r '.id' <<< "${artifact}")
+          artifact_name=$(jq -r '.name' <<< "${artifact}")
+          issue_id=${artifact_name##*-}
+          echo "::set-output name=artifact_id::${artifact_id}"
+          echo "::set-output name=issue_id::${issue_id}"
+
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          repository: ${{github.repository}}
+          issue-number: ${{steps.fetch_artifact.outputs.issue_id}}
+          body: |
+            Your build is ready.
+
+            [woocommerce-payments.zip](https://nightly.link/${{github.repository}}/actions/artifacts/${{steps.fetch_artifact.outputs.artifact_id}}.zip)
