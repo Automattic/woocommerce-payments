@@ -112,6 +112,7 @@ Please note that our support for the checkout block is still experimental and th
 * Tweak - Update recurring payments copy on payment gateways page.
 * Fix - Incorrect text when filtering subscriptions to no results.
 * Changed - Subscription products must have a recurring amount greater than $0.
+* Fix - Return correct product prices datatype in WCPay.
 * Fix - Prevent duplicate subscriptions from being created when submit button is spammed.
 
 = 3.4.0 - 2021-12-08 =
