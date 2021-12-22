@@ -236,12 +236,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Validate the business support email.
 	 *
-	 * @param array           $value The value being validated.
+	 * @param string          $value The value being validated.
 	 * @param WP_REST_Request $request The request made.
 	 * @param string          $param The parameter name, used in error messages.
 	 * @return true|WP_Error
 	 */
-	public function validate_business_support_email_address( $value, $request, $param ) {
+	public function validate_business_support_email_address( string $value, WP_REST_Request $request, string $param ) {
 		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
 		if ( true !== $string_validation_result ) {
 			return $string_validation_result;
@@ -267,12 +267,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Validate the business support phone.
 	 *
-	 * @param array           $value The value being validated.
+	 * @param string          $value The value being validated.
 	 * @param WP_REST_Request $request The request made.
 	 * @param string          $param The parameter name, used in error messages.
 	 * @return true|WP_Error
 	 */
-	public function validate_business_support_phone( $value, $request, $param ) {
+	public function validate_business_support_phone( string $value, WP_REST_Request $request, string $param ) {
 		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
 		if ( true !== $string_validation_result ) {
 			return $string_validation_result;
@@ -291,12 +291,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Validate the business support URL.
 	 *
-	 * @param array           $value The value being validated.
+	 * @param string          $value The value being validated.
 	 * @param WP_REST_Request $request The request made.
 	 * @param string          $param The parameter name, used in error messages.
 	 * @return true|WP_Error
 	 */
-	public function validate_business_support_uri( $value, $request, $param ) {
+	public function validate_business_support_uri( string $value, WP_REST_Request $request, string $param ) {
 		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
 		if ( true !== $string_validation_result ) {
 			return $string_validation_result;
