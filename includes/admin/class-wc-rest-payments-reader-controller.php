@@ -67,6 +67,32 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base,
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'register_reader' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'location'          => [
+						'type'     => 'string',
+						'required' => true,
+					],
+					'registration_code' => [
+						'type'     => 'string',
+						'required' => true,
+					],
+					'label'             => [
+						'type' => 'string',
+					],
+					'metadata'          => [
+						'type' => 'object',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/charges/(?P<transaction_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -122,6 +148,43 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			return rest_ensure_response( $this->fetch_readers() );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Links a card reader to an account and terminal location.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function register_reader( $request ) {
+		try {
+			$response = $this->api_client->register_terminal_reader(
+				$request->get_param( 'location' ),
+				$request->get_param( 'registration_code' ),
+				$request->get_param( 'label' ),
+				$request->get_param( 'metadata' )
+			);
+
+			$reader = [
+				'id'          => $response['id'],
+				'livemode'    => $response['livemode'],
+				'device_type' => $response['device_type'],
+				'label'       => $response['label'],
+				'location'    => $response['location'],
+				'metadata'    => $response['metadata'],
+				'status'      => $response['status'],
+			];
+
+			return rest_ensure_response( $reader );
+		} catch ( API_Exception $e ) {
+			return rest_ensure_response(
+				new WP_Error(
+					$e->get_error_code(),
+					$e->getMessage(),
+					[ 'status' => $e->get_http_code() ]
+				)
+			);
 		}
 	}
 
