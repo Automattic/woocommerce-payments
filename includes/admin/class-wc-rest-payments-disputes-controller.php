@@ -95,9 +95,10 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Retrieve transactions summary to respond with via API.
 	 *
+	 * @param  WP_REST_Request $request Request data.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_disputes_summary() {
+	public function get_disputes_summary( WP_REST_Request $request ) {
 		return $this->forward_request( 'get_disputes_summary', [] );
 	}
 

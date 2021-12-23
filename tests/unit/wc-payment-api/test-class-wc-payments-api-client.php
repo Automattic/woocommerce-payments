@@ -1320,8 +1320,79 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		];
 	}
 
-	// TODO test list_disputes and get_disputes_summary.
+	/** Test a successful fetch of a list of disputes
+	 *
+	 * @throws Exception
+	 */
+	public function test_list_disputes_success() {
+		$order_1 = WC_Helper_Order::create_order();
+		$order_1->update_meta_data( '_charge_id', 'ch_test_1' );
+		$order_1->save();
 
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'ch_test_1' )
+			->willReturn( $order_1 );
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					[
+						'dispute_id'       => 'dp_test_1',
+						'charge_id'        => 'ch_test_1',
+						'amount'           => 42,
+						'currency'         => 'usd',
+						'reason'           => 'fraudulent',
+						'source'           => 'visa',
+						'customer_name'    => 'John Testerson',
+						'customer_email'   => 'one@example.com',
+						'customer_country' => 'US',
+						'status'           => 'needs_response',
+						'created'          => '2021-12-21 10:05:39',
+						'due_by'           => '2021-12-30 23:59:59',
+					],
+				],
+			]
+		);
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order ) {
+				return [];
+			}
+		);
+
+		$disputes = $this->payments_api_client->list_disputes();
+
+		$this->assertSame( 'dp_test_1', $disputes['data'][0]['id'] );
+		$this->assertSame( 'ch_test_1', $disputes['data'][0]['charge']['id'] );
+		$this->assertSame( 'visa', $disputes['data'][0]['charge']['payment_method_details']['card']['brand'] );
+		$this->assertSame( 'John Testerson', $disputes['data'][0]['charge']['billing_details']['name'] );
+		$this->assertSame( 'US', $disputes['data'][0]['charge']['billing_details']['address']['country'] );
+		$this->assertSame( 1640081139, $disputes['data'][0]['created'] );
+		$this->assertSame( 1640908799, $disputes['data'][0]['evidence_details']['due_by'] );
+		$this->assertSame( $order_1->get_order_number(), $disputes['data'][0]['order']['number'] );
+	}
+
+	/**
+	 * Test a sucessful fetch of disputes summary
+	 *
+	 * @throws Exception
+	 */
+	public function test_get_disputes_summary_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					'count' => 12,
+				],
+			]
+		);
+
+		$disputes_summary = $this->payments_api_client->get_disputes_summary();
+		$this->assertSame( 12, $disputes_summary['data']['count'] );
+	}
 	/**
 	 * Set up http mock response.
 	 *
