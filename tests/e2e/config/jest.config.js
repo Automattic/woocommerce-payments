@@ -1,6 +1,7 @@
 const path = require( 'path' );
 const { config } = require( 'dotenv' );
 const { jestConfig } = require( '@automattic/puppeteer-utils' );
+const fs = require( 'fs' );
 
 config( { path: path.resolve( __dirname, '.env' ) } );
 config( { path: path.resolve( __dirname, 'local.env' ) } );
@@ -15,10 +16,20 @@ const e2ePaths = {
 // Allow E2E tests to run specific tests - wcpay, subscriptions, blocks, all (default).
 const allowedPaths = [];
 if ( process.env.E2E_GROUP ) {
+	// Throw error if E2E_GROUP is not found in defined paths.
+	if ( ! (process.env.E2E_GROUP in e2ePaths) ) {
+		throw new Error( `Invalid test group specified: ${process.env.E2E_GROUP}` );
+	}
+
 	if ( process.env.E2E_BRANCH ) {
-		allowedPaths.push(
-			e2ePaths[ process.env.E2E_GROUP ] + '/' + process.env.E2E_BRANCH
-		);
+		const combined_path = path.join( e2ePaths[ process.env.E2E_GROUP ], process.env.E2E_BRANCH );
+
+		// Throw error if path doesn't exist.
+		if ( ! fs.existsSync( combined_path ) ) {
+			throw new Error( `Invalid test branch specified: ${process.env.E2E_BRANCH}` );
+		}
+
+		allowedPaths.push( combined_path );
 	} else {
 		allowedPaths.push( e2ePaths[ process.env.E2E_GROUP ] );
 	}
