@@ -23,6 +23,9 @@ env:
   E2E_BLOG_ID:                                 ${{ secrets.E2E_BLOG_ID }}
   E2E_BLOG_TOKEN:                              ${{ secrets.E2E_BLOG_TOKEN }}
   E2E_USER_TOKEN:                              ${{ secrets.E2E_USER_TOKEN }}
+  WC_E2E_SCREENSHOTS:                          1
+  E2E_SLACK_CHANNEL:                           ${{ secrets.E2E_SLACK_CHANNEL }}
+  E2E_SLACK_TOKEN:                             ${{ secrets.E2E_SLACK_TOKEN }}
 
 jobs:
   e2e:
@@ -82,7 +85,11 @@ jobs:
       - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false
       - run: npm run test:e2e-setup
       - run: npm run test:e2e
-      - uses: actions/upload-artifact@v2
+      - name: Archive e2e test screenshots
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
         with:
-          name: screenshots
-          path: screenshots
+            name: e2e-screenshots
+            path: tests/e2e/screenshots
+            if-no-files-found: ignore
+            retention-days: 5
