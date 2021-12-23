@@ -166,15 +166,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 				$request->get_param( 'metadata' )
 			);
 
-			$reader = [
-				'id'          => $response['id'],
-				'livemode'    => $response['livemode'],
-				'device_type' => $response['device_type'],
-				'label'       => $response['label'],
-				'location'    => $response['location'],
-				'metadata'    => $response['metadata'],
-				'status'      => $response['status'],
-			];
+			$reader = wp_array_slice_assoc( $response, [ 'id', 'livemode', 'device_type', 'label', 'location', 'metadata', 'status' ] );
 
 			return rest_ensure_response( $reader );
 		} catch ( API_Exception $e ) {
