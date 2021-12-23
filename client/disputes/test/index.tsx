@@ -89,7 +89,7 @@ const mockDisputes = [
 			due_by: 1573099200,
 		},
 		reason: 'general' as DisputeReason,
-		status: 'warning_under_review' as DisputeStatus,
+		status: 'under_review' as DisputeStatus,
 		// dispute without order or charge information
 	},
 ];
