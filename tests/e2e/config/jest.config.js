@@ -16,39 +16,35 @@ const e2ePaths = {
 // Allow E2E tests to run specific tests - wcpay, subscriptions, blocks, all (default).
 const allowedPaths = [];
 
-try {
-	if ( process.env.E2E_GROUP ) {
-		// Throw error if E2E_GROUP is not found in defined paths.
-		if ( ! ( process.env.E2E_GROUP in e2ePaths ) ) {
-			throw new Error(
-				`Invalid test group specified: ${ process.env.E2E_GROUP }`
-			);
-		}
-
-		if ( process.env.E2E_BRANCH ) {
-			const combinedPath = path.join(
-				e2ePaths[ process.env.E2E_GROUP ],
-				process.env.E2E_BRANCH
-			);
-
-			// Throw error if path doesn't exist.
-			if ( ! fs.existsSync( combinedPath ) ) {
-				throw new Error(
-					`Invalid test branch specified: ${ process.env.E2E_BRANCH }`
-				);
-			}
-
-			allowedPaths.push( combinedPath );
-		} else {
-			allowedPaths.push( e2ePaths[ process.env.E2E_GROUP ] );
-		}
-	} else {
-		Object.values( e2ePaths ).forEach( ( testPath ) => {
-			allowedPaths.push( testPath );
-		} );
+if ( process.env.E2E_GROUP ) {
+	// Throw error if E2E_GROUP is not found in defined paths.
+	if ( ! ( process.env.E2E_GROUP in e2ePaths ) ) {
+		throw new Error(
+			`Invalid test group specified: ${ process.env.E2E_GROUP }`
+		);
 	}
-} catch ( error ) {
-	console.error( error );
+
+	if ( process.env.E2E_BRANCH ) {
+		const combinedPath = path.join(
+			e2ePaths[ process.env.E2E_GROUP ],
+			process.env.E2E_BRANCH
+		);
+
+		// Throw error if path doesn't exist.
+		if ( ! fs.existsSync( combinedPath ) ) {
+			throw new Error(
+				`Invalid test branch specified: ${ process.env.E2E_BRANCH }`
+			);
+		}
+
+		allowedPaths.push( combinedPath );
+	} else {
+		allowedPaths.push( e2ePaths[ process.env.E2E_GROUP ] );
+	}
+} else {
+	Object.values( e2ePaths ).forEach( ( testPath ) => {
+		allowedPaths.push( testPath );
+	} );
 }
 
 module.exports = {
