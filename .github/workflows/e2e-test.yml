@@ -51,6 +51,14 @@ jobs:
       E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
+      - name: Current Test Configuration
+        run: |
+          echo "WordPress version: ${{ matrix.wordpress }}"
+          echo "WooCommerce version: ${{ matrix.woocommerce }}"
+          echo "PHP version: ${{ matrix.php }}"
+          echo "Test Group: ${{ matrix.test_groups }}"
+          echo "Test Branch: ${{ matrix.test_branches }}"
+
       # clone the repository
       - uses: actions/checkout@v2
 
