@@ -2609,14 +2609,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			]
 		);
 		return array_map(
-			static function ( WC_Payment_Token_CC $token ): array {
+			static function ( WC_Payment_Token $token ): array {
 				return [
 					'tokenId'         => $token->get_id(),
 					'paymentMethodId' => $token->get_token(),
-					'brand'           => $token->get_card_type(),
-					'last4'           => $token->get_last4(),
-					'expiryMonth'     => $token->get_expiry_month(),
-					'expiryYear'      => $token->get_expiry_year(),
 					'isDefault'       => $token->get_is_default(),
 					'displayName'     => $token->get_display_name(),
 				];

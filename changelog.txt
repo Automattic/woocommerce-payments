@@ -15,6 +15,7 @@
 * Fix - Incorrect text when filtering subscriptions to no results.
 * Changed - Subscription products must have a recurring amount greater than $0.
 * Fix - Return correct product prices datatype in WCPay.
+* Fix - Stop errors when viewing Subscription details when purchased via SEPA Direct Debit.
 
 = 3.4.0 - 2021-12-08 =
 * Add - Allow UI customizations on checkout payment fields.
