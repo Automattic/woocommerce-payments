@@ -1320,6 +1320,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		];
 	}
 
+	// TODO test list_disputes and get_disputes_summary.
+
 	/**
 	 * Set up http mock response.
 	 *

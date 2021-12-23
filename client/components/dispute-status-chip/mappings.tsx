@@ -5,7 +5,12 @@
  */
 import { __ } from '@wordpress/i18n';
 
-export default {
+const status: {
+	[ k: string ]: {
+		type: string;
+		message: string;
+	};
+} = {
 	warning_needs_response: {
 		type: 'primary',
 		message: __( 'Inquiry: Needs response', 'woocommerce-payments' ),
@@ -39,3 +44,5 @@ export default {
 		message: __( 'Lost', 'woocommerce-payments' ),
 	},
 };
+
+export default status;

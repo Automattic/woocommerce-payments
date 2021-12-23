@@ -2,6 +2,10 @@
 	.woocommerce-table__header.is-center-aligned {
 		text-align: center;
 	}
+
+	.woocommerce-pagination {
+		align-items: flex-end; // Fix a bug where the 'Rows per page' label is misaligned
+	}
 }
 
 // TODO generalize most of these styles to other WCPay views, if not WooCommerce Admin in general.

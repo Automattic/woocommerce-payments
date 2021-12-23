@@ -11,7 +11,7 @@ import { map, keyBy } from 'lodash';
 import TYPES from './action-types';
 import { getResourceId } from 'utils/data';
 
-const defaultState = { byId: {}, queries: {} };
+const defaultState = { byId: {}, queries: {}, summary: {} };
 
 const receiveDisputes = (
 	state = defaultState,
@@ -34,6 +34,14 @@ const receiveDisputes = (
 					[ index ]: {
 						data: map( data, 'id' ),
 					},
+				},
+			};
+		case TYPES.SET_DISPUTES_SUMMARY:
+			return {
+				...state,
+				summary: {
+					...state.summary,
+					count: data.count,
 				},
 			};
 	}

@@ -11,7 +11,11 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE, STORE_NAME } from '../constants';
-import { updateDispute, updateDisputes } from './actions';
+import {
+	updateDispute,
+	updateDisputes,
+	updateDisputesSummary,
+} from './actions';
 
 /**
  * Retrieve a single dispute from the disputes API.
@@ -59,6 +63,24 @@ export function* getDisputes( query ) {
 			'core/notices',
 			'createErrorNotice',
 			__( 'Error retrieving disputes.', 'woocommerce-payments' )
+		);
+	}
+}
+
+export function* getDisputesSummary() {
+	try {
+		const summary = yield apiFetch( {
+			path: `${ NAMESPACE }/disputes/summary`,
+		} );
+		yield updateDisputesSummary( summary );
+	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving the summary of disputes.',
+				'woocommerce-payments'
+			)
 		);
 	}
 }

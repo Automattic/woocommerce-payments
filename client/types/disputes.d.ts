@@ -10,7 +10,7 @@ interface Evidence {
 }
 
 interface EvidenceDetails {
-	has_evidence: boolean;
+	has_evidence?: boolean;
 	due_by: number;
 	submission_count: number;
 }
@@ -52,16 +52,19 @@ export interface Dispute {
 	status: DisputeStatus;
 	id: string;
 	evidence_details?: EvidenceDetails;
-	metadata: Record< string, any >;
-	order?: Order;
-	evidence: Evidence;
+	metadata?: Record< string, any >;
+	order?: {
+		number: string;
+		url: string;
+	};
+	evidence?: Evidence;
 	fileSize?: Record< string, number >;
 	reason: DisputeReason;
-	charge: Charge;
+	charge?: Charge;
 	amount: number;
 	currency: string;
 	created: number;
-	balance_transactions: BalanceTransaction[];
+	balance_transactions?: BalanceTransaction[];
 }
 
 interface UploadFieldObject {
@@ -80,4 +83,16 @@ export interface DisputeFileUpload {
 	onFileChange( key: string, file: File ): any;
 	onFileRemove( key: string ): any;
 	help?: string;
+}
+
+export interface DisputesSummary {
+	disputesSummary: {
+		count?: number;
+	};
+	isLoading: boolean;
+}
+
+export interface Disputes {
+	disputes: Dispute[];
+	isLoading: boolean;
 }

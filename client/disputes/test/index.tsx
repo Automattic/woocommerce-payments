@@ -9,13 +9,29 @@ import os from 'os';
 /**
  * Internal dependencies
  */
-import DisputesList from '../';
-import { useDisputes } from 'wcpay/data';
+import DisputesList from '..';
+import { useDisputes, useDisputesSummary } from 'data/index';
 import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
+import React from 'react';
 
-jest.mock( 'wcpay/data', () => ( {
+declare const global: {
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+	};
+};
+
+jest.mock( 'data/index', () => ( {
 	useDisputes: jest.fn(),
+	useDisputesSummary: jest.fn(),
 } ) );
+
+const mockUseDisputes = useDisputes as jest.MockedFunction<
+	typeof useDisputes
+>;
+
+const mockUseDisputesSummary = useDisputesSummary as jest.MockedFunction<
+	typeof useDisputesSummary
+>;
 
 jest.mock( '@woocommerce/csv-export', () => {
 	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
@@ -25,6 +41,10 @@ jest.mock( '@woocommerce/csv-export', () => {
 		downloadCSVFile: jest.fn(),
 	};
 } );
+
+const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
+	typeof downloadCSVFile
+>;
 
 const mockDisputes = [
 	{
@@ -79,9 +99,16 @@ describe( 'Disputes list', () => {
 	} );
 
 	test( 'renders correctly', () => {
-		useDisputes.mockReturnValue( {
+		mockUseDisputes.mockReturnValue( {
 			isLoading: false,
 			disputes: mockDisputes,
+		} );
+
+		mockUseDisputesSummary.mockReturnValue( {
+			isLoading: false,
+			disputesSummary: {
+				count: 25,
+			},
 		} );
 
 		const { container: list } = render( <DisputesList /> );
@@ -90,7 +117,7 @@ describe( 'Disputes list', () => {
 
 	describe( 'Download button', () => {
 		test( 'renders when there are one or more disputes', () => {
-			useDisputes.mockReturnValue( {
+			mockUseDisputes.mockReturnValue( {
 				disputes: mockDisputes,
 				isLoading: false,
 			} );
@@ -102,7 +129,7 @@ describe( 'Disputes list', () => {
 		} );
 
 		test( 'does not render when there are no disputes', () => {
-			useDisputes.mockReturnValue( {
+			mockUseDisputes.mockReturnValue( {
 				disputes: [],
 				isLoading: false,
 			} );
@@ -116,9 +143,16 @@ describe( 'Disputes list', () => {
 
 	describe( 'CSV download', () => {
 		beforeEach( () => {
-			useDisputes.mockReturnValue( {
+			mockUseDisputes.mockReturnValue( {
 				disputes: mockDisputes,
 				isLoading: false,
+			} );
+
+			mockUseDisputesSummary.mockReturnValue( {
+				isLoading: false,
+				disputesSummary: {
+					count: 25,
+				},
 			} );
 		} );
 
@@ -148,7 +182,7 @@ describe( 'Disputes list', () => {
 				'"Respond by"',
 			];
 
-			const csvContent = downloadCSVFile.mock.calls[ 0 ][ 1 ];
+			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
 			const csvHeaderRow = csvContent.split( os.EOL )[ 0 ].split( ',' );
 			expect( csvHeaderRow ).toEqual( expected );
 		} );
@@ -157,7 +191,7 @@ describe( 'Disputes list', () => {
 			const { getByRole, getAllByRole } = render( <DisputesList /> );
 			getByRole( 'button', { name: 'Download' } ).click();
 
-			const csvContent = downloadCSVFile.mock.calls[ 0 ][ 1 ];
+			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
 			const csvRows = csvContent.split( os.EOL );
 			const displayRows = getAllByRole( 'row' );
 

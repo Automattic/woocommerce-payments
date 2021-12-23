@@ -4,9 +4,9 @@
  * External dependencies
  */
 import { dateI18n } from '@wordpress/date';
-import { __ } from '@wordpress/i18n';
+import { _n, __ } from '@wordpress/i18n';
 import moment from 'moment';
-import { TableCard } from '@woocommerce/components';
+import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import {
 	downloadCSVFile,
@@ -17,7 +17,7 @@ import {
 /**
  * Internal dependencies.
  */
-import { useDisputes } from 'wcpay/data';
+import { useDisputes, useDisputesSummary } from 'data/index';
 import OrderLink from 'components/order-link';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
@@ -31,8 +31,27 @@ import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 
 import './style.scss';
+import React from 'react';
+import wcpayTracks from 'tracks';
 
-const headers = [
+interface Header extends TableCardColumn {
+	key:
+		| 'details'
+		| 'amount'
+		| 'status'
+		| 'reason'
+		| 'source'
+		| 'order'
+		| 'customer'
+		| 'email'
+		| 'country'
+		| 'created'
+		| 'dueBy';
+	cellClassName?: string;
+	visible?: boolean;
+}
+
+const headers: Header[] = [
 	{
 		key: 'details',
 		label: '',
@@ -99,55 +118,65 @@ const headers = [
 	},
 ];
 
-export const DisputesList = () => {
+export const DisputesList = (): JSX.Element => {
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
-	const rows = disputes.map( ( dispute ) => {
-		const order = dispute.order
-			? {
-					value: dispute.order.number,
-					display: <OrderLink order={ dispute.order } />,
-			  }
-			: null;
+	const {
+		disputesSummary,
+		isLoading: isSummaryLoading,
+	} = useDisputesSummary();
 
-		const clickable = ( children ) => (
-			<ClickableCell href={ getDetailsURL( dispute.id, 'disputes' ) }>
+	const rows = disputes.map( ( dispute ) => {
+		const {
+			amount = 0,
+			currency,
+			charge,
+			created,
+			id: disputeId,
+			evidence_details: evidenceDetails,
+			order: disputeOrder,
+			reason,
+			status,
+		} = dispute;
+
+		const order = {
+			value: disputeOrder ? disputeOrder.number : '',
+			display: <OrderLink order={ disputeOrder } />,
+		};
+
+		const clickable = ( children: React.ReactNode ): JSX.Element => (
+			<ClickableCell href={ getDetailsURL( disputeId, 'disputes' ) }>
 				{ children }
 			</ClickableCell>
 		);
 
 		const detailsLink = (
-			<DetailsLink id={ dispute.id } parentSegment="disputes" />
+			<DetailsLink id={ disputeId } parentSegment="disputes" />
 		);
 
-		const reasonMapping = reasons[ dispute.reason ];
+		const source = charge?.payment_method_details?.card?.brand;
+		const name = charge?.billing_details?.name;
+		const email = charge?.billing_details?.email;
+		const country = charge?.billing_details?.address?.country;
+
+		const reasonMapping = reasons[ reason ];
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
-			: formatStringValue( dispute.reason );
-
-		const charge = dispute.charge || {};
-		const source = ( ( charge.payment_method_details || {} ).card || {} )
-			.brand;
-		const customer = charge.billing_details || {};
+			: formatStringValue( reason );
 
 		const data = {
 			amount: {
-				value: dispute.amount / 100,
+				value: amount / 100,
 				display: clickable(
-					formatExplicitCurrency(
-						dispute.amount || 0,
-						dispute.currency || 'USD'
-					)
+					formatExplicitCurrency( amount, currency )
 				),
 			},
 			status: {
-				value: dispute.status,
-				display: clickable(
-					<DisputeStatusChip status={ dispute.status } />
-				),
+				value: status,
+				display: clickable( <DisputeStatusChip status={ status } /> ),
 			},
 			reason: {
-				value: dispute.reason,
+				value: reason,
 				display: clickable( reasonDisplay ),
 			},
 			source: {
@@ -159,41 +188,37 @@ export const DisputesList = () => {
 				),
 			},
 			created: {
-				value: dispute.created * 1000,
+				value: created * 1000,
 				display: clickable(
-					dateI18n(
-						'M j, Y',
-						moment( dispute.created * 1000 ).toISOString()
-					)
+					dateI18n( 'M j, Y', moment( created * 1000 ).toISOString() )
 				),
 			},
 			dueBy: {
-				value: dispute.evidence_details.due_by * 1000,
+				value: ( evidenceDetails?.due_by || 0 ) * 1000,
 				display: clickable(
 					dateI18n(
 						'M j, Y / g:iA',
 						moment(
-							dispute.evidence_details.due_by * 1000
+							( evidenceDetails?.due_by || 0 ) * 1000
 						).toISOString()
 					)
 				),
 			},
 			order,
 			customer: {
-				value: customer.name,
-				display: clickable( customer.name ),
+				value: name,
+				display: clickable( name ),
 			},
 			email: {
-				value: customer.email,
-				display: clickable( customer.email ),
+				value: email,
+				display: clickable( email ),
 			},
 			country: {
-				value: ( customer.address || {} ).country,
-				display: clickable( ( customer.address || {} ).country ),
+				value: country,
+				display: clickable( country ),
 			},
-			details: { value: dispute.id, display: detailsLink },
+			details: { value: disputeId, display: detailsLink },
 		};
-
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
 
@@ -201,7 +226,6 @@ export const DisputesList = () => {
 
 	function onDownload() {
 		const title = __( 'Disputes', 'woocommerce-payments' );
-		const { page, path, ...params } = getQuery();
 
 		const csvColumns = [
 			{
@@ -216,11 +240,14 @@ export const DisputesList = () => {
 				...row.slice( 0, 2 ),
 				{
 					...row[ 2 ],
-					value: disputeStatusMapping[ row[ 2 ].value ].message,
+					value: disputeStatusMapping[ row[ 2 ].value ?? '' ].message,
 				},
 				{
 					...row[ 3 ],
-					value: formatStringValue( row[ 3 ].value ),
+					value:
+						typeof row[ 3 ].value === 'string'
+							? formatStringValue( row[ 3 ].value )
+							: '',
 				},
 				...row.slice( 4, 9 ),
 				{
@@ -241,14 +268,31 @@ export const DisputesList = () => {
 		} );
 
 		downloadCSVFile(
-			generateCSVFileName( title, params ),
+			generateCSVFileName( title, getQuery() ),
 			generateCSVDataFromTable( csvColumns, csvRows )
 		);
 
-		window.wcTracks.recordEvent( 'wcpay_disputes_download', {
+		wcpayTracks.recordEvent( 'wcpay_disputes_download', {
 			exported_disputes: csvRows.length,
-			total_disputes: disputes.length,
+			total_disputes: disputesSummary.count,
 		} );
+	}
+
+	let summary;
+	const isDisputesSummaryDataLoaded =
+		disputesSummary.count !== undefined && false === isSummaryLoading;
+	if ( isDisputesSummaryDataLoaded ) {
+		summary = [
+			{
+				label: _n(
+					'dispute',
+					'disputes',
+					disputesSummary.count ?? 0,
+					'woocommerce-payments'
+				),
+				value: `${ disputesSummary.count }`,
+			},
+		];
 	}
 
 	return (
@@ -258,10 +302,11 @@ export const DisputesList = () => {
 				className="wcpay-disputes-list"
 				title={ __( 'Disputes', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
-				rowsPerPage={ 10 }
-				totalRows={ 10 }
+				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
+				totalRows={ disputesSummary.count || 0 }
 				headers={ headers }
 				rows={ rows }
+				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
 				actions={ [

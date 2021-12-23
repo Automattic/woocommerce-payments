@@ -45,3 +45,7 @@ export const getDisputes = ( state, query ) => {
 	const ids = getDisputesForQuery( state, query ).data || [];
 	return ids.map( getDispute.bind( this, state ) );
 };
+
+export const getDisputesSummary = ( state ) => {
+	return getDisputesState( state ).summary || {};
+};

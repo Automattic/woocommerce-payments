@@ -34,6 +34,7 @@ describe( 'Disputes reducer tests', () => {
 				dp_mock1: mockDisputes[ 0 ],
 			},
 			queries: {},
+			summary: {},
 		} );
 
 		const stateAfterTwo = reducer( stateAfterOne, {
@@ -47,6 +48,7 @@ describe( 'Disputes reducer tests', () => {
 				dp_mock2: mockDisputes[ 1 ],
 			},
 			queries: {},
+			summary: {},
 		} );
 	} );
 
@@ -70,6 +72,7 @@ describe( 'Disputes reducer tests', () => {
 					data: [ 'dp_mock1', 'dp_mock2' ],
 				},
 			},
+			summary: {},
 		};
 
 		expect( reduced ).toStrictEqual( after );
@@ -84,6 +87,9 @@ describe( 'Disputes reducer tests', () => {
 				earlierQuery: {
 					data: [ 'dp_mock1' ],
 				},
+			},
+			summary: {
+				count: 1,
 			},
 		};
 
@@ -105,6 +111,60 @@ describe( 'Disputes reducer tests', () => {
 				[ getResourceId( mockQuery ) ]: {
 					data: [ 'dp_mock2' ],
 				},
+			},
+			summary: {
+				count: 1,
+			},
+		};
+
+		expect( reduced ).toStrictEqual( after );
+	} );
+
+	test( 'New disputes summary reduced correctly', () => {
+		const reduced = reducer( undefined, {
+			type: types.SET_DISPUTES_SUMMARY,
+			data: {
+				count: 42,
+			},
+		} );
+
+		const after = {
+			byId: {},
+			queries: {},
+			summary: {
+				count: 42,
+			},
+		};
+
+		expect( reduced ).toStrictEqual( after );
+	} );
+
+	test( 'Disputes summary updated correctly', () => {
+		const before = {
+			byId: {
+				dp_mock1: mockDisputes[ 0 ],
+			},
+			queries: {
+				earlierQuery: {
+					data: [ 'dp_mock1' ],
+				},
+			},
+			summary: {
+				count: 1,
+			},
+		};
+
+		const reduced = reducer( before, {
+			type: types.SET_DISPUTES_SUMMARY,
+			data: {
+				count: 42,
+			},
+		} );
+
+		const after = {
+			...before,
+			summary: {
+				count: 42,
 			},
 		};
 

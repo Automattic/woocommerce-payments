@@ -689,12 +689,16 @@ class WC_Payments_API_Client {
 	/**
 	 * List disputes
 	 *
+	 * @param  int $page The page index to retrieve.
+	 * @param  int $page_size The number of items the page contains.
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function list_disputes() {
+	public function list_disputes( int $page = 0, int $page_size = 25 ):array {
 		$query = [
-			'limit' => 100,
+			'limit'    => 100,
+			'page'     => $page,
+			'pagesize' => $page_size,
 		];
 
 		$disputes = $this->request( $query, self::DISPUTES_API, self::GET );
@@ -704,6 +708,7 @@ class WC_Payments_API_Client {
 			foreach ( $disputes['data'] as &$dispute ) {
 				try {
 					// Wrap with try/catch to avoid failing whole request because of a single dispute.
+					$dispute = $this->format_dispute_for_ui( $dispute );
 					$dispute = $this->add_order_info_to_object( $dispute['charge']['id'], $dispute );
 				} catch ( Exception $e ) {
 					// TODO: Log the error once Logger PR (#326) is merged.
@@ -713,6 +718,16 @@ class WC_Payments_API_Client {
 		}
 
 		return $disputes;
+	}
+
+	/**
+	 * Get summary of disputes.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes_summary():array {
+		return $this->request( [], self::DISPUTES_API . '/summary', self::GET );
 	}
 
 	/**
@@ -1709,6 +1724,41 @@ class WC_Payments_API_Client {
 		}
 
 		return $object;
+	}
+
+	/**
+	 * Formats dispute for UI
+	 *
+	 * @param  array $dispute The dispute coming from API.
+	 * @return array array in the format that the UI expects
+	 */
+	private function format_dispute_for_ui( array $dispute ): array {
+		return [
+			'id'               => $dispute['dispute_id'],
+			'reason'           => $dispute['reason'],
+			'charge'           => [
+				'id'                     => $dispute['charge_id'],
+				'payment_method_details' => [
+					'card' => [
+						'brand' => $dispute['source'],
+					],
+				],
+				'billing_details'        => [
+					'name'    => $dispute['customer_name'],
+					'email'   => $dispute['customer_email'],
+					'address' => [
+						'country' => $dispute['customer_country'],
+					],
+				],
+			],
+			'amount'           => $dispute['amount'],
+			'currency'         => $dispute['currency'],
+			'status'           => $dispute['status'],
+			'created'          => strtotime( $dispute['created'] ),
+			'evidence_details' => [
+				'due_by' => strtotime( $dispute['due_by'] ),
+			],
+		];
 	}
 
 
