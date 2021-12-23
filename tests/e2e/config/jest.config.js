@@ -19,19 +19,26 @@ const allowedPaths = [];
 try {
 	if ( process.env.E2E_GROUP ) {
 		// Throw error if E2E_GROUP is not found in defined paths.
-		if ( ! (process.env.E2E_GROUP in e2ePaths) ) {
-			throw new Error( `Invalid test group specified: ${process.env.E2E_GROUP}` );
+		if ( ! ( process.env.E2E_GROUP in e2ePaths ) ) {
+			throw new Error(
+				`Invalid test group specified: ${ process.env.E2E_GROUP }`
+			);
 		}
 
 		if ( process.env.E2E_BRANCH ) {
-			const combined_path = path.join( e2ePaths[ process.env.E2E_GROUP ], process.env.E2E_BRANCH );
+			const combinedPath = path.join(
+				e2ePaths[ process.env.E2E_GROUP ],
+				process.env.E2E_BRANCH
+			);
 
 			// Throw error if path doesn't exist.
-			if ( ! fs.existsSync( combined_path ) ) {
-				throw new Error( `Invalid test branch specified: ${process.env.E2E_BRANCH}` );
+			if ( ! fs.existsSync( combinedPath ) ) {
+				throw new Error(
+					`Invalid test branch specified: ${ process.env.E2E_BRANCH }`
+				);
 			}
 
-			allowedPaths.push( combined_path );
+			allowedPaths.push( combinedPath );
 		} else {
 			allowedPaths.push( e2ePaths[ process.env.E2E_GROUP ] );
 		}
@@ -42,7 +49,6 @@ try {
 	}
 } catch ( error ) {
 	console.error( error );
-	process.exit(1);
 }
 
 module.exports = {
