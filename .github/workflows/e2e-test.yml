@@ -42,7 +42,7 @@ jobs:
           - test_groups: 'blocks'
             test_branches: 'merchant'
 
-    name: ${{ matrix.test_groups }} | ${{ matrix.test_branches }} | WC-${{ matrix.woocommerce }}
+    name: WP ${{ matrix.wordpress }} | WC ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }} | PHP ${{ matrix.php }}
 
     env:
       WP_VERSION: ${{ matrix.wordpress }}
