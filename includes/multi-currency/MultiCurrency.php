@@ -118,21 +118,21 @@ class MultiCurrency {
 	 *
 	 * @var Currency[]|null
 	 */
-	protected $available_currencies = null;
+	protected $available_currencies;
 
 	/**
 	 * The default currency.
 	 *
 	 * @var Currency|null
 	 */
-	protected $default_currency = null;
+	protected $default_currency;
 
 	/**
 	 * The enabled currencies.
 	 *
 	 * @var Currency[]|null
 	 */
-	protected $enabled_currencies = null;
+	protected $enabled_currencies;
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -395,7 +395,7 @@ class MultiCurrency {
 	/**
 	 * Returns the Currency Switcher Widget instance.
 	 *
-	 * @return CurrencySwitcherWidget
+	 * @return CurrencySwitcherWidget|null
 	 */
 	public function get_currency_switcher_widget() {
 		return $this->currency_switcher_widget;
@@ -546,11 +546,11 @@ class MultiCurrency {
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_available_currencies(): array {
-		if ( null !== $this->available_currencies ) {
-			return $this->available_currencies;
+		if ( null === $this->available_currencies ) {
+			$this->init();
 		}
-		$this->init();
-		return $this->available_currencies;
+
+		return $this->available_currencies ?? [];
 	}
 
 	/**
@@ -559,11 +559,11 @@ class MultiCurrency {
 	 * @return Currency The store base currency.
 	 */
 	public function get_default_currency(): Currency {
-		if ( null !== $this->default_currency ) {
-			return $this->default_currency;
+		if ( null === $this->default_currency ) {
+			$this->init();
 		}
-		$this->init();
-		return $this->default_currency;
+
+		return $this->default_currency ?? new Currency( get_woocommerce_currency() );
 	}
 
 	/**
@@ -572,11 +572,11 @@ class MultiCurrency {
 	 * @return Currency[] Array of Currency objects.
 	 */
 	public function get_enabled_currencies(): array {
-		if ( null !== $this->enabled_currencies ) {
-			return $this->enabled_currencies;
+		if ( null === $this->enabled_currencies ) {
+			$this->init();
 		}
-		$this->init();
-		return $this->enabled_currencies;
+
+		return $this->enabled_currencies ?? [];
 	}
 
 	/**
@@ -611,11 +611,10 @@ class MultiCurrency {
 	 * @return Currency
 	 */
 	public function get_selected_currency(): Currency {
-		$code = $this->get_stored_currency_code();
+		$multi_currency_code = $this->compatibility->override_selected_currency();
+		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
 
-		$code = $this->compatibility->override_selected_currency() ? $this->compatibility->override_selected_currency() : $code;
-
-		return $this->get_enabled_currencies()[ $code ] ?? $this->get_default_currency();
+		return $this->get_enabled_currencies()[ $currency_code ] ?? $this->get_default_currency();
 	}
 
 	/**
@@ -629,6 +628,9 @@ class MultiCurrency {
 		$code     = strtoupper( $currency_code );
 		$user_id  = get_current_user_id();
 		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
+
+		// We discard the cache for the front-end.
+		$this->frontend_currencies->selected_currency_changed();
 
 		if ( null === $currency ) {
 			return;
@@ -866,10 +868,10 @@ class MultiCurrency {
 	 * @return float The adjusted price.
 	 */
 	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
-		$price = $this->ceil_price( $price, floatval( $currency->get_rounding() ) );
+		$price = $this->ceil_price( $price, (float) $currency->get_rounding() );
 
 		if ( $apply_charm_pricing ) {
-			$price += floatval( $currency->get_charm() );
+			$price += (float) $currency->get_charm();
 		}
 
 		// Do not return negative prices (possible because of $currency->get_charm()).
@@ -898,15 +900,15 @@ class MultiCurrency {
 	 */
 	private function get_stored_currency_code() {
 		$user_id = get_current_user_id();
-		$code    = null;
 
-		if ( 0 === $user_id && WC()->session ) {
-			$code = WC()->session->get( self::CURRENCY_SESSION_KEY );
-		} elseif ( $user_id ) {
-			$code = get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
+		if ( $user_id ) {
+			return get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
 		}
 
-		return $code;
+		WC()->initialize_session();
+		$currency_code = WC()->session->get( self::CURRENCY_SESSION_KEY );
+
+		return is_string( $currency_code ) ? $currency_code : null;
 	}
 
 	/**
@@ -1143,8 +1145,6 @@ class MultiCurrency {
 	/**
 	 * Apply client order currency format and reduces the rounding precision to 2.
 	 *
-	 * @psalm-suppress InvalidGlobal
-	 *
 	 * @return  void
 	 */
 	public function set_client_format_and_rounding_precision() {
@@ -1160,11 +1160,11 @@ class MultiCurrency {
 			$rounding_precision = wc_get_price_decimals() ?? wc_get_rounding_precision();
 			?>
 		<script>
-		woocommerce_admin_meta_boxes.currency_format_num_decimals = <?php echo intval( $currency_format_num_decimals ); ?>;
+		woocommerce_admin_meta_boxes.currency_format_num_decimals = <?php echo (int) $currency_format_num_decimals; ?>;
 		woocommerce_admin_meta_boxes.currency_format_decimal_sep = '<?php echo esc_attr( $currency_format_decimal_sep ); ?>';
 		woocommerce_admin_meta_boxes.currency_format_thousand_sep = '<?php echo esc_attr( $currency_format_thousand_sep ); ?>';
 		woocommerce_admin_meta_boxes.currency_format = '<?php echo esc_attr( $currency_format ); ?>';
-		woocommerce_admin_meta_boxes.rounding_precision = <?php echo intval( $rounding_precision ); ?>;
+		woocommerce_admin_meta_boxes.rounding_precision = <?php echo (int) $rounding_precision; ?>;
 		</script>
 			<?php
 		endif;
@@ -1203,7 +1203,7 @@ class MultiCurrency {
 	 * @return  string|false  Returns back the currency code in uppercase letters if it's valid, or `false` if not.
 	 */
 	public function validate_currency_code( $currency_code ) {
-		return in_array( strtoupper( $currency_code ), array_keys( $this->available_currencies ), true )
+		return array_key_exists( strtoupper( $currency_code ), $this->available_currencies )
 		? strtoupper( $currency_code )
 		: false;
 	}
@@ -1277,7 +1277,7 @@ class MultiCurrency {
 	 * @return  bool  Whether the simulation is enabled or not
 	 */
 	public function is_simulation_enabled() {
-		return 0 < count( array_keys( $this->simulation_params ) );
+		return 0 < count( $this->simulation_params );
 	}
 
 	/**
@@ -1289,13 +1289,13 @@ class MultiCurrency {
 
 		$parameters = $_GET; // phpcs:ignore WordPress.Security.NonceVerification
 		// Check if we are in a preview session, don't interfere with the main session.
-		if ( ! isset( $parameters['is_mc_onboarding_simulation'] ) || true !== boolval( $parameters['is_mc_onboarding_simulation'] ) ) {
+		if ( ! isset( $parameters['is_mc_onboarding_simulation'] ) || ! (bool) $parameters['is_mc_onboarding_simulation'] ) {
 			// Check if the page referer has the variables.
 			$server = $_SERVER; // phpcs:ignore WordPress.Security.NonceVerification
 			// Check if we are coming from a simulation session (if we don't have the necessary query strings).
 			if ( isset( $server['HTTP_REFERER'] ) && 0 < strpos( $server['HTTP_REFERER'], 'is_mc_onboarding_simulation' ) ) {
 				wp_parse_str( wp_parse_url( $server['HTTP_REFERER'], PHP_URL_QUERY ), $parameters );
-				if ( ! isset( $parameters['is_mc_onboarding_simulation'] ) || true !== boolval( $parameters['is_mc_onboarding_simulation'] ) ) {
+				if ( ! isset( $parameters['is_mc_onboarding_simulation'] ) || ! (bool) $parameters['is_mc_onboarding_simulation'] ) {
 					return [];
 				}
 			} else {
@@ -1322,11 +1322,7 @@ class MultiCurrency {
 		foreach ( $possible_variables as $possible_variable => $sanitization_callback ) {
 			// phpcs:disable WordPress.Security.NonceVerification
 			if ( isset( $parameters[ $possible_variable ] ) ) {
-				$values[ $possible_variable ] = call_user_func(
-					$sanitization_callback,
-					$parameters[ $possible_variable ] // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-				);
-				// phpcs:enable WordPress.Security.NonceVerification
+				$values[ $possible_variable ] = $sanitization_callback( $parameters[ $possible_variable ] );
 			} else {
 				// Append the default, the param is missing in the querystring.
 				$values [ $possible_variable ] = $defaults[ $possible_variable ];

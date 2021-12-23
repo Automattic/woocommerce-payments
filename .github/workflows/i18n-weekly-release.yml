@@ -11,6 +11,12 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@v2
+
+      # Use project specific node version
+      - uses: actions/setup-node@v2
+        with:
+          node-version-file: '.nvmrc'
+
       # enable dependencies caching (vendor and node_modules are wiped during build so they are ignored here)
       - uses: actions/cache@v2
         with:

@@ -1,0 +1,185 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Empty state table renders correctly for deposits 1`] = `
+<div>
+  <div
+    class="components-card empty-state-table is-size-medium woocommerce-table woocommerce-report-table has-menu"
+  >
+    <div
+      class="components-flex components-card__header is-size-medium"
+    >
+      <h2>
+        Deposit history
+      </h2>
+    </div>
+    <div
+      class="components-card__body"
+    >
+      <div
+        class="woocommerce-table__table"
+        role="group"
+      >
+        <table>
+          <tbody>
+            <tr>
+              <th
+                class="woocommerce-table__header is-left-aligned"
+              >
+                Date
+              </th>
+              <th
+                class="woocommerce-table__header"
+              >
+                Type
+              </th>
+              <th
+                class="woocommerce-table__header"
+              >
+                Amount
+              </th>
+              <th
+                class="woocommerce-table__header"
+              >
+                Bank account
+              </th>
+            </tr>
+            <tr>
+              <td
+                class="woocommerce-table__empty-item"
+                colspan="4"
+              >
+                <div
+                  class="empty-state-list"
+                >
+                  <div>
+                    <img
+                      alt=""
+                    />
+                  </div>
+                  <p
+                    class="intro-copy"
+                  >
+                    Collect payments, track cash flow, and manage recurring revenue directly from your store's dashboard -- all without setup costs or monthly fees.
+                  </p>
+                  <p
+                    class="terms-of-service"
+                  >
+                    By clicking "Finish setup", you agree to the 
+                    <a
+                      href="https://wordpress.com/tos/"
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      Terms of Service
+                    </a>
+                  </p>
+                  <div>
+                    <a
+                      class="components-button is-primary"
+                      href="https://connect"
+                    >
+                      Finish setup
+                    </a>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Empty state table renders correctly for transaction 1`] = `
+<div>
+  <div
+    class="components-card empty-state-table is-size-medium woocommerce-table woocommerce-report-table has-menu"
+  >
+    <div
+      class="components-flex components-card__header is-size-medium"
+    >
+      <h2>
+        Transactions
+      </h2>
+    </div>
+    <div
+      class="components-card__body"
+    >
+      <div
+        class="woocommerce-table__table"
+        role="group"
+      >
+        <table>
+          <tbody>
+            <tr>
+              <th
+                class="woocommerce-table__header is-left-aligned"
+              >
+                Date
+              </th>
+              <th
+                class="woocommerce-table__header"
+              >
+                Type
+              </th>
+              <th
+                class="woocommerce-table__header"
+              >
+                Amount
+              </th>
+              <th
+                class="woocommerce-table__header"
+              >
+                Bank account
+              </th>
+            </tr>
+            <tr>
+              <td
+                class="woocommerce-table__empty-item"
+                colspan="4"
+              >
+                <div
+                  class="empty-state-list"
+                >
+                  <div>
+                    <img
+                      alt=""
+                    />
+                  </div>
+                  <p
+                    class="intro-copy"
+                  >
+                    Collect payments, track cash flow, and manage recurring revenue directly from your store's dashboard -- all without setup costs or monthly fees.
+                  </p>
+                  <p
+                    class="terms-of-service"
+                  >
+                    By clicking "Finish setup", you agree to the 
+                    <a
+                      href="https://wordpress.com/tos/"
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      Terms of Service
+                    </a>
+                  </p>
+                  <div>
+                    <a
+                      class="components-button is-primary"
+                      href="https://connect"
+                    >
+                      Finish setup
+                    </a>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+`;

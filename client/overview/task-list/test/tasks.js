@@ -4,9 +4,6 @@
  * Internal dependencies
  */
 import { getTasks, taskSort } from '../tasks';
-import createMultiCurrencySetupTask from '../../../multi-currency-setup/task';
-
-jest.mock( '../../../multi-currency-setup/task', () => jest.fn() );
 
 describe( 'getTasks()', () => {
 	it( 'should include business details when flag is set', () => {
@@ -232,11 +229,6 @@ describe( 'getTasks()', () => {
 
 describe( 'taskSort()', () => {
 	it( 'should sort the tasks', () => {
-		createMultiCurrencySetupTask.mockReturnValue( {
-			key: 'test-element',
-			completed: true,
-			level: 3,
-		} );
 		/*eslint-disable camelcase*/
 		const disputes = [
 			{
@@ -262,9 +254,13 @@ describe( 'taskSort()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
-			multiCurrencySetup: { isTaskVisible: true },
 			isAccountOverviewTasksEnabled: true,
 			disputes,
+		} );
+		unsortedTasks.unshift( {
+			key: 'test-element',
+			completed: true,
+			level: 3,
 		} );
 		expect( unsortedTasks[ 0 ] ).toEqual(
 			expect.objectContaining( {
