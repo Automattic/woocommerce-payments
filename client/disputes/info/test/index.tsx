@@ -27,7 +27,7 @@ describe( 'Dispute info', () => {
 	} );
 
 	test( 'renders correctly', () => {
-		const dispute = {
+		const dispute: any = {
 			status: 'needs_response',
 			id: '',
 			evidence_details: {

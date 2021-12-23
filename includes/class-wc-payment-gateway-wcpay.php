@@ -1277,12 +1277,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					// Read the latest order properties from the database to avoid race conditions when the paid webhook was handled during this request.
 					$order->get_data_store()->read( $order );
 
-					if ( ! $order->has_status( [ 'processing', 'completed' ] ) ) {
-						$order->payment_complete( $intent_id );
+					if ( $order->has_status( [ 'processing', 'completed' ] ) ) {
+						return;
 					}
+
+					if ( WC_Payments_Utils::is_order_locked( $order, $intent_id ) ) {
+						return;
+					}
+
+					WC_Payments_Utils::lock_order_payment( $order, $intent_id );
+					$order->payment_complete( $intent_id );
+					WC_Payments_Utils::unlock_order_payment( $order );
 				} catch ( Exception $e ) {
 					// continue further, something unexpected happened, but we can't really do nothing with that.
 					Logger::log( 'Error when completing payment for order: ' . $e->getMessage() );
+
+					// unlock the order.
+					WC_Payments_Utils::unlock_order_payment( $order );
 				}
 				break;
 			case 'processing':
@@ -2598,14 +2609,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			]
 		);
 		return array_map(
-			static function ( WC_Payment_Token_CC $token ): array {
+			static function ( WC_Payment_Token $token ): array {
 				return [
 					'tokenId'         => $token->get_id(),
 					'paymentMethodId' => $token->get_token(),
-					'brand'           => $token->get_card_type(),
-					'last4'           => $token->get_last4(),
-					'expiryMonth'     => $token->get_expiry_month(),
-					'expiryYear'      => $token->get_expiry_year(),
 					'isDefault'       => $token->get_is_default(),
 					'displayName'     => $token->get_display_name(),
 				];

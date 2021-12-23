@@ -4,27 +4,27 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "da57373382ec0e4da89c7ebabc31cfbd",
+    "content-hash": "a1619c2b99e3c04c6dbbebf77aef05cf",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
-            "version": "v1.4.9",
+            "version": "v1.4.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-a8c-mc-stats.git",
-                "reference": "6920ecb008891558cbf619838d1ce963838f077d"
+                "reference": "f24331c8cc098e81225c131e3d25f7df85ee9cd7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-a8c-mc-stats/zipball/6920ecb008891558cbf619838d1ce963838f077d",
-                "reference": "6920ecb008891558cbf619838d1ce963838f077d",
+                "url": "https://api.github.com/repos/Automattic/jetpack-a8c-mc-stats/zipball/f24331c8cc098e81225c131e3d25f7df85ee9cd7",
+                "reference": "f24331c8cc098e81225c131e3d25f7df85ee9cd7",
                 "shasum": ""
             },
             "require-dev": {
                 "automattic/jetpack-changelogger": "^3.0",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-a8c-mc-stats",
@@ -45,20 +45,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Used to record internal usage stats for Automattic. Not visible to site owners.",
-            "time": "2021-11-02T14:06:54+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-a8c-mc-stats/tree/v1.4.10"
+            },
+            "time": "2021-12-14T17:53:40+00:00"
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v1.13.1",
+            "version": "v1.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "3f1bb61ef36548ba0e503816b557c303ea179d1c"
+                "reference": "c49569503e992a28ac8b6bff1d62f0845e58c3d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/3f1bb61ef36548ba0e503816b557c303ea179d1c",
-                "reference": "3f1bb61ef36548ba0e503816b557c303ea179d1c",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/c49569503e992a28ac8b6bff1d62f0845e58c3d8",
+                "reference": "c49569503e992a28ac8b6bff1d62f0845e58c3d8",
                 "shasum": ""
             },
             "require": {
@@ -67,9 +70,10 @@
             "require-dev": {
                 "automattic/jetpack-changelogger": "^3.0",
                 "brain/monkey": "2.6.1",
+                "wikimedia/testing-access-wrapper": "^1.0 | ^2.0",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-assets",
@@ -77,10 +81,13 @@
                     "link-template": "https://github.com/Automattic/jetpack-assets/compare/v${old}...v${new}"
                 },
                 "branch-alias": {
-                    "dev-master": "1.13.x-dev"
+                    "dev-master": "1.15.x-dev"
                 }
             },
             "autoload": {
+                "files": [
+                    "actions.php"
+                ],
                 "classmap": [
                     "src/"
                 ]
@@ -90,7 +97,10 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
-            "time": "2021-11-22T23:53:54+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.15.0"
+            },
+            "time": "2021-12-20T22:27:22+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
@@ -138,6 +148,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Creates a custom autoloader for a plugin or theme.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-autoloader/tree/v2.10.10"
+            },
             "time": "2021-11-16T16:27:09+00:00"
         },
         {
@@ -178,6 +191,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Jetpack configuration package that initializes other packages and configures Jetpack's functionality. Can be used as a base for all variants of Jetpack package usage.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-config/tree/v1.5.3"
+            },
             "time": "2021-10-13T17:10:55+00:00"
         },
         {
@@ -236,20 +252,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Everything needed to connect to the Jetpack infrastructure",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-connection/tree/v1.30.13"
+            },
             "time": "2021-11-09T15:47:28+00:00"
         },
         {
             "name": "automattic/jetpack-constants",
-            "version": "v1.6.12",
+            "version": "v1.6.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-constants.git",
-                "reference": "7adbedb4947bd3cdcf3aa25d8dda3844b137744a"
+                "reference": "5a14050ea6d27d92cba3cfcf76d02a8235912d1a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-constants/zipball/7adbedb4947bd3cdcf3aa25d8dda3844b137744a",
-                "reference": "7adbedb4947bd3cdcf3aa25d8dda3844b137744a",
+                "url": "https://api.github.com/repos/Automattic/jetpack-constants/zipball/5a14050ea6d27d92cba3cfcf76d02a8235912d1a",
+                "reference": "5a14050ea6d27d92cba3cfcf76d02a8235912d1a",
                 "shasum": ""
             },
             "require-dev": {
@@ -257,7 +276,7 @@
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-constants",
@@ -278,20 +297,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "A wrapper for defining constants in a more testable way.",
-            "time": "2021-11-22T17:18:30+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-constants/tree/v1.6.13"
+            },
+            "time": "2021-12-14T17:53:48+00:00"
         },
         {
             "name": "automattic/jetpack-heartbeat",
-            "version": "v1.3.14",
+            "version": "v1.3.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-heartbeat.git",
-                "reference": "517c77909515def1f4c71f2df37573d6beacc215"
+                "reference": "990678483baf84ed18545782c8a2b1c324297d91"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-heartbeat/zipball/517c77909515def1f4c71f2df37573d6beacc215",
-                "reference": "517c77909515def1f4c71f2df37573d6beacc215",
+                "url": "https://api.github.com/repos/Automattic/jetpack-heartbeat/zipball/990678483baf84ed18545782c8a2b1c324297d91",
+                "reference": "990678483baf84ed18545782c8a2b1c324297d91",
                 "shasum": ""
             },
             "require": {
@@ -301,7 +323,7 @@
             "require-dev": {
                 "automattic/jetpack-changelogger": "^3.0"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-heartbeat",
@@ -322,20 +344,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "This adds a cronjob that sends a batch of internal automattic stats to wp.com once a day",
-            "time": "2021-11-30T16:30:38+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-heartbeat/tree/v1.3.15"
+            },
+            "time": "2021-12-14T17:54:04+00:00"
         },
         {
             "name": "automattic/jetpack-options",
-            "version": "v1.14.0",
+            "version": "v1.14.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-options.git",
-                "reference": "a9a4f86f4424a7bff1fb2fc29da1a4a9d0884aeb"
+                "reference": "a87629f83f0486ef505e3651ea6bf8c9412d2274"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-options/zipball/a9a4f86f4424a7bff1fb2fc29da1a4a9d0884aeb",
-                "reference": "a9a4f86f4424a7bff1fb2fc29da1a4a9d0884aeb",
+                "url": "https://api.github.com/repos/Automattic/jetpack-options/zipball/a87629f83f0486ef505e3651ea6bf8c9412d2274",
+                "reference": "a87629f83f0486ef505e3651ea6bf8c9412d2274",
                 "shasum": ""
             },
             "require": {
@@ -345,7 +370,7 @@
                 "automattic/jetpack-changelogger": "^3.0",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-options",
@@ -366,20 +391,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "A wrapper for wp-options to manage specific Jetpack options.",
-            "time": "2021-11-30T16:30:34+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-options/tree/v1.14.1"
+            },
+            "time": "2021-12-14T17:53:58+00:00"
         },
         {
             "name": "automattic/jetpack-redirect",
-            "version": "v1.7.7",
+            "version": "v1.7.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-redirect.git",
-                "reference": "129db0fb5db1096ec20ffd924bc7ee678639991a"
+                "reference": "09bab23e80bbb397986accfee6129f4c54fe935b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-redirect/zipball/129db0fb5db1096ec20ffd924bc7ee678639991a",
-                "reference": "129db0fb5db1096ec20ffd924bc7ee678639991a",
+                "url": "https://api.github.com/repos/Automattic/jetpack-redirect/zipball/09bab23e80bbb397986accfee6129f4c54fe935b",
+                "reference": "09bab23e80bbb397986accfee6129f4c54fe935b",
                 "shasum": ""
             },
             "require": {
@@ -390,7 +418,7 @@
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-redirect",
@@ -411,20 +439,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Utilities to build URLs to the jetpack.com/redirect/ service",
-            "time": "2021-11-22T23:54:00+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-redirect/tree/v1.7.8"
+            },
+            "time": "2021-12-14T17:54:08+00:00"
         },
         {
             "name": "automattic/jetpack-roles",
-            "version": "v1.4.11",
+            "version": "v1.4.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-roles.git",
-                "reference": "7eae1d12e531414714098580e9557739a934e957"
+                "reference": "a39955125dde3480bcc111482e80ede86e6d3ccb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-roles/zipball/7eae1d12e531414714098580e9557739a934e957",
-                "reference": "7eae1d12e531414714098580e9557739a934e957",
+                "url": "https://api.github.com/repos/Automattic/jetpack-roles/zipball/a39955125dde3480bcc111482e80ede86e6d3ccb",
+                "reference": "a39955125dde3480bcc111482e80ede86e6d3ccb",
                 "shasum": ""
             },
             "require-dev": {
@@ -432,7 +463,7 @@
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-roles",
@@ -453,20 +484,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Utilities, related with user roles and capabilities.",
-            "time": "2021-11-22T23:53:51+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-roles/tree/v1.4.12"
+            },
+            "time": "2021-12-14T17:53:55+00:00"
         },
         {
             "name": "automattic/jetpack-status",
-            "version": "v1.9.3",
+            "version": "v1.9.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-status.git",
-                "reference": "fe050c1727bde3c43659f50226440e48b2aefec4"
+                "reference": "14da3bae567c96a8ea11adaeb37c276999fcf701"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-status/zipball/fe050c1727bde3c43659f50226440e48b2aefec4",
-                "reference": "fe050c1727bde3c43659f50226440e48b2aefec4",
+                "url": "https://api.github.com/repos/Automattic/jetpack-status/zipball/14da3bae567c96a8ea11adaeb37c276999fcf701",
+                "reference": "14da3bae567c96a8ea11adaeb37c276999fcf701",
                 "shasum": ""
             },
             "require": {
@@ -477,7 +511,7 @@
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-status",
@@ -498,20 +532,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Used to retrieve information about the current status of Jetpack and the site overall.",
-            "time": "2021-11-22T23:53:56+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-status/tree/v1.9.4"
+            },
+            "time": "2021-12-14T17:53:59+00:00"
         },
         {
             "name": "automattic/jetpack-terms-of-service",
-            "version": "v1.9.16",
+            "version": "v1.9.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-terms-of-service.git",
-                "reference": "95915d016fadff1046741766b5f4c038830fffc5"
+                "reference": "425420572afec29d8afe22561c7fc29579efa543"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-terms-of-service/zipball/95915d016fadff1046741766b5f4c038830fffc5",
-                "reference": "95915d016fadff1046741766b5f4c038830fffc5",
+                "url": "https://api.github.com/repos/Automattic/jetpack-terms-of-service/zipball/425420572afec29d8afe22561c7fc29579efa543",
+                "reference": "425420572afec29d8afe22561c7fc29579efa543",
                 "shasum": ""
             },
             "require": {
@@ -523,7 +560,7 @@
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-terms-of-service",
@@ -544,24 +581,27 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Everything need to manage the terms of service state",
-            "time": "2021-11-30T16:30:44+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-terms-of-service/tree/v1.9.17"
+            },
+            "time": "2021-12-14T17:54:10+00:00"
         },
         {
             "name": "automattic/jetpack-tracking",
-            "version": "v1.13.18",
+            "version": "v1.13.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-tracking.git",
-                "reference": "8895a292e41f2755d63b9003359e6547ef64ca69"
+                "reference": "d4aeda56969750ed2724831057707b6bf3a424a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-tracking/zipball/8895a292e41f2755d63b9003359e6547ef64ca69",
-                "reference": "8895a292e41f2755d63b9003359e6547ef64ca69",
+                "url": "https://api.github.com/repos/Automattic/jetpack-tracking/zipball/d4aeda56969750ed2724831057707b6bf3a424a9",
+                "reference": "d4aeda56969750ed2724831057707b6bf3a424a9",
                 "shasum": ""
             },
             "require": {
-                "automattic/jetpack-assets": "^1.13",
+                "automattic/jetpack-assets": "^1.14",
                 "automattic/jetpack-options": "^1.14",
                 "automattic/jetpack-status": "^1.9",
                 "automattic/jetpack-terms-of-service": "^1.9"
@@ -571,7 +611,7 @@
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-tracking",
@@ -593,7 +633,10 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Tracking for Jetpack",
-            "time": "2021-11-30T16:30:48+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-tracking/tree/v1.13.19"
+            },
+            "time": "2021-12-14T17:54:14+00:00"
         },
         {
             "name": "composer/installers",
@@ -723,6 +766,10 @@
                 "zend",
                 "zikula"
             ],
+            "support": {
+                "issues": "https://github.com/composer/installers/issues",
+                "source": "https://github.com/composer/installers/tree/v1.10.0"
+            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -783,6 +830,10 @@
             "keywords": [
                 "enum"
             ],
+            "support": {
+                "issues": "https://github.com/myclabs/php-enum/issues",
+                "source": "https://github.com/myclabs/php-enum/tree/1.7.7"
+            },
             "funding": [
                 {
                     "url": "https://github.com/mnapoli",
@@ -797,41 +848,49 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "1.1.0",
+            "version": "1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "0bae09c4e64617a23a6d8706883e0e345f449ad6"
+                "reference": "10555008c58cd08b3e3bd353b04de8dc55de475c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/0bae09c4e64617a23a6d8706883e0e345f449ad6",
-                "reference": "0bae09c4e64617a23a6d8706883e0e345f449ad6",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/10555008c58cd08b3e3bd353b04de8dc55de475c",
+                "reference": "10555008c58cd08b3e3bd353b04de8dc55de475c",
                 "shasum": ""
+            },
+            "require": {
+                "composer/installers": "~1.2",
+                "php": "^7.0"
+            },
+            "require-dev": {
+                "dave-liddament/sarb": "^1.1",
+                "doctrine/instantiator": "1.0.5",
+                "phpdocumentor/reflection-docblock": "4.3.4",
+                "phpdocumentor/type-resolver": "0.5.1",
+                "phpunit/phpunit": "^6.0",
+                "woocommerce/woocommerce-sniffs": "0.1.0",
+                "yoast/phpunit-polyfills": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "phpcodesniffer-search-depth": 2
             },
             "archive": {
                 "exclude": [
                     "!/build"
                 ]
             },
-            "require": {
-                "composer/installers": "~1.2"
-            },
-            "require-dev": {
-                "dave-liddament/sarb": "^1.1",
-                "phpunit/phpunit": "6.5.14",
-                "woocommerce/woocommerce-sniffs": "0.1.0"
-            },
-            "type": "library",
-            "extra": {
-                "phpcodesniffer-search-depth": 2
-            },
             "scripts": {
                 "phpcs": [
-                    "vendor/bin/phpcs --report=json | vendor/bin/sarb remove phpcs.baseline"
+                    "bin/phpcs.sh"
                 ],
                 "lint": [
                     "find . \\( -path ./vendor \\) -prune -o \\( -name '*.php' \\) -exec php -lf {} \\;| (! grep -v \"No syntax errors detected\" )"
+                ],
+                "test": [
+                    "phpunit"
                 ]
             },
             "license": [
@@ -840,10 +899,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.1.0",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.3.0",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2021-11-12T05:01:25+00:00"
+            "time": "2021-12-21T02:08:05+00:00"
         }
     ],
     "packages-dev": [
@@ -923,6 +982,11 @@
                 "non-blocking",
                 "promise"
             ],
+            "support": {
+                "irc": "irc://irc.freenode.org/amphp",
+                "issues": "https://github.com/amphp/amp/issues",
+                "source": "https://github.com/amphp/amp/tree/v2.6.1"
+            },
             "funding": [
                 {
                     "url": "https://github.com/amphp",
@@ -995,6 +1059,11 @@
                 "non-blocking",
                 "stream"
             ],
+            "support": {
+                "irc": "irc://irc.freenode.org/amphp",
+                "issues": "https://github.com/amphp/byte-stream/issues",
+                "source": "https://github.com/amphp/byte-stream/tree/v1.8.1"
+            },
             "funding": [
                 {
                     "url": "https://github.com/amphp",
@@ -1056,6 +1125,10 @@
                 }
             ],
             "description": "Composer plugin that provides efficient querying for installed package versions (no runtime IO)",
+            "support": {
+                "issues": "https://github.com/composer/package-versions-deprecated/issues",
+                "source": "https://github.com/composer/package-versions-deprecated/tree/1.11.99.4"
+            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -1071,6 +1144,77 @@
                 }
             ],
             "time": "2021-09-13T08:41:34+00:00"
+        },
+        {
+            "name": "composer/pcre",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/composer/pcre.git",
+                "reference": "3d322d715c43a1ac36c7fe215fa59336265500f2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/composer/pcre/zipball/3d322d715c43a1ac36c7fe215fa59336265500f2",
+                "reference": "3d322d715c43a1ac36c7fe215fa59336265500f2",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.3.2 || ^7.0 || ^8.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^1",
+                "phpstan/phpstan-strict-rules": "^1.1",
+                "symfony/phpunit-bridge": "^4.2 || ^5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Composer\\Pcre\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jordi Boggiano",
+                    "email": "j.boggiano@seld.be",
+                    "homepage": "http://seld.be"
+                }
+            ],
+            "description": "PCRE wrapping library that offers type-safe preg_* replacements.",
+            "keywords": [
+                "PCRE",
+                "preg",
+                "regex",
+                "regular expression"
+            ],
+            "support": {
+                "issues": "https://github.com/composer/pcre/issues",
+                "source": "https://github.com/composer/pcre/tree/1.0.0"
+            },
+            "funding": [
+                {
+                    "url": "https://packagist.com",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/composer",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/composer/composer",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2021-12-06T15:17:27+00:00"
         },
         {
             "name": "composer/semver",
@@ -1132,6 +1276,11 @@
                 "validation",
                 "versioning"
             ],
+            "support": {
+                "irc": "irc://irc.freenode.org/composer",
+                "issues": "https://github.com/composer/semver/issues",
+                "source": "https://github.com/composer/semver/tree/3.2.6"
+            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -1150,25 +1299,27 @@
         },
         {
             "name": "composer/xdebug-handler",
-            "version": "2.0.2",
+            "version": "2.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/xdebug-handler.git",
-                "reference": "84674dd3a7575ba617f5a76d7e9e29a7d3891339"
+                "reference": "6555461e76962fd0379c444c46fd558a0fcfb65e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/84674dd3a7575ba617f5a76d7e9e29a7d3891339",
-                "reference": "84674dd3a7575ba617f5a76d7e9e29a7d3891339",
+                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/6555461e76962fd0379c444c46fd558a0fcfb65e",
+                "reference": "6555461e76962fd0379c444c46fd558a0fcfb65e",
                 "shasum": ""
             },
             "require": {
+                "composer/pcre": "^1",
                 "php": "^5.3.2 || ^7.0 || ^8.0",
                 "psr/log": "^1 || ^2 || ^3"
             },
             "require-dev": {
-                "phpstan/phpstan": "^0.12.55",
-                "symfony/phpunit-bridge": "^4.2 || ^5"
+                "phpstan/phpstan": "^1.0",
+                "phpstan/phpstan-strict-rules": "^1.1",
+                "symfony/phpunit-bridge": "^4.2 || ^5.0 || ^6.0"
             },
             "type": "library",
             "autoload": {
@@ -1191,6 +1342,11 @@
                 "Xdebug",
                 "performance"
             ],
+            "support": {
+                "irc": "irc://irc.freenode.org/composer",
+                "issues": "https://github.com/composer/xdebug-handler/issues",
+                "source": "https://github.com/composer/xdebug-handler/tree/2.0.3"
+            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -1205,7 +1361,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-07-31T17:03:58+00:00"
+            "time": "2021-12-08T13:07:32+00:00"
         },
         {
             "name": "cweagans/composer-patches",
@@ -1249,6 +1405,10 @@
                 }
             ],
             "description": "Provides a way to patch Composer packages.",
+            "support": {
+                "issues": "https://github.com/cweagans/composer-patches/issues",
+                "source": "https://github.com/cweagans/composer-patches/tree/1.7.1"
+            },
             "time": "2021-06-08T15:12:46+00:00"
         },
         {
@@ -1315,6 +1475,10 @@
                 "stylecheck",
                 "tests"
             ],
+            "support": {
+                "issues": "https://github.com/dealerdirect/phpcodesniffer-composer-installer/issues",
+                "source": "https://github.com/dealerdirect/phpcodesniffer-composer-installer"
+            },
             "time": "2020-06-25T14:57:39+00:00"
         },
         {
@@ -1348,6 +1512,10 @@
                 "MIT"
             ],
             "description": "implementation of xdg base directory specification for php",
+            "support": {
+                "issues": "https://github.com/dnoegel/php-xdg-base-dir/issues",
+                "source": "https://github.com/dnoegel/php-xdg-base-dir/tree/v0.1.1"
+            },
             "time": "2019-12-04T15:06:13+00:00"
         },
         {
@@ -1399,6 +1567,10 @@
                 "constructor",
                 "instantiate"
             ],
+            "support": {
+                "issues": "https://github.com/doctrine/instantiator/issues",
+                "source": "https://github.com/doctrine/instantiator/tree/1.4.0"
+            },
             "funding": [
                 {
                     "url": "https://www.doctrine-project.org/sponsorship.html",
@@ -1454,6 +1626,10 @@
                 }
             ],
             "description": "A more advanced JSONRPC implementation",
+            "support": {
+                "issues": "https://github.com/felixfbecker/php-advanced-json-rpc/issues",
+                "source": "https://github.com/felixfbecker/php-advanced-json-rpc/tree/v3.2.1"
+            },
             "time": "2021-06-11T22:34:44+00:00"
         },
         {
@@ -1506,6 +1682,10 @@
                 "php",
                 "server"
             ],
+            "support": {
+                "issues": "https://github.com/felixfbecker/php-language-server-protocol/issues",
+                "source": "https://github.com/felixfbecker/php-language-server-protocol/tree/1.5.1"
+            },
             "time": "2021-02-22T14:02:09+00:00"
         },
         {
@@ -1534,6 +1714,7 @@
                 "phpunit/phpunit": "^6.5",
                 "rregeer/phpunit-coverage-check": "^0.1"
             },
+            "default-branch": true,
             "type": "composer-plugin",
             "extra": {
                 "class": "Kalessil\\Composer\\Plugins\\ProductionDependenciesGuard\\Guard"
@@ -1558,6 +1739,10 @@
             ],
             "description": "Prevents adding of development packages into require-section (should be require-dev).",
             "homepage": "https://github.com/kalessil/production-dependencies-guard",
+            "support": {
+                "issues": "https://github.com/kalessil/production-dependencies-guard/issues",
+                "source": "https://github.com/kalessil/production-dependencies-guard/tree/master"
+            },
             "time": "2021-06-11T06:14:27+00:00"
         },
         {
@@ -1606,6 +1791,10 @@
                 "object",
                 "object graph"
             ],
+            "support": {
+                "issues": "https://github.com/myclabs/DeepCopy/issues",
+                "source": "https://github.com/myclabs/DeepCopy/tree/1.10.2"
+            },
             "funding": [
                 {
                     "url": "https://tidelift.com/funding/github/packagist/myclabs/deep-copy",
@@ -1658,6 +1847,11 @@
                 }
             ],
             "description": "Map nested JSON structures onto PHP classes",
+            "support": {
+                "email": "cweiske@cweiske.de",
+                "issues": "https://github.com/cweiske/jsonmapper/issues",
+                "source": "https://github.com/cweiske/jsonmapper/tree/v4.0.0"
+            },
             "time": "2020-12-01T19:48:11+00:00"
         },
         {
@@ -1710,6 +1904,10 @@
                 "parser",
                 "php"
             ],
+            "support": {
+                "issues": "https://github.com/nikic/PHP-Parser/issues",
+                "source": "https://github.com/nikic/PHP-Parser/tree/v4.13.2"
+            },
             "time": "2021-11-30T19:35:32+00:00"
         },
         {
@@ -1759,6 +1957,10 @@
                 "xml",
                 "xml conversion"
             ],
+            "support": {
+                "issues": "https://github.com/nullivex/lib-array2xml/issues",
+                "source": "https://github.com/nullivex/lib-array2xml/tree/master"
+            },
             "time": "2019-03-29T20:06:56+00:00"
         },
         {
@@ -1814,6 +2016,10 @@
                 }
             ],
             "description": "Component for reading phar.io manifest information from a PHP Archive (PHAR)",
+            "support": {
+                "issues": "https://github.com/phar-io/manifest/issues",
+                "source": "https://github.com/phar-io/manifest/tree/master"
+            },
             "time": "2018-07-08T19:23:20+00:00"
         },
         {
@@ -1861,6 +2067,10 @@
                 }
             ],
             "description": "Library for handling version information and constraints",
+            "support": {
+                "issues": "https://github.com/phar-io/version/issues",
+                "source": "https://github.com/phar-io/version/tree/master"
+            },
             "time": "2018-07-08T19:19:57+00:00"
         },
         {
@@ -1901,6 +2111,10 @@
                 "woocommerce",
                 "wordpress"
             ],
+            "support": {
+                "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v5.9.0"
+            },
             "time": "2021-11-05T10:02:27+00:00"
         },
         {
@@ -1941,6 +2155,10 @@
                 "static analysis",
                 "wordpress"
             ],
+            "support": {
+                "issues": "https://github.com/php-stubs/wordpress-stubs/issues",
+                "source": "https://github.com/php-stubs/wordpress-stubs/tree/v5.8.2"
+            },
             "time": "2021-11-11T13:57:00+00:00"
         },
         {
@@ -1999,6 +2217,10 @@
                 "phpcs",
                 "standards"
             ],
+            "support": {
+                "issues": "https://github.com/PHPCompatibility/PHPCompatibility/issues",
+                "source": "https://github.com/PHPCompatibility/PHPCompatibility"
+            },
             "time": "2019-12-27T09:44:58+00:00"
         },
         {
@@ -2051,6 +2273,10 @@
                 "polyfill",
                 "standards"
             ],
+            "support": {
+                "issues": "https://github.com/PHPCompatibility/PHPCompatibilityParagonie/issues",
+                "source": "https://github.com/PHPCompatibility/PHPCompatibilityParagonie"
+            },
             "time": "2021-02-15T10:24:51+00:00"
         },
         {
@@ -2101,6 +2327,10 @@
                 "standards",
                 "wordpress"
             ],
+            "support": {
+                "issues": "https://github.com/PHPCompatibility/PHPCompatibilityWP/issues",
+                "source": "https://github.com/PHPCompatibility/PHPCompatibilityWP"
+            },
             "time": "2019-08-28T14:22:28+00:00"
         },
         {
@@ -2150,6 +2380,10 @@
                 "reflection",
                 "static analysis"
             ],
+            "support": {
+                "issues": "https://github.com/phpDocumentor/ReflectionCommon/issues",
+                "source": "https://github.com/phpDocumentor/ReflectionCommon/tree/master"
+            },
             "time": "2020-04-27T09:25:28+00:00"
         },
         {
@@ -2202,6 +2436,10 @@
                 }
             ],
             "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock.",
+            "support": {
+                "issues": "https://github.com/phpDocumentor/ReflectionDocBlock/issues",
+                "source": "https://github.com/phpDocumentor/ReflectionDocBlock/tree/release/4.x"
+            },
             "time": "2019-12-28T18:55:12+00:00"
         },
         {
@@ -2249,6 +2487,10 @@
                 }
             ],
             "description": "A PSR-5 based resolver of Class names, Types and Structural Element Names",
+            "support": {
+                "issues": "https://github.com/phpDocumentor/TypeResolver/issues",
+                "source": "https://github.com/phpDocumentor/TypeResolver/tree/0.7.2"
+            },
             "time": "2019-08-22T18:11:29+00:00"
         },
         {
@@ -2312,6 +2554,10 @@
                 "spy",
                 "stub"
             ],
+            "support": {
+                "issues": "https://github.com/phpspec/prophecy/issues",
+                "source": "https://github.com/phpspec/prophecy/tree/v1.10.3"
+            },
             "time": "2020-03-05T15:02:03+00:00"
         },
         {
@@ -2375,6 +2621,10 @@
                 "testing",
                 "xunit"
             ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
+                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/master"
+            },
             "time": "2018-10-31T16:06:48+00:00"
         },
         {
@@ -2425,6 +2675,10 @@
                 "filesystem",
                 "iterator"
             ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/php-file-iterator/issues",
+                "source": "https://github.com/sebastianbergmann/php-file-iterator/tree/2.0.5"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -2472,6 +2726,10 @@
             "keywords": [
                 "template"
             ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/php-text-template/issues",
+                "source": "https://github.com/sebastianbergmann/php-text-template/tree/1.2.1"
+            },
             "time": "2015-06-21T13:50:34+00:00"
         },
         {
@@ -2521,6 +2779,10 @@
             "keywords": [
                 "timer"
             ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/php-timer/issues",
+                "source": "https://github.com/sebastianbergmann/php-timer/tree/2.1.3"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -2576,6 +2838,10 @@
             "keywords": [
                 "tokenizer"
             ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/php-token-stream/issues",
+                "source": "https://github.com/sebastianbergmann/php-token-stream/tree/3.1.3"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -2642,9 +2908,6 @@
             "extra": {
                 "branch-alias": {
                     "dev-master": "7.5-dev"
-                },
-                "patches_applied": {
-                    "PHP 8.1 compatibility: globals": "tests/phpunit-patches/globals-usage-compatibility.diff"
                 }
             },
             "autoload": {
@@ -2670,6 +2933,10 @@
                 "testing",
                 "xunit"
             ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/phpunit/issues",
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/7.5.20"
+            },
             "time": "2020-01-08T08:45:45+00:00"
         },
         {
@@ -2717,6 +2984,9 @@
                 "psr",
                 "psr-3"
             ],
+            "support": {
+                "source": "https://github.com/php-fig/log/tree/1.1.4"
+            },
             "time": "2021-05-03T11:20:27+00:00"
         },
         {
@@ -2759,6 +3029,10 @@
                 "testing",
                 "unittest"
             ],
+            "support": {
+                "issues": "https://github.com/richardregeer/phpunit-coverage-check/issues",
+                "source": "https://github.com/richardregeer/phpunit-coverage-check/tree/0.3.1"
+            },
             "time": "2019-10-14T07:04:13+00:00"
         },
         {
@@ -2804,6 +3078,10 @@
             ],
             "description": "Looks up which function or method a line of code belongs to",
             "homepage": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/",
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/issues",
+                "source": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/tree/1.0.2"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -2874,6 +3152,10 @@
                 "compare",
                 "equality"
             ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/comparator/issues",
+                "source": "https://github.com/sebastianbergmann/comparator/tree/3.0.3"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -2936,6 +3218,10 @@
                 "unidiff",
                 "unified diff"
             ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/diff/issues",
+                "source": "https://github.com/sebastianbergmann/diff/tree/3.0.3"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -2995,6 +3281,10 @@
                 "environment",
                 "hhvm"
             ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/environment/issues",
+                "source": "https://github.com/sebastianbergmann/environment/tree/4.2.4"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -3068,6 +3358,10 @@
                 "export",
                 "exporter"
             ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/exporter/issues",
+                "source": "https://github.com/sebastianbergmann/exporter/tree/3.1.4"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -3125,6 +3419,10 @@
             "keywords": [
                 "global state"
             ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/global-state/issues",
+                "source": "https://github.com/sebastianbergmann/global-state/tree/2.0.0"
+            },
             "time": "2017-04-27T15:39:26+00:00"
         },
         {
@@ -3172,6 +3470,10 @@
             ],
             "description": "Traverses array structures and object graphs to enumerate all referenced objects",
             "homepage": "https://github.com/sebastianbergmann/object-enumerator/",
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/object-enumerator/issues",
+                "source": "https://github.com/sebastianbergmann/object-enumerator/tree/3.0.4"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -3223,6 +3525,10 @@
             ],
             "description": "Allows reflection of object attributes, including inherited and non-public ones",
             "homepage": "https://github.com/sebastianbergmann/object-reflector/",
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/object-reflector/issues",
+                "source": "https://github.com/sebastianbergmann/object-reflector/tree/1.1.2"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -3282,6 +3588,10 @@
             ],
             "description": "Provides functionality to recursively process PHP variables",
             "homepage": "http://www.github.com/sebastianbergmann/recursion-context",
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/recursion-context/issues",
+                "source": "https://github.com/sebastianbergmann/recursion-context/tree/3.0.1"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -3330,6 +3640,10 @@
             ],
             "description": "Provides a list of PHP built-in functions that operate on resources",
             "homepage": "https://www.github.com/sebastianbergmann/resource-operations",
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/resource-operations/issues",
+                "source": "https://github.com/sebastianbergmann/resource-operations/tree/2.0.2"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -3379,20 +3693,24 @@
             ],
             "description": "Library that helps with managing the version number of Git-hosted PHP projects",
             "homepage": "https://github.com/sebastianbergmann/version",
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/version/issues",
+                "source": "https://github.com/sebastianbergmann/version/tree/master"
+            },
             "time": "2016-10-03T07:35:21+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.6.1",
+            "version": "3.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "f268ca40d54617c6e06757f83f699775c9b3ff2e"
+                "reference": "5e4e71592f69da17871dba6e80dd51bce74a351a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/f268ca40d54617c6e06757f83f699775c9b3ff2e",
-                "reference": "f268ca40d54617c6e06757f83f699775c9b3ff2e",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/5e4e71592f69da17871dba6e80dd51bce74a351a",
+                "reference": "5e4e71592f69da17871dba6e80dd51bce74a351a",
                 "shasum": ""
             },
             "require": {
@@ -3430,7 +3748,12 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2021-10-11T04:00:11+00:00"
+            "support": {
+                "issues": "https://github.com/squizlabs/PHP_CodeSniffer/issues",
+                "source": "https://github.com/squizlabs/PHP_CodeSniffer",
+                "wiki": "https://github.com/squizlabs/PHP_CodeSniffer/wiki"
+            },
+            "time": "2021-12-12T21:44:58+00:00"
         },
         {
             "name": "symfony/console",
@@ -3497,6 +3820,9 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/console/tree/v3.4.47"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -3562,6 +3888,9 @@
             ],
             "description": "Symfony Debug Component",
             "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/debug/tree/v3.4.47"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -3638,6 +3967,9 @@
                 "polyfill",
                 "portable"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.23.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -3715,6 +4047,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.23.1"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -3769,6 +4104,10 @@
                 }
             ],
             "description": "A small library for converting tokenized PHP source code into XML and potentially other formats",
+            "support": {
+                "issues": "https://github.com/theseer/tokenizer/issues",
+                "source": "https://github.com/theseer/tokenizer/tree/master"
+            },
             "time": "2019-06-13T22:48:21+00:00"
         },
         {
@@ -3871,6 +4210,10 @@
                 "inspection",
                 "php"
             ],
+            "support": {
+                "issues": "https://github.com/vimeo/psalm/issues",
+                "source": "https://github.com/vimeo/psalm/tree/4.13.1"
+            },
             "time": "2021-11-23T23:52:49+00:00"
         },
         {
@@ -3920,6 +4263,10 @@
                 "check",
                 "validate"
             ],
+            "support": {
+                "issues": "https://github.com/webmozarts/assert/issues",
+                "source": "https://github.com/webmozarts/assert/tree/1.9.1"
+            },
             "time": "2020-07-08T17:02:28+00:00"
         },
         {
@@ -3966,6 +4313,10 @@
                 }
             ],
             "description": "A robust cross-platform utility for normalizing, comparing and modifying file paths.",
+            "support": {
+                "issues": "https://github.com/webmozart/path-util/issues",
+                "source": "https://github.com/webmozart/path-util/tree/2.3.0"
+            },
             "abandoned": "symfony/filesystem",
             "time": "2015-12-17T08:42:14+00:00"
         },
@@ -4002,6 +4353,10 @@
             ],
             "description": "Action Scheduler for WordPress and WooCommerce",
             "homepage": "https://actionscheduler.org/",
+            "support": {
+                "issues": "https://github.com/woocommerce/action-scheduler/issues",
+                "source": "https://github.com/woocommerce/action-scheduler/tree/master"
+            },
             "time": "2020-05-12T16:22:33+00:00"
         },
         {
@@ -4042,6 +4397,10 @@
                 "woocommerce",
                 "wordpress"
             ],
+            "support": {
+                "issues": "https://github.com/woocommerce/woocommerce-sniffs/issues",
+                "source": "https://github.com/woocommerce/woocommerce-sniffs/tree/master"
+            },
             "time": "2020-08-06T18:23:45+00:00"
         },
         {
@@ -4088,6 +4447,11 @@
                 "standards",
                 "wordpress"
             ],
+            "support": {
+                "issues": "https://github.com/WordPress/WordPress-Coding-Standards/issues",
+                "source": "https://github.com/WordPress/WordPress-Coding-Standards",
+                "wiki": "https://github.com/WordPress/WordPress-Coding-Standards/wiki"
+            },
             "time": "2020-05-13T23:57:56+00:00"
         },
         {
@@ -4147,6 +4511,10 @@
                 "polyfill",
                 "testing"
             ],
+            "support": {
+                "issues": "https://github.com/Yoast/PHPUnit-Polyfills/issues",
+                "source": "https://github.com/Yoast/PHPUnit-Polyfills"
+            },
             "time": "2021-08-09T16:28:08+00:00"
         }
     ],
@@ -4165,5 +4533,5 @@
     "platform-overrides": {
         "php": "7.1"
     },
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.1.0"
 }

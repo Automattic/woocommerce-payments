@@ -30,6 +30,13 @@ export interface Transaction {
 	customer_country: string;
 	customer_currency: string;
 	deposit_id?: string;
+	deposit_status?:
+		| 'paid'
+		| 'pending'
+		| 'in_transit'
+		| 'canceled'
+		| 'failed'
+		| 'estimated';
 	available_on: string;
 	currency: string;
 	transaction_id: string;

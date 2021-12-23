@@ -206,7 +206,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->willReturn( $receipt );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'payment_id', 42 );
+		$request->set_param( 'payment_intent_id', 42 );
 
 		$response = $this->controller->generate_print_receipt( $request );
 
@@ -234,7 +234,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->method( 'get_receipt_markup' );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'payment_id', 42 );
+		$request->set_param( 'payment_intent_id', 42 );
 
 		$response = $this->controller->generate_print_receipt( $request );
 
@@ -264,7 +264,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->method( 'get_receipt_markup' );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'payment_id', 42 );
+		$request->set_param( 'payment_intent_id', 42 );
 
 		$response = $this->controller->generate_print_receipt( $request );
 
@@ -300,7 +300,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->method( 'get_receipt_markup' );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'payment_id', 42 );
+		$request->set_param( 'payment_intent_id', 42 );
 
 		$response = $this->controller->generate_print_receipt( $request );
 
@@ -339,7 +339,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->method( 'get_receipt_markup' );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'payment_id', 42 );
+		$request->set_param( 'payment_intent_id', 42 );
 
 		$response = $this->controller->generate_print_receipt( $request );
 
@@ -382,7 +382,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->willThrowException( new Exception( 'Something bad' ) );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'payment_id', 42 );
+		$request->set_param( 'payment_intent_id', 42 );
 
 		$response = $this->controller->generate_print_receipt( $request );
 
