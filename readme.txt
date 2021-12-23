@@ -103,7 +103,17 @@ Please note that our support for the checkout block is still experimental and th
 * Add - JS error boundaries to admin screens.
 * Update - Remove task from the overview list for setting up multiple currencies
 * Update - Return to task "Set up payments" after finishing KYC from WC-Admin.
+* Fix - Improve race condition checks to prevent duplicate order status changes.
 * Fix - Explicit currency formatting in customer-facing emails.
+* Fix - Update tooltip wording when deleting product variation.
+* Fix - Remove references to WooCommerce Subscriptions extension in the tooltips found on the Payment Methods settings table.
+* Fix - Update the Automatic Recurring Payments column on the Payment Methods table to only show which payment methods are supported by WooCommerce Subscriptions Core.
+* Fix - Prevent deprecation warnings when purchasing subscriptions products using WooCommerce Blocks.
+* Tweak - Update recurring payments copy on payment gateways page.
+* Fix - Incorrect text when filtering subscriptions to no results.
+* Changed - Subscription products must have a recurring amount greater than $0.
+* Fix - Return correct product prices datatype in WCPay.
+* Fix - Stop errors when viewing Subscription details when purchased via SEPA Direct Debit.
 
 = 3.4.0 - 2021-12-08 =
 * Add - Allow UI customizations on checkout payment fields.
