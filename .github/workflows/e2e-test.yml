@@ -1,4 +1,4 @@
-name: E2E tests
+name: WCPay E2E Tests
 
 on:
   schedule:
@@ -26,7 +26,7 @@ env:
   E2E_RETEST:               1
 
 jobs:
-  e2e-tests:
+  wcpay-e2e-tests:
     runs-on: ubuntu-18.04
 
     strategy:
@@ -90,7 +90,7 @@ jobs:
           key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
 
       - name: Add node_modules to cache
-      - uses: actions/cache@v2
+        uses: actions/cache@v2
         with:
           path: node_modules/
           key:  ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
