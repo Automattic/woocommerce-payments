@@ -49,15 +49,45 @@ interface Order {
 	subscriptions: Array< Record< string, string > >;
 }
 
+interface Order {
+	customer_url: string;
+	number: string;
+	url: string;
+	subscriptions: Array< Record< string, string > >;
+}
+
+export type DisputeReason =
+	| 'bank_cannot_process'
+	| 'check_returned'
+	| 'credit_not_processed'
+	| 'customer_initiated'
+	| 'debit_not_authorized'
+	| 'duplicate'
+	| 'fraudulent'
+	| 'general'
+	| 'incorrect_account_details'
+	| 'insufficient_funds'
+	| 'product_not_received'
+	| 'product_unacceptable'
+	| 'subscription_canceled'
+	| 'unrecognized';
+
+export type DisputeStatus =
+	| 'warning_needs_response'
+	| 'warning_under_review'
+	| 'warning_closed'
+	| 'needs_response'
+	| 'under_review'
+	| 'charge_refunded'
+	| 'won'
+	| 'lost';
+
 export interface Dispute {
 	status: DisputeStatus;
 	id: string;
 	evidence_details?: EvidenceDetails;
 	metadata?: Record< string, any >;
-	order?: {
-		number: string;
-		url: string;
-	};
+	order?: Order;
 	evidence?: Evidence;
 	fileSize?: Record< string, number >;
 	reason: DisputeReason;

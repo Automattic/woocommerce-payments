@@ -13,6 +13,7 @@ import DisputesList from '..';
 import { useDisputes, useDisputesSummary } from 'data/index';
 import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
 import React from 'react';
+import { DisputeReason, DisputeStatus } from 'wcpay/types/disputes';
 
 declare const global: {
 	wcpaySettings: {
@@ -55,8 +56,8 @@ const mockDisputes = [
 		evidence_details: {
 			due_by: 1573199200,
 		},
-		reason: 'fraudulent',
-		status: 'needs_response',
+		reason: 'fraudulent' as DisputeReason,
+		status: 'needs_response' as DisputeStatus,
 		charge: {
 			id: 'ch_mock',
 			payment_method_details: {
@@ -75,6 +76,8 @@ const mockDisputes = [
 		order: {
 			number: '1',
 			url: 'http://test.local/order/1',
+			customer_url: '',
+			subscriptions: [],
 		},
 	},
 	{
@@ -85,8 +88,8 @@ const mockDisputes = [
 		evidence_details: {
 			due_by: 1573099200,
 		},
-		reason: 'general',
-		status: 'under_review',
+		reason: 'general' as DisputeReason,
+		status: 'warning_under_review' as DisputeStatus,
 		// dispute without order or charge information
 	},
 ];
