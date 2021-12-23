@@ -1,6 +1,7 @@
 // eslint-disable-next-line wpcalypso/import-docblock
 import { Charge } from './charges';
 import { BalanceTransaction } from './balance-transactions';
+import { TableCardColumn } from '@woocommerce/components';
 
 interface Evidence {
 	[ key: string ]:
@@ -95,4 +96,21 @@ export interface DisputesSummary {
 export interface Disputes {
 	disputes: Dispute[];
 	isLoading: boolean;
+}
+
+export interface DisputesTableHeader extends TableCardColumn {
+	key:
+		| 'details'
+		| 'amount'
+		| 'status'
+		| 'reason'
+		| 'source'
+		| 'order'
+		| 'customer'
+		| 'email'
+		| 'country'
+		| 'created'
+		| 'dueBy';
+	cellClassName?: string;
+	visible?: boolean;
 }

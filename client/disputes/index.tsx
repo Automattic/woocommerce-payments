@@ -3,10 +3,12 @@
 /**
  * External dependencies
  */
+import React from 'react';
+import wcpayTracks from 'tracks';
 import { dateI18n } from '@wordpress/date';
 import { _n, __ } from '@wordpress/i18n';
 import moment from 'moment';
-import { TableCard, TableCardColumn } from '@woocommerce/components';
+import { TableCard } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import {
 	downloadCSVFile,
@@ -29,29 +31,11 @@ import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
+import { DisputesTableHeader } from 'wcpay/types/disputes';
 
 import './style.scss';
-import React from 'react';
-import wcpayTracks from 'tracks';
 
-interface Header extends TableCardColumn {
-	key:
-		| 'details'
-		| 'amount'
-		| 'status'
-		| 'reason'
-		| 'source'
-		| 'order'
-		| 'customer'
-		| 'email'
-		| 'country'
-		| 'created'
-		| 'dueBy';
-	cellClassName?: string;
-	visible?: boolean;
-}
-
-const headers: Header[] = [
+const headers: DisputesTableHeader[] = [
 	{
 		key: 'details',
 		label: '',
