@@ -13,17 +13,17 @@ on:
   workflow_dispatch:
 
 env:
-  E2E_GH_TOKEN:                                ${{ secrets.E2E_GH_TOKEN }}
-  CI_USER_TOKEN:                               ${{ secrets.CI_USER_TOKEN }}
-  WCP_DEV_TOOLS_REPO:                          ${{ secrets.WCP_DEV_TOOLS_REPO }}
-  WCP_SERVER_REPO:                             ${{ secrets.WCP_SERVER_REPO }}
-  WC_SUBSCRIPTIONS_REPO:                       ${{ secrets.WC_SUBSCRIPTIONS_REPO }}
-  WC_ACTION_SCHEDULER_REPO:                    ${{ secrets.WC_ACTION_SCHEDULER_REPO }}
-  WC_BLOCKS_REPO:                              ${{ secrets.WC_BLOCKS_REPO }}
-  E2E_BLOG_ID:                                 ${{ secrets.E2E_BLOG_ID }}
-  E2E_BLOG_TOKEN:                              ${{ secrets.E2E_BLOG_TOKEN }}
-  E2E_USER_TOKEN:                              ${{ secrets.E2E_USER_TOKEN }}
-  E2E_RETEST:                                  1
+  E2E_GH_TOKEN:             ${{ secrets.E2E_GH_TOKEN }}
+  CI_USER_TOKEN:            ${{ secrets.CI_USER_TOKEN }}
+  WCP_DEV_TOOLS_REPO:       ${{ secrets.WCP_DEV_TOOLS_REPO }}
+  WCP_SERVER_REPO:          ${{ secrets.WCP_SERVER_REPO }}
+  WC_SUBSCRIPTIONS_REPO:    ${{ secrets.WC_SUBSCRIPTIONS_REPO }}
+  WC_ACTION_SCHEDULER_REPO: ${{ secrets.WC_ACTION_SCHEDULER_REPO }}
+  WC_BLOCKS_REPO:           ${{ secrets.WC_BLOCKS_REPO }}
+  E2E_BLOG_ID:              ${{ secrets.E2E_BLOG_ID }}
+  E2E_BLOG_TOKEN:           ${{ secrets.E2E_BLOG_TOKEN }}
+  E2E_USER_TOKEN:           ${{ secrets.E2E_USER_TOKEN }}
+  E2E_RETEST:               1
 
 jobs:
   e2e-tests:
@@ -51,6 +51,7 @@ jobs:
       E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
+      # Log current test configuration
       - name: Current Test Configuration
         run: |
           echo "WordPress version: ${{ matrix.wordpress }}"
@@ -59,51 +60,74 @@ jobs:
           echo "Test Group: ${{ matrix.test_groups }}"
           echo "Test Branch: ${{ matrix.test_branches }}"
 
-      # clone the repository
-      - uses: actions/checkout@v2
+      # Clone Repo
+      - name: Clone WCPay Repository
+        uses: actions/checkout@v2
 
-      # Setup node version
-      - uses: actions/setup-node@v2
+      # Use node version from .nvmrc
+      - name: Setup NodeJS
+        uses: actions/setup-node@v2
         with:
           node-version-file: '.nvmrc'
 
-      # enable dependencies caching
-      - uses: actions/cache@v2
+      # Dependency caching
+      - name: Add composer to cache
+        uses: actions/cache@v2
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      - uses: actions/cache@v2
+
+      - name: Add vendor directory to cache
+        uses: actions/cache@v2
         with:
           path: vendor/
           key:  ${{ runner.os }}-vendor-${{ hashFiles('composer.lock') }}
-      - uses: actions/cache@v2
+
+      - name: Add NPM directory to cache
+        uses: actions/cache@v2
         with:
           path: ~/.npm/
           key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+
+      - name: Add node_modules to cache
       - uses: actions/cache@v2
         with:
           path: node_modules/
           key:  ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
 
-      # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
+      # PHP setup
+      - name: PHP Setup
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           tools:       composer
           extensions:  mysql
           coverage:    none
 
-      # install dependencies
-      - run: composer self-update 2.0.6 && composer install --no-progress
-      - run: npm ci && npm run build:client
+      # Prepare testing dependencies
+      - name: Prepare testing dependencies
+        run: |
+          echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
+          sudo systemctl start mysql.service
+          composer self-update 2.0.6 && composer install --no-progress
 
-      # prepare testing resources and run E2E tests
-      - run: echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
-      - run: sudo systemctl start mysql.service
-      - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false
-      - run: npm run test:e2e-setup
-      - run: npm run test:e2e
-      - uses: actions/upload-artifact@v2
+      # Build WCPay client
+      - name: Build WCPay Client
+        run: npm ci && npm run build:client
+
+      # Prepare test environment
+      - name: Prepare test environment
+        run: |
+          WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false
+          npm run test:e2e-setup
+
+      # Run Tests
+      - name: Run E2E Tests
+        run: npm run test:e2e
+
+      # Upload screenshots if any
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v2
         with:
           name: screenshots
           path: screenshots
