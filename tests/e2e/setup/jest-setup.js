@@ -1,8 +1,6 @@
 /**
  * External dependencies
  */
-import shell from 'shelljs';
-import config from 'config';
 import { get } from 'lodash';
 import {
 	enablePageDialogAccept,
@@ -29,8 +27,6 @@ const OBSERVED_CONSOLE_MESSAGE_TYPES = {
 	error: 'error',
 };
 
-const WP_CONTAINER = 'wcp_e2e_wordpress';
-const WP_CLI = `docker run --rm --user xfs --volumes-from ${ WP_CONTAINER } --network container:${ WP_CONTAINER } wordpress:cli`;
 const RESOURCE_TYPES_TO_BLOCK = [ 'image', 'font', 'media', 'other' ];
 const STYLESHEETS_TO_LOAD = [ /\/style.css/, /\/menu.css/, /chunk/, /blocks/ ];
 
@@ -180,27 +176,6 @@ function setTestTimeouts() {
 	jest.setTimeout( TIMEOUT );
 }
 
-async function createCustomerUser() {
-	const username = config.get( 'users.customer.username' );
-	const email = config.get( 'users.customer.email' );
-	const password = config.get( 'users.customer.password' );
-
-	shell.exec( `${ WP_CLI } wp user delete ${ username } --yes`, {
-		silent: true,
-	} );
-	shell.exec(
-		`${ WP_CLI } wp user create ${ username } ${ email } --role=customer --user_pass=${ password }`,
-		{ silent: true }
-	);
-}
-
-async function removeGuestUser() {
-	const email = config.get( 'users.guest.email' );
-	shell.exec( `${ WP_CLI } wp user delete ${ email } --yes`, {
-		silent: true,
-	} );
-}
-
 function blockAssets() {
 	page.setRequestInterception( true );
 	page.on( 'request', ( req ) => {
@@ -227,8 +202,6 @@ beforeAll( async () => {
 	observeConsoleLogging();
 	setTestTimeouts();
 	blockAssets();
-	await createCustomerUser();
-	await removeGuestUser();
 	await setupBrowser();
 } );
 
