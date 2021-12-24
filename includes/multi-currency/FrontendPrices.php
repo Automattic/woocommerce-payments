@@ -41,14 +41,14 @@ class FrontendPrices {
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			// Simple product price hooks.
-			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price' ], 50, 2 );
-			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price' ], 50, 2 );
-			add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price_string' ], 50, 2 );
+			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price_string' ], 50, 2 );
+			add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price_string' ], 50, 2 );
 
 			// Variation price hooks.
-			add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price' ], 50, 2 );
-			add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price' ], 50, 2 );
-			add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price_string' ], 50, 2 );
+			add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price_string' ], 50, 2 );
+			add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price_string' ], 50, 2 );
 
 			// Variation price range hooks.
 			add_filter( 'woocommerce_variation_prices', [ $this, 'get_variation_price_range' ], 50 );
@@ -85,6 +85,18 @@ class FrontendPrices {
 	}
 
 	/**
+	 * Returns the stringified price for a product.
+	 *
+	 * @param mixed $price The product's price.
+	 * @param mixed $product WC_Product or null.
+	 *
+	 * @return string The converted product's price.
+	 */
+	public function get_product_price_string( $price, $product = null ): string {
+		return (string) $this->get_product_price( $price, $product );
+	}
+
+	/**
 	 * Returns the price range for a variation.
 	 *
 	 * @param array $variation_prices The variation's prices.
@@ -94,7 +106,7 @@ class FrontendPrices {
 	public function get_variation_price_range( $variation_prices ) {
 		foreach ( $variation_prices as $price_type => $prices ) {
 			foreach ( $prices as $variation_id => $price ) {
-				$variation_prices[ $price_type ][ $variation_id ] = $this->get_product_price( $price );
+				$variation_prices[ $price_type ][ $variation_id ] = $this->get_product_price_string( $price );
 			}
 		}
 
