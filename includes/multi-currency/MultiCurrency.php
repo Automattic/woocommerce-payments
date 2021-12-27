@@ -298,6 +298,12 @@ class MultiCurrency {
 	 * @return array The new settings pages.
 	 */
 	public function init_settings_pages( $settings_pages ): array {
+		// We don't need to check if Stripe is connected for the
+		// Settings page generation on the incoming CLI calls.
+		if ( defined( 'WP_CLI' ) ) {
+			return $settings_pages;
+		}
+
 		if ( $this->payments_account->is_stripe_connected() ) {
 			$settings_pages[] = new Settings( $this );
 		} else {
