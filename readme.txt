@@ -99,6 +99,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 3.5.0 - 2021-xx-xx =
+* Add - Add compatibility between Multi-Currency and WooCommerce Name Your Price.
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
 * Add - JS error boundaries to admin screens.
 * Update - Remove task from the overview list for setting up multiple currencies
