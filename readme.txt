@@ -2,7 +2,7 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
-Tested up to: 5.8.1
+Tested up to: 5.8.2
 Requires PHP: 7.0
 Stable tag: 3.4.0
 License: GPLv2 or later
@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.6 or newer.
-* WooCommerce 5.5 or newer.
+* WooCommerce 5.8 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -114,6 +114,7 @@ Please note that our support for the checkout block is still experimental and th
 * Changed - Subscription products must have a recurring amount greater than $0.
 * Fix - Return correct product prices datatype in WCPay.
 * Fix - Stop errors when viewing Subscription details when purchased via SEPA Direct Debit.
+* Update - Bump minimum supported version of WooCommerce from 5.5 to 5.8.
 
 = 3.4.0 - 2021-12-08 =
 * Add - Allow UI customizations on checkout payment fields.
