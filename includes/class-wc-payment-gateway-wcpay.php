@@ -1029,7 +1029,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
-			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout();
+			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 			$intent = $this->payments_api_client->create_and_confirm_intention(
@@ -2699,9 +2699,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Returns the list of enabled payment method types that will function with the current checkout.
 	 *
 	 * @param string $order_id optional Order ID.
+	 * @param bool   $force_currency_check optional Whether the currency check is required even if is_admin().
 	 * @return string[]
 	 */
-	public function get_payment_method_ids_enabled_at_checkout( $order_id = null ) {
+	public function get_payment_method_ids_enabled_at_checkout( $order_id = null, $force_currency_check = false ) {
 		return [
 			'card',
 		];
