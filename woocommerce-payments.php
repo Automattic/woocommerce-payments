@@ -67,7 +67,7 @@ if ( ! $is_autoloading_ready ) {
 add_filter( 'woocommerce_translations_updates_for_woocommerce-payments', '__return_true' );
 
 /**
- * Initialize the Jetpack connection functionality.
+ * Initialize the Jetpack functionalities: connection, identity crisis, etc.
  */
 function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
@@ -79,6 +79,16 @@ function wcpay_jetpack_init() {
 		[
 			'slug' => 'woocommerce-payments',
 			'name' => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+		]
+	);
+
+	$jetpack_config->ensure(
+		'identity_crisis',
+		[
+			'slug'          => 'woocommerce-payments',
+			'customContent' => [], // TODO: need to update this variable.
+			'admin_page'    => '/wp-admin/admin.php?page=wc-admin',
+			'priority'      => 5,
 		]
 	);
 }
