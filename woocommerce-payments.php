@@ -82,11 +82,25 @@ function wcpay_jetpack_init() {
 		]
 	);
 
+	$custom_content = [ // TODO: need to update these texts.
+		'headerText'             => 'Sample Header',
+		'mainTitle'              => 'Sample main title',
+		'mainBodyText'           => 'Sample main body text',
+		'migratedTitle'          => 'Sample migrated title',
+		'migratedBodyText'       => 'Sample migrated body text',
+		'migrateCardTitle'       => 'Sample migrate card title',
+		'migrateCardBodyText'    => 'Sample migrate card body text',
+		'startFreshCardTitle'    => 'Sample start fresh card title',
+		'startFreshCardBodyText' => 'Sample start fresh card body',
+		'nonAdminTitle'          => 'Sample non-admin title',
+		'nonAdminBodyText'       => 'Sample non-admin body text',
+	];
+
 	$jetpack_config->ensure(
 		'identity_crisis',
 		[
 			'slug'          => 'woocommerce-payments',
-			'customContent' => [], // TODO: need to update this variable.
+			'customContent' => $custom_content,
 			'admin_page'    => '/wp-admin/admin.php?page=wc-admin',
 			'priority'      => 5,
 		]
