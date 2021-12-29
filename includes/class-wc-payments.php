@@ -279,9 +279,6 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
 
-		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-translations-loader.php';
-		WC_Payments_Translations_Loader::init();
-
 		// Add admin screens.
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
