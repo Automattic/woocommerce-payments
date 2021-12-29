@@ -41,14 +41,14 @@ class FrontendPrices {
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			// Simple product price hooks.
-			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price' ], 50, 2 );
-			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price' ], 50, 2 );
-			add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price_string' ], 50, 2 );
+			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price_string' ], 50, 2 );
+			add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price_string' ], 50, 2 );
 
 			// Variation price hooks.
-			add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price' ], 50, 2 );
-			add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price' ], 50, 2 );
-			add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price_string' ], 50, 2 );
+			add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price_string' ], 50, 2 );
+			add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price_string' ], 50, 2 );
 
 			// Variation price range hooks.
 			add_filter( 'woocommerce_variation_prices', [ $this, 'get_variation_price_range' ], 50 );
@@ -85,6 +85,18 @@ class FrontendPrices {
 	}
 
 	/**
+	 * Returns the stringified price for a product.
+	 *
+	 * @param mixed $price The product's price.
+	 * @param mixed $product WC_Product or null.
+	 *
+	 * @return string The converted product's price.
+	 */
+	public function get_product_price_string( $price, $product = null ): string {
+		return (string) $this->get_product_price( $price, $product );
+	}
+
+	/**
 	 * Returns the price range for a variation.
 	 *
 	 * @param array $variation_prices The variation's prices.
@@ -94,7 +106,7 @@ class FrontendPrices {
 	public function get_variation_price_range( $variation_prices ) {
 		foreach ( $variation_prices as $price_type => $prices ) {
 			foreach ( $prices as $variation_id => $price ) {
-				$variation_prices[ $price_type ][ $variation_id ] = $this->get_product_price( $price );
+				$variation_prices[ $price_type ][ $variation_id ] = $this->get_product_price_string( $price );
 			}
 		}
 
@@ -190,7 +202,7 @@ class FrontendPrices {
 	 * @return array The shipping zone settings with converted min_amount.
 	 */
 	public function get_free_shipping_min_amount( $data ) {
-		if ( ! isset( $data['min_amount'] ) || ! $data['min_amount'] ) {
+		if ( empty( $data['min_amount'] ) ) {
 			return $data;
 		}
 
@@ -214,7 +226,7 @@ class FrontendPrices {
 		foreach ( $shipping_zones as $shipping_zone ) {
 			foreach ( $shipping_zone['shipping_methods'] as $shipping_method ) {
 				if ( 'free_shipping' === $shipping_method->id ) {
-					$option_name = 'option_woocommerce_' . trim( $shipping_method->id ) . '_' . intval( $shipping_method->instance_id ) . '_settings';
+					$option_name = 'option_woocommerce_' . trim( $shipping_method->id ) . '_' . (int) $shipping_method->instance_id . '_settings';
 					add_filter( $option_name, [ $this, 'get_free_shipping_min_amount' ], 50 );
 				}
 			}

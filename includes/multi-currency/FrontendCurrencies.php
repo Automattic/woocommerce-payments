@@ -51,13 +51,40 @@ class FrontendCurrencies {
 	 */
 	protected $currency_format = [];
 
-
 	/**
 	 * Order currency code.
 	 *
 	 * @var string|null
 	 */
-	protected $order_currency = null;
+	protected $order_currency;
+
+	/**
+	 * WOO currency cache.
+	 *
+	 * @var string
+	 */
+	private $woocommerce_currency;
+
+	/**
+	 * Price Decimal Separator cache.
+	 *
+	 * @var array
+	 */
+	private $price_decimal_separators = [];
+
+	/**
+	 * Selected Currency Code cache.
+	 *
+	 * @var string
+	 */
+	private $selected_currency_code;
+
+	/**
+	 * Store Currency cache.
+	 *
+	 * @var Currency
+	 */
+	private $store_currency;
 
 	/**
 	 * Constructor.
@@ -90,12 +117,27 @@ class FrontendCurrencies {
 	}
 
 	/**
+	 * The selected currency changed. We discard some cache.
+	 *
+	 * @return void
+	 */
+	public function selected_currency_changed() {
+		$this->selected_currency_code   = null;
+		$this->price_decimal_separators = [];
+		$this->woocommerce_currency     = null;
+		$this->store_currency           = null;
+	}
+
+	/**
 	 * Gets the store currency.
 	 *
 	 * @return  Currency  The store currency wrapped as a Currency object
 	 */
-	public function get_store_currency() {
-		return new Currency( get_option( 'woocommerce_currency' ) );
+	public function get_store_currency(): Currency {
+		if ( empty( $this->store_currency ) ) {
+			$this->store_currency = $this->multi_currency->get_default_currency();
+		}
+		return $this->store_currency;
 	}
 
 	/**
@@ -105,9 +147,13 @@ class FrontendCurrencies {
 	 */
 	public function get_woocommerce_currency(): string {
 		if ( $this->compatibility->should_return_store_currency() ) {
-			return $this->multi_currency->get_default_currency()->get_code();
+			return $this->get_store_currency()->get_code();
 		}
-		return $this->multi_currency->get_selected_currency()->get_code();
+
+		if ( empty( $this->woocommerce_currency ) ) {
+			$this->woocommerce_currency = $this->get_selected_currency_code();
+		}
+		return $this->woocommerce_currency;
 	}
 
 	/**
@@ -133,11 +179,19 @@ class FrontendCurrencies {
 	 * @return string The decimal separator.
 	 */
 	public function get_price_decimal_separator( $separator ): string {
-		$currency_code = $this->get_currency_code();
-		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
-			return $this->localization_service->get_currency_format( $currency_code )['decimal_sep'];
+		$currency_code       = $this->get_currency_code();
+		$store_currency_code = $this->get_store_currency()->get_code();
+
+		if ( $currency_code === $store_currency_code ) {
+			$currency_code                                    = $store_currency_code;
+			$this->price_decimal_separators[ $currency_code ] = $separator;
 		}
-		return $separator;
+
+		if ( empty( $this->price_decimal_separators[ $currency_code ] ) ) {
+			$this->price_decimal_separators[ $currency_code ] = $this->localization_service->get_currency_format( $currency_code )['decimal_sep'];
+		}
+
+		return $this->price_decimal_separators[ $currency_code ];
 	}
 
 	/**
@@ -200,7 +254,7 @@ class FrontendCurrencies {
 	 *
 	 * @param mixed $arg Either WC_Order or the id of an order are expected, but can be empty.
 	 *
-	 * @return int The order id or what was passed as $arg.
+	 * @return int|mixed The order id or what was passed as $arg.
 	 */
 	public function init_order_currency( $arg ) {
 		if ( null !== $this->order_currency ) {
@@ -214,7 +268,7 @@ class FrontendCurrencies {
 			return $order->get_id();
 		}
 
-		$this->order_currency = $this->multi_currency->get_selected_currency();
+		$this->order_currency = $this->multi_currency->get_selected_currency()->get_code();
 		return $arg;
 	}
 
@@ -250,10 +304,25 @@ class FrontendCurrencies {
 	 * @return string|null Three letter currency code.
 	 */
 	private function get_currency_code() {
-		if ( $this->should_override_currency_code() ) {
+		if ( $this->should_use_order_currency() ) {
 			return $this->order_currency;
 		}
-		return $this->multi_currency->get_selected_currency()->get_code();
+
+		$this->selected_currency_code = $this->get_selected_currency_code();
+
+		return $this->selected_currency_code;
+	}
+
+	/**
+	 * Helper function to "cache" the selected currency.
+	 *
+	 * @return string
+	 */
+	private function get_selected_currency_code(): string {
+		if ( empty( $this->selected_currency_code ) ) {
+			$this->selected_currency_code = $this->multi_currency->get_selected_currency()->get_code();
+		}
+		return $this->selected_currency_code;
 	}
 
 	/**
@@ -261,13 +330,21 @@ class FrontendCurrencies {
 	 *
 	 * @return bool
 	 */
-	private function should_override_currency_code(): bool {
-		return $this->utils->is_call_in_backtrace(
-			[
-				'WC_Shortcode_My_Account::view_order',
-				'WC_Shortcode_Checkout::order_received',
-				'WC_Shortcode_Checkout::order_pay',
-			]
-		);
+	private function should_use_order_currency(): bool {
+		$pages = [ 'my-account', 'checkout' ];
+		$vars  = [ 'order-received', 'order-pay', 'order-received', 'orders' ];
+
+		if ( $this->utils->is_page_with_vars( $pages, $vars ) ) {
+			return $this->utils->is_call_in_backtrace(
+				[
+					'WC_Shortcode_My_Account::view_order',
+					'WC_Shortcode_Checkout::order_received',
+					'WC_Shortcode_Checkout::order_pay',
+					'WC_Order->get_formatted_order_total',
+				]
+			);
+		}
+
+		return false;
 	}
 }

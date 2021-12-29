@@ -61,6 +61,10 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->mock_utils                = $this->createMock( Utils::class );
 		$this->mock_order                = WC_Helper_Order::create_order();
 
+		$this->mock_multi_currency
+			->method( 'get_default_currency' )
+			->willReturn( new Currency( 'USD' ) );
+
 		$this->frontend_currencies = new FrontendCurrencies( $this->mock_multi_currency, $this->mock_localization_service, $this->mock_utils, $this->mock_compatibility );
 	}
 
@@ -94,24 +98,14 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_woocommerce_currency_returns_selected_currency() {
-		$store_currency    = new Currency( 'USD' );
-		$selected_currency = new Currency( 'EUR' );
-		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $store_currency );
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $selected_currency );
-
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $selected_currency );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'EUR' ) );
 		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
 
 		$this->assertSame( 'EUR', $this->frontend_currencies->get_woocommerce_currency() );
 	}
 
 	public function test_get_woocommerce_currency_returns_store_currency() {
-		$store_currency    = new Currency( 'USD' );
-		$selected_currency = new Currency( 'EUR' );
-		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $store_currency );
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $selected_currency );
-
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $selected_currency );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'EUR' ) );
 		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( true );
 
 		$this->assertSame( 'USD', $this->frontend_currencies->get_woocommerce_currency() );
@@ -128,6 +122,10 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->mock_utils
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
 			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'USD' ) );
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'num_decimals' => 3 ] );
@@ -157,6 +155,10 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
 			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'USD' ) );
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'decimal_sep' => '.' ] );
 
@@ -184,6 +186,10 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->mock_utils
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
 			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'USD' ) );
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'thousand_sep' => ',' ] );
@@ -213,10 +219,15 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
 			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'USD' ) );
 		$this->mock_localization_service->method( 'get_currency_format' )->with( 'EUR' )->willReturn( [ 'currency_pos' => 'left' ] );
 
 		$this->mock_order->set_currency( 'EUR' );
+		$this->frontend_currencies->selected_currency_changed();
 		$this->frontend_currencies->init_order_currency( $this->mock_order );
 
 		$this->assertEquals( '%1$s%2$s', $this->frontend_currencies->get_woocommerce_price_format( '%2$s%1$s' ) );

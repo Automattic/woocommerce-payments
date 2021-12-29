@@ -66,7 +66,7 @@ final class Experimental_Abtest {
 	 * Retrieve the test variation for a provided A/B test.
 	 *
 	 * @param string $test_name Name of the A/B test.
-	 * @return mixed|null A/B test variation, or null on failure.
+	 * @return mixed A/B test variation, or null on failure.
 	 */
 	public function get_variation( $test_name ) {
 		// Default to the control variation when users haven't consented to tracking.
@@ -92,7 +92,7 @@ final class Experimental_Abtest {
 	 * a value of "control".
 	 *
 	 * @param string $test_name Name of the A/B test.
-	 * @return array|\WP_Error A/B test variation, or error on failure.
+	 * @return string|array|\WP_Error A/B test variation, or error on failure.
 	 */
 	protected function fetch_variation( $test_name ) {
 		// Make sure test name exists.
@@ -101,7 +101,7 @@ final class Experimental_Abtest {
 		}
 
 		// Make sure test name is a valid one.
-		if ( ! preg_match( '/^[A-Za-z0-9_]+$/', $test_name ) ) {
+		if ( ! preg_match( '/^[[:alnum:]_]+$/', $test_name ) ) {
 			return new \WP_Error( 'invalid_test_name', 'Invalid A/B test name.' );
 		}
 
