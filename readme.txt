@@ -114,6 +114,7 @@ Please note that our support for the checkout block is still experimental and th
 * Changed - Subscription products must have a recurring amount greater than $0.
 * Fix - Return correct product prices datatype in WCPay.
 * Fix - Stop errors when viewing Subscription details when purchased via SEPA Direct Debit.
+* Fix - Force currency check when preparing a payment intent to request even when is_admin() returns true.
 * Update - Bump minimum supported version of WooCommerce from 5.5 to 5.8.
 
 = 3.4.0 - 2021-12-08 =
