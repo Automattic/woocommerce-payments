@@ -41,7 +41,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await merchant.logout();
 		} );
 
-		xit( 'using a basic card', async () => {
+		it( 'using a basic card', async () => {
 			await shopper.goToShop();
 			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
@@ -60,7 +60,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			} );
 		} );
 
-		xit( 'using a 3DS card', async () => {
+		it( 'using a 3DS card', async () => {
 			await shopper.goToShop();
 			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
