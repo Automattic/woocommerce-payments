@@ -1,6 +1,9 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.5.0 - 2021-xx-xx =
+= 3.6.0 - 2022-xx-xx =
+*
+
+= 3.5.0 - 2021-12-29 =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
 * Add - JS error boundaries to admin screens.
 * Update - Remove task from the overview list for setting up multiple currencies.
