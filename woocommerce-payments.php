@@ -101,6 +101,7 @@ function wcpay_jetpack_init() {
 		[
 			'slug'          => 'woocommerce-payments',
 			'customContent' => $custom_content,
+			'logo'          => plugins_url( 'assets/images/logo.svg', WCPAY_PLUGIN_FILE ),
 			'admin_page'    => '/wp-admin/admin.php?page=wc-admin',
 			'priority'      => 5,
 		]
