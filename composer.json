@@ -14,7 +14,7 @@
     "require": {
       "php": "7.*",
       "automattic/jetpack-connection": "1.34.x-dev",
-      "automattic/jetpack-config": "1.5.3",
+      "automattic/jetpack-config": "1.6.x-dev",
       "automattic/jetpack-autoloader": "2.10.10",
       "automattic/jetpack-identity-crisis": "0.6.x-dev",
       "myclabs/php-enum": "1.7.7",
