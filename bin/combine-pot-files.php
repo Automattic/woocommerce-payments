@@ -75,9 +75,90 @@ function woocommerce_admin_parse_pot( $file_name ) {
 	return $originals;
 }
 
+/**
+ * Generates a map with the mapping for 'original source file' -> final transpiled/minified file in the 'dist' folder.
+ * Format example:
+ * [
+ *   'client/card-readers/settings/file-upload.js' => [
+ *     'dist/index.js',
+ *     'dist/tos.js',
+ *   ]
+ * ]
+ *
+ * @return array Mapping of source js files and the generated files that use them.
+ */
+function load_js_transpiling_source_maps(): array {
+	$mappings = [];
+	foreach ( glob( "dist/*.js.map", GLOB_NOSORT ) as $filename ) {
+		$file_content = file_get_contents( $filename );
+		if ( $file_content === false ) {
+			echo "[WARN] Unable to read file '". $filename . "'. Some translation strings might not have the correct references as a result.\n";
+			continue;
+		}
+		$file_json = json_decode( $file_content, true );
+		if ( $file_json === null ) {
+			echo "[WARN] Unable to parse JSON file: '". $filename . "'. Some translation strings might not have the correct references as a result.\n";
+			continue;
+		}
+
+		foreach ( $file_json[ 'sources' ] as $source ) {
+			$source = preg_replace( '%^webpack://woocommerce-payments/\./(client/.*)$%', '${1}', $source );
+			if ( 'webpack' !== substr( $source, 0, 7 ) ) {
+				$mappings[ $source ][] = $file_json[ 'file' ];
+			}
+		}
+	}
+
+	if ( empty( $mappings ) ) {
+		echo "[ERROR] Unable to load JS transpiling mappings from 'dist/*.js.map' files. Make sure the JS assets compilation was successful.\n";
+		die();
+	}
+
+	return $mappings;
+}
+
+/**
+ * For each file reference to a javascript/typescript file (from the client folder) in the comments, it adds file
+ * references to the generated files (from the dist folder) that use that particular javascript/typescript as source.
+ *
+ * @param array $js_mappings Mapping of source js files and the generated files that use them.
+ * @param array $translations POT translations (including references/comments).
+ */
+function add_transpiled_filepath_reference_to_comments( array $js_mappings, array $translations ): array {
+	foreach ( $translations as $message => $references ) {
+		// Check references for js/jsx/ts/tsx files
+		$dist_js_to_add = [];
+		foreach ( $references as $ref ) {
+			if ( preg_match( '%^#: (.+\.(js|jsx|ts|tsx)):\d+$%', $ref, $m ) ) {
+				if ( ! array_key_exists( $m[1], $js_mappings ) ) {
+					// The file $m[1] is not used in any of the generated client JS files. Skip it.
+					continue;
+				}
+
+				foreach ( $js_mappings[ $m[1] ] as $mapping ) {
+					$dist_js_to_add[] = '#: dist/' . $mapping . ':1';
+				}
+			}
+		}
+
+		// Add the new file references to the top of the list.
+		if ( ! empty( $dist_js_to_add ) ) {
+			array_splice( $translations[ $message], 0, 0, array_unique( $dist_js_to_add ) );
+		}
+	}
+
+	return $translations;
+}
+
 // Read the translation files.
 $originals_1 = woocommerce_admin_parse_pot( $argv[1] );
 $originals_2 = woocommerce_admin_parse_pot( $argv[2] );
+
+// For transpiled JS client files, we need to add a reference to the generated dist file.
+$js_source_maps = load_js_transpiling_source_maps();
+$originals_1 = add_transpiled_filepath_reference_to_comments( $js_source_maps, $originals_1 );
+$originals_2 = add_transpiled_filepath_reference_to_comments( $js_source_maps, $originals_2 );
+
 // Delete the original sources.
 unlink( $argv[1] );
 unlink( $argv[2] );

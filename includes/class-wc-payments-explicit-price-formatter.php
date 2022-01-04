@@ -54,13 +54,15 @@ class WC_Payments_Explicit_Price_Formatter {
 		// As is_admin() returns false for REST requests, we need to skip those checks for REST requests for backend too.
 		$is_backend_request = (
 			// Current URL is an admın URL.
-			( 0 === strpos( strtolower( wp_get_referer() ), strtolower( admin_url() ) ) )
+			( 0 === stripos( wp_get_referer(), admin_url() ) )
 			// The current request is a REST request.
 			&& WC()->is_rest_api_request()
 		);
 
+		$is_customer_email = doing_action( 'woocommerce_email_order_details' );
+
 		// Only apply this for frontend.
-		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! $is_backend_request ) {
+		if ( ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! $is_backend_request ) || $is_customer_email ) {
 			// If customer Multi-Currency is disabled, don't use explicit currencies on frontend.
 			// Because it'll have only the store currency active, same as count == 1.
 			if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -73,7 +75,7 @@ class WC_Payments_Explicit_Price_Formatter {
 			}
 
 			// If the instance isn't initalized yet, skip the checks.
-			if ( false === self::$multi_currency_instance->is_initialized() ) {
+			if ( ! self::$multi_currency_instance->is_initialized() ) {
 				return false;
 			}
 

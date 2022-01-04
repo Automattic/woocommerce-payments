@@ -83,7 +83,7 @@ class WC_Payments_Customer_Service {
 		if ( null === $user_id || 0 === $user_id ) {
 			// Try to retrieve the customer id from the session if stored previously.
 			$customer_id = WC()->session ? WC()->session->get( self::CUSTOMER_ID_SESSION_KEY ) : null;
-			return $customer_id;
+			return is_string( $customer_id ) ? $customer_id : null;
 		}
 
 		$customer_id = get_user_option( $this->get_customer_id_option(), $user_id );
@@ -382,9 +382,8 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @param WC_Order $order WC Order object.
 	 *
-	 * @return string WCPay customer ID.
-	 *
-	 * @throws API_Exception If there's an error creating customer.
+	 * @return string|null    WCPay customer ID.
+	 * @throws API_Exception  If there's an error creating customer.
 	 */
 	public function get_customer_id_for_order( $order ) {
 		$customer_id = null;

@@ -48,7 +48,7 @@ class Currency implements \JsonSerializable {
 	/**
 	 * Currency rounding rate after conversion.
 	 *
-	 * @var float|null
+	 * @var string|null
 	 */
 	private $rounding;
 
@@ -64,7 +64,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @var int|null
 	 */
-	private $last_updated = null;
+	private $last_updated;
 
 	/**
 	 * Constructor.
@@ -171,7 +171,7 @@ class Currency implements \JsonSerializable {
 	 * @return string Rounding rate.
 	 */
 	public function get_rounding(): string {
-		return $this->rounding ?? '0';
+		return (string) ( $this->rounding ?? '0' );
 	}
 
 	/**
@@ -233,6 +233,7 @@ class Currency implements \JsonSerializable {
 	 * Sets the currency's rounding rate.
 	 *
 	 * @param string $rounding Rounding rate.
+	 * @return void
 	 */
 	public function set_rounding( $rounding ) {
 		$this->rounding = $rounding;

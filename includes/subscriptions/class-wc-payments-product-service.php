@@ -139,10 +139,10 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product   The product to get the WC Pay ID for.
 	 * @param bool|null  $test_mode Is WC Pay in test/dev mode.
 	 *
-	 * @return string             The WC Pay product ID or an empty string.
+	 * @return bool                 The WC Pay product ID or an empty string.
 	 */
-	public static function has_wcpay_product_id( WC_Product $product, $test_mode = null ) : string {
-		return (bool) $product->get_meta( self::get_wcpay_product_id_option( $test_mode ), true );
+	public static function has_wcpay_product_id( WC_Product $product, $test_mode = null ) : bool {
+		return (bool) $product->get_meta( self::get_wcpay_product_id_option( $test_mode ) );
 	}
 
 	/**
@@ -296,7 +296,7 @@ class WC_Payments_Product_Service {
 
 			// Update all versions of WCPay Products that need updating.
 			foreach ( $wcpay_product_ids as $environment => $wcpay_product_id ) {
-				$data['test_mode'] = 'live' === $environment ? false : true;
+				$data['test_mode'] = 'live' !== $environment;
 				$this->payments_api_client->update_product( $wcpay_product_id, $data );
 			}
 
@@ -356,15 +356,13 @@ class WC_Payments_Product_Service {
 
 		foreach ( $wcpay_product_ids as $environment => $wcpay_product_id ) {
 			try {
-				$test_mode = 'live' === $environment ? false : true;
-
 				$this->delete_all_wcpay_price_ids( $product );
 
 				$this->payments_api_client->update_product(
 					$wcpay_product_id,
 					[
 						'active'    => 'false',
-						'test_mode' => $test_mode,
+						'test_mode' => 'live' !== $environment,
 					]
 				);
 			} catch ( API_Exception $e ) {
@@ -387,13 +385,11 @@ class WC_Payments_Product_Service {
 
 		foreach ( $wcpay_product_ids as $environment => $wcpay_product_id ) {
 			try {
-				$test_mode = 'live' === $environment ? false : true;
-
 				$this->payments_api_client->update_product(
 					$wcpay_product_id,
 					[
 						'active'    => 'true',
-						'test_mode' => $test_mode,
+						'test_mode' => 'live' !== $environment,
 					]
 				);
 			} catch ( API_Exception $e ) {
@@ -446,7 +442,7 @@ class WC_Payments_Product_Service {
 		// Prevent WC Subs Core from saving the interval when it's invalid.
 		if ( ! $this->is_valid_billing_cycle( $period, $interval ) ) {
 			$new_interval                              = $this->get_period_interval_limit( $period );
-			$_REQUEST['_subscription_period_interval'] = strval( $new_interval );
+			$_REQUEST['_subscription_period_interval'] = (string) $new_interval;
 
 			/* translators: %1$s Opening strong tag, %2$s Closing strong tag, %3$s The subscription renewal interval (every x time) */
 			wcs_add_admin_notice( sprintf( __( '%1$sThere was an issue saving your product!%2$s A subscription product\'s billing period cannot be longer than one year. We have updated this product to renew every %3$s.', 'woocommerce-payments' ), '<strong>', '</strong>', wcs_get_subscription_period_strings( $new_interval, $period ) ), 'error' );
@@ -484,7 +480,7 @@ class WC_Payments_Product_Service {
 		// Prevent WC Subs Core from saving the interval when it's invalid.
 		if ( ! $this->is_valid_billing_cycle( $period, $interval ) ) {
 			$new_interval = $this->get_period_interval_limit( $period );
-			$_POST['variable_subscription_period_interval'][ $index ] = strval( $new_interval );
+			$_POST['variable_subscription_period_interval'][ $index ] = (string) $new_interval;
 
 			if ( false === $admin_notice_sent ) {
 				$admin_notice_sent = true;
@@ -537,7 +533,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * If applicable, returns the product's variations otherwise returns the product by itself.
 	 *
-	 * @param WC_Product $product The product.
+	 * @param WC_Product|WC_Product_Variable $product The product.
 	 *
 	 * @return array The products to update.
 	 */
