@@ -263,7 +263,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 
 		$capture_method          = empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] ? 'automatic' : 'manual';
-		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id );
+		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 
 		try {
 			$payment_intent = $this->payments_api_client->create_intention(
@@ -828,9 +828,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * Returns the list of enabled payment method types that will function with the current checkout.
 	 *
 	 * @param string $order_id optional Order ID.
+	 * @param bool   $force_currency_check optional Whether the currency check is required even if is_admin().
+	 *
 	 * @return string[]
 	 */
-	public function get_payment_method_ids_enabled_at_checkout( $order_id = null ) {
+	public function get_payment_method_ids_enabled_at_checkout( $order_id = null, $force_currency_check = false ) {
 		$capture                    = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
 		$capturable_payment_methods = $capture ? $this->get_upe_enabled_payment_method_ids() : [ 'card' ];
 		$enabled_payment_methods    = [];
@@ -838,8 +840,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		foreach ( $capturable_payment_methods as $payment_method_id ) {
 			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
 			if ( isset( $this->payment_methods[ $payment_method_id ] ) ) {
+				// When creating a payment intent, we need to ensure the currency is matching
+				// with the payment methods which are sent with the payment intent request, otherwise
+				// Stripe returns an error.
+
+				// force_currency_check = 0 is_admin = 0 currency_is_checked = 1.
+				// force_currency_check = 0 is_admin = 1 currency_is_checked = 0.
+				// force_currency_check = 1 is_admin = 0 currency_is_checked = 1.
+				// force_currency_check = 1 is_admin = 1 currency_is_checked = 1.
+
+				$skip_currency_check       = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout() && ( is_admin() || $processing_payment_method->is_currency_valid() ) ) {
+				if ( $processing_payment_method->is_enabled_at_checkout() && ( $skip_currency_check || $processing_payment_method->is_currency_valid() ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
 					if ( 'active' === $status ) {
 						$enabled_payment_methods[] = $payment_method_id;

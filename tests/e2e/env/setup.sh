@@ -9,7 +9,12 @@ if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	. "$E2E_ROOT/config/local.env"
 fi
 
+# Variables
 BLOG_ID=${E2E_BLOG_ID-111}
+WC_GUEST_EMAIL='guest@woocommercecoree2etestsuite.com'
+WC_CUSTOMER_EMAIL='customer@woocommercecoree2etestsuite.com'
+WC_CUSTOMER_USERNAME='customer'
+WC_CUSTOMER_PASSWORD='password'
 
 # Setup WCPay local server instance.
 # Only if E2E_USE_LOCAL_SERVER is present & equals to true.
@@ -160,6 +165,15 @@ cli wp wc --user=admin tool run install_pages
 
 echo "Importing some sample data..."
 cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip
+
+echo "Removing customer account if present ..."
+cli wp user delete $WC_CUSTOMER_EMAIL --yes
+
+echo "Removing guest account if present ..."
+cli wp user delete $WC_GUEST_EMAIL --yes
+
+echo "Adding customer account ..."
+cli wp user create $WC_CUSTOMER_USERNAME $WC_CUSTOMER_EMAIL --role=customer --user_pass=$WC_CUSTOMER_PASSWORD
 
 # TODO: Build a zip and use it to install plugin to make sure production build is under test.
 echo "Activating the WooCommerce Payments plugin..."

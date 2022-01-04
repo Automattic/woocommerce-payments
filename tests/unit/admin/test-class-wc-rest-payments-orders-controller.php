@@ -138,6 +138,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'woocommerce_payments', $result_order->get_payment_method() );
 		$this->assertEquals( 'WooCommerce In-Person Payments', $result_order->get_payment_method_title() );
 		$this->assertEquals( 'completed', $result_order->get_status() );
+		$this->assertStringEndsWith( '/wc/v3/payments/readers/receipts/pi_mock', $result_order->get_meta( 'receipt_url' ) );
 	}
 
 	public function test_capture_terminal_payment_intent_non_capturable() {
