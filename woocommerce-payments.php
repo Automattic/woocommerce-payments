@@ -8,9 +8,9 @@
  * Woo: 5278104:bf3cf30871604e15eec560c962593c1f
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
- * WC requires at least: 4.4
+ * WC requires at least: 4.5
  * WC tested up to: 6.1
- * Requires at least: 5.6
+ * Requires at least: 5.7
  * Requires PHP: 7.0
  * Version: 3.5.0
  *
