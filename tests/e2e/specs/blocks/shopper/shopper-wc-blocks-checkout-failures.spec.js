@@ -26,7 +26,6 @@ import {
 	confirmCardAuthentication,
 } from '../../../utils/payments';
 
-// Unskip these after debugging failing shopper tests.
 describeif( RUN_WC_BLOCKS_TESTS )(
 	'WooCommerce Blocks > Checkout failures',
 	() => {
