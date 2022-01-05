@@ -101,6 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 = 3.6.0 - 2022-xx-xx =
 * Fix UPE validation error visibility on checkout page.
 * Tweak - Load translations for js files directly from lang-pack json files.
+* Add - Add support for full transaction exports.
 
 = 3.5.0 - 2021-12-29 =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
