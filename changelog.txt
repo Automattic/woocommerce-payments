@@ -3,6 +3,8 @@
 = 3.6.0 - 2022-xx-xx =
 * Fix UPE validation error visibility on checkout page.
 * Add - Add support for full transaction exports.
+* Fix - Simple subscription elements on the product edit page not shown/hidden when necessary.
+* Fix - Prevent fatal errors on the admin subscriptions screen when a subscription fails to load.
 
 = 3.5.0 - 2021-12-29 =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
