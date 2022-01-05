@@ -2,7 +2,6 @@
 
 = 3.6.0 - 2022-xx-xx =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
-* Update - Bump minimum required version of WordPress from 5.6 to 5.7.
 * Fix UPE validation error visibility on checkout page.
 
 = 3.5.0 - 2021-12-29 =

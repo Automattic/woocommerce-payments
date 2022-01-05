@@ -1,7 +1,7 @@
 === WooCommerce Payments ===
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
-Requires at least: 5.7
+Requires at least: 5.6
 Tested up to: 5.9
 Requires PHP: 7.0
 Stable tag: 3.5.0
@@ -38,7 +38,7 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* WordPress 5.7 or newer.
+* WordPress 5.6 or newer.
 * WooCommerce 5.8 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
@@ -100,7 +100,6 @@ Please note that our support for the checkout block is still experimental and th
 
 = 3.6.0 - 2022-xx-xx =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
-* Update - Bump minimum required version of WordPress from 5.6 to 5.7.
 * Fix UPE validation error visibility on checkout page.
 
 = 3.5.0 - 2021-12-29 =
