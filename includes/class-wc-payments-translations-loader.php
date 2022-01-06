@@ -180,7 +180,7 @@ class WC_Payments_Translations_Loader {
 	 */
 	public static function load_script_translation_file( $file, $handle, $domain ) {
 		// Make sure the main app script is being loaded.
-		if ( 0 !== strpos( $handle, 'WCPAY_' ) ) {
+		if ( ! str_starts_with( $handle, 'WCPAY_' ) ) {
 			return $file;
 		}
 
