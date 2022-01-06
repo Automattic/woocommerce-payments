@@ -285,7 +285,7 @@ class WC_Payments_Utils {
 	 */
 	public static function get_charge_ids_from_search_term( $term ) {
 		$order_term = __( 'Order #', 'woocommerce-payments' );
-		if ( substr( $term, 0, strlen( $order_term ) ) === $order_term ) {
+		if ( str_starts_with( $term, $order_term ) ) {
 			$term_parts = explode( $order_term, $term, 2 );
 			$order_id   = isset( $term_parts[1] ) ? $term_parts[1] : '';
 			$order      = wc_get_order( $order_id );
@@ -295,7 +295,7 @@ class WC_Payments_Utils {
 		}
 
 		$subscription_term = __( 'Subscription #', 'woocommerce-payments' );
-		if ( function_exists( 'wcs_get_subscription' ) && substr( $term, 0, strlen( $subscription_term ) ) === $subscription_term ) {
+		if ( function_exists( 'wcs_get_subscription' ) && str_starts_with( $term, $subscription_term ) ) {
 			$term_parts      = explode( $subscription_term, $term, 2 );
 			$subscription_id = isset( $term_parts[1] ) ? $term_parts[1] : '';
 			$subscription    = wcs_get_subscription( $subscription_id );
@@ -436,7 +436,7 @@ class WC_Payments_Utils {
 			is_admin()
 			&& $current_tab && $current_section
 			&& 'checkout' === $current_tab
-			&& 0 === strpos( $current_section, 'woocommerce_payments' )
+			&& str_starts_with( $current_section, 'woocommerce_payments' )
 		);
 	}
 
