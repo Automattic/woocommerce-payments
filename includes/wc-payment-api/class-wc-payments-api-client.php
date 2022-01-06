@@ -951,6 +951,7 @@ class WC_Payments_API_Client {
 	 * Get data needed to initialize the onboarding flow
 	 *
 	 * @param string $return_url     - URL to redirect to at the end of the flow.
+	 * @param string $refresh_url    - URL to restart KYC flow if user refreshes or visits invalid account links URL.
 	 * @param array  $business_data  - Data to prefill the form.
 	 * @param array  $site_data      - Data to track ToS agreement.
 	 * @param array  $actioned_notes - Actioned WCPay note names to be sent to the on-boarding flow.
@@ -959,11 +960,12 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_onboarding_data( $return_url, array $business_data = [], array $site_data = [], array $actioned_notes = [] ) {
+	public function get_onboarding_data( $return_url, $refresh_url, array $business_data = [], array $site_data = [], array $actioned_notes = [] ) {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
 				'return_url'          => $return_url,
+				'refresh_url'         => $refresh_url,
 				'business_data'       => $business_data,
 				'site_data'           => $site_data,
 				'create_live_account' => ! WC_Payments::get_gateway()->is_in_dev_mode(),

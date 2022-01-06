@@ -668,6 +668,7 @@ class WC_Payments_Account {
 
 		$current_user = wp_get_current_user();
 		$return_url   = $this->get_onboarding_return_url( $wcpay_connect_from );
+		$refresh_url  = html_entity_decode( $this->get_connect_url() );
 
 		$country = WC()->countries->get_base_country();
 		if ( ! array_key_exists( $country, WC_Payments_Utils::supported_countries() ) ) {
@@ -676,6 +677,7 @@ class WC_Payments_Account {
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			$return_url,
+			$refresh_url,
 			[
 				'email'         => $current_user->user_email,
 				'business_name' => get_bloginfo( 'name' ),

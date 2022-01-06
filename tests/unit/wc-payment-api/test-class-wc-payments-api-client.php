@@ -561,7 +561,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				wp_json_encode(
 					[
 						'test_mode'           => false,
-						'return_url'          => 'http://localhost',
+						'return_url'          => 'http://localhost?return_url',
+						'refresh_url'         => 'http://localhost?refresh_url',
 						'business_data'       => [
 							'a' => 1,
 							'b' => 2,
@@ -593,7 +594,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		// Call the method under test.
 		$result = $this->payments_api_client->get_onboarding_data(
-			'http://localhost',
+			'http://localhost?return_url',
+			'http://localhost?refresh_url',
 			[
 				'a' => 1,
 				'b' => 2,
