@@ -28,7 +28,7 @@ export const normalizeLineItems = ( displayItems, pending = false ) => {
  * @return {Object} Order object in the format WooCommerce expects.
  */
 export const normalizeOrderData = ( paymentData ) => {
-	const name = paymentData?.paymentMethod?.billing_details?.name ?? '';
+	const name = paymentData?.paymentMethod?.billing_details?.name ?? paymentData.payerName;
 	const email = paymentData?.paymentMethod?.billing_details?.email ?? '';
 	const phone = paymentData?.paymentMethod?.billing_details?.phone ?? '';
 	const billing = paymentData?.paymentMethod?.billing_details?.address ?? {};
