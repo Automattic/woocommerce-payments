@@ -22,7 +22,6 @@ describe( 'SetupComplete', () => {
 	beforeEach( () => {
 		window.wcpaySettings = {
 			additionalMethodsSetup: {
-				isSetupCompleted: 'no',
 				isUpeEnabled: false,
 			},
 		};
