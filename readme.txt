@@ -102,6 +102,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - UPE validation error visibility on checkout page.
 * Add - Add support for full transaction exports.
 * Fix - Flag emoji rendering in currency switcher block widget
+* Fix - Error when saved Google Pay payment method does not have billing address name
 
 = 3.5.0 - 2021-12-29 =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
