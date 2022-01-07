@@ -133,8 +133,7 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 				'card',
 			]
 		);
-		// resetting the onboarding task status.
-		delete_option( 'wcpay_additional_methods_setup_completed' );
+
 		// removing the note from the database.
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
