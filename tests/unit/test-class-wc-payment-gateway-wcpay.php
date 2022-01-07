@@ -1930,7 +1930,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			[ '_charge_id', $charge_id ]
 		);
 
-		$this->wcpay_gateway->attach_intent_info_to_order( $order, $intent_id, $charge_id, $customer_id, $payment_method, $intent_id, $currency );
+		$this->wcpay_gateway->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
 	}
 
 	/**
@@ -1955,8 +1955,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->method( 'payment_complete' )
 			->with( $intent_id );
 
-		$order->expects( $this->once() )->method( 'save' );
-
 		$this->wcpay_gateway->update_order_from_intent( $order, $intent_id, $intent_status, $charge_id, $currency );
 	}
 
@@ -1980,7 +1978,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$currency      = 'USD';
 
 		$order->method( 'payment_complete' )->willThrowException( new Exception( 'something went wrong' ) );
-		$order->expects( $this->once() )->method( 'save' );
 
 		$this->wcpay_gateway->update_order_from_intent( $order, $intent_id, $intent_status, $charge_id, $currency );
 	}
