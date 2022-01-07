@@ -64,6 +64,24 @@ export interface Dispute {
 	balance_transactions?: BalanceTransaction[];
 }
 
+export interface CachedDispute {
+	wcpay_disputes_cache_id: number;
+	stripe_account_id: string;
+	dispute_id: string;
+	charge_id?: string;
+	amount: number;
+	currency: string;
+	reason: DisputeReason;
+	source?: string;
+	order_number?: number;
+	customer_name?: string;
+	customer_email?: string;
+	customer_country?: string;
+	status: DisputeStatus;
+	created: string;
+	due_by: string;
+}
+
 interface UploadFieldObject {
 	key: string;
 	label: string;
@@ -91,6 +109,11 @@ export interface DisputesSummary {
 
 export interface Disputes {
 	disputes: Dispute[];
+	isLoading: boolean;
+}
+
+export interface CachedDisputes {
+	disputes: CachedDispute[];
 	isLoading: boolean;
 }
 

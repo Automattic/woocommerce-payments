@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { NAMESPACE, STORE_NAME } from '../constants';
+import { NAMESPACE } from '../constants';
 import {
 	updateDispute,
 	updateDisputes,
@@ -51,13 +51,6 @@ export function* getDisputes( query ) {
 	try {
 		const results = yield apiFetch( { path } ) || {};
 		yield updateDisputes( query, results.data );
-
-		// Update resolution state on getDispute selector for each result.
-		for ( const i in results.data ) {
-			yield dispatch( STORE_NAME, 'finishResolution', 'getDispute', [
-				results.data[ i ].id,
-			] );
-		}
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',

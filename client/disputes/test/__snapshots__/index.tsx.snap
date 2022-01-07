@@ -293,7 +293,7 @@ exports[`Disputes list renders correctly 1`] = `
                 >
                   <a
                     data-link-type="external"
-                    href="http://test.local/order/1"
+                    href="post.php?post=1&action=edit"
                   >
                     1
                   </a>
@@ -319,7 +319,7 @@ exports[`Disputes list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
-                    Nov 1, 2019
+                    Jan 6, 2022
                   </a>
                 </td>
                 <td
@@ -331,7 +331,7 @@ exports[`Disputes list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
-                    Nov 8, 2019 / 2:46AM
+                    Jan 15, 2022 / 11:59PM
                   </a>
                 </td>
               </tr>
@@ -342,7 +342,7 @@ exports[`Disputes list renders correctly 1`] = `
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                   >
                     <svg
                       class="gridicon gridicons-info-outline needs-offset"
@@ -365,7 +365,7 @@ exports[`Disputes list renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
                     $10.50 USD
@@ -377,7 +377,7 @@ exports[`Disputes list renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
                     <span
@@ -393,7 +393,7 @@ exports[`Disputes list renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
                     General
@@ -405,7 +405,7 @@ exports[`Disputes list renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
                     <span
@@ -416,9 +416,10 @@ exports[`Disputes list renders correctly 1`] = `
                 <td
                   class="woocommerce-table__item"
                 >
-                  <span>
-                    –
-                  </span>
+                  <a
+                    data-link-type="external"
+                    href="post.php?action=edit"
+                  />
                 </td>
                 <td
                   class="woocommerce-table__item is-left-aligned"
@@ -426,7 +427,7 @@ exports[`Disputes list renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   />
                 </td>
@@ -436,10 +437,10 @@ exports[`Disputes list renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
-                    Oct 30, 2019
+                    Jan 6, 2022
                   </a>
                 </td>
                 <td
@@ -448,10 +449,10 @@ exports[`Disputes list renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
-                    Nov 6, 2019 / 11:00PM
+                    Jan 15, 2022 / 11:59PM
                   </a>
                 </td>
               </tr>

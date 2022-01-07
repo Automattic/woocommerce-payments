@@ -49,48 +49,34 @@ const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 
 const mockDisputes = [
 	{
-		id: 'dp_asdfghjkl',
+		wcpay_disputes_cache_id: 4,
+		stripe_account_id: 'acct_test',
+		dispute_id: 'dp_asdfghjkl',
+		charge_id: 'ch_mock',
 		amount: 1000,
 		currency: 'usd',
-		created: 1572590800,
-		evidence_details: {
-			due_by: 1573199200,
-		},
 		reason: 'fraudulent' as DisputeReason,
+		source: 'visa',
+		order_number: 1,
+		customer_name: 'Mock customer',
+		customer_email: 'mock@customer.net',
+		customer_country: 'US',
 		status: 'needs_response' as DisputeStatus,
-		charge: {
-			id: 'ch_mock',
-			payment_method_details: {
-				card: {
-					brand: 'visa',
-				},
-			},
-			billing_details: {
-				name: 'Mock customer',
-				email: 'mock@customer.net',
-				address: {
-					country: 'US',
-				},
-			},
-		},
-		order: {
-			number: '1',
-			url: 'http://test.local/order/1',
-			customer_url: '',
-			subscriptions: [],
-		},
+		created: '2022-01-06 09:14:33',
+		due_by: '2022-01-15 23:59:59',
 	},
 	{
-		id: 'dp_zxcvbnm',
+		// dispute without order or charge information
+		wcpay_disputes_cache_id: 5,
+		stripe_account_id: 'acct_test',
+		dispute_id: 'dp_asdfghjkl',
+		charge_id: 'ch_mock',
 		amount: 1050,
 		currency: 'usd',
-		created: 1572480800,
-		evidence_details: {
-			due_by: 1573099200,
-		},
 		reason: 'general' as DisputeReason,
 		status: 'under_review' as DisputeStatus,
-		// dispute without order or charge information
+		created: '2022-01-06 09:14:33',
+		due_by: '2022-01-15 23:59:59',
 	},
 ];
 

@@ -32,6 +32,7 @@ import { formatExplicitCurrency } from 'utils/currency';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { DisputesTableHeader } from 'wcpay/types/disputes';
+import { getPostUrl } from 'wcpay/utils';
 
 import './style.scss';
 
@@ -103,6 +104,7 @@ const headers: DisputesTableHeader[] = [
 ];
 
 export const DisputesList = (): JSX.Element => {
+	/* eslint-disable */
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
 	const {
@@ -112,36 +114,42 @@ export const DisputesList = (): JSX.Element => {
 
 	const rows = disputes.map( ( dispute ) => {
 		const {
+			dispute_id,
 			amount = 0,
 			currency,
-			charge,
-			created,
-			id: disputeId,
-			evidence_details: evidenceDetails,
-			order: disputeOrder,
 			reason,
+			source,
+			order_number,
+			customer_name,
+			customer_email,
+			customer_country,
 			status,
+			created,
+			due_by,
 		} = dispute;
 
+		const orderObject = {
+			number: order_number,
+			url: getPostUrl( {
+				post: order_number,
+				action: 'edit',
+			} ),
+		};
+
 		const order = {
-			value: disputeOrder ? disputeOrder.number : '',
-			display: <OrderLink order={ disputeOrder } />,
+			value: order_number,
+			display: <OrderLink order={ orderObject } />,
 		};
 
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
-			<ClickableCell href={ getDetailsURL( disputeId, 'disputes' ) }>
+			<ClickableCell href={ getDetailsURL( dispute_id, 'disputes' ) }>
 				{ children }
 			</ClickableCell>
 		);
 
 		const detailsLink = (
-			<DetailsLink id={ disputeId } parentSegment="disputes" />
+			<DetailsLink id={ dispute_id } parentSegment="disputes" />
 		);
-
-		const source = charge?.payment_method_details?.card?.brand;
-		const name = charge?.billing_details?.name;
-		const email = charge?.billing_details?.email;
-		const country = charge?.billing_details?.address?.country;
 
 		const reasonMapping = reasons[ reason ];
 		const reasonDisplay = reasonMapping
@@ -172,36 +180,31 @@ export const DisputesList = (): JSX.Element => {
 				),
 			},
 			created: {
-				value: created * 1000,
+				value: created,
 				display: clickable(
-					dateI18n( 'M j, Y', moment( created * 1000 ).toISOString() )
+					dateI18n( 'M j, Y', moment( created ).toISOString() )
 				),
 			},
 			dueBy: {
-				value: ( evidenceDetails?.due_by || 0 ) * 1000,
+				value: due_by,
 				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment(
-							( evidenceDetails?.due_by || 0 ) * 1000
-						).toISOString()
-					)
+					dateI18n( 'M j, Y / g:iA', moment( due_by ).toISOString() )
 				),
 			},
 			order,
 			customer: {
-				value: name,
-				display: clickable( name ),
+				value: customer_name,
+				display: clickable( customer_name ),
 			},
 			email: {
-				value: email,
-				display: clickable( email ),
+				value: customer_email,
+				display: clickable( customer_email ),
 			},
 			country: {
-				value: country,
-				display: clickable( country ),
+				value: customer_country,
+				display: clickable( customer_country ),
 			},
-			details: { value: disputeId, display: detailsLink },
+			details: { value: dispute_id, display: detailsLink },
 		};
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
 	} );

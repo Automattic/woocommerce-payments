@@ -9,7 +9,11 @@ import type { Query } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import type { Dispute, Disputes, DisputesSummary } from 'wcpay/types/disputes';
+import type {
+	Dispute,
+	CachedDisputes,
+	DisputesSummary,
+} from 'wcpay/types/disputes';
 import { STORE_NAME } from '../constants';
 
 export const useDispute = (
@@ -44,7 +48,10 @@ export const useDisputeEvidence = (): {
 	return { updateDispute };
 };
 
-export const useDisputes = ( { paged, per_page: perPage }: Query ): Disputes =>
+export const useDisputes = ( {
+	paged,
+	per_page: perPage,
+}: Query ): CachedDisputes =>
 	useSelect(
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );

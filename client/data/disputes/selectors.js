@@ -26,6 +26,11 @@ export const getDispute = ( state, id ) => {
 	return disputeById[ id ];
 };
 
+export const getCachedDispute = ( state, id ) => {
+	const disputeById = getDisputesState( state ).cached || {};
+	return disputeById[ id ];
+};
+
 /**
  * Retrieves the disputes corresponding to the provided query or a sane
  * default if they don't exist.
@@ -38,12 +43,13 @@ export const getDispute = ( state, id ) => {
 const getDisputesForQuery = ( state, query ) => {
 	const index = getResourceId( query );
 	const queries = getDisputesState( state ).queries || {};
+
 	return queries[ index ] || {};
 };
 
 export const getDisputes = ( state, query ) => {
 	const ids = getDisputesForQuery( state, query ).data || [];
-	return ids.map( getDispute.bind( this, state ) );
+	return ids.map( getCachedDispute.bind( this, state ) );
 };
 
 export const getDisputesSummary = ( state ) => {

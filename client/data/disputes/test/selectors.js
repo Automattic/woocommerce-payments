@@ -55,7 +55,8 @@ describe( 'Disputes selectors', () => {
 	// State is populated.
 	const filledSuccessState = {
 		disputes: {
-			byId: {
+			byId: {},
+			cached: {
 				dp_mock1: mockDisputes[ 0 ],
 				dp_mock2: mockDisputes[ 1 ],
 			},

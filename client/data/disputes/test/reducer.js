@@ -20,6 +20,17 @@ describe( 'Disputes reducer tests', () => {
 		},
 	];
 
+	const mockCachedDisputes = [
+		{
+			dispute_id: 'dp_mock1',
+			reason: 'product_unacceptable',
+		},
+		{
+			dispute_id: 'dp_mock2',
+			reason: 'fraudulent',
+		},
+	];
+
 	test( 'New individual disputes reduced correctly', () => {
 		const stateAfterOne = reducer(
 			undefined, // Default state.
@@ -33,6 +44,7 @@ describe( 'Disputes reducer tests', () => {
 			byId: {
 				dp_mock1: mockDisputes[ 0 ],
 			},
+			cached: {},
 			queries: {},
 			summary: {},
 		} );
@@ -47,6 +59,7 @@ describe( 'Disputes reducer tests', () => {
 				dp_mock1: mockDisputes[ 0 ],
 				dp_mock2: mockDisputes[ 1 ],
 			},
+			cached: {},
 			queries: {},
 			summary: {},
 		} );
@@ -57,15 +70,16 @@ describe( 'Disputes reducer tests', () => {
 			undefined, // Default state.
 			{
 				type: types.SET_DISPUTES,
-				data: mockDisputes,
+				data: mockCachedDisputes,
 				query: mockQuery,
 			}
 		);
 
 		const after = {
-			byId: {
-				dp_mock1: mockDisputes[ 0 ],
-				dp_mock2: mockDisputes[ 1 ],
+			byId: {},
+			cached: {
+				dp_mock1: mockCachedDisputes[ 0 ],
+				dp_mock2: mockCachedDisputes[ 1 ],
 			},
 			queries: {
 				[ getResourceId( mockQuery ) ]: {
@@ -80,13 +94,14 @@ describe( 'Disputes reducer tests', () => {
 
 	test( 'Disputes updated correctly on updated info', () => {
 		const before = {
-			byId: {
-				dp_mock1: mockDisputes[ 0 ],
-			},
+			byId: {},
 			queries: {
 				earlierQuery: {
 					data: [ 'dp_mock1' ],
 				},
+			},
+			cached: {
+				dp_mock1: mockCachedDisputes[ 0 ],
 			},
 			summary: {
 				count: 1,
@@ -95,14 +110,15 @@ describe( 'Disputes reducer tests', () => {
 
 		const reduced = reducer( before, {
 			type: types.SET_DISPUTES,
-			data: mockDisputes.slice( 1 ),
+			data: mockCachedDisputes.slice( 1 ),
 			query: mockQuery,
 		} );
 
 		const after = {
-			byId: {
-				dp_mock1: mockDisputes[ 0 ],
-				dp_mock2: mockDisputes[ 1 ],
+			byId: {},
+			cached: {
+				dp_mock1: mockCachedDisputes[ 0 ],
+				dp_mock2: mockCachedDisputes[ 1 ],
 			},
 			queries: {
 				earlierQuery: {
@@ -131,6 +147,7 @@ describe( 'Disputes reducer tests', () => {
 		const after = {
 			byId: {},
 			queries: {},
+			cached: {},
 			summary: {
 				count: 42,
 			},
@@ -143,6 +160,9 @@ describe( 'Disputes reducer tests', () => {
 		const before = {
 			byId: {
 				dp_mock1: mockDisputes[ 0 ],
+			},
+			cached: {
+				dp_mock1: mockCachedDisputes[ 0 ],
 			},
 			queries: {
 				earlierQuery: {

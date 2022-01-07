@@ -82,13 +82,6 @@ describe( 'getDisputes resolver', () => {
 			expect( generator.next( { data: mockDisputes } ).value ).toEqual(
 				updateDisputes( query, mockDisputes )
 			);
-			mockDisputes.forEach( ( dispute ) => {
-				expect( generator.next().value ).toEqual(
-					dispatch( 'wc/payments', 'finishResolution', 'getDispute', [
-						dispute.id,
-					] )
-				);
-			} );
 		} );
 	} );
 

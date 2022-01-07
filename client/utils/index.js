@@ -22,6 +22,8 @@ export const isInTestMode = ( fallback = false ) => {
 
 export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
 
+export const getPostUrl = ( args ) => addQueryArgs( 'post.php', args );
+
 /**
  * Returns the URL to the WooCommerce Payments settings.
  *
