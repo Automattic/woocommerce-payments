@@ -168,41 +168,6 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$this->payments_admin->maybe_redirect_to_onboarding();
 	}
 
-	public function test_it_should_show_apm_setup_if_on_wc_admin_page_and_upe_settings_preview_is_enabled() {
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
-		$this->set_up_show_apm_task_test( true, true, [ 'foo' ] );
-
-		$this->assertTrue( $this->payments_admin->is_page_eligible_for_additional_methods_setup_task() );
-	}
-
-	public function test_it_should_show_apm_setup_if_on_wc_admin_page_and_has_multiple_available_methods() {
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
-		$this->set_up_show_apm_task_test( true, false, [ 'foo', 'bar' ] );
-
-		$this->assertTrue( $this->payments_admin->is_page_eligible_for_additional_methods_setup_task() );
-	}
-
-	public function test_it_should_not_show_apm_setup_if_not_on_wc_admin_page() {
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
-		$this->set_up_show_apm_task_test( false, true, [ 'foo', 'bar' ] );
-
-		$this->assertFalse( $this->payments_admin->is_page_eligible_for_additional_methods_setup_task() );
-	}
-
-	public function test_it_should_not_show_apm_setup_if_single_method_is_available() {
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
-		$this->set_up_show_apm_task_test( true, false, [ 'foo' ] );
-
-		$this->assertFalse( $this->payments_admin->is_page_eligible_for_additional_methods_setup_task() );
-	}
-
-	public function test_it_should_not_show_apm_setup_if_account_is_disconnected() {
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( false );
-		$this->set_up_show_apm_task_test( true, true, [ 'foo' ] );
-
-		$this->assertFalse( $this->payments_admin->is_page_eligible_for_additional_methods_setup_task() );
-	}
-
 	/**
 	 * Data provider for test_maybe_redirect_to_onboarding
 	 */
@@ -260,18 +225,5 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 				],
 			],
 		];
-	}
-
-	private function set_up_show_apm_task_test( $is_wc_admin_page, $is_upe_preview_enabled, $available_methods ) {
-		set_current_screen( 'foo' );
-
-		add_filter(
-			'woocommerce_navigation_is_registered_page',
-			function () use ( $is_wc_admin_page ) {
-				return $is_wc_admin_page;
-			}
-		);
-		update_option( '_wcpay_feature_upe_settings_preview', $is_upe_preview_enabled ? '1' : '0' );
-		$this->mock_gateway->method( 'get_upe_available_payment_methods' )->willReturn( $available_methods );
 	}
 }
