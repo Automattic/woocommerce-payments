@@ -101,11 +101,12 @@ const TransactionsAndDeposits = () => {
 					<TextControl
 						className="transactions-and-deposits__account-statement-input"
 						help={ __(
-							"Edit the way your store name appears on your customers' bank statements.",
+							'Enter the name your customers will see on their transactions. Use a recognizable name – e.g. ' +
+								'the legal entity name or website address – to avoid potential disputes and chargebacks.',
 							'woocommerce-payments'
 						) }
 						label={ __(
-							'Customer bank statement',
+							'Full bank statement',
 							'woocommerce-payments'
 						) }
 						value={ accountStatementDescriptor }
