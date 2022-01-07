@@ -22,7 +22,6 @@ describe( 'SetupComplete', () => {
 	beforeEach( () => {
 		window.wcpaySettings = {
 			additionalMethodsSetup: {
-				isSetupCompleted: 'no',
 				isUpeEnabled: false,
 			},
 		};
@@ -41,7 +40,7 @@ describe( 'SetupComplete', () => {
 		] );
 	} );
 
-	it( 'sets isSetupCompleted and isUpeEnabled if isActive', () => {
+	it( 'sets isUpeEnabled if isActive', () => {
 		render(
 			<WizardTaskContext.Provider value={ { isActive: true } }>
 				<SetupComplete />
@@ -49,23 +48,17 @@ describe( 'SetupComplete', () => {
 		);
 
 		expect(
-			window.wcpaySettings.additionalMethodsSetup.isSetupCompleted
-		).toEqual( 'yes' );
-		expect(
 			window.wcpaySettings.additionalMethodsSetup.isUpeEnabled
 		).toBeTruthy();
 	} );
 
-	it( 'does not set isSetupCompleted and isUpeEnabled if not isActive', () => {
+	it( 'does not set isUpeEnabled if not isActive', () => {
 		render(
 			<WizardTaskContext.Provider value={ { isActive: false } }>
 				<SetupComplete />
 			</WizardTaskContext.Provider>
 		);
 
-		expect(
-			window.wcpaySettings.additionalMethodsSetup.isSetupCompleted
-		).toEqual( 'no' );
 		expect(
 			window.wcpaySettings.additionalMethodsSetup.isUpeEnabled
 		).toBeFalsy();

@@ -24,6 +24,9 @@ env:
   E2E_BLOG_TOKEN:           ${{ secrets.E2E_BLOG_TOKEN }}
   E2E_USER_TOKEN:           ${{ secrets.E2E_USER_TOKEN }}
   E2E_RETEST:               1
+  WC_E2E_SCREENSHOTS:       1
+  E2E_SLACK_CHANNEL:        ${{ secrets.E2E_SLACK_CHANNEL }}
+  E2E_SLACK_TOKEN:          ${{ secrets.E2E_SLACK_TOKEN }}
 
 jobs:
   wcpay-e2e-tests:
@@ -33,7 +36,7 @@ jobs:
       fail-fast:     false
       matrix:
         # Min WooCommerce | L-2 | L(atest) | beta
-        woocommerce:   [ '4.4.0', '5.7.0', '5.9.0', 'beta' ]
+        woocommerce:   [ '4.4.0', '5.8.0', '6.0.0', 'beta' ]
         wordpress:     [ 'latest' ]
         php:           [ '7.4' ]
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
@@ -125,9 +128,12 @@ jobs:
       - name: Run E2E Tests
         run: npm run test:e2e
 
-      # Upload screenshots if any
-      - name: Upload screenshots
+      # Archive screenshots if any
+      - name: Archive e2e test screenshots
+        if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
-          name: screenshots
-          path: screenshots
+            name: e2e-screenshots
+            path: tests/e2e/screenshots
+            if-no-files-found: ignore
+            retention-days: 5

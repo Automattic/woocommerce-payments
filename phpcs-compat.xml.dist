@@ -4,6 +4,7 @@
 
 	<arg value="ps"/>
 	<arg name="parallel" value="20"/>
+	<arg name="extensions" value="php"/>
 
     <!-- Exclude paths -->
 	<exclude-pattern>./dist/*</exclude-pattern>
@@ -11,8 +12,7 @@
 	<exclude-pattern>./docker/*</exclude-pattern>
 	<exclude-pattern>./node_modules/*</exclude-pattern>
 	<exclude-pattern>./vendor/*</exclude-pattern>
-	<exclude-pattern>tests/</exclude-pattern>
-	<exclude-pattern>*\.(?!php$)</exclude-pattern>
+	<exclude-pattern>./vendor-dist/*</exclude-pattern>
 
 	<!-- Configs -->
 	<config name="minimum_supported_wp_version" value="5.6" />
