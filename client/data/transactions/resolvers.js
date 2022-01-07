@@ -18,7 +18,7 @@ import {
 } from './actions';
 import { formatDateValue } from 'utils';
 
-const formatQueryFilters = ( query ) => ( {
+export const formatQueryFilters = ( query ) => ( {
 	match: query.match,
 	date_before: formatDateValue( query.dateBefore, true ),
 	date_after: formatDateValue( query.dateAfter ),
@@ -53,6 +53,15 @@ export function* getTransactions( query ) {
 	} catch ( e ) {
 		yield updateErrorForTransactions( query, null, e );
 	}
+}
+
+export function getTransactionsCSV( query ) {
+	const path = addQueryArgs(
+		`${ NAMESPACE }/transactions/download`,
+		formatQueryFilters( query )
+	);
+
+	return path;
 }
 
 /**

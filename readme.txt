@@ -98,6 +98,11 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.6.0 - 2022-xx-xx =
+* Fix - UPE validation error visibility on checkout page.
+* Add - Add support for full transaction exports.
+* Fix - Flag emoji rendering in currency switcher block widget
+
 = 3.5.0 - 2021-12-29 =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
 * Add - JS error boundaries to admin screens.
