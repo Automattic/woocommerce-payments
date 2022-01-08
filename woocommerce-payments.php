@@ -81,26 +81,11 @@ function wcpay_jetpack_init() {
 			'name' => __( 'WooCommerce Payments', 'woocommerce-payments' ),
 		]
 	);
-
-	$custom_content = [ // TODO: need to update these texts.
-		'headerText'             => 'Sample Header',
-		'mainTitle'              => 'Sample main title',
-		'mainBodyText'           => 'Sample main body text',
-		'migratedTitle'          => 'Sample migrated title',
-		'migratedBodyText'       => 'Sample migrated body text',
-		'migrateCardTitle'       => 'Sample migrate card title',
-		'migrateCardBodyText'    => 'Sample migrate card body text',
-		'startFreshCardTitle'    => 'Sample start fresh card title',
-		'startFreshCardBodyText' => 'Sample start fresh card body',
-		'nonAdminTitle'          => 'Sample non-admin title',
-		'nonAdminBodyText'       => 'Sample non-admin body text',
-	];
-
 	$jetpack_config->ensure(
 		'identity_crisis',
 		[
 			'slug'          => 'woocommerce-payments',
-			'customContent' => $custom_content,
+			'customContent' => wcpay_get_jetpack_idc_custom_content(),
 			'logo'          => plugins_url( 'assets/images/logo.svg', WCPAY_PLUGIN_FILE ),
 			'admin_page'    => '/wp-admin/admin.php?page=wc-admin',
 			'priority'      => 5,
@@ -212,4 +197,52 @@ function wcpay_show_old_jetpack_notice() {
 		<p><?php echo esc_html( __( 'The version of Jetpack installed is too old to be used with WooCommerce Payments. WooCommerce Payments has been disabled. Please deactivate or update Jetpack.', 'woocommerce-payments' ) ); ?></p>
 	</div>
 	<?php
+}
+
+/**
+ * Get custom texts for Jetpack Indentity Crisis (IDC) module.
+ *
+ * @return array
+ */
+function wcpay_get_jetpack_idc_custom_content(): array {
+	$custom_content = [
+		'headerText'             => __( 'Safe Mode', 'woocommerce-payments' ),
+		'mainTitle'              => __( 'Safe Mode has been activated', 'woocommerce-payments' ),
+		'mainBodyText'           => __( 'Your site is in Safe Mode because you have two sites connected with the same WooCommerce Payments account.', 'woocommerce-payments' ),
+		'migratedTitle'          => __( 'Your WooCommerce Payments account has been migrated successfully', 'woocommerce-payments' ),
+		'migratedBodyText'       => __( 'Safe Mode has been switched off for your website and WooCommerce Payments is fully functional.', 'woocommerce-payments' ),
+		'migrateCardTitle'       => __( 'Move account', 'woocommerce-payments' ),
+		'startFreshCardTitle'    => __( 'Give each site its own account', 'woocommerce-payments' ),
+		'startFreshCardBodyText' => __( 'The other site will start fresh with a new WooCommerce Payments account.', 'woocommerce-payments' ),
+		'nonAdminTitle'          => __( 'Safe Mode has been activated', 'woocommerce-payments' ),
+		'nonAdminBodyText'       => __( 'Your site is in Safe Mode because you have two sites connected with the same WooCommerce Payments account. An administrator of this site can take it out of Safe Mode.', 'woocommerce-payments' ),
+	];
+
+	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();
+	if ( false !== $urls ) {
+		$current_url = untrailingslashit( $urls['current_url'] );
+		$wpcom_url   = untrailingslashit( $urls['wpcom_url'] );
+
+		$custom_content['migrateCardBodyText'] = sprintf(
+			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. */
+			__(
+				'Move your WooCommerce Payments account to your current site "%1$s". Disconnect the other site "%2$s" but you can create a new account on it.',
+				'woocommerce-payments'
+			),
+			$current_url,
+			$wpcom_url
+		);
+
+		$custom_content['startFreshCardBodyText'] = sprintf(
+			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. */
+			__(
+				'Your current site "%1$s" will start with a fresh WooCommerce Payments account. The other site "%2$s" will keep its account as is.',
+				'woocommerce-payments'
+			),
+			$current_url,
+			$wpcom_url
+		);
+	}
+
+	return $custom_content;
 }
