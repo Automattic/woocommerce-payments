@@ -7,8 +7,11 @@ import { Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { isInJetpackIdc } from 'utils';
 import { addQueryArgs } from '@wordpress/url';
+
+const isInJetpackIdc = window.hasOwnProperty(
+	'JP_IDENTITY_CRISIS__INITIAL_STATE'
+);
 
 const JetpackIdcNotice = () => {
 	return (
