@@ -96,3 +96,13 @@ export const formatDateValue = ( date, upperBound = false ) => {
 		)
 	);
 };
+
+/**
+ * Return true if the site is currently in the Jetpack Identity Crisis (IDC), false otherwise.
+ *
+ *
+ * @return {boolean} True if the site in Jetpack IDC, false otherwise.
+ */
+export const isInJetpackIdc = () => {
+	return window.hasOwnProperty( 'JP_IDENTITY_CRISIS__INITIAL_STATE' );
+};
