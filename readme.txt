@@ -100,7 +100,10 @@ Please note that our support for the checkout block is still experimental and th
 
 = 3.6.0 - 2022-xx-xx =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
-* Fix UPE validation error visibility on checkout page.
+* Fix - UPE validation error visibility on checkout page.
+* Tweak - Load translations for js files directly from lang-pack json files.
+* Add - Add support for full transaction exports.
+* Fix - Flag emoji rendering in currency switcher block widget
 
 = 3.5.0 - 2021-12-29 =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.

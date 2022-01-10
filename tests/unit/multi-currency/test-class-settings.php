@@ -54,20 +54,8 @@ class WCPay_Multi_Currency_Settings_Tests extends WP_UnitTestCase {
 	public function woocommerce_action_provider() {
 		return [
 			[ 'woocommerce_admin_field_wcpay_multi_currency_settings_page', 'wcpay_multi_currency_settings_page' ],
+			[ 'admin_print_scripts', 'maybe_add_print_emoji_detection_script' ],
 		];
 	}
 
-	public function test_registers_external_action_with_account() {
-
-		// Init Settings again to get proper registration of hooks/filters.
-		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency );
-
-		$action        = 'admin_print_scripts';
-		$function_name = 'print_emoji_detection_script';
-
-		$this->assertNotFalse(
-			has_action( $action, $function_name ),
-			"Action '$action' was not registered with '$function_name'"
-		);
-	}
 }
