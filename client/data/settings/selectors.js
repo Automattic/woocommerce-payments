@@ -47,6 +47,10 @@ export const getIsShortStatementEnabled = ( state ) => {
 	return getSettings( state ).is_short_statement_descriptor_enabled || false;
 };
 
+export const getShortStatementDescriptor = ( state ) => {
+	return getSettings( state ).short_statement_descriptor || '';
+};
+
 export const getAccountBusinessName = ( state ) => {
 	return getSettings( state ).account_business_name || '';
 };

@@ -16,9 +16,11 @@ import {
  */
 import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';
+import TextLengthHelpInputWrapper from './text-length-help-input-wrapper';
 import {
 	useAccountStatementDescriptor,
 	useIsShortStatementEnabled,
+	useShortStatementDescriptor,
 	useManualCapture,
 	useGetSavingError,
 	useSavedCards,
@@ -27,7 +29,7 @@ import {
 import './style.scss';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
-// const SHORT_STATEMENT_MAX_LENGTH = 10;
+const SHORT_STATEMENT_MAX_LENGTH = 10;
 
 const TransactionsAndDeposits = () => {
 	const {
@@ -46,6 +48,10 @@ const TransactionsAndDeposits = () => {
 		isShortStatementEnabled,
 		setIsShortStatementEnabled,
 	] = useIsShortStatementEnabled();
+	const [
+		shortAccountStatementDescriptor,
+		setShortAccountStatementDescriptor,
+	] = useShortStatementDescriptor();
 	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
 		?.account_statement_descriptor?.message;
 	const [ isCardPresentEligible ] = useCardPresentEligible();
@@ -110,25 +116,27 @@ const TransactionsAndDeposits = () => {
 							'woocommerce-payments'
 						) }
 					</h4>
-					<TextControl
-						className="transactions-and-deposits__account-statement-input"
-						help={ __(
-							'Enter the name your customers will see on their transactions. Use a recognizable name – e.g. ' +
-								'the legal entity name or website address – to avoid potential disputes and chargebacks.',
-							'woocommerce-payments'
-						) }
-						label={ __(
-							'Full bank statement',
-							'woocommerce-payments'
-						) }
-						value={ accountStatementDescriptor }
-						onChange={ setAccountStatementDescriptor }
+					<TextLengthHelpInputWrapper
+						textLength={ accountStatementDescriptor.length }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
 						data-testid={ 'store-name-bank-statement' }
-					/>
-					<span className="input-help-text" aria-hidden="true">
-						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
-					</span>
+					>
+						<TextControl
+							className="transactions-and-deposits__account-statement-input"
+							help={ __(
+								'Enter the name your customers will see on their transactions. Use a recognizable name – e.g. ' +
+									'the legal entity name or website address – to avoid potential disputes and chargebacks.',
+								'woocommerce-payments'
+							) }
+							label={ __(
+								'Full bank statement',
+								'woocommerce-payments'
+							) }
+							value={ accountStatementDescriptor }
+							onChange={ setAccountStatementDescriptor }
+							maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
+						/>
+					</TextLengthHelpInputWrapper>
 
 					<CheckboxControl
 						checked={ isShortStatementEnabled }
@@ -152,20 +160,29 @@ const TransactionsAndDeposits = () => {
 										} }
 									/>
 								</Notice>
-							) }
-							<TextControl
-								help={ __(
-									"We'll use the short version in combination with the customer order number.",
-									'woocommerce-payments'
-								) }
-								label={ __(
-									'Shortened customer bank statement',
-									'woocommerce-payments'
-								) }
-								value={ shortAccountStatementDescriptor }
-								onChange={ setShortAccountStatementDescriptor }
+							) } */ }
+							<TextLengthHelpInputWrapper
+								textLength={
+									shortAccountStatementDescriptor.length
+								}
 								maxLength={ SHORT_STATEMENT_MAX_LENGTH }
-							/> */ }
+							>
+								<TextControl
+									help={ __(
+										"We'll use the short version in combination with the customer order number.",
+										'woocommerce-payments'
+									) }
+									label={ __(
+										'Shortened customer bank statement',
+										'woocommerce-payments'
+									) }
+									value={ shortAccountStatementDescriptor }
+									onChange={
+										setShortAccountStatementDescriptor
+									}
+									maxLength={ SHORT_STATEMENT_MAX_LENGTH }
+								/>
+							</TextLengthHelpInputWrapper>
 						</>
 					) }
 				</div>

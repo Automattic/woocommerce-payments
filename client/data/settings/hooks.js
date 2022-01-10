@@ -151,6 +151,22 @@ export const useIsShortStatementEnabled = () => {
 	);
 };
 
+export const useShortStatementDescriptor = () => {
+	const { updateShortStatementDescriptor } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getShortStatementDescriptor } = select( STORE_NAME );
+
+			return [
+				getShortStatementDescriptor(),
+				updateShortStatementDescriptor,
+			];
+		},
+		[ updateShortStatementDescriptor ]
+	);
+};
+
 export const useAccountBusinessName = () => {
 	const { updateAccountBusinessName } = useDispatch( STORE_NAME );
 

@@ -103,6 +103,12 @@ export function updateIsShortStatementEnabled( isEnabled ) {
 	} );
 }
 
+export function updateShortStatementDescriptor( shortStatementDescriptor ) {
+	return updateSettingsValues( {
+		short_statement_descriptor: shortStatementDescriptor,
+	} );
+}
+
 export function updateAccountBusinessName( accountBusinessName ) {
 	return updateSettingsValues( {
 		account_business_name: accountBusinessName,
