@@ -285,7 +285,7 @@ class WC_Payments_Utils {
 	 */
 	public static function get_charge_ids_from_search_term( $term ) {
 		$order_term = __( 'Order #', 'woocommerce-payments' );
-		if ( substr( $term, 0, strlen( $order_term ) ) === $order_term ) {
+		if ( str_starts_with( $term, $order_term ) ) {
 			$term_parts = explode( $order_term, $term, 2 );
 			$order_id   = isset( $term_parts[1] ) ? $term_parts[1] : '';
 			$order      = wc_get_order( $order_id );
@@ -295,7 +295,7 @@ class WC_Payments_Utils {
 		}
 
 		$subscription_term = __( 'Subscription #', 'woocommerce-payments' );
-		if ( function_exists( 'wcs_get_subscription' ) && substr( $term, 0, strlen( $subscription_term ) ) === $subscription_term ) {
+		if ( function_exists( 'wcs_get_subscription' ) && str_starts_with( $term, $subscription_term ) ) {
 			$term_parts      = explode( $subscription_term, $term, 2 );
 			$subscription_id = isset( $term_parts[1] ) ? $term_parts[1] : '';
 			$subscription    = wcs_get_subscription( $subscription_id );
@@ -436,7 +436,7 @@ class WC_Payments_Utils {
 			is_admin()
 			&& $current_tab && $current_section
 			&& 'checkout' === $current_tab
-			&& 0 === strpos( $current_section, 'woocommerce_payments' )
+			&& str_starts_with( $current_section, 'woocommerce_payments' )
 		);
 	}
 
@@ -582,5 +582,45 @@ class WC_Payments_Utils {
 	public static function get_cached_minimum_amount( $currency ) {
 		$cached = get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
 		return (int) $cached ? (int) $cached : null;
+	}
+
+	/**
+	 * Check if order is locked for payment processing
+	 *
+	 * @param WC_Order $order  The order that is being paid.
+	 * @param string   $intent_id The id of the intent that is being processed.
+	 * @return bool    A flag that indicates whether the order is already locked.
+	 */
+	public static function is_order_locked( $order, $intent_id = null ) {
+		$order_id       = $order->get_id();
+		$transient_name = 'wcpay_processing_intent_' . $order_id;
+		$processing     = get_transient( $transient_name );
+
+		// Block the process if the same intent is already being handled.
+		return ( '-1' === $processing || ( isset( $intent_id ) && $processing === $intent_id ) );
+	}
+
+	/**
+	 * Lock an order for payment intent processing for 5 minutes.
+	 *
+	 * @param WC_Order $order  The order that is being paid.
+	 * @param string   $intent_id The id of the intent that is being processed.
+	 * @return void
+	 */
+	public static function lock_order_payment( $order, $intent_id = null ) {
+		$order_id       = $order->get_id();
+		$transient_name = 'wcpay_processing_intent_' . $order_id;
+
+		set_transient( $transient_name, empty( $intent_id ) ? '-1' : $intent_id, 5 * MINUTE_IN_SECONDS );
+	}
+
+	/**
+	 * Unlocks an order for processing by payment intents.
+	 *
+	 * @param WC_Order $order The order that is being unlocked.
+	 */
+	public static function unlock_order_payment( $order ) {
+		$order_id = $order->get_id();
+		delete_transient( 'wcpay_processing_intent_' . $order_id );
 	}
 }

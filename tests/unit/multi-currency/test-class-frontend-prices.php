@@ -55,12 +55,12 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 
 	public function woocommerce_filter_provider() {
 		return [
-			[ 'woocommerce_product_get_price', 'get_product_price' ],
-			[ 'woocommerce_product_get_regular_price', 'get_product_price' ],
-			[ 'woocommerce_product_get_sale_price', 'get_product_price' ],
-			[ 'woocommerce_product_variation_get_price', 'get_product_price' ],
-			[ 'woocommerce_product_variation_get_regular_price', 'get_product_price' ],
-			[ 'woocommerce_product_variation_get_sale_price', 'get_product_price' ],
+			[ 'woocommerce_product_get_price', 'get_product_price_string' ],
+			[ 'woocommerce_product_get_regular_price', 'get_product_price_string' ],
+			[ 'woocommerce_product_get_sale_price', 'get_product_price_string' ],
+			[ 'woocommerce_product_variation_get_price', 'get_product_price_string' ],
+			[ 'woocommerce_product_variation_get_regular_price', 'get_product_price_string' ],
+			[ 'woocommerce_product_variation_get_sale_price', 'get_product_price_string' ],
 			[ 'woocommerce_variation_prices', 'get_variation_price_range' ],
 			[ 'woocommerce_get_variation_prices_hash', 'add_exchange_rate_to_variation_prices_hash' ],
 			[ 'woocommerce_package_rates', 'convert_package_rates_prices' ],
@@ -130,12 +130,12 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$this->assertSame(
 			[
 				'price'      => [
-					1 => 25.0,
-					2 => 30.0,
+					1 => '25',
+					2 => '30',
 				],
 				'sale_price' => [
-					1 => 15.0,
-					2 => 20.0,
+					1 => '15',
+					2 => '20',
 				],
 			],
 			$this->frontend_prices->get_variation_price_range( $base_variation_prices )
