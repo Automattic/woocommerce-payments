@@ -75,12 +75,16 @@ export function* getDisputes( query ) {
 	}
 }
 
-export function* getDisputesSummary() {
+export function* getDisputesSummary( query ) {
+	const path = addQueryArgs( `${ NAMESPACE }/disputes/summary`, {
+		page: query.paged,
+		pagesize: query.perPage,
+		...formatQueryFilters( query ),
+	} );
+
 	try {
-		const summary = yield apiFetch( {
-			path: `${ NAMESPACE }/disputes/summary`,
-		} );
-		yield updateDisputesSummary( summary );
+		const summary = yield apiFetch( { path } );
+		yield updateDisputesSummary( query, summary );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',

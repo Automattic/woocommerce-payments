@@ -108,10 +108,9 @@ export const DisputesList = (): JSX.Element => {
 	/* eslint-disable */
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
-	const {
-		disputesSummary,
-		isLoading: isSummaryLoading,
-	} = useDisputesSummary();
+	const { disputesSummary, isLoading: isSummaryLoading } = useDisputesSummary(
+		getQuery()
+	);
 
 	const rows = disputes.map( ( dispute ) => {
 		const {
