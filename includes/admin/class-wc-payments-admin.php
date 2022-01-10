@@ -366,10 +366,7 @@ class WC_Payments_Admin {
 			'showUpdateDetailsTask'   => get_option( 'wcpay_show_update_business_details_task', 'no' ),
 			'wpcomReconnectUrl'       => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'additionalMethodsSetup'  => [
-				'isTaskVisible'               => $this->is_page_eligible_for_additional_methods_setup_task(),
-				'isSetupCompleted'            => get_option( 'wcpay_additional_methods_setup_completed', 'no' ),
-				'isUpeSettingsPreviewEnabled' => WC_Payments_Features::is_upe_settings_preview_enabled(),
-				'isUpeEnabled'                => WC_Payments_Features::is_upe_enabled(),
+				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
 			],
 			'multiCurrencySetup'      => [
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
@@ -757,34 +754,5 @@ class WC_Payments_Admin {
 		}
 
 		$this->account->redirect_to_onboarding_page();
-	}
-
-	/**
-	 * Checks whether the current page should be eligible to enqueue the task.
-	 */
-	public function is_page_eligible_for_additional_methods_setup_task() {
-		if ( ! wc_admin_is_registered_page() ) {
-			return false;
-		}
-
-		// if the account is disconnected, just don't display the onboarding task.
-		if ( ! $this->account->is_stripe_connected() ) {
-			return false;
-		}
-
-		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
-			return false === WC_Payments_Features::did_merchant_disable_upe();
-		}
-
-		$available_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
-		if ( empty( $available_methods ) ) {
-			return false;
-		}
-
-		if ( 1 >= count( $available_methods ) ) {
-			return false;
-		}
-
-		return true;
 	}
 }

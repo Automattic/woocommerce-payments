@@ -1,6 +1,6 @@
 const path = require( 'path' );
 const { config } = require( 'dotenv' );
-const { jestConfig } = require( '@automattic/puppeteer-utils' );
+const { useE2EJestConfig } = require( '@woocommerce/e2e-environment' );
 const fs = require( 'fs' );
 
 config( { path: path.resolve( __dirname, '.env' ) } );
@@ -47,16 +47,15 @@ if ( process.env.E2E_GROUP ) {
 	} );
 }
 
-module.exports = {
-	...jestConfig,
+// eslint-disable-next-line react-hooks/rules-of-hooks
+const testConfig = useE2EJestConfig( {
+	setupFiles: [],
 	rootDir: path.resolve( __dirname, '../../../' ),
 	roots: allowedPaths,
-	setupFilesAfterEnv: [
-		path.resolve( __dirname, '../setup/jest-setup.js' ),
-		...jestConfig.setupFilesAfterEnv,
-	],
 	testSequencer: path.resolve(
 		__dirname,
 		'../config/jest-custom-sequencer.js'
 	),
-};
+} );
+
+module.exports = testConfig;

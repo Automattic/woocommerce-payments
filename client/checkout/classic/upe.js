@@ -421,10 +421,10 @@ jQuery( function ( $ ) {
 	 * Checks if UPE form is filled out. Displays errors if not.
 	 *
 	 * @param {Object} $form     The jQuery object for the form.
-	 * @param {string} returnUrl The `return_url` param. (optional)
+	 * @param {string} returnUrl The `return_url` param. Defaults to '#' (optional)
 	 * @return {boolean} false if incomplete.
 	 */
-	const checkUPEForm = async ( $form, returnUrl = '' ) => {
+	const checkUPEForm = async ( $form, returnUrl = '#' ) => {
 		if ( ! upeElement ) {
 			showError( 'Your payment information is incomplete.' );
 			return false;
