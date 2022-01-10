@@ -53,10 +53,7 @@ export default class WCPayAPI {
 			if ( isUPEEnabled ) {
 				this.stripe = new Stripe( publishableKey, {
 					stripeAccount: accountId,
-					betas: [
-						'payment_element_beta_1',
-						'card_country_event_beta_1',
-					],
+					betas: [ 'card_country_event_beta_1' ],
 					locale,
 				} );
 			} else {
