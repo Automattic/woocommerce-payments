@@ -5,6 +5,7 @@
  */
 import { useSelect, useDispatch } from '@wordpress/data';
 import type { Query } from '@woocommerce/navigation';
+import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -51,6 +52,13 @@ export const useDisputeEvidence = (): {
 export const useDisputes = ( {
 	paged,
 	per_page: perPage,
+	store_currency_is: storeCurrencyIs,
+	match,
+	date_before: dateBefore,
+	date_after: dateAfter,
+	date_between: dateBetween,
+	status_is: statusIs,
+	status_is_not: statusIsNot,
 }: Query ): CachedDisputes =>
 	useSelect(
 		( select ) => {
@@ -63,6 +71,17 @@ export const useDisputes = ( {
 				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
 					? '25'
 					: perPage,
+				storeCurrencyIs,
+				match,
+				dateBefore,
+				dateAfter,
+				dateBetween:
+					dateBetween &&
+					dateBetween.sort( ( a, b ) =>
+						moment( a ).diff( moment( b ) )
+					),
+				statusIs,
+				statusIsNot,
 			};
 
 			return {
@@ -70,7 +89,17 @@ export const useDisputes = ( {
 				isLoading: isResolving( 'getDisputes', [ query ] ),
 			};
 		},
-		[ paged, perPage ]
+		[
+			paged,
+			perPage,
+			storeCurrencyIs,
+			match,
+			dateBefore,
+			dateAfter,
+			JSON.stringify( dateBetween ),
+			statusIs,
+			statusIsNot,
+		]
 	);
 
 export const useDisputesSummary = (): DisputesSummary =>

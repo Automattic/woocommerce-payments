@@ -324,3 +324,18 @@ export const reasons: Record<
 		],
 	},
 };
+
+// Mapping of disputes status to display string.
+export const displayStatus = {
+	warning_needs_response: __(
+		'Inquiry: Needs response',
+		'woocommerce-payments'
+	),
+	warning_under_review: __( 'Inquiry: Under review', 'woocommerce-payments' ),
+	warning_closed: __( 'Inquiry: Closed', 'woocommerce-payments' ),
+	needs_response: __( 'Needs response', 'woocommerce-payments' ),
+	under_review: __( 'Under review', 'woocommerce-payments' ),
+	charge_refunded: __( 'Charge refunded', 'woocommerce-payments' ),
+	won: __( 'Won', 'woocommerce-payments' ),
+	lost: __( 'Lost', 'woocommerce-payments' ),
+};

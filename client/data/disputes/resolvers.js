@@ -6,6 +6,7 @@
 import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
+import { formatDateValue } from 'utils';
 
 /**
  * Internal dependencies
@@ -16,6 +17,19 @@ import {
 	updateDisputes,
 	updateDisputesSummary,
 } from './actions';
+
+const formatQueryFilters = ( query ) => ( {
+	match: query.match,
+	store_currency_is: query.storeCurrencyIs,
+	date_before: formatDateValue( query.dateBefore, true ),
+	date_after: formatDateValue( query.dateAfter ),
+	date_between: query.dateBetween && [
+		formatDateValue( query.dateBetween[ 0 ] ),
+		formatDateValue( query.dateBetween[ 1 ], true ),
+	],
+	status_is: query.statusIs,
+	status_is_not: query.statusIsNot,
+} );
 
 /**
  * Retrieve a single dispute from the disputes API.
@@ -46,6 +60,7 @@ export function* getDisputes( query ) {
 	const path = addQueryArgs( `${ NAMESPACE }/disputes`, {
 		page: query.paged,
 		pagesize: query.perPage,
+		...formatQueryFilters( query ),
 	} );
 
 	try {

@@ -115,6 +115,8 @@ declare module '@woocommerce/navigation' {
 		type_is_not?: unknown;
 		store_currency_is?: string;
 		search?: string[];
+		status_is?: unknown;
+		status_is_not?: unknown;
 	}
 
 	const onQueryChange: unknown;

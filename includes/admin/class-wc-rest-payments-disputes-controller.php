@@ -89,7 +89,9 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	public function get_disputes( WP_REST_Request $request ) {
 		$page      = (int) $request->get_param( 'page' );
 		$page_size = (int) $request->get_param( 'pagesize' );
-		return $this->forward_request( 'list_disputes', [ $page, $page_size ] );
+		$filters   = $this->get_disputes_filters( $request );
+
+		return $this->forward_request( 'list_disputes', [ $page, $page_size, $filters ] );
 	}
 
 	/**
@@ -147,5 +149,27 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	public function close_dispute( $request ) {
 		$dispute_id = $request->get_param( 'dispute_id' );
 		return $this->forward_request( 'close_dispute', [ $dispute_id ] );
+	}
+
+	/**
+	 * Extract disputes filters from request
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	private function get_disputes_filters( $request ) {
+		return array_filter(
+			[
+				'match'             => $request->get_param( 'match' ),
+				'store_currency_is' => $request->get_param( 'store_currency_is' ),
+				'created_before'    => $request->get_param( 'date_before' ),
+				'created_after'     => $request->get_param( 'date_after' ),
+				'created_between'   => $request->get_param( 'date_between' ),
+				'status_is'         => $request->get_param( 'status_is' ),
+				'status_is_not'     => $request->get_param( 'status_is_not' ),
+			],
+			static function ( $filter ) {
+				return null !== $filter;
+			}
+		);
 	}
 }
