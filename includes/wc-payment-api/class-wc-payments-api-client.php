@@ -707,19 +707,24 @@ class WC_Payments_API_Client {
 	/**
 	 * List disputes
 	 *
-	 * @param int   $page The page index to retrieve.
-	 * @param int   $page_size The number of items the page contains.
-	 * @param array $filters The filters to be used in the query.
+	 * @param int    $page The page index to retrieve.
+	 * @param int    $page_size The number of items the page contains.
+	 * @param string $sort       The column to be used for sorting.
+	 * @param string $direction  The sorting direction.
+	 * @param array  $filters The filters to be used in the query.
+	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function list_disputes( int $page = 0, int $page_size = 25, array $filters = [] ):array {
+	public function list_disputes( int $page = 0, int $page_size = 25, string $sort = 'created', string $direction = 'DESC', array $filters = [] ):array {
 		$query = array_merge(
 			$filters,
 			[
-				'limit'    => 100,
-				'page'     => $page,
-				'pagesize' => $page_size,
+				'limit'     => 100,
+				'page'      => $page,
+				'pagesize'  => $page_size,
+				'sort'      => $sort,
+				'direction' => $direction,
 			]
 		);
 

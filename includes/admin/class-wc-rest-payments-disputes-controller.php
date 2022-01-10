@@ -89,9 +89,11 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	public function get_disputes( WP_REST_Request $request ) {
 		$page      = (int) $request->get_param( 'page' );
 		$page_size = (int) $request->get_param( 'pagesize' );
+		$sort      = $request->get_param( 'sort' );
+		$direction = $request->get_param( 'direction' );
 		$filters   = $this->get_disputes_filters( $request );
 
-		return $this->forward_request( 'list_disputes', [ $page, $page_size, $filters ] );
+		return $this->forward_request( 'list_disputes', [ $page, $page_size, $sort, $direction, $filters ] );
 	}
 
 	/**
