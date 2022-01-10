@@ -724,7 +724,7 @@ class WC_Payments_API_Client {
 					// Wrap with try/catch to avoid failing whole request because of a single dispute.
 					$dispute = $this->add_order_info_to_object( $dispute['charge']['id'], $dispute );
 				} catch ( Exception $e ) {
-					Logger::error( 'Failed to add order info to dispute ' . $dispute['id'] );
+					Logger::error( 'Error adding order info to dispute ' . $dispute['id'] . ' : ' . $e->getMessage() );
 					continue;
 				}
 			}
