@@ -103,7 +103,8 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_disputes_summary( WP_REST_Request $request ) {
-		return $this->forward_request( 'get_disputes_summary', [] );
+		$filters = $this->get_disputes_filters( $request );
+		return $this->forward_request( 'get_disputes_summary', [ $filters ] );
 	}
 
 	/**

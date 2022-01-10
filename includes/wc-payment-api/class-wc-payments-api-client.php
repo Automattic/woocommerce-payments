@@ -734,11 +734,13 @@ class WC_Payments_API_Client {
 	/**
 	 * Get summary of disputes.
 	 *
+	 * @param array $filters The filters to be used in the query.
+	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_disputes_summary():array {
-		return $this->request( [], self::DISPUTES_API . '/summary', self::GET );
+	public function get_disputes_summary( array $filters = [] ):array {
+		return $this->request( [ $filters ], self::DISPUTES_API . '/summary', self::GET );
 	}
 
 	/**
