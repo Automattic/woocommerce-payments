@@ -1817,37 +1817,37 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	 *
 	 * @dataProvider account_statement_descriptor_validation_provider
 	 */
-	public function test_validate_account_statement_descriptor_field( $is_valid, $value, $expected = null ) {
+	public function test_validate_account_statement_descriptor_field( $is_valid, $value, $max_length, $expected = null ) {
 		$key = 'account_statement_descriptor';
 		if ( $is_valid ) {
-			$validated_value = $this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value );
+			$validated_value = $this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value, $max_length );
 			$this->assertEquals( $expected ?? $value, $validated_value );
 		} else {
 			$this->expectExceptionMessage( 'Customer bank statement is invalid.' );
-			$this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value );
+			$this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value, $max_length );
 		}
 	}
 
 	public function account_statement_descriptor_validation_provider() {
 		return [
-			'valid'          => [ true, 'WCPAY dev' ],
-			'allow_digits'   => [ true, 'WCPay dev 2020' ],
-			'allow_special'  => [ true, 'WCPay-Dev_2020' ],
-			'allow_amp'      => [ true, 'WCPay&Dev_2020' ],
-			'strip_slashes'  => [ true, 'WCPay\\\\Dev_2020', 'WCPay\\Dev_2020' ],
-			'allow_long_amp' => [ true, 'aaaaaaaaaaaaaaaaaaa&aa' ],
-			'trim_valid'     => [ true, '   good_descriptor  ', 'good_descriptor' ],
-			'empty'          => [ false, '' ],
-			'short'          => [ false, 'WCP' ],
-			'long'           => [ false, 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev' ],
-			'no_*'           => [ false, 'WCPay * dev' ],
-			'no_sqt'         => [ false, 'WCPay \'dev\'' ],
-			'no_dqt'         => [ false, 'WCPay "dev"' ],
-			'no_lt'          => [ false, 'WCPay<dev' ],
-			'no_gt'          => [ false, 'WCPay>dev' ],
-			'req_latin'      => [ false, 'дескриптор' ],
-			'req_letter'     => [ false, '123456' ],
-			'trim_too_short' => [ false, '  aaa    ' ],
+			'valid'          => [ true, 'WCPAY dev', 22 ],
+			'allow_digits'   => [ true, 'WCPay dev 2020', 22 ],
+			'allow_special'  => [ true, 'WCPay-Dev_2020', 22 ],
+			'allow_amp'      => [ true, 'WCPay&Dev_2020', 22 ],
+			'strip_slashes'  => [ true, 'WCPay\\\\Dev_2020', 22, 'WCPay\\Dev_2020' ],
+			'allow_long_amp' => [ true, 'aaaaaaaaaaaaaaaaaaa&aa', 22 ],
+			'trim_valid'     => [ true, '   good_descriptor  ', 22, 'good_descriptor' ],
+			'empty'          => [ false, '', 22 ],
+			'short'          => [ false, 'WCP', 22 ],
+			'long'           => [ false, 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev', 22 ],
+			'no_*'           => [ false, 'WCPay * dev', 22 ],
+			'no_sqt'         => [ false, 'WCPay \'dev\'', 22 ],
+			'no_dqt'         => [ false, 'WCPay "dev"', 22 ],
+			'no_lt'          => [ false, 'WCPay<dev', 22 ],
+			'no_gt'          => [ false, 'WCPay>dev', 22 ],
+			'req_latin'      => [ false, 'дескриптор', 22 ],
+			'req_letter'     => [ false, '123456', 22 ],
+			'trim_too_short' => [ false, '  aaa    ', 22 ],
 		];
 	}
 
