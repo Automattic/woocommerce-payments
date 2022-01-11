@@ -1933,10 +1933,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
 	}
 
-	/**
-	 * @group underTest
-	 */
-	public function test_update_order_from_intent_success_payment_complete() {
+	public function test_update_order_status_from_intent_success_payment_complete() {
 		$order = $this->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
 			->setMethods( [ 'update_meta_data', 'save', 'payment_complete', 'get_data_store' ] )
@@ -1955,13 +1952,10 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->method( 'payment_complete' )
 			->with( $intent_id );
 
-		$this->wcpay_gateway->update_order_from_intent( $order, $intent_id, $intent_status, $charge_id, $currency );
+		$this->wcpay_gateway->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id, $currency );
 	}
 
-	/**
-	 * @group underTest
-	 */
-	public function test_update_order_from_intent_fails_payment_complete() {
+	public function test_update_order_status_from_intent_fails_payment_complete() {
 		// test if metadata needed for refunds is being saved despite the payment_complete method.
 		$order = $this->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
@@ -1979,7 +1973,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$order->method( 'payment_complete' )->willThrowException( new Exception( 'something went wrong' ) );
 
-		$this->wcpay_gateway->update_order_from_intent( $order, $intent_id, $intent_status, $charge_id, $currency );
+		$this->wcpay_gateway->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id, $currency );
 	}
 
 	public function test_create_intent_success() {

@@ -131,7 +131,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$intent->get_charge_id(),
 				$intent->get_currency()
 			);
-			$this->gateway->update_order_from_intent(
+			$this->gateway->update_order_status_from_intent(
 				$order,
 				$intent->get_id(),
 				$intent->get_status(),

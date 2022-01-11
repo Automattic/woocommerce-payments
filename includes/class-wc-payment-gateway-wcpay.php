@@ -1120,7 +1120,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
-		$this->update_order_from_intent( $order, $intent_id, $status, $charge_id, $currency );
+		$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id, $currency );
 
 		if ( isset( $response ) ) {
 			return $response;
@@ -1262,7 +1262,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param string   $charge_id Charge ID.
 	 * @param string   $currency Currency code.
 	 */
-	public function update_order_from_intent( $order, $intent_id, $intent_status, $charge_id, $currency ) {
+	public function update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id, $currency ) {
 		// Get the order amount and check whether a payment was needed.
 		$amount         = $order->get_total();
 		$payment_needed = $amount > 0;
