@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-
+import epsBankList from '../eps/bank-list';
 /**
  * Internal dependencies.
  */
@@ -21,7 +21,6 @@ const formatPaymentMethodDetails = ( charge ) => {
 
 	const {
 		bank,
-		reference,
 		verified_name: verifiedName,
 	} = charge.payment_method_details.eps;
 
@@ -34,7 +33,6 @@ const formatPaymentMethodDetails = ( charge ) => {
 	return {
 		id,
 		bank,
-		reference,
 		verifiedName,
 		customerName,
 		email,
@@ -48,7 +46,6 @@ const formatPaymentMethodDetails = ( charge ) => {
 const paymentMethodPlaceholders = {
 	id: 'id placeholder',
 	bank: 'bank name placeholder',
-	reference: 'reference placeholder',
 	verifiedName: 'verified_name placeholder',
 	customerName: 'customer_name placeholder',
 	email: 'email placeholder',
@@ -63,7 +60,6 @@ const EpsDetails = ( { charge = {}, isLoading } ) => {
 	const {
 		id,
 		bank,
-		reference,
 		verifiedName,
 		customerName,
 		email,
@@ -80,14 +76,7 @@ const EpsDetails = ( { charge = {}, isLoading } ) => {
 					isLoading={ isLoading }
 					label={ __( 'Bank name', 'woocommerce-payments' ) }
 				>
-					{ bank }
-				</Detail>
-
-				<Detail
-					isLoading={ isLoading }
-					label={ __( 'Reference', 'woocommerce-payments' ) }
-				>
-					{ reference }
+					{ epsBankList[ bank ] }
 				</Detail>
 
 				<Detail
