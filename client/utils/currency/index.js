@@ -8,16 +8,16 @@ import { find, trimEnd, endsWith } from 'lodash';
 const currencyData = getCurrencyData();
 
 const currencyNames = {
-	aud: 'Australian dollar',
-	cad: 'Canadian dollar',
-	chf: 'Swiss franc',
-	dkk: 'Danish krone',
-	eur: 'Euro',
-	gbp: 'Pound sterling',
-	nok: 'Norwegian krone',
-	nzd: 'New Zealand dollar',
-	sek: 'Swedish krona',
-	usd: 'United States (US) dollar',
+	aud: __( 'Australian dollar', 'woocommerce-payments' ),
+	cad: __( 'Canadian dollar', 'woocommerce-payments' ),
+	chf: __( 'Swiss franc', 'woocommerce-payments' ),
+	dkk: __( 'Danish krone', 'woocommerce-payments' ),
+	eur: __( 'Euro', 'woocommerce-payments' ),
+	gbp: __( 'Pound sterling', 'woocommerce-payments' ),
+	nok: __( 'Norwegian krone', 'woocommerce-payments' ),
+	nzd: __( 'New Zealand dollar', 'woocommerce-payments' ),
+	sek: __( 'Swedish krona', 'woocommerce-payments' ),
+	usd: __( 'United States (US) dollar', 'woocommerce-payments' ),
 };
 
 /**
@@ -27,13 +27,8 @@ const currencyNames = {
  *
  * @return {string} formatted and translated currency name
  */
-export const formatCurrencyName = ( currencyCode ) => {
-	const currencyName =
-		currencyNames[ currencyCode.toLowerCase() ] ||
-		currencyCode.toUpperCase();
-	// eslint-disable-next-line @wordpress/i18n-no-variables
-	return __( currencyName, 'woocommerce-payments' );
-};
+export const formatCurrencyName = ( currencyCode ) =>
+	currencyNames[ currencyCode.toLowerCase() ] || currencyCode.toUpperCase();
 
 /**
  * Gets wc-admin Currency for the given currency code
