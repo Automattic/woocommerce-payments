@@ -13,6 +13,7 @@ import Loadable from 'components/loadable';
 import CardDetails from './card';
 import CardPresentDetails from './card-present';
 import BancontactDetails from './bancontact';
+import EpsDetails from './eps';
 import GiropayDetails from './giropay';
 import IdealDetails from './ideal';
 import P24Details from './p24';
@@ -23,6 +24,7 @@ const detailsComponentMap = {
 	card: CardDetails,
 	card_present: CardPresentDetails,
 	bancontact: BancontactDetails,
+	eps: EpsDetails,
 	giropay: GiropayDetails,
 	ideal: IdealDetails,
 	p24: P24Details,

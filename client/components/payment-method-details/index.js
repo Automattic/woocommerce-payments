@@ -30,6 +30,7 @@ const formatDetails = ( payment ) => {
 			return <Fragment>{ paymentMethod.bank_code }</Fragment>;
 		case 'bancontact':
 		case 'ideal':
+		case 'eps':
 		case 'sofort':
 			return (
 				<Fragment>

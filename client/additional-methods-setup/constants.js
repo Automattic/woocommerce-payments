@@ -1,5 +1,6 @@
 export const upeMethods = [
 	'bancontact',
+	'eps',
 	'giropay',
 	'ideal',
 	'p24',

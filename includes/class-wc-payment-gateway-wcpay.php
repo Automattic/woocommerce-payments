@@ -302,6 +302,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'sofort'     => 'sofort_payments',
 			'giropay'    => 'giropay_payments',
 			'bancontact' => 'bancontact_payments',
+			'eps'        => 'eps_payments',
 			'ideal'      => 'ideal_payments',
 			'p24'        => 'p24_payments',
 			'card'       => 'card_payments',
