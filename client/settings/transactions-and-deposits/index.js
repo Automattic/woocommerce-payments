@@ -54,6 +54,8 @@ const TransactionsAndDeposits = () => {
 	] = useShortStatementDescriptor();
 	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
 		?.account_statement_descriptor?.message;
+	const shortStatementDescriptorErrorMessage = useGetSavingError()?.data
+		?.details?.short_statement_descriptor?.message;
 	const [ isCardPresentEligible ] = useCardPresentEligible();
 
 	return (
@@ -100,15 +102,6 @@ const TransactionsAndDeposits = () => {
 						</span>
 					}
 				/>
-				{ customerBankStatementErrorMessage && (
-					<Notice status="error" isDismissible={ false }>
-						<span
-							dangerouslySetInnerHTML={ {
-								__html: customerBankStatementErrorMessage,
-							} }
-						/>
-					</Notice>
-				) }
 				<div className="transactions-and-deposits__account-statement-wrapper">
 					<h4>
 						{ __(
@@ -116,6 +109,15 @@ const TransactionsAndDeposits = () => {
 							'woocommerce-payments'
 						) }
 					</h4>
+					{ customerBankStatementErrorMessage && (
+						<Notice status="error" isDismissible={ false }>
+							<span
+								dangerouslySetInnerHTML={ {
+									__html: customerBankStatementErrorMessage,
+								} }
+							/>
+						</Notice>
+					) }
 					<TextLengthHelpInputWrapper
 						textLength={ accountStatementDescriptor.length }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
@@ -152,7 +154,7 @@ const TransactionsAndDeposits = () => {
 					/>
 					{ isShortStatementEnabled && (
 						<>
-							{ /* { shortStatementDescriptorErrorMessage && (
+							{ shortStatementDescriptorErrorMessage && (
 								<Notice status="error" isDismissible={ false }>
 									<span
 										dangerouslySetInnerHTML={ {
@@ -160,7 +162,7 @@ const TransactionsAndDeposits = () => {
 										} }
 									/>
 								</Notice>
-							) } */ }
+							) }
 							<TextLengthHelpInputWrapper
 								textLength={
 									shortAccountStatementDescriptor.length
