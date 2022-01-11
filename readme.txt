@@ -106,6 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Flag emoji rendering in currency switcher block widget
 * Fix - Error when saved Google Pay payment method does not have billing address name
 * Update - Update Payment Element from beta version to release version.
+* Fix - Currency name not translated the Overview card title.
 
 = 3.5.0 - 2021-12-29 =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
