@@ -83,6 +83,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 			[
 				'card',
 				'bancontact',
+				'eps',
 				'giropay',
 				'sepa_debit',
 			]
@@ -108,6 +109,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 			[
 				'card',
 				'bancontact',
+				'eps',
 				'giropay',
 				'sepa_debit',
 			]

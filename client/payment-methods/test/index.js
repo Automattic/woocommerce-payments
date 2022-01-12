@@ -35,6 +35,7 @@ describe( 'PaymentMethods', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
 			'bancontact',
+			'eps',
 			'giropay',
 			'ideal',
 			'p24',
@@ -44,6 +45,7 @@ describe( 'PaymentMethods', () => {
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: upeCapabilityStatuses.ACTIVE,
 			bancontact_payments: upeCapabilityStatuses.ACTIVE,
+			eps_payments: upeCapabilityStatuses.ACTIVE,
 			giropay_payments: upeCapabilityStatuses.ACTIVE,
 			ideal_payments: upeCapabilityStatuses.ACTIVE,
 			p24_payments: upeCapabilityStatuses.ACTIVE,
@@ -75,6 +77,7 @@ describe( 'PaymentMethods', () => {
 		const bancontact = screen.getByRole( 'checkbox', {
 			name: 'Bancontact',
 		} );
+		const eps = screen.getByRole( 'checkbox', { name: 'EPS' } );
 		const giropay = screen.getByRole( 'checkbox', { name: 'giropay' } );
 		const sofort = screen.getByRole( 'checkbox', { name: 'Sofort' } );
 		const p24 = screen.getByRole( 'checkbox', {
@@ -84,6 +87,7 @@ describe( 'PaymentMethods', () => {
 
 		const allMethods = [
 			bancontact,
+			eps,
 			giropay,
 			sofort,
 			ideal,
@@ -114,6 +118,7 @@ describe( 'PaymentMethods', () => {
 			[
 				'Credit card / debit card',
 				'Bancontact',
+				'EPS',
 				'giropay',
 				'iDEAL',
 				'Przelewy24 (P24)',
@@ -128,6 +133,10 @@ describe( 'PaymentMethods', () => {
 				requirements: [],
 			},
 			bancontact_payments: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			eps_payments: {
 				status: upeCapabilityStatuses.INACTIVE,
 				requirements: [],
 			},
@@ -163,7 +172,7 @@ describe( 'PaymentMethods', () => {
 
 		expect(
 			screen.queryAllByText( /Contact WooCommerce Support/i ).length
-		).toEqual( 3 );
+		).toEqual( 4 );
 	} );
 
 	test( 'express payments rendered when UPE preview feture flag is enabled', () => {
