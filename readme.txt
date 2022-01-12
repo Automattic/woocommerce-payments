@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Add support for full transaction exports.
 * Fix - Simple subscription elements on the product edit page not shown/hidden when necessary.
 * Fix - Prevent fatal errors on the admin subscriptions screen when a subscription fails to load.
+* Fix - Compatibility issue when loading subscriptions templates.
 * Fix - Flag emoji rendering in currency switcher block widget
 * Fix - Error when saved Google Pay payment method does not have billing address name
 * Update - Update Payment Element from beta version to release version.
