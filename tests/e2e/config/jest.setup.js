@@ -8,7 +8,16 @@ import {
 	setBrowserViewport,
 } from '@wordpress/e2e-test-utils';
 import { addConsoleSuppression } from '@woocommerce/e2e-environment';
+
+// Since we block assets from loading intentionally, these messages
+// might flood the console and can be ignored.
 addConsoleSuppression( 'Failed to load resource', false );
+
+// CSP report only issues for loading resources can be ignored.
+addConsoleSuppression(
+	'violates the following Content Security Policy directive',
+	false
+);
 
 /**
  * Array of page event tuples of [ eventName, handler ].
@@ -97,21 +106,6 @@ function observeConsoleLogging() {
 		if (
 			text.includes( 'net::ERR_INTERNET_DISCONNECTED' ) &&
 			isOfflineMode()
-		) {
-			return;
-		}
-
-		// Since we block assets from loading intentionally, these messages
-		// might flood the console and can be ignored.
-		if ( text.includes( 'Failed to load resource' ) ) {
-			return;
-		}
-
-		// CSP report only issues for loading resources can be ignored.
-		if (
-			text.includes(
-				'violates the following Content Security Policy directive'
-			)
 		) {
 			return;
 		}
