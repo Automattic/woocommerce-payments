@@ -420,6 +420,22 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 				}
 
+				$intent_id              = $updated_payment_intent->get_id();
+				$intent_status          = $updated_payment_intent->get_status();
+				$payment_method         = $updated_payment_intent->get_payment_method_id();
+				$payment_method_details = $updated_payment_intent->get_payment_method_details();
+				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+				$charge_id              = $updated_payment_intent->get_charge_id();
+
+				/**
+				 * Attach the intent and exchange info to the order before doing the redirect, just in case the redirect
+				 * either does not complete properly, or the Stripe webhook which processes a successful order hits before
+				 * the redirect completes.
+				 */
+				$this->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+				$this->attach_exchange_info_to_order( $order, $updated_payment_intent->get_charge_id() );
+				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+
 				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
 				if ( $this->should_bump_rate_limiter( $last_payment_error_code ) ) {
 					// UPE method gives us the error of the previous payment attempt, so we use that for the Rate Limiter.
@@ -526,7 +542,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			if ( $order->has_status( [ 'processing', 'completed', 'on-hold' ] ) ) {
-				return;
+				/**
+				 * Previously, we exited early in this case, but this can cause issues if the webhook finishes processing
+				 * before the redirect happens, such as the order intent info not getting properly attached and order notes being
+				 * added. since the payment_complete logic has a lock on it, it should be fine to continue the logic in this case.
+				 */
+				Logger::info( "UPE order $order_id had status processing, completed or on-hold when UPE redirect processing started" );
 			}
 
 			Logger::log( "Begin processing UPE redirect payment for order $order_id for the amount of {$order->get_total()}" );

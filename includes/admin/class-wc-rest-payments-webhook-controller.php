@@ -298,6 +298,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
+		Logger::log( 'Webhook processing started' );
 		WC_Payments_Utils::mark_payment_completed( $order, $intent_id );
 	}
 
