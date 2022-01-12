@@ -1909,9 +1909,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		);
 	}
 
-	/**
-	 * @group underTest
-	 */
 	public function test_attach_intent_info_to_order() {
 		$order = $this->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
@@ -1971,7 +1968,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$intent_status = 'succeeded';
 		$currency      = 'USD';
 
-		$order->method( 'payment_complete' )->willThrowException( new Exception( 'something went wrong' ) );
+		$order->expects( $this->once() )
+			->method( 'payment_complete' )
+			->willThrowException( new Exception( 'something went wrong' ) );
 
 		$this->wcpay_gateway->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id, $currency );
 	}
