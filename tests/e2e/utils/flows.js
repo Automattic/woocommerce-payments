@@ -198,7 +198,15 @@ export const shopperWCP = {
 			'#billing-address_1',
 			customerBillingDetails.addressfirstline
 		);
+		await clearAndFillInput(
+			'#billing-country .components-form-token-field__input',
+			customerBillingDetails.country
+		);
 		await clearAndFillInput( '#billing-city', customerBillingDetails.city );
+		await clearAndFillInput(
+			'#billing-state .components-form-token-field__input',
+			customerBillingDetails.state
+		);
 		await clearAndFillInput(
 			'#billing-postcode',
 			customerBillingDetails.postcode
