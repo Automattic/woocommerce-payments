@@ -624,6 +624,24 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Initiates transactions export via API.
+	 *
+	 * @param array $filters The filters to be used in the query.
+	 *
+	 * @return array Export summary
+	 *
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_transactions_export( $filters = [] ) {
+		// Map Order # terms to the actual charge id to be used in the server.
+		if ( ! empty( $filters['search'] ) ) {
+			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
+		}
+
+		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
+	}
+
+	/**
 	 * Fetch a single transaction with provided id.
 	 *
 	 * @param string $transaction_id id of requested transaction.
@@ -706,7 +724,7 @@ class WC_Payments_API_Client {
 					// Wrap with try/catch to avoid failing whole request because of a single dispute.
 					$dispute = $this->add_order_info_to_object( $dispute['charge']['id'], $dispute );
 				} catch ( Exception $e ) {
-					// TODO: Log the error once Logger PR (#326) is merged.
+					Logger::error( 'Error adding order info to dispute ' . $dispute['id'] . ' : ' . $e->getMessage() );
 					continue;
 				}
 			}
