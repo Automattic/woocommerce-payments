@@ -7,6 +7,8 @@ import {
 	isOfflineMode,
 	setBrowserViewport,
 } from '@wordpress/e2e-test-utils';
+import { addConsoleSuppression } from '@woocommerce/e2e-environment';
+addConsoleSuppression( 'Failed to load resource', false );
 
 /**
  * Array of page event tuples of [ eventName, handler ].
