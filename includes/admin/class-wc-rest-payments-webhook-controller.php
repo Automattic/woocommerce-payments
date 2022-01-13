@@ -287,9 +287,18 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	private function process_webhook_payment_intent_succeeded( $event_body ) {
 		$order = $this->get_order_from_event( $event_body );
 
-		if ( $order && ! $order->has_status( [ 'processing', 'completed' ] ) ) {
-			$order->payment_complete();
+		if ( ! $order || $order->has_status( [ 'processing', 'completed' ] ) ) {
+			return;
 		}
+
+		// Prevent parallel order processing attempts.
+		if ( WC_Payments_Utils::is_order_locked( $order, $intent_id ) ) {
+			return;
+		}
+
+		WC_Payments_Utils::lock_order_payment( $order, $intent_id );
+		$order->payment_complete();
+		WC_Payments_Utils::unlock_order_payment( $order );
 	}
 
 	/**
