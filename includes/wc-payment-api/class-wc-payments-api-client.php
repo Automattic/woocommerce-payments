@@ -743,6 +743,9 @@ class WC_Payments_API_Client {
 			}
 		}
 
+		return $disputes;
+	}
+
 	/**
 	 * Get summary of disputes.
 	 *
