@@ -735,9 +735,9 @@ class WC_Payments_API_Client {
 			foreach ( $disputes['data'] as &$dispute ) {
 				try {
 					// Wrap with try/catch to avoid failing whole request because of a single dispute.
-					$dispute = $this->add_order_info_to_object( $dispute['charge']['id'], $dispute );
+					$dispute = $this->add_order_info_to_object( $disputes['data'][0]['charge_id'], $dispute );
 				} catch ( Exception $e ) {
-					Logger::error( 'Error adding order info to dispute ' . $dispute['id'] . ' : ' . $e->getMessage() );
+					Logger::error( 'Error adding order info to dispute ' . $disputes['data'][0]['dispute_id'] . ' : ' . $e->getMessage() );
 					continue;
 				}
 			}
