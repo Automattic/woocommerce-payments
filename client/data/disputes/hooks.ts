@@ -113,25 +113,40 @@ export const useDisputesSummary = ( {
 	status_is: statusIs,
 	status_is_not: statusIsNot,
 }: Query ): DisputesSummary =>
-	useSelect( ( select ) => {
-		const { getDisputesSummary, isResolving } = select( STORE_NAME );
+	useSelect(
+		( select ) => {
+			const { getDisputesSummary, isResolving } = select( STORE_NAME );
 
-		const query = {
-			paged: Number.isNaN( parseInt( paged ?? '', 10 ) ) ? '1' : paged,
-			perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
-				? '25'
-				: perPage,
-			match,
+			const query = {
+				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
+					? '1'
+					: paged,
+				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
+					? '25'
+					: perPage,
+				match,
+				storeCurrencyIs,
+				dateBefore,
+				dateAfter,
+				dateBetween,
+				statusIs,
+				statusIsNot,
+			};
+
+			return {
+				disputesSummary: getDisputesSummary( query ),
+				isLoading: isResolving( 'getDisputesSummary', [ query ] ),
+			};
+		},
+		[
+			paged,
+			perPage,
 			storeCurrencyIs,
+			match,
 			dateBefore,
 			dateAfter,
-			dateBetween,
+			JSON.stringify( dateBetween ),
 			statusIs,
 			statusIsNot,
-		};
-
-		return {
-			disputesSummary: getDisputesSummary( query ),
-			isLoading: isResolving( 'getDisputesSummary', [ query ] ),
-		};
-	}, [] );
+		]
+	);
