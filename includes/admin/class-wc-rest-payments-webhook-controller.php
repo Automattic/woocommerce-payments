@@ -464,7 +464,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 * @throws Rest_Request_Exception           Required parameters not found.
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 *
-	 * @return ?WC_Order
+	 * @return boolean|WC_Order|WC_Order_Refund
 	 */
 	private function get_order_from_event_body_intent_id( $event_body ) {
 		$event_data   = $this->read_rest_property( $event_body, 'data' );
@@ -484,7 +484,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				$order    = $this->wcpay_db->order_from_order_id( $order_id );
 			} elseif ( ! empty( $event_object['invoice'] ) ) {
 				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
-				return;
+				return false;
 			}
 		}
 
