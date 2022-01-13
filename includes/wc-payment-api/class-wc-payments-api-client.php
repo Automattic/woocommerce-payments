@@ -728,8 +728,20 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		return $this->request( $query, self::DISPUTES_API, self::GET );
-	}
+		$disputes = $this->request( $query, self::DISPUTES_API, self::GET );
+
+		// Add WooCommerce order information to each dispute.
+		if ( isset( $disputes['data'] ) ) {
+			foreach ( $disputes['data'] as &$dispute ) {
+				try {
+					// Wrap with try/catch to avoid failing whole request because of a single dispute.
+					$dispute = $this->add_order_info_to_object( $dispute['charge']['id'], $dispute );
+				} catch ( Exception $e ) {
+					Logger::error( 'Error adding order info to dispute ' . $dispute['id'] . ' : ' . $e->getMessage() );
+					continue;
+				}
+			}
+		}
 
 	/**
 	 * Get summary of disputes.
