@@ -486,6 +486,8 @@ class WC_Payments_Subscription_Service {
 
 			if ( $wcpay_subscription_id && $wcpay_payment_method_id ) {
 				try {
+					// TODO: This is failing.
+					// "Error: The customer does not have a payment method with the ID pm_123. The payment method must be attached to the customer.".
 					$this->update_subscription( $subscription, [ 'default_payment_method' => $wcpay_payment_method_id ] );
 				} catch ( API_Exception $e ) {
 					Logger::error( sprintf( 'There was a problem updating the WCPay subscription\'s default payment method on server: %s.', $e->getMessage() ) );
@@ -821,6 +823,8 @@ class WC_Payments_Subscription_Service {
 		}
 
 		try {
+			// TODO: This is failing.
+			// "Error: The customer does not have a payment method with the ID pm_123. The payment method must be attached to the customer.".
 			$response = $this->payments_api_client->update_subscription( $wcpay_subscription_id, $data );
 		} catch ( API_Exception $e ) {
 			Logger::log( sprintf( 'There was a problem updating the WCPay subscription on server: %s', $e->getMessage() ) );

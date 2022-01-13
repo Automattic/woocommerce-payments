@@ -380,7 +380,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$currency                  = $order->get_currency();
 		$converted_amount          = WC_Payments_Utils::prepare_amount( $amount, $currency );
 		$payment_needed            = 0 < $converted_amount;
-		$token                     = Payment_Information::get_token_from_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_type              = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 		$save_payment_method       = $payment_type->equals( Payment_Type::RECURRING() ) || ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -575,6 +574,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				if ( $save_payment_method && $payment_method->is_reusable() ) {
 					try {
 						$token = $payment_method->get_payment_token_for_user( $user, $payment_method_id );
+						// TODO: This is failing.
+						// "Error: The customer does not have a payment method with the ID pm_123. The payment method must be attached to the customer.".
 						$this->add_token_to_order( $order, $token );
 					} catch ( Exception $e ) {
 						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
