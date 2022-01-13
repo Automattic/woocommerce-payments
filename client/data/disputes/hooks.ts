@@ -60,7 +60,7 @@ export const useDisputes = ( {
 	status_is: statusIs,
 	status_is_not: statusIsNot,
 	orderby: orderBy = 'created',
-	order = 'asc',
+	order = 'desc',
 }: Query ): CachedDisputes =>
 	useSelect(
 		( select ) => {

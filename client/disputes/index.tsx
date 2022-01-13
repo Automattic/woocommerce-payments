@@ -48,15 +48,17 @@ const getHeaders = ( sortByCreated: boolean ): DisputesTableHeader[] => [
 	{
 		key: 'created',
 		label: __( 'Disputed on', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Disputed on', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
 		isSortable: true,
 		defaultSort: true,
-		defaultOrder: 'asc',
+		defaultOrder: 'desc',
 	},
 	{
 		key: 'amount',
 		label: __( 'Amount', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Amount', 'woocommerce-payments' ),
 		required: true,
 		isSortable: true,
 	},
@@ -103,6 +105,7 @@ const getHeaders = ( sortByCreated: boolean ): DisputesTableHeader[] => [
 	{
 		key: 'due_by',
 		label: __( 'Respond by', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Respond by', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
 		isSortable: true,
@@ -127,11 +130,11 @@ export const DisputesList = (): JSX.Element => {
 			amount = 0,
 			currency,
 			reason,
-			source = '',
-			order_number = '',
-			customer_name = '',
-			customer_email = '',
-			customer_country = '',
+			source,
+			order_number,
+			customer_name,
+			customer_email,
+			customer_country,
 			status,
 			created,
 			due_by,
@@ -174,10 +177,12 @@ export const DisputesList = (): JSX.Element => {
 					display: clickable( reasonDisplay ),
 				},
 				source: {
-					value: source,
+					value: source ?? '',
 					display: clickable(
 						<span
-							className={ `payment-method__brand payment-method__brand--${ source }` }
+							className={ `payment-method__brand payment-method__brand--${
+								source ?? ''
+							}` }
 						/>
 					),
 				},
@@ -197,7 +202,7 @@ export const DisputesList = (): JSX.Element => {
 					),
 				},
 				order: {
-					value: order_number,
+					value: order_number ?? '',
 					display: (
 						<OrderLink
 							order={ {
@@ -211,15 +216,15 @@ export const DisputesList = (): JSX.Element => {
 					),
 				},
 				name: {
-					value: customer_name,
+					value: customer_name ?? '',
 					display: clickable( customer_name ),
 				},
 				email: {
-					value: customer_email,
+					value: customer_email ?? '',
 					display: clickable( customer_email ),
 				},
 				country: {
-					value: customer_country,
+					value: customer_country ?? '',
 					display: clickable( customer_country ),
 				},
 				details: { value: dispute_id, display: detailsLink },
@@ -245,26 +250,27 @@ export const DisputesList = (): JSX.Element => {
 
 		const csvRows = rows.map( ( row ) => {
 			return [
-				...row.slice( 0, 2 ),
+				{ ...row[ 0 ] },
 				{
-					...row[ 2 ],
-					value: disputeStatusMapping[ row[ 2 ].value ?? '' ].message,
-				},
-				{
-					...row[ 3 ],
-					value:
-						typeof row[ 3 ].value === 'string'
-							? formatStringValue( row[ 3 ].value )
-							: '',
-				},
-				...row.slice( 4, 9 ),
-				{
-					...row[ 9 ],
+					...row[ 1 ],
 					value: dateI18n(
 						'Y-m-d',
-						moment( row[ 9 ].value ).toISOString()
+						moment( row[ 1 ].value ).toISOString()
 					),
 				},
+				{ ...row[ 2 ] },
+				{
+					...row[ 3 ],
+					value: disputeStatusMapping[ row[ 3 ].value ?? '' ].message,
+				},
+				{
+					...row[ 4 ],
+					value:
+						typeof row[ 4 ].value === 'string'
+							? formatStringValue( row[ 4 ].value )
+							: '',
+				},
+				...row.slice( 5, 10 ),
 				{
 					...row[ 10 ],
 					value: dateI18n(
