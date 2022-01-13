@@ -26,6 +26,14 @@ export default {
 		currencies: [],
 		stripe_key: 'card_payments',
 	},
+	au_becs_debit: {
+		id: 'au_becs_debit',
+		label: __( 'BECS Direct Debit', 'woocommerce-payments' ),
+		description: __( 'TODO: BECS Description.', 'woocommerce-payments' ),
+		Icon: SepaIcon,
+		currencies: [ 'AUD' ],
+		stripe_key: 'au_becs_debit_payments',
+	},
 	bancontact: {
 		id: 'bancontact',
 		label: __( 'Bancontact', 'woocommerce-payments' ),

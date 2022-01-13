@@ -24,4 +24,5 @@ class Payment_Method extends Enum {
 	const SEPA            = 'sepa_debit';
 	const CARD_PRESENT    = 'card_present';
 	const US_BANK_ACCOUNT = 'us_bank_account';
+	const BECS            = 'au_becs_debit';
 }
