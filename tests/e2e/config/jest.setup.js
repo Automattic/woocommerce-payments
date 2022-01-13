@@ -110,6 +110,21 @@ function observeConsoleLogging() {
 			return;
 		}
 
+		// Since we block assets from loading intentionally, these messages
+		// might flood the console and can be ignored.
+		if ( text.includes( 'Failed to load resource' ) ) {
+			return;
+		}
+
+		// CSP report only issues for loading resources can be ignored.
+		if (
+			text.includes(
+				'violates the following Content Security Policy directive'
+			)
+		) {
+			return;
+		}
+
 		// As of WordPress 5.3.2 in Chrome 79, navigating to the block editor
 		// (Posts > Add New) will display a console warning about
 		// non - unique IDs.
