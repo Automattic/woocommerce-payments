@@ -60,6 +60,8 @@ export function* getDisputes( query ) {
 	const path = addQueryArgs( `${ NAMESPACE }/disputes`, {
 		page: query.paged,
 		pagesize: query.perPage,
+		sort: query.orderBy,
+		direction: query.order,
 		...formatQueryFilters( query ),
 	} );
 

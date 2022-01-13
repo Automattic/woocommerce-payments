@@ -37,18 +37,28 @@ import { getPostUrl } from 'wcpay/utils';
 
 import './style.scss';
 
-const headers: DisputesTableHeader[] = [
+const getHeaders = ( sortByCreated: boolean ): DisputesTableHeader[] => [
 	{
 		key: 'details',
 		label: '',
 		required: true,
-		cellClassName: 'info-button',
+		cellClassName: 'info-button ' + ( sortByCreated ? 'is-sorted' : '' ),
 		isLeftAligned: true,
+	},
+	{
+		key: 'created',
+		label: __( 'Disputed on', 'woocommerce-payments' ),
+		required: true,
+		isLeftAligned: true,
+		isSortable: true,
+		defaultSort: true,
+		defaultOrder: 'asc',
 	},
 	{
 		key: 'amount',
 		label: __( 'Amount', 'woocommerce-payments' ),
 		required: true,
+		isSortable: true,
 	},
 	{
 		key: 'status',
@@ -74,7 +84,7 @@ const headers: DisputesTableHeader[] = [
 		required: true,
 	},
 	{
-		key: 'customer',
+		key: 'name',
 		label: __( 'Customer', 'woocommerce-payments' ),
 		isLeftAligned: true,
 	},
@@ -91,16 +101,11 @@ const headers: DisputesTableHeader[] = [
 		isLeftAligned: true,
 	},
 	{
-		key: 'created',
-		label: __( 'Disputed on', 'woocommerce-payments' ),
-		required: true,
-		isLeftAligned: true,
-	},
-	{
-		key: 'dueBy',
+		key: 'due_by',
 		label: __( 'Respond by', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
+		isSortable: true,
 	},
 ];
 
@@ -112,102 +117,118 @@ export const DisputesList = (): JSX.Element => {
 		getQuery()
 	);
 
-	const rows = disputes.map( ( dispute ) => {
-		const {
+	const sortByCreated =
+		! getQuery().orderby || 'created' === getQuery().orderby;
+	const headers = getHeaders( sortByCreated );
+
+	const rows = disputes.map(
+		( {
 			dispute_id,
 			amount = 0,
 			currency,
 			reason,
-			source,
-			order_number,
-			customer_name,
-			customer_email,
-			customer_country,
+			source = '',
+			order_number = '',
+			customer_name = '',
+			customer_email = '',
+			customer_country = '',
 			status,
 			created,
 			due_by,
-		} = dispute;
+		} ) => {
+			const clickable = ( children: React.ReactNode ): JSX.Element => (
+				<ClickableCell href={ getDetailsURL( dispute_id, 'disputes' ) }>
+					{ children }
+				</ClickableCell>
+			);
 
-		const orderObject = {
-			number: order_number,
-			url: getPostUrl( {
-				post: order_number,
-				action: 'edit',
-			} ),
-		};
+			const detailsLink = (
+				<DetailsLink id={ dispute_id } parentSegment="disputes" />
+			);
 
-		const order = {
-			value: order_number,
-			display: <OrderLink order={ orderObject } />,
-		};
+			const reasonMapping = reasons[ reason ];
+			const reasonDisplay = reasonMapping
+				? reasonMapping.display
+				: formatStringValue( reason );
 
-		const clickable = ( children: React.ReactNode ): JSX.Element => (
-			<ClickableCell href={ getDetailsURL( dispute_id, 'disputes' ) }>
-				{ children }
-			</ClickableCell>
-		);
-
-		const detailsLink = (
-			<DetailsLink id={ dispute_id } parentSegment="disputes" />
-		);
-
-		const reasonMapping = reasons[ reason ];
-		const reasonDisplay = reasonMapping
-			? reasonMapping.display
-			: formatStringValue( reason );
-
-		const data = {
-			amount: {
-				value: amount / 100,
-				display: clickable(
-					formatExplicitCurrency( amount, currency )
-				),
-			},
-			status: {
-				value: status,
-				display: clickable( <DisputeStatusChip status={ status } /> ),
-			},
-			reason: {
-				value: reason,
-				display: clickable( reasonDisplay ),
-			},
-			source: {
-				value: source,
-				display: clickable(
-					<span
-						className={ `payment-method__brand payment-method__brand--${ source }` }
-					/>
-				),
-			},
-			created: {
-				value: created,
-				display: clickable(
-					dateI18n( 'M j, Y', moment( created ).toISOString() )
-				),
-			},
-			dueBy: {
-				value: due_by,
-				display: clickable(
-					dateI18n( 'M j, Y / g:iA', moment( due_by ).toISOString() )
-				),
-			},
-			order,
-			customer: {
-				value: customer_name,
-				display: clickable( customer_name ),
-			},
-			email: {
-				value: customer_email,
-				display: clickable( customer_email ),
-			},
-			country: {
-				value: customer_country,
-				display: clickable( customer_country ),
-			},
-			details: { value: dispute_id, display: detailsLink },
-		};
-		return headers.map( ( { key } ) => data[ key ] || { display: null } );
-	} );
+			const data: {
+				[ k: string ]: {
+					value: number | string;
+					display: JSX.Element;
+				};
+			} = {
+				amount: {
+					value: amount / 100,
+					display: clickable(
+						formatExplicitCurrency( amount, currency )
+					),
+				},
+				status: {
+					value: status,
+					display: clickable(
+						<DisputeStatusChip status={ status } />
+					),
+				},
+				reason: {
+					value: reason,
+					display: clickable( reasonDisplay ),
+				},
+				source: {
+					value: source,
+					display: clickable(
+						<span
+							className={ `payment-method__brand payment-method__brand--${ source }` }
+						/>
+					),
+				},
+				created: {
+					value: created,
+					display: clickable(
+						dateI18n( 'M j, Y', moment( created ).toISOString() )
+					),
+				},
+				due_by: {
+					value: due_by,
+					display: clickable(
+						dateI18n(
+							'M j, Y / g:iA',
+							moment( due_by ).toISOString()
+						)
+					),
+				},
+				order: {
+					value: order_number,
+					display: (
+						<OrderLink
+							order={ {
+								number: order_number,
+								url: getPostUrl( {
+									post: order_number,
+									action: 'edit',
+								} ),
+							} }
+						/>
+					),
+				},
+				name: {
+					value: customer_name,
+					display: clickable( customer_name ),
+				},
+				email: {
+					value: customer_email,
+					display: clickable( customer_email ),
+				},
+				country: {
+					value: customer_country,
+					display: clickable( customer_country ),
+				},
+				details: { value: dispute_id, display: detailsLink },
+			};
+			return headers.map(
+				( { key } ) => data[ key ] || { display: null }
+			);
+		}
+	);
 
 	const downloadable = !! rows.length;
 
