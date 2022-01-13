@@ -269,7 +269,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_payment_intent_failed( $event_body ) {
-		$order = $this->get_order_from_event( $event_body );
+		$order = $this->get_order_from_event_intent_id( $event_body );
 
 		if ( $order && ! $order->has_status( [ 'failed' ] ) ) {
 			$order->update_status( 'failed', $this->get_failure_message_from_event( $event_body ) );
@@ -285,7 +285,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_payment_intent_succeeded( $event_body ) {
-		$order = $this->get_order_from_event( $event_body );
+		$order = $this->get_order_from_event_intent_id( $event_body );
 
 		if ( ! $order || $order->has_status( [ 'processing', 'completed' ] ) ) {
 			return;
@@ -465,7 +465,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Gets the order related to the event.
+	 * Gets the order related to the event intent id.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
@@ -474,7 +474,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @return WC_Order|null
 	 */
-	private function get_order_from_event( $event_body ) {
+	private function get_order_from_event_intent_id( $event_body ) {
 		$event_data   = $this->read_rest_property( $event_body, 'data' );
 		$event_object = $this->read_rest_property( $event_data, 'object' );
 		$intent_id    = $this->read_rest_property( $event_object, 'id' );
