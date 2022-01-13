@@ -518,7 +518,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		$event_object  = $this->read_rest_property( $event_data, 'object' );
 		$event_charges = $this->read_rest_property( $event_object, 'charges' );
 		$charges_data  = $this->read_rest_property( $event_charges, 'data' );
-		$failure_code  = isset( $charges_data[0]['failure_code'] ) ? $charges_data[0]['failure_code'] : '';
+		$failure_code  = $charges_data[0]['failure_code'] ?? '';
 
 		switch ( $failure_code ) {
 			case 'account_closed':
