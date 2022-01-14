@@ -47,14 +47,20 @@ class WC_Payments_Subscription_Minimum_Amount_Handler {
 	 * @param int|bool $minimum_amount The minimum amount that can be processed in recurring transactions. Can be an int (the minimum amount) or false if no minimum exists.
 	 * @param string   $currency_code  The currency to fetch the minimum amount in.
 	 *
-	 * @return int The minimum recurring amount.
+	 * @return float The minimum recurring amount.
 	 */
 	public function get_minimum_recurring_amount( $minimum_amount, $currency_code ) {
-		$transient_key  = self::MINIMUM_RECURRING_AMOUNT_TRANSIENT_KEY . "_$currency_code";
+		$transient_key = self::MINIMUM_RECURRING_AMOUNT_TRANSIENT_KEY . "_$currency_code";
+		// Minimum amount is purposefully immediately overwritten. The calling function passes a default value which we must receive.
 		$minimum_amount = get_transient( $transient_key );
 
 		if ( false === $minimum_amount ) {
-			$minimum_amount = $this->api_client->get_currency_minimum_recurring_amount( $currency_code );
+			try {
+				$minimum_amount = $this->api_client->get_currency_minimum_recurring_amount( $currency_code );
+			} catch ( \WCPay\Exceptions\API_Exception $exception ) {
+				// Currency not supported or other API error.
+				return 0.0;
+			}
 			set_transient( $transient_key, $minimum_amount, self::MINIMUM_RECURRING_AMOUNTS_TRANSIENT_EXPIRATION );
 		}
 

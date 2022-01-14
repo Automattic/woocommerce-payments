@@ -1929,7 +1929,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If an error occurs.
 	 */
 	public function get_currency_minimum_recurring_amount( $currency ) {
-		return $this->request(
+		return (int) $this->request(
 			[],
 			self::MINIMUM_RECURRING_AMOUNT_API . '/' . $currency,
 			self::GET
