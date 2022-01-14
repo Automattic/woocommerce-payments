@@ -13,7 +13,11 @@ import DisputesList from '..';
 import { useDisputes, useDisputesSummary } from 'data/index';
 import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
 import React from 'react';
-import { DisputeReason, DisputeStatus } from 'wcpay/types/disputes';
+import {
+	DisputeReason,
+	DisputeStatus,
+	CachedDispute,
+} from 'wcpay/types/disputes';
 
 declare const global: {
 	wcpaySettings: {
@@ -62,27 +66,27 @@ const mockDisputes = [
 		customer_email: 'mock@customer.net',
 		customer_country: 'US',
 		status: 'needs_response' as DisputeStatus,
-		created: '2022-01-06 09:14:33',
-		due_by: '2022-01-15 23:59:59',
-	},
+		created: '2019-11-01 23:59:59',
+		due_by: '2019-11-08 02:46:00',
+		order: {
+			number: '1',
+			url: 'http://test.local/order/1',
+		},
+	} as CachedDispute,
 	{
 		// dispute without order or charge information
 		wcpay_disputes_cache_id: 5,
 		stripe_account_id: 'acct_test',
-		dispute_id: 'dp_asdfghjkl',
+		dispute_id: 'dp_zxcvbnm',
 		charge_id: 'ch_mock',
 		amount: 1050,
 		currency: 'usd',
 		reason: 'general' as DisputeReason,
-		source: '',
 		order_number: 2,
-		customer_name: '',
-		customer_email: '',
-		customer_country: '',
 		status: 'under_review' as DisputeStatus,
-		created: '2022-01-06 09:14:33',
-		due_by: '2022-01-15 23:59:59',
-	},
+		created: '2019-10-30 09:14:33',
+		due_by: '2019-11-06 23:00:59',
+	} as CachedDispute,
 ];
 
 describe( 'Disputes list', () => {
