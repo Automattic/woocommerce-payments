@@ -41,7 +41,7 @@ const DisputeDetails = ( {
 			}
 			isSubmitted={
 				disputeObject.evidence_details &&
-				0 < ( disputeObject.evidence_details.submission_count ?? 0 )
+				0 < disputeObject.evidence_details.submission_count
 			}
 			onAccept={ doAccept }
 		/>

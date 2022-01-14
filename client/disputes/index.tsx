@@ -223,10 +223,9 @@ export const DisputesList = (): JSX.Element => {
 				},
 				{
 					...row[ 3 ],
-					value:
-						typeof row[ 3 ].value === 'string'
-							? formatStringValue( row[ 3 ].value )
-							: '',
+					value: formatStringValue(
+						( row[ 3 ].value ?? '' ).toString()
+					),
 				},
 				...row.slice( 4, 9 ),
 				{
