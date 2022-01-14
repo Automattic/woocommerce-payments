@@ -32,22 +32,21 @@ interface ChargeRefunds {
 
 export interface Charge {
 	id: string;
-	amount?: number;
-	amount_captured?: number;
-	amount_refunded?: number;
-	application_fee_amount?: number;
-	balance_transaction?: BalanceTransaction;
+	amount: number;
+	amount_captured: number;
+	amount_refunded: number;
+	application_fee_amount: number;
+	balance_transaction: BalanceTransaction;
 	billing_details: BillingDetails;
-	captured?: boolean;
-	currency?: string;
+	captured: boolean;
+	currency: string;
 	dispute?: Dispute;
-	disputed?: boolean;
-	outcome?: ChargeOutcome;
-	paid?: boolean;
-	payment_method_details: PaymentMethodDetails;
-	refunded?: boolean;
-	refunds?: ChargeRefunds;
-	status?: string;
+	disputed: boolean;
+	outcome: ChargeOutcome;
+	paid: boolean;
+	refunded: boolean;
+	refunds: ChargeRefunds;
+	status: string;
 }
 
 export interface ChargeAmounts {
@@ -56,10 +55,4 @@ export interface ChargeAmounts {
 	fee: number;
 	net: number;
 	refunded: number;
-}
-
-export interface PaymentMethodDetails {
-	card: {
-		brand: string;
-	};
 }

@@ -11,9 +11,9 @@ interface Evidence {
 }
 
 interface EvidenceDetails {
-	has_evidence?: boolean;
+	has_evidence: boolean;
 	due_by: number;
-	submission_count?: number;
+	submission_count: number;
 }
 interface Order {
 	customer_url: string;
@@ -52,16 +52,16 @@ export interface Dispute {
 	status: DisputeStatus;
 	id: string;
 	evidence_details?: EvidenceDetails;
-	metadata?: Record< string, any >;
+	metadata: Record< string, any >;
 	order?: Order;
-	evidence?: Evidence;
+	evidence: Evidence;
 	fileSize?: Record< string, number >;
 	reason: DisputeReason;
-	charge?: Charge;
+	charge: Charge;
 	amount: number;
 	currency: string;
 	created: number;
-	balance_transactions?: BalanceTransaction[];
+	balance_transactions: BalanceTransaction[];
 }
 
 export interface CachedDispute {
@@ -103,7 +103,7 @@ export interface DisputeFileUpload {
 
 export interface DisputesSummary {
 	disputesSummary: {
-		count?: number;
+		count: number;
 	};
 	isLoading: boolean;
 }

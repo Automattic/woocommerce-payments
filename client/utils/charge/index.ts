@@ -37,12 +37,8 @@ export const isChargeCaptured = ( charge: Charge = <Charge>{} ): boolean =>
 export const isChargeDisputed = ( charge: Charge = <Charge>{} ): boolean =>
 	true === charge.disputed;
 
-export const isChargeRefunded = ( charge: Charge = <Charge>{} ): boolean => {
-	if ( ! charge.amount_refunded ) {
-		return false;
-	}
-	return 0 < charge.amount_refunded;
-};
+export const isChargeRefunded = ( charge: Charge = <Charge>{} ): boolean =>
+	0 < charge.amount_refunded;
 
 export const isChargeFullyRefunded = ( charge: Charge = <Charge>{} ): boolean =>
 	true === charge.refunded;
@@ -52,9 +48,7 @@ export const isChargePartiallyRefunded = (
 ): boolean => isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
 
 /* TODO: implement authorization and SCA charge statuses */
-export const getChargeStatus = (
-	charge: Charge = <Charge>{}
-): string | undefined => {
+export const getChargeStatus = ( charge: Charge = <Charge>{} ): string => {
 	if ( isChargeFailed( charge ) ) {
 		return 'failed';
 	}
@@ -85,16 +79,16 @@ export const getChargeStatus = (
 export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	const balance = charge.balance_transaction
 		? {
-				currency: charge?.balance_transaction?.currency || '',
-				amount: charge?.balance_transaction?.amount || 0,
-				fee: charge?.balance_transaction?.fee || 0,
+				currency: charge.balance_transaction.currency,
+				amount: charge.balance_transaction.amount,
+				fee: charge.balance_transaction.fee,
 				refunded: 0,
 				net: 0,
 		  }
 		: {
-				currency: charge?.currency || '',
-				amount: charge?.amount || 0,
-				fee: charge.application_fee_amount || 0,
+				currency: charge.currency,
+				amount: charge.amount,
+				fee: charge.application_fee_amount,
 				refunded: 0,
 				net: 0,
 		  };
@@ -102,15 +96,13 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	if ( isChargeRefunded( charge ) ) {
 		// Refund balance_transactions have negative amount.
 		balance.refunded -= sumBy(
-			charge?.refunds?.data || [],
+			charge.refunds.data,
 			'balance_transaction.amount'
 		);
 	}
 
 	if ( isChargeDisputed( charge ) && typeof charge.dispute !== 'undefined' ) {
-		if ( balance.fee ) {
-			balance.fee += sumBy( charge.dispute.balance_transactions, 'fee' );
-		}
+		balance.fee += sumBy( charge.dispute.balance_transactions, 'fee' );
 		balance.refunded -= sumBy(
 			charge.dispute.balance_transactions,
 			'amount'
