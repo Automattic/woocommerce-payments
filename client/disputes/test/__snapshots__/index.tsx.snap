@@ -290,14 +290,7 @@ exports[`Disputes list renders correctly 1`] = `
                 </td>
                 <td
                   class="woocommerce-table__item"
-                >
-                  <a
-                    data-link-type="external"
-                    href="post.php?post=1&action=edit"
-                  >
-                    1
-                  </a>
-                </td>
+                />
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
@@ -409,18 +402,13 @@ exports[`Disputes list renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--undefined"
+                      class="payment-method__brand payment-method__brand--"
                     />
                   </a>
                 </td>
                 <td
                   class="woocommerce-table__item"
-                >
-                  <a
-                    data-link-type="external"
-                    href="post.php?action=edit"
-                  />
-                </td>
+                />
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
