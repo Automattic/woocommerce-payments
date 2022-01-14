@@ -34,12 +34,17 @@ const PaymentMethod = ( {
 	const disabled = upeCapabilityStatuses.INACTIVE === status;
 	const { accountFees } = useContext( WCPaySettingsContext );
 
+	// Not available in the Stripe account country if there are no fees.
+	const unavailable = ! accountFees[ id ];
+
 	const handleChange = ( newStatus ) => {
 		if ( newStatus ) {
 			return onCheckClick( id );
 		}
 		return onUncheckClick( id );
 	};
+
+	if ( unavailable ) return null;
 
 	return (
 		<li
