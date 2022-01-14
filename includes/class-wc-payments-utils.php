@@ -276,6 +276,32 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Updates an order when the payment is complete. Also implements a lock to ensure the order cannot be marked as complete multiple times due to
+	 * possible race conditions when the paid webhook from Stripe is handled during this request.
+	 *
+	 * @param WC_Order $order     The order.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 *
+	 * @return void
+	 */
+	public static function mark_payment_completed( $order, $intent_id ) {
+		// Read the latest order properties from the database to avoid race conditions when the paid webhook was handled during this request.
+		$order->get_data_store()->read( $order );
+
+		if ( $order->has_status( [ 'processing', 'completed' ] ) ) {
+			return;
+		}
+
+		if ( self::is_order_locked( $order, $intent_id ) ) {
+			return;
+		}
+
+		self::lock_order_payment( $order, $intent_id );
+		$order->payment_complete( $intent_id );
+		self::unlock_order_payment( $order );
+	}
+
+	/**
 	 * Returns the charge_id for an "Order #" search term
 	 * or all charge_ids for a "Subscription #" search term.
 	 *
