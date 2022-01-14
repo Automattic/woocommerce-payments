@@ -541,7 +541,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				return;
 			}
 
-			if ( $order->has_status( [ 'processing', 'completed', 'on-hold' ] ) ) {
+			if ( $order->meta_exists( '_intention_status' ) && $order->get_meta( '_intention_status' ) !== 'requires_payment_method' ) {
 				return;
 			}
 
