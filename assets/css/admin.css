@@ -116,7 +116,7 @@
 }
 
 .payment-method__brand--au_becs_debit {
-	background: no-repeat url( '../images/payment-methods/sepa_debit.svg' );
+	background: no-repeat url( '../images/payment-methods/bank_debit.svg' );
 	background-size: contain;
 }
 

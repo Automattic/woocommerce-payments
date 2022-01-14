@@ -13,6 +13,7 @@ import SofortIcon from './gateway-icons/sofort';
 import SepaIcon from './gateway-icons/sepa';
 import P24Icon from './gateway-icons/p24';
 import IdealIcon from './gateway-icons/ideal';
+import BankDebitIcon from './gateway-icons/bank-debit';
 
 export default {
 	card: {
@@ -29,8 +30,11 @@ export default {
 	au_becs_debit: {
 		id: 'au_becs_debit',
 		label: __( 'BECS Direct Debit', 'woocommerce-payments' ),
-		description: __( 'TODO: BECS Description.', 'woocommerce-payments' ),
-		Icon: SepaIcon,
+		description: __(
+			'Bulk Electronic Clearing System - Accept secure bank transfer from Australia.',
+			'woocommerce-payments'
+		),
+		Icon: BankDebitIcon,
 		currencies: [ 'AUD' ],
 		stripe_key: 'au_becs_debit_payments',
 	},
