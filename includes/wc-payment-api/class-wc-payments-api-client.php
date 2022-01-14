@@ -719,7 +719,22 @@ class WC_Payments_API_Client {
 			'pagesize' => $page_size,
 		];
 
-		return $this->request( $query, self::DISPUTES_API, self::GET );
+		$disputes = $this->request( $query, self::DISPUTES_API, self::GET );
+
+		// Add WooCommerce order information to each dispute.
+		if ( isset( $disputes['data'] ) ) {
+			foreach ( $disputes['data'] as &$dispute ) {
+				try {
+					// Wrap with try/catch to avoid failing whole request because of a single dispute.
+					$dispute = $this->add_order_info_to_object( $dispute['charge_id'], $dispute );
+				} catch ( Exception $e ) {
+					Logger::error( 'Error adding order info to dispute ' . $dispute['dispute_id'] . ' : ' . $e->getMessage() );
+					continue;
+				}
+			}
+		}
+
+		return $disputes;
 	}
 
 	/**
@@ -1758,42 +1773,6 @@ class WC_Payments_API_Client {
 
 		return $object;
 	}
-
-	/**
-	 * Formats dispute for UI
-	 *
-	 * @param  array $dispute The dispute coming from API.
-	 * @return array array in the format that the UI expects
-	 */
-	private function format_dispute_for_ui( array $dispute ): array {
-		return [
-			'id'               => $dispute['dispute_id'],
-			'reason'           => $dispute['reason'],
-			'charge'           => [
-				'id'                     => $dispute['charge_id'],
-				'payment_method_details' => [
-					'card' => [
-						'brand' => $dispute['source'],
-					],
-				],
-				'billing_details'        => [
-					'name'    => $dispute['customer_name'],
-					'email'   => $dispute['customer_email'],
-					'address' => [
-						'country' => $dispute['customer_country'],
-					],
-				],
-			],
-			'amount'           => $dispute['amount'],
-			'currency'         => $dispute['currency'],
-			'status'           => $dispute['status'],
-			'created'          => strtotime( $dispute['created'] ),
-			'evidence_details' => [
-				'due_by' => strtotime( $dispute['due_by'] ),
-			],
-		];
-	}
-
 
 	/**
 	 * Creates the array representing order for frontend.
