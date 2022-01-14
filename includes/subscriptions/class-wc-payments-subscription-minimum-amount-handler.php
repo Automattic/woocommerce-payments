@@ -59,11 +59,11 @@ class WC_Payments_Subscription_Minimum_Amount_Handler {
 				$minimum_amount = $this->api_client->get_currency_minimum_recurring_amount( $currency_code );
 			} catch ( \WCPay\Exceptions\API_Exception $exception ) {
 				// Currency not supported or other API error.
-				return 0.0;
+				$minimum_amount = 0;
 			}
 			set_transient( $transient_key, $minimum_amount, self::MINIMUM_RECURRING_AMOUNTS_TRANSIENT_EXPIRATION );
 		}
 
-		return WC_Payments_Utils::interpret_stripe_amount( $minimum_amount, strtolower( $currency_code ) );
+		return WC_Payments_Utils::interpret_stripe_amount( (int) $minimum_amount, strtolower( $currency_code ) );
 	}
 }
