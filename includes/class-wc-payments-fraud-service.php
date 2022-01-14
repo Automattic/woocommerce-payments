@@ -54,6 +54,7 @@ class WC_Payments_Fraud_Service {
 		add_filter( 'wcpay_prepare_fraud_config', [ $this, 'prepare_fraud_config' ], 10, 2 );
 		add_filter( 'wcpay_current_session_id', [ $this, 'get_session_id' ] );
 		add_action( 'init', [ $this, 'link_session_if_user_just_logged_in' ] );
+		add_action( 'admin_print_footer_scripts', [ $this, 'add_sift_js_tracker' ] );
 	}
 
 	/**
@@ -194,5 +195,47 @@ class WC_Payments_Fraud_Service {
 		}
 		$cookie_customer_id = $cookie[0];
 		return $wpcom_blog_id . '_' . $cookie_customer_id;
+	}
+
+	/**
+	 * Adds the Sift JS page tracker if needed. See the comments for the detailed logic.
+	 *
+	 * @return  void
+	 */
+	public function add_sift_js_tracker() {
+		if ( ! isset( $_GET['wcpay-connection-success'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			// Only enqueue the tracker if the merchant has just finished the Stripe KYC.
+			return;
+		}
+
+		$fraud_config = $this->account->get_fraud_services_config();
+		if ( ! isset( $fraud_config['sift'] ) ) {
+			// Abort if Sift is not enabled for this account.
+			return;
+		}
+
+		if ( isset( $_GET['path'] ) && strpos( $_GET['path'], '/payments/' ) === 0 ) { // phpcs:ignore WordPress.Security
+			// If the current page is a WCPay dashboard, there's separate logic that will include the Sift JS tracker on its own.
+			return;
+		}
+
+		?>
+		<script type="text/javascript">
+			var src = 'https://cdn.sift.com/s.js';
+
+			var _sift = ( window._sift = window._sift || [] );
+			_sift.push( [ '_setAccount', '<?php echo esc_attr( $fraud_config['sift']['beacon_key'] ); ?>' ] );
+			_sift.push( [ '_setUserId', '<?php echo esc_attr( $fraud_config['sift']['user_id'] ); ?>' ] );
+			_sift.push( [ '_setSessionId', '<?php echo esc_attr( $fraud_config['sift']['session_id'] ); ?>' ] );
+			_sift.push( [ '_trackPageview' ] );
+
+			if ( ! document.querySelector( '[src="' + src + '"]' ) ) {
+				var script = document.createElement( 'script' );
+				script.src = src;
+				script.async = true;
+				document.body.appendChild( script );
+			}
+		</script>
+		<?php
 	}
 }

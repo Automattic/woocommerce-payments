@@ -4,27 +4,27 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "da57373382ec0e4da89c7ebabc31cfbd",
+    "content-hash": "fd396360a87fc51fe044306a6490d821",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
-            "version": "v1.4.9",
+            "version": "v1.4.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-a8c-mc-stats.git",
-                "reference": "6920ecb008891558cbf619838d1ce963838f077d"
+                "reference": "f24331c8cc098e81225c131e3d25f7df85ee9cd7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-a8c-mc-stats/zipball/6920ecb008891558cbf619838d1ce963838f077d",
-                "reference": "6920ecb008891558cbf619838d1ce963838f077d",
+                "url": "https://api.github.com/repos/Automattic/jetpack-a8c-mc-stats/zipball/f24331c8cc098e81225c131e3d25f7df85ee9cd7",
+                "reference": "f24331c8cc098e81225c131e3d25f7df85ee9cd7",
                 "shasum": ""
             },
             "require-dev": {
                 "automattic/jetpack-changelogger": "^3.0",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-a8c-mc-stats",
@@ -45,20 +45,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Used to record internal usage stats for Automattic. Not visible to site owners.",
-            "time": "2021-11-02T14:06:54+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-a8c-mc-stats/tree/v1.4.10"
+            },
+            "time": "2021-12-14T17:53:40+00:00"
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v1.13.1",
+            "version": "v1.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "3f1bb61ef36548ba0e503816b557c303ea179d1c"
+                "reference": "c49569503e992a28ac8b6bff1d62f0845e58c3d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/3f1bb61ef36548ba0e503816b557c303ea179d1c",
-                "reference": "3f1bb61ef36548ba0e503816b557c303ea179d1c",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/c49569503e992a28ac8b6bff1d62f0845e58c3d8",
+                "reference": "c49569503e992a28ac8b6bff1d62f0845e58c3d8",
                 "shasum": ""
             },
             "require": {
@@ -67,9 +70,10 @@
             "require-dev": {
                 "automattic/jetpack-changelogger": "^3.0",
                 "brain/monkey": "2.6.1",
+                "wikimedia/testing-access-wrapper": "^1.0 | ^2.0",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-assets",
@@ -77,10 +81,13 @@
                     "link-template": "https://github.com/Automattic/jetpack-assets/compare/v${old}...v${new}"
                 },
                 "branch-alias": {
-                    "dev-master": "1.13.x-dev"
+                    "dev-master": "1.15.x-dev"
                 }
             },
             "autoload": {
+                "files": [
+                    "actions.php"
+                ],
                 "classmap": [
                     "src/"
                 ]
@@ -90,7 +97,10 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
-            "time": "2021-11-22T23:53:54+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.15.0"
+            },
+            "time": "2021-12-20T22:27:22+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
@@ -240,16 +250,16 @@
         },
         {
             "name": "automattic/jetpack-constants",
-            "version": "v1.6.12",
+            "version": "v1.6.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-constants.git",
-                "reference": "7adbedb4947bd3cdcf3aa25d8dda3844b137744a"
+                "reference": "5a14050ea6d27d92cba3cfcf76d02a8235912d1a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-constants/zipball/7adbedb4947bd3cdcf3aa25d8dda3844b137744a",
-                "reference": "7adbedb4947bd3cdcf3aa25d8dda3844b137744a",
+                "url": "https://api.github.com/repos/Automattic/jetpack-constants/zipball/5a14050ea6d27d92cba3cfcf76d02a8235912d1a",
+                "reference": "5a14050ea6d27d92cba3cfcf76d02a8235912d1a",
                 "shasum": ""
             },
             "require-dev": {
@@ -257,7 +267,7 @@
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-constants",
@@ -278,20 +288,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "A wrapper for defining constants in a more testable way.",
-            "time": "2021-11-22T17:18:30+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-constants/tree/v1.6.13"
+            },
+            "time": "2021-12-14T17:53:48+00:00"
         },
         {
             "name": "automattic/jetpack-heartbeat",
-            "version": "v1.3.14",
+            "version": "v1.3.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-heartbeat.git",
-                "reference": "517c77909515def1f4c71f2df37573d6beacc215"
+                "reference": "990678483baf84ed18545782c8a2b1c324297d91"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-heartbeat/zipball/517c77909515def1f4c71f2df37573d6beacc215",
-                "reference": "517c77909515def1f4c71f2df37573d6beacc215",
+                "url": "https://api.github.com/repos/Automattic/jetpack-heartbeat/zipball/990678483baf84ed18545782c8a2b1c324297d91",
+                "reference": "990678483baf84ed18545782c8a2b1c324297d91",
                 "shasum": ""
             },
             "require": {
@@ -301,7 +314,7 @@
             "require-dev": {
                 "automattic/jetpack-changelogger": "^3.0"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-heartbeat",
@@ -322,20 +335,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "This adds a cronjob that sends a batch of internal automattic stats to wp.com once a day",
-            "time": "2021-11-30T16:30:38+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-heartbeat/tree/v1.3.15"
+            },
+            "time": "2021-12-14T17:54:04+00:00"
         },
         {
             "name": "automattic/jetpack-options",
-            "version": "v1.14.0",
+            "version": "v1.14.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-options.git",
-                "reference": "a9a4f86f4424a7bff1fb2fc29da1a4a9d0884aeb"
+                "reference": "a87629f83f0486ef505e3651ea6bf8c9412d2274"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-options/zipball/a9a4f86f4424a7bff1fb2fc29da1a4a9d0884aeb",
-                "reference": "a9a4f86f4424a7bff1fb2fc29da1a4a9d0884aeb",
+                "url": "https://api.github.com/repos/Automattic/jetpack-options/zipball/a87629f83f0486ef505e3651ea6bf8c9412d2274",
+                "reference": "a87629f83f0486ef505e3651ea6bf8c9412d2274",
                 "shasum": ""
             },
             "require": {
@@ -345,7 +361,7 @@
                 "automattic/jetpack-changelogger": "^3.0",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-options",
@@ -366,20 +382,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "A wrapper for wp-options to manage specific Jetpack options.",
-            "time": "2021-11-30T16:30:34+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-options/tree/v1.14.1"
+            },
+            "time": "2021-12-14T17:53:58+00:00"
         },
         {
             "name": "automattic/jetpack-redirect",
-            "version": "v1.7.7",
+            "version": "v1.7.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-redirect.git",
-                "reference": "129db0fb5db1096ec20ffd924bc7ee678639991a"
+                "reference": "09bab23e80bbb397986accfee6129f4c54fe935b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-redirect/zipball/129db0fb5db1096ec20ffd924bc7ee678639991a",
-                "reference": "129db0fb5db1096ec20ffd924bc7ee678639991a",
+                "url": "https://api.github.com/repos/Automattic/jetpack-redirect/zipball/09bab23e80bbb397986accfee6129f4c54fe935b",
+                "reference": "09bab23e80bbb397986accfee6129f4c54fe935b",
                 "shasum": ""
             },
             "require": {
@@ -390,7 +409,7 @@
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-redirect",
@@ -411,20 +430,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Utilities to build URLs to the jetpack.com/redirect/ service",
-            "time": "2021-11-22T23:54:00+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-redirect/tree/v1.7.8"
+            },
+            "time": "2021-12-14T17:54:08+00:00"
         },
         {
             "name": "automattic/jetpack-roles",
-            "version": "v1.4.11",
+            "version": "v1.4.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-roles.git",
-                "reference": "7eae1d12e531414714098580e9557739a934e957"
+                "reference": "a39955125dde3480bcc111482e80ede86e6d3ccb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-roles/zipball/7eae1d12e531414714098580e9557739a934e957",
-                "reference": "7eae1d12e531414714098580e9557739a934e957",
+                "url": "https://api.github.com/repos/Automattic/jetpack-roles/zipball/a39955125dde3480bcc111482e80ede86e6d3ccb",
+                "reference": "a39955125dde3480bcc111482e80ede86e6d3ccb",
                 "shasum": ""
             },
             "require-dev": {
@@ -432,7 +454,7 @@
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-roles",
@@ -453,20 +475,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Utilities, related with user roles and capabilities.",
-            "time": "2021-11-22T23:53:51+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-roles/tree/v1.4.12"
+            },
+            "time": "2021-12-14T17:53:55+00:00"
         },
         {
             "name": "automattic/jetpack-status",
-            "version": "v1.9.3",
+            "version": "v1.9.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-status.git",
-                "reference": "fe050c1727bde3c43659f50226440e48b2aefec4"
+                "reference": "14da3bae567c96a8ea11adaeb37c276999fcf701"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-status/zipball/fe050c1727bde3c43659f50226440e48b2aefec4",
-                "reference": "fe050c1727bde3c43659f50226440e48b2aefec4",
+                "url": "https://api.github.com/repos/Automattic/jetpack-status/zipball/14da3bae567c96a8ea11adaeb37c276999fcf701",
+                "reference": "14da3bae567c96a8ea11adaeb37c276999fcf701",
                 "shasum": ""
             },
             "require": {
@@ -477,7 +502,7 @@
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-status",
@@ -498,20 +523,23 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Used to retrieve information about the current status of Jetpack and the site overall.",
-            "time": "2021-11-22T23:53:56+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-status/tree/v1.9.4"
+            },
+            "time": "2021-12-14T17:53:59+00:00"
         },
         {
             "name": "automattic/jetpack-terms-of-service",
-            "version": "v1.9.16",
+            "version": "v1.9.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-terms-of-service.git",
-                "reference": "95915d016fadff1046741766b5f4c038830fffc5"
+                "reference": "425420572afec29d8afe22561c7fc29579efa543"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-terms-of-service/zipball/95915d016fadff1046741766b5f4c038830fffc5",
-                "reference": "95915d016fadff1046741766b5f4c038830fffc5",
+                "url": "https://api.github.com/repos/Automattic/jetpack-terms-of-service/zipball/425420572afec29d8afe22561c7fc29579efa543",
+                "reference": "425420572afec29d8afe22561c7fc29579efa543",
                 "shasum": ""
             },
             "require": {
@@ -523,7 +551,7 @@
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-terms-of-service",
@@ -544,24 +572,27 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Everything need to manage the terms of service state",
-            "time": "2021-11-30T16:30:44+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-terms-of-service/tree/v1.9.17"
+            },
+            "time": "2021-12-14T17:54:10+00:00"
         },
         {
             "name": "automattic/jetpack-tracking",
-            "version": "v1.13.18",
+            "version": "v1.13.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-tracking.git",
-                "reference": "8895a292e41f2755d63b9003359e6547ef64ca69"
+                "reference": "d4aeda56969750ed2724831057707b6bf3a424a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-tracking/zipball/8895a292e41f2755d63b9003359e6547ef64ca69",
-                "reference": "8895a292e41f2755d63b9003359e6547ef64ca69",
+                "url": "https://api.github.com/repos/Automattic/jetpack-tracking/zipball/d4aeda56969750ed2724831057707b6bf3a424a9",
+                "reference": "d4aeda56969750ed2724831057707b6bf3a424a9",
                 "shasum": ""
             },
             "require": {
-                "automattic/jetpack-assets": "^1.13",
+                "automattic/jetpack-assets": "^1.14",
                 "automattic/jetpack-options": "^1.14",
                 "automattic/jetpack-status": "^1.9",
                 "automattic/jetpack-terms-of-service": "^1.9"
@@ -571,7 +602,7 @@
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.2"
             },
-            "type": "library",
+            "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
                 "mirror-repo": "Automattic/jetpack-tracking",
@@ -593,7 +624,10 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Tracking for Jetpack",
-            "time": "2021-11-30T16:30:48+00:00"
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-tracking/tree/v1.13.19"
+            },
+            "time": "2021-12-14T17:54:14+00:00"
         },
         {
             "name": "composer/installers",
@@ -796,42 +830,497 @@
             "time": "2020-11-14T18:14:52+00:00"
         },
         {
-            "name": "woocommerce/subscriptions-core",
-            "version": "1.1.0",
+            "name": "symfony/polyfill-php71",
+            "version": "v1.20.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "0bae09c4e64617a23a6d8706883e0e345f449ad6"
+                "url": "https://github.com/symfony/polyfill-php71.git",
+                "reference": "2d6cdeca7ea470e50db9e544c9ec4b1955036c22"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/0bae09c4e64617a23a6d8706883e0e345f449ad6",
-                "reference": "0bae09c4e64617a23a6d8706883e0e345f449ad6",
+                "url": "https://api.github.com/repos/symfony/polyfill-php71/zipball/2d6cdeca7ea470e50db9e544c9ec4b1955036c22",
+                "reference": "2d6cdeca7ea470e50db9e544c9ec4b1955036c22",
                 "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "type": "metapackage",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.20-dev"
+                },
+                "thanks": {
+                    "name": "symfony/polyfill",
+                    "url": "https://github.com/symfony/polyfill"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 7.1+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2020-10-23T14:02:19+00:00"
+        },
+        {
+            "name": "symfony/polyfill-php72",
+            "version": "v1.23.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-php72.git",
+                "reference": "9a142215a36a3888e30d0a9eeea9766764e96976"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-php72/zipball/9a142215a36a3888e30d0a9eeea9766764e96976",
+                "reference": "9a142215a36a3888e30d0a9eeea9766764e96976",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.23-dev"
+                },
+                "thanks": {
+                    "name": "symfony/polyfill",
+                    "url": "https://github.com/symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php72\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 7.2+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2021-05-27T09:17:38+00:00"
+        },
+        {
+            "name": "symfony/polyfill-php73",
+            "version": "v1.23.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-php73.git",
+                "reference": "fba8933c384d6476ab14fb7b8526e5287ca7e010"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-php73/zipball/fba8933c384d6476ab14fb7b8526e5287ca7e010",
+                "reference": "fba8933c384d6476ab14fb7b8526e5287ca7e010",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.23-dev"
+                },
+                "thanks": {
+                    "name": "symfony/polyfill",
+                    "url": "https://github.com/symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php73\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ],
+                "classmap": [
+                    "Resources/stubs"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 7.3+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2021-02-19T12:13:01+00:00"
+        },
+        {
+            "name": "symfony/polyfill-php74",
+            "version": "v1.23.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-php74.git",
+                "reference": "a5d80cdf049bd3b0af6da91184a2cd37533c0fd8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-php74/zipball/a5d80cdf049bd3b0af6da91184a2cd37533c0fd8",
+                "reference": "a5d80cdf049bd3b0af6da91184a2cd37533c0fd8",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.23-dev"
+                },
+                "thanks": {
+                    "name": "symfony/polyfill",
+                    "url": "https://github.com/symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php74\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ion Bazan",
+                    "email": "ion.bazan@gmail.com"
+                },
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 7.4+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2021-02-19T12:13:01+00:00"
+        },
+        {
+            "name": "symfony/polyfill-php80",
+            "version": "v1.23.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-php80.git",
+                "reference": "1100343ed1a92e3a38f9ae122fc0eb21602547be"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/1100343ed1a92e3a38f9ae122fc0eb21602547be",
+                "reference": "1100343ed1a92e3a38f9ae122fc0eb21602547be",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.23-dev"
+                },
+                "thanks": {
+                    "name": "symfony/polyfill",
+                    "url": "https://github.com/symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php80\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ],
+                "classmap": [
+                    "Resources/stubs"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ion Bazan",
+                    "email": "ion.bazan@gmail.com"
+                },
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 8.0+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2021-07-28T13:41:28+00:00"
+        },
+        {
+            "name": "symfony/polyfill-php81",
+            "version": "v1.23.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-php81.git",
+                "reference": "e66119f3de95efc359483f810c4c3e6436279436"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-php81/zipball/e66119f3de95efc359483f810c4c3e6436279436",
+                "reference": "e66119f3de95efc359483f810c4c3e6436279436",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.23-dev"
+                },
+                "thanks": {
+                    "name": "symfony/polyfill",
+                    "url": "https://github.com/symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php81\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ],
+                "classmap": [
+                    "Resources/stubs"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 8.1+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2021-05-21T13:25:03+00:00"
+        },
+        {
+            "name": "woocommerce/subscriptions-core",
+            "version": "1.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
+                "reference": "659909bc7f3a80b7188a73a5226f526978e49f0b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/659909bc7f3a80b7188a73a5226f526978e49f0b",
+                "reference": "659909bc7f3a80b7188a73a5226f526978e49f0b",
+                "shasum": ""
+            },
+            "require": {
+                "composer/installers": "~1.2",
+                "php": "^7.0"
+            },
+            "require-dev": {
+                "dave-liddament/sarb": "^1.1",
+                "doctrine/instantiator": "1.0.5",
+                "phpdocumentor/reflection-docblock": "4.3.4",
+                "phpdocumentor/type-resolver": "0.5.1",
+                "phpunit/phpunit": "^6.0",
+                "woocommerce/woocommerce-sniffs": "0.1.0",
+                "yoast/phpunit-polyfills": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "phpcodesniffer-search-depth": 2
             },
             "archive": {
                 "exclude": [
                     "!/build"
                 ]
             },
-            "require": {
-                "composer/installers": "~1.2"
-            },
-            "require-dev": {
-                "dave-liddament/sarb": "^1.1",
-                "phpunit/phpunit": "6.5.14",
-                "woocommerce/woocommerce-sniffs": "0.1.0"
-            },
-            "type": "library",
-            "extra": {
-                "phpcodesniffer-search-depth": 2
-            },
             "scripts": {
                 "phpcs": [
-                    "vendor/bin/phpcs --report=json | vendor/bin/sarb remove phpcs.baseline"
+                    "bin/phpcs.sh"
                 ],
                 "lint": [
                     "find . \\( -path ./vendor \\) -prune -o \\( -name '*.php' \\) -exec php -lf {} \\;| (! grep -v \"No syntax errors detected\" )"
+                ],
+                "test": [
+                    "phpunit"
                 ]
             },
             "license": [
@@ -840,10 +1329,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.1.0",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.4.0",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2021-11-12T05:01:25+00:00"
+            "time": "2022-01-11T02:27:55+00:00"
         }
     ],
     "packages-dev": [
@@ -1073,6 +1562,77 @@
             "time": "2021-09-13T08:41:34+00:00"
         },
         {
+            "name": "composer/pcre",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/composer/pcre.git",
+                "reference": "3d322d715c43a1ac36c7fe215fa59336265500f2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/composer/pcre/zipball/3d322d715c43a1ac36c7fe215fa59336265500f2",
+                "reference": "3d322d715c43a1ac36c7fe215fa59336265500f2",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.3.2 || ^7.0 || ^8.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^1",
+                "phpstan/phpstan-strict-rules": "^1.1",
+                "symfony/phpunit-bridge": "^4.2 || ^5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Composer\\Pcre\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jordi Boggiano",
+                    "email": "j.boggiano@seld.be",
+                    "homepage": "http://seld.be"
+                }
+            ],
+            "description": "PCRE wrapping library that offers type-safe preg_* replacements.",
+            "keywords": [
+                "PCRE",
+                "preg",
+                "regex",
+                "regular expression"
+            ],
+            "support": {
+                "issues": "https://github.com/composer/pcre/issues",
+                "source": "https://github.com/composer/pcre/tree/1.0.0"
+            },
+            "funding": [
+                {
+                    "url": "https://packagist.com",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/composer",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/composer/composer",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2021-12-06T15:17:27+00:00"
+        },
+        {
             "name": "composer/semver",
             "version": "3.2.6",
             "source": {
@@ -1150,25 +1710,27 @@
         },
         {
             "name": "composer/xdebug-handler",
-            "version": "2.0.2",
+            "version": "2.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/xdebug-handler.git",
-                "reference": "84674dd3a7575ba617f5a76d7e9e29a7d3891339"
+                "reference": "6555461e76962fd0379c444c46fd558a0fcfb65e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/84674dd3a7575ba617f5a76d7e9e29a7d3891339",
-                "reference": "84674dd3a7575ba617f5a76d7e9e29a7d3891339",
+                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/6555461e76962fd0379c444c46fd558a0fcfb65e",
+                "reference": "6555461e76962fd0379c444c46fd558a0fcfb65e",
                 "shasum": ""
             },
             "require": {
+                "composer/pcre": "^1",
                 "php": "^5.3.2 || ^7.0 || ^8.0",
                 "psr/log": "^1 || ^2 || ^3"
             },
             "require-dev": {
-                "phpstan/phpstan": "^0.12.55",
-                "symfony/phpunit-bridge": "^4.2 || ^5"
+                "phpstan/phpstan": "^1.0",
+                "phpstan/phpstan-strict-rules": "^1.1",
+                "symfony/phpunit-bridge": "^4.2 || ^5.0 || ^6.0"
             },
             "type": "library",
             "autoload": {
@@ -1191,6 +1753,11 @@
                 "Xdebug",
                 "performance"
             ],
+            "support": {
+                "irc": "irc://irc.freenode.org/composer",
+                "issues": "https://github.com/composer/xdebug-handler/issues",
+                "source": "https://github.com/composer/xdebug-handler/tree/2.0.3"
+            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -1205,7 +1772,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-07-31T17:03:58+00:00"
+            "time": "2021-12-08T13:07:32+00:00"
         },
         {
             "name": "cweagans/composer-patches",
@@ -1249,6 +1816,10 @@
                 }
             ],
             "description": "Provides a way to patch Composer packages.",
+            "support": {
+                "issues": "https://github.com/cweagans/composer-patches/issues",
+                "source": "https://github.com/cweagans/composer-patches/tree/1.7.1"
+            },
             "time": "2021-06-08T15:12:46+00:00"
         },
         {
@@ -1901,6 +2472,10 @@
                 "woocommerce",
                 "wordpress"
             ],
+            "support": {
+                "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v5.9.0"
+            },
             "time": "2021-11-05T10:02:27+00:00"
         },
         {
@@ -1941,6 +2516,10 @@
                 "static analysis",
                 "wordpress"
             ],
+            "support": {
+                "issues": "https://github.com/php-stubs/wordpress-stubs/issues",
+                "source": "https://github.com/php-stubs/wordpress-stubs/tree/v5.8.2"
+            },
             "time": "2021-11-11T13:57:00+00:00"
         },
         {
@@ -3383,16 +3962,16 @@
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.6.1",
+            "version": "3.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "f268ca40d54617c6e06757f83f699775c9b3ff2e"
+                "reference": "5e4e71592f69da17871dba6e80dd51bce74a351a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/f268ca40d54617c6e06757f83f699775c9b3ff2e",
-                "reference": "f268ca40d54617c6e06757f83f699775c9b3ff2e",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/5e4e71592f69da17871dba6e80dd51bce74a351a",
+                "reference": "5e4e71592f69da17871dba6e80dd51bce74a351a",
                 "shasum": ""
             },
             "require": {
@@ -3430,7 +4009,12 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2021-10-11T04:00:11+00:00"
+            "support": {
+                "issues": "https://github.com/squizlabs/PHP_CodeSniffer/issues",
+                "source": "https://github.com/squizlabs/PHP_CodeSniffer",
+                "wiki": "https://github.com/squizlabs/PHP_CodeSniffer/wiki"
+            },
+            "time": "2021-12-12T21:44:58+00:00"
         },
         {
             "name": "symfony/console",
@@ -3871,6 +4455,10 @@
                 "inspection",
                 "php"
             ],
+            "support": {
+                "issues": "https://github.com/vimeo/psalm/issues",
+                "source": "https://github.com/vimeo/psalm/tree/4.13.1"
+            },
             "time": "2021-11-23T23:52:49+00:00"
         },
         {
@@ -4165,5 +4753,5 @@
     "platform-overrides": {
         "php": "7.1"
     },
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.1.0"
 }

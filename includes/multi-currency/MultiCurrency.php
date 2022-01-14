@@ -298,6 +298,12 @@ class MultiCurrency {
 	 * @return array The new settings pages.
 	 */
 	public function init_settings_pages( $settings_pages ): array {
+		// We don't need to check if Stripe is connected for the
+		// Settings page generation on the incoming CLI and async job calls.
+		if ( ( defined( 'WP_CLI' ) && WP_CLI ) || ( defined( 'WPCOM_JOBS' ) && WPCOM_JOBS ) ) {
+			return $settings_pages;
+		}
+
 		if ( $this->payments_account->is_stripe_connected() ) {
 			$settings_pages[] = new Settings( $this );
 		} else {
@@ -628,6 +634,9 @@ class MultiCurrency {
 		$code     = strtoupper( $currency_code );
 		$user_id  = get_current_user_id();
 		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
+
+		// We discard the cache for the front-end.
+		$this->frontend_currencies->selected_currency_changed();
 
 		if ( null === $currency ) {
 			return;

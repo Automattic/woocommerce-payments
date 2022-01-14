@@ -34,6 +34,15 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/download',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'get_transactions_export' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/summary',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -74,6 +83,17 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		$deposit_id = $request->get_param( 'deposit_id' );
 		$filters    = $this->get_transactions_filters( $request );
 		return $this->forward_request( 'list_transactions', [ $page, $page_size, $sort, $direction, $filters, $deposit_id ] );
+	}
+
+	/**
+	 * Initiate transactions export via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_transactions_export( $request ) {
+		$filters = $this->get_transactions_filters( $request );
+
+		return $this->forward_request( 'get_transactions_export', [ $filters ] );
 	}
 
 	/**

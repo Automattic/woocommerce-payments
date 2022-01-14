@@ -44,6 +44,7 @@ Add as many details as possible to help others reproduce the issue and test the 
 <!--
 Make sure you edit the page for the current release when adding testing instructions.
 We often create a blank page ahead of time for the next release.
+If this PR need not be QA tested, edit to 'QA Testing Not Applicable'
 -->
 
-- [ ] Added testing instructions to the [release testing doc](https://github.com/Automattic/woocommerce-payments/wiki/Release-testing-instructions) (or does not apply)
+- [ ] Link to testing instructions from [release testing doc](https://github.com/Automattic/woocommerce-payments/wiki/Release-testing-instructions) : _Add link here / 'QA Testing Not Applicable'_

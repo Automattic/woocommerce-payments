@@ -147,8 +147,6 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 
 		// clear auto-published products from option.
 		delete_option( self::WCPAY_SUBSCRIPTION_AUTO_PUBLISH_PRODUCTS );
-
-		Tracker::track_admin( 'wcpay_subscriptions_account_not_connected_publish_products' );
 	}
 
 	/**

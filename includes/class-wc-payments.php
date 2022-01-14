@@ -282,9 +282,6 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
 
-		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-translations-loader.php';
-		WC_Payments_Translations_Loader::init();
-
 		// Add admin screens.
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
@@ -497,7 +494,7 @@ class WC_Payments {
 	 * @return string Modified where clause.
 	 */
 	public static function possibly_add_note_source_where_clause( $where_clauses, $args ) {
-		if ( ! empty( $args['source'] ) && false === strpos( $where_clauses, 'AND source IN' ) ) {
+		if ( ! empty( $args['source'] ) && ! str_contains( $where_clauses, 'AND source IN' ) ) {
 			$where_source_array = [];
 			foreach ( $args['source'] as $args_type ) {
 				$args_type            = trim( $args_type );
