@@ -542,12 +542,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			if ( $order->has_status( [ 'processing', 'completed', 'on-hold' ] ) ) {
-				/**
-				 * Previously, we exited early in this case, but this can cause issues if the webhook finishes processing
-				 * before the redirect happens, such as the order intent info not getting properly attached and order notes being
-				 * added. since the payment_complete logic has a lock on it, it should be fine to continue the logic in this case.
-				 */
-				Logger::info( "UPE order $order_id had status processing, completed or on-hold when UPE redirect processing started" );
+				return;
 			}
 
 			Logger::log( "Begin processing UPE redirect payment for order $order_id for the amount of {$order->get_total()}" );
