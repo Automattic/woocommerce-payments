@@ -188,7 +188,7 @@ class Analytics {
 			}
 
 			foreach ( $replacements_array as $find => $replace ) {
-				if ( strpos( $clause, $find ) !== false ) {
+				if ( str_contains( $clause, $find ) ) {
 					$clause = str_replace(
 						$find,
 						$replace,
@@ -291,7 +291,7 @@ class Analytics {
 		global $wpdb;
 
 		foreach ( $clauses as $clause ) {
-			if ( strpos( $clause, "{$wpdb->prefix}wc_order_stats" ) !== false ) {
+			if ( str_contains( $clause, "{$wpdb->prefix}wc_order_stats" ) ) {
 				return true;
 			}
 		}
