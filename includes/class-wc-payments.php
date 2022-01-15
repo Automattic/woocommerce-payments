@@ -674,6 +674,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Customer_Service instance
+	 *
+	 * @return WC_Payments_Customer_Service  The Customer Service instance.
+	 */
+	public static function get_customer_service(): WC_Payments_Customer_Service {
+		return self::$customer_service;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
