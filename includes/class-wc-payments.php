@@ -774,6 +774,8 @@ class WC_Payments {
 
 	/**
 	 * Registers platform checkout hooks if the platform checkout feature flag is enabled.
+	 *
+	 * @return void
 	 */
 	public static function maybe_register_platform_checkout_hooks() {
 		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
@@ -792,16 +794,26 @@ class WC_Payments {
 	public static function ajax_init_platform_checkout() {
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
+		$user        = wp_get_current_user();
+		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			// create customer.
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
+			self::$customer_service->create_customer_for_user( $user, $customer_data );
+		}
+
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 		$body                   = [
-			'user_id'              => get_current_user_id(),
+			'user_id'              => $user->ID,
+			'customer_id'          => $customer_id,
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
 				'store_name' => get_bloginfo( 'name' ),
 				'store_logo' => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
 				'blog_id'    => Jetpack_Options::get_option( 'id' ),
+				'blog_url'   => get_bloginfo( 'url' ),
 			],
 		];
 		$args                   = [
