@@ -66,6 +66,9 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 
 		if ( $is_site_specific ) {
 			// We expect `url` to include a `%s` placeholder which will allow us inject the blog id.
+			if ( strstr( $args['url'], 'intent' ) ) {
+				$args['blog_id'] = '<merchant_store_blog_id>';
+			}
 			$url         = explode( '?', $args['url'], 2 );
 			$url[0]      = sprintf( $url[0], $args['blog_id'] );
 			$args['url'] = implode( '?', $url );

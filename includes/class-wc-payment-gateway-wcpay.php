@@ -939,7 +939,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
 		}
 
-		return [ $user, $customer_id ];
+		// We apply the filter here because the customer information should not be updated above using the filtered ID.
+		return [ $user, apply_filters( 'wc_payments_customer_id', $customer_id ) ];
 	}
 
 	/**
