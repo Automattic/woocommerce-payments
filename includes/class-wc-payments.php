@@ -810,7 +810,7 @@ class WC_Payments {
 				'store_name' => get_bloginfo( 'name' ),
 				'store_logo' => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
 				'blog_id'    => Jetpack_Options::get_option( 'id' ),
-				'blog_url'   => get_bloginfo( 'url' ),
+				'blog_url'   => get_site_url(),
 			],
 		];
 		$args                   = [
