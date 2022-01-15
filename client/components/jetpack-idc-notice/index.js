@@ -11,6 +11,7 @@ import { addQueryArgs } from '@wordpress/url';
 
 const JetpackIdcNotice = () => {
 	return (
+		wcpaySettings.hasOwnProperty( 'isJetpackIdcActive' ) &&
 		wcpaySettings.isJetpackIdcActive && (
 			<Notice
 				status="error"
