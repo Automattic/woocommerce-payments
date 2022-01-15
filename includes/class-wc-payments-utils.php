@@ -887,6 +887,51 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Sanizite and retrieve a shortened statement descriptor.
+	 *
+	 * The descriptor will be used as prefix and the order ID will be concatenated, acting as a suffix.
+	 *
+	 * @param string   $statement_descriptor Shortened statement descriptor.
+	 * @param WC_Order $order Order.
+	 * @return string $statement_descriptor Final shortened statement descriptor.
+	 */
+	public static function get_shortened_statement_descriptor( $statement_descriptor = '', $order = null ) {
+		$statement_descriptor = self::clean_statement_descriptor( $statement_descriptor );
+
+		if ( method_exists( $order, 'get_order_number' ) && ! empty( $order->get_order_number() ) ) {
+			$statement_descriptor = $statement_descriptor . '* #' . $order->get_order_number();
+		}
+
+		// Limit it to 22 characters just in case.
+		$statement_descriptor = substr( $statement_descriptor, 0, 22 );
+
+		return $statement_descriptor;
+	}
+
+	/**
+	 * Sanitize statement descriptor text.
+	 *
+	 * Stripe requires max of 22 characters and no special characters.
+	 *
+	 * @since 4.0.0
+	 * @param string $statement_descriptor Statement descriptor.
+	 * @return string $statement_descriptor Sanitized statement descriptor
+	 */
+	public static function clean_statement_descriptor( $statement_descriptor = '' ) {
+		$disallowed_characters = [ '<', '>', '\\', '*', '"', "'", '/', '(', ')', '{', '}' ];
+		// Strip any tags.
+		$statement_descriptor = wp_strip_all_tags( $statement_descriptor );
+		// Strip any HTML entities.
+		// Props https://stackoverflow.com/questions/657643/how-to-remove-html-special-chars .
+		$statement_descriptor = preg_replace( '/&#?[a-z0-9]{2,8};/i', '', $statement_descriptor );
+		// Next, remove any remaining disallowed characters.
+		$statement_descriptor = str_replace( $disallowed_characters, '', $statement_descriptor );
+		// Trim any whitespace at the ends and limit to 22 characters.
+		$statement_descriptor = substr( trim( $statement_descriptor ), 0, 22 );
+		return $statement_descriptor;
+	}
+
+	/**
 	 * Get the core request class name as WordPress 6.2 introduces a breaking namespace change.
 	 *
 	 * @see https://github.com/WordPress/wordpress-develop/commit/d7dd42d72fe5b10460072e7c78d36c130857e427
