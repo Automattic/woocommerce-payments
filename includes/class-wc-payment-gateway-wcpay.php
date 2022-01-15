@@ -2687,6 +2687,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Returns the mapping list between capability keys and payment type keys
+	 *
+	 * @return string[]
+	 */
+	public function get_payment_method_capability_key_map(): array {
+		return $this->payment_method_capability_key_map;
+	}
+
+	/**
 	 * Updates the account cache with the new payment method status, until it gets fetched again from the server.
 	 *
 	 * @return  void
