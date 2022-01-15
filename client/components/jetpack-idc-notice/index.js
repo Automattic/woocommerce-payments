@@ -9,13 +9,9 @@ import { Notice } from '@wordpress/components';
  */
 import { addQueryArgs } from '@wordpress/url';
 
-const isInJetpackIdc = window.hasOwnProperty(
-	'JP_IDENTITY_CRISIS__INITIAL_STATE'
-);
-
 const JetpackIdcNotice = () => {
 	return (
-		isInJetpackIdc && (
+		wcpaySettings.isJetpackIdcActive && (
 			<Notice
 				status="error"
 				isDismissible={ false }
