@@ -887,15 +887,15 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Sanizite and retrieve a shortened statement descriptor.
+	 * Sanitize and retrieve a shortened statement descriptor concatenated with the order number.
 	 *
-	 * The descriptor will be used as prefix and the order ID will be concatenated, acting as a suffix.
+	 * The shortened descriptor will be used as prefix and the order ID will be concatenated, acting as a suffix.
 	 *
 	 * @param string   $statement_descriptor Shortened statement descriptor.
 	 * @param WC_Order $order Order.
 	 * @return string $statement_descriptor Final shortened statement descriptor.
 	 */
-	public static function get_shortened_statement_descriptor( $statement_descriptor = '', $order = null ) {
+	public static function get_dynamic_statement_descriptor( $statement_descriptor = '', $order = null ) {
 		$statement_descriptor = self::clean_statement_descriptor( $statement_descriptor );
 
 		if ( method_exists( $order, 'get_order_number' ) && ! empty( $order->get_order_number() ) ) {

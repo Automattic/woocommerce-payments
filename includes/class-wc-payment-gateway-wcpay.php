@@ -1111,7 +1111,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( in_array( $order->get_payment_method(), [ 'card', 'woocommerce_payments' ], true ) && $is_short_statement_descriptor_enabled && ! empty( $short_statement_descriptor ) ) {
 				// Use the shortened statement descriptor for card transactions only.
-				$descriptor = WC_Payments_Utils::get_shortened_statement_descriptor( $short_statement_descriptor, $order );
+				$descriptor = WC_Payments_Utils::get_dynamic_statement_descriptor( $short_statement_descriptor, $order );
 			} elseif ( ! empty( $statement_descriptor ) ) {
 				$descriptor = WC_Payments_Utils::clean_statement_descriptor( $statement_descriptor );
 			}
