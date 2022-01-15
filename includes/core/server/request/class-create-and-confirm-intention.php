@@ -108,4 +108,14 @@ class Create_And_Confirm_Intention extends Create_Intention {
 	public function set_return_url( $return_url ) {
 		$this->set_param( 'return_url', $return_url );
 	}
+
+	/**
+	* Statement descriptor setter.
+	 *
+	 * @param string $statement_descriptor The statement descriptor for this payment method (Optional).
+	 * @return void
+	 */
+	public function set_statement_descriptor( string $statement_descriptor ) {
+		$this->set_param( 'statement_descriptor', $statement_descriptor );
+	}
 }

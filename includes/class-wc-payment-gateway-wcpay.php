@@ -1105,6 +1105,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
+			$statement_descriptor                  = $this->get_account_statement_descriptor();
+			$short_statement_descriptor            = ! empty( $this->get_option( 'short_statement_descriptor' ) ) ? str_replace( "'", '', $this->get_option( 'short_statement_descriptor' ) ) : '';
+			$is_short_statement_descriptor_enabled = ! empty( $this->get_option( 'is_short_statement_descriptor_enabled' ) ) && 'yes' === $this->get_option( 'is_short_statement_descriptor_enabled' );
+
+			if ( in_array( $order->get_payment_method(), [ 'card', 'woocommerce_payments' ], true ) && $is_short_statement_descriptor_enabled && ! empty( $short_statement_descriptor ) ) {
+				// Use the shortened statement descriptor for card transactions only.
+				$descriptor = WC_Payments_Utils::get_shortened_statement_descriptor( $short_statement_descriptor, $order );
+			} elseif ( ! empty( $statement_descriptor ) ) {
+				$descriptor = WC_Payments_Utils::clean_statement_descriptor( $statement_descriptor );
+			}
+
 			if ( empty( $intent ) ) {
 				$request = Create_And_Confirm_Intention::create();
 				$request->set_amount( $converted_amount );
@@ -1134,6 +1145,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							)
 						)
 					);
+				}
+
+				if ( $descriptor ) {
+					$request->set_statement_descriptor( $descriptor );
 				}
 
 				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.

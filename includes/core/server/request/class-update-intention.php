@@ -178,6 +178,16 @@ class Update_Intention extends Request {
 	}
 
 	/**
+	 * Statement descriptor setter.
+	 *
+	 * @param string $statement_descriptor The statement descriptor for this payment method (Optional).
+	 * @return void
+	 */
+	public function set_statement_descriptor( string $statement_descriptor ) {
+		$this->set_param( 'statement_descriptor', $statement_descriptor );
+	}
+
+	/**
 	 * Formats the response from the server.
 	 *
 	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
