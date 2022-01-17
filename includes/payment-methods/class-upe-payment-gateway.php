@@ -482,6 +482,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$statement_descriptor                  = $this->get_account_statement_descriptor();
 		$short_statement_descriptor            = ! empty( $this->get_option( 'short_statement_descriptor' ) ) ? $this->get_option( 'short_statement_descriptor' ) : '';
 		$is_short_statement_descriptor_enabled = 'yes' === $this->get_option( 'is_short_statement_descriptor_enabled' );
+		$descriptor                            = null;
 
 		if ( 'card' === $selected_upe_payment_type && $is_short_statement_descriptor_enabled && ! empty( $short_statement_descriptor ) ) {
 			// Use the shortened statement descriptor for card transactions only.
