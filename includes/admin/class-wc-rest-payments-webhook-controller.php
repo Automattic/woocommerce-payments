@@ -269,11 +269,27 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_payment_intent_failed( $event_body ) {
+		// Check to make sure we should process this according to the payment method.
+		$payment_method     = $this->get_payment_method_from_event( $event_body );
+		$actionable_methods = [
+			'us_bank_account',
+		];
+
+		if ( empty( $payment_method['type'] ) || ! in_array( $payment_method['type'], $actionable_methods, true ) ) {
+			return;
+		}
+
+		// Get the order and make sure it is an order, it is not already in failed status, and the payment methods match.
 		$order = $this->get_order_from_event_body_intent_id( $event_body );
 
-		if ( $order && ! $order->has_status( [ 'failed' ] ) ) {
-			$order->update_status( 'failed', $this->get_failure_message_from_event( $event_body ) );
+		if ( ! $order
+			|| $order->has_status( [ 'failed' ] )
+			|| empty( $payment_method['id'] )
+			|| $payment_method['id'] !== $order->get_meta( '_payment_method_id' ) ) {
+			return;
 		}
+
+		WC_Payments_Utils::mark_payment_failed( $order, $this->get_failure_message_from_event( $event_body ) );
 	}
 
 	/**
@@ -546,5 +562,26 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return $failure_message;
+	}
+
+	/**
+	 * Gets the payment method from the webhook event body.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Rest_Request_Exception           Required parameters not found.
+	 *
+	 * @return array The payment method found, or null.
+	 */
+	private function get_payment_method_from_event( $event_body ) {
+		$event_data    = $this->read_rest_property( $event_body, 'data' );
+		$event_object  = $this->read_rest_property( $event_data, 'object' );
+		$event_charges = $this->read_rest_property( $event_object, 'charges' );
+		$charges_data  = $this->read_rest_property( $event_charges, 'data' );
+
+		return [
+			'id'   => $charges_data[0]['payment_method'] ?? null,
+			'type' => $charges_data[0]['payment_method_details']['type'] ?? null,
+		];
 	}
 }
