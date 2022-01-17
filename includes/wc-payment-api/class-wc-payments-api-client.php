@@ -2152,6 +2152,7 @@ class WC_Payments_API_Client {
 		$processing             = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
 		$payment_method_types   = $intention_array['payment_method_types'] ?? [];
 		$payment_method_options = $intention_array['payment_method_options'] ?? [];
+		$statement_descriptor   = $intention_array['statement_descriptor'] ?? null;
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 		$order  = $this->get_order_info_from_intention_object( $intention_array['id'] );
@@ -2172,6 +2173,7 @@ class WC_Payments_API_Client {
 			$processing,
 			$payment_method_types,
 			$payment_method_options,
+			$statement_descriptor,
 			$order
 		);
 
