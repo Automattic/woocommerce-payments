@@ -7,17 +7,6 @@ import {
 	isOfflineMode,
 	setBrowserViewport,
 } from '@wordpress/e2e-test-utils';
-import { addConsoleSuppression } from '@woocommerce/e2e-environment';
-
-// Since we block assets from loading intentionally, these messages
-// might flood the console and can be ignored.
-addConsoleSuppression( 'Failed to load resource', false );
-
-// CSP report only issues for loading resources can be ignored.
-addConsoleSuppression(
-	'violates the following Content Security Policy directive',
-	false
-);
 
 /**
  * Array of page event tuples of [ eventName, handler ].
@@ -37,9 +26,6 @@ const OBSERVED_CONSOLE_MESSAGE_TYPES = {
 	warning: 'warn',
 	error: 'error',
 };
-
-const RESOURCE_TYPES_TO_BLOCK = [ 'image', 'font', 'media', 'other' ];
-const STYLESHEETS_TO_LOAD = [ /\/style.css/, /\/menu.css/, /chunk/, /blocks/ ];
 
 async function setupBrowser() {
 	await setBrowserViewport( 'large' );
@@ -110,21 +96,6 @@ function observeConsoleLogging() {
 			return;
 		}
 
-		// Since we block assets from loading intentionally, these messages
-		// might flood the console and can be ignored.
-		if ( text.includes( 'Failed to load resource' ) ) {
-			return;
-		}
-
-		// CSP report only issues for loading resources can be ignored.
-		if (
-			text.includes(
-				'violates the following Content Security Policy directive'
-			)
-		) {
-			return;
-		}
-
 		// As of WordPress 5.3.2 in Chrome 79, navigating to the block editor
 		// (Posts > Add New) will display a console warning about
 		// non - unique IDs.
@@ -187,23 +158,6 @@ function setTestTimeouts() {
 	jest.setTimeout( TIMEOUT );
 }
 
-function blockAssets() {
-	page.setRequestInterception( true );
-	page.on( 'request', ( req ) => {
-		const resourceType = req.resourceType();
-
-		if (
-			RESOURCE_TYPES_TO_BLOCK.includes( resourceType ) ||
-			( 'stylesheet' === resourceType &&
-				! STYLESHEETS_TO_LOAD.some( ( s ) => s.test( req.url() ) ) )
-		) {
-			req.abort();
-		} else {
-			req.continue();
-		}
-	} );
-}
-
 // Before every test suite run, delete all content created by the test. This ensures
 // other posts/comments/etc. aren't dirtying tests and tests don't depend on
 // each other's side-effects.
@@ -212,7 +166,6 @@ beforeAll( async () => {
 	enablePageDialogAccept();
 	observeConsoleLogging();
 	setTestTimeouts();
-	blockAssets();
 	await setupBrowser();
 } );
 
