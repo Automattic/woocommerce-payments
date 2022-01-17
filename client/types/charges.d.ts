@@ -6,6 +6,10 @@ import { Dispute } from './disputes';
 
 interface BillingDetails {
 	name: string;
+	email: string;
+	address: {
+		country: string;
+	};
 }
 
 interface ChargeOutcome {

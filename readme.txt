@@ -111,6 +111,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Update Payment Element from beta version to release version.
 * Tweak - Display a more specific error message when a customer attempts to purchase a WCPay Subscription below the minimum transact-able amount.
 * Add - Add handling for payment_failed webhooks.
+* Add - Disputes pagination.
 * Add - Show a warning when attempting to create a subscription product with a price below the minimum amount.
 * Fix - When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown.
 * Fix - When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown.

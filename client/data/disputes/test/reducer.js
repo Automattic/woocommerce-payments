@@ -20,6 +20,17 @@ describe( 'Disputes reducer tests', () => {
 		},
 	];
 
+	const mockCachedDisputes = [
+		{
+			dispute_id: 'dp_mock1',
+			reason: 'product_unacceptable',
+		},
+		{
+			dispute_id: 'dp_mock2',
+			reason: 'fraudulent',
+		},
+	];
+
 	test( 'New individual disputes reduced correctly', () => {
 		const stateAfterOne = reducer(
 			undefined, // Default state.
@@ -33,7 +44,9 @@ describe( 'Disputes reducer tests', () => {
 			byId: {
 				dp_mock1: mockDisputes[ 0 ],
 			},
+			cached: {},
 			queries: {},
+			summary: {},
 		} );
 
 		const stateAfterTwo = reducer( stateAfterOne, {
@@ -46,7 +59,9 @@ describe( 'Disputes reducer tests', () => {
 				dp_mock1: mockDisputes[ 0 ],
 				dp_mock2: mockDisputes[ 1 ],
 			},
+			cached: {},
 			queries: {},
+			summary: {},
 		} );
 	} );
 
@@ -55,21 +70,23 @@ describe( 'Disputes reducer tests', () => {
 			undefined, // Default state.
 			{
 				type: types.SET_DISPUTES,
-				data: mockDisputes,
+				data: mockCachedDisputes,
 				query: mockQuery,
 			}
 		);
 
 		const after = {
-			byId: {
-				dp_mock1: mockDisputes[ 0 ],
-				dp_mock2: mockDisputes[ 1 ],
+			byId: {},
+			cached: {
+				dp_mock1: mockCachedDisputes[ 0 ],
+				dp_mock2: mockCachedDisputes[ 1 ],
 			},
 			queries: {
 				[ getResourceId( mockQuery ) ]: {
 					data: [ 'dp_mock1', 'dp_mock2' ],
 				},
 			},
+			summary: {},
 		};
 
 		expect( reduced ).toStrictEqual( after );
@@ -77,26 +94,31 @@ describe( 'Disputes reducer tests', () => {
 
 	test( 'Disputes updated correctly on updated info', () => {
 		const before = {
-			byId: {
-				dp_mock1: mockDisputes[ 0 ],
-			},
+			byId: {},
 			queries: {
 				earlierQuery: {
 					data: [ 'dp_mock1' ],
 				},
 			},
+			cached: {
+				dp_mock1: mockCachedDisputes[ 0 ],
+			},
+			summary: {
+				count: 1,
+			},
 		};
 
 		const reduced = reducer( before, {
 			type: types.SET_DISPUTES,
-			data: mockDisputes.slice( 1 ),
+			data: mockCachedDisputes.slice( 1 ),
 			query: mockQuery,
 		} );
 
 		const after = {
-			byId: {
-				dp_mock1: mockDisputes[ 0 ],
-				dp_mock2: mockDisputes[ 1 ],
+			byId: {},
+			cached: {
+				dp_mock1: mockCachedDisputes[ 0 ],
+				dp_mock2: mockCachedDisputes[ 1 ],
 			},
 			queries: {
 				earlierQuery: {
@@ -105,6 +127,64 @@ describe( 'Disputes reducer tests', () => {
 				[ getResourceId( mockQuery ) ]: {
 					data: [ 'dp_mock2' ],
 				},
+			},
+			summary: {
+				count: 1,
+			},
+		};
+
+		expect( reduced ).toStrictEqual( after );
+	} );
+
+	test( 'New disputes summary reduced correctly', () => {
+		const reduced = reducer( undefined, {
+			type: types.SET_DISPUTES_SUMMARY,
+			data: {
+				count: 42,
+			},
+		} );
+
+		const after = {
+			byId: {},
+			queries: {},
+			cached: {},
+			summary: {
+				count: 42,
+			},
+		};
+
+		expect( reduced ).toStrictEqual( after );
+	} );
+
+	test( 'Disputes summary updated correctly', () => {
+		const before = {
+			byId: {
+				dp_mock1: mockDisputes[ 0 ],
+			},
+			cached: {
+				dp_mock1: mockCachedDisputes[ 0 ],
+			},
+			queries: {
+				earlierQuery: {
+					data: [ 'dp_mock1' ],
+				},
+			},
+			summary: {
+				count: 1,
+			},
+		};
+
+		const reduced = reducer( before, {
+			type: types.SET_DISPUTES_SUMMARY,
+			data: {
+				count: 42,
+			},
+		} );
+
+		const after = {
+			...before,
+			summary: {
+				count: 42,
 			},
 		};
 
