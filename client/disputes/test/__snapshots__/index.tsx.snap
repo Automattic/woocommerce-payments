@@ -454,6 +454,24 @@ exports[`Disputes list renders correctly 1`] = `
             </tbody>
           </table>
         </div>
+        <ul
+          class="woocommerce-table__summary"
+        >
+          <li
+            class="woocommerce-table__summary-item"
+          >
+            <span
+              class="woocommerce-table__summary-value"
+            >
+              25
+            </span>
+            <span
+              class="woocommerce-table__summary-label"
+            >
+              disputes
+            </span>
+          </li>
+        </ul>
       </div>
     </div>
   </div>

@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Logger;
 
 /**
@@ -375,6 +376,19 @@ class WC_Payments_Subscription_Service {
 			}
 		} catch ( \Exception $e ) {
 			Logger::log( sprintf( 'There was a problem creating the WCPay subscription. %s', $e->getMessage() ) );
+
+			if ( $e instanceof Amount_Too_Small_Exception ) {
+				throw new Exception(
+					sprintf(
+						// Translators: The %1 placeholder is a currency formatted price string ($0.50). The %2 and %3 placeholders are opening and closing strong HTML tags.
+						__( 'There was a problem creating your subscription. %1$s doesn\'t meet the %2$sminimum recurring amount%3$s this payment method can process.', 'woocommerce-payments' ),
+						wc_price( $subscription->get_total() ),
+						'<strong>',
+						'</strong>'
+					)
+				);
+			}
+
 			throw new Exception( $checkout_error_message );
 		}
 	}
