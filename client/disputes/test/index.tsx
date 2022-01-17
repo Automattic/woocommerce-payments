@@ -9,13 +9,34 @@ import os from 'os';
 /**
  * Internal dependencies
  */
-import DisputesList from '../';
-import { useDisputes } from 'wcpay/data';
+import DisputesList from '..';
+import { useDisputes, useDisputesSummary } from 'data/index';
 import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
+import React from 'react';
+import {
+	DisputeReason,
+	DisputeStatus,
+	CachedDispute,
+} from 'wcpay/types/disputes';
 
-jest.mock( 'wcpay/data', () => ( {
+declare const global: {
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+	};
+};
+
+jest.mock( 'data/index', () => ( {
 	useDisputes: jest.fn(),
+	useDisputesSummary: jest.fn(),
 } ) );
+
+const mockUseDisputes = useDisputes as jest.MockedFunction<
+	typeof useDisputes
+>;
+
+const mockUseDisputesSummary = useDisputesSummary as jest.MockedFunction<
+	typeof useDisputesSummary
+>;
 
 jest.mock( '@woocommerce/csv-export', () => {
 	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
@@ -26,49 +47,46 @@ jest.mock( '@woocommerce/csv-export', () => {
 	};
 } );
 
+const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
+	typeof downloadCSVFile
+>;
+
 const mockDisputes = [
 	{
-		id: 'dp_asdfghjkl',
+		wcpay_disputes_cache_id: 4,
+		stripe_account_id: 'acct_test',
+		dispute_id: 'dp_asdfghjkl',
+		charge_id: 'ch_mock',
 		amount: 1000,
 		currency: 'usd',
-		created: 1572590800,
-		evidence_details: {
-			due_by: 1573199200,
-		},
-		reason: 'fraudulent',
-		status: 'needs_response',
-		charge: {
-			id: 'ch_mock',
-			payment_method_details: {
-				card: {
-					brand: 'visa',
-				},
-			},
-			billing_details: {
-				name: 'Mock customer',
-				email: 'mock@customer.net',
-				address: {
-					country: 'US',
-				},
-			},
-		},
+		reason: 'fraudulent' as DisputeReason,
+		source: 'visa',
+		order_number: 1,
+		customer_name: 'Mock customer',
+		customer_email: 'mock@customer.net',
+		customer_country: 'US',
+		status: 'needs_response' as DisputeStatus,
+		created: '2019-11-01 23:59:59',
+		due_by: '2019-11-08 02:46:00',
 		order: {
 			number: '1',
 			url: 'http://test.local/order/1',
 		},
-	},
+	} as CachedDispute,
 	{
-		id: 'dp_zxcvbnm',
+		// dispute without order or charge information
+		wcpay_disputes_cache_id: 5,
+		stripe_account_id: 'acct_test',
+		dispute_id: 'dp_zxcvbnm',
+		charge_id: 'ch_mock',
 		amount: 1050,
 		currency: 'usd',
-		created: 1572480800,
-		evidence_details: {
-			due_by: 1573099200,
-		},
-		reason: 'general',
-		status: 'under_review',
-		// dispute without order or charge information
-	},
+		reason: 'general' as DisputeReason,
+		order_number: 2,
+		status: 'under_review' as DisputeStatus,
+		created: '2019-10-30 09:14:33',
+		due_by: '2019-11-06 23:00:59',
+	} as CachedDispute,
 ];
 
 describe( 'Disputes list', () => {
@@ -79,9 +97,16 @@ describe( 'Disputes list', () => {
 	} );
 
 	test( 'renders correctly', () => {
-		useDisputes.mockReturnValue( {
+		mockUseDisputes.mockReturnValue( {
 			isLoading: false,
 			disputes: mockDisputes,
+		} );
+
+		mockUseDisputesSummary.mockReturnValue( {
+			isLoading: false,
+			disputesSummary: {
+				count: 25,
+			},
 		} );
 
 		const { container: list } = render( <DisputesList /> );
@@ -90,7 +115,7 @@ describe( 'Disputes list', () => {
 
 	describe( 'Download button', () => {
 		test( 'renders when there are one or more disputes', () => {
-			useDisputes.mockReturnValue( {
+			mockUseDisputes.mockReturnValue( {
 				disputes: mockDisputes,
 				isLoading: false,
 			} );
@@ -102,7 +127,7 @@ describe( 'Disputes list', () => {
 		} );
 
 		test( 'does not render when there are no disputes', () => {
-			useDisputes.mockReturnValue( {
+			mockUseDisputes.mockReturnValue( {
 				disputes: [],
 				isLoading: false,
 			} );
@@ -116,9 +141,16 @@ describe( 'Disputes list', () => {
 
 	describe( 'CSV download', () => {
 		beforeEach( () => {
-			useDisputes.mockReturnValue( {
+			mockUseDisputes.mockReturnValue( {
 				disputes: mockDisputes,
 				isLoading: false,
+			} );
+
+			mockUseDisputesSummary.mockReturnValue( {
+				isLoading: false,
+				disputesSummary: {
+					count: 25,
+				},
 			} );
 		} );
 
@@ -148,7 +180,7 @@ describe( 'Disputes list', () => {
 				'"Respond by"',
 			];
 
-			const csvContent = downloadCSVFile.mock.calls[ 0 ][ 1 ];
+			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
 			const csvHeaderRow = csvContent.split( os.EOL )[ 0 ].split( ',' );
 			expect( csvHeaderRow ).toEqual( expected );
 		} );
@@ -157,7 +189,7 @@ describe( 'Disputes list', () => {
 			const { getByRole, getAllByRole } = render( <DisputesList /> );
 			getByRole( 'button', { name: 'Download' } ).click();
 
-			const csvContent = downloadCSVFile.mock.calls[ 0 ][ 1 ];
+			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
 			const csvRows = csvContent.split( os.EOL );
 			const displayRows = getAllByRole( 'row' );
 
