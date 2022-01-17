@@ -110,6 +110,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Error when saved Google Pay payment method does not have billing address name
 * Update - Update Payment Element from beta version to release version.
 * Add - Add handling for payment_failed webhooks.
+* Add - Disputes pagination.
 
 = 3.5.0 - 2021-12-29 =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
