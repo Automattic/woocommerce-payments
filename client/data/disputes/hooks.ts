@@ -4,8 +4,17 @@
  * External dependencies
  */
 import { useSelect, useDispatch } from '@wordpress/data';
+import type { Query } from '@woocommerce/navigation';
+
+/**
+ * Internal dependencies
+ */
+import type {
+	Dispute,
+	CachedDisputes,
+	DisputesSummary,
+} from 'wcpay/types/disputes';
 import { STORE_NAME } from '../constants';
-import type { Dispute } from 'wcpay/types/disputes';
 
 export const useDispute = (
 	id: string
@@ -32,7 +41,9 @@ export const useDispute = (
 	return { dispute, isLoading, doAccept };
 };
 
-export const useDisputeEvidence = () => {
+export const useDisputeEvidence = (): {
+	updateDispute: ( data: Dispute ) => void;
+} => {
 	const { updateDispute } = useDispatch( STORE_NAME );
 	return { updateDispute };
 };
@@ -40,25 +51,34 @@ export const useDisputeEvidence = () => {
 export const useDisputes = ( {
 	paged,
 	per_page: perPage,
-}: {
-	paged: string;
-	per_page: string;
-} ) =>
+}: Query ): CachedDisputes =>
 	useSelect(
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );
 
 			const query = {
-				paged: Number.isNaN( parseInt( paged, 10 ) ) ? '1' : paged,
-				perPage: Number.isNaN( parseInt( perPage, 10 ) )
+				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
+					? '1'
+					: paged,
+				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
 					? '25'
 					: perPage,
 			};
 
-			const disputes = getDisputes( query );
-			const isLoading = isResolving( 'getDisputes', [ query ] );
-
-			return { disputes, isLoading };
+			return {
+				disputes: getDisputes( query ),
+				isLoading: isResolving( 'getDisputes', [ query ] ),
+			};
 		},
 		[ paged, perPage ]
 	);
+
+export const useDisputesSummary = (): DisputesSummary =>
+	useSelect( ( select ) => {
+		const { getDisputesSummary, isResolving } = select( STORE_NAME );
+
+		return {
+			disputesSummary: getDisputesSummary(),
+			isLoading: isResolving( 'getDisputesSummary' ),
+		};
+	}, [] );
