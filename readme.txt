@@ -109,6 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Flag emoji rendering in currency switcher block widget
 * Fix - Error when saved Google Pay payment method does not have billing address name
 * Update - Update Payment Element from beta version to release version.
+* Tweak - Display a more specific error message when a customer attempts to purchase a WCPay Subscription below the minimum transact-able amount.
 * Add - Add handling for payment_failed webhooks.
 * Add - Show a warning when attempting to create a subscription product with a price below the minimum amount.
 
