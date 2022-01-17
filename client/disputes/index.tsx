@@ -15,6 +15,7 @@ import {
 	generateCSVDataFromTable,
 	generateCSVFileName,
 } from '@woocommerce/csv-export';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies.
@@ -42,7 +43,9 @@ const getHeaders = ( sortByCreated: boolean ): DisputesTableHeader[] => [
 		key: 'details',
 		label: '',
 		required: true,
-		cellClassName: 'info-button ' + ( sortByCreated ? 'is-sorted' : '' ),
+		cellClassName: classNames( 'info-button', {
+			'is-sorted': sortByCreated,
+		} ),
 		isLeftAligned: true,
 	},
 	{
@@ -86,24 +89,24 @@ const getHeaders = ( sortByCreated: boolean ): DisputesTableHeader[] => [
 		required: true,
 	},
 	{
-		key: 'name',
+		key: 'customerName',
 		label: __( 'Customer', 'woocommerce-payments' ),
 		isLeftAligned: true,
 	},
 	{
-		key: 'email',
+		key: 'customerEmail',
 		label: __( 'Email', 'woocommerce-payments' ),
 		visible: false,
 		isLeftAligned: true,
 	},
 	{
-		key: 'country',
+		key: 'customerCountry',
 		label: __( 'Country', 'woocommerce-payments' ),
 		visible: false,
 		isLeftAligned: true,
 	},
 	{
-		key: 'due_by',
+		key: 'dueBy',
 		label: __( 'Respond by', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Respond by', 'woocommerce-payments' ),
 		required: true,
@@ -124,116 +127,110 @@ export const DisputesList = (): JSX.Element => {
 		! getQuery().orderby || 'created' === getQuery().orderby;
 	const headers = getHeaders( sortByCreated );
 
-	const rows = disputes.map(
-		( {
-			dispute_id,
-			amount = 0,
-			currency,
-			reason,
-			source,
-			order_number,
-			customer_name,
-			customer_email,
-			customer_country,
-			status,
-			created,
-			due_by,
-		} ) => {
-			const clickable = ( children: React.ReactNode ): JSX.Element => (
-				<ClickableCell href={ getDetailsURL( dispute_id, 'disputes' ) }>
-					{ children }
-				</ClickableCell>
-			);
+	const rows = disputes.map( ( dispute ) => {
+		const clickable = ( children: React.ReactNode ): JSX.Element => (
+			<ClickableCell
+				href={ getDetailsURL( dispute[ 'dispute_id' ], 'disputes' ) }
+			>
+				{ children }
+			</ClickableCell>
+		);
 
-			const detailsLink = (
-				<DetailsLink id={ dispute_id } parentSegment="disputes" />
-			);
+		const detailsLink = (
+			<DetailsLink
+				id={ dispute[ 'dispute_id' ] }
+				parentSegment="disputes"
+			/>
+		);
 
-			const reasonMapping = reasons[ reason ];
-			const reasonDisplay = reasonMapping
-				? reasonMapping.display
-				: formatStringValue( reason );
+		const reasonMapping = reasons[ dispute[ 'reason' ] ];
+		const reasonDisplay = reasonMapping
+			? reasonMapping.display
+			: formatStringValue( dispute[ 'reason' ] );
 
-			const data: {
-				[ k: string ]: {
-					value: number | string;
-					display: JSX.Element;
-				};
-			} = {
-				amount: {
-					value: amount / 100,
-					display: clickable(
-						formatExplicitCurrency( amount, currency )
-					),
-				},
-				status: {
-					value: status,
-					display: clickable(
-						<DisputeStatusChip status={ status } />
-					),
-				},
-				reason: {
-					value: reason,
-					display: clickable( reasonDisplay ),
-				},
-				source: {
-					value: source ?? '',
-					display: clickable(
-						<span
-							className={ `payment-method__brand payment-method__brand--${
-								source ?? ''
-							}` }
-						/>
-					),
-				},
-				created: {
-					value: created,
-					display: clickable(
-						dateI18n( 'M j, Y', moment( created ).toISOString() )
-					),
-				},
-				due_by: {
-					value: due_by,
-					display: clickable(
-						dateI18n(
-							'M j, Y / g:iA',
-							moment( due_by ).toISOString()
-						)
-					),
-				},
-				order: {
-					value: order_number ?? '',
-					display: (
-						<OrderLink
-							order={ {
-								number: order_number,
-								url: getPostUrl( {
-									post: order_number,
-									action: 'edit',
-								} ),
-							} }
-						/>
-					),
-				},
-				name: {
-					value: customer_name ?? '',
-					display: clickable( customer_name ),
-				},
-				email: {
-					value: customer_email ?? '',
-					display: clickable( customer_email ),
-				},
-				country: {
-					value: customer_country ?? '',
-					display: clickable( customer_country ),
-				},
-				details: { value: dispute_id, display: detailsLink },
+		const data: {
+			[ key: string ]: {
+				value: number | string;
+				display: JSX.Element;
 			};
-			return headers.map(
-				( { key } ) => data[ key ] || { display: null }
-			);
-		}
-	);
+		} = {
+			amount: {
+				value: dispute[ 'amount' ] / 100,
+				display: clickable(
+					formatExplicitCurrency(
+						dispute[ 'amount' ],
+						dispute[ 'currency' ]
+					)
+				),
+			},
+			status: {
+				value: dispute[ 'status' ],
+				display: clickable(
+					<DisputeStatusChip status={ dispute[ 'status' ] } />
+				),
+			},
+			reason: {
+				value: dispute[ 'reason' ],
+				display: clickable( reasonDisplay ),
+			},
+			source: {
+				value: dispute[ 'source' ] ?? '',
+				display: clickable(
+					<span
+						className={ `payment-method__brand payment-method__brand--${
+							dispute[ 'source' ] ?? ''
+						}` }
+					/>
+				),
+			},
+			created: {
+				value: dispute[ 'created' ],
+				display: clickable(
+					dateI18n(
+						'M j, Y',
+						moment( dispute[ 'created' ] ).toISOString()
+					)
+				),
+			},
+			dueBy: {
+				value: dispute[ 'due_by' ],
+				display: clickable(
+					dateI18n(
+						'M j, Y / g:iA',
+						moment( dispute[ 'due_by' ] ).toISOString()
+					)
+				),
+			},
+			order: {
+				value: dispute[ 'order_number' ] ?? '',
+				display: (
+					<OrderLink
+						order={ {
+							number: dispute[ 'order_number' ],
+							url: getPostUrl( {
+								post: dispute[ 'order_number' ],
+								action: 'edit',
+							} ),
+						} }
+					/>
+				),
+			},
+			customerName: {
+				value: dispute[ 'customer_name' ] ?? '',
+				display: clickable( dispute[ 'customer_name' ] ),
+			},
+			customerEmail: {
+				value: dispute[ 'customer_email' ] ?? '',
+				display: clickable( dispute[ 'customer_email' ] ),
+			},
+			customerCountry: {
+				value: dispute[ 'customer_country' ] ?? '',
+				display: clickable( dispute[ 'customer_country' ] ),
+			},
+			details: { value: dispute[ 'dispute_id' ], display: detailsLink },
+		};
+		return headers.map( ( { key } ) => data[ key ] || { display: null } );
+	} );
 
 	const downloadable = !! rows.length;
 

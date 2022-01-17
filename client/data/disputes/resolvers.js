@@ -7,6 +7,7 @@ import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 import { formatDateValue } from 'utils';
+import { snakeCase } from 'lodash';
 
 /**
  * Internal dependencies
@@ -60,7 +61,7 @@ export function* getDisputes( query ) {
 	const path = addQueryArgs( `${ NAMESPACE }/disputes`, {
 		page: query.paged,
 		pagesize: query.perPage,
-		sort: query.orderBy,
+		sort: snakeCase( query.orderBy ),
 		direction: query.order,
 		...formatQueryFilters( query ),
 	} );

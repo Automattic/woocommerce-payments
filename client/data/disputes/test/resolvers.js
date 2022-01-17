@@ -73,12 +73,15 @@ describe( 'getDispute resolver', () => {
 
 describe( 'getDisputes resolver', () => {
 	let generator = null;
-	const query = { paged: 1, perPage: 25 };
+	const query = { paged: 1, perPage: 25, orderBy: 'someKey' };
 
 	beforeEach( () => {
 		generator = getDisputes( query );
 		expect( generator.next().value ).toEqual(
-			apiFetch( { path: '/wc/v3/payments/disputes?page=1&pagesize=25' } )
+			apiFetch( {
+				path:
+					'/wc/v3/payments/disputes?page=1&pagesize=25&sort=some_key',
+			} )
 		);
 	} );
 

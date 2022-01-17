@@ -126,11 +126,11 @@ export interface DisputesTableHeader extends TableCardColumn {
 		| 'reason'
 		| 'source'
 		| 'order'
-		| 'name'
-		| 'email'
-		| 'country'
+		| 'customerName'
+		| 'customerEmail'
+		| 'customerCountry'
 		| 'created'
-		| 'due_by';
+		| 'dueBy';
 	cellClassName?: string;
 	visible?: boolean;
 }
