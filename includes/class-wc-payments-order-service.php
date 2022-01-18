@@ -39,6 +39,39 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Updates an order to failed status, while adding a note with a link to the failed transaction.
+	 *
+	 * @param WC_Order $order   Order object.
+	 * @param string   $message Optional message to add to the failed note.
+	 *
+	 * @return void
+	 */
+	public function mark_payment_failed( $order, $message = '' ) {
+
+		$transaction_url = self::compose_transaction_url( $order->get_meta( '_charge_id' ) );
+		$note            = sprintf(
+			self::esc_interpolated_html(
+				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+				__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
+			$order->get_meta( '_intent_id' )
+		);
+
+		if ( $message ) {
+			$note .= ' ' . $message;
+		}
+
+		$order->add_order_note( $note );
+		$order->update_meta_data( '_intention_status', 'failed' );
+		$order->update_status( 'failed' );
+	}
+
+	/**
 	 * Check if order is locked for payment processing
 	 *
 	 * @param WC_Order $order  The order that is being paid.
