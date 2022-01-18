@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7295577584e64ad2f603d9990560236d",
+    "content-hash": "42808f84eeaa1af623316af3afceadea",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1278,16 +1278,16 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "1.6.0",
+            "version": "1.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "4bc4bcc955711ef8d1f7cadd5d8fa30abed852b0"
+                "reference": "d23e989583e04544fcfe9602d45e1744279aa8cf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/4bc4bcc955711ef8d1f7cadd5d8fa30abed852b0",
-                "reference": "4bc4bcc955711ef8d1f7cadd5d8fa30abed852b0",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/d23e989583e04544fcfe9602d45e1744279aa8cf",
+                "reference": "d23e989583e04544fcfe9602d45e1744279aa8cf",
                 "shasum": ""
             },
             "require": {
@@ -1303,7 +1303,7 @@
                 "woocommerce/woocommerce-sniffs": "0.1.0",
                 "yoast/phpunit-polyfills": "^1.0"
             },
-            "type": "library",
+            "type": "wordpress-plugin",
             "extra": {
                 "phpcodesniffer-search-depth": 2
             },
@@ -1329,10 +1329,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.6.0",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.6.1",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2022-01-17T00:13:19+00:00"
+            "time": "2022-01-18T05:09:25+00:00"
         }
     ],
     "packages-dev": [
