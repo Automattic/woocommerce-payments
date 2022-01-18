@@ -604,7 +604,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_payment_fields_js_config() {
 		return [
 			'publishableKey'            => $this->account->get_publishable_key( $this->is_in_test_mode() ),
-			'accountId'                 => $this->account->get_stripe_account_id(),
+			'accountId'                 => apply_filters( 'wc_payments_js_account_id', $this->account->get_stripe_account_id() ),
 			'ajaxUrl'                   => admin_url( 'admin-ajax.php' ),
 			'wcAjaxUrl'                 => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'createSetupIntentNonce'    => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
