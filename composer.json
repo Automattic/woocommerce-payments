@@ -67,6 +67,15 @@
         "phpunit/phpunit": {
           "PHP 8.1 compatibility: globals": "tests/phpunit-patches/globals-usage-compatibility.diff"
         }
+      },
+      "changelogger": {
+          "changelog": "changelog.txt",
+          "types": [
+            "Add",
+            "Fix",
+            "Update",
+            "Dev"
+          ]
       }
     },
     "autoload": {
