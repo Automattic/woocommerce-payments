@@ -153,7 +153,7 @@ exports[`Disputes list renders correctly 1`] = `
             <tbody>
               <tr>
                 <th
-                  class="woocommerce-table__header info-button is-sorted is-left-aligned"
+                  class="woocommerce-table__header info-button is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
@@ -162,8 +162,8 @@ exports[`Disputes list renders correctly 1`] = `
                   />
                 </th>
                 <th
-                  aria-sort="descending"
-                  class="woocommerce-table__header is-left-aligned is-sortable is-sorted"
+                  aria-sort="none"
+                  class="woocommerce-table__header is-sortable"
                   role="columnheader"
                   scope="col"
                 >
@@ -188,59 +188,17 @@ exports[`Disputes list renders correctly 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Disputed on
+                      Amount
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Disputed on
+                      Amount
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-0-1"
-                  >
-                    Sort by Disputed on in ascending order
-                  </span>
-                </th>
-                <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable"
-                  role="columnheader"
-                  scope="col"
-                >
-                  <button
-                    aria-describedby="header-0-2"
-                    class="components-button"
-                    type="button"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Amount
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Amount
-                    </span>
-                  </button>
-                  <span
-                    class="screen-reader-text"
-                    id="header-0-2"
                   >
                     Sort by Amount in descending order
                   </span>
@@ -301,6 +259,48 @@ exports[`Disputes list renders correctly 1`] = `
                   </span>
                 </th>
                 <th
+                  aria-sort="descending"
+                  class="woocommerce-table__header is-left-aligned is-sortable is-sorted"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-0-7"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Disputed on
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Disputed on
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-7"
+                  >
+                    Sort by Disputed on in ascending order
+                  </span>
+                </th>
+                <th
                   aria-sort="none"
                   class="woocommerce-table__header is-left-aligned is-sortable"
                   role="columnheader"
@@ -345,7 +345,7 @@ exports[`Disputes list renders correctly 1`] = `
               </tr>
               <tr>
                 <th
-                  class="woocommerce-table__item info-button is-sorted is-left-aligned"
+                  class="woocommerce-table__item info-button is-left-aligned"
                   scope="row"
                 >
                   <a
@@ -367,18 +367,6 @@ exports[`Disputes list renders correctly 1`] = `
                     </svg>
                   </a>
                 </th>
-                <td
-                  class="woocommerce-table__item is-left-aligned is-sorted"
-                >
-                  <a
-                    class="woocommerce-table__clickable-cell"
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-                    tabindex="-1"
-                  >
-                    Jan 6, 2022
-                  </a>
-                </td>
                 <td
                   class="woocommerce-table__item"
                 >
@@ -456,6 +444,18 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
+                  class="woocommerce-table__item is-left-aligned is-sorted"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    Jan 6, 2022
+                  </a>
+                </td>
+                <td
                   class="woocommerce-table__item is-left-aligned"
                 >
                   <a
@@ -470,7 +470,7 @@ exports[`Disputes list renders correctly 1`] = `
               </tr>
               <tr>
                 <th
-                  class="woocommerce-table__item info-button is-sorted is-left-aligned"
+                  class="woocommerce-table__item info-button is-left-aligned"
                   scope="row"
                 >
                   <a
@@ -492,18 +492,6 @@ exports[`Disputes list renders correctly 1`] = `
                     </svg>
                   </a>
                 </th>
-                <td
-                  class="woocommerce-table__item is-left-aligned is-sorted"
-                >
-                  <a
-                    class="woocommerce-table__clickable-cell"
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-                    tabindex="-1"
-                  >
-                    Jan 6, 2022
-                  </a>
-                </td>
                 <td
                   class="woocommerce-table__item"
                 >
@@ -575,6 +563,18 @@ exports[`Disputes list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   />
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned is-sorted"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    Jan 6, 2022
+                  </a>
                 </td>
                 <td
                   class="woocommerce-table__item is-left-aligned"

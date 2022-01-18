@@ -38,25 +38,15 @@ import { getPostUrl } from 'wcpay/utils';
 
 import './style.scss';
 
-const getHeaders = ( sortByCreated: boolean ): DisputesTableHeader[] => [
+const getHeaders = ( sortByAmount: boolean ): DisputesTableHeader[] => [
 	{
 		key: 'details',
 		label: '',
 		required: true,
 		cellClassName: classNames( 'info-button', {
-			'is-sorted': sortByCreated,
+			'is-sorted': sortByAmount,
 		} ),
 		isLeftAligned: true,
-	},
-	{
-		key: 'created',
-		label: __( 'Disputed on', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Disputed on', 'woocommerce-payments' ),
-		required: true,
-		isLeftAligned: true,
-		isSortable: true,
-		defaultSort: true,
-		defaultOrder: 'desc',
 	},
 	{
 		key: 'amount',
@@ -106,6 +96,16 @@ const getHeaders = ( sortByCreated: boolean ): DisputesTableHeader[] => [
 		isLeftAligned: true,
 	},
 	{
+		key: 'created',
+		label: __( 'Disputed on', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Disputed on', 'woocommerce-payments' ),
+		required: true,
+		isLeftAligned: true,
+		isSortable: true,
+		defaultSort: true,
+		defaultOrder: 'desc',
+	},
+	{
 		key: 'dueBy',
 		label: __( 'Respond by', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Respond by', 'woocommerce-payments' ),
@@ -123,9 +123,8 @@ export const DisputesList = (): JSX.Element => {
 		getQuery()
 	);
 
-	const sortByCreated =
-		! getQuery().orderby || 'created' === getQuery().orderby;
-	const headers = getHeaders( sortByCreated );
+	const sortByAmount = 'amount' === getQuery().orderby;
+	const headers = getHeaders( sortByAmount );
 
 	const rows = disputes.map( ( dispute ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
@@ -247,27 +246,26 @@ export const DisputesList = (): JSX.Element => {
 
 		const csvRows = rows.map( ( row ) => {
 			return [
-				{ ...row[ 0 ] },
+				...row.slice( 0, 2 ),
 				{
-					...row[ 1 ],
-					value: dateI18n(
-						'Y-m-d',
-						moment( row[ 1 ].value ).toISOString()
-					),
+					...row[ 2 ],
+					value: disputeStatusMapping[ row[ 2 ].value ?? '' ].message,
 				},
-				{ ...row[ 2 ] },
 				{
 					...row[ 3 ],
-					value: disputeStatusMapping[ row[ 3 ].value ?? '' ].message,
-				},
-				{
-					...row[ 4 ],
 					value:
-						typeof row[ 4 ].value === 'string'
-							? formatStringValue( row[ 4 ].value )
+						typeof row[ 3 ].value === 'string'
+							? formatStringValue( row[ 3 ].value )
 							: '',
 				},
-				...row.slice( 5, 10 ),
+				...row.slice( 4, 9 ),
+				{
+					...row[ 9 ],
+					value: dateI18n(
+						'Y-m-d',
+						moment( row[ 9 ].value ).toISOString()
+					),
+				},
 				{
 					...row[ 10 ],
 					value: dateI18n(

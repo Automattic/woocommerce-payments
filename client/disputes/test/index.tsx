@@ -159,7 +159,6 @@ describe( 'Disputes list', () => {
 
 			const expected = [
 				'"Dispute Id"',
-				'"Disputed on"',
 				'Amount',
 				'Status',
 				'Reason',
@@ -168,6 +167,7 @@ describe( 'Disputes list', () => {
 				'Customer',
 				'Email',
 				'Country',
+				'"Disputed on"',
 				'"Respond by"',
 			];
 
@@ -191,10 +191,6 @@ describe( 'Disputes list', () => {
 				displayRows[ 1 ].querySelectorAll( 'td' )
 			).map( ( td ) => td.textContent );
 
-			expect( formatDate( csvFirstDispute[ 1 ], 'Y-m-d / g:iA' ) ).toBe(
-				formatDate( displayFirstDispute[ 0 ], 'Y-m-d / g:iA' )
-			); // date disputed on
-
 			// Note:
 			//
 			// 1. CSV and display indexes are off by 1 because the first field in CSV is dispute id,
@@ -204,25 +200,29 @@ describe( 'Disputes list', () => {
 			//    trailing zeros as in the display amount.
 			//
 			expect(
-				getUnformattedAmount( displayFirstDispute[ 1 ] ).indexOf(
-					csvFirstDispute[ 2 ]
+				getUnformattedAmount( displayFirstDispute[ 0 ] ).indexOf(
+					csvFirstDispute[ 1 ]
 				)
 			).not.toBe( -1 ); // amount
 
-			expect( csvFirstDispute[ 3 ] ).toBe(
-				`"${ displayFirstDispute[ 2 ] }"`
+			expect( csvFirstDispute[ 2 ] ).toBe(
+				`"${ displayFirstDispute[ 1 ] }"`
 			); //status
 
-			expect( csvFirstDispute[ 4 ] ).toBe( displayFirstDispute[ 3 ] ); // reason
+			expect( csvFirstDispute[ 3 ] ).toBe( displayFirstDispute[ 2 ] ); // reason
 
-			expect( csvFirstDispute[ 6 ] ).toBe( displayFirstDispute[ 5 ] ); // order
+			expect( csvFirstDispute[ 5 ] ).toBe( displayFirstDispute[ 4 ] ); // order
 
-			expect( csvFirstDispute[ 7 ] ).toBe(
-				`"${ displayFirstDispute[ 6 ] }"`
+			expect( csvFirstDispute[ 6 ] ).toBe(
+				`"${ displayFirstDispute[ 5 ] }"`
 			); // customer
 
-			expect( formatDate( csvFirstDispute[ 10 ], 'Y-m-d' ) ).toBe(
-				formatDate( displayFirstDispute[ 7 ], 'Y-m-d' )
+			expect( formatDate( csvFirstDispute[ 9 ], 'Y-m-d' ) ).toBe(
+				formatDate( displayFirstDispute[ 6 ], 'Y-m-d' )
+			); // date disputed on
+
+			expect( formatDate( csvFirstDispute[ 10 ], 'Y-m-d / g:iA' ) ).toBe(
+				formatDate( displayFirstDispute[ 7 ], 'Y-m-d / g:iA' )
 			); // date respond by
 		} );
 	} );
