@@ -45,6 +45,7 @@ class WC_Payments_Account {
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
 		add_action( self::INSTANT_DEPOSITS_REMINDER_ACTION, [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_action( self::ACCOUNT_CACHE_REFRESH_ACTION, [ $this, 'handle_account_cache_refresh' ] );
@@ -331,6 +332,41 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the request is for the Capital view offer redirection page, and redirects to the offer if so.
+	 *
+	 * Only admins are be able to perform this action. The redirect doesn't happen if the request is an AJAX request.
+	 * This method will end execution after the redirect if the user requests and is allowed to view the loan offer.
+	 */
+	public function maybe_redirect_to_capital_offer() {
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
+		// Safety check to prevent non-admin users to be redirected to the view offer page.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// This is an automatic redirection page, used to authenticate users that come from the offer email. For this reason
+		// we're not using a nonce. The GET parameter accessed here is just to indicate that we should process the redirection.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['wcpay-view-capital-offer'] ) ) {
+			return;
+		}
+
+		$return_url  = $this->get_overview_page_url();
+		$refresh_url = add_query_arg( [ 'wcpay-view-capital-offer' => '' ], admin_url( 'admin.php' ) );
+
+		try {
+			$capital_link = $this->payments_api_client->get_capital_link( 'capital_financing_offer', $return_url, $refresh_url );
+
+			$this->redirect_to( $capital_link['url'] );
+		} catch ( API_Exception $e ) {
+			$this->redirect_to( $return_url );
+		}
+	}
+
+	/**
 	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
 	 * Note that this function immediately ends the execution.
 	 *
@@ -577,6 +613,18 @@ class WC_Payments_Account {
 		// If the transient isn't set at all, we'll get false indicating that the server hasn't informed us that
 		// on-boarding has been disabled (i.e. it's enabled as far as we know).
 		return get_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
+	}
+
+	/**
+	 * Calls wp_safe_redirect and exit.
+	 *
+	 * This method will end the execution immediately after the redirection.
+	 *
+	 * @param string $location The URL to redirect to.
+	 */
+	protected function redirect_to( $location ) {
+		wp_safe_redirect( $location );
+		exit;
 	}
 
 	/**
