@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5abfb2cfc0a91b7538cd35658f1a520b",
+    "content-hash": "0046032f934c5d844fecda1ef6db1eca",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1420,16 +1420,16 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "1.4.0",
+            "version": "1.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "659909bc7f3a80b7188a73a5226f526978e49f0b"
+                "reference": "d23e989583e04544fcfe9602d45e1744279aa8cf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/659909bc7f3a80b7188a73a5226f526978e49f0b",
-                "reference": "659909bc7f3a80b7188a73a5226f526978e49f0b",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/d23e989583e04544fcfe9602d45e1744279aa8cf",
+                "reference": "d23e989583e04544fcfe9602d45e1744279aa8cf",
                 "shasum": ""
             },
             "require": {
@@ -1445,7 +1445,7 @@
                 "woocommerce/woocommerce-sniffs": "0.1.0",
                 "yoast/phpunit-polyfills": "^1.0"
             },
-            "type": "library",
+            "type": "wordpress-plugin",
             "extra": {
                 "phpcodesniffer-search-depth": 2
             },
@@ -1471,10 +1471,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.4.0",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.6.1",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2022-01-11T02:27:55+00:00"
+            "time": "2022-01-18T05:09:25+00:00"
         }
     ],
     "packages-dev": [
@@ -1646,16 +1646,16 @@
         },
         {
             "name": "composer/package-versions-deprecated",
-            "version": "1.11.99.4",
+            "version": "1.11.99.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/package-versions-deprecated.git",
-                "reference": "b174585d1fe49ceed21928a945138948cb394600"
+                "reference": "b4f54f74ef3453349c24a845d22392cd31e65f1d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/package-versions-deprecated/zipball/b174585d1fe49ceed21928a945138948cb394600",
-                "reference": "b174585d1fe49ceed21928a945138948cb394600",
+                "url": "https://api.github.com/repos/composer/package-versions-deprecated/zipball/b4f54f74ef3453349c24a845d22392cd31e65f1d",
+                "reference": "b4f54f74ef3453349c24a845d22392cd31e65f1d",
                 "shasum": ""
             },
             "require": {
@@ -1699,7 +1699,7 @@
             "description": "Composer plugin that provides efficient querying for installed package versions (no runtime IO)",
             "support": {
                 "issues": "https://github.com/composer/package-versions-deprecated/issues",
-                "source": "https://github.com/composer/package-versions-deprecated/tree/1.11.99.4"
+                "source": "https://github.com/composer/package-versions-deprecated/tree/1.11.99.5"
             },
             "funding": [
                 {
@@ -1715,7 +1715,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-09-13T08:41:34+00:00"
+            "time": "2022-01-17T14:14:24+00:00"
         },
         {
             "name": "composer/pcre",
