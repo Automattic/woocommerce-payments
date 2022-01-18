@@ -808,6 +808,8 @@ class WC_Payments {
 			self::$customer_service->create_customer_for_user( $user, $customer_data );
 		}
 
+		$account_id = self::get_account_service()->get_stripe_account_id();
+
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 		$body                   = [
@@ -820,6 +822,7 @@ class WC_Payments {
 				'store_logo' => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
 				'blog_id'    => Jetpack_Options::get_option( 'id' ),
 				'blog_url'   => get_site_url(),
+				'account_id' => $account_id,
 			],
 		];
 		$args                   = [
