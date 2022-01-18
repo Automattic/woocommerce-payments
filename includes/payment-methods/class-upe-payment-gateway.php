@@ -590,8 +590,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				if ( $save_payment_method && $payment_method->is_reusable() ) {
 					try {
 						$token = $payment_method->get_payment_token_for_user( $user, $payment_method_id );
-						// TODO: This is failing.
-						// "Error: The customer does not have a payment method with the ID pm_123. The payment method must be attached to the customer.".
 						$this->add_token_to_order( $order, $token );
 					} catch ( Exception $e ) {
 						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
