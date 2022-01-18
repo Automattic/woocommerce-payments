@@ -882,14 +882,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$methods[] = 'sepa_debit';
 		$methods[] = 'p24';
 
-		$methods = array_intersect( $methods, array_keys( $fees ) );
-
-		return array_values(
+		$methods = array_values(
 			apply_filters(
 				'wcpay_upe_available_payment_methods',
 				$methods
 			)
 		);
+
+		return array_intersect( $methods, array_keys( $fees ) );
 	}
 
 	/**
