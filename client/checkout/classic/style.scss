@@ -39,3 +39,26 @@
 .wcpay-sepa-mounted {
 	background-color: #fff;
 }
+
+.platform-checkout-billing-email {
+	.woocommerce-input-wrapper {
+		position: relative;
+	}
+
+	&.is-loading .woocommerce-input-wrapper::after {
+		content: '';
+		width: 24px;
+		height: 24px;
+		position: absolute;
+		top: 50%;
+		right: 10px;
+		margin-top: -12px;
+		background: url( '../../../assets/images/spinner.svg' );
+	}
+}
+
+@media screen and ( min-width: 768px ) {
+	.platform-checkout-billing-email {
+		width: 52.9411764706%;
+	}
+}

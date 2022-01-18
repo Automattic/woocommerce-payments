@@ -554,4 +554,41 @@ jQuery( function ( $ ) {
 			maybeShowAuthenticationModal();
 		}
 	} );
+
+	// Check whether user is a valid Platform Checkout user
+	const handlePlatformCheckoutEmailInput = () => {
+		let timer;
+		const waitTime = 500;
+		const platformCheckoutEmailContainer = document.querySelector(
+			'.platform-checkout-billing-email'
+		);
+
+		const platformCheckoutLocateUser = () => {
+			platformCheckoutEmailContainer.classList.add( 'is-loading' );
+
+			// Placeholder to simulate request. Replace with request to Platform Checkout email verification endpoint.
+			setTimeout( () => {
+				platformCheckoutEmailContainer.classList.remove( 'is-loading' );
+			}, 3000 );
+		};
+
+		const platformCheckoutEmailInput = document.querySelector(
+			'.platform-checkout-billing-email-input'
+		);
+
+		platformCheckoutEmailInput.addEventListener( 'keyup', ( e ) => {
+			const input = e.currentTarget.value;
+
+			clearTimeout( timer );
+			platformCheckoutEmailContainer.classList.remove( 'is-loading' );
+
+			timer = setTimeout( () => {
+				platformCheckoutLocateUser( input );
+			}, waitTime );
+		} );
+	};
+
+	if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
+		handlePlatformCheckoutEmailInput();
+	}
 } );
