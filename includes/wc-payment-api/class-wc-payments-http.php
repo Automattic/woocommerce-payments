@@ -58,7 +58,12 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 			);
 		}
 
-		$args['blog_id'] = $this->get_blog_id();
+		$args['blog_id'] = apply_filters(
+			'wc_payments_blog_id_for_api',
+			$this->get_blog_id(),
+			$args['url'],
+			$args['method']
+		);
 
 		if ( $use_user_token ) {
 			$args['user_id'] = $this->connection_manager->get_connection_owner_id();
@@ -66,9 +71,6 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 
 		if ( $is_site_specific ) {
 			// We expect `url` to include a `%s` placeholder which will allow us inject the blog id.
-			if ( strstr( $args['url'], 'intent' ) ) {
-				$args['blog_id'] = '<merchant_store_blog_id>';
-			}
 			$url         = explode( '?', $args['url'], 2 );
 			$url[0]      = sprintf( $url[0], $args['blog_id'] );
 			$args['url'] = implode( '?', $url );
