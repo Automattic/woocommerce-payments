@@ -1247,6 +1247,26 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Clones a payment method from the provided platform-level customer to a merchant account.
+	 *
+	 * @param string $payment_method_id     The platform-level payment method to clone.
+	 * @param string $platform_customer_id  The customer the payment method to be cloned is attached to.
+	 *
+	 * @return array  The cloned payment method's details.
+	 * @throws API_Exception
+	 */
+	public function clone_payment_method( string $payment_method_id, string $platform_customer_id ): array {
+		return $this->request(
+			[
+				'customer'       => $platform_customer_id,
+				'payment_method' => $payment_method_id,
+			],
+			self::PAYMENT_METHODS_API,
+			self::POST
+		);
+	}
+
+	/**
 	 * Get payment methods for customer.
 	 *
 	 * @param string $customer_id The customer ID.
