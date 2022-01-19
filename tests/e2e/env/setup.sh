@@ -212,10 +212,9 @@ fi
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	echo "Install and activate the latest release of WooCommerce Subscriptions"
 	cd "$E2E_ROOT"/deps
-	WCS_LATEST_RELEASE_JSON=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest)
-	LATEST_RELEASE=$(echo $WCS_LATEST_RELEASE_JSON | jq -r '.tag_name')
-	WCS_LATEST_ASSET_ID=$(echo $WCS_LATEST_RELEASE_JSON | jq -r '.assets[0].id')
-	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" -H 'Accept: application/octet-stream' "https://github.com/$WC_SUBSCRIPTIONS_REPO/releases/assets/$WCS_LATEST_ASSET_ID" --output "woocommerce-subscriptions-$LATEST_RELEASE.zip"
+	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | jq -r '.tag_name')
+	WCS_LATEST_ASSET_ID=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | jq -r '.assets[0].id')
+	curl -L -H "Authorization: token $E2E_GH_TOKEN" -H 'Accept: application/octet-stream' "https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/assets/$WCS_LATEST_ASSET_ID" --output "woocommerce-subscriptions-$LATEST_RELEASE.zip"
 
 	unzip -qq woocommerce-subscriptions-$LATEST_RELEASE.zip
 
