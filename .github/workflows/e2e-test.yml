@@ -5,7 +5,7 @@ on:
     - cron: '0 */6 * * *'
   pull_request:
     branches:
-      - trunk
+      - fix/e2e-download-wcs-release
   push:
     branches:
       - develop
