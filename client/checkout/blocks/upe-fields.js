@@ -165,6 +165,10 @@ const WCPayUPEFields = ( {
 				},
 			},
 		},
+		wallets: {
+			applePay: 'never',
+			googlePay: 'never',
+		},
 	};
 
 	const showTerms =
