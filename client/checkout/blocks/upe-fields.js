@@ -27,16 +27,14 @@ const WCPayUPEFields = ( {
 		onCheckoutAfterProcessingWithSuccess,
 	},
 	emitResponse,
+	paymentIntentId,
+	errorMessage,
 	shouldSavePayment,
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
 
-	const [ paymentIntentId, setPaymentIntentId ] = useState( null );
-	const [ clientSecret, setClientSecret ] = useState( null );
-	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
 	const [ isUPEComplete, setIsUPEComplete ] = useState( false );
-	const [ errorMessage, setErrorMessage ] = useState( null );
 	const [ selectedUPEPaymentType, setSelectedUPEPaymentType ] = useState(
 		''
 	);
@@ -50,28 +48,6 @@ const WCPayUPEFields = ( {
 			with any expiry date and CVC.
 		</p>
 	);
-
-	useEffect( () => {
-		if ( paymentIntentId || hasRequestedIntent ) {
-			return;
-		}
-
-		async function createIntent() {
-			try {
-				const response = await api.createIntent();
-				setPaymentIntentId( response.id );
-				setClientSecret( response.client_secret );
-			} catch ( error ) {
-				setErrorMessage(
-					error.message
-						? error.message
-						: 'There was an error loading the payment gateway.'
-				);
-			}
-		}
-		setHasRequestedIntent( true );
-		createIntent();
-	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage ] );
 
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
@@ -174,7 +150,6 @@ const WCPayUPEFields = ( {
 	};
 
 	const elementOptions = {
-		clientSecret,
 		fields: {
 			billingDetails: {
 				name: 'never',
@@ -203,6 +178,54 @@ const WCPayUPEFields = ( {
 		elementOptions.appearance = appearance;
 	}
 
+	return (
+		<>
+			{ testMode ? testCopy : '' }
+			<PaymentElement
+				options={ elementOptions }
+				onChange={ upeOnChange }
+				className="wcpay-payment-element"
+			/>
+		</>
+	);
+};
+
+/**
+ * Wraps WCPayFields within the necessary Stripe consumer components.
+ *
+ * @param {Object} props All props given by WooCommerce Blocks.
+ * @return {Object}     The wrapped React element.
+ */
+const ConsumableWCPayFields = ( { api, ...props } ) => {
+	const stripe = api.getStripe();
+
+	const [ paymentIntentId, setPaymentIntentId ] = useState( null );
+	const [ clientSecret, setClientSecret ] = useState( null );
+	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
+	const [ errorMessage, setErrorMessage ] = useState( null );
+
+	useEffect( () => {
+		if ( paymentIntentId || hasRequestedIntent ) {
+			return;
+		}
+
+		async function createIntent() {
+			try {
+				const response = await api.createIntent();
+				setPaymentIntentId( response.id );
+				setClientSecret( response.client_secret );
+			} catch ( error ) {
+				setErrorMessage(
+					error.message
+						? error.message
+						: 'There was an error loading the payment gateway.'
+				);
+			}
+		}
+		setHasRequestedIntent( true );
+		createIntent();
+	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage ] );
+
 	if ( ! clientSecret ) {
 		if ( errorMessage ) {
 			return (
@@ -217,28 +240,18 @@ const WCPayUPEFields = ( {
 		return null;
 	}
 
-	return (
-		<Elements stripe={ api.getStripe() } options={ elementOptions }>
-			{ testMode ? testCopy : '' }
-			<PaymentElement
-				options={ elementOptions }
-				onChange={ upeOnChange }
-				className="wcpay-payment-element"
-			/>
-		</Elements>
-	);
-};
+	const options = {
+		clientSecret,
+	};
 
-/**
- * Wraps WCPayFields within the necessary Stripe consumer components.
- *
- * @param {Object} props All props given by WooCommerce Blocks.
- * @return {Object}     The wrapped React element.
- */
-const ConsumableWCPayFields = ( { api, ...props } ) => {
 	return (
-		<Elements stripe={ api.getStripe() }>
-			<WCPayUPEFields api={ api } { ...props } />
+		<Elements stripe={ stripe } options={ options }>
+			<WCPayUPEFields
+				api={ api }
+				paymentIntentId={ paymentIntentId }
+				errorMessage={ errorMessage }
+				{ ...props }
+			/>
 		</Elements>
 	);
 };
