@@ -138,15 +138,11 @@ const WCPayUPEFields = ( {
 							paymentCountry
 						);
 
-						const paymentElement = elements.getElement(
-							PaymentElement
-						);
-
 						return confirmUPEPayment(
 							api,
 							paymentDetails.redirect_url,
 							paymentDetails.payment_needed,
-							paymentElement,
+							elements,
 							billingData,
 							emitResponse
 						);
