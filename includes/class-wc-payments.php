@@ -216,6 +216,12 @@ class WC_Payments {
 			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 		}
 
+		// Load platform checkout save user section if feature is enabled.
+		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
+			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
+			new Platform_Checkout_Save_User();
+		}
+
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
@@ -792,7 +798,7 @@ class WC_Payments {
 	public static function ajax_init_platform_checkout() {
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
-		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
+		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://172.17.0.1:8090';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 		$body                   = [
 			'user_id'              => get_current_user_id(),
