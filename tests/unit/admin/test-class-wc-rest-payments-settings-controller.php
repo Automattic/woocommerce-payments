@@ -109,6 +109,20 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->upe_gateway    = new UPE_Payment_Gateway( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $mock_payment_methods, $mock_rate_limiter );
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->upe_gateway );
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'get_account_data' )
+			->willReturn(
+				[
+					'card_present_eligible' => true,
+					'is_live'               => true,
+					'fees'                  => $mock_payment_methods,
+				]
+			);
 	}
 
 	public function tearDown() {
@@ -495,21 +509,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_get_settings_card_eligible_flag() {
-
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'is_server_connected' )
-			->willReturn( true );
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'get_account_data' )
-			->willReturn(
-				[
-					'card_present_eligible' => true,
-					'is_live'               => true,
-				]
-			);
-
 		$response = $this->upe_controller->get_settings();
 
 		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
