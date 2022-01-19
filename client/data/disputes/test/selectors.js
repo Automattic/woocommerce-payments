@@ -4,7 +4,7 @@
  * Internal dependencies
  */
 import { getResourceId } from 'utils/data';
-import { getDispute, getDisputes } from '../selectors';
+import { getDispute, getDisputes, getDisputesSummary } from '../selectors';
 
 // Sections in initial state are empty.
 const emptyState = {
@@ -55,7 +55,8 @@ describe( 'Disputes selectors', () => {
 	// State is populated.
 	const filledSuccessState = {
 		disputes: {
-			byId: {
+			byId: {},
+			cached: {
 				dp_mock1: mockDisputes[ 0 ],
 				dp_mock2: mockDisputes[ 1 ],
 			},
@@ -75,6 +76,27 @@ describe( 'Disputes selectors', () => {
 		const expected = mockDisputes;
 		expect( getDisputes( filledSuccessState, mockQuery ) ).toStrictEqual(
 			expected
+		);
+	} );
+} );
+
+describe( 'Disputes summary selector', () => {
+	const mockDisputesSummary = { count: 42 };
+
+	// State is populated.
+	const filledSuccessState = {
+		disputes: {
+			summary: mockDisputesSummary,
+		},
+	};
+
+	test( 'Returns empty disputes summary when state is empty', () => {
+		expect( getDisputesSummary( emptyState ) ).toStrictEqual( {} );
+	} );
+
+	test( 'Returns disputes summary from state', () => {
+		expect( getDisputesSummary( filledSuccessState ) ).toStrictEqual(
+			mockDisputesSummary
 		);
 	} );
 } );

@@ -10,8 +10,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { NAMESPACE, STORE_NAME } from '../constants';
-import { updateDispute, updateDisputes } from './actions';
+import { NAMESPACE } from '../constants';
+import {
+	updateDispute,
+	updateDisputes,
+	updateDisputesSummary,
+} from './actions';
 
 /**
  * Retrieve a single dispute from the disputes API.
@@ -47,18 +51,29 @@ export function* getDisputes( query ) {
 	try {
 		const results = yield apiFetch( { path } ) || {};
 		yield updateDisputes( query, results.data );
-
-		// Update resolution state on getDispute selector for each result.
-		for ( const i in results.data ) {
-			yield dispatch( STORE_NAME, 'finishResolution', 'getDispute', [
-				results.data[ i ].id,
-			] );
-		}
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__( 'Error retrieving disputes.', 'woocommerce-payments' )
+		);
+	}
+}
+
+export function* getDisputesSummary() {
+	try {
+		const summary = yield apiFetch( {
+			path: `${ NAMESPACE }/disputes/summary`,
+		} );
+		yield updateDisputesSummary( summary );
+	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving the summary of disputes.',
+				'woocommerce-payments'
+			)
 		);
 	}
 }

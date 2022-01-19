@@ -3,8 +3,10 @@
 /**
  * External dependencies
  */
+import React from 'react';
+import wcpayTracks from 'tracks';
 import { dateI18n } from '@wordpress/date';
-import { __ } from '@wordpress/i18n';
+import { _n, __ } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
@@ -17,7 +19,7 @@ import {
 /**
  * Internal dependencies.
  */
-import { useDisputes } from 'wcpay/data';
+import { useDisputes, useDisputesSummary } from 'data/index';
 import OrderLink from 'components/order-link';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
@@ -29,10 +31,11 @@ import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
+import { DisputesTableHeader } from 'wcpay/types/disputes';
 
 import './style.scss';
 
-const headers = [
+const headers: DisputesTableHeader[] = [
 	{
 		key: 'details',
 		label: '',
@@ -99,8 +102,13 @@ const headers = [
 	},
 ];
 
-export const DisputesList = () => {
+export const DisputesList = (): JSX.Element => {
 	const { disputes, isLoading } = useDisputes( getQuery() );
+
+	const {
+		disputesSummary,
+		isLoading: isSummaryLoading,
+	} = useDisputesSummary();
 
 	const rows = disputes.map( ( dispute ) => {
 		const order = dispute.order
@@ -110,25 +118,22 @@ export const DisputesList = () => {
 			  }
 			: null;
 
-		const clickable = ( children ) => (
-			<ClickableCell href={ getDetailsURL( dispute.id, 'disputes' ) }>
+		const clickable = ( children: React.ReactNode ): JSX.Element => (
+			<ClickableCell
+				href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
+			>
 				{ children }
 			</ClickableCell>
 		);
 
 		const detailsLink = (
-			<DetailsLink id={ dispute.id } parentSegment="disputes" />
+			<DetailsLink id={ dispute.dispute_id } parentSegment="disputes" />
 		);
 
 		const reasonMapping = reasons[ dispute.reason ];
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
 			: formatStringValue( dispute.reason );
-
-		const charge = dispute.charge || {};
-		const source = ( ( charge.payment_method_details || {} ).card || {} )
-			.brand;
-		const customer = charge.billing_details || {};
 
 		const data = {
 			amount: {
@@ -151,57 +156,55 @@ export const DisputesList = () => {
 				display: clickable( reasonDisplay ),
 			},
 			source: {
-				value: source,
+				value: dispute.source,
 				display: clickable(
 					<span
-						className={ `payment-method__brand payment-method__brand--${ source }` }
+						className={ `payment-method__brand payment-method__brand--${ dispute.source }` }
 					/>
 				),
 			},
 			created: {
-				value: dispute.created * 1000,
+				value: dispute.created,
 				display: clickable(
 					dateI18n(
 						'M j, Y',
-						moment( dispute.created * 1000 ).toISOString()
+						moment( dispute.created ).toISOString()
 					)
 				),
 			},
 			dueBy: {
-				value: dispute.evidence_details.due_by * 1000,
+				value: dispute.due_by,
 				display: clickable(
 					dateI18n(
 						'M j, Y / g:iA',
-						moment(
-							dispute.evidence_details.due_by * 1000
-						).toISOString()
+						moment( dispute.due_by ).toISOString()
 					)
 				),
 			},
 			order,
 			customer: {
-				value: customer.name,
-				display: clickable( customer.name ),
+				value: dispute.customer_name,
+				display: clickable( dispute.customer_name ),
 			},
 			email: {
-				value: customer.email,
-				display: clickable( customer.email ),
+				value: dispute.customer_email,
+				display: clickable( dispute.customer_email ),
 			},
 			country: {
-				value: ( customer.address || {} ).country,
-				display: clickable( ( customer.address || {} ).country ),
+				value: dispute.customer_country,
+				display: clickable( dispute.customer_country ),
 			},
-			details: { value: dispute.id, display: detailsLink },
+			details: { value: dispute.dispute_id, display: detailsLink },
 		};
-
-		return headers.map( ( { key } ) => data[ key ] || { display: null } );
+		return headers.map(
+			( { key } ) => data[ key ] || { value: undefined, display: null }
+		);
 	} );
 
 	const downloadable = !! rows.length;
 
 	function onDownload() {
 		const title = __( 'Disputes', 'woocommerce-payments' );
-		const { page, path, ...params } = getQuery();
 
 		const csvColumns = [
 			{
@@ -216,11 +219,13 @@ export const DisputesList = () => {
 				...row.slice( 0, 2 ),
 				{
 					...row[ 2 ],
-					value: disputeStatusMapping[ row[ 2 ].value ].message,
+					value: disputeStatusMapping[ row[ 2 ].value ?? '' ].message,
 				},
 				{
 					...row[ 3 ],
-					value: formatStringValue( row[ 3 ].value ),
+					value: formatStringValue(
+						( row[ 3 ].value ?? '' ).toString()
+					),
 				},
 				...row.slice( 4, 9 ),
 				{
@@ -241,14 +246,31 @@ export const DisputesList = () => {
 		} );
 
 		downloadCSVFile(
-			generateCSVFileName( title, params ),
+			generateCSVFileName( title, getQuery() ),
 			generateCSVDataFromTable( csvColumns, csvRows )
 		);
 
-		window.wcTracks.recordEvent( 'wcpay_disputes_download', {
+		wcpayTracks.recordEvent( 'wcpay_disputes_download', {
 			exported_disputes: csvRows.length,
-			total_disputes: disputes.length,
+			total_disputes: disputesSummary.count,
 		} );
+	}
+
+	let summary;
+	const isDisputesSummaryDataLoaded =
+		disputesSummary.count !== undefined && false === isSummaryLoading;
+	if ( isDisputesSummaryDataLoaded ) {
+		summary = [
+			{
+				label: _n(
+					'dispute',
+					'disputes',
+					disputesSummary.count ?? 0,
+					'woocommerce-payments'
+				),
+				value: `${ disputesSummary.count }`,
+			},
+		];
 	}
 
 	return (
@@ -258,10 +280,11 @@ export const DisputesList = () => {
 				className="wcpay-disputes-list"
 				title={ __( 'Disputes', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
-				rowsPerPage={ 10 }
-				totalRows={ 10 }
+				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
+				totalRows={ disputesSummary.count || 0 }
 				headers={ headers }
 				rows={ rows }
+				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
 				actions={ [

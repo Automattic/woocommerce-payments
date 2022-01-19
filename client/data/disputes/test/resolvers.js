@@ -8,8 +8,12 @@ import { apiFetch, dispatch } from '@wordpress/data-controls';
 /**
  * Internal dependencies
  */
-import { updateDispute, updateDisputes } from '../actions';
-import { getDispute, getDisputes } from '../resolvers';
+import {
+	updateDispute,
+	updateDisputes,
+	updateDisputesSummary,
+} from '../actions';
+import { getDispute, getDisputes, getDisputesSummary } from '../resolvers';
 
 const mockDisputes = [
 	{
@@ -78,18 +82,47 @@ describe( 'getDisputes resolver', () => {
 			expect( generator.next( { data: mockDisputes } ).value ).toEqual(
 				updateDisputes( query, mockDisputes )
 			);
-			mockDisputes.forEach( ( dispute ) => {
-				expect( generator.next().value ).toEqual(
-					dispatch( 'wc/payments', 'finishResolution', 'getDispute', [
-						dispute.id,
-					] )
-				);
-			} );
 		} );
 	} );
 
 	describe( 'on error', () => {
 		test( 'should update state with error on error', () => {
+			expect( generator.throw( errorResponse ).value ).toEqual(
+				dispatch(
+					'core/notices',
+					'createErrorNotice',
+					expect.any( String )
+				)
+			);
+		} );
+	} );
+} );
+
+describe( 'getDisputesSummary resolver', () => {
+	let generator = null;
+	const mockSummary = { count: 42 };
+
+	beforeEach( () => {
+		generator = getDisputesSummary();
+		expect( generator.next().value ).toEqual(
+			apiFetch( { path: '/wc/v3/payments/disputes/summary' } )
+		);
+	} );
+
+	afterEach( () => {
+		expect( generator.next().done ).toStrictEqual( true );
+	} );
+
+	describe( 'on success', () => {
+		test( 'should update state with disputes summary data', () => {
+			expect( generator.next( mockSummary ).value ).toEqual(
+				updateDisputesSummary( mockSummary )
+			);
+		} );
+	} );
+
+	describe( 'on error', () => {
+		test( 'should update state with error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
 				dispatch(
 					'core/notices',
