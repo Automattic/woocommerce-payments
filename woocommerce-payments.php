@@ -27,6 +27,8 @@ define( 'WCPAY_SUBSCRIPTIONS_ABSPATH', __DIR__ . '/vendor/woocommerce/subscripti
 require_once __DIR__ . '/vendor/autoload_packages.php';
 require_once __DIR__ . '/includes/class-wc-payments-features.php';
 
+define( 'SOME_UNUSED_CONSTANT', true );
+
 /**
  * Plugin activation hook.
  */
