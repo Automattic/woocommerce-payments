@@ -3,7 +3,8 @@
  */
 import {
 	Elements,
-	ElementsConsumer,
+	useStripe,
+	useElements,
 	PaymentElement,
 } from '@stripe/react-stripe-js';
 import { useEffect, useState } from '@wordpress/element';
@@ -20,8 +21,6 @@ import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,
-	stripe,
-	elements,
 	billing: { billingData },
 	eventRegistration: {
 		onPaymentProcessing,
@@ -30,6 +29,9 @@ const WCPayUPEFields = ( {
 	emitResponse,
 	shouldSavePayment,
 } ) => {
+	const stripe = useStripe();
+	const elements = useElements();
+
 	const [ paymentIntentId, setPaymentIntentId ] = useState( null );
 	const [ clientSecret, setClientSecret ] = useState( null );
 	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
@@ -216,14 +218,14 @@ const WCPayUPEFields = ( {
 	}
 
 	return (
-		<>
+		<Elements stripe={ api.getStripe() } options={ elementOptions }>
 			{ testMode ? testCopy : '' }
 			<PaymentElement
 				options={ elementOptions }
 				onChange={ upeOnChange }
 				className="wcpay-payment-element"
 			/>
-		</>
+		</Elements>
 	);
 };
 
@@ -233,19 +235,12 @@ const WCPayUPEFields = ( {
  * @param {Object} props All props given by WooCommerce Blocks.
  * @return {Object}     The wrapped React element.
  */
-const ConsumableWCPayFields = ( { api, ...props } ) => (
-	<Elements stripe={ api.getStripe() }>
-		<ElementsConsumer>
-			{ ( { elements, stripe } ) => (
-				<WCPayUPEFields
-					api={ api }
-					elements={ elements }
-					stripe={ stripe }
-					{ ...props }
-				/>
-			) }
-		</ElementsConsumer>
-	</Elements>
-);
+const ConsumableWCPayFields = ( { api, ...props } ) => {
+	return (
+		<Elements stripe={ api.getStripe() }>
+			<WCPayUPEFields api={ api } { ...props } />
+		</Elements>
+	);
+};
 
 export default ConsumableWCPayFields;
