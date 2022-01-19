@@ -109,7 +109,16 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Flag emoji rendering in currency switcher block widget
 * Fix - Error when saved Google Pay payment method does not have billing address name
 * Update - Update Payment Element from beta version to release version.
+* Fix - Ensure order is always associated with corresponding transaction in UPE Checkout.
+* Tweak - Display a more specific error message when a customer attempts to purchase a WCPay Subscription below the minimum transact-able amount.
 * Add - Add handling for payment_failed webhooks.
+* Add - Disputes pagination.
+* Add - Show a warning when attempting to create a subscription product with a price below the minimum amount.
+* Fix - When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown.
+* Fix - When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown.
+* Fix - Don't limit subscription products being created with an interval of more than one year when the WC Subscriptions plugin is active.
+* Fix - Subscriptions not renewing with subscription products that use a free trial period.
+* Fix - "Fees" column values are different in the downloaded CSV file for the transaction table
 
 = 3.5.0 - 2021-12-29 =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
