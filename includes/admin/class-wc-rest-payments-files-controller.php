@@ -69,7 +69,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 			return rest_ensure_response(
 				new WP_Error(
 					$result->get_error_code(),
-					$result->get_error_messages(),
+					$result->get_error_message(),
 					[ 'status' => $error_status_code ]
 				)
 			);
