@@ -12,41 +12,100 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_Order_Service {
 
-	/**
-	 * Updates an order when the payment is complete. Also implements a lock to ensure the order cannot be marked as complete multiple times due to
-	 * possible race conditions when the paid webhook from Stripe is handled during this request.
-	 *
-	 * @param WC_Order $order     The order.
-	 * @param string   $intent_id The ID of the intent associated with this order.
-	 *
-	 * @return void
-	 */
-	public function mark_payment_completed( $order, $intent_id ) {
+	public function update_payment_status( $status, $order, $intent_id, $message = '' ) {
 		// Read the latest order properties from the database to avoid race conditions when the paid webhook was handled during this request.
 		$order->get_data_store()->read( $order );
 
-		if ( $order->has_status( [ 'processing', 'completed' ] ) ) {
+		if ( $this->is_order_locked( $order, $intent_id ) ) {
 			return;
 		}
 
-		if ( self::is_order_locked( $order, $intent_id ) ) {
+		$this->order   = $order;
+		$this->intent  = $this->payments_api_client->get_intent( $intent_id );
+		$this->message = $message;
+
+		// Lock the order.
+		$this->lock_order_payment();
+
+		// Process the order/payment status change.
+		switch ( $status ) {
+			case 'completed':
+				$this->mark_payment_completed();
+				break;
+
+			case 'failed':
+				$this->mark_payment_failed();
+				break;
+		}
+
+		// Unlock the order.
+		$this->unlock_order_payment();
+	}
+
+	/**
+	 * Updates an order when the payment is complete.
+	 *
+	 * @return void
+	 */
+	private function mark_payment_completed() {
+
+		if ( $this->order->has_status( [ 'processing', 'completed' ] )
+			|| 'succeeded' === $this->order->get_meta( '_intention_status' ) ) {
 			return;
 		}
 
-		self::lock_order_payment( $order, $intent_id );
-		$order->payment_complete( $intent_id );
-		self::unlock_order_payment( $order );
+		$this->add_success_note();
+		$this->order->payment_complete( $this->intent->get_id() );
+	}
+
+	private function add_success_note() {
+		$amount         = $this->order->get_total();
+		$payment_needed = $amount > 0;
+
+		if ( $payment_needed ) {
+			$transaction_url = $this->compose_transaction_url();
+			$note            = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+					__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+					[
+						'strong' => '<strong>',
+						'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					]
+				),
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $this->order->get_currency() ] ), $this->order ),
+				$this->intent->get_charge_id()
+			);
+		}
+
+		if ( $note ) {
+			$note .= ' ' . $this->message;
+		}
+
+		if ( $note ) {
+			$this->order->add_order_note( $note );
+		}
 	}
 
 	/**
 	 * Updates an order to failed status, while adding a note with a link to the failed transaction.
 	 *
 	 * @param WC_Order $order   Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
 	 * @param string   $message Optional message to add to the failed note.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_failed( $order, $message = '' ) {
+	private function mark_payment_failed( $order, $intent_id, $message = '' ) {
+		// Read the latest order properties from the database to avoid race conditions when the paid webhook was handled during this request.
+		$order->get_data_store()->read( $order );
+
+		if ( $order->has_status( [ 'failed' ] )
+			|| 'failed' === $order->get_meta( '_intention_status' )
+			|| 'succeeded' === $order->get_meta( '_intention_status' )
+			|| $this->is_order_locked( $order, $intent_id ) ) {
+			return;
+		}
 
 		$transaction_url = self::compose_transaction_url( $order->get_meta( '_charge_id' ) );
 		$note            = sprintf(
@@ -72,6 +131,27 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Composes url for transaction details page.
+	 *
+	 * @return string            Transaction details page url.
+	 */
+	protected function compose_transaction_url() {
+		$charge_id = $this->intent->get_charge_id();
+		if ( empty( $charge_id ) ) {
+			return '';
+		}
+
+		return add_query_arg(
+			[
+				'page' => 'wc-admin',
+				'path' => '/payments/transactions/details',
+				'id'   => $charge_id,
+			],
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
 	 * Check if order is locked for payment processing
 	 *
 	 * @param WC_Order $order  The order that is being paid.
@@ -91,13 +171,11 @@ class WC_Payments_Order_Service {
 	/**
 	 * Lock an order for payment intent processing for 5 minutes.
 	 *
-	 * @param WC_Order $order  The order that is being paid.
-	 * @param string   $intent_id The id of the intent that is being processed.
-	 *
 	 * @return void
 	 */
-	private function lock_order_payment( $order, $intent_id = null ) {
-		$order_id       = $order->get_id();
+	private function lock_order_payment() {
+		$order_id       = $this->order->get_id();
+		$intent_id      = $this->intent->get_id();
 		$transient_name = 'wcpay_processing_intent_' . $order_id;
 
 		set_transient( $transient_name, empty( $intent_id ) ? '-1' : $intent_id, 5 * MINUTE_IN_SECONDS );
@@ -106,12 +184,10 @@ class WC_Payments_Order_Service {
 	/**
 	 * Unlocks an order for processing by payment intents.
 	 *
-	 * @param WC_Order $order The order that is being unlocked.
-	 *
 	 * @return void
 	 */
-	private function unlock_order_payment( $order ) {
-		$order_id = $order->get_id();
+	private function unlock_order_payment() {
+		$order_id = $this->order->get_id();
 		delete_transient( 'wcpay_processing_intent_' . $order_id );
 	}
 }
