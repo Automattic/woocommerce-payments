@@ -881,12 +881,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	/**
 	 * Returns the list of available payment method types for UPE.
+	 * Filtering out those without configured fees, this will prevent a payment method not supported by the Stripe account's country from being returned.
 	 * See https://stripe.com/docs/stripe-js/payment-element#web-create-payment-intent for a complete list.
 	 *
 	 * @return string[]
 	 */
 	public function get_upe_available_payment_methods() {
 		$methods = parent::get_upe_available_payment_methods();
+		$fees    = $this->account->get_fees();
 
 		$methods[] = 'bancontact';
 		$methods[] = 'giropay';
@@ -895,12 +897,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$methods[] = 'sepa_debit';
 		$methods[] = 'p24';
 
-		return array_values(
+		$methods = array_values(
 			apply_filters(
 				'wcpay_upe_available_payment_methods',
 				$methods
 			)
 		);
+
+		return array_intersect( $methods, array_keys( $fees ) );
 	}
 
 	/**
