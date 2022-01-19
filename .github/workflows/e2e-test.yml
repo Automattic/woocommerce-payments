@@ -1,16 +1,7 @@
 name: WCPay E2E Tests
 
 on:
-  schedule:
-    - cron: '0 */6 * * *'
-  pull_request:
-    branches:
-      - fix/e2e-download-wcs-release
-  push:
-    branches:
-      - develop
-      - trunk
-  workflow_dispatch:
+  pull_request
 
 env:
   E2E_GH_TOKEN:             ${{ secrets.E2E_GH_TOKEN }}
