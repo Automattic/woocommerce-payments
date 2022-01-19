@@ -116,6 +116,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Show a warning when attempting to create a subscription product with a price below the minimum amount.
 * Fix - When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown.
 * Fix - When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown.
+* Fix - Don't limit subscription products being created with an interval of more than one year when the WC Subscriptions plugin is active.
+* Fix - Subscriptions not renewing with subscription products that use a free trial period.
 
 = 3.5.0 - 2021-12-29 =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
