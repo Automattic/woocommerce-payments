@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -97,5 +97,20 @@ describe( 'Overview page', () => {
 				'.wcpay-connection-success.components-notice.is-success'
 			)
 		).toBeVisible();
+	} );
+
+	it( 'Displays the view loan error message for query param wcpay-loan-offer-error=1', () => {
+		getQuery.mockReturnValue( { 'wcpay-loan-offer-error': '1' } );
+		getTasks.mockReturnValue( [] );
+
+		render( <OverviewPage /> );
+
+		const loanOfferNotices = screen.queryAllByText(
+			'There was a problem redirecting you to the loan offer. Please check that it is not expired and try again.'
+		);
+
+		loanOfferNotices.forEach( ( notice ) =>
+			expect( notice ).toBeVisible()
+		);
 	} );
 } );

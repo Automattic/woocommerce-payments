@@ -362,7 +362,12 @@ class WC_Payments_Account {
 
 			$this->redirect_to( $capital_link['url'] );
 		} catch ( API_Exception $e ) {
-			$this->redirect_to( $return_url );
+			$error_url = add_query_arg(
+				[ 'wcpay-loan-offer-error' => '1' ],
+				self::get_overview_page_url()
+			);
+
+			$this->redirect_to( $error_url );
 		}
 	}
 

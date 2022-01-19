@@ -114,7 +114,7 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 			)
 			->willThrowException( new API_Exception( 'Error: This account has no offer of financing from Capital.', 'invalid_request_error', 400 ) );
 
-		$this->wcpay_account->expects( $this->once() )->method( 'redirect_to' )->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
+		$this->wcpay_account->expects( $this->once() )->method( 'redirect_to' )->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Foverview&wcpay-loan-offer-error=1' );
 
 		$this->wcpay_account->maybe_redirect_to_capital_offer();
 	}
