@@ -21,7 +21,7 @@ import {
 } from '../../../utils/payments';
 
 // Unskip this after debugging failing shopper tests.
-describe.skip( 'Shopper > Checkout > Failures with various cards', () => {
+describe( 'Shopper > Checkout > Failures with various cards', () => {
 	beforeAll( async () => {
 		await createSimpleProduct();
 		await setupProductCheckout(
