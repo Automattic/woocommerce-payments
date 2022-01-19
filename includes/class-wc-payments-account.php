@@ -350,12 +350,12 @@ class WC_Payments_Account {
 		// This is an automatic redirection page, used to authenticate users that come from the offer email. For this reason
 		// we're not using a nonce. The GET parameter accessed here is just to indicate that we should process the redirection.
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		if ( ! isset( $_GET['wcpay-view-capital-offer'] ) ) {
+		if ( ! isset( $_GET['wcpay-loan-offer'] ) ) {
 			return;
 		}
 
 		$return_url  = $this->get_overview_page_url();
-		$refresh_url = add_query_arg( [ 'wcpay-view-capital-offer' => '' ], admin_url( 'admin.php' ) );
+		$refresh_url = add_query_arg( [ 'wcpay-loan-offer' => '' ], admin_url( 'admin.php' ) );
 
 		try {
 			$capital_link = $this->payments_api_client->get_capital_link( 'capital_financing_offer', $return_url, $refresh_url );

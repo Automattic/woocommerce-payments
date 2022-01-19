@@ -43,7 +43,7 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 
 		// Set the request as if the user is requesting to view a capital offer.
 		add_filter( 'wp_doing_ajax', '__return_false' );
-		$_GET['wcpay-view-capital-offer'] = '';
+		$_GET['wcpay-loan-offer'] = '';
 
 		$this->mock_api_client = $this->createMock( 'WC_Payments_API_Client' );
 
@@ -57,7 +57,7 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 	public function tearDown() {
 		wp_set_current_user( $this->previous_user_id );
 
-		unset( $_GET['wcpay-view-capital-offer'] );
+		unset( $_GET['wcpay-loan-offer'] );
 
 		remove_filter( 'wp_doing_ajax', '__return_true' );
 		remove_filter( 'wp_doing_ajax', '__return_false' );
@@ -82,7 +82,7 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 	}
 
 	public function test_maybe_redirect_to_capital_offer_skips_regular_requests() {
-		unset( $_GET['wcpay-view-capital-offer'] );
+		unset( $_GET['wcpay-loan-offer'] );
 
 		$this->mock_api_client->expects( $this->never() )->method( 'get_capital_link' );
 
@@ -95,7 +95,7 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 			->with(
 				'capital_financing_offer',
 				'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview',
-				'http://example.org/wp-admin/admin.php?wcpay-view-capital-offer'
+				'http://example.org/wp-admin/admin.php?wcpay-loan-offer'
 			)
 			->willReturn( [ 'url' => 'https://capital.url' ] );
 
@@ -110,7 +110,7 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 			->with(
 				'capital_financing_offer',
 				'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview',
-				'http://example.org/wp-admin/admin.php?wcpay-view-capital-offer'
+				'http://example.org/wp-admin/admin.php?wcpay-loan-offer'
 			)
 			->willThrowException( new API_Exception( 'Error: This account has no offer of financing from Capital.', 'invalid_request_error', 400 ) );
 
