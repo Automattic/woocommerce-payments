@@ -200,64 +200,6 @@ describe( 'Disputes reducer tests', () => {
 					},
 				},
 			},
-			summary: {
-				count: 1,
-			},
-		};
-
-		expect( reduced ).toStrictEqual( after );
-	} );
-
-	test( 'New disputes summary reduced correctly', () => {
-		const reduced = reducer( undefined, {
-			type: types.SET_DISPUTES_SUMMARY,
-			data: {
-				count: 42,
-			},
-		} );
-
-		const after = {
-			byId: {},
-			queries: {},
-			cached: {},
-			summary: {
-				count: 42,
-			},
-		};
-
-		expect( reduced ).toStrictEqual( after );
-	} );
-
-	test( 'Disputes summary updated correctly', () => {
-		const before = {
-			byId: {
-				dp_mock1: mockDisputes[ 0 ],
-			},
-			cached: {
-				dp_mock1: mockCachedDisputes[ 0 ],
-			},
-			queries: {
-				earlierQuery: {
-					data: [ 'dp_mock1' ],
-				},
-			},
-			summary: {
-				count: 1,
-			},
-		};
-
-		const reduced = reducer( before, {
-			type: types.SET_DISPUTES_SUMMARY,
-			data: {
-				count: 42,
-			},
-		} );
-
-		const after = {
-			...before,
-			summary: {
-				count: 42,
-			},
 		};
 
 		expect( reduced ).toStrictEqual( after );
