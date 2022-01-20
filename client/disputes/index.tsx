@@ -38,13 +38,13 @@ import { getPostUrl } from 'wcpay/utils';
 
 import './style.scss';
 
-const getHeaders = ( sortByAmount: boolean ): DisputesTableHeader[] => [
+const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
 		key: 'details',
 		label: '',
 		required: true,
 		cellClassName: classNames( 'info-button', {
-			'is-sorted': sortByAmount,
+			'is-sorted': sortColumn === 'amount',
 		} ),
 		isLeftAligned: true,
 	},
@@ -123,8 +123,7 @@ export const DisputesList = (): JSX.Element => {
 		getQuery()
 	);
 
-	const sortByAmount = 'amount' === getQuery().orderby;
-	const headers = getHeaders( sortByAmount );
+	const headers = getHeaders( getQuery().orderby );
 
 	const rows = disputes.map( ( dispute ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
