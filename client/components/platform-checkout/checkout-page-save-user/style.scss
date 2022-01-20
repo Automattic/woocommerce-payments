@@ -1,0 +1,39 @@
+.platform-checkout-save-new-user-container {
+	h3 {
+		margin-bottom: 16px;
+		font-weight: 400;
+		font-size: 24px;
+	}
+
+	.save-details-form {
+		display: flex;
+		flex-direction: column;
+		font-size: 16px;
+		line-height: 26px;
+		font-weight: 400;
+		background-color: #f8f8f8;
+		padding: 16px;
+		gap: 16px;
+
+		.about-platform-checkout {
+			color: #6d6d6d;
+		}
+
+		.additional-information {
+			display: flex;
+			flex-direction: row;
+			align-items: flex-start;
+			gap: 8px;
+			color: #757575;
+
+			img {
+				margin-top: 5px;
+			}
+		}
+
+		.tos {
+			font-size: 12px;
+			line-height: 16px;
+		}
+	}
+}
