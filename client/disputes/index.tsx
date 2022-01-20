@@ -34,7 +34,6 @@ import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { DisputesTableHeader } from 'wcpay/types/disputes';
-import { getPostUrl } from 'wcpay/utils';
 
 import './style.scss';
 
@@ -123,7 +122,6 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 ];
 
 export const DisputesList = (): JSX.Element => {
-	/* eslint-disable */
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
 	const { disputesSummary, isLoading: isSummaryLoading } = useDisputesSummary(
@@ -135,23 +133,20 @@ export const DisputesList = (): JSX.Element => {
 	const rows = disputes.map( ( dispute ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell
-				href={ getDetailsURL( dispute[ 'dispute_id' ], 'disputes' ) }
+				href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
 			>
 				{ children }
 			</ClickableCell>
 		);
 
 		const detailsLink = (
-			<DetailsLink
-				id={ dispute[ 'dispute_id' ] }
-				parentSegment="disputes"
-			/>
+			<DetailsLink id={ dispute.dispute_id } parentSegment="disputes" />
 		);
 
-		const reasonMapping = reasons[ dispute[ 'reason' ] ];
+		const reasonMapping = reasons[ dispute.reason ];
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
-			: formatStringValue( dispute[ 'reason' ] );
+			: formatStringValue( dispute.reason );
 
 		const data: {
 			[ key: string ]: {
@@ -160,81 +155,70 @@ export const DisputesList = (): JSX.Element => {
 			};
 		} = {
 			amount: {
-				value: dispute[ 'amount' ] / 100,
+				value: dispute.amount / 100,
 				display: clickable(
-					formatExplicitCurrency(
-						dispute[ 'amount' ],
-						dispute[ 'currency' ]
-					)
+					formatExplicitCurrency( dispute.amount, dispute.currency )
 				),
 			},
 			status: {
-				value: dispute[ 'status' ],
+				value: dispute.status,
 				display: clickable(
-					<DisputeStatusChip status={ dispute[ 'status' ] } />
+					<DisputeStatusChip status={ dispute.status } />
 				),
 			},
 			reason: {
-				value: dispute[ 'reason' ],
+				value: dispute.reason,
 				display: clickable( reasonDisplay ),
 			},
 			source: {
-				value: dispute[ 'source' ] ?? '',
+				value: dispute.source ?? '',
 				display: clickable(
 					<span
 						className={ `payment-method__brand payment-method__brand--${
-							dispute[ 'source' ] ?? ''
+							dispute.source ?? ''
 						}` }
 					/>
 				),
 			},
 			created: {
-				value: dispute[ 'created' ],
+				value: dispute.created,
 				display: clickable(
 					dateI18n(
 						'M j, Y',
-						moment( dispute[ 'created' ] ).toISOString()
+						moment( dispute.created ).toISOString()
 					)
 				),
 			},
 			dueBy: {
-				value: dispute[ 'due_by' ],
+				value: dispute.due_by,
 				display: clickable(
 					dateI18n(
 						'M j, Y / g:iA',
-						moment( dispute[ 'due_by' ] ).toISOString()
+						moment( dispute.due_by ).toISOString()
 					)
 				),
 			},
 			order: {
-				value: dispute[ 'order_number' ] ?? '',
-				display: (
-					<OrderLink
-						order={ {
-							number: dispute[ 'order_number' ],
-							url: getPostUrl( {
-								post: dispute[ 'order_number' ],
-								action: 'edit',
-							} ),
-						} }
-					/>
-				),
+				value: dispute.order_number ?? '',
+				display: <OrderLink order={ dispute.order } />,
 			},
 			customerName: {
-				value: dispute[ 'customer_name' ] ?? '',
-				display: clickable( dispute[ 'customer_name' ] ),
+				value: dispute.customer_name ?? '',
+				display: clickable( dispute.customer_name ),
 			},
 			customerEmail: {
-				value: dispute[ 'customer_email' ] ?? '',
-				display: clickable( dispute[ 'customer_email' ] ),
+				value: dispute.customer_email ?? '',
+				display: clickable( dispute.customer_email ),
 			},
 			customerCountry: {
-				value: dispute[ 'customer_country' ] ?? '',
-				display: clickable( dispute[ 'customer_country' ] ),
+				value: dispute.customer_country ?? '',
+				display: clickable( dispute.customer_country ),
 			},
-			details: { value: dispute[ 'dispute_id' ], display: detailsLink },
+			details: { value: dispute.dispute_id, display: detailsLink },
 		};
-		return headers.map( ( { key } ) => data[ key ] || { display: null } );
+		return headers.map(
+			( { key } ) => data[ key ] || { value: undefined, display: null }
+		);
 	} );
 
 	const downloadable = !! rows.length;
@@ -259,10 +243,9 @@ export const DisputesList = (): JSX.Element => {
 				},
 				{
 					...row[ 3 ],
-					value:
-						typeof row[ 3 ].value === 'string'
-							? formatStringValue( row[ 3 ].value )
-							: '',
+					value: formatStringValue(
+						( row[ 3 ].value ?? '' ).toString()
+					),
 				},
 				...row.slice( 4, 9 ),
 				{

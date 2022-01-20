@@ -6,7 +6,7 @@
 import { __ } from '@wordpress/i18n';
 
 const status: {
-	[ k: string ]: {
+	[ key: string ]: {
 		type: string;
 		message: string;
 	};
