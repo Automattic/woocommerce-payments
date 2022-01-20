@@ -214,9 +214,16 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	cd "$E2E_ROOT"/deps
 	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | jq -r '.tag_name')
 	WCS_LATEST_ASSET_ID=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | jq -r '.assets[0].id')
-	curl -L -H "Authorization: token $E2E_GH_TOKEN" -H 'Accept: application/octet-stream' "https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/assets/$WCS_LATEST_ASSET_ID" --output "woocommerce-subscriptions-$LATEST_RELEASE.zip"
+	curl -L \
+		-H "Authorization: token $E2E_GH_TOKEN" \
+		-H 'Accept: application/octet-stream' \
+		--output "woocommerce-subscriptions-$LATEST_RELEASE.zip" \
+		"https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/assets/$WCS_LATEST_ASSET_ID"
 
-	unzip -qq woocommerce-subscriptions-$LATEST_RELEASE.zip
+	pwd
+	ls -l
+
+	unzip woocommerce-subscriptions-$LATEST_RELEASE.zip
 
 	echo "Moving the unzipped plugin files. This may require your admin password"
 	sudo mv woocommerce-subscriptions/* "$E2E_ROOT"/deps/woocommerce-subscriptions
