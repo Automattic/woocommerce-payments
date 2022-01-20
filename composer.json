@@ -75,7 +75,10 @@
             "Fix",
             "Update",
             "Dev"
-          ]
+          ],
+          "formatter": {
+            "filename": "bin/wcpay-changelog-formatter.php"
+          }
       }
     },
     "autoload": {
