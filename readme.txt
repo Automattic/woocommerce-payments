@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.7.0 - 2022-xx-xx =
+* Add - Disputes list sorting
+
 = 3.6.0 - 2022-xx-xx =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
 * Fix - UPE validation error visibility on checkout page.
