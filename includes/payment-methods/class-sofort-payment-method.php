@@ -9,7 +9,6 @@ namespace WCPay\Payment_Methods;
 
 use WP_User;
 use WC_Payments_Token_Service;
-use WC_Payment_Token_WCPay_SEPA;
 
 /**
  * Sofort Payment Method class extending UPE base class
@@ -26,5 +25,6 @@ class Sofort_Payment_Method extends UPE_Payment_Method {
 		$this->stripe_id   = 'sofort';
 		$this->title       = 'Sofort';
 		$this->is_reusable = false;
+		$this->currencies  = [ 'EUR' ];
 	}
 }

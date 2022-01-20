@@ -22,6 +22,18 @@
 			display: none;
 		}
 	}
+
+	&__preview {
+		border: 1px dashed #ddd;
+		box-sizing: border-box;
+		border-radius: 3px;
+		background-color: #f0f0f0;
+		padding: 16px;
+	}
+
+	&__preview-help-text {
+		font-style: italic;
+	}
 }
 
 .components-radio-control__input[type='radio']:checked::before {

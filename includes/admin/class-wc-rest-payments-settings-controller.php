@@ -12,6 +12,19 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
+	const ACCOUNT_FIELDS_TO_UPDATE = [
+		'account_statement_descriptor',
+		'account_business_name',
+		'account_business_url',
+		'account_business_support_address',
+		'account_business_support_email',
+		'account_business_support_phone',
+		'account_branding_logo',
+		'account_branding_icon',
+		'account_branding_primary_color',
+		'account_branding_secondary_color',
+	];
+
 	/**
 	 * Endpoint path.
 	 *
@@ -80,8 +93,23 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'is_saved_cards_enabled'            => [
+						'description'       => __( 'If WooCommerce Payments "Saved cards" should be enabled.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
 					'is_test_mode_enabled'              => [
 						'description'       => __( 'WooCommerce Payments test mode setting.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'is_multi_currency_enabled'         => [
+						'description'       => __( 'WooCommerce Payments Multi-Currency feature flag setting.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'is_wcpay_subscription_enabled'     => [
+						'description'       => __( 'WooCommerce Payments Subscriptions feature flag setting.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
@@ -89,6 +117,43 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'description'       => __( 'WooCommerce Payments bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'validate_callback' => [ $this, 'validate_statement_descriptor' ],
+					],
+					'account_business_name'             => [
+						'description' => __( 'The customer-facing business name.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_business_url'              => [
+						'description' => __( 'The business’s publicly available website.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_business_support_address'  => [
+						'description'       => __( 'A publicly available mailing address for sending support issues to.', 'woocommerce-payments' ),
+						'type'              => 'object',
+						'validate_callback' => [ $this, 'validate_business_support_address' ],
+					],
+					'account_business_support_email'    => [
+						'description' => __( 'A publicly available email address for sending support issues to.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_business_support_phone'    => [
+						'description' => __( 'A publicly available phone number to call with support issues.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_branding_logo'             => [
+						'description' => __( 'A logo id for the account that will be used in Checkout', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_branding_icon'             => [
+						'description' => __( 'An icon for the account.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_branding_primary_color'    => [
+						'description' => __( 'A CSS hex color value representing the primary branding color for this account.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'account_branding_secondary_color'  => [
+						'description' => __( 'A CSS hex color value representing the secondary branding color for this account.', 'woocommerce-payments' ),
+						'type'        => 'string',
 					],
 					'is_payment_request_enabled'        => [
 						'description'       => __( 'If WooCommerce Payments express checkouts should be enabled.', 'woocommerce-payments' ),
@@ -166,6 +231,32 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Validate the business support address.
+	 *
+	 * @param array           $value The value being validated.
+	 * @param WP_REST_Request $request The request made.
+	 * @param string          $param The parameter name, used in error messages.
+	 * @return true|WP_Error
+	 */
+	public function validate_business_support_address( array $value, WP_REST_Request $request, string $param ) {
+		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
+		if ( true !== $string_validation_result ) {
+			return $string_validation_result;
+		}
+
+		foreach ( $value as $field => $field_value ) {
+			if ( ! in_array( $field, [ 'city', 'country', 'line1', 'line2', 'postal_code', 'state' ], true ) ) {
+				return new WP_Error(
+					'rest_invalid_pattern',
+					'Invalid address format!'
+				);
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Retrieve settings.
 	 *
 	 * @return WP_REST_Response
@@ -175,17 +266,33 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			[
 				'enabled_payment_method_ids'        => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
 				'available_payment_method_ids'      => $this->wcpay_gateway->get_upe_available_payment_methods(),
+				'payment_method_statuses'           => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
 				'is_wcpay_enabled'                  => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'         => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
-				'is_test_mode_enabled'              => 'yes' === $this->wcpay_gateway->is_in_test_mode(),
+				'is_test_mode_enabled'              => $this->wcpay_gateway->is_in_test_mode(),
 				'is_dev_mode_enabled'               => $this->wcpay_gateway->is_in_dev_mode(),
+				'is_multi_currency_enabled'         => WC_Payments_Features::is_customer_multi_currency_enabled(),
+				'is_wcpay_subscriptions_enabled'    => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
+				'is_wcpay_subscriptions_eligible'   => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
+				'is_subscriptions_plugin_active'    => $this->wcpay_gateway->is_subscriptions_plugin_active(),
 				'account_statement_descriptor'      => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
+				'account_business_name'             => $this->wcpay_gateway->get_option( 'account_business_name' ),
+				'account_business_url'              => $this->wcpay_gateway->get_option( 'account_business_url' ),
+				'account_business_support_address'  => $this->wcpay_gateway->get_option( 'account_business_support_address' ),
+				'account_business_support_email'    => $this->wcpay_gateway->get_option( 'account_business_support_email' ),
+				'account_business_support_phone'    => $this->wcpay_gateway->get_option( 'account_business_support_phone' ),
+				'account_branding_logo'             => $this->wcpay_gateway->get_option( 'account_branding_logo' ),
+				'account_branding_icon'             => $this->wcpay_gateway->get_option( 'account_branding_icon' ),
+				'account_branding_primary_color'    => $this->wcpay_gateway->get_option( 'account_branding_primary_color' ),
+				'account_branding_secondary_color'  => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
 				'is_payment_request_enabled'        => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
 				'is_debug_log_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
 				'payment_request_enabled_locations' => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
 				'payment_request_button_size'       => $this->wcpay_gateway->get_option( 'payment_request_button_size' ),
 				'payment_request_button_type'       => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
 				'payment_request_button_theme'      => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
+				'is_saved_cards_enabled'            => $this->wcpay_gateway->is_saved_cards_enabled(),
+				'is_card_present_eligible'          => $this->wcpay_gateway->is_card_present_eligible(),
 			]
 		);
 	}
@@ -201,10 +308,13 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_manual_capture_enabled( $request );
 		$this->update_is_test_mode_enabled( $request );
 		$this->update_is_debug_log_enabled( $request );
-		$this->update_account_statement_descriptor( $request );
+		$this->update_is_multi_currency_enabled( $request );
+		$this->update_is_wcpay_subscriptions_enabled( $request );
 		$this->update_is_payment_request_enabled( $request );
 		$this->update_payment_request_enabled_locations( $request );
 		$this->update_payment_request_appearance( $request );
+		$this->update_is_saved_cards_enabled( $request );
+		$this->update_account( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -251,6 +361,35 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		);
 
 		$this->wcpay_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
+		if ( $payment_method_ids_to_enable ) {
+			$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
+		}
+	}
+
+	/**
+	 * Requests the capabilities of unrequested payment methods
+	 *
+	 * @param   array $payment_method_ids_to_enable  Enabled Payment method ID's.
+	 *
+	 * @return  void
+	 */
+	private function request_unrequested_payment_methods( $payment_method_ids_to_enable ) {
+		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();
+		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();
+		$cache_needs_refresh     = false;
+		foreach ( $payment_method_ids_to_enable as $payment_method_id_to_enable ) {
+			$stripe_key = $capability_key_map[ $payment_method_id_to_enable ] ?? null;
+			if ( array_key_exists( $stripe_key, $payment_method_statuses ) ) {
+				if ( 'unrequested' === $payment_method_statuses[ $stripe_key ]['status'] ) {
+					$request_result      = $this->api_client->request_capability( $stripe_key, true );
+					$cache_needs_refresh = $cache_needs_refresh || 'unrequested' !== $request_result['status'];
+				}
+			}
+		}
+
+		if ( $cache_needs_refresh ) {
+			$this->wcpay_gateway->refresh_cached_account_data();
+		}
 	}
 
 	/**
@@ -309,18 +448,47 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates WooCommerce Payments account statement descriptor.
+	 * Updates customer Multi-Currency feature status.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
-	private function update_account_statement_descriptor( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'account_statement_descriptor' ) ) {
+	private function update_is_multi_currency_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_multi_currency_enabled' ) ) {
 			return;
 		}
 
-		$account_statement_descriptor = $request->get_param( 'account_statement_descriptor' );
+		$is_multi_currency_enabled = $request->get_param( 'is_multi_currency_enabled' );
 
-		$this->wcpay_gateway->update_option( 'account_statement_descriptor', $account_statement_descriptor );
+		update_option( '_wcpay_feature_customer_multi_currency', $is_multi_currency_enabled ? '1' : '0' );
+	}
+
+	/**
+	 * Updates the WCPay Subscriptions feature status.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_wcpay_subscriptions_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_wcpay_subscriptions_enabled' ) ) {
+			return;
+		}
+
+		$is_wcpay_subscriptions_enabled = $request->get_param( 'is_wcpay_subscriptions_enabled' );
+
+		update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, $is_wcpay_subscriptions_enabled ? '1' : '0' );
+	}
+
+	/**
+	 * Updates WooCommerce Payments account fields
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_account( WP_REST_Request $request ) {
+		$updated_fields_callback = function ( $value, string $key ) {
+			return in_array( $key, static::ACCOUNT_FIELDS_TO_UPDATE, true ) &&
+					$this->wcpay_gateway->get_option( $key ) !== $value;
+		};
+		$updated_fields          = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
+		$this->wcpay_gateway->update_account_settings( $updated_fields );
 	}
 
 	/**
@@ -372,5 +540,20 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			$value = $request->get_param( $request_key );
 			$this->wcpay_gateway->update_option( $attribute, $value );
 		}
+	}
+
+	/**
+	 * Updates WooCommerce Payments "saved cards" feature.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_saved_cards_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_saved_cards_enabled' ) ) {
+			return;
+		}
+
+		$is_saved_cards_enabled = $request->get_param( 'is_saved_cards_enabled' );
+
+		$this->wcpay_gateway->update_option( 'saved_cards', $is_saved_cards_enabled ? 'yes' : 'no' );
 	}
 }

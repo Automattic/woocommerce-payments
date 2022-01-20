@@ -27,12 +27,84 @@ export const getAvailablePaymentMethodIds = ( state ) => {
 	return getSettings( state ).available_payment_method_ids || EMPTY_ARR;
 };
 
+export const getPaymentMethodStatuses = ( state ) => {
+	return getSettings( state ).payment_method_statuses || EMPTY_ARR;
+};
+
 export const isSavingSettings = ( state ) => {
 	return getSettingsState( state ).isSaving || false;
 };
 
 export const getAccountStatementDescriptor = ( state ) => {
 	return getSettings( state ).account_statement_descriptor || '';
+};
+
+export const getAccountBusinessName = ( state ) => {
+	return getSettings( state ).account_business_name || '';
+};
+
+export const getAccountBusinessURL = ( state ) => {
+	return getSettings( state ).account_business_url || '';
+};
+
+export const getAccountBusinessSupportAddress = ( state ) => {
+	return getSettings( state ).account_business_support_address || '';
+};
+
+export const getAccountBusinessSupportAddressCountry = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
+	return getSettings( state ).account_business_support_address.country || '';
+};
+
+export const getAccountBusinessSupportAddressLine1 = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
+	return getSettings( state ).account_business_support_address.line1 || '';
+};
+
+export const getAccountBusinessSupportAddressLine2 = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
+	return getSettings( state ).account_business_support_address.line2 || '';
+};
+
+export const getAccountBusinessSupportAddressCity = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
+	return getSettings( state ).account_business_support_address.city || '';
+};
+
+export const getAccountBusinessSupportAddressPostalCode = ( state ) => {
+	if ( ! getSettings( state ).account_business_support_address ) return '';
+
+	return (
+		getSettings( state ).account_business_support_address.postal_code || ''
+	);
+};
+
+export const getAccountBusinessSupportEmail = ( state ) => {
+	return getSettings( state ).account_business_support_email || '';
+};
+
+export const getAccountBusinessSupportPhone = ( state ) => {
+	return getSettings( state ).account_business_support_phone || '';
+};
+
+export const getAccountBrandingLogo = ( state ) => {
+	return getSettings( state ).account_branding_logo || '';
+};
+
+export const getAccountBrandingIcon = ( state ) => {
+	return getSettings( state ).account_branding_icon || '';
+};
+
+export const getAccountBrandingPrimaryColor = ( state ) => {
+	return getSettings( state ).account_branding_primary_color || '';
+};
+
+export const getAccountBrandingSecondaryColor = ( state ) => {
+	return getSettings( state ).account_branding_secondary_color || '';
 };
 
 export const getIsManualCaptureEnabled = ( state ) => {
@@ -55,6 +127,10 @@ export const getIsDebugLogEnabled = ( state ) => {
 	return getSettings( state ).is_debug_log_enabled || false;
 };
 
+export const getIsMultiCurrencyEnabled = ( state ) => {
+	return getSettings( state ).is_multi_currency_enabled || false;
+};
+
 export const getPaymentRequestLocations = ( state ) => {
 	return getSettings( state ).payment_request_enabled_locations || EMPTY_ARR;
 };
@@ -71,6 +147,26 @@ export const getPaymentRequestButtonTheme = ( state ) => {
 	return getSettings( state ).payment_request_button_theme || '';
 };
 
+export const getIsSavedCardsEnabled = ( state ) => {
+	return getSettings( state ).is_saved_cards_enabled || false;
+};
+
 export const getSavingError = ( state ) => {
 	return getSettingsState( state ).savingError;
+};
+
+export const getIsCardPresentEligible = ( state ) => {
+	return getSettings( state ).is_card_present_eligible || false;
+};
+
+export const getIsWCPaySubscriptionsEnabled = ( state ) => {
+	return getSettings( state ).is_wcpay_subscriptions_enabled || false;
+};
+
+export const getIsWCPaySubscriptionsEligible = ( state ) => {
+	return getSettings( state ).is_wcpay_subscriptions_eligible || false;
+};
+
+export const getIsSubscriptionsPluginActive = ( state ) => {
+	return getSettings( state ).is_subscriptions_plugin_active || false;
 };

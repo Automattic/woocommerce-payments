@@ -12,6 +12,11 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "noImplicitAny": true,
+    "paths": {
+      "wcpay/*": [
+        "./*"
+      ]
+    },
     "types": [
       "node", 
       "jest",

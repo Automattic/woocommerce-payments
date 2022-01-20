@@ -8,16 +8,16 @@ import { find, trimEnd, endsWith } from 'lodash';
 const currencyData = getCurrencyData();
 
 const currencyNames = {
-	aud: 'Australian dollar',
-	cad: 'Canadian dollar',
-	chf: 'Swiss franc',
-	dkk: 'Danish krone',
-	eur: 'Euro',
-	gbp: 'Pound sterling',
-	nok: 'Norwegian krone',
-	nzd: 'New Zealand dollar',
-	sek: 'Swedish krona',
-	usd: 'United States (US) dollar',
+	aud: __( 'Australian dollar', 'woocommerce-payments' ),
+	cad: __( 'Canadian dollar', 'woocommerce-payments' ),
+	chf: __( 'Swiss franc', 'woocommerce-payments' ),
+	dkk: __( 'Danish krone', 'woocommerce-payments' ),
+	eur: __( 'Euro', 'woocommerce-payments' ),
+	gbp: __( 'Pound sterling', 'woocommerce-payments' ),
+	nok: __( 'Norwegian krone', 'woocommerce-payments' ),
+	nzd: __( 'New Zealand dollar', 'woocommerce-payments' ),
+	sek: __( 'Swedish krona', 'woocommerce-payments' ),
+	usd: __( 'United States (US) dollar', 'woocommerce-payments' ),
 };
 
 /**
@@ -27,24 +27,36 @@ const currencyNames = {
  *
  * @return {string} formatted and translated currency name
  */
-export const formatCurrencyName = ( currencyCode ) => {
-	const currencyName =
-		currencyNames[ currencyCode.toLowerCase() ] ||
-		currencyCode.toUpperCase();
-	// eslint-disable-next-line @wordpress/i18n-no-variables
-	return __( currencyName, 'woocommerce-payments' );
-};
+export const formatCurrencyName = ( currencyCode ) =>
+	currencyNames[ currencyCode.toLowerCase() ] || currencyCode.toUpperCase();
 
 /**
  * Gets wc-admin Currency for the given currency code
  *
  * @param {string} currencyCode Currency code
+ * @param {string} baseCurrencyCode Base Currency code to override decimal and thousand separators
  *
  * @return {Currency|null} Currency object
  */
-export const getCurrency = ( currencyCode ) => {
+export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
+		if (
+			null !== baseCurrencyCode &&
+			baseCurrencyCode.toUpperCase() !== currencyCode.toUpperCase()
+		) {
+			const baseCurrency = find( currencyData, {
+				code: baseCurrencyCode.toUpperCase(),
+			} );
+			if ( baseCurrency ) {
+				currency.decimalSeparator = baseCurrency.decimalSeparator;
+				currency.thousandSeparator = baseCurrency.thousandSeparator;
+				currency.symbolPosition = baseCurrency.symbolPosition;
+				if ( 0 !== currency.precision ) {
+					currency.precision = baseCurrency.precision;
+				}
+			}
+		}
 		return new Currency( currency );
 	}
 	return null;
@@ -68,17 +80,22 @@ const isZeroDecimalCurrency = ( currencyCode ) => {
  *
  * @param {number} amount       Amount
  * @param {string} currencyCode Currency code
+ * @param {string} baseCurrencyCode Base Currency code to override decimal and thousand separators
  *
  * @return {string} formatted currency representation
  */
-export const formatCurrency = ( amount, currencyCode = 'USD' ) => {
+export const formatCurrency = (
+	amount,
+	currencyCode = 'USD',
+	baseCurrencyCode = null
+) => {
 	// Normalize amount with respect to zer decimal currencies and provided data formats
 	const isZeroDecimal = isZeroDecimalCurrency( currencyCode );
 	if ( ! isZeroDecimal ) {
 		amount /= 100;
 	}
 
-	const currency = getCurrency( currencyCode );
+	const currency = getCurrency( currencyCode, baseCurrencyCode );
 	if ( null === currency ) {
 		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
 	}
@@ -90,6 +107,44 @@ export const formatCurrency = ( amount, currencyCode = 'USD' ) => {
 	} catch ( err ) {
 		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
 	}
+};
+
+/**
+ * Appends the currency code if it's not present in the current price.
+ *
+ * @param {string} formatted Preformatted price string
+ * @param {string} currencyCode Currency code to append
+ *
+ * @return {string} formatted currency representation with the currency code suffix
+ */
+const appendCurrencyCode = ( formatted, currencyCode ) => {
+	if ( -1 === formatted.toString().indexOf( currencyCode ) ) {
+		formatted = formatted + ' ' + currencyCode;
+	}
+	return formatted;
+};
+
+/**
+ * Formats amount according to the given currency.
+ *
+ * @param {number} amount       Amount
+ * @param {string} currencyCode Currency code
+ * @param {boolean} skipSymbol  If true, trims off the short currency symbol
+ * @param {string} baseCurrencyCode Base Currency code to override decimal and thousand separators
+ *
+ * @return {string} formatted currency representation
+ */
+export const formatExplicitCurrency = (
+	amount,
+	currencyCode = 'USD',
+	skipSymbol = false,
+	baseCurrencyCode = null
+) => {
+	let formatted = formatCurrency( amount, currencyCode, baseCurrencyCode );
+	if ( skipSymbol ) {
+		formatted = removeCurrencySymbol( formatted );
+	}
+	return appendCurrencyCode( formatted, currencyCode.toUpperCase() );
 };
 
 /**
@@ -111,10 +166,11 @@ export const formatFX = ( from, to ) => {
 	}
 
 	const fromAmount = isZeroDecimalCurrency( from.currency ) ? 1 : 100;
-	return `${ formatCurrency(
+	return `${ formatExplicitCurrency(
 		fromAmount,
-		from.currency
-	) } → ${ formatExchangeRate( from, to ) }: ${ formatCurrency(
+		from.currency,
+		true
+	) } → ${ formatExchangeRate( from, to ) }: ${ formatExplicitCurrency(
 		Math.abs( to.amount ),
 		to.currency
 	) }`;
@@ -144,25 +200,46 @@ function formatExchangeRate( from, to ) {
 
 	if ( ! exchangeCurrencyConfig ) {
 		sprintf(
-			isZeroDecimal ? '%s %i' : '%s %.5f',
-			to.currency.toUpperCase(),
-			exchangeRate
+			isZeroDecimal ? '%i %s' : '%.5f %s',
+			exchangeRate,
+			to.currency.toUpperCase()
 		);
 	}
 	const exchangeCurrency = new Currency( {
 		...exchangeCurrencyConfig,
 		precision,
 	} );
-	return trimEndingZeroes( exchangeCurrency.formatAmount( exchangeRate ) );
+	return appendCurrencyCode(
+		trimEndingZeroes(
+			removeCurrencySymbol(
+				exchangeCurrency.formatAmount( exchangeRate )
+			)
+		),
+		to.currency.toUpperCase()
+	);
+}
+
+function removeCurrencySymbol( formatted ) {
+	formatted = formatted.replace( /[^0-9,.' ]/g, '' ).trim();
+	return formatted;
 }
 
 function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
-	// Fallback for unsupported currencies: currency code and amount
-	return sprintf(
-		isZeroDecimal ? '%s %i' : '%s %.2f',
-		currencyCode.toUpperCase(),
-		amount
-	);
+	try {
+		// Fallback for unsupported currencies: currency code and amount
+		return amount.toLocaleString( undefined, {
+			style: 'currency',
+			currency: currencyCode,
+			currencyDisplay: 'narrowSymbol',
+			dummy: isZeroDecimal,
+		} );
+	} catch ( error ) {
+		return sprintf(
+			isZeroDecimal ? '%s %i' : '%s %.2f',
+			currencyCode.toUpperCase(),
+			amount
+		);
+	}
 }
 
 function trimEndingZeroes( formattedCurrencyAmount = '' ) {

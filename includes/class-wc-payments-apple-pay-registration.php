@@ -66,14 +66,14 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @param WC_Payment_Gateway_WCPay $gateway WooCommerce Payments gateway.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
-		$this->domain_name             = $_SERVER['HTTP_HOST'] ?? str_replace( [ 'https://', 'http://' ], '', get_site_url() ); // @codingStandardsIgnoreLine
+		$this->domain_name             = str_replace( [ 'https://', 'http://' ], '', get_site_url() ); // @codingStandardsIgnoreLine
 		$this->apple_pay_verify_notice = '';
 		$this->payments_api_client     = $payments_api_client;
 		$this->account                 = $account;
 		$this->gateway                 = $gateway;
 
 		add_action( 'init', [ $this, 'add_domain_association_rewrite_rule' ], 5 );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_if_configured' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_on_update' ] );
 		add_action( 'init', [ $this, 'init' ] );
 	}
 
@@ -126,6 +126,15 @@ class WC_Payments_Apple_Pay_Registration {
 	}
 
 	/**
+	 * Verify domain upon plugin update only in case the domain association file has changed.
+	 */
+	public function verify_domain_on_update() {
+		if ( ! $this->is_hosted_domain_association_file_up_to_date() ) {
+			$this->verify_domain_if_configured();
+		}
+	}
+
+	/**
 	 * Vefifies if hosted domain association file is up to date
 	 * with the file from the plugin directory.
 	 *
@@ -153,10 +162,8 @@ class WC_Payments_Apple_Pay_Registration {
 		$well_known_dir = untrailingslashit( ABSPATH ) . '/' . self::DOMAIN_ASSOCIATION_FILE_DIR;
 		$fullpath       = $well_known_dir . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
 
-		if ( ! file_exists( $well_known_dir ) ) {
-			if ( ! @mkdir( $well_known_dir, 0755 ) ) { // @codingStandardsIgnoreLine
-				return __( 'Unable to create domain association folder to domain root.', 'woocommerce-payments' );
-			}
+		if ( ! is_dir( $well_known_dir ) && ! @mkdir( $well_known_dir, 0755 ) && ! is_dir( $well_known_dir ) ) { // @codingStandardsIgnoreLine
+			return __( 'Unable to create domain association folder to domain root.', 'woocommerce-payments' );
 		}
 
 		if ( ! @copy( WCPAY_ABSPATH . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME, $fullpath ) ) { // @codingStandardsIgnoreLine
@@ -346,7 +353,7 @@ class WC_Payments_Apple_Pay_Registration {
 		<div class="notice notice-warning apple-pay-message">
 			<p>
 				<strong><?php echo esc_html( 'Apple Pay:' ); ?></strong>
-				<?php echo esc_html_e( 'Payment Request Buttons are enabled. To use Apple Pay, please use a live WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+				<?php echo esc_html_e( 'Payment request buttons are enabled. To use Apple Pay, please use a live WooCommerce Payments account.', 'woocommerce-payments' ); ?>
 			</p>
 		</div>
 		<?php
@@ -379,7 +386,7 @@ class WC_Payments_Apple_Pay_Registration {
 				'title' => [],
 			],
 		];
-		$payment_request_button_text       = __( 'Payment Request Button:', 'woocommerce-payments' );
+		$payment_request_button_text       = __( 'Payment request button:', 'woocommerce-payments' );
 		$verification_failed_without_error = __( 'Apple Pay domain verification failed.', 'woocommerce-payments' );
 		$verification_failed_with_error    = __( 'Apple Pay domain verification failed with the following error:', 'woocommerce-payments' );
 		$check_log_text                    = sprintf(

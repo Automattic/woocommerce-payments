@@ -10,6 +10,7 @@ import { render } from '@testing-library/react';
  */
 import OverviewPage from '../';
 import { getTasks } from '../task-list/tasks';
+import { getQuery } from '@woocommerce/navigation';
 
 jest.mock( '../task-list/tasks', () => ( { getTasks: jest.fn() } ) );
 jest.mock( '../inbox-notifications', () =>
@@ -23,6 +24,7 @@ jest.mock( '@woocommerce/experimental', () => {
 		Text: () => <div>text</div>,
 	};
 } );
+jest.mock( '@woocommerce/navigation', () => ( { getQuery: jest.fn() } ) );
 
 describe( 'Overview page', () => {
 	beforeEach( () => {
@@ -45,6 +47,7 @@ describe( 'Overview page', () => {
 				accountOverviewTaskList: true,
 			},
 		};
+		getQuery.mockReturnValue( {} );
 	} );
 
 	it( 'Skips rendering task list when there are no tasks', () => {
@@ -68,5 +71,31 @@ describe( 'Overview page', () => {
 		expect(
 			container.querySelector( '.woocommerce-experimental-list' )
 		).toBeNull();
+	} );
+
+	it( 'Displays the login error for query param wcpay-login-error=1', () => {
+		getQuery.mockReturnValue( { 'wcpay-login-error': '1' } );
+		getTasks.mockReturnValue( [] );
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector(
+				'.wcpay-login-error.components-notice.is-error'
+			)
+		).toBeVisible();
+	} );
+
+	it( 'Displays the success message for query param wcpay-connection-success=1', () => {
+		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
+		getTasks.mockReturnValue( [] );
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector(
+				'.wcpay-connection-success.components-notice.is-success'
+			)
+		).toBeVisible();
 	} );
 } );

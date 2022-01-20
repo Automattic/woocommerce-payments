@@ -17,12 +17,13 @@ import classNames from 'classnames';
 /**
  * Internal dependencies.
  */
-import { useDeposit } from 'data';
+import { useDeposit } from 'wcpay/data';
 import { displayStatus } from '../strings';
 import TransactionsList from 'transactions/list';
 import Page from 'components/page';
+import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
-import { formatCurrency } from 'utils/currency';
+import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 
 const Status = ( { status } ) => (
@@ -83,7 +84,7 @@ export const DepositOverview = ( { depositId } ) => {
 					<ul>
 						{ depositDateItem }
 						<li className="wcpay-deposit-amount">
-							{ formatCurrency(
+							{ formatExplicitCurrency(
 								deposit.amount,
 								deposit.currency
 							) }
@@ -102,7 +103,7 @@ export const DepositOverview = ( { depositId } ) => {
 								'Deposit amount',
 								'woocommerce-payments'
 							) }
-							value={ formatCurrency(
+							value={ formatExplicitCurrency(
 								deposit.amount + deposit.fee,
 								deposit.currency
 							) }
@@ -128,7 +129,7 @@ export const DepositOverview = ( { depositId } ) => {
 								'Net deposit amount',
 								'woocommerce-payments'
 							) }
-							value={ formatCurrency(
+							value={ formatExplicitCurrency(
 								deposit.amount,
 								deposit.currency
 							) }
@@ -144,8 +145,12 @@ export const DepositOverview = ( { depositId } ) => {
 export const DepositDetails = ( { query: { id: depositId } } ) => (
 	<Page>
 		<TestModeNotice topic={ topics.depositDetails } />
-		<DepositOverview depositId={ depositId } />
-		<TransactionsList depositId={ depositId } />
+		<ErrorBoundary>
+			<DepositOverview depositId={ depositId } />
+		</ErrorBoundary>
+		<ErrorBoundary>
+			<TransactionsList depositId={ depositId } />
+		</ErrorBoundary>
 	</Page>
 );
 

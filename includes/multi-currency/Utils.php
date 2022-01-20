@@ -10,7 +10,7 @@ namespace WCPay\MultiCurrency;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class that controls Multi Currency Utils.
+ * Class that controls Multi-Currency Utils.
  */
 class Utils {
 	/**
@@ -28,5 +28,35 @@ class Utils {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Checks the query_vars array for a particular pagename and variable to be set.
+	 *
+	 * @param array $pages Array of the pagenames to check for.
+	 * @param array $vars Array of the vars to check for.
+	 *
+	 * @return bool True if found, false if not.
+	 */
+	public function is_page_with_vars( array $pages, array $vars ): bool {
+		global $wp;
+
+		if ( $wp->query_vars && isset( $wp->query_vars['pagename'] ) && in_array( $wp->query_vars['pagename'], $pages, true ) ) {
+			foreach ( $vars as $var ) {
+				if ( isset( $wp->query_vars[ $var ] ) ) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Checks if is a REST API request and the HTTP referer matches admin url.
+	 *
+	 * @return boolean
+	 */
+	public static function is_admin_api_request(): bool {
+		return 0 === stripos( wp_get_referer(), admin_url() ) && WC()->is_rest_api_request();
 	}
 }

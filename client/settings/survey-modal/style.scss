@@ -1,0 +1,21 @@
+.survey-section {
+	.survey-radiocontrols > div > label {
+		font-weight: 600;
+	}
+
+	.comments-text-field {
+		margin-top: 2em;
+
+		label {
+			font-weight: 600;
+		}
+
+		textarea {
+			height: 4rem;
+		}
+	}
+
+	.survey-bottom-disclaimer {
+		font-style: italic;
+	}
+}

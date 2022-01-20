@@ -76,13 +76,6 @@ const AccountStatusDetails = ( props ) => {
 
 	return (
 		<AccountStatusCard title={ cardTitle }>
-			{ accountStatus.email && (
-				<AccountStatusItem
-					label={ __( 'Connected email:', 'woocommerce-payments' ) }
-				>
-					{ accountStatus.email }
-				</AccountStatusItem>
-			) }
 			<AccountStatusItem
 				label={ __( 'Payments:', 'woocommerce-payments' ) }
 			>
@@ -97,19 +90,15 @@ const AccountStatusDetails = ( props ) => {
 					depositsStatus={ accountStatus.depositsStatus }
 				/>
 			</AccountStatusItem>
-			<AccountStatusItem
-				align={ 'flex-start' }
-				label={ __( 'Base Fee:', 'woocommerce-payments' ) }
-			>
+			{ 0 < accountFees.length && (
 				<AccountFees accountFees={ accountFees } />
-			</AccountStatusItem>
+			) }
 		</AccountStatusCard>
 	);
 };
 
 const AccountStatus = ( props ) => {
 	const { accountStatus } = props;
-
 	return accountStatus.error ? (
 		<AccountStatusError />
 	) : (

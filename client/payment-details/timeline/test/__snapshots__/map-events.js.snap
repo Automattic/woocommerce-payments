@@ -5,7 +5,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-03-31T21:58:40.000Z,
-    "headline": "Payment status changed to Authorization Expired.",
+    "headline": "Payment status changed to Authorization expired.",
     "icon": <t
       className=""
       icon="sync"
@@ -15,7 +15,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-03-31T21:58:40.000Z,
-    "headline": "Authorization for $86.00 expired.",
+    "headline": "Authorization for $86.00 USD expired.",
     "icon": <t
       className="is-error"
       icon="cross"
@@ -30,7 +30,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-03-31T10:57:59.000Z,
-    "headline": "Payment status changed to Authorization Voided.",
+    "headline": "Payment status changed to Authorization voided.",
     "icon": <t
       className=""
       icon="sync"
@@ -40,7 +40,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-03-31T10:57:59.000Z,
-    "headline": "Authorization for $59.00 was voided.",
+    "headline": "Authorization for $59.00 USD was voided.",
     "icon": <t
       className="is-warning"
       icon="checkmark"
@@ -65,7 +65,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-03-30T17:33:16.000Z,
-    "headline": "A payment of $79.00 was successfully authorized.",
+    "headline": "A payment of $79.00 USD was successfully authorized.",
     "icon": <t
       className="is-warning"
       icon="checkmark"
@@ -90,7 +90,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-01T03:35:13.000Z,
-    "headline": "A payment of $77.00 failed.",
+    "headline": "A payment of $77.00 USD failed.",
     "icon": <t
       className="is-error"
       icon="cross"
@@ -120,7 +120,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T20:26:47.000Z,
-    "headline": "Payment status changed to Disputed: In Review.",
+    "headline": "Payment status changed to Disputed: In review.",
     "icon": <t
       className=""
       icon="sync"
@@ -145,7 +145,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment status changed to Disputed: Needs Response.",
+    "headline": "Payment status changed to Disputed: Needs response.",
     "icon": <t
       className=""
       icon="sync"
@@ -199,7 +199,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats captured events with fee details 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats captured events with fee details 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -215,7 +215,7 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $20.97 was added to your 
+      $20.97 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
         type="wc-admin"
@@ -232,12 +232,13 @@ Array [
   },
   Object {
     "body": Array [
-      "€1,00 → $1.19944: $21.59",
+      "1,00 EUR → 1.19944 USD: $21.59 USD",
       "Fee (2.9% + $0.30): $-0.62",
-      "Net deposit: $20.97",
+      undefined,
+      "Net deposit: $20.97 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "A payment of €18,00 was successfully charged.",
+    "headline": "A payment of €18,00 EUR was successfully charged.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -247,7 +248,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats captured events without fee details 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats captured events without fee details 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -263,7 +264,7 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $20.97 was added to your 
+      $20.97 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
         type="wc-admin"
@@ -280,12 +281,13 @@ Array [
   },
   Object {
     "body": Array [
-      "€1,00 → $1.19944: $21.59",
+      "1,00 EUR → 1.19944 USD: $21.59 USD",
       "Fee: €0,52",
-      "Net deposit: $20.97",
+      undefined,
+      "Net deposit: $20.97 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "A payment of €18,00 was successfully charged.",
+    "headline": "A payment of €18,00 EUR was successfully charged.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -295,12 +297,12 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats dispute_needs_response events 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats dispute_needs_response events 1`] = `
 Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment status changed to Disputed: Needs Response.",
+    "headline": "Payment status changed to Disputed: Needs response.",
     "icon": <t
       className=""
       icon="sync"
@@ -310,11 +312,11 @@ Array [
   Object {
     "body": Array [
       "Disputed amount: €18,00",
-      "€1,00 → $1.2: $21.60",
+      "1,00 EUR → 1.2 USD: $21.60 USD",
       "Fee: $15.00",
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "$36.60 will be deducted from a future deposit.",
+    "headline": "$36.60 USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -341,7 +343,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats dispute_won events 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats dispute_won events 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -360,7 +362,7 @@ Array [
     ],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": <React.Fragment>
-      $44.99 was added to your 
+      $44.99 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
         type="wc-admin"
@@ -388,7 +390,7 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats full_refund events 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats full_refund events 1`] = `
 Array [
   Object {
     "body": Array [],
@@ -403,7 +405,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "$21.64 will be deducted from a future deposit.",
+    "headline": "$21.64 USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -412,10 +414,10 @@ Array [
   },
   Object {
     "body": Array [
-      "€1,00 → $1.20222: $21.64",
+      "1,00 EUR → 1.20222 USD: $21.64 USD",
     ],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "A payment of €18,00 was successfully refunded.",
+    "headline": "A payment of €18,00 EUR was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -425,12 +427,12 @@ Array [
 ]
 `;
 
-exports[`mapTimelineEvents multi currency events formats partial_refund events 1`] = `
+exports[`mapTimelineEvents Multi-Currency events formats partial_refund events 1`] = `
 Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "Payment status changed to Partial Refund.",
+    "headline": "Payment status changed to Partial refund.",
     "icon": <t
       className=""
       icon="sync"
@@ -440,7 +442,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "$6.00 will be deducted from a future deposit.",
+    "headline": "$6.00 USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -449,10 +451,10 @@ Array [
   },
   Object {
     "body": Array [
-      "€1,00 → $1.2: $6.00",
+      "1,00 EUR → 1.2 USD: $6.00 USD",
     ],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "A payment of €5,00 was successfully refunded.",
+    "headline": "A payment of €5,00 EUR was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -478,7 +480,7 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $59.50 was added to your 
+      $59.50 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
         type="wc-admin"
@@ -497,10 +499,90 @@ Array [
     "body": Array [
       undefined,
       "Fee (1.95% + $0.15): $-3.50",
-      "Net deposit: $59.50",
+      <ul
+        className="fee-breakdown-list"
+      >
+         
+        <li>
+          Base fee: 1.4% + £0.20
+        </li>
+        <li>
+          International card fee: 1.5%
+        </li>
+        <li>
+          Foreign exchange fee: 2%
+        </li>
+        <li>
+          Discount
+          <ul
+            className="discount-split-list"
+          >
+            <li>
+              Variable fee: 
+              -4.9
+              %
+            </li>
+            <li>
+              Fixed fee: 
+              £-0.20
+            </li>
+          </ul>
+        </li>
+         
+      </ul>,
+      "Net deposit: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "A payment of $63.00 was successfully charged.",
+    "headline": "A payment of $63.00 USD was successfully charged.",
+    "icon": <t
+      className="is-success"
+      icon="checkmark"
+      size={24}
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents single currency events formats captured events with just the base fee 1`] = `
+Array [
+  Object {
+    "body": Array [],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": "Payment status changed to Paid.",
+    "icon": <t
+      className=""
+      icon="sync"
+      size={24}
+    />,
+  },
+  Object {
+    "body": Array [],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": <React.Fragment>
+      $59.50 USD was added to your 
+      <Link
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        type="wc-admin"
+      >
+        Apr 2, 2020 deposit
+      </Link>
+      .
+    </React.Fragment>,
+    "icon": <t
+      className=""
+      icon="plus"
+      size={24}
+    />,
+  },
+  Object {
+    "body": Array [
+      undefined,
+      "Base fee (1.95% + $0.15): $-3.50",
+      undefined,
+      "Net deposit: $59.50 USD",
+    ],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": "A payment of $63.00 USD was successfully charged.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -526,7 +608,7 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $59.50 was added to your 
+      $59.50 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
         type="wc-admin"
@@ -545,10 +627,11 @@ Array [
     "body": Array [
       undefined,
       "Fee: $3.50",
-      "Net deposit: $59.50",
+      undefined,
+      "Net deposit: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "A payment of $63.00 was successfully charged.",
+    "headline": "A payment of $63.00 USD was successfully charged.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -588,7 +671,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment status changed to Disputed: Needs Response.",
+    "headline": "Payment status changed to Disputed: Needs response.",
     "icon": <t
       className=""
       icon="sync"
@@ -602,7 +685,7 @@ Array [
       "Fee: $15.00",
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "$110.00 will be deducted from a future deposit.",
+    "headline": "$110.00 USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -648,7 +731,7 @@ Array [
     ],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": <React.Fragment>
-      $115.00 was added to your 
+      $115.00 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
         type="wc-admin"
@@ -691,7 +774,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "$100.00 will be deducted from a future deposit.",
+    "headline": "$100.00 USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -703,7 +786,7 @@ Array [
       undefined,
     ],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "A payment of $100.00 was successfully refunded.",
+    "headline": "A payment of $100.00 USD was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -718,7 +801,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "Payment status changed to Partial Refund.",
+    "headline": "Payment status changed to Partial refund.",
     "icon": <t
       className=""
       icon="sync"
@@ -728,7 +811,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "$50.00 will be deducted from a future deposit.",
+    "headline": "$50.00 USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -740,7 +823,56 @@ Array [
       undefined,
     ],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "A payment of $50.00 was successfully refunded.",
+    "headline": "A payment of $50.00 USD was successfully refunded.",
+    "icon": <t
+      className="is-success"
+      icon="checkmark"
+      size={24}
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents single currency events should not render fee breakup when fee history is not present 1`] = `
+Array [
+  Object {
+    "body": Array [],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": "Payment status changed to Paid.",
+    "icon": <t
+      className=""
+      icon="sync"
+      size={24}
+    />,
+  },
+  Object {
+    "body": Array [],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": <React.Fragment>
+      $59.50 USD was added to your 
+      <Link
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        type="wc-admin"
+      >
+        Apr 2, 2020 deposit
+      </Link>
+      .
+    </React.Fragment>,
+    "icon": <t
+      className=""
+      icon="plus"
+      size={24}
+    />,
+  },
+  Object {
+    "body": Array [
+      undefined,
+      "Fee (1.95% + $0.15): $-3.50",
+      undefined,
+      "Net deposit: $59.50 USD",
+    ],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": "A payment of $63.00 USD was successfully charged.",
     "icon": <t
       className="is-success"
       icon="checkmark"

@@ -9,7 +9,7 @@ import interpolateComponents from 'interpolate-components';
 /**
  * Internal dependencies
  */
-import { useDevMode, useIsWCPayEnabled, useTestMode } from 'data';
+import { useDevMode, useIsWCPayEnabled, useTestMode } from 'wcpay/data';
 import CardBody from '../card-body';
 
 const GeneralSettings = () => {
@@ -49,7 +49,7 @@ const GeneralSettings = () => {
 					help={ interpolateComponents( {
 						mixedString: __(
 							'Use {{testCardHelpLink}}test card numbers{{/testCardHelpLink}} to simulate various transactions. ' +
-								'{{learnMoreLink}}Learn more{{/learnMoreLink}}.',
+								'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
 							'woocommerce-payments'
 						),
 						components: {
@@ -58,7 +58,7 @@ const GeneralSettings = () => {
 								<a
 									target="_blank"
 									rel="noreferrer"
-									href="https://docs.woocommerce.com/document/payments/testing/#test-cards"
+									href="https://woocommerce.com/document/payments/testing/#test-cards"
 								/>
 							),
 							learnMoreLink: (
@@ -66,7 +66,7 @@ const GeneralSettings = () => {
 								<a
 									target="_blank"
 									rel="noreferrer"
-									href="https://docs.woocommerce.com/document/payments/testing/"
+									href="https://woocommerce.com/document/payments/testing/"
 								/>
 							),
 						},

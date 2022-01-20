@@ -13,11 +13,18 @@
     },
     "require": {
       "php": "7.*",
-      "automattic/jetpack-connection": "1.20.0",
-      "automattic/jetpack-config": "1.4.3",
-      "automattic/jetpack-autoloader": "2.8.0",
+      "ext-json": "*",
+      "automattic/jetpack-connection": "1.30.13",
+      "automattic/jetpack-config": "1.5.3",
+      "automattic/jetpack-autoloader": "2.10.10",
       "myclabs/php-enum": "1.7.7",
-      "ext-json": "*"
+      "woocommerce/subscriptions-core": "1.6.2",
+      "symfony/polyfill-php71": "1.20.0",
+      "symfony/polyfill-php72": "1.23.0",
+      "symfony/polyfill-php73": "1.23.0",
+      "symfony/polyfill-php74": "1.23.0",
+      "symfony/polyfill-php80": "1.23.1",
+      "symfony/polyfill-php81": "1.23.0"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
@@ -25,9 +32,12 @@
       "woocommerce/woocommerce-sniffs": "0.1.0",
       "woocommerce/action-scheduler": "3.1.6",
       "kalessil/production-dependencies-guard": "dev-master",
-      "vimeo/psalm": "^4.8",
-	    "php-stubs/wordpress-stubs": "^5.7",
-	    "php-stubs/woocommerce-stubs": "^5.4"
+      "vimeo/psalm": "4.13.1",
+      "php-stubs/wordpress-stubs": "5.8.2",
+      "php-stubs/woocommerce-stubs": "5.9.0",
+      "rregeer/phpunit-coverage-check": "0.3.1",
+      "yoast/phpunit-polyfills": "1.0.1",
+      "cweagans/composer-patches": "1.7.1"
     },
     "scripts": {
       "test": [
@@ -50,11 +60,23 @@
       "production-dependencies-guard": [
         "check-lock-file",
         "check-abandoned"
-      ]
+      ],
+      "composer-exit-on-patch-failure": true,
+      "patches": {
+        "phpunit/phpunit": {
+          "PHP 8.1 compatibility: globals": "tests/phpunit-patches/globals-usage-compatibility.diff"
+        }
+      }
     },
     "autoload": {
       "psr-4": {
         "WCPay\\MultiCurrency\\": "includes/multi-currency"
       }
-    }
+    },
+    "repositories": [
+      {
+        "type": "vcs",
+        "url": "https://github.com/automattic/woocommerce-subscriptions-core.git"
+      }
+    ]
 }

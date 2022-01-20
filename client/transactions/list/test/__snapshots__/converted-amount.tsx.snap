@@ -23,7 +23,7 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 1`] 
         </g>
       </svg>
     </span>
-    $1.00
+    $1.00 USD
   </div>
 </div>
 `;
@@ -73,20 +73,20 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 2`] 
                   style="display: block; opacity: 0; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; overflow: hidden; pointer-events: none; z-index: -1;"
                   tabindex="-1"
                 />
-                Converted from MOK 2.00
+                Converted from MOK 2.00
               </div>
             </div>
           </div>
         </div>
       </span>
     </span>
-    $1.00
+    $1.00 USD
   </div>
 </div>
 `;
 
 exports[`ConvertedAmount renders an amount without conversion 1`] = `
 <div>
-  $1.00
+  $1.00 USD
 </div>
 `;

@@ -9,8 +9,12 @@ use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
+use WCPay\Payment_Methods\P24_Payment_Method;
+use WCPay\Payment_Methods\Ideal_Payment_Method;
+use WCPay\Payment_Methods\Sepa_Payment_Method;
 
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
@@ -61,12 +65,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		add_action( 'rest_api_init', [ $this, 'deregister_wc_blocks_rest_api' ], 5 );
-		remove_filter( 'woocommerce_settings_api_sanitized_fields_woocommerce_payments', [ WC_Payments::get_gateway(), 'sanitize_plugin_settings' ] );
+		require_once __DIR__ . '/../helpers/class-wc-blocks-rest-api-registration-preventer.php';
+		WC_Blocks_REST_API_Registration_Preventer::prevent();
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
-		update_option( '_wcpay_feature_grouped_settings', '1' );
 
 		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
@@ -83,8 +86,12 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$mock_payment_methods   = [];
 		$payment_method_classes = [
 			CC_Payment_Method::class,
+			Bancontact_Payment_Method::class,
 			Giropay_Payment_Method::class,
 			Sofort_Payment_Method::class,
+			Sepa_Payment_Method::class,
+			P24_Payment_Method::class,
+			Ideal_Payment_Method::class,
 		];
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
@@ -98,8 +105,30 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			$mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 		}
 
-		$this->upe_gateway    = new UPE_Payment_Gateway( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $mock_payment_methods );
+		$mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
+
+		$this->upe_gateway    = new UPE_Payment_Gateway( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $mock_payment_methods, $mock_rate_limiter );
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->upe_gateway );
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'get_account_data' )
+			->willReturn(
+				[
+					'card_present_eligible' => true,
+					'is_live'               => true,
+					'fees'                  => $mock_payment_methods,
+				]
+			);
+	}
+
+	public function tearDown() {
+		parent::tearDown();
+
+		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {
@@ -125,9 +154,35 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'card', 'giropay', 'sofort' ],
+			[ 'card', 'bancontact', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24' ],
 			$enabled_method_ids
 		);
+	}
+
+	public function test_get_settings_request_returns_test_mode_flag() {
+		add_filter(
+			'wcpay_dev_mode',
+			function () {
+				return true;
+			}
+		);
+		$this->gateway->update_option( 'test_mode', 'yes' );
+		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
+
+		$this->gateway->update_option( 'test_mode', 'no' );
+		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
+
+		add_filter(
+			'wcpay_dev_mode',
+			function () {
+				return false;
+			}
+		);
+		$this->gateway->update_option( 'test_mode', 'yes' );
+		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
+
+		$this->gateway->update_option( 'test_mode', 'no' );
+		$this->assertEquals( false, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
 	}
 
 	public function test_get_settings_returns_if_wcpay_is_enabled() {
@@ -329,15 +384,37 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( true, $this->gateway->is_in_test_mode() );
 	}
 
-	public function test_update_settings_saves_account_statement_descriptor() {
-		$new_account_descriptor = 'new account descriptor';
-
+	public function test_update_settings_saves_account() {
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_account' )
-			->with( $this->equalTo( [ 'statement_descriptor' => $new_account_descriptor ] ) );
+			->with(
+				$this->equalTo(
+					[
+						'statement_descriptor'     => 'test statement descriptor',
+						'business_name'            => 'test business_name',
+						'business_url'             => 'test business_url',
+						'business_support_address' => 'test business_support_address',
+						'business_support_email'   => 'test business_support_email',
+						'business_support_phone'   => 'test business_support_phone',
+						'branding_logo'            => 'test branding_logo',
+						'branding_icon'            => 'test branding_icon',
+						'branding_primary_color'   => 'test branding_primary_color',
+						'branding_secondary_color' => 'test branding_secondary_color',
+					]
+				)
+			);
 
 		$request = new WP_REST_Request();
-		$request->set_param( 'account_statement_descriptor', $new_account_descriptor );
+		$request->set_param( 'account_statement_descriptor', 'test statement descriptor' );
+		$request->set_param( 'account_business_name', 'test business_name' );
+		$request->set_param( 'account_business_url', 'test business_url' );
+		$request->set_param( 'account_business_support_address', 'test business_support_address' );
+		$request->set_param( 'account_business_support_email', 'test business_support_email' );
+		$request->set_param( 'account_business_support_phone', 'test business_support_phone' );
+		$request->set_param( 'account_branding_logo', 'test branding_logo' );
+		$request->set_param( 'account_branding_icon', 'test branding_icon' );
+		$request->set_param( 'account_branding_primary_color', 'test branding_primary_color' );
+		$request->set_param( 'account_branding_secondary_color', 'test branding_secondary_color' );
 
 		$this->controller->update_settings( $request );
 	}
@@ -375,9 +452,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'book', $this->gateway->get_option( 'payment_request_button_type' ) );
 	}
 
-	public function test_update_settings_does_not_save_account_statement_descriptor_if_not_supplied() {
-		$status_before_request = $this->gateway->get_option( 'account_statement_descriptor' );
-
+	public function test_update_settings_does_not_save_account_if_not_supplied() {
 		$request = new WP_REST_Request();
 
 		$this->mock_api_client->expects( $this->never() )
@@ -386,6 +461,25 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->controller->update_settings( $request );
 	}
+
+	public function test_update_settings_enables_saved_cards() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_saved_cards_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'yes', $this->gateway->get_option( 'saved_cards' ) );
+	}
+
+	public function test_update_settings_disables_saved_cards() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_saved_cards_enabled', false );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'no', $this->gateway->get_option( 'saved_cards' ) );
+	}
+
 	/**
 	 * @param bool $can_manage_woocommerce
 	 *
@@ -413,4 +507,50 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			remove_action( 'rest_api_init', [ RestApi::class, 'register_rest_routes' ] );
 		}
 	}
+
+	public function test_get_settings_card_eligible_flag() {
+		$response = $this->upe_controller->get_settings();
+
+		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
+		$this->assertTrue( $response->get_data()['is_card_present_eligible'] );
+	}
+
+	/**
+	 * Tests account business support address validator
+	 *
+	 * @dataProvider account_business_support_address_validation_provider
+	 */
+	public function test_validate_business_support_address( $value, $request, $param, $expected ) {
+		$return = $this->controller->validate_business_support_address( $value, $request, $param );
+		$this->assertEquals( $return, $expected );
+	}
+
+	/**
+	 * Provider for test_validate_business_support_address.
+	 * @return array[] test method params.
+	 */
+	public function account_business_support_address_validation_provider() {
+		$request = new WP_REST_Request();
+		return [
+			[
+				[
+					'city'    => 'test city',
+					'country' => 'US',
+				],
+				$request,
+				'account_business_support_address',
+				true,
+			],
+			[
+				[
+					'invalid_param' => 'value',
+				],
+				$request,
+				'account_business_support_address',
+				new WP_Error( 'rest_invalid_pattern', 'Invalid address format!' ),
+			],
+		];
+	}
+
+
 }

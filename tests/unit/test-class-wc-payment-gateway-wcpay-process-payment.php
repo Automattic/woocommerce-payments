@@ -8,6 +8,9 @@
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 
+// Need to use WC_Mock_Data_Store.
+require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
+
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
@@ -48,6 +51,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	private $mock_action_scheduler_service;
 
 	/**
+	 * Mock Session_Rate_Limiter.
+	 *
+	 * @var Session_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_rate_limiter;
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
@@ -74,7 +84,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention', 'create_and_confirm_setup_intent', 'get_payment_method', 'is_server_connected' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'create_and_confirm_setup_intent', 'get_payment_method', 'is_server_connected', 'get_charge' ] )
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -95,6 +105,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
+
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
 		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
@@ -105,6 +117,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
+					$this->mock_rate_limiter,
 				]
 			)
 			->setMethods(
@@ -146,6 +159,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a good return value for the order's data store.
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
 
 		// Arrange: Set a good return value for order ID.
 		$mock_order
@@ -198,7 +216,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 8 ) )
+			->expects( $this->exactly( 9 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
@@ -208,7 +226,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				[ '_intention_status', $status ],
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ],
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
 		// Assert: The order note contains all the information we want:
@@ -220,10 +239,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'add_order_note' )
 			->with(
 				$this->callback(
-					function( $note ) use ( $intent_id, $total ) {
+					function( $note ) use ( $charge_id, $total ) {
 						return (
 						strpos( $note, 'successfully charged' )
-						&& strpos( $note, $intent_id )
+						&& strpos( $note, $charge_id )
 						&& strpos( $note, strval( $total ) )
 						);
 					}
@@ -242,7 +261,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Act: process a successful payment.
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -263,6 +286,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a good return value for the order's data store.
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
 
 		// Arrange: Set a good return value for order ID.
 		$mock_order
@@ -309,7 +337,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Act: process a successful payment.
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -383,7 +415,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 8 ) )
+			->expects( $this->exactly( 9 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
@@ -393,7 +425,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				[ '_intention_status', $status ],
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ],
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
 		// Assert: The order note contains all the information we want:
@@ -431,7 +464,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Act: process payment.
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, WCPay\Constants\Payment_Type::SINGLE(), WCPay\Constants\Payment_Initiated_By::CUSTOMER(), WCPay\Constants\Payment_Capture_Type::MANUAL() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -461,39 +498,44 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
+
 		// Act: process payment.
-		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
-		$result_order = wc_get_order( $order->get_id() );
+		$this->expectException( Exception::class );
+		try {
+			$this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		} catch ( Exception $e ) {
+			$result_order = wc_get_order( $order->get_id() );
 
-		// Assert: Order status was updated.
-		$this->assertEquals( 'failed', $result_order->get_status() );
+			// Assert: Order status was updated.
+			$this->assertEquals( 'failed', $result_order->get_status() );
 
-		// Assert: Order transaction ID was not set.
-		$this->assertEquals( '', $result_order->get_meta( '_transaction_id' ) );
+			// Assert: Order transaction ID was not set.
+			$this->assertEquals( '', $result_order->get_meta( '_transaction_id' ) );
 
-		// Assert: Order meta was not updated with charge ID, intention status, or intent ID.
-		$this->assertEquals( '', $result_order->get_meta( '_intent_id' ) );
-		$this->assertEquals( '', $result_order->get_meta( '_charge_id' ) );
-		$this->assertEquals( '', $result_order->get_meta( '_intention_status' ) );
+			// Assert: Order meta was not updated with charge ID, intention status, or intent ID.
+			$this->assertEquals( '', $result_order->get_meta( '_intent_id' ) );
+			$this->assertEquals( '', $result_order->get_meta( '_charge_id' ) );
+			$this->assertEquals( '', $result_order->get_meta( '_intention_status' ) );
 
-		// Assert: No order note was added, besides the status change and failed transaction details.
-		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
-		$this->assertCount( 2, $notes );
-		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( 'A payment of &#36;50.00 failed to complete with the following message: Error: No such customer: 123.', strip_tags( $notes[0]->content, '' ) );
+			// Assert: No order note was added, besides the status change and failed transaction details.
+			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+			$this->assertCount( 2, $notes );
+			$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+			$this->assertContains( 'A payment of &#36;50.00 failed to complete with the following message: Error: No such customer: 123.', strip_tags( $notes[0]->content, '' ) );
 
-		// Assert: A WooCommerce notice was added.
-		$this->assertTrue( wc_has_notice( $error_message, 'error' ) );
+			// Assert: A WooCommerce notice was added.
+			$this->assertSame( $error_message, $e->getMessage() );
 
-		// Assert: Returning correct array.
-		$this->assertEquals( 'fail', $result['result'] );
-		$this->assertEquals( '', $result['redirect'] );
+			throw $e;
+		}
 	}
 
 	public function test_connection_exception_thrown() {
 		// Arrange: Reusable data.
 		$error_message = 'Test error.';
-		$error_notice  = 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.';
+		$error_notice  = 'There was an error while processing this request. If you continue to see this notice, please contact the admin.';
 
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
@@ -512,30 +554,108 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
+
 		// Act: process payment.
-		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
-		$result_order = wc_get_order( $order->get_id() );
+		$this->expectException( Exception::class );
+		try {
+			$this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		} catch ( Exception $e ) {
+			$result_order = wc_get_order( $order->get_id() );
 
-		// Assert: Order status was updated.
-		$this->assertEquals( 'failed', $result_order->get_status() );
+			// Assert: Order status was updated.
+			$this->assertEquals( 'failed', $result_order->get_status() );
 
-		// Assert: No order note was added, besides the status change and failed transaction details.
-		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
-		$this->assertCount( 2, $notes );
-		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( 'A payment of &#36;50.00 failed to complete with the following message: Test error.', strip_tags( $notes[0]->content, '' ) );
+			// Assert: No order note was added, besides the status change and failed transaction details.
+			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+			$this->assertCount( 2, $notes );
+			$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+			$this->assertContains( 'A payment of &#36;50.00 failed to complete with the following message: Test error.', strip_tags( $notes[0]->content, '' ) );
 
-		// Assert: A WooCommerce notice was added.
-		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
+			// Assert: A WooCommerce notice was added.
+			$this->assertSame( $error_notice, $e->getMessage() );
 
-		// Assert: Returning correct array.
-		$this->assertEquals( 'fail', $result['result'] );
-		$this->assertEquals( '', $result['redirect'] );
+			throw $e;
+		}
+	}
+
+	/**
+	 * Tests that the rawte limiter is bumped for certain error codes
+	 *
+	 * @dataProvider rate_limiter_error_code_provider
+	 */
+	public function test_failed_transaction_rate_limiter_bumped( $error_code ) {
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'bump' );
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->throwException(
+					new API_Exception(
+						'test error',
+						$error_code,
+						400,
+						'card_error'
+					)
+				)
+			);
+
+		$this->expectException( Exception::class );
+
+		// Act: process payment.
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function rate_limiter_error_code_provider() {
+		return [
+			[ 'card_declined' ],
+			[ 'incorrect_number' ],
+			[ 'incorrect_cvc' ],
+		];
+	}
+
+	public function test_failed_transaction_rate_limiter_is_limited() {
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+
+		// Arrange: Rate limiter is limited.
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( true );
+
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
+
+		// Act: process payment.
+		$this->expectException( Exception::class );
+		try {
+			$this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		} catch ( Exception $e ) {
+			$result_order = wc_get_order( $order->get_id() );
+
+			// Assert: Order status was updated.
+			$this->assertEquals( 'failed', $result_order->get_status() );
+
+			// Assert: No order note was added, besides the status change and failed transaction details.
+			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+			$this->assertCount( 2, $notes );
+			$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+			$this->assertContains( 'A payment of &#36;50.00 failed to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.', strip_tags( $notes[0]->content, '' ) );
+
+			throw $e;
+		}
 	}
 
 	public function test_bad_request_exception_thrown() {
 		$error_message = 'Test error.';
-		$error_notice  = 'We\'re not able to process this payment. Please refresh the page and try again.';
+		$error_notice  = 'We\'re not able to process this request. Please refresh the page and try again.';
 
 		$order = WC_Helper_Order::create_order();
 
@@ -552,27 +672,70 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
+		// Arrange: Prepare for the upcoming exception.
+		$this->expectException( 'Exception' );
+
 		// Act: process payment.
-		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
-		$result_order = wc_get_order( $order->get_id() );
+		$this->expectException( Exception::class );
+		try {
+			$this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		} catch ( Exception $e ) {
+			$result_order = wc_get_order( $order->get_id() );
 
-		// Assert: Order status was updated.
-		$this->assertEquals( 'failed', $result_order->get_status() );
+			// Assert: Order status was updated.
+			$this->assertEquals( 'failed', $result_order->get_status() );
 
-		// Assert: No order note was added, besides the status change and failed transaction details.
-		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
-		$this->assertCount( 2, $notes );
-		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( "A payment of &#36;50.00 failed to complete with the following message: $error_message", strip_tags( $notes[0]->content, '' ) );
+			// Assert: No order note was added, besides the status change and failed transaction details.
+			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+			$this->assertCount( 2, $notes );
+			$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+			$this->assertContains( "A payment of &#36;50.00 failed to complete with the following message: $error_message", strip_tags( $notes[0]->content, '' ) );
 
-		// Assert: A WooCommerce notice was added.
-		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
+			// Assert: A WooCommerce notice was added.
+			$this->assertSame( $error_notice, $e->getMessage() );
 
-		// Assert: Returning correct array.
-		$this->assertEquals( 'fail', $result['result'] );
-		$this->assertEquals( '', $result['redirect'] );
+			throw $e;
+		}
 	}
 
+	public function test_incorrect_zip_exception_thrown() {
+		$error_message = 'Test error.';
+		$error_note    = 'We couldn’t verify the postal code in the billing address. If the issue persists, suggest the customer to reach out to the card issuing bank.';
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->throwException(
+					new API_Exception(
+						$error_message,
+						'incorrect_zip',
+						400,
+						'card_error'
+					)
+				)
+			);
+
+		// Act: process payment.
+		$this->expectException( Exception::class );
+		try {
+			$this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		} catch ( Exception $e ) {
+			$result_order = wc_get_order( $order->get_id() );
+
+			// Assert: No order note was added, besides the status change and failed transaction details.
+			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+
+			// Assert: Correct order notes are added.
+			$this->assertCount( 2, $notes );
+			$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+			$this->assertContains( "A payment of &#36;50.00 failed. $error_note", strip_tags( $notes[0]->content, '' ) );
+
+			throw $e;
+		}
+	}
 
 	/**
 	 * Test processing payment with the status "requires_action".
@@ -643,7 +806,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 8 ) )
+			->expects( $this->exactly( 9 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
@@ -653,7 +816,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				[ '_intention_status', $status ],
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ],
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
 		// Assert: Order status was not updated.
@@ -693,7 +857,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Act: process payment.
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -839,7 +1007,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->will( $this->returnValue( new WC_Payment_Token_CC() ) );
 
 		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_not_saved_card_at_checkout() {

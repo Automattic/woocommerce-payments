@@ -33,8 +33,24 @@ const events = {
 	CONNECT_ACCOUNT_VIEW: 'page_view',
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
-	DEPOSITS_SUMMARY_EMPTY_STATE_CLICKED:
-		'wcpay_deposits_summary_empty_state_click',
+	UPE_ENABLED: 'wcpay_upe_enabled',
+	UPE_DISABLED: 'wcpay_upe_disabled',
+	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
+		'wcpay_multi_currency_enabled_currencies_updated',
+	PAYMENT_REQUEST_SETTINGS_CHANGE: 'wcpay_payment_request_settings_change',
+	// WCPay Subscriptions empty state - prompts to connect to WCPay or create product.
+	SUBSCRIPTIONS_EMPTY_STATE_VIEW: 'wcpay_subscriptions_empty_state_view',
+	SUBSCRIPTIONS_EMPTY_STATE_FINISH_SETUP:
+		'wcpay_subscriptions_empty_state_finish_setup',
+	SUBSCRIPTIONS_EMPTY_STATE_CREATE_PRODUCT:
+		'wcpay_subscriptions_empty_state_create_product',
+	// WCPay Subscriptions create product modal - prompts to connect to WCPay.
+	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_VIEW:
+		'wcpay_subscriptions_account_not_connected_product_modal_view',
+	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_FINISH_SETUP:
+		'wcpay_subscriptions_account_not_connected_product_modal_finish_setup',
+	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS:
+		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
 };
 
 export default {

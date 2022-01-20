@@ -7,12 +7,13 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Payments_Localization_Service;
 use WC_Payments_Utils;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Multi Currency Currency object.
+ * Multi-Currency Currency object.
  */
 class Currency implements \JsonSerializable {
 
@@ -47,7 +48,7 @@ class Currency implements \JsonSerializable {
 	/**
 	 * Currency rounding rate after conversion.
 	 *
-	 * @var float|null
+	 * @var string|null
 	 */
 	private $rounding;
 
@@ -63,7 +64,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @var int|null
 	 */
-	private $last_updated = null;
+	private $last_updated;
 
 	/**
 	 * Constructor.
@@ -170,7 +171,7 @@ class Currency implements \JsonSerializable {
 	 * @return string Rounding rate.
 	 */
 	public function get_rounding(): string {
-		return is_null( $this->rounding ) ? 'none' : $this->rounding;
+		return (string) ( $this->rounding ?? '0' );
 	}
 
 	/**
@@ -180,6 +181,16 @@ class Currency implements \JsonSerializable {
 	 */
 	public function get_symbol(): string {
 		return get_woocommerce_currency_symbol( $this->code );
+	}
+
+	/**
+	 * Retrieves the currency's symbol position from Localization Service
+	 *
+	 * @return  string  Currency position (left/right).
+	 */
+	public function get_symbol_position() : string {
+		$localization_service = new WC_Payments_Localization_Service();
+		return $localization_service->get_currency_format( $this->code )['currency_pos'];
 	}
 
 	/**
@@ -222,6 +233,7 @@ class Currency implements \JsonSerializable {
 	 * Sets the currency's rounding rate.
 	 *
 	 * @param string $rounding Rounding rate.
+	 * @return void
 	 */
 	public function set_rounding( $rounding ) {
 		$this->rounding = $rounding;
@@ -252,6 +264,7 @@ class Currency implements \JsonSerializable {
 			'is_default'      => $this->get_is_default(),
 			'flag'            => $this->get_flag(),
 			'symbol'          => html_entity_decode( $this->get_symbol() ),
+			'symbol_position' => $this->get_symbol_position(),
 			'is_zero_decimal' => $this->get_is_zero_decimal(),
 			'last_updated'    => $this->get_last_updated(),
 		];

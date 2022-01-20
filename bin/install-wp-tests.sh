@@ -12,6 +12,7 @@ DB_HOST=${4-$WORDPRESS_DB_HOST}
 WP_VERSION=${5-latest}
 WC_VERSION=${6-latest}
 SKIP_DB_CREATE=${7-false}
+GUTENBERG_VERSION=${8-latest}
 
 TMPDIR=${TMPDIR-/tmp}
 TMPDIR=$(echo $TMPDIR | sed -e "s/\/$//")
@@ -123,6 +124,10 @@ configure_wp() {
 	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
 		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
 	fi
+
+    # MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versions
+    sed -i "/Happy publishing/i mysqli_report(MYSQLI_REPORT_OFF);\n" "$WP_CORE_DIR/wp-config.php"
+
 	wp core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --skip-email
 }
 
@@ -144,6 +149,10 @@ install_test_suite() {
 
 	if [ ! -f wp-tests-config.php ]; then
 		download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
+
+		# MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versions
+		sed -i "/youremptytestdbnamehere/i mysqli_report(MYSQLI_REPORT_OFF);\n" "$WP_TESTS_DIR/wp-tests-config.php"
+
 		# remove all forward slashes in the end
 		WP_CORE_DIR=$(echo $WP_CORE_DIR | sed "s:/\+$::")
 		sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR/':" "$WP_TESTS_DIR"/wp-tests-config.php
@@ -199,12 +208,21 @@ install_woocommerce() {
 install_gutenberg() {
 	INSTALLED_GUTENBERG_VERSION=$(wp plugin get gutenberg --field=version)
 
-	if [[ -n $INSTALLED_GUTENBERG_VERSION ]]; then
+	if [[ -n $INSTALLED_GUTENBERG_VERSION ]] && [[ $GUTENBERG_VERSION == 'latest' ]]; then
 		# Gutenberg is already installed, we just must update it to the latest stable version
 		wp plugin update gutenberg
 		wp plugin activate gutenberg
 	else
-		wp plugin install gutenberg --activate
+		if [[ $INSTALLED_GUTENBERG_VERSION != $GUTENBERG_VERSION ]]; then
+			# Gutenberg is installed but it's the wrong version, overwrite the installed version
+			GUTENBERG_INSTALL_EXTRA+=" --force"
+		fi
+
+		if [[ $GUTENBERG_VERSION != 'latest' ]]; then
+			GUTENBERG_INSTALL_EXTRA+=" --version=$GUTENBERG_VERSION"
+		fi
+
+		wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA
 	fi
 }
 

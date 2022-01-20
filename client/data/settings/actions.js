@@ -20,6 +20,14 @@ function updateSettingsValues( payload ) {
 	};
 }
 
+export function updateIsSavedCardsEnabled( isEnabled ) {
+	return updateSettingsValues( { is_saved_cards_enabled: isEnabled } );
+}
+
+export function updateIsCardPresentEligible( isEnabled ) {
+	return updateSettingsValues( { is_card_present_eligible: isEnabled } );
+}
+
 export function updatePaymentRequestButtonType( type ) {
 	return updateSettingsValues( { payment_request_button_type: type } );
 }
@@ -73,9 +81,83 @@ export function updateIsDebugLogEnabled( isEnabled ) {
 	return updateSettingsValues( { is_debug_log_enabled: isEnabled } );
 }
 
+export function updateIsMultiCurrencyEnabled( isEnabled ) {
+	return updateSettingsValues( { is_multi_currency_enabled: isEnabled } );
+}
+
+export function updateIsWCPaySubscriptionsEnabled( isEnabled ) {
+	return updateSettingsValues( {
+		is_wcpay_subscriptions_enabled: isEnabled,
+	} );
+}
+
 export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	return updateSettingsValues( {
 		account_statement_descriptor: accountStatementDescriptor,
+	} );
+}
+
+export function updateAccountBusinessName( accountBusinessName ) {
+	return updateSettingsValues( {
+		account_business_name: accountBusinessName,
+	} );
+}
+
+export function updateAccountBusinessURL( accountBusinessURL ) {
+	return updateSettingsValues( {
+		account_business_url: accountBusinessURL,
+	} );
+}
+
+export function updateAccountBusinessSupportAddress(
+	accountBusinessSupportAddress
+) {
+	return updateSettingsValues( {
+		account_business_support_address: accountBusinessSupportAddress,
+	} );
+}
+
+export function updateAccountBusinessSupportEmail(
+	accountBusinessSupportEmail
+) {
+	return updateSettingsValues( {
+		account_business_support_email: accountBusinessSupportEmail,
+	} );
+}
+
+export function updateAccountBusinessSupportPhone(
+	accountBusinessSupportPhone
+) {
+	return updateSettingsValues( {
+		account_business_support_phone: accountBusinessSupportPhone,
+	} );
+}
+
+export function updateAccountBrandingLogo( accountBrandingLogo ) {
+	return updateSettingsValues( {
+		account_branding_logo: accountBrandingLogo,
+	} );
+}
+
+export function updateAccountBrandingIcon( accountBrandingIcon ) {
+	return updateSettingsValues( {
+		account_branding_icon: accountBrandingIcon,
+	} );
+}
+
+export function updateAccountBrandingPrimaryColor(
+	accountBrandingPrimaryColor
+) {
+	return updateSettingsValues( {
+		account_branding_primary_color: accountBrandingPrimaryColor,
+	} );
+}
+
+export function updateAccountBrandingSecondaryColor(
+	accountBrandingSecondaryColor
+) {
+	return updateSettingsValues( {
+		account_branding_secondary_color: accountBrandingSecondaryColor,
 	} );
 }
 

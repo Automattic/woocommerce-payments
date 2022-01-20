@@ -16,6 +16,7 @@ import PaymentRequestSettings from './payment-request-settings';
 import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
+import ErrorBoundary from '../../components/error-boundary';
 
 const methods = {
 	payment_request: {
@@ -32,7 +33,7 @@ const methods = {
 				<p>
 					<ExternalLink href="https://developer.apple.com/design/human-interface-guidelines/apple-pay/overview/introduction/">
 						{ __(
-							'View Apple Pay Guidelines',
+							'View Apple Pay guidelines',
 							'woocommerce-payments'
 						) }
 					</ExternalLink>
@@ -40,7 +41,7 @@ const methods = {
 				<p>
 					<ExternalLink href="https://developers.google.com/pay/api/web/guides/brand-guidelines">
 						{ __(
-							'View Google Pay Guidelines',
+							'View Google Pay guidelines',
 							'woocommerce-payments'
 						) }
 					</ExternalLink>
@@ -78,7 +79,9 @@ const PaymentMethodSettings = ( { methodId } ) => {
 
 			<SettingsSection Description={ Description }>
 				<LoadableSettingsSection numLines={ 30 }>
-					<Controls />
+					<ErrorBoundary>
+						<Controls />
+					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
 

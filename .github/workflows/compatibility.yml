@@ -6,22 +6,25 @@ on:
 jobs:
   woocommerce-compatibility:
     name:    WC compatibility
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast:    false
       max-parallel: 10
       matrix:
-        woocommerce: [ '4.0.0', '4.3.0', '4.4.0', '4.5.0', '4.6.0', '4.7.0', '4.8.0', '4.9.0', '5.0.0', '5.1.0', '5.2.0', '5.3.0' ]
+        woocommerce: [ '4.5.0', '4.6.0', '4.7.0', '4.8.0', '4.9.0', '5.0.0', '5.1.0', '5.2.0', '5.3.0', '5.4.0', '5.5.0', '5.6.0', '5.7.0', '5.8.0', '5.9.0', '6.0.0', '6.1.0-rc.1']
         wordpress:   [ 'latest' ]
+        gutenberg:   [ 'latest' ]
         php:         [ '7.4' ]
         include:
           # Edge case: oldest dependencies compatibility
-          - woocommerce: '4.0.0'
-            wordpress:   '5.4'
-            php:         '7.0'
+          - woocommerce: '4.5.0'
+            wordpress:   '5.6'
+            gutenberg:   '11.4.0' # The latest version supporting WP 5.6.
+            php:         '7.1' # TODO This should be 7.0. Pending to fix in issue #2970.
     env:
-      WP_VERSION: ${{ matrix.wordpress }}
-      WC_VERSION: ${{ matrix.woocommerce }}
+      WP_VERSION:        ${{ matrix.wordpress }}
+      WC_VERSION:        ${{ matrix.woocommerce }}
+      GUTENBERG_VERSION: ${{ matrix.gutenberg }}
     steps:
       # clone the repository
       - uses: actions/checkout@v2
@@ -36,23 +39,26 @@ jobs:
           php-version: ${{ matrix.php }}
           tools:       composer
           coverage:    none
+      # TODO move this run back when we fix the edge case with PHP 7.0. See #2970.
+      # run: if [[ "${{ matrix.php }}" == '7.0' ]]; then wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar; fi;
       # run CI checks
-      - run: if [[ "${{ matrix.php }}" == '7.0' ]]; then wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar; fi;
       - run: bash bin/run-ci-tests.bash
 
   # a dedicated job, as allowed to fail
   compatibility-woocommerce-beta:
     name:    Environment - WC beta
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast: false
       matrix:
         woocommerce: [ 'beta' ]
         wordpress:   [ 'latest' ]
-        php:         [ '7.1', '8.0' ]
+        gutenberg:   [ 'latest' ]
+        php:         [ '7.1', '8.0', '8.1' ]
     env:
-      WP_VERSION: ${{ matrix.wordpress }}
-      WC_VERSION: ${{ matrix.woocommerce }}
+      WP_VERSION:        ${{ matrix.wordpress }}
+      WC_VERSION:        ${{ matrix.woocommerce }}
+      GUTENBERG_VERSION: ${{ matrix.gutenberg }}
     steps:
       # clone the repository
       - uses: actions/checkout@v2

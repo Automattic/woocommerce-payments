@@ -188,125 +188,41 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		// Mock the HTTP client manually to assert we are sending the correct args.
 		$this->mock_http_client
-		->expects( $this->once() )
-		->method( 'remote_request' )
-		->with(
-			[
-				'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents',
-				'method'          => 'POST',
-				'headers'         => [
-					'Content-Type' => 'application/json; charset=utf-8',
-					'User-Agent'   => 'Unit Test Agent/0.1.0',
-				],
-				'timeout'         => 70,
-				'connect_timeout' => 70,
-			],
-			wp_json_encode(
-				[
-					'test_mode'            => false,
-					'customer'             => $customer_id,
-					'confirm'              => 'false',
-					'payment_method_types' => $payment_method_types,
-				]
-			),
-			true,
-			false
-		)
-		->will(
-			$this->returnValue(
-				[
-					'body'     => wp_json_encode(
-						[
-							'id'     => 'seti_mock',
-							'object' => 'setup_intent',
-						]
-					),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents' ),
+				wp_json_encode(
+					[
+						'test_mode'            => false,
+						'customer'             => $customer_id,
+						'confirm'              => 'false',
+						'payment_method_types' => $payment_method_types,
+					]
+				),
+				true,
+				false
 			)
-		);
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode(
+							[
+								'id'     => 'seti_mock',
+								'object' => 'setup_intent',
+							]
+						),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
 
 		$result = $this->payments_api_client->create_setup_intention( $customer_id, $payment_method_types );
 
 		$this->assertEquals( $setup_intent_id, $result['id'] );
-	}
-	/**
-	 * Test a successful call to create_and_confirm_setup_intent when SEPA is enabled.
-	 *
-	 * @throws Exception - In the event of test failure.
-	 */
-	public function test_create_and_confirm_setup_intent_with_SEPA() {
-		// Enable SEPA.
-		update_option( '_wcpay_feature_sepa', '1' );
-
-		$payment_method_id    = 'pm_mock';
-		$customer_id          = 'cus_test12345';
-		$payment_method_types = [ 'card', 'sepa_debit' ];
-		$mandate_data         = [
-			'customer_acceptance' => [
-				'type'   => 'online',
-				'online' => [
-					'ip_address' => '127.0.0.1',
-					'user_agent' => 'Unit Test Agent/0.1.0',
-				],
-			],
-		];
-
-		// Mock the HTTP client manually to assert we are adding mandate data.
-		$this->mock_http_client
-		->expects( $this->once() )
-		->method( 'remote_request' )
-		->with(
-			[
-				'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents',
-				'method'          => 'POST',
-				'headers'         => [
-					'Content-Type' => 'application/json; charset=utf-8',
-					'User-Agent'   => 'Unit Test Agent/0.1.0',
-				],
-				'timeout'         => 70,
-				'connect_timeout' => 70,
-			],
-			wp_json_encode(
-				[
-					'test_mode'            => false,
-					'payment_method'       => $payment_method_id,
-					'customer'             => $customer_id,
-					'confirm'              => 'true',
-					'payment_method_types' => $payment_method_types,
-					'mandate_data'         => $mandate_data,
-				]
-			),
-			true,
-			false
-		)
-		->will(
-			$this->returnValue(
-				[
-					'body'     => wp_json_encode(
-						[
-							'id'             => 'seti_mock',
-							'object'         => 'setup_intent',
-							'payment_method' => $payment_method_id,
-						]
-					),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			)
-		);
-
-		$result = $this->payments_api_client->create_and_confirm_setup_intent( $payment_method_id, $customer_id );
-
-		$this->assertEquals( $payment_method_id, $result['payment_method'] );
-
-		// Disable SEPA.
-		update_option( '_wcpay_feature_sepa', '0' );
 	}
 
 	/**
@@ -430,6 +346,78 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test a successful fetch of a single transaction.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_list_transactions_success() {
+
+		$order_1 = WC_Helper_Order::create_order();
+		$order_1->update_meta_data( '_charge_id', 'ch_test_1' );
+		$order_1->save();
+
+		$order_2 = WC_Helper_Order::create_order();
+		$order_2->update_meta_data( '_charge_id', 'ch_test_2' );
+		$order_2->save();
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'orders_with_charge_id_from_charge_ids' )
+			->with(
+				[
+					'ch_test_1',
+					'ch_test_2',
+				]
+			)
+			->will(
+				$this->returnValue(
+					[
+						[
+							'order'     => $order_1,
+							'charge_id' => 'ch_test_1',
+						],
+						[
+							'order'     => $order_2,
+							'charge_id' => 'ch_test_2',
+						],
+					]
+				)
+			);
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					[
+						'transaction_id' => 'txn_test_1',
+						'type'           => 'charge',
+						'charge_id'      => 'ch_test_1',
+					],
+					[
+						'transaction_id' => 'txn_test_2',
+						'type'           => 'charge',
+						'charge_id'      => 'ch_test_2',
+					],
+				],
+			]
+		);
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order ) {
+				return [];
+			}
+		);
+
+		$transactions = $this->payments_api_client->list_transactions();
+
+		$this->assertSame( 'txn_test_1', $transactions['data'][0]['transaction_id'] );
+		$this->assertSame( $order_1->get_order_number(), $transactions['data'][0]['order']['number'] );
+
+		$this->assertSame( 'txn_test_2', $transactions['data'][1]['transaction_id'] );
+		$this->assertSame( $order_2->get_order_number(), $transactions['data'][1]['order']['number'] );
+	}
+
+	/**
 	 * Test creating a customer.
 	 *
 	 * @throws API_Exception
@@ -469,16 +457,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345' ),
 				wp_json_encode(
 					[
 						'test_mode'   => false,
@@ -569,25 +548,16 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test getting initial oauth data.
+	 * Test getting initial onboarding data.
 	 *
 	 * @throws API_Exception
 	 */
-	public function test_get_oauth_data() {
+	public function test_get_onboarding_data() {
 		$this->mock_http_client
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/oauth/init',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/init' ),
 				wp_json_encode(
 					[
 						'test_mode'           => false,
@@ -610,7 +580,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					]
 				),
 				true,
-				true // get_oauth_data should use user token auth.
+				true // get_onboarding_data should use user token auth.
 			)
 			->willReturn(
 				[
@@ -623,7 +593,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			);
 
 		// Call the method under test.
-		$result = $this->payments_api_client->get_oauth_data(
+		$result = $this->payments_api_client->get_onboarding_data(
 			'http://localhost',
 			[
 				'a' => 1,
@@ -652,16 +622,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts' ),
 				wp_json_encode(
 					array_merge(
 						[ 'test_mode' => false ],
@@ -691,16 +652,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/login_links',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/login_links' ),
 				wp_json_encode(
 					[
 						'test_mode'    => false,
@@ -730,16 +682,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/tos_agreements',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/tos_agreements' ),
 				wp_json_encode(
 					[
 						'test_mode' => false,
@@ -812,6 +755,171 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test a successful call to update_intention.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_update_intention_with_default_parameters_success() {
+		$intention_id    = 'test_intention_id';
+		$currency_code   = 'usd';
+		$expected_amount = 123;
+		$expected_status = 'succeeded';
+
+		// Mock the HTTP client manually to assert we are sending the correct args.
+		$this->mock_http_client
+		->expects( $this->once() )
+		->method( 'remote_request' )
+		->with(
+			$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id ),
+			wp_json_encode(
+				[
+					'test_mode'   => false,
+					'amount'      => $expected_amount,
+					'currency'    => $currency_code,
+					'metadata'    => [],
+					'level3'      => [],
+					'description' => 'Online Payment for example.org',
+				]
+			),
+			true,
+			false
+		)
+		->will(
+			$this->returnValue(
+				[
+					'body'     => wp_json_encode(
+						[
+							'id'            => 'test_intention_id',
+							'amount'        => $expected_amount,
+							'created'       => 1557224304,
+							'status'        => $expected_status,
+							'charges'       => [
+								'total_count' => 0,
+								'data'        => [],
+							],
+							'client_secret' => 'test_client_secret',
+							'currency'      => 'usd',
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			)
+		);
+
+		$result = $this->payments_api_client->update_intention(
+			'test_intention_id',
+			$expected_amount,
+			'usd'
+		);
+
+		$this->assertEquals( $expected_amount, $result->get_amount() );
+		$this->assertEquals( $expected_status, $result->get_status() );
+	}
+
+	/**
+	 * Test a successful call to update_intention.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_update_intention_with_all_parameters_success() {
+		$intention_id            = 'test_intention_id';
+		$currency_code           = 'eur';
+		$customer_id             = 'cus_123abc';
+		$expected_amount         = 123;
+		$expected_status         = 'succeeded';
+		$selected_payment_method = 'giropay';
+		$payment_country         = 'US';
+		$save_payment_method     = true;
+		$metadata                = [
+			'customer_name'  => 'Testy Testerson',
+			'customer_email' => 'test@test.com',
+			'site_url'       => 'http://example.org',
+			'order_id'       => 1,
+			'order_key'      => 'test_key',
+			'payment_type'   => 'single',
+		];
+		$level3_data             = [
+			'merchant_reference' => 'abc123',
+			'line_items'         => [
+				[
+					'discount_amount'     => 0,
+					'product_code'        => 'free-hug',
+					'product_description' => 'Free hug',
+					'quantity'            => 1,
+					'tax_amount'          => 0,
+					'unit_cost'           => 0,
+				],
+			],
+		];
+
+		// Mock the HTTP client manually to assert we are sending the correct args.
+		$this->mock_http_client
+		->expects( $this->once() )
+		->method( 'remote_request' )
+		->with(
+			$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id ),
+			wp_json_encode(
+				[
+					'test_mode'            => false,
+					'amount'               => $expected_amount,
+					'currency'             => $currency_code,
+					'metadata'             => $metadata,
+					'level3'               => $level3_data,
+					'description'          => 'Online Payment for Order #' . strval( $metadata['order_id'] ) . ' for ' . str_replace( [ 'https://', 'http://' ], '', $metadata['site_url'] ),
+					'payment_method_types' => [ 'giropay' ],
+					'payment_country'      => 'US',
+					'customer'             => $customer_id,
+					'setup_future_usage'   => 'off_session',
+				]
+			),
+			true,
+			false
+		)
+		->will(
+			$this->returnValue(
+				[
+					'body'     => wp_json_encode(
+						[
+							'id'            => $intention_id,
+							'amount'        => $expected_amount,
+							'created'       => 1557224304,
+							'status'        => $expected_status,
+							'client_secret' => 'test_client_secret',
+							'currency'      => $currency_code,
+							'charges'       => [
+								'total_count' => 0,
+								'data'        => [],
+							],
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			)
+		);
+
+		$result = $this->payments_api_client->update_intention(
+			$intention_id,
+			$expected_amount,
+			$currency_code,
+			$save_payment_method,
+			$customer_id,
+			$metadata,
+			$level3_data,
+			$selected_payment_method,
+			$payment_country
+		);
+
+		$this->assertEquals( $expected_amount, $result->get_amount() );
+		$this->assertEquals( $expected_status, $result->get_status() );
+	}
+
+	/**
 	 * @dataProvider data_request_with_level3_data
 	 */
 	public function test_request_with_level3_data( $input_args, $expected_level3_args ) {
@@ -844,6 +952,111 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			$this->payments_api_client,
 			'request_with_level3_data',
 			[ $input_args, 'intentions', 'POST' ]
+		);
+	}
+
+	public function test_create_terminal_location_validation_array() {
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessageRegExp( '~address.*required~i' );
+		$this->payments_api_client->create_terminal_location( 'Example', '' );
+	}
+
+	public function test_create_terminal_location_validation_values() {
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessageRegExp( '~address.*required~i' );
+		$this->payments_api_client->create_terminal_location(
+			'Example',
+			[
+				'country' => 'US',
+			]
+		);
+	}
+
+	public function test_create_terminal_location_success() {
+		$location = [
+			'display_name' => 'Example',
+			'address'      => [
+				'country' => 'US',
+				'line1'   => 'Some Str. 2',
+			],
+			'metadata'     => [],
+		];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function( $request ) {
+						return 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations' === $request['url']
+							&& 'POST' === $request['method'];
+					}
+				),
+				$this->callback(
+					function( $body ) use ( $location ) {
+						$flags = [ 'test_mode' => false ];
+						return wp_json_encode( array_merge( $flags, $location ) ) === $body;
+					}
+				)
+			)
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode( $location ),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
+
+		$result = $this->payments_api_client->create_terminal_location( $location['display_name'], $location['address'] );
+		// The returned value is an object, even though Stripe specifies an array.
+		$result['metadata'] = (array) $result['metadata'];
+		$this->assertSame( $location, $result );
+	}
+
+	public function test_delete_terminal_location_success() {
+		$delete_location_response = [
+			'id'      => 'tml_XXXXXXX',
+			'object'  => 'terminal.deleted',
+			'deleted' => true,
+		];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations/tml_XXXXXXX?test_mode=0',
+					'method'          => 'DELETE',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				null,
+				true,
+				false
+			)
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode( $delete_location_response ),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
+
+		$this->assertSame(
+			$this->payments_api_client->delete_terminal_location( 'tml_XXXXXXX' ),
+			$delete_location_response
 		);
 	}
 
@@ -956,6 +1169,222 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test a successful call to cancel subscription.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_cancel_subscription() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/subscriptions/sub_test?test_mode=0',
+					'method'          => 'DELETE',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				null,
+				true,
+				false
+			)
+			->will(
+				$this->returnValue(
+					[
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+						'body'     => wp_json_encode(
+							[
+								'id'     => 'sub_test',
+								'object' => 'subscription',
+							]
+						),
+					]
+				)
+			);
+
+		$result = $this->payments_api_client->cancel_subscription( 'sub_test' );
+		$this->assertSame( 'sub_test', $result['id'] );
+		$this->assertSame( 'subscription', $result['object'] );
+	}
+
+	/**
+	 * Test redacting request params.
+	 *
+	 * @dataProvider redacting_params_data
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_redacting_params( $request_arguments, $logger_num_calls, ...$logger_expected_arguments ) {
+		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
+							->setMethods( [ 'log' ] )
+							->getMock();
+
+		$logger_ref = new ReflectionProperty( 'WCPay\Logger', 'logger' );
+		$logger_ref->setAccessible( true );
+		$logger_ref->setValue( null, $mock_logger );
+
+		$wcpay_dev_mode_true = function () {
+			return true;
+		};
+		add_filter( 'wcpay_dev_mode', $wcpay_dev_mode_true );
+
+		$mock_logger
+			->expects( $this->exactly( $logger_num_calls ) )
+			->method( 'log' )
+			->withConsecutive( ...$logger_expected_arguments );
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->will(
+				$this->returnValue(
+					[
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+						'body'     => wp_json_encode(
+							[
+								'status' => true,
+							]
+						),
+					]
+				)
+			);
+
+		$reflection     = new ReflectionClass( $this->payments_api_client );
+		$request_method = $reflection->getMethod( 'request' );
+		$request_method->setAccessible( true );
+		$request_method->invokeArgs( $this->payments_api_client, $request_arguments );
+		$request_method->setAccessible( false );
+
+		// clean up.
+		$logger_ref->setAccessible( true );
+		$logger_ref->setValue( null, null );
+		remove_filter( 'wcpay_dev_mode', $wcpay_dev_mode_true );
+	}
+
+	/**
+	 * Data provider for test_redacting_params
+	 */
+	public function redacting_params_data() {
+		$string_should_not_include_secret = function( $string ) {
+			return false === strpos( $string, 'some-secret' );
+		};
+
+		return [
+			'delete' => [
+				[ [ 'client_secret' => 'some-secret' ], 'abc', 'DELETE' ],
+				3,
+				[
+					$this->anything(),
+					$this->callback( $string_should_not_include_secret ),
+				],
+				[
+					$this->anything(),
+					$this->anything(),
+				],
+			],
+			'get'    => [
+				[ [ 'client_secret' => 'some-secret' ], 'abc', 'GET' ],
+				3,
+				[
+					$this->anything(),
+					$this->callback( $string_should_not_include_secret ),
+				],
+				[
+					$this->anything(),
+					$this->anything(),
+				],
+			],
+			'post'   => [
+				[ [ 'client_secret' => 'some-secret' ], 'abc', 'POST' ],
+				4,
+				[
+					$this->anything(),
+					$this->callback( $string_should_not_include_secret ),
+				],
+				[
+					$this->anything(),
+					$this->callback( $string_should_not_include_secret ),
+				],
+				[
+					$this->anything(),
+					$this->anything(),
+				],
+			],
+		];
+	}
+
+	/** Test a successful fetch of a list of disputes
+	 *
+	 * @throws Exception
+	 */
+	public function test_list_disputes_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					[
+						'dispute_id'       => 'dp_test_1',
+						'charge_id'        => 'ch_test_1',
+						'amount'           => 42,
+						'currency'         => 'usd',
+						'reason'           => 'fraudulent',
+						'source'           => 'visa',
+						'customer_name'    => 'John Testerson',
+						'customer_email'   => 'one@example.com',
+						'customer_country' => 'US',
+						'status'           => 'needs_response',
+						'created'          => '2021-12-21 10:05:39',
+						'due_by'           => '2021-12-30 23:59:59',
+					],
+				],
+			]
+		);
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order ) {
+				return [];
+			}
+		);
+
+		$disputes = $this->payments_api_client->list_disputes();
+
+		$this->assertSame( 'dp_test_1', $disputes['data'][0]['dispute_id'] );
+		$this->assertSame( 'ch_test_1', $disputes['data'][0]['charge_id'] );
+		$this->assertSame( 'visa', $disputes['data'][0]['source'] );
+		$this->assertSame( 'John Testerson', $disputes['data'][0]['customer_name'] );
+		$this->assertSame( 'US', $disputes['data'][0]['customer_country'] );
+		$this->assertSame( '2021-12-21 10:05:39', $disputes['data'][0]['created'] );
+		$this->assertSame( '2021-12-30 23:59:59', $disputes['data'][0]['due_by'] );
+	}
+
+	/**
+	 * Test a sucessful fetch of disputes summary
+	 *
+	 * @throws Exception
+	 */
+	public function test_get_disputes_summary_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					'count' => 12,
+				],
+			]
+		);
+
+		$disputes_summary = $this->payments_api_client->get_disputes_summary();
+		$this->assertSame( 12, $disputes_summary['data']['count'] );
+	}
+	/**
 	 * Set up http mock response.
 	 *
 	 * @param int   $status_code status code for the mocked response.
@@ -982,4 +1411,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				)
 			);
 	}
+
+	/**
+	 * Set up mock for no subscriptions for order.
+	 */
 }

@@ -84,7 +84,7 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WP_UnitTestCase {
 		$response = $this->controller->set_flag( $request );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( null, get_option( '_wcpay_feature_upe', null ) );
+		$this->assertEquals( 'disabled', get_option( '_wcpay_feature_upe', null ) );
 		$this->assertEquals(
 			[
 				'card',

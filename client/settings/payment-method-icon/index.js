@@ -2,40 +2,17 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import React from 'react';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
-import CreditCardIcon from '../../gateway-icons/credit-card';
-import GiropayIcon from '../../gateway-icons/giropay';
-import SepaIcon from '../../gateway-icons/sepa';
-import SofortIcon from '../../gateway-icons/sofort';
+import paymentMethodsMap from '../../payment-methods-map';
 
-const paymentMethods = {
-	card: {
-		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
-		Icon: CreditCardIcon,
-	},
-	giropay: {
-		label: __( 'GiroPay', 'woocommerce-payments' ),
-		Icon: GiropayIcon,
-	},
-	sepa_debit: {
-		label: __( 'Direct Debit Payments', 'woocommerce-payments' ),
-		Icon: SepaIcon,
-	},
-	sofort: {
-		label: __( 'Sofort', 'woocommerce-payments' ),
-		Icon: SofortIcon,
-	},
-};
-
-const PaymentMethodIcon = ( props ) => {
-	const { name, showName } = props;
-
-	const paymentMethod = paymentMethods[ name ];
+const PaymentMethodIcon = ( { name, showName } ) => {
+	const paymentMethod = paymentMethodsMap[ name ];
 
 	if ( ! paymentMethod ) {
 		return <></>;
@@ -44,7 +21,12 @@ const PaymentMethodIcon = ( props ) => {
 	const { label, Icon } = paymentMethod;
 
 	return (
-		<span className="woocommerce-payments__payment-method-icon">
+		<span
+			className={ classNames(
+				'woocommerce-payments__payment-method-icon',
+				{ 'has-icon-border': 'card' !== name }
+			) }
+		>
 			<Icon />
 			{ showName && (
 				<span className="woocommerce-payments__payment-method-icon__label">

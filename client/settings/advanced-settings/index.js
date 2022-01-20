@@ -11,9 +11,12 @@ import { Card, Button } from '@wordpress/components';
  */
 import SettingsSection from '../settings-section';
 import DebugMode from './debug-mode';
+import MultiCurrencyToggle from './multi-currency-toggle';
+import WCPaySubscriptionsToggle from './wcpay-subscriptions-toggle';
 import useToggle from './use-toggle';
 import './style.scss';
 import CardBody from '../card-body';
+import ErrorBoundary from '../../components/error-boundary';
 
 const AdvancedSettings = () => {
 	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( false );
@@ -30,11 +33,15 @@ const AdvancedSettings = () => {
 			</SettingsSection>
 			{ isSectionExpanded && (
 				<SettingsSection>
-					<Card>
-						<CardBody>
-							<DebugMode />
-						</CardBody>
-					</Card>
+					<ErrorBoundary>
+						<Card>
+							<CardBody>
+								<MultiCurrencyToggle />
+								<WCPaySubscriptionsToggle />
+								<DebugMode />
+							</CardBody>
+						</Card>
+					</ErrorBoundary>
 				</SettingsSection>
 			) }
 		</>

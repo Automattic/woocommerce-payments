@@ -11,22 +11,24 @@ import Gridicon from 'gridicons';
 /**
  * Internal dependencies
  */
-import { formatCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'utils/currency';
 
 interface ConversionIndicatorProps {
 	amount: number;
 	currency: string;
+	baseCurrency: string;
 }
 
 const ConversionIndicator = ( {
 	amount,
 	currency,
+	baseCurrency,
 }: ConversionIndicatorProps ): React.ReactElement => (
 	<Tooltip
 		text={ sprintf(
 			/* translators: %s is a monetary amount */
 			__( 'Converted from %s', 'woocommerce-payments' ),
-			formatCurrency( amount, currency )
+			formatExplicitCurrency( amount, currency, false, baseCurrency )
 		) }
 		position="bottom center"
 	>
@@ -52,7 +54,7 @@ const ConvertedAmount = ( {
 	fromAmount,
 	fromCurrency,
 }: ConvertedAmountProps ): JSX.Element => {
-	const formattedCurrency = formatCurrency( amount, currency );
+	const formattedCurrency = formatExplicitCurrency( amount, currency );
 
 	// No conversion if currencies match.
 	if ( currency === fromCurrency ) {
@@ -64,6 +66,7 @@ const ConvertedAmount = ( {
 			<ConversionIndicator
 				amount={ fromAmount }
 				currency={ fromCurrency }
+				baseCurrency={ currency }
 			/>
 			{ formattedCurrency }
 		</div>

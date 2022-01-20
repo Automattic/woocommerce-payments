@@ -1,6 +1,10 @@
 .woocommerce-payments-banner {
 	margin-bottom: 32px;
 
+	svg {
+		max-width: 100%;
+	}
+
 	&.account-page {
 		border: none;
 		border-bottom: 1px solid $studio-gray-5;

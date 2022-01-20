@@ -10,6 +10,26 @@ import { useSelect, useDispatch } from '@wordpress/data';
  */
 import { STORE_NAME } from '../constants';
 
+export const useSavedCards = () => {
+	const { updateIsSavedCardsEnabled } = useDispatch( STORE_NAME );
+
+	const isSavedCardsEnabled = useSelect( ( select ) => {
+		return select( STORE_NAME ).getIsSavedCardsEnabled();
+	}, [] );
+
+	return [ isSavedCardsEnabled, updateIsSavedCardsEnabled ];
+};
+
+export const useCardPresentEligible = () => {
+	const { updateIsCardPresentEligible } = useDispatch( STORE_NAME );
+
+	const isCardPresentEligible = useSelect( ( select ) => {
+		return select( STORE_NAME ).getIsCardPresentEligible();
+	}, [] );
+
+	return [ isCardPresentEligible, updateIsCardPresentEligible ];
+};
+
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
@@ -60,6 +80,45 @@ export const useDevMode = () => {
 	}, [] );
 };
 
+export const useMultiCurrency = () => {
+	const { updateIsMultiCurrencyEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsMultiCurrencyEnabled } = select( STORE_NAME );
+			const isMultiCurrencyEnabled = getIsMultiCurrencyEnabled();
+			return [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ];
+		},
+		[ updateIsMultiCurrencyEnabled ]
+	);
+};
+
+export const useWCPaySubscriptions = () => {
+	const { updateIsWCPaySubscriptionsEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const {
+				getIsWCPaySubscriptionsEnabled,
+				getIsWCPaySubscriptionsEligible,
+				getIsSubscriptionsPluginActive,
+			} = select( STORE_NAME );
+
+			const isWCPaySubscriptionsEnabled = getIsWCPaySubscriptionsEnabled();
+			const isWCPaySubscriptionsEligible = getIsWCPaySubscriptionsEligible();
+			const isSubscriptionsPluginActive = getIsSubscriptionsPluginActive();
+
+			return [
+				isWCPaySubscriptionsEnabled,
+				isWCPaySubscriptionsEligible,
+				isSubscriptionsPluginActive,
+				updateIsWCPaySubscriptionsEnabled,
+			];
+		},
+		[ updateIsWCPaySubscriptionsEnabled ]
+	);
+};
+
 export const useAccountStatementDescriptor = () => {
 	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
 
@@ -73,6 +132,150 @@ export const useAccountStatementDescriptor = () => {
 			];
 		},
 		[ updateAccountStatementDescriptor ]
+	);
+};
+
+export const useAccountBusinessName = () => {
+	const { updateAccountBusinessName } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountBusinessName } = select( STORE_NAME );
+
+			return [ getAccountBusinessName(), updateAccountBusinessName ];
+		},
+		[ updateAccountBusinessName ]
+	);
+};
+
+export const useAccountBusinessURL = () => {
+	const { updateAccountBusinessURL } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountBusinessURL } = select( STORE_NAME );
+
+			return [ getAccountBusinessURL(), updateAccountBusinessURL ];
+		},
+		[ updateAccountBusinessURL ]
+	);
+};
+
+export const useAccountBusinessSupportAddress = () => {
+	const { updateAccountBusinessSupportAddress } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const {
+				getAccountBusinessSupportAddress,
+				getAccountBusinessSupportAddressCountry,
+				getAccountBusinessSupportAddressLine1,
+				getAccountBusinessSupportAddressLine2,
+				getAccountBusinessSupportAddressCity,
+				getAccountBusinessSupportAddressPostalCode,
+			} = select( STORE_NAME );
+
+			return [
+				getAccountBusinessSupportAddress(),
+				getAccountBusinessSupportAddressCountry(),
+				getAccountBusinessSupportAddressLine1(),
+				getAccountBusinessSupportAddressLine2(),
+				getAccountBusinessSupportAddressCity(),
+				getAccountBusinessSupportAddressPostalCode(),
+				updateAccountBusinessSupportAddress,
+			];
+		},
+		[ updateAccountBusinessSupportAddress ]
+	);
+};
+
+export const useAccountBusinessSupportEmail = () => {
+	const { updateAccountBusinessSupportEmail } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountBusinessSupportEmail } = select( STORE_NAME );
+
+			return [
+				getAccountBusinessSupportEmail(),
+				updateAccountBusinessSupportEmail,
+			];
+		},
+		[ updateAccountBusinessSupportEmail ]
+	);
+};
+
+export const useAccountBusinessSupportPhone = () => {
+	const { updateAccountBusinessSupportPhone } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountBusinessSupportPhone } = select( STORE_NAME );
+
+			return [
+				getAccountBusinessSupportPhone(),
+				updateAccountBusinessSupportPhone,
+			];
+		},
+		[ updateAccountBusinessSupportPhone ]
+	);
+};
+
+export const useAccountBrandingLogo = () => {
+	const { updateAccountBrandingLogo } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountBrandingLogo } = select( STORE_NAME );
+
+			return [ getAccountBrandingLogo(), updateAccountBrandingLogo ];
+		},
+		[ updateAccountBrandingLogo ]
+	);
+};
+
+export const useAccountBrandingIcon = () => {
+	const { updateAccountBrandingIcon } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountBrandingIcon } = select( STORE_NAME );
+
+			return [ getAccountBrandingIcon(), updateAccountBrandingIcon ];
+		},
+		[ updateAccountBrandingIcon ]
+	);
+};
+
+export const useAccountBrandingPrimaryColor = () => {
+	const { updateAccountBrandingPrimaryColor } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountBrandingPrimaryColor } = select( STORE_NAME );
+
+			return [
+				getAccountBrandingPrimaryColor(),
+				updateAccountBrandingPrimaryColor,
+			];
+		},
+		[ updateAccountBrandingPrimaryColor ]
+	);
+};
+
+export const useAccountBrandingSecondaryColor = () => {
+	const { updateAccountBrandingSecondaryColor } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountBrandingSecondaryColor } = select( STORE_NAME );
+
+			return [
+				getAccountBrandingSecondaryColor(),
+				updateAccountBrandingSecondaryColor,
+			];
+		},
+		[ updateAccountBrandingSecondaryColor ]
 	);
 };
 
@@ -110,6 +313,13 @@ export const useGetAvailablePaymentMethodIds = () =>
 		const { getAvailablePaymentMethodIds } = select( STORE_NAME );
 
 		return getAvailablePaymentMethodIds();
+	} );
+
+export const useGetPaymentMethodStatuses = () =>
+	useSelect( ( select ) => {
+		const { getPaymentMethodStatuses } = select( STORE_NAME );
+
+		return getPaymentMethodStatuses();
 	} );
 
 export const useSettings = () => {

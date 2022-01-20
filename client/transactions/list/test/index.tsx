@@ -4,9 +4,14 @@
  * External dependencies
  */
 import * as React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import user from '@testing-library/user-event';
+import apiFetch from '@wordpress/api-fetch';
+import { dateI18n } from '@wordpress/date';
+import { downloadCSVFile } from '@woocommerce/csv-export';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import moment from 'moment';
+import os from 'os';
 
 /**
  * Internal dependencies
@@ -14,20 +19,6 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { TransactionsList } from '../';
 import { useTransactions, useTransactionsSummary } from 'data/index';
 import type { Transaction } from 'data/transactions/hooks';
-
-import { downloadCSVFile } from '@woocommerce/csv-export';
-
-jest.mock( 'data/index', () => ( {
-	useTransactions: jest.fn(),
-	useTransactionsSummary: jest.fn(),
-} ) );
-
-const mockUseTransactions = useTransactions as jest.MockedFunction<
-	typeof useTransactions
->;
-const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
-	typeof useTransactionsSummary
->;
 
 jest.mock( '@woocommerce/csv-export', () => {
 	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
@@ -38,8 +29,37 @@ jest.mock( '@woocommerce/csv-export', () => {
 	};
 } );
 
+jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+
+// Workaround for mocking @wordpress/data.
+// See https://github.com/WordPress/gutenberg/issues/15031
+jest.mock( '@wordpress/data', () => ( {
+	createRegistryControl: jest.fn(),
+	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	registerStore: jest.fn(),
+	select: jest.fn(),
+	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
+} ) );
+
+jest.mock( 'data/index', () => ( {
+	useTransactions: jest.fn(),
+	useTransactionsSummary: jest.fn(),
+} ) );
+
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
+>;
+
+const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
+
+const mockUseTransactions = useTransactions as jest.MockedFunction<
+	typeof useTransactions
+>;
+
+const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
+	typeof useTransactionsSummary
 >;
 
 declare const global: {
@@ -104,6 +124,18 @@ const getMockTransactions: () => Transaction[] = () => [
 		deposit_id: 'po_mock',
 	},
 ];
+
+function getUnformattedAmount( formattedAmount: string ) {
+	const amount = formattedAmount.replace( /[^0-9,.' ]/g, '' ).trim();
+	return amount.replace( ',', '.' ); // Euro fix
+}
+
+function formatDate( date: string ) {
+	return dateI18n(
+		'M j, Y / g:iA',
+		moment.utc( date ).local().toISOString()
+	);
+}
 
 describe( 'Transactions list', () => {
 	beforeEach( () => {
@@ -389,7 +421,7 @@ describe( 'Transactions list', () => {
 
 			mockUseTransactionsSummary.mockReturnValue( {
 				transactionsSummary: {
-					count: 10,
+					count: 2,
 					currency: 'usd',
 					store_currencies: [ 'eur', 'usd' ],
 					fees: 100,
@@ -400,16 +432,59 @@ describe( 'Transactions list', () => {
 			} );
 		} );
 
-		afterEach( () => {
-			jest.resetAllMocks();
+		test( 'should fetch export after confirmation when download button is selected for unfiltered exports larger than 10000.', async () => {
+			window.confirm = jest.fn( () => true );
+			mockUseTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 11000,
+				},
+				isLoading: false,
+			} );
+
+			const { getByRole } = render( <TransactionsList /> );
+
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
+			expect( window.confirm ).toHaveBeenCalledWith(
+				"You are about to export 11000 transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?"
+			);
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
+				expect( mockApiFetch ).toHaveBeenCalledWith( {
+					method: 'POST',
+					path: '/wc/v3/payments/transactions/download?',
+				} );
+			} );
 		} );
 
-		afterAll( () => {
-			jest.restoreAllMocks();
+		test( 'should not fetch export after cancel when download button is selected for unfiltered exports larger than 10000.', async () => {
+			window.confirm = jest.fn( () => false );
+			mockUseTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 11000,
+				},
+				isLoading: false,
+			} );
+
+			const { getByRole } = render( <TransactionsList /> );
+
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
+			expect( window.confirm ).toHaveBeenCalledWith(
+				"You are about to export 11000 transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?"
+			);
+
+			await waitFor( () =>
+				expect( mockApiFetch ).not.toHaveBeenCalled()
+			);
 		} );
 
 		test( 'should render expected columns in CSV when the download button is clicked', () => {
 			const { getByRole } = render( <TransactionsList /> );
+
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			const expected = [
@@ -425,7 +500,8 @@ describe( 'Transactions list', () => {
 				'Email',
 				'Country',
 				'"Risk level"',
-				'Deposit',
+				'"Deposit date"',
+				'"Deposit status"',
 			];
 
 			// checking if columns in CSV are rendered correctly
@@ -434,6 +510,68 @@ describe( 'Transactions list', () => {
 					.split( '\n' )[ 0 ]
 					.split( ',' )
 			).toEqual( expected );
+		} );
+
+		test( 'should match the visible rows', () => {
+			const { getByRole, getAllByRole } = render( <TransactionsList /> );
+
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
+			const csvRows = csvContent.split( os.EOL );
+			const displayRows: HTMLElement[] = getAllByRole( 'row' );
+
+			expect( csvRows.length ).toEqual( displayRows.length );
+
+			const csvFirstTransaction = csvRows[ 1 ].split( ',' );
+			const displayFirstTransaction: string[] = Array.from(
+				displayRows[ 1 ].querySelectorAll( 'td' )
+			).map( ( td: HTMLElement ) => td.textContent || '' );
+
+			// Date/Time column is a th
+			// Extract is separately and prepend to csvFirstTransaction
+			const displayFirstRowHead: string[] = Array.from(
+				displayRows[ 1 ].querySelectorAll( 'th' )
+			).map( ( th: HTMLElement ) => th.textContent || '' );
+			displayFirstTransaction.unshift( displayFirstRowHead[ 0 ] );
+
+			// Note:
+			//
+			// 1. CSV and display indexes are off by 1 because the first field in CSV is transaction id,
+			//    which is missing in display.
+			//
+			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
+			//    trailing zeros as in the display amount.
+			//
+			expect( displayFirstTransaction[ 0 ] ).toBe(
+				formatDate( csvFirstTransaction[ 1 ].replace( /['"]+/g, '' ) ) // strip extra quotes
+			); // date
+			expect( displayFirstTransaction[ 1 ] ).toBe(
+				csvFirstTransaction[ 2 ]
+			); // type
+			expect(
+				getUnformattedAmount( displayFirstTransaction[ 2 ] ).indexOf(
+					csvFirstTransaction[ 3 ]
+				)
+			).not.toBe( -1 ); // amount
+			expect(
+				-Number( getUnformattedAmount( displayFirstTransaction[ 3 ] ) )
+			).toEqual(
+				Number(
+					csvFirstTransaction[ 4 ].replace( /['"]+/g, '' ) // strip extra quotes
+				)
+			); // fees
+			expect(
+				getUnformattedAmount( displayFirstTransaction[ 4 ] ).indexOf(
+					csvFirstTransaction[ 5 ]
+				)
+			).not.toBe( -1 ); // net
+			expect( displayFirstTransaction[ 5 ] ).toBe(
+				csvFirstTransaction[ 6 ]
+			); // order number
+			expect( displayFirstTransaction[ 7 ] ).toBe(
+				csvFirstTransaction[ 8 ].replace( /['"]+/g, '' ) // strip extra quotes
+			); // customer
 		} );
 	} );
 } );

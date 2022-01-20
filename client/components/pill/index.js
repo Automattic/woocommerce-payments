@@ -10,7 +10,10 @@ import classNames from 'classnames';
 import './style.scss';
 
 const Pill = ( { className, ...restProps } ) => (
-	<span className={ classNames( 'wcpay-pill' ) } { ...restProps } />
+	<span
+		className={ classNames( 'wcpay-pill', className ) }
+		{ ...restProps }
+	/>
 );
 
 export default Pill;

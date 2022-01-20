@@ -30,12 +30,24 @@ export interface Transaction {
 	customer_country: string;
 	customer_currency: string;
 	deposit_id?: string;
+	deposit_status?:
+		| 'paid'
+		| 'pending'
+		| 'in_transit'
+		| 'canceled'
+		| 'failed'
+		| 'estimated';
 	available_on: string;
 	currency: string;
 	transaction_id: string;
 	date: string;
 	type: 'charge' | 'refund';
 	source: string;
+	metadata?: {
+		charge_type: 'card_reader_fee';
+		interval_from: string;
+		interval_to: string;
+	};
 }
 
 interface Transactions {

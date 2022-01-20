@@ -39,7 +39,12 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Payment methods transient. Used in conjunction with the customer_id to cache a customer's payment methods.
 	 */
-	const PAYMENT_METHODS_TRANSIENT = 'wcpay_payment_methods_';
+	const PAYMENT_METHODS_TRANSIENT = 'wcpay_pm_';
+
+	/**
+	 * Key used to store customer id for non logged in users in WooCommerce Session.
+	 */
+	const CUSTOMER_ID_SESSION_KEY = 'wcpay_customer_id';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -64,6 +69,19 @@ class WC_Payments_Customer_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
+
+		/*
+		 * Adds the WooComerce Payments customer ID found in the user session
+		 * to the WordPress user as metadata.
+		 *
+		 * This is helpful in scenarios where the shopper begins the checkout flow
+		 * logged out (i.e. guest checkout) and a user account is created for them
+		 * during checkout.
+		 *
+		 * This occurs when a user account is necessary for checkout, e.g. when the shopper
+		 * purchases a subscription product.
+		 */
+		add_action( 'woocommerce_created_customer', [ $this, 'add_customer_id_to_user' ] );
 	}
 
 	/**
@@ -76,7 +94,9 @@ class WC_Payments_Customer_Service {
 	public function get_customer_id_by_user_id( $user_id ) {
 		// User ID might be 0 if fetched from a WP_User instance for a user who isn't logged in.
 		if ( null === $user_id || 0 === $user_id ) {
-			return null;
+			// Try to retrieve the customer id from the session if stored previously.
+			$customer_id = WC()->session ? WC()->session->get( self::CUSTOMER_ID_SESSION_KEY ) : null;
+			return is_string( $customer_id ) ? $customer_id : null;
 		}
 
 		$customer_id = get_user_option( $this->get_customer_id_option(), $user_id );
@@ -110,13 +130,11 @@ class WC_Payments_Customer_Service {
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );
 
 		if ( $user->ID > 0 ) {
-			$global = WC_Payments::is_network_saved_cards_enabled();
-			$result = update_user_option( $user->ID, $this->get_customer_id_option(), $customer_id, $global );
-			if ( ! $result ) {
-				// Log the error, but continue since we have the customer ID we need.
-				Logger::error( 'Failed to store new customer ID for user ' . $user->ID );
-			}
+			$this->update_user_customer_id( $user->ID, $customer_id );
 		}
+
+		// Save the customer id in the session for non logged in users to reuse it in payments.
+		WC()->session->set( self::CUSTOMER_ID_SESSION_KEY, $customer_id );
 
 		return $customer_id;
 	}
@@ -187,10 +205,11 @@ class WC_Payments_Customer_Service {
 		}
 
 		$cache_payment_methods = ! WC_Payments::is_network_saved_cards_enabled();
+		$transient_key         = self::PAYMENT_METHODS_TRANSIENT . $customer_id . '_' . $type;
 
 		if ( $cache_payment_methods ) {
-			$payment_methods = get_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id );
-			if ( $payment_methods ) {
+			$payment_methods = get_transient( $transient_key );
+			if ( is_array( $payment_methods ) ) {
 				return $payment_methods;
 			}
 		}
@@ -198,7 +217,7 @@ class WC_Payments_Customer_Service {
 		try {
 			$payment_methods = $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
 			if ( $cache_payment_methods ) {
-				set_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id, $payment_methods, DAY_IN_SECONDS );
+				set_transient( $transient_key, $payment_methods, DAY_IN_SECONDS );
 			}
 			return $payment_methods;
 
@@ -243,7 +262,9 @@ class WC_Payments_Customer_Service {
 			return; // No need to do anything, payment methods will never be cached in this case.
 		}
 		$customer_id = $this->get_customer_id_by_user_id( $user_id );
-		delete_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id );
+		foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
+			delete_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id . '_' . $type );
+		}
 	}
 
 	/**
@@ -362,5 +383,67 @@ class WC_Payments_Customer_Service {
 				Logger::error( 'Failed to store new customer ID for user ' . $user_id . '; legacy customer was kept.' );
 			}
 		}
+	}
+
+	/**
+	 * Get the WCPay customer ID associated with an order, or create one if none found.
+	 *
+	 * @param WC_Order $order WC Order object.
+	 *
+	 * @return string|null    WCPay customer ID.
+	 * @throws API_Exception  If there's an error creating customer.
+	 */
+	public function get_customer_id_for_order( $order ) {
+		$customer_id = null;
+		$user        = $order->get_user();
+
+		if ( false !== $user ) {
+			// Determine the customer making the payment, create one if we don't have one already.
+			$customer_id = $this->get_customer_id_by_user_id( $user->ID );
+
+			if ( null === $customer_id ) {
+				$customer_data = self::map_customer_data( $order, new WC_Customer( $user->ID ) );
+				$customer_id   = $this->create_customer_for_user( $user, $customer_data );
+			}
+		}
+
+		return $customer_id;
+	}
+
+	/**
+	 * Updates the given user with the given WooCommerce Payments
+	 * customer ID.
+	 *
+	 * @param int    $user_id     The WordPress user ID.
+	 * @param string $customer_id The WooCommerce Payments customer ID.
+	 */
+	public function update_user_customer_id( int $user_id, string $customer_id ) {
+		$global = WC_Payments::is_network_saved_cards_enabled();
+		$result = update_user_option( $user_id, $this->get_customer_id_option(), $customer_id, $global );
+		if ( ! $result ) {
+			Logger::error( 'Failed to update customer ID for user ' . $user_id );
+		}
+	}
+
+	/**
+	 * Adds the WooComerce Payments customer ID found in the user session
+	 * to the WordPress user as metadata.
+	 *
+	 * @param int $user_id The WordPress user ID.
+	 */
+	public function add_customer_id_to_user( $user_id ) {
+		// Not processing a checkout, bail.
+		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) || ! WOOCOMMERCE_CHECKOUT ) {
+			return;
+		}
+
+		// Retrieve the WooComerce Payments customer ID from the user session.
+		$customer_id = WC()->session ? WC()->session->get( self::CUSTOMER_ID_SESSION_KEY ) : null;
+
+		if ( ! $customer_id ) {
+			return;
+		}
+
+		$this->update_user_customer_id( $user_id, $customer_id );
 	}
 }

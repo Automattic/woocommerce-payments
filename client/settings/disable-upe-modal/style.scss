@@ -1,0 +1,11 @@
+.disable-modal-section {
+	.deactivating-payment-methods-list {
+		min-height: 150px;
+
+		> * {
+			&:not( :last-child ) {
+				margin-bottom: $grid-unit-10;
+			}
+		}
+	}
+}

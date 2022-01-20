@@ -4,13 +4,14 @@ on:
   pull_request
 
 env:
-  WP_VERSION: latest
-  WC_VERSION: 4.5.0  # the most used version here
+  WP_VERSION:        latest
+  WC_VERSION: 5.6.0  # the min supported version as per L-2 policy
+  GUTENBERG_VERSION: latest
 
 jobs:
   lint:
     name:    PHP linting
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
       # clone the repository
       - uses: actions/checkout@v2
@@ -30,7 +31,7 @@ jobs:
 
   test:
     name:    PHP testing
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast:    false
       max-parallel: 10
@@ -49,6 +50,6 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           tools:       composer
-          coverage:    none
+          coverage:    xdebug2
       # run CI checks
       - run: bash bin/run-ci-tests.bash

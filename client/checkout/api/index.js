@@ -7,6 +7,7 @@ import { getConfig } from 'utils/checkout';
 import {
 	getPaymentRequestData,
 	getPaymentRequestAjaxURL,
+	buildAjaxURL,
 } from '../../payment-request/utils';
 
 /**
@@ -52,7 +53,7 @@ export default class WCPayAPI {
 			if ( isUPEEnabled ) {
 				this.stripe = new Stripe( publishableKey, {
 					stripeAccount: accountId,
-					betas: [ 'payment_element_beta_1' ],
+					betas: [ 'card_country_event_beta_1' ],
 					locale,
 				} );
 			} else {
@@ -273,10 +274,10 @@ export default class WCPayAPI {
 	 * @return {Promise} The final promise for the request to the server.
 	 */
 	initSetupIntent() {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			action: 'init_setup_intent',
-			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
-		} ).then( ( response ) => {
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_setup_intent' ),
+			{ _ajax_nonce: getConfig( 'createSetupIntentNonce' ) }
+		).then( ( response ) => {
 			if ( ! response.success ) {
 				throw response.data.error;
 			}
@@ -326,11 +327,13 @@ export default class WCPayAPI {
 	 * @return {Promise} The final promise for the request to the server.
 	 */
 	createIntent( orderId ) {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			action: 'create_payment_intent',
-			wcpay_order_id: orderId,
-			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
-		} )
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'create_payment_intent' ),
+			{
+				wcpay_order_id: orderId,
+				_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
+			}
+		)
 			.then( ( response ) => {
 				if ( ! response.success ) {
 					throw response.data.error;
@@ -353,21 +356,29 @@ export default class WCPayAPI {
 	 * @param {string} paymentIntentId The id of the payment intent.
 	 * @param {int} orderId The id of the order.
 	 * @param {string} savePaymentMethod 'yes' if saving.
+	 * @param {string} selectedUPEPaymentType The name of the selected UPE payment type or empty string.
+	 * @param {string?} paymentCountry The payment two-letter iso country code or null.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	updateIntent( paymentIntentId, orderId, savePaymentMethod ) {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			// eslint-disable-next-line camelcase
-			wcpay_order_id: orderId,
-			// eslint-disable-next-line camelcase
-			wc_payment_intent_id: paymentIntentId,
-			// eslint-disable-next-line camelcase
-			save_payment_method: savePaymentMethod,
-			action: 'update_payment_intent',
-			// eslint-disable-next-line camelcase
-			_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
-		} )
+	updateIntent(
+		paymentIntentId,
+		orderId,
+		savePaymentMethod,
+		selectedUPEPaymentType,
+		paymentCountry
+	) {
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'update_payment_intent' ),
+			{
+				wcpay_order_id: orderId,
+				wc_payment_intent_id: paymentIntentId,
+				save_payment_method: savePaymentMethod,
+				wcpay_selected_upe_payment_type: selectedUPEPaymentType,
+				wcpay_payment_country: paymentCountry,
+				_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
+			}
+		)
 			.then( ( response ) => {
 				if ( 'failure' === response.result ) {
 					throw new Error( response.messages );
@@ -383,6 +394,35 @@ export default class WCPayAPI {
 				}
 			} );
 	}
+
+	/**
+	 * Saves the calculated UPE appearance values in a transient.
+	 *
+	 * @param {Object} appearance The UPE appearance object with style values
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	saveUPEAppearance( appearance ) {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			appearance,
+			action: 'save_upe_appearance',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
+		} )
+			.then( ( response ) => {
+				// There is not any action to take or harm caused by a failed update, so just returning success status.
+				return response.success;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajaxrequest.
+					throw new Error( error.statusText );
+				}
+			} );
+	}
+
 	/**
 	 * Process checkout and update payment intent via AJAX.
 	 *
@@ -391,11 +431,13 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise containing redirect URL for UPE element.
 	 */
 	processCheckout( paymentIntentId, fields ) {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			...fields,
-			wc_payment_intent_id: paymentIntentId,
-			action: 'woocommerce_checkout',
-		} )
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'checkout', '' ),
+			{
+				...fields,
+				wc_payment_intent_id: paymentIntentId,
+			}
+		)
 			.then( ( response ) => {
 				if ( 'failure' === response.result ) {
 					throw new Error( response.messages );
@@ -498,6 +540,34 @@ export default class WCPayAPI {
 		return this.request( getPaymentRequestAjaxURL( 'create_order' ), {
 			_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
 			...paymentData,
+		} );
+	}
+
+	initPlatformCheckout() {
+		return this.request(
+			getPaymentRequestAjaxURL( 'init_platform_checkout' ),
+			{
+				_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
+			}
+		);
+	}
+
+	/**
+	 * Log Payment Errors via Ajax.
+	 *
+	 * @param {string} chargeId Stripe Charge ID
+	 * @return {boolean} Returns true irrespective of result.
+	 */
+	logPaymentError( chargeId ) {
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'log_payment_error' ),
+			{
+				charge_id: chargeId,
+				_ajax_nonce: getConfig( 'logPaymentErrorNonce' ),
+			}
+		).then( () => {
+			// There is not any action to take or harm caused by a failed update, so just returning true.
+			return true;
 		} );
 	}
 }

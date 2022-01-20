@@ -1,30 +1,41 @@
 /* eslint-disable */
 const path = require( 'path' );
 var NODE_ENV = process.env.NODE_ENV || 'development';
+const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 
 const webpackConfig = {
 	mode: NODE_ENV,
-	devtool: process.env.SOURCEMAP === 'none' ? undefined : 'source-map',
+	devtool:
+		process.env.SOURCEMAP === 'none'
+			? undefined
+			: process.env.SOURCEMAP === 'hidden'
+			? 'hidden-source-map'
+			: 'source-map',
 	entry: {
 		index: './client/index.js',
 		settings: './client/settings/index.js',
 		'blocks-checkout': './client/checkout/blocks/index.js',
+		'upe-blocks-checkout': './client/checkout/blocks/upe.js',
 		checkout: './client/checkout/classic/index.js',
 		upe_checkout: './client/checkout/classic/upe.js',
 		'payment-request': './client/payment-request/index.js',
 		'subscription-edit-page': './client/subscription-edit-page.js',
 		tos: './client/tos/index.js',
-		'additional-methods-setup':
-			'./client/additional-methods-setup/index.js',
 		'payment-gateways': './client/payment-gateways/index.js',
 		'multi-currency': './client/multi-currency/index.js',
+		'multi-currency-switcher-block':
+			'./client/multi-currency/blocks/currency-switcher.js',
+		'multi-currency-analytics':
+			'./client/multi-currency-analytics/index.js',
 		order: './client/order/index.js',
-	},
-	output: {
-		filename: '[name].js',
-		path: path.resolve( 'dist' ),
+		'subscriptions-empty-state':
+			'./client/subscriptions-empty-state/index.js',
+		'subscription-product-onboarding-modal':
+			'./client/subscription-product-onboarding/modal.js',
+		'subscription-product-onboarding-toast':
+			'./client/subscription-product-onboarding/toast.js',
 	},
 	module: {
 		rules: [
@@ -76,15 +87,26 @@ const webpackConfig = {
 			{
 				test: /\.(svg|png)$/,
 				exclude: /node_modules/,
-				loader: 'url-loader',
+				type: 'asset/inline',
 			},
 		],
 	},
 	resolve: {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
 		modules: [ path.join( __dirname, 'client' ), 'node_modules' ],
+		alias: {
+			wcpay: path.resolve( __dirname, 'client' ),
+		},
+		fallback: {
+			crypto: require.resolve( 'crypto-browserify' ),
+			stream: require.resolve( 'stream-browserify' ),
+			util: require.resolve( 'util' ),
+		},
 	},
 	plugins: [
+		new ProvidePlugin( {
+			process: 'process/browser',
+		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WordPressExternalDependenciesPlugin( {
 			injectPolyfill: true,

@@ -4,73 +4,80 @@ set -e
 
 . ./tests/e2e/env/shared.sh
 
-BLOG_ID=${E2E_BLOG_ID-111}
-
 if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	echo "Loading local env variables"
 	. "$E2E_ROOT/config/local.env"
 fi
 
-if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
-	step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
+# Variables
+BLOG_ID=${E2E_BLOG_ID-111}
+WC_GUEST_EMAIL='guest@woocommercecoree2etestsuite.com'
+WC_CUSTOMER_EMAIL='customer@woocommercecoree2etestsuite.com'
+WC_CUSTOMER_USERNAME='customer'
+WC_CUSTOMER_PASSWORD='password'
 
-	if [[ -z $WCP_SERVER_REPO ]]; then
-		echo "WCP_SERVER_REPO env variable is not defined"
-		exit 1;
+# Setup WCPay local server instance.
+# Only if E2E_USE_LOCAL_SERVER is present & equals to true.
+if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
+	if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$SERVER_PATH" ]]; then
+		step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
+
+		if [[ -z $WCP_SERVER_REPO ]]; then
+			echo "WCP_SERVER_REPO env variable is not defined"
+			exit 1;
+		fi
+
+		rm -rf "$SERVER_PATH"
+		git clone --depth=1 --branch ${WCP_SERVER_BRANCH-trunk} $WCP_SERVER_REPO "$SERVER_PATH"
+	else
+		echo "Using cached server at ${SERVER_PATH}"
 	fi
 
-	rm -rf $SERVER_PATH
-	git clone --depth=1 --branch ${WCP_SERVER_BRANCH-trunk} $WCP_SERVER_REPO $SERVER_PATH
-else
-	echo "Using cached server at ${SERVER_PATH}"
+	cd "$SERVER_PATH"
+
+	step "Creating server secrets"
+	SECRETS="<?php
+	define( 'WCPAY_STRIPE_TEST_PUBLIC_KEY', '$E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY' );
+	define( 'WCPAY_STRIPE_TEST_SECRET_KEY', '$E2E_WCPAY_STRIPE_TEST_SECRET_KEY' );
+	define( 'WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY', '$E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY' );
+	define( 'WCPAY_STRIPE_LIVE_PUBLIC_KEY', 'pk_live_XXXXXXX' );
+	define( 'WCPAY_STRIPE_LIVE_SECRET_KEY', 'sk_live_XXXXXXX' );
+	define( 'WCPAY_ONBOARDING_ENCRYPT_KEY', str_repeat( 'a', SODIUM_CRYPTO_SECRETBOX_KEYBYTES ) );
+	"
+	printf "$SECRETS" > "local/secrets.php"
+	echo "Secrets created"
+
+	step "Starting SERVER containers"
+	redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
+
+	# Get WordPress instance port number from running containers, and print a debug line to show if it works.
+	WP_LISTEN_PORT=$(docker ps | grep woocommerce_payments_server_wordpress_e2e | sed -En "s/.*0:([0-9]+).*/\1/p")
+	echo "WordPress instance listening on port ${WP_LISTEN_PORT}"
+
+	if [[ -n $CI ]]; then
+		echo "Setting docker folder permissions"
+		redirect_output sudo chown www-data:www-data -R ./docker/wordpress
+		redirect_output ls -al ./docker
+	fi
+
+	step "Setting up SERVER containers"
+	"$SERVER_PATH"/local/bin/docker-setup.sh
+
+	step "Configuring server with stripe account"
+	"$SERVER_PATH"/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID test 1 1
 fi
 
-cd $SERVER_PATH
+cd "$cwd"
 
-step "Creating server secrets"
-SECRETS="<?php
-define( 'WCPAY_STRIPE_TEST_PUBLIC_KEY', '$E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY' );
-define( 'WCPAY_STRIPE_TEST_SECRET_KEY', '$E2E_WCPAY_STRIPE_TEST_SECRET_KEY' );
-define( 'WCPAY_STRIPE_TEST_CLIENT_ID', '$E2E_WCPAY_STRIPE_TEST_CLIENT_ID' );
-define( 'WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY', '$E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY' );
-define( 'WCPAY_STRIPE_LIVE_PUBLIC_KEY', 'pk_live_XXXXXXX' );
-define( 'WCPAY_STRIPE_LIVE_SECRET_KEY', 'sk_live_XXXXXXX' );
-define( 'WCPAY_STRIPE_LIVE_CLIENT_ID', 'ca_live_XXXXXXX' );
-define( 'WCPAY_OAUTH_ENCRYPT_KEY', str_repeat( 'a', SODIUM_CRYPTO_SECRETBOX_KEYBYTES ) );
-"
-printf "$SECRETS" > "local/secrets.php"
-echo "Secrets created"
-
-step "Starting SERVER containers"
-redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
-
-# Get WordPress instance port number from running containers, and print a debug line to show if it works.
-WP_LISTEN_PORT=$(docker ps | grep woocommerce_payments_server_wordpress_e2e | sed -En "s/.*0:([0-9]+).*/\1/p")
-echo "WordPress instance listening on port ${WP_LISTEN_PORT}"
-
-if [[ -n $CI ]]; then
-	echo "Setting docker folder permissions"
-	redirect_output sudo chown www-data:www-data -R ./docker/wordpress
-	redirect_output ls -al ./docker
-fi
-
-step "Setting up SERVER containers"
-$SERVER_PATH/local/bin/docker-setup.sh
-
-step "Configuring server with stripe account"
-$SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID test 1 1
-
-cd $cwd
-
-if [[ $FORCE_E2E_DEPS_SETUP || ! -d $DEV_TOOLS_PATH ]]; then
+if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$DEV_TOOLS_PATH" ]]; then
 	step "Fetching dev tools"
 	if [[ -z $WCP_DEV_TOOLS_REPO ]]; then
 		echo "WCP_DEV_TOOLS_REPO env variable is not defined"
 		exit 1;
 	fi
 
-	rm -rf $DEV_TOOLS_PATH
-	git clone --depth=1 --branch ${WCP_DEV_TOOLS_BRANCH-trunk} $WCP_DEV_TOOLS_REPO $DEV_TOOLS_PATH
+	rm -rf "$DEV_TOOLS_PATH"
+	git clone --depth=1 --branch ${WCP_DEV_TOOLS_BRANCH-trunk} $WCP_DEV_TOOLS_REPO "$DEV_TOOLS_PATH"
 fi
 
 step "Starting CLIENT containers"
@@ -88,9 +95,10 @@ WP_CONTAINER="wcp_e2e_wordpress"
 SITE_URL=$WP_URL
 SITE_TITLE="WooCommerce Payments E2E site"
 
-set +e
+
 # Wait for containers to be started up before the setup.
 # The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
+set +e
 cli wp db check --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
@@ -106,8 +114,8 @@ echo
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
-	redirect_output sudo chown www-data:www-data -R $E2E_ROOT/docker/wordpress/wp-content
-	redirect_output ls -al $E2E_ROOT/docker/wordpress
+	redirect_output sudo chown www-data:www-data -R "$E2E_ROOT"/docker/wordpress/wp-content
+	redirect_output ls -al "$E2E_ROOT"/docker/wordpress
 fi
 
 echo "Pulling the WordPress CLI docker image..."
@@ -132,11 +140,11 @@ cli wp core update-db --quiet
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
 
-echo "Installing and activating Gutenberg..."
-cli wp plugin install gutenberg --activate
+echo "Installing and activating Gutenberg, WooCommerce & WordPress Importer..."
+cli wp plugin install gutenberg woocommerce wordpress-importer --activate
 
-echo "Installing and activating WooCommerce..."
-cli wp plugin install woocommerce --activate
+echo "Installing basic auth plugin for interfacing with the API"
+cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
 
 echo "Installing and activating Storefront theme..."
 cli wp theme install storefront --activate
@@ -155,11 +163,17 @@ cli wp option set woocommerce_enable_signup_and_login_from_checkout "yes"
 echo "Importing WooCommerce shop pages..."
 cli wp wc --user=admin tool run install_pages
 
-echo "Installing and activating the WordPress Importer plugin..."
-cli wp plugin install wordpress-importer --activate
-
 echo "Importing some sample data..."
 cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip
+
+echo "Removing customer account if present ..."
+cli wp user delete $WC_CUSTOMER_EMAIL --yes
+
+echo "Removing guest account if present ..."
+cli wp user delete $WC_GUEST_EMAIL --yes
+
+echo "Adding customer account ..."
+cli wp user create $WC_CUSTOMER_USERNAME $WC_CUSTOMER_EMAIL --role=customer --user_pass=$WC_CUSTOMER_PASSWORD
 
 # TODO: Build a zip and use it to install plugin to make sure production build is under test.
 echo "Activating the WooCommerce Payments plugin..."
@@ -177,19 +191,39 @@ fi
 echo "Activating dev tools plugin"
 cli wp plugin activate $DEV_TOOLS_DIR
 
-echo "Setting Jetpack blog_id"
-cli wp wcpay_dev set_blog_id $BLOG_ID
+if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
+	echo "Setting redirection to local server"
+	# host.docker.internal is not available in linux. Use ip address for docker0 interface to redirect requests from container.
+	if [[ -n $CI ]]; then
+		DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+	fi
+	cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
+
+	echo "Setting Jetpack blog_id"
+	cli wp wcpay_dev set_blog_id $BLOG_ID
+else
+	echo "Disabling WPCOM requests proxy"
+	cli wp option update wcpaydev_proxy 0
+
+	echo "Setting Jetpack blog_id"
+	cli wp wcpay_dev set_blog_id $BLOG_ID --blog_token=$E2E_BLOG_TOKEN --user_token=$E2E_USER_TOKEN
+fi
 
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	echo "Install and activate the latest release of WooCommerce Subscriptions"
-	cd $E2E_ROOT/deps
-	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
-	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_SUBSCRIPTIONS_REPO/archive/$LATEST_RELEASE.zip"
+	cd "$E2E_ROOT"/deps
+	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | jq -r '.tag_name')
+	WCS_LATEST_ASSET_ID=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | jq -r '.assets[0].id')
+	curl -L \
+		-H "Authorization: token $E2E_GH_TOKEN" \
+		-H 'Accept: application/octet-stream' \
+		--output "woocommerce-subscriptions-$LATEST_RELEASE.zip" \
+		"https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/assets/$WCS_LATEST_ASSET_ID"
 
-	unzip -qq woocommerce-subscriptions-$LATEST_RELEASE.zip
+	unzip -qq woocommerce-subscriptions-$LATEST_RELEASE.zip -d woocommerce-subscriptions-$LATEST_RELEASE
 
 	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv woocommerce-subscriptions-$LATEST_RELEASE/* $E2E_ROOT/deps/woocommerce-subscriptions
+	sudo mv woocommerce-subscriptions-$LATEST_RELEASE/woocommerce-subscriptions/* "$E2E_ROOT"/deps/woocommerce-subscriptions
 
 	cli wp plugin activate woocommerce-subscriptions
 
@@ -200,14 +234,14 @@ fi
 
 if [[ ! ${SKIP_WC_ACTION_SCHEDULER_TESTS} ]]; then
 	echo "Install and activate the latest release of Action Scheduler"
-	cd $E2E_ROOT/deps
+	cd "$E2E_ROOT"/deps
 	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_ACTION_SCHEDULER_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
 	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_ACTION_SCHEDULER_REPO/archive/$LATEST_RELEASE.zip"
 
 	unzip -qq action-scheduler-$LATEST_RELEASE.zip
 
 	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv action-scheduler-$LATEST_RELEASE/* $E2E_ROOT/deps/action-scheduler
+	sudo mv action-scheduler-$LATEST_RELEASE/* "$E2E_ROOT"/deps/action-scheduler
 
 	cli wp plugin activate action-scheduler
 
@@ -216,20 +250,29 @@ else
 	echo "Skipping install of Action Scheduler"
 fi
 
-echo "Installing basic auth plugin for interfacing with the API"
-cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
+if [[ ! ${SKIP_WC_BLOCKS_TESTS} ]]; then
+	echo "Install and activate the latest release of WooCommerce Blocks"
+	cd "$E2E_ROOT"/deps
+	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_BLOCKS_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
+	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_BLOCKS_REPO/archive/$LATEST_RELEASE.zip"
+
+	unzip -qq woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}.zip
+
+	echo "Moving the unzipped plugin files. This may require your admin password"
+	sudo mv woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}/* "$E2E_ROOT"/deps/woocommerce-gutenberg-products-block
+
+	cli wp plugin activate woocommerce-gutenberg-products-block
+
+	rm -rf woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}
+else
+	echo "Skipping install of WooCommerce Blocks"
+fi
 
 echo "Creating screenshots directory"
 mkdir -p $WCP_ROOT/screenshots
 
-echo "Setting redirection to local server"
-
-# host.docker.internal is not available in linux. Use ip address for docker0 interface to redirect requests from container.
-if [[ -n $CI ]]; then
-	DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
-fi
-
-cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
+echo "Disabling rate limiter for card declined in E2E tests"
+cli wp option add wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
 
 echo
 step "Client site is up and running at http://${WP_URL}/wp-admin/"

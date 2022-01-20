@@ -8,9 +8,9 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import InstantDepositButton from '../';
-import { useInstantDeposit } from 'data';
+import { useInstantDeposit } from 'wcpay/data';
 
-jest.mock( 'data', () => ( { useInstantDeposit: jest.fn() } ) );
+jest.mock( 'wcpay/data', () => ( { useInstantDeposit: jest.fn() } ) );
 
 useInstantDeposit.mockReturnValue( {
 	deposit: undefined,

@@ -12,12 +12,16 @@ import {
 	useGetSavingError,
 	useAccountStatementDescriptor,
 	useManualCapture,
+	useSavedCards,
+	useCardPresentEligible,
 } from '../../../data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
 	useManualCapture: jest.fn(),
 	useGetSavingError: jest.fn(),
+	useSavedCards: jest.fn(),
+	useCardPresentEligible: jest.fn(),
 } ) );
 
 describe( 'TransactionsAndDeposits', () => {
@@ -25,6 +29,8 @@ describe( 'TransactionsAndDeposits', () => {
 		useAccountStatementDescriptor.mockReturnValue( [ '', jest.fn() ] );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		useGetSavingError.mockReturnValue( null );
+		useSavedCards.mockReturnValue( [ false, jest.fn() ] );
+		useCardPresentEligible.mockReturnValue( [ false ] );
 	} );
 
 	it( 'renders', () => {
@@ -94,6 +100,18 @@ describe( 'TransactionsAndDeposits', () => {
 		expect(
 			screen.getByText(
 				`Customer bank statement is invalid. It should not contain special characters: ' " * < >`
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'display ipp payment notice', async () => {
+		useCardPresentEligible.mockReturnValue( [ true ] );
+
+		render( <TransactionsAndDeposits /> );
+
+		expect(
+			screen.getByText(
+				new RegExp( 'The setting is not applied to In-Person Payments' )
 			)
 		).toBeInTheDocument();
 	} );
