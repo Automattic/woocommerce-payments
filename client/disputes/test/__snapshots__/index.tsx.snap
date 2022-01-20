@@ -163,7 +163,7 @@ exports[`Disputes list renders correctly 1`] = `
                 </th>
                 <th
                   aria-sort="none"
-                  class="woocommerce-table__header is-sortable"
+                  class="woocommerce-table__header is-left-aligned is-sortable"
                   role="columnheader"
                   scope="col"
                 >
@@ -393,7 +393,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </th>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -518,7 +518,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </th>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -573,7 +573,11 @@ exports[`Disputes list renders correctly 1`] = `
                 </td>
                 <td
                   class="woocommerce-table__item"
-                />
+                >
+                  <span>
+                    –
+                  </span>
+                </td>
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
