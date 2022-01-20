@@ -1,8 +1,36 @@
+@import '../../../stylesheets/abstracts/colors';
+@import '../../../stylesheets/abstracts/variables';
+
 .platform-checkout-save-new-user-container {
+	display: flex;
+	flex-direction: column;
+	gap: $gap;
+	margin: $gap-large 0;
+
 	h3 {
-		margin-bottom: 16px;
 		font-weight: 400;
 		font-size: 24px;
+		margin-bottom: 0;
+	}
+
+	.components-checkbox-control__input-container {
+		margin-right: $gap-smaller;
+
+		.components-checkbox-control__input[type='checkbox'] {
+			height: 16px;
+			width: 16px;
+		}
+
+		svg {
+			height: 16px;
+			width: 16px;
+			left: 0;
+			top: 0;
+		}
+
+		label {
+			font-size: 14px;
+		}
 	}
 
 	.save-details-form {
@@ -12,8 +40,8 @@
 		line-height: 26px;
 		font-weight: 400;
 		background-color: #f8f8f8;
-		padding: 16px;
-		gap: 16px;
+		padding: $gap;
+		gap: $gap;
 
 		.about-platform-checkout {
 			color: #6d6d6d;
@@ -23,8 +51,8 @@
 			display: flex;
 			flex-direction: row;
 			align-items: flex-start;
-			gap: 8px;
-			color: #757575;
+			gap: $gap-smaller;
+			color: $gray-700;
 
 			img {
 				margin-top: 5px;

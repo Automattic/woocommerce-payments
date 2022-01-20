@@ -37,7 +37,7 @@ class Platform_Checkout_Save_User {
 		wp_register_style(
 			'WCPAY_PLATFORM_CHECKOUT',
 			$style_url,
-			[],
+			[ 'wp-components' ],
 			\WC_Payments::get_file_version( 'dist/platform-checkout.css' )
 		);
 

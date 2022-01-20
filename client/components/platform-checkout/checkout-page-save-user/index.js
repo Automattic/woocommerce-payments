@@ -17,7 +17,7 @@ import PhoneIcon from '../icons/phone-icon';
 import './style.scss';
 
 const CheckoutPageSaveUser = () => {
-	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( true );
+	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
 	const { isRegisteredUser } = usePlatformCheckoutUser();
 
 	if ( isRegisteredUser ) {
@@ -29,9 +29,7 @@ const CheckoutPageSaveUser = () => {
 			<h3>Remember your details?</h3>
 			<CheckboxControl
 				checked={ isSaveDetailsChecked }
-				onChange={ () =>
-					setIsSaveDetailsChecked( ! isSaveDetailsChecked )
-				}
+				onChange={ setIsSaveDetailsChecked }
 				label={ __(
 					'Save my information for faster checkouts',
 					'woocommerce-payments'
