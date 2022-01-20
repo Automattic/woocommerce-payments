@@ -33,7 +33,6 @@ import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { DisputesTableHeader } from 'wcpay/types/disputes';
-import { getPostUrl } from 'wcpay/utils';
 
 import './style.scss';
 
@@ -105,108 +104,102 @@ const headers: DisputesTableHeader[] = [
 ];
 
 export const DisputesList = (): JSX.Element => {
-	/* eslint-disable */
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
-	const { disputesSummary, isLoading: isSummaryLoading } = useDisputesSummary(
-		getQuery()
-	);
+	const {
+		disputesSummary,
+		isLoading: isSummaryLoading,
+	} = useDisputesSummary( getQuery() );
 
 	const rows = disputes.map( ( dispute ) => {
-		const {
-			dispute_id,
-			amount = 0,
-			currency,
-			reason,
-			source,
-			order_number,
-			customer_name,
-			customer_email,
-			customer_country,
-			status,
-			created,
-			due_by,
-		} = dispute;
-
-		const orderObject = {
-			number: order_number,
-			url: getPostUrl( {
-				post: order_number,
-				action: 'edit',
-			} ),
-		};
-
-		const order = {
-			value: order_number,
-			display: <OrderLink order={ orderObject } />,
-		};
+		const order = dispute.order
+			? {
+					value: dispute.order.number,
+					display: <OrderLink order={ dispute.order } />,
+			  }
+			: null;
 
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
-			<ClickableCell href={ getDetailsURL( dispute_id, 'disputes' ) }>
+			<ClickableCell
+				href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
+			>
 				{ children }
 			</ClickableCell>
 		);
 
 		const detailsLink = (
-			<DetailsLink id={ dispute_id } parentSegment="disputes" />
+			<DetailsLink id={ dispute.dispute_id } parentSegment="disputes" />
 		);
 
-		const reasonMapping = reasons[ reason ];
+		const reasonMapping = reasons[ dispute.reason ];
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
-			: formatStringValue( reason );
+			: formatStringValue( dispute.reason );
 
 		const data = {
 			amount: {
-				value: amount / 100,
+				value: dispute.amount / 100,
 				display: clickable(
-					formatExplicitCurrency( amount, currency )
+					formatExplicitCurrency(
+						dispute.amount || 0,
+						dispute.currency || 'USD'
+					)
 				),
 			},
 			status: {
-				value: status,
-				display: clickable( <DisputeStatusChip status={ status } /> ),
+				value: dispute.status,
+				display: clickable(
+					<DisputeStatusChip status={ dispute.status } />
+				),
 			},
 			reason: {
-				value: reason,
+				value: dispute.reason,
 				display: clickable( reasonDisplay ),
 			},
 			source: {
-				value: source,
+				value: dispute.source,
 				display: clickable(
 					<span
-						className={ `payment-method__brand payment-method__brand--${ source }` }
+						className={ `payment-method__brand payment-method__brand--${ dispute.source }` }
 					/>
 				),
 			},
 			created: {
-				value: created,
+				value: dispute.created,
 				display: clickable(
-					dateI18n( 'M j, Y', moment( created ).toISOString() )
+					dateI18n(
+						'M j, Y',
+						moment( dispute.created ).toISOString()
+					)
 				),
 			},
 			dueBy: {
-				value: due_by,
+				value: dispute.due_by,
 				display: clickable(
-					dateI18n( 'M j, Y / g:iA', moment( due_by ).toISOString() )
+					dateI18n(
+						'M j, Y / g:iA',
+						moment( dispute.due_by ).toISOString()
+					)
 				),
 			},
 			order,
 			customer: {
-				value: customer_name,
-				display: clickable( customer_name ),
+				value: dispute.customer_name,
+				display: clickable( dispute.customer_name ),
 			},
 			email: {
-				value: customer_email,
-				display: clickable( customer_email ),
+				value: dispute.customer_email,
+				display: clickable( dispute.customer_email ),
 			},
 			country: {
-				value: customer_country,
-				display: clickable( customer_country ),
+				value: dispute.customer_country,
+				display: clickable( dispute.customer_country ),
 			},
-			details: { value: dispute_id, display: detailsLink },
+			details: { value: dispute.dispute_id, display: detailsLink },
 		};
-		return headers.map( ( { key } ) => data[ key ] || { display: null } );
+		return headers.map(
+			( { key } ) => data[ key ] || { value: undefined, display: null }
+		);
 	} );
 
 	const downloadable = !! rows.length;
@@ -231,10 +224,9 @@ export const DisputesList = (): JSX.Element => {
 				},
 				{
 					...row[ 3 ],
-					value:
-						typeof row[ 3 ].value === 'string'
-							? formatStringValue( row[ 3 ].value )
-							: '',
+					value: formatStringValue(
+						( row[ 3 ].value ?? '' ).toString()
+					),
 				},
 				...row.slice( 4, 9 ),
 				{

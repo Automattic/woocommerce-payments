@@ -555,10 +555,12 @@ describe( 'Transactions list', () => {
 				)
 			).not.toBe( -1 ); // amount
 			expect(
-				getUnformattedAmount( displayFirstTransaction[ 3 ] ).indexOf(
-					csvFirstTransaction[ 4 ]
+				-Number( getUnformattedAmount( displayFirstTransaction[ 3 ] ) )
+			).toEqual(
+				Number(
+					csvFirstTransaction[ 4 ].replace( /['"]+/g, '' ) // strip extra quotes
 				)
-			).not.toBe( -1 ); // fees
+			); // fees
 			expect(
 				getUnformattedAmount( displayFirstTransaction[ 4 ] ).indexOf(
 					csvFirstTransaction[ 5 ]
