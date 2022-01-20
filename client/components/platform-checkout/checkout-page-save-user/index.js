@@ -11,12 +11,18 @@ import interpolateComponents from 'interpolate-components';
 /**
  * Internal dependencies
  */
+import usePlatformCheckoutUser from '../hooks/use-platform-checkout-user';
 import LockIcon from '../icons/lock-icon';
 import PhoneIcon from '../icons/phone-icon';
 import './style.scss';
 
 const CheckoutPageSaveUser = () => {
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( true );
+	const { isRegisteredUser } = usePlatformCheckoutUser();
+
+	if ( isRegisteredUser ) {
+		return null;
+	}
 
 	return (
 		<div className="platform-checkout-save-new-user-container">
