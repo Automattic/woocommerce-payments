@@ -906,7 +906,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_information = $this->maybe_prepare_subscription_payment_information( $payment_information, $order->get_id() );
 
 		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			// During normal orders the payment method is saved when the customer enters a new one and choses to save it.
+			// During normal orders the payment method is saved when the customer enters a new one and chooses to save it.
 			$payment_information->must_save_payment_method();
 		}
 
