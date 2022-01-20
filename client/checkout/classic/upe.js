@@ -7,12 +7,16 @@ import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_UPE,
+	COOKIE_CART_HASH,
+	COOKIE_UPE_PAYMENT_INTENT,
+	COOKIE_UPE_SETUP_INTENT,
 } from '../constants.js';
 import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import { getTerms } from '../utils/upe';
+import { getCookieValue } from '../../utils';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -266,7 +270,7 @@ jQuery( function ( $ ) {
 	 *
 	 * @param {boolean} isSetupIntent {Boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
 	 */
-	const mountUPEElement = function ( isSetupIntent = false ) {
+	const mountUPEElement = async function ( isSetupIntent = false ) {
 		// Do not mount UPE twice.
 		if ( upeElement || paymentIntentId ) {
 			return;
@@ -291,73 +295,21 @@ jQuery( function ( $ ) {
 			orderId = getConfig( 'orderId' );
 		}
 
-		const intentAction = isSetupIntent
-			? api.initSetupIntent()
-			: api.createIntent( orderId );
+		let { intentId, clientSecret } = isSetupIntent
+			? getSetupIntentFromCookie()
+			: getPaymentIntentFromCookie();
 
 		const $upeContainer = $( '#wcpay-upe-element' );
 		blockUI( $upeContainer );
 
-		intentAction
-			.then( ( response ) => {
-				// I repeat, do NOT mount UPE twice.
-				if ( upeElement || paymentIntentId ) {
-					unblockUI( $upeContainer );
-					return;
-				}
-
-				const { client_secret: clientSecret, id: id } = response;
-				paymentIntentId = id;
-
-				let appearance = getConfig( 'upeAppearance' );
-
-				if ( ! appearance ) {
-					hiddenElementsForUPE.init();
-					appearance = getAppearance();
-					hiddenElementsForUPE.cleanup();
-					api.saveUPEAppearance( appearance );
-				}
-
-				elements = api.getStripe().elements( {
-					clientSecret,
-					appearance,
-					fonts: getFontRulesFromPage(),
-				} );
-
-				const upeSettings = {};
-				if ( getConfig( 'cartContainsSubscription' ) ) {
-					upeSettings.terms = getTerms(
-						paymentMethodsConfig,
-						'always'
-					);
-				}
-				if ( isCheckout && ! ( isOrderPay || isChangingPayment ) ) {
-					upeSettings.fields = {
-						billingDetails: hiddenBillingFields,
-					};
-				}
-
-				upeElement = elements.create( 'payment', {
-					...upeSettings,
-					wallets: {
-						applePay: 'never',
-						googlePay: 'never',
-					},
-				} );
-				upeElement.mount( '#wcpay-upe-element' );
-				unblockUI( $upeContainer );
-				upeElement.on( 'change', ( event ) => {
-					const selectedUPEPaymentType = event.value.type;
-					const isPaymentMethodReusable =
-						paymentMethodsConfig[ selectedUPEPaymentType ]
-							.isReusable;
-					showNewPaymentMethodCheckbox( isPaymentMethodReusable );
-					setSelectedUPEPaymentType( selectedUPEPaymentType );
-					setPaymentCountry( event.value.country );
-					isUPEComplete = event.complete;
-				} );
-			} )
-			.catch( ( error ) => {
+		if ( ! intentId ) {
+			try {
+				const newIntent = isSetupIntent
+					? await api.initSetupIntent()
+					: await api.createIntent( orderId );
+				intentId = newIntent.id;
+				clientSecret = newIntent.client_secret;
+			} catch ( error ) {
 				unblockUI( $upeContainer );
 				showError( error.message );
 				const gatewayErrorMessage =
@@ -365,7 +317,60 @@ jQuery( function ( $ ) {
 				$( '.payment_box.payment_method_woocommerce_payments' ).html(
 					gatewayErrorMessage
 				);
-			} );
+			}
+		}
+
+		// I repeat, do NOT mount UPE twice.
+		if ( upeElement || paymentIntentId ) {
+			unblockUI( $upeContainer );
+			return;
+		}
+
+		paymentIntentId = intentId;
+
+		let appearance = getConfig( 'upeAppearance' );
+
+		if ( ! appearance ) {
+			hiddenElementsForUPE.init();
+			appearance = getAppearance();
+			hiddenElementsForUPE.cleanup();
+			api.saveUPEAppearance( appearance );
+		}
+
+		elements = api.getStripe().elements( {
+			clientSecret,
+			appearance,
+			fonts: getFontRulesFromPage(),
+		} );
+
+		const upeSettings = {};
+		if ( getConfig( 'cartContainsSubscription' ) ) {
+			upeSettings.terms = getTerms( paymentMethodsConfig, 'always' );
+		}
+		if ( isCheckout && ! ( isOrderPay || isChangingPayment ) ) {
+			upeSettings.fields = {
+				billingDetails: hiddenBillingFields,
+			};
+		}
+
+		upeElement = elements.create( 'payment', {
+			...upeSettings,
+			wallets: {
+				applePay: 'never',
+				googlePay: 'never',
+			},
+		} );
+		upeElement.mount( '#wcpay-upe-element' );
+		unblockUI( $upeContainer );
+		upeElement.on( 'change', ( event ) => {
+			const selectedUPEPaymentType = event.value.type;
+			const isPaymentMethodReusable =
+				paymentMethodsConfig[ selectedUPEPaymentType ].isReusable;
+			showNewPaymentMethodCheckbox( isPaymentMethodReusable );
+			setSelectedUPEPaymentType( selectedUPEPaymentType );
+			setPaymentCountry( event.value.country );
+			isUPEComplete = event.complete;
+		} );
 	};
 
 	const renameGatewayTitle = () =>
@@ -653,6 +658,41 @@ jQuery( function ( $ ) {
 			$( '#wc-woocommerce_payments-payment-token-new' ).length &&
 			! $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' )
 		);
+	}
+
+	/**
+	 * Returns the cached payment intent for the current cart state.
+	 *
+	 * @return {Object} The intent id and client secret required for mounting the UPE element.
+	 */
+	function getPaymentIntentFromCookie() {
+		const cartHash = getCookieValue( COOKIE_CART_HASH );
+		const cookieVal = getCookieValue( COOKIE_UPE_PAYMENT_INTENT );
+
+		if ( cartHash && cookieVal && cookieVal.startsWith( cartHash ) ) {
+			const intentId = cookieVal.split( '-' )[ 1 ];
+			const clientSecret = cookieVal.split( '-' )[ 2 ];
+			return { intentId, clientSecret };
+		}
+
+		return {};
+	}
+
+	/**
+	 * Returns the cached setup intent.
+	 *
+	 * @return {Object} The intent id and client secret required for mounting the UPE element.
+	 */
+	function getSetupIntentFromCookie() {
+		const cookieVal = getCookieValue( COOKIE_UPE_SETUP_INTENT );
+
+		if ( cookieVal ) {
+			const intentId = cookieVal.split( '-' )[ 0 ];
+			const clientSecret = cookieVal.split( '-' )[ 1 ];
+			return { intentId, clientSecret };
+		}
+
+		return {};
 	}
 
 	// Handle the checkout form when WooCommerce Payments is chosen.

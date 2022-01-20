@@ -46,6 +46,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	const UPE_APPEARANCE_TRANSIENT = 'wcpay_upe_appearance';
 
+	const COOKIE_UPE_PAYMENT_INTENT = 'wcpay_upe_payment_intent';
+
+	const COOKIE_UPE_SETUP_INTENT = 'wcpay_upe_setup_intent';
+
 	/**
 	 * Array mapping payment method string IDs to classes
 	 *
@@ -90,6 +94,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
 
 		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
+
+		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'remove_upe_intent_cookies' ], 10, 0 );
 
 		if ( ! is_admin() ) {
 			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
@@ -222,7 +228,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			// If paying from order, we need to get the total from the order instead of the cart.
 			$order_id = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
 
-			wp_send_json_success( $this->create_payment_intent( $order_id ), 200 );
+			// Create a new intent.
+			$response = $this->create_payment_intent( $order_id );
+
+			// Cache the intent id in cookie.
+			$this->create_upe_payment_intent_cookie( $response['id'], $response['client_secret'] );
+
+			wp_send_json_success( $response, 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
@@ -315,7 +327,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				);
 			}
 
-			wp_send_json_success( $this->create_setup_intent(), 200 );
+			// Create a new intent.
+			$response = $this->create_setup_intent();
+
+			// Cache the intent id in cookie.
+			$this->create_upe_setup_intent_cookie( $response['id'], $response['client_secret'] );
+
+			wp_send_json_success( $response, 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
@@ -1067,5 +1085,46 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				]
 			);
 		}
+	}
+
+	/**
+	 * Creates a cookie to store the id and client secret of payment intent needed to mount the UPE element in frontend.
+	 *
+	 * An intent is tied to the cart's current state. New or removed items will likely impact the cart value,
+	 * necessitating the creation of a new intent with the revised cart value.
+	 * So a new cookie is expected to be created whenever the cart is modified.
+	 *
+	 * @param string $intent_id     The payment intent id.
+	 * @param string $client_secret The payment intent client secret.
+	 */
+	private function create_upe_payment_intent_cookie( string $intent_id = '', string $client_secret = '' ) {
+		$cart_hash = 'undefined';
+
+		if ( isset( $_COOKIE['woocommerce_cart_hash'] ) ) {
+			$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE['woocommerce_cart_hash'] ) );
+		}
+
+		$cookie_val = $cart_hash . '-' . $intent_id . '-' . $client_secret;
+
+		wc_setcookie( self::COOKIE_UPE_PAYMENT_INTENT, $cookie_val, time() + MINUTE_IN_SECONDS * 30 );
+	}
+
+	/**
+	 * Creates a cookie to store the id and client secret of setup intent needed to mount the UPE element in frontend.
+	 *
+	 * @param string $intent_id     The setup intent id.
+	 * @param string $client_secret The setup intent client secret.
+	 */
+	private function create_upe_setup_intent_cookie( string $intent_id = '', string $client_secret = '' ) {
+		$cookie_val = $intent_id . '-' . $client_secret;
+		wc_setcookie( self::COOKIE_UPE_SETUP_INTENT, $cookie_val, time() + MINUTE_IN_SECONDS * 30 );
+	}
+
+	/**
+	 * Removes any payment and setup intent cookies created for UPE.
+	 */
+	public function remove_upe_intent_cookies() {
+		setcookie( self::COOKIE_UPE_PAYMENT_INTENT, '', time() - 3600 );
+		setcookie( self::COOKIE_UPE_SETUP_INTENT, '', time() - 3600 );
 	}
 }
