@@ -209,7 +209,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Status
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Status
                   </span>
@@ -220,7 +225,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Reason
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Reason
                   </span>
@@ -231,7 +241,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Source
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Source
                   </span>
@@ -242,7 +257,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Order #
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Order #
                   </span>
@@ -253,7 +273,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Customer
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Customer
                   </span>
