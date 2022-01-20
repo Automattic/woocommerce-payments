@@ -8,6 +8,16 @@ import {
 	setBrowserViewport,
 } from '@wordpress/e2e-test-utils';
 
+import { addConsoleSuppression } from '@woocommerce/e2e-environment';
+addConsoleSuppression(
+	'violates the following Content Security Policy directive',
+	false
+);
+addConsoleSuppression(
+	'You may test your Stripe.js integration over HTTP.',
+	false
+);
+
 /**
  * Array of page event tuples of [ eventName, handler ].
  *
@@ -115,6 +125,14 @@ function observeConsoleLogging() {
 		if (
 			text.includes(
 				'You may test your Stripe.js integration over HTTP.'
+			)
+		) {
+			return;
+		}
+
+		if (
+			text.includes(
+				'violates the following Content Security Policy directive'
 			)
 		) {
 			return;
