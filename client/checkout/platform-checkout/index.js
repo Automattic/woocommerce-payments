@@ -8,10 +8,22 @@ import ReactDOM from 'react-dom';
  */
 import CheckoutPageSaveUser from 'wcpay/components/platform-checkout/checkout-page-save-user';
 
-const checkoutPageSaveUserContainer = document.getElementById(
-	'checkout-page-save-user-container'
-);
+window.addEventListener( 'load', () => {
+	const placeOrderButton = document.getElementsByClassName(
+		'form-row place-order'
+	)?.[ 0 ];
+	const buttonParent = placeOrderButton?.parentNode;
+	const checkoutPageSaveUserContainer = document.createElement( 'div' );
 
-if ( checkoutPageSaveUserContainer ) {
-	ReactDOM.render( <CheckoutPageSaveUser />, checkoutPageSaveUserContainer );
-}
+	if ( placeOrderButton && buttonParent ) {
+		buttonParent.insertBefore(
+			checkoutPageSaveUserContainer,
+			placeOrderButton
+		);
+
+		ReactDOM.render(
+			<CheckoutPageSaveUser />,
+			checkoutPageSaveUserContainer
+		);
+	}
+} );
