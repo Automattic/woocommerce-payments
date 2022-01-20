@@ -31,7 +31,7 @@ export default {
 		id: 'au_becs_debit',
 		label: __( 'BECS Direct Debit', 'woocommerce-payments' ),
 		description: __(
-			'Bulk Electronic Clearing System - Accept secure bank transfer from Australia.',
+			'Bulk Electronic Clearing System — Accept secure bank transfer from Australia.',
 			'woocommerce-payments'
 		),
 		Icon: BankDebitIcon,
