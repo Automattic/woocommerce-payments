@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.7.0 - 2022-xx-xx =
+* Add - Add endpoint to retrieve a file content via API.
+
 = 3.6.0 - 2022-01-20 =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
 * Fix - UPE validation error visibility on checkout page.
