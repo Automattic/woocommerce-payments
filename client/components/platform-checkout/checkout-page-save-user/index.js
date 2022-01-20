@@ -99,6 +99,7 @@ const CheckoutPageSaveUser = () => {
 							},
 						} ) }
 					</div>
+					<div className="line"></div>
 				</div>
 			) }
 		</div>
