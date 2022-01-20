@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
@@ -138,6 +139,9 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 					$note = $this->read_rest_property( $body, 'data' );
 					$this->remote_note_service->put_note( $note );
 					break;
+				case 'payment_intent.payment_failed':
+					$this->process_webhook_payment_intent_failed( $body );
+					break;
 				case 'payment_intent.succeeded':
 					$this->process_webhook_payment_intent_succeeded( $body );
 					break;
@@ -258,7 +262,42 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Process webhook for a successul payment intent.
+	 * Process webhook for a failed payment intent.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Rest_Request_Exception           Required parameters not found.
+	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
+	 */
+	private function process_webhook_payment_intent_failed( $event_body ) {
+		// Check to make sure we should process this according to the payment method.
+		$charges_data        = $event_body['data']['object']['charges']['data'][0] ?? null;
+		$payment_method_type = $charges_data['payment_method_details']['type'] ?? null;
+
+		$actionable_methods = [
+			Payment_Method::US_BANK_ACCOUNT,
+		];
+
+		if ( empty( $payment_method_type ) || ! in_array( $payment_method_type, $actionable_methods, true ) ) {
+			return;
+		}
+
+		// Get the order and make sure it is an order, it is not already in failed status, and the payment methods match.
+		$order             = $this->get_order_from_event_body_intent_id( $event_body );
+		$payment_method_id = $charges_data['payment_method'] ?? null;
+
+		if ( ! $order
+			|| $order->has_status( [ 'failed' ] )
+			|| empty( $payment_method_id )
+			|| $payment_method_id !== $order->get_meta( '_payment_method_id' ) ) {
+			return;
+		}
+
+		WC_Payments_Utils::mark_payment_failed( $order, $this->get_failure_message_from_event( $event_body ) );
+	}
+
+	/**
+	 * Process webhook for a successful payment intent.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
@@ -269,50 +308,9 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		$event_data   = $this->read_rest_property( $event_body, 'data' );
 		$event_object = $this->read_rest_property( $event_data, 'object' );
 		$intent_id    = $this->read_rest_property( $event_object, 'id' );
+		$order        = $this->get_order_from_event_body_intent_id( $event_body );
 
-		// Look up the order related to this charge.
-		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
-
-		if ( ! $order ) {
-			// Retrieving order with order_id in case intent_id was not properly set.
-			Logger::debug( 'intent_id not found, using order_id to retrieve order' );
-			$metadata = $this->read_rest_property( $event_object, 'metadata' );
-
-			if ( isset( $metadata['order_id'] ) ) {
-				$order_id = $metadata['order_id'];
-				$order    = $this->wcpay_db->order_from_order_id( $order_id );
-			} elseif ( ! empty( $event_object['invoice'] ) ) {
-				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
-				return;
-			}
-		}
-
-		if ( ! $order ) {
-			throw new Invalid_Payment_Method_Exception(
-				sprintf(
-					/* translators: %1: charge ID */
-					__( 'Could not find order via intent ID: %1$s', 'woocommerce-payments' ),
-					$intent_id
-				),
-				'order_not_found'
-			);
-		}
-
-		// Get an updated set of order properties to avoid race conditions when the server sends the paid webhook before we've finished processing the original payment request.
-		$order->get_data_store()->read( $order );
-
-		if ( $order->has_status( [ 'processing', 'completed' ] ) ) {
-			return;
-		}
-
-		// Prevent parallel order processing attempts.
-		if ( WC_Payments_Utils::is_order_locked( $order, $intent_id ) ) {
-			return;
-		}
-
-		WC_Payments_Utils::lock_order_payment( $order, $intent_id );
-		$order->payment_complete();
-		WC_Payments_Utils::unlock_order_payment( $order );
+		WC_Payments_Utils::mark_payment_completed( $order, $intent_id );
 	}
 
 	/**
@@ -476,5 +474,97 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 		return $array[ $key ];
+	}
+
+	/**
+	 * Gets the order related to the event intent id.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Rest_Request_Exception           Required parameters not found.
+	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
+	 *
+	 * @return boolean|WC_Order|WC_Order_Refund
+	 */
+	private function get_order_from_event_body_intent_id( $event_body ) {
+		$event_data   = $this->read_rest_property( $event_body, 'data' );
+		$event_object = $this->read_rest_property( $event_data, 'object' );
+		$intent_id    = $this->read_rest_property( $event_object, 'id' );
+
+		// Look up the order related to this charge.
+		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
+
+		if ( ! $order ) {
+			// Retrieving order with order_id in case intent_id was not properly set.
+			Logger::debug( 'intent_id not found, using order_id to retrieve order' );
+			$metadata = $this->read_rest_property( $event_object, 'metadata' );
+
+			if ( isset( $metadata['order_id'] ) ) {
+				$order_id = $metadata['order_id'];
+				$order    = $this->wcpay_db->order_from_order_id( $order_id );
+			} elseif ( ! empty( $event_object['invoice'] ) ) {
+				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
+				return false;
+			}
+		}
+
+		if ( ! $order ) {
+			throw new Invalid_Payment_Method_Exception(
+				sprintf(
+					/* translators: %1: charge ID */
+					__( 'Could not find order via intent ID: %1$s', 'woocommerce-payments' ),
+					$intent_id
+				),
+				'order_not_found'
+			);
+		}
+
+		// Get an updated set of order properties to avoid race conditions when the server sends the paid webhook before we've finished processing the original payment request.
+		$order->get_data_store()->read( $order );
+
+		return $order;
+	}
+
+	/**
+	 * Gets the proper failure message from the code in the event.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @return string The failure message.
+	 */
+	private function get_failure_message_from_event( $event_body ):string {
+		// Get the failure code from the event body.
+		$event_data    = $this->read_rest_property( $event_body, 'data' );
+		$event_object  = $this->read_rest_property( $event_data, 'object' );
+		$event_charges = $this->read_rest_property( $event_object, 'charges' );
+		$charges_data  = $this->read_rest_property( $event_charges, 'data' );
+		$failure_code  = $charges_data[0]['failure_code'] ?? '';
+
+		switch ( $failure_code ) {
+			case 'account_closed':
+				$failure_message = __( "The customer's bank account has been closed.", 'woocommerce-payments' );
+				break;
+			case 'debit_not_authorized':
+				$failure_message = __( 'The customer has notified their bank that this payment was unauthorized.', 'woocommerce-payments' );
+				break;
+			case 'insufficient_funds':
+				$failure_message = __( "The customer's account has insufficient funds to cover this payment.", 'woocommerce-payments' );
+				break;
+			case 'no_account':
+				$failure_message = __( "The customer's bank account could not be located.", 'woocommerce-payments' );
+				break;
+			case 'payment_method_microdeposit_failed':
+				$failure_message = __( 'Microdeposit transfers failed. Please check the account, institution and transit numbers.', 'woocommerce-payments' );
+				break;
+			case 'payment_method_microdeposit_verification_attempts_exceeded':
+				$failure_message = __( 'You have exceeded the number of allowed verification attempts.', 'woocommerce-payments' );
+				break;
+
+			default:
+				$failure_message = __( 'The payment was not able to be processed.', 'woocommerce-payments' );
+				break;
+		}
+
+		return $failure_message;
 	}
 }

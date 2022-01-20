@@ -131,7 +131,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 	}
 
 	/**
-	 * @group underTest
 	 * @dataProvider select_clause_provider
 	 */
 	public function test_filter_select_clauses( $context, $clauses, $expected ) {
@@ -210,7 +209,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 	}
 
 	/**
-	 * @group underTest
 	 * @dataProvider join_clause_provider
 	 */
 	public function test_filter_join_clauses( $clauses, $expected ) {
