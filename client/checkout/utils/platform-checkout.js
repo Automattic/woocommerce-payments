@@ -15,7 +15,7 @@ export const handlePlatformCheckoutEmailInput = ( container, field ) => {
 
 	const platformCheckoutEmailInput = document.querySelector( field );
 
-	platformCheckoutEmailInput.addEventListener( 'keyup', ( e ) => {
+	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
 		const input = e.currentTarget.value;
 
 		clearTimeout( timer );
