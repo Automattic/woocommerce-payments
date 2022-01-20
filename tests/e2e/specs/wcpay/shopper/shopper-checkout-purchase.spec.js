@@ -15,11 +15,18 @@ import {
 	confirmCardAuthentication,
 } from '../../../utils/payments';
 
+import { shopperWCP } from '../../../utils';
+
 describe( 'Successful purchase', () => {
 	beforeEach( async () => {
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
 		);
+	} );
+
+	afterAll( async () => {
+		// Clear the cart at the end so it's ready for another test
+		await shopperWCP.emptyCart();
 	} );
 
 	it( 'using a basic card', async () => {
@@ -29,7 +36,7 @@ describe( 'Successful purchase', () => {
 		await expect( page ).toMatch( 'Order received' );
 	} );
 
-	it( 'using a 3DS card and account signup', async () => {
+	it( 'using a 3DS card', async () => {
 		const card = config.get( 'cards.3ds' );
 		await fillCardDetails( page, card );
 		await expect( page ).toClick( '#place_order' );
