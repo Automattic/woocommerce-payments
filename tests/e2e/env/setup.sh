@@ -220,17 +220,14 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 		--output "woocommerce-subscriptions-$LATEST_RELEASE.zip" \
 		"https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/assets/$WCS_LATEST_ASSET_ID"
 
-	pwd
-	ls -l
-
-	unzip woocommerce-subscriptions-$LATEST_RELEASE.zip
+	unzip -qq woocommerce-subscriptions-$LATEST_RELEASE.zip -d woocommerce-subscriptions-$LATEST_RELEASE
 
 	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv woocommerce-subscriptions/* "$E2E_ROOT"/deps/woocommerce-subscriptions
+	sudo mv woocommerce-subscriptions-$LATEST_RELEASE/woocommerce-subscriptions/* "$E2E_ROOT"/deps/woocommerce-subscriptions
 
 	cli wp plugin activate woocommerce-subscriptions
 
-	rm -rf woocommerce-subscriptions
+	rm -rf woocommerce-subscriptions-$LATEST_RELEASE
 else
 	echo "Skipping install of WooCommerce Subscriptions"
 fi
