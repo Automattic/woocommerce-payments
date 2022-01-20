@@ -106,10 +106,9 @@ const headers: DisputesTableHeader[] = [
 export const DisputesList = (): JSX.Element => {
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
-	const {
-		disputesSummary,
-		isLoading: isSummaryLoading,
-	} = useDisputesSummary( getQuery() );
+	const { disputesSummary, isLoading: isSummaryLoading } = useDisputesSummary(
+		getQuery()
+	);
 
 	const rows = disputes.map( ( dispute ) => {
 		const order = dispute.order

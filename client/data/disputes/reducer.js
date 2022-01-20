@@ -43,7 +43,7 @@ const receiveDisputes = (
 					...state.summary,
 					[ index ]: {
 						data: data,
-          },
+					},
 				},
 			};
 	}
