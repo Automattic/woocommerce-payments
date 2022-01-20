@@ -100,6 +100,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 3.7.0 - 2022-xx-xx =
 * Add - Add endpoint to retrieve a file content via API.
+* Fix - Currency name not translated the Overview card title.
 
 = 3.6.0 - 2022-01-20 =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
@@ -119,7 +120,6 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Show a warning when attempting to create a subscription product with a price below the minimum amount.
 * Fix - When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown.
 * Fix - When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown.
-* Fix - Currency name not translated the Overview card title.
 * Fix - Don't limit subscription products being created with an interval of more than one year when the WC Subscriptions plugin is active.
 * Fix - Subscriptions not renewing with subscription products that use a free trial period.
 * Fix - "Fees" column values are different in the downloaded CSV file for the transaction table

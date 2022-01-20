@@ -4,7 +4,6 @@
 import config from 'config';
 
 const {
-	shopper,
 	createSimpleProduct,
 	uiUnblocked,
 } = require( '@woocommerce/e2e-utils' );
@@ -12,6 +11,8 @@ const {
 /**
  * Internal dependencies
  */
+import { shopperWCP } from '../../../utils';
+
 import {
 	fillCardDetails,
 	clearCardDetails,
@@ -20,7 +21,7 @@ import {
 } from '../../../utils/payments';
 
 // Unskip this after debugging failing shopper tests.
-describe.skip( 'Shopper > Checkout > Failures with various cards', () => {
+describe( 'Shopper > Checkout > Failures with various cards', () => {
 	beforeAll( async () => {
 		await createSimpleProduct();
 		await setupProductCheckout(
@@ -35,7 +36,7 @@ describe.skip( 'Shopper > Checkout > Failures with various cards', () => {
 
 	afterAll( async () => {
 		// Clear the cart at the end so it's ready for another test
-		await shopper.emptyCart();
+		await shopperWCP.emptyCart();
 	} );
 
 	it( 'should throw an error that the card was simply declined', async () => {
@@ -139,15 +140,6 @@ describe.skip( 'Shopper > Checkout > Failures with various cards', () => {
 	it( 'should throw an error that the card was declined due to incorrect card number', async () => {
 		const cardIncorrectNumber = config.get( 'cards.declined-incorrect' );
 		await fillCardDetails( page, cardIncorrectNumber );
-
-		// Verify the error message
-		await expect( page ).toMatchElement(
-			'div#wcpay-errors > ul.woocommerce-error > li',
-			{
-				text: 'Your card number is invalid.',
-			}
-		);
-
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
 		await expect(
