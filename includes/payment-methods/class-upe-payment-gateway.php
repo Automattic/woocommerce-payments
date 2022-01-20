@@ -904,7 +904,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			)
 		);
 
-		return array_intersect( $methods, array_keys( $fees ) );
+		$methods_with_fees = array_values( array_intersect( $methods, array_keys( $fees ) ) );
+
+		return $methods_with_fees;
 	}
 
 	/**
