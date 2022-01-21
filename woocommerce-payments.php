@@ -206,16 +206,19 @@ function wcpay_show_old_jetpack_notice() {
  */
 function wcpay_get_jetpack_idc_custom_content(): array {
 	$custom_content = [
-		'headerText'             => __( 'Safe Mode', 'woocommerce-payments' ),
-		'mainTitle'              => __( 'Safe Mode has been activated', 'woocommerce-payments' ),
-		'mainBodyText'           => __( 'Your site is in Safe Mode because you have two sites connected with the same WooCommerce Payments account.', 'woocommerce-payments' ),
-		'migratedTitle'          => __( 'Your WooCommerce Payments account has been migrated successfully', 'woocommerce-payments' ),
-		'migratedBodyText'       => __( 'Safe Mode has been switched off for your website and WooCommerce Payments is fully functional.', 'woocommerce-payments' ),
-		'migrateCardTitle'       => __( 'Move account', 'woocommerce-payments' ),
-		'startFreshCardTitle'    => __( 'Give each site its own account', 'woocommerce-payments' ),
-		'startFreshCardBodyText' => __( 'The other site will start fresh with a new WooCommerce Payments account.', 'woocommerce-payments' ),
-		'nonAdminTitle'          => __( 'Safe Mode has been activated', 'woocommerce-payments' ),
-		'nonAdminBodyText'       => __( 'Your site is in Safe Mode because you have two sites connected with the same WooCommerce Payments account. An administrator of this site can take it out of Safe Mode.', 'woocommerce-payments' ),
+		'headerText'            => __( 'Safe Mode', 'woocommerce-payments' ),
+		'mainTitle'             => __( 'Safe Mode activated', 'woocommerce-payments' ),
+		'mainBodyText'          => __( 'We’ve detected that you have duplicate sites connected to WooCommerce Payments. When Safe Mode is active, payments will not be interupted, however some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transfering your site from one domain to another, or creating a staging site for testing. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
+		'migratedTitle'         => __( 'WooCommerce Payments connection successfully transfered', 'woocommerce-payments' ),
+		'migratedBodyText'      => __( 'Safe Mode has been deactivated and WooCommerce Payments is fully functional.', 'woocommerce-payments' ),
+		'migrateCardTitle'      => __( 'Transfer connection', 'woocommerce-payments' ),
+		'migrateButtonLabel'    => __( 'Transfer your connection', 'woocommerce-payments' ), // TODO wait for https://github.com/Automattic/jetpack/pull/22394.
+		'startFreshCardTitle'   => __( 'Create a new connection', 'woocommerce-payments' ),
+		'startFreshButtonLabel' => __( 'Create a new connection', 'woocommerce-payments' ), // TODO wait for https://github.com/Automattic/jetpack/pull/22394.
+		'nonAdminTitle'         => __( 'Safe Mode activated', 'woocommerce-payments' ),
+		'nonAdminBodyText'      => __( 'We’ve detected that you have duplicate sites connected to WooCommerce Payments. When Safe Mode is active, payments will not be interupted, however some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transfering your site from one domain to another, or creating a staging site for testing. A site adminstrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ), // TODO wait for safeModeLink tag is allowed. https://github.com/Automattic/jetpack/pull/22394.
+		'supportURL'            => __( 'https://woocommerce.com/document/payments/faq/safe-mode/', 'woocommerce-payments' ), // TODO 1) this doc is in progress; 2) This link is used in the `safeModeLink` tag.
+
 	];
 
 	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();
@@ -224,9 +227,9 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 		$wpcom_url   = untrailingslashit( $urls['wpcom_url'] );
 
 		$custom_content['migrateCardBodyText'] = sprintf(
-			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. */
+			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly.*/
 			__(
-				'Move your WooCommerce Payments account to your current site "%1$s". Disconnect the other site "%2$s" but you can create a new account on it.',
+				'Transfer your WooCommerce Payments connection from <hostname>%2$s</hostname> to this site <hostname%1$s</hostname>. <hostname>%2$s</hostname> will be disconnected from WooCommerce Payments.', // TODO hostname will be converted to strong tag. Waiting for https://github.com/Automattic/jetpack/pull/22360.
 				'woocommerce-payments'
 			),
 			$current_url,
@@ -234,9 +237,9 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 		);
 
 		$custom_content['startFreshCardBodyText'] = sprintf(
-			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. */
+			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly. */
 			__(
-				'Your current site "%1$s" will start with a fresh WooCommerce Payments account. The other site "%2$s" will keep its account as is.',
+				'Create a new connection to WooCommerce Payments for <hostname%1$s</hostname>. You’ll have to re-verify your business details to begin accepting payments. Your <hostname%2$s</hostname> connection will remain as is.',  // TODO hostname will be converted to strong tag. Waiting for https://github.com/Automattic/jetpack/pull/22360.
 				'woocommerce-payments'
 			),
 			$current_url,
