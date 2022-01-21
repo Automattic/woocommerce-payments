@@ -19,8 +19,7 @@ const cards = [
 	[ '3DS2', config.get( 'cards.3ds2' ) ],
 ];
 
-// Unskip this after debugging failing shopper tests.
-describe.skip( 'Saved cards ', () => {
+describe( 'Saved cards ', () => {
 	describe.each( cards )(
 		'when using a %s card added through my account',
 		( cardType, card ) => {
