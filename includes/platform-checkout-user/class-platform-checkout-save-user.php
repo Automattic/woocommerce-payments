@@ -17,6 +17,7 @@ class Platform_Checkout_Save_User {
 	 */
 	public function __construct() {
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_checkout_page_scripts' ] );
+		add_action( 'woocommerce_thankyou_cod', [ $this, 'save_user_placeholder' ] );
 	}
 
 	/**
@@ -45,5 +46,10 @@ class Platform_Checkout_Save_User {
 
 		wp_enqueue_style( 'WCPAY_PLATFORM_CHECKOUT' );
 		wp_enqueue_script( 'WCPAY_PLATFORM_CHECKOUT' );
+	}
+
+	/** Insert a placeholder in order page to load save user section */
+	public function save_user_placeholder() {
+		echo '<div id="order-page-save-user">Hello World</div>';
 	}
 }
