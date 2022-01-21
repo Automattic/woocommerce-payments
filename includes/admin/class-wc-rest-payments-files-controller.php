@@ -50,7 +50,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function upload_file( $request ) {
-		return $this->forward_request( 'upload_evidence', [ $request ] );
+		return $this->forward_request( 'upload_file', [ $request ] );
 	}
 
 	/**
@@ -64,7 +64,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 		$file_id = $request->get_param( 'file_id' );
 		$result  = $this->forward_request( 'get_file_contents', [ $file_id ] );
 
-		if ( $result instanceof WP_Error ) {
+		if ( is_wp_error( $result ) ) {
 			$error_status_code = 'resource_missing' === $result->get_error_code() ? WP_Http::NOT_FOUND : WP_Http::INTERNAL_SERVER_ERROR;
 			return rest_ensure_response(
 				new WP_Error(
@@ -92,7 +92,10 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 		return new WP_HTTP_Response(
 			base64_decode( $result->get_data()['file_content'] ), // @codingStandardsIgnoreLine
 			200,
-			[ 'Content-Type' => $result->get_data()['content_type'] ]
+			[
+				'Content-Type'        => $result->get_data()['content_type'],
+				'Content-Disposition' => 'inline',
+			]
 		);
 
 	}

@@ -605,8 +605,8 @@ class WC_Payments {
 		$charges_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-files-controller.php';
-		$disputes_controller = new WC_REST_Payments_Files_Controller( self::$api_client );
-		$disputes_controller->register_routes();
+		$files_controller = new WC_REST_Payments_Files_Controller( self::$api_client );
+		$files_controller->register_routes();
 
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';

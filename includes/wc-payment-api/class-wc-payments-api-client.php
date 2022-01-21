@@ -810,14 +810,14 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Upload evidence and return file object.
+	 * Upload file and return file object.
 	 *
 	 * @param WP_REST_Request $request request object received.
 	 *
 	 * @return array file object.
 	 * @throws API_Exception - If request throws.
 	 */
-	public function upload_evidence( $request ) {
+	public function upload_file( $request ) {
 		$purpose     = $request->get_param( 'purpose' );
 		$file_params = $request->get_file_params();
 		$file_name   = $file_params['file']['name'];
