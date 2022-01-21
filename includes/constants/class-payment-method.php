@@ -20,7 +20,8 @@ use MyCLabs\Enum\Enum;
  * @psalm-immutable
  */
 class Payment_Method extends Enum {
-	const CARD         = 'card';
-	const SEPA         = 'sepa_debit';
-	const CARD_PRESENT = 'card_present';
+	const CARD            = 'card';
+	const SEPA            = 'sepa_debit';
+	const CARD_PRESENT    = 'card_present';
+	const US_BANK_ACCOUNT = 'us_bank_account';
 }

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "aebb7dbf4516d160fa0c505cbc7415e4",
+    "content-hash": "5a3661e098b945754e4b257aef947ae1",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -52,16 +52,16 @@
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v1.16.1",
+            "version": "v1.16.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "5a6959969bed4559e080269cafbd69d476249822"
+                "reference": "e657324b4b2cbd6a26d2381136047f9373a44bc2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/5a6959969bed4559e080269cafbd69d476249822",
-                "reference": "5a6959969bed4559e080269cafbd69d476249822",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/e657324b4b2cbd6a26d2381136047f9373a44bc2",
+                "reference": "e657324b4b2cbd6a26d2381136047f9373a44bc2",
                 "shasum": ""
             },
             "require": {
@@ -99,9 +99,9 @@
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.16.1"
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.16.2"
             },
-            "time": "2022-01-05T21:46:22+00:00"
+            "time": "2022-01-18T11:16:43+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
@@ -1420,16 +1420,16 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "1.6.1",
+            "version": "1.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "d23e989583e04544fcfe9602d45e1744279aa8cf"
+                "reference": "bc48cd0437fc4601643e72abc4a7cd9beffb35b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/d23e989583e04544fcfe9602d45e1744279aa8cf",
-                "reference": "d23e989583e04544fcfe9602d45e1744279aa8cf",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/bc48cd0437fc4601643e72abc4a7cd9beffb35b5",
+                "reference": "bc48cd0437fc4601643e72abc4a7cd9beffb35b5",
                 "shasum": ""
             },
             "require": {
@@ -1471,10 +1471,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.6.1",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.6.2",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2022-01-18T05:09:25+00:00"
+            "time": "2022-01-19T13:46:30+00:00"
         }
     ],
     "packages-dev": [

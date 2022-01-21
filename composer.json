@@ -19,7 +19,7 @@
       "automattic/jetpack-autoloader": "2.10.11",
       "automattic/jetpack-identity-crisis": "0.6.2",
       "myclabs/php-enum": "1.7.7",
-      "woocommerce/subscriptions-core": "1.6.1",
+      "woocommerce/subscriptions-core": "1.6.2",
       "symfony/polyfill-php71": "1.20.0",
       "symfony/polyfill-php72": "1.23.0",
       "symfony/polyfill-php73": "1.23.0",

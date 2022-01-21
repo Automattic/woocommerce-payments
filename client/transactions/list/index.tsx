@@ -283,7 +283,7 @@ export const TransactionsList = (
 			const isCardReader =
 				txn.metadata && txn.metadata.charge_type === 'card_reader_fee';
 			return {
-				value: ( isCardReader ? txn.amount : txn.fees ) / 100,
+				value: ( isCardReader ? txn.amount : txn.fees * -1 ) / 100,
 				display: clickable(
 					formatCurrency(
 						isCardReader ? txn.amount : txn.fees * -1,
