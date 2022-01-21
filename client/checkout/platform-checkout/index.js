@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom';
 /**
  * External dependencies
  */
-import CheckoutPageSaveUser from 'wcpay/components/platform-checkout/checkout-page-save-user';
+import CheckoutPageSaveUser from 'wcpay/components/platform-checkout/save-user/checkout-page-save-user';
 
 window.addEventListener( 'load', () => {
 	const placeOrderButton = document.getElementsByClassName(
