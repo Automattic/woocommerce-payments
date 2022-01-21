@@ -24,6 +24,9 @@ const JetpackIdcNotice = () => {
 				) }
 				<span>&nbsp;</span>
 				<a href={ addQueryArgs( '/wp-admin/index.php' ) }>
+					{ /* TODO If this suggestion is accepted https://github.com/Automattic/jetpack/pull/22266,
+					I will use WCPay settings page, i.e. `wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments`.
+					aka using getPaymentSettingsUrl from client/utils/index.js*/ }
 					{ __( 'Please take action!', 'woocommerce-payments' ) }
 				</a>
 			</Notice>
