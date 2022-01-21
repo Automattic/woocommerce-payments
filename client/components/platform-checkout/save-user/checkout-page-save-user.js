@@ -18,6 +18,7 @@ import './style.scss';
 
 const CheckoutPageSaveUser = () => {
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
+	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const { isRegisteredUser } = usePlatformCheckoutUser();
 	const { isWCPayChosen } = useSelectedPaymentMethod();
 
@@ -45,8 +46,8 @@ const CheckoutPageSaveUser = () => {
 							'Mobile phone number',
 							'woocommerce-payments'
 						) }
-						value={ '' }
-						onChange={ () => {} }
+						value={ phoneNumber }
+						onChange={ setPhoneNumber }
 					/>
 					<AdditionalInformation />
 					<Agreement />
