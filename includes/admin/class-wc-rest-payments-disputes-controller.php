@@ -156,19 +156,20 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Extract disputes filters from request
+	 * The reason to map the filter properties is to keep consitency between the front-end models.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	private function get_disputes_filters( $request ) {
 		return array_filter(
 			[
-				'match'             => $request->get_param( 'match' ),
-				'store_currency_is' => $request->get_param( 'store_currency_is' ),
-				'created_before'    => $request->get_param( 'date_before' ),
-				'created_after'     => $request->get_param( 'date_after' ),
-				'created_between'   => $request->get_param( 'date_between' ),
-				'status_is'         => $request->get_param( 'status_is' ),
-				'status_is_not'     => $request->get_param( 'status_is_not' ),
+				'match'           => $request->get_param( 'match' ),
+				'currency_is'     => $request->get_param( 'store_currency_is' ),
+				'created_before'  => $request->get_param( 'date_before' ),
+				'created_after'   => $request->get_param( 'date_after' ),
+				'created_between' => $request->get_param( 'date_between' ),
+				'status_is'       => $request->get_param( 'status_is' ),
+				'status_is_not'   => $request->get_param( 'status_is_not' ),
 			],
 			static function ( $filter ) {
 				return null !== $filter;
