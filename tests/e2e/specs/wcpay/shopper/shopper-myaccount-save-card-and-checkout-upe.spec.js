@@ -19,7 +19,7 @@ const cards = [
 	[ '3DS2', config.get( 'cards.3ds2' ) ],
 ];
 
-describe( 'Saved cards ', () => {
+describe.skip( 'Saved cards ', () => {
 	describe.each( cards )(
 		'when using a %s card added through my account',
 		( cardType, card ) => {
