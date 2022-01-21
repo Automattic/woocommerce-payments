@@ -29,6 +29,13 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 	private $date_format = 'Y-m-d';
 
 	/**
+	 * String used as the date for an unreleased version.
+	 *
+	 * @var string
+	 */
+	private $unreleased = '2022-xx-xx';
+
+	/**
 	 * Title for the changelog.
 	 *
 	 * @var string
@@ -85,18 +92,26 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 
 			$version   = $heading[1];
 			$timestamp = $heading[2];
-			try {
-				$timestamp = new DateTime( $timestamp, new DateTimeZone( 'UTC' ) );
-			} catch ( \Exception $ex ) {
-				trigger_error( $ex->getMessage() );
-				$timestamp = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
+			if ( $timestamp === $this->unreleased ) {
+				$timestamp       = null;
+				$entry_timestamp = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
+			} else {
+				try {
+					$timestamp = new DateTime( $timestamp, new DateTimeZone( 'UTC' ) );
+				} catch ( \Exception $ex ) {
+					throw new InvalidArgumentException( "Heading has an invalid timestamp: $heading", 0, $ex );
+				}
+				if ( strtotime( $heading[2], 0 ) !== strtotime( $heading[2], 1000000000 ) ) {
+					throw new InvalidArgumentException( "Heading has a relative timestamp: $heading" );
+				}
+				$entry_timestamp = $timestamp;
 			}
 
 			$entry = $this->newChangelogEntry(
 				$version,
-				[
+				array(
 					'timestamp' => $timestamp,
-				]
+				)
 			);
 
 			$entries[] = $entry;
@@ -130,7 +145,7 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 							[
 								'subheading' => $change['subheading'],
 								'content'    => $change['content'],
-								'timestamp'  => $timestamp,
+								'timestamp'  => $entry_timestamp,
 							]
 						)
 					);
@@ -151,12 +166,13 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 	 * @return string
 	 */
 	public function format( Changelog $changelog ) {
-		$ret         = '';
-		$date_format = $this->date_format;
+		$ret = '';
 
 		foreach ( $changelog->getEntries() as $entry ) {
-			$timestamp = $entry->getTimestamp();
-			$ret      .= '= ' . $entry->getVersion() . ' ' . $this->separator . ' ' . $timestamp->format( $this->date_format ) . " =\n";
+			$timestamp    = $entry->getTimestamp();
+			$release_date = null === $timestamp ? $this->unreleased : $timestamp->format( $this->date_format );
+
+			$ret .= '= ' . $entry->getVersion() . ' ' . $this->separator . ' ' . $release_date . " =\n";
 
 			$prologue = trim( $entry->getPrologue() );
 			if ( '' !== $prologue ) {
