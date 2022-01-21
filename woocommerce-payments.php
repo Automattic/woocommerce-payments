@@ -229,7 +229,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 		$custom_content['migrateCardBodyText'] = sprintf(
 			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly.*/
 			__(
-				'Transfer your WooCommerce Payments connection from <hostname>%2$s</hostname> to this site <hostname%1$s</hostname>. <hostname>%2$s</hostname> will be disconnected from WooCommerce Payments.', // TODO hostname will be converted to strong tag. Waiting for https://github.com/Automattic/jetpack/pull/22360.
+				'Transfer your WooCommerce Payments connection from <hostname>%2$s</hostname> to this site <hostname>%1$s</hostname>. <hostname>%2$s</hostname> will be disconnected from WooCommerce Payments.', // TODO hostname will be converted to strong tag. Waiting for https://github.com/Automattic/jetpack/pull/22360.
 				'woocommerce-payments'
 			),
 			$current_url,
@@ -239,7 +239,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 		$custom_content['startFreshCardBodyText'] = sprintf(
 			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly. */
 			__(
-				'Create a new connection to WooCommerce Payments for <hostname%1$s</hostname>. You’ll have to re-verify your business details to begin accepting payments. Your <hostname%2$s</hostname> connection will remain as is.',  // TODO hostname will be converted to strong tag. Waiting for https://github.com/Automattic/jetpack/pull/22360.
+				'Create a new connection to WooCommerce Payments for <hostname>%1$s</hostname>. You’ll have to re-verify your business details to begin accepting payments. Your <hostname>%2$s</hostname> connection will remain as is.',  // TODO hostname will be converted to strong tag. Waiting for https://github.com/Automattic/jetpack/pull/22360.
 				'woocommerce-payments'
 			),
 			$current_url,
