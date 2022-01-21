@@ -50,7 +50,7 @@ const paymentMethodPlaceholders = {
 	formattedAddress: 'address placeholder',
 };
 
-const SepaDetails = ( { charge = {}, isLoading } ) => {
+const BecsDetails = ( { charge = {}, isLoading } ) => {
 	const details =
 		charge && charge.payment_method_details
 			? formatPaymentMethodDetails( charge )
@@ -131,4 +131,4 @@ const SepaDetails = ( { charge = {}, isLoading } ) => {
 	);
 };
 
-export default SepaDetails;
+export default BecsDetails;
