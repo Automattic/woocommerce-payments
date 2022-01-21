@@ -36,7 +36,7 @@ describe( 'Disputes filters', () => {
 		let ruleSelector: HTMLElement;
 
 		beforeEach( () => {
-			addAdvancedFilter( 'Date' );
+			addAdvancedFilter( 'Disputed on date' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /dispute date filter/i,
 			} );

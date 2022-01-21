@@ -89,7 +89,7 @@ export const advancedFilters = {
 	filters: {
 		date: {
 			labels: {
-				add: __( 'Date', 'woocommerce-payments' ),
+				add: __( 'Disputed on date', 'woocommerce-payments' ),
 				remove: __(
 					'Remove dispute date filter',
 					'woocommerce-payments'
