@@ -18,7 +18,7 @@ interface DisputesFiltersProps {
 export const DisputesFilters = ( {
 	storeCurrencies,
 }: DisputesFiltersProps ): JSX.Element => {
-	const populateDepositCurrencies = (
+	const populateDisputesCurrencies = (
 		filtersConfiguration: DisputesFilterType[]
 	) => {
 		filtersConfiguration.forEach( ( filter ) => {
@@ -43,7 +43,7 @@ export const DisputesFilters = ( {
 
 	return (
 		<ReportFilters
-			filters={ populateDepositCurrencies( filters ) }
+			filters={ populateDisputesCurrencies( filters ) }
 			advancedFilters={ advancedFilters }
 			showDatePicker={ false }
 			path="/payments/disputes"

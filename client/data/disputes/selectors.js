@@ -53,12 +53,12 @@ export const getDisputes = ( state, query ) => {
 };
 
 /**
- * Retrieves the deposits summary corresponding to the provided query.
+ * Retrieves the disputes summary corresponding to the provided query.
  *
  * @param {Object} state Current wp.data state.
- * @param {Object} query The deposits summary query.
+ * @param {Object} query The disputes summary query.
  *
- * @return {Object} The deposits summary for the given query.
+ * @return {Object} The disputes summary for the given query.
  */
 const getDisputesSummaryForQuery = ( state, query ) => {
 	const index = getResourceId( query );
