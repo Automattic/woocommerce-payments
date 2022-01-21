@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { TextControl } from '@wordpress/components';
+import { TextControl, Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -28,15 +28,20 @@ const OrderSuccessPageSaveUser = () => {
 			<h3>Check out faster next time</h3>
 			<AboutPlatformCheckout />
 			<Agreement isSaving={ true } />
-			<TextControl
-				type="text"
-				label={ __(
-					'Confirm your mobile number',
-					'woocommerce-payments'
-				) }
-				value={ phoneNumber }
-				onChange={ setPhoneNumber }
-			/>
+			<div className="save-mobile-number">
+				<TextControl
+					type="text"
+					label={ __(
+						'Confirm your mobile number',
+						'woocommerce-payments'
+					) }
+					value={ phoneNumber }
+					onChange={ setPhoneNumber }
+				/>
+				<Button isPrimary onClick={ () => {} }>
+					{ __( 'Save', 'woocommerce-payments' ) }
+				</Button>
+			</div>
 			<AdditionalInformation />
 		</div>
 	);

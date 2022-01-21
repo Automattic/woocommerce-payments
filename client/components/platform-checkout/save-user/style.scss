@@ -33,6 +33,10 @@
 		}
 	}
 
+	.components-text-control__input[type='text'] {
+		padding: $gap-smaller;
+	}
+
 	.save-details-form {
 		display: flex;
 		flex-direction: column;
@@ -42,6 +46,18 @@
 		background-color: #f8f8f8;
 		padding: $gap;
 		gap: $gap;
+	}
+
+	.save-mobile-number {
+		display: inline-flex;
+		align-items: flex-end;
+
+		.components-button.is-primary {
+			background: $black;
+			padding-left: $gap;
+			padding-right: $gap;
+			margin: 0 0 $gap-smaller $gap-smaller;
+		}
 	}
 
 	.about-platform-checkout {
