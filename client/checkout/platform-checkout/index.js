@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom';
  * External dependencies
  */
 import CheckoutPageSaveUser from 'wcpay/components/platform-checkout/save-user/checkout-page-save-user';
+import OrderSuccessPageSaveUser from 'wcpay/components/platform-checkout/save-user/order-success-page-save-user';
 
 window.addEventListener( 'load', () => {
 	const placeOrderButton = document.getElementsByClassName(
@@ -27,3 +28,14 @@ window.addEventListener( 'load', () => {
 		);
 	}
 } );
+
+const OrderSuccessPageSaveUserContainer = document.getElementById(
+	'order-page-save-user'
+);
+
+if ( OrderSuccessPageSaveUserContainer ) {
+	ReactDOM.render(
+		<OrderSuccessPageSaveUser />,
+		OrderSuccessPageSaveUserContainer
+	);
+}

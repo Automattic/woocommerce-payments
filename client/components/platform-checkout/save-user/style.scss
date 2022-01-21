@@ -42,32 +42,36 @@
 		background-color: #f8f8f8;
 		padding: $gap;
 		gap: $gap;
+	}
 
-		.about-platform-checkout {
-			color: #6d6d6d;
-		}
+	.about-platform-checkout {
+		color: #6d6d6d;
+	}
 
-		.additional-information {
-			display: flex;
-			flex-direction: row;
-			align-items: flex-start;
-			gap: $gap-smaller;
-			color: $gray-700;
+	.additional-information {
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		gap: $gap-smaller;
+		color: $gray-700;
 
-			img {
-				margin-top: 5px;
-			}
-		}
-
-		.tos {
-			font-size: 12px;
-			line-height: 16px;
-		}
-
-		.line {
-			border: 0.5px solid $studio-gray-5;
+		img {
+			margin-top: 5px;
 		}
 	}
+
+	.tos {
+		font-size: 12px;
+		line-height: 16px;
+	}
+
+	.line {
+		border: 0.5px solid $studio-gray-5;
+	}
+}
+
+.order-success-page {
+	margin: 32px 0;
 }
 
 #payment .place-order {
