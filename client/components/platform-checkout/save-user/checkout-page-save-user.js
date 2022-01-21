@@ -2,8 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
-import { useState } from '@wordpress/element';
+import React, { useState } from 'react';
 import { CheckboxControl, TextControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -11,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import usePlatformCheckoutUser from '../hooks/use-platform-checkout-user';
+import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import AboutPlatformCheckout from './about-platform-checkout';
 import AdditionalInformation from './additional-information';
 import Agreement from './agreement';
@@ -19,8 +19,9 @@ import './style.scss';
 const CheckoutPageSaveUser = () => {
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
 	const { isRegisteredUser } = usePlatformCheckoutUser();
+	const { isWCPayChosen } = useSelectedPaymentMethod();
 
-	if ( isRegisteredUser ) {
+	if ( ! isWCPayChosen || isRegisteredUser ) {
 		return null;
 	}
 
