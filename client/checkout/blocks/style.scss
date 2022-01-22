@@ -28,16 +28,10 @@
 #contact-fields {
 	.wc-block-components-text-input {
 		position: relative;
-	}
 
-	&.is-loading .wc-block-components-text-input::after {
-		content: '';
-		width: 24px;
-		height: 24px;
-		position: absolute;
-		top: 50%;
-		right: 10px;
-		margin-top: -12px;
-		background: url( '../../../assets/images/spinner.svg' );
+		.wc-block-components-spinner {
+			width: 24px;
+			right: 10px;
+		}
 	}
 }

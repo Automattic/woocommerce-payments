@@ -733,9 +733,6 @@ jQuery( function ( $ ) {
 		}
 	} );
 	if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
-		handlePlatformCheckoutEmailInput(
-			'.platform-checkout-billing-email',
-			'.platform-checkout-billing-email-input'
-		);
+		handlePlatformCheckoutEmailInput( '#billing_email' );
 	}
 } );

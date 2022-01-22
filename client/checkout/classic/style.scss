@@ -42,18 +42,14 @@
 
 .platform-checkout-billing-email {
 	.woocommerce-input-wrapper {
+		display: inline-block;
 		position: relative;
-	}
+		width: 100%;
 
-	&.is-loading .woocommerce-input-wrapper::after {
-		content: '';
-		width: 24px;
-		height: 24px;
-		position: absolute;
-		top: 50%;
-		right: 10px;
-		margin-top: -12px;
-		background: url( '../../../assets/images/spinner.svg' );
+		.wc-block-components-spinner {
+			right: 10px;
+			width: 24px;
+		}
 	}
 }
 
