@@ -400,7 +400,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$currency                  = $order->get_currency();
 		$converted_amount          = WC_Payments_Utils::prepare_amount( $amount, $currency );
 		$payment_needed            = 0 < $converted_amount;
-		$token                     = Payment_Information::get_token_from_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_type              = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 		$save_payment_method       = $payment_type->equals( Payment_Type::RECURRING() ) || ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -905,13 +904,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	/**
 	 * Returns the list of available payment method types for UPE.
+	 * Filtering out those without configured fees, this will prevent a payment method not supported by the Stripe account's country from being returned.
 	 * See https://stripe.com/docs/stripe-js/payment-element#web-create-payment-intent for a complete list.
 	 *
 	 * @return string[]
 	 */
 	public function get_upe_available_payment_methods() {
 		$methods = parent::get_upe_available_payment_methods();
+		$fees    = $this->account->get_fees();
 
+		$methods[] = 'au_becs_debit';
 		$methods[] = 'bancontact';
 		$methods[] = 'giropay';
 		$methods[] = 'ideal';
@@ -919,12 +921,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$methods[] = 'sepa_debit';
 		$methods[] = 'p24';
 
-		return array_values(
+		$methods = array_values(
 			apply_filters(
 				'wcpay_upe_available_payment_methods',
 				$methods
 			)
 		);
+
+		$methods_with_fees = array_values( array_intersect( $methods, array_keys( $fees ) ) );
+
+		return $methods_with_fees;
 	}
 
 	/**

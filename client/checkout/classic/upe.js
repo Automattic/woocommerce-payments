@@ -524,7 +524,7 @@ jQuery( function ( $ ) {
 
 		try {
 			const { error } = await api.getStripe().confirmSetup( {
-				element: upeElement,
+				elements,
 				confirmParams: {
 					return_url: returnUrl,
 				},

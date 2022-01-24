@@ -690,11 +690,18 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	public function test_payment_intent_fails_and_fails_order() {
 		$this->request_body['type']           = 'payment_intent.payment_failed';
 		$this->request_body['data']['object'] = [
-			'id'       => 'pi_123123123123123', // payment_intent's ID.
+			'id'       => 'pi_123123123123123', // Payment_intent's ID.
 			'object'   => 'payment_intent',
 			'amount'   => 1500,
 			'charges'  => [
-				'data' => [],
+				'data' => [
+					[
+						'payment_method'         => 'pm_123123123123123', // Payment method ID.
+						'payment_method_details' => [
+							'type' => 'us_bank_account',
+						],
+					],
+				],
 			],
 			'currency' => 'usd',
 		];
@@ -704,6 +711,20 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$mock_order = $this->createMock( WC_Order::class );
 
 		$mock_order
+			->expects( $this->exactly( 3 ) )
+			->method( 'get_meta' )
+			->withConsecutive(
+				[ '_payment_method_id' ],
+				[ '_charge_id' ],
+				[ '_intent_id' ]
+			)
+			->willReturnOnConsecutiveCalls(
+				'pm_123123123123123',
+				'py_123123123123123',
+				'pi_123123123123123'
+			);
+
+		$mock_order
 			->expects( $this->once() )
 			->method( 'has_status' )
 			->with( [ 'failed' ] )
@@ -711,13 +732,17 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$mock_order
 			->expects( $this->once() )
-			->method( 'update_status' )
+			->method( 'add_order_note' )
 			->with(
-				'failed',
 				$this->matchesRegularExpression(
-					'/The payment was not able to be processed.*/'
+					'/The payment was not able to be processed/'
 				)
 			);
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'update_status' )
+			->with( 'failed' );
 
 		$mock_order
 			->method( 'get_data_store' )

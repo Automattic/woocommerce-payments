@@ -302,6 +302,39 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Updates an order to failed status, while adding a note with a link to the failed transaction.
+	 *
+	 * @param WC_Order $order   Order object.
+	 * @param string   $message Optional message to add to the failed note.
+	 *
+	 * @return void
+	 */
+	public static function mark_payment_failed( $order, $message = '' ) {
+
+		$transaction_url = self::compose_transaction_url( $order->get_meta( '_charge_id' ) );
+		$note            = sprintf(
+			self::esc_interpolated_html(
+				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+				__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
+			$order->get_meta( '_intent_id' )
+		);
+
+		if ( $message ) {
+			$note .= ' ' . $message;
+		}
+
+		$order->add_order_note( $note );
+		$order->update_meta_data( '_intention_status', 'failed' );
+		$order->update_status( 'failed' );
+	}
+
+	/**
 	 * Returns the charge_id for an "Order #" search term
 	 * or all charge_ids for a "Subscription #" search term.
 	 *
@@ -648,5 +681,26 @@ class WC_Payments_Utils {
 	public static function unlock_order_payment( $order ) {
 		$order_id = $order->get_id();
 		delete_transient( 'wcpay_processing_intent_' . $order_id );
+	}
+
+	/**
+	 * Composes url for transaction details page.
+	 *
+	 * @param  string $charge_id Charge id.
+	 * @return string            Transaction details page url.
+	 */
+	public static function compose_transaction_url( $charge_id ) {
+		if ( empty( $charge_id ) ) {
+			return '';
+		}
+
+		return add_query_arg(
+			[
+				'page' => 'wc-admin',
+				'path' => '/payments/transactions/details',
+				'id'   => $charge_id,
+			],
+			admin_url( 'admin.php' )
+		);
 	}
 }

@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
@@ -269,11 +270,31 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_payment_intent_failed( $event_body ) {
-		$order = $this->get_order_from_event_body_intent_id( $event_body );
+		// Check to make sure we should process this according to the payment method.
+		$charges_data        = $event_body['data']['object']['charges']['data'][0] ?? null;
+		$payment_method_type = $charges_data['payment_method_details']['type'] ?? null;
 
-		if ( $order && ! $order->has_status( [ 'failed' ] ) ) {
-			$order->update_status( 'failed', $this->get_failure_message_from_event( $event_body ) );
+		$actionable_methods = [
+			Payment_Method::US_BANK_ACCOUNT,
+			Payment_Method::BECS,
+		];
+
+		if ( empty( $payment_method_type ) || ! in_array( $payment_method_type, $actionable_methods, true ) ) {
+			return;
 		}
+
+		// Get the order and make sure it is an order, it is not already in failed status, and the payment methods match.
+		$order             = $this->get_order_from_event_body_intent_id( $event_body );
+		$payment_method_id = $charges_data['payment_method'] ?? null;
+
+		if ( ! $order
+			|| $order->has_status( [ 'failed' ] )
+			|| empty( $payment_method_id )
+			|| $payment_method_id !== $order->get_meta( '_payment_method_id' ) ) {
+			return;
+		}
+
+		WC_Payments_Utils::mark_payment_failed( $order, $this->get_failure_message_from_event( $event_body ) );
 	}
 
 	/**

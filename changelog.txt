@@ -1,6 +1,12 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.6.0 - 2022-xx-xx =
+= 3.7.0 - 2022-xx-xx =
+* Add - Introduce sorting on disputes page.
+* Fix - Currency name not translated the Overview card title.
+* Add - Introduce advance filters on disputes page.
+* Add - UPE payment methods - BECS Direct Debit.
+
+= 3.6.0 - 2022-01-20 =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
 * Fix - UPE validation error visibility on checkout page.
 * Tweak - Load translations for js files directly from lang-pack json files.
@@ -18,7 +24,9 @@
 * Add - Show a warning when attempting to create a subscription product with a price below the minimum amount.
 * Fix - When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown.
 * Fix - When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown.
-
+* Fix - Don't limit subscription products being created with an interval of more than one year when the WC Subscriptions plugin is active.
+* Fix - Subscriptions not renewing with subscription products that use a free trial period.
+* Fix - "Fees" column values are different in the downloaded CSV file for the transaction table
 
 = 3.5.0 - 2021-12-29 =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.

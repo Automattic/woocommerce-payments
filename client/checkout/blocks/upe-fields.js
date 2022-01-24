@@ -3,7 +3,8 @@
  */
 import {
 	Elements,
-	ElementsConsumer,
+	useStripe,
+	useElements,
 	PaymentElement,
 } from '@stripe/react-stripe-js';
 import { useEffect, useState } from '@wordpress/element';
@@ -20,21 +21,20 @@ import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,
-	stripe,
-	elements,
 	billing: { billingData },
 	eventRegistration: {
 		onPaymentProcessing,
 		onCheckoutAfterProcessingWithSuccess,
 	},
 	emitResponse,
+	paymentIntentId,
+	errorMessage,
 	shouldSavePayment,
 } ) => {
-	const [ paymentIntentId, setPaymentIntentId ] = useState( null );
-	const [ clientSecret, setClientSecret ] = useState( null );
-	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
+	const stripe = useStripe();
+	const elements = useElements();
+
 	const [ isUPEComplete, setIsUPEComplete ] = useState( false );
-	const [ errorMessage, setErrorMessage ] = useState( null );
 	const [ selectedUPEPaymentType, setSelectedUPEPaymentType ] = useState(
 		''
 	);
@@ -48,28 +48,6 @@ const WCPayUPEFields = ( {
 			with any expiry date and CVC.
 		</p>
 	);
-
-	useEffect( () => {
-		if ( paymentIntentId || hasRequestedIntent ) {
-			return;
-		}
-
-		async function createIntent() {
-			try {
-				const response = await api.createIntent();
-				setPaymentIntentId( response.id );
-				setClientSecret( response.client_secret );
-			} catch ( error ) {
-				setErrorMessage(
-					error.message
-						? error.message
-						: 'There was an error loading the payment gateway.'
-				);
-			}
-		}
-		setHasRequestedIntent( true );
-		createIntent();
-	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage ] );
 
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
@@ -138,15 +116,11 @@ const WCPayUPEFields = ( {
 							paymentCountry
 						);
 
-						const paymentElement = elements.getElement(
-							PaymentElement
-						);
-
 						return confirmUPEPayment(
 							api,
 							paymentDetails.redirect_url,
 							paymentDetails.payment_needed,
-							paymentElement,
+							elements,
 							billingData,
 							emitResponse
 						);
@@ -176,7 +150,6 @@ const WCPayUPEFields = ( {
 	};
 
 	const elementOptions = {
-		clientSecret,
 		fields: {
 			billingDetails: {
 				name: 'never',
@@ -192,6 +165,10 @@ const WCPayUPEFields = ( {
 				},
 			},
 		},
+		wallets: {
+			applePay: 'never',
+			googlePay: 'never',
+		},
 	};
 
 	const showTerms =
@@ -203,20 +180,6 @@ const WCPayUPEFields = ( {
 	const appearance = getConfig( 'upeAppearance' );
 	if ( appearance ) {
 		elementOptions.appearance = appearance;
-	}
-
-	if ( ! clientSecret ) {
-		if ( errorMessage ) {
-			return (
-				<div className="woocommerce-error">
-					<div className="components-notice__content">
-						{ errorMessage }
-					</div>
-				</div>
-			);
-		}
-
-		return null;
 	}
 
 	return (
@@ -237,19 +200,64 @@ const WCPayUPEFields = ( {
  * @param {Object} props All props given by WooCommerce Blocks.
  * @return {Object}     The wrapped React element.
  */
-const ConsumableWCPayFields = ( { api, ...props } ) => (
-	<Elements stripe={ api.getStripe() }>
-		<ElementsConsumer>
-			{ ( { elements, stripe } ) => (
-				<WCPayUPEFields
-					api={ api }
-					elements={ elements }
-					stripe={ stripe }
-					{ ...props }
-				/>
-			) }
-		</ElementsConsumer>
-	</Elements>
-);
+const ConsumableWCPayFields = ( { api, ...props } ) => {
+	const stripe = api.getStripe();
+
+	const [ paymentIntentId, setPaymentIntentId ] = useState( null );
+	const [ clientSecret, setClientSecret ] = useState( null );
+	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
+	const [ errorMessage, setErrorMessage ] = useState( null );
+
+	useEffect( () => {
+		if ( paymentIntentId || hasRequestedIntent ) {
+			return;
+		}
+
+		async function createIntent() {
+			try {
+				const response = await api.createIntent();
+				setPaymentIntentId( response.id );
+				setClientSecret( response.client_secret );
+			} catch ( error ) {
+				setErrorMessage(
+					error.message
+						? error.message
+						: 'There was an error loading the payment gateway.'
+				);
+			}
+		}
+		setHasRequestedIntent( true );
+		createIntent();
+	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage ] );
+
+	if ( ! clientSecret ) {
+		if ( errorMessage ) {
+			return (
+				<div className="woocommerce-error">
+					<div className="components-notice__content">
+						{ errorMessage }
+					</div>
+				</div>
+			);
+		}
+
+		return null;
+	}
+
+	const options = {
+		clientSecret,
+	};
+
+	return (
+		<Elements stripe={ stripe } options={ options }>
+			<WCPayUPEFields
+				api={ api }
+				paymentIntentId={ paymentIntentId }
+				errorMessage={ errorMessage }
+				{ ...props }
+			/>
+		</Elements>
+	);
+};
 
 export default ConsumableWCPayFields;

@@ -52,6 +52,21 @@ export const getDisputes = ( state, query ) => {
 	return ids.map( getCachedDispute.bind( this, state ) );
 };
 
-export const getDisputesSummary = ( state ) => {
-	return getDisputesState( state ).summary || {};
+/**
+ * Retrieves the disputes summary corresponding to the provided query.
+ *
+ * @param {Object} state Current wp.data state.
+ * @param {Object} query The disputes summary query.
+ *
+ * @return {Object} The disputes summary for the given query.
+ */
+const getDisputesSummaryForQuery = ( state, query ) => {
+	const index = getResourceId( query );
+	const summary = getDisputesState( state ).summary || {};
+
+	return summary[ index ] || {};
+};
+
+export const getDisputesSummary = ( state, query ) => {
+	return getDisputesSummaryForQuery( state, query ).data || {};
 };
