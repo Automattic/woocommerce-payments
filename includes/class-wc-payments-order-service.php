@@ -47,10 +47,8 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->add_success_note( $order, $intent_id, $message );
-		$this->update_order_intention_status( $order, $intent_id );
 		$order->payment_complete( $intent_id );
-		$this->unlock_order_payment( $order );
-		$order->save();
+		$this->complete_order_processing( $order, $intent_id );
 	}
 
 	/**
@@ -73,10 +71,8 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->add_failure_note( $order, $intent_id, $message );
-		$this->update_order_intention_status( $order, $intent_id );
 		$order->update_status( 'failed' );
-		$this->unlock_order_payment( $order );
-		$order->save();
+		$this->complete_order_processing( $order, $intent_id );
 	}
 
 	/**
@@ -100,10 +96,8 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->add_on_hold_note( $order, $intent_id, $message );
-		$this->update_order_intention_status( $order, $intent_id );
 		$order->update_status( 'on-hold' );
-		$this->unlock_order_payment( $order );
-		$order->save();
+		$this->complete_order_processing( $order, $intent_id );
 	}
 
 	/**
@@ -125,9 +119,53 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->add_pending_note( $order, $intent_id, $message );
-		$this->update_order_intention_status( $order, $intent_id );
-		$this->unlock_order_payment( $order );
-		$order->save();
+		$this->complete_order_processing( $order, $intent_id );
+	}
+
+	/**
+	 * Updates an order to processing/completed status, while adding a note with a link to the transaction.
+	 *
+	 * @param WC_Order $order   Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $message Optional message to add to the note.
+	 *
+	 * @return void
+	 */
+	public function mark_payment_capture_completed( $order, $intent_id, $message = '' ) {
+
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id )
+			|| $order->has_status( [ 'processing', 'completed' ] )
+			|| 'succeeded' === $order->get_meta( '_intention_status' ) ) {
+			// TODO: Should these be separate with logging for each reason for return?
+			return;
+		}
+
+		$this->add_capture_success_note( $order, $intent_id, $message );
+		$order->payment_complete( $intent_id );
+		$this->complete_order_processing( $order, $intent_id );
+	}
+
+	/**
+	 * Updates an order to canceled status, while adding a note with a link to the transaction.
+	 *
+	 * @param WC_Order $order   Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $message Optional message to add to the note.
+	 *
+	 * @return void
+	 */
+	public function mark_payment_expired( $order, $intent_id, $message = '' ) {
+
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id )
+			|| $order->has_status( [ 'processing', 'completed' ] )
+			|| 'succeeded' === $order->get_meta( '_intention_status' ) ) {
+			// TODO: Should these be separate with logging for each reason for return?
+			return;
+		}
+
+		$this->add_expired_note( $order, $intent_id, $message );
+		$order->update_status( 'cancelled' );
+		$this->complete_order_processing( $order, $intent_id );
 	}
 
 	/**
@@ -161,8 +199,10 @@ class WC_Payments_Order_Service {
 			);
 		}
 
-		if ( $note ) {
-			$note .= ' ' . $this->message;
+		if ( $note && $message ) {
+			$note .= ' ' . $message;
+		} elseif ( $message ) {
+			$note = $message;
 		}
 
 		if ( $note ) {
@@ -222,6 +262,99 @@ class WC_Payments_Order_Service {
 				]
 			),
 			WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
+			$intent_id
+		);
+
+		if ( $message ) {
+			$note .= ' ' . $message;
+		}
+
+		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Adds the pending order note and additional message, if included.
+	 *
+	 * @param WC_Order $order     Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $message   Optional message to add to the note.
+	 *
+	 * @return void
+	 */
+	private function add_pending_note( $order, $intent_id, $message ) {
+		$note = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'code'   => '<code>',
+				]
+			),
+			WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
+			$intent_id
+		);
+
+		if ( $message ) {
+			$note .= ' ' . $message;
+		}
+
+		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Adds the successful capture order note, if needed, and additional message, if included.
+	 *
+	 * @param WC_Order $order     Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $message   Optional message to add to the note.
+	 *
+	 * @return void
+	 */
+	private function add_capture_success_note( $order, $intent_id, $message ) {
+		$intent          = $this->payments_api_client->get_intent( $intent_id );
+		$charge_id       = $intent->get_charge_id();
+		$transaction_url = $this->compose_transaction_url( $charge_id );
+		$note            = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
+			$charge_id
+		);
+
+		if ( $message ) {
+			$note .= ' ' . $message;
+		}
+
+		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Adds the expired order note and additional message, if included.
+	 *
+	 * @param WC_Order $order     Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $message   Optional message to add to the note.
+	 *
+	 * @return void
+	 */
+	private function add_expired_note( $order, $intent_id, $message ) {
+		$transaction_url = $this->compose_transaction_url( $order->get_meta( '_charge_id' ) );
+		$note            = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+				__( 'Payment authorization has <strong>expired</strong> (<a>%1$s</a>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
 			$intent_id
 		);
 
@@ -321,6 +454,20 @@ class WC_Payments_Order_Service {
 		$this->lock_order_payment( $order, $intent_id );
 
 		return true;
+	}
+
+	/**
+	 * Completes order processing by updating the intent meta, unlocking the order, and saving the order.
+	 *
+	 * @param WC_Order $order   Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 *
+	 * @return void
+	 */
+	private function complete_order_processing( $order, $intent_id ) {
+		$this->update_order_intention_status( $order, $intent_id );
+		$this->unlock_order_payment( $order );
+		$order->save();
 	}
 
 	/**
