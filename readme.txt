@@ -99,7 +99,6 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 3.7.0 - 2022-xx-xx =
-* Add - Add redirect to view Capital financing offers.
 * Fix - Currency name not translated the Overview card title.
 
 = 3.6.0 - 2022-01-20 =
