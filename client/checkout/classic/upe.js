@@ -7,9 +7,6 @@ import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_UPE,
-	COOKIE_CART_HASH,
-	COOKIE_UPE_PAYMENT_INTENT,
-	COOKIE_UPE_SETUP_INTENT,
 } from '../constants.js';
 import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
@@ -26,6 +23,9 @@ jQuery( function ( $ ) {
 	const isUPEEnabled = getConfig( 'isUPEEnabled' );
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 	const enabledBillingFields = getConfig( 'enabledBillingFields' );
+	const cookieCartHash = getConfig( 'cookieCartHash' );
+	const cookieUPEPaymentIntent = getConfig( 'cookieUPEPaymentIntent' );
+	const cookieUPESetupIntent = getConfig( 'cookieUPESetupIntent' );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -666,8 +666,8 @@ jQuery( function ( $ ) {
 	 * @return {Object} The intent id and client secret required for mounting the UPE element.
 	 */
 	function getPaymentIntentFromCookie() {
-		const cartHash = getCookieValue( COOKIE_CART_HASH );
-		const cookieVal = getCookieValue( COOKIE_UPE_PAYMENT_INTENT );
+		const cartHash = getCookieValue( cookieCartHash );
+		const cookieVal = getCookieValue( cookieUPEPaymentIntent );
 
 		if ( cartHash && cookieVal && cookieVal.startsWith( cartHash ) ) {
 			const intentId = cookieVal.split( '-' )[ 1 ];
@@ -684,7 +684,7 @@ jQuery( function ( $ ) {
 	 * @return {Object} The intent id and client secret required for mounting the UPE element.
 	 */
 	function getSetupIntentFromCookie() {
-		const cookieVal = getCookieValue( COOKIE_UPE_SETUP_INTENT );
+		const cookieVal = getCookieValue( cookieUPESetupIntent );
 
 		if ( cookieVal ) {
 			const intentId = cookieVal.split( '-' )[ 0 ];

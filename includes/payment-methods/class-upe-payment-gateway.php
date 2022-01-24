@@ -50,6 +50,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	const COOKIE_UPE_SETUP_INTENT = 'wcpay_upe_setup_intent';
 
+	const COOKIE_CART_HASH = 'woocommerce_cart_hash'; // maintained in WC core.
+
 	/**
 	 * Array mapping payment method string IDs to classes
 	 *
@@ -670,6 +672,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['checkoutTitle']            = $this->checkout_title;
 		$payment_fields['cartContainsSubscription'] = $this->is_subscription_item_in_cart();
 		$payment_fields['logPaymentErrorNonce']     = wp_create_nonce( 'wcpay_log_payment_error_nonce' );
+		$payment_fields['cookieCartHash']           = self::COOKIE_CART_HASH;
+		$payment_fields['cookieUPEPaymentIntent']   = self::COOKIE_UPE_PAYMENT_INTENT;
+		$payment_fields['cookieUPESetupIntent']     = self::COOKIE_UPE_SETUP_INTENT;
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
@@ -1100,8 +1105,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	private function create_upe_payment_intent_cookie( string $intent_id = '', string $client_secret = '' ) {
 		$cart_hash = 'undefined';
 
-		if ( isset( $_COOKIE['woocommerce_cart_hash'] ) ) {
-			$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE['woocommerce_cart_hash'] ) );
+		if ( isset( $_COOKIE[ self::COOKIE_CART_HASH ] ) ) {
+			$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE[ self::COOKIE_CART_HASH ] ) );
 		}
 
 		$cookie_val = $cart_hash . '-' . $intent_id . '-' . $client_secret;
