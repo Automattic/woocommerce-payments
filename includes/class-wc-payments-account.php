@@ -343,7 +343,7 @@ class WC_Payments_Account {
 		}
 
 		// Safety check to prevent non-admin users to be redirected to the view offer page.
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
 
