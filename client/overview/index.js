@@ -52,6 +52,7 @@ const OverviewPage = () => {
 		'1' === queryParams[ 'wcpay-connection-success' ];
 
 	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
+	const showLoanOfferError = '1' === queryParams[ 'wcpay-loan-offer-error' ];
 	const accountRejected = accountStatus.status.startsWith( 'rejected' );
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
@@ -104,6 +105,15 @@ const OverviewPage = () => {
 			) }
 
 			<JetpackIdcNotice />
+
+			{ showLoanOfferError && (
+				<Notice status="error" isDismissible={ false }>
+					{ __(
+						'There was a problem redirecting you to the loan offer. Please check that it is not expired and try again.',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
 
 			<TestModeNotice topic={ topics.overview } />
 
