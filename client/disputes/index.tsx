@@ -29,6 +29,7 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { reasons } from './strings';
 import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
+import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { DisputesTableHeader } from 'wcpay/types/disputes';
@@ -105,10 +106,9 @@ const headers: DisputesTableHeader[] = [
 export const DisputesList = (): JSX.Element => {
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
-	const {
-		disputesSummary,
-		isLoading: isSummaryLoading,
-	} = useDisputesSummary();
+	const { disputesSummary, isLoading: isSummaryLoading } = useDisputesSummary(
+		getQuery()
+	);
 
 	const rows = disputes.map( ( dispute ) => {
 		const order = dispute.order
@@ -273,9 +273,16 @@ export const DisputesList = (): JSX.Element => {
 		];
 	}
 
+	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
+
+	const storeCurrencies =
+		disputesSummary.store_currencies ||
+		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
+
 	return (
 		<Page>
 			<TestModeNotice topic={ topics.disputes } />
+			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
 				className="wcpay-disputes-list"
 				title={ __( 'Disputes', 'woocommerce-payments' ) }
