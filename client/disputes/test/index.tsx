@@ -208,7 +208,6 @@ describe( 'Disputes list', () => {
 			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
 			//    trailing zeros as in the display amount.
 			//
-
 			expect(
 				getUnformattedAmount( displayFirstDispute[ 0 ] ).indexOf(
 					csvFirstDispute[ 1 ]

@@ -59,6 +59,8 @@ export const useDisputes = ( {
 	date_between: dateBetween,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
+	orderby: orderBy,
+	order,
 }: Query ): CachedDisputes =>
 	useSelect(
 		( select ) => {
@@ -82,6 +84,8 @@ export const useDisputes = ( {
 					),
 				statusIs,
 				statusIsNot,
+				orderBy: orderBy || 'created',
+				order: order || 'desc',
 			};
 
 			return {
@@ -99,6 +103,8 @@ export const useDisputes = ( {
 			JSON.stringify( dateBetween ),
 			statusIs,
 			statusIsNot,
+			orderBy,
+			order,
 		]
 	);
 
