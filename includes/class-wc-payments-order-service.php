@@ -34,7 +34,7 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->add_success_note( $order, $intent, $message );
-		$order->payment_complete( $intent );
+		$order->payment_complete( $intent->get_id() );
 		$this->complete_order_processing( $order, $intent );
 	}
 
@@ -112,7 +112,7 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->add_capture_success_note( $order, $intent, $message );
-		$order->payment_complete( $intent );
+		$order->payment_complete( $intent->get_id() );
 		$this->complete_order_processing( $order, $intent );
 	}
 
@@ -196,7 +196,7 @@ class WC_Payments_Order_Service {
 				]
 			),
 			$this->get_order_amount( $order ),
-			$intent
+			$intent->get_id()
 		);
 
 		if ( $message ) {
@@ -227,7 +227,7 @@ class WC_Payments_Order_Service {
 				]
 			),
 			$this->get_order_amount( $order ),
-			$intent
+			$intent->get_id()
 		);
 
 		if ( $message ) {
@@ -257,7 +257,7 @@ class WC_Payments_Order_Service {
 				]
 			),
 			$this->get_order_amount( $order ),
-			$intent
+			$intent->get_id()
 		);
 
 		if ( $message ) {
@@ -319,7 +319,7 @@ class WC_Payments_Order_Service {
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			$intent
+			$intent->get_id()
 		);
 
 		if ( $message ) {
@@ -365,7 +365,7 @@ class WC_Payments_Order_Service {
 		$processing     = get_transient( $transient_name );
 
 		// Block the process if the same intent is already being handled.
-		return ( '-1' === $processing || ( isset( $intent ) && $processing === $intent ) );
+		return ( '-1' === $processing || ( isset( $intent ) && $processing === $intent->get_id() ) );
 	}
 
 	/**
@@ -380,7 +380,7 @@ class WC_Payments_Order_Service {
 		$order_id       = $order->get_id();
 		$transient_name = 'wcpay_processing_intent_' . $order_id;
 
-		set_transient( $transient_name, empty( $intent ) ? '-1' : $intent, 5 * MINUTE_IN_SECONDS );
+		set_transient( $transient_name, empty( $intent ) ? '-1' : $intent->get_id(), 5 * MINUTE_IN_SECONDS );
 	}
 
 	/**
