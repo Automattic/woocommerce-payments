@@ -1,7 +1,7 @@
 *** WooCommerce Payments Changelog ***
 
 = 3.7.0 - 2022-xx-xx =
-* Add - Disputes list sorting
+* Add - Introduce sorting on disputes page.
 * Fix - Currency name not translated the Overview card title.
 * Add - Introduce advance filters on disputes page.
 * Add - UPE payment methods - BECS Direct Debit.
