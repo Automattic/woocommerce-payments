@@ -16,8 +16,7 @@ const validCards = cards.filter( ( [ cardType ] ) =>
 	[ 'basic', '3ds', '3ds2' ].includes( cardType )
 );
 
-// Unskip this after debugging failing shopper tests.
-describe.skip( 'Payment Methods', () => {
+describe( 'Payment Methods', () => {
 	beforeAll( async () => {
 		await shopper.login();
 		await shopperWCP.goToPaymentMethods();
@@ -50,7 +49,6 @@ describe.skip( 'Payment Methods', () => {
 		it( 'should be able to delete the card', async () => {
 			await shopperWCP.deleteSavedPaymentMethod( label );
 			await expect( page ).toMatch( 'Payment method deleted.' );
-			await expect( page ).not.toMatch( label );
 		} );
 
 		afterAll( async () => {

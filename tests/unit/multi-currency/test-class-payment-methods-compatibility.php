@@ -82,6 +82,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
 			[
 				'card',
+				'au_becs_debit',
 				'bancontact',
 				'giropay',
 				'sepa_debit',
@@ -107,6 +108,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
 			[
 				'card',
+				'au_becs_debit',
 				'bancontact',
 				'giropay',
 				'sepa_debit',
