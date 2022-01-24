@@ -15,6 +15,7 @@ import {
 	generateCSVDataFromTable,
 	generateCSVFileName,
 } from '@woocommerce/csv-export';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies.
@@ -29,95 +30,108 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { reasons } from './strings';
 import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
+import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { DisputesTableHeader } from 'wcpay/types/disputes';
 
 import './style.scss';
 
-const headers: DisputesTableHeader[] = [
+const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
 		key: 'details',
 		label: '',
 		required: true,
-		cellClassName: 'info-button',
+		cellClassName: classNames( 'info-button', {
+			'is-sorted': sortColumn === 'amount',
+		} ),
 		isLeftAligned: true,
 	},
 	{
 		key: 'amount',
 		label: __( 'Amount', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Amount', 'woocommerce-payments' ),
 		required: true,
+		isSortable: true,
+		isLeftAligned: true,
 	},
 	{
 		key: 'status',
 		label: __( 'Status', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Status', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
 	},
 	{
 		key: 'reason',
 		label: __( 'Reason', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Reason', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
 	},
 	{
 		key: 'source',
 		label: __( 'Source', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Source', 'woocommerce-payments' ),
 		required: true,
 		cellClassName: 'is-center-aligned',
 	},
 	{
 		key: 'order',
 		label: __( 'Order #', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Order #', 'woocommerce-payments' ),
 		required: true,
 	},
 	{
-		key: 'customer',
+		key: 'customerName',
 		label: __( 'Customer', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Customer', 'woocommerce-payments' ),
 		isLeftAligned: true,
 	},
 	{
-		key: 'email',
+		key: 'customerEmail',
 		label: __( 'Email', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Email', 'woocommerce-payments' ),
 		visible: false,
 		isLeftAligned: true,
 	},
 	{
-		key: 'country',
+		key: 'customerCountry',
 		label: __( 'Country', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Country', 'woocommerce-payments' ),
 		visible: false,
 		isLeftAligned: true,
 	},
 	{
 		key: 'created',
 		label: __( 'Disputed on', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Disputed on', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
+		isSortable: true,
+		defaultSort: true,
+		defaultOrder: 'desc',
 	},
 	{
 		key: 'dueBy',
 		label: __( 'Respond by', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Respond by', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
+		isSortable: true,
 	},
 ];
 
 export const DisputesList = (): JSX.Element => {
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
-	const {
-		disputesSummary,
-		isLoading: isSummaryLoading,
-	} = useDisputesSummary();
+	const { disputesSummary, isLoading: isSummaryLoading } = useDisputesSummary(
+		getQuery()
+	);
+
+	const headers = getHeaders( getQuery().orderby );
 
 	const rows = disputes.map( ( dispute ) => {
-		const order = dispute.order
-			? {
-					value: dispute.order.number,
-					display: <OrderLink order={ dispute.order } />,
-			  }
-			: null;
-
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell
 				href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
@@ -135,14 +149,16 @@ export const DisputesList = (): JSX.Element => {
 			? reasonMapping.display
 			: formatStringValue( dispute.reason );
 
-		const data = {
+		const data: {
+			[ key: string ]: {
+				value: number | string;
+				display: JSX.Element;
+			};
+		} = {
 			amount: {
 				value: dispute.amount / 100,
 				display: clickable(
-					formatExplicitCurrency(
-						dispute.amount || 0,
-						dispute.currency || 'USD'
-					)
+					formatExplicitCurrency( dispute.amount, dispute.currency )
 				),
 			},
 			status: {
@@ -156,10 +172,12 @@ export const DisputesList = (): JSX.Element => {
 				display: clickable( reasonDisplay ),
 			},
 			source: {
-				value: dispute.source,
+				value: dispute.source ?? '',
 				display: clickable(
 					<span
-						className={ `payment-method__brand payment-method__brand--${ dispute.source }` }
+						className={ `payment-method__brand payment-method__brand--${
+							dispute.source ?? ''
+						}` }
 					/>
 				),
 			},
@@ -181,17 +199,20 @@ export const DisputesList = (): JSX.Element => {
 					)
 				),
 			},
-			order,
-			customer: {
-				value: dispute.customer_name,
+			order: {
+				value: dispute.order_number ?? '',
+				display: <OrderLink order={ dispute.order } />,
+			},
+			customerName: {
+				value: dispute.customer_name ?? '',
 				display: clickable( dispute.customer_name ),
 			},
-			email: {
-				value: dispute.customer_email,
+			customerEmail: {
+				value: dispute.customer_email ?? '',
 				display: clickable( dispute.customer_email ),
 			},
-			country: {
-				value: dispute.customer_country,
+			customerCountry: {
+				value: dispute.customer_country ?? '',
 				display: clickable( dispute.customer_country ),
 			},
 			details: { value: dispute.dispute_id, display: detailsLink },
@@ -273,9 +294,16 @@ export const DisputesList = (): JSX.Element => {
 		];
 	}
 
+	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
+
+	const storeCurrencies =
+		disputesSummary.store_currencies ||
+		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
+
 	return (
 		<Page>
 			<TestModeNotice topic={ topics.disputes } />
+			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
 				className="wcpay-disputes-list"
 				title={ __( 'Disputes', 'woocommerce-payments' ) }
