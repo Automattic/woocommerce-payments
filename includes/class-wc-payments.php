@@ -719,6 +719,7 @@ class WC_Payments {
 	 * Adds WCPay notes to the WC-Admin inbox.
 	 */
 	public static function add_woo_admin_notes() {
+		// Do not try to add notes on ajax requests to improve their performance.
 		if ( wp_doing_ajax() ) {
 			return;
 		}
