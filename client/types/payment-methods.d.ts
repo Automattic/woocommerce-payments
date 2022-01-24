@@ -7,6 +7,7 @@
  */
 
 export type PaymentMethod =
+	| 'au_becs_debit'
 	| 'bancontact'
 	| 'card'
 	| 'card_present'

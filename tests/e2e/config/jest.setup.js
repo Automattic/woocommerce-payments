@@ -7,15 +7,18 @@ import {
 } from '@wordpress/e2e-test-utils';
 
 import { addConsoleSuppression } from '@woocommerce/e2e-environment';
-addConsoleSuppression(
+
+const ERROR_MESSAGES_TO_IGNORE = [
 	'violates the following Content Security Policy directive',
-	false
-);
-addConsoleSuppression(
 	'You may test your Stripe.js integration over HTTP.',
-	false
-);
-addConsoleSuppression( 'is deprecated', false );
+	'is deprecated',
+	'Unrecognized feature:',
+	'This Element will be mounted to a DOM element that contains child nodes',
+];
+
+ERROR_MESSAGES_TO_IGNORE.forEach( ( errorMessage ) => {
+	addConsoleSuppression( errorMessage, false );
+} );
 
 /**
  * Array of page event tuples of [ eventName, handler ].
