@@ -103,7 +103,8 @@ export interface DisputeFileUpload {
 
 export interface DisputesSummary {
 	disputesSummary: {
-		count: number;
+		count?: number;
+		store_currencies?: string[];
 	};
 	isLoading: boolean;
 }

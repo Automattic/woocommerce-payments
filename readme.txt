@@ -101,6 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 = 3.7.0 - 2022-xx-xx =
 * Add - Add endpoint to retrieve a file content via API.
 * Fix - Currency name not translated the Overview card title.
+* Add - Introduce advance filters on disputes page.
 * Add - UPE payment methods - BECS Direct Debit.
 
 = 3.6.0 - 2022-01-20 =

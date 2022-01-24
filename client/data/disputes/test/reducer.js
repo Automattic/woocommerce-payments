@@ -139,6 +139,7 @@ describe( 'Disputes reducer tests', () => {
 	test( 'New disputes summary reduced correctly', () => {
 		const reduced = reducer( undefined, {
 			type: types.SET_DISPUTES_SUMMARY,
+			query: mockQuery,
 			data: {
 				count: 42,
 			},
@@ -149,7 +150,11 @@ describe( 'Disputes reducer tests', () => {
 			queries: {},
 			cached: {},
 			summary: {
-				count: 42,
+				[ getResourceId( mockQuery ) ]: {
+					data: {
+						count: 42,
+					},
+				},
 			},
 		};
 
@@ -170,12 +175,17 @@ describe( 'Disputes reducer tests', () => {
 				},
 			},
 			summary: {
-				count: 1,
+				[ getResourceId( mockQuery ) ]: {
+					data: {
+						count: 1,
+					},
+				},
 			},
 		};
 
 		const reduced = reducer( before, {
 			type: types.SET_DISPUTES_SUMMARY,
+			query: mockQuery,
 			data: {
 				count: 42,
 			},
@@ -184,7 +194,11 @@ describe( 'Disputes reducer tests', () => {
 		const after = {
 			...before,
 			summary: {
-				count: 42,
+				[ getResourceId( mockQuery ) ]: {
+					data: {
+						count: 42,
+					},
+				},
 			},
 		};
 

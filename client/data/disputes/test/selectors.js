@@ -81,22 +81,34 @@ describe( 'Disputes selectors', () => {
 } );
 
 describe( 'Disputes summary selector', () => {
-	const mockDisputesSummary = { count: 42 };
+	// Mock objects.
+	const mockQuery = { paged: '2', perPage: '50' };
+	const mockDisputesSummary = {
+		count: 42,
+	};
 
 	// State is populated.
 	const filledSuccessState = {
 		disputes: {
-			summary: mockDisputesSummary,
+			summary: {
+				[ getResourceId( mockQuery ) ]: {
+					data: {
+						count: 42,
+					},
+				},
+			},
 		},
 	};
 
 	test( 'Returns empty disputes summary when state is empty', () => {
-		expect( getDisputesSummary( emptyState ) ).toStrictEqual( {} );
+		expect( getDisputesSummary( emptyState, mockQuery ) ).toStrictEqual(
+			{}
+		);
 	} );
 
 	test( 'Returns disputes summary from state', () => {
-		expect( getDisputesSummary( filledSuccessState ) ).toStrictEqual(
-			mockDisputesSummary
-		);
+		expect(
+			getDisputesSummary( filledSuccessState, mockQuery )
+		).toStrictEqual( mockDisputesSummary );
 	} );
 } );
