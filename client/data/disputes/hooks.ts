@@ -5,6 +5,7 @@
  */
 import { useSelect, useDispatch } from '@wordpress/data';
 import type { Query } from '@woocommerce/navigation';
+import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -51,6 +52,15 @@ export const useDisputeEvidence = (): {
 export const useDisputes = ( {
 	paged,
 	per_page: perPage,
+	store_currency_is: storeCurrencyIs,
+	match,
+	date_before: dateBefore,
+	date_after: dateAfter,
+	date_between: dateBetween,
+	status_is: statusIs,
+	status_is_not: statusIsNot,
+	orderby: orderBy,
+	order,
 }: Query ): CachedDisputes =>
 	useSelect(
 		( select ) => {
@@ -63,6 +73,19 @@ export const useDisputes = ( {
 				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
 					? '25'
 					: perPage,
+				storeCurrencyIs,
+				match,
+				dateBefore,
+				dateAfter,
+				dateBetween:
+					dateBetween &&
+					dateBetween.sort( ( a, b ) =>
+						moment( a ).diff( moment( b ) )
+					),
+				statusIs,
+				statusIsNot,
+				orderBy: orderBy || 'created',
+				order: order || 'desc',
 			};
 
 			return {
@@ -70,15 +93,66 @@ export const useDisputes = ( {
 				isLoading: isResolving( 'getDisputes', [ query ] ),
 			};
 		},
-		[ paged, perPage ]
+		[
+			paged,
+			perPage,
+			storeCurrencyIs,
+			match,
+			dateBefore,
+			dateAfter,
+			JSON.stringify( dateBetween ),
+			statusIs,
+			statusIsNot,
+			orderBy,
+			order,
+		]
 	);
 
-export const useDisputesSummary = (): DisputesSummary =>
-	useSelect( ( select ) => {
-		const { getDisputesSummary, isResolving } = select( STORE_NAME );
+export const useDisputesSummary = ( {
+	paged,
+	per_page: perPage,
+	match,
+	store_currency_is: storeCurrencyIs,
+	date_before: dateBefore,
+	date_after: dateAfter,
+	date_between: dateBetween,
+	status_is: statusIs,
+	status_is_not: statusIsNot,
+}: Query ): DisputesSummary =>
+	useSelect(
+		( select ) => {
+			const { getDisputesSummary, isResolving } = select( STORE_NAME );
 
-		return {
-			disputesSummary: getDisputesSummary(),
-			isLoading: isResolving( 'getDisputesSummary' ),
-		};
-	}, [] );
+			const query = {
+				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
+					? '1'
+					: paged,
+				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
+					? '25'
+					: perPage,
+				match,
+				storeCurrencyIs,
+				dateBefore,
+				dateAfter,
+				dateBetween,
+				statusIs,
+				statusIsNot,
+			};
+
+			return {
+				disputesSummary: getDisputesSummary( query ),
+				isLoading: isResolving( 'getDisputesSummary', [ query ] ),
+			};
+		},
+		[
+			paged,
+			perPage,
+			storeCurrencyIs,
+			match,
+			dateBefore,
+			dateAfter,
+			JSON.stringify( dateBetween ),
+			statusIs,
+			statusIsNot,
+		]
+	);

@@ -49,7 +49,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		afterAll( async () => {
 			// Clear the cart at the end so it's ready for another test
-			await shopper.emptyCart();
+			await shopperWCP.emptyCart();
 		} );
 
 		it( 'should throw an error that the card was simply declined', async () => {
