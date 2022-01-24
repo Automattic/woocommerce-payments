@@ -200,7 +200,7 @@ function wcpay_show_old_jetpack_notice() {
 }
 
 /**
- * Get custom texts for Jetpack Indentity Crisis (IDC) module.
+ * Get custom texts for Jetpack Identity Crisis (IDC) module.
  *
  * @return array
  */
@@ -212,13 +212,12 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 		'migratedTitle'         => __( 'WooCommerce Payments connection successfully transfered', 'woocommerce-payments' ),
 		'migratedBodyText'      => __( 'Safe Mode has been deactivated and WooCommerce Payments is fully functional.', 'woocommerce-payments' ),
 		'migrateCardTitle'      => __( 'Transfer connection', 'woocommerce-payments' ),
-		'migrateButtonLabel'    => __( 'Transfer your connection', 'woocommerce-payments' ), // TODO wait for https://github.com/Automattic/jetpack/pull/22394.
+		'migrateButtonLabel'    => __( 'Transfer your connection', 'woocommerce-payments' ),
 		'startFreshCardTitle'   => __( 'Create a new connection', 'woocommerce-payments' ),
-		'startFreshButtonLabel' => __( 'Create a new connection', 'woocommerce-payments' ), // TODO wait for https://github.com/Automattic/jetpack/pull/22394.
+		'startFreshButtonLabel' => __( 'Create a new connection', 'woocommerce-payments' ),
 		'nonAdminTitle'         => __( 'Safe Mode activated', 'woocommerce-payments' ),
-		'nonAdminBodyText'      => __( 'We’ve detected that you have duplicate sites connected to WooCommerce Payments. When Safe Mode is active, payments will not be interupted, however some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transfering your site from one domain to another, or creating a staging site for testing. A site adminstrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ), // TODO wait for safeModeLink tag is allowed. https://github.com/Automattic/jetpack/pull/22394.
-		'supportURL'            => __( 'https://woocommerce.com/document/payments/faq/safe-mode/', 'woocommerce-payments' ), // TODO 1) this doc is in progress; 2) This link is used in the `safeModeLink` tag.
-
+		'nonAdminBodyText'      => __( 'We’ve detected that you have duplicate sites connected to WooCommerce Payments. When Safe Mode is active, payments will not be interupted, however some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transfering your site from one domain to another, or creating a staging site for testing. A site adminstrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
+		'supportURL'            => __( 'https://woocommerce.com/document/payments/faq/safe-mode/', 'woocommerce-payments' ),
 	];
 
 	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();
@@ -229,7 +228,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 		$custom_content['migrateCardBodyText'] = sprintf(
 			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly.*/
 			__(
-				'Transfer your WooCommerce Payments connection from <hostname>%2$s</hostname> to this site <hostname>%1$s</hostname>. <hostname>%2$s</hostname> will be disconnected from WooCommerce Payments.', // TODO hostname will be converted to strong tag. Waiting for https://github.com/Automattic/jetpack/pull/22360.
+				'Transfer your WooCommerce Payments connection from <hostname>%2$s</hostname> to this site <hostname>%1$s</hostname>. <hostname>%2$s</hostname> will be disconnected from WooCommerce Payments.',
 				'woocommerce-payments'
 			),
 			$current_url,
@@ -239,7 +238,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 		$custom_content['startFreshCardBodyText'] = sprintf(
 			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly. */
 			__(
-				'Create a new connection to WooCommerce Payments for <hostname>%1$s</hostname>. You’ll have to re-verify your business details to begin accepting payments. Your <hostname>%2$s</hostname> connection will remain as is.',  // TODO hostname will be converted to strong tag. Waiting for https://github.com/Automattic/jetpack/pull/22360.
+				'Create a new connection to WooCommerce Payments for <hostname>%1$s</hostname>. You’ll have to re-verify your business details to begin accepting payments. Your <hostname>%2$s</hostname> connection will remain as is.',
 				'woocommerce-payments'
 			),
 			$current_url,
