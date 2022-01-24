@@ -162,14 +162,45 @@ exports[`Disputes list renders correctly 1`] = `
                   />
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  aria-sort="none"
+                  class="woocommerce-table__header is-left-aligned is-sortable"
                   role="columnheader"
                   scope="col"
                 >
-                  <span
-                    aria-hidden="false"
+                  <button
+                    aria-describedby="header-0-1"
+                    class="components-button"
+                    type="button"
                   >
-                    Amount
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Amount
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Amount
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-1"
+                  >
+                    Sort by Amount in descending order
                   </span>
                 </th>
                 <th
@@ -178,7 +209,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Status
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Status
                   </span>
@@ -189,7 +225,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Reason
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Reason
                   </span>
@@ -200,7 +241,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Source
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Source
                   </span>
@@ -211,7 +257,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Order #
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Order #
                   </span>
@@ -222,31 +273,98 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Customer
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Customer
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-left-aligned"
+                  aria-sort="descending"
+                  class="woocommerce-table__header is-left-aligned is-sortable is-sorted"
                   role="columnheader"
                   scope="col"
                 >
-                  <span
-                    aria-hidden="false"
+                  <button
+                    aria-describedby="header-0-7"
+                    class="components-button"
+                    type="button"
                   >
-                    Disputed on
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Disputed on
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Disputed on
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-7"
+                  >
+                    Sort by Disputed on in ascending order
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-left-aligned"
+                  aria-sort="none"
+                  class="woocommerce-table__header is-left-aligned is-sortable"
                   role="columnheader"
                   scope="col"
                 >
-                  <span
-                    aria-hidden="false"
+                  <button
+                    aria-describedby="header-0-8"
+                    class="components-button"
+                    type="button"
                   >
-                    Respond by
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Respond by
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Respond by
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-8"
+                  >
+                    Sort by Respond by in descending order
                   </span>
                 </th>
               </tr>
@@ -275,7 +393,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </th>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -351,7 +469,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item is-left-aligned is-sorted"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -400,7 +518,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </th>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -449,13 +567,17 @@ exports[`Disputes list renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--undefined"
+                      class="payment-method__brand payment-method__brand--"
                     />
                   </a>
                 </td>
                 <td
                   class="woocommerce-table__item"
-                />
+                >
+                  <span>
+                    –
+                  </span>
+                </td>
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
@@ -467,7 +589,7 @@ exports[`Disputes list renders correctly 1`] = `
                   />
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item is-left-aligned is-sorted"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
