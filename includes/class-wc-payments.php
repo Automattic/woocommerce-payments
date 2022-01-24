@@ -14,6 +14,7 @@ use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
+use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
@@ -188,6 +189,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-p24-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-ideal-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-becs-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -242,6 +244,7 @@ class WC_Payments {
 				Sofort_Payment_Method::class,
 				P24_Payment_Method::class,
 				Ideal_Payment_Method::class,
+				Becs_Payment_Method::class,
 			];
 			foreach ( $payment_method_classes as $payment_method_class ) {
 				$payment_method                               = new $payment_method_class( self::$token_service );
