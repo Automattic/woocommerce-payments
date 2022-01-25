@@ -299,13 +299,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// so instead of appending '_payments' to the end of the ID, it'll be better
 		// to have a map for it instead, just in case the pattern changes.
 		$this->payment_method_capability_key_map = [
-			'sofort'     => 'sofort_payments',
-			'giropay'    => 'giropay_payments',
-			'bancontact' => 'bancontact_payments',
-			'ideal'      => 'ideal_payments',
-			'p24'        => 'p24_payments',
-			'card'       => 'card_payments',
-			'sepa_debit' => 'sepa_debit_payments',
+			'sofort'        => 'sofort_payments',
+			'giropay'       => 'giropay_payments',
+			'bancontact'    => 'bancontact_payments',
+			'ideal'         => 'ideal_payments',
+			'p24'           => 'p24_payments',
+			'card'          => 'card_payments',
+			'sepa_debit'    => 'sepa_debit_payments',
+			'au_becs_debit' => 'au_becs_debit_payments',
 		];
 
 		// Load the settings.

@@ -26,6 +26,15 @@ const mockDisputes = [
 	},
 ];
 const errorResponse = { code: 'error' };
+const filterQuery = {
+	match: 'all',
+	dateBefore: '2020-04-28 00:00:00',
+	dateAfter: '2020-04-29 23:59:59',
+	dateBetween: [ '2020-04-28 00:00:00', '2020-04-29 23:59:59' ],
+	statusIs: 'lost',
+	statusIsNot: 'won',
+	storeCurrencyIs: 'gbp',
+};
 
 describe( 'getDispute resolver', () => {
 	let generator = null;
@@ -64,12 +73,15 @@ describe( 'getDispute resolver', () => {
 
 describe( 'getDisputes resolver', () => {
 	let generator = null;
-	const query = { paged: 1, perPage: 25 };
+	const query = { paged: 1, perPage: 25, orderBy: 'someKey' };
 
 	beforeEach( () => {
 		generator = getDisputes( query );
 		expect( generator.next().value ).toEqual(
-			apiFetch( { path: '/wc/v3/payments/disputes?page=1&pagesize=25' } )
+			apiFetch( {
+				path:
+					'/wc/v3/payments/disputes?page=1&pagesize=25&sort=some_key',
+			} )
 		);
 	} );
 
@@ -100,12 +112,18 @@ describe( 'getDisputes resolver', () => {
 
 describe( 'getDisputesSummary resolver', () => {
 	let generator = null;
+	const query = filterQuery;
 	const mockSummary = { count: 42 };
+	const expectedQueryString =
+		// eslint-disable-next-line max-len
+		'match=all&store_currency_is=gbp&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&status_is=lost&status_is_not=won';
 
 	beforeEach( () => {
-		generator = getDisputesSummary();
+		generator = getDisputesSummary( query );
 		expect( generator.next().value ).toEqual(
-			apiFetch( { path: '/wc/v3/payments/disputes/summary' } )
+			apiFetch( {
+				path: `/wc/v3/payments/disputes/summary?${ expectedQueryString }`,
+			} )
 		);
 	} );
 
@@ -116,7 +134,7 @@ describe( 'getDisputesSummary resolver', () => {
 	describe( 'on success', () => {
 		test( 'should update state with disputes summary data', () => {
 			expect( generator.next( mockSummary ).value ).toEqual(
-				updateDisputesSummary( mockSummary )
+				updateDisputesSummary( query, mockSummary )
 			);
 		} );
 	} );
