@@ -73,6 +73,8 @@ jobs:
           php-version: ${{ matrix.php }}
           tools:       composer
           coverage:    none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.CI_USER_TOKEN }}
       # Since WP 5.9, to test PHP 8.0 and 8.1, we need to use the appropriate version of PHPUnit
       # See https://make.wordpress.org/core/2021/09/27/changes-to-the-wordpress-core-php-test-suite/#integration-tests-ci-changes
       - run: |
