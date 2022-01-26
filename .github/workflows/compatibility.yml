@@ -76,9 +76,9 @@ jobs:
       # Since WP 5.9, to test PHP 8.0 and 8.1, we need to use the appropriate version of PHPUnit
       # See https://make.wordpress.org/core/2021/09/27/changes-to-the-wordpress-core-php-test-suite/#integration-tests-ci-changes
       - run: |
-        if [[ "${{ matrix.php }}" == '8.0' || "${{ matrix.php }}" == '8.1'  ]]; then 
-          composer remove --dev phpunit/phpunit; 
+        if [[ "${{ matrix.php }}" == '8.0' || "${{ matrix.php }}" == '8.1' ]]; then 
+          composer remove --dev phpunit/phpunit
           composer update --dev yoast/phpunit-polyfills --with-dependencies --ignore-platform-reqs 
-        fi;
+        fi
       # run CI checks
       - run: bash bin/run-ci-tests.bash
