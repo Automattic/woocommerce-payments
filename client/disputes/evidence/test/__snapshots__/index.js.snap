@@ -103,9 +103,7 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
                 type="file"
               />
             </div>
-            <span
-              class="upload-message"
-            />
+            
           </div>
         </div>
       </div>
@@ -281,9 +279,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
                 type="file"
               />
             </div>
-            <span
-              class="upload-message"
-            />
+            
           </div>
         </div>
       </div>
