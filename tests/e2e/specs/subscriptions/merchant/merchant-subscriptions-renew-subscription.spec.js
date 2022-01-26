@@ -26,7 +26,13 @@ const customerBilling = config.get( 'addresses.customer.billing' );
 
 let subscriptionId;
 
-describeif( RUN_SUBSCRIPTIONS_TESTS )(
+/*
+ * This test has dependencies on components like Action Scheduler and there is
+ * no guarantee in the test environment that it won't be overloaded with other
+ * tasks, e.g. image regeneration. Hence, it is better to skip test until we
+ * can find a way to create a "pure" environment without any background tasks.
+ */
+describeif( RUN_SUBSCRIPTIONS_TESTS ).skip(
 	'Subscriptions > Renew a subscription as a merchant',
 	() => {
 		beforeAll( async () => {
