@@ -98,4 +98,18 @@ describe( 'Overview page', () => {
 			)
 		).toBeVisible();
 	} );
+
+	it( 'Displays the notice for Jetpack Identity Crisis', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			isJetpackIdcActive: 1,
+		};
+		getTasks.mockReturnValue( [] );
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector( '.wcpay-jetpack-idc-notice' )
+		).toBeVisible();
+	} );
 } );
