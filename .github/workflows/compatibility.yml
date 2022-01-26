@@ -73,5 +73,8 @@ jobs:
           php-version: ${{ matrix.php }}
           tools:       composer
           coverage:    none
+      # Since WP 5.9, to test PHP 8.0 and 8.1, we need PHPUnit 9
+      # See https://make.wordpress.org/core/handbook/references/phpunit-compatibility-and-wordpress-versions/
+      - run: if [[ "${{ matrix.php }}" == '8.0' || "${{ matrix.php }}" == '8.1'  ]]; then wget https://phar.phpunit.de/phpunit-9.5.13.phar && mv phpunit-9.5.13.phar phpunit.phar; fi;    
       # run CI checks
       - run: bash bin/run-ci-tests.bash
