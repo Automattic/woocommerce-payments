@@ -26,7 +26,7 @@ const customerBilling = config.get( 'addresses.customer.billing' );
 
 let subscriptionId;
 
-describeif( RUN_SUBSCRIPTIONS_TESTS )(
+describeif( RUN_SUBSCRIPTIONS_TESTS ).skip(
 	'Subscriptions > Renew a subscription as a merchant',
 	() => {
 		beforeAll( async () => {

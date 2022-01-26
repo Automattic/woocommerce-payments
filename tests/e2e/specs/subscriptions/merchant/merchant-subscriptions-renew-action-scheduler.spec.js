@@ -24,7 +24,7 @@ const productSlug = 'subscription-for-systems-renewal';
 const actionSchedulerHook = 'woocommerce_scheduled_subscription_payment';
 const customerBilling = config.get( 'addresses.customer.billing' );
 
-describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
+describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS ).skip(
 	'Subscriptions > Renew a subscription via Action Scheduler',
 	() => {
 		beforeAll( async () => {
