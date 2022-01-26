@@ -20,7 +20,6 @@ import {
 	confirmCardAuthentication,
 } from '../../../utils/payments';
 
-// Unskip this after debugging failing shopper tests.
 describe( 'Shopper > Checkout > Failures with various cards', () => {
 	beforeAll( async () => {
 		await createSimpleProduct();

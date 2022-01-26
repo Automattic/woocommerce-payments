@@ -6,6 +6,8 @@
 import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
+import { formatDateValue } from 'utils';
+import { snakeCase } from 'lodash';
 
 /**
  * Internal dependencies
@@ -16,6 +18,19 @@ import {
 	updateDisputes,
 	updateDisputesSummary,
 } from './actions';
+
+const formatQueryFilters = ( query ) => ( {
+	match: query.match,
+	store_currency_is: query.storeCurrencyIs,
+	date_before: formatDateValue( query.dateBefore, true ),
+	date_after: formatDateValue( query.dateAfter ),
+	date_between: query.dateBetween && [
+		formatDateValue( query.dateBetween[ 0 ] ),
+		formatDateValue( query.dateBetween[ 1 ], true ),
+	],
+	status_is: query.statusIs,
+	status_is_not: query.statusIsNot,
+} );
 
 /**
  * Retrieve a single dispute from the disputes API.
@@ -46,6 +61,9 @@ export function* getDisputes( query ) {
 	const path = addQueryArgs( `${ NAMESPACE }/disputes`, {
 		page: query.paged,
 		pagesize: query.perPage,
+		sort: snakeCase( query.orderBy ),
+		direction: query.order,
+		...formatQueryFilters( query ),
 	} );
 
 	try {
@@ -60,12 +78,16 @@ export function* getDisputes( query ) {
 	}
 }
 
-export function* getDisputesSummary() {
+export function* getDisputesSummary( query ) {
+	const path = addQueryArgs( `${ NAMESPACE }/disputes/summary`, {
+		page: query.paged,
+		pagesize: query.perPage,
+		...formatQueryFilters( query ),
+	} );
+
 	try {
-		const summary = yield apiFetch( {
-			path: `${ NAMESPACE }/disputes/summary`,
-		} );
-		yield updateDisputesSummary( summary );
+		const summary = yield apiFetch( { path } );
+		yield updateDisputesSummary( query, summary );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
