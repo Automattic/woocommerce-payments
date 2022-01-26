@@ -1,6 +1,7 @@
 // eslint-disable-next-line wpcalypso/import-docblock
 import { Charge } from './charges';
 import { BalanceTransaction } from './balance-transactions';
+import { TableCardColumn } from '@woocommerce/components';
 
 interface Evidence {
 	[ key: string ]:
@@ -13,6 +14,12 @@ interface EvidenceDetails {
 	has_evidence: boolean;
 	due_by: number;
 	submission_count: number;
+}
+interface Order {
+	customer_url: string;
+	number: string;
+	url: string;
+	subscriptions: Array< Record< string, string > >;
 }
 
 export type DisputeReason =
@@ -41,13 +48,6 @@ export type DisputeStatus =
 	| 'won'
 	| 'lost';
 
-interface Order {
-	customer_url: string;
-	number: string;
-	url: string;
-	subscriptions: Array< Record< string, string > >;
-}
-
 export interface Dispute {
 	status: DisputeStatus;
 	id: string;
@@ -62,6 +62,25 @@ export interface Dispute {
 	currency: string;
 	created: number;
 	balance_transactions: BalanceTransaction[];
+}
+
+export interface CachedDispute {
+	wcpay_disputes_cache_id: number;
+	stripe_account_id: string;
+	dispute_id: string;
+	charge_id: string;
+	amount: number;
+	currency: string;
+	reason: DisputeReason;
+	source: string;
+	order_number: number;
+	order?: Order;
+	customer_name: string;
+	customer_email: string;
+	customer_country: string;
+	status: DisputeStatus;
+	created: string;
+	due_by: string;
 }
 
 interface UploadFieldObject {
@@ -80,4 +99,40 @@ export interface DisputeFileUpload {
 	onFileChange( key: string, file: File ): any;
 	onFileRemove( key: string ): any;
 	help?: string;
+}
+
+export interface DisputesSummary {
+	disputesSummary: {
+		count?: number;
+		store_currencies?: string[];
+	};
+	isLoading: boolean;
+}
+
+export interface Disputes {
+	disputes: Dispute[];
+	isLoading: boolean;
+}
+
+export interface CachedDisputes {
+	disputes: CachedDispute[];
+	isLoading: boolean;
+}
+
+export interface DisputesTableHeader extends TableCardColumn {
+	key:
+		| 'details'
+		| 'amount'
+		| 'currency'
+		| 'status'
+		| 'reason'
+		| 'source'
+		| 'order'
+		| 'customerName'
+		| 'customerEmail'
+		| 'customerCountry'
+		| 'created'
+		| 'dueBy';
+	cellClassName?: string;
+	visible?: boolean;
 }

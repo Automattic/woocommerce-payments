@@ -39,9 +39,8 @@ const WC_SUBSCRIPTIONS_PAGE =
 const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
 const WP_ADMIN_PAGES = baseUrl + 'wp-admin/edit.php?post_type=page';
 const WCB_CHECKOUT = baseUrl + 'checkout-wcb/';
-const WCPAY_DEV_TOOLS = `${ config.get(
-	'url'
-) }wp-admin/admin.php?page=wcpaydev`;
+const WCPAY_DEV_TOOLS = baseUrl + 'wp-admin/admin.php?page=wcpaydev';
+const SHOP_CART_PAGE = baseUrl + 'cart/';
 
 export const RUN_SUBSCRIPTIONS_TESTS =
 	'1' !== process.env.SKIP_WC_SUBSCRIPTIONS_TESTS;
@@ -198,11 +197,48 @@ export const shopperWCP = {
 			'#billing-address_1',
 			customerBillingDetails.addressfirstline
 		);
+		await clearAndFillInput(
+			'#billing-country .components-form-token-field__input',
+			customerBillingDetails.country
+		);
 		await clearAndFillInput( '#billing-city', customerBillingDetails.city );
+		await clearAndFillInput(
+			'#billing-state .components-form-token-field__input',
+			customerBillingDetails.state
+		);
 		await clearAndFillInput(
 			'#billing-postcode',
 			customerBillingDetails.postcode
 		);
+	},
+
+	emptyCart: async () => {
+		await page.goto( SHOP_CART_PAGE, {
+			waitUntil: 'networkidle0',
+		} );
+
+		// Remove products if they exist
+		if ( null !== ( await page.$$( '.remove' ) ) ) {
+			let products = await page.$$( '.remove' );
+			while ( products && 0 < products.length ) {
+				for ( const product of products ) {
+					await product.click();
+					await uiUnblocked();
+				}
+				products = await page.$$( '.remove' );
+			}
+		}
+
+		// Remove coupons if they exist
+		if ( null !== ( await page.$( '.woocommerce-remove-coupon' ) ) ) {
+			await page.click( '.woocommerce-remove-coupon' );
+			await uiUnblocked();
+		}
+
+		await page.waitForSelector( '.cart-empty.woocommerce-info' );
+		await expect( page ).toMatchElement( '.cart-empty.woocommerce-info', {
+			text: 'Your cart is currently empty.',
+		} );
 	},
 };
 

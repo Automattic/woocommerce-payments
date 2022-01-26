@@ -1,0 +1,641 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Disputes list renders correctly 1`] = `
+<div>
+  <div
+    class=" woocommerce-payments-page"
+  >
+    <h2
+      class="screen-reader-text"
+    >
+      Filters
+    </h2>
+    <div
+      class="woocommerce-filters"
+    >
+      <div
+        class="woocommerce-filters__basic-filters"
+      >
+        <div
+          class="woocommerce-filters-filter"
+        >
+          <span
+            class="woocommerce-filters-label"
+          >
+            Show
+            :
+          </span>
+          <div
+            class="components-dropdown"
+          >
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-dropdown-button"
+              type="button"
+            >
+              <div
+                class="woocommerce-dropdown-button__labels"
+              >
+                <span>
+                  All disputes
+                </span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card woocommerce-table woocommerce-analytics__card wcpay-disputes-list has-menu has-action"
+    >
+      <div
+        class="woocommerce-card__header"
+      >
+        <div
+          class="woocommerce-card__title-wrapper"
+        >
+          <h2
+            class="woocommerce-card__title woocommerce-card__header-item"
+          >
+            Disputes
+          </h2>
+        </div>
+        <div
+          class="woocommerce-card__action woocommerce-card__header-item"
+        >
+          <button
+            class="components-button woocommerce-table__download-button"
+            type="button"
+          >
+            <svg
+              class="gridicon gridicons-cloud-download"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M18 9c-.01 0-.017.002-.025.003C17.72 5.646 14.922 3 11.5 3 7.91 3 5 5.91 5 9.5c0 .524.07 1.03.186 1.52C5.123 11.015 5.064 11 5 11c-2.21 0-4 1.79-4 4 0 1.202.54 2.267 1.38 3h18.593C22.196 17.09 23 15.643 23 14c0-2.76-2.24-5-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
+                />
+              </g>
+            </svg>
+            <span
+              class="woocommerce-table__download-button__label"
+            >
+              Download
+            </span>
+          </button>
+        </div>
+        <div
+          class="woocommerce-card__menu woocommerce-card__header-item"
+        >
+          <div
+            class="woocommerce-ellipsis-menu"
+          >
+            <div
+              class="components-dropdown"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
+                title="Choose which values to display"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="dashicon dashicons-ellipsis"
+                  focusable="false"
+                  height="20"
+                  role="img"
+                  viewBox="0 0 20 20"
+                  width="20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                  />
+                </svg>
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  role="img"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="woocommerce-card__body"
+      >
+        <div
+          aria-hidden="false"
+          aria-labelledby="caption-0"
+          class="woocommerce-table__table"
+          role="group"
+        >
+          <table>
+            <caption
+              class="woocommerce-table__caption screen-reader-text"
+              id="caption-0"
+            >
+              Disputes
+            </caption>
+            <tbody>
+              <tr>
+                <th
+                  class="woocommerce-table__header info-button is-left-aligned"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  />
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header is-left-aligned is-sortable"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-0-1"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Amount
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Amount
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-1"
+                  >
+                    Sort by Amount in descending order
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header is-left-aligned"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="true"
+                  >
+                    Status
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Status
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header is-left-aligned"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="true"
+                  >
+                    Reason
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Reason
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header is-center-aligned"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="true"
+                  >
+                    Source
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Source
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="true"
+                  >
+                    Order #
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Order #
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header is-left-aligned"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="true"
+                  >
+                    Customer
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Customer
+                  </span>
+                </th>
+                <th
+                  aria-sort="descending"
+                  class="woocommerce-table__header is-left-aligned is-sortable is-sorted"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-0-7"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Disputed on
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Disputed on
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-7"
+                  >
+                    Sort by Disputed on in ascending order
+                  </span>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header is-left-aligned is-sortable"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-0-8"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Respond by
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Respond by
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-8"
+                  >
+                    Sort by Respond by in descending order
+                  </span>
+                </th>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item info-button is-left-aligned"
+                  scope="row"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                  >
+                    <svg
+                      class="gridicon gridicons-info-outline needs-offset"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                        />
+                      </g>
+                    </svg>
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    $10.00 USD
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="chip chip-primary is-compact"
+                    >
+                      Needs response
+                    </span>
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    Fraudulent
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-center-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    data-link-type="external"
+                    href="http://test.local/order/1"
+                  >
+                    1
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    Mock customer
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned is-sorted"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    Nov 1, 2019
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    Nov 8, 2019 / 2:46AM
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item info-button is-left-aligned"
+                  scope="row"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                  >
+                    <svg
+                      class="gridicon gridicons-info-outline needs-offset"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                        />
+                      </g>
+                    </svg>
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  >
+                    $10.50 USD
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="chip chip-light is-compact"
+                    >
+                      Under review
+                    </span>
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  >
+                    General
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-center-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--"
+                    />
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <span>
+                    –
+                  </span>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  />
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned is-sorted"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  >
+                    Oct 30, 2019
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  >
+                    Nov 6, 2019 / 11:00PM
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ul
+          class="woocommerce-table__summary"
+        >
+          <li
+            class="woocommerce-table__summary-item"
+          >
+            <span
+              class="woocommerce-table__summary-value"
+            >
+              25
+            </span>
+            <span
+              class="woocommerce-table__summary-label"
+            >
+              disputes
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+`;

@@ -107,11 +107,7 @@ jQuery( function ( $ ) {
 			$( '#wcpay-hidden-div' ).remove();
 		},
 	};
-
-	const elements = api.getStripe().elements( {
-		fonts: getFontRulesFromPage(),
-	} );
-
+	let elements = null;
 	let upeElement = null;
 	let paymentIntentId = null;
 	let isUPEComplete = false;
@@ -322,11 +318,13 @@ jQuery( function ( $ ) {
 					api.saveUPEAppearance( appearance );
 				}
 
-				const upeSettings = {
+				elements = api.getStripe().elements( {
 					clientSecret,
 					appearance,
-				};
+					fonts: getFontRulesFromPage(),
+				} );
 
+				const upeSettings = {};
 				if ( getConfig( 'cartContainsSubscription' ) ) {
 					upeSettings.terms = getTerms(
 						paymentMethodsConfig,
@@ -339,7 +337,13 @@ jQuery( function ( $ ) {
 					};
 				}
 
-				upeElement = elements.create( 'payment', upeSettings );
+				upeElement = elements.create( 'payment', {
+					...upeSettings,
+					wallets: {
+						applePay: 'never',
+						googlePay: 'never',
+					},
+				} );
 				upeElement.mount( '#wcpay-upe-element' );
 				unblockUI( $upeContainer );
 				upeElement.on( 'change', ( event ) => {
@@ -421,10 +425,10 @@ jQuery( function ( $ ) {
 	 * Checks if UPE form is filled out. Displays errors if not.
 	 *
 	 * @param {Object} $form     The jQuery object for the form.
-	 * @param {string} returnUrl The `return_url` param. (optional)
+	 * @param {string} returnUrl The `return_url` param. Defaults to '#' (optional)
 	 * @return {boolean} false if incomplete.
 	 */
-	const checkUPEForm = async ( $form, returnUrl = '' ) => {
+	const checkUPEForm = async ( $form, returnUrl = '#' ) => {
 		if ( ! upeElement ) {
 			showError( 'Your payment information is incomplete.' );
 			return false;
@@ -432,7 +436,7 @@ jQuery( function ( $ ) {
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
 			const { error } = await api.getStripe().confirmPayment( {
-				element: upeElement,
+				elements,
 				confirmParams: {
 					return_url: returnUrl,
 				},
@@ -482,7 +486,7 @@ jQuery( function ( $ ) {
 			);
 
 			const { error } = await api.getStripe().confirmPayment( {
-				element: upeElement,
+				elements,
 				confirmParams: {
 					return_url: returnUrl,
 				},
@@ -515,7 +519,7 @@ jQuery( function ( $ ) {
 
 		try {
 			const { error } = await api.getStripe().confirmSetup( {
-				element: upeElement,
+				elements,
 				confirmParams: {
 					return_url: returnUrl,
 				},
@@ -555,7 +559,7 @@ jQuery( function ( $ ) {
 			);
 			const redirectUrl = response.redirect_url;
 			const upeConfig = {
-				element: upeElement,
+				elements,
 				confirmParams: {
 					return_url: redirectUrl,
 					payment_method_data: {

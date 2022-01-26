@@ -4,10 +4,12 @@
  * External dependencies
  */
 import * as React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import user from '@testing-library/user-event';
-import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
+import { downloadCSVFile } from '@woocommerce/csv-export';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import moment from 'moment';
 import os from 'os';
 
@@ -18,20 +20,6 @@ import { TransactionsList } from '../';
 import { useTransactions, useTransactionsSummary } from 'data/index';
 import type { Transaction } from 'data/transactions/hooks';
 
-import { downloadCSVFile } from '@woocommerce/csv-export';
-
-jest.mock( 'data/index', () => ( {
-	useTransactions: jest.fn(),
-	useTransactionsSummary: jest.fn(),
-} ) );
-
-const mockUseTransactions = useTransactions as jest.MockedFunction<
-	typeof useTransactions
->;
-const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
-	typeof useTransactionsSummary
->;
-
 jest.mock( '@woocommerce/csv-export', () => {
 	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
 
@@ -41,8 +29,37 @@ jest.mock( '@woocommerce/csv-export', () => {
 	};
 } );
 
+jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+
+// Workaround for mocking @wordpress/data.
+// See https://github.com/WordPress/gutenberg/issues/15031
+jest.mock( '@wordpress/data', () => ( {
+	createRegistryControl: jest.fn(),
+	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	registerStore: jest.fn(),
+	select: jest.fn(),
+	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
+} ) );
+
+jest.mock( 'data/index', () => ( {
+	useTransactions: jest.fn(),
+	useTransactionsSummary: jest.fn(),
+} ) );
+
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
+>;
+
+const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
+
+const mockUseTransactions = useTransactions as jest.MockedFunction<
+	typeof useTransactions
+>;
+
+const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
+	typeof useTransactionsSummary
 >;
 
 declare const global: {
@@ -404,7 +421,7 @@ describe( 'Transactions list', () => {
 
 			mockUseTransactionsSummary.mockReturnValue( {
 				transactionsSummary: {
-					count: 10,
+					count: 2,
 					currency: 'usd',
 					store_currencies: [ 'eur', 'usd' ],
 					fees: 100,
@@ -415,16 +432,59 @@ describe( 'Transactions list', () => {
 			} );
 		} );
 
-		afterEach( () => {
-			jest.resetAllMocks();
+		test( 'should fetch export after confirmation when download button is selected for unfiltered exports larger than 10000.', async () => {
+			window.confirm = jest.fn( () => true );
+			mockUseTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 11000,
+				},
+				isLoading: false,
+			} );
+
+			const { getByRole } = render( <TransactionsList /> );
+
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
+			expect( window.confirm ).toHaveBeenCalledWith(
+				"You are about to export 11000 transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?"
+			);
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
+				expect( mockApiFetch ).toHaveBeenCalledWith( {
+					method: 'POST',
+					path: '/wc/v3/payments/transactions/download?',
+				} );
+			} );
 		} );
 
-		afterAll( () => {
-			jest.restoreAllMocks();
+		test( 'should not fetch export after cancel when download button is selected for unfiltered exports larger than 10000.', async () => {
+			window.confirm = jest.fn( () => false );
+			mockUseTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 11000,
+				},
+				isLoading: false,
+			} );
+
+			const { getByRole } = render( <TransactionsList /> );
+
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
+			expect( window.confirm ).toHaveBeenCalledWith(
+				"You are about to export 11000 transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?"
+			);
+
+			await waitFor( () =>
+				expect( mockApiFetch ).not.toHaveBeenCalled()
+			);
 		} );
 
 		test( 'should render expected columns in CSV when the download button is clicked', () => {
 			const { getByRole } = render( <TransactionsList /> );
+
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			const expected = [
@@ -454,6 +514,7 @@ describe( 'Transactions list', () => {
 
 		test( 'should match the visible rows', () => {
 			const { getByRole, getAllByRole } = render( <TransactionsList /> );
+
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
@@ -494,10 +555,12 @@ describe( 'Transactions list', () => {
 				)
 			).not.toBe( -1 ); // amount
 			expect(
-				getUnformattedAmount( displayFirstTransaction[ 3 ] ).indexOf(
-					csvFirstTransaction[ 4 ]
+				-Number( getUnformattedAmount( displayFirstTransaction[ 3 ] ) )
+			).toEqual(
+				Number(
+					csvFirstTransaction[ 4 ].replace( /['"]+/g, '' ) // strip extra quotes
 				)
-			).not.toBe( -1 ); // fees
+			); // fees
 			expect(
 				getUnformattedAmount( displayFirstTransaction[ 4 ] ).indexOf(
 					csvFirstTransaction[ 5 ]

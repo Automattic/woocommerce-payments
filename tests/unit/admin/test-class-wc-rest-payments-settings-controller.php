@@ -10,6 +10,7 @@ use Automattic\WooCommerce\Blocks\RestApi;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
+use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
@@ -85,6 +86,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$mock_payment_methods   = [];
 		$payment_method_classes = [
+			Becs_Payment_Method::class,
 			CC_Payment_Method::class,
 			Bancontact_Payment_Method::class,
 			Giropay_Payment_Method::class,
@@ -109,6 +111,20 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->upe_gateway    = new UPE_Payment_Gateway( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $mock_payment_methods, $mock_rate_limiter );
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->upe_gateway );
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'get_account_data' )
+			->willReturn(
+				[
+					'card_present_eligible' => true,
+					'is_live'               => true,
+					'fees'                  => $mock_payment_methods,
+				]
+			);
 	}
 
 	public function tearDown() {
@@ -140,7 +156,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'card', 'bancontact', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24' ],
+			[ 'card', 'au_becs_debit', 'bancontact', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24' ],
 			$enabled_method_ids
 		);
 	}
@@ -495,21 +511,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_get_settings_card_eligible_flag() {
-
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'is_server_connected' )
-			->willReturn( true );
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'get_account_data' )
-			->willReturn(
-				[
-					'card_present_eligible' => true,
-					'is_live'               => true,
-				]
-			);
-
 		$response = $this->upe_controller->get_settings();
 
 		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );

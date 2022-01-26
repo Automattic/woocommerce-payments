@@ -11,6 +11,13 @@ import '@testing-library/jest-dom/extend-expect';
 import PaymentMethodIcon from '..';
 
 describe( 'PaymentMethodIcon', () => {
+	test( 'renders BECS payment method icon', () => {
+		const { container } = render(
+			<PaymentMethodIcon name="au_becs_debit" />
+		);
+		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+	} );
+
 	test( 'renders Bancontact payment method icon', () => {
 		const { container } = render( <PaymentMethodIcon name="bancontact" /> );
 		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
@@ -39,6 +46,13 @@ describe( 'PaymentMethodIcon', () => {
 	test( 'renders iDEAL payment method icon', () => {
 		const { container } = render( <PaymentMethodIcon name="ideal" /> );
 		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+	} );
+
+	test( 'renders BECS payment method icon and label', () => {
+		render( <PaymentMethodIcon name="au_becs_debit" showName /> );
+
+		const label = screen.queryByText( 'BECS Direct Debit' );
+		expect( label ).toBeInTheDocument();
 	} );
 
 	test( 'renders Bancontact payment method icon and label', () => {

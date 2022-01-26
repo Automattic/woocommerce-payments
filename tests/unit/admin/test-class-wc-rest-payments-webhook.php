@@ -685,27 +685,83 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Tests that an invoice upoming event creates invoice items for subscription.
+	 * Tests that a payment_intent.succeeded event will complete the order.
 	 */
-	public function test_invoice_upcoming_webhook() {
-		// Stub.
-		$this->assertTrue( true );
-	}
+	public function test_payment_intent_fails_and_fails_order() {
+		$this->request_body['type']           = 'payment_intent.payment_failed';
+		$this->request_body['data']['object'] = [
+			'id'       => 'pi_123123123123123', // Payment_intent's ID.
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'payment_method'         => 'pm_123123123123123', // Payment method ID.
+						'payment_method_details' => [
+							'type' => 'us_bank_account',
+						],
+					],
+				],
+			],
+			'currency' => 'usd',
+		];
 
-	/**
-	 * Tests that an invoice paid event renews a subscription.
-	 */
-	public function test_invoice_paid_webhook() {
-		// Stub.
-		$this->assertTrue( true );
-	}
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
-	/**
-	 * Tests that an invoice payment failed event places a subscription on-hold.
-	 */
-	public function test_invoice_payment_failed_webhook() {
-		// Stub.
-		$this->assertTrue( true );
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$mock_order
+			->expects( $this->exactly( 3 ) )
+			->method( 'get_meta' )
+			->withConsecutive(
+				[ '_payment_method_id' ],
+				[ '_charge_id' ],
+				[ '_intent_id' ]
+			)
+			->willReturnOnConsecutiveCalls(
+				'pm_123123123123123',
+				'py_123123123123123',
+				'pi_123123123123123'
+			);
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( [ 'failed' ] )
+			->willReturn( false );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'/The payment was not able to be processed/'
+				)
+			);
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'update_status' )
+			->with( 'failed' );
+
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$response = $this->controller->handle_webhook( $this->request );
+
+		// Check the response.
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
 	}
 
 	/**
