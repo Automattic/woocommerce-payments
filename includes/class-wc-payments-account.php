@@ -415,7 +415,7 @@ class WC_Payments_Account {
 	 * Handle onboarding (login/init/redirect) routes
 	 */
 	public function maybe_handle_onboarding() {
-		if ( ! is_admin() ) {
+		if ( ! is_admin() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
 
