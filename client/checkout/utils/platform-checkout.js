@@ -15,6 +15,15 @@ export const handlePlatformCheckoutEmailInput = ( field ) => {
 		}, 3000 );
 	};
 
+	const validateEmail = ( value ) => {
+		const input = document.createElement( 'input' );
+		input.type = 'email';
+		input.required = true;
+		input.value = value;
+
+		return input.checkValidity() || false;
+	};
+
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
 		const input = e.currentTarget.value;
 
@@ -22,7 +31,9 @@ export const handlePlatformCheckoutEmailInput = ( field ) => {
 		spinner.remove();
 
 		timer = setTimeout( () => {
-			platformCheckoutLocateUser( input );
+			if ( validateEmail( input ) ) {
+				platformCheckoutLocateUser( input );
+			}
 		}, waitTime );
 	} );
 };
