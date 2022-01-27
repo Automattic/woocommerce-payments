@@ -9,6 +9,10 @@
 * Add - UPE payment methods - BECS Direct Debit.
 * Fix - Missing currency field in disputes export file.
 
+= 3.6.1 - 2022-01-27 =
+* Fix - Remove packages not compatible with PHP 7.0
+* Security update.
+
 = 3.6.0 - 2022-01-20 =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
 * Fix - UPE validation error visibility on checkout page.
