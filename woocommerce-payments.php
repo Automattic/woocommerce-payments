@@ -217,7 +217,8 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 		'startFreshButtonLabel' => __( 'Create a new connection', 'woocommerce-payments' ),
 		'nonAdminTitle'         => __( 'Safe Mode activated', 'woocommerce-payments' ),
 		'nonAdminBodyText'      => __( 'We’ve detected that you have duplicate sites connected to WooCommerce Payments. When Safe Mode is active, payments will not be interupted, however some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transfering your site from one domain to another, or creating a staging site for testing. A site adminstrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
-		'supportURL'            => __( 'https://woocommerce.com/document/payments/faq/safe-mode/', 'woocommerce-payments' ),
+		'supportURL'            => 'https://woocommerce.com/document/payments/faq/safe-mode/',
+		'adminBarSafeModeLabel' => __( 'WooCommerce Payments Safe Mode', 'woocommerce-payments' ),
 	];
 
 	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();
