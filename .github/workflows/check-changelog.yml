@@ -13,7 +13,8 @@ jobs:
       # clone the repository
       - uses: actions/checkout@v2
       # enable dependencies caching
-      - uses: actions/cache@v2
+      - name: Add composer to cache
+        uses: actions/cache@v2
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
@@ -23,7 +24,11 @@ jobs:
           php-version: '7.4'
           tools:    composer
           coverage: none
+      # Install composer packages.
+      - run: composer self-update 2.0.6 && composer install --no-progress
       # Fetch the target branch before running the check.
-      - run: git fetch origin $GITHUB_BASE_REF
+      - name: Fetch the target origin branch
+        run: git fetch origin $GITHUB_BASE_REF
       # Check if any changelog file is added when comparing the current branch vs the target branch.
-      - run: bash bin/check-changelog.sh origin/$GITHUB_BASE_REF HEAD
+      - name: Check changelog
+        run: bash bin/check-changelog.sh origin/$GITHUB_BASE_REF HEAD
