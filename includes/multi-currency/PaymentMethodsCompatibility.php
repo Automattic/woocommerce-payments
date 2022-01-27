@@ -9,6 +9,7 @@ namespace WCPay\MultiCurrency;
 
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Features;
+use WCPay\Constants\Payment_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -65,11 +66,9 @@ class PaymentMethodsCompatibility {
 				if ( in_array( $method, [ 'card', 'card_present' ], true ) ) {
 					return $result;
 				}
-				$class_key = $method;
-				if ( 'sepa_debit' === $method ) {
-					$class_key = 'sepa';
-				}
-				$class_name = '\\WCPay\\Payment_Methods\\' . ucfirst( strtolower( $class_key ) ) . '_Payment_Method';
+				$method_key = Payment_Method::search( $method );
+				$class_key  = ucfirst( strtolower( $method_key ? $method_key : $method ) );
+				$class_name = "\\WCPay\\Payment_Methods\\{$class_key}_Payment_Method";
 				if ( ! class_exists( $class_name ) ) {
 					return $result;
 				}
