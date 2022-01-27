@@ -69,17 +69,18 @@
         }
       },
       "changelogger": {
-          "changelog": "changelog.txt",
-          "types": {
-            "add": "Add",
-            "fix": "Fix",
-            "update": "Update",
-            "dev": "Dev"
-          },
-          "formatter": {
-            "filename": "bin/class-wcpay-changelog-formatter.php"
-          }
-      }
+            "changelog": "changelog.txt",
+            "types": {
+                "add": "Add",
+                "fix": "Fix",
+                "update": "Update",
+                "dev": "Dev"
+            },
+            "formatter": {
+                "filename": "bin/class-wcpay-changelog-formatter.php"
+            },
+            "changes-dir": "changelog"
+        }
     },
     "autoload": {
       "psr-4": {
