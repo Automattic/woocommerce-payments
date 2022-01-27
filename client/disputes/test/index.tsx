@@ -70,6 +70,7 @@ const mockDisputes = [
 		due_by: '2019-11-08 02:46:00',
 		order: {
 			number: '1',
+			customer_url: 'https://shop.local',
 			url: 'http://test.local/order/1',
 		},
 	} as CachedDispute,

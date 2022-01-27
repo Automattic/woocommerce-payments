@@ -460,10 +460,8 @@ exports[`Disputes list renders correctly 1`] = `
                   class="woocommerce-table__item is-left-aligned"
                 >
                   <a
-                    class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-                    tabindex="-1"
+                    href="https://shop.local"
                   >
                     Mock customer
                   </a>
