@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Logger;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -35,7 +37,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$order->payment_complete( $intent_id );
+		$this->update_order_status( $order, $intent_id, 'payment_complete' );
 		$this->add_success_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_id, $intent_status );
 	}
@@ -59,8 +61,8 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$order->update_status( 'failed' );
-		$this->add_failure_note( $order, $intent_id, $charge_id );
+		$this->update_order_status( $order, $intent_id, 'failed' );
+		$this->add_failure_note( $order, $intent_id, $charge_id, $message );
 		$this->complete_order_processing( $order, $intent_id, $intent_status );
 	}
 
@@ -82,7 +84,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$order->update_status( 'on-hold' );
+		$this->update_order_status( $order, $intent_id, 'on-hold' );
 		$this->add_on_hold_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_id, $intent_status );
 	}
@@ -125,31 +127,28 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$order->payment_complete( $intent_id );
+		$this->update_order_status( $order, $intent_id, 'payment_complete' );
 		$this->add_capture_success_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_id, $intent_status );
 	}
 
 	/**
-	 * Updates an order to failed status, while adding a note with a link to the transaction.
+	 * Leaves order in current status (should be on-hold), adds a note with a link to the transaction.
 	 *
-	 * @param WC_Order $order         Order object.
-	 * @param string   $intent_id     The ID of the intent associated with this order.
-	 * @param string   $intent_status The status of the intent related to this order.
-	 * @param string   $charge_id     The charge ID related to the intent/order.
-	 * @param string   $message       Optional message to add to the note.
+	 * @param WC_Order    $order         Order object.
+	 * @param string      $intent_id     The ID of the intent associated with this order.
+	 * @param string|null $intent_status The status of the intent related to this order.
+	 * @param string      $charge_id     The charge ID related to the intent/order.
+	 * @param string      $message       Optional message to add to the note.
 	 *
 	 * @return void
 	 */
 	public function mark_payment_capture_failed( $order, $intent_id, $intent_status, $charge_id, $message = '' ) {
 
-		if ( ! $this->order_prepared_for_processing( $order, $intent_id )
-			|| $order->has_status( [ 'failed' ] )
-			|| 'failed' === $order->get_meta( '_intention_status' ) ) {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
-		$order->update_status( 'failed' );
 		$this->add_capture_failed_note( $order, $intent_id, $charge_id, $message );
 		$this->complete_order_processing( $order, $intent_id, $intent_status );
 	}
@@ -170,7 +169,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$order->update_status( 'cancelled' );
+		$this->update_order_status( $order, $intent_id, 'cancelled' );
 		$this->add_expired_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_id, $intent_status );
 	}
@@ -187,25 +186,25 @@ class WC_Payments_Order_Service {
 	private function add_success_note( $order, $intent_id, $charge_id ) {
 		$payment_needed = $order->get_total() > 0;
 
-		if ( $payment_needed ) {
-			$transaction_url = $this->compose_transaction_url( $charge_id );
-			$note            = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-					__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
-					[
-						'strong' => '<strong>',
-						'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
-					]
-				),
-				$this->get_order_amount( $order ),
-				$charge_id
-			);
+		if ( ! $payment_needed ) {
+			return;
 		}
 
-		if ( $note ) {
-			$order->add_order_note( $note );
-		}
+		$transaction_url = $this->compose_transaction_url( $charge_id );
+		$note            = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$this->get_order_amount( $order ),
+			$charge_id
+		);
+
+		$order->add_order_note( $note );
 	}
 
 	/**
@@ -233,7 +232,7 @@ class WC_Payments_Order_Service {
 			$intent_id
 		);
 
-		if ( $message ) {
+		if ( ! empty( $message ) ) {
 			$note .= ' ' . $message;
 		}
 
@@ -330,7 +329,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	private function add_capture_failure_note( $order, $intent_id, $charge_id, $message ) {
+	private function add_capture_failed_note( $order, $intent_id, $charge_id, $message ) {
 		$transaction_url = $this->compose_transaction_url( $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
@@ -345,7 +344,7 @@ class WC_Payments_Order_Service {
 			$intent_id
 		);
 
-		if ( $message ) {
+		if ( ! empty( $message ) ) {
 			$note .= ' ' . $message;
 		}
 
@@ -483,14 +482,16 @@ class WC_Payments_Order_Service {
 	/**
 	 * Completes order processing by updating the intent meta, unlocking the order, and saving the order.
 	 *
-	 * @param WC_Order $order         Order object.
-	 * @param string   $intent_id     The ID of the intent associated with this order.
-	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param WC_Order    $order         Order object.
+	 * @param string      $intent_id     The ID of the intent associated with this order.
+	 * @param string|null $intent_status The status of the intent related to this order.
 	 *
 	 * @return void
 	 */
 	private function complete_order_processing( $order, $intent_id, $intent_status ) {
-		$order->update_meta_data( '_intention_status', $intent_status );
+		if ( ! empty( $intent_status ) ) {
+			$order->update_meta_data( '_intention_status', $intent_status );
+		}
 		$this->unlock_order_payment( $order );
 		$order->save();
 	}
@@ -504,5 +505,27 @@ class WC_Payments_Order_Service {
 	 */
 	private function get_order_amount( $order ) {
 		return WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order );
+	}
+
+	/**
+	 * Updates the order status and catches any exceptions so that processing can continue.
+	 *
+	 * @param WC_Order $order        Order object.
+	 * @param string   $intent_id    The ID of the intent associated with this order.
+	 * @param string   $order_status The status to change the order to.
+	 *
+	 * @return void
+	 */
+	private function update_order_status( $order, $intent_id, $order_status ) {
+		try {
+			if ( 'payment_complete' === $order_status ) {
+				$order->payment_complete( $intent_id );
+			} else {
+				$order->update_status( $order_status );
+			}
+		} catch ( Exception $e ) {
+			// Continue further, something unexpected happened, but we can't really do anything with that.
+			Logger::log( 'Error when updating status for order ' . $order->get_id() . ': ' . $e->getMessage() );
+		}
 	}
 }

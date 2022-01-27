@@ -1897,11 +1897,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( 'succeeded' === $status ) {
 			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $status, $intent->get_charge_id() );
-		} elseif ( 'canceled' === $status || $is_authorization_expired ) {
-			$this->order_service->mark_payment_expired( $order, $intent_id, $status, $intent->get_charge_id() );
+		} elseif ( $is_authorization_expired ) {
+			$this->order_service->mark_payment_expired( $order, $intent_id, $intent->get_status(), $intent->get_charge_id() );
 		} else {
-			$error_message = ! empty( $error_message ) ? esc_html( $error_message ) : '';
-			$http_code     = $http_code ?? 502;
+			if ( ! empty( $error_message ) ) {
+				$error_message = esc_html( $error_message );
+			} else {
+				$http_code = 502;
+			}
 
 			$this->order_service->mark_payment_capture_failed( $order, $intent_id, $status, $intent->get_charge_id(), $error_message );
 		}
