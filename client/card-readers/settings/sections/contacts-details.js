@@ -39,11 +39,7 @@ const ContactDetailsSection = () => {
 			</h4>
 			{ businessSuppotEmailErrorMessage && (
 				<Notice status="error" isDismissible={ false }>
-					<span
-						dangerouslySetInnerHTML={ {
-							__html: businessSuppotEmailErrorMessage,
-						} }
-					/>
+					<span>{ businessSuppotEmailErrorMessage }</span>
 				</Notice>
 			) }
 			<TextControl
@@ -55,11 +51,7 @@ const ContactDetailsSection = () => {
 			/>
 			{ businessSuppotPhoneErrorMessage && (
 				<Notice status="error" isDismissible={ false }>
-					<span
-						dangerouslySetInnerHTML={ {
-							__html: businessSuppotPhoneErrorMessage,
-						} }
-					/>
+					<span>{ businessSuppotPhoneErrorMessage }</span>
 				</Notice>
 			) }
 			<TextControl

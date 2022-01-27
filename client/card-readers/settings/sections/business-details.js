@@ -40,11 +40,7 @@ const BusinessDetailsSection = () => {
 			/>
 			{ businessSuppotURLErrorMessage && (
 				<Notice status="error" isDismissible={ false }>
-					<span
-						dangerouslySetInnerHTML={ {
-							__html: businessSuppotURLErrorMessage,
-						} }
-					/>
+					<span>{ businessSuppotURLErrorMessage }</span>
 				</Notice>
 			) }
 			<TextControl

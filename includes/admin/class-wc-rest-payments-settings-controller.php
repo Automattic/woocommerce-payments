@@ -247,7 +247,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return $string_validation_result;
 		}
 
-		if ( empty( $value ) ) {
+		if ( '' === $value ) {
 			return new WP_Error(
 				'rest_invalid_pattern',
 				__( 'Error: Support email address is required!', 'woocommerce-payments' )
@@ -278,7 +278,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return $string_validation_result;
 		}
 
-		if ( ! empty( $value ) && ! WC_Validation::is_phone( $value ) ) {
+		if ( '' !== $value && ! WC_Validation::is_phone( $value ) ) {
 			return new WP_Error(
 				'rest_invalid_pattern',
 				__( 'Error: Invalid phone number: ', 'woocommerce-payments' ) . $value
@@ -302,7 +302,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return $string_validation_result;
 		}
 
-		if ( ! empty( $value ) && ! wp_http_validate_url( $value ) ) {
+		if ( '' !== $value && ! wp_http_validate_url( $value ) ) {
 			return new WP_Error(
 				'rest_invalid_pattern',
 				__( 'Error: Invalid business URL: ', 'woocommerce-payments' ) . $value

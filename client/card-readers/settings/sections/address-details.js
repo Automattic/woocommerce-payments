@@ -65,11 +65,7 @@ const AddressDetailsSection = () => {
 			<h4>{ __( 'Business address', 'woocommerce-payments' ) }</h4>
 			{ businessSuppotAddressErrorMessage && (
 				<Notice status="error" isDismissible={ false }>
-					<span
-						dangerouslySetInnerHTML={ {
-							__html: businessSuppotAddressErrorMessage,
-						} }
-					/>
+					<span>{ businessSuppotAddressErrorMessage }</span>
 				</Notice>
 			) }
 			<SelectControl
