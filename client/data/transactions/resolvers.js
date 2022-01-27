@@ -29,6 +29,7 @@ export const formatQueryFilters = ( query ) => ( {
 	type_is: query.typeIs,
 	type_is_not: query.typeIsNot,
 	store_currency_is: query.storeCurrencyIs,
+	loan_id: query.loanId,
 	deposit_id: query.depositId,
 	search: query.search,
 } );

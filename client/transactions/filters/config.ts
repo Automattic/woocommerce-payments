@@ -34,6 +34,21 @@ const transactionTypesOptions = Object.entries( displayType )
 		return el != null;
 	} );
 
+const loanSelectionOptions = wcpaySettings.accountLoans.loans.map(
+	( loanDefinition ) => {
+		const loanDefinitionSplitted = loanDefinition.split( '|' );
+		const loanDisplayValue =
+			'ID: ' +
+			loanDefinitionSplitted[ 0 ] +
+			( 'active' === loanDefinitionSplitted[ 1 ]
+				? ' | In Progress'
+				: '' );
+
+		return { label: loanDisplayValue, value: loanDefinitionSplitted[ 0 ] };
+	},
+	[]
+);
+
 export const filters: [ TransactionsFilterType, TransactionsFilterType ] = [
 	{
 		label: __( 'Deposit currency', 'woocommerce-payments' ),
@@ -177,6 +192,23 @@ export const advancedFilters = {
 			input: {
 				component: 'SelectControl',
 				options: transactionTypesOptions,
+			},
+		},
+		loan_id: {
+			labels: {
+				add: __( 'Loan', 'woocommerce-payments' ),
+				remove: __( 'Remove loan filter', 'woocommerce-payments' ),
+				rule: __( 'Select a loan', 'woocommerce-payments' ),
+				/* translators: A sentence describing a Loan ID filter. */
+				title: __(
+					'{{title}}Loan{{/title}} {{rule /}} {{filter /}}',
+					'woocommerce-payments'
+				),
+				filter: __( 'Select a loan', 'woocommerce-payments' ),
+			},
+			input: {
+				component: 'SelectControl',
+				options: loanSelectionOptions,
 			},
 		},
 	},

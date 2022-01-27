@@ -80,6 +80,7 @@ export const useTransactions = (
 		type_is: typeIs,
 		type_is_not: typeIsNot,
 		store_currency_is: storeCurrencyIs,
+		loan_id: loanId,
 		search,
 	}: Query,
 	depositId: string
@@ -112,6 +113,7 @@ export const useTransactions = (
 				typeIs,
 				typeIsNot,
 				storeCurrencyIs,
+				loanId,
 				depositId,
 				search,
 			};
@@ -134,6 +136,7 @@ export const useTransactions = (
 			typeIs,
 			typeIsNot,
 			storeCurrencyIs,
+			loanId,
 			depositId,
 			JSON.stringify( search ),
 		]
@@ -148,6 +151,7 @@ export const useTransactionsSummary = (
 		type_is: typeIs,
 		type_is_not: typeIsNot,
 		store_currency_is: storeCurrencyIs,
+		loan_id: loanId,
 		search,
 	}: Query,
 	depositId: string
@@ -166,6 +170,7 @@ export const useTransactionsSummary = (
 				typeIs,
 				typeIsNot,
 				storeCurrencyIs,
+				loanId,
 				depositId,
 				search,
 			};
@@ -183,6 +188,7 @@ export const useTransactionsSummary = (
 			typeIs,
 			typeIsNot,
 			storeCurrencyIs,
+			loanId,
 			depositId,
 			JSON.stringify( search ),
 		]
