@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.6.1 - 2022-xx-xx =
+= 3.6.1 - 2022-01-27 =
 * Fix - Remove packages not compatible with PHP 7.0
 * Security update.
 

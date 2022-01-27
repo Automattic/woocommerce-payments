@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.6
 Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 3.6.0
+Stable tag: 3.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.6.1 - 2022-xx-xx =
+= 3.6.1 - 2022-01-27 =
 * Fix - Remove packages not compatible with PHP 7.0
 * Security update.
 
