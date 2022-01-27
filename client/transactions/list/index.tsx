@@ -222,7 +222,11 @@ export const TransactionsList = (
 			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 		);
 
-		const orderUrl = <OrderLink order={ txn.order } />;
+		const orderUrl = txn.order ? (
+			<OrderLink order={ txn.order } />
+		) : (
+			__( 'N/A', 'woocommerce-payments' )
+		);
 		const orderSubscriptions = txn.order && txn.order.subscriptions;
 		const subscriptionsValue =
 			wcpaySettings.isSubscriptionsActive && orderSubscriptions
@@ -282,13 +286,17 @@ export const TransactionsList = (
 		const formatFees = () => {
 			const isCardReader =
 				txn.metadata && txn.metadata.charge_type === 'card_reader_fee';
+			const feeAmount =
+				( isCardReader ? txn.amount : txn.fees * -1 ) / 100;
 			return {
-				value: ( isCardReader ? txn.amount : txn.fees * -1 ) / 100,
+				value: feeAmount,
 				display: clickable(
-					formatCurrency(
-						isCardReader ? txn.amount : txn.fees * -1,
-						currency
-					)
+					0 !== feeAmount
+						? formatCurrency(
+								isCardReader ? txn.amount : txn.fees * -1,
+								currency
+						  )
+						: __( 'N/A', 'woocommerce-payments' )
 				),
 			};
 		};
@@ -296,6 +304,10 @@ export const TransactionsList = (
 		const depositStatus = txn.deposit_status
 			? displayDepositStatus[ txn.deposit_status ]
 			: '';
+
+		const isFinancingType =
+			-1 !==
+			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
 
 		// Map transaction into table row.
 		const data = {
@@ -320,10 +332,14 @@ export const TransactionsList = (
 			},
 			source: {
 				value: txn.source,
-				display: clickable(
-					<span
-						className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-					/>
+				display: ! isFinancingType ? (
+					clickable(
+						<span
+							className={ `payment-method__brand payment-method__brand--${ txn.source }` }
+						/>
+					)
+				) : (
+					<span className={ 'payment-method__brand' }>—</span>
 				),
 			},
 			order: {
@@ -336,11 +352,15 @@ export const TransactionsList = (
 			},
 			customer_name: {
 				value: txn.customer_name,
-				display: customerName,
+				display: ! isFinancingType
+					? customerName
+					: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_email: {
 				value: txn.customer_email,
-				display: customerEmail,
+				display: ! isFinancingType
+					? customerEmail
+					: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_country: {
 				value: txn.customer_country,
