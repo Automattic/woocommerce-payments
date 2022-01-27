@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ec41da167960469f3bbd478542cbeee1",
+    "content-hash": "f9945c795139fa0f7590109e89cc9dca",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -355,16 +355,16 @@
         },
         {
             "name": "automattic/jetpack-identity-crisis",
-            "version": "v0.6.4",
+            "version": "v0.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-identity-crisis.git",
-                "reference": "5914d65729c8fa0e9968850c887fa99ce45edb81"
+                "reference": "1953d572dd0f5e722315b9c5c2191311acef67d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-identity-crisis/zipball/5914d65729c8fa0e9968850c887fa99ce45edb81",
-                "reference": "5914d65729c8fa0e9968850c887fa99ce45edb81",
+                "url": "https://api.github.com/repos/Automattic/jetpack-identity-crisis/zipball/1953d572dd0f5e722315b9c5c2191311acef67d6",
+                "reference": "1953d572dd0f5e722315b9c5c2191311acef67d6",
                 "shasum": ""
             },
             "require": {
@@ -393,7 +393,7 @@
                     "link-template": "https://github.com/Automattic/jetpack-identity-crisis/compare/v${old}...v${new}"
                 },
                 "branch-alias": {
-                    "dev-master": "0.6.x-dev"
+                    "dev-master": "0.7.x-dev"
                 }
             },
             "autoload": {
@@ -407,9 +407,9 @@
             ],
             "description": "Identity Crisis.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-identity-crisis/tree/v0.6.4"
+                "source": "https://github.com/Automattic/jetpack-identity-crisis/tree/v0.7.0"
             },
-            "time": "2022-01-25T17:38:59+00:00"
+            "time": "2022-01-27T17:34:42+00:00"
         },
         {
             "name": "automattic/jetpack-logo",
