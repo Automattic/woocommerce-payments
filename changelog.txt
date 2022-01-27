@@ -1,4 +1,6 @@
 *** WooCommerce Payments Changelog ***
+= 3.6.1 - 2022-xx-xx =
+* Fix - Remove packages not compatible with PHP 7.0
 
 = 3.7.0 - 2022-xx-xx =
 * Add - Introduce sorting on disputes page.
