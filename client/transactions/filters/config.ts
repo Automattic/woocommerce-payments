@@ -34,20 +34,20 @@ const transactionTypesOptions = Object.entries( displayType )
 		return el != null;
 	} );
 
-const loanSelectionOptions = wcpaySettings.accountLoans.loans.map(
-	( loanDefinition ) => {
-		const loanDefinitionSplitted = loanDefinition.split( '|' );
-		const loanDisplayValue =
-			'ID: ' +
-			loanDefinitionSplitted[ 0 ] +
-			( 'active' === loanDefinitionSplitted[ 1 ]
-				? ' | In Progress'
-				: '' );
+const loanDefinitions =
+	'undefined' !== typeof wcpaySettings
+		? wcpaySettings.accountLoans.loans
+		: [];
 
-		return { label: loanDisplayValue, value: loanDefinitionSplitted[ 0 ] };
-	},
-	[]
-);
+const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
+	const loanDefinitionSplitted = loanDefinition.split( '|' );
+	const loanDisplayValue =
+		'ID: ' +
+		loanDefinitionSplitted[ 0 ] +
+		( 'active' === loanDefinitionSplitted[ 1 ] ? ' | In Progress' : '' );
+
+	return { label: loanDisplayValue, value: loanDefinitionSplitted[ 0 ] };
+}, [] );
 
 export const filters: [ TransactionsFilterType, TransactionsFilterType ] = [
 	{
