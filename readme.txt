@@ -106,6 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Introduce advance filters on disputes page.
 * Add - UPE payment methods - BECS Direct Debit.
 * Fix - Missing currency field in disputes export file.
+* Add - Implement Jetpack Identity Crisis / Safe Mode banner.
 
 = 3.6.0 - 2022-01-20 =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
