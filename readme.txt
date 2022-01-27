@@ -99,6 +99,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 3.7.0 - 2022-xx-xx =
+* Update - Bump minimum required version of WooCommerce from 4.5 to 4.6.
 * Add - Introduce sorting on disputes page.
 * Fix - Currency name not translated the Overview card title.
 * Add - Introduce advance filters on disputes page.
