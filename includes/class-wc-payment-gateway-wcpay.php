@@ -1033,20 +1033,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 
-			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
-			$intent = $this->payments_api_client->create_and_confirm_intention(
-				$converted_amount,
-				$currency,
-				$payment_information->get_payment_method(),
-				$customer_id,
-				$payment_information->is_using_manual_capture(),
-				$save_payment_method,
-				$metadata,
-				$this->get_level3_data_from_order( $order ),
-				$payment_information->is_merchant_initiated(),
-				$additional_api_parameters,
-				$payment_methods
-			);
+			// phpcs:ignore
+			if ( ! empty( $_POST['platform-checkout-intent'] ) ) {
+				// If the intent is included in the request use that intent.
+				// phpcs:ignore
+				$intent_id = wp_unslash( $_POST['platform-checkout-intent'] );
+				$intent    = $this->payments_api_client->get_intent( $intent_id );
+			} else {
+				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
+				$intent = $this->payments_api_client->create_and_confirm_intention(
+					$converted_amount,
+					$currency,
+					$payment_information->get_payment_method(),
+					$customer_id,
+					$payment_information->is_using_manual_capture(),
+					$save_payment_method,
+					$metadata,
+					$this->get_level3_data_from_order( $order ),
+					$payment_information->is_merchant_initiated(),
+					$additional_api_parameters,
+					$payment_methods
+				);
+			}
 
 			$intent_id     = $intent->get_id();
 			$status        = $intent->get_status();
