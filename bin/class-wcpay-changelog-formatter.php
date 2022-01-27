@@ -1,5 +1,9 @@
 <?php
-// phpcs:ignoreFile - This is an auxiliary build tool, and not part of the plugin.
+/**
+ * Jetpack Changelogger Formatter for WooCommerce Payments
+ *
+ * @package WooCommerce\Payments
+ */
 
 use Automattic\Jetpack\Changelog\Changelog;
 use Automattic\Jetpack\Changelog\Parser;
@@ -9,7 +13,7 @@ use Automattic\Jetpack\Changelogger\PluginTrait;
 /**
  * Jetpack Changelogger Formatter for WooCommerce Payments
  *
- * Class WCPayFormatter
+ * Class WCPay_Changelog_Formatter
  */
 class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 	use PluginTrait;
@@ -109,9 +113,9 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 
 			$entry = $this->newChangelogEntry(
 				$version,
-				array(
+				[
 					'timestamp' => $timestamp,
-				)
+				]
 			);
 
 			$entries[] = $entry;

@@ -72,12 +72,12 @@
           "changelog": "changelog.txt",
           "types": {
             "add": "Add",
-            "fix":  "Fix",
+            "fix": "Fix",
             "update": "Update",
             "dev": "Dev"
           },
           "formatter": {
-            "filename": "bin/wcpay-changelog-formatter.php"
+            "filename": "bin/class-wcpay-changelog-formatter.php"
           }
       }
     },

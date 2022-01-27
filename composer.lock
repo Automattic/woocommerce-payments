@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "238921830ce07edeacc30bb0ab794f1f",
+    "content-hash": "be3cc7fc9e4c9613a2bbd869ebd3644b",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
-            "version": "v1.4.11",
+            "version": "v1.4.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-a8c-mc-stats.git",
-                "reference": "6e7d7c8b9c996f04978b834e4c3484bd2d916998"
+                "reference": "38b3d11fec181d90abe6d80f5184fff6d2ef694c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-a8c-mc-stats/zipball/6e7d7c8b9c996f04978b834e4c3484bd2d916998",
-                "reference": "6e7d7c8b9c996f04978b834e4c3484bd2d916998",
+                "url": "https://api.github.com/repos/Automattic/jetpack-a8c-mc-stats/zipball/38b3d11fec181d90abe6d80f5184fff6d2ef694c",
+                "reference": "38b3d11fec181d90abe6d80f5184fff6d2ef694c",
                 "shasum": ""
             },
             "require-dev": {
@@ -46,22 +46,22 @@
             ],
             "description": "Used to record internal usage stats for Automattic. Not visible to site owners.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-a8c-mc-stats/tree/v1.4.11"
+                "source": "https://github.com/Automattic/jetpack-a8c-mc-stats/tree/v1.4.12"
             },
-            "time": "2022-01-04T21:11:24+00:00"
+            "time": "2022-01-25T17:38:22+00:00"
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v1.16.2",
+            "version": "v1.17.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "e657324b4b2cbd6a26d2381136047f9373a44bc2"
+                "reference": "91d88714171476dbfc75743dfc2c48d84eb14364"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/e657324b4b2cbd6a26d2381136047f9373a44bc2",
-                "reference": "e657324b4b2cbd6a26d2381136047f9373a44bc2",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/91d88714171476dbfc75743dfc2c48d84eb14364",
+                "reference": "91d88714171476dbfc75743dfc2c48d84eb14364",
                 "shasum": ""
             },
             "require": {
@@ -82,7 +82,7 @@
                     "link-template": "https://github.com/Automattic/jetpack-assets/compare/v${old}...v${new}"
                 },
                 "branch-alias": {
-                    "dev-master": "1.16.x-dev"
+                    "dev-master": "1.17.x-dev"
                 }
             },
             "autoload": {
@@ -99,9 +99,9 @@
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.16.2"
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.17.0"
             },
-            "time": "2022-01-18T11:16:43+00:00"
+            "time": "2022-01-25T17:38:45+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
@@ -260,16 +260,16 @@
         },
         {
             "name": "automattic/jetpack-constants",
-            "version": "v1.6.14",
+            "version": "v1.6.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-constants.git",
-                "reference": "93af2a61eceaabd16c432451cc33f7c9074efa81"
+                "reference": "f203b7c8ce89760ff8a70abcfbd1308765038fc9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-constants/zipball/93af2a61eceaabd16c432451cc33f7c9074efa81",
-                "reference": "93af2a61eceaabd16c432451cc33f7c9074efa81",
+                "url": "https://api.github.com/repos/Automattic/jetpack-constants/zipball/f203b7c8ce89760ff8a70abcfbd1308765038fc9",
+                "reference": "f203b7c8ce89760ff8a70abcfbd1308765038fc9",
                 "shasum": ""
             },
             "require-dev": {
@@ -299,9 +299,9 @@
             ],
             "description": "A wrapper for defining constants in a more testable way.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-constants/tree/v1.6.14"
+                "source": "https://github.com/Automattic/jetpack-constants/tree/v1.6.15"
             },
-            "time": "2022-01-04T21:11:33+00:00"
+            "time": "2022-01-25T17:38:30+00:00"
         },
         {
             "name": "automattic/jetpack-heartbeat",
@@ -400,20 +400,20 @@
         },
         {
             "name": "automattic/jetpack-redirect",
-            "version": "v1.7.9",
+            "version": "v1.7.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-redirect.git",
-                "reference": "7b7640108a704b6978814e0cfb2e5102d19c7d42"
+                "reference": "f2facf6874cb9faffdb767e514a97b8949b95561"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-redirect/zipball/7b7640108a704b6978814e0cfb2e5102d19c7d42",
-                "reference": "7b7640108a704b6978814e0cfb2e5102d19c7d42",
+                "url": "https://api.github.com/repos/Automattic/jetpack-redirect/zipball/f2facf6874cb9faffdb767e514a97b8949b95561",
+                "reference": "f2facf6874cb9faffdb767e514a97b8949b95561",
                 "shasum": ""
             },
             "require": {
-                "automattic/jetpack-status": "^1.9"
+                "automattic/jetpack-status": "^1.10"
             },
             "require-dev": {
                 "automattic/jetpack-changelogger": "^3.0",
@@ -442,22 +442,22 @@
             ],
             "description": "Utilities to build URLs to the jetpack.com/redirect/ service",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-redirect/tree/v1.7.9"
+                "source": "https://github.com/Automattic/jetpack-redirect/tree/v1.7.10"
             },
-            "time": "2022-01-04T21:11:51+00:00"
+            "time": "2022-01-25T17:38:48+00:00"
         },
         {
             "name": "automattic/jetpack-roles",
-            "version": "v1.4.13",
+            "version": "v1.4.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-roles.git",
-                "reference": "5d0a94f52de1e44a4537bc736af940f6b178c107"
+                "reference": "3cccac277e4f7fed80ce7929d4313c8aa40b65e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-roles/zipball/5d0a94f52de1e44a4537bc736af940f6b178c107",
-                "reference": "5d0a94f52de1e44a4537bc736af940f6b178c107",
+                "url": "https://api.github.com/repos/Automattic/jetpack-roles/zipball/3cccac277e4f7fed80ce7929d4313c8aa40b65e4",
+                "reference": "3cccac277e4f7fed80ce7929d4313c8aa40b65e4",
                 "shasum": ""
             },
             "require-dev": {
@@ -487,22 +487,22 @@
             ],
             "description": "Utilities, related with user roles and capabilities.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-roles/tree/v1.4.13"
+                "source": "https://github.com/Automattic/jetpack-roles/tree/v1.4.14"
             },
-            "time": "2022-01-04T21:11:39+00:00"
+            "time": "2022-01-25T17:38:37+00:00"
         },
         {
             "name": "automattic/jetpack-status",
-            "version": "v1.9.5",
+            "version": "v1.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-status.git",
-                "reference": "6300e03a808ef63dda558f0eb78e39a0e529a274"
+                "reference": "c339904491b53319bff13aaa77bd74b39c011617"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-status/zipball/6300e03a808ef63dda558f0eb78e39a0e529a274",
-                "reference": "6300e03a808ef63dda558f0eb78e39a0e529a274",
+                "url": "https://api.github.com/repos/Automattic/jetpack-status/zipball/c339904491b53319bff13aaa77bd74b39c011617",
+                "reference": "c339904491b53319bff13aaa77bd74b39c011617",
                 "shasum": ""
             },
             "require": {
@@ -521,7 +521,7 @@
                     "link-template": "https://github.com/Automattic/jetpack-status/compare/v${old}...v${new}"
                 },
                 "branch-alias": {
-                    "dev-master": "1.9.x-dev"
+                    "dev-master": "1.10.x-dev"
                 }
             },
             "autoload": {
@@ -535,27 +535,27 @@
             ],
             "description": "Used to retrieve information about the current status of Jetpack and the site overall.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-status/tree/v1.9.5"
+                "source": "https://github.com/Automattic/jetpack-status/tree/v1.10.0"
             },
-            "time": "2022-01-04T21:11:43+00:00"
+            "time": "2022-01-25T17:38:42+00:00"
         },
         {
             "name": "automattic/jetpack-terms-of-service",
-            "version": "v1.9.18",
+            "version": "v1.9.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-terms-of-service.git",
-                "reference": "46f3ac423d38219d719f0d0a33e7753b6e28d7ef"
+                "reference": "2a30cf6db575e62b996febd6fd761bb4aec4a527"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-terms-of-service/zipball/46f3ac423d38219d719f0d0a33e7753b6e28d7ef",
-                "reference": "46f3ac423d38219d719f0d0a33e7753b6e28d7ef",
+                "url": "https://api.github.com/repos/Automattic/jetpack-terms-of-service/zipball/2a30cf6db575e62b996febd6fd761bb4aec4a527",
+                "reference": "2a30cf6db575e62b996febd6fd761bb4aec4a527",
                 "shasum": ""
             },
             "require": {
                 "automattic/jetpack-options": "^1.14",
-                "automattic/jetpack-status": "^1.9"
+                "automattic/jetpack-status": "^1.10"
             },
             "require-dev": {
                 "automattic/jetpack-changelogger": "^3.0",
@@ -584,28 +584,28 @@
             ],
             "description": "Everything need to manage the terms of service state",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-terms-of-service/tree/v1.9.18"
+                "source": "https://github.com/Automattic/jetpack-terms-of-service/tree/v1.9.19"
             },
-            "time": "2022-01-04T21:11:52+00:00"
+            "time": "2022-01-25T17:38:49+00:00"
         },
         {
             "name": "automattic/jetpack-tracking",
-            "version": "v1.14.0",
+            "version": "v1.14.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-tracking.git",
-                "reference": "b2f869437c42fca557f3450fed0f61ae6162d0bf"
+                "reference": "68a0fe8a7fc498915c4944e07c6d0f7ec54da562"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-tracking/zipball/b2f869437c42fca557f3450fed0f61ae6162d0bf",
-                "reference": "b2f869437c42fca557f3450fed0f61ae6162d0bf",
+                "url": "https://api.github.com/repos/Automattic/jetpack-tracking/zipball/68a0fe8a7fc498915c4944e07c6d0f7ec54da562",
+                "reference": "68a0fe8a7fc498915c4944e07c6d0f7ec54da562",
                 "shasum": ""
             },
             "require": {
-                "automattic/jetpack-assets": "^1.16",
+                "automattic/jetpack-assets": "^1.17",
                 "automattic/jetpack-options": "^1.14",
-                "automattic/jetpack-status": "^1.9",
+                "automattic/jetpack-status": "^1.10",
                 "automattic/jetpack-terms-of-service": "^1.9"
             },
             "require-dev": {
@@ -637,9 +637,9 @@
             ],
             "description": "Tracking for Jetpack",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-tracking/tree/v1.14.0"
+                "source": "https://github.com/Automattic/jetpack-tracking/tree/v1.14.1"
             },
-            "time": "2022-01-04T21:11:55+00:00"
+            "time": "2022-01-25T17:38:53+00:00"
         },
         {
             "name": "composer/installers",
@@ -1672,23 +1672,23 @@
         },
         {
             "name": "composer/pcre",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/pcre.git",
-                "reference": "3d322d715c43a1ac36c7fe215fa59336265500f2"
+                "reference": "67a32d7d6f9f560b726ab25a061b38ff3a80c560"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/pcre/zipball/3d322d715c43a1ac36c7fe215fa59336265500f2",
-                "reference": "3d322d715c43a1ac36c7fe215fa59336265500f2",
+                "url": "https://api.github.com/repos/composer/pcre/zipball/67a32d7d6f9f560b726ab25a061b38ff3a80c560",
+                "reference": "67a32d7d6f9f560b726ab25a061b38ff3a80c560",
                 "shasum": ""
             },
             "require": {
                 "php": "^5.3.2 || ^7.0 || ^8.0"
             },
             "require-dev": {
-                "phpstan/phpstan": "^1",
+                "phpstan/phpstan": "^1.3",
                 "phpstan/phpstan-strict-rules": "^1.1",
                 "symfony/phpunit-bridge": "^4.2 || ^5"
             },
@@ -1723,7 +1723,7 @@
             ],
             "support": {
                 "issues": "https://github.com/composer/pcre/issues",
-                "source": "https://github.com/composer/pcre/tree/1.0.0"
+                "source": "https://github.com/composer/pcre/tree/1.0.1"
             },
             "funding": [
                 {
@@ -1739,7 +1739,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-12-06T15:17:27+00:00"
+            "time": "2022-01-21T20:24:37+00:00"
         },
         {
             "name": "composer/semver",
