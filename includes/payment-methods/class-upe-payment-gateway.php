@@ -890,6 +890,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$methods = parent::get_upe_available_payment_methods();
 		$fees    = $this->account->get_fees();
 
+		$methods[] = 'au_becs_debit';
 		$methods[] = 'bancontact';
 		$methods[] = 'giropay';
 		$methods[] = 'ideal';
@@ -904,7 +905,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			)
 		);
 
-		return array_intersect( $methods, array_keys( $fees ) );
+		$methods_with_fees = array_values( array_intersect( $methods, array_keys( $fees ) ) );
+
+		return $methods_with_fees;
 	}
 
 	/**

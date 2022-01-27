@@ -41,7 +41,9 @@ const receiveDisputes = (
 				...state,
 				summary: {
 					...state.summary,
-					count: data.count,
+					[ index ]: {
+						data: data,
+					},
 				},
 			};
 	}

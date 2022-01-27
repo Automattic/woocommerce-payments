@@ -276,6 +276,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		$actionable_methods = [
 			Payment_Method::US_BANK_ACCOUNT,
+			Payment_Method::BECS,
 		];
 
 		if ( empty( $payment_method_type ) || ! in_array( $payment_method_type, $actionable_methods, true ) ) {

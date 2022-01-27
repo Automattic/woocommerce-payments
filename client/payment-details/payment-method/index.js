@@ -13,6 +13,7 @@ import Loadable from 'components/loadable';
 import CardDetails from './card';
 import CardPresentDetails from './card-present';
 import BancontactDetails from './bancontact';
+import BecsDetails from './becs';
 import GiropayDetails from './giropay';
 import IdealDetails from './ideal';
 import P24Details from './p24';
@@ -22,6 +23,7 @@ import SofortDetails from './sofort';
 const detailsComponentMap = {
 	card: CardDetails,
 	card_present: CardPresentDetails,
+	au_becs_debit: BecsDetails,
 	bancontact: BancontactDetails,
 	giropay: GiropayDetails,
 	ideal: IdealDetails,

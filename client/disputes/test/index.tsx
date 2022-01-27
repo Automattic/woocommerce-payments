@@ -169,6 +169,7 @@ describe( 'Disputes list', () => {
 			const expected = [
 				'"Dispute Id"',
 				'Amount',
+				'Currency',
 				'Status',
 				'Reason',
 				'Source',
@@ -202,36 +203,38 @@ describe( 'Disputes list', () => {
 
 			// Note:
 			//
-			// 1. CSV and display indexes are off by 1 because the first field in CSV is dispute id,
-			//    which is missing in display.
+			// 1. CSV and display indexes are off by 2 because:
+			// 		- the first field in CSV is dispute id, which is missing in display.
+			// 		- the third field in CSV is currency, which is missing in display (it's displayed in "amount" column).
 			//
 			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
 			//    trailing zeros as in the display amount.
 			//
-
 			expect(
 				getUnformattedAmount( displayFirstDispute[ 0 ] ).indexOf(
 					csvFirstDispute[ 1 ]
 				)
 			).not.toBe( -1 ); // amount
 
-			expect( csvFirstDispute[ 2 ] ).toBe(
+			expect( csvFirstDispute[ 2 ] ).toBe( 'usd' );
+
+			expect( csvFirstDispute[ 3 ] ).toBe(
 				`"${ displayFirstDispute[ 1 ] }"`
 			); //status
 
-			expect( csvFirstDispute[ 3 ] ).toBe( displayFirstDispute[ 2 ] ); // reason
+			expect( csvFirstDispute[ 4 ] ).toBe( displayFirstDispute[ 2 ] ); // reason
 
-			expect( csvFirstDispute[ 5 ] ).toBe( displayFirstDispute[ 4 ] ); // order
+			expect( csvFirstDispute[ 6 ] ).toBe( displayFirstDispute[ 4 ] ); // order
 
-			expect( csvFirstDispute[ 6 ] ).toBe(
+			expect( csvFirstDispute[ 7 ] ).toBe(
 				`"${ displayFirstDispute[ 5 ] }"`
 			); // customer
 
-			expect( formatDate( csvFirstDispute[ 9 ], 'Y-m-d' ) ).toBe(
+			expect( formatDate( csvFirstDispute[ 10 ], 'Y-m-d' ) ).toBe(
 				formatDate( displayFirstDispute[ 6 ], 'Y-m-d' )
 			); // date disputed on
 
-			expect( formatDate( csvFirstDispute[ 10 ], 'Y-m-d / g:iA' ) ).toBe(
+			expect( formatDate( csvFirstDispute[ 11 ], 'Y-m-d / g:iA' ) ).toBe(
 				formatDate( displayFirstDispute[ 7 ], 'Y-m-d / g:iA' )
 			); // date respond by
 		} );
