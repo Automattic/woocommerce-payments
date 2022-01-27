@@ -20,6 +20,7 @@ use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
+use WC_Payments_Order_Service;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payments;
@@ -63,16 +64,26 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
-	 * @param WC_Payments_Account                  $account                  - Account class instance.
-	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
-	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
-	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
-	 * @param array                                $payment_methods          - Array of UPE payment methods.
-	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter             - Session Rate Limiter instance.
+	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                  $account                         - Account class instance.
+	 * @param WC_Payments_Customer_Service         $customer_service                - Customer class instance.
+	 * @param WC_Payments_Token_Service            $token_service                   - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
+	 * @param array                                $payment_methods                 - Array of UPE payment methods.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Session Rate Limiter instance.
+	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service, array $payment_methods, Session_Rate_Limiter $failed_transaction_rate_limiter ) {
-		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter );
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Account $account,
+		WC_Payments_Customer_Service $customer_service,
+		WC_Payments_Token_Service $token_service,
+		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
+		array $payment_methods,
+		Session_Rate_Limiter $failed_transaction_rate_limiter,
+		WC_Payments_Order_Service $order_service
+	) {
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service );
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 		$this->title              = __( 'WooCommerce Payments', 'woocommerce-payments' );
@@ -599,7 +610,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
-				$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id, $currency );
+				$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 
 				if ( 'requires_action' === $status ) {
