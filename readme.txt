@@ -97,6 +97,8 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+= 3.6.1 - 2022-xx-xx =
+* Fix - Remove packages not compatible with PHP 7.0
 
 = 3.6.1 - 2022-xx-xx =
 * Security update.
