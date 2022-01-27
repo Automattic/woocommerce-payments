@@ -111,6 +111,28 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the account has been rejected, assumes the value of $on_error on server error.
+	 *
+	 * @param bool $on_error Value to return on server error, defaults to false.
+	 *
+	 * @return bool True if the account is rejected, false otherwise, $on_error on error.
+	 */
+	public function is_account_rejected( bool $on_error = false ): bool {
+		try {
+			$account = $this->get_cached_account_data();
+
+			if ( empty( $account ) ) {
+				// Empty means no account, so not rejected.
+				return false;
+			}
+
+			return strpos( $account['status'], 'rejected' ) === 0;
+		} catch ( Exception $e ) {
+			return $on_error;
+		}
+	}
+
+	/**
 	 * Checks if the account is connected, throws on server error.
 	 *
 	 * @return bool      True if the account is connected, false otherwise.

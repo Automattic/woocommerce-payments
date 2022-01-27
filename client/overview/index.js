@@ -51,6 +51,7 @@ const OverviewPage = () => {
 		'1' === queryParams[ 'wcpay-connection-success' ];
 
 	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
+	const accountRejected = accountStatus.status.startsWith( 'rejected' );
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
@@ -103,9 +104,11 @@ const OverviewPage = () => {
 
 			<TestModeNotice topic={ topics.overview } />
 
-			<ErrorBoundary>
-				<DepositsInformation />
-			</ErrorBoundary>
+			{ ! accountRejected && (
+				<ErrorBoundary>
+					<DepositsInformation />
+				</ErrorBoundary>
+			) }
 
 			<ErrorBoundary>
 				<AccountStatus
@@ -113,17 +116,23 @@ const OverviewPage = () => {
 					accountFees={ activeAccountFees }
 				/>
 			</ErrorBoundary>
-			{ !! accountOverviewTaskList && 0 < tasks.length && ! isLoading && (
+			{ !! accountOverviewTaskList &&
+				0 < tasks.length &&
+				! isLoading &&
+				! accountRejected && (
+					<ErrorBoundary>
+						<TaskList
+							tasks={ tasks }
+							overviewTasksVisibility={ overviewTasksVisibility }
+						/>
+					</ErrorBoundary>
+				) }
+
+			{ ! accountRejected && (
 				<ErrorBoundary>
-					<TaskList
-						tasks={ tasks }
-						overviewTasksVisibility={ overviewTasksVisibility }
-					/>
+					<InboxNotifications />
 				</ErrorBoundary>
 			) }
-			<ErrorBoundary>
-				<InboxNotifications />
-			</ErrorBoundary>
 		</Page>
 	);
 };
