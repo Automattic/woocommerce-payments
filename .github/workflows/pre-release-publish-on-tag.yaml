@@ -115,6 +115,9 @@ jobs:
           # pick anything before the first dash as a version number
           VERSION=$(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG)
 
+          # Gather changelog entries
+          ./vendor/bin/changelogger write --use-version="$VERSION" --release-date=unreleased --amend
+
           echo "Picking up changelog for version '$VERSION'..."
           if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]];
           then
