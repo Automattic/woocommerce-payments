@@ -1137,7 +1137,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * Removes any payment and setup intent cookies created for UPE.
 	 */
 	public function remove_upe_intent_cookies() {
-		setcookie( self::COOKIE_UPE_PAYMENT_INTENT, '', time() - 3600 );
-		setcookie( self::COOKIE_UPE_SETUP_INTENT, '', time() - 3600 );
+		if ( isset( $_COOKIE[ self::COOKIE_UPE_PAYMENT_INTENT ] ) ) {
+			unset( $_COOKIE[ self::COOKIE_UPE_PAYMENT_INTENT ] );
+			setcookie( self::COOKIE_UPE_PAYMENT_INTENT, '', time() - HOUR_IN_SECONDS, '/' );
+		}
+		if ( isset( $_COOKIE[ self::COOKIE_UPE_SETUP_INTENT ] ) ) {
+			unset( $_COOKIE[ self::COOKIE_UPE_SETUP_INTENT ] );
+			setcookie( self::COOKIE_UPE_SETUP_INTENT, '', time() - HOUR_IN_SECONDS, '/' );
+		}
 	}
 }
