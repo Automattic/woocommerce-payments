@@ -123,6 +123,7 @@ export interface DisputesTableHeader extends TableCardColumn {
 	key:
 		| 'details'
 		| 'amount'
+		| 'currency'
 		| 'status'
 		| 'reason'
 		| 'source'
