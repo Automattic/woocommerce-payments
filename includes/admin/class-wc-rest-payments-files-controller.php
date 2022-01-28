@@ -37,8 +37,9 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<file_id>\w+)',
 			[
-				'methods'  => WP_REST_Server::READABLE,
-				'callback' => [ $this, 'get_file' ],
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_file' ],
+				'permission_callback' => [],
 			]
 		);
 	}
