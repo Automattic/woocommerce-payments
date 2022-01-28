@@ -89,7 +89,7 @@ describe( 'PaymentMethodSettings', () => {
 	test( 'renders banner at the top', () => {
 		render( <PaymentMethodSettings methodId="payment_request" /> );
 
-		const banner = screen.queryByTitle( 'WooCommerce Payments' );
+		const banner = screen.queryByAltText( 'WooCommerce Payments logo' );
 		expect( banner ).toBeInTheDocument();
 	} );
 } );

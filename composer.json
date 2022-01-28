@@ -14,9 +14,10 @@
     "require": {
       "php": "7.*",
       "ext-json": "*",
-      "automattic/jetpack-connection": "1.30.13",
-      "automattic/jetpack-config": "1.5.3",
-      "automattic/jetpack-autoloader": "2.10.10",
+      "automattic/jetpack-connection": "1.36.0",
+      "automattic/jetpack-config": "1.6.0",
+      "automattic/jetpack-autoloader": "2.10.11",
+      "automattic/jetpack-identity-crisis": "0.7.0",
       "myclabs/php-enum": "1.7.7",
       "woocommerce/subscriptions-core": "1.6.2"
     },

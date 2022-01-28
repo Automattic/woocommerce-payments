@@ -104,6 +104,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Introduce advance filters on disputes page.
 * Add - UPE payment methods - BECS Direct Debit.
 * Fix - Missing currency field in disputes export file.
+* Add - Implement Jetpack Identity Crisis / Safe Mode banner.
 
 = 3.6.1 - 2022-01-27 =
 * Fix - Remove packages not compatible with PHP 7.0
