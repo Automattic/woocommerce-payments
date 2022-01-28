@@ -115,6 +115,7 @@ exports[`FileUploadControl renders disabled state 1`] = `
           />
         </div>
         <img
+          alt="file.pdf"
           src="/wp-json/wc/v3/payments/file/file.pdf"
           style="max-width: 100px;"
         />
@@ -239,6 +240,7 @@ exports[`FileUploadControl renders upload done state 1`] = `
           />
         </div>
         <img
+          alt="file.pdf"
           src="/wp-json/wc/v3/payments/file/file.pdf"
           style="max-width: 100px;"
         />
