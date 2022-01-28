@@ -10,7 +10,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 /**
  * WC_Payments_Admin_Sections_Overwrite unit tests.
  */
-class WC_Payments_Admin_Sections_Overwrite_Test extends \Yoast\PHPUnitPolyfills\TestCases\TestCase {
+class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 
 	/**
 	 * @var string
@@ -27,7 +27,7 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends \Yoast\PHPUnitPolyfills\
 	 */
 	private $account_service;
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->account_service = $this->getMockBuilder( WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'get_cached_account_data' ] )->getMock();
@@ -236,7 +236,6 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends \Yoast\PHPUnitPolyfills\
 	private function set_is_admin() {
 		global $current_screen;
 
-		//phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		$current_screen = $this->getMockBuilder( \stdClass::class )
 			->setMethods( [ 'in_admin' ] )
 			->getMock();
