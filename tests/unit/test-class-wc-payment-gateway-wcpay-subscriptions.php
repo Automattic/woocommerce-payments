@@ -6,12 +6,11 @@
  */
 
 use WCPay\Exceptions\API_Exception;
-use Yoast\PHPUnitPolyfills\TestCases\TestCase as PolyfillTestCase;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
-class WC_Payment_Gateway_WCPay_Subscriptions_Test extends PolyfillTestCase {
+class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 	const USER_ID           = 1;
 	const CUSTOMER_ID       = 'cus_mock';
 	const PAYMENT_METHOD_ID = 'pm_mock';
