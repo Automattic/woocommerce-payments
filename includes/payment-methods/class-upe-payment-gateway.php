@@ -100,6 +100,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
 
 		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'remove_upe_intent_cookies' ], 10, 0 );
+		add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_intent_cookies' ], 10, 0 );
 
 		if ( ! is_admin() ) {
 			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
