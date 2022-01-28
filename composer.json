@@ -43,9 +43,6 @@
       "cweagans/composer-patches": "1.7.1"
     },
     "scripts": {
-      "post-install-cmd": [
-        "bash bin/phpunit-php8-compability.sh"
-      ],
       "test": [
         "phpunit"
       ],
