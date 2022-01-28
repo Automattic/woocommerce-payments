@@ -50,6 +50,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	const COOKIE_UPE_SETUP_INTENT = 'wcpay_upe_setup_intent';
 
+	const COOKIE_UPE_EXPIRES_IN_MINS = 10;
+
 	const COOKIE_CART_HASH = 'woocommerce_cart_hash'; // maintained in WC core.
 
 	/**
@@ -1119,7 +1121,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$cookie_val = $cart_hash . '-' . $intent_id . '-' . $client_secret;
 
-		wc_setcookie( self::COOKIE_UPE_PAYMENT_INTENT, $cookie_val, time() + MINUTE_IN_SECONDS * 30 );
+		wc_setcookie( self::COOKIE_UPE_PAYMENT_INTENT, $cookie_val, time() + MINUTE_IN_SECONDS * self::COOKIE_UPE_EXPIRES_IN_MINS );
 	}
 
 	/**
@@ -1130,7 +1132,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	private function create_upe_setup_intent_cookie( string $intent_id = '', string $client_secret = '' ) {
 		$cookie_val = $intent_id . '-' . $client_secret;
-		wc_setcookie( self::COOKIE_UPE_SETUP_INTENT, $cookie_val, time() + MINUTE_IN_SECONDS * 30 );
+		wc_setcookie( self::COOKIE_UPE_SETUP_INTENT, $cookie_val, time() + MINUTE_IN_SECONDS * self::COOKIE_UPE_EXPIRES_IN_MINS );
 	}
 
 	/**
