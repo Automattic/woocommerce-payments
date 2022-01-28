@@ -141,9 +141,11 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 	/**
 	 * Cleanup after all tests.
 	 */
-	public static function tearDownAfterClass() {
+	public static function tear_down_after_class() {
 		WC_Subscriptions::set_wcs_order_contains_subscription( null );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
+
+		parent::tear_down_after_class();
 	}
 
 	private function mock_wcs_order_contains_subscription( $value ) {
