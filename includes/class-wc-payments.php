@@ -851,7 +851,11 @@ class WC_Payments {
 	 * @return array WooCommerce checkout fields.
 	 */
 	public static function platform_checkout_remove_default_email_field( $fields ) {
-		unset( $fields['billing']['billing_email'] );
+		if ( isset( $fields['billing']['billing_email'] ) ) {
+			unset( $fields['billing']['billing_email'] );
+		} else {
+			remove_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
+		}
 
 		return $fields;
 	}
