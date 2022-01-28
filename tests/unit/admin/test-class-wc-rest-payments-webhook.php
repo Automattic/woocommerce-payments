@@ -89,9 +89,9 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->request_body['data'] = $event_data;
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		set_current_screen( 'front' );
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	/**

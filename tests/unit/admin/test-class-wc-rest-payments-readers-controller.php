@@ -59,8 +59,8 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 	/**
 	 * Post test cleanup
 	 */
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 		delete_transient( Controller::STORE_READERS_TRANSIENT_KEY );
 	}
 

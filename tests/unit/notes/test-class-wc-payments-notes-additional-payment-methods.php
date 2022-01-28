@@ -17,8 +17,8 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WP_UnitTestCase 
 		update_option( '_wcpay_feature_upe', '0' );
 	}
 
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		delete_option( '_wcpay_feature_upe_settings_preview' );
 		delete_option( '_wcpay_feature_upe' );

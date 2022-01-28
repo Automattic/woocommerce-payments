@@ -37,8 +37,8 @@ class Session_Rate_Limiter_Test extends WP_UnitTestCase {
 	/**
 	 * After-test cleanup
 	 */
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 		WC()->session->set( $this->key, [] );
 	}
 

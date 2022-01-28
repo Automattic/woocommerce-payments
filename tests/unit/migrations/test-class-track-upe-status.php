@@ -28,8 +28,8 @@ class Track_Upe_Status_Test extends WP_UnitTestCase {
 	/**
 	 * After-test cleanup
 	 */
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		Tracker::remove_admin_event( 'wcpay_upe_enabled' );
 		Tracker::remove_admin_event( 'wcpay_upe_disabled' );

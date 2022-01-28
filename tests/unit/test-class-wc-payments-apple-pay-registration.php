@@ -69,8 +69,8 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 		$this->initial_file_contents = file_get_contents( WCPAY_ABSPATH . '/' . $this->file_name ); // @codingStandardsIgnoreLine
 	}
 
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		$path     = untrailingslashit( ABSPATH );
 		$dir      = '.well-known';

@@ -49,11 +49,11 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
 		delete_transient( WC_Payments_Account::ON_BOARDING_DISABLED_TRANSIENT );
 		unset( $_GET );
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	public function test_maybe_redirect_to_onboarding_stripe_disconnected_redirects() {

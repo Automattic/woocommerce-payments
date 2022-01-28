@@ -127,8 +127,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			);
 	}
 
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
 	}

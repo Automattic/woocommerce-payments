@@ -107,7 +107,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->init_multi_currency();
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
@@ -122,7 +122,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		delete_option( self::ENABLED_CURRENCIES_OPTION );
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'no' );
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	public function test_available_currencies_uses_wc_currencies_when_no_stripe_account() {

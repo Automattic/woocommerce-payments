@@ -48,10 +48,10 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$this->payments_admin = new WC_Payments_Admin( $mock_api_client, $this->mock_gateway, $this->mock_account );
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		unset( $_GET );
 		set_current_screen( 'front' );
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	public function test_it_renders_settings_badge_if_upe_settings_preview_is_enabled_and_upe_is_not() {

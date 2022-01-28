@@ -64,8 +64,8 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 	/**
 	 * Post test cleanup
 	 */
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 		delete_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY );
 	}
 

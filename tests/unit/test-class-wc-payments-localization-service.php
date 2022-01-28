@@ -25,7 +25,7 @@ class WC_Payments_Localization_Service_Test extends WP_UnitTestCase {
 		$this->localization_service = new WC_Payments_Localization_Service();
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		wp_set_current_user( 0 );
 		remove_all_filters( 'locale' );
 		remove_all_filters( 'wcpay_eur_format' );

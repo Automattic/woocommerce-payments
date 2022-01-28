@@ -68,10 +68,10 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$this->frontend_currencies = new FrontendCurrencies( $this->mock_multi_currency, $this->mock_localization_service, $this->mock_utils, $this->mock_compatibility );
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		remove_all_filters( 'wcpay_multi_currency_currency_settings' );
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	/**

@@ -47,8 +47,8 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 		$property_reflection->setValue( $account_service, $this->mock_api_client );
 	}
 
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 

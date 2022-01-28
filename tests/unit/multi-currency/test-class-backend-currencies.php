@@ -45,11 +45,11 @@ class WCPay_Multi_Currency_Backend_Currencies_Tests extends WP_UnitTestCase {
 		$this->backend_currencies = new BackendCurrencies( $this->mock_multi_currency, $this->mock_localization_service );
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		remove_all_filters( 'wcpay_multi_currency_currency_settings' );
 		set_current_screen( 'front' );
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	/**
@@ -68,7 +68,7 @@ class WCPay_Multi_Currency_Backend_Currencies_Tests extends WP_UnitTestCase {
 	 */
 	public function test_doesnt_register_woocommerce_filter_on_frontend( $filter, $function_name ) {
 
-		$this->tearDown();
+		$this->tear_down();
 		$this->backend_currencies = new BackendCurrencies( $this->mock_multi_currency, $this->mock_localization_service );
 
 		$this->assertFalse(

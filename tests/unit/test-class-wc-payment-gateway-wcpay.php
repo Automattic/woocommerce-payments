@@ -124,8 +124,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	/**
 	 * Post-test teardown
 	 */
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
 		delete_option( WC_Payments_Account::ACCOUNT_OPTION );

@@ -57,9 +57,9 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Post-test teardown
 	 */
-	public function tearDown() {
+	public function tear_down() {
 		wp_set_current_user( $this->user_id );
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	/**
