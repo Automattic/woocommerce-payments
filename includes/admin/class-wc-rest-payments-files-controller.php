@@ -70,7 +70,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 			if ( is_wp_error( $file ) ) {
 				return $this->file_error_response( $file );
 			}
-			$purpose = $file->data['purpose'];
+			$purpose = $file->get_data()['purpose'];
 			set_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . $file_id, $purpose, WC_Payments_File_Service::CACHE_PERIOD );
 		}
 
