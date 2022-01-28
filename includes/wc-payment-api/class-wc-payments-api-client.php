@@ -1366,6 +1366,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Clone payment method.
+	 *
+	 * @param string $payment_method_id Payment method ID.
+	 * @param string $email             Billing email.
+	 *
+	 * @return array Payment method details.
+	 *
+	 * @throws API_Exception If payment method server request fails.
+	 */
+	public function clone_payment_method( $payment_method_id, $email ) {
+		return $this->request(
+			[
+				'payment_method' => $payment_method_id,
+				'email'          => $email,
+			],
+			self::PAYMENT_METHODS_API,
+			self::POST
+		);
+	}
+
+	/**
 	 * Records a new Terms of Service agreement.
 	 *
 	 * @param string $source     A string, which describes where the merchant agreed to the terms.
