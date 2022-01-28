@@ -108,6 +108,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - UPE payment methods - BECS Direct Debit.
 * Fix - Missing currency field in disputes export file.
 * Add - Implement Jetpack Identity Crisis / Safe Mode banner.
+* Add - Add a preview of uploaded logo and icon on terminal card reader receipt settings page.
 
 = 3.6.1 - 2022-01-27 =
 * Fix - Remove packages not compatible with PHP 7.0
