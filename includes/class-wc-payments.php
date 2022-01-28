@@ -212,6 +212,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-experimental-abtest.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
+		include_once __DIR__ . '/class-wc-payments-file-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
