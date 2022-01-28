@@ -99,8 +99,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
 
-		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'remove_upe_intent_cookies' ], 10, 0 );
-		add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_intent_cookies' ], 10, 0 );
+		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'remove_upe_payment_intent_cookie' ], 10, 0 );
+		add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_cookie' ], 10, 0 );
 
 		if ( ! is_admin() ) {
 			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
@@ -1137,13 +1137,19 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Removes any payment and setup intent cookies created for UPE.
+	 * Removes the payment intent cookie created for UPE.
 	 */
-	public function remove_upe_intent_cookies() {
+	public function remove_upe_payment_intent_cookie() {
 		if ( isset( $_COOKIE[ self::COOKIE_UPE_PAYMENT_INTENT ] ) ) {
 			unset( $_COOKIE[ self::COOKIE_UPE_PAYMENT_INTENT ] );
 			setcookie( self::COOKIE_UPE_PAYMENT_INTENT, '', time() - HOUR_IN_SECONDS, '/' );
 		}
+	}
+
+	/**
+	 * Removes the payment setup intent cookie created for UPE.
+	 */
+	public function remove_upe_setup_intent_cookie() {
 		if ( isset( $_COOKIE[ self::COOKIE_UPE_SETUP_INTENT ] ) ) {
 			unset( $_COOKIE[ self::COOKIE_UPE_SETUP_INTENT ] );
 			setcookie( self::COOKIE_UPE_SETUP_INTENT, '', time() - HOUR_IN_SECONDS, '/' );
