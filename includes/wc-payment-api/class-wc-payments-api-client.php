@@ -882,6 +882,18 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Retrieve a file content via API.
+	 *
+	 * @param string $file_id - API file id.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function get_file( string $file_id ) : array {
+		return $this->request( [], self::FILES_API . '/' . $file_id, self::GET );
+	}
+
+	/**
 	 * Create a connection token.
 	 *
 	 * @param WP_REST_Request $request request object received.

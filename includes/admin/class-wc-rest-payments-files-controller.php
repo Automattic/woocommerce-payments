@@ -61,18 +61,31 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_Error|WP_HTTP_Response
 	 */
 	public function get_file( WP_REST_Request $request ) {
-		$file_id = $request->get_param( 'file_id' );
-		$result  = $this->forward_request( 'get_file_contents', [ $file_id ] );
+		$file_id      = $request->get_param( 'file_id' );
+		$file_service = new WC_Payments_File_Service();
+		$purpose      = get_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . $file_id );
+
+		if ( ! $purpose ) {
+			$file = $this->forward_request( 'get_file', [ $file_id ] );
+			if ( is_wp_error( $file ) ) {
+				return $this->file_error_response( $file );
+			}
+			$purpose = $file->get_data()['purpose'];
+			set_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . $file_id, $purpose, WC_Payments_File_Service::CACHE_PERIOD );
+		}
+
+		if ( $file_service->file_need_access_permissions( $purpose ) && ! $this->check_permission() ) {
+			return new WP_Error(
+				'rest_forbidden',
+				__( 'Sorry, you are not allowed to do that.', 'woocommerce-payments' ),
+				[ 'status' => rest_authorization_required_code() ]
+			);
+		}
+
+		$result = $this->forward_request( 'get_file_contents', [ $file_id ] );
 
 		if ( is_wp_error( $result ) ) {
-			$error_status_code = 'resource_missing' === $result->get_error_code() ? WP_Http::NOT_FOUND : WP_Http::INTERNAL_SERVER_ERROR;
-			return rest_ensure_response(
-				new WP_Error(
-					$result->get_error_code(),
-					$result->get_error_message(),
-					[ 'status' => $error_status_code ]
-				)
-			);
+			return $this->file_error_response( $result );
 		}
 
 		/**
@@ -98,5 +111,21 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 			]
 		);
 
+	}
+
+	/**
+	 * Convert error response
+	 *
+	 * @param WP_Error $error  - error.
+	 *
+	 * @return WP_Error
+	 */
+	private function file_error_response( WP_Error $error ) : WP_Error {
+		$error_status_code = 'resource_missing' === $error->get_error_code() ? WP_Http::NOT_FOUND : WP_Http::INTERNAL_SERVER_ERROR;
+		return new WP_Error(
+			$error->get_error_code(),
+			$error->get_error_message(),
+			[ 'status' => $error_status_code ]
+		);
 	}
 }

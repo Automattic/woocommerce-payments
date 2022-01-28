@@ -212,6 +212,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-experimental-abtest.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
+		include_once __DIR__ . '/class-wc-payments-file-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -494,7 +495,7 @@ class WC_Payments {
 	 * @return string Modified where clause.
 	 */
 	public static function possibly_add_note_source_where_clause( $where_clauses, $args ) {
-		if ( ! empty( $args['source'] ) && ! str_contains( $where_clauses, 'AND source IN' ) ) {
+		if ( ! empty( $args['source'] ) && false === strpos( $where_clauses, 'AND source IN' ) ) {
 			$where_source_array = [];
 			foreach ( $args['source'] as $args_type ) {
 				$args_type            = trim( $args_type );
