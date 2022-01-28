@@ -27,8 +27,8 @@ class Session_Rate_Limiter_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->key          = Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY;
 		$this->rate_limiter = new Session_Rate_Limiter( $this->key, 2, 600 );

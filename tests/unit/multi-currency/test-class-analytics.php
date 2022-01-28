@@ -31,8 +31,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->set_is_admin( true );
 		$this->set_is_rest_request( true );

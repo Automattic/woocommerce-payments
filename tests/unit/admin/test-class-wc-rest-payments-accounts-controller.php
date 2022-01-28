@@ -29,8 +29,8 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 	 */
 	private $original_api_client;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );

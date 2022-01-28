@@ -46,8 +46,8 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// There are checks for is_admin() along with tests for test requests, this allows them to pass.
 		set_current_screen( 'admin' );

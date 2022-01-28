@@ -79,8 +79,8 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 	 */
 	private $mock_localization_service;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_currency_settings(
 			'GBP',

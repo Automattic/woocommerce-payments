@@ -36,8 +36,8 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 	 */
 	private $mock_receipts_service;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_wcpay_gateway    = $this->createMock( WC_Payment_Gateway_WCPay::class );

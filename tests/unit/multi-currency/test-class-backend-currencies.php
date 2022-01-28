@@ -33,8 +33,8 @@ class WCPay_Multi_Currency_Backend_Currencies_Tests extends WP_UnitTestCase {
 	 */
 	private $backend_currencies;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 		$this->mock_multi_currency       = $this->createMock( MultiCurrency::class );

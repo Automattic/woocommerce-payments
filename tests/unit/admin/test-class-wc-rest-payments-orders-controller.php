@@ -39,8 +39,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 	 */
 	private $mock_charge_id = 'ch_yyyyyyyyyyyyy';
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );

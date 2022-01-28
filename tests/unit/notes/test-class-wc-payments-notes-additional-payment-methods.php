@@ -9,8 +9,8 @@
  * Class WC_Payments_Notes_Additional_Payment_Methods tests.
  */
 class WC_Payments_Notes_Additional_Payment_Methods_Test extends WP_UnitTestCase {
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		wp_set_current_user( 1 );
 		update_option( '_wcpay_feature_upe_settings_preview', '1' );

@@ -33,8 +33,8 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->multi_currency_mock = $this
 			->getMockBuilder( WCPay\MultiCurrency\MultiCurrency::class )

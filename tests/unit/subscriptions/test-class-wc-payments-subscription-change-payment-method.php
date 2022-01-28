@@ -23,8 +23,8 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->change_payment_method_handler = new WC_Payments_Subscription_Change_Payment_Method_Handler();
 	}

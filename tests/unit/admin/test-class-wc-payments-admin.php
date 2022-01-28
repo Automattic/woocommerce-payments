@@ -27,7 +27,7 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 	 */
 	private $payments_admin;
 
-	public function setUp() {
+	public function set_up() {
 		global $menu, $submenu;
 
 		$menu    = null;

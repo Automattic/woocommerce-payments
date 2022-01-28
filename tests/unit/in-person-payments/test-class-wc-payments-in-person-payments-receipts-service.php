@@ -29,8 +29,8 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 		],
 	];
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 	}

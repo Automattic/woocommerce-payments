@@ -19,8 +19,8 @@ class Track_Upe_Status_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		delete_option( Track_Upe_Status::IS_TRACKED_OPTION );
 	}

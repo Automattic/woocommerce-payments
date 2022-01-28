@@ -32,8 +32,8 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// Set the request as if the user was in the Payments onboarding page so the "wp_redirect(); exit();" code doesn't run.
 		$_GET = [

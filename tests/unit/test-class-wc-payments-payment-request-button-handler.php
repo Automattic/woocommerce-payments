@@ -76,8 +76,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 	/**
 	 * Sets up things all tests need.
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 									->disableOriginalConstructor()
