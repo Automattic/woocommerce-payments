@@ -39,7 +39,7 @@
       "php-stubs/wordpress-stubs": "5.8.2",
       "php-stubs/woocommerce-stubs": "5.9.0",
       "rregeer/phpunit-coverage-check": "0.3.1",
-      "yoast/phpunit-polyfills": "1.0.1",
+      "yoast/phpunit-polyfills": "^1.0",
       "cweagans/composer-patches": "1.7.1"
     },
     "scripts": {
