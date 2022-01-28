@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f35a7da01a8771056d9563894eae56a2",
+    "content-hash": "458b2ba6749a5db106b237fd2d076f5b",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -52,16 +52,16 @@
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v1.17.0",
+            "version": "v1.17.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "91d88714171476dbfc75743dfc2c48d84eb14364"
+                "reference": "d4e2134acb8d7a397625cb90754fbae9c2c39e80"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/91d88714171476dbfc75743dfc2c48d84eb14364",
-                "reference": "91d88714171476dbfc75743dfc2c48d84eb14364",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/d4e2134acb8d7a397625cb90754fbae9c2c39e80",
+                "reference": "d4e2134acb8d7a397625cb90754fbae9c2c39e80",
                 "shasum": ""
             },
             "require": {
@@ -99,9 +99,9 @@
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.17.0"
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.17.1"
             },
-            "time": "2022-01-25T17:38:45+00:00"
+            "time": "2022-01-27T15:05:26+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
@@ -1868,9 +1868,6 @@
             },
             "require": {
                 "php": "^7.1 || ^8.0"
-            },
-            "replace": {
-                "myclabs/deep-copy": "self.version"
             },
             "require-dev": {
                 "doctrine/collections": "^1.0",

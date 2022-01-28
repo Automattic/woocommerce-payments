@@ -42,6 +42,9 @@
       "cweagans/composer-patches": "1.7.1"
     },
     "scripts": {
+      "post-install-cmd": [
+        "bin/phpunit-php8-compability.sh"
+      ],
       "test": [
         "phpunit"
       ],
@@ -64,11 +67,7 @@
         "check-abandoned"
       ],
       "composer-exit-on-patch-failure": true,
-      "patches": {
-        "phpunit/phpunit": {
-          "PHP 8.1 compatibility: globals": "tests/phpunit-patches/globals-usage-compatibility.diff"
-        }
-      }
+      "patches": {}
     },
     "autoload": {
       "psr-4": {
