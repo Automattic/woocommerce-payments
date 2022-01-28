@@ -345,11 +345,11 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	public function test_update_selected_currency_recalculates_cart() {
 		wp_set_current_user( self::LOGGED_IN_USER_ID );
 
-		$this->assertContains( '&#36;', WC()->cart->get_total() );
+		$this->assertStringContainsString( '&#36;', WC()->cart->get_total() );
 
 		$this->multi_currency->update_selected_currency( 'GBP' );
 
-		$this->assertContains( '&pound;', WC()->cart->get_total() );
+		$this->assertStringContainsString( '&pound;', WC()->cart->get_total() );
 		$this->assertNotContains( '&#36;', WC()->cart->get_total() );
 
 	}

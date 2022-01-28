@@ -850,7 +850,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			]
 		)[0];
 
-		$this->assertContains( 'authorized', $note->content );
+		$this->assertStringContainsString( 'authorized', $note->content );
 		$this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
 		$this->assertEquals( $charge_id, $result_order->get_meta( '_charge_id', true ) );
 		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
@@ -1056,7 +1056,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			]
 		)[0];
 
-		$this->assertContains( 'authorized', $note->content );
+		$this->assertStringContainsString( 'authorized', $note->content );
 		$this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
 		$this->assertEquals( $charge_id, $result_order->get_meta( '_charge_id', true ) );
 		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );

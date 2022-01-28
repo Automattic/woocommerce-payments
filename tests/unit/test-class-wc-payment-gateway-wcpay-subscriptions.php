@@ -290,8 +290,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$latest_wcpay_note = $notes[0];
 
 		$this->assertEquals( 'failed', $renewal_order->get_status() );
-		$this->assertContains( 'failed', $latest_wcpay_note->content );
-		$this->assertContains( wc_price( $renewal_order->get_total(), [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( 'failed', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( $renewal_order->get_total(), [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_subscription_payment_method_filter_bypass_other_payment_methods() {
