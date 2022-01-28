@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\Constraint\TraversableContains;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -191,7 +192,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents' ),
+				new TraversableContains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents' ),
 				wp_json_encode(
 					[
 						'test_mode'            => false,
@@ -457,7 +458,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345' ),
+				new TraversableContains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345' ),
 				wp_json_encode(
 					[
 						'test_mode'   => false,
@@ -557,7 +558,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/init' ),
+				new TraversableContains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/init' ),
 				wp_json_encode(
 					[
 						'test_mode'           => false,
@@ -620,7 +621,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts' ),
+				new TraversableContains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts' ),
 				wp_json_encode(
 					array_merge(
 						[ 'test_mode' => false ],
@@ -650,7 +651,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/login_links' ),
+				new TraversableContains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/login_links' ),
 				wp_json_encode(
 					[
 						'test_mode'    => false,
@@ -680,7 +681,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/tos_agreements' ),
+				new TraversableContains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/tos_agreements' ),
 				wp_json_encode(
 					[
 						'test_mode' => false,
@@ -768,7 +769,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		->expects( $this->once() )
 		->method( 'remote_request' )
 		->with(
-			$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id ),
+			new TraversableContains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id ),
 			wp_json_encode(
 				[
 					'test_mode'   => false,
@@ -858,7 +859,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		->expects( $this->once() )
 		->method( 'remote_request' )
 		->with(
-			$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id ),
+			new TraversableContains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id ),
 			wp_json_encode(
 				[
 					'test_mode'            => false,
