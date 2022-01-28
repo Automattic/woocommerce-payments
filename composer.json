@@ -64,7 +64,11 @@
         "check-abandoned"
       ],
       "composer-exit-on-patch-failure": true,
-      "patches": {}
+      "patches": {
+        "phpunit/phpunit": {
+          "PHP 8.1 compatibility: globals": "tests/phpunit-patches/globals-usage-compatibility.diff"
+        }
+      }
     },
     "autoload": {
       "psr-4": {
