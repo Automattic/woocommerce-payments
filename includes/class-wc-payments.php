@@ -822,20 +822,6 @@ class WC_Payments {
 	}
 
 	/**
-	 * Clones payment method to Stripe connected Account.
-	 *
-	 * @return void
-	 */
-	public static function ajax_clone_payment_method() {
-		if ( ! isset( $_POST['payment_method'], $_POST['email'] ) ) { // // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			return;
-		}
-
-		$response = self::$api_client->clone_payment_method( $_POST['payment_method'], $_POST['email'] ); // phpcs:ignore
-		wp_send_json( $response );
-	}
-
-	/**
 	 * Used to initialize platform checkout session.
 	 *
 	 * @return void

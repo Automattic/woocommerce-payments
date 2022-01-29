@@ -36,13 +36,11 @@ export default class WCPayAPI {
 	getStripe( forceAccountRequest = false ) {
 		const {
 			publishableKey,
-			// accountId,
+			accountId,
 			forceNetworkSavedCards,
 			locale,
 			isUPEEnabled,
 		} = this.options;
-
-		const accountId = '<PLATFORM_STRIPE_ACCOUNT_ID>';
 
 		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
 			if ( ! this.stripePlatform ) {
@@ -60,7 +58,6 @@ export default class WCPayAPI {
 				} );
 			} else {
 				this.stripe = new Stripe( publishableKey, {
-					stripeAccount: accountId,
 					locale,
 				} );
 			}
@@ -94,7 +91,7 @@ export default class WCPayAPI {
 	 */
 	generatePaymentMethodRequest( elements, preparedCustomerData = {} ) {
 		const stripe = this.getStripe();
-		const request = this.request;
+
 		return new ( class {
 			constructor() {
 				this.args = {
@@ -158,22 +155,12 @@ export default class WCPayAPI {
 			send() {
 				return stripe
 					.createPaymentMethod( this.args )
-					.then( ( response ) => {
-						if ( response.error ) {
-							throw response.error;
+					.then( ( paymentMethod ) => {
+						if ( paymentMethod.error ) {
+							throw paymentMethod.error;
 						}
 
-						return request(
-							'/?wc-ajax=wcpay_clone_payment_method',
-							{
-								payment_method: response.paymentMethod.id,
-								email: this.args.billing_details.email,
-								_wpnonce: getPaymentRequestData( 'nonce' )
-									?.checkout,
-							}
-						).then( ( paymentMethod ) => {
-							return paymentMethod;
-						} );
+						return paymentMethod;
 					} );
 			}
 		} )();

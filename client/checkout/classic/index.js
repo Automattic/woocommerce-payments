@@ -359,7 +359,7 @@ jQuery( function ( $ ) {
 
 		request
 			.send()
-			.then( ( paymentMethod ) => {
+			.then( ( { paymentMethod } ) => {
 				// Flag that the payment method has been successfully generated so that we can allow the form
 				// submission next time.
 				paymentMethodGenerated = true;
