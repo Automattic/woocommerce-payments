@@ -99,6 +99,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 3.7.0 - 2022-xx-xx =
+* Add - Link to customer in disputes list
 * Update - Bump minimum required version of WordPress from 5.6 to 5.7.
 * Update - Bump minimum required version of WooCommerce from 4.5 to 4.6.
 * Add - Add endpoint to retrieve a file content via API.
