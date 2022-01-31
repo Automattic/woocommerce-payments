@@ -778,7 +778,7 @@ class WC_Payments {
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
 			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-			add_filter( 'woocommerce_checkout_fields', [ __CLASS__, 'platform_checkout_remove_default_email_field' ] );
+			add_filter( 'woocommerce_checkout_fields', [ __CLASS__, 'platform_checkout_remove_default_email_field' ], 50 );
 			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
 		}
 	}
@@ -866,7 +866,7 @@ class WC_Payments {
 	public static function platform_checkout_fields_before_billing_details() {
 		$checkout = WC()->checkout;
 
-		echo '<div id="contact_details">';
+		echo '<div id="contact_details" class="col2-set">';
 		echo '<div class="col-1">';
 
 		echo '<h3>' . esc_html( __( 'Contact information', 'woocommerce-payments' ) ) . '</h3>';

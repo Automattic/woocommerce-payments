@@ -40,6 +40,16 @@
 	background-color: #fff;
 }
 
+/* stylelint-disable selector-id-pattern */
+#contact_details {
+	float: none;
+}
+
+#contact_details + #customer_details {
+	display: block;
+}
+/* stylelint-enable selector-id-pattern */
+
 .platform-checkout-billing-email {
 	.woocommerce-input-wrapper {
 		display: inline-block;
@@ -50,11 +60,5 @@
 			right: 10px;
 			width: 24px;
 		}
-	}
-}
-
-@media screen and ( min-width: 768px ) {
-	.platform-checkout-billing-email {
-		width: 52.9411764706%;
 	}
 }
