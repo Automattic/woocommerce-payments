@@ -40,6 +40,7 @@ export default class WCPayAPI {
 			forceNetworkSavedCards,
 			locale,
 			isUPEEnabled,
+			isPlatformCheckoutEnabled,
 		} = this.options;
 
 		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
@@ -57,9 +58,11 @@ export default class WCPayAPI {
 					locale,
 				} );
 			} else {
-				this.stripe = new Stripe( publishableKey, {
-					locale,
-				} );
+				const stripeOptions = isPlatformCheckoutEnabled
+					? { locale }
+					: { stripeAccount: accountId, locale };
+
+				this.stripe = new Stripe( publishableKey, stripeOptions );
 			}
 		}
 		return this.stripe;
