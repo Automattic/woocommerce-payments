@@ -48,10 +48,10 @@ describe( 'Overview page', () => {
 			},
 		};
 		getQuery.mockReturnValue( {} );
+		getTasks.mockReturnValue( [] );
 	} );
 
 	it( 'Skips rendering task list when there are no tasks', () => {
-		getTasks.mockReturnValue( [] );
 		const { container } = render( <OverviewPage /> );
 
 		expect(
@@ -65,7 +65,6 @@ describe( 'Overview page', () => {
 			featureFlags: {},
 		};
 
-		getTasks.mockReturnValue( [] );
 		const { container } = render( <OverviewPage /> );
 
 		expect(
@@ -75,7 +74,6 @@ describe( 'Overview page', () => {
 
 	it( 'Displays the login error for query param wcpay-login-error=1', () => {
 		getQuery.mockReturnValue( { 'wcpay-login-error': '1' } );
-		getTasks.mockReturnValue( [] );
 
 		const { container } = render( <OverviewPage /> );
 
@@ -88,7 +86,6 @@ describe( 'Overview page', () => {
 
 	it( 'Displays the success message for query param wcpay-connection-success=1', () => {
 		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
-		getTasks.mockReturnValue( [] );
 
 		const { container } = render( <OverviewPage /> );
 
@@ -96,6 +93,19 @@ describe( 'Overview page', () => {
 			container.querySelector(
 				'.wcpay-connection-success.components-notice.is-success'
 			)
+		).toBeVisible();
+	} );
+
+	it( 'Displays the notice for Jetpack Identity Crisis', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			isJetpackIdcActive: 1,
+		};
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector( '.wcpay-jetpack-idc-notice' )
 		).toBeVisible();
 	} );
 } );

@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -361,6 +363,7 @@ class WC_Payments_Admin {
 			'zeroDecimalCurrencies'   => WC_Payments_Utils::zero_decimal_currencies(),
 			'fraudServices'           => $this->account->get_fraud_services_config(),
 			'isJetpackConnected'      => $this->payments_api_client->is_server_connected(),
+			'isJetpackIdcActive'      => Jetpack_Identity_Crisis::has_identity_crisis(),
 			'accountStatus'           => $this->account->get_account_status_data(),
 			'accountFees'             => $this->account->get_fees(),
 			'accountEmail'            => $this->account->get_account_email(),

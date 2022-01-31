@@ -6,6 +6,7 @@ declare const wcpaySettings: {
 	};
 	fraudServices: unknown[];
 	isJetpackConnected: boolean;
+	isJetpackIdcActive: boolean;
 	accountStatus: {
 		error?: boolean;
 		status?: string;
