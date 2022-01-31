@@ -824,6 +824,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
+			UPE_Payment_Gateway::remove_upe_payment_intent_cookie();
+
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
@@ -888,6 +890,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 				$order->add_order_note( $note );
 			}
+
+			UPE_Payment_Gateway::remove_upe_payment_intent_cookie();
 
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
