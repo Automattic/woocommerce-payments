@@ -47,7 +47,7 @@ export const filters: [ DisputesFilterType, DisputesFilterType ] = [
 			'date_after',
 			'date_between',
 		],
-		showFilters: () => false,
+		showFilters: () => true,
 		filters: [
 			{
 				label: __( 'All currencies', 'woocommerce-payments' ),
