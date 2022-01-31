@@ -882,7 +882,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Retrieve a file content via API.
+	 * Retrieve a file details via API.
 	 *
 	 * @param string $file_id - API file id.
 	 *

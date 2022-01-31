@@ -29,12 +29,12 @@ class WC_Payments_File_Service {
 	 *
 	 * @return bool
 	 */
-	public function file_need_access_permissions( string $purpose ) : bool {
+	public function is_file_public( string $purpose ) : bool {
 		if ( in_array( $purpose, static::FILE_PURPOSE_NO_PERMISSIONS, true ) ) {
-			return false;
+			return true;
 		}
 
-		return true;
+		return false;
 	}
 
 }

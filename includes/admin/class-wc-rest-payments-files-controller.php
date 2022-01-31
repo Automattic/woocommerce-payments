@@ -74,7 +74,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 			set_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . $file_id, $purpose, WC_Payments_File_Service::CACHE_PERIOD );
 		}
 
-		if ( $file_service->file_need_access_permissions( $purpose ) && ! $this->check_permission() ) {
+		if ( ! $file_service->is_file_public( $purpose ) && ! $this->check_permission() ) {
 			return new WP_Error(
 				'rest_forbidden',
 				__( 'Sorry, you are not allowed to do that.', 'woocommerce-payments' ),
