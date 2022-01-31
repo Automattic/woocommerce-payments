@@ -32,14 +32,13 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_completed( $order, $intent_id, $intent_status, $charge_id ) {
-
-		if ( ! $this->order_prepared_for_processing( $order, $intent_id, $intent_status ) ) {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
-		$this->update_order_status( $order, $intent_id, 'payment_complete' );
+		$this->update_order_status( $order, 'payment_complete', $intent_id );
 		$this->add_success_note( $order, $intent_id, $charge_id );
-		$this->complete_order_processing( $order, $intent_id, $intent_status );
+		$this->complete_order_processing( $order, $intent_status );
 	}
 
 	/**
@@ -54,16 +53,15 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $message = '' ) {
-
 		if ( ! $this->order_prepared_for_processing( $order, $intent_id )
 			|| $order->has_status( [ 'failed' ] )
 			|| 'failed' === $order->get_meta( '_intention_status' ) ) {
 			return;
 		}
 
-		$this->update_order_status( $order, $intent_id, 'failed' );
+		$this->update_order_status( $order, 'failed' );
 		$this->add_failure_note( $order, $intent_id, $charge_id, $message );
-		$this->complete_order_processing( $order, $intent_id, $intent_status );
+		$this->complete_order_processing( $order, $intent_status );
 	}
 
 	/**
@@ -77,16 +75,15 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_on_hold( $order, $intent_id, $intent_status, $charge_id ) {
-
 		if ( ! $this->order_prepared_for_processing( $order, $intent_id )
 			|| $order->has_status( [ 'on-hold' ] )
 			|| 'requires_capture' === $order->get_meta( '_intention_status' ) ) {
 			return;
 		}
 
-		$this->update_order_status( $order, $intent_id, 'on-hold' );
+		$this->update_order_status( $order, 'on-hold' );
 		$this->add_on_hold_note( $order, $intent_id, $charge_id );
-		$this->complete_order_processing( $order, $intent_id, $intent_status );
+		$this->complete_order_processing( $order, $intent_status );
 	}
 
 	/**
@@ -100,7 +97,6 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_pending( $order, $intent_id, $intent_status, $charge_id ) {
-
 		if ( ! $this->order_prepared_for_processing( $order, $intent_id )
 			|| ! $order->has_status( [ 'pending' ] )
 			|| 'requires_action' === $order->get_meta( '_intention_status' ) ) {
@@ -108,7 +104,7 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->add_pending_note( $order, $intent_id, $charge_id );
-		$this->complete_order_processing( $order, $intent_id, $intent_status );
+		$this->complete_order_processing( $order, $intent_status );
 	}
 
 	/**
@@ -122,14 +118,13 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_capture_completed( $order, $intent_id, $intent_status, $charge_id ) {
-
 		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
-		$this->update_order_status( $order, $intent_id, 'payment_complete' );
+		$this->update_order_status( $order, 'payment_complete', $intent_id );
 		$this->add_capture_success_note( $order, $intent_id, $charge_id );
-		$this->complete_order_processing( $order, $intent_id, $intent_status );
+		$this->complete_order_processing( $order, $intent_status );
 	}
 
 	/**
@@ -144,17 +139,16 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_capture_failed( $order, $intent_id, $intent_status, $charge_id, $message = '' ) {
-
 		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
 		$this->add_capture_failed_note( $order, $intent_id, $charge_id, $message );
-		$this->complete_order_processing( $order, $intent_id, $intent_status );
+		$this->complete_order_processing( $order, $intent_status );
 	}
 
 	/**
-	 * Updates an order to canceled status, while adding a note with a link to the transaction.
+	 * Updates an order to cancelled status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
 	 * @param string   $intent_id     The ID of the intent associated with this order.
@@ -163,19 +157,108 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	public function mark_payment_expired( $order, $intent_id, $intent_status, $charge_id ) {
-
+	public function mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id ) {
 		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
-		$this->update_order_status( $order, $intent_id, 'cancelled' );
-		$this->add_expired_note( $order, $intent_id, $charge_id );
-		$this->complete_order_processing( $order, $intent_id, $intent_status );
+		$this->update_order_status( $order, 'cancelled' );
+		$this->add_capture_expired_note( $order, $intent_id, $charge_id );
+		$this->complete_order_processing( $order, $intent_status );
 	}
 
 	/**
-	 * Adds the success order note, if needed, and additional message, if included.
+	 * Updates an order to cancelled status, while adding a note with a link to the transaction.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param string   $intent_id     The ID of the intent associated with this order.
+	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param string   $charge_id     The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	public function mark_payment_capture_cancelled( $order, $intent_id, $intent_status, $charge_id ) {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		$this->update_order_status( $order, 'cancelled' );
+		$this->add_capture_cancelled_note( $order, $intent_id, $charge_id );
+		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Updates the order to on-hold status and adds a note about the dispute.
+	 *
+	 * @param WC_Order $order      Order object.
+	 * @param string   $dispute_id The ID of the dispute associated with this order.
+	 * @param string   $reason     The reason for the dispute.
+	 *
+	 * @return void
+	 */
+	public function mark_payment_dispute_created( $order, $dispute_id, $reason ) {
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return;
+		}
+
+		$this->update_order_status( $order, 'on-hold' );
+		$this->add_dispute_created_note( $order, $dispute_id, $reason );
+		$this->complete_order_processing( $order );
+	}
+
+	/**
+	 * Updates the order status based on dispute status and adds a note about the dispute.
+	 *
+	 * @param WC_Order $order      Order object.
+	 * @param string   $dispute_id The ID of the dispute associated with this order.
+	 * @param string   $status     The status of the dispute.
+	 *
+	 * @return void
+	 */
+	public function mark_payment_dispute_closed( $order, $dispute_id, $status ) {
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return;
+		}
+
+		if ( 'lost' === $status ) {
+			wc_create_refund(
+				[
+					'amount'     => $order->get_total(),
+					'reason'     => __( 'Dispute lost.', 'woocommerce-payments' ),
+					'order_id'   => $order->get_id(),
+					'line_items' => $order->get_items(),
+				]
+			);
+		} else {
+			$this->update_order_status( $order, 'completed' );
+		}
+
+		$this->add_dispute_closed_note( $order, $dispute_id, $status );
+		$this->complete_order_processing( $order );
+	}
+
+	/**
+	 * Updates a terminal order to completed status, while adding a note with a link to the transaction.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param string   $intent_id     The ID of the intent associated with this order.
+	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param string   $charge_id     The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status, $charge_id ) {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		$this->update_order_status( $order, 'completed', $intent_id );
+		$this->add_terminal_complete_note( $order, $intent_id, $charge_id );
+		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Adds the success order note, if needed.
 	 *
 	 * @param WC_Order $order     Order object.
 	 * @param string   $intent_id The ID of the intent associated with this order.
@@ -240,7 +323,7 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Adds the on-hold order note and additional message, if included.
+	 * Adds the on-hold order note.
 	 *
 	 * @param WC_Order $order     Order object.
 	 * @param string   $intent_id The ID of the intent associated with this order.
@@ -267,7 +350,7 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Adds the pending order note and additional message, if included.
+	 * Adds the pending order note.
 	 *
 	 * @param WC_Order $order     Order object.
 	 * @param string   $intent_id The ID of the intent associated with this order.
@@ -293,7 +376,7 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Adds the successful capture order note, if needed, and additional message, if included.
+	 * Adds the successful capture order note, if needed.
 	 *
 	 * @param WC_Order $order     Order object.
 	 * @param string   $intent_id The ID of the intent associated with this order.
@@ -352,7 +435,7 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Adds the expired order note and additional message, if included.
+	 * Adds the expired order note.
 	 *
 	 * @param WC_Order $order     Order object.
 	 * @param string   $intent_id The ID of the intent associated with this order.
@@ -360,7 +443,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	private function add_expired_note( $order, $intent_id, $charge_id ) {
+	private function add_capture_expired_note( $order, $intent_id, $charge_id ) {
 		$transaction_url = $this->compose_transaction_url( $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
@@ -378,9 +461,102 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Adds the cancelled order note.
+	 *
+	 * @param WC_Order $order     Order object.
+	 *
+	 * @return void
+	 */
+	private function add_capture_cancelled_note( $order ) {
+		$note = WC_Payments_Utils::esc_interpolated_html(
+			__( 'Payment authorization was successfully <strong>cancelled</strong>.', 'woocommerce-payments' ),
+			[ 'strong' => '<strong>' ]
+		);
+
+		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Adds the dispute created order note.
+	 *
+	 * @param WC_Order $order      Order object.
+	 * @param string   $dispute_id The ID of the dispute associated with this order.
+	 * @param string   $reason     The reason for the dispute.
+	 *
+	 * @return void
+	 */
+	private function add_dispute_created_note( $order, $dispute_id, $reason ) {
+		$dispute_url = $this->compose_dispute_url( $dispute_id );
+		$note        = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the dispute reason */
+				__( 'Payment has been disputed as %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
+				[
+					'a' => '<a href="' . $dispute_url . '" target="_blank" rel="noopener noreferrer">',
+				]
+			),
+			$reason
+		);
+
+		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Adds the dispute closed order note.
+	 *
+	 * @param WC_Order $order      Order object.
+	 * @param string   $dispute_id The ID of the dispute associated with this order.
+	 * @param string   $status     The status of the dispute.
+	 *
+	 * @return void
+	 */
+	private function add_dispute_closed_note( $order, $dispute_id, $status ) {
+		$dispute_url = $this->compose_dispute_url( $dispute_id );
+		$note        = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the dispute status */
+				__( 'Payment dispute has been closed with status %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
+				[
+					'a' => '<a href="' . $dispute_url . '" target="_blank" rel="noopener noreferrer">',
+				]
+			),
+			$status
+		);
+
+		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Adds the terminal complete note.
+	 *
+	 * @param WC_Order $order     Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	private function add_terminal_complete_note( $order, $intent_id, $charge_id ) {
+		$transaction_url = $this->compose_transaction_url( $charge_id );
+		$note            = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce In-Person Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$this->get_order_amount( $order ),
+			$charge_id
+		);
+
+		$order->add_order_note( $note );
+	}
+
+	/**
 	 * Composes url for transaction details page.
 	 *
-	 * @param  string $charge_id Charge id.
+	 * @param string $charge_id Charge id.
 	 *
 	 * @return string Transaction details page url.
 	 */
@@ -394,6 +570,24 @@ class WC_Payments_Order_Service {
 				'page' => 'wc-admin',
 				'path' => '/payments/transactions/details',
 				'id'   => $charge_id,
+			],
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
+	 * Composes url for dispute details page.
+	 *
+	 * @param string $dispute_id Dispute id.
+	 *
+	 * @return string Dispute details page url.
+	 */
+	private function compose_dispute_url( $dispute_id ) {
+		return add_query_arg(
+			[
+				'page' => 'wc-admin',
+				'path' => '/payments/disputes/details',
+				'id'   => $dispute_id,
 			],
 			admin_url( 'admin.php' )
 		);
@@ -459,17 +653,20 @@ class WC_Payments_Order_Service {
 			return false;
 		}
 
-		// Read the latest order properties from the database to avoid race conditions when the paid webhook was handled during this request.
-		$order->get_data_store()->read( $order );
+		// Read the latest order properties from the database to avoid race conditions if webhook was handled during this request.
+		$clone_order = clone $order;
+		$clone_order->get_data_store()->read( $clone_order );
 
 		// Check if the order is already complete.
 		if ( function_exists( 'wc_get_is_paid_statuses' ) ) {
-			if ( $order->has_status( wc_get_is_paid_statuses() ) ) {
+			if ( $order->has_status( wc_get_is_paid_statuses() )
+				|| $clone_order->has_status( wc_get_is_paid_statuses() ) ) {
 				return false;
 			}
 		}
 
-		if ( $this->is_order_locked( $order, $intent_id ) ) {
+		if ( $this->is_order_locked( $order, $intent_id )
+			|| $this->is_order_locked( $clone_order, $intent_id ) ) {
 			return false;
 		}
 
@@ -483,12 +680,11 @@ class WC_Payments_Order_Service {
 	 * Completes order processing by updating the intent meta, unlocking the order, and saving the order.
 	 *
 	 * @param WC_Order    $order         Order object.
-	 * @param string      $intent_id     The ID of the intent associated with this order.
 	 * @param string|null $intent_status The status of the intent related to this order.
 	 *
 	 * @return void
 	 */
-	private function complete_order_processing( $order, $intent_id, $intent_status ) {
+	private function complete_order_processing( $order, $intent_status = null ) {
 		if ( ! empty( $intent_status ) ) {
 			$order->update_meta_data( '_intention_status', $intent_status );
 		}
@@ -510,15 +706,20 @@ class WC_Payments_Order_Service {
 	/**
 	 * Updates the order status and catches any exceptions so that processing can continue.
 	 *
-	 * @param WC_Order $order        Order object.
-	 * @param string   $intent_id    The ID of the intent associated with this order.
-	 * @param string   $order_status The status to change the order to.
+	 * @param WC_Order    $order        Order object.
+	 * @param string      $order_status The status to change the order to.
+	 * @param null|string $intent_id    The ID of the intent associated with this order.
+	 *
+	 * @throws Exception Throws exception if intent id is not included if order needs to be marked as paid.
 	 *
 	 * @return void
 	 */
-	private function update_order_status( $order, $intent_id, $order_status ) {
+	private function update_order_status( $order, $order_status, $intent_id = '' ) {
 		try {
 			if ( 'payment_complete' === $order_status ) {
+				if ( empty( $intent_id ) ) {
+					throw new Exception( __( 'Intent id was not included for payment complete status change.', 'woocommerce-payments' ) );
+				}
 				$order->payment_complete( $intent_id );
 			} else {
 				$order->update_status( $order_status );

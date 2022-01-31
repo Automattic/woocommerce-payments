@@ -837,6 +837,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
+			/**
+			 * TODO: Determine how to do this update with Order_Service.
+			 * It seems that the status only needs to change in certain instances, and within those instances the intent
+			 * information is not added to the order, as shown by tests.
+			 */
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
 				$order->update_status( 'failed' );
 			}
@@ -1067,7 +1072,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( 'requires_action' === $status && $payment_information->is_merchant_initiated() ) {
 				// Allow 3rd-party to trigger some action if needed.
 				do_action( 'woocommerce_woocommerce_payments_payment_requires_action', $order, $intent_id, $payment_method, $customer_id, $charge_id, $currency );
-				$order->update_status( 'failed' );
+				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, '' );
 			}
 		} else {
 			// For $0 orders, we need to save the payment method using a setup intent.
@@ -1283,6 +1288,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				break;
 			case 'requires_action':
 				$this->order_service->mark_payment_pending( $order, $intent_id, $intent_status, $charge_id );
+				break;
+			default:
+				Logger::error( 'Uncaught payment intent status of ' . $intent_status . ' passed for order id: ' . $order->get_id() );
 				break;
 		}
 	}
@@ -1898,7 +1906,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( 'succeeded' === $status ) {
 			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $status, $intent->get_charge_id() );
 		} elseif ( $is_authorization_expired ) {
-			$this->order_service->mark_payment_expired( $order, $intent_id, $intent->get_status(), $intent->get_charge_id() );
+			$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent->get_status(), $intent->get_charge_id() );
 		} else {
 			if ( ! empty( $error_message ) ) {
 				$error_message = esc_html( $error_message );
@@ -1945,17 +1953,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
-		$order->update_meta_data( '_intention_status', $status );
-		$order->save();
-
 		if ( 'canceled' === $status ) {
-			$order->update_status(
-				'cancelled',
-				WC_Payments_Utils::esc_interpolated_html(
-					__( 'Payment authorization was successfully <strong>cancelled</strong>.', 'woocommerce-payments' ),
-					[ 'strong' => '<strong>' ]
-				)
-			);
+			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status, $intent->get_charge_id() );
+			return;
 		} elseif ( ! empty( $error_message ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
@@ -1980,6 +1980,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				)
 			);
 		}
+
+		$order->update_meta_data( '_intention_status', $status );
+		$order->save();
 	}
 
 	/**

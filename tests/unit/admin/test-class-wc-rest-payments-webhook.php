@@ -612,7 +612,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$mock_order = $this->createMock( WC_Order::class );
 
 		$mock_order
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
 			->with( [ 'processing', 'completed' ] )
 			->willReturn( false );
@@ -743,9 +743,10 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			);
 
 		$mock_order
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
 			->withConsecutive(
+				[ [ 'processing', 'completed' ] ],
 				[ [ 'processing', 'completed' ] ],
 				[ [ 'failed' ] ]
 			)

@@ -636,7 +636,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
 			/* translators: localized exception message */
-			$order->update_status( 'failed', sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() ) );
+			$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
+			$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
@@ -1040,8 +1041,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			// Get charge data from WCPay Server.
-			$get_charge_data = $this->payments_api_client->get_charge( $charge_id );
-			$order_id        = $get_charge_data['metadata']['order_id'];
+			$charge_data = $this->payments_api_client->get_charge( $charge_id );
+			$order_id    = $charge_data['metadata']['order_id'];
 
 			// Validate Order ID and proceed with logging errors and updating order status.
 			$order = wc_get_order( $order_id );
@@ -1049,30 +1050,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				throw new Exception( 'Order not found. Unable to log error.' );
 			}
 
-			$order_amount  = WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order );
-			$error_message = esc_html( rtrim( $get_charge_data['failure_message'], '.' ) );
+			$intent_id     = $charge_data['payment_intent'] ?? $order->get_meta( '_intent_id' );
+			$intent        = $this->payments_api_client->get_intent( $intent_id );
+			$intent_status = $intent->get_status();
+			$error_message = esc_html( rtrim( $charge_data['failure_message'], '.' ) );
 
-			$order_note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the failed payment amount, %2: error message  */
-					__(
-						'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-						'woocommerce-payments'
-					),
-					[
-						'strong' => '<strong>',
-						'code'   => '<code>',
-					]
-				),
-				$order_amount,
-				$error_message
-			);
-
-			// Set order as failed and add the order note.
-			if ( 'failed' !== $order->get_status() ) {
-				$order->update_status( 'failed' );
-			}
-			$order->add_order_note( $order_note );
+			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $error_message );
 
 			wp_send_json_success();
 		} catch ( Exception $e ) {

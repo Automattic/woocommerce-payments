@@ -273,7 +273,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		$intent_status = $intent->get_status();
 
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
-		$this->order_service->mark_payment_expired( $order, $intent_id, $intent_status, $charge_id );
+		$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id );
 	}
 
 	/**
@@ -364,18 +364,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
-		$note = sprintf(
-			/* translators: %1: the dispute reason, %2: the dispute details URL */
-			__( 'Payment has been disputed as %1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
-			$reason,
-			add_query_arg(
-				[ 'id' => $dispute_id ],
-				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
-			)
-		);
-
-		$order->add_order_note( $note );
-		$order->update_status( 'on-hold' );
+		$this->order_service->mark_payment_dispute_created( $order, $dispute_id, $reason );
 	}
 
 	/**
@@ -404,30 +393,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
-		$note = sprintf(
-			/* translators: %1: the dispute status, %2: the dispute details URL */
-			__( 'Payment dispute has been closed with status %1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
-			$status,
-			add_query_arg(
-				[ 'id' => $dispute_id ],
-				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
-			)
-		);
-
-		$order->add_order_note( $note );
-
-		if ( 'lost' === $status ) {
-			wc_create_refund(
-				[
-					'amount'     => $order->get_total(),
-					'reason'     => __( 'dispute lost', 'woocommerce-payments' ),
-					'order_id'   => $order->get_id(),
-					'line_items' => $order->get_items(),
-				]
-			);
-		} else {
-			$order->update_status( 'completed' );
-		}
+		$this->order_service->mark_payment_dispute_closed( $order, $dispute_id, $status );
 	}
 
 	/**
