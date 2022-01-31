@@ -43,7 +43,10 @@ export default class WCPayAPI {
 			isPlatformCheckoutEnabled,
 		} = this.options;
 
-		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
+		if (
+			( isPlatformCheckoutEnabled && ! isUPEEnabled ) ||
+			( forceNetworkSavedCards && ! forceAccountRequest )
+		) {
 			if ( ! this.stripePlatform ) {
 				this.stripePlatform = new Stripe( publishableKey, { locale } );
 			}
@@ -58,11 +61,10 @@ export default class WCPayAPI {
 					locale,
 				} );
 			} else {
-				const stripeOptions = isPlatformCheckoutEnabled
-					? { locale }
-					: { stripeAccount: accountId, locale };
-
-				this.stripe = new Stripe( publishableKey, stripeOptions );
+				this.stripe = new Stripe( publishableKey, {
+					stripeAccount: accountId,
+					locale,
+				} );
 			}
 		}
 		return this.stripe;
