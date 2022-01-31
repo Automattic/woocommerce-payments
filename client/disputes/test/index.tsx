@@ -88,6 +88,27 @@ const mockDisputes = [
 		created: '2019-10-30 09:14:33',
 		due_by: '2019-11-06 23:00:59',
 	} as CachedDispute,
+	{
+		wcpay_disputes_cache_id: 6,
+		stripe_account_id: 'acct_test',
+		dispute_id: 'dp_rstyuoi',
+		charge_id: 'ch_mock',
+		amount: 2000,
+		currency: 'usd',
+		reason: 'general' as DisputeReason,
+		source: 'visa',
+		order_number: 1,
+		customer_name: 'Mock customer',
+		customer_email: 'mock@customer.net',
+		customer_country: 'US',
+		status: 'needs_response' as DisputeStatus,
+		created: '2019-11-01 23:59:59',
+		due_by: '2019-11-08 02:46:00',
+		order: {
+			number: '3',
+			url: 'http://test.local/order/3',
+		},
+	} as CachedDispute,
 ];
 
 describe( 'Disputes list', () => {
