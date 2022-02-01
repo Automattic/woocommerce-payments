@@ -944,12 +944,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$result = $this->wcpay_gateway->capture_charge( $order );
 
-		$note = wc_get_order_notes(
+		$notes             = wc_get_order_notes(
 			[
 				'order_id' => $order->get_id(),
 				'limit'    => 1,
 			]
-		)[0];
+		);
+		$latest_wcpay_note = $notes[0];
 
 		$note_currency = WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order );
 
@@ -963,8 +964,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$result
 		);
-		$this->assertContains( 'successfully captured', $note->content );
-		$this->assertContains( $note_currency, $note->content );
+		$this->assertContains( 'successfully captured', $latest_wcpay_note->content );
+		$this->assertContains( $note_currency, $latest_wcpay_note->content );
 		$this->assertEquals( 'succeeded', $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( 'processing', $order->get_status() );
 	}

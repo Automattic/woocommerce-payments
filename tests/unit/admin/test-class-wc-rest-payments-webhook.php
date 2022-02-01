@@ -566,6 +566,16 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$mock_order = $this->createMock( WC_Order::class );
 
+		$mock_order
+		->expects( $this->exactly( 2 ) )
+		->method( 'has_status' )
+		->with( [ 'processing', 'completed' ] )
+		->willReturn( false );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
 		$this->mock_db_wrapper
 			->expects( $this->once() )
 			->method( 'order_from_intent_id' )

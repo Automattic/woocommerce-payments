@@ -49,14 +49,6 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Post-test teardown
-	 */
-	public function tearDown() {
-		delete_transient( 'wcpay_processing_intent_' . $this->order->get_id() );
-		parent::tearDown();
-	}
-
-	/**
 	 * Private method of `order_prepared_for_processing` stops processing if order passed isn't an order.
 	 */
 	public function test_order_status_not_updated_if_order_is_invalid() {
@@ -64,7 +56,7 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order complete. Get updated notes.
-		$this->order_service->mark_payment_completed( 'string', $this->intent_id, 'succeeded', $this->charge_id );
+		$this->order_service->mark_payment_completed( 'fake_order', $this->intent_id, 'succeeded', $this->charge_id );
 
 		// Assert: Check to make sure the intent/transaction id and intent_status meta were not set.
 		$this->assertEquals( '', $this->order->get_transaction_id() );

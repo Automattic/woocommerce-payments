@@ -2120,7 +2120,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$status    = $intent->get_status();
 				$charge_id = $intent->get_charge_id();
 
-				$this->attach_exchange_info_to_order( $order, $intent->get_charge_id() );
+				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->attach_intent_info_to_order( $order, $intent_id, $status, $intent->get_payment_method_id(), $intent->get_customer_id(), $charge_id, $intent->get_currency() );
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
