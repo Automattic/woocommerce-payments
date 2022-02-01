@@ -1095,8 +1095,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 			$order->add_order_note( $order_note );
 
+			self::remove_upe_payment_intent_cookie();
+
 			wp_send_json_success();
 		} catch ( Exception $e ) {
+			self::remove_upe_payment_intent_cookie();
+
 			wp_send_json_error(
 				[
 					'error' => [
