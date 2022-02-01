@@ -1,7 +1,7 @@
 === WooCommerce Payments ===
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
-Requires at least: 5.6
+Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.0
 Stable tag: 3.6.1
@@ -38,8 +38,8 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* WordPress 5.6 or newer.
-* WooCommerce 5.8 or newer.
+* WordPress 5.7 or newer.
+* WooCommerce 5.9 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -99,11 +99,15 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 3.7.0 - 2022-xx-xx =
+* Add - Link to customer in disputes list
+* Update - Bump minimum required version of WordPress from 5.6 to 5.7.
+* Update - Bump minimum required version of WooCommerce from 4.5 to 4.6.
 * Add - Introduce sorting on disputes page.
 * Fix - Currency name not translated the Overview card title.
 * Add - Introduce advance filters on disputes page.
 * Add - UPE payment methods - BECS Direct Debit.
 * Fix - Missing currency field in disputes export file.
+* Add - Implement Jetpack Identity Crisis / Safe Mode banner.
 
 = 3.6.1 - 2022-01-27 =
 * Fix - Remove packages not compatible with PHP 7.0
