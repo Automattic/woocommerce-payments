@@ -134,6 +134,10 @@ describe( 'Disputes filters', () => {
 	} );
 
 	describe( 'when filtering by currency', () => {
+		test( 'by default, no currency filter is applied', () => {
+			expect( getQuery().store_currency_is ).toEqual( undefined );
+		} );
+
 		test.each( [ 'usd', 'eur' ] )( 'should filter by %s', ( currency ) => {
 			addCurrencyFilter( formatCurrencyName( currency ) );
 
