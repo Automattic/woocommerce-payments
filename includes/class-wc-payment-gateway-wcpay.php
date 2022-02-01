@@ -619,6 +619,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'isUPEEnabled'              => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'       => $this->is_saved_cards_enabled(),
 			'isPlatformCheckoutEnabled' => WC_Payments_Features::is_platform_checkout_enabled(),
+			'platformCheckoutHost'      => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
 		];
 	}
 

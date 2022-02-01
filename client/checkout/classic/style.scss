@@ -60,5 +60,57 @@
 			right: 10px;
 			width: 24px;
 		}
+		.platform-checkout-sms-otp-iframe {
+			width: 100%;
+			height: 100vh;
+			position: fixed;
+			top: 0;
+			left: 0;
+			z-index: 355000;
+			border: 0;
+		}
+	}
+}
+
+@media screen and ( min-width: 768px ) {
+	.platform-checkout-billing-email {
+		width: 52.9411764706%;
+		.woocommerce-input-wrapper {
+			.platform-checkout-sms-otp-iframe-wrapper{
+				.platform-checkout-sms-otp-iframe {
+					width: 250px;
+					height: 500px;
+					position: absolute;
+					left: calc(100% + 10px);
+					top: -250px;
+				}
+				&::before {
+					position: fixed;
+					background: #000;
+					opacity: 50%;
+					top: 0;
+					left: 0;
+					width: 100vw;
+					height: 100vh;
+					content:" ";
+					display:block;
+					z-index: 555;
+				}
+				&::after{
+					content: "";
+					position: absolute;
+					left: 100%;
+					top: 0;
+					background: transparent;
+					width: 0;
+					height: 0;
+					z-index: 5555;
+					border-top: 10px solid transparent;
+					border-bottom: 10px solid transparent;
+					border-right: 10px solid #fff;
+				}
+			}
+
+		}
 	}
 }
