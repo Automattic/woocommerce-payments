@@ -531,7 +531,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WP_UnitTestCas
 			'display' => '',
 		];
 
-		$this->mock_multi_currency->method( 'get_price' )->with( 10, 'product' )->willReturn( 10 );
+		$this->mock_multi_currency->method( 'get_price' )->with( 10.00, 'product' )->willReturn( 10.00 );
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
 	}
 }
