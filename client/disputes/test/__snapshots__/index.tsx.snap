@@ -460,10 +460,8 @@ exports[`Disputes list renders correctly 1`] = `
                   class="woocommerce-table__item is-left-aligned"
                 >
                   <a
-                    class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-                    tabindex="-1"
+                    href="https://shop.local"
                   >
                     Mock customer
                   </a>
@@ -610,6 +608,131 @@ exports[`Disputes list renders correctly 1`] = `
                     tabindex="-1"
                   >
                     Nov 6, 2019 / 11:00PM
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item info-button is-left-aligned"
+                  scope="row"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                  >
+                    <svg
+                      class="gridicon gridicons-info-outline needs-offset"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                        />
+                      </g>
+                    </svg>
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    $20.00 USD
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="chip chip-primary is-compact"
+                    >
+                      Needs response
+                    </span>
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    General
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-center-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    data-link-type="external"
+                    href="http://test.local/order/3"
+                  >
+                    3
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    Mock customer
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned is-sorted"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    Nov 1, 2019
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    Nov 8, 2019 / 2:46AM
                   </a>
                 </td>
               </tr>
