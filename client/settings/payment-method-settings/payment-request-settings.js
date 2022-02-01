@@ -4,7 +4,7 @@
  */
 import React, { useMemo } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, RadioControl } from '@wordpress/components';
+import { Card, CheckboxControl, RadioControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -20,6 +20,10 @@ import {
 import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
 import { getPaymentRequestData } from '../../payment-request/utils';
+import {
+	usePaymentRequestEnabledSettings,
+	usePaymentRequestLocations,
+} from 'wcpay/data';
 
 const makeButtonSizeText = ( string ) =>
 	interpolateComponents( {
@@ -118,7 +122,7 @@ const buttonThemeOptions = [
 	},
 ];
 
-const PaymentRequestSettings = () => {
+const PaymentRequestSettings = ( { section } ) => {
 	const [ buttonType, setButtonType ] = usePaymentRequestButtonType();
 	const [ size, setSize ] = usePaymentRequestButtonSize();
 	const [ theme, setTheme ] = usePaymentRequestButtonTheme();
@@ -131,44 +135,142 @@ const PaymentRequestSettings = () => {
 		} );
 	}, [] );
 
+	const [
+		isPaymentRequestEnabled,
+		updateIsPaymentRequestEnabled,
+	] = usePaymentRequestEnabledSettings();
+
+	const [
+		paymentRequestLocations,
+		updatePaymentRequestLocations,
+	] = usePaymentRequestLocations();
+
+	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
+		if ( isChecked ) {
+			updatePaymentRequestLocations( [
+				...paymentRequestLocations,
+				location,
+			] );
+		} else {
+			updatePaymentRequestLocations(
+				paymentRequestLocations.filter( ( name ) => name !== location )
+			);
+		}
+	};
+
 	return (
 		<Card>
-			<CardBody>
-				<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
-				<RadioControl
-					className="payment-method-settings__cta-selection"
-					label={ __( 'Call to action', 'woocommerce-payments' ) }
-					hideLabelFromVision
-					help={ __(
-						'Select a button label that fits best with the flow of purchase or payment experience on your store.',
-						'woocommerce-payments'
-					) }
-					selected={ buttonType }
-					options={ buttonActionOptions }
-					onChange={ setButtonType }
-				/>
-				<h4>{ __( 'Appearance', 'woocommerce-payments' ) }</h4>
-				<RadioControl
-					help={ __(
-						'Note that larger buttons are more suitable for mobile use.',
-						'woocommerce-payments'
-					) }
-					label={ __( 'Size', 'woocommerce-payments' ) }
-					selected={ size }
-					options={ buttonSizeOptions }
-					onChange={ setSize }
-				/>
-				<RadioControl
-					label={ __( 'Theme', 'woocommerce-payments' ) }
-					selected={ theme }
-					options={ buttonThemeOptions }
-					onChange={ setTheme }
-				/>
-				<p>{ __( 'Preview', 'woocommerce-payments' ) }</p>
-				<Elements stripe={ stripePromise }>
-					<PaymentRequestButtonPreview />
-				</Elements>
-			</CardBody>
+			{ 'enable' === section && (
+				<CardBody>
+					<CheckboxControl
+						checked={ isPaymentRequestEnabled }
+						onChange={ updateIsPaymentRequestEnabled }
+						label={ __(
+							'Enable Apple Pay / Google Pay',
+							'woocommerce-payments'
+						) }
+						help={ __(
+							'When enabled, customers who have configured Apple Pay or Google Pay enabled devices ' +
+								'will be able to pay with their respective choice of Wallet.',
+							'woocommerce-payments'
+						) }
+					/>
+				</CardBody>
+			) }
+			{ 'general' === section && (
+				<CardBody>
+					<h4>
+						{ __(
+							'Show express checkouts on',
+							'woocommerce-payments'
+						) }
+					</h4>
+					<ul>
+						<li>
+							<CheckboxControl
+								disabled={ ! isPaymentRequestEnabled }
+								checked={
+									isPaymentRequestEnabled &&
+									paymentRequestLocations.includes(
+										'checkout'
+									)
+								}
+								onChange={ makeLocationChangeHandler(
+									'checkout'
+								) }
+								label={ __(
+									'Checkout',
+									'woocommerce-payments'
+								) }
+							/>
+						</li>
+						<li>
+							<CheckboxControl
+								disabled={ ! isPaymentRequestEnabled }
+								checked={
+									isPaymentRequestEnabled &&
+									paymentRequestLocations.includes(
+										'product'
+									)
+								}
+								onChange={ makeLocationChangeHandler(
+									'product'
+								) }
+								label={ __(
+									'Product page',
+									'woocommerce-payments'
+								) }
+							/>
+						</li>
+						<li>
+							<CheckboxControl
+								disabled={ ! isPaymentRequestEnabled }
+								checked={
+									isPaymentRequestEnabled &&
+									paymentRequestLocations.includes( 'cart' )
+								}
+								onChange={ makeLocationChangeHandler( 'cart' ) }
+								label={ __( 'Cart', 'woocommerce-payments' ) }
+							/>
+						</li>
+					</ul>
+					<br />
+					<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
+					<RadioControl
+						className="payment-method-settings__cta-selection"
+						label={ __( 'Call to action', 'woocommerce-payments' ) }
+						hideLabelFromVision
+						help={ __(
+							'Select a button label that fits best with the flow of purchase or payment experience on your store.',
+							'woocommerce-payments'
+						) }
+						selected={ buttonType }
+						options={ buttonActionOptions }
+						onChange={ setButtonType }
+					/>
+					<h4>{ __( 'Appearance', 'woocommerce-payments' ) }</h4>
+					<RadioControl
+						help={ __(
+							'Note that larger buttons are more suitable for mobile use.',
+							'woocommerce-payments'
+						) }
+						label={ __( 'Size', 'woocommerce-payments' ) }
+						selected={ size }
+						options={ buttonSizeOptions }
+						onChange={ setSize }
+					/>
+					<RadioControl
+						label={ __( 'Theme', 'woocommerce-payments' ) }
+						selected={ theme }
+						options={ buttonThemeOptions }
+						onChange={ setTheme }
+					/>
+					<p>{ __( 'Preview', 'woocommerce-payments' ) }</p>
+					<Elements stripe={ stripePromise }>
+						<PaymentRequestButtonPreview />
+					</Elements>
+				</CardBody>
+			) }
 		</Card>
 	);
 };
