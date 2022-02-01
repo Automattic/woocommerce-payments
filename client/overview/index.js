@@ -20,6 +20,7 @@ import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
 import { useDisputes } from 'data';
+import JetpackIdcNotice from 'components/jetpack-idc-notice';
 
 import './style.scss';
 import { useSettings } from 'wcpay/data';
@@ -100,6 +101,8 @@ const OverviewPage = () => {
 					) }
 				</Notice>
 			) }
+
+			<JetpackIdcNotice />
 
 			<TestModeNotice topic={ topics.overview } />
 
