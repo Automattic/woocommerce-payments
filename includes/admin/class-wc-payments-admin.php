@@ -214,6 +214,12 @@ class WC_Payments_Admin {
 			]
 		);
 
+		if ( $this->account->is_account_rejected() ) {
+			// If the account is rejected, only show the overview page.
+			wc_admin_register_page( $this->admin_child_pages['wc-payments-overview'] );
+			return;
+		}
+
 		if ( $should_render_full_menu ) {
 			if ( self::is_card_readers_page_enabled() && $this->account->is_card_present_eligible() ) {
 				$this->admin_child_pages['wc-payments-card-readers'] = [
