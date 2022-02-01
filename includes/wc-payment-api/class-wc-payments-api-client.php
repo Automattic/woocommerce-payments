@@ -1597,8 +1597,7 @@ class WC_Payments_API_Client {
 			$url          .= '?' . http_build_query( $params );
 			$redacted_url .= '?' . http_build_query( $redacted_params );
 		} else {
-			$headers['Idempotency-Key'] = $this->uuid();
-			$body                       = wp_json_encode( $params );
+			$body = wp_json_encode( $params );
 			if ( ! $body ) {
 				throw new API_Exception(
 					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' ),
@@ -1918,19 +1917,6 @@ class WC_Payments_API_Client {
 			null !== $blog_id ? " blog_id $blog_id" : ''
 		);
 	}
-
-	/**
-	 * Returns a v4 UUID.
-	 *
-	 * @return string
-	 */
-	private function uuid() {
-		$arr    = array_values( unpack( 'N1a/n4b/N1c', random_bytes( 16 ) ) );
-		$arr[2] = ( $arr[2] & 0x0fff ) | 0x4000;
-		$arr[3] = ( $arr[3] & 0x3fff ) | 0x8000;
-		return vsprintf( '%08x-%04x-%04x-%04x-%04x%08x', $arr );
-	}
-
 
 	/**
 	 * Fetch readers charge summary.
