@@ -1028,13 +1028,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 	public function test_create_terminal_location_validation_array() {
 		$this->expectException( API_Exception::class );
-		$this->expectExceptionMessageRegExp( '~address.*required~i' );
+		$this->expectExceptionMessageMatches( '~address.*required~i' );
 		$this->payments_api_client->create_terminal_location( 'Example', '' );
 	}
 
 	public function test_create_terminal_location_validation_values() {
 		$this->expectException( API_Exception::class );
-		$this->expectExceptionMessageRegExp( '~address.*required~i' );
+		$this->expectExceptionMessageMatches( '~address.*required~i' );
 		$this->payments_api_client->create_terminal_location(
 			'Example',
 			[

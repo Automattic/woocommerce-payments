@@ -74,8 +74,8 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 
 		// Confirm the function changed the button name and URL.
 		$this->assertSame( 'Update payment method', $result['change_payment_method']['name'] );
-		$this->assertRegExp( '/change_payment_method=/', $result['change_payment_method']['url'] );
-		$this->assertRegExp( '/_wpnonce=/', $result['change_payment_method']['url'] );
+		$this->assertMatchesRegularExpression( '/change_payment_method=/', $result['change_payment_method']['url'] );
+		$this->assertMatchesRegularExpression( '/_wpnonce=/', $result['change_payment_method']['url'] );
 	}
 
 	/**
@@ -118,9 +118,9 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WP_UnitTestCas
 		$this->assertArrayHasKey( 'pay', $test_actions );
 
 		// Confirm the pay url has been updated to include the change payment method flag.
-		$this->assertRegExp( '/order-pay=/', $result['pay']['url'] );
-		$this->assertRegExp( '/pay_for_order=/', $result['pay']['url'] );
-		$this->assertRegExp( '/change_payment_method=/', $result['pay']['url'] );
+		$this->assertMatchesRegularExpression( '/order-pay=/', $result['pay']['url'] );
+		$this->assertMatchesRegularExpression( '/pay_for_order=/', $result['pay']['url'] );
+		$this->assertMatchesRegularExpression( '/change_payment_method=/', $result['pay']['url'] );
 	}
 
 	/**

@@ -350,7 +350,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->multi_currency->update_selected_currency( 'GBP' );
 
 		$this->assertStringContainsString( '&pound;', WC()->cart->get_total() );
-		$this->assertNotContains( '&#36;', WC()->cart->get_total() );
+		$this->assertStringNotContainsString( '&#36;', WC()->cart->get_total() );
 
 	}
 
