@@ -16,8 +16,7 @@ const invalidCards = cards.filter( ( [ cardType ] ) =>
 	cardType.includes( 'declined' )
 );
 
-// Unskip this after debugging failing shopper tests.
-describe.skip( 'Payment Methods', () => {
+describe( 'Payment Methods', () => {
 	beforeAll( async () => {
 		await shopper.login();
 	} );

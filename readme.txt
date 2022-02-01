@@ -1,10 +1,10 @@
 === WooCommerce Payments ===
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
-Requires at least: 5.6
+Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 3.5.0
+Stable tag: 3.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,8 +38,8 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* WordPress 5.6 or newer.
-* WooCommerce 5.8 or newer.
+* WordPress 5.7 or newer.
+* WooCommerce 5.9 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -98,7 +98,22 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.6.0 - 2022-xx-xx =
+= 3.7.0 - 2022-xx-xx =
+* Add - Link to customer in disputes list
+* Update - Bump minimum required version of WordPress from 5.6 to 5.7.
+* Update - Bump minimum required version of WooCommerce from 4.5 to 4.6.
+* Add - Introduce sorting on disputes page.
+* Fix - Currency name not translated the Overview card title.
+* Add - Introduce advance filters on disputes page.
+* Add - UPE payment methods - BECS Direct Debit.
+* Fix - Missing currency field in disputes export file.
+* Add - Implement Jetpack Identity Crisis / Safe Mode banner.
+
+= 3.6.1 - 2022-01-27 =
+* Fix - Remove packages not compatible with PHP 7.0
+* Security update.
+
+= 3.6.0 - 2022-01-20 =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
 * Fix - UPE validation error visibility on checkout page.
 * Tweak - Load translations for js files directly from lang-pack json files.
@@ -116,7 +131,6 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Show a warning when attempting to create a subscription product with a price below the minimum amount.
 * Fix - When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown.
 * Fix - When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown.
-* Fix - Currency name not translated the Overview card title.
 * Fix - Don't limit subscription products being created with an interval of more than one year when the WC Subscriptions plugin is active.
 * Fix - Subscriptions not renewing with subscription products that use a free trial period.
 * Fix - "Fees" column values are different in the downloaded CSV file for the transaction table

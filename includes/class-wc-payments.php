@@ -14,6 +14,7 @@ use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
+use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
@@ -188,6 +189,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-p24-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-ideal-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-becs-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -242,6 +244,7 @@ class WC_Payments {
 				Sofort_Payment_Method::class,
 				P24_Payment_Method::class,
 				Ideal_Payment_Method::class,
+				Becs_Payment_Method::class,
 			];
 			foreach ( $payment_method_classes as $payment_method_class ) {
 				$payment_method                               = new $payment_method_class( self::$token_service );
@@ -491,7 +494,7 @@ class WC_Payments {
 	 * @return string Modified where clause.
 	 */
 	public static function possibly_add_note_source_where_clause( $where_clauses, $args ) {
-		if ( ! empty( $args['source'] ) && ! str_contains( $where_clauses, 'AND source IN' ) ) {
+		if ( ! empty( $args['source'] ) && false === strpos( $where_clauses, 'AND source IN' ) ) {
 			$where_source_array = [];
 			foreach ( $args['source'] as $args_type ) {
 				$args_type            = trim( $args_type );
@@ -674,6 +677,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Customer_Service instance
+	 *
+	 * @return WC_Payments_Customer_Service  The Customer Service instance.
+	 */
+	public static function get_customer_service(): WC_Payments_Customer_Service {
+		return self::$customer_service;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
@@ -791,16 +803,29 @@ class WC_Payments {
 	public static function ajax_init_platform_checkout() {
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
+		$user        = wp_get_current_user();
+		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			// create customer.
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
+			self::$customer_service->create_customer_for_user( $user, $customer_data );
+		}
+
+		$account_id = self::get_account_service()->get_stripe_account_id();
+
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 		$body                   = [
-			'user_id'              => get_current_user_id(),
+			'user_id'              => $user->ID,
+			'customer_id'          => $customer_id,
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
 				'store_name' => get_bloginfo( 'name' ),
 				'store_logo' => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
 				'blog_id'    => Jetpack_Options::get_option( 'id' ),
+				'blog_url'   => get_site_url(),
+				'account_id' => $account_id,
 			],
 		];
 		$args                   = [

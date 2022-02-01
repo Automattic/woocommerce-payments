@@ -5,6 +5,7 @@
  */
 import './style.scss';
 import {
+	PAYMENT_METHOD_NAME_BECS,
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_GIROPAY,
 	PAYMENT_METHOD_NAME_SEPA,
@@ -470,6 +471,7 @@ jQuery( function ( $ ) {
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	const wcpayPaymentMethods = [
+		PAYMENT_METHOD_NAME_BECS,
 		PAYMENT_METHOD_NAME_CARD,
 		PAYMENT_METHOD_NAME_GIROPAY,
 		PAYMENT_METHOD_NAME_SEPA,
