@@ -571,7 +571,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		};
 		$updated_fields          = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
 
-		return $this->wcpay_gateway->update_account_settings( $updated_fields );
+		$this->wcpay_gateway->update_account_settings( $updated_fields );
 	}
 
 	/**
