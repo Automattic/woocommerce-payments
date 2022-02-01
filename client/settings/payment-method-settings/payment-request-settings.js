@@ -177,6 +177,7 @@ const PaymentRequestSettings = ( { section } ) => {
 					/>
 				</CardBody>
 			) }
+
 			{ 'general' === section && (
 				<CardBody>
 					<h4>
@@ -185,7 +186,7 @@ const PaymentRequestSettings = ( { section } ) => {
 							'woocommerce-payments'
 						) }
 					</h4>
-					<ul>
+					<ul className="payment-method-settings__location">
 						<li>
 							<CheckboxControl
 								disabled={ ! isPaymentRequestEnabled }
@@ -234,7 +235,6 @@ const PaymentRequestSettings = ( { section } ) => {
 							/>
 						</li>
 					</ul>
-					<br />
 					<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 					<RadioControl
 						className="payment-method-settings__cta-selection"

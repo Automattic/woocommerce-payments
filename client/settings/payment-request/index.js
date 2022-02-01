@@ -13,8 +13,7 @@ import interpolateComponents from 'interpolate-components';
 import { getPaymentMethodSettingsUrl } from '../../utils';
 import { usePaymentRequestEnabledSettings } from 'wcpay/data';
 import CardBody from '../card-body';
-import AppleIcon from '../../gateway-icons/apple';
-import GoogleIcon from '../../gateway-icons/google';
+import AppleGoogleIcon from '../../gateway-icons/apple-google';
 import './style.scss';
 
 const PaymentRequest = () => {
@@ -35,7 +34,7 @@ const PaymentRequest = () => {
 							/>
 						</div>
 						<div className="payment-request__icon">
-							<AppleIcon /> <GoogleIcon />
+							<AppleGoogleIcon />
 						</div>
 						<div className="payment-method__label-container">
 							<div className="payment-request__label">

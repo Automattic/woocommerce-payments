@@ -2,14 +2,15 @@
 	.payment-requests-list {
 		.payment-request {
 			display: flex;
-			flex-direction: row;
-			flex-wrap: wrap;
-			align-items: center;
 			margin: 0;
-			padding: 24px;
+			padding: 16px 24px 14px 24px;
 			background: #fff;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			align-items: center;
 
 			@include breakpoint( '>660px' ) {
+				padding: 24px 24px 24px 24px;
 				flex-wrap: nowrap;
 			}
 
@@ -50,8 +51,11 @@
 			}
 
 			&__link {
+				display: flex;
+				align-items: center;
+				justify-content: flex-end;
 				white-space: nowrap;
-				margin-left: auto;
+				margin-left: 16px;
 			}
 		}
 	}

@@ -16,8 +16,7 @@ import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import AppleIcon from '../../gateway-icons/apple';
-import GoogleIcon from '../../gateway-icons/google';
+import AppleGoogleIcon from '../../gateway-icons/apple-google';
 
 const methods = {
 	payment_request: {
@@ -27,8 +26,8 @@ const methods = {
 				section: 'enable',
 				description: () => (
 					<>
-						<div className="payment-request__icon">
-							<AppleIcon /> <GoogleIcon />
+						<div className="payment-method-settings__icon">
+							<AppleGoogleIcon />
 						</div>
 						<p>
 							{ __(
