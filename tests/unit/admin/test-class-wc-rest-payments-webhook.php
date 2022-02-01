@@ -746,9 +746,9 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
 			->withConsecutive(
+				[ [ 'failed' ] ],
 				[ [ 'processing', 'completed' ] ],
-				[ [ 'processing', 'completed' ] ],
-				[ [ 'failed' ] ]
+				[ [ 'processing', 'completed' ] ]
 			)
 			->willReturn( false );
 

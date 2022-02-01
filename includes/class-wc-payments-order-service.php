@@ -53,9 +53,9 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $message = '' ) {
-		if ( ! $this->order_prepared_for_processing( $order, $intent_id )
-			|| $order->has_status( [ 'failed' ] )
-			|| 'failed' === $order->get_meta( '_intention_status' ) ) {
+		if ( $order->has_status( [ 'failed' ] )
+			|| 'failed' === $order->get_meta( '_intention_status' )
+			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
@@ -75,9 +75,9 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_on_hold( $order, $intent_id, $intent_status, $charge_id ) {
-		if ( ! $this->order_prepared_for_processing( $order, $intent_id )
-			|| $order->has_status( [ 'on-hold' ] )
-			|| 'requires_capture' === $order->get_meta( '_intention_status' ) ) {
+		if ( $order->has_status( [ 'on-hold' ] )
+			|| 'requires_capture' === $order->get_meta( '_intention_status' )
+			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
@@ -97,9 +97,9 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_pending( $order, $intent_id, $intent_status, $charge_id ) {
-		if ( ! $this->order_prepared_for_processing( $order, $intent_id )
-			|| ! $order->has_status( [ 'pending' ] )
-			|| 'requires_action' === $order->get_meta( '_intention_status' ) ) {
+		if ( ! $order->has_status( [ 'pending' ] )
+			|| 'requires_action' === $order->get_meta( '_intention_status' )
+			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
@@ -203,7 +203,7 @@ class WC_Payments_Order_Service {
 
 		$this->update_order_status( $order, 'on-hold' );
 		$this->add_dispute_created_note( $order, $dispute_id, $reason );
-		$this->complete_order_processing( $order );
+		$order->save();
 	}
 
 	/**
@@ -234,7 +234,7 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->add_dispute_closed_note( $order, $dispute_id, $status );
-		$this->complete_order_processing( $order );
+		$order->save();
 	}
 
 	/**
@@ -463,7 +463,7 @@ class WC_Payments_Order_Service {
 	/**
 	 * Adds the cancelled order note.
 	 *
-	 * @param WC_Order $order     Order object.
+	 * @param WC_Order $order Order object.
 	 *
 	 * @return void
 	 */
@@ -653,6 +653,28 @@ class WC_Payments_Order_Service {
 			return false;
 		}
 
+		if ( $this->is_order_paid( $order ) ) {
+			return false;
+		}
+
+		if ( $this->is_order_locked( $order, $intent_id ) ) {
+			return false;
+		}
+
+		// Lock the order.
+		$this->lock_order_payment( $order, $intent_id );
+
+		return true;
+	}
+
+	/**
+	 * Checks to see if the current order, and a fresh copy of the order from the database are paid.
+	 *
+	 * @param WC_Order $order The order being checked.
+	 *
+	 * @return boolean True if it has a paid status, false if not.
+	 */
+	private function is_order_paid( $order ) {
 		// Read the latest order properties from the database to avoid race conditions if webhook was handled during this request.
 		$clone_order = clone $order;
 		$clone_order->get_data_store()->read( $clone_order );
@@ -661,19 +683,11 @@ class WC_Payments_Order_Service {
 		if ( function_exists( 'wc_get_is_paid_statuses' ) ) {
 			if ( $order->has_status( wc_get_is_paid_statuses() )
 				|| $clone_order->has_status( wc_get_is_paid_statuses() ) ) {
-				return false;
+				return true;
 			}
 		}
 
-		if ( $this->is_order_locked( $order, $intent_id )
-			|| $this->is_order_locked( $clone_order, $intent_id ) ) {
-			return false;
-		}
-
-		// Lock the order.
-		$this->lock_order_payment( $order, $intent_id );
-
-		return true;
+		return false;
 	}
 
 	/**
