@@ -76,7 +76,6 @@ class WC_Payments_Order_Service {
 	 */
 	public function mark_payment_on_hold( $order, $intent_id, $intent_status, $charge_id ) {
 		if ( $order->has_status( [ 'on-hold' ] )
-			|| 'requires_capture' === $order->get_meta( '_intention_status' )
 			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
