@@ -14,6 +14,7 @@ import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import { getTerms } from '../utils/upe';
 import { getCookieValue } from '../../utils';
+import { handlePlatformCheckoutEmailInput } from '../utils/platform-checkout';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -771,4 +772,7 @@ jQuery( function ( $ ) {
 			maybeShowAuthenticationModal();
 		}
 	} );
+	if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
+		handlePlatformCheckoutEmailInput( '#billing_email' );
+	}
 } );

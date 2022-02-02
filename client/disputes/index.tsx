@@ -8,7 +8,7 @@ import wcpayTracks from 'tracks';
 import { dateI18n } from '@wordpress/date';
 import { _n, __ } from '@wordpress/i18n';
 import moment from 'moment';
-import { TableCard } from '@woocommerce/components';
+import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import {
 	downloadCSVFile,
@@ -54,6 +54,12 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 		required: true,
 		isSortable: true,
 		isLeftAligned: true,
+	},
+	{
+		key: 'currency',
+		label: __( 'Currency', 'woocommerce-payments' ),
+		visible: false,
+		required: true,
 	},
 	{
 		key: 'status',
@@ -161,6 +167,10 @@ export const DisputesList = (): JSX.Element => {
 					formatExplicitCurrency( dispute.amount, dispute.currency )
 				),
 			},
+			currency: {
+				value: dispute.currency,
+				display: clickable( dispute.currency ),
+			},
 			status: {
 				value: dispute.status,
 				display: clickable(
@@ -205,7 +215,14 @@ export const DisputesList = (): JSX.Element => {
 			},
 			customerName: {
 				value: dispute.customer_name ?? '',
-				display: clickable( dispute.customer_name ),
+				display:
+					dispute.order && dispute.order.customer_url ? (
+						<Link href={ dispute.order.customer_url }>
+							{ dispute.customer_name }
+						</Link>
+					) : (
+						clickable( dispute.customer_name )
+					),
 			},
 			customerEmail: {
 				value: dispute.customer_email ?? '',
@@ -237,30 +254,30 @@ export const DisputesList = (): JSX.Element => {
 
 		const csvRows = rows.map( ( row ) => {
 			return [
-				...row.slice( 0, 2 ),
-				{
-					...row[ 2 ],
-					value: disputeStatusMapping[ row[ 2 ].value ?? '' ].message,
-				},
+				...row.slice( 0, 3 ),
 				{
 					...row[ 3 ],
-					value: formatStringValue(
-						( row[ 3 ].value ?? '' ).toString()
-					),
+					value: disputeStatusMapping[ row[ 3 ].value ?? '' ].message,
 				},
-				...row.slice( 4, 9 ),
 				{
-					...row[ 9 ],
-					value: dateI18n(
-						'Y-m-d',
-						moment( row[ 9 ].value ).toISOString()
+					...row[ 4 ],
+					value: formatStringValue(
+						( row[ 4 ].value ?? '' ).toString()
 					),
 				},
+				...row.slice( 5, 10 ),
 				{
 					...row[ 10 ],
 					value: dateI18n(
-						'Y-m-d / g:iA',
+						'Y-m-d',
 						moment( row[ 10 ].value ).toISOString()
+					),
+				},
+				{
+					...row[ 11 ],
+					value: dateI18n(
+						'Y-m-d / g:iA',
+						moment( row[ 11 ].value ).toISOString()
 					),
 				},
 			];
@@ -297,7 +314,7 @@ export const DisputesList = (): JSX.Element => {
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
 
 	const storeCurrencies =
-		disputesSummary.store_currencies ||
+		disputesSummary.currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
 
 	return (
