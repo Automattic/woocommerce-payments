@@ -5,6 +5,46 @@ exports[`Disputes list renders correctly 1`] = `
   <div
     class=" woocommerce-payments-page"
   >
+    <h2
+      class="screen-reader-text"
+    >
+      Filters
+    </h2>
+    <div
+      class="woocommerce-filters"
+    >
+      <div
+        class="woocommerce-filters__basic-filters"
+      >
+        <div
+          class="woocommerce-filters-filter"
+        >
+          <span
+            class="woocommerce-filters-label"
+          >
+            Show
+            :
+          </span>
+          <div
+            class="components-dropdown"
+          >
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-dropdown-button"
+              type="button"
+            >
+              <div
+                class="woocommerce-dropdown-button__labels"
+              >
+                <span>
+                  All disputes
+                </span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div
       class="woocommerce-card woocommerce-table woocommerce-analytics__card wcpay-disputes-list has-menu has-action"
     >
@@ -122,14 +162,45 @@ exports[`Disputes list renders correctly 1`] = `
                   />
                 </th>
                 <th
-                  class="woocommerce-table__header"
+                  aria-sort="none"
+                  class="woocommerce-table__header is-left-aligned is-sortable"
                   role="columnheader"
                   scope="col"
                 >
-                  <span
-                    aria-hidden="false"
+                  <button
+                    aria-describedby="header-0-1"
+                    class="components-button"
+                    type="button"
                   >
-                    Amount
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Amount
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Amount
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-1"
+                  >
+                    Sort by Amount in descending order
                   </span>
                 </th>
                 <th
@@ -138,7 +209,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Status
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Status
                   </span>
@@ -149,7 +225,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Reason
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Reason
                   </span>
@@ -160,7 +241,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Source
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Source
                   </span>
@@ -171,7 +257,12 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Order #
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Order #
                   </span>
@@ -182,31 +273,98 @@ exports[`Disputes list renders correctly 1`] = `
                   scope="col"
                 >
                   <span
-                    aria-hidden="false"
+                    aria-hidden="true"
+                  >
+                    Customer
+                  </span>
+                  <span
+                    class="screen-reader-text"
                   >
                     Customer
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-left-aligned"
+                  aria-sort="descending"
+                  class="woocommerce-table__header is-left-aligned is-sortable is-sorted"
                   role="columnheader"
                   scope="col"
                 >
-                  <span
-                    aria-hidden="false"
+                  <button
+                    aria-describedby="header-0-7"
+                    class="components-button"
+                    type="button"
                   >
-                    Disputed on
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Disputed on
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Disputed on
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-7"
+                  >
+                    Sort by Disputed on in ascending order
                   </span>
                 </th>
                 <th
-                  class="woocommerce-table__header is-left-aligned"
+                  aria-sort="none"
+                  class="woocommerce-table__header is-left-aligned is-sortable"
                   role="columnheader"
                   scope="col"
                 >
-                  <span
-                    aria-hidden="false"
+                  <button
+                    aria-describedby="header-0-8"
+                    class="components-button"
+                    type="button"
                   >
-                    Respond by
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Respond by
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Respond by
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-8"
+                  >
+                    Sort by Respond by in descending order
                   </span>
                 </th>
               </tr>
@@ -235,7 +393,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </th>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -302,16 +460,14 @@ exports[`Disputes list renders correctly 1`] = `
                   class="woocommerce-table__item is-left-aligned"
                 >
                   <a
-                    class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-                    tabindex="-1"
+                    href="https://shop.local"
                   >
                     Mock customer
                   </a>
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item is-left-aligned is-sorted"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -360,7 +516,7 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </th>
                 <td
-                  class="woocommerce-table__item"
+                  class="woocommerce-table__item is-left-aligned"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -409,13 +565,17 @@ exports[`Disputes list renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--undefined"
+                      class="payment-method__brand payment-method__brand--"
                     />
                   </a>
                 </td>
                 <td
                   class="woocommerce-table__item"
-                />
+                >
+                  <span>
+                    –
+                  </span>
+                </td>
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
@@ -427,7 +587,7 @@ exports[`Disputes list renders correctly 1`] = `
                   />
                 </td>
                 <td
-                  class="woocommerce-table__item is-left-aligned"
+                  class="woocommerce-table__item is-left-aligned is-sorted"
                 >
                   <a
                     class="woocommerce-table__clickable-cell"
@@ -451,9 +611,152 @@ exports[`Disputes list renders correctly 1`] = `
                   </a>
                 </td>
               </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item info-button is-left-aligned"
+                  scope="row"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                  >
+                    <svg
+                      class="gridicon gridicons-info-outline needs-offset"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                        />
+                      </g>
+                    </svg>
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    $20.00 USD
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="chip chip-primary is-compact"
+                    >
+                      Needs response
+                    </span>
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    General
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-center-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    data-link-type="external"
+                    href="http://test.local/order/3"
+                  >
+                    3
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    Mock customer
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned is-sorted"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    Nov 1, 2019
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    tabindex="-1"
+                  >
+                    Nov 8, 2019 / 2:46AM
+                  </a>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
+        <ul
+          class="woocommerce-table__summary"
+        >
+          <li
+            class="woocommerce-table__summary-item"
+          >
+            <span
+              class="woocommerce-table__summary-value"
+            >
+              25
+            </span>
+            <span
+              class="woocommerce-table__summary-label"
+            >
+              disputes
+            </span>
+          </li>
+        </ul>
       </div>
     </div>
   </div>

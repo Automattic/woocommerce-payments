@@ -34,6 +34,7 @@ describe( 'PaymentMethods', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
+			'au_becs_debit',
 			'bancontact',
 			'eps',
 			'giropay',
@@ -44,6 +45,7 @@ describe( 'PaymentMethods', () => {
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: upeCapabilityStatuses.ACTIVE,
+			au_becs_debit: upeCapabilityStatuses.ACTIVE,
 			bancontact_payments: upeCapabilityStatuses.ACTIVE,
 			eps_payments: upeCapabilityStatuses.ACTIVE,
 			giropay_payments: upeCapabilityStatuses.ACTIVE,
@@ -71,6 +73,9 @@ describe( 'PaymentMethods', () => {
 		const cc = screen.getByRole( 'checkbox', {
 			name: 'Credit card / debit card',
 		} );
+		const becs = screen.getByRole( 'checkbox', {
+			name: 'BECS Direct Debit',
+		} );
 		const sepa = screen.getByRole( 'checkbox', {
 			name: 'SEPA Direct Debit',
 		} );
@@ -86,6 +91,7 @@ describe( 'PaymentMethods', () => {
 		const ideal = screen.getByRole( 'checkbox', { name: 'iDEAL' } );
 
 		const allMethods = [
+			becs,
 			bancontact,
 			eps,
 			giropay,
@@ -117,6 +123,7 @@ describe( 'PaymentMethods', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[
 				'Credit card / debit card',
+				'BECS Direct Debit',
 				'Bancontact',
 				'EPS',
 				'giropay',
@@ -130,6 +137,10 @@ describe( 'PaymentMethods', () => {
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: {
 				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			au_becs_debit: {
+				status: upeCapabilityStatuses.INACTIVE,
 				requirements: [],
 			},
 			bancontact_payments: {

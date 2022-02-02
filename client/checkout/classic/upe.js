@@ -13,6 +13,7 @@ import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import { getTerms } from '../utils/upe';
+import { handlePlatformCheckoutEmailInput } from '../utils/platform-checkout';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -519,7 +520,7 @@ jQuery( function ( $ ) {
 
 		try {
 			const { error } = await api.getStripe().confirmSetup( {
-				element: upeElement,
+				elements,
 				confirmParams: {
 					return_url: returnUrl,
 				},
@@ -731,4 +732,7 @@ jQuery( function ( $ ) {
 			maybeShowAuthenticationModal();
 		}
 	} );
+	if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
+		handlePlatformCheckoutEmailInput( '#billing_email' );
+	}
 } );

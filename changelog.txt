@@ -1,6 +1,24 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.6.0 - 2022-xx-xx =
+= 3.7.0 - 2022-xx-xx =
+* Add - Filter by currency in disputes list
+* Add - Link to customer in disputes list
+* Update - Bump minimum required version of WordPress from 5.6 to 5.7.
+* Update - Bump minimum required version of WooCommerce from 4.5 to 4.6.
+* Add - Introduce sorting on disputes page.
+* Fix - Currency name not translated the Overview card title.
+* Add - Introduce advance filters on disputes page.
+* Add - UPE payment methods - BECS Direct Debit.
+* Fix - Missing currency field in disputes export file.
+* Add - Implement Jetpack Identity Crisis / Safe Mode banner.
+* Fix - Checkout with block-based themes.
+* Add - UPE payment method - EPS.
+
+= 3.6.1 - 2022-01-27 =
+* Fix - Remove packages not compatible with PHP 7.0
+* Security update.
+
+= 3.6.0 - 2022-01-20 =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
 * Fix - UPE validation error visibility on checkout page.
 * Tweak - Load translations for js files directly from lang-pack json files.
@@ -11,7 +29,16 @@
 * Fix - Flag emoji rendering in currency switcher block widget
 * Fix - Error when saved Google Pay payment method does not have billing address name
 * Update - Update Payment Element from beta version to release version.
-* Add - UPE payment method - EPS.
+* Fix - Ensure order is always associated with corresponding transaction in UPE Checkout.
+* Tweak - Display a more specific error message when a customer attempts to purchase a WCPay Subscription below the minimum transact-able amount.
+* Add - Add handling for payment_failed webhooks.
+* Add - Disputes pagination.
+* Add - Show a warning when attempting to create a subscription product with a price below the minimum amount.
+* Fix - When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown.
+* Fix - When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown.
+* Fix - Don't limit subscription products being created with an interval of more than one year when the WC Subscriptions plugin is active.
+* Fix - Subscriptions not renewing with subscription products that use a free trial period.
+* Fix - "Fees" column values are different in the downloaded CSV file for the transaction table
 
 = 3.5.0 - 2021-12-29 =
 * Fix - Error when renewing subscriptions with saved payment methods disabled.
@@ -39,6 +66,7 @@
 * Fix - Incorrect customer links on Transactions page.
 * Fix - Incorrect prices in Payment Request Button for certain currencies.
 * Fix - Updates to fraud protection.
+* Add - Add support for suggested gateway methods in WC-Admin.
 * Fix - Prevent Payment Request buttons from showing up in Composite Product pages.
 * Update - Updated @woocommerce/experimental package to v2.1.0.
 * Add - Add support for suggested gateway methods in WC-Admin.
@@ -131,9 +159,9 @@
 
 = 3.1.0 - 2021-10-06 =
 * Fix - Issue affecting analytics for Multi-Currency orders made with a zero-decimal to non-zero decimal conversion.
-* Add - Customer multi-currency onboarding flow.
+* Add - Customer Multi-Currency onboarding flow.
 * Add - Checkbox toggle for disabling customer Multi-Currency feature in Advanced Settings.
-* Add - Update layout of the Multi-currency settings screen.
+* Add - Update layout of the Multi-Currency settings screen.
 * Fix - Fixed missing file error for removed CSS file.
 * Add - Currency deletion confirmation modal for currencies that are bound to an UPE method.
 * Fix - Currency switcher does not affect order confirmation screen prices.
@@ -233,6 +261,7 @@
 * Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
 * Fix - Do not overwrite admin pages when account is disconnected.
 * Update - Set a description when creating payment intents.
+* Add - Add dispute resolution task.
 
 = 2.6.1 - 2021-07-01 =
 * Fix - Updates the notes query filters to prevent breaking the WooCommerce > Home inbox.
@@ -338,13 +367,13 @@
 
 = 2.0.0 - 2021-02-22 =
 * Update - Render customer details in transactions list as text instead of link if order missing.
-* Update - Render transaction summary on details page for multi-currency transactions.
+* Update - Render transaction summary on details page for Multi-Currency transactions.
 * Update - Improvements to fraud prevention.
 * Fix - Added better notices for end users if there are connection errors when making payments.
 * Fix - If account is set to manual payouts display 'Temporarily suspended' under Payments > Settings.
 * Add - Add file dropzones to dispute evidence upload fields
 * Add - Currency conversion indicator to Transactions list.
-* Add - Transaction timeline details for multi-currency transactions.
+* Add - Transaction timeline details for Multi-Currency transactions.
 * Update - Link order note with transaction details page.
 * Fix - Updating payment method using saved payment for WC Subscriptions orders.
 
