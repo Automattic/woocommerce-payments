@@ -31,7 +31,7 @@ const OverviewPage = () => {
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		featureFlags: { accountOverviewTaskList },
+		featureFlags: { accountOverviewTaskList, capital },
 		needsHttpsSetup,
 	} = wcpaySettings;
 	const { disputes, isLoading } = useDisputes( getQuery() );
@@ -52,7 +52,8 @@ const OverviewPage = () => {
 		'1' === queryParams[ 'wcpay-connection-success' ];
 
 	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
-	const showLoanOfferError = '1' === queryParams[ 'wcpay-loan-offer-error' ];
+	const showLoanOfferError =
+		capital && '1' === queryParams[ 'wcpay-loan-offer-error' ];
 	const accountRejected = accountStatus.status.startsWith( 'rejected' );
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )

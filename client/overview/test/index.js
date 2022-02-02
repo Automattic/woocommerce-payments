@@ -26,6 +26,9 @@ jest.mock( '@woocommerce/experimental', () => {
 } );
 jest.mock( '@woocommerce/navigation', () => ( { getQuery: jest.fn() } ) );
 
+const loanOfferErrorText =
+	'There was a problem redirecting you to the loan offer. Please check that it is not expired and try again.';
+
 describe( 'Overview page', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
@@ -45,6 +48,7 @@ describe( 'Overview page', () => {
 			},
 			featureFlags: {
 				accountOverviewTaskList: true,
+				capital: true,
 			},
 		};
 		getQuery.mockReturnValue( {} );
@@ -115,12 +119,49 @@ describe( 'Overview page', () => {
 
 		render( <OverviewPage /> );
 
-		const loanOfferNotices = screen.queryAllByText(
-			'There was a problem redirecting you to the loan offer. Please check that it is not expired and try again.'
-		);
+		expect(
+			screen.queryByText( ( content, element ) => {
+				return (
+					loanOfferErrorText === content &&
+					! element.classList.contains( 'a11y-speak-region' )
+				);
+			} )
+		).toBeVisible();
+	} );
 
-		loanOfferNotices.forEach( ( notice ) =>
-			expect( notice ).toBeVisible()
-		);
+	it( 'Does not display the view loan error message when there the query parameter is not present', () => {
+		getTasks.mockReturnValue( [] );
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( ( content, element ) => {
+				return (
+					loanOfferErrorText === content &&
+					! element.classList.contains( 'a11y-speak-region' )
+				);
+			} )
+		).toBeNull();
+	} );
+
+	it( 'Does not display the view loan error message when Capital is disabled', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			featureFlags: {},
+		};
+
+		getQuery.mockReturnValue( { 'wcpay-loan-offer-error': '1' } );
+		getTasks.mockReturnValue( [] );
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( ( content, element ) => {
+				return (
+					loanOfferErrorText === content &&
+					! element.classList.contains( 'a11y-speak-region' )
+				);
+			} )
+		).toBeNull();
 	} );
 } );
