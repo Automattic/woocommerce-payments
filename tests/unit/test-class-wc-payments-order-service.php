@@ -252,26 +252,6 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Method `mark_payment_on_hold` should exit if the intent status is already requires_capture.
-	 */
-	public function test_mark_payment_on_hold_on_existing_intent_status_requires_capture() {
-		// Arrange: Set the intent status, apply intent status, and get the expected notes.
-		$intent_status = 'requires_capture';
-		$this->order->update_meta_data( '_intention_status', $intent_status );
-		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-
-		// Act: Attempt to mark the payment/order on-hold.
-		$this->order_service->mark_payment_on_hold( $this->order, $this->intent_id, $intent_status, $this->charge_id );
-
-		// Assert: Check that the notes were not updated.
-		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertEquals( $expected_notes, $updated_notes );
-
-		// Assert: Check that the order is not locked.
-		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
-	}
-
-	/**
 	 * Tests marking/leaving the payment in pending status with a started note.
 	 */
 	public function test_mark_payment_pending() {
