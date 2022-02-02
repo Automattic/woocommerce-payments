@@ -314,7 +314,7 @@ export const DisputesList = (): JSX.Element => {
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
 
 	const storeCurrencies =
-		disputesSummary.store_currencies ||
+		disputesSummary.currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
 
 	return (
