@@ -11,39 +11,74 @@ import interpolateComponents from 'interpolate-components';
  * Internal dependencies
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
-import { usePaymentRequestEnabledSettings } from 'wcpay/data';
+import {
+	usePaymentRequestEnabledSettings,
+	usePlatformCheckoutEnabledSettings,
+} from 'wcpay/data';
 import CardBody from '../card-body';
-import AppleGoogleIcon from '../../gateway-icons/apple-google';
+import PaymentRequestIcon from '../../gateway-icons/payment-request';
+import WooIcon from '../../gateway-icons/woo';
 import './style.scss';
 
-const PaymentRequest = () => {
+const ExpressCheckout = () => {
 	const [
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
 	] = usePaymentRequestEnabledSettings();
 
+	const [
+		isPlatformCheckoutEnabled,
+		updateIsPlatformCheckoutEnabled,
+	] = usePlatformCheckoutEnabledSettings();
+
 	return (
-		<Card className="payment-requests">
+		<Card className="express-checkouts">
 			<CardBody size={ 0 }>
-				<ul className="payment-requests-list">
-					<li className="payment-request has-icon-border">
-						<div className="payment-request__checkbox">
+				<ul className="express-checkouts-list">
+					<li className="express-checkout has-icon-border">
+						<div className="express-checkout__checkbox">
+							<CheckboxControl
+								checked={ isPlatformCheckoutEnabled }
+								onChange={ updateIsPlatformCheckoutEnabled }
+							/>
+						</div>
+						<div className="express-checkout__icon">
+							<WooIcon />
+						</div>
+						<div className="express-checkout__label">
+							{ __(
+								'Platform Checkout',
+								'woocommerce-payments'
+							) }
+						</div>
+						<div className="express-checkout__link">
+							<a
+								href={ getPaymentMethodSettingsUrl(
+									'platform_checkout'
+								) }
+							>
+								{ __( 'Customize', 'woocommerce-payments' ) }
+							</a>
+						</div>
+					</li>
+					<li className="express-checkout has-icon-border">
+						<div className="express-checkout__checkbox">
 							<CheckboxControl
 								checked={ isPaymentRequestEnabled }
 								onChange={ updateIsPaymentRequestEnabled }
 							/>
 						</div>
-						<div className="payment-request__icon">
-							<AppleGoogleIcon />
+						<div className="express-checkout__icon">
+							<PaymentRequestIcon />
 						</div>
-						<div className="payment-method__label-container">
-							<div className="payment-request__label">
+						<div className="express-checkout__label-container">
+							<div className="express-checkout__label">
 								{ __(
 									'Apple Pay / Google Pay',
 									'woocommerce-payments'
 								) }
 							</div>
-							<div className="payment-method__description">
+							<div className="express-checkout__description">
 								{
 									/* eslint-disable jsx-a11y/anchor-has-content */
 									interpolateComponents( {
@@ -80,7 +115,7 @@ const PaymentRequest = () => {
 								}
 							</div>
 						</div>
-						<div className="payment-request__link">
+						<div className="express-checkout__link">
 							<a
 								href={ getPaymentMethodSettingsUrl(
 									'payment_request'
@@ -96,4 +131,4 @@ const PaymentRequest = () => {
 	);
 };
 
-export default PaymentRequest;
+export default ExpressCheckout;

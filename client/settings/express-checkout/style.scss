@@ -1,12 +1,12 @@
-.payment-requests {
-	.payment-requests-list {
-		.payment-request {
+.express-checkouts {
+	.express-checkouts-list {
+		.express-checkout {
 			display: flex;
 			margin: 0;
 			padding: 16px 24px 14px 24px;
 			background: #fff;
 			flex-wrap: wrap;
-			justify-content: space-between;
+			justify-content: flex-start;
 			align-items: center;
 
 			@include breakpoint( '>660px' ) {
@@ -51,11 +51,8 @@
 			}
 
 			&__link {
-				display: flex;
-				align-items: center;
-				justify-content: flex-end;
-				white-space: nowrap;
-				margin-left: 16px;
+				margin-left: auto;
+				padding-left: 16px;
 			}
 		}
 	}

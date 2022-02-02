@@ -163,6 +163,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'is_platform_checkout_enabled'      => [
+						'description'       => __( 'If WooCommerce Payments platform checkout should be enabled.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
 					'payment_request_enabled_locations' => [
 						'description'       => __( 'Express checkout locations that should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
@@ -363,6 +368,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'account_branding_primary_color'    => $this->wcpay_gateway->get_option( 'account_branding_primary_color' ),
 				'account_branding_secondary_color'  => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
 				'is_payment_request_enabled'        => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
+				'is_platform_checkout_enabled'      => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'is_debug_log_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
 				'payment_request_enabled_locations' => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
 				'payment_request_button_size'       => $this->wcpay_gateway->get_option( 'payment_request_button_size' ),
@@ -388,6 +394,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_multi_currency_enabled( $request );
 		$this->update_is_wcpay_subscriptions_enabled( $request );
 		$this->update_is_payment_request_enabled( $request );
+		$this->update_is_platform_checkout_enabled( $request );
 		$this->update_payment_request_enabled_locations( $request );
 		$this->update_payment_request_appearance( $request );
 		$this->update_is_saved_cards_enabled( $request );
@@ -582,6 +589,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_payment_request_enabled = $request->get_param( 'is_payment_request_enabled' );
 
 		$this->wcpay_gateway->update_option( 'payment_request', $is_payment_request_enabled ? 'yes' : 'no' );
+	}
+
+	/**
+	 * Updates the "platform checkout" enable/disable settings.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_platform_checkout_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_platform_checkout_enabled' ) ) {
+			return;
+		}
+
+		$is_platform_checkout_enabled = $request->get_param( 'is_platform_checkout_enabled' );
+
+		$this->wcpay_gateway->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
 	}
 
 	/**

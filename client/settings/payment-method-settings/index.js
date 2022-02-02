@@ -12,13 +12,37 @@ import './index.scss';
 import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import PaymentRequestSettings from './payment-request-settings';
+import PlatformCheckoutSettings from './platform-checkout-settings';
 import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import AppleGoogleIcon from '../../gateway-icons/apple-google';
+import PaymentRequestIcon from '../../gateway-icons/payment-request';
+import WooIcon from '../../gateway-icons/woo';
 
 const methods = {
+	platform_checkout: {
+		title: 'Platform Checkout',
+		sections: [
+			{
+				section: 'enable',
+				description: () => (
+					<>
+						<div className="payment-method-settings__icon">
+							<WooIcon />
+						</div>
+						<p>
+							{ __(
+								'Allow your customers to collect payments via Platform Checkout.',
+								'woocommerce-payments'
+							) }
+						</p>
+					</>
+				),
+			},
+		],
+		controls: ( props ) => <PlatformCheckoutSettings { ...props } />,
+	},
 	payment_request: {
 		title: 'Apple Pay / Google Pay',
 		sections: [
@@ -27,7 +51,7 @@ const methods = {
 				description: () => (
 					<>
 						<div className="payment-method-settings__icon">
-							<AppleGoogleIcon />
+							<PaymentRequestIcon />
 						</div>
 						<p>
 							{ __(

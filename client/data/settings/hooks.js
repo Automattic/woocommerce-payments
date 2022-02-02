@@ -410,6 +410,19 @@ export const usePaymentRequestButtonTheme = () => {
 	} );
 };
 
+export const usePlatformCheckoutEnabledSettings = () => {
+	const { updateIsPlatformCheckoutEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getIsPlatformCheckoutEnabled } = select( STORE_NAME );
+
+		return [
+			getIsPlatformCheckoutEnabled(),
+			updateIsPlatformCheckoutEnabled,
+		];
+	} );
+};
+
 export const useGetSavingError = () => {
 	return useSelect( ( select ) => {
 		const { getSavingError } = select( STORE_NAME );

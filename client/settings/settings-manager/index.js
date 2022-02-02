@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AdvancedSettings from '../advanced-settings';
 import PaymentMethods from '../../payment-methods';
-import PaymentRequest from '../payment-request';
+import ExpressCheckout from '../express-checkout';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
 import SettingsLayout from '../settings-layout';
@@ -38,7 +38,7 @@ const PaymentMethodsDescription = () => (
 	</>
 );
 
-const PaymentRequestDescription = () => (
+const ExpressCheckoutDescription = () => (
 	<>
 		<h2>{ __( 'Express checkouts', 'woocommerce-payments' ) }</h2>
 		<p>
@@ -111,10 +111,10 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</SettingsSection>
 			) }
-			<SettingsSection Description={ PaymentRequestDescription }>
+			<SettingsSection Description={ ExpressCheckoutDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<PaymentRequest />
+						<ExpressCheckout />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>

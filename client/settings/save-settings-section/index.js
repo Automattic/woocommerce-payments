@@ -24,6 +24,11 @@ const SaveSettingsSection = () => {
 		setInitialIsPaymentRequestEnabled,
 	] = useState( null );
 
+	const [
+		initialIsPlatformCheckoutEnabled,
+		setInitialIsPlatformCheckoutEnabled,
+	] = useState( null );
+
 	if (
 		null === initialIsPaymentRequestEnabled &&
 		settings &&
@@ -31,6 +36,16 @@ const SaveSettingsSection = () => {
 	) {
 		setInitialIsPaymentRequestEnabled(
 			settings.is_payment_request_enabled
+		);
+	}
+
+	if (
+		null === initialIsPlatformCheckoutEnabled &&
+		settings &&
+		'undefined' !== typeof settings.is_platform_checkout_enabled
+	) {
+		setInitialIsPlatformCheckoutEnabled(
+			settings.is_platform_checkout_enabled
 		);
 	}
 
@@ -54,6 +69,17 @@ const SaveSettingsSection = () => {
 			// Update the "initial" value to properly track consecutive saves.
 			setInitialIsPaymentRequestEnabled(
 				settings.is_payment_request_enabled
+			);
+		}
+
+		if (
+			isSuccess &&
+			initialIsPlatformCheckoutEnabled !==
+				settings.is_platform_checkout_enabled
+		) {
+			// Update the "initial" value to properly track consecutive saves.
+			setInitialIsPlatformCheckoutEnabled(
+				settings.is_platform_checkout_enabled
 			);
 		}
 	};
