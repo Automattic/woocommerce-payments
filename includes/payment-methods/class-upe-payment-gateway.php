@@ -1150,7 +1150,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public static function remove_upe_payment_intent_cookie() {
 		if ( isset( $_COOKIE[ self::COOKIE_UPE_PAYMENT_INTENT ] ) ) {
 			unset( $_COOKIE[ self::COOKIE_UPE_PAYMENT_INTENT ] );
-			setcookie( self::COOKIE_UPE_PAYMENT_INTENT, '', time() - HOUR_IN_SECONDS, '/' );
+			wc_setcookie( self::COOKIE_UPE_PAYMENT_INTENT, '', time() - HOUR_IN_SECONDS );
 		}
 	}
 
@@ -1160,7 +1160,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function remove_upe_setup_intent_cookie() {
 		if ( isset( $_COOKIE[ self::COOKIE_UPE_SETUP_INTENT ] ) ) {
 			unset( $_COOKIE[ self::COOKIE_UPE_SETUP_INTENT ] );
-			setcookie( self::COOKIE_UPE_SETUP_INTENT, '', time() - HOUR_IN_SECONDS, '/' );
+			wc_setcookie( self::COOKIE_UPE_SETUP_INTENT, '', time() - HOUR_IN_SECONDS );
 		}
 	}
 }
