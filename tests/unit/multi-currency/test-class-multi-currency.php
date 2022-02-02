@@ -564,6 +564,24 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		);
 	}
 
+	public function test_get_cached_currencies_with_account_rejected() {
+		update_option( self::CACHED_CURRENCIES_OPTION, null );
+
+		$this->mock_account
+			->expects( $this->once() )
+			->method( 'is_account_rejected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_currency_rates' );
+
+		$this->assertEquals(
+			null,
+			$this->multi_currency->get_cached_currencies()
+		);
+	}
+
 	public function test_get_expired_cached_currencies_with_server_retrieval_error() {
 		$currency_cache            = $this->mock_cached_currencies;
 		$currency_cache['expires'] = strtotime( 'yesterday' );
@@ -874,10 +892,10 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		}
 	}
 
-	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true ) {
+	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null ) {
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
-		$this->mock_account = $this->createMock( WC_Payments_Account::class );
+		$this->mock_account = $mock_account ?? $this->createMock( WC_Payments_Account::class );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( $wcpay_account_connected );
 
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );

@@ -4,12 +4,15 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { TextControl, SelectControl } from '@wordpress/components';
+import { TextControl, SelectControl, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { useAccountBusinessSupportAddress } from '../../../data';
+import {
+	useAccountBusinessSupportAddress,
+	useGetSavingError,
+} from '../../../data';
 
 const AddressDetailsSection = () => {
 	const [
@@ -18,9 +21,13 @@ const AddressDetailsSection = () => {
 		accountBusinessSupportAddressLine1,
 		accountBusinessSupportAddressLine2,
 		accountBusinessSupportAddressCity,
+		accountBusinessSupportAddressState,
 		accountBusinessSupportAddressPostalCode,
 		setAccountBusinessSupportAddress,
 	] = useAccountBusinessSupportAddress();
+
+	const businessSuppotAddressErrorMessage = useGetSavingError()?.data?.details
+		?.account_business_support_address?.message;
 
 	const handleAddressPropertyChange = ( property, value ) => {
 		setAccountBusinessSupportAddress( {
@@ -41,9 +48,26 @@ const AddressDetailsSection = () => {
 		} )
 	);
 
+	const countryStates =
+		wcpaySettings.connect.availableStates[
+			accountBusinessSupportAddressCountry
+		] || [];
+	const countryStatesOptions = Object.entries( countryStates ).map(
+		( [ value, label ] ) => ( {
+			label: unescapeHtmlEntities( label ),
+			value: unescapeHtmlEntities( label ),
+			country: value,
+		} )
+	);
+
 	return (
 		<>
 			<h4>{ __( 'Business address', 'woocommerce-payments' ) }</h4>
+			{ businessSuppotAddressErrorMessage && (
+				<Notice status="error" isDismissible={ false }>
+					<span>{ businessSuppotAddressErrorMessage }</span>
+				</Notice>
+			) }
 			<SelectControl
 				label={ __( 'Country', 'woocommerce-payments' ) }
 				value={ accountBusinessSupportAddressCountry }
@@ -76,6 +100,16 @@ const AddressDetailsSection = () => {
 					handleAddressPropertyChange( 'city', value )
 				}
 			/>
+			{ 0 < countryStatesOptions.length && (
+				<SelectControl
+					label={ __( 'State', 'woocommerce-payments' ) }
+					value={ accountBusinessSupportAddressState }
+					onChange={ ( value ) =>
+						handleAddressPropertyChange( 'state', value )
+					}
+					options={ countryStatesOptions }
+				/>
+			) }
 			<TextControl
 				className="card-readers-support-address-postcode"
 				label={ __( 'Postal code', 'woocommerce-payments' ) }
