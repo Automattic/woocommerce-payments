@@ -12,9 +12,15 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { DisputesFilters } from '../';
+import { formatCurrencyName } from '../../../utils/currency';
 
 function addAdvancedFilter( filter: string ) {
 	user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
+	user.click( screen.getByRole( 'button', { name: filter } ) );
+}
+
+function addCurrencyFilter( filter: string ) {
+	user.click( screen.getByRole( 'button', { name: /All currencies/i } ) );
 	user.click( screen.getByRole( 'button', { name: filter } ) );
 }
 
@@ -29,7 +35,7 @@ describe( 'Disputes filters', () => {
 		user.click(
 			screen.getByRole( 'button', { name: /Advanced filters/i } )
 		);
-		rerender( <DisputesFilters /> );
+		rerender( <DisputesFilters storeCurrencies={ [ 'eur', 'usd' ] } /> );
 	} );
 
 	describe( 'when filtering by date', () => {
@@ -124,6 +130,18 @@ describe( 'Disputes filters', () => {
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().status_is_not ).toEqual( 'lost' );
+		} );
+	} );
+
+	describe( 'when filtering by currency', () => {
+		test( 'by default, no currency filter is applied', () => {
+			expect( getQuery().store_currency_is ).toEqual( undefined );
+		} );
+
+		test.each( [ 'usd', 'eur' ] )( 'should filter by %s', ( currency ) => {
+			addCurrencyFilter( formatCurrencyName( currency ) );
+
+			expect( getQuery().store_currency_is ).toEqual( currency );
 		} );
 	} );
 } );

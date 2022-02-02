@@ -99,6 +99,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 3.7.0 - 2022-xx-xx =
+* Add - Filter by currency in disputes list
 * Add - Link to customer in disputes list
 * Update - Bump minimum required version of WordPress from 5.6 to 5.7.
 * Update - Bump minimum required version of WooCommerce from 4.5 to 4.6.
@@ -108,6 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - UPE payment methods - BECS Direct Debit.
 * Fix - Missing currency field in disputes export file.
 * Add - Implement Jetpack Identity Crisis / Safe Mode banner.
+* Fix - Checkout with block-based themes.
 
 = 3.6.1 - 2022-01-27 =
 * Fix - Remove packages not compatible with PHP 7.0

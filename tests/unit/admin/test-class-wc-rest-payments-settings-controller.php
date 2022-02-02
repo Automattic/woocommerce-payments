@@ -598,7 +598,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 				'', // Empty value should trigger error.
 				$request,
 				'account_business_support_email',
-				new WP_Error( 'rest_invalid_pattern', 'Error: Support email address is required!' ),
+				true,
 			],
 			[
 				'test@test',
@@ -677,10 +677,10 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 				true,
 			],
 			[
-				'http://test',
+				'test',
 				$request,
 				'account_business_url',
-				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid business URL: http://test' ),
+				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid business URL: test' ),
 			],
 		];
 	}

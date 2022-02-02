@@ -247,14 +247,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return $string_validation_result;
 		}
 
-		if ( '' === $value ) {
-			return new WP_Error(
-				'rest_invalid_pattern',
-				__( 'Error: Support email address is required!', 'woocommerce-payments' )
-			);
-		}
-
-		if ( ! is_email( $value ) ) {
+		if ( '' !== $value && ! is_email( $value ) ) {
 			return new WP_Error(
 				'rest_invalid_pattern',
 				__( 'Error: Invalid email address: ', 'woocommerce-payments' ) . $value
@@ -302,7 +295,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return $string_validation_result;
 		}
 
-		if ( '' !== $value && ! wp_http_validate_url( $value ) ) {
+		if ( '' !== $value && ! filter_var( $value, FILTER_VALIDATE_URL ) ) {
 			return new WP_Error(
 				'rest_invalid_pattern',
 				__( 'Error: Invalid business URL: ', 'woocommerce-payments' ) . $value
@@ -326,12 +319,14 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return $string_validation_result;
 		}
 
-		foreach ( $value as $field => $field_value ) {
-			if ( ! in_array( $field, [ 'city', 'country', 'line1', 'line2', 'postal_code', 'state' ], true ) ) {
-				return new WP_Error(
-					'rest_invalid_pattern',
-					__( 'Error: Invalid address format!', 'woocommerce-payments' )
-				);
+		if ( [] !== $value ) {
+			foreach ( $value as $field => $field_value ) {
+				if ( ! in_array( $field, [ 'city', 'country', 'line1', 'line2', 'postal_code', 'state' ], true ) ) {
+					return new WP_Error(
+						'rest_invalid_pattern',
+						__( 'Error: Invalid address format!', 'woocommerce-payments' )
+					);
+				}
 			}
 		}
 
@@ -571,7 +566,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		};
 		$updated_fields          = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
 
-		return $this->wcpay_gateway->update_account_settings( $updated_fields );
+		$this->wcpay_gateway->update_account_settings( $updated_fields );
 	}
 
 	/**
