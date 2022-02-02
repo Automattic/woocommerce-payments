@@ -1294,6 +1294,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->order_service->mark_payment_on_hold( $order, $intent_id, $intent_status, $charge_id );
 				break;
 			case 'requires_action':
+			case 'requires_payment_method':
 				$this->order_service->mark_payment_pending( $order, $intent_id, $intent_status, $charge_id );
 				break;
 			default:
@@ -1894,7 +1895,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
 				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
-				if ( 'canceled' === $intent->get_status() ) {
+				$status = ! empty( $intent ) ? $intent->get_status() : null;
+				if ( 'canceled' === $status ) {
 					$is_authorization_expired = true;
 				}
 			} catch ( API_Exception $ge ) {
@@ -1908,12 +1910,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		Tracker::track_admin( 'wcpay_merchant_captured_auth' );
 
-		$this->attach_exchange_info_to_order( $order, $intent->get_charge_id() );
+		// There is a possibility of the intent being null, so we need to get the charge_id safely.
+		$charge_id = ! empty( $intent ) ? $intent->get_charge_id() : $order->get_meta( '_charge_id' );
+
+		// If the status is still null, get it from the intent, if the intent is not null.
+		if ( empty( $status ) && ! empty( $intent ) ) {
+			$status = $intent->get_status();
+		}
+
+		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( 'succeeded' === $status ) {
-			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $status, $intent->get_charge_id() );
+			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $status, $charge_id );
 		} elseif ( $is_authorization_expired ) {
-			$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent->get_status(), $intent->get_charge_id() );
+			$this->order_service->mark_payment_capture_expired( $order, $intent_id, $status, $charge_id );
 		} else {
 			if ( ! empty( $error_message ) ) {
 				$error_message = esc_html( $error_message );
@@ -1921,7 +1931,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$http_code = 502;
 			}
 
-			$this->order_service->mark_payment_capture_failed( $order, $intent_id, $status, $intent->get_charge_id(), $error_message );
+			$this->order_service->mark_payment_capture_failed( $order, $intent_id, $status, $charge_id, $error_message );
 		}
 
 		return [
