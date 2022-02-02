@@ -677,6 +677,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Customer_Service instance
+	 *
+	 * @return WC_Payments_Customer_Service  The Customer Service instance.
+	 */
+	public static function get_customer_service(): WC_Payments_Customer_Service {
+		return self::$customer_service;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
@@ -781,6 +790,8 @@ class WC_Payments {
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
 			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+			add_filter( 'woocommerce_checkout_fields', [ __CLASS__, 'platform_checkout_remove_default_email_field' ], 50 );
+			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
 		}
 	}
 
@@ -792,16 +803,29 @@ class WC_Payments {
 	public static function ajax_init_platform_checkout() {
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
+		$user        = wp_get_current_user();
+		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			// create customer.
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
+			self::$customer_service->create_customer_for_user( $user, $customer_data );
+		}
+
+		$account_id = self::get_account_service()->get_stripe_account_id();
+
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 		$body                   = [
-			'user_id'              => get_current_user_id(),
+			'user_id'              => $user->ID,
+			'customer_id'          => $customer_id,
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
 				'store_name' => get_bloginfo( 'name' ),
 				'store_logo' => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
 				'blog_id'    => Jetpack_Options::get_option( 'id' ),
+				'blog_url'   => get_site_url(),
+				'account_id' => $account_id,
 			],
 		];
 		$args                   = [
@@ -843,5 +867,49 @@ class WC_Payments {
 		);
 
 		return (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'];
+	}
+
+	/**
+	 * Remove default billing email field for Platform Checkout
+	 *
+	 * @param array $fields WooCommerce checkout fields.
+	 * @return array WooCommerce checkout fields.
+	 */
+	public static function platform_checkout_remove_default_email_field( $fields ) {
+		if ( isset( $fields['billing']['billing_email'] ) ) {
+			unset( $fields['billing']['billing_email'] );
+		} else {
+			remove_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Adds custom email field.
+	 */
+	public static function platform_checkout_fields_before_billing_details() {
+		$checkout = WC()->checkout;
+
+		echo '<div id="contact_details" class="col2-set">';
+		echo '<div class="col-1">';
+
+		echo '<h3>' . esc_html( __( 'Contact information', 'woocommerce-payments' ) ) . '</h3>';
+
+		woocommerce_form_field(
+			'billing_email',
+			[
+				'type'        => 'email',
+				'label'       => __( 'Email address', 'woocommerce-payments' ),
+				'class'       => [ 'form-row-wide platform-checkout-billing-email' ],
+				'input_class' => [ 'platform-checkout-billing-email-input' ],
+				'validate'    => [ 'email' ],
+				'required'    => true,
+			],
+			$checkout->get_value( 'billing_email' )
+		);
+
+		echo '</div>';
+		echo '</div>';
 	}
 }
