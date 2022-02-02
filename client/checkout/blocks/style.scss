@@ -13,3 +13,25 @@
 	margin-top: 1rem;
 	width: 100%;
 }
+
+.wc-block-components-main
+	.wc-block-components-checkout-step--with-step-number
+	.wc-block-components-checkout-step__content
+	> :last-child {
+	padding: 0;
+}
+
+#contact-fields {
+	padding-bottom: 1.5em;
+}
+
+#contact-fields {
+	.wc-block-components-text-input {
+		position: relative;
+
+		.wc-block-components-spinner {
+			width: 24px;
+			right: 10px;
+		}
+	}
+}
