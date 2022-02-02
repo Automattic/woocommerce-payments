@@ -1291,11 +1291,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				break;
 			case 'processing':
 			case 'requires_capture':
-				$this->order_service->mark_payment_on_hold( $order, $intent_id, $intent_status, $charge_id );
+				$this->order_service->mark_payment_authorized( $order, $intent_id, $intent_status, $charge_id );
 				break;
 			case 'requires_action':
 			case 'requires_payment_method':
-				$this->order_service->mark_payment_pending( $order, $intent_id, $intent_status, $charge_id );
+				$this->order_service->mark_payment_started( $order, $intent_id, $intent_status, $charge_id );
 				break;
 			default:
 				Logger::error( 'Uncaught payment intent status of ' . $intent_status . ' passed for order id: ' . $order->get_id() );
@@ -2146,7 +2146,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					break;
 				case 'processing':
 				case 'requires_capture':
-					$this->order_service->mark_payment_on_hold( $order, $intent_id, $status, $charge_id );
+					$this->order_service->mark_payment_authorized( $order, $intent_id, $status, $charge_id );
 					break;
 				case 'requires_payment_method':
 					$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );

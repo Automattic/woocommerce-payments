@@ -15,13 +15,6 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_Order_Service {
 
 	/**
-	 * Stripe intents that are treated as successfully created.
-	 *
-	 * @type array
-	 */
-	const SUCCESSFUL_INTENT_STATUS = [ 'succeeded', 'requires_capture', 'processing' ];
-
-	/**
 	 * Updates an order to processing/completed status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
@@ -37,7 +30,7 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->update_order_status( $order, 'payment_complete', $intent_id );
-		$this->add_success_note( $order, $intent_id, $charge_id );
+		$this->add_payment_success_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -60,7 +53,7 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->update_order_status( $order, 'failed' );
-		$this->add_failure_note( $order, $intent_id, $charge_id, $message );
+		$this->add_payment_failure_note( $order, $intent_id, $charge_id, $message );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -74,14 +67,14 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	public function mark_payment_on_hold( $order, $intent_id, $intent_status, $charge_id ) {
+	public function mark_payment_authorized( $order, $intent_id, $intent_status, $charge_id ) {
 		if ( $order->has_status( [ 'on-hold' ] )
 			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
 		$this->update_order_status( $order, 'on-hold' );
-		$this->add_on_hold_note( $order, $intent_id, $charge_id );
+		$this->add_payment_authorized_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -95,14 +88,14 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	public function mark_payment_pending( $order, $intent_id, $intent_status, $charge_id ) {
+	public function mark_payment_started( $order, $intent_id, $intent_status, $charge_id ) {
 		if ( ! $order->has_status( [ 'pending' ] )
 			|| 'requires_action' === $order->get_meta( '_intention_status' )
 			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
-		$this->add_pending_note( $order, $intent_id, $charge_id );
+		$this->add_payment_started_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -260,7 +253,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	private function add_success_note( $order, $intent_id, $charge_id ) {
+	private function add_payment_success_note( $order, $intent_id, $charge_id ) {
 		$payment_needed = $order->get_total() > 0;
 
 		if ( ! $payment_needed ) {
@@ -294,7 +287,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	private function add_failure_note( $order, $intent_id, $charge_id, $message ) {
+	private function add_payment_failure_note( $order, $intent_id, $charge_id, $message ) {
 		$transaction_url = $this->compose_transaction_url( $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
@@ -317,7 +310,7 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Adds the on-hold order note.
+	 * Adds the payment authorized order note.
 	 *
 	 * @param WC_Order $order     Order object.
 	 * @param string   $intent_id The ID of the intent associated with this order.
@@ -325,7 +318,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	private function add_on_hold_note( $order, $intent_id, $charge_id ) {
+	private function add_payment_authorized_note( $order, $intent_id, $charge_id ) {
 		$transaction_url = $this->compose_transaction_url( $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
@@ -344,7 +337,7 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Adds the pending order note.
+	 * Adds the payment started order note.
 	 *
 	 * @param WC_Order $order     Order object.
 	 * @param string   $intent_id The ID of the intent associated with this order.
@@ -352,7 +345,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	private function add_pending_note( $order, $intent_id, $charge_id ) {
+	private function add_payment_started_note( $order, $intent_id, $charge_id ) {
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */

@@ -207,13 +207,13 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Tests if the order was marked on-hold successfully.
 	 */
-	public function test_mark_payment_on_hold() {
+	public function test_mark_payment_authorized() {
 		// Arrange: Set the intent and order statuses.
 		$intent_status = 'requires_capture';
 		$order_status  = 'on-hold';
 
 		// Act: Attempt to mark the payment/order on-hold.
-		$this->order_service->mark_payment_on_hold( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+		$this->order_service->mark_payment_authorized( $this->order, $this->intent_id, $intent_status, $this->charge_id );
 
 		// Assert: Check to make sure the intent_status meta was set.
 		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
@@ -232,16 +232,16 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Method `mark_payment_on_hold` should exit if the order status is already on-hold.
+	 * Method `mark_payment_authorized` should exit if the order status is already on-hold.
 	 */
-	public function test_mark_payment_on_hold_exits_on_existing_order_status_on_hold() {
+	public function test_mark_payment_authorized_exits_on_existing_order_status_on_hold() {
 		// Arrange: Set the intent status, order status, and get the expected notes.
 		$intent_status = 'requires_capture';
 		$this->order->set_status( 'on-hold' );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order on-hold.
-		$this->order_service->mark_payment_on_hold( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+		$this->order_service->mark_payment_authorized( $this->order, $this->intent_id, $intent_status, $this->charge_id );
 
 		// Assert: Check that the notes were not updated.
 		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -254,13 +254,13 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Tests marking/leaving the payment in pending status with a started note.
 	 */
-	public function test_mark_payment_pending() {
+	public function test_mark_payment_started() {
 		// Arrange: Set the intent and order statuses.
 		$intent_status = 'requires_action';
 		$order_status  = 'pending';
 
 		// Act: Attempt to mark the payment/order pending.
-		$this->order_service->mark_payment_pending( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+		$this->order_service->mark_payment_started( $this->order, $this->intent_id, $intent_status, $this->charge_id );
 
 		// Assert: Check to make sure the intent_status meta was set.
 		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
@@ -278,16 +278,16 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Method `mark_payment_pending` should exit if the order status is not already pending.
+	 * Method `mark_payment_started` should exit if the order status is not already pending.
 	 */
-	public function test_mark_payment_pending_exits_on_existing_order_status_not_pending() {
+	public function test_mark_payment_started_exits_on_existing_order_status_not_pending() {
 		// Arrange: Set the intent status, order status, and get the expected notes.
 		$intent_status = 'requires_action';
 		$this->order->set_status( 'on-hold' );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order pending.
-		$this->order_service->mark_payment_pending( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+		$this->order_service->mark_payment_started( $this->order, $this->intent_id, $intent_status, $this->charge_id );
 
 		// Assert: Check that the notes were not updated.
 		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -298,16 +298,16 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Method `mark_payment_pending` should exit if the intent status is already requires_action.
+	 * Method `mark_payment_started` should exit if the intent status is already requires_action.
 	 */
-	public function test_mark_payment_pending_on_existing_intent_status_requires_action() {
+	public function test_mark_payment_started_on_existing_intent_status_requires_action() {
 		// Arrange: Set the intent status, apply intent status, and get the expected notes.
 		$intent_status = 'requires_action';
 		$this->order->update_meta_data( '_intention_status', $intent_status );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order pending.
-		$this->order_service->mark_payment_pending( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+		$this->order_service->mark_payment_started( $this->order, $this->intent_id, $intent_status, $this->charge_id );
 
 		// Assert: Check that the notes were not updated.
 		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );

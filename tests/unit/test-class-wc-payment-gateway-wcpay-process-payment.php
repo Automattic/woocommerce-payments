@@ -424,7 +424,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Assert: The Order_Service is called correctly.
 		$this->mock_order_service
 			->expects( $this->once() )
-			->method( 'mark_payment_on_hold' )
+			->method( 'mark_payment_authorized' )
 			->with( $mock_order, $intent_id, $status, $charge_id );
 
 		// Assert: Order has correct transaction ID set.
@@ -799,7 +799,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Assert: The Order_Service is called correctly.
 		$this->mock_order_service
 			->expects( $this->once() )
-			->method( 'mark_payment_pending' )
+			->method( 'mark_payment_started' )
 			->with( $mock_order, $intent_id, $status, $charge_id );
 
 		// Assert: Order has correct transaction ID set.
