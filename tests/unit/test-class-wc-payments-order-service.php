@@ -558,9 +558,7 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'Pending payment to Completed', $notes[1]->content );
-		$this->assertContains( 'successfully charged</strong> using WooCommerce In-Person Payments', $notes[0]->content );
-		$this->assertContains( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">py_123', $notes[0]->content );
+		$this->assertContains( 'Pending payment to Completed', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );

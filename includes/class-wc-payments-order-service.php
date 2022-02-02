@@ -247,12 +247,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status, $charge_id ) {
-		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
-			return;
-		}
-
 		$this->update_order_status( $order, 'completed', $intent_id );
-		$this->add_terminal_complete_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -520,33 +515,6 @@ class WC_Payments_Order_Service {
 				]
 			),
 			$status
-		);
-
-		$order->add_order_note( $note );
-	}
-
-	/**
-	 * Adds the terminal complete note.
-	 *
-	 * @param WC_Order $order     Order object.
-	 * @param string   $intent_id The ID of the intent associated with this order.
-	 * @param string   $charge_id The charge ID related to the intent/order.
-	 *
-	 * @return void
-	 */
-	private function add_terminal_complete_note( $order, $intent_id, $charge_id ) {
-		$transaction_url = $this->compose_transaction_url( $charge_id );
-		$note            = sprintf(
-			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce In-Person Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
-				[
-					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
-				]
-			),
-			$this->get_order_amount( $order ),
-			$charge_id
 		);
 
 		$order->add_order_note( $note );
