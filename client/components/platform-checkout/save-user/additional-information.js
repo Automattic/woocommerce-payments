@@ -16,7 +16,7 @@ const AdditionalInformation = () => {
 				<PhoneIcon />
 				<span>
 					{ __(
-						'Next time time you checkout, we’ll send you a text message to access your saved information.',
+						"Next time time you checkout, we'll send you a text message to access your saved information.",
 						'woocommerce-payments'
 					) }
 				</span>
