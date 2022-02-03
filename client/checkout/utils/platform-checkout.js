@@ -34,6 +34,15 @@ export const handlePlatformCheckoutEmailInput = ( field ) => {
 		platformCheckoutEmailInput.focus();
 	};
 	iframeWrapper.addEventListener( 'click', closeIframe );
+	window.addEventListener( 'message', ( e ) => {
+		if ( getConfig( 'platformCheckoutHost' ) !== e.origin ) {
+			return;
+		}
+
+		if ( 'close_modal' === e.data.action ) {
+			closeIframe();
+		}
+	} );
 
 	const openIframe = ( email ) => {
 		iframe.src =
