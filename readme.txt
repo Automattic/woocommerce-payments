@@ -111,6 +111,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Implement Jetpack Identity Crisis / Safe Mode banner.
 * Fix - Checkout with block-based themes.
 * Add - UPE payment method - EPS.
+* Fix - Redundant payment intents for UPE.
 
 = 3.6.1 - 2022-01-27 =
 * Fix - Remove packages not compatible with PHP 7.0
