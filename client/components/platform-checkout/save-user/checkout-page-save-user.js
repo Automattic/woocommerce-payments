@@ -38,7 +38,7 @@ const CheckoutPageSaveUser = () => {
 				) }
 			/>
 			{ isSaveDetailsChecked && (
-				<div className="save-details-form">
+				<div className="save-details-form place-order">
 					<AboutPlatformCheckout />
 					<TextControl
 						type="text"
