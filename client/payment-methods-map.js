@@ -8,11 +8,13 @@ import { __ } from '@wordpress/i18n';
  */
 import CreditCardIcon from './gateway-icons/credit-card';
 import BancontactIcon from './gateway-icons/bancontact';
+import EpsIcon from './gateway-icons/eps';
 import GiropayIcon from './gateway-icons/giropay';
 import SofortIcon from './gateway-icons/sofort';
 import SepaIcon from './gateway-icons/sepa';
 import P24Icon from './gateway-icons/p24';
 import IdealIcon from './gateway-icons/ideal';
+import BankDebitIcon from './gateway-icons/bank-debit';
 
 export default {
 	card: {
@@ -26,6 +28,17 @@ export default {
 		currencies: [],
 		stripe_key: 'card_payments',
 	},
+	au_becs_debit: {
+		id: 'au_becs_debit',
+		label: __( 'BECS Direct Debit', 'woocommerce-payments' ),
+		description: __(
+			'Bulk Electronic Clearing System — Accept secure bank transfer from Australia.',
+			'woocommerce-payments'
+		),
+		Icon: BankDebitIcon,
+		currencies: [ 'AUD' ],
+		stripe_key: 'au_becs_debit_payments',
+	},
 	bancontact: {
 		id: 'bancontact',
 		label: __( 'Bancontact', 'woocommerce-payments' ),
@@ -36,6 +49,17 @@ export default {
 		Icon: BancontactIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'bancontact_payments',
+	},
+	eps: {
+		id: 'eps',
+		label: __( 'EPS', 'woocommerce-payments' ),
+		description: __(
+			'Accept your payment with EPS — a common payment method in Austria.',
+			'woocommerce-payments'
+		),
+		Icon: EpsIcon,
+		currencies: [ 'EUR' ],
+		stripe_key: 'eps_payments',
 	},
 	giropay: {
 		id: 'giropay',

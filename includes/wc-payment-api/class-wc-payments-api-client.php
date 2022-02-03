@@ -708,17 +708,26 @@ class WC_Payments_API_Client {
 	/**
 	 * List disputes
 	 *
-	 * @param  int $page The page index to retrieve.
-	 * @param  int $page_size The number of items the page contains.
+	 * @param int    $page The page index to retrieve.
+	 * @param int    $page_size The number of items the page contains.
+	 * @param string $sort       The column to be used for sorting.
+	 * @param string $direction  The sorting direction.
+	 * @param array  $filters The filters to be used in the query.
+	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function list_disputes( int $page = 0, int $page_size = 25 ):array {
-		$query = [
-			'limit'    => 100,
-			'page'     => $page,
-			'pagesize' => $page_size,
-		];
+	public function list_disputes( int $page = 0, int $page_size = 25, string $sort = 'created', string $direction = 'DESC', array $filters = [] ):array {
+		$query = array_merge(
+			$filters,
+			[
+				'limit'     => 100,
+				'page'      => $page,
+				'pagesize'  => $page_size,
+				'sort'      => $sort,
+				'direction' => $direction,
+			]
+		);
 
 		$disputes = $this->request( $query, self::DISPUTES_API, self::GET );
 
@@ -741,11 +750,13 @@ class WC_Payments_API_Client {
 	/**
 	 * Get summary of disputes.
 	 *
+	 * @param array $filters The filters to be used in the query.
+	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_disputes_summary():array {
-		return $this->request( [], self::DISPUTES_API . '/summary', self::GET );
+	public function get_disputes_summary( array $filters = [] ):array {
+		return $this->request( [ $filters ], self::DISPUTES_API . '/summary', self::GET );
 	}
 
 	/**
@@ -1003,6 +1014,31 @@ class WC_Payments_API_Client {
 				'test_mode'    => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API . '/login_links',
+			self::POST,
+			true,
+			true
+		);
+	}
+
+	/**
+	 * Get a one-time capital link.
+	 *
+	 * @param string $type        The type of link to be requested.
+	 * @param string $return_url  URL to navigate back to from the dashboard.
+	 * @param string $refresh_url URL to navigate to if the link expired, has been previously-visited, or is otherwise invalid.
+	 *
+	 * @return array Account link object with create, expires_at, and url fields.
+	 *
+	 * @throws API_Exception When something goes wrong with the request, or there aren't valid loan offers for the merchant.
+	 */
+	public function get_capital_link( $type, $return_url, $refresh_url ) {
+		return $this->request(
+			[
+				'type'        => $type,
+				'return_url'  => $return_url,
+				'refresh_url' => $refresh_url,
+			],
+			self::ACCOUNTS_API . '/capital_links',
 			self::POST,
 			true,
 			true

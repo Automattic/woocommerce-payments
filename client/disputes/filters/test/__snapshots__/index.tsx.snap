@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Disputes filters when filtering by status should render all statuses 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="warning_needs_response"
+  >
+    Inquiry: Needs response
+  </option>,
+  <option
+    value="warning_under_review"
+  >
+    Inquiry: Under review
+  </option>,
+  <option
+    value="warning_closed"
+  >
+    Inquiry: Closed
+  </option>,
+  <option
+    value="needs_response"
+  >
+    Needs response
+  </option>,
+  <option
+    value="under_review"
+  >
+    Under review
+  </option>,
+  <option
+    value="charge_refunded"
+  >
+    Charge refunded
+  </option>,
+  <option
+    value="won"
+  >
+    Won
+  </option>,
+  <option
+    value="lost"
+  >
+    Lost
+  </option>,
+]
+`;
