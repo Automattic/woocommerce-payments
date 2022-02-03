@@ -22,10 +22,14 @@ export const handlePlatformCheckoutEmailInput = ( field ) => {
 		'woocommerce-payments'
 	);
 	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
+	iframe.addEventListener( 'load', () => {
+		iframe.classList.add( 'open' );
+	} );
 	iframeWrapper.insertBefore( iframe, null );
 
 	const closeIframe = () => {
 		iframeWrapper.remove();
+		iframe.classList.remove( 'open' );
 		platformCheckoutEmailInput.focus();
 	};
 	iframeWrapper.addEventListener( 'click', closeIframe );
