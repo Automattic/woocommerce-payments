@@ -30,6 +30,21 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 		],
 	];
 
+	/**
+	 * mock_order_data
+	 *
+	 * @var array
+	 */
+	private $mock_order_data = [
+		'coupon_lines' => [],
+		'line_items'   => [],
+		'subtotal'     => 42,
+		'tax_lines'    => [],
+		'id'           => '42',
+		'currency'     => 'usd',
+		'total'        => '42',
+	];
+
 	public function setUp() {
 		parent::setUp();
 
@@ -37,11 +52,10 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 	}
 
 	public function test_get_receipt_markup_is_EMV_compliant() {
-		$mock_order  = WC_Helper_Order::create_order();
 		$mock_charge = [
 			'amount_captured'        => 10,
 			'order'                  => [
-				'number' => $mock_order->get_id(),
+				'number' => $this->mock_order_data['id'],
 			],
 			'payment_method_details' => [
 				'card_present' => [
@@ -56,7 +70,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 			],
 		];
 
-		$result = $this->receipts_service->get_receipt_markup( $this->mock_settings, $mock_order, $mock_charge );
+		$result = $this->receipts_service->get_receipt_markup( $this->mock_settings, $this->mock_order_data, $mock_charge );
 
 		$doc = new DOMDocument();
 		$doc->loadHTML( $result );
@@ -74,7 +88,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 		$mock_order = WC_Helper_Order::create_order();
 		$this->expectException( \RuntimeException::class );
 		$this->expectExceptionMessage( $expected_message );
-		$this->receipts_service->get_receipt_markup( $this->mock_settings, $mock_order, $input_charge );
+		$this->receipts_service->get_receipt_markup( $this->mock_settings, $this->mock_order_data, $input_charge );
 	}
 
 	/**
@@ -84,7 +98,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 		$mock_order = WC_Helper_Order::create_order();
 		$this->expectException( \RuntimeException::class );
 		$this->expectExceptionMessage( $expected_message );
-		$this->receipts_service->get_receipt_markup( $input_settings, $mock_order, [] );
+		$this->receipts_service->get_receipt_markup( $input_settings, $this->mock_order_data, [] );
 	}
 
 	public function provide_settings_validation_data() {

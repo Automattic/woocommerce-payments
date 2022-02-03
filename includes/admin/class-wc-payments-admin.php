@@ -128,7 +128,7 @@ class WC_Payments_Admin {
 	 * @return bool
 	 */
 	public static function is_card_readers_page_enabled() {
-		return '1' === get_option( self::CARD_READERS_FLAG_NAME, '0' );
+		return '1' === get_option( self::CARD_READERS_FLAG_NAME, '1' ); // TODO remove this.
 	}
 
 	/**
@@ -318,6 +318,16 @@ class WC_Payments_Admin {
 					'parent' => 'woocommerce-settings-payments',
 					'title'  => __( 'Set up multiple currencies', 'woocommerce-payments' ),
 					'path'   => '/payments/multi-currency-setup',
+				]
+			);
+
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-card-readers-preview-receipt',
+					'parent' => 'wc-payments-card-readers',
+					'title'  => __( 'Preview a printed receipt', 'woocommerce-payments' ),
+					'path'   => '/payments/card-readers/preview-receipt',
+
 				]
 			);
 		}

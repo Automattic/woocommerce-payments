@@ -8,7 +8,6 @@
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
-
 /**
  * REST controller for reader charges.
  */
@@ -106,6 +105,16 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'generate_print_receipt' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/receipts/print/preview',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'preview_print_receipt' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -270,7 +279,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			];
 
 			/* Generate receipt */
-			$receipt_data = $this->receipts_service->get_receipt_markup( $settings, $order, $charge );
+			$receipt_data = $this->receipts_service->get_receipt_markup( $settings, $this->prepare_order_for_printed_receipt( $order ), $charge );
 		} catch ( \Throwable $e ) {
 			$error_status_code = $e instanceof API_Exception ? $e->get_http_code() : 500;
 			return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', $e->getMessage(), [ 'status' => $error_status_code ] ) );
@@ -295,5 +304,144 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			200,
 			[ 'Content-Type' => 'text/html; charset=UTF-8' ]
 		);
+	}
+	/**
+	 * Returns HTML to preview a print receipt
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_HTTP_Response|WP_Error
+	 * @throws \RuntimeException Error collecting data.
+	 */
+	public function preview_print_receipt( WP_REST_Request $request ) {
+		return rest_ensure_response(
+			$this->receipts_service->get_receipt_markup(
+				$this->create_print_preview_receipt_settings_data( $request->get_body_params() ),
+				$this->create_print_preview_receipt_order_data(),
+				$this->create_print_preview_receipt_charge_data()
+			)
+		);
+	}
+
+	/**
+	 * Creates settings data to be used on the printed receipt preview. Defaults to Stripe data if one key is missing.
+	 *
+	 * @param  array $params Array of params to use to create the settings.
+	 * @return array
+	 */
+	private function create_print_preview_receipt_settings_data( array $params ): array {
+		$support_address = empty( $params['accountBusinessSupportAddress'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_address' ) : $params['accountBusinessSupportAddress'];
+		return [
+			'business_name' => empty( $params['accountBusinessName'] ) ? $this->wcpay_gateway->get_option( 'account_business_name' ) : $params['accountBusinessName'],
+			'support_info'  => [
+				'address' => [
+					'line1'       => $support_address['line1'],
+					'line2'       => $support_address['line2'],
+					'city'        => $support_address['city'],
+					'state'       => $support_address['state'],
+					'postal_code' => $support_address['postal_code'],
+					'country'     => $support_address['country'],
+				],
+				'phone'   => empty( $params['accountBusinessSupportPhone'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_phone' ) : $params['accountBusinessSupportPhone'],
+				'email'   => empty( $params['accountBusinessSupportEmail'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_email' ) : $params['accountBusinessSupportEmail'],
+			],
+		];
+	}
+
+	/**
+	 * Creates order data to be used on the printed receipt preview.
+	 *
+	 * @return array
+	 */
+	public function create_print_preview_receipt_order_data(): array {
+		return [
+			'id'           => '42',
+			'currency'     => 'USD',
+			'subtotal'     => 0,
+			'line_items'   => [
+				[
+					'name'     => 'Sample',
+					'quantity' => 1,
+					'subtotal' => 0,
+					'product'  => [
+						'price'         => 0,
+						'regular_price' => 1,
+						'id'            => 'sample',
+					],
+				],
+				[
+					'name'     => 'Sample',
+					'quantity' => 1,
+					'subtotal' => 0,
+					'product'  => [
+						'price'         => 0,
+						'regular_price' => 1,
+						'id'            => 'sample',
+					],
+				],
+			],
+			'coupon_lines' => [
+				[
+					'code'        => 'DISCOUNT',
+					'description' => 'sample',
+					'discount'    => 0,
+				],
+			],
+			'tax_lines'    => [
+				[
+					'rate_percent' => 0,
+					'tax_total'    => '0',
+				],
+			],
+			'total'        => 0,
+		];
+	}
+
+	/**
+	 * Creates charge data to be used on the printed receipt preview.
+	 *
+	 * @return array comment.
+	 */
+	public function create_print_preview_receipt_charge_data(): array {
+		return [
+			'amount_captured'        => 0,
+			'payment_method_details' => [
+				'card_present' => [
+					'brand'   => 'Sample',
+					'last4'   => '0000',
+					'receipt' => [
+						'application_preferred_name' => 'Sample',
+						'dedicated_file_name'        => '0000',
+						'account_type'               => 'Sample',
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * Prepares order data to be printed.
+	 *
+	 * @param  WC_Order $order comment.
+	 * @return array comment.
+	 */
+	public function prepare_order_for_printed_receipt( WC_Order $order ): array {
+		$order_data = $order->get_data();
+
+		$line_items_data = [];
+		foreach ( $order_data['line_items'] as $line_item ) {
+			$line_item_data            = $line_item->get_data();
+			$line_item_data['product'] = $line_item->get_product()->get_data();
+			$line_items_data[]         = $line_item_data;
+		}
+
+		return [
+			'coupon_lines' => $order_data['coupon_lines'],
+			'line_items'   => $line_items_data,
+			'subtotal'     => $order->get_subtotal(),
+			'tax_lines'    => $order_data['tax_lines'],
+			'id'           => $order_data['id'],
+			'currency'     => $order_data['currency'],
+			'total'        => $order_data['total'],
+		];
 	}
 }

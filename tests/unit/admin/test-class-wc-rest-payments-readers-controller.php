@@ -279,7 +279,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->mock_receipts_service
 			->expects( $this->once() )
 			->method( 'get_receipt_markup' )
-			->with( $settings, $this->isInstanceOf( WC_Order::class ), $charge )
+			->with( $settings, $this->controller->prepare_order_for_printed_receipt( $order ), $charge )
 			->willReturn( $receipt );
 
 		$request = new WP_REST_Request( 'GET' );
@@ -289,6 +289,104 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 
 		$this->assertSame( $receipt, $response->get_data() );
 		$this->assertSame( 200, $response->status );
+	}
+
+	public function test_preview_print_receipt() {
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'get_option' );
+
+		$this->mock_receipts_service
+			->expects( $this->once() )
+			->method( 'get_receipt_markup' )
+			->with(
+				[
+					'business_name' => 'Test',
+					'support_info'  => [
+						'phone'   => '424242',
+						'email'   => 'some@example.com',
+						'address' => [
+							'line1'       => 'line1',
+							'line2'       => 'line2',
+							'city'        => 'city',
+							'state'       => 'state',
+							'postal_code' => 'postal_code',
+							'country'     => 'country',
+						],
+					],
+				],
+				$this->controller->create_print_preview_receipt_order_data(),
+				$this->controller->create_print_preview_receipt_charge_data()
+			)
+			->willReturn( '' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'accountBusinessName'           => 'Test',
+				'accountBusinessSupportPhone'   => '424242',
+				'accountBusinessSupportEmail'   => 'some@example.com',
+				'accountBusinessSupportAddress' => [
+					'line1'       => 'line1',
+					'line2'       => 'line2',
+					'city'        => 'city',
+					'state'       => 'state',
+					'postal_code' => 'postal_code',
+					'country'     => 'country',
+				],
+			]
+		);
+
+		$response      = $this->controller->preview_print_receipt( $request );
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->status );
+		$this->assertEquals( '', $response_data );
+	}
+
+	public function test_preview_print_receipt_defaults_to_wcpay_settings() {
+		$settings = $this->mock_settings();
+		$this->mock_wcpay_gateway
+			->expects( $this->exactly( 4 ) )
+			->method( 'get_option' )
+			->willReturnOnConsecutiveCalls(
+				$settings['support_info']['address'],
+				$settings['business_name'],
+				$settings['support_info']['phone'],
+				$settings['support_info']['email']
+			);
+
+		$this->mock_receipts_service
+			->expects( $this->once() )
+			->method( 'get_receipt_markup' )
+			->with(
+				[
+					'business_name' => 'Test Business Name',
+					'support_info'  => [
+						'phone'   => '4242',
+						'email'   => 'test@example.com',
+						'address' => [
+							'line1'       => 'line1',
+							'line2'       => 'line2',
+							'city'        => 'city',
+							'state'       => 'state',
+							'postal_code' => 'postal_code',
+							'country'     => 'country',
+						],
+					],
+				],
+				$this->controller->create_print_preview_receipt_order_data(),
+				$this->controller->create_print_preview_receipt_charge_data()
+			)
+			->willReturn( '' );
+
+		$request = new WP_REST_Request( 'POST' );
+
+		$response      = $this->controller->preview_print_receipt( $request );
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->status );
+		$this->assertEquals( '', $response_data );
 	}
 
 	public function test_generate_print_receipt_invalid_payment_error() {
@@ -455,7 +553,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->mock_receipts_service
 			->expects( $this->once() )
 			->method( 'get_receipt_markup' )
-			->with( $settings, $this->isInstanceOf( WC_Order::class ), $charge )
+			->with( $settings, $this->controller->prepare_order_for_printed_receipt( $order ), $charge )
 			->willThrowException( new Exception( 'Something bad' ) );
 
 		$request = new WP_REST_Request( 'GET' );
@@ -508,7 +606,14 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			'branding_logo' => [],
 			'business_name' => 'Test Business Name',
 			'support_info'  => [
-				'address' => [],
+				'address' => [
+					'line1'       => 'line1',
+					'line2'       => 'line2',
+					'city'        => 'city',
+					'state'       => 'state',
+					'postal_code' => 'postal_code',
+					'country'     => 'country',
+				],
 				'phone'   => '4242',
 				'email'   => 'test@example.com',
 			],
