@@ -237,7 +237,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$response = $this->create_payment_intent( $order_id );
 
 			// Cache the intent id in cookie.
-			if ( strpos( $response['id'], 'pi' ) === 0 ) { // response is a payment intent (could possibly be a setup intent).
+			if ( strpos( $response['id'], 'pi_' ) === 0 ) { // response is a payment intent (could possibly be a setup intent).
 				$this->create_upe_payment_intent_cookie( $response['id'], $response['client_secret'] );
 			}
 
