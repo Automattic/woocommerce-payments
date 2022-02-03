@@ -57,3 +57,31 @@
 .components-radio-control__input[type='radio']:checked::before {
 	box-sizing: border-box;
 }
+
+.platform-checkout-settings {
+	.components-base-control:first-child {
+		margin-bottom: 2em;
+	}
+
+	&__custom-message-wrapper {
+		position: relative;
+
+		.components-base-control__field .components-text-control__input {
+			// to make room for the help text, so that the input's text and the help text don't overlap
+			padding-right: 55px;
+			max-width: 300px;
+		}
+
+		.input-help-text {
+			position: absolute;
+			left: 260px;
+			top: 42px;
+			font-size: 12px;
+			color: #757575;
+
+			@media ( min-width: 783px ) {
+				top: 38px;
+			}
+		}
+	}
+}

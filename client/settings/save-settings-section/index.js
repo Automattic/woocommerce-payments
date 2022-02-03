@@ -52,6 +52,17 @@ const SaveSettingsSection = () => {
 	const saveOnClick = async () => {
 		const isSuccess = await saveSettings();
 
+		if (
+			isSuccess &&
+			initialIsPlatformCheckoutEnabled !==
+				settings.is_platform_checkout_enabled
+		) {
+			// Update the "initial" value to properly track consecutive saves.
+			setInitialIsPlatformCheckoutEnabled(
+				settings.is_platform_checkout_enabled
+			);
+		}
+
 		// Track the event when the value changed and the
 		// settings were successfully saved.
 		if (
@@ -69,17 +80,6 @@ const SaveSettingsSection = () => {
 			// Update the "initial" value to properly track consecutive saves.
 			setInitialIsPaymentRequestEnabled(
 				settings.is_payment_request_enabled
-			);
-		}
-
-		if (
-			isSuccess &&
-			initialIsPlatformCheckoutEnabled !==
-				settings.is_platform_checkout_enabled
-		) {
-			// Update the "initial" value to properly track consecutive saves.
-			setInitialIsPlatformCheckoutEnabled(
-				settings.is_platform_checkout_enabled
 			);
 		}
 	};
