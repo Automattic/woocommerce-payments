@@ -15,6 +15,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_Product_Service {
 
+	use WC_Payments_Subscriptions_Utilities;
+
 	/**
 	 * The product meta key used to store the product data we last sent to WC Pay as a hash. Used to compare current WC product data with WC Pay data.
 	 *
@@ -420,8 +422,13 @@ class WC_Payments_Product_Service {
 	 * @param int $product_id Post ID of the product.
 	 */
 	public function limit_subscription_product_intervals( $product_id ) {
+		if ( $this->is_subscriptions_plugin_active() ) {
+			return;
+		}
+
 		// Skip products that aren't subscriptions.
 		$product = wc_get_product( $product_id );
+
 		if (
 			! $product ||
 			! WC_Subscriptions_Product::is_subscription( $product ) ||
@@ -456,6 +463,10 @@ class WC_Payments_Product_Service {
 	 * @param int $index Variation index in the incoming array.
 	 */
 	public function limit_subscription_variation_intervals( $product_id, $index ) {
+		if ( $this->is_subscriptions_plugin_active() ) {
+			return;
+		}
+
 		// Skip products that aren't subscriptions.
 		$product           = wc_get_product( $product_id );
 		$admin_notice_sent = false;

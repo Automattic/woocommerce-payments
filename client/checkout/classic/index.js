@@ -5,12 +5,14 @@
  */
 import './style.scss';
 import {
+	PAYMENT_METHOD_NAME_BECS,
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_GIROPAY,
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
 } from '../constants.js';
 import { getConfig } from 'utils/checkout';
+import { handlePlatformCheckoutEmailInput } from '../utils/platform-checkout';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
 
@@ -469,6 +471,7 @@ jQuery( function ( $ ) {
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	const wcpayPaymentMethods = [
+		PAYMENT_METHOD_NAME_BECS,
 		PAYMENT_METHOD_NAME_CARD,
 		PAYMENT_METHOD_NAME_GIROPAY,
 		PAYMENT_METHOD_NAME_SEPA,
@@ -554,4 +557,8 @@ jQuery( function ( $ ) {
 			maybeShowAuthenticationModal();
 		}
 	} );
+
+	if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
+		handlePlatformCheckoutEmailInput( '#billing_email' );
+	}
 } );
