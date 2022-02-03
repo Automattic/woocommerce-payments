@@ -74,14 +74,12 @@
 
 @media screen and ( min-width: 768px ) {
 	.platform-checkout-billing-email {
-		width: 52.9411764706%;
 		.woocommerce-input-wrapper {
-			.platform-checkout-sms-otp-iframe-wrapper{
+			.platform-checkout-sms-otp-iframe-wrapper {
 				.platform-checkout-sms-otp-iframe {
-					width: 250px;
-					height: 500px;
+					height: 90vh;
 					position: absolute;
-					left: calc(100% + 10px);
+					left: calc( 100% + 10px );
 					top: -250px;
 				}
 				&::before {
@@ -92,12 +90,12 @@
 					left: 0;
 					width: 100vw;
 					height: 100vh;
-					content:" ";
-					display:block;
+					content: ' ';
+					display: block;
 					z-index: 555;
 				}
-				&::after{
-					content: "";
+				&::after {
+					content: '';
 					position: absolute;
 					left: 100%;
 					top: 0;
@@ -110,7 +108,6 @@
 					border-right: 10px solid #fff;
 				}
 			}
-
 		}
 	}
 }
