@@ -111,6 +111,7 @@ const TransactionsAndDeposits = () => {
 						value={ accountStatementDescriptor }
 						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
+						data-testid={ 'store-name-bank-statement' }
 					/>
 					<span className="input-help-text" aria-hidden="true">
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
