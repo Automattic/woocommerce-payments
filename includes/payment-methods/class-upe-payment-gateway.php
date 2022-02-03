@@ -931,6 +931,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$methods[] = 'au_becs_debit';
 		$methods[] = 'bancontact';
+		$methods[] = 'eps';
 		$methods[] = 'giropay';
 		$methods[] = 'ideal';
 		$methods[] = 'sofort';
