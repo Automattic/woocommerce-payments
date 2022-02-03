@@ -4,8 +4,6 @@
 const {
 	merchant,
 	shopper,
-	setCheckbox,
-	unsetCheckbox,
 	selectOrderAction,
 } = require( '@woocommerce/e2e-utils' );
 import config from 'config';
@@ -16,7 +14,7 @@ import config from 'config';
 import { merchantWCP } from '../../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
-const chkboxCaptureLaterOption = '#inspector-checkbox-control-8';
+const chkboxCaptureLaterOption = 'capture-later-checkbox';
 let orderId;
 
 describe( 'Order > Manual Capture', () => {
@@ -24,7 +22,7 @@ describe( 'Order > Manual Capture', () => {
 		// As the merchant, enable the "Issue an authorization on checkout, and capture later" option in the Payment Settings page
 		await merchant.login();
 		await merchantWCP.openWCPSettings();
-		await setCheckbox( chkboxCaptureLaterOption );
+		await merchantWCP.setCheckboxByTestId( chkboxCaptureLaterOption );
 		await expect( page ).toFill( '#inspector-text-control-0', 'E2E Store' );
 		await merchantWCP.wcpSettingsSaveChanges();
 
@@ -46,7 +44,7 @@ describe( 'Order > Manual Capture', () => {
 	afterAll( async () => {
 		// Disable the "Issue an authorization on checkout, and capture later" option
 		await merchantWCP.openWCPSettings();
-		await unsetCheckbox( chkboxCaptureLaterOption );
+		await merchantWCP.unsetCheckboxByTestId( chkboxCaptureLaterOption );
 		await merchantWCP.wcpSettingsSaveChanges();
 		await merchant.logout();
 	} );

@@ -66,6 +66,7 @@ const TransactionsAndDeposits = () => {
 				<CheckboxControl
 					checked={ isManualCaptureEnabled }
 					onChange={ setIsManualCaptureEnabled }
+					data-testid={ 'capture-later-checkbox' }
 					label={ __(
 						'Issue an authorization on checkout, and capture later',
 						'woocommerce-payments'
