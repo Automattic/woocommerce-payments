@@ -55,10 +55,6 @@ export function updateIsPaymentRequestEnabled( isEnabled ) {
 	return updateSettingsValues( { is_payment_request_enabled: isEnabled } );
 }
 
-export function updateIsPlatformCheckoutEnabled( isEnabled ) {
-	return updateSettingsValues( { is_platform_checkout_enabled: isEnabled } );
-}
-
 export function updateEnabledPaymentMethodIds( methodIds ) {
 	return updateSettingsValues( {
 		enabled_payment_method_ids: [ ...methodIds ],
@@ -196,5 +192,15 @@ export function* saveSettings() {
 export function updatePaymentRequestLocations( locations ) {
 	return updateSettingsValues( {
 		payment_request_enabled_locations: [ ...locations ],
+	} );
+}
+
+export function updateIsPlatformCheckoutEnabled( isEnabled ) {
+	return updateSettingsValues( { is_platform_checkout_enabled: isEnabled } );
+}
+
+export function updatePlatformCheckoutCustomMessage( message ) {
+	return updateSettingsValues( {
+		platform_checkout_custom_message: message,
 	} );
 }

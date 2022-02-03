@@ -67,19 +67,23 @@
 		position: relative;
 
 		.components-base-control__field .components-text-control__input {
-			// to make room for the help text, so that the input's text and the help text don't overlap
-			padding-right: 55px;
-			max-width: 300px;
+			padding-right: 50px;
+			max-width: 75%;
+
+			@media ( min-width: 783px ) {
+				max-width: 52%;
+			}
 		}
 
 		.input-help-text {
 			position: absolute;
-			left: 260px;
+			right: 27%;
 			top: 42px;
 			font-size: 12px;
 			color: #757575;
 
 			@media ( min-width: 783px ) {
+				right: 50%;
 				top: 38px;
 			}
 		}

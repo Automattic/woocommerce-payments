@@ -410,6 +410,14 @@ export const usePaymentRequestButtonTheme = () => {
 	} );
 };
 
+export const useGetSavingError = () => {
+	return useSelect( ( select ) => {
+		const { getSavingError } = select( STORE_NAME );
+
+		return getSavingError();
+	}, [] );
+};
+
 export const usePlatformCheckoutEnabledSettings = () => {
 	const { updateIsPlatformCheckoutEnabled } = useDispatch( STORE_NAME );
 
@@ -423,10 +431,18 @@ export const usePlatformCheckoutEnabledSettings = () => {
 	} );
 };
 
-export const useGetSavingError = () => {
-	return useSelect( ( select ) => {
-		const { getSavingError } = select( STORE_NAME );
+export const usePlatformCheckoutCustomMessage = () => {
+	const { updatePlatformCheckoutCustomMessage } = useDispatch( STORE_NAME );
 
-		return getSavingError();
-	}, [] );
+	return useSelect(
+		( select ) => {
+			const { getPlatformCheckoutCustomMessage } = select( STORE_NAME );
+
+			return [
+				getPlatformCheckoutCustomMessage(),
+				updatePlatformCheckoutCustomMessage,
+			];
+		},
+		[ updatePlatformCheckoutCustomMessage ]
+	);
 };

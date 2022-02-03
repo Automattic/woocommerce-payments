@@ -119,10 +119,6 @@ export const getIsPaymentRequestEnabled = ( state ) => {
 	return getSettings( state ).is_payment_request_enabled || false;
 };
 
-export const getIsPlatformCheckoutEnabled = ( state ) => {
-	return getSettings( state ).is_platform_checkout_enabled || false;
-};
-
 export const getIsDebugLogEnabled = ( state ) => {
 	return getSettings( state ).is_debug_log_enabled || false;
 };
@@ -169,4 +165,12 @@ export const getIsWCPaySubscriptionsEligible = ( state ) => {
 
 export const getIsSubscriptionsPluginActive = ( state ) => {
 	return getSettings( state ).is_subscriptions_plugin_active || false;
+};
+
+export const getIsPlatformCheckoutEnabled = ( state ) => {
+	return getSettings( state ).is_platform_checkout_enabled || false;
+};
+
+export const getPlatformCheckoutCustomMessage = ( state ) => {
+	return getSettings( state ).platform_checkout_custom_message || '';
 };

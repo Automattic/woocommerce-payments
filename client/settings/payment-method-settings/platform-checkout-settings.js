@@ -10,7 +10,10 @@ import { Card, CheckboxControl, TextControl } from '@wordpress/components';
  * Internal dependencies
  */
 import CardBody from '../card-body';
-import { usePlatformCheckoutEnabledSettings } from 'wcpay/data';
+import {
+	usePlatformCheckoutEnabledSettings,
+	usePlatformCheckoutCustomMessage,
+} from 'wcpay/data';
 
 const CUSTOM_MESSAGE_MAX_LENGTH = 24;
 
@@ -19,6 +22,11 @@ const PlatformCheckoutSettings = () => {
 		isPlatformCheckoutEnabled,
 		updateIsPlatformCheckoutEnabled,
 	] = usePlatformCheckoutEnabledSettings();
+
+	const [
+		platformCheckoutCustomMessage,
+		setPlatformCheckoutCustomMessage,
+	] = usePlatformCheckoutCustomMessage();
 
 	return (
 		<Card className="platform-checkout-settings">
@@ -47,11 +55,12 @@ const PlatformCheckoutSettings = () => {
 							'Free returns and exchanges',
 							'woocommerce-payments'
 						) }
-						onChange={ () => false }
+						value={ platformCheckoutCustomMessage }
+						onChange={ setPlatformCheckoutCustomMessage }
 						maxLength={ CUSTOM_MESSAGE_MAX_LENGTH }
 					/>
 					<span className="input-help-text" aria-hidden="true">
-						{ `${ 1 } / ${ CUSTOM_MESSAGE_MAX_LENGTH }` }
+						{ `${ platformCheckoutCustomMessage.length } / ${ CUSTOM_MESSAGE_MAX_LENGTH }` }
 					</span>
 				</div>
 			</CardBody>
