@@ -128,7 +128,7 @@ class WC_Payments_Admin {
 	 * @return bool
 	 */
 	public static function is_card_readers_page_enabled() {
-		return '1' === get_option( self::CARD_READERS_FLAG_NAME, '1' ); // TODO remove this.
+		return '1' === get_option( self::CARD_READERS_FLAG_NAME, '0' );
 	}
 
 	/**
