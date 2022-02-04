@@ -118,9 +118,9 @@ export default {
 	},
 	us_bank_account: {
 		id: 'us_bank_account',
-		label: __( 'US Bank Account (ACH)', 'woocommerce-payments' ),
+		label: __( 'US Bank Account Debit (ACH)', 'woocommerce-payments' ),
 		description: __(
-			'US Bank Account needs a description.',
+			'Accept US bank account debits from customers with a US bank account using the Automated Clearing House (ACH) system.',
 			'woocommerce-payments'
 		),
 		Icon: BankDebitIcon,

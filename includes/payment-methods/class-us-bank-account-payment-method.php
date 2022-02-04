@@ -22,7 +22,7 @@ class US_Bank_Account_Payment_Method extends UPE_Payment_Method {
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 		$this->stripe_id   = 'us_bank_account';
-		$this->title       = 'US Bank Account';
+		$this->title       = 'US Bank Account Debit';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'USD' ];
 	}
