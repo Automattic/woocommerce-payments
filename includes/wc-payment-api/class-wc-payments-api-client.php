@@ -27,32 +27,33 @@ class WC_Payments_API_Client {
 
 	const API_TIMEOUT_SECONDS = 70;
 
-	const ACCOUNTS_API           = 'accounts';
-	const CAPABILITIES_API       = 'accounts/capabilities';
-	const APPLE_PAY_API          = 'apple_pay';
-	const CHARGES_API            = 'charges';
-	const CONN_TOKENS_API        = 'terminal/connection_tokens';
-	const TERMINAL_LOCATIONS_API = 'terminal/locations';
-	const CUSTOMERS_API          = 'customers';
-	const CURRENCY_API           = 'currency';
-	const INTENTIONS_API         = 'intentions';
-	const REFUNDS_API            = 'refunds';
-	const DEPOSITS_API           = 'deposits';
-	const TRANSACTIONS_API       = 'transactions';
-	const DISPUTES_API           = 'disputes';
-	const FILES_API              = 'files';
-	const ONBOARDING_API         = 'onboarding';
-	const TIMELINE_API           = 'timeline';
-	const PAYMENT_METHODS_API    = 'payment_methods';
-	const SETUP_INTENTS_API      = 'setup_intents';
-	const TRACKING_API           = 'tracking';
-	const PRODUCTS_API           = 'products';
-	const PRICES_API             = 'products/prices';
-	const INVOICES_API           = 'invoices';
-	const SUBSCRIPTIONS_API      = 'subscriptions';
-	const SUBSCRIPTION_ITEMS_API = 'subscriptions/items';
-	const READERS_CHARGE_SUMMARY = 'reader-charges/summary';
-	const TERMINAL_READERS_API   = 'terminal/readers';
+	const ACCOUNTS_API                 = 'accounts';
+	const CAPABILITIES_API             = 'accounts/capabilities';
+	const APPLE_PAY_API                = 'apple_pay';
+	const CHARGES_API                  = 'charges';
+	const CONN_TOKENS_API              = 'terminal/connection_tokens';
+	const TERMINAL_LOCATIONS_API       = 'terminal/locations';
+	const CUSTOMERS_API                = 'customers';
+	const CURRENCY_API                 = 'currency';
+	const INTENTIONS_API               = 'intentions';
+	const REFUNDS_API                  = 'refunds';
+	const DEPOSITS_API                 = 'deposits';
+	const TRANSACTIONS_API             = 'transactions';
+	const DISPUTES_API                 = 'disputes';
+	const FILES_API                    = 'files';
+	const ONBOARDING_API               = 'onboarding';
+	const TIMELINE_API                 = 'timeline';
+	const PAYMENT_METHODS_API          = 'payment_methods';
+	const SETUP_INTENTS_API            = 'setup_intents';
+	const TRACKING_API                 = 'tracking';
+	const PRODUCTS_API                 = 'products';
+	const PRICES_API                   = 'products/prices';
+	const INVOICES_API                 = 'invoices';
+	const SUBSCRIPTIONS_API            = 'subscriptions';
+	const SUBSCRIPTION_ITEMS_API       = 'subscriptions/items';
+	const READERS_CHARGE_SUMMARY       = 'reader-charges/summary';
+	const TERMINAL_READERS_API         = 'terminal/readers';
+	const MINIMUM_RECURRING_AMOUNT_API = 'subscriptions/minimum_amount';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -624,6 +625,24 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Initiates transactions export via API.
+	 *
+	 * @param array $filters The filters to be used in the query.
+	 *
+	 * @return array Export summary
+	 *
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_transactions_export( $filters = [] ) {
+		// Map Order # terms to the actual charge id to be used in the server.
+		if ( ! empty( $filters['search'] ) ) {
+			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
+		}
+
+		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
+	}
+
+	/**
 	 * Fetch a single transaction with provided id.
 	 *
 	 * @param string $transaction_id id of requested transaction.
@@ -689,13 +708,26 @@ class WC_Payments_API_Client {
 	/**
 	 * List disputes
 	 *
+	 * @param int    $page The page index to retrieve.
+	 * @param int    $page_size The number of items the page contains.
+	 * @param string $sort       The column to be used for sorting.
+	 * @param string $direction  The sorting direction.
+	 * @param array  $filters The filters to be used in the query.
+	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function list_disputes() {
-		$query = [
-			'limit' => 100,
-		];
+	public function list_disputes( int $page = 0, int $page_size = 25, string $sort = 'created', string $direction = 'DESC', array $filters = [] ):array {
+		$query = array_merge(
+			$filters,
+			[
+				'limit'     => 100,
+				'page'      => $page,
+				'pagesize'  => $page_size,
+				'sort'      => $sort,
+				'direction' => $direction,
+			]
+		);
 
 		$disputes = $this->request( $query, self::DISPUTES_API, self::GET );
 
@@ -704,15 +736,27 @@ class WC_Payments_API_Client {
 			foreach ( $disputes['data'] as &$dispute ) {
 				try {
 					// Wrap with try/catch to avoid failing whole request because of a single dispute.
-					$dispute = $this->add_order_info_to_object( $dispute['charge']['id'], $dispute );
+					$dispute = $this->add_order_info_to_object( $dispute['charge_id'], $dispute );
 				} catch ( Exception $e ) {
-					// TODO: Log the error once Logger PR (#326) is merged.
+					Logger::error( 'Error adding order info to dispute ' . $dispute['dispute_id'] . ' : ' . $e->getMessage() );
 					continue;
 				}
 			}
 		}
 
 		return $disputes;
+	}
+
+	/**
+	 * Get summary of disputes.
+	 *
+	 * @param array $filters The filters to be used in the query.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes_summary( array $filters = [] ):array {
+		return $this->request( [ $filters ], self::DISPUTES_API . '/summary', self::GET );
 	}
 
 	/**
@@ -970,6 +1014,31 @@ class WC_Payments_API_Client {
 				'test_mode'    => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API . '/login_links',
+			self::POST,
+			true,
+			true
+		);
+	}
+
+	/**
+	 * Get a one-time capital link.
+	 *
+	 * @param string $type        The type of link to be requested.
+	 * @param string $return_url  URL to navigate back to from the dashboard.
+	 * @param string $refresh_url URL to navigate to if the link expired, has been previously-visited, or is otherwise invalid.
+	 *
+	 * @return array Account link object with create, expires_at, and url fields.
+	 *
+	 * @throws API_Exception When something goes wrong with the request, or there aren't valid loan offers for the merchant.
+	 */
+	public function get_capital_link( $type, $return_url, $refresh_url ) {
+		return $this->request(
+			[
+				'type'        => $type,
+				'return_url'  => $return_url,
+				'refresh_url' => $refresh_url,
+			],
+			self::ACCOUNTS_API . '/capital_links',
 			self::POST,
 			true,
 			true
@@ -1377,6 +1446,37 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Registers a card reader to a terminal.
+	 *
+	 * @param string  $location           The location to assign the reader to.
+	 * @param string  $registration_code  A code generated by the reader used for registering to an account.
+	 * @param ?string $label              Custom label given to the reader for easier identification.
+	 *                                    If no label is specified, the registration code will be used.
+	 * @param ?array  $metadata           Set of key-value pairs that you can attach to the reader.
+	 *                                    Useful for storing additional information about the object.
+	 *
+	 * @return array Stripe terminal reader object.
+	 * @see https://stripe.com/docs/api/terminal/readers/object
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function register_terminal_reader( string $location, string $registration_code, string $label = null, array $metadata = null ) {
+		$request = [
+			'location'          => $location,
+			'registration_code' => $registration_code,
+		];
+
+		if ( null !== $label ) {
+			$request['label'] = $label;
+		}
+		if ( null !== $metadata ) {
+			$request['metadata'] = $metadata;
+		}
+
+		return $this->request( $request, self::TERMINAL_READERS_API, self::POST );
+	}
+
+	/**
 	 * Creates a new terminal location.
 	 *
 	 * @param string  $display_name The display name of the terminal location.
@@ -1711,7 +1811,6 @@ class WC_Payments_API_Client {
 		return $object;
 	}
 
-
 	/**
 	 * Creates the array representing order for frontend.
 	 *
@@ -1867,5 +1966,22 @@ class WC_Payments_API_Client {
 	 */
 	public function get_readers_charge_summary( string $charge_date ) : array {
 		return $this->request( [ 'charge_date' => $charge_date ], self::READERS_CHARGE_SUMMARY, self::GET );
+	}
+
+	/**
+	 * Fetches from the server the minimum amount that can be processed in recurring transactions for a given currency.
+	 *
+	 * @param string $currency The currency code.
+	 *
+	 * @return int The minimum amount that can be processed in cents (with no decimals).
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_currency_minimum_recurring_amount( $currency ) {
+		return (int) $this->request(
+			[],
+			self::MINIMUM_RECURRING_AMOUNT_API . '/' . $currency,
+			self::GET
+		);
 	}
 }

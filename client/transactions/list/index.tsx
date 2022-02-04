@@ -3,11 +3,12 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React, { useState } from 'react';
 import { uniq } from 'lodash';
+import { useDispatch } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
-import { __, _n } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import {
 	TableCard,
@@ -25,7 +26,7 @@ import {
 	generateCSVDataFromTable,
 	generateCSVFileName,
 } from '@woocommerce/csv-export';
-
+import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
@@ -35,6 +36,7 @@ import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
+import { displayStatus as displayDepositStatus } from 'deposits/strings';
 import { formatStringValue } from 'utils';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import Deposit from './deposit';
@@ -45,6 +47,7 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 import DownloadButton from 'components/download-button';
+import { getTransactionsCSV } from '../../data/transactions/resolvers';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -175,11 +178,18 @@ const getColumns = (
 			cellClassName: 'deposit',
 			isLeftAligned: true,
 		},
+		includeDeposit && {
+			key: 'deposit_status',
+			label: __( 'Deposit status', 'woocommerce-payments' ),
+			visible: false,
+		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
 export const TransactionsList = (
 	props: TransactionsListProps
 ): JSX.Element => {
+	const [ isDownloading, setIsDownloading ] = useState( false );
+	const { createNotice } = useDispatch( 'core/notices' );
 	const { transactions, isLoading } = useTransactions(
 		getQuery(),
 		props.depositId ?? ''
@@ -198,6 +208,7 @@ export const TransactionsList = (
 		[ props.depositId ]
 	);
 
+	const totalRows = transactionsSummary.count || 0;
 	const rows = transactions.map( ( txn ) => {
 		const detailsURL =
 			getDetailsURL( txn.charge_id, 'transactions' ) +
@@ -272,7 +283,7 @@ export const TransactionsList = (
 			const isCardReader =
 				txn.metadata && txn.metadata.charge_type === 'card_reader_fee';
 			return {
-				value: ( isCardReader ? txn.amount : txn.fees ) / 100,
+				value: ( isCardReader ? txn.amount : txn.fees * -1 ) / 100,
 				display: clickable(
 					formatCurrency(
 						isCardReader ? txn.amount : txn.fees * -1,
@@ -281,6 +292,10 @@ export const TransactionsList = (
 				),
 			};
 		};
+
+		const depositStatus = txn.deposit_status
+			? displayDepositStatus[ txn.deposit_status ]
+			: '';
 
 		// Map transaction into table row.
 		const data = {
@@ -345,6 +360,10 @@ export const TransactionsList = (
 				display: clickable( riskLevel ),
 			},
 			deposit: { value: txn.available_on, display: deposit },
+			deposit_status: {
+				value: depositStatus,
+				display: depositStatus,
+			},
 		};
 
 		return columnsToDisplay.map(
@@ -383,20 +402,100 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const onDownload = () => {
+	const onDownload = async () => {
+		setIsDownloading( true );
+
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
+		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
-		downloadCSVFile(
-			generateCSVFileName( title, params ),
-			generateCSVDataFromTable( columnsToDisplay, rows )
-		);
+		if ( 'endpoint' === downloadType ) {
+			const {
+				date_after: dateAfter,
+				date_before: dateBefore,
+				date_between: dateBetween,
+				match,
+				search,
+				type_is: typeIs,
+				type_is_not: typeIsNot,
+			} = params;
 
-		wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-			exported_transactions: rows.length,
-			total_transactions: transactionsSummary.count,
-		} );
+			const isFiltered =
+				!! dateAfter ||
+				!! dateBefore ||
+				!! dateBetween ||
+				!! search ||
+				!! typeIs ||
+				!! typeIsNot;
+
+			const confirmThreshold = 10000;
+			const confirmMessage = sprintf(
+				__(
+					"You are about to export %d transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
+					'woocommerce-payments'
+				),
+				totalRows
+			);
+
+			if (
+				isFiltered ||
+				totalRows < confirmThreshold ||
+				window.confirm( confirmMessage )
+			) {
+				try {
+					const {
+						exported_transactions: exportedTransactions,
+					} = await apiFetch( {
+						path: getTransactionsCSV( {
+							dateAfter,
+							dateBefore,
+							dateBetween,
+							match,
+							search,
+							typeIs,
+							typeIsNot,
+						} ),
+						method: 'POST',
+					} );
+
+					createNotice(
+						'success',
+						__(
+							'Your export will be emailed to you.',
+							'woocommerce-payments'
+						)
+					);
+
+					wcpayTracks.recordEvent( 'wcpay_transactions_download', {
+						exported_transactions: exportedTransactions,
+						total_transactions: exportedTransactions,
+						download_type: downloadType,
+					} );
+				} catch {
+					createNotice(
+						'error',
+						__(
+							'There was a problem generating your export.',
+							'woocommerce-payments'
+						)
+					);
+				}
+			}
+		} else {
+			downloadCSVFile(
+				generateCSVFileName( title, params ),
+				generateCSVDataFromTable( columnsToDisplay, rows )
+			);
+
+			wcpayTracks.recordEvent( 'wcpay_transactions_download', {
+				exported_transactions: rows.length,
+				total_transactions: transactionsSummary.count,
+				download_type: downloadType,
+			} );
+		}
+
+		setIsDownloading( false );
 	};
 
 	if ( ! wcpaySettings.featureFlags.customSearch ) {
@@ -476,14 +575,10 @@ export const TransactionsList = (
 			) }
 			<TableCard
 				className="transactions-list woocommerce-report-table has-search"
-				title={
-					props.depositId
-						? __( 'Deposit transactions', 'woocommerce-payments' )
-						: __( 'Transactions', 'woocommerce-payments' )
-				}
+				title={ title }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
-				totalRows={ transactionsSummary.count || 0 }
+				totalRows={ totalRows }
 				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
@@ -508,7 +603,7 @@ export const TransactionsList = (
 					downloadable && (
 						<DownloadButton
 							key="download"
-							isDisabled={ isLoading }
+							isDisabled={ isLoading || isDownloading }
 							onClick={ onDownload }
 						/>
 					),

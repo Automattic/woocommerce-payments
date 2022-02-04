@@ -438,10 +438,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$this->multi_currency->display_geolocation_currency_update_notice();
 
-		$this->expectOutputRegex( '/<p class="woocommerce-store-notice demo_store" data-notice-id="cd4c082cbdfa742c13d944c867a45cd92" style="display:none;">/' );
-		$this->expectOutputRegex( '/We noticed you&#039;re visiting from Canada. We&#039;ve updated our prices to Canadian dollar for your shopping convenience./' );
-		$this->expectOutputRegex( '/<a href="?currency=USD">Use United States (US) dollar instead.<\/a>/' );
-		$this->expectOutputRegex( '/<a href="#" class="woocommerce-store-notice__dismiss-link">Dismiss<\/a><\/p>/' );
+		$this->expectOutputRegex( '/woocommerce-store-notice.+visiting from Canada.+\?currency=USD.+Use United States \(US\) dollar instead/' );
 	}
 
 	public function test_display_geolocation_currency_update_notice_does_not_display_if_using_default_currency() {
@@ -563,6 +560,24 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->init_multi_currency( $mock_api_client );
 		$this->assertEquals(
 			$this->mock_cached_currencies,
+			$this->multi_currency->get_cached_currencies()
+		);
+	}
+
+	public function test_get_cached_currencies_with_account_rejected() {
+		update_option( self::CACHED_CURRENCIES_OPTION, null );
+
+		$this->mock_account
+			->expects( $this->once() )
+			->method( 'is_account_rejected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_currency_rates' );
+
+		$this->assertEquals(
+			null,
 			$this->multi_currency->get_cached_currencies()
 		);
 	}
@@ -877,10 +892,10 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		}
 	}
 
-	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true ) {
+	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null ) {
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
-		$this->mock_account = $this->createMock( WC_Payments_Account::class );
+		$this->mock_account = $mock_account ?? $this->createMock( WC_Payments_Account::class );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( $wcpay_account_connected );
 
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );

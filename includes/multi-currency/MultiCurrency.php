@@ -298,6 +298,12 @@ class MultiCurrency {
 	 * @return array The new settings pages.
 	 */
 	public function init_settings_pages( $settings_pages ): array {
+		// We don't need to check if Stripe is connected for the
+		// Settings page generation on the incoming CLI and async job calls.
+		if ( ( defined( 'WP_CLI' ) && WP_CLI ) || ( defined( 'WPCOM_JOBS' ) && WPCOM_JOBS ) ) {
+			return $settings_pages;
+		}
+
 		if ( $this->payments_account->is_stripe_connected() ) {
 			$settings_pages[] = new Settings( $this );
 		} else {
@@ -355,8 +361,8 @@ class MultiCurrency {
 			return $cache_data;
 		}
 
-		// If connection to server cannot be established, or if Stripe is not connected, return expired data or null.
-		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_stripe_connected() ) {
+		// If connection to server cannot be established, or if Stripe is not connected, or if the account is rejected, return expired data or null.
+		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_stripe_connected() || $this->payments_account->is_account_rejected() ) {
 			return $cache_data ?? null;
 		}
 

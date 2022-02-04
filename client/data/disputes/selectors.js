@@ -26,6 +26,11 @@ export const getDispute = ( state, id ) => {
 	return disputeById[ id ];
 };
 
+export const getCachedDispute = ( state, id ) => {
+	const disputeById = getDisputesState( state ).cached || {};
+	return disputeById[ id ];
+};
+
 /**
  * Retrieves the disputes corresponding to the provided query or a sane
  * default if they don't exist.
@@ -38,10 +43,30 @@ export const getDispute = ( state, id ) => {
 const getDisputesForQuery = ( state, query ) => {
 	const index = getResourceId( query );
 	const queries = getDisputesState( state ).queries || {};
+
 	return queries[ index ] || {};
 };
 
 export const getDisputes = ( state, query ) => {
 	const ids = getDisputesForQuery( state, query ).data || [];
-	return ids.map( getDispute.bind( this, state ) );
+	return ids.map( getCachedDispute.bind( this, state ) );
+};
+
+/**
+ * Retrieves the disputes summary corresponding to the provided query.
+ *
+ * @param {Object} state Current wp.data state.
+ * @param {Object} query The disputes summary query.
+ *
+ * @return {Object} The disputes summary for the given query.
+ */
+const getDisputesSummaryForQuery = ( state, query ) => {
+	const index = getResourceId( query );
+	const summary = getDisputesState( state ).summary || {};
+
+	return summary[ index ] || {};
+};
+
+export const getDisputesSummary = ( state, query ) => {
+	return getDisputesSummaryForQuery( state, query ).data || {};
 };

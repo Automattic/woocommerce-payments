@@ -4,8 +4,9 @@ on:
   pull_request
 
 env:
-  WP_VERSION: latest
-  WC_VERSION: 5.5.0  # the min supported version as per L-2 policy
+  WP_VERSION:        latest
+  WC_VERSION: 5.7.0  # the min supported version as per L-2 policy
+  GUTENBERG_VERSION: latest
 
 jobs:
   lint:

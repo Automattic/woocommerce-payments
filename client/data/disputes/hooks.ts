@@ -4,8 +4,18 @@
  * External dependencies
  */
 import { useSelect, useDispatch } from '@wordpress/data';
+import type { Query } from '@woocommerce/navigation';
+import moment from 'moment';
+
+/**
+ * Internal dependencies
+ */
+import type {
+	Dispute,
+	CachedDisputes,
+	DisputesSummary,
+} from 'wcpay/types/disputes';
 import { STORE_NAME } from '../constants';
-import type { Dispute } from 'wcpay/types/disputes';
 
 export const useDispute = (
 	id: string
@@ -19,8 +29,8 @@ export const useDispute = (
 			const { getDispute, isResolving } = select( STORE_NAME );
 
 			return {
-				dispute: getDispute( id ),
-				isLoading: isResolving( 'getDispute', [ id ] ),
+				dispute: <Dispute>getDispute( id ),
+				isLoading: <boolean>isResolving( 'getDispute', [ id ] ),
 			};
 		},
 		[ id ]
@@ -32,7 +42,9 @@ export const useDispute = (
 	return { dispute, isLoading, doAccept };
 };
 
-export const useDisputeEvidence = () => {
+export const useDisputeEvidence = (): {
+	updateDispute: ( data: Dispute ) => void;
+} => {
 	const { updateDispute } = useDispatch( STORE_NAME );
 	return { updateDispute };
 };
@@ -40,25 +52,107 @@ export const useDisputeEvidence = () => {
 export const useDisputes = ( {
 	paged,
 	per_page: perPage,
-}: {
-	paged: string;
-	per_page: string;
-} ) =>
+	store_currency_is: storeCurrencyIs,
+	match,
+	date_before: dateBefore,
+	date_after: dateAfter,
+	date_between: dateBetween,
+	status_is: statusIs,
+	status_is_not: statusIsNot,
+	orderby: orderBy,
+	order,
+}: Query ): CachedDisputes =>
 	useSelect(
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );
 
 			const query = {
-				paged: Number.isNaN( parseInt( paged, 10 ) ) ? '1' : paged,
-				perPage: Number.isNaN( parseInt( perPage, 10 ) )
+				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
+					? '1'
+					: paged,
+				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
 					? '25'
 					: perPage,
+				storeCurrencyIs,
+				match,
+				dateBefore,
+				dateAfter,
+				dateBetween:
+					dateBetween &&
+					dateBetween.sort( ( a, b ) =>
+						moment( a ).diff( moment( b ) )
+					),
+				statusIs,
+				statusIsNot,
+				orderBy: orderBy || 'created',
+				order: order || 'desc',
 			};
 
-			const disputes = getDisputes( query );
-			const isLoading = isResolving( 'getDisputes', [ query ] );
-
-			return { disputes, isLoading };
+			return {
+				disputes: getDisputes( query ),
+				isLoading: isResolving( 'getDisputes', [ query ] ),
+			};
 		},
-		[ paged, perPage ]
+		[
+			paged,
+			perPage,
+			storeCurrencyIs,
+			match,
+			dateBefore,
+			dateAfter,
+			JSON.stringify( dateBetween ),
+			statusIs,
+			statusIsNot,
+			orderBy,
+			order,
+		]
+	);
+
+export const useDisputesSummary = ( {
+	paged,
+	per_page: perPage,
+	match,
+	store_currency_is: storeCurrencyIs,
+	date_before: dateBefore,
+	date_after: dateAfter,
+	date_between: dateBetween,
+	status_is: statusIs,
+	status_is_not: statusIsNot,
+}: Query ): DisputesSummary =>
+	useSelect(
+		( select ) => {
+			const { getDisputesSummary, isResolving } = select( STORE_NAME );
+
+			const query = {
+				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
+					? '1'
+					: paged,
+				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
+					? '25'
+					: perPage,
+				match,
+				storeCurrencyIs,
+				dateBefore,
+				dateAfter,
+				dateBetween,
+				statusIs,
+				statusIsNot,
+			};
+
+			return {
+				disputesSummary: getDisputesSummary( query ),
+				isLoading: isResolving( 'getDisputesSummary', [ query ] ),
+			};
+		},
+		[
+			paged,
+			perPage,
+			storeCurrencyIs,
+			match,
+			dateBefore,
+			dateAfter,
+			JSON.stringify( dateBetween ),
+			statusIs,
+			statusIsNot,
+		]
 	);

@@ -12,6 +12,7 @@ DB_HOST=${4-$WORDPRESS_DB_HOST}
 WP_VERSION=${5-latest}
 WC_VERSION=${6-latest}
 SKIP_DB_CREATE=${7-false}
+GUTENBERG_VERSION=${8-latest}
 
 TMPDIR=${TMPDIR-/tmp}
 TMPDIR=$(echo $TMPDIR | sed -e "s/\/$//")
@@ -207,12 +208,21 @@ install_woocommerce() {
 install_gutenberg() {
 	INSTALLED_GUTENBERG_VERSION=$(wp plugin get gutenberg --field=version)
 
-	if [[ -n $INSTALLED_GUTENBERG_VERSION ]]; then
+	if [[ -n $INSTALLED_GUTENBERG_VERSION ]] && [[ $GUTENBERG_VERSION == 'latest' ]]; then
 		# Gutenberg is already installed, we just must update it to the latest stable version
 		wp plugin update gutenberg
 		wp plugin activate gutenberg
 	else
-		wp plugin install gutenberg --activate
+		if [[ $INSTALLED_GUTENBERG_VERSION != $GUTENBERG_VERSION ]]; then
+			# Gutenberg is installed but it's the wrong version, overwrite the installed version
+			GUTENBERG_INSTALL_EXTRA+=" --force"
+		fi
+
+		if [[ $GUTENBERG_VERSION != 'latest' ]]; then
+			GUTENBERG_INSTALL_EXTRA+=" --version=$GUTENBERG_VERSION"
+		fi
+
+		wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA
 	fi
 }
 
