@@ -54,6 +54,7 @@ class WC_Payments_API_Client {
 	const READERS_CHARGE_SUMMARY       = 'reader-charges/summary';
 	const TERMINAL_READERS_API         = 'terminal/readers';
 	const MINIMUM_RECURRING_AMOUNT_API = 'subscriptions/minimum_amount';
+	const CAPITAL_API                  = 'capital';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1983,5 +1984,16 @@ class WC_Payments_API_Client {
 			self::MINIMUM_RECURRING_AMOUNT_API . '/' . $currency,
 			self::GET
 		);
+	}
+
+	/**
+	 * Fetch the summary of the currently active Capital loan.
+	 *
+	 * @return array summary object.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_active_loan_summary() : array {
+		return $this->request( [], self::CAPITAL_API . '/active-loan-summary', self::GET );
 	}
 }

@@ -138,7 +138,10 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 };
 
 const DepositsInformation = (): JSX.Element => {
-	const { overviews, isLoading } = useAllDeposistsOverviews();
+	const {
+		overviews,
+		isLoading,
+	} = useAllDeposistsOverviews() as AccountOverview.OverviewsResponse;
 
 	if ( isLoading ) {
 		return <DepositsInformationLoading />;
