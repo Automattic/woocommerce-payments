@@ -1907,10 +1907,7 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
-		$charge             = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
-		$next_action        = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
-		$last_payment_error = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
-		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
+		$charge = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
 
 		/**
 		 * Bank methods like us_bank_account can be verified by microdeposits in the customer account. When this happens the
@@ -1927,11 +1924,11 @@ class WC_Payments_API_Client {
 			$intention_array['status'],
 			$charge ? $charge['id'] : null,
 			$intention_array['client_secret'],
-			$next_action,
-			$last_payment_error,
+			$intention_array['next_action'] ?? [],
+			$intention_array['last_payment_error'] ?? [],
 			$charge ? $charge['payment_method_details'] : null,
-			$metadata,
-			$intention_array['payment_method_types']
+			$intention_array['metadata'] ?? [],
+			$intention_array['payment_method_types'] ?? []
 		);
 
 		return $intent;
