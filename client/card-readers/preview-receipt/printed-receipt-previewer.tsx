@@ -10,8 +10,19 @@ import { createPortal } from 'react-dom';
  */
 import './style.scss';
 
-const IFrameComponent = ( { title, children } ) => {
-	const [ contentRef, setContentRef ] = useState( null );
+interface PrintedReceiptPreviewerProps {
+	receiptHtml: string;
+}
+
+interface IFrameComponentProps {
+	title: string;
+	children: React.ReactNode;
+}
+
+const IFrameComponent = ( { title, children }: IFrameComponentProps ) => {
+	const [ contentRef, setContentRef ] = useState< HTMLIFrameElement | null >(
+		null
+	);
 	const mountNode = contentRef?.contentWindow?.document?.body;
 
 	return (
@@ -25,14 +36,15 @@ const IFrameComponent = ( { title, children } ) => {
 	);
 };
 
-function prepareMarkup( __html = '' ) {
-	return { __html };
-}
-
-const PrintedReceiptPreviewer = ( { receiptHtml } ) => {
+const PrintedReceiptPreviewer = ( {
+	receiptHtml,
+}: PrintedReceiptPreviewerProps ): JSX.Element => {
 	return (
 		<IFrameComponent title="Preview Receipt">
-			<div dangerouslySetInnerHTML={ prepareMarkup( receiptHtml ) } />
+			{
+				// eslint-disable-next-line react/no-danger
+				<div dangerouslySetInnerHTML={ { __html: receiptHtml } } />
+			}
 		</IFrameComponent>
 	);
 };
