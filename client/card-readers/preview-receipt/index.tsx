@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { Card, CardBody } from '@wordpress/components';
 import Page from 'components/page';
 /**
@@ -9,7 +10,7 @@ import Page from 'components/page';
 import PreviewReceipt from './preview-receipt';
 import ErrorBoundary from 'components/error-boundary';
 
-export const PreviewPrintReceipt = () => {
+export const PreviewPrintReceipt = (): JSX.Element => {
 	return (
 		<Page isNarrow className="wcpay-card-readers-preview-receipt-page">
 			<Card>
