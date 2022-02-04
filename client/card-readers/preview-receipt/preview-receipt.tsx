@@ -18,14 +18,17 @@ import {
 	useAccountBusinessSupportEmail,
 	useAccountBusinessSupportPhone,
 } from '../../data';
+import { FetchReceiptPayload } from 'wcpay/types/card-readers';
 
-async function fetchReceiptHtml( payload ) {
+async function fetchReceiptHtml(
+	payload: FetchReceiptPayload
+): Promise< string > {
 	const path = '/wc/v3/payments/readers/receipts/print/preview';
 	return apiFetch( { path, data: payload, method: 'post' } );
 }
 
-const PreviewReceipt = () => {
-	const [ receiptHtml, setReceiptHtml ] = useState( '' );
+const PreviewReceipt = (): JSX.Element => {
+	const [ receiptHtml, setReceiptHtml ] = useState< string >( '' );
 	const [ isLoading, setIsLoading ] = useState( true );
 	const [ isErrorFetchingReceipt, setIsErrorFetchingReceipt ] = useState(
 		false
@@ -45,11 +48,10 @@ const PreviewReceipt = () => {
 			try {
 				const data = await fetchReceiptHtml( {
 					accountBusinessSupportAddress,
-					accountBusinessName,
 					accountBusinessURL,
 					accountBusinessSupportEmail,
 					accountBusinessSupportPhone,
-				} );
+				} as FetchReceiptPayload );
 
 				if ( ! didCancel && data ) {
 					setIsLoading( false );
