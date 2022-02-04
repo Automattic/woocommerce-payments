@@ -3,6 +3,7 @@
  */
 import { render, waitFor } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
+import React from 'react';
 
 /**
  * Internal dependencies
@@ -13,7 +14,8 @@ import {
 	useAccountBusinessSupportEmail,
 	useAccountBusinessSupportPhone,
 	useAccountBusinessURL,
-} from 'wcpay/data';
+} from 'wcpay/data/index';
+import { FetchReceiptPayload } from 'wcpay/types/card-readers';
 import PreviewPrintReceipt from '..';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
@@ -26,6 +28,23 @@ jest.mock( 'wcpay/data', () => ( {
 	useAccountBusinessSupportPhone: jest.fn(),
 } ) );
 
+const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
+const mockUseAccountBusinessSupportAddress = useAccountBusinessSupportAddress as jest.MockedFunction<
+	typeof useAccountBusinessSupportAddress
+>;
+const mockUseAccountBusinessName = useAccountBusinessName as jest.MockedFunction<
+	typeof useAccountBusinessName
+>;
+const mockUseAccountBusinessURL = useAccountBusinessURL as jest.MockedFunction<
+	typeof useAccountBusinessURL
+>;
+const mockUseAccountBusinessSupportEmail = useAccountBusinessSupportEmail as jest.MockedFunction<
+	typeof useAccountBusinessSupportEmail
+>;
+const mockUseAccountBusinessSupportPhone = useAccountBusinessSupportPhone as jest.MockedFunction<
+	typeof useAccountBusinessSupportPhone
+>;
+
 const mockSettings = {
 	accountBusinessSupportAddress: {
 		line1: 'line1',
@@ -33,6 +52,7 @@ const mockSettings = {
 		city: 'city',
 		postal_code: '42',
 		country: 'US',
+		state: 'state',
 	},
 	accountBusinessName: 'Test',
 	accountBusinessURL: 'https:\\test',
@@ -46,16 +66,16 @@ const mockAccountSettings = ( {
 	accountBusinessURL,
 	accountBusinessSupportEmail,
 	accountBusinessSupportPhone,
-} ) => {
-	useAccountBusinessSupportAddress.mockReturnValue( [
+}: FetchReceiptPayload ) => {
+	mockUseAccountBusinessSupportAddress.mockReturnValue( [
 		accountBusinessSupportAddress,
 	] );
-	useAccountBusinessName.mockReturnValue( [ accountBusinessName ] );
-	useAccountBusinessURL.mockReturnValue( [ accountBusinessURL ] );
-	useAccountBusinessSupportEmail.mockReturnValue( [
+	mockUseAccountBusinessName.mockReturnValue( [ accountBusinessName ] );
+	mockUseAccountBusinessURL.mockReturnValue( [ accountBusinessURL ] );
+	mockUseAccountBusinessSupportEmail.mockReturnValue( [
 		accountBusinessSupportEmail,
 	] );
-	useAccountBusinessSupportPhone.mockReturnValue( [
+	mockUseAccountBusinessSupportPhone.mockReturnValue( [
 		accountBusinessSupportPhone,
 	] );
 };
@@ -64,7 +84,7 @@ const renderPreviewPrintReceipt = async () => {
 	const renderResult = render( <PreviewPrintReceipt /> );
 
 	await waitFor( () => {
-		expect( apiFetch ).toHaveBeenCalledWith( {
+		expect( mockApiFetch ).toHaveBeenCalledWith( {
 			data: mockSettings,
 			method: 'post',
 			path: '/wc/v3/payments/readers/receipts/print/preview',
@@ -85,7 +105,7 @@ describe( 'PreviewReceipt', () => {
 
 	it( 'should render preview when fetch from API succeeds', async () => {
 		mockAccountSettings( mockSettings );
-		apiFetch.mockResolvedValue( 'test' );
+		mockApiFetch.mockResolvedValue( 'test' );
 
 		const { container } = await renderPreviewPrintReceipt();
 
@@ -94,7 +114,7 @@ describe( 'PreviewReceipt', () => {
 
 	it( 'should render error when fetch from API fails', async () => {
 		mockAccountSettings( mockSettings );
-		apiFetch.mockRejectedValue( new Error( 'Something bad happened' ) );
+		mockApiFetch.mockRejectedValue( new Error( 'Something bad happened' ) );
 
 		const { container } = await renderPreviewPrintReceipt();
 
