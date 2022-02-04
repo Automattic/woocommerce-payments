@@ -2033,14 +2033,20 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_is_platform_checkout_is_returned_as_true() {
 		update_option( '_wcpay_feature_platform_checkout', '1' );
+		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertTrue( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
 	/**
 	 * @dataProvider is_platform_checkout_falsy_value_provider
 	 */
-	public function test_is_platform_checkout_is_returned_as_false_if_not_equal_1() {
+	public function test_is_platform_checkout_is_returned_as_false_if_feature_flag_is_not_equal_1() {
 		update_option( '_wcpay_feature_platform_checkout', '0' );
+		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+	}
+
+	public function test_is_platform_checkout_is_returned_as_option_is_not_equal_1() {
+		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
