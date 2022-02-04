@@ -315,7 +315,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	public function preview_print_receipt( WP_REST_Request $request ) {
 		return rest_ensure_response(
 			$this->receipts_service->get_receipt_markup(
-				$this->create_print_preview_receipt_settings_data( $request->get_body_params() ),
+				$this->create_print_preview_receipt_settings_data( $request->get_json_params() ),
 				$this->create_print_preview_receipt_order_data(),
 				$this->create_print_preview_receipt_charge_data()
 			)

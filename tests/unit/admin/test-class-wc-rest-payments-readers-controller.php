@@ -321,20 +321,23 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->willReturn( '' );
 
 		$request = new WP_REST_Request( 'POST' );
-		$request->set_body_params(
-			[
-				'accountBusinessName'           => 'Test',
-				'accountBusinessSupportPhone'   => '424242',
-				'accountBusinessSupportEmail'   => 'some@example.com',
-				'accountBusinessSupportAddress' => [
-					'line1'       => 'line1',
-					'line2'       => 'line2',
-					'city'        => 'city',
-					'state'       => 'state',
-					'postal_code' => 'postal_code',
-					'country'     => 'country',
-				],
-			]
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_body(
+			wp_json_encode(
+				[
+					'accountBusinessName'           => 'Test',
+					'accountBusinessSupportPhone'   => '424242',
+					'accountBusinessSupportEmail'   => 'some@example.com',
+					'accountBusinessSupportAddress' => [
+						'line1'       => 'line1',
+						'line2'       => 'line2',
+						'city'        => 'city',
+						'state'       => 'state',
+						'postal_code' => 'postal_code',
+						'country'     => 'country',
+					],
+				]
+			)
 		);
 
 		$response      = $this->controller->preview_print_receipt( $request );
@@ -381,6 +384,17 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->willReturn( '' );
 
 		$request = new WP_REST_Request( 'POST' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_body(
+			wp_json_encode(
+				[
+					'accountBusinessName'           => '',
+					'accountBusinessSupportPhone'   => '',
+					'accountBusinessSupportEmail'   => '',
+					'accountBusinessSupportAddress' => [],
+				]
+			)
+		);
 
 		$response      = $this->controller->preview_print_receipt( $request );
 		$response_data = $response->get_data();
