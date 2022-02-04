@@ -23,6 +23,11 @@ describe( 'PaymentMethodIcon', () => {
 		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
 	} );
 
+	test( 'renders EPS payment method icon', () => {
+		const { container } = render( <PaymentMethodIcon name="eps" /> );
+		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+	} );
+
 	test( 'renders giropay payment method icon', () => {
 		const { container } = render( <PaymentMethodIcon name="giropay" /> );
 		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
@@ -59,6 +64,13 @@ describe( 'PaymentMethodIcon', () => {
 		render( <PaymentMethodIcon name="bancontact" showName /> );
 
 		const label = screen.queryByText( 'Bancontact' );
+		expect( label ).toBeInTheDocument();
+	} );
+
+	test( 'renders EPS payment method icon and label', () => {
+		render( <PaymentMethodIcon name="eps" showName /> );
+
+		const label = screen.queryByText( 'EPS' );
 		expect( label ).toBeInTheDocument();
 	} );
 
