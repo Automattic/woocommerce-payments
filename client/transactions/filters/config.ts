@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __, _x } from '@wordpress/i18n';
+import { __, _x, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -41,10 +41,13 @@ const loanDefinitions =
 
 const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
 	const loanDefinitionSplitted = loanDefinition.split( '|' );
-	const loanDisplayValue =
-		'ID: ' +
-		loanDefinitionSplitted[ 0 ] +
-		( 'active' === loanDefinitionSplitted[ 1 ] ? ' | In Progress' : '' );
+	const loanDisplayValue = sprintf(
+		'ID: %s | %s',
+		loanDefinitionSplitted[ 0 ],
+		'active' === loanDefinitionSplitted[ 1 ]
+			? __( 'In Progress', 'woocommerce-payments' )
+			: __( 'Paid in Full', 'woocommerce-payments' )
+	);
 
 	return { label: loanDisplayValue, value: loanDefinitionSplitted[ 0 ] };
 }, [] );
@@ -194,7 +197,7 @@ export const advancedFilters = {
 				options: transactionTypesOptions,
 			},
 		},
-		loan_id: {
+		loan_id_is: {
 			labels: {
 				add: __( 'Loan', 'woocommerce-payments' ),
 				remove: __( 'Remove loan filter', 'woocommerce-payments' ),
@@ -208,6 +211,7 @@ export const advancedFilters = {
 			},
 			input: {
 				component: 'SelectControl',
+				type: 'loans',
 				options: loanSelectionOptions,
 			},
 		},
