@@ -559,6 +559,6 @@ jQuery( function ( $ ) {
 	} );
 
 	if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
-		handlePlatformCheckoutEmailInput( '#billing_email' );
+		handlePlatformCheckoutEmailInput( '#billing_email', api );
 	}
 } );

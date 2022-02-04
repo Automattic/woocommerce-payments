@@ -56,7 +56,7 @@ registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
 	registerExpressPaymentMethod( platformCheckoutPaymentMethod( api ) );
 	window.addEventListener( 'load', () => {
-		handlePlatformCheckoutEmailInput( '#email' );
+		handlePlatformCheckoutEmailInput( '#email', api );
 	} );
 }
 window.addEventListener( 'load', () => {

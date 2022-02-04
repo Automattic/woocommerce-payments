@@ -5,7 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { debounce } from 'lodash';
 import { getConfig } from 'wcpay/utils/checkout';
 
-export const handlePlatformCheckoutEmailInput = ( field ) => {
+export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
 	const waitTime = 500;
 	const platformCheckoutEmailInput = document.querySelector( field );
@@ -23,26 +23,44 @@ export const handlePlatformCheckoutEmailInput = ( field ) => {
 		'woocommerce-payments'
 	);
 	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
+
+	// Track the current state of the header. This default
+	// value should match the default state on the platform.
+	let iframeHeaderValue = true;
+	const getWindowSize = () => {
+		if (
+			( 768 < window.innerWidth && iframeHeaderValue ) ||
+			( 768 >= window.innerWidth && ! iframeHeaderValue )
+		) {
+			iframeHeaderValue = ! iframeHeaderValue;
+			iframe.contentWindow.postMessage(
+				{
+					action: 'setHeader',
+					value: iframeHeaderValue,
+				},
+				getConfig( 'platformCheckoutHost' )
+			);
+		}
+	};
+	// Do this on debounced resize.
+	const debouncedGetWindowSize = debounce( getWindowSize, 100 );
+
 	iframe.addEventListener( 'load', () => {
+		// Set the initial value.
+		getWindowSize();
+		window.addEventListener( 'resize', debouncedGetWindowSize );
 		iframe.classList.add( 'open' );
 	} );
 	iframeWrapper.insertBefore( iframe, null );
 
 	const closeIframe = () => {
+		debouncedGetWindowSize.cancel();
+		window.removeEventListener( 'resize', debouncedGetWindowSize );
 		iframeWrapper.remove();
 		iframe.classList.remove( 'open' );
 		platformCheckoutEmailInput.focus();
 	};
 	iframeWrapper.addEventListener( 'click', closeIframe );
-	window.addEventListener( 'message', ( e ) => {
-		if ( getConfig( 'platformCheckoutHost' ) !== e.origin ) {
-			return;
-		}
-
-		if ( 'close_modal' === e.data.action ) {
-			closeIframe();
-		}
-	} );
 
 	const openIframe = ( email ) => {
 		iframe.src =
@@ -100,36 +118,22 @@ export const handlePlatformCheckoutEmailInput = ( field ) => {
 		}, waitTime );
 	} );
 
-	// Track the current state of the header. This default
-	// value should match the default state on the platform.
-	let iframeHeaderValue = true;
-	const getWindowSize = () => {
-		if ( 768 >= window.innerWidth && ! iframeHeaderValue ) {
-			iframeHeaderValue = ! iframeHeaderValue;
-			iframe.contentWindow.postMessage(
-				{
-					action: 'setHeader',
-					value: true,
-				},
-				getConfig( 'platformCheckoutHost' )
-			);
+	window.addEventListener( 'message', ( e ) => {
+		if ( ! getConfig( 'platformCheckoutHost' ).startsWith( e.origin ) ) {
+			return;
 		}
 
-		if ( 768 < window.innerWidth && iframeHeaderValue ) {
-			iframeHeaderValue = ! iframeHeaderValue;
-			iframe.contentWindow.postMessage(
-				{
-					action: 'setHeader',
-					value: false,
-				},
-				getConfig( 'platformCheckoutHost' )
-			);
+		switch ( e.data.action ) {
+			case 'redirect_to_platform_checkout':
+				api.initPlatformCheckout().then( ( response ) => {
+					window.location = response.url;
+				} );
+				break;
+			case 'close_modal':
+				closeIframe();
+				break;
+			default:
+			// do nothing, only respond to expected actions.
 		}
-	};
-	// Set the initial value.
-	getWindowSize();
-
-	// Do this on debounced resize.
-	const debouncedGetWindowSize = debounce( getWindowSize, 100 );
-	window.addEventListener( 'resize', debouncedGetWindowSize );
+	} );
 };
