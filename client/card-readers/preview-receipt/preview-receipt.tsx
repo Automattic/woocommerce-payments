@@ -47,6 +47,7 @@ const PreviewReceipt = (): JSX.Element => {
 		async function fetchReceiptHtmlAPI() {
 			try {
 				const data = await fetchReceiptHtml( {
+					accountBusinessName,
 					accountBusinessSupportAddress,
 					accountBusinessURL,
 					accountBusinessSupportEmail,
