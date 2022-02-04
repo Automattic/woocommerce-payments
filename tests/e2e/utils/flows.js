@@ -470,4 +470,24 @@ export const merchantWCP = {
 			'Page updated.'
 		);
 	},
+
+	setCheckboxByTestId: async ( testId ) => {
+		const checkbox = await page.$( `[data-testid="${ testId }"]` );
+		const checkboxStatus = await (
+			await checkbox.getProperty( 'checked' )
+		 ).jsonValue();
+		if ( true !== checkboxStatus ) {
+			await checkbox.click();
+		}
+	},
+
+	unsetCheckboxByTestId: async ( testId ) => {
+		const checkbox = await page.$( `[data-testid="${ testId }"]` );
+		const checkboxStatus = await (
+			await checkbox.getProperty( 'checked' )
+		 ).jsonValue();
+		if ( true === checkboxStatus ) {
+			await checkbox.click();
+		}
+	},
 };
