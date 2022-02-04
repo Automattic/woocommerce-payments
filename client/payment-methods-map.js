@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import CreditCardIcon from './gateway-icons/credit-card';
 import BancontactIcon from './gateway-icons/bancontact';
+import EpsIcon from './gateway-icons/eps';
 import GiropayIcon from './gateway-icons/giropay';
 import SofortIcon from './gateway-icons/sofort';
 import SepaIcon from './gateway-icons/sepa';
@@ -48,6 +49,17 @@ export default {
 		Icon: BancontactIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'bancontact_payments',
+	},
+	eps: {
+		id: 'eps',
+		label: __( 'EPS', 'woocommerce-payments' ),
+		description: __(
+			'Accept your payment with EPS — a common payment method in Austria.',
+			'woocommerce-payments'
+		),
+		Icon: EpsIcon,
+		currencies: [ 'EUR' ],
+		stripe_key: 'eps_payments',
 	},
 	giropay: {
 		id: 'giropay',

@@ -96,3 +96,14 @@ export const formatDateValue = ( date, upperBound = false ) => {
 		)
 	);
 };
+
+/**
+ * Returns the value of the given cookie.
+ *
+ * @param {string} name Name of the cookie.
+ *
+ * @return {string} Value of the given cookie. Empty string if cookie doesn't exist.
+ */
+export const getCookieValue = ( name ) =>
+	document.cookie.match( '(^|;)\\s*' + name + '\\s*=\\s*([^;]+)' )?.pop() ||
+	'';
