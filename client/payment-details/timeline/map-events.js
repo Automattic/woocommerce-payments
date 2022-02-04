@@ -637,7 +637,10 @@ const mapEventToTimelineItems = ( event ) => {
 					'is-error',
 					[
 						// eslint-disable-next-line react/jsx-key
-						<Link href={ disputeUrl }>
+						<Link
+							href={ disputeUrl }
+							data-testid={ 'view-dispute-button' }
+						>
 							{ __( 'View dispute', 'woocommerce-payments' ) }
 						</Link>,
 					]
