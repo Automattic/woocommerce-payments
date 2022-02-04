@@ -39,6 +39,11 @@ const loanDefinitions =
 		? wcpaySettings.accountLoans.loans
 		: [];
 
+const capitalEnabled =
+	'undefined' !== typeof wcpaySettings
+		? wcpaySettings.featureFlags.capital
+		: false;
+
 const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
 	const loanDefinitionSplitted = loanDefinition.split( '|' );
 	const loanDisplayValue = sprintf(
@@ -197,24 +202,26 @@ export const advancedFilters = {
 				options: transactionTypesOptions,
 			},
 		},
-		loan_id_is: {
-			labels: {
-				add: __( 'Loan', 'woocommerce-payments' ),
-				remove: __( 'Remove loan filter', 'woocommerce-payments' ),
-				rule: __( 'Select a loan', 'woocommerce-payments' ),
-				/* translators: A sentence describing a Loan ID filter. */
-				title: __(
-					'{{title}}Loan{{/title}} {{rule /}} {{filter /}}',
-					'woocommerce-payments'
-				),
-				filter: __( 'Select a loan', 'woocommerce-payments' ),
+		...( capitalEnabled && {
+			loan_id_is: {
+				labels: {
+					add: __( 'Loan', 'woocommerce-payments' ),
+					remove: __( 'Remove loan filter', 'woocommerce-payments' ),
+					rule: __( 'Select a loan', 'woocommerce-payments' ),
+					/* translators: A sentence describing a Loan ID filter. */
+					title: __(
+						'{{title}}Loan{{/title}} {{rule /}} {{filter /}}',
+						'woocommerce-payments'
+					),
+					filter: __( 'Select a loan', 'woocommerce-payments' ),
+				},
+				input: {
+					component: 'SelectControl',
+					type: 'loans',
+					options: loanSelectionOptions,
+				},
 			},
-			input: {
-				component: 'SelectControl',
-				type: 'loans',
-				options: loanSelectionOptions,
-			},
-		},
+		} ),
 	},
 };
 /*eslint-enable max-len*/
