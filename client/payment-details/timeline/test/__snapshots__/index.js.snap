@@ -714,6 +714,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span>
                     <a
                       data-link-type="wc-admin"
+                      data-testid="view-dispute-button"
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=some_id"
                     >
                       View dispute

@@ -16,6 +16,7 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Tracker;
+use WCPay\Payment_Methods\UPE_Payment_Gateway;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -302,6 +303,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'sofort'        => 'sofort_payments',
 			'giropay'       => 'giropay_payments',
 			'bancontact'    => 'bancontact_payments',
+			'eps'           => 'eps_payments',
 			'ideal'         => 'ideal_payments',
 			'p24'           => 'p24_payments',
 			'card'          => 'card_payments',
@@ -732,8 +734,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
 
-			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
-			wp_enqueue_script( 'WCPAY_CHECKOUT' );
+			add_action( 'wp_footer', [ $this, 'enqueue_payment_scripts' ] );
 
 			$prepared_customer_data = $this->get_prepared_customer_data();
 			if ( ! empty( $prepared_customer_data ) ) {
@@ -806,6 +807,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Enqueues and localizes WCPay's checkout scripts.
+	 */
+	public function enqueue_payment_scripts() {
+		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
+		wp_enqueue_script( 'WCPAY_CHECKOUT' );
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
@@ -824,6 +833,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'rate_limiter_enabled'
 				);
 			}
+
+			UPE_Payment_Gateway::remove_upe_payment_intent_cookie();
 
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
@@ -889,6 +900,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 				$order->add_order_note( $note );
 			}
+
+			UPE_Payment_Gateway::remove_upe_payment_intent_cookie();
 
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
