@@ -41,7 +41,7 @@ export interface Transaction {
 	currency: string;
 	transaction_id: string;
 	date: string;
-	type: 'charge' | 'refund';
+	type: 'charge' | 'refund' | 'financing_payout' | 'financing_paydown';
 	source: string;
 	loan_id?: string;
 	metadata?: {

@@ -218,9 +218,14 @@ export const TransactionsList = (
 			( txn.metadata && 'card_reader_fee' === txn.metadata.charge_type
 				? txn.metadata.charge_type
 				: txn.type );
-		const clickable = ( children: JSX.Element | string ) => (
-			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
-		);
+		const clickable =
+			'financing_payout' !== txn.type
+				? ( children: JSX.Element | string ) => (
+						<ClickableCell href={ detailsURL }>
+							{ children }
+						</ClickableCell>
+				  )
+				: ( children: JSX.Element | string ) => children;
 
 		const orderUrl = txn.order ? (
 			<OrderLink order={ txn.order } />
