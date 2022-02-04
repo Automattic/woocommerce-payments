@@ -25,7 +25,7 @@ const methods = {
 		title: 'Platform Checkout',
 		sections: [
 			{
-				section: 'enable',
+				section: 'general',
 				description: () => (
 					<>
 						<div className="payment-method-settings__icon">

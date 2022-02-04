@@ -9,15 +9,15 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import PaymentRequest from '..';
+import ExpressCheckout from '..';
 import {
 	usePaymentRequestEnabledSettings,
-	usePaymentRequestLocations,
+	usePlatformCheckoutEnabledSettings,
 } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
-	usePaymentRequestLocations: jest.fn(),
+	usePlatformCheckoutEnabledSettings: jest.fn(),
 } ) );
 
 const getMockPaymentRequestEnabledSettings = (
@@ -25,78 +25,31 @@ const getMockPaymentRequestEnabledSettings = (
 	updateIsPaymentRequestEnabledHandler
 ) => [ isEnabled, updateIsPaymentRequestEnabledHandler ];
 
-const getMockPaymentRequestLocations = (
-	isCheckoutEnabled,
-	isProductPageEnabled,
-	isCartEnabled,
-	updatePaymentRequestLocationsHandler
-) => [
-	[
-		isCheckoutEnabled && 'checkout',
-		isProductPageEnabled && 'product',
-		isCartEnabled && 'cart',
-	].filter( Boolean ),
-	updatePaymentRequestLocationsHandler,
-];
+const getMockPlatformCheckoutEnabledSettings = (
+	isEnabled,
+	updateIsPlatformCheckoutEnabledHandler
+) => [ isEnabled, updateIsPlatformCheckoutEnabledHandler ];
 
-describe( 'PaymentRequest', () => {
+describe( 'ExpressCheckout', () => {
 	beforeEach( () => {
 		usePaymentRequestEnabledSettings.mockReturnValue(
 			getMockPaymentRequestEnabledSettings( false, jest.fn() )
 		);
-		usePaymentRequestLocations.mockReturnValue(
-			getMockPaymentRequestLocations( true, true, true, jest.fn() )
+		usePlatformCheckoutEnabledSettings.mockReturnValue(
+			getMockPlatformCheckoutEnabledSettings( false, jest.fn() )
 		);
-	} );
-
-	it( 'should enable express checkout locations if express checkout is enabled', async () => {
-		usePaymentRequestEnabledSettings.mockReturnValue(
-			getMockPaymentRequestEnabledSettings( false, jest.fn() )
-		);
-
-		render( <PaymentRequest /> );
-
-		const [
-			,
-			checkoutCheckbox,
-			productPageCheckbox,
-			cartCheckbox,
-		] = screen.getAllByRole( 'checkbox' );
-
-		// all "locations" checkboes are disabled and unchecked.
-		expect( checkoutCheckbox ).toBeDisabled();
-		expect( checkoutCheckbox ).not.toBeChecked();
-		expect( productPageCheckbox ).toBeDisabled();
-		expect( productPageCheckbox ).not.toBeChecked();
-		expect( cartCheckbox ).toBeDisabled();
-		expect( cartCheckbox ).not.toBeChecked();
-	} );
-
-	it( 'should disable express checkout locations if express checkout is disabled', async () => {
-		usePaymentRequestEnabledSettings.mockReturnValue(
-			getMockPaymentRequestEnabledSettings( true, jest.fn() )
-		);
-
-		render( <PaymentRequest /> );
-
-		const [
-			,
-			checkoutCheckbox,
-			productPageCheckbox,
-			cartCheckbox,
-		] = screen.getAllByRole( 'checkbox' );
-
-		// all checkboxes are checked by default, once the feature is enabled.
-		expect( checkoutCheckbox ).not.toBeDisabled();
-		expect( checkoutCheckbox ).toBeChecked();
-		expect( productPageCheckbox ).not.toBeDisabled();
-		expect( productPageCheckbox ).toBeChecked();
-		expect( cartCheckbox ).not.toBeDisabled();
-		expect( cartCheckbox ).toBeChecked();
 	} );
 
 	it( 'should dispatch enabled status update if express checkout is being toggled', async () => {
+		const updateIsPlatformCheckoutEnabledHandler = jest.fn();
 		const updateIsPaymentRequestEnabledHandler = jest.fn();
+
+		usePlatformCheckoutEnabledSettings.mockReturnValue(
+			getMockPlatformCheckoutEnabledSettings(
+				false,
+				updateIsPlatformCheckoutEnabledHandler
+			)
+		);
 		usePaymentRequestEnabledSettings.mockReturnValue(
 			getMockPaymentRequestEnabledSettings(
 				false,
@@ -104,87 +57,38 @@ describe( 'PaymentRequest', () => {
 			)
 		);
 
-		render( <PaymentRequest /> );
+		render( <ExpressCheckout /> );
 
-		userEvent.click( screen.getByText( 'Enable express checkouts' ) );
+		const [
+			platformCheckoutCheckbox,
+			paymentRequestCheckbox,
+		] = screen.queryAllByRole( 'checkbox' );
 
+		userEvent.click( platformCheckoutCheckbox );
+		userEvent.click( paymentRequestCheckbox );
+
+		expect( updateIsPlatformCheckoutEnabledHandler ).toHaveBeenCalledWith(
+			true
+		);
 		expect( updateIsPaymentRequestEnabledHandler ).toHaveBeenCalledWith(
 			true
 		);
 	} );
 
-	it( 'should trigger an action to save the checked locations when un-checking the location checkboxes', async () => {
-		const updatePaymentRequestLocationsHandler = jest.fn();
-		usePaymentRequestEnabledSettings.mockReturnValue(
-			getMockPaymentRequestEnabledSettings( true, jest.fn() )
-		);
-		usePaymentRequestLocations.mockReturnValue(
-			getMockPaymentRequestLocations(
-				true,
-				true,
-				true,
-				updatePaymentRequestLocationsHandler
-			)
-		);
+	it( 'has the correct href links to the express checkout settings pages', async () => {
+		render( <ExpressCheckout /> );
 
-		render( <PaymentRequest /> );
+		const [
+			platformCheckoutCheckbox,
+			paymentRequestCheckbox,
+		] = screen.getAllByRole( 'link', { name: 'Customize' } );
 
-		// Uncheck each checkbox, and verify them what kind of action should have been called
-		userEvent.click( screen.getByText( 'Product page' ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'checkout', 'cart' ] );
-
-		userEvent.click( screen.getByText( 'Checkout' ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'product', 'cart' ] );
-
-		userEvent.click( screen.getByText( 'Cart' ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );
-	} );
-
-	it( 'should trigger an action to save the checked locations when checking the location checkboxes', async () => {
-		const updatePaymentRequestLocationsHandler = jest.fn();
-		usePaymentRequestEnabledSettings.mockReturnValue(
-			getMockPaymentRequestEnabledSettings( true, jest.fn() )
-		);
-		usePaymentRequestLocations.mockReturnValue(
-			getMockPaymentRequestLocations(
-				false,
-				false,
-				false,
-				updatePaymentRequestLocationsHandler
-			)
+		expect( platformCheckoutCheckbox ).toHaveAttribute(
+			'href',
+			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&method=platform_checkout'
 		);
 
-		render( <PaymentRequest /> );
-
-		userEvent.click( screen.getByText( 'Cart' ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'cart' ] );
-
-		userEvent.click( screen.getByText( 'Product page' ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'product' ] );
-
-		userEvent.click( screen.getByText( 'Checkout' ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'checkout' ] );
-	} );
-
-	it( 'has the correct href link to the payment request setting page', async () => {
-		render( <PaymentRequest /> );
-
-		const customizeAppearanceButton = screen.getByText(
-			'Customize appearance'
-		);
-		expect( customizeAppearanceButton ).toHaveAttribute(
+		expect( paymentRequestCheckbox ).toHaveAttribute(
 			'href',
 			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&method=payment_request'
 		);
