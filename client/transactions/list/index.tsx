@@ -219,7 +219,8 @@ export const TransactionsList = (
 				? txn.metadata.charge_type
 				: txn.type );
 		const clickable =
-			'financing_payout' !== txn.type
+			'financing_payout' !== txn.type &&
+			! ( 'financing_paydown' === txn.type && '' === txn.charge_id )
 				? ( children: JSX.Element | string ) => (
 						<ClickableCell href={ detailsURL }>
 							{ children }
