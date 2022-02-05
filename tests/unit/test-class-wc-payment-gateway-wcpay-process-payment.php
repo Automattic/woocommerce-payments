@@ -976,7 +976,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Act: prepare payment information.
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_information->must_save_payment_method();
+		$payment_information->must_save_payment_method_to_store();
 
 		// Act: process payment.
 		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );

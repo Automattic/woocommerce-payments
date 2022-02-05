@@ -923,7 +923,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			// During normal orders the payment method is saved when the customer enters a new one and chooses to save it.
-			$payment_information->must_save_payment_method();
+			$payment_information->must_save_payment_method_to_store();
+		}
+
+		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-platform-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$payment_information->must_save_payment_method_to_platform();
 		}
 
 		return $payment_information;
@@ -971,7 +975,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] ) {
 		$order                                       = $payment_information->get_order();
-		$save_payment_method                         = $payment_information->should_save_payment_method();
+		$save_payment_method                         = $payment_information->should_save_payment_method_to_store();
 		$is_changing_payment_method_for_subscription = $payment_information->is_changing_payment_method_for_subscription();
 
 		$order_id = $order->get_id();
@@ -1055,6 +1059,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$customer_id,
 				$payment_information->is_using_manual_capture(),
 				$save_payment_method,
+				$payment_information->should_save_payment_method_to_platform(),
 				$metadata,
 				$this->get_level3_data_from_order( $order ),
 				$payment_information->is_merchant_initiated(),
