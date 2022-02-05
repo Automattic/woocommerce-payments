@@ -21,6 +21,7 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
+use WCPay\Payment_Methods\Eps_Payment_Method;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -190,6 +191,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-ideal-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-becs-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-eps-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -245,6 +247,7 @@ class WC_Payments {
 				P24_Payment_Method::class,
 				Ideal_Payment_Method::class,
 				Becs_Payment_Method::class,
+				Eps_Payment_Method::class,
 			];
 			foreach ( $payment_method_classes as $payment_method_class ) {
 				$payment_method                               = new $payment_method_class( self::$token_service );
@@ -792,6 +795,8 @@ class WC_Payments {
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
 			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+			add_filter( 'woocommerce_checkout_fields', [ __CLASS__, 'platform_checkout_remove_default_email_field' ], 50 );
+			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
 		}
 	}
 
@@ -867,5 +872,49 @@ class WC_Payments {
 		);
 
 		return (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'];
+	}
+
+	/**
+	 * Remove default billing email field for Platform Checkout
+	 *
+	 * @param array $fields WooCommerce checkout fields.
+	 * @return array WooCommerce checkout fields.
+	 */
+	public static function platform_checkout_remove_default_email_field( $fields ) {
+		if ( isset( $fields['billing']['billing_email'] ) ) {
+			unset( $fields['billing']['billing_email'] );
+		} else {
+			remove_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Adds custom email field.
+	 */
+	public static function platform_checkout_fields_before_billing_details() {
+		$checkout = WC()->checkout;
+
+		echo '<div id="contact_details" class="col2-set">';
+		echo '<div class="col-1">';
+
+		echo '<h3>' . esc_html( __( 'Contact information', 'woocommerce-payments' ) ) . '</h3>';
+
+		woocommerce_form_field(
+			'billing_email',
+			[
+				'type'        => 'email',
+				'label'       => __( 'Email address', 'woocommerce-payments' ),
+				'class'       => [ 'form-row-wide platform-checkout-billing-email' ],
+				'input_class' => [ 'platform-checkout-billing-email-input' ],
+				'validate'    => [ 'email' ],
+				'required'    => true,
+			],
+			$checkout->get_value( 'billing_email' )
+		);
+
+		echo '</div>';
+		echo '</div>';
 	}
 }
