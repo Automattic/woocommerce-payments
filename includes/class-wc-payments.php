@@ -822,6 +822,23 @@ class WC_Payments {
 	}
 
 	/**
+	 * Displays the "Save my information for faster checkouts" checkbox.
+	 * Note: This is a UI placeholder for the actual checkbox that will be implemented in a separate PR. The positioning here is also not correct.
+	 */
+	public static function display_save_payment_information_to_platform_checkbox() {
+		$id = 'wc-woocommerce_payments-new-platform-payment-method';
+		?>
+		<h3><?php echo esc_html__( 'Remember your details?', 'woocommerce-payments' ); ?></h3>
+		<div class="form-row" style="margin: 0 0 2rem;">
+			<input id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" type="checkbox" value="true" style="width:auto;" />
+			<label for="<?php echo esc_attr( $id ); ?>" style="display:inline;">
+				<?php echo esc_html( apply_filters( 'wc_payments_save_to_account_text', __( 'Save my information for faster checkouts.', 'woocommerce-payments' ) ) ); ?>
+			</label>
+		</div>
+		<?php
+	}
+
+	/**
 	 * Used to initialize platform checkout session.
 	 *
 	 * @return void
