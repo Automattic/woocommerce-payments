@@ -382,6 +382,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_card_present_eligible'          => $this->wcpay_gateway->is_card_present_eligible(),
 				'is_platform_checkout_enabled'      => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'platform_checkout_custom_message'  => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
+				'is_platform_checkout_feature_flag_enabled' => WC_Payments_Features::is_platform_checkout_enabled(),
 			]
 		);
 	}

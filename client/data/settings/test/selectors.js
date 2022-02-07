@@ -21,6 +21,7 @@ import {
 	getAccountBrandingSecondaryColor,
 	getIsPlatformCheckoutEnabled,
 	getPlatformCheckoutCustomMessage,
+	getIsPlatformCheckoutFeatureFlagEnabled,
 } from '../selectors';
 
 describe( 'Settings selectors tests', () => {
@@ -233,6 +234,33 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: { data: {} } } ],
 		] )( 'returns false if missing (tested state: %j)', ( state ) => {
 			expect( getIsPlatformCheckoutEnabled( state ) ).toBeFalsy();
+		} );
+	} );
+
+	describe( 'getIsPlatformCheckoutFeatureFlagEnabled()', () => {
+		test( 'returns the value of state.settings.data.is_platform_checkout_feature_flag_enabled', () => {
+			const state = {
+				settings: {
+					data: {
+						is_platform_checkout_feature_flag_enabled: true,
+					},
+				},
+			};
+
+			expect(
+				getIsPlatformCheckoutFeatureFlagEnabled( state )
+			).toBeTruthy();
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns false if missing (tested state: %j)', ( state ) => {
+			expect(
+				getIsPlatformCheckoutFeatureFlagEnabled( state )
+			).toBeFalsy();
 		} );
 	} );
 

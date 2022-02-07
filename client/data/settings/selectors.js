@@ -171,6 +171,12 @@ export const getIsPlatformCheckoutEnabled = ( state ) => {
 	return getSettings( state ).is_platform_checkout_enabled || false;
 };
 
+export const getIsPlatformCheckoutFeatureFlagEnabled = ( state ) => {
+	return (
+		getSettings( state ).is_platform_checkout_feature_flag_enabled || false
+	);
+};
+
 export const getPlatformCheckoutCustomMessage = ( state ) => {
 	return getSettings( state ).platform_checkout_custom_message || '';
 };

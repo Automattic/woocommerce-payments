@@ -15,6 +15,15 @@ import {
 	usePlatformCheckoutEnabledSettings,
 } from 'wcpay/data';
 
+// Mock platform checkout feature flag.
+jest.mock( '@wordpress/data', () => ( {
+	useSelect: jest.fn().mockImplementation( () => ( {
+		getIsPlatformCheckoutFeatureFlagEnabled: jest
+			.fn()
+			.mockReturnValue( true ),
+	} ) ),
+} ) );
+
 jest.mock( 'wcpay/data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
 	usePlatformCheckoutEnabledSettings: jest.fn(),
