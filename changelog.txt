@@ -14,6 +14,8 @@
 * Fix - Checkout with block-based themes.
 * Add - UPE payment method - EPS.
 * Fix - Redundant payment intents for UPE.
+* Fix - Replace uses of is_ajax() with wp_doing_ajax() in subscriptions-core.
+* Security update.
 
 = 3.6.1 - 2022-01-27 =
 * Fix - Remove packages not compatible with PHP 7.0
