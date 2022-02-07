@@ -25,7 +25,12 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 
 	useEffect( () => {
 		let iti = null;
-		const input = document.querySelector( '#phone-number' );
+		const input = document.querySelector(
+			`input[aria-label="${ __(
+				'Mobile phone number',
+				'woocommerce-payments'
+			) }"]`
+		);
 
 		const handleCountryChange = () => {
 			handlePhoneNumberChange( iti.getNumber() );
@@ -59,7 +64,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 	return (
 		<TextControl
 			type="tel"
-			id="phone-number"
+			aria-label={ __( 'Mobile phone number', 'woocommerce-payments' ) }
 			label={ __( 'Mobile phone number', 'woocommerce-payments' ) }
 			value={ inputValue }
 			onChange={ handlePhoneNumberInputChange }
