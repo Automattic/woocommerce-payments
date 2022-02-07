@@ -111,7 +111,6 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Implement Jetpack Identity Crisis / Safe Mode banner.
 * Fix - Checkout with block-based themes.
 * Add - UPE payment method - EPS.
-* Fix - Redundant payment intents for UPE.
 * Fix - Replace uses of is_ajax() with wp_doing_ajax() in subscriptions-core.
 * Improve handling of session data.
 
