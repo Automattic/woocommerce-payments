@@ -88,7 +88,7 @@ describe( 'CheckoutPageSaveUser', () => {
 			)
 		).not.toBeChecked();
 		expect(
-			screen.queryByLabelText( 'Mobile phone number' )
+			screen.queryByTestId( 'save-user-form' )
 		).not.toBeInTheDocument();
 
 		// click on the checkbox
@@ -103,8 +103,6 @@ describe( 'CheckoutPageSaveUser', () => {
 				'Save my information for faster checkouts'
 			)
 		).toBeChecked();
-		expect(
-			screen.queryByLabelText( 'Mobile phone number' )
-		).toBeInTheDocument();
+		expect( screen.queryByTestId( 'save-user-form' ) ).toBeInTheDocument();
 	} );
 } );
