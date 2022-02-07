@@ -34,6 +34,7 @@ const CheckoutPageSaveUser = () => {
 			<CheckboxControl
 				checked={ isSaveDetailsChecked }
 				onChange={ setIsSaveDetailsChecked }
+				name="save_user_in_platform_checkout"
 				label={ __(
 					'Save my information for faster checkouts',
 					'woocommerce-payments'

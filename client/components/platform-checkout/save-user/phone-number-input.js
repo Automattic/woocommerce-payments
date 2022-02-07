@@ -66,6 +66,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 			type="tel"
 			aria-label={ __( 'Mobile phone number', 'woocommerce-payments' ) }
 			label={ __( 'Mobile phone number', 'woocommerce-payments' ) }
+			name="platform_checkout_user_phone_field"
 			value={ inputValue }
 			onChange={ handlePhoneNumberInputChange }
 		/>
