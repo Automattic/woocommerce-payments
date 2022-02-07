@@ -9,7 +9,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import { LoadableBlock } from '../../components/loadable';
+import { LoadableBlock } from 'components/loadable';
 import PrintedReceiptPreviewer from 'wcpay/card-readers/preview-receipt/printed-receipt-previewer';
 import {
 	useAccountBusinessSupportAddress,
@@ -29,7 +29,7 @@ async function fetchReceiptHtml(
 
 const PreviewReceipt = (): JSX.Element => {
 	const [ receiptHtml, setReceiptHtml ] = useState< string >( '' );
-	const [ isLoading, setIsLoading ] = useState( true );
+	const [ isLoading, setIsLoading ] = useState< boolean >( true );
 	const [ isErrorFetchingReceipt, setIsErrorFetchingReceipt ] = useState(
 		false
 	);
