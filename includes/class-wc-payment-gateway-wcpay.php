@@ -666,10 +666,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param bool $force_checked True if the checkbox must be forced to "checked" state (and invisible).
 	 */
 	public function save_payment_method_checkbox( $force_checked = false ) {
-		$id                   = 'wc-' . $this->id . '-new-payment-method';
-		$should_hide_checkbox = $force_checked || ( WC_Payments_Features::is_platform_checkout_enabled() && ! WC_Payments_Features::is_upe_enabled() );
+		$id = 'wc-' . $this->id . '-new-payment-method';
 		?>
-		<div <?php echo $should_hide_checkbox ? 'style="display:none;"' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
+		<div <?php echo ( $force_checked || $this->should_use_stripe_platform_on_checkout_page() ) ? 'style="display:none;"' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
 			<p class="form-row woocommerce-SavedPaymentMethods-saveNew">
 				<input id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" type="checkbox" value="true" style="width:auto;" <?php echo $force_checked ? 'checked' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?> />
 				<label for="<?php echo esc_attr( $id ); ?>" style="display:inline;">
@@ -678,6 +677,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Whether we should use Stripe platform.
+	 *
+	 * @return bool
+	 */
+	public function should_use_stripe_platform_on_checkout_page() {
+		// TODO: Add support for blocks checkout.
+		if (
+			WC_Payments_Features::is_platform_checkout_enabled() &&
+			! WC_Payments_Features::is_upe_enabled() &&
+			is_checkout() &&
+			! has_block( 'woocommerce/checkout' ) &&
+			! WC()->cart->is_empty()
+		) {
+			$cart_total = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), get_woocommerce_currency() );
+			// We currently can't support setup intents, so free trial subscriptions
+			// or pre-orders with charge upon release are not supported.
+			return $cart_total > 0;
+		}
+
+		return false;
 	}
 
 	/**
