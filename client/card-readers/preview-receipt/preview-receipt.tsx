@@ -81,16 +81,16 @@ const PreviewReceipt = (): JSX.Element => {
 				<p>{ __( 'Generating preview.', 'woocommerce-payments' ) }</p>
 			) }
 			<LoadableBlock isLoading={ isLoading } numLines={ 25 }>
-				{ ! isErrorFetchingReceipt && (
-					<PrintedReceiptPreviewer receiptHtml={ receiptHtml } />
-				) }
 				{ isErrorFetchingReceipt && (
 					<Notice status="error" isDismissible={ false }>
 						{ __(
-							'There was a problem generating the receipt preview. Please try again.',
+							'There was a problem generating the receipt preview. Please try again later.',
 							'woocommerce-payments'
 						) }
 					</Notice>
+				) }
+				{ ! isErrorFetchingReceipt && (
+					<PrintedReceiptPreviewer receiptHtml={ receiptHtml } />
 				) }
 			</LoadableBlock>
 		</>
