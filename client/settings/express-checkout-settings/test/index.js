@@ -8,7 +8,7 @@ import { render, screen, within } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import PaymentMethodSettings from '..';
+import ExpressCheckoutSettings from '..';
 import PaymentRequestButtonPreview from '../payment-request-button-preview';
 
 jest.mock( '../../../data', () => ( {
@@ -48,25 +48,25 @@ jest.mock( 'payment-request/utils', () => ( {
 	} ),
 } ) );
 
-describe( 'PaymentMethodSettings', () => {
+describe( 'ExpressCheckoutSettings', () => {
 	test( 'renders banner at the top', () => {
-		render( <PaymentMethodSettings methodId="payment_request" /> );
+		render( <ExpressCheckoutSettings methodId="payment_request" /> );
 
 		const banner = screen.queryByAltText( 'WooCommerce Payments logo' );
 		expect( banner ).toBeInTheDocument();
 	} );
 
 	test( 'renders error message for invalid method IDs', () => {
-		render( <PaymentMethodSettings methodId="foo" /> );
+		render( <ExpressCheckoutSettings methodId="foo" /> );
 
 		const errorMessage = screen.queryByText(
-			'Invalid payment method ID specified.'
+			'Invalid express checkout method ID specified.'
 		);
 		expect( errorMessage ).toBeInTheDocument();
 	} );
 
 	test( 'renders payment request breadcrumbs', () => {
-		render( <PaymentMethodSettings methodId="payment_request" /> );
+		render( <ExpressCheckoutSettings methodId="payment_request" /> );
 
 		const linkToPayments = screen.getByRole( 'link', {
 			name: 'WooCommerce Payments',
@@ -80,7 +80,7 @@ describe( 'PaymentMethodSettings', () => {
 	} );
 
 	test( 'renders payment request title and description', () => {
-		render( <PaymentMethodSettings methodId="payment_request" /> );
+		render( <ExpressCheckoutSettings methodId="payment_request" /> );
 
 		const heading = screen.queryByRole( 'heading', {
 			name: 'Settings',
@@ -89,7 +89,7 @@ describe( 'PaymentMethodSettings', () => {
 	} );
 
 	test( 'renders payment request enable setting and confirm its checkbox label', () => {
-		render( <PaymentMethodSettings methodId="payment_request" /> );
+		render( <ExpressCheckoutSettings methodId="payment_request" /> );
 
 		const label = screen.getByRole( 'checkbox', {
 			name: 'Enable Apple Pay / Google Pay',
@@ -98,7 +98,7 @@ describe( 'PaymentMethodSettings', () => {
 	} );
 
 	test( 'renders payment request general setting and confirm its first heading', () => {
-		render( <PaymentMethodSettings methodId="payment_request" /> );
+		render( <ExpressCheckoutSettings methodId="payment_request" /> );
 
 		expect(
 			screen.queryByRole( 'heading', {
@@ -108,7 +108,7 @@ describe( 'PaymentMethodSettings', () => {
 	} );
 
 	test( 'renders platform checkout breadcrumbs', () => {
-		render( <PaymentMethodSettings methodId="platform_checkout" /> );
+		render( <ExpressCheckoutSettings methodId="platform_checkout" /> );
 
 		const linkToPayments = screen.getByRole( 'link', {
 			name: 'WooCommerce Payments',
@@ -122,7 +122,7 @@ describe( 'PaymentMethodSettings', () => {
 	} );
 
 	test( 'renders platform checkout settings and confirm its checkbox label', () => {
-		render( <PaymentMethodSettings methodId="platform_checkout" /> );
+		render( <ExpressCheckoutSettings methodId="platform_checkout" /> );
 
 		const label = screen.getByRole( 'checkbox', {
 			name: 'Enable Platform Checkout',

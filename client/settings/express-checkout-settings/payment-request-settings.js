@@ -186,7 +186,7 @@ const PaymentRequestSettings = ( { section } ) => {
 							'woocommerce-payments'
 						) }
 					</h4>
-					<ul className="payment-method-settings__location">
+					<ul className="payment-request-settings__location">
 						<li>
 							<CheckboxControl
 								disabled={ ! isPaymentRequestEnabled }
@@ -238,7 +238,6 @@ const PaymentRequestSettings = ( { section } ) => {
 					<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 					<RadioControl
 						className="payment-method-settings__cta-selection"
-						label={ __( 'Call to action', 'woocommerce-payments' ) }
 						hideLabelFromVision
 						help={ __(
 							'Select a button label that fits best with the flow of purchase or payment experience on your store.',

@@ -28,7 +28,7 @@ const methods = {
 				section: 'general',
 				description: () => (
 					<>
-						<div className="payment-method-settings__icon">
+						<div className="express-checkout-settings__icon">
 							<WooIcon />
 						</div>
 						<p>
@@ -50,7 +50,7 @@ const methods = {
 				section: 'enable',
 				description: () => (
 					<>
-						<div className="payment-method-settings__icon">
+						<div className="express-checkout-settings__icon">
 							<PaymentRequestIcon />
 						</div>
 						<p>
@@ -81,14 +81,14 @@ const methods = {
 	},
 };
 
-const PaymentMethodSettings = ( { methodId } ) => {
+const ExpressCheckoutSettings = ( { methodId } ) => {
 	const method = methods[ methodId ];
 
 	if ( ! method ) {
 		return (
 			<p>
 				{ __(
-					'Invalid payment method ID specified.',
+					'Invalid express checkout method ID specified.',
 					'woocommerce-payments'
 				) }
 			</p>
@@ -99,7 +99,7 @@ const PaymentMethodSettings = ( { methodId } ) => {
 
 	return (
 		<SettingsLayout>
-			<h2 className="payment-method-settings__breadcrumbs">
+			<h2 className="express-checkout-settings__breadcrumbs">
 				<a href={ getPaymentSettingsUrl() }>
 					{ __( 'WooCommerce Payments', 'woocommerce-payments' ) }
 				</a>{ ' ' }
@@ -121,4 +121,4 @@ const PaymentMethodSettings = ( { methodId } ) => {
 	);
 };
 
-export default PaymentMethodSettings;
+export default ExpressCheckoutSettings;

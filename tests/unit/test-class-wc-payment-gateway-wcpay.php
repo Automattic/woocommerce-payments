@@ -1704,12 +1704,12 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertStringMatchesFormat( '%aid="wcpay-account-settings-container"%a', $output );
 	}
 
-	public function test_outputs_payment_method_settings_screen() {
+	public function test_outputs_express_checkout_settings_screen() {
 		$_GET['method'] = 'foo';
 		ob_start();
 		$this->wcpay_gateway->output_payments_settings_screen();
 		$output = ob_get_clean();
-		$this->assertStringMatchesFormat( '%aid="wcpay-payment-method-settings-container"%a', $output );
+		$this->assertStringMatchesFormat( '%aid="wcpay-express-checkout-settings-container"%a', $output );
 		$this->assertStringMatchesFormat( '%adata-method-id="foo"%a', $output );
 	}
 

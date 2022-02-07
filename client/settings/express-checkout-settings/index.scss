@@ -1,4 +1,4 @@
-.payment-method-settings {
+.express-checkout-settings {
 	&__breadcrumbs {
 		margin-bottom: 40px;
 	}
@@ -48,10 +48,6 @@
 			display: inline-block;
 		}
 	}
-
-	&__location {
-		margin-bottom: 26px;
-	}
 }
 
 .components-radio-control__input[type='radio']:checked::before {
@@ -82,5 +78,11 @@
 				top: 38px;
 			}
 		}
+	}
+}
+
+.payment-request-settings {
+	&__location {
+		margin-bottom: 26px;
 	}
 }
