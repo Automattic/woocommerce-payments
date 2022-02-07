@@ -33,7 +33,6 @@ jQuery( function ( $ ) {
 			accountId: getConfig( 'accountId' ),
 			forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
 			locale: getConfig( 'locale' ),
-			isPlatformCheckoutEnabled: getConfig( 'isPlatformCheckoutEnabled' ),
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {

@@ -616,7 +616,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'genericErrorMessage'       => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'             => $this->account->get_fraud_services_config(),
 			'features'                  => $this->supports,
-			'forceNetworkSavedCards'    => WC_Payments::is_network_saved_cards_enabled(),
+			'forceNetworkSavedCards'    => WC_Payments::is_network_saved_cards_enabled() || $this->should_use_stripe_platform_on_checkout_page(),
 			'locale'                    => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isUPEEnabled'              => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'       => $this->is_saved_cards_enabled(),

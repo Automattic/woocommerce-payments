@@ -40,13 +40,9 @@ export default class WCPayAPI {
 			forceNetworkSavedCards,
 			locale,
 			isUPEEnabled,
-			isPlatformCheckoutEnabled,
 		} = this.options;
 
-		if (
-			( isPlatformCheckoutEnabled && ! isUPEEnabled ) ||
-			( forceNetworkSavedCards && ! forceAccountRequest )
-		) {
+		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
 			if ( ! this.stripePlatform ) {
 				this.stripePlatform = new Stripe( publishableKey, { locale } );
 			}
