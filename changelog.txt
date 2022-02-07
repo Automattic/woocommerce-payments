@@ -5,6 +5,7 @@
 * Tweak - only add admin notes on non-AJAX requests
 * Add - Add endpoint to retrieve a file content via API.
 * Add - Add a preview of uploaded logo and icon on terminal card reader receipt settings page.
+* Add - Add Preview printed version of IPP receipt to Card Readers settings page.
 
 = 3.7.0 - 2022-02-10 =
 * Add - Filter by currency in disputes list
