@@ -30,9 +30,9 @@ async function fetchReceiptHtml(
 const PreviewReceipt = (): JSX.Element => {
 	const [ receiptHtml, setReceiptHtml ] = useState< string >( '' );
 	const [ isLoading, setIsLoading ] = useState< boolean >( true );
-	const [ isErrorFetchingReceipt, setIsErrorFetchingReceipt ] = useState(
-		false
-	);
+	const [ isErrorFetchingReceipt, setIsErrorFetchingReceipt ] = useState<
+		boolean
+	>( false );
 
 	const [
 		accountBusinessSupportAddress,
