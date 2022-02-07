@@ -15,7 +15,7 @@ import {
 	usePlatformCheckoutCustomMessage,
 } from 'wcpay/data';
 
-const CUSTOM_MESSAGE_MAX_LENGTH = 24;
+const CUSTOM_MESSAGE_MAX_LENGTH = 100;
 
 const PlatformCheckoutSettings = () => {
 	const [
@@ -49,10 +49,6 @@ const PlatformCheckoutSettings = () => {
 						help={ __(
 							'Inform your customers about the return, refund, and exchange policy, or include any other useful message. ' +
 								'Note that you can add plain text and links, but not images.',
-							'woocommerce-payments'
-						) }
-						placeholder={ __(
-							'Free returns and exchanges',
 							'woocommerce-payments'
 						) }
 						value={ platformCheckoutCustomMessage }

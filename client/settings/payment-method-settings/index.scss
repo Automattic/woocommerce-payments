@@ -64,26 +64,21 @@
 	}
 
 	&__custom-message-wrapper {
+		max-width: 500px;
 		position: relative;
 
 		.components-base-control__field .components-text-control__input {
-			padding-right: 50px;
-			max-width: 75%;
-
-			@media ( min-width: 783px ) {
-				max-width: 52%;
-			}
+			padding-right: 70px;
 		}
 
 		.input-help-text {
 			position: absolute;
-			right: 27%;
+			right: 10px;
 			top: 42px;
 			font-size: 12px;
 			color: #757575;
 
 			@media ( min-width: 783px ) {
-				right: 50%;
 				top: 38px;
 			}
 		}
