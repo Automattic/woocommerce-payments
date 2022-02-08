@@ -105,6 +105,25 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertTrue( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
+	public function test_maybe_redirect_to_onboarding_account_onboarding() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->returnValue(
+				[
+					'account_id' => 'acc_test',
+					'is_live'    => true,
+					'status'     => 'onboarding',
+				]
+			)
+		);
+
+		$this->assertTrue( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		// The option should be updated.
+		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+	}
+
 	public function test_maybe_redirect_to_onboarding_account_connected() {
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
@@ -281,9 +300,23 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->wcpay_account->try_is_stripe_connected();
 	}
 
-	public function test_try_is_stripe_connected_returns_false() {
+	public function test_try_is_stripe_connected_returns_false_if_no_account() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
+		);
+
+		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
+	}
+
+	public function test_try_is_stripe_connected_returns_false_if_account_onboarding() {
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->returnValue(
+				[
+					'account_id' => 'acc_test',
+					'is_live'    => true,
+					'status'     => 'onboarding',
+				]
+			)
 		);
 
 		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
