@@ -28,7 +28,8 @@
       "automattic/jetpack-identity-crisis": "0.7.0",
       "automattic/jetpack-sync": "1.29.1",
       "myclabs/php-enum": "1.7.7",
-      "woocommerce/subscriptions-core": "1.6.3"
+      "woocommerce/subscriptions-core": "1.6.3",
+      "cweagans/composer-patches": "1.7.1"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
@@ -40,8 +41,7 @@
       "php-stubs/wordpress-stubs": "5.8.2",
       "php-stubs/woocommerce-stubs": "5.9.0",
       "rregeer/phpunit-coverage-check": "0.3.1",
-      "yoast/phpunit-polyfills": "1.0.1",
-      "cweagans/composer-patches": "1.7.1"
+      "yoast/phpunit-polyfills": "1.0.1"
     },
     "scripts": {
       "test": [
@@ -69,6 +69,12 @@
       "patches": {
         "phpunit/phpunit": {
           "PHP 8.1 compatibility: globals": "tests/phpunit-patches/globals-usage-compatibility.diff"
+        },
+        "automattic/jetpack-sync": {
+          "PR Jetpack 22458": "sync.patch"
+        },
+        "automattic/jetpack-config": {
+          "PR Jetpack 22458": "config.patch"
         }
       }
     },
