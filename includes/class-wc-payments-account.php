@@ -128,7 +128,7 @@ class WC_Payments_Account {
 
 			if ( empty( $account ) ) {
 				// Empty means no account, so not rejected.
-				return false;
+				return $on_error;
 			}
 
 			return strpos( $account['status'], 'rejected' ) === 0;
