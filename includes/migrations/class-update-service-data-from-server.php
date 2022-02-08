@@ -39,10 +39,9 @@ class Update_Service_Data_From_Server {
 	 * Checks whether it's worth doing the migration.
 	 */
 	public function maybe_migrate() {
-		$account_data = $this->account->get_cached_account_data();
 		// no need to migrate anything, maybe the site is disconnected.
 		// the plugin will eventually fetch new account data.
-		if ( empty( $account_data ) ) {
+		if ( ! $this->account->is_account_onboarded() ) {
 			return;
 		}
 

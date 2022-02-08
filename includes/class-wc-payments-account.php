@@ -475,7 +475,7 @@ class WC_Payments_Account {
 			update_option( 'wcpay_should_redirect_to_onboarding', false );
 		}
 
-		if ( ! empty( $account ) ) {
+		if ( $this->is_account_onboarded() ) {
 			// Do not redirect if connected.
 			return false;
 		}

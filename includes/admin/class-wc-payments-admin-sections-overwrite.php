@@ -51,7 +51,7 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 * @return bool
 	 */
 	public function is_account_disconnected() {
-		return empty( $this->account->get_cached_account_data() );
+		return ! $this->account->is_account_onboarded();
 	}
 
 	/**
