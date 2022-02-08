@@ -605,14 +605,14 @@ class WC_Payments_API_Client {
 		$transactions = $this->request( $query, self::TRANSACTIONS_API, self::GET );
 
 		$charge_ids             = array_column( $transactions['data'], 'charge_id' );
-		$orders_with_charge_ids = $this->wcpay_db->orders_with_charge_id_from_charge_ids( $charge_ids );
+		$orders_with_charge_ids = count( $charge_ids ) ? $this->wcpay_db->orders_with_charge_id_from_charge_ids( $charge_ids ) : [];
 
 		// Add order information to each transaction available.
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
 		if ( isset( $transactions['data'] ) ) {
 			foreach ( $transactions['data'] as &$transaction ) {
 				foreach ( $orders_with_charge_ids as $order_with_charge_id ) {
-					if ( $order_with_charge_id['charge_id'] === $transaction['charge_id'] ) {
+					if ( $order_with_charge_id['charge_id'] === $transaction['charge_id'] && ! empty( $transaction['charge_id'] ) ) {
 						$transaction['order'] = $this->build_order_info( $order_with_charge_id['order'] );
 					}
 				}
