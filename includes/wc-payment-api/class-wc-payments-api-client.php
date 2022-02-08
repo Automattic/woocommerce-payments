@@ -998,6 +998,13 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Delete Stripe account
+	 */
+	public function delete_non_onboarded_account() {
+		$this->request( [], self::ACCOUNTS_API, self::DELETE, true, true );
+	}
+
+	/**
 	 * Request capability activation from the server
 	 *
 	 * @param   string $capability_id  Capability ID.

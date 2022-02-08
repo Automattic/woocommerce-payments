@@ -1292,4 +1292,12 @@ class WC_Payments_Account {
 		$action_time = time() + ( 2 * HOUR_IN_SECONDS );
 		$action_scheduler_service->schedule_job( $action_time, $action_hook );
 	}
+
+	/**
+	 * Deletes Stripe account that hasn't completed onboarding, if any.
+	 */
+	public function delete_non_onboarded_account() {
+		$this->payments_api_client->delete_non_onboarded_account();
+		$this->clear_cache();
+	}
 }

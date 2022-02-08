@@ -53,6 +53,16 @@ class WC_Payments_Status {
 			'desc'     => __( 'This tool will clear the account cached values used in WooCommerce Payments.', 'woocommerce-payments' ),
 			'callback' => [ $this->account, 'refresh_account_data' ],
 		];
+
+		if ( ! empty( $this->account->get_cached_account_data() ) && ! $this->account->is_account_onboarded() ) {
+			$tools['delete_non_onboarded_wcpay_account'] = [
+				'name'     => __( 'Delete WooCommerce Payments account', 'woocommerce-payments' ),
+				'button'   => __( 'Delete', 'woocommerce-payments' ),
+				'desc'     => __( 'This tool will delete your WooCommerce Payments account and allow account setup to be restarted.', 'woocommerce-payments' ),
+				'callback' => [ $this->account, 'delete_non_onboarded_account' ],
+			];
+		}
+
 		return $tools;
 	}
 
