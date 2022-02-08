@@ -92,9 +92,13 @@ function wcpay_jetpack_init() {
 		]
 	);
 
-	// TODO - Class Data_Settings is only available after this Jetpack PR is merged https://github.com/Automattic/jetpack/pull/22458
-	// TODO - and a new version of jetpack-sync is released.
-	$jetpack_config->ensure( 'sync', Automattic\Jetpack\Sync\Data_Settings::MUST_SYNC_DATA_SETTINGS );
+	// TODO - This config can only work after this Jetpack PR is merged https://github.com/Automattic/jetpack/pull/22458.
+	$jetpack_config->ensure(
+		'sync',
+		[
+			'jetpack_sync_options_whitelist' => [ 'active_plugins' ],
+		]
+	);
 
 	// Trigger the first Jetpack full-sync when updating from old WCPay versions,
 	// which do not have Jetpack Sync package.
