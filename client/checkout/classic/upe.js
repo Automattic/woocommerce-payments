@@ -14,7 +14,7 @@ import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import { getTerms } from '../utils/upe';
 import { getCookieValue } from '../../utils';
-import { handlePlatformCheckoutEmailInput } from '../utils/platform-checkout';
+import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );

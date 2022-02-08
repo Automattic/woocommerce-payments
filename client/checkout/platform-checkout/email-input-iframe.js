@@ -41,6 +41,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				getConfig( 'platformCheckoutHost' )
 			);
 		}
+		document.body.style.overflow = iframeHeaderValue ? 'hidden' : '';
 	};
 	// Do this on debounced resize.
 	const debouncedGetWindowSize = debounce( getWindowSize, 100 );
@@ -59,6 +60,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		iframeWrapper.remove();
 		iframe.classList.remove( 'open' );
 		platformCheckoutEmailInput.focus();
+		document.body.style.overflow = '';
 	};
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
@@ -131,6 +133,13 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				break;
 			case 'close_modal':
 				closeIframe();
+				break;
+			case 'iframe_height':
+				if ( 768 < window.innerWidth ) {
+					iframe.style.height = e.data.height + 'px';
+				} else {
+					iframe.style.height = '';
+				}
 				break;
 			default:
 			// do nothing, only respond to expected actions.
