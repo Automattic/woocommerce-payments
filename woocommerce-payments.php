@@ -96,6 +96,11 @@ function wcpay_jetpack_init() {
 	$jetpack_config->ensure(
 		'sync',
 		[
+			'jetpack_sync_modules'           =>
+				[
+					'Automattic\\Jetpack\\Sync\\Modules\\Options',
+					'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
+				],
 			'jetpack_sync_options_whitelist' => [ 'active_plugins' ],
 		]
 	);
