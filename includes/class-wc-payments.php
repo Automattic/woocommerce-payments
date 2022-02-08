@@ -220,6 +220,12 @@ class WC_Payments {
 			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 		}
 
+		// Load platform checkout save user section if feature is enabled.
+		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
+			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
+			new Platform_Checkout_Save_User();
+		}
+
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
