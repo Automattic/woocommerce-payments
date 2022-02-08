@@ -7,7 +7,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import PrintedReceiptPreviewer from '../printed-receipt-previewer';
+import PrintedReceiptPreviewer from '../previewer';
 
 describe( 'PrintedReceiptPreviewer', () => {
 	it( 'should render correctly', () => {

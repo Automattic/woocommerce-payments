@@ -7,7 +7,7 @@ import Page from 'components/page';
 /**
  * Internal dependencies.
  */
-import PreviewReceipt from './preview-receipt';
+import PreviewReceipt from './receipt';
 import ErrorBoundary from 'components/error-boundary';
 
 export const PreviewPrintReceipt = (): JSX.Element => {

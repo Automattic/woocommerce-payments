@@ -10,7 +10,7 @@ import React from 'react';
  * Internal dependencies
  */
 import { LoadableBlock } from 'components/loadable';
-import PrintedReceiptPreviewer from 'wcpay/card-readers/preview-receipt/printed-receipt-previewer';
+import PrintedReceiptPreviewer from 'wcpay/card-readers/preview-receipt/previewer';
 import {
 	useAccountBusinessSupportAddress,
 	useAccountBusinessName,
