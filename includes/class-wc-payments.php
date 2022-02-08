@@ -22,6 +22,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
+use WCPay\Platform_Checkout_Tracker;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -229,6 +230,9 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
+		// Load platform checkout tracking.
+		include_once WCPAY_ABSPATH . 'includes/class-tracker.php';
+
 		self::$account                             = new WC_Payments_Account( self::$api_client );
 		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
 		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
@@ -303,6 +307,9 @@ class WC_Payments {
 			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
+		} else {
+			// only load on non-admin pages.
+			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
 		}
 
 		// Load WCPay Subscriptions.
