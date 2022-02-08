@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6168547033670c26959dc4f293679c16",
+    "content-hash": "8fbe3e02865ab4a85a2d4fdb21f9aed5",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -156,21 +156,22 @@
         },
         {
             "name": "automattic/jetpack-config",
-            "version": "v1.6.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-config.git",
-                "reference": "1d46f87df9167a03960d708ce767d0efdfc855cf"
+                "reference": "7a5fabe59b157222811b9cf25bd0050d9d896717"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/1d46f87df9167a03960d708ce767d0efdfc855cf",
-                "reference": "1d46f87df9167a03960d708ce767d0efdfc855cf",
+                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/7a5fabe59b157222811b9cf25bd0050d9d896717",
+                "reference": "7a5fabe59b157222811b9cf25bd0050d9d896717",
                 "shasum": ""
             },
             "require-dev": {
                 "automattic/jetpack-changelogger": "^3.0"
             },
+            "default-branch": true,
             "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
@@ -194,9 +195,9 @@
             ],
             "description": "Jetpack configuration package that initializes other packages and configures Jetpack's functionality. Can be used as a base for all variants of Jetpack package usage.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-config/tree/v1.6.0"
+                "source": "https://github.com/Automattic/jetpack-config/tree/master"
             },
-            "time": "2022-01-04T21:11:32+00:00"
+            "time": "2022-02-08T08:48:56+00:00"
         },
         {
             "name": "automattic/jetpack-connection",
@@ -691,16 +692,16 @@
         },
         {
             "name": "automattic/jetpack-sync",
-            "version": "v1.29.1",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-sync.git",
-                "reference": "9ebc40019062401552495a3d8f9bf1aa8bbdc696"
+                "reference": "8f23d95350f7c6d8ddf7613301d720ab135ea420"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-sync/zipball/9ebc40019062401552495a3d8f9bf1aa8bbdc696",
-                "reference": "9ebc40019062401552495a3d8f9bf1aa8bbdc696",
+                "url": "https://api.github.com/repos/Automattic/jetpack-sync/zipball/8f23d95350f7c6d8ddf7613301d720ab135ea420",
+                "reference": "8f23d95350f7c6d8ddf7613301d720ab135ea420",
                 "shasum": ""
             },
             "require": {
@@ -718,6 +719,7 @@
                 "automattic/wordbless": "@dev",
                 "yoast/phpunit-polyfills": "1.0.3"
             },
+            "default-branch": true,
             "type": "jetpack-library",
             "extra": {
                 "autotagger": true,
@@ -744,9 +746,9 @@
             ],
             "description": "Everything needed to allow syncing to the WP.com infrastructure.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-sync/tree/v1.29.1"
+                "source": "https://github.com/Automattic/jetpack-sync/tree/master"
             },
-            "time": "2022-02-02T15:58:14+00:00"
+            "time": "2022-02-08T08:49:23+00:00"
         },
         {
             "name": "automattic/jetpack-terms-of-service",
@@ -4739,6 +4741,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "automattic/jetpack-config": 20,
+        "automattic/jetpack-sync": 20,
         "kalessil/production-dependencies-guard": 20
     },
     "prefer-stable": true,
