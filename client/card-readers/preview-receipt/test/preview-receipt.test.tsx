@@ -14,7 +14,7 @@ import {
 	useAccountBusinessSupportEmail,
 	useAccountBusinessSupportPhone,
 	useAccountBusinessURL,
-} from 'wcpay/data/index';
+} from 'wcpay/data';
 import { FetchReceiptPayload } from 'wcpay/types/card-readers';
 import PreviewPrintReceipt from '..';
 
