@@ -305,12 +305,19 @@ export const getTransactionsPaymentMethodName = (
 	paymentMethod: PaymentMethod
 ): string => {
 	switch ( paymentMethod ) {
+		case 'au_becs_debit':
+			return __(
+				'BECS Direct Debit transactions',
+				'woocommerce-payments'
+			);
 		case 'bancontact':
 			return __( 'Bancontact transactions', 'woocommerce-payments' );
 		case 'card':
 			return __( 'Card transactions', 'woocommerce-payments' );
 		case 'card_present':
 			return __( 'In-person transactions', 'woocommerce-payments' );
+		case 'eps':
+			return __( 'EPS transactions', 'woocommerce-payments' );
 		case 'giropay':
 			return __( 'GiroPay transactions', 'woocommerce-payments' );
 		case 'ideal':

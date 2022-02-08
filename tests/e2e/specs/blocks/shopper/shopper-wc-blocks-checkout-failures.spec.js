@@ -26,7 +26,6 @@ import {
 	confirmCardAuthentication,
 } from '../../../utils/payments';
 
-// Unskip these after debugging failing shopper tests.
 describeif( RUN_WC_BLOCKS_TESTS )(
 	'WooCommerce Blocks > Checkout failures',
 	() => {
@@ -50,10 +49,10 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		afterAll( async () => {
 			// Clear the cart at the end so it's ready for another test
-			await shopper.emptyCart();
+			await shopperWCP.emptyCart();
 		} );
 
-		xit( 'should throw an error that the card was simply declined', async () => {
+		it( 'should throw an error that the card was simply declined', async () => {
 			const declinedCard = config.get( 'cards.declined' );
 			await fillCardDetailsWCB( page, declinedCard );
 			await expect( page ).toClick( 'button > span', {
@@ -69,7 +68,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			);
 		} );
 
-		xit( 'should throw an error that the card expiration date is in the past', async () => {
+		it( 'should throw an error that the card expiration date is in the past', async () => {
 			const cardInvalidExpDate = config.get( 'cards.invalid-exp-date' );
 			await fillCardDetailsWCB( page, cardInvalidExpDate );
 			await expect( page ).toClick( 'button > span', {
@@ -83,7 +82,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			);
 		} );
 
-		xit( 'should throw an error that the card CVV number is invalid', async () => {
+		it( 'should throw an error that the card CVV number is invalid', async () => {
 			const cardInvalidCVV = config.get( 'cards.invalid-cvv-number' );
 			await fillCardDetailsWCB( page, cardInvalidCVV );
 			await expect( page ).toClick( 'button > span', {
@@ -98,7 +97,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			);
 		} );
 
-		xit( 'should throw an error that the card was declined due to insufficient funds', async () => {
+		it( 'should throw an error that the card was declined due to insufficient funds', async () => {
 			const cardInsufficientFunds = config.get( 'cards.declined-funds' );
 			await fillCardDetailsWCB( page, cardInsufficientFunds );
 			await expect( page ).toClick( 'button > span', {
@@ -114,7 +113,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			);
 		} );
 
-		xit( 'should throw an error that the card was declined due to expired card', async () => {
+		it( 'should throw an error that the card was declined due to expired card', async () => {
 			const cardExpired = config.get( 'cards.declined-expired' );
 			await fillCardDetailsWCB( page, cardExpired );
 			await expect( page ).toClick( 'button > span', {
@@ -130,7 +129,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			);
 		} );
 
-		xit( 'should throw an error that the card was declined due to incorrect CVC number', async () => {
+		it( 'should throw an error that the card was declined due to incorrect CVC number', async () => {
 			const cardIncorrectCVC = config.get( 'cards.declined-cvc' );
 			await fillCardDetailsWCB( page, cardIncorrectCVC );
 			await expect( page ).toClick( 'button > span', {
@@ -146,7 +145,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			);
 		} );
 
-		xit( 'should throw an error that the card was declined due to processing error', async () => {
+		it( 'should throw an error that the card was declined due to processing error', async () => {
 			const cardProcessingError = config.get(
 				'cards.declined-processing'
 			);
@@ -165,7 +164,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			);
 		} );
 
-		xit( 'should throw an error that the card was declined due to incorrect card number', async () => {
+		it( 'should throw an error that the card was declined due to incorrect card number', async () => {
 			const cardIncorrectNumber = config.get(
 				'cards.declined-incorrect'
 			);
@@ -182,7 +181,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			);
 		} );
 
-		xit( 'should throw an error that the card was declined due to invalid 3DS card', async () => {
+		it( 'should throw an error that the card was declined due to invalid 3DS card', async () => {
 			const declinedCard = config.get( 'cards.declined-3ds' );
 			await fillCardDetailsWCB( page, declinedCard );
 			await expect( page ).toClick( 'button > span', {

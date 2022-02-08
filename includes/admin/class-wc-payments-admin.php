@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -196,6 +198,8 @@ class WC_Payments_Admin {
 
 		$top_level_link = $should_render_full_menu ? '/payments/overview' : '/payments/connect';
 
+		$menu_icon = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgdmVyc2lvbj0iMS4xIgogICBpZD0ic3ZnNjciCiAgIHNvZGlwb2RpOmRvY25hbWU9IndjcGF5X21lbnVfaWNvbi5zdmciCiAgIHdpZHRoPSI4NTIiCiAgIGhlaWdodD0iNjg0IgogICBpbmtzY2FwZTp2ZXJzaW9uPSIxLjEgKGM0ZThmOWUsIDIwMjEtMDUtMjQpIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxkZWZzCiAgICAgaWQ9ImRlZnM3MSIgLz4KICA8c29kaXBvZGk6bmFtZWR2aWV3CiAgICAgaWQ9Im5hbWVkdmlldzY5IgogICAgIHBhZ2Vjb2xvcj0iI2ZmZmZmZiIKICAgICBib3JkZXJjb2xvcj0iIzY2NjY2NiIKICAgICBib3JkZXJvcGFjaXR5PSIxLjAiCiAgICAgaW5rc2NhcGU6cGFnZXNoYWRvdz0iMiIKICAgICBpbmtzY2FwZTpwYWdlb3BhY2l0eT0iMC4wIgogICAgIGlua3NjYXBlOnBhZ2VjaGVja2VyYm9hcmQ9IjAiCiAgICAgc2hvd2dyaWQ9ImZhbHNlIgogICAgIGZpdC1tYXJnaW4tdG9wPSIwIgogICAgIGZpdC1tYXJnaW4tbGVmdD0iMCIKICAgICBmaXQtbWFyZ2luLXJpZ2h0PSIwIgogICAgIGZpdC1tYXJnaW4tYm90dG9tPSIwIgogICAgIGlua3NjYXBlOnpvb209IjI1NiIKICAgICBpbmtzY2FwZTpjeD0iLTg0Ljg1NzQyMiIKICAgICBpbmtzY2FwZTpjeT0iLTgzLjI5NDkyMiIKICAgICBpbmtzY2FwZTp3aW5kb3ctd2lkdGg9IjEzMTIiCiAgICAgaW5rc2NhcGU6d2luZG93LWhlaWdodD0iMTA4MSIKICAgICBpbmtzY2FwZTp3aW5kb3cteD0iMTE2IgogICAgIGlua3NjYXBlOndpbmRvdy15PSIyMDIiCiAgICAgaW5rc2NhcGU6d2luZG93LW1heGltaXplZD0iMCIKICAgICBpbmtzY2FwZTpjdXJyZW50LWxheWVyPSJzdmc2NyIgLz4KICA8cGF0aAogICAgIHRyYW5zZm9ybT0ic2NhbGUoLTEsIDEpIHRyYW5zbGF0ZSgtODUwLCAwKSIKICAgICBkPSJNIDc2OCw4NiBWIDU5OCBIIDg0IFYgODYgWiBtIDAsNTk4IGMgNDgsMCA4NCwtMzggODQsLTg2IFYgODYgQyA4NTIsMzggODE2LDAgNzY4LDAgSCA4NCBDIDM2LDAgMCwzOCAwLDg2IHYgNTEyIGMgMCw0OCAzNiw4NiA4NCw4NiB6IE0gMzg0LDEyOCB2IDQ0IGggLTg2IHYgODQgaCAxNzAgdiA0NCBIIDM0MCBjIC0yNCwwIC00MiwxOCAtNDIsNDIgdiAxMjggYyAwLDI0IDE4LDQyIDQyLDQyIGggNDQgdiA0NCBoIDg0IHYgLTQ0IGggODYgViA0MjggSCAzODQgdiAtNDQgaCAxMjggYyAyNCwwIDQyLC0xOCA0MiwtNDIgViAyMTQgYyAwLC0yNCAtMTgsLTQyIC00MiwtNDIgaCAtNDQgdiAtNDQgeiIKICAgICBmaWxsPSIjYTJhYWIyIgogICAgIGlkPSJwYXRoNjUiIC8+Cjwvc3ZnPgo=';
+
 		wc_admin_register_page(
 			[
 				'id'         => 'wc-payments',
@@ -203,6 +207,7 @@ class WC_Payments_Admin {
 				'capability' => 'manage_woocommerce',
 				'path'       => $top_level_link,
 				'position'   => '55.7', // After WooCommerce & Product menu items.
+				'icon'       => $menu_icon,
 				'nav_args'   => [
 					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
 					'is_category'  => $should_render_full_menu,
@@ -211,6 +216,12 @@ class WC_Payments_Admin {
 				],
 			]
 		);
+
+		if ( $this->account->is_account_rejected() ) {
+			// If the account is rejected, only show the overview page.
+			wc_admin_register_page( $this->admin_child_pages['wc-payments-overview'] );
+			return;
+		}
 
 		if ( $should_render_full_menu ) {
 			if ( self::is_card_readers_page_enabled() && $this->account->is_card_present_eligible() ) {
@@ -349,6 +360,7 @@ class WC_Payments_Admin {
 			'connect'                 => [
 				'country'            => WC()->countries->get_base_country(),
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
+				'availableStates'    => WC()->countries->get_states(),
 			],
 			'testMode'                => $this->wcpay_gateway->is_in_test_mode(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
@@ -360,16 +372,15 @@ class WC_Payments_Admin {
 			'zeroDecimalCurrencies'   => WC_Payments_Utils::zero_decimal_currencies(),
 			'fraudServices'           => $this->account->get_fraud_services_config(),
 			'isJetpackConnected'      => $this->payments_api_client->is_server_connected(),
+			'isJetpackIdcActive'      => Jetpack_Identity_Crisis::has_identity_crisis(),
 			'accountStatus'           => $this->account->get_account_status_data(),
 			'accountFees'             => $this->account->get_fees(),
+			'accountLoans'            => $this->account->get_capital(),
 			'accountEmail'            => $this->account->get_account_email(),
 			'showUpdateDetailsTask'   => get_option( 'wcpay_show_update_business_details_task', 'no' ),
 			'wpcomReconnectUrl'       => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'additionalMethodsSetup'  => [
-				'isTaskVisible'               => $this->is_page_eligible_for_additional_methods_setup_task(),
-				'isSetupCompleted'            => get_option( 'wcpay_additional_methods_setup_completed', 'no' ),
-				'isUpeSettingsPreviewEnabled' => WC_Payments_Features::is_upe_settings_preview_enabled(),
-				'isUpeEnabled'                => WC_Payments_Features::is_upe_enabled(),
+				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
 			],
 			'multiCurrencySetup'      => [
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
@@ -757,34 +768,5 @@ class WC_Payments_Admin {
 		}
 
 		$this->account->redirect_to_onboarding_page();
-	}
-
-	/**
-	 * Checks whether the current page should be eligible to enqueue the task.
-	 */
-	public function is_page_eligible_for_additional_methods_setup_task() {
-		if ( ! wc_admin_is_registered_page() ) {
-			return false;
-		}
-
-		// if the account is disconnected, just don't display the onboarding task.
-		if ( ! $this->account->is_stripe_connected() ) {
-			return false;
-		}
-
-		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
-			return false === WC_Payments_Features::did_merchant_disable_upe();
-		}
-
-		$available_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
-		if ( empty( $available_methods ) ) {
-			return false;
-		}
-
-		if ( 1 >= count( $available_methods ) ) {
-			return false;
-		}
-
-		return true;
 	}
 }

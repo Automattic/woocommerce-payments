@@ -212,13 +212,18 @@ fi
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	echo "Install and activate the latest release of WooCommerce Subscriptions"
 	cd "$E2E_ROOT"/deps
-	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
-	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_SUBSCRIPTIONS_REPO/archive/$LATEST_RELEASE.zip"
+	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | jq -r '.tag_name')
+	WCS_LATEST_ASSET_ID=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | jq -r '.assets[0].id')
+	curl -L \
+		-H "Authorization: token $E2E_GH_TOKEN" \
+		-H 'Accept: application/octet-stream' \
+		--output "woocommerce-subscriptions-$LATEST_RELEASE.zip" \
+		"https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/assets/$WCS_LATEST_ASSET_ID"
 
-	unzip -qq woocommerce-subscriptions-$LATEST_RELEASE.zip
+	unzip -qq woocommerce-subscriptions-$LATEST_RELEASE.zip -d woocommerce-subscriptions-$LATEST_RELEASE
 
 	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv woocommerce-subscriptions-$LATEST_RELEASE/* "$E2E_ROOT"/deps/woocommerce-subscriptions
+	sudo mv woocommerce-subscriptions-$LATEST_RELEASE/woocommerce-subscriptions/* "$E2E_ROOT"/deps/woocommerce-subscriptions
 
 	cli wp plugin activate woocommerce-subscriptions
 

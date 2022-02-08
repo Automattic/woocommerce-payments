@@ -114,7 +114,10 @@ declare module '@woocommerce/navigation' {
 		type_is?: unknown;
 		type_is_not?: unknown;
 		store_currency_is?: string;
+		loan_id_is?: string;
 		search?: string[];
+		status_is?: string;
+		status_is_not?: string;
 	}
 
 	const onQueryChange: unknown;

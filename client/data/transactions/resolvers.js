@@ -18,7 +18,7 @@ import {
 } from './actions';
 import { formatDateValue } from 'utils';
 
-const formatQueryFilters = ( query ) => ( {
+export const formatQueryFilters = ( query ) => ( {
 	match: query.match,
 	date_before: formatDateValue( query.dateBefore, true ),
 	date_after: formatDateValue( query.dateAfter ),
@@ -29,6 +29,7 @@ const formatQueryFilters = ( query ) => ( {
 	type_is: query.typeIs,
 	type_is_not: query.typeIsNot,
 	store_currency_is: query.storeCurrencyIs,
+	loan_id_is: query.loanIdIs,
 	deposit_id: query.depositId,
 	search: query.search,
 } );
@@ -53,6 +54,15 @@ export function* getTransactions( query ) {
 	} catch ( e ) {
 		yield updateErrorForTransactions( query, null, e );
 	}
+}
+
+export function getTransactionsCSV( query ) {
+	const path = addQueryArgs(
+		`${ NAMESPACE }/transactions/download`,
+		formatQueryFilters( query )
+	);
+
+	return path;
 }
 
 /**

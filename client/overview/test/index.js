@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -26,6 +26,9 @@ jest.mock( '@woocommerce/experimental', () => {
 } );
 jest.mock( '@woocommerce/navigation', () => ( { getQuery: jest.fn() } ) );
 
+const loanOfferErrorText =
+	'There was a problem redirecting you to the loan offer. Please check that it is not expired and try again.';
+
 describe( 'Overview page', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
@@ -45,13 +48,14 @@ describe( 'Overview page', () => {
 			},
 			featureFlags: {
 				accountOverviewTaskList: true,
+				capital: true,
 			},
 		};
 		getQuery.mockReturnValue( {} );
+		getTasks.mockReturnValue( [] );
 	} );
 
 	it( 'Skips rendering task list when there are no tasks', () => {
-		getTasks.mockReturnValue( [] );
 		const { container } = render( <OverviewPage /> );
 
 		expect(
@@ -65,7 +69,6 @@ describe( 'Overview page', () => {
 			featureFlags: {},
 		};
 
-		getTasks.mockReturnValue( [] );
 		const { container } = render( <OverviewPage /> );
 
 		expect(
@@ -75,7 +78,6 @@ describe( 'Overview page', () => {
 
 	it( 'Displays the login error for query param wcpay-login-error=1', () => {
 		getQuery.mockReturnValue( { 'wcpay-login-error': '1' } );
-		getTasks.mockReturnValue( [] );
 
 		const { container } = render( <OverviewPage /> );
 
@@ -88,7 +90,6 @@ describe( 'Overview page', () => {
 
 	it( 'Displays the success message for query param wcpay-connection-success=1', () => {
 		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
-		getTasks.mockReturnValue( [] );
 
 		const { container } = render( <OverviewPage /> );
 
@@ -97,5 +98,70 @@ describe( 'Overview page', () => {
 				'.wcpay-connection-success.components-notice.is-success'
 			)
 		).toBeVisible();
+	} );
+
+	it( 'Displays the notice for Jetpack Identity Crisis', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			isJetpackIdcActive: 1,
+		};
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector( '.wcpay-jetpack-idc-notice' )
+		).toBeVisible();
+	} );
+
+	it( 'Displays the view loan error message for query param wcpay-loan-offer-error=1', () => {
+		getQuery.mockReturnValue( { 'wcpay-loan-offer-error': '1' } );
+		getTasks.mockReturnValue( [] );
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( ( content, element ) => {
+				return (
+					loanOfferErrorText === content &&
+					! element.classList.contains( 'a11y-speak-region' )
+				);
+			} )
+		).toBeVisible();
+	} );
+
+	it( 'Does not display the view loan error message when there the query parameter is not present', () => {
+		getTasks.mockReturnValue( [] );
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( ( content, element ) => {
+				return (
+					loanOfferErrorText === content &&
+					! element.classList.contains( 'a11y-speak-region' )
+				);
+			} )
+		).toBeNull();
+	} );
+
+	it( 'Does not display the view loan error message when Capital is disabled', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			featureFlags: {},
+		};
+
+		getQuery.mockReturnValue( { 'wcpay-loan-offer-error': '1' } );
+		getTasks.mockReturnValue( [] );
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( ( content, element ) => {
+				return (
+					loanOfferErrorText === content &&
+					! element.classList.contains( 'a11y-speak-region' )
+				);
+			} )
+		).toBeNull();
 	} );
 } );

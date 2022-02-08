@@ -69,6 +69,19 @@ class WC_Payments_Customer_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
+
+		/*
+		 * Adds the WooComerce Payments customer ID found in the user session
+		 * to the WordPress user as metadata.
+		 *
+		 * This is helpful in scenarios where the shopper begins the checkout flow
+		 * logged out (i.e. guest checkout) and a user account is created for them
+		 * during checkout.
+		 *
+		 * This occurs when a user account is necessary for checkout, e.g. when the shopper
+		 * purchases a subscription product.
+		 */
+		add_action( 'woocommerce_created_customer', [ $this, 'add_customer_id_to_user' ] );
 	}
 
 	/**
@@ -117,12 +130,7 @@ class WC_Payments_Customer_Service {
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );
 
 		if ( $user->ID > 0 ) {
-			$global = WC_Payments::is_network_saved_cards_enabled();
-			$result = update_user_option( $user->ID, $this->get_customer_id_option(), $customer_id, $global );
-			if ( ! $result ) {
-				// Log the error, but continue since we have the customer ID we need.
-				Logger::error( 'Failed to store new customer ID for user ' . $user->ID );
-			}
+			$this->update_user_customer_id( $user->ID, $customer_id );
 		}
 
 		// Save the customer id in the session for non logged in users to reuse it in payments.
@@ -400,5 +408,42 @@ class WC_Payments_Customer_Service {
 		}
 
 		return $customer_id;
+	}
+
+	/**
+	 * Updates the given user with the given WooCommerce Payments
+	 * customer ID.
+	 *
+	 * @param int    $user_id     The WordPress user ID.
+	 * @param string $customer_id The WooCommerce Payments customer ID.
+	 */
+	public function update_user_customer_id( int $user_id, string $customer_id ) {
+		$global = WC_Payments::is_network_saved_cards_enabled();
+		$result = update_user_option( $user_id, $this->get_customer_id_option(), $customer_id, $global );
+		if ( ! $result ) {
+			Logger::error( 'Failed to update customer ID for user ' . $user_id );
+		}
+	}
+
+	/**
+	 * Adds the WooComerce Payments customer ID found in the user session
+	 * to the WordPress user as metadata.
+	 *
+	 * @param int $user_id The WordPress user ID.
+	 */
+	public function add_customer_id_to_user( $user_id ) {
+		// Not processing a checkout, bail.
+		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) || ! WOOCOMMERCE_CHECKOUT ) {
+			return;
+		}
+
+		// Retrieve the WooComerce Payments customer ID from the user session.
+		$customer_id = WC()->session ? WC()->session->get( self::CUSTOMER_ID_SESSION_KEY ) : null;
+
+		if ( ! $customer_id ) {
+			return;
+		}
+
+		$this->update_user_customer_id( $user_id, $customer_id );
 	}
 }

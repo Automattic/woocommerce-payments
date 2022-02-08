@@ -30,6 +30,14 @@ export function updateDisputes( query, data ) {
 	};
 }
 
+export function updateDisputesSummary( query, data ) {
+	return {
+		type: TYPES.SET_DISPUTES_SUMMARY,
+		query,
+		data,
+	};
+}
+
 export function* acceptDispute( id ) {
 	try {
 		yield dispatch( STORE_NAME, 'startResolution', 'getDispute', [ id ] );

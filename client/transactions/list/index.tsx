@@ -3,11 +3,12 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React, { useState } from 'react';
 import { uniq } from 'lodash';
+import { useDispatch } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
-import { __, _n } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import {
 	TableCard,
@@ -25,7 +26,7 @@ import {
 	generateCSVDataFromTable,
 	generateCSVFileName,
 } from '@woocommerce/csv-export';
-
+import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
@@ -46,6 +47,7 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 import DownloadButton from 'components/download-button';
+import { getTransactionsCSV } from '../../data/transactions/resolvers';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -186,6 +188,8 @@ const getColumns = (
 export const TransactionsList = (
 	props: TransactionsListProps
 ): JSX.Element => {
+	const [ isDownloading, setIsDownloading ] = useState( false );
+	const { createNotice } = useDispatch( 'core/notices' );
 	const { transactions, isLoading } = useTransactions(
 		getQuery(),
 		props.depositId ?? ''
@@ -204,6 +208,7 @@ export const TransactionsList = (
 		[ props.depositId ]
 	);
 
+	const totalRows = transactionsSummary.count || 0;
 	const rows = transactions.map( ( txn ) => {
 		const detailsURL =
 			getDetailsURL( txn.charge_id, 'transactions' ) +
@@ -213,11 +218,21 @@ export const TransactionsList = (
 			( txn.metadata && 'card_reader_fee' === txn.metadata.charge_type
 				? txn.metadata.charge_type
 				: txn.type );
-		const clickable = ( children: JSX.Element | string ) => (
-			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
-		);
+		const clickable =
+			'financing_payout' !== txn.type &&
+			! ( 'financing_paydown' === txn.type && '' === txn.charge_id )
+				? ( children: JSX.Element | string ) => (
+						<ClickableCell href={ detailsURL }>
+							{ children }
+						</ClickableCell>
+				  )
+				: ( children: JSX.Element | string ) => children;
 
-		const orderUrl = <OrderLink order={ txn.order } />;
+		const orderUrl = txn.order ? (
+			<OrderLink order={ txn.order } />
+		) : (
+			__( 'N/A', 'woocommerce-payments' )
+		);
 		const orderSubscriptions = txn.order && txn.order.subscriptions;
 		const subscriptionsValue =
 			wcpaySettings.isSubscriptionsActive && orderSubscriptions
@@ -277,13 +292,17 @@ export const TransactionsList = (
 		const formatFees = () => {
 			const isCardReader =
 				txn.metadata && txn.metadata.charge_type === 'card_reader_fee';
+			const feeAmount =
+				( isCardReader ? txn.amount : txn.fees * -1 ) / 100;
 			return {
-				value: ( isCardReader ? txn.amount : txn.fees ) / 100,
+				value: feeAmount,
 				display: clickable(
-					formatCurrency(
-						isCardReader ? txn.amount : txn.fees * -1,
-						currency
-					)
+					0 !== feeAmount
+						? formatCurrency(
+								isCardReader ? txn.amount : txn.fees * -1,
+								currency
+						  )
+						: __( 'N/A', 'woocommerce-payments' )
 				),
 			};
 		};
@@ -291,6 +310,10 @@ export const TransactionsList = (
 		const depositStatus = txn.deposit_status
 			? displayDepositStatus[ txn.deposit_status ]
 			: '';
+
+		const isFinancingType =
+			-1 !==
+			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
 
 		// Map transaction into table row.
 		const data = {
@@ -315,10 +338,14 @@ export const TransactionsList = (
 			},
 			source: {
 				value: txn.source,
-				display: clickable(
-					<span
-						className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-					/>
+				display: ! isFinancingType ? (
+					clickable(
+						<span
+							className={ `payment-method__brand payment-method__brand--${ txn.source }` }
+						/>
+					)
+				) : (
+					<span className={ 'payment-method__brand' }>—</span>
 				),
 			},
 			order: {
@@ -331,11 +358,15 @@ export const TransactionsList = (
 			},
 			customer_name: {
 				value: txn.customer_name,
-				display: customerName,
+				display: ! isFinancingType
+					? customerName
+					: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_email: {
 				value: txn.customer_email,
-				display: customerEmail,
+				display: ! isFinancingType
+					? customerEmail
+					: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_country: {
 				value: txn.customer_country,
@@ -397,20 +428,100 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const onDownload = () => {
+	const onDownload = async () => {
+		setIsDownloading( true );
+
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
+		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
-		downloadCSVFile(
-			generateCSVFileName( title, params ),
-			generateCSVDataFromTable( columnsToDisplay, rows )
-		);
+		if ( 'endpoint' === downloadType ) {
+			const {
+				date_after: dateAfter,
+				date_before: dateBefore,
+				date_between: dateBetween,
+				match,
+				search,
+				type_is: typeIs,
+				type_is_not: typeIsNot,
+			} = params;
 
-		wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-			exported_transactions: rows.length,
-			total_transactions: transactionsSummary.count,
-		} );
+			const isFiltered =
+				!! dateAfter ||
+				!! dateBefore ||
+				!! dateBetween ||
+				!! search ||
+				!! typeIs ||
+				!! typeIsNot;
+
+			const confirmThreshold = 10000;
+			const confirmMessage = sprintf(
+				__(
+					"You are about to export %d transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
+					'woocommerce-payments'
+				),
+				totalRows
+			);
+
+			if (
+				isFiltered ||
+				totalRows < confirmThreshold ||
+				window.confirm( confirmMessage )
+			) {
+				try {
+					const {
+						exported_transactions: exportedTransactions,
+					} = await apiFetch( {
+						path: getTransactionsCSV( {
+							dateAfter,
+							dateBefore,
+							dateBetween,
+							match,
+							search,
+							typeIs,
+							typeIsNot,
+						} ),
+						method: 'POST',
+					} );
+
+					createNotice(
+						'success',
+						__(
+							'Your export will be emailed to you.',
+							'woocommerce-payments'
+						)
+					);
+
+					wcpayTracks.recordEvent( 'wcpay_transactions_download', {
+						exported_transactions: exportedTransactions,
+						total_transactions: exportedTransactions,
+						download_type: downloadType,
+					} );
+				} catch {
+					createNotice(
+						'error',
+						__(
+							'There was a problem generating your export.',
+							'woocommerce-payments'
+						)
+					);
+				}
+			}
+		} else {
+			downloadCSVFile(
+				generateCSVFileName( title, params ),
+				generateCSVDataFromTable( columnsToDisplay, rows )
+			);
+
+			wcpayTracks.recordEvent( 'wcpay_transactions_download', {
+				exported_transactions: rows.length,
+				total_transactions: transactionsSummary.count,
+				download_type: downloadType,
+			} );
+		}
+
+		setIsDownloading( false );
 	};
 
 	if ( ! wcpaySettings.featureFlags.customSearch ) {
@@ -490,14 +601,10 @@ export const TransactionsList = (
 			) }
 			<TableCard
 				className="transactions-list woocommerce-report-table has-search"
-				title={
-					props.depositId
-						? __( 'Deposit transactions', 'woocommerce-payments' )
-						: __( 'Transactions', 'woocommerce-payments' )
-				}
+				title={ title }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
-				totalRows={ transactionsSummary.count || 0 }
+				totalRows={ totalRows }
 				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
@@ -522,7 +629,7 @@ export const TransactionsList = (
 					downloadable && (
 						<DownloadButton
 							key="download"
-							isDisabled={ isLoading }
+							isDisabled={ isLoading || isDownloading }
 							onClick={ onDownload }
 						/>
 					),
