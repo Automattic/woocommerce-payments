@@ -231,7 +231,7 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
 		// Load platform checkout tracking.
-		include_once WCPAY_ABSPATH . 'includes/class-tracker.php';
+		include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
 
 		self::$account                             = new WC_Payments_Account( self::$api_client );
 		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
