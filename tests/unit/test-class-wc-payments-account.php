@@ -322,6 +322,42 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
 	}
 
+	public function test_is_account_onboarded_returns_true_if_no_longer_onboarding() {
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->returnValue(
+				[
+					'account_id' => 'acc_test',
+					'is_live'    => true,
+					'status'     => 'complete',
+				]
+			)
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_account_onboarded() );
+	}
+
+	public function test_is_account_onboarded_returns_true_if_not_finished_onboarding() {
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->returnValue(
+				[
+					'account_id' => 'acc_test',
+					'is_live'    => true,
+					'status'     => 'onboarding',
+				]
+			)
+		);
+
+		$this->assertFalse( $this->wcpay_account->is_account_onboarded() );
+	}
+
+	public function test_is_account_onboarded_returns_true_if_no_account() {
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
+		);
+
+		$this->assertFalse( $this->wcpay_account->is_account_onboarded() );
+	}
+
 	public function test_get_publishable_key_returns_for_live() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
