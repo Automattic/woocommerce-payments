@@ -292,6 +292,8 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_preview_print_receipt() {
+		$mock_receipt = '<p>Receipt</p>';
+
 		$this->mock_wcpay_gateway
 			->expects( $this->never() )
 			->method( 'get_option' );
@@ -315,10 +317,10 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 						],
 					],
 				],
-				$this->controller->create_print_preview_receipt_order_data(),
-				$this->controller->create_print_preview_receipt_charge_data()
+				$this->controller::PREVIEW_RECEIPT_ORDER_DATA,
+				$this->controller::PREVIEW_RECEIPT_CHARGE_DATA
 			)
-			->willReturn( '' );
+			->willReturn( $mock_receipt );
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_header( 'Content-Type', 'application/json' );
@@ -344,11 +346,13 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 200, $response->status );
-		$this->assertEquals( '', $response_data );
+		$this->assertEquals( $mock_receipt, $response_data );
 	}
 
 	public function test_preview_print_receipt_defaults_to_wcpay_settings() {
-		$settings = $this->mock_settings();
+		$settings     = $this->mock_settings();
+		$mock_receipt = '<p>Receipt</p>';
+
 		$this->mock_wcpay_gateway
 			->expects( $this->exactly( 4 ) )
 			->method( 'get_option' )
@@ -378,10 +382,10 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 						],
 					],
 				],
-				$this->controller->create_print_preview_receipt_order_data(),
-				$this->controller->create_print_preview_receipt_charge_data()
+				$this->controller::PREVIEW_RECEIPT_ORDER_DATA,
+				$this->controller::PREVIEW_RECEIPT_CHARGE_DATA
 			)
-			->willReturn( '' );
+			->willReturn( $mock_receipt );
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_header( 'Content-Type', 'application/json' );
@@ -400,7 +404,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 200, $response->status );
-		$this->assertEquals( '', $response_data );
+		$this->assertEquals( $mock_receipt, $response_data );
 	}
 
 	public function test_generate_print_receipt_invalid_payment_error() {

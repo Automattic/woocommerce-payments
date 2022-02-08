@@ -87,7 +87,7 @@ const renderPreviewPrintReceipt = async () => {
 		expect( mockApiFetch ).toHaveBeenCalledWith( {
 			data: mockSettings,
 			method: 'post',
-			path: '/wc/v3/payments/readers/receipts/print/preview',
+			path: '/wc/v3/payments/readers/receipts/preview',
 		} );
 	} );
 

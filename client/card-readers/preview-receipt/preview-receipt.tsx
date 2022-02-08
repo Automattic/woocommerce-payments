@@ -23,7 +23,7 @@ import { FetchReceiptPayload } from 'wcpay/types/card-readers';
 async function fetchReceiptHtml(
 	payload: FetchReceiptPayload
 ): Promise< string > {
-	const path = '/wc/v3/payments/readers/receipts/print/preview';
+	const path = '/wc/v3/payments/readers/receipts/preview';
 	return apiFetch( { path, data: payload, method: 'post' } );
 }
 

@@ -14,6 +14,63 @@ defined( 'ABSPATH' ) || exit;
 class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	const STORE_READERS_TRANSIENT_KEY = 'wcpay_store_terminal_readers';
 
+	const PREVIEW_RECEIPT_CHARGE_DATA = [
+		'amount_captured'        => 0,
+		'payment_method_details' => [
+			'card_present' => [
+				'brand'   => 'Sample',
+				'last4'   => '0000',
+				'receipt' => [
+					'application_preferred_name' => 'Sample',
+					'dedicated_file_name'        => '0000',
+					'account_type'               => 'Sample',
+				],
+			],
+		],
+	];
+
+	const PREVIEW_RECEIPT_ORDER_DATA = [
+		'id'           => '42',
+		'currency'     => 'USD',
+		'subtotal'     => 0,
+		'line_items'   => [
+			[
+				'name'     => 'Sample',
+				'quantity' => 1,
+				'subtotal' => 0,
+				'product'  => [
+					'price'         => 0,
+					'regular_price' => 1,
+					'id'            => 'sample',
+				],
+			],
+			[
+				'name'     => 'Sample',
+				'quantity' => 1,
+				'subtotal' => 0,
+				'product'  => [
+					'price'         => 0,
+					'regular_price' => 1,
+					'id'            => 'sample',
+				],
+			],
+		],
+		'coupon_lines' => [
+			[
+				'code'        => 'DISCOUNT',
+				'description' => 'sample',
+				'discount'    => 0,
+			],
+		],
+		'tax_lines'    => [
+			[
+				'rate_percent' => 0,
+				'tax_total'    => '0',
+			],
+		],
+		'total'        => 0,
+	];
+
 	/**
 	 * Endpoint path.
 	 *
@@ -101,6 +158,15 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/receipts/preview',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'preview_print_receipt' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/receipts/(?P<payment_intent_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -109,15 +175,6 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			]
 		);
 
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/receipts/print/preview',
-			[
-				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'preview_print_receipt' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-			]
-		);
 	}
 
 	/**
@@ -316,14 +373,14 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 		return rest_ensure_response(
 			$this->receipts_service->get_receipt_markup(
 				$this->create_print_preview_receipt_settings_data( $request->get_json_params() ),
-				$this->create_print_preview_receipt_order_data(),
-				$this->create_print_preview_receipt_charge_data()
+				self::PREVIEW_RECEIPT_ORDER_DATA,
+				self::PREVIEW_RECEIPT_CHARGE_DATA
 			)
 		);
 	}
 
 	/**
-	 * Creates settings data to be used on the printed receipt preview. Defaults to Stripe data if one key is missing.
+	 * Creates settings data to be used on the printed receipt preview. Defaults to stored settings if one key is missing.
 	 *
 	 * @param  array $params Array of params to use to create the settings.
 	 * @return array
@@ -343,77 +400,6 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 				],
 				'phone'   => empty( $params['accountBusinessSupportPhone'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_phone' ) : $params['accountBusinessSupportPhone'],
 				'email'   => empty( $params['accountBusinessSupportEmail'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_email' ) : $params['accountBusinessSupportEmail'],
-			],
-		];
-	}
-
-	/**
-	 * Creates order data to be used on the printed receipt preview.
-	 *
-	 * @return array
-	 */
-	public function create_print_preview_receipt_order_data(): array {
-		return [
-			'id'           => '42',
-			'currency'     => 'USD',
-			'subtotal'     => 0,
-			'line_items'   => [
-				[
-					'name'     => 'Sample',
-					'quantity' => 1,
-					'subtotal' => 0,
-					'product'  => [
-						'price'         => 0,
-						'regular_price' => 1,
-						'id'            => 'sample',
-					],
-				],
-				[
-					'name'     => 'Sample',
-					'quantity' => 1,
-					'subtotal' => 0,
-					'product'  => [
-						'price'         => 0,
-						'regular_price' => 1,
-						'id'            => 'sample',
-					],
-				],
-			],
-			'coupon_lines' => [
-				[
-					'code'        => 'DISCOUNT',
-					'description' => 'sample',
-					'discount'    => 0,
-				],
-			],
-			'tax_lines'    => [
-				[
-					'rate_percent' => 0,
-					'tax_total'    => '0',
-				],
-			],
-			'total'        => 0,
-		];
-	}
-
-	/**
-	 * Creates charge data to be used on the printed receipt preview.
-	 *
-	 * @return array comment.
-	 */
-	public function create_print_preview_receipt_charge_data(): array {
-		return [
-			'amount_captured'        => 0,
-			'payment_method_details' => [
-				'card_present' => [
-					'brand'   => 'Sample',
-					'last4'   => '0000',
-					'receipt' => [
-						'application_preferred_name' => 'Sample',
-						'dedicated_file_name'        => '0000',
-						'account_type'               => 'Sample',
-					],
-				],
 			],
 		];
 	}
