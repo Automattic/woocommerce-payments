@@ -127,8 +127,20 @@ class WC_Payments_Account {
 			throw new Exception( __( 'Failed to detect connection status', 'woocommerce-payments' ) );
 		}
 
+		return $this->is_account_onboarded();
+	}
+
+	/**
+	 * Checks if the account has finished onboarding.
+	 *
+	 * @return bool True if the account is onboarded, false otherwise.
+	 */
+	public function is_account_onboarded() {
+		$account = $this->get_cached_account_data();
+
 		// The empty array indicates that account is not connected yet.
-		return [] !== $account;
+		// If non-empty account has no status, can assume already onboarded for legacy reasons.
+		return ! empty( $account ) && ( $account['status'] ?? null ) !== 'onboarding';
 	}
 
 	/**
