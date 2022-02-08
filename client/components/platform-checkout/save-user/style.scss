@@ -1,0 +1,74 @@
+@import '../../../stylesheets/abstracts/colors';
+@import '../../../stylesheets/abstracts/variables';
+
+.platform-checkout-save-new-user-container {
+	display: flex;
+	flex-direction: column;
+	gap: $gap;
+	margin-top: $gap-large;
+
+	h3 {
+		font-weight: 400;
+		font-size: 24px;
+		margin-bottom: 0;
+	}
+
+	.components-checkbox-control__input-container {
+		margin-right: $gap-smaller;
+
+		.components-checkbox-control__input[type='checkbox'] {
+			height: 16px;
+			width: 16px;
+		}
+
+		svg {
+			height: 16px;
+			width: 16px;
+			left: 0;
+			top: 0;
+		}
+
+		label {
+			font-size: 14px;
+		}
+	}
+
+	.save-details-form {
+		display: flex;
+		flex-direction: column;
+		font-size: 16px;
+		line-height: 26px;
+		font-weight: 400;
+		padding: $gap;
+		gap: $gap;
+
+		.about-platform-checkout {
+			color: #6d6d6d;
+		}
+
+		.additional-information {
+			display: flex;
+			flex-direction: row;
+			align-items: flex-start;
+			gap: $gap-smaller;
+			color: $gray-700;
+
+			img {
+				margin-top: 5px;
+			}
+		}
+
+		.tos {
+			font-size: 12px;
+			line-height: 16px;
+		}
+
+		.line {
+			border: 0.5px solid $studio-gray-5;
+		}
+	}
+}
+
+#payment .place-order {
+	margin-top: $gap-large !important;
+}

@@ -21,6 +21,7 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
+use WCPay\Payment_Methods\Eps_Payment_Method;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -197,6 +198,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-ideal-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-becs-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-eps-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -224,6 +226,12 @@ class WC_Payments {
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
 			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
+		}
+
+		// Load platform checkout save user section if feature is enabled.
+		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
+			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
+			new Platform_Checkout_Save_User();
 		}
 
 		// Always load tracker to avoid class not found errors.
@@ -254,6 +262,7 @@ class WC_Payments {
 				P24_Payment_Method::class,
 				Ideal_Payment_Method::class,
 				Becs_Payment_Method::class,
+				Eps_Payment_Method::class,
 			];
 			foreach ( $payment_method_classes as $payment_method_class ) {
 				$payment_method                               = new $payment_method_class( self::$token_service );
