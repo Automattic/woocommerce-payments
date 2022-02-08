@@ -95,6 +95,20 @@ function wcpay_jetpack_init() {
 	// TODO - Class Data_Settings is only available after this Jetpack PR is merged https://github.com/Automattic/jetpack/pull/22458
 	// TODO - and a new version of jetpack-sync is released.
 	$jetpack_config->ensure( 'sync', Automattic\Jetpack\Sync\Data_Settings::MUST_SYNC_DATA_SETTINGS );
+
+	// Trigger the first Jetpack full-sync when updating from old WCPay versions,
+	// which do not have Jetpack Sync package.
+	add_action(
+		'woocommerce_woocommerce_payments_updated',
+		function () {
+			// TODO version 3.7.0 is temporary, the exact version will be discussed.
+			$version_check = version_compare( '3.7.0', get_option( 'woocommerce_woocommerce_payments_version' ), '>' );
+			$method_check  = method_exists( '\Automattic\Jetpack\Sync\Actions', 'do_only_first_initial_sync' );
+			if ( $version_check && $method_check ) {
+				\Automattic\Jetpack\Sync\Actions::do_only_first_initial_sync();
+			}
+		}
+	);
 }
 // Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
 Automattic\Jetpack\Connection\Rest_Authentication::init();
