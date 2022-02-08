@@ -92,7 +92,7 @@ function wcpay_jetpack_init() {
 		]
 	);
 
-	// TODO - This config can only work after this Jetpack PR is merged https://github.com/Automattic/jetpack/pull/22458.
+	// When only WooCommerce Payments is active, minimize the data to send back to WPcom for supporting Woo Mobile apps.
 	$jetpack_config->ensure(
 		'sync',
 		[
