@@ -91,6 +91,10 @@ function wcpay_jetpack_init() {
 			'priority'      => 5,
 		]
 	);
+
+	// TODO - Class Data_Settings is only available after this Jetpack PR is merged https://github.com/Automattic/jetpack/pull/22458
+	// TODO - and a new version of jetpack-sync is released.
+	$jetpack_config->ensure( 'sync', Automattic\Jetpack\Sync\Data_Settings::MUST_SYNC_DATA_SETTINGS );
 }
 // Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
 Automattic\Jetpack\Connection\Rest_Authentication::init();
