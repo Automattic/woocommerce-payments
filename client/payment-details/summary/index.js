@@ -146,6 +146,20 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 									) }
 								</Loadable>
 							</p>
+							{ charge.paydown ? (
+								<p>
+									{ `${ __(
+										'Loan repayment',
+										'woocommerce-payments'
+									) }: ` }
+									{ formatExplicitCurrency(
+										charge.paydown.amount,
+										balance.currency
+									) }
+								</p>
+							) : (
+								''
+							) }
 							<p>
 								<Loadable
 									isLoading={ isLoading }
@@ -156,7 +170,12 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 										'woocommerce-payments'
 									) }: ` }
 									{ formatExplicitCurrency(
-										balance.net,
+										charge.paydown
+											? balance.net -
+													Math.abs(
+														charge.paydown.amount
+													)
+											: balance.net,
 										balance.currency
 									) }
 								</Loadable>
