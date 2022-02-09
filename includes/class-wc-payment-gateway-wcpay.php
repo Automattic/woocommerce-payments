@@ -1149,7 +1149,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
 		}
 
-		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+		if ( empty( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+		}
 
 		return [
 			'result'   => 'success',
