@@ -378,7 +378,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'google_pay' => 'Google Pay',
 		];
 
-		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', ' (WooCommerce Payments)' );
+		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooCommerce Payments' );
+		if ( ! empty( $suffix ) ) {
+			$suffix = " ($suffix)";
+		}
 
 		$payment_method_title = isset( $payment_method_titles[ $payment_request_type ] ) ? $payment_method_titles[ $payment_request_type ] : 'Payment Request';
 		$order->set_payment_method_title( $payment_method_title . $suffix );
