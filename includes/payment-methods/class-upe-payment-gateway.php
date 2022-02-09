@@ -762,11 +762,23 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$payment_fields = $this->get_payment_fields_js_config();
 			wp_enqueue_script( 'wcpay-upe-checkout' );
-			wp_add_inline_script( 'wcpay-upe-checkout', 'wcpay_config=' . wp_json_encode( $payment_fields ) . ';' );
+			wp_add_inline_script(
+				'wcpay-upe-checkout',
+				sprintf(
+					'window.wcpay_config = %s;',
+					wp_json_encode( $payment_fields )
+				)
+			);
 
 			$prepared_customer_data = $this->get_prepared_customer_data();
 			if ( ! empty( $prepared_customer_data ) ) {
-				wp_add_inline_script( 'wcpay-upe-checkout', 'wcpayCustomerData=' . wp_json_encode( $prepared_customer_data ) . ';' );
+				wp_add_inline_script(
+					'wcpay-upe-checkout',
+					sprintf(
+						'window.wcpayCustomerData = %s;',
+						wp_json_encode( $prepared_customer_data )
+					)
+				);
 			}
 
 			wp_enqueue_style(
