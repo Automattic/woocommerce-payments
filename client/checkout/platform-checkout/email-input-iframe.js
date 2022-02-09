@@ -41,7 +41,13 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				getConfig( 'platformCheckoutHost' )
 			);
 		}
-		document.body.style.overflow = iframeHeaderValue ? 'hidden' : '';
+		if ( iframeHeaderValue ) {
+			document.body.style.overflow = 'hidden';
+			iframe.style.height = '';
+			iframe.style.top = '';
+		} else {
+			document.body.style.overflow = '';
+		}
 	};
 	// Do this on debounced resize.
 	const debouncedGetWindowSize = debounce( getWindowSize, 100 );
@@ -135,8 +141,10 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			case 'iframe_height':
 				if ( 768 < window.innerWidth ) {
 					iframe.style.height = e.data.height + 'px';
+					iframe.style.top = Math.floor( e.data.height / -2 ) + 'px';
 				} else {
 					iframe.style.height = '';
+					iframe.style.top = '';
 				}
 				break;
 			default:

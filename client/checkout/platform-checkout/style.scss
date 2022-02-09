@@ -45,7 +45,7 @@
 			position: absolute;
 			left: calc( 100% + 30px );
 			top: -250px;
-			width: calc( 100vw - 100% - 94px );
+			width: max( calc( 100vw - 100% - 94px ), 300px );
 			max-width: 374px;
 			border-radius: 8px;
 			&.open {
