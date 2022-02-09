@@ -373,7 +373,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$payment_request_type = wc_clean( wp_unslash( $_POST['payment_request_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
-		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', ' (WooCommerce Payments' );
+		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', ' (WooCommerce Payments)' );
 		if ( 'apple_pay' === $payment_request_type ) {
 			$order->set_payment_method_title( "Apple Pay$suffix" );
 			$order->save();
