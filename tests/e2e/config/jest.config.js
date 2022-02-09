@@ -56,6 +56,9 @@ const testConfig = useE2EJestConfig( {
 		__dirname,
 		'../config/jest-custom-sequencer.js'
 	),
+	moduleNameMapper: {
+		'^iti/utils$': '<rootDir>/node_modules/intl-tel-input/build/js/utils',
+	},
 } );
 
 module.exports = testConfig;
