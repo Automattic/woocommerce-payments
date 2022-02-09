@@ -103,7 +103,14 @@ function wcpay_jetpack_init() {
 						'Automattic\\Jetpack\\Sync\\Modules\\Options',
 						'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
 					],
-				'jetpack_sync_options_whitelist' => [ 'active_plugins' ],
+				'jetpack_sync_options_whitelist' =>
+					[
+						'active_plugins',
+						'blogdescription',
+						'blogname',
+						'timezone_string',
+						'gmt_offset',
+					],
 			]
 		)
 	);
