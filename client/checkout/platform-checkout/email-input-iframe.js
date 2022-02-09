@@ -72,9 +72,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	};
 
 	document.addEventListener( 'keyup', ( event ) => {
-		const key = event.which || event.keyCode;
-
-		if ( 27 === key && closeIframe() ) {
+		if ( 'Escape' === event.key && closeIframe() ) {
 			event.stopPropagation();
 		}
 	} );
