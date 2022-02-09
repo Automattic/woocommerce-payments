@@ -5,69 +5,73 @@ exports[`Transactions list renders correctly when can filter by several currenci
   <div
     class=" woocommerce-payments-page"
   >
-    <h2
-      class="screen-reader-text"
-    >
-      Filters
-    </h2>
     <div
-      class="woocommerce-filters"
+      class="woocommerce-filters-transactions"
     >
+      <h2
+        class="screen-reader-text"
+      >
+        Filters
+      </h2>
       <div
-        class="woocommerce-filters__basic-filters"
+        class="woocommerce-filters"
       >
         <div
-          class="woocommerce-filters-filter"
+          class="woocommerce-filters__basic-filters"
         >
-          <span
-            class="woocommerce-filters-label"
-          >
-            Deposit currency
-            :
-          </span>
           <div
-            class="components-dropdown"
+            class="woocommerce-filters-filter"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
+            <span
+              class="woocommerce-filters-label"
             >
-              <div
-                class="woocommerce-dropdown-button__labels"
+              Deposit currency
+              :
+            </span>
+            <div
+              class="components-dropdown"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-dropdown-button"
+                type="button"
               >
-                <span>
-                  All currencies
-                </span>
-              </div>
-            </button>
+                <div
+                  class="woocommerce-dropdown-button__labels"
+                >
+                  <span>
+                    All currencies
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
-        </div>
-        <div
-          class="woocommerce-filters-filter"
-        >
-          <span
-            class="woocommerce-filters-label"
-          >
-            Show
-            :
-          </span>
           <div
-            class="components-dropdown"
+            class="woocommerce-filters-filter"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
+            <span
+              class="woocommerce-filters-label"
             >
-              <div
-                class="woocommerce-dropdown-button__labels"
+              Show
+              :
+            </span>
+            <div
+              class="components-dropdown"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-dropdown-button"
+                type="button"
               >
-                <span>
-                  All transactions
-                </span>
-              </div>
-            </button>
+                <div
+                  class="woocommerce-dropdown-button__labels"
+                >
+                  <span>
+                    All transactions
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -736,69 +740,73 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
   <div
     class=" woocommerce-payments-page"
   >
-    <h2
-      class="screen-reader-text"
-    >
-      Filters
-    </h2>
     <div
-      class="woocommerce-filters"
+      class="woocommerce-filters-transactions"
     >
+      <h2
+        class="screen-reader-text"
+      >
+        Filters
+      </h2>
       <div
-        class="woocommerce-filters__basic-filters"
+        class="woocommerce-filters"
       >
         <div
-          class="woocommerce-filters-filter"
+          class="woocommerce-filters__basic-filters"
         >
-          <span
-            class="woocommerce-filters-label"
-          >
-            Deposit currency
-            :
-          </span>
           <div
-            class="components-dropdown"
+            class="woocommerce-filters-filter"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
+            <span
+              class="woocommerce-filters-label"
             >
-              <div
-                class="woocommerce-dropdown-button__labels"
+              Deposit currency
+              :
+            </span>
+            <div
+              class="components-dropdown"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-dropdown-button"
+                type="button"
               >
-                <span>
-                  United States (US) dollar
-                </span>
-              </div>
-            </button>
+                <div
+                  class="woocommerce-dropdown-button__labels"
+                >
+                  <span>
+                    United States (US) dollar
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
-        </div>
-        <div
-          class="woocommerce-filters-filter"
-        >
-          <span
-            class="woocommerce-filters-label"
-          >
-            Show
-            :
-          </span>
           <div
-            class="components-dropdown"
+            class="woocommerce-filters-filter"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
+            <span
+              class="woocommerce-filters-label"
             >
-              <div
-                class="woocommerce-dropdown-button__labels"
+              Show
+              :
+            </span>
+            <div
+              class="components-dropdown"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-dropdown-button"
+                type="button"
               >
-                <span>
-                  All transactions
-                </span>
-              </div>
-            </button>
+                <div
+                  class="woocommerce-dropdown-button__labels"
+                >
+                  <span>
+                    All transactions
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -2087,42 +2095,46 @@ exports[`Transactions list subscription column renders correctly 1`] = `
   <div
     class=" woocommerce-payments-page"
   >
-    <h2
-      class="screen-reader-text"
-    >
-      Filters
-    </h2>
     <div
-      class="woocommerce-filters"
+      class="woocommerce-filters-transactions"
     >
+      <h2
+        class="screen-reader-text"
+      >
+        Filters
+      </h2>
       <div
-        class="woocommerce-filters__basic-filters"
+        class="woocommerce-filters"
       >
         <div
-          class="woocommerce-filters-filter"
+          class="woocommerce-filters__basic-filters"
         >
-          <span
-            class="woocommerce-filters-label"
-          >
-            Show
-            :
-          </span>
           <div
-            class="components-dropdown"
+            class="woocommerce-filters-filter"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
+            <span
+              class="woocommerce-filters-label"
             >
-              <div
-                class="woocommerce-dropdown-button__labels"
+              Show
+              :
+            </span>
+            <div
+              class="components-dropdown"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-dropdown-button"
+                type="button"
               >
-                <span>
-                  All transactions
-                </span>
-              </div>
-            </button>
+                <div
+                  class="woocommerce-dropdown-button__labels"
+                >
+                  <span>
+                    All transactions
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -2862,42 +2874,46 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
   <div
     class=" woocommerce-payments-page"
   >
-    <h2
-      class="screen-reader-text"
-    >
-      Filters
-    </h2>
     <div
-      class="woocommerce-filters"
+      class="woocommerce-filters-transactions"
     >
+      <h2
+        class="screen-reader-text"
+      >
+        Filters
+      </h2>
       <div
-        class="woocommerce-filters__basic-filters"
+        class="woocommerce-filters"
       >
         <div
-          class="woocommerce-filters-filter"
+          class="woocommerce-filters__basic-filters"
         >
-          <span
-            class="woocommerce-filters-label"
-          >
-            Show
-            :
-          </span>
           <div
-            class="components-dropdown"
+            class="woocommerce-filters-filter"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
+            <span
+              class="woocommerce-filters-label"
             >
-              <div
-                class="woocommerce-dropdown-button__labels"
+              Show
+              :
+            </span>
+            <div
+              class="components-dropdown"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-dropdown-button"
+                type="button"
               >
-                <span>
-                  All transactions
-                </span>
-              </div>
-            </button>
+                <div
+                  class="woocommerce-dropdown-button__labels"
+                >
+                  <span>
+                    All transactions
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -3608,42 +3624,46 @@ exports[`Transactions list when not filtered by deposit renders table summary on
   <div
     class=" woocommerce-payments-page"
   >
-    <h2
-      class="screen-reader-text"
-    >
-      Filters
-    </h2>
     <div
-      class="woocommerce-filters"
+      class="woocommerce-filters-transactions"
     >
+      <h2
+        class="screen-reader-text"
+      >
+        Filters
+      </h2>
       <div
-        class="woocommerce-filters__basic-filters"
+        class="woocommerce-filters"
       >
         <div
-          class="woocommerce-filters-filter"
+          class="woocommerce-filters__basic-filters"
         >
-          <span
-            class="woocommerce-filters-label"
-          >
-            Show
-            :
-          </span>
           <div
-            class="components-dropdown"
+            class="woocommerce-filters-filter"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
+            <span
+              class="woocommerce-filters-label"
             >
-              <div
-                class="woocommerce-dropdown-button__labels"
+              Show
+              :
+            </span>
+            <div
+              class="components-dropdown"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-dropdown-button"
+                type="button"
               >
-                <span>
-                  All transactions
-                </span>
-              </div>
-            </button>
+                <div
+                  class="woocommerce-dropdown-button__labels"
+                >
+                  <span>
+                    All transactions
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>

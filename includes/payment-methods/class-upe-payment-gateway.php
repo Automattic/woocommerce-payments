@@ -760,9 +760,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		try {
 			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
 
-			$payment_fields = $this->get_payment_fields_js_config();
-			wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $payment_fields );
-			wp_enqueue_script( 'wcpay-upe-checkout' );
+			add_action( 'wp_footer', [ $this, 'enqueue_payment_scripts' ] );
 
 			$prepared_customer_data = $this->get_prepared_customer_data();
 			if ( ! empty( $prepared_customer_data ) ) {
@@ -841,6 +839,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Enqueues and localizes UPE's checkout scripts.
+	 */
+	public function enqueue_payment_scripts() {
+		$payment_fields = $this->get_payment_fields_js_config();
+		wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $payment_fields );
+		wp_enqueue_script( 'wcpay-upe-checkout' );
+	}
+
+	/**
 	 * Returns the list of enabled payment method types that will function with the current checkout.
 	 *
 	 * @param string $order_id optional Order ID.
@@ -892,6 +899,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$methods[] = 'au_becs_debit';
 		$methods[] = 'bancontact';
+		$methods[] = 'eps';
 		$methods[] = 'giropay';
 		$methods[] = 'ideal';
 		$methods[] = 'sofort';
