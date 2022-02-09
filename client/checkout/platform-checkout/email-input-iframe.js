@@ -29,8 +29,8 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let iframeHeaderValue = true;
 	const getWindowSize = () => {
 		if (
-			( 768 < window.innerWidth && iframeHeaderValue ) ||
-			( 768 >= window.innerWidth && ! iframeHeaderValue )
+			( 768 <= window.innerWidth && iframeHeaderValue ) ||
+			( 768 > window.innerWidth && ! iframeHeaderValue )
 		) {
 			iframeHeaderValue = ! iframeHeaderValue;
 			iframe.contentWindow.postMessage(
