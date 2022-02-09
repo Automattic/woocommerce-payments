@@ -12,6 +12,10 @@
 * Add - UPE payment methods - BECS Direct Debit.
 * Fix - Missing currency field in disputes export file.
 * Add - Implement Jetpack Identity Crisis / Safe Mode banner.
+* Fix - Checkout with block-based themes.
+* Add - UPE payment method - EPS.
+* Fix - Replace uses of is_ajax() with wp_doing_ajax() in subscriptions-core.
+* Improve handling of session data.
 * Add - Add a preview of uploaded logo and icon on terminal card reader receipt settings page.
 * Fix - Checkout with block-based themes.
 * Add - UPE payment method - EPS.
