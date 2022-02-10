@@ -41,8 +41,9 @@ export interface Transaction {
 	currency: string;
 	transaction_id: string;
 	date: string;
-	type: 'charge' | 'refund';
+	type: 'charge' | 'refund' | 'financing_payout' | 'financing_paydown';
 	source: string;
+	loan_id?: string;
 	metadata?: {
 		charge_type: 'card_reader_fee';
 		interval_from: string;
@@ -80,6 +81,7 @@ export const useTransactions = (
 		type_is: typeIs,
 		type_is_not: typeIsNot,
 		store_currency_is: storeCurrencyIs,
+		loan_id_is: loanIdIs,
 		search,
 	}: Query,
 	depositId: string
@@ -112,6 +114,7 @@ export const useTransactions = (
 				typeIs,
 				typeIsNot,
 				storeCurrencyIs,
+				loanIdIs,
 				depositId,
 				search,
 			};
@@ -134,6 +137,7 @@ export const useTransactions = (
 			typeIs,
 			typeIsNot,
 			storeCurrencyIs,
+			loanIdIs,
 			depositId,
 			JSON.stringify( search ),
 		]
@@ -148,6 +152,7 @@ export const useTransactionsSummary = (
 		type_is: typeIs,
 		type_is_not: typeIsNot,
 		store_currency_is: storeCurrencyIs,
+		loan_id_is: loanIdIs,
 		search,
 	}: Query,
 	depositId: string
@@ -166,6 +171,7 @@ export const useTransactionsSummary = (
 				typeIs,
 				typeIsNot,
 				storeCurrencyIs,
+				loanIdIs,
 				depositId,
 				search,
 			};
@@ -183,6 +189,7 @@ export const useTransactionsSummary = (
 			typeIs,
 			typeIsNot,
 			storeCurrencyIs,
+			loanIdIs,
 			depositId,
 			JSON.stringify( search ),
 		]

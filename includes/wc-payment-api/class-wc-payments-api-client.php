@@ -605,14 +605,14 @@ class WC_Payments_API_Client {
 		$transactions = $this->request( $query, self::TRANSACTIONS_API, self::GET );
 
 		$charge_ids             = array_column( $transactions['data'], 'charge_id' );
-		$orders_with_charge_ids = $this->wcpay_db->orders_with_charge_id_from_charge_ids( $charge_ids );
+		$orders_with_charge_ids = count( $charge_ids ) ? $this->wcpay_db->orders_with_charge_id_from_charge_ids( $charge_ids ) : [];
 
 		// Add order information to each transaction available.
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
 		if ( isset( $transactions['data'] ) ) {
 			foreach ( $transactions['data'] as &$transaction ) {
 				foreach ( $orders_with_charge_ids as $order_with_charge_id ) {
-					if ( $order_with_charge_id['charge_id'] === $transaction['charge_id'] ) {
+					if ( $order_with_charge_id['charge_id'] === $transaction['charge_id'] && ! empty( $transaction['charge_id'] ) ) {
 						$transaction['order'] = $this->build_order_info( $order_with_charge_id['order'] );
 					}
 				}
@@ -833,6 +833,7 @@ class WC_Payments_API_Client {
 		$file_params = $request->get_file_params();
 		$file_name   = $file_params['file']['name'];
 		$file_type   = $file_params['file']['type'];
+		$as_account  = (bool) $request->get_param( 'as_account' );
 
 		// Sometimes $file_params is empty array for large files (8+ MB).
 		$file_error = empty( $file_params ) || $file_params['file']['error'];
@@ -853,9 +854,10 @@ class WC_Payments_API_Client {
 			// phpcs:disable
 			'file'      => base64_encode( file_get_contents( $file_params['file']['tmp_name'] ) ),
 			// phpcs:enable
-			'file_name' => $file_name,
-			'file_type' => $file_type,
-			'purpose'   => $purpose,
+			'file_name'  => $file_name,
+			'file_type'  => $file_type,
+			'purpose'    => $purpose,
+			'as_account' => $as_account,
 		];
 
 		try {
@@ -1014,6 +1016,31 @@ class WC_Payments_API_Client {
 				'test_mode'    => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API . '/login_links',
+			self::POST,
+			true,
+			true
+		);
+	}
+
+	/**
+	 * Get a one-time capital link.
+	 *
+	 * @param string $type        The type of link to be requested.
+	 * @param string $return_url  URL to navigate back to from the dashboard.
+	 * @param string $refresh_url URL to navigate to if the link expired, has been previously-visited, or is otherwise invalid.
+	 *
+	 * @return array Account link object with create, expires_at, and url fields.
+	 *
+	 * @throws API_Exception When something goes wrong with the request, or there aren't valid loan offers for the merchant.
+	 */
+	public function get_capital_link( $type, $return_url, $refresh_url ) {
+		return $this->request(
+			[
+				'type'        => $type,
+				'return_url'  => $return_url,
+				'refresh_url' => $refresh_url,
+			],
+			self::ACCOUNTS_API . '/capital_links',
 			self::POST,
 			true,
 			true

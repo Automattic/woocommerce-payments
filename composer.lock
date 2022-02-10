@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cd3e0c144c874fde9f86e0c649091254",
+    "content-hash": "503e76d7a6e1c7eec0aa0431a6d08f68",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -52,16 +52,16 @@
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v1.17.1",
+            "version": "v1.17.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "d4e2134acb8d7a397625cb90754fbae9c2c39e80"
+                "reference": "b486f8be634cbb17847b0a8fb174c1669abc468c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/d4e2134acb8d7a397625cb90754fbae9c2c39e80",
-                "reference": "d4e2134acb8d7a397625cb90754fbae9c2c39e80",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/b486f8be634cbb17847b0a8fb174c1669abc468c",
+                "reference": "b486f8be634cbb17847b0a8fb174c1669abc468c",
                 "shasum": ""
             },
             "require": {
@@ -99,9 +99,9 @@
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.17.1"
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.17.4"
             },
-            "time": "2022-01-27T15:05:26+00:00"
+            "time": "2022-02-09T17:56:52+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
@@ -137,12 +137,12 @@
                 }
             },
             "autoload": {
-                "classmap": [
-                    "src/AutoloadGenerator.php"
-                ],
                 "psr-4": {
                     "Automattic\\Jetpack\\Autoloader\\": "src"
-                }
+                },
+                "classmap": [
+                    "src/AutoloadGenerator.php"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -955,16 +955,16 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "1.6.2",
+            "version": "1.6.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "bc48cd0437fc4601643e72abc4a7cd9beffb35b5"
+                "reference": "7cdddd4887080595bf08b6e48ba51514ce8c14f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/bc48cd0437fc4601643e72abc4a7cd9beffb35b5",
-                "reference": "bc48cd0437fc4601643e72abc4a7cd9beffb35b5",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/7cdddd4887080595bf08b6e48ba51514ce8c14f5",
+                "reference": "7cdddd4887080595bf08b6e48ba51514ce8c14f5",
                 "shasum": ""
             },
             "require": {
@@ -1006,10 +1006,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.6.2",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.6.4",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2022-01-19T13:46:30+00:00"
+            "time": "2022-02-10T00:09:23+00:00"
         }
     ],
     "packages-dev": [
@@ -1135,12 +1135,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Amp\\ByteStream\\": "lib"
-                },
                 "files": [
                     "lib/functions.php"
-                ]
+                ],
+                "psr-4": {
+                    "Amp\\ByteStream\\": "lib"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -1222,8 +1222,8 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Automattic\\Jetpack\\Changelogger\\": "src",
-                    "Automattic\\Jetpack\\Changelog\\": "lib"
+                    "Automattic\\Jetpack\\Changelog\\": "lib",
+                    "Automattic\\Jetpack\\Changelogger\\": "src"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1382,23 +1382,23 @@
         },
         {
             "name": "composer/semver",
-            "version": "3.2.7",
+            "version": "3.2.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "deac27056b57e46faf136fae7b449eeaa71661ee"
+                "reference": "a951f614bd64dcd26137bc9b7b2637ddcfc57649"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/deac27056b57e46faf136fae7b449eeaa71661ee",
-                "reference": "deac27056b57e46faf136fae7b449eeaa71661ee",
+                "url": "https://api.github.com/repos/composer/semver/zipball/a951f614bd64dcd26137bc9b7b2637ddcfc57649",
+                "reference": "a951f614bd64dcd26137bc9b7b2637ddcfc57649",
                 "shasum": ""
             },
             "require": {
                 "php": "^5.3.2 || ^7.0 || ^8.0"
             },
             "require-dev": {
-                "phpstan/phpstan": "^0.12.54",
+                "phpstan/phpstan": "^1.4",
                 "symfony/phpunit-bridge": "^4.2 || ^5"
             },
             "type": "library",
@@ -1443,7 +1443,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/semver/issues",
-                "source": "https://github.com/composer/semver/tree/3.2.7"
+                "source": "https://github.com/composer/semver/tree/3.2.9"
             },
             "funding": [
                 {
@@ -1459,7 +1459,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-01-04T09:57:54+00:00"
+            "time": "2022-02-04T13:58:43+00:00"
         },
         {
             "name": "composer/xdebug-handler",
@@ -1936,12 +1936,12 @@
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "DeepCopy\\": "src/DeepCopy/"
-                },
                 "files": [
                     "src/DeepCopy/deep_copy.php"
-                ]
+                ],
+                "psr-4": {
+                    "DeepCopy\\": "src/DeepCopy/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -4418,13 +4418,13 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Psalm\\": "src/Psalm/"
-                },
                 "files": [
                     "src/functions.php",
                     "src/spl_object_id.php"
-                ]
+                ],
+                "psr-4": {
+                    "Psalm\\": "src/Psalm/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [

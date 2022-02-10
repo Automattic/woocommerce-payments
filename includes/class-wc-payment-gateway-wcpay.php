@@ -302,6 +302,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'sofort'        => 'sofort_payments',
 			'giropay'       => 'giropay_payments',
 			'bancontact'    => 'bancontact_payments',
+			'eps'           => 'eps_payments',
 			'ideal'         => 'ideal_payments',
 			'p24'           => 'p24_payments',
 			'card'          => 'card_payments',
@@ -731,8 +732,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
 
-			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
-			wp_enqueue_script( 'WCPAY_CHECKOUT' );
+			add_action( 'wp_footer', [ $this, 'enqueue_payment_scripts' ] );
 
 			$prepared_customer_data = $this->get_prepared_customer_data();
 			if ( ! empty( $prepared_customer_data ) ) {
@@ -802,6 +802,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			</div>
 			<?php
 		}
+	}
+
+	/**
+	 * Enqueues and localizes WCPay's checkout scripts.
+	 */
+	public function enqueue_payment_scripts() {
+		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
+		wp_enqueue_script( 'WCPAY_CHECKOUT' );
 	}
 
 	/**

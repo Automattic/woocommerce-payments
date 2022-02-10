@@ -8,7 +8,7 @@ import wcpayTracks from 'tracks';
 import { dateI18n } from '@wordpress/date';
 import { _n, __ } from '@wordpress/i18n';
 import moment from 'moment';
-import { TableCard } from '@woocommerce/components';
+import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import {
 	downloadCSVFile,
@@ -215,7 +215,14 @@ export const DisputesList = (): JSX.Element => {
 			},
 			customerName: {
 				value: dispute.customer_name ?? '',
-				display: clickable( dispute.customer_name ),
+				display:
+					dispute.order && dispute.order.customer_url ? (
+						<Link href={ dispute.order.customer_url }>
+							{ dispute.customer_name }
+						</Link>
+					) : (
+						clickable( dispute.customer_name )
+					),
 			},
 			customerEmail: {
 				value: dispute.customer_email ?? '',
@@ -307,7 +314,7 @@ export const DisputesList = (): JSX.Element => {
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
 
 	const storeCurrencies =
-		disputesSummary.store_currencies ||
+		disputesSummary.currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
 
 	return (
