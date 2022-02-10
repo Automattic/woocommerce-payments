@@ -11,6 +11,7 @@ fi
 
 # Variables
 BLOG_ID=${E2E_BLOG_ID-111}
+IS_DEBUG_ENABLED=${DEBUG-false}
 WC_GUEST_EMAIL='guest@woocommercecoree2etestsuite.com'
 WC_CUSTOMER_EMAIL='customer@woocommercecoree2etestsuite.com'
 WC_CUSTOMER_USERNAME='customer'
@@ -286,6 +287,30 @@ mkdir -p $WCP_ROOT/screenshots
 
 echo "Disabling rate limiter for card declined in E2E tests"
 cli wp option add wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
+
+if [[ "$IS_DEBUG_ENABLED" = false ]]; then
+	#Temporarily enable debugging to display output for the following commands.
+	DEBUG=true
+fi
+echo
+echo "*******************************************************"
+echo "Current test configuration"
+echo
+echo "WordPress version:"
+cli wp core version
+
+echo
+echo "WooCommerce version:"
+cli wp plugin get woocommerce --field=version
+
+echo
+echo "Docker environment:"
+cli wp cli info
+echo "*******************************************************"
+if [[ "$IS_DEBUG_ENABLED" = false ]]; then
+	#Disable debugging if temporarily enabled.
+	DEBUG=false
+fi
 
 echo
 step "Client site is up and running at http://${WP_URL}/wp-admin/"
