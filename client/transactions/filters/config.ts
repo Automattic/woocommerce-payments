@@ -35,7 +35,7 @@ const transactionTypesOptions = Object.entries( displayType )
 	} );
 
 const loanDefinitions =
-	'undefined' !== typeof wcpaySettings && wcpaySettings.accountLoans
+	'undefined' !== typeof wcpaySettings
 		? wcpaySettings.accountLoans.loans
 		: [];
 
