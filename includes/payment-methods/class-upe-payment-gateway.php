@@ -46,14 +46,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	const UPE_APPEARANCE_TRANSIENT = 'wcpay_upe_appearance';
 
-	const COOKIE_UPE_PAYMENT_INTENT = 'wcpay_upe_payment_intent';
-
-	const COOKIE_UPE_SETUP_INTENT = 'wcpay_upe_setup_intent';
-
-	const COOKIE_UPE_EXPIRES_IN_MINS = 10;
-
-	const COOKIE_CART_HASH = 'woocommerce_cart_hash'; // maintained in WC core.
-
 	/**
 	 * Array mapping payment method string IDs to classes
 	 *
@@ -98,9 +90,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
 
 		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
-
-		add_action( 'woocommerce_order_payment_status_changed', [ 'WCPay\Payment_Methods\UPE_Payment_Gateway', 'remove_upe_payment_intent_cookie' ], 10, 0 );
-		add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_cookie' ], 10, 0 );
 
 		if ( ! is_admin() ) {
 			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
@@ -233,15 +222,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			// If paying from order, we need to get the total from the order instead of the cart.
 			$order_id = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
 
-			// Create a new intent.
-			$response = $this->create_payment_intent( $order_id );
-
-			// Cache the intent id in cookie.
-			if ( strpos( $response['id'], 'pi_' ) === 0 ) { // response is a payment intent (could possibly be a setup intent).
-				$this->create_upe_payment_intent_cookie( $response['id'], $response['client_secret'] );
-			}
-
-			wp_send_json_success( $response, 200 );
+			wp_send_json_success( $this->create_payment_intent( $order_id ), 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
@@ -334,13 +315,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				);
 			}
 
-			// Create a new intent.
-			$response = $this->create_setup_intent();
-
-			// Cache the intent id in cookie.
-			$this->create_upe_setup_intent_cookie( $response['id'], $response['client_secret'] );
-
-			wp_send_json_success( $response, 200 );
+			wp_send_json_success( $this->create_setup_intent(), 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
@@ -627,8 +602,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id, $currency );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 
-				self::remove_upe_payment_intent_cookie();
-
 				if ( 'requires_action' === $status ) {
 					// I don't think this case should be possible, but just in case...
 					$next_action = $intent->get_next_action();
@@ -654,8 +627,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			/* translators: localized exception message */
 			$order->update_status( 'failed', sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() ) );
 
-			self::remove_upe_payment_intent_cookie();
-
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
 			exit;
@@ -680,9 +651,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['checkoutTitle']            = $this->checkout_title;
 		$payment_fields['cartContainsSubscription'] = $this->is_subscription_item_in_cart();
 		$payment_fields['logPaymentErrorNonce']     = wp_create_nonce( 'wcpay_log_payment_error_nonce' );
-		$payment_fields['cookieCartHash']           = self::COOKIE_CART_HASH;
-		$payment_fields['cookieUPEPaymentIntent']   = self::COOKIE_UPE_PAYMENT_INTENT;
-		$payment_fields['cookieUPESetupIntent']     = self::COOKIE_UPE_SETUP_INTENT;
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
@@ -792,7 +760,19 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		try {
 			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
 
-			add_action( 'wp_footer', [ $this, 'enqueue_payment_scripts' ] );
+			/**
+			 * Localizing scripts within shortcodes does not work in WP 5.9,
+			 * but we need `$this->get_payment_fields_js_config` to be called
+			 * before `$this->saved_payment_methods()`.
+			 */
+			$payment_fields = $this->get_payment_fields_js_config();
+			wp_enqueue_script( 'wcpay-upe-checkout' );
+			add_action(
+				'wp_footer',
+				function() use ( $payment_fields ) {
+					wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $payment_fields );
+				}
+			);
 
 			$prepared_customer_data = $this->get_prepared_customer_data();
 			if ( ! empty( $prepared_customer_data ) ) {
@@ -868,15 +848,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			</div>
 			<?php
 		}
-	}
-
-	/**
-	 * Enqueues and localizes UPE's checkout scripts.
-	 */
-	public function enqueue_payment_scripts() {
-		$payment_fields = $this->get_payment_fields_js_config();
-		wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $payment_fields );
-		wp_enqueue_script( 'wcpay-upe-checkout' );
 	}
 
 	/**
@@ -1103,12 +1074,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 			$order->add_order_note( $order_note );
 
-			self::remove_upe_payment_intent_cookie();
-
 			wp_send_json_success();
 		} catch ( Exception $e ) {
-			self::remove_upe_payment_intent_cookie();
-
 			wp_send_json_error(
 				[
 					'error' => [
@@ -1116,59 +1083,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					],
 				]
 			);
-		}
-	}
-
-	/**
-	 * Creates a cookie to store the id and client secret of payment intent needed to mount the UPE element in frontend.
-	 *
-	 * An intent is tied to the cart's current state. New or removed items will likely impact the cart value,
-	 * necessitating the creation of a new intent with the revised cart value.
-	 * So a new cookie is expected to be created whenever the cart is modified.
-	 *
-	 * @param string $intent_id     The payment intent id.
-	 * @param string $client_secret The payment intent client secret.
-	 */
-	private function create_upe_payment_intent_cookie( string $intent_id = '', string $client_secret = '' ) {
-		$cart_hash = 'undefined';
-
-		if ( isset( $_COOKIE[ self::COOKIE_CART_HASH ] ) ) {
-			$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE[ self::COOKIE_CART_HASH ] ) );
-		}
-
-		$cookie_val = $cart_hash . '-' . $intent_id . '-' . $client_secret;
-
-		wc_setcookie( self::COOKIE_UPE_PAYMENT_INTENT, $cookie_val, time() + MINUTE_IN_SECONDS * self::COOKIE_UPE_EXPIRES_IN_MINS );
-	}
-
-	/**
-	 * Creates a cookie to store the id and client secret of setup intent needed to mount the UPE element in frontend.
-	 *
-	 * @param string $intent_id     The setup intent id.
-	 * @param string $client_secret The setup intent client secret.
-	 */
-	private function create_upe_setup_intent_cookie( string $intent_id = '', string $client_secret = '' ) {
-		$cookie_val = $intent_id . '-' . $client_secret;
-		wc_setcookie( self::COOKIE_UPE_SETUP_INTENT, $cookie_val, time() + MINUTE_IN_SECONDS * self::COOKIE_UPE_EXPIRES_IN_MINS );
-	}
-
-	/**
-	 * Removes the payment intent cookie created for UPE.
-	 */
-	public static function remove_upe_payment_intent_cookie() {
-		if ( isset( $_COOKIE[ self::COOKIE_UPE_PAYMENT_INTENT ] ) ) {
-			unset( $_COOKIE[ self::COOKIE_UPE_PAYMENT_INTENT ] );
-			wc_setcookie( self::COOKIE_UPE_PAYMENT_INTENT, '', time() - HOUR_IN_SECONDS );
-		}
-	}
-
-	/**
-	 * Removes the payment setup intent cookie created for UPE.
-	 */
-	public function remove_upe_setup_intent_cookie() {
-		if ( isset( $_COOKIE[ self::COOKIE_UPE_SETUP_INTENT ] ) ) {
-			unset( $_COOKIE[ self::COOKIE_UPE_SETUP_INTENT ] );
-			wc_setcookie( self::COOKIE_UPE_SETUP_INTENT, '', time() - HOUR_IN_SECONDS );
 		}
 	}
 }

@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 3.6.1
+Stable tag: 3.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,10 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.7.0 - 2022-xx-xx =
+= 3.8.0 - 20xx-xx-xx =
+* Add - Introduce `wcpay_payment_request_payment_method_title_suffix` filter. Allows plugins to replace "(WooCommerce Payments)" suffix on title of payment request buttons.
+
+= 3.7.0 - 2022-02-10 =
 * Add - Filter by currency in disputes list
 * Add - Link to customer in disputes list
 * Update - Bump minimum required version of WordPress from 5.6 to 5.7.
@@ -111,9 +114,9 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Implement Jetpack Identity Crisis / Safe Mode banner.
 * Fix - Checkout with block-based themes.
 * Add - UPE payment method - EPS.
-* Fix - Redundant payment intents for UPE.
 * Fix - Replace uses of is_ajax() with wp_doing_ajax() in subscriptions-core.
 * Improve handling of session data.
+* Fix - When changing the payment method, make sure the subscription total returns $0 when `subscriptions-core` is loaded after the `woocommerce_loaded` action hook.
 
 = 3.6.1 - 2022-01-27 =
 * Fix - Remove packages not compatible with PHP 7.0
