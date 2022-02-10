@@ -365,31 +365,4 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			],
 		];
 	}
-
-	/**
-	 * Prepares order data to be printed.
-	 *
-	 * @param  WC_Order $order comment.
-	 * @return array comment.
-	 */
-	public function prepare_order_for_printed_receipt( WC_Order $order ): array {
-		$order_data = $order->get_data();
-
-		$line_items_data = [];
-		foreach ( $order_data['line_items'] as $line_item ) {
-			$line_item_data            = $line_item->get_data();
-			$line_item_data['product'] = $line_item->get_product()->get_data();
-			$line_items_data[]         = $line_item_data;
-		}
-
-		return [
-			'coupon_lines' => $order_data['coupon_lines'],
-			'line_items'   => $line_items_data,
-			'subtotal'     => $order->get_subtotal(),
-			'tax_lines'    => $order_data['tax_lines'],
-			'id'           => $order_data['id'],
-			'currency'     => $order_data['currency'],
-			'total'        => $order_data['total'],
-		];
-	}
 }

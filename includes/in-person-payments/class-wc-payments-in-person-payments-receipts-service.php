@@ -62,7 +62,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 			'',
 			__DIR__ . '/templates/'
 		);
-		unset( $order );
+
 		return ob_get_clean();
 	}
 
