@@ -123,8 +123,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'        => 'string',
 					],
 					'account_business_url'              => [
-						'description' => __( 'The business’s publicly available website.', 'woocommerce-payments' ),
-						'type'        => 'string',
+						'description'       => __( 'The business’s publicly available website.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'validate_callback' => [ $this, 'validate_business_support_uri' ],
 					],
 					'account_business_support_address'  => [
 						'description'       => __( 'A publicly available mailing address for sending support issues to.', 'woocommerce-payments' ),
@@ -132,12 +133,14 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'validate_callback' => [ $this, 'validate_business_support_address' ],
 					],
 					'account_business_support_email'    => [
-						'description' => __( 'A publicly available email address for sending support issues to.', 'woocommerce-payments' ),
-						'type'        => 'string',
+						'description'       => __( 'A publicly available email address for sending support issues to.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'validate_callback' => [ $this, 'validate_business_support_email_address' ],
 					],
 					'account_business_support_phone'    => [
-						'description' => __( 'A publicly available phone number to call with support issues.', 'woocommerce-payments' ),
-						'type'        => 'string',
+						'description'       => __( 'A publicly available phone number to call with support issues.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'validate_callback' => [ $this, 'validate_business_support_phone' ],
 					],
 					'account_branding_logo'             => [
 						'description' => __( 'A logo id for the account that will be used in Checkout', 'woocommerce-payments' ),
@@ -231,6 +234,78 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Validate the business support email.
+	 *
+	 * @param string          $value The value being validated.
+	 * @param WP_REST_Request $request The request made.
+	 * @param string          $param The parameter name, used in error messages.
+	 * @return true|WP_Error
+	 */
+	public function validate_business_support_email_address( string $value, WP_REST_Request $request, string $param ) {
+		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
+		if ( true !== $string_validation_result ) {
+			return $string_validation_result;
+		}
+
+		if ( '' !== $value && ! is_email( $value ) ) {
+			return new WP_Error(
+				'rest_invalid_pattern',
+				__( 'Error: Invalid email address: ', 'woocommerce-payments' ) . $value
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Validate the business support phone.
+	 *
+	 * @param string          $value The value being validated.
+	 * @param WP_REST_Request $request The request made.
+	 * @param string          $param The parameter name, used in error messages.
+	 * @return true|WP_Error
+	 */
+	public function validate_business_support_phone( string $value, WP_REST_Request $request, string $param ) {
+		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
+		if ( true !== $string_validation_result ) {
+			return $string_validation_result;
+		}
+
+		if ( '' !== $value && ! WC_Validation::is_phone( $value ) ) {
+			return new WP_Error(
+				'rest_invalid_pattern',
+				__( 'Error: Invalid phone number: ', 'woocommerce-payments' ) . $value
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Validate the business support URL.
+	 *
+	 * @param string          $value The value being validated.
+	 * @param WP_REST_Request $request The request made.
+	 * @param string          $param The parameter name, used in error messages.
+	 * @return true|WP_Error
+	 */
+	public function validate_business_support_uri( string $value, WP_REST_Request $request, string $param ) {
+		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
+		if ( true !== $string_validation_result ) {
+			return $string_validation_result;
+		}
+
+		if ( '' !== $value && ! filter_var( $value, FILTER_VALIDATE_URL ) ) {
+			return new WP_Error(
+				'rest_invalid_pattern',
+				__( 'Error: Invalid business URL: ', 'woocommerce-payments' ) . $value
+			);
+		}
+
+		return true;
+	}
+
+	/**
 	 * Validate the business support address.
 	 *
 	 * @param array           $value The value being validated.
@@ -244,12 +319,14 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return $string_validation_result;
 		}
 
-		foreach ( $value as $field => $field_value ) {
-			if ( ! in_array( $field, [ 'city', 'country', 'line1', 'line2', 'postal_code', 'state' ], true ) ) {
-				return new WP_Error(
-					'rest_invalid_pattern',
-					'Invalid address format!'
-				);
+		if ( [] !== $value ) {
+			foreach ( $value as $field => $field_value ) {
+				if ( ! in_array( $field, [ 'city', 'country', 'line1', 'line2', 'postal_code', 'state' ], true ) ) {
+					return new WP_Error(
+						'rest_invalid_pattern',
+						__( 'Error: Invalid address format!', 'woocommerce-payments' )
+					);
+				}
 			}
 		}
 
@@ -488,6 +565,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					$this->wcpay_gateway->get_option( $key ) !== $value;
 		};
 		$updated_fields          = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
+
 		$this->wcpay_gateway->update_account_settings( $updated_fields );
 	}
 

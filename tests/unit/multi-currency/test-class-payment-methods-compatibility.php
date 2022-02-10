@@ -82,7 +82,9 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
 			[
 				'card',
+				'au_becs_debit',
 				'bancontact',
+				'eps',
 				'giropay',
 				'sepa_debit',
 			]
@@ -107,7 +109,9 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
 			[
 				'card',
+				'au_becs_debit',
 				'bancontact',
+				'eps',
 				'giropay',
 				'sepa_debit',
 			]
@@ -119,8 +123,9 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 		);
 		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_available_currencies' )->willReturn(
 			[
-				'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
 				'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
+				'AUD' => new \WCPay\MultiCurrency\Currency( 'AUD' ),
+				'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
 			]
 		);
 		$this->multi_currency_mock
@@ -130,6 +135,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 				$this->equalTo(
 					[
 						'USD',
+						'AUD',
 						'EUR',
 					]
 				)

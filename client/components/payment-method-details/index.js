@@ -15,6 +15,7 @@ const formatDetails = ( payment ) => {
 	const paymentMethod = payment[ payment.type ];
 	switch ( payment.type ) {
 		case 'card':
+		case 'au_becs_debit':
 		case 'sepa_debit':
 			return (
 				<Fragment>
@@ -30,6 +31,7 @@ const formatDetails = ( payment ) => {
 			return <Fragment>{ paymentMethod.bank_code }</Fragment>;
 		case 'bancontact':
 		case 'ideal':
+		case 'eps':
 		case 'sofort':
 			return (
 				<Fragment>

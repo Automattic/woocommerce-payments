@@ -760,9 +760,19 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		try {
 			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
 
+			/**
+			 * Localizing scripts within shortcodes does not work in WP 5.9,
+			 * but we need `$this->get_payment_fields_js_config` to be called
+			 * before `$this->saved_payment_methods()`.
+			 */
 			$payment_fields = $this->get_payment_fields_js_config();
-			wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $payment_fields );
 			wp_enqueue_script( 'wcpay-upe-checkout' );
+			add_action(
+				'wp_footer',
+				function() use ( $payment_fields ) {
+					wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $payment_fields );
+				}
+			);
 
 			$prepared_customer_data = $this->get_prepared_customer_data();
 			if ( ! empty( $prepared_customer_data ) ) {
@@ -890,7 +900,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$methods = parent::get_upe_available_payment_methods();
 		$fees    = $this->account->get_fees();
 
+		$methods[] = 'au_becs_debit';
 		$methods[] = 'bancontact';
+		$methods[] = 'eps';
 		$methods[] = 'giropay';
 		$methods[] = 'ideal';
 		$methods[] = 'sofort';
@@ -904,7 +916,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			)
 		);
 
-		return array_intersect( $methods, array_keys( $fees ) );
+		$methods_with_fees = array_values( array_intersect( $methods, array_keys( $fees ) ) );
+
+		return $methods_with_fees;
 	}
 
 	/**
