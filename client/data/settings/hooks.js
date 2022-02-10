@@ -172,6 +172,7 @@ export const useAccountBusinessSupportAddress = () => {
 				getAccountBusinessSupportAddressLine1,
 				getAccountBusinessSupportAddressLine2,
 				getAccountBusinessSupportAddressCity,
+				getAccountBusinessSupportAddressState,
 				getAccountBusinessSupportAddressPostalCode,
 			} = select( STORE_NAME );
 
@@ -181,6 +182,7 @@ export const useAccountBusinessSupportAddress = () => {
 				getAccountBusinessSupportAddressLine1(),
 				getAccountBusinessSupportAddressLine2(),
 				getAccountBusinessSupportAddressCity(),
+				getAccountBusinessSupportAddressState(),
 				getAccountBusinessSupportAddressPostalCode(),
 				updateAccountBusinessSupportAddress,
 			];
