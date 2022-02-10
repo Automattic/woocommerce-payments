@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_File_Service {
 
 
-	const FILE_PURPOSE_NO_PERMISSIONS = [
+	const FILE_PURPOSE_PUBLIC = [
 		'business_logo',
 		'business_icon',
 	];
@@ -29,12 +29,8 @@ class WC_Payments_File_Service {
 	 *
 	 * @return bool
 	 */
-	public function file_need_access_permissions( string $purpose ) : bool {
-		if ( in_array( $purpose, static::FILE_PURPOSE_NO_PERMISSIONS, true ) ) {
-			return false;
-		}
-
-		return true;
+	public function is_file_public( string $purpose ) : bool {
+		return in_array( $purpose, static::FILE_PURPOSE_PUBLIC, true );
 	}
 
 }

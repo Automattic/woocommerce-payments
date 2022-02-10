@@ -875,24 +875,26 @@ class WC_Payments_API_Client {
 	 * Retrieve a file content via API.
 	 *
 	 * @param string $file_id - API file id.
+	 * @param bool   $as_account - add the current account to header request.
 	 *
 	 * @return array
 	 * @throws API_Exception
 	 */
-	public function get_file_contents( string $file_id ) : array {
-		return $this->request( [], self::FILES_API . '/' . $file_id . '/contents', self::GET );
+	public function get_file_contents( string $file_id, bool $as_account = true ) : array {
+		return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id . '/contents', self::GET );
 	}
 
 	/**
-	 * Retrieve a file content via API.
+	 * Retrieve a file details via API.
 	 *
 	 * @param string $file_id - API file id.
+	 * @param bool   $as_account - add the current account to header request.
 	 *
 	 * @return array
 	 * @throws API_Exception
 	 */
-	public function get_file( string $file_id ) : array {
-		return $this->request( [], self::FILES_API . '/' . $file_id, self::GET );
+	public function get_file( string $file_id, bool $as_account = true ) : array {
+		return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id, self::GET );
 	}
 
 	/**

@@ -61,12 +61,15 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_Error|WP_HTTP_Response
 	 */
 	public function get_file( WP_REST_Request $request ) {
-		$file_id      = $request->get_param( 'file_id' );
+		$file_id    = $request->get_param( 'file_id' );
+		$as_account = (bool) $request->get_param( 'as_account' );
+
 		$file_service = new WC_Payments_File_Service();
-		$purpose      = get_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . $file_id );
+		$purpose      = get_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . $file_id . '_' . ( $as_account ? '1' : '0' ) );
 
 		if ( ! $purpose ) {
-			$file = $this->forward_request( 'get_file', [ $file_id ] );
+			$file = $this->forward_request( 'get_file', [ $file_id, $as_account ] );
+
 			if ( is_wp_error( $file ) ) {
 				return $this->file_error_response( $file );
 			}
@@ -74,7 +77,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 			set_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . $file_id, $purpose, WC_Payments_File_Service::CACHE_PERIOD );
 		}
 
-		if ( $file_service->file_need_access_permissions( $purpose ) && ! $this->check_permission() ) {
+		if ( ! $file_service->is_file_public( $purpose ) && ! $this->check_permission() ) {
 			return new WP_Error(
 				'rest_forbidden',
 				__( 'Sorry, you are not allowed to do that.', 'woocommerce-payments' ),
@@ -82,7 +85,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
-		$result = $this->forward_request( 'get_file_contents', [ $file_id ] );
+		$result = $this->forward_request( 'get_file_contents', [ $file_id, $as_account ] );
 
 		if ( is_wp_error( $result ) ) {
 			return $this->file_error_response( $result );
