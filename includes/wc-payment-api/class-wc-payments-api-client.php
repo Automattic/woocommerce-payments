@@ -1994,6 +1994,6 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If an error occurs.
 	 */
 	public function get_active_loan_summary() : array {
-		return $this->request( [], self::CAPITAL_API . '/active-loan-summary', self::GET );
+		return $this->request( [], self::CAPITAL_API . '/active_loan_summary', self::GET );
 	}
 }

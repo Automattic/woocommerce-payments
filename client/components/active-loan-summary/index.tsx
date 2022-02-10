@@ -171,47 +171,45 @@ const ActiveLoanSummary = (): JSX.Element => {
 							}
 						) }
 					</Block>
-					{ details.current_repayment_interval && (
-						<Block
-							title={ sprintf(
+					<Block
+						title={ sprintf(
+							__(
+								'Repaid this period (until %s)',
+								'woocommerce-payments'
+							),
+							dateI18n(
+								'M j, Y',
+								new Date(
+									details.current_repayment_interval
+										.due_at * 1000
+								)
+							)
+						) }
+					>
+						{ createInterpolateElement(
+							sprintf(
 								__(
-									'Repaid this period (until %s)',
+									'<big>%s</big> of %s minimum',
 									'woocommerce-payments'
 								),
-								dateI18n(
-									'M j, Y',
-									new Date(
-										details.current_repayment_interval
-											.due_at * 1000
-									)
-								)
-							) }
-						>
-							{ createInterpolateElement(
-								sprintf(
-									__(
-										'<big>%s</big> of %s minimum',
-										'woocommerce-payments'
-									),
-									formatExplicitCurrency(
-										details.current_repayment_interval
-											.paid_amount,
-										details.currency
-									),
-									formatExplicitCurrency(
-										details.current_repayment_interval
-											.paid_amount +
-											details.current_repayment_interval
-												.remaining_amount,
-										details.currency
-									)
+								formatExplicitCurrency(
+									details.current_repayment_interval
+										.paid_amount,
+									details.currency
 								),
-								{
-									big: <span className="is-big" />,
-								}
-							) }
-						</Block>
-					) }
+								formatExplicitCurrency(
+									details.current_repayment_interval
+										.paid_amount +
+										details.current_repayment_interval
+											.remaining_amount,
+									details.currency
+								)
+							),
+							{
+								big: <span className="is-big" />,
+							}
+						) }
+					</Block>
 				</Flex>
 				<Flex
 					align="normal"

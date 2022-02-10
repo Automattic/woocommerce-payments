@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { CapitalState, State, Summary } from './types';
+import { ApiError, CapitalState, State, Summary } from './types';
 
 /**
  * Retrieves the Capital loans state from the wp.data store if the state
@@ -27,6 +27,6 @@ export const getActiveLoanSummary = ( state: State ): Summary | undefined => {
 
 export const getActiveLoanSummaryError = (
 	state: State
-): string | undefined => {
+): ApiError | undefined => {
 	return getCapitalState( state ).summaryError;
 };

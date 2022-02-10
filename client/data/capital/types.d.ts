@@ -10,7 +10,7 @@ export interface Summary {
 		advance_amount: number;
 		advance_paid_out_at: number;
 		currency: string;
-		current_repayment_interval?: {
+		current_repayment_interval: {
 			due_at: number;
 			paid_amount: number;
 			remaining_amount: number;
@@ -23,15 +23,19 @@ export interface Summary {
 	};
 }
 
+export interface ApiError {
+	code: string,
+}
+
 export interface SummaryResponse {
 	isLoading: boolean;
 	summary?: Summary;
-	summaryError?: string;
+	summaryError?: ApiError;
 }
 
 export interface CapitalState {
 	summary?: Summary;
-	summaryError?: string;
+	summaryError?: ApiError;
 }
 
 export interface State {
@@ -45,5 +49,5 @@ export interface UpdateSummaryAction {
 
 export interface ErrorSummaryAction {
 	type: ACTION_TYPES.SET_ERROR_FOR_ACTIVE_LOAN_SUMMARY;
-	error: string;
+	error: ApiError;
 }

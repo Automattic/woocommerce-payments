@@ -4,7 +4,7 @@
  * Internal Dependencies
  */
 import ACTION_TYPES from './action-types';
-import { Summary, UpdateSummaryAction, ErrorSummaryAction } from './types';
+import { ApiError, Summary, UpdateSummaryAction, ErrorSummaryAction } from './types';
 
 export function updateActiveLoanSummary( data: Summary ): UpdateSummaryAction {
 	return {
@@ -14,7 +14,7 @@ export function updateActiveLoanSummary( data: Summary ): UpdateSummaryAction {
 }
 
 export function updateErrorForActiveLoanSummary(
-	error: string
+	error: ApiError
 ): ErrorSummaryAction {
 	return {
 		type: ACTION_TYPES.SET_ERROR_FOR_ACTIVE_LOAN_SUMMARY,
