@@ -6,9 +6,10 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Exceptions\Rest_Request_Exception;
 use WC_REST_Payments_Reader_Controller as Controller;
 use WCPay\Exceptions\API_Exception;
+
+require_once WCPAY_ABSPATH . 'includes/in-person-payments/class-wc-payments-printed-receipt-sample-order.php';
 
 /**
  * WC_REST_Payments_Reader_Controller_Test unit tests.
@@ -279,7 +280,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->mock_receipts_service
 			->expects( $this->once() )
 			->method( 'get_receipt_markup' )
-			->with( $settings, $this->controller->prepare_order_for_printed_receipt( $order ), $charge )
+			->with( $settings, $this->isInstanceOf( WC_Order::class ), $charge )
 			->willReturn( $receipt );
 
 		$request = new WP_REST_Request( 'GET' );
@@ -292,8 +293,9 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_preview_print_receipt() {
-		$mock_receipt = '<p>Receipt</p>';
+		$order = new WC_Payments_Printed_Receipt_Sample_Order();
 
+		$mock_receipt = '<p>Receipt</p>';
 		$this->mock_wcpay_gateway
 			->expects( $this->never() )
 			->method( 'get_option' );
@@ -317,7 +319,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 						],
 					],
 				],
-				$this->controller::PREVIEW_RECEIPT_ORDER_DATA,
+				$order,
 				$this->controller::PREVIEW_RECEIPT_CHARGE_DATA
 			)
 			->willReturn( $mock_receipt );
@@ -350,6 +352,8 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_preview_print_receipt_defaults_to_wcpay_settings() {
+		$order = new WC_Payments_Printed_Receipt_Sample_Order();
+
 		$settings     = $this->mock_settings();
 		$mock_receipt = '<p>Receipt</p>';
 
@@ -382,7 +386,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 						],
 					],
 				],
-				$this->controller::PREVIEW_RECEIPT_ORDER_DATA,
+				$order,
 				$this->controller::PREVIEW_RECEIPT_CHARGE_DATA
 			)
 			->willReturn( $mock_receipt );
@@ -571,7 +575,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->mock_receipts_service
 			->expects( $this->once() )
 			->method( 'get_receipt_markup' )
-			->with( $settings, $this->controller->prepare_order_for_printed_receipt( $order ), $charge )
+			->with( $settings, $this->isInstanceOf( WC_Order::class ), $charge )
 			->willThrowException( new Exception( 'Something bad' ) );
 
 		$request = new WP_REST_Request( 'GET' );
