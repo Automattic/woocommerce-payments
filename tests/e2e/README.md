@@ -104,6 +104,21 @@ SKIP_WC_BLOCKS_TESTS=1
 ---
 
 <details>
+<summary>Using specific version of WordPress / WooCommerce</summary>
+<p>
+
+To use a specific version of WordPress or WooCommerce for testing, the following env variables needs to be added to your `local.env`.
+```
+WP_VERSION='<wordpress_version>'
+WC_VERSION='<woocommerce_version>'
+```
+
+</p>
+</details>
+
+---
+
+<details>
 <summary>Initialize E2E docker environment</summary>
 <p>
 
