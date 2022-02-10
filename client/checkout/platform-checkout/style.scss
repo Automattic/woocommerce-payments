@@ -43,7 +43,10 @@
 			height: 90vh;
 			max-height: 520px;
 			position: absolute;
-			left: min( calc(100% + 30px), calc( 85vw - max(85vw - 100% - 94px, 300px) ) );
+			left: min(
+				calc( 100% + 30px ),
+				calc( 85vw - max( 85vw - 100% - 94px, 300px ) )
+			);
 			top: -250px;
 			width: max( calc( 100vw - 100% - 94px ), 300px );
 			max-width: 374px;
@@ -66,7 +69,10 @@
 		&::after {
 			content: '';
 			position: absolute;
-			left: calc( min( 100% + 30px, 85vw - max(85vw - 100% - 94px, 300px) ) - 15px)
+			left: calc(
+				min( 100% + 30px, 85vw - max( 85vw - 100% - 94px, 300px ) ) -
+					15px
+			);
 			top: calc( 50% - 15px );
 			background: transparent;
 			width: 0;
