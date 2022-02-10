@@ -131,8 +131,13 @@ cli wp core install \
 	--admin_email="${WP_ADMIN_EMAIL-admin@example.com}" \
 	--skip-email
 
-echo "Updating WordPress to the latest version..."
-cli wp core update --quiet
+if [[ -n "$WP_VERSION" && "$WP_VERSION" != "latest" ]]; then
+	echo "Installing specified WordPress version..."
+	cli wp core update --version="$WP_VERSION" --force --quiet
+else
+	echo "Updating WordPress to the latest version..."
+	cli wp core update --quiet
+fi
 
 echo "Updating the WordPress database..."
 cli wp core update-db --quiet
@@ -140,8 +145,16 @@ cli wp core update-db --quiet
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
 
-echo "Installing and activating Gutenberg, WooCommerce & WordPress Importer..."
-cli wp plugin install gutenberg woocommerce wordpress-importer --activate
+echo "Installing and activating Gutenberg & WordPress Importer..."
+cli wp plugin install gutenberg wordpress-importer --activate
+
+if [[ -n "$WC_VERSION" ]]; then
+	echo "Installing and activating specified WooCommerce version..."
+	cli wp plugin install woocommerce --version="$WC_VERSION" --activate
+else
+	echo "Installing and activating latest WooCommerce version..."
+	cli wp plugin install woocommerce --activate
+fi
 
 echo "Installing basic auth plugin for interfacing with the API"
 cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
