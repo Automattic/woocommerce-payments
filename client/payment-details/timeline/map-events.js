@@ -796,7 +796,10 @@ const mapEventToTimelineItems = ( event ) => {
 							[
 								createInterpolateElement(
 									sprintf(
-										'Loan repayment <a>Loan %s</a>',
+										__(
+											'Loan repayment: <a>Loan %s</a>',
+											'woocommerce-payments'
+										),
 										event.loan_id
 									),
 									{
