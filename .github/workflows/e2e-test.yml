@@ -121,7 +121,6 @@ jobs:
       # Prepare test environment
       - name: Prepare test environment
         run: |
-          WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false
           npm run test:e2e-setup
 
       # Run Tests
