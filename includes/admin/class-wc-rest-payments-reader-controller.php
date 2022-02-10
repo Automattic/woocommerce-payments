@@ -7,6 +7,8 @@
 
 use WCPay\Exceptions\API_Exception;
 
+require_once WCPAY_ABSPATH . 'includes/in-person-payments/class-wc-payments-printed-receipt-sample-order.php';
+
 defined( 'ABSPATH' ) || exit;
 /**
  * REST controller for reader charges.
@@ -27,48 +29,6 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 				],
 			],
 		],
-	];
-
-	const PREVIEW_RECEIPT_ORDER_DATA = [
-		'id'           => '42',
-		'currency'     => 'USD',
-		'subtotal'     => 0,
-		'line_items'   => [
-			[
-				'name'     => 'Sample',
-				'quantity' => 1,
-				'subtotal' => 0,
-				'product'  => [
-					'price'         => 0,
-					'regular_price' => 1,
-					'id'            => 'sample',
-				],
-			],
-			[
-				'name'     => 'Sample',
-				'quantity' => 1,
-				'subtotal' => 0,
-				'product'  => [
-					'price'         => 0,
-					'regular_price' => 1,
-					'id'            => 'sample',
-				],
-			],
-		],
-		'coupon_lines' => [
-			[
-				'code'        => 'DISCOUNT',
-				'description' => 'sample',
-				'discount'    => 0,
-			],
-		],
-		'tax_lines'    => [
-			[
-				'rate_percent' => 0,
-				'tax_total'    => '0',
-			],
-		],
-		'total'        => 0,
 	];
 
 	/**
@@ -336,7 +296,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			];
 
 			/* Generate receipt */
-			$receipt_data = $this->receipts_service->get_receipt_markup( $settings, $this->prepare_order_for_printed_receipt( $order ), $charge );
+			$receipt_data = $this->receipts_service->get_receipt_markup( $settings, $order, $charge );
 		} catch ( \Throwable $e ) {
 			$error_status_code = $e instanceof API_Exception ? $e->get_http_code() : 500;
 			return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', $e->getMessage(), [ 'status' => $error_status_code ] ) );
@@ -370,17 +330,19 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	 * @throws \RuntimeException Error collecting data.
 	 */
 	public function preview_print_receipt( WP_REST_Request $request ) {
+		$sample_order = new WC_Payments_Printed_Receipt_Sample_Order();
+
 		return rest_ensure_response(
 			$this->receipts_service->get_receipt_markup(
 				$this->create_print_preview_receipt_settings_data( $request->get_json_params() ),
-				self::PREVIEW_RECEIPT_ORDER_DATA,
+				$sample_order,
 				self::PREVIEW_RECEIPT_CHARGE_DATA
 			)
 		);
 	}
 
 	/**
-	 * Creates settings data to be used on the printed receipt preview. Defaults to stored settings if one key is missing.
+	 * Creates settings data to be used on the printed receipt preview. Defaults to stored settings if one parameter is not provided.
 	 *
 	 * @param  array $params Array of params to use to create the settings.
 	 * @return array

@@ -15,15 +15,31 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	/**
 	 * Renders the receipt template.
 	 *
-	 * @param  array $settings Merchant settings.
-	 * @param  array $order_data Order instance.
-	 * @param  array $charge Charge data.
+	 * @param  array    $settings Merchant settings.
+	 * @param  WC_Order $order Order instance.
+	 * @param  array    $charge Charge data.
 	 *
 	 * @return string
 	 */
-	public function get_receipt_markup( array $settings, array $order_data, array $charge ) :string {
+	public function get_receipt_markup( array $settings, WC_Order $order, array $charge ) :string {
 		$this->validate_settings( $settings );
 		$this->validate_charge( $charge );
+
+		if ( $order instanceof WC_Payments_Printed_Receipt_Sample_Order ) {
+			$order_data      = $order->get_data();
+			$line_items_data = $order_data['line_items'];
+		} else {
+			$order_data      = [
+				'id'           => $order->get_id(),
+				'currency'     => $order->get_currency(),
+				'subtotal'     => $order->get_subtotal(),
+				'line_items'   => $order->get_items(),
+				'coupon_lines' => $order->get_items( 'coupon' ),
+				'tax_lines'    => $order->get_items( 'tax' ),
+				'total'        => $order->get_total(),
+			];
+			$line_items_data = $this->format_line_items( $order_data );
+		}
 
 		ob_start();
 
@@ -34,7 +50,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 				'coupon_lines'           => $order_data['coupon_lines'] ?? [],
 				'branding_logo'          => $settings['branding_logo'] ?? [],
 				'business_name'          => $settings['business_name'],
-				'line_items'             => $order_data['line_items'],
+				'line_items'             => $line_items_data,
 				'order'                  => $order_data,
 				'payment_method_details' => $charge['payment_method_details']['card_present'],
 				'receipt'                => $charge['payment_method_details']['card_present']['receipt'],
@@ -46,8 +62,26 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 			'',
 			__DIR__ . '/templates/'
 		);
-
+		unset( $order );
 		return ob_get_clean();
+	}
+
+	/**
+	 * Format line items
+	 *
+	 * @param  array $order the order.
+	 * @return array
+	 */
+	private function format_line_items( array $order ) :array {
+		$line_items_data = [];
+
+		foreach ( $order['line_items'] as $item ) {
+			$item_data            = $item->get_data();
+			$item_data['product'] = $item->get_product()->get_data();
+			$line_items_data[]    = $item_data;
+		}
+
+		return $line_items_data;
 	}
 
 	/**

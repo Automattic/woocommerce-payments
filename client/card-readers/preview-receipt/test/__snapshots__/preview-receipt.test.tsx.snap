@@ -17,7 +17,7 @@ exports[`PreviewReceipt should render error when fetch from API fails 1`] = `
           <div
             class="components-notice__content"
           >
-            There was a problem generating the receipt preview. Please try again.
+            There was a problem generating the receipt preview. Please try again later.
           </div>
         </div>
       </div>
