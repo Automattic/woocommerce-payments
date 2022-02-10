@@ -619,6 +619,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id, $currency );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 
+				$this->remove_upe_payment_intent_from_session();
+
 				if ( 'requires_action' === $status ) {
 					// I don't think this case should be possible, but just in case...
 					$next_action = $intent->get_next_action();
@@ -643,6 +645,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			/* translators: localized exception message */
 			$order->update_status( 'failed', sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() ) );
+
+			$this->remove_upe_payment_intent_from_session();
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
