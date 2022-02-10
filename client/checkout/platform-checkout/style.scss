@@ -66,7 +66,7 @@
 		&::after {
 			content: '';
 			position: absolute;
-			left: calc( min(calc(100% + 30px), calc( 85vw - max(85vw - 100% - 94px, 300px) ) ) - 15px);
+			left: calc( min( 100% + 30px, 85vw - max(85vw - 100% - 94px, 300px) ) - 15px)
 			top: calc( 50% - 15px );
 			background: transparent;
 			width: 0;
