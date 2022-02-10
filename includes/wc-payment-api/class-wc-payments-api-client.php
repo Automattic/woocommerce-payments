@@ -1661,6 +1661,13 @@ class WC_Payments_API_Client {
 			$use_user_token
 		);
 
+		$response_headers = wp_remote_retrieve_headers( $response );
+		foreach ( $response_headers as $header => $value ) {
+			if ( 0 === strpos( $header, 'x-wcpay-backend' ) ) {
+				header( sprintf( '%s: %s', $header, $value ) );
+			}
+		}
+
 		$response_body = $this->extract_response_body( $response );
 		Logger::log(
 			'RESPONSE: '
