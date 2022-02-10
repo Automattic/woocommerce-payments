@@ -310,6 +310,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the current account loan data for rendering on the settings pages.
+	 *
+	 * @return array loan data.
+	 */
+	public function get_capital() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['capital'] ) ? $account['capital'] : [];
+	}
+
+	/**
 	 * Gets the current account email for rendering on the settings page.
 	 *
 	 * @return string Email.
