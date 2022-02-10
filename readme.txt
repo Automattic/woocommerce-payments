@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.8.0 - 2022-xx-xx =
+*
+
 = 3.7.0 - 2022-02-10 =
 * Add - Filter by currency in disputes list
 * Add - Link to customer in disputes list
