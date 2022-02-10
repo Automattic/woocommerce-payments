@@ -11,7 +11,7 @@ if [[ -n "$CHANGELOG_FILES" ]]; then
 	echo "$CHANGELOG_FILES"
 else
 	echo ":error::No changelog found."
-	echo "Add at least one changelog file for your PR by running: ./vendor/bin/changelogger add"
+	echo "Add at least one changelog file for your PR by running: npm run changelog"
 	echo "Choose *patch* to leave it empty if the change is not significant. You can add multiple changelog files in one PR by running this command a few times."
 	exit 1
 fi
