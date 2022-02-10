@@ -16,7 +16,7 @@ describe( 'Capital reducer tests', () => {
 				some_more: 'irrelevant_data',
 			},
 			status: 'active',
-		}
+		};
 		const reduced = reducer(
 			undefined, // Default state.
 			{

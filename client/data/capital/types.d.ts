@@ -24,7 +24,7 @@ export interface Summary {
 }
 
 export interface ApiError {
-	code: string,
+	code: string;
 }
 
 export interface SummaryResponse {

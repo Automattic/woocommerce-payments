@@ -180,8 +180,8 @@ const ActiveLoanSummary = (): JSX.Element => {
 							dateI18n(
 								'M j, Y',
 								new Date(
-									details.current_repayment_interval
-										.due_at * 1000
+									details.current_repayment_interval.due_at *
+										1000
 								)
 							)
 						) }
