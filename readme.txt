@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 3.6.1
+Stable tag: 3.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.7.0 - 2022-xx-xx =
+= 3.7.0 - 2022-02-10 =
 * Add - Filter by currency in disputes list
 * Add - Link to customer in disputes list
 * Update - Bump minimum required version of WordPress from 5.6 to 5.7.
