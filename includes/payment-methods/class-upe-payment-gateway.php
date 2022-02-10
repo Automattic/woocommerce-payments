@@ -99,7 +99,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
 		}
 
-		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'remove_upe_payment_intent_from_session' ], 10, 0 );
+		add_action( 'woocommerce_order_payment_status_changed', [ 'WCPay\Payment_Methods\UPE_Payment_Gateway', 'remove_upe_payment_intent_from_session' ], 10, 0 );
 		add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
 	}
 
@@ -619,7 +619,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id, $currency );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 
-				$this->remove_upe_payment_intent_from_session();
+				self::remove_upe_payment_intent_from_session();
 
 				if ( 'requires_action' === $status ) {
 					// I don't think this case should be possible, but just in case...
@@ -646,7 +646,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			/* translators: localized exception message */
 			$order->update_status( 'failed', sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() ) );
 
-			$this->remove_upe_payment_intent_from_session();
+			self::remove_upe_payment_intent_from_session();
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
@@ -1127,7 +1127,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Removes the payment intent created for UPE from WC session.
 	 */
-	public function remove_upe_payment_intent_from_session() {
+	public static function remove_upe_payment_intent_from_session() {
 		WC()->session->__unset( self::KEY_UPE_PAYMENT_INTENT );
 	}
 
