@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "503e76d7a6e1c7eec0aa0431a6d08f68",
+    "content-hash": "f692ce1196cb5ed6cb01b9c7459e5792",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1181,16 +1181,16 @@
         },
         {
             "name": "automattic/jetpack-changelogger",
-            "version": "v3.0.5",
+            "version": "v3.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-changelogger.git",
-                "reference": "085de16ec8cb1e02cfa52ead3cbb772ecee1a188"
+                "reference": "2de25bc819be8aa5bb0fc7ef4bbcf2bdb415116e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-changelogger/zipball/085de16ec8cb1e02cfa52ead3cbb772ecee1a188",
-                "reference": "085de16ec8cb1e02cfa52ead3cbb772ecee1a188",
+                "url": "https://api.github.com/repos/Automattic/jetpack-changelogger/zipball/2de25bc819be8aa5bb0fc7ef4bbcf2bdb415116e",
+                "reference": "2de25bc819be8aa5bb0fc7ef4bbcf2bdb415116e",
                 "shasum": ""
             },
             "require": {
@@ -1232,9 +1232,9 @@
             ],
             "description": "Jetpack Changelogger tool. Allows for managing changelogs by dropping change files into a changelog directory with each PR.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-changelogger/tree/v3.0.5"
+                "source": "https://github.com/Automattic/jetpack-changelogger/tree/v3.0.7"
             },
-            "time": "2022-01-04T21:11:13+00:00"
+            "time": "2022-02-09T17:56:23+00:00"
         },
         {
             "name": "composer/package-versions-deprecated",

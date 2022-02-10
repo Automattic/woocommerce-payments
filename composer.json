@@ -41,7 +41,7 @@
       "rregeer/phpunit-coverage-check": "0.3.1",
       "yoast/phpunit-polyfills": "1.0.1",
       "cweagans/composer-patches": "1.7.1",
-      "automattic/jetpack-changelogger": "3.0.5"
+      "automattic/jetpack-changelogger": "^3.0.7"
     },
     "scripts": {
       "test": [
