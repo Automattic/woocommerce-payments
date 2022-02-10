@@ -111,7 +111,9 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Implement Jetpack Identity Crisis / Safe Mode banner.
 * Fix - Checkout with block-based themes.
 * Add - UPE payment method - EPS.
-* Fix - Redundant payment intents for UPE.
+* Fix - Replace uses of is_ajax() with wp_doing_ajax() in subscriptions-core.
+* Improve handling of session data.
+* Fix - When changing the payment method, make sure the subscription total returns $0 when `subscriptions-core` is loaded after the `woocommerce_loaded` action hook.
 
 = 3.6.1 - 2022-01-27 =
 * Fix - Remove packages not compatible with PHP 7.0

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __, _x } from '@wordpress/i18n';
+import { __, _x, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -33,6 +33,29 @@ const transactionTypesOptions = Object.entries( displayType )
 	.filter( function ( el ) {
 		return el != null;
 	} );
+
+const loanDefinitions =
+	'undefined' !== typeof wcpaySettings
+		? wcpaySettings.accountLoans.loans
+		: [];
+
+const capitalEnabled =
+	'undefined' !== typeof wcpaySettings
+		? wcpaySettings.featureFlags.capital
+		: false;
+
+const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
+	const loanDefinitionSplitted = loanDefinition.split( '|' );
+	const loanDisplayValue = sprintf(
+		'ID: %s | %s',
+		loanDefinitionSplitted[ 0 ],
+		'active' === loanDefinitionSplitted[ 1 ]
+			? __( 'In Progress', 'woocommerce-payments' )
+			: __( 'Paid in Full', 'woocommerce-payments' )
+	);
+
+	return { label: loanDisplayValue, value: loanDefinitionSplitted[ 0 ] };
+}, [] );
 
 export const filters: [ TransactionsFilterType, TransactionsFilterType ] = [
 	{
@@ -179,6 +202,26 @@ export const advancedFilters = {
 				options: transactionTypesOptions,
 			},
 		},
+		...( capitalEnabled && {
+			loan_id_is: {
+				labels: {
+					add: __( 'Loan', 'woocommerce-payments' ),
+					remove: __( 'Remove loan filter', 'woocommerce-payments' ),
+					rule: __( 'Select a loan', 'woocommerce-payments' ),
+					/* translators: A sentence describing a Loan ID filter. */
+					title: __(
+						'{{title}}Loan{{/title}} {{rule /}} {{filter /}}',
+						'woocommerce-payments'
+					),
+					filter: __( 'Select a loan', 'woocommerce-payments' ),
+				},
+				input: {
+					component: 'SelectControl',
+					type: 'loans',
+					options: loanSelectionOptions,
+				},
+			},
+		} ),
 	},
 };
 /*eslint-enable max-len*/
