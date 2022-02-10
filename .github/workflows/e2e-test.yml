@@ -54,8 +54,8 @@ jobs:
       E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
-      # Log current test configuration
-      - name: Current Test Configuration
+      # Log workflow configuration
+      - name: Workflow Configuration
         run: |
           echo "WordPress version: ${{ matrix.wordpress }}"
           echo "WooCommerce version: ${{ matrix.woocommerce }}"
