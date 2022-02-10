@@ -113,6 +113,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - UPE payment method - EPS.
 * Fix - Replace uses of is_ajax() with wp_doing_ajax() in subscriptions-core.
 * Improve handling of session data.
+* Fix - Redundant payment intents for UPE.
 
 = 3.6.1 - 2022-01-27 =
 * Fix - Remove packages not compatible with PHP 7.0
