@@ -134,6 +134,13 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 					$row          = trim( $row );
 					$row          = preg_replace( '/\\' . $this->bullet . '/', '', $row, 1 );
 					$row_segments = explode( $this->separator, $row, 2 );
+
+					if ( count( $row_segments ) !== 2 ) {
+						// Current row (change entry) does not have correct format.
+						// It usually happens before migrating to Jetpack Changelogger.
+						throw new Exception( 'Change entry does not have the correct format. Please update it manually and run this command again. Change entry: ' . $row );
+					}
+
 					array_push(
 						$changes,
 						[
