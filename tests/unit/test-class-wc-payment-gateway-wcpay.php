@@ -806,6 +806,40 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected_data, $level_3_data );
 	}
 
+	public function test_level3_data_bundle() {
+		$items = (array) [
+			(object) [
+				'product_code'        => 'abcd',
+				'product_description' => 'product description',
+				'unit_cost'           => 1000,
+				'quantity'            => 4,
+				'tax_amount'          => 200,
+				'discount_amount'     => 500,
+			],
+			(object) [
+				'product_code'        => 'abcd',
+				'product_description' => 'product description',
+				'unit_cost'           => 5000,
+				'quantity'            => 3,
+				'tax_amount'          => 1000,
+				'discount_amount'     => 200,
+			],
+		];
+
+		$bundle_data = $this->wcpay_gateway->bundle_level3_data_from_items( $items );
+		// total_unit_cost = sum( unit_cost * quantity ).
+		$this->assertEquals( $bundle_data->unit_cost, 19000 );
+
+		// quantity of the bundle = 1.
+		$this->assertEquals( $bundle_data->quantity, 1 );
+
+		// total_tax_amount = sum( tax_amount ).
+		$this->assertEquals( $bundle_data->tax_amount, 1200 );
+
+		// total_discount_amount = sum( discount_amount ).
+		$this->assertEquals( $bundle_data->discount_amount, 700 );
+	}
+
 	public function test_capture_charge_success() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';

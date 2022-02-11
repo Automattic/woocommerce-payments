@@ -2768,4 +2768,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function should_bump_rate_limiter( string $error_code ): bool {
 		return in_array( $error_code, [ 'card_declined', 'incorrect_number', 'incorrect_cvc' ], true );
 	}
+
+	/**
+	 * Returns a bundle of products passed as an argument. Useful when working with Stripe's level 3 data
+	 *
+	 * @param array $items The Stripe's level 3 array of items.
+	 *
+	 * @return object A bundle of the products passed.
+	 */
+	public function bundle_level3_data_from_items( array $items ) {
+		// Total cost is the sum of each product cost * quantity.
+		$total_cost = array_sum(
+			array_map(
+				function( $cost, $qty ) {
+					return $cost * $qty;
+				},
+				array_column( $items, 'unit_cost' ),
+				array_column( $items, 'quantity' )
+			)
+		);
+
+		return (object) [
+			'product_code'        => (string) substr( uniqid(), 0, 26 ),
+			'product_description' => 'Bundle of products',
+			'unit_cost'           => $total_cost,
+			'quantity'            => 1,
+			'tax_amount'          => array_sum( array_column( $items, 'tax_amount' ) ),
+			'discount_amount'     => array_sum( array_column( $items, 'discount_amount' ) ),
+		];
+	}
 }
