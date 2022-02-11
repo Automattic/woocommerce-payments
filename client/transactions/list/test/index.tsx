@@ -97,6 +97,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		customer_currency: 'usd',
 		risk_level: 0,
 		deposit_id: undefined,
+		loan_id: undefined,
 	},
 	{
 		transaction_id: 'txn_oa9kaKaa8',
@@ -122,6 +123,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		customer_currency: 'mok',
 		risk_level: 2,
 		deposit_id: 'po_mock',
+		loan_id: 'flxln_mock',
 	},
 ];
 

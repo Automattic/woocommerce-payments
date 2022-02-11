@@ -1,0 +1,313 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Active loan summary renders correctly 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-medium wcpay-loan-summary-header e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      <div
+        class="components-flex__item css-1s295sp-Item eboqfv51"
+      >
+        Active loan overview
+      </div>
+      <div
+        class="components-flex__item css-1s295sp-Item eboqfv51"
+      >
+        <a
+          class="components-button is-link"
+          href="javascript:alert('Not implemented yet')"
+        >
+          View transactions
+        </a>
+      </div>
+    </div>
+    <div
+      class="components-card__body is-size-medium wcpay-loan-summary-body css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div
+        class="components-flex wcpay-loan-summary-row css-bz4r5k-Flex eboqfv50"
+      >
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            Total repaid
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            <span
+              class="is-big"
+            >
+              $12.34 USD
+            </span>
+             of $1,150.00 USD
+          </div>
+        </div>
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            Repaid this period (until Feb 14, 2022)
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            <span
+              class="is-big"
+            >
+              $1.23 USD
+            </span>
+             of $24.68 USD minimum
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-flex wcpay-loan-summary-row is-bottom-row css-bz4r5k-Flex eboqfv50"
+      >
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            Loan disbursed
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            Feb 3, 2022
+          </div>
+        </div>
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            Loan amount
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            $1,000.00 USD
+          </div>
+        </div>
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            Fixed fee
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            $150.00 USD
+          </div>
+        </div>
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            Withhold rate
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            1000
+            %
+          </div>
+        </div>
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            First paydown
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            Feb 4, 2022
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Active loan summary renders correctly when loading 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-medium wcpay-loan-summary-header e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      <div
+        class="components-flex__item css-1s295sp-Item eboqfv51"
+      >
+        Active loan overview
+      </div>
+    </div>
+    <div
+      class="components-card__body is-size-medium wcpay-loan-summary-body css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div
+        class="components-flex wcpay-loan-summary-row css-bz4r5k-Flex eboqfv50"
+      >
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            Total repaid
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            <span
+              aria-busy="true"
+              class="is-loadable-placeholder is-inline"
+            >
+              Total repaid placeholder
+            </span>
+          </div>
+        </div>
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            Repaid this period
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            <span
+              aria-busy="true"
+              class="is-loadable-placeholder is-inline"
+            >
+              Repaid this period placeholder
+            </span>
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-flex wcpay-loan-summary-row is-bottom-row css-bz4r5k-Flex eboqfv50"
+      >
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            Loan disbursed
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            <span
+              aria-busy="true"
+              class="is-loadable-placeholder is-inline"
+            >
+              Date disbursed
+            </span>
+          </div>
+        </div>
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            Loan amount
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            <span
+              aria-busy="true"
+              class="is-loadable-placeholder is-inline"
+            >
+              Loan amount
+            </span>
+          </div>
+        </div>
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            Fixed fee
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            <span
+              aria-busy="true"
+              class="is-loadable-placeholder is-inline"
+            >
+              Fixed fee
+            </span>
+          </div>
+        </div>
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            Withhold rate
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            <span
+              aria-busy="true"
+              class="is-loadable-placeholder is-inline"
+            >
+              Rate
+            </span>
+          </div>
+        </div>
+        <div
+          class="components-flex__block wcpay-loan-summary-block css-yr442k-Item-Block eboqfv52"
+        >
+          <div
+            class="wcpay-loan-summary-block__title"
+          >
+            First paydown
+          </div>
+          <div
+            class="wcpay-loan-summary-block__value"
+          >
+            <span
+              aria-busy="true"
+              class="is-loadable-placeholder is-inline"
+            >
+              First paydown
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

@@ -99,6 +99,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Capital feature is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_capital_enabled() {
+		return '1' === get_option( '_wcpay_feature_capital', '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -110,6 +119,7 @@ class WC_Payments_Features {
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
+				'capital'                 => self::is_capital_enabled(),
 			]
 		);
 	}

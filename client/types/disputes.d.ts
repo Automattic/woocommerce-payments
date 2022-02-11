@@ -104,7 +104,7 @@ export interface DisputeFileUpload {
 export interface DisputesSummary {
 	disputesSummary: {
 		count?: number;
-		store_currencies?: string[];
+		currencies?: string[];
 	};
 	isLoading: boolean;
 }
@@ -123,6 +123,7 @@ export interface DisputesTableHeader extends TableCardColumn {
 	key:
 		| 'details'
 		| 'amount'
+		| 'currency'
 		| 'status'
 		| 'reason'
 		| 'source'
