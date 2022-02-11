@@ -98,19 +98,21 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.7.1 - 2022-xx-xx =
+* Add - Add endpoint to retrieve a file content via API.
+* Add - Add a preview of uploaded logo and icon on terminal card reader receipt settings page.
+
 = 3.7.0 - 2022-02-10 =
 * Add - Filter by currency in disputes list
 * Add - Link to customer in disputes list
 * Update - Bump minimum required version of WordPress from 5.6 to 5.7.
 * Update - Bump minimum required version of WooCommerce from 4.5 to 4.6.
-* Add - Add endpoint to retrieve a file content via API.
 * Add - Introduce sorting on disputes page.
 * Fix - Currency name not translated the Overview card title.
 * Add - Introduce advance filters on disputes page.
 * Add - UPE payment methods - BECS Direct Debit.
 * Fix - Missing currency field in disputes export file.
 * Add - Implement Jetpack Identity Crisis / Safe Mode banner.
-* Add - Add a preview of uploaded logo and icon on terminal card reader receipt settings page.
 * Fix - Checkout with block-based themes.
 * Add - UPE payment method - EPS.
 * Fix - Replace uses of is_ajax() with wp_doing_ajax() in subscriptions-core.
