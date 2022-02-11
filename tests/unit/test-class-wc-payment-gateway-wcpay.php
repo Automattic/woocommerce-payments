@@ -543,7 +543,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->payment_fields();
 	}
 
-	protected function mock_level_3_order( $shipping_postcode, $with_fee = false, $quantity = 1 ) {
+	protected function mock_level_3_order( $shipping_postcode, $with_fee = false, $quantity = 1, $basket_size = 1 ) {
 		// Setup the item.
 		$mock_item = $this->getMockBuilder( WC_Order_Item_Product::class )
 			->disableOriginalConstructor()
@@ -604,6 +604,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				->will( $this->returnValue( 1.5 ) );
 
 			$mock_items[] = $mock_fee;
+		}
+
+		if ( $basket_size > 1 ) {
+			// Keep the formely created item/fee and add duplicated items to the basket.
+			$mock_items = array_merge( $mock_items, array_fill( 0, $basket_size - 1, $mock_items[0] ) );
 		}
 
 		// Setup the order.
@@ -838,6 +843,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		// total_discount_amount = sum( discount_amount ).
 		$this->assertEquals( $bundle_data->discount_amount, 700 );
+	}
+
+	public function test_level3_data_bundle_for_orders_with_more_than_200_items() {
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
+		$mock_order   = $this->mock_level_3_order( '98012', true, 1, 500 );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
+
+		$this->assertEquals( count( $level_3_data['line_items'] ), 1 );
 	}
 
 	public function test_capture_charge_success() {
