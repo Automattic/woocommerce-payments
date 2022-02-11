@@ -25,7 +25,7 @@ export function* getActiveLoanSummary(): unknown {
 	try {
 		const result = yield apiFetch( { path } );
 		yield updateActiveLoanSummary( result as Summary );
-	} catch ( e: unknown ) {
+	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
 			'createErrorNotice',
