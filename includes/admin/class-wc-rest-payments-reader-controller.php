@@ -102,7 +102,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/receipts/(?P<payment_id>\w+)',
+			'/' . $this->rest_base . '/receipts/(?P<payment_intent_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'generate_print_receipt' ],
@@ -255,8 +255,12 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 				throw new \RuntimeException( __( 'Order not found', 'woocommerce-payments' ) );
 			}
 
+			// Retrieve branding logo file ID.
+			$branding_logo = $this->wcpay_gateway->get_option( 'account_branding_logo', '' );
+
 			/* Collect merchant settings */
 			$settings = [
+				'branding_logo' => ( '' !== $branding_logo ) ? $this->api_client->get_file_contents( $branding_logo, false ) : [],
 				'business_name' => $this->wcpay_gateway->get_option( 'account_business_name' ),
 				'support_info'  => [
 					'address' => $this->wcpay_gateway->get_option( 'account_business_support_address' ),
