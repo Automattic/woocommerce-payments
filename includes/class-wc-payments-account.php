@@ -315,7 +315,11 @@ class WC_Payments_Account {
 	 */
 	public function get_capital() {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['capital'] ) ? $account['capital'] : [];
+		return ! empty( $account ) && isset( $account['capital'] ) && ! empty( $account['capital'] ) ? $account['capital'] : [
+			'loans'             => [],
+			'has_active_loan'   => false,
+			'has_previous_loan' => false,
+		];
 	}
 
 	/**
