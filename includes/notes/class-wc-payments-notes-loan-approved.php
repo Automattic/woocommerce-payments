@@ -82,7 +82,7 @@ class WC_Payments_Notes_Loan_Approved {
 		$note->add_action(
 			self::NOTE_NAME,
 			__( 'View loan details', 'woocommerce-payments' ),
-			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&action=' . self::NOTE_ACTION ),
+			admin_url( 'admin.php?page=wc-admin&path=/payments/loans' ),
 			$note_class::E_WC_ADMIN_NOTE_UNACTIONED,
 			true
 		);

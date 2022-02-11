@@ -1135,38 +1135,30 @@ class WC_Payments_Account {
 	 * @return void
 	 */
 	public function handle_loan_approved_inbox_note( $account ) {
+		// If the account cache is empty, delete the note, just in case.
 		if ( empty( $account ) ) {
+			WC_Payments_Notes_Loan_Approved::possibly_delete_note();
 			return;
 		}
 
+		// Delete the loan note when the user doesn't have an active loan.
 		if ( ! $this->has_active_loan( $account ) ) {
+			WC_Payments_Notes_Loan_Approved::possibly_delete_note();
 			return;
 		}
 
-		$active_loans = array_filter(
-			$account['capital']['loans'],
-			function( $loan_info ) {
-				return 0 < strpos( $loan_info, '|active' );
-			}
-		);
-
-		if ( empty( $active_loans ) ) {
+		// Get the active loan ID. If there's no active loan ID in the list, delete the note.
+		$active_loan_id = $this->get_active_loan_id( $account );
+		if ( empty( $active_loan_id ) ) {
+			WC_Payments_Notes_Loan_Approved::possibly_delete_note();
 			return;
 		}
 
-		$matches = [];
-		preg_match( '/(\w+)|active/', $active_loans[0], $matches );
-		$active_loan_id = $matches[1];
+		// Get the loan summary.
+		$loan_details = $this->payments_api_client->get_active_loan_summary();
 
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
-		$note = WC_Payments_Notes_Loan_Approved::get_note();
-
-		if ( ! $note ) {
-			WC_Payments_Notes_Loan_Approved::possibly_delete_note();
-		}
-
-		WC_Payments_Notes_Loan_Approved::set_account( $this );
-		WC_Payments_Notes_Loan_Approved::set_loan_details( [ 'advance_amount' => 10000 ] );
+		WC_Payments_Notes_Loan_Approved::set_loan_details( $loan_details );
 		WC_Payments_Notes_Loan_Approved::possibly_add_note();
 	}
 
@@ -1235,6 +1227,32 @@ class WC_Payments_Account {
 		}
 
 		return true === $account['capital']['has_active_loan'];
+	}
+
+	/**
+	 * Returns the active loan ID from the account loan data.
+	 *
+	 * @param   array $account  The account data.
+	 *
+	 * @return  string
+	 */
+	private function get_active_loan_id( array $account ): string {
+		$active_loans = array_filter(
+			$account['capital']['loans'],
+			function( $loan_info ) {
+				return 0 < strpos( $loan_info, '|active' );
+			}
+		);
+
+		if ( empty( $active_loans ) ) {
+			return '';
+		}
+
+		$matches = [];
+		preg_match( '/(\w+)|active/', $active_loans[0], $matches );
+		$active_loan_id = $matches[1] ?? '';
+
+		return $active_loan_id;
 	}
 
 	/**
