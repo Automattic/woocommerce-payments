@@ -33,13 +33,6 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 	private $date_format = 'Y-m-d';
 
 	/**
-	 * String used as the date for an unreleased version.
-	 *
-	 * @var string
-	 */
-	private $unreleased = '2022-xx-xx';
-
-	/**
 	 * Title for the changelog.
 	 *
 	 * @var string
@@ -96,7 +89,7 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 
 			$version   = $heading[1];
 			$timestamp = $heading[2];
-			if ( $timestamp === $this->unreleased ) {
+			if ( $timestamp === $this->get_unreleased_date() ) {
 				$timestamp       = null;
 				$entry_timestamp = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
 			} else {
@@ -181,7 +174,7 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 
 		foreach ( $changelog->getEntries() as $entry ) {
 			$timestamp    = $entry->getTimestamp();
-			$release_date = null === $timestamp ? $this->unreleased : $timestamp->format( $this->date_format );
+			$release_date = null === $timestamp ? $this->get_unreleased_date() : $timestamp->format( $this->date_format );
 
 			$ret .= '= ' . $entry->getVersion() . ' ' . $this->separator . ' ' . $release_date . " =\n";
 
@@ -203,5 +196,14 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 		$ret = $this->title . "\n\n" . trim( $ret ) . "\n";
 
 		return $ret;
+	}
+
+	/**
+	 * Get string used as the date for an unreleased version.
+	 *
+	 * @return string
+	 */
+	private function get_unreleased_date(): string {
+		return gmdate( 'Y' ) . '-xx-xx';
 	}
 }
