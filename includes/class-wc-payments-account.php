@@ -46,6 +46,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_loan_approved_inbox_note' ] );
 		add_action( self::INSTANT_DEPOSITS_REMINDER_ACTION, [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_action( self::ACCOUNT_CACHE_REFRESH_ACTION, [ $this, 'handle_account_cache_refresh' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
@@ -1122,6 +1123,49 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Handles adding a note if the merchant has an loan approved.
+	 *
+	 * @param array $account The account data.
+	 *
+	 * @return void
+	 */
+	public function handle_loan_approved_inbox_note( $account ) {
+		if ( empty( $account ) ) {
+			return;
+		}
+
+		if ( ! $this->has_active_loan( $account ) ) {
+			return;
+		}
+
+		$active_loans = array_filter(
+			$account['capital']['loans'],
+			function( $loan_info ) {
+				return 0 < strpos( $loan_info, '|active' );
+			}
+		);
+
+		if ( empty( $active_loans ) ) {
+			return;
+		}
+
+		$matches = [];
+		preg_match( '/(\w+)|active/', $active_loans[0], $matches );
+		$active_loan_id = $matches[1];
+
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
+		$note = WC_Payments_Notes_Loan_Approved::get_note();
+
+		if ( ! $note ) {
+			WC_Payments_Notes_Loan_Approved::possibly_delete_note();
+		}
+
+		WC_Payments_Notes_Loan_Approved::set_account( $this );
+		WC_Payments_Notes_Loan_Approved::set_loan_details( [ 'advance_amount' => 10000 ] );
+		WC_Payments_Notes_Loan_Approved::possibly_add_note();
+	}
+
+	/**
 	 * Handles removing note about merchant Instant Deposits eligibility.
 	 * Hands off to handle_instant_deposits_inbox_note to add the new note.
 	 *
@@ -1171,6 +1215,21 @@ class WC_Payments_Account {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Checks to see if the account has an active loan.
+	 *
+	 * @param array $account The account data.
+	 *
+	 * @return bool
+	 */
+	private function has_active_loan( array $account ): bool {
+		if ( empty( $account['capital'] ) ) {
+			return false;
+		}
+
+		return true === $account['capital']['has_active_loan'];
 	}
 
 	/**

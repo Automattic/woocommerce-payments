@@ -57,7 +57,7 @@ class WC_Payments_Notes_Loan_Approved {
 		}
 
 		// If the loan amount isn't set correctly, don't push the note.
-		if ( ! empty( self::$loan_info ) || ! is_array( self::$loan_info ) || ! array_key_exists( 'advance_amount', self::$loan_info ) || ! is_numeric( self::$loan_info['advance_amount'] ) ) {
+		if ( empty( self::$loan_info ) || ! is_array( self::$loan_info ) || ! array_key_exists( 'advance_amount', self::$loan_info ) || ! is_numeric( self::$loan_info['advance_amount'] ) ) {
 			return;
 		}
 
@@ -72,7 +72,7 @@ class WC_Payments_Notes_Loan_Approved {
 					'Congratulations! Your capital loan has been approved and %1$s was deposited in to the bank account linked to WooCommerce Payments. You\'ll automatically repay the loan, plus a flat fee, through a fixed percentage of each WooCommerce Payments transaction.',
 					'woocommerce-payments'
 				),
-				self::$loan_info['advance_amount']
+				wc_price( self::$loan_info['advance_amount'] / 100 )
 			)
 		);
 		$note->set_content_data( (object) [] );
@@ -81,7 +81,7 @@ class WC_Payments_Notes_Loan_Approved {
 		$note->set_source( 'woocommerce-payments' );
 		$note->add_action(
 			self::NOTE_NAME,
-			__( 'Enable on your store', 'woocommerce-payments' ),
+			__( 'View loan details', 'woocommerce-payments' ),
 			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&action=' . self::NOTE_ACTION ),
 			$note_class::E_WC_ADMIN_NOTE_UNACTIONED,
 			true
