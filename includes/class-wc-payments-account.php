@@ -126,12 +126,17 @@ class WC_Payments_Account {
 		try {
 			$account = $this->get_cached_account_data();
 
-			if ( empty( $account ) ) {
-				// Empty means no account, so not rejected.
+			if ( false === $account ) {
+				// False means error.
 				return $on_error;
 			}
 
-			return strpos( $account['status'], 'rejected' ) === 0;
+			if ( is_array( $account ) && empty( $account ) ) {
+				// Empty array means no account, so not rejected.
+				return false;
+			}
+
+			return strpos( $account['status'] ?? '', 'rejected' ) === 0;
 		} catch ( Exception $e ) {
 			return $on_error;
 		}
