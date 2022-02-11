@@ -317,6 +317,7 @@ class WC_Payments_Account {
 	 */
 	public function get_capital() {
 		$account = $this->get_cached_account_data();
+		$this->handle_loan_approved_inbox_note( $account );
 		return ! empty( $account ) && isset( $account['capital'] ) && ! empty( $account['capital'] ) ? $account['capital'] : [
 			'loans'             => [],
 			'has_active_loan'   => false,
@@ -1135,6 +1136,8 @@ class WC_Payments_Account {
 	 * @return void
 	 */
 	public function handle_loan_approved_inbox_note( $account ) {
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
+
 		// If the account cache is empty, delete the note, just in case.
 		if ( empty( $account ) ) {
 			WC_Payments_Notes_Loan_Approved::possibly_delete_note();
@@ -1147,17 +1150,11 @@ class WC_Payments_Account {
 			return;
 		}
 
-		// Get the active loan ID. If there's no active loan ID in the list, delete the note.
-		$active_loan_id = $this->get_active_loan_id( $account );
-		if ( empty( $active_loan_id ) ) {
-			WC_Payments_Notes_Loan_Approved::possibly_delete_note();
-			return;
-		}
-
 		// Get the loan summary.
 		$loan_details = $this->payments_api_client->get_active_loan_summary();
 
-		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
+		// Try to save the note.
+		WC_Payments_Notes_Loan_Approved::set_account( $this );
 		WC_Payments_Notes_Loan_Approved::set_loan_details( $loan_details );
 		WC_Payments_Notes_Loan_Approved::possibly_add_note();
 	}

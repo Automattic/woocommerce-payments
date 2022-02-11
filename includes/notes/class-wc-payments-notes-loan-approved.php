@@ -6,6 +6,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use Automattic\WooCommerce\Admin\Notes\Notes;
+use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 
 defined( 'ABSPATH' ) || exit;
@@ -44,25 +46,13 @@ class WC_Payments_Notes_Loan_Approved {
 	 * Get the note.
 	 */
 	public static function get_note() {
-		// Show this notice only if capital feature is enabled.
-		if ( false === WC_Payments_Features::is_capital_enabled() ) {
-			return;
-		}
-
-		// if the user hasn't connected their account (or the account got disconnected) do not add the note.
-		if ( self::$account instanceof WC_Payments_Account ) {
-			if ( ! self::$account->is_stripe_connected() ) {
-				return;
-			}
-		}
-
-		// If the loan amount isn't set correctly, don't push the note.
-		if ( empty( self::$loan_info ) || ! is_array( self::$loan_info ) || ! array_key_exists( 'advance_amount', self::$loan_info ) || ! is_numeric( self::$loan_info['advance_amount'] ) ) {
-			return;
-		}
-
 		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
-		$note       = new $note_class();
+		/**
+		 * Note object
+		 *
+		 * @var Note
+		 */
+		$note = new $note_class();
 
 		$note->set_title( __( 'Your capital loan has been approved!', 'woocommerce-payments' ) );
 		$note->set_content(
@@ -72,7 +62,7 @@ class WC_Payments_Notes_Loan_Approved {
 					'Congratulations! Your capital loan has been approved and %1$s was deposited in to the bank account linked to WooCommerce Payments. You\'ll automatically repay the loan, plus a flat fee, through a fixed percentage of each WooCommerce Payments transaction.',
 					'woocommerce-payments'
 				),
-				wc_price( self::$loan_info['advance_amount'] / 100 )
+				wc_price( self::$loan_info['details']['advance_amount'] / 100 )
 			)
 		);
 		$note->set_content_data( (object) [] );
@@ -86,8 +76,103 @@ class WC_Payments_Notes_Loan_Approved {
 			$note_class::E_WC_ADMIN_NOTE_UNACTIONED,
 			true
 		);
+		$note->set_content_data(
+			(object) [
+				'advance_amount'      => self::$loan_info['details']['advance_amount'],
+				'advance_paid_out_at' => self::$loan_info['details']['advance_paid_out_at'],
+			]
+		);
 
 		return $note;
+	}
+
+	/**
+	 * Add the note if it passes predefined conditions.
+	 *
+	 * @throws NotesUnavailableException Throws exception when notes are unavailable.
+	 */
+	public static function possibly_add_note() {
+		// Show this notice only if capital feature is enabled.
+		if ( false === WC_Payments_Features::is_capital_enabled() ) {
+			return;
+		}
+
+		// if the user hasn't connected their account (or the account got disconnected) do not add the note.
+		if ( self::$account instanceof WC_Payments_Account ) {
+			if ( ! self::$account->is_stripe_connected() ) {
+				return;
+			}
+		}
+
+		// If we have the correct information, proceed. Otherwise, delete existing notes.
+		if ( ! self::validate_inputs() ) {
+			// We don't have the necessary info to create a note, do nothing.
+			return;
+		}
+
+		// Check if the current loan info matches with the received one. If it matches, don't add a new one.
+		if ( ! self::check_loan_paid_out_date_is_different() ) {
+			// Loan paid out dates are the same, do nothing.
+			return;
+		}
+
+		// Do the overridden work.
+		if ( ! self::can_be_added() ) {
+			return;
+		}
+
+		$new_note = self::get_note();
+		$new_note->save();
+	}
+
+	/**
+	 * Check if the stored loan info has all the values we need.
+	 *
+	 * @return bool
+	 * @throws NotesUnavailableException Throws exception when notes are unavailable.
+	 */
+	private static function validate_inputs() {
+		// If the loan amount isn't set correctly, don't push the note, and delete the old one if exists.
+		if ( empty( self::$loan_info )
+			|| ! is_array( self::$loan_info )
+			|| ! isset( self::$loan_info['details']['advance_amount'] )
+			|| ! is_numeric( self::$loan_info['details']['advance_amount'] )
+		) {
+			// There's something wrong with the loan information, delete the existing note, just in case of wrong information.
+			self::possibly_delete_note();
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Checks the saved paid out date on the previous note and deletes it if it doesn't match, to create a new one.
+	 *
+	 * @return bool
+	 * @throws NotesUnavailableException Throws exception when notes are unavailable.
+	 */
+	private static function check_loan_paid_out_date_is_different() {
+		// Check if the note already exists, and the stored paid out date matches our current loan before adding a new one.
+		$data_store = Notes::load_data_store();
+		$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
+
+		if ( ! empty( $note_ids ) ) {
+			$note = Notes::get_note( $note_ids[0] );
+			if ( $note instanceof Note ) {
+				$content_data = (array) $note->get_content_data();
+				if ( isset( $content_data['advance_paid_out_at'], $content_data['advance_amount'] ) ) {
+					if ( self::$loan_info['details']['advance_paid_out_at'] === $content_data['advance_paid_out_at'] &&
+						self::$loan_info['details']['advance_amount'] === $content_data['advance_amount'] ) {
+						// Note already exists for the current loan. No action will be taken.
+						return false;
+					}
+				}
+				// The note isn't for the current loan. Delete it.
+				$data_store->delete( $note );
+			}
+		}
+
+		return true;
 	}
 
 	/**
