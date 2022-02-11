@@ -311,7 +311,7 @@ class Payment_Information {
 	 * @return bool The flag.
 	 */
 	public function should_save_payment_method_to_platform() {
-		return $this->save_payment_method_to_platform;
+		return ! $this->is_using_saved_payment_method() && $this->save_payment_method_to_platform;
 	}
 
 	/**
