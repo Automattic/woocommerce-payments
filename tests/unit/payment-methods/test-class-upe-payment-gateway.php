@@ -650,7 +650,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertRegExp( '/save_payment_method=no/', $result['redirect_url'] );
 	}
 
-	public function test_process_payment_passes_save_payment_method() {
+	public function test_process_payment_passes_save_payment_method_to_store() {
 		$order                         = WC_Helper_Order::create_order();
 		$order_id                      = $order->get_id();
 		$gateway_id                    = UPE_Payment_Gateway::GATEWAY_ID;

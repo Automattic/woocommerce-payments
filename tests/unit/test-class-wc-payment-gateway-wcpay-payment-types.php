@@ -169,6 +169,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 				$this->anything(),
 				$this->anything(),
 				$this->anything(),
+				$this->anything(),
 				// Metadata argument.
 				$this->callback(
 					function( $metadata ) use ( $order ) {
@@ -192,6 +193,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
 			->with(
+				$this->anything(),
 				$this->anything(),
 				$this->anything(),
 				$this->anything(),
@@ -227,6 +229,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
 			->with(
+				$this->anything(),
 				$this->anything(),
 				$this->anything(),
 				$this->anything(),
