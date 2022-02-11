@@ -21,7 +21,7 @@ import {
 import InstantDepositButton from 'deposits/instant-deposits';
 import DepositsInformationBlock from './block';
 import { formatCurrency, formatCurrencyName } from 'utils/currency';
-import { useAllDeposistsOverviews } from 'wcpay/data';
+import { useAllDepositsOverviews } from 'wcpay/data';
 
 import './style.scss';
 
@@ -141,7 +141,7 @@ const DepositsInformation = (): JSX.Element => {
 	const {
 		overviews,
 		isLoading,
-	} = useAllDeposistsOverviews() as AccountOverview.OverviewsResponse;
+	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 
 	if ( isLoading ) {
 		return <DepositsInformationLoading />;

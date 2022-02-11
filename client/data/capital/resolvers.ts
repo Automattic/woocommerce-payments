@@ -14,7 +14,7 @@ import {
 	updateActiveLoanSummary,
 	updateErrorForActiveLoanSummary,
 } from './actions';
-import { Summary } from './types';
+import { ApiError, Summary } from './types';
 
 /**
  * Retrieve all deposits' overviews from the deposits API.
@@ -25,7 +25,7 @@ export function* getActiveLoanSummary(): unknown {
 	try {
 		const result = yield apiFetch( { path } );
 		yield updateActiveLoanSummary( result as Summary );
-	} catch ( e ) {
+	} catch ( e: unknown ) {
 		yield dispatch(
 			'core/notices',
 			'createErrorNotice',
@@ -34,6 +34,6 @@ export function* getActiveLoanSummary(): unknown {
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForActiveLoanSummary( e );
+		yield updateErrorForActiveLoanSummary( e as ApiError );
 	}
 }
