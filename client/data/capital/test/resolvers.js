@@ -33,7 +33,7 @@ describe( 'getActiveLoanSummary resolver', () => {
 	beforeEach( () => {
 		generator = getActiveLoanSummary();
 		expect( generator.next().value ).toEqual(
-			apiFetch( { path: '/wc/v3/payments/capital/active-loan-summary' } )
+			apiFetch( { path: '/wc/v3/payments/capital/active_loan_summary' } )
 		);
 	} );
 
