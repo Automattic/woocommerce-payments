@@ -7,6 +7,8 @@
 
 namespace WCPay;
 
+use WC_Payments_Features;
+
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**
@@ -55,12 +57,35 @@ class Platform_Checkout_Tracker {
 	 * @param array  $props array of event properties.
 	 */
 	public function record_user_event( $event, $props = [] ) {
-		// TODO: dont track when
-		// platform checkout is disabled
-		// on admin environment
-		// on feature flag
-		// tos?
+		if ( ! $this->should_enable_tracking() ) {
+			return;
+		}
 		self::$tracking->record_user_event( $event, $props );
 	}
 
+	/**
+	 * Check whether tracking should be enabled.
+	 *
+	 * @return bool
+	 */
+	public function should_enable_tracking() {
+		// Tracking only Site pages.
+		if ( is_admin() ) {
+			return false;
+		}
+
+		// Don't track site admins.
+		if ( is_user_logged_in() && in_array( 'administrator', wp_get_current_user()->roles, true ) ) {
+			return false;
+		}
+
+		// Don't track when platform checkout is disabled.
+		if ( ! WC_Payments_Features::is_platform_checkout_enabled() ) {
+			return false;
+		}
+
+		// TODO: Don't track if jetpack_tos_agreed flag is not present.
+
+		return true;
+	}
 }
