@@ -997,13 +997,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->any() )
 			->method( 'create_and_confirm_intention' )
-			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), true, $this->anything(), $this->anything() )
+			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), true, false, $this->anything(), $this->anything() )
 			->will( $this->returnValue( $intent ) );
 
 		$this->mock_token_service
 			->expects( $this->once() )
 			->method( 'add_payment_method_to_user' )
-			->with( 'pm_mock', $order->get_user() )
+			->with( 'pm_56789', $order->get_user() )
 			->will( $this->returnValue( new WC_Payment_Token_CC() ) );
 
 		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
