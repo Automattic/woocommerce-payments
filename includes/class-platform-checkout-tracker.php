@@ -40,6 +40,7 @@ class Platform_Checkout_Tracker {
 		self::$tracking = new \Automattic\Jetpack\Tracking( self::$prefix, $http );
 
 		add_action( 'woocommerce_add_to_cart', [ $this, 'track_add_to_cart' ], 10, 6 );
+		add_action( 'wp_enqueue_scripts', [ $this, 'maybe_enqueue_tracks_scripts' ] );
 	}
 
 	/**
@@ -87,5 +88,19 @@ class Platform_Checkout_Tracker {
 		// TODO: Don't track if jetpack_tos_agreed flag is not present.
 
 		return true;
+	}
+
+	/**
+	 * Enqueue Ajax tracking scripts if the store is trackable.
+	 *
+	 * @return void
+	 */
+	public function maybe_enqueue_tracks_scripts() {
+		// Don't enqueue tracking scripts if we cannot track.
+		if ( ! $this->should_enable_tracking() ) {
+			return;
+		}
+
+		self::$tracking->enqueue_tracks_scripts( true );
 	}
 }
