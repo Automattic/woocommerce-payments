@@ -102,6 +102,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Introduce `wcpay_payment_request_payment_method_title_suffix` filter. Allows plugins to replace "(WooCommerce Payments)" suffix on title of payment request buttons.
 * Tweak - only add admin notes on non-AJAX requests
 * Add - Add endpoint to retrieve a file content via API.
+* Add - Add a preview of uploaded logo and icon on terminal card reader receipt settings page.
 
 = 3.7.0 - 2022-02-10 =
 * Add - Filter by currency in disputes list
