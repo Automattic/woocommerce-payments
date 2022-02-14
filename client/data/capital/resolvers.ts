@@ -20,7 +20,7 @@ import { ApiError, Summary } from './types';
  * Retrieve all deposits' overviews from the deposits API.
  */
 export function* getActiveLoanSummary(): unknown {
-	const path = `${ NAMESPACE }/capital/active-loan-summary`;
+	const path = `${ NAMESPACE }/capital/active_loan_summary`;
 
 	try {
 		const result = yield apiFetch( { path } );
