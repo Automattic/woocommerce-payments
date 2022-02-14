@@ -15,7 +15,7 @@ step() {
 }
 
 redirect_output() {
-	if [ -z "$DEBUG" ]; then
+	if [[ -z "$DEBUG" && $DEBUG = true ]]; then
         "$@" > /dev/null
     else
         "$@"
