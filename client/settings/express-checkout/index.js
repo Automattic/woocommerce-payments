@@ -4,7 +4,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useSelect } from '@wordpress/data';
 import { Card, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
@@ -15,14 +14,13 @@ import { getPaymentMethodSettingsUrl } from '../../utils';
 import {
 	usePaymentRequestEnabledSettings,
 	usePlatformCheckoutEnabledSettings,
-	WCPAY_STORE_NAME,
 } from 'wcpay/data';
 import CardBody from '../card-body';
 import PaymentRequestIcon from '../../gateway-icons/payment-request';
 import WooIcon from '../../gateway-icons/woo';
 import './style.scss';
 
-const ExpressCheckout = () => {
+const ExpressCheckout = ( { isPlatformCheckoutFeatureFlagEnabled } ) => {
 	const [
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
@@ -33,15 +31,11 @@ const ExpressCheckout = () => {
 		updateIsPlatformCheckoutEnabled,
 	] = usePlatformCheckoutEnabledSettings();
 
-	const { getIsPlatformCheckoutFeatureFlagEnabled } = useSelect(
-		WCPAY_STORE_NAME
-	);
-
 	return (
 		<Card className="express-checkouts">
 			<CardBody size={ 0 }>
 				<ul className="express-checkouts-list">
-					{ getIsPlatformCheckoutFeatureFlagEnabled() && (
+					{ isPlatformCheckoutFeatureFlagEnabled && (
 						<li className="express-checkout has-icon-border">
 							<div className="express-checkout__checkbox">
 								<CheckboxControl

@@ -84,6 +84,7 @@ const TransactionsAndDepositsDescription = () => (
 const SettingsManager = () => {
 	const {
 		featureFlags: {
+			platformCheckout: isPlatformCheckoutFeatureFlagEnabled,
 			upeSettingsPreview: isUPESettingsPreviewEnabled,
 			upe: isUpeEnabled,
 		},
@@ -114,7 +115,11 @@ const SettingsManager = () => {
 			<SettingsSection Description={ ExpressCheckoutDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<ExpressCheckout />
+						<ExpressCheckout
+							isPlatformCheckoutFeatureFlagEnabled={
+								isPlatformCheckoutFeatureFlagEnabled
+							}
+						/>
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>

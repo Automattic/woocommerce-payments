@@ -15,15 +15,6 @@ import {
 	usePlatformCheckoutEnabledSettings,
 } from 'wcpay/data';
 
-// Mock platform checkout feature flag.
-jest.mock( '@wordpress/data', () => ( {
-	useSelect: jest.fn().mockImplementation( () => ( {
-		getIsPlatformCheckoutFeatureFlagEnabled: jest
-			.fn()
-			.mockReturnValue( true ),
-	} ) ),
-} ) );
-
 jest.mock( 'wcpay/data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
 	usePlatformCheckoutEnabledSettings: jest.fn(),
@@ -66,7 +57,9 @@ describe( 'ExpressCheckout', () => {
 			)
 		);
 
-		render( <ExpressCheckout /> );
+		render(
+			<ExpressCheckout isPlatformCheckoutFeatureFlagEnabled={ true } />
+		);
 
 		const [
 			platformCheckoutCheckbox,
@@ -85,7 +78,9 @@ describe( 'ExpressCheckout', () => {
 	} );
 
 	it( 'has the correct href links to the express checkout settings pages', async () => {
-		render( <ExpressCheckout /> );
+		render(
+			<ExpressCheckout isPlatformCheckoutFeatureFlagEnabled={ true } />
+		);
 
 		const [
 			platformCheckoutCheckbox,
