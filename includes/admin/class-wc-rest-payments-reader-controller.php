@@ -260,7 +260,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 
 			/* Collect merchant settings */
 			$settings = [
-				'branding_logo' => ( '' !== $branding_logo ) ? $this->api_client->get_file_contents( $branding_logo, false ) : [],
+				'branding_logo' => ( ! empty( $branding_logo ) ) ? $this->api_client->get_file_contents( $branding_logo, false ) : [],
 				'business_name' => $this->wcpay_gateway->get_option( 'account_business_name' ),
 				'support_info'  => [
 					'address' => $this->wcpay_gateway->get_option( 'account_business_support_address' ),

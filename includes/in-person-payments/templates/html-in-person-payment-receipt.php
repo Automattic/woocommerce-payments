@@ -98,7 +98,7 @@ function format_price_helper( array $product, string $currency ): string {
 			margin: 20px auto;
 		}
 
-		#credentials {
+		#powered_by {
 			font-size: 7px;
 			padding-top: 5px;
 		}
@@ -108,7 +108,7 @@ function format_price_helper( array $product, string $currency ): string {
 <body>
 	<div class="receipt">
 		<div class="receipt__header">
-			<?php if ( isset( $branding_logo['file_content'] ) && isset( $branding_logo['content_type'] ) && '' !== $branding_logo['file_content'] && '' !== $branding_logo['content_type'] ) { ?>
+			<?php if ( ! empty( $branding_logo['content_type'] ) ) { ?>
 				<img class="branding-logo" src="data:<?php echo esc_html( $branding_logo['content_type'] ); ?>;base64,<?php echo esc_html( $branding_logo['file_content'] ); ?>" alt="<?php echo esc_html( $business_name ); ?>"/>
 			<?php } ?>
 			<h1 class="title"><?php echo esc_html( $business_name ); ?></h1>
@@ -196,7 +196,7 @@ function format_price_helper( array $product, string $currency ): string {
 			<p id="application-preferred-name"><?php echo sprintf( '%s: %s', esc_html__( 'Application name', 'woocommerce-payments' ), esc_html( ucfirst( $receipt['application_preferred_name'] ) ) ); ?></p>
 			<p id="dedicated-file-name"><?php echo sprintf( '%s: %s', esc_html__( 'AID', 'woocommerce-payments' ), esc_html( ucfirst( $receipt['dedicated_file_name'] ) ) ); ?></p>
 			<p id="account_type"><?php echo sprintf( '%s: %s', esc_html__( 'Account Type', 'woocommerce-payments' ), esc_html( ucfirst( $receipt['account_type'] ) ) ); ?></p>
-			<p id="credentials"><?php echo esc_html__( 'Powered by WooCommerce', 'woocommerce-payments' ); ?></p>
+			<p id="powered_by"><?php echo esc_html__( 'Powered by WooCommerce', 'woocommerce-payments' ); ?></p>
 		</div>
 	</div>
 </body>
