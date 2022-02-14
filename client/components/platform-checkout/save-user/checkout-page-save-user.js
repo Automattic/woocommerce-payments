@@ -29,7 +29,7 @@ const CheckoutPageSaveUser = () => {
 	}
 
 	return (
-		<div className="platform-checkout-save-new-user-container">
+		<>
 			<h3>Remember your details?</h3>
 			<CheckboxControl
 				checked={ isSaveDetailsChecked }
@@ -54,7 +54,7 @@ const CheckoutPageSaveUser = () => {
 					<div className="line"></div>
 				</div>
 			) }
-		</div>
+		</>
 	);
 };
 

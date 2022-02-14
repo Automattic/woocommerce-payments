@@ -115,6 +115,15 @@ jobs:
           # pick anything before the first dash as a version number
           VERSION=$(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG)
 
+          # Gather changelog entries
+          if [[ $VERSION == "3.8.0" ]];
+          then
+            # Add "--amend" for the cut-off version before moving to Jetpack Changelogger completely.
+            ./vendor/bin/changelogger write --use-version="$VERSION" --release-date=unreleased --amend
+          else
+            ./vendor/bin/changelogger write --use-version="$VERSION" --release-date=unreleased
+          fi
+
           echo "Picking up changelog for version '$VERSION'..."
           if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]];
           then

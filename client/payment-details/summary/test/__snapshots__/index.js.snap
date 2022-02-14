@@ -37,6 +37,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
               Fee: 
               $-0.70
             </p>
+            
             <p>
               Net: 
               $19.30 USD
@@ -233,6 +234,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
               Fee: 
               $-0.70
             </p>
+            
             <p>
               Net: 
               $19.30 USD
@@ -459,6 +461,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
               Fee: 
               $-0.70
             </p>
+            
             <p>
               Net: 
               $-0.70 USD
@@ -654,6 +657,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
                 Fee amount
               </span>
             </p>
+            
             <p>
               <span
                 aria-busy="true"
@@ -738,6 +742,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
               Fee: 
               $-0.70
             </p>
+            
             <p>
               Net: 
               $7.30 USD
@@ -937,6 +942,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
               Fee: 
               $-15.70
             </p>
+            
             <p>
               Net: 
               $-10.70 USD
