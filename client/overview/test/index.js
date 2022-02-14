@@ -164,4 +164,59 @@ describe( 'Overview page', () => {
 			} )
 		).toBeNull();
 	} );
+
+	it( 'Does not display loan summary when Capital is disabled', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			accountStatus: {
+				...global.wcpaySettings.accountStatus,
+				hasActiveLoan: true,
+			},
+			featureFlags: {},
+		};
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector( '.wcpay-loan-summary-header' )
+		).toBeNull();
+	} );
+
+	it( 'Does not display loan summary when there is no loan', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			accountStatus: {
+				...global.wcpaySettings.accountStatus,
+				hasActiveLoan: false,
+			},
+			featureFlags: {
+				capital: true,
+			},
+		};
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector( '.wcpay-loan-summary-header' )
+		).toBeNull();
+	} );
+
+	it( 'Displays loan summary when there is a loan and Capital is enabled', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			accountStatus: {
+				...global.wcpaySettings.accountStatus,
+				hasActiveLoan: true,
+			},
+			featureFlags: {
+				capital: true,
+			},
+		};
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector( '.wcpay-loan-summary-header' )
+		).toBeVisible();
+	} );
 } );

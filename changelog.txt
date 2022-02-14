@@ -2,6 +2,7 @@
 
 = 3.8.0 - 20xx-xx-xx =
 * Add - Introduce `wcpay_payment_request_payment_method_title_suffix` filter. Allows plugins to replace "(WooCommerce Payments)" suffix on title of payment request buttons.
+* Tweak - only add admin notes on non-AJAX requests
 
 = 3.7.0 - 2022-02-10 =
 * Add - Filter by currency in disputes list

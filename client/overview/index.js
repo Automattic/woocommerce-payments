@@ -14,6 +14,7 @@ import { __ } from '@wordpress/i18n';
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
+import ActiveLoanSummary from 'components/active-loan-summary';
 import DepositsInformation from 'components/deposits-information';
 import ErrorBoundary from 'components/error-boundary';
 import TaskList from './task-list';
@@ -130,6 +131,14 @@ const OverviewPage = () => {
 					accountFees={ activeAccountFees }
 				/>
 			</ErrorBoundary>
+
+			{ wcpaySettings.featureFlags.capital &&
+				wcpaySettings.accountStatus.hasActiveLoan && (
+					<ErrorBoundary>
+						<ActiveLoanSummary />
+					</ErrorBoundary>
+				) }
+
 			{ !! accountOverviewTaskList &&
 				0 < tasks.length &&
 				! isLoading &&
