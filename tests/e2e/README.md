@@ -11,13 +11,10 @@ For running E2E tests locally, create a new file named `local.env` under `tests/
 <p>
 
 ```
-WCP_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
+# WooCommerce Payments Dev Tools Repo
 WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git'
 
-// Use WCPay server local instance (Default: true). To use live server, set value to false
-E2E_USE_LOCAL_SERVER=true
-
-// Optional to see verbose output
+# Optional to see verbose output
 DEBUG=true
 ```
 
@@ -37,7 +34,13 @@ It is possible to use the live server or a local docker instance of WCPay server
 By default, the local E2E environment is configured to use WCPay local server instance. Add the following env variables to configure the local server instance.
 
 ```
-// Stripe account data. Need to support level 3 data to run tests successfully.
+# Use WCPay server local instance (Default: true). To use live server, set value to false
+E2E_USE_LOCAL_SERVER=true
+
+# WooCommerce Payments Server Repo
+WCP_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
+
+# Stripe account data. Need to support level 3 data to run tests successfully.
 E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY=<stripe pk_test_xxx>
 E2E_WCPAY_STRIPE_TEST_SECRET_KEY=<stripe sk_test_xxx>
 E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY=<stripe whsec_xxx>
@@ -57,6 +60,9 @@ Set the value of `E2E_USE_LOCAL_SERVER` to `false` to enable live server.
 
 Once you have the blog id & tokens, add the following ev variables to your `local.env`.
 ```
+# Use WCPay server local instance (Default: true). To use live server, set value to false
+E2E_USE_LOCAL_SERVER=false
+
 E2E_BLOG_TOKEN='<jetpack_blog_token>'
 E2E_USER_TOKEN='<jetpack_user_token>'
 E2E_BLOG_ID='<blog_id>'
