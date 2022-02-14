@@ -129,6 +129,59 @@ const getDepositTimelineItem = (
 };
 
 /**
+ * Creates a timeline item about a financing paydown
+ *
+ * @param {Object} event An event affecting the deposit
+ * @param {string} formattedAmount Formatted amount string
+ * @param {Array} body Any extra subitems that should be included as item body
+ *
+ * @return {Object} Deposit timeline item
+ */
+const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
+	let headline = '';
+	if ( event.deposit ) {
+		headline = sprintf(
+			// translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
+			__(
+				'%1$s was subtracted from your <a>%2$s deposit</a>.',
+				'woocommerce-payments'
+			),
+			formattedAmount,
+			dateI18n(
+				'M j, Y',
+				moment( event.deposit.arrival_date * 1000 ).toISOString()
+			)
+		);
+
+		const depositUrl = getAdminUrl( {
+			page: 'wc-admin',
+			path: '/payments/deposits/details',
+			id: event.deposit.id,
+		} );
+
+		headline = createInterpolateElement( headline, {
+			// eslint-disable-next-line jsx-a11y/anchor-has-content
+			a: <Link href={ depositUrl } />,
+		} );
+	} else {
+		headline = sprintf(
+			__(
+				'%s will be subtracted from a future deposit.',
+				'woocommerce-payments'
+			),
+			formattedAmount
+		);
+	}
+
+	return {
+		date: new Date( event.date * 1000 ),
+		icon: getIcon( 'minus' ),
+		headline,
+		body,
+	};
+};
+
+/**
  * Formats the main item for the event
  *
  * @param {Object} event Event object
@@ -734,6 +787,37 @@ const mapEventToTimelineItems = ( event ) => {
 					'is-success'
 				),
 			];
+		case 'financing_paydown':
+			return wcpaySettings.featureFlags.capital
+				? [
+						getFinancingPaydownTimelineItem(
+							event,
+							formatCurrency( Math.abs( event.amount ) ),
+							[
+								createInterpolateElement(
+									sprintf(
+										__(
+											'Loan repayment: <a>Loan %s</a>',
+											'woocommerce-payments'
+										),
+										event.loan_id
+									),
+									{
+										a: (
+											<Link
+												href={
+													'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions' +
+													'&type=charge&filter=advanced&loan_id_is=' +
+													event.loan_id
+												}
+											/>
+										),
+									}
+								),
+							]
+						),
+				  ]
+				: [];
 		default:
 			return [];
 	}

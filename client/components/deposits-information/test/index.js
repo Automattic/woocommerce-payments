@@ -9,10 +9,10 @@ import { merge } from 'lodash';
  * Internal dependencies
  */
 import DepositsInformation from '..';
-import { useAllDeposistsOverviews, useInstantDeposit } from 'wcpay/data';
+import { useAllDepositsOverviews, useInstantDeposit } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
-	useAllDeposistsOverviews: jest.fn(),
+	useAllDepositsOverviews: jest.fn(),
 	useInstantDeposit: jest.fn(),
 } ) );
 
@@ -56,7 +56,7 @@ const createMockCurrency = ( currencyCode, extra = {} ) =>
 	);
 
 const mockOverviews = ( currencies = null, account = null ) => {
-	return useAllDeposistsOverviews.mockReturnValue( {
+	return useAllDepositsOverviews.mockReturnValue( {
 		overviews: {
 			currencies: currencies,
 			account: account,
