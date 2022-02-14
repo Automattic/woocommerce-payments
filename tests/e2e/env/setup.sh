@@ -149,7 +149,13 @@ cli wp rewrite structure '/%postname%/'
 echo "Installing and activating Gutenberg & WordPress Importer..."
 cli wp plugin install gutenberg wordpress-importer --activate
 
-if [[ -n "$WC_VERSION" ]]; then
+# Install WooCommerce
+if [[ -n "$WC_VERSION" && $WC_VERSION != 'latest' ]]; then
+	# If specified version is 'beta', fetch the latest beta version from WordPress.org API
+	if [[ $WC_VERSION == 'beta' ]]; then
+		WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | with_entries(select(.key|match("beta";"i"))) | keys[-1]' --sort-keys)
+	fi
+
 	echo "Installing and activating specified WooCommerce version..."
 	cli wp plugin install woocommerce --version="$WC_VERSION" --activate
 else
