@@ -848,6 +848,11 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public static function add_woo_admin_notes() {
+		// Do not try to add notes on ajax requests to improve their performance.
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			NoteMultiCurrencyAvailable::possibly_add_note();
 		}

@@ -57,9 +57,6 @@ declare namespace AccountOverview {
 	}
 }
 
-declare module 'wcpay/data' {
-	function useAllDeposistsOverviews(): AccountOverview.OverviewsResponse;
-}
 declare module 'gridicons' {
 	type GridiconParams = {
 		icon: string;
