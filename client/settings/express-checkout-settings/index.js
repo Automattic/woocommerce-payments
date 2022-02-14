@@ -17,8 +17,8 @@ import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import PaymentRequestIcon from '../../gateway-icons/payment-request';
-import WooIcon from '../../gateway-icons/woo';
+import PaymentRequestIcon from 'wcpay/gateway-icons/payment-request';
+import WooIcon from 'wcpay/gateway-icons/woo';
 
 const methods = {
 	platform_checkout: {
