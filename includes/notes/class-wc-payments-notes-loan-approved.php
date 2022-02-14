@@ -135,11 +135,10 @@ class WC_Payments_Notes_Loan_Approved {
 		// If the loan amount isn't set correctly, don't push the note, and delete the old one if exists.
 		if ( empty( self::$loan_info )
 			|| ! is_array( self::$loan_info )
-			|| ! isset( self::$loan_info['details']['advance_amount'] )
+			|| ! isset( self::$loan_info['details']['advance_amount'], self::$loan_info['details']['advance_paid_out_at'] )
 			|| ! is_numeric( self::$loan_info['details']['advance_amount'] )
 		) {
 			// There's something wrong with the loan information, delete the existing note, just in case of wrong information.
-			self::possibly_delete_note();
 			return false;
 		}
 		return true;
@@ -167,7 +166,7 @@ class WC_Payments_Notes_Loan_Approved {
 						return false;
 					}
 				}
-				// The note isn't for the current loan. Delete it.
+				// The note isn't for the current loan. Delete it to create a new one.
 				$data_store->delete( $note );
 			}
 		}

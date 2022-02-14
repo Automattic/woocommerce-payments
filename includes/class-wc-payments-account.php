@@ -1135,16 +1135,16 @@ class WC_Payments_Account {
 	 * @return void
 	 */
 	public function handle_loan_approved_inbox_note( $account ) {
-		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
 
-		// If the account cache is empty, delete the note, just in case.
+		// If the account cache is empty, don't try to create an inbox note.
 		if ( empty( $account ) ) {
-			WC_Payments_Notes_Loan_Approved::possibly_delete_note();
 			return;
 		}
 
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
+
 		// Delete the loan note when the user doesn't have an active loan.
-		if ( ! $this->has_active_loan( $account ) ) {
+		if ( ! isset( $account['capital']['has_active_loan'] ) || ! $account['capital']['has_active_loan'] ) {
 			WC_Payments_Notes_Loan_Approved::possibly_delete_note();
 			return;
 		}
@@ -1208,47 +1208,6 @@ class WC_Payments_Account {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Checks to see if the account has an active loan.
-	 *
-	 * @param array $account The account data.
-	 *
-	 * @return bool
-	 */
-	private function has_active_loan( array $account ): bool {
-		if ( empty( $account['capital'] ) ) {
-			return false;
-		}
-
-		return true === $account['capital']['has_active_loan'];
-	}
-
-	/**
-	 * Returns the active loan ID from the account loan data.
-	 *
-	 * @param   array $account  The account data.
-	 *
-	 * @return  string
-	 */
-	private function get_active_loan_id( array $account ): string {
-		$active_loans = array_filter(
-			$account['capital']['loans'],
-			function( $loan_info ) {
-				return 0 < strpos( $loan_info, '|active' );
-			}
-		);
-
-		if ( empty( $active_loans ) ) {
-			return '';
-		}
-
-		$matches = [];
-		preg_match( '/(\w+)|active/', $active_loans[0], $matches );
-		$active_loan_id = $matches[1] ?? '';
-
-		return $active_loan_id;
 	}
 
 	/**
