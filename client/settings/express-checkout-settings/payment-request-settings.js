@@ -12,17 +12,15 @@ import { loadStripe } from '@stripe/stripe-js';
 /**
  * Internal dependencies
  */
-import {
-	usePaymentRequestButtonType,
-	usePaymentRequestButtonSize,
-	usePaymentRequestButtonTheme,
-} from '../../data';
 import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
 import { getPaymentRequestData } from '../../payment-request/utils';
 import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
+	usePaymentRequestButtonType,
+	usePaymentRequestButtonSize,
+	usePaymentRequestButtonTheme,
 } from 'wcpay/data';
 
 const makeButtonSizeText = ( string ) =>
