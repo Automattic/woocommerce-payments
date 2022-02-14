@@ -417,7 +417,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 				'test_publishable_key'     => 'pk_live_',
 				'has_pending_requirements' => true,
 				'current_deadline'         => 12345,
-				'is_live'                  => false,
+				'is_live'                  => true,
 				'status'                   => 'rejected.tos',
 			]
 		);
@@ -433,7 +433,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 				'test_publishable_key'     => 'pk_live_',
 				'has_pending_requirements' => true,
 				'current_deadline'         => 12345,
-				'is_live'                  => false,
+				'is_live'                  => true,
 				'status'                   => 'complete',
 			]
 		);
