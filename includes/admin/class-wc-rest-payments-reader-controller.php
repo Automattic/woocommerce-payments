@@ -23,7 +23,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 				'brand'   => 'Sample',
 				'last4'   => '0000',
 				'receipt' => [
-					'application_preferred_name' => 'Sample',
+					'application_preferred_name' => 'Sample, Receipts preview',
 					'dedicated_file_name'        => '0000',
 					'account_type'               => 'Sample',
 				],
