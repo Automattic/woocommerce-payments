@@ -134,7 +134,6 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
-
 	}
 
 	/**
@@ -344,13 +343,13 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Creates settings data to be used on the printed receipt preview. Defaults to stored settings if one parameter is not provided.
 	 *
-	 * @param  array $params Array of params to use to create the settings.
+	 * @param  array $receipt_settings Array of settings to use to create the receipt preview.
 	 * @return array
 	 */
-	private function create_print_preview_receipt_settings_data( array $params ): array {
-		$support_address = empty( $params['accountBusinessSupportAddress'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_address' ) : $params['accountBusinessSupportAddress'];
+	private function create_print_preview_receipt_settings_data( array $receipt_settings ): array {
+		$support_address = empty( $receipt_settings['accountBusinessSupportAddress'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_address' ) : $receipt_settings['accountBusinessSupportAddress'];
 		return [
-			'business_name' => empty( $params['accountBusinessName'] ) ? $this->wcpay_gateway->get_option( 'account_business_name' ) : $params['accountBusinessName'],
+			'business_name' => empty( $receipt_settings['accountBusinessName'] ) ? $this->wcpay_gateway->get_option( 'account_business_name' ) : $receipt_settings['accountBusinessName'],
 			'support_info'  => [
 				'address' => [
 					'line1'       => $support_address['line1'],
@@ -360,8 +359,8 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 					'postal_code' => $support_address['postal_code'],
 					'country'     => $support_address['country'],
 				],
-				'phone'   => empty( $params['accountBusinessSupportPhone'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_phone' ) : $params['accountBusinessSupportPhone'],
-				'email'   => empty( $params['accountBusinessSupportEmail'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_email' ) : $params['accountBusinessSupportEmail'],
+				'phone'   => empty( $receipt_settings['accountBusinessSupportPhone'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_phone' ) : $receipt_settings['accountBusinessSupportPhone'],
+				'email'   => empty( $receipt_settings['accountBusinessSupportEmail'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_email' ) : $receipt_settings['accountBusinessSupportEmail'],
 			],
 		];
 	}

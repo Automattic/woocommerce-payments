@@ -14,14 +14,3 @@ export interface FetchReceiptPayload {
 	accountBusinessSupportEmail: string;
 	accountBusinessSupportPhone: string;
 }
-
-declare module 'wcpay/data' {
-	function useAccountBusinessName(): [ string ];
-	function useAccountBusinessSupportAddress(): [
-		AccountBusinessSupportAddress
-	];
-	function useAccountBusinessSupportEmail(): [ string ];
-	function useAccountBusinessSupportPhone(): [ string ];
-	function useAccountBusinessSupportPhone(): [ string ];
-	function useAccountBusinessURL(): [ string ];
-}
