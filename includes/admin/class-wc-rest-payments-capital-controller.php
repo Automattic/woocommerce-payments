@@ -25,7 +25,7 @@ class WC_REST_Payments_Capital_Controller extends WC_Payments_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/active-loan-summary',
+			'/' . $this->rest_base . '/active_loan_summary',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_active_loan_summary' ],

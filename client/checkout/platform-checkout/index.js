@@ -23,6 +23,8 @@ const renderSaveUserSection = () => {
 	)?.[ 0 ];
 	const buttonParent = placeOrderButton?.parentNode;
 	const checkoutPageSaveUserContainer = document.createElement( 'div' );
+	checkoutPageSaveUserContainer.className =
+		'platform-checkout-save-new-user-container';
 
 	if ( placeOrderButton && buttonParent ) {
 		buttonParent.insertBefore(
