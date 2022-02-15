@@ -13,5 +13,6 @@ declare const wcpaySettings: {
 	};
 	connect: {
 		country: string;
+		availableStates: Array< Record< string, string > >;
 	};
 };
