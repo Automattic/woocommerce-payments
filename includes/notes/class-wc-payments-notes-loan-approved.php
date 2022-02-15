@@ -29,13 +29,6 @@ class WC_Payments_Notes_Loan_Approved {
 	const NOTE_ACTION = 'view-capital-page';
 
 	/**
-	 * The account service instance.
-	 *
-	 * @var WC_Payments_Account
-	 */
-	private static $account;
-
-	/**
 	 * Loan information to build the message.
 	 *
 	 * @var array
@@ -65,7 +58,13 @@ class WC_Payments_Notes_Loan_Approved {
 				wc_price( self::$loan_info['details']['advance_amount'] / 100 )
 			)
 		);
-		$note->set_content_data( (object) [] );
+
+		$note->set_content_data(
+			(object) [
+				'advance_amount'      => self::$loan_info['details']['advance_amount'],
+				'advance_paid_out_at' => self::$loan_info['details']['advance_paid_out_at'],
+			]
+		);
 		$note->set_type( $note_class::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );
 		$note->set_source( 'woocommerce-payments' );
@@ -75,12 +74,6 @@ class WC_Payments_Notes_Loan_Approved {
 			admin_url( 'admin.php?page=wc-admin&path=/payments/loans' ),
 			$note_class::E_WC_ADMIN_NOTE_UNACTIONED,
 			true
-		);
-		$note->set_content_data(
-			(object) [
-				'advance_amount'      => self::$loan_info['details']['advance_amount'],
-				'advance_paid_out_at' => self::$loan_info['details']['advance_paid_out_at'],
-			]
 		);
 
 		return $note;
@@ -92,18 +85,6 @@ class WC_Payments_Notes_Loan_Approved {
 	 * @throws NotesUnavailableException Throws exception when notes are unavailable.
 	 */
 	public static function possibly_add_note() {
-		// Show this notice only if capital feature is enabled.
-		if ( false === WC_Payments_Features::is_capital_enabled() ) {
-			return;
-		}
-
-		// if the user hasn't connected their account (or the account got disconnected) do not add the note.
-		if ( self::$account instanceof WC_Payments_Account ) {
-			if ( ! self::$account->is_stripe_connected() ) {
-				return;
-			}
-		}
-
 		// If we have the correct information, proceed. Otherwise, delete existing notes.
 		if ( ! self::validate_inputs() ) {
 			// We don't have the necessary info to create a note, do nothing.
@@ -172,15 +153,6 @@ class WC_Payments_Notes_Loan_Approved {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Sets the account service instance reference on the class.
-	 *
-	 * @param WC_Payments_Account $account account service instance.
-	 */
-	public static function set_account( WC_Payments_Account $account ) {
-		self::$account = $account;
 	}
 
 	/**

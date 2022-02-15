@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Admin\Notes\Notes;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -815,6 +816,95 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		// So we make sure the two are different.
 		$this->assertNotSame( $first_note, $second_note );
+	}
+
+	public function loan_approved_no_action_account_states() {
+		return [
+			[ [] ],
+			[ [ 'capital' => [] ] ],
+			[ [ 'capital' => [ 'has_active_loan' => false ] ] ],
+		];
+	}
+
+	/**
+	 * @dataProvider loan_approved_no_action_account_states
+	 */
+	public function test_handle_loan_approved_inbox_note_not_created( $account ) {
+		$this->enable_capital_feature();
+		$this->wcpay_account->handle_loan_approved_inbox_note( $account );
+		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
+		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+	}
+
+	public function get_cached_account_loan_data() {
+		return [
+			'capital' => [ 'has_active_loan' => true ],
+		];
+	}
+
+	public function enable_capital_feature() {
+		update_option( '_wcpay_feature_capital', '1' );
+	}
+
+	public function disable_capital_feature() {
+		update_option( '_wcpay_feature_capital', '0' );
+	}
+
+	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_throws_exception() {
+		$this->enable_capital_feature();
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_active_loan_summary' )
+			->willThrowException( new API_Exception( 'test_exception', 0, 400 ) );
+		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
+		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
+		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+	}
+
+	public function test_handle_loan_approved_inbox_note_not_created_when_capital_is_disabled() {
+		$this->disable_capital_feature();
+		$this->mock_api_client->expects( $this->never() )->method( 'get_active_loan_summary' );
+		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
+		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
+		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+	}
+
+	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_returns_invalid_data() {
+		$this->enable_capital_feature();
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_active_loan_summary' )
+			->willReturn( [ 'test' ] );
+		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
+		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
+		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+	}
+
+	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data() {
+		$this->enable_capital_feature();
+		$advance_amount = 12345;
+		$time           = time();
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_active_loan_summary' )
+			->willReturn(
+				[
+					'details' => [
+						'advance_amount'      => $advance_amount,
+						'advance_paid_out_at' => $time,
+					],
+				]
+			);
+		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
+		$note_id    = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
+		$data_store = WC_Data_Store::load( 'admin-note' );
+		$notes      = $data_store->get_notes_with_name( $note_id );
+		$this->assertCount( 1, $notes );
+		$note      = Notes::get_note( $notes[0] );
+		$note_data = (array) $note->get_content_data();
+		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
+		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
+		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
 	}
 
 	/**

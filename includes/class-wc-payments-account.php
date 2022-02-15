@@ -1135,13 +1135,17 @@ class WC_Payments_Account {
 	 * @return void
 	 */
 	public function handle_loan_approved_inbox_note( $account ) {
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
+
+		// Add this notice only if capital feature is enabled.
+		if ( false === WC_Payments_Features::is_capital_enabled() ) {
+			return;
+		}
 
 		// If the account cache is empty, don't try to create an inbox note.
 		if ( empty( $account ) ) {
 			return;
 		}
-
-		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
 
 		// Delete the loan note when the user doesn't have an active loan.
 		if ( ! isset( $account['capital']['has_active_loan'] ) || ! $account['capital']['has_active_loan'] ) {
@@ -1150,10 +1154,12 @@ class WC_Payments_Account {
 		}
 
 		// Get the loan summary.
-		$loan_details = $this->payments_api_client->get_active_loan_summary();
+		try {
+			$loan_details = $this->payments_api_client->get_active_loan_summary();
+		} catch ( API_Exception $ex ) {
+			return;
+		}
 
-		// Try to save the note.
-		WC_Payments_Notes_Loan_Approved::set_account( $this );
 		WC_Payments_Notes_Loan_Approved::set_loan_details( $loan_details );
 		WC_Payments_Notes_Loan_Approved::possibly_add_note();
 	}
