@@ -62,16 +62,6 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/payments/file',
-			[
-				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'upload_evidence' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-			]
-		);
-
-		register_rest_route(
-			$this->namespace,
 			'/' . $this->rest_base . '/(?P<dispute_id>\w+)/close',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -133,15 +123,6 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 				$params['metadata'],
 			]
 		);
-	}
-
-	/**
-	 * Create file and respond with file object via API.
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 */
-	public function upload_evidence( $request ) {
-		return $this->forward_request( 'upload_evidence', [ $request ] );
 	}
 
 	/**
