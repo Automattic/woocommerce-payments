@@ -14,6 +14,7 @@ import {
 	usePaymentRequestEnabledSettings,
 	usePlatformCheckoutEnabledSettings,
 } from 'wcpay/data';
+import WCPaySettingsContext from '../../wcpay-settings-context';
 
 jest.mock( 'wcpay/data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
@@ -57,8 +58,12 @@ describe( 'ExpressCheckout', () => {
 			)
 		);
 
+		const context = { featureFlags: { platformCheckout: true } };
+
 		render(
-			<ExpressCheckout isPlatformCheckoutFeatureFlagEnabled={ true } />
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
 		);
 
 		const [
@@ -78,8 +83,12 @@ describe( 'ExpressCheckout', () => {
 	} );
 
 	it( 'has the correct href links to the express checkout settings pages', async () => {
+		const context = { featureFlags: { platformCheckout: true } };
+
 		render(
-			<ExpressCheckout isPlatformCheckoutFeatureFlagEnabled={ true } />
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
 		);
 
 		const [
