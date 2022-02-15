@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use Automattic\WooCommerce\Admin\Notes\Notes;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -930,7 +929,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$data_store = WC_Data_Store::load( 'admin-note' );
 		$notes      = $data_store->get_notes_with_name( $note_id );
 		$this->assertCount( 1, $notes );
-		$note      = Notes::get_note( $notes[0] );
+		$note      = $data_store->get_note( $notes[0] );
 		$note_data = (array) $note->get_content_data();
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
