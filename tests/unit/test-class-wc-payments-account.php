@@ -830,6 +830,12 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	 * @dataProvider loan_approved_no_action_account_states
 	 */
 	public function test_handle_loan_approved_inbox_note_not_created( $account ) {
+
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
 		$this->enable_capital_feature();
 		$this->wcpay_account->handle_loan_approved_inbox_note( $account );
 		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
@@ -851,6 +857,12 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_throws_exception() {
+
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
 		$this->enable_capital_feature();
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -862,6 +874,12 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_capital_is_disabled() {
+
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
 		$this->disable_capital_feature();
 		$this->mock_api_client->expects( $this->never() )->method( 'get_active_loan_summary' );
 		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
@@ -870,6 +888,12 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_returns_invalid_data() {
+
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
 		$this->enable_capital_feature();
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -881,6 +905,12 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data() {
+
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
 		$this->enable_capital_feature();
 		$advance_amount = 12345;
 		$time           = time();
