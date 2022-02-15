@@ -55,7 +55,7 @@ class WC_Payments_Notes_Loan_Approved {
 					'Congratulations! Your capital loan has been approved and %1$s was deposited in to the bank account linked to WooCommerce Payments. You\'ll automatically repay the loan, plus a flat fee, through a fixed percentage of each WooCommerce Payments transaction.',
 					'woocommerce-payments'
 				),
-				wc_price( self::$loan_info['details']['advance_amount'] / 100 )
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( self::$loan_info['details']['advance_amount'] / 100 ) )
 			)
 		);
 
@@ -97,7 +97,7 @@ class WC_Payments_Notes_Loan_Approved {
 		}
 
 		// Check if the current loan info matches with the received one. If it matches, don't add a new one.
-		if ( ! self::check_loan_paid_out_date_is_different() ) {
+		if ( ! self::check_attached_loan_data_is_different() ) {
 			// Loan paid out dates are the same, do nothing.
 			return;
 		}
@@ -134,7 +134,7 @@ class WC_Payments_Notes_Loan_Approved {
 	 *
 	 * @return bool
 	 */
-	private static function check_loan_paid_out_date_is_different() {
+	private static function check_attached_loan_data_is_different() {
 		// Check if the note already exists, and the stored paid out date matches our current loan before adding a new one.
 		$data_store = Notes::load_data_store();
 		$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
