@@ -18,7 +18,6 @@
 * Fix - Checkout with block-based themes.
 * Add - UPE payment method - EPS.
 * Fix - Replace uses of is_ajax() with wp_doing_ajax() in subscriptions-core.
-* Fix - Redundant payment intents for UPE.
 * Update - Improve handling of session data.
 * Fix - When changing the payment method, make sure the subscription total returns $0 when `subscriptions-core` is loaded after the `woocommerce_loaded` action hook.
 
