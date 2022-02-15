@@ -202,7 +202,7 @@ class Payment_Information {
 		Payment_Initiated_By $payment_initiated_by = null,
 		Payment_Capture_Type $manual_capture = null
 	): Payment_Information {
-		$payment_method = apply_filters( 'wc_payments_payment_method', self::get_payment_method_from_request( $request ) );
+		$payment_method = self::get_payment_method_from_request( $request );
 		$token          = self::get_token_from_request( $request );
 
 		return new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture );
@@ -253,8 +253,6 @@ class Payment_Information {
 		if ( ! $token || $payment_method !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
 			return null;
 		}
-
-		$token->set_token( apply_filters( 'wc_payments_payment_method', $token->get_token() ) );
 
 		return $token;
 	}
