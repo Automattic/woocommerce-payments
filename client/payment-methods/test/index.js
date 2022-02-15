@@ -42,6 +42,7 @@ describe( 'PaymentMethods', () => {
 			'p24',
 			'sepa_debit',
 			'sofort',
+			'us_bank_account',
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: upeCapabilityStatuses.ACTIVE,
@@ -53,6 +54,7 @@ describe( 'PaymentMethods', () => {
 			p24_payments: upeCapabilityStatuses.ACTIVE,
 			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
 			sofort_payments: upeCapabilityStatuses.ACTIVE,
+			us_bank_account: upeCapabilityStatuses.ACTIVE,
 		} );
 		global.wcpaySettings = {
 			accountEmail: 'admin@example.com',
@@ -89,6 +91,9 @@ describe( 'PaymentMethods', () => {
 			name: 'Przelewy24 (P24)',
 		} );
 		const ideal = screen.getByRole( 'checkbox', { name: 'iDEAL' } );
+		const usBankAccount = screen.getByRole( 'checkbox', {
+			name: 'US Bank Account Debit (ACH)',
+		} );
 
 		const allMethods = [
 			becs,
@@ -100,6 +105,7 @@ describe( 'PaymentMethods', () => {
 			p24,
 			cc,
 			sepa,
+			usBankAccount,
 		];
 		const enabledMethods = [ cc, sepa ];
 
@@ -131,6 +137,7 @@ describe( 'PaymentMethods', () => {
 				'Przelewy24 (P24)',
 				'SEPA Direct Debit',
 				'Sofort',
+				'US Bank Account Debit (ACH)',
 			],
 			updateEnabledMethodsMock,
 		] );
@@ -170,6 +177,10 @@ describe( 'PaymentMethods', () => {
 			sofort_payments: {
 				status: upeCapabilityStatuses.PENDING_VERIFICATION,
 				requirements: [ 'individual.identification_number' ],
+			},
+			us_bank_account: {
+				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
 			},
 		} );
 

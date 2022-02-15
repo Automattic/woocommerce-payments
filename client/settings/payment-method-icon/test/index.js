@@ -53,6 +53,13 @@ describe( 'PaymentMethodIcon', () => {
 		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
 	} );
 
+	test( 'renders ACH payment method icon', () => {
+		const { container } = render(
+			<PaymentMethodIcon name="us_bank_account" />
+		);
+		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+	} );
+
 	test( 'renders BECS payment method icon and label', () => {
 		render( <PaymentMethodIcon name="au_becs_debit" showName /> );
 
@@ -106,6 +113,13 @@ describe( 'PaymentMethodIcon', () => {
 		render( <PaymentMethodIcon name="ideal" showName /> );
 
 		const label = screen.queryByText( 'iDEAL' );
+		expect( label ).toBeInTheDocument();
+	} );
+
+	test( 'renders ACH payment method icon and label', () => {
+		render( <PaymentMethodIcon name="us_bank_account" showName /> );
+
+		const label = screen.queryByText( 'US Bank Account Debit (ACH)' );
 		expect( label ).toBeInTheDocument();
 	} );
 
