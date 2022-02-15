@@ -858,7 +858,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_throws_exception() {
 
-		if ( ! version_compare( WC_VERSION, '5.5.0', '>=' ) ) {
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
 		}
@@ -875,7 +875,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_capital_is_disabled() {
 
-		if ( ! version_compare( WC_VERSION, '5.5.0', '>=' ) ) {
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
 		}
@@ -889,7 +889,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_returns_invalid_data() {
 
-		if ( ! version_compare( WC_VERSION, '5.5.0', '>=' ) ) {
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
 		}
@@ -906,7 +906,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data() {
 
-		if ( ! version_compare( WC_VERSION, '5.5.0', '>=' ) ) {
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
 		}

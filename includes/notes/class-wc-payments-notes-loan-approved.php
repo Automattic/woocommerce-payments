@@ -83,13 +83,6 @@ class WC_Payments_Notes_Loan_Approved {
 	 * Add the note if it passes predefined conditions.
 	 */
 	public static function possibly_add_note() {
-
-		// Check if we're on a supported platform before calling this function (WC >= 5.5.0).
-		// The compatibility requirement is for the Note class having a data store attached.
-		if ( ! version_compare( WC_VERSION, '5.5.0', '>=' ) ) {
-			return;
-		}
-
 		// If we have the correct information, proceed. Otherwise, delete existing notes.
 		if ( ! self::validate_inputs() ) {
 			// We don't have the necessary info to create a note, do nothing.
