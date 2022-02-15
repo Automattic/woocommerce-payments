@@ -53,9 +53,7 @@ exports[`FileUploadControl renders default file upload control 1`] = `
             type="file"
           />
         </div>
-        <span
-          class="upload-message"
-        />
+        
       </div>
     </div>
   </div>
@@ -116,11 +114,11 @@ exports[`FileUploadControl renders disabled state 1`] = `
             type="file"
           />
         </div>
-        <span
-          class="upload-message"
-        >
-          file.pdf
-        </span>
+        <img
+          alt="file.pdf"
+          src="/wp-json/wc/v3/payments/file/file.pdf?as_account=0"
+          style="max-width: 100px;"
+        />
       </div>
     </div>
   </div>
@@ -181,9 +179,7 @@ exports[`FileUploadControl renders loading state 1`] = `
             type="file"
           />
         </div>
-        <span
-          class="upload-message"
-        />
+        
       </div>
     </div>
   </div>
@@ -243,11 +239,11 @@ exports[`FileUploadControl renders upload done state 1`] = `
             type="file"
           />
         </div>
-        <span
-          class="upload-message"
-        >
-          file.pdf
-        </span>
+        <img
+          alt="file.pdf"
+          src="/wp-json/wc/v3/payments/file/file.pdf?as_account=0"
+          style="max-width: 100px;"
+        />
         <button
           aria-label="Remove file"
           class="components-button delete-uploaded-file-button has-icon"

@@ -12,7 +12,7 @@ import {
 	PAYMENT_METHOD_NAME_SOFORT,
 } from '../constants.js';
 import { getConfig } from 'utils/checkout';
-import { handlePlatformCheckoutEmailInput } from '../utils/platform-checkout';
+import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
 
@@ -559,6 +559,6 @@ jQuery( function ( $ ) {
 	} );
 
 	if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
-		handlePlatformCheckoutEmailInput( '#billing_email' );
+		handlePlatformCheckoutEmailInput( '#billing_email', api );
 	}
 } );

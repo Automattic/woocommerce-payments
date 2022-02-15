@@ -762,6 +762,31 @@ Array [
 ]
 `;
 
+exports[`mapTimelineEvents single currency events formats financing paydown events 1`] = `
+Array [
+  Object {
+    "body": Array [
+      <React.Fragment>
+        Loan repayment: 
+        <Link
+          href="/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=flxln_1KOKzdR4ByxURRrFX9A65q40"
+          type="wc-admin"
+        >
+          Loan flxln_1KOKzdR4ByxURRrFX9A65q40
+        </Link>
+      </React.Fragment>,
+    ],
+    "date": 2022-02-01T12:04:04.000Z,
+    "headline": "$110.00 will be subtracted from a future deposit.",
+    "icon": <t
+      className=""
+      icon="minus"
+      size={24}
+    />,
+  },
+]
+`;
+
 exports[`mapTimelineEvents single currency events formats full_refund events 1`] = `
 Array [
   Object {

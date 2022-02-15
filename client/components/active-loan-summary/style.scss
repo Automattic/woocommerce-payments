@@ -1,0 +1,52 @@
+.wcpay-loan-summary-header {
+	.components-button.is-link {
+		text-decoration: none;
+	}
+}
+
+.wcpay-loan-summary-body {
+	padding: 0 !important;
+}
+
+.wcpay-loan-summary-row {
+	& + & {
+		border-top: 1px solid $gray-200;
+	}
+
+	&.is-bottom-row {
+		padding-top: 24px;
+		padding-bottom: 24px;
+
+		.wcpay-loan-summary-block {
+			padding-top: 0;
+			padding-bottom: 0;
+		}
+	}
+}
+
+.wcpay-loan-summary-block {
+	padding: 24px 16px;
+	margin-right: 0;
+
+	& + & {
+		border-left: 1px solid $gray-200;
+	}
+
+	&__title {
+		font-size: 12px;
+		line-height: 16px;
+		color: $gray-600;
+	}
+
+	&__value {
+		color: $gray-900;
+		font-size: 13px;
+		line-height: 20px;
+		padding: 8px 0;
+
+		.is-big {
+			font-size: 20px;
+			line-height: 27px;
+		}
+	}
+}

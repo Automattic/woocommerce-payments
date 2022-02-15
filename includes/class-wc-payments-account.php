@@ -185,6 +185,7 @@ class WC_Payments_Account {
 			'currentDeadline' => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
 			'pastDue'         => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
 			'accountLink'     => $this->get_login_url(),
+			'hasActiveLoan'   => $account['capital']['has_active_loan'] ?? false,
 		];
 	}
 
@@ -306,6 +307,20 @@ class WC_Payments_Account {
 	public function get_fees() {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['fees'] ) ? $account['fees'] : [];
+	}
+
+	/**
+	 * Gets the current account loan data for rendering on the settings pages.
+	 *
+	 * @return array loan data.
+	 */
+	public function get_capital() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['capital'] ) && ! empty( $account['capital'] ) ? $account['capital'] : [
+			'loans'             => [],
+			'has_active_loan'   => false,
+			'has_previous_loan' => false,
+		];
 	}
 
 	/**
