@@ -2783,7 +2783,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function bundle_level3_data_from_items( array $items ) {
 		// Total cost is the sum of each product cost * quantity.
-		$total_cost = array_sum(
+		$items_count = count( $items );
+		$total_cost  = array_sum(
 			array_map(
 				function( $cost, $qty ) {
 					return $cost * $qty;
@@ -2795,7 +2796,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		return (object) [
 			'product_code'        => (string) substr( uniqid(), 0, 26 ),
-			'product_description' => 'Bundle of products',
+			'product_description' => "{$items_count} more items",
 			'unit_cost'           => $total_cost,
 			'quantity'            => 1,
 			'tax_amount'          => array_sum( array_column( $items, 'tax_amount' ) ),

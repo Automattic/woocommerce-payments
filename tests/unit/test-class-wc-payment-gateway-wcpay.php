@@ -832,6 +832,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		];
 
 		$bundle_data = $this->wcpay_gateway->bundle_level3_data_from_items( $items );
+
+		$this->assertEquals( $bundle_data->product_description, '2 more items' );
+
 		// total_unit_cost = sum( unit_cost * quantity ).
 		$this->assertEquals( $bundle_data->unit_cost, 19000 );
 
