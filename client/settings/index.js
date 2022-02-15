@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom';
  */
 import enqueueFraudScripts from 'fraud-scripts';
 import SettingsManager from 'settings/settings-manager';
-import PaymentMethodSettings from './payment-method-settings';
+import ExpressCheckoutSettings from './express-checkout-settings';
 import WCPaySettingsContext from './wcpay-settings-context';
 import ErrorBoundary from '../components/error-boundary';
 
@@ -31,16 +31,16 @@ if ( settingsContainer ) {
 	);
 }
 
-const paymentMethodSettingsContainer = document.getElementById(
-	'wcpay-payment-method-settings-container'
+const expressCheckoutSettingsContainer = document.getElementById(
+	'wcpay-express-checkout-settings-container'
 );
-if ( paymentMethodSettingsContainer ) {
-	const methodId = paymentMethodSettingsContainer.dataset.methodId;
+if ( expressCheckoutSettingsContainer ) {
+	const methodId = expressCheckoutSettingsContainer.dataset.methodId;
 
 	ReactDOM.render(
 		<ErrorBoundary>
-			<PaymentMethodSettings methodId={ methodId } />
+			<ExpressCheckoutSettings methodId={ methodId } />
 		</ErrorBoundary>,
-		paymentMethodSettingsContainer
+		expressCheckoutSettingsContainer
 	);
 }
