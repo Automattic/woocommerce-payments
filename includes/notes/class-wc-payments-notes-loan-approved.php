@@ -83,6 +83,13 @@ class WC_Payments_Notes_Loan_Approved {
 	 * Add the note if it passes predefined conditions.
 	 */
 	public static function possibly_add_note() {
+
+		// Check if we're on a supported platform before calling this function (WC >= 5.5.0).
+		// The compatibility requirement is for the Note class having a data store attached.
+		if ( ! version_compare( WC_VERSION, '5.5.0', '>=' ) ) {
+			return;
+		}
+
 		// If we have the correct information, proceed. Otherwise, delete existing notes.
 		if ( ! self::validate_inputs() ) {
 			// We don't have the necessary info to create a note, do nothing.
@@ -128,11 +135,6 @@ class WC_Payments_Notes_Loan_Approved {
 	 * @return bool
 	 */
 	private static function check_loan_paid_out_date_is_different() {
-		// Check if we're on a supported platform before calling this function.
-		if ( ! class_exists( Notes::class ) || ! method_exists( Notes::class, 'load_data_store' ) ) {
-			return false;
-		}
-
 		// Check if the note already exists, and the stored paid out date matches our current loan before adding a new one.
 		$data_store = Notes::load_data_store();
 		$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
