@@ -134,12 +134,13 @@ class WC_Payments_Notes_Loan_Approved {
 		 *
 		 * @var WC_Admin_Note|Note
 		 */
-		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
-		$data_store = WC_Data_Store::load( 'admin-note' );
-		$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
+		$note_class  = WC_Payment_Woo_Compat_Utils::get_note_class();
+		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
+		$data_store  = WC_Data_Store::load( 'admin-note' );
+		$note_ids    = $data_store->get_notes_with_name( self::NOTE_NAME );
 
 		if ( ! empty( $note_ids ) ) {
-			$note = $data_store->get_note( $note_ids[0] );
+			$note = $notes_class::get_note( $note_ids[0] );
 			if ( $note instanceof $note_class ) {
 				$content_data = (array) $note->get_content_data();
 				if ( isset( $content_data['advance_paid_out_at'], $content_data['advance_amount'] ) ) {
