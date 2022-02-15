@@ -128,6 +128,11 @@ class WC_Payments_Notes_Loan_Approved {
 	 * @return bool
 	 */
 	private static function check_loan_paid_out_date_is_different() {
+		// Check if we're on a supported platform before calling this function.
+		if ( ! class_exists( Notes::class ) || ! method_exists( Notes::class, 'load_data_store' ) ) {
+			return false;
+		}
+
 		// Check if the note already exists, and the stored paid out date matches our current loan before adding a new one.
 		$data_store = Notes::load_data_store();
 		$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
