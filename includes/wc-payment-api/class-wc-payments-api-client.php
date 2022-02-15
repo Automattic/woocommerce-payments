@@ -822,14 +822,14 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Upload evidence and return file object.
+	 * Upload file and return file object.
 	 *
 	 * @param WP_REST_Request $request request object received.
 	 *
 	 * @return array file object.
 	 * @throws API_Exception - If request throws.
 	 */
-	public function upload_evidence( $request ) {
+	public function upload_file( $request ) {
 		$purpose     = $request->get_param( 'purpose' );
 		$file_params = $request->get_file_params();
 		$file_name   = $file_params['file']['name'];
@@ -870,6 +870,32 @@ class WC_Payments_API_Client {
 				$e->get_http_code()
 			);
 		}
+	}
+
+	/**
+	 * Retrieve a file content via API.
+	 *
+	 * @param string $file_id - API file id.
+	 * @param bool   $as_account - add the current account to header request.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function get_file_contents( string $file_id, bool $as_account = true ) : array {
+		return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id . '/contents', self::GET );
+	}
+
+	/**
+	 * Retrieve a file details via API.
+	 *
+	 * @param string $file_id - API file id.
+	 * @param bool   $as_account - add the current account to header request.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function get_file( string $file_id, bool $as_account = true ) : array {
+		return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id, self::GET );
 	}
 
 	/**

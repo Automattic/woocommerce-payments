@@ -214,6 +214,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-experimental-abtest.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
+		include_once __DIR__ . '/class-wc-payments-file-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -615,6 +616,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client, self::$card_gateway, self::$in_person_payments_receipts_service );
 		$charges_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-files-controller.php';
+		$files_controller = new WC_REST_Payments_Files_Controller( self::$api_client );
+		$files_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-capital-controller.php';
 		$capital_controller = new WC_REST_Payments_Capital_Controller( self::$api_client );
