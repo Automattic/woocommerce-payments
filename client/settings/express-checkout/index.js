@@ -6,6 +6,7 @@
 import { __ } from '@wordpress/i18n';
 import { Card, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
+import { useContext } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -19,8 +20,9 @@ import CardBody from '../card-body';
 import PaymentRequestIcon from '../../gateway-icons/payment-request';
 import WooIcon from '../../gateway-icons/woo';
 import './style.scss';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
-const ExpressCheckout = ( { isPlatformCheckoutFeatureFlagEnabled } ) => {
+const ExpressCheckout = () => {
 	const [
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
@@ -30,6 +32,12 @@ const ExpressCheckout = ( { isPlatformCheckoutFeatureFlagEnabled } ) => {
 		isPlatformCheckoutEnabled,
 		updateIsPlatformCheckoutEnabled,
 	] = usePlatformCheckoutEnabledSettings();
+
+	const {
+		featureFlags: {
+			platformCheckout: isPlatformCheckoutFeatureFlagEnabled,
+		},
+	} = useContext( WCPaySettingsContext );
 
 	return (
 		<Card className="express-checkouts">
