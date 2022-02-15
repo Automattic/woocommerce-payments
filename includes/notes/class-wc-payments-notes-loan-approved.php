@@ -43,7 +43,7 @@ class WC_Payments_Notes_Loan_Approved {
 		/**
 		 * Note object
 		 *
-		 * @var Note
+		 * @var WC_Admin_Note|Note
 		 */
 		$note = new $note_class();
 
@@ -129,12 +129,18 @@ class WC_Payments_Notes_Loan_Approved {
 	 */
 	private static function check_attached_loan_data_is_different() {
 		// Check if the note already exists, and the stored paid out date matches our current loan before adding a new one.
+		/**
+		 * Note class.
+		 *
+		 * @var WC_Admin_Note|Note
+		 */
+		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
 		$data_store = WC_Data_Store::load( 'admin-note' );
 		$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
 
 		if ( ! empty( $note_ids ) ) {
 			$note = $data_store->get_note( $note_ids[0] );
-			if ( $note instanceof Note ) {
+			if ( $note instanceof $note_class ) {
 				$content_data = (array) $note->get_content_data();
 				if ( isset( $content_data['advance_paid_out_at'], $content_data['advance_amount'] ) ) {
 					if ( self::$loan_info['details']['advance_paid_out_at'] === $content_data['advance_paid_out_at'] &&
