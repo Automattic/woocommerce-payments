@@ -81,8 +81,6 @@ class WC_Payments_Notes_Loan_Approved {
 
 	/**
 	 * Add the note if it passes predefined conditions.
-	 *
-	 * @throws NotesUnavailableException Throws exception when notes are unavailable.
 	 */
 	public static function possibly_add_note() {
 		// If we have the correct information, proceed. Otherwise, delete existing notes.
@@ -110,7 +108,6 @@ class WC_Payments_Notes_Loan_Approved {
 	 * Check if the stored loan info has all the values we need.
 	 *
 	 * @return bool
-	 * @throws NotesUnavailableException Throws exception when notes are unavailable.
 	 */
 	private static function validate_inputs() {
 		// If the loan amount isn't set correctly, don't push the note, and delete the old one if exists.
@@ -129,7 +126,6 @@ class WC_Payments_Notes_Loan_Approved {
 	 * Checks the saved paid out date on the previous note and deletes it if it doesn't match, to create a new one.
 	 *
 	 * @return bool
-	 * @throws NotesUnavailableException Throws exception when notes are unavailable.
 	 */
 	private static function check_loan_paid_out_date_is_different() {
 		// Check if the note already exists, and the stored paid out date matches our current loan before adding a new one.
