@@ -40,12 +40,7 @@ class WC_Payments_Notes_Loan_Approved {
 	 */
 	public static function get_note() {
 		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
-		/**
-		 * Note object
-		 *
-		 * @var WC_Admin_Note|Note
-		 */
-		$note = new $note_class();
+		$note       = new $note_class();
 
 		$note->set_title( __( 'Your capital loan has been approved!', 'woocommerce-payments' ) );
 		$note->set_content(
@@ -130,9 +125,10 @@ class WC_Payments_Notes_Loan_Approved {
 	private static function check_attached_loan_data_is_different() {
 		// Check if the note already exists, and the stored paid out date matches our current loan before adding a new one.
 		/**
-		 * Note class.
+		 * Note class. Suppressed psalm error for WC<=5.5.0 because it uses an old class for the note.
 		 *
 		 * @var WC_Admin_Note|Note
+		 * @psalm-suppress UndefinedDocblockClass
 		 */
 		$note_class  = WC_Payment_Woo_Compat_Utils::get_note_class();
 		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
