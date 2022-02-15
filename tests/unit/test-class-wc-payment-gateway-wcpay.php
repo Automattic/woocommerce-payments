@@ -853,7 +853,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$mock_order   = $this->mock_level_3_order( '98012', true, 1, 500 );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
-		$this->assertEquals( count( $level_3_data['line_items'] ), 1 );
+		$this->assertEquals( count( $level_3_data['line_items'] ), 200 );
+
+		$bundled_data = end( $level_3_data['line_items'] );
+
+		$this->assertEquals( $bundled_data->product_description, '301 more items' );
 	}
 
 	public function test_capture_charge_success() {

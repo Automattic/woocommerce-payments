@@ -2129,8 +2129,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$items_to_send = array_map( $process_item, $order_items );
 
 		if ( count( $items_to_send ) > 200 ) {
-			// Stripe API max items is 200. If more than that is present, bundle everything in one "product bundle".
-			$items_to_send = [ $this->bundle_level3_data_from_items( $items_to_send ) ];
+			// If more than 200 items are present, bundle the last ones in a single item.
+			$items_to_send = array_merge(
+				array_slice( $items_to_send, 0, 199 ),
+				[ $this->bundle_level3_data_from_items( array_slice( $items_to_send, 200 ) ) ]
+			);
 		}
 
 		$level3_data = [
