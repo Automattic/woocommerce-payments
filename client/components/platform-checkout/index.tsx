@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useEffect } from 'react';
+import React from 'react';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from 'interpolate-components';
@@ -26,29 +26,6 @@ interface platformCheckoutButtonProps {
 
 const PlatformCheckout = ( { isStatic, api }: platformCheckoutButtonProps ) => {
 	const [ isLoading, setIsLoading ] = useState( false );
-
-	const listener = useCallback(
-		( e ) => {
-			if ( getConfig( 'platformCheckoutHost' ) !== e.origin ) {
-				return;
-			}
-
-			if ( 'redirect_to_platform_checkout' === e.data.action ) {
-				api.initPlatformCheckout().then( ( response ) => {
-					window.location = response.url;
-				} );
-			}
-		},
-		[ api ]
-	);
-
-	useEffect( () => {
-		window.addEventListener( 'message', listener );
-
-		return () => {
-			window.removeEventListener( 'message', listener );
-		};
-	}, [ listener ] );
 
 	const buttonContent = (
 		<span>
@@ -88,14 +65,6 @@ const PlatformCheckout = ( { isStatic, api }: platformCheckoutButtonProps ) => {
 			>
 				{ buttonContent }
 			</button>
-			<iframe
-				title={ __(
-					'Platform checkout SMS code verification',
-					'woocommerce-payments'
-				) }
-				className="platform-checkout-sms-otp-iframe"
-				src={ `${ getConfig( 'platformCheckoutHost' ) }/sms-otp/` }
-			/>
 		</>
 	);
 };

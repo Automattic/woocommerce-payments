@@ -118,6 +118,7 @@ const webpackConfig = {
 			requestToExternal( request ) {
 				switch ( request ) {
 					case '@wordpress/components':
+					case 'lodash':
 						return null;
 					case '@woocommerce/components':
 						return [ 'wc', 'components' ];
@@ -134,6 +135,7 @@ const webpackConfig = {
 			requestToHandle( request ) {
 				switch ( request ) {
 					case '@wordpress/components':
+					case 'lodash':
 						return null;
 					case '@woocommerce/components':
 						return 'wc-components';
