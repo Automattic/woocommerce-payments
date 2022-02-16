@@ -39,8 +39,6 @@ class Platform_Checkout_Tracker extends Tracking {
 		parent::__construct( self::$prefix, $http );
 		add_action( 'wp_ajax_nopriv_jetpack_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'maybe_enqueue_tracks_scripts' ] );
-		add_action( 'woocommerce_add_to_cart', [ $this, 'track_add_to_cart' ], 10, 6 );
-
 	}
 
 	/**
