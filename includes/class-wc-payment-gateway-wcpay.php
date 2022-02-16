@@ -586,7 +586,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! empty( $_GET['method'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			?>
 			<div
-				id="wcpay-payment-method-settings-container"
+				id="wcpay-express-checkout-settings-container"
 				data-method-id="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>"
 			></div>
 		<?php else : ?>
@@ -619,7 +619,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'locale'                    => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isUPEEnabled'              => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'       => $this->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled' => WC_Payments_Features::is_platform_checkout_enabled(),
+			'isPlatformCheckoutEnabled' => WC_Payments_Features::is_platform_checkout_enabled() && 'yes' === $this->get_option( 'platform_checkout', 'no' ),
+			'platformCheckoutHost'      => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
 		];
 	}
 
@@ -1149,7 +1150,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
 		}
 
-		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+		if ( empty( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+		}
 
 		return [
 			'result'   => 'success',

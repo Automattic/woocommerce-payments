@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "17133e98dfa354883b3b054937d1a0ab",
+    "content-hash": "2b9ceac62a5e5a60ef7b402cc89682ab",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -52,16 +52,16 @@
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v1.17.0",
+            "version": "v1.17.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "91d88714171476dbfc75743dfc2c48d84eb14364"
+                "reference": "b486f8be634cbb17847b0a8fb174c1669abc468c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/91d88714171476dbfc75743dfc2c48d84eb14364",
-                "reference": "91d88714171476dbfc75743dfc2c48d84eb14364",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/b486f8be634cbb17847b0a8fb174c1669abc468c",
+                "reference": "b486f8be634cbb17847b0a8fb174c1669abc468c",
                 "shasum": ""
             },
             "require": {
@@ -99,9 +99,9 @@
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.17.0"
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.17.4"
             },
-            "time": "2022-01-25T17:38:45+00:00"
+            "time": "2022-02-09T17:56:52+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
@@ -137,12 +137,12 @@
                 }
             },
             "autoload": {
-                "classmap": [
-                    "src/AutoloadGenerator.php"
-                ],
                 "psr-4": {
                     "Automattic\\Jetpack\\Autoloader\\": "src"
-                }
+                },
+                "classmap": [
+                    "src/AutoloadGenerator.php"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -156,16 +156,16 @@
         },
         {
             "name": "automattic/jetpack-config",
-            "version": "v1.6.0",
+            "version": "v1.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-config.git",
-                "reference": "1d46f87df9167a03960d708ce767d0efdfc855cf"
+                "reference": "34ed249c0be9f8c871c5a28411913983fb1ce7d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/1d46f87df9167a03960d708ce767d0efdfc855cf",
-                "reference": "1d46f87df9167a03960d708ce767d0efdfc855cf",
+                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/34ed249c0be9f8c871c5a28411913983fb1ce7d7",
+                "reference": "34ed249c0be9f8c871c5a28411913983fb1ce7d7",
                 "shasum": ""
             },
             "require-dev": {
@@ -194,9 +194,9 @@
             ],
             "description": "Jetpack configuration package that initializes other packages and configures Jetpack's functionality. Can be used as a base for all variants of Jetpack package usage.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-config/tree/v1.6.0"
+                "source": "https://github.com/Automattic/jetpack-config/tree/v1.6.1"
             },
-            "time": "2022-01-04T21:11:32+00:00"
+            "time": "2022-02-09T17:56:28+00:00"
         },
         {
             "name": "automattic/jetpack-connection",
@@ -503,6 +503,52 @@
             "time": "2022-01-04T21:11:42+00:00"
         },
         {
+            "name": "automattic/jetpack-password-checker",
+            "version": "v0.2.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Automattic/jetpack-password-checker.git",
+                "reference": "f3fe0234d7f196c64f9fadb87408c74502d4de9c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Automattic/jetpack-password-checker/zipball/f3fe0234d7f196c64f9fadb87408c74502d4de9c",
+                "reference": "f3fe0234d7f196c64f9fadb87408c74502d4de9c",
+                "shasum": ""
+            },
+            "require-dev": {
+                "automattic/jetpack-changelogger": "^3.0",
+                "automattic/wordbless": "@dev",
+                "yoast/phpunit-polyfills": "1.0.3"
+            },
+            "type": "jetpack-library",
+            "extra": {
+                "autotagger": true,
+                "mirror-repo": "Automattic/jetpack-password-checker",
+                "textdomain": "jetpack-password-checker",
+                "changelogger": {
+                    "link-template": "https://github.com/Automattic/jetpack-password-checker/compare/v${old}...v${new}"
+                },
+                "branch-alias": {
+                    "dev-master": "0.2.x-dev"
+                }
+            },
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "description": "Password Checker.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-password-checker/tree/v0.2.2"
+            },
+            "time": "2022-01-25T17:38:36+00:00"
+        },
+        {
             "name": "automattic/jetpack-redirect",
             "version": "v1.7.10",
             "source": {
@@ -642,6 +688,65 @@
                 "source": "https://github.com/Automattic/jetpack-status/tree/v1.10.0"
             },
             "time": "2022-01-25T17:38:42+00:00"
+        },
+        {
+            "name": "automattic/jetpack-sync",
+            "version": "v1.29.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Automattic/jetpack-sync.git",
+                "reference": "38816b4b303a5dc6f1eb00507aa3166b3e530fe0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Automattic/jetpack-sync/zipball/38816b4b303a5dc6f1eb00507aa3166b3e530fe0",
+                "reference": "38816b4b303a5dc6f1eb00507aa3166b3e530fe0",
+                "shasum": ""
+            },
+            "require": {
+                "automattic/jetpack-connection": "^1.36",
+                "automattic/jetpack-constants": "^1.6",
+                "automattic/jetpack-heartbeat": "^1.4",
+                "automattic/jetpack-identity-crisis": "^0.7",
+                "automattic/jetpack-options": "^1.14",
+                "automattic/jetpack-password-checker": "^0.2",
+                "automattic/jetpack-roles": "^1.4",
+                "automattic/jetpack-status": "^1.10"
+            },
+            "require-dev": {
+                "automattic/jetpack-changelogger": "^3.0",
+                "automattic/wordbless": "@dev",
+                "yoast/phpunit-polyfills": "1.0.3"
+            },
+            "type": "jetpack-library",
+            "extra": {
+                "autotagger": true,
+                "mirror-repo": "Automattic/jetpack-sync",
+                "textdomain": "jetpack-sync",
+                "version-constants": {
+                    "::PACKAGE_VERSION": "src/class-package-version.php"
+                },
+                "changelogger": {
+                    "link-template": "https://github.com/Automattic/jetpack-sync/compare/v${old}...v${new}"
+                },
+                "branch-alias": {
+                    "dev-master": "1.29.x-dev"
+                }
+            },
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "description": "Everything needed to allow syncing to the WP.com infrastructure.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-sync/tree/v1.29.2"
+            },
+            "time": "2022-02-09T17:57:03+00:00"
         },
         {
             "name": "automattic/jetpack-terms-of-service",
@@ -955,16 +1060,16 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "1.6.3",
+            "version": "1.6.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "68cbe478e0e21494b93fb0cf3a642157127fd13b"
+                "reference": "7cdddd4887080595bf08b6e48ba51514ce8c14f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/68cbe478e0e21494b93fb0cf3a642157127fd13b",
-                "reference": "68cbe478e0e21494b93fb0cf3a642157127fd13b",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/7cdddd4887080595bf08b6e48ba51514ce8c14f5",
+                "reference": "7cdddd4887080595bf08b6e48ba51514ce8c14f5",
                 "shasum": ""
             },
             "require": {
@@ -1006,10 +1111,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.6.3",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/1.6.4",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2022-02-07T04:58:57+00:00"
+            "time": "2022-02-10T00:09:23+00:00"
         }
     ],
     "packages-dev": [
@@ -1135,12 +1240,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Amp\\ByteStream\\": "lib"
-                },
                 "files": [
                     "lib/functions.php"
-                ]
+                ],
+                "psr-4": {
+                    "Amp\\ByteStream\\": "lib"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -1178,6 +1283,63 @@
                 }
             ],
             "time": "2021-03-30T17:13:30+00:00"
+        },
+        {
+            "name": "automattic/jetpack-changelogger",
+            "version": "v3.0.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Automattic/jetpack-changelogger.git",
+                "reference": "2de25bc819be8aa5bb0fc7ef4bbcf2bdb415116e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Automattic/jetpack-changelogger/zipball/2de25bc819be8aa5bb0fc7ef4bbcf2bdb415116e",
+                "reference": "2de25bc819be8aa5bb0fc7ef4bbcf2bdb415116e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6",
+                "symfony/console": "^3.4 | ^5.2",
+                "symfony/process": "^3.4 | ^5.2",
+                "wikimedia/at-ease": "^1.2 | ^2.0"
+            },
+            "require-dev": {
+                "wikimedia/testing-access-wrapper": "^1.0 | ^2.0",
+                "yoast/phpunit-polyfills": "1.0.3"
+            },
+            "bin": [
+                "bin/changelogger"
+            ],
+            "type": "project",
+            "extra": {
+                "autotagger": true,
+                "branch-alias": {
+                    "dev-master": "3.0.x-dev"
+                },
+                "mirror-repo": "Automattic/jetpack-changelogger",
+                "version-constants": {
+                    "::VERSION": "src/Application.php"
+                },
+                "changelogger": {
+                    "link-template": "https://github.com/Automattic/jetpack-changelogger/compare/${old}...${new}"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Automattic\\Jetpack\\Changelog\\": "lib",
+                    "Automattic\\Jetpack\\Changelogger\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "description": "Jetpack Changelogger tool. Allows for managing changelogs by dropping change files into a changelog directory with each PR.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-changelogger/tree/v3.0.7"
+            },
+            "time": "2022-02-09T17:56:23+00:00"
         },
         {
             "name": "composer/package-versions-deprecated",
@@ -1325,23 +1487,23 @@
         },
         {
             "name": "composer/semver",
-            "version": "3.2.7",
+            "version": "3.2.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "deac27056b57e46faf136fae7b449eeaa71661ee"
+                "reference": "a951f614bd64dcd26137bc9b7b2637ddcfc57649"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/deac27056b57e46faf136fae7b449eeaa71661ee",
-                "reference": "deac27056b57e46faf136fae7b449eeaa71661ee",
+                "url": "https://api.github.com/repos/composer/semver/zipball/a951f614bd64dcd26137bc9b7b2637ddcfc57649",
+                "reference": "a951f614bd64dcd26137bc9b7b2637ddcfc57649",
                 "shasum": ""
             },
             "require": {
                 "php": "^5.3.2 || ^7.0 || ^8.0"
             },
             "require-dev": {
-                "phpstan/phpstan": "^0.12.54",
+                "phpstan/phpstan": "^1.4",
                 "symfony/phpunit-bridge": "^4.2 || ^5"
             },
             "type": "library",
@@ -1386,7 +1548,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/semver/issues",
-                "source": "https://github.com/composer/semver/tree/3.2.7"
+                "source": "https://github.com/composer/semver/tree/3.2.9"
             },
             "funding": [
                 {
@@ -1402,7 +1564,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-01-04T09:57:54+00:00"
+            "time": "2022-02-04T13:58:43+00:00"
         },
         {
             "name": "composer/xdebug-handler",
@@ -1879,12 +2041,12 @@
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "DeepCopy\\": "src/DeepCopy/"
-                },
                 "files": [
                     "src/DeepCopy/deep_copy.php"
-                ]
+                ],
+                "psr-4": {
+                    "DeepCopy\\": "src/DeepCopy/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -4130,12 +4292,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Mbstring\\": ""
-                },
                 "files": [
                     "bootstrap.php"
-                ]
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Mbstring\\": ""
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -4178,6 +4340,67 @@
                 }
             ],
             "time": "2021-11-30T18:21:41+00:00"
+        },
+        {
+            "name": "symfony/process",
+            "version": "v3.4.47",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/process.git",
+                "reference": "b8648cf1d5af12a44a51d07ef9bf980921f15fca"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/process/zipball/b8648cf1d5af12a44a51d07ef9bf980921f15fca",
+                "reference": "b8648cf1d5af12a44a51d07ef9bf980921f15fca",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.5.9|>=7.0.8"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Process\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Process Component",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/process/tree/v3.4.47"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2020-10-24T10:57:07+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -4300,13 +4523,13 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Psalm\\": "src/Psalm/"
-                },
                 "files": [
                     "src/functions.php",
                     "src/spl_object_id.php"
-                ]
+                ],
+                "psr-4": {
+                    "Psalm\\": "src/Psalm/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -4432,6 +4655,61 @@
             },
             "abandoned": "symfony/filesystem",
             "time": "2015-12-17T08:42:14+00:00"
+        },
+        {
+            "name": "wikimedia/at-ease",
+            "version": "v2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wikimedia/at-ease.git",
+                "reference": "013ac61929797839c80a111a3f1a4710d8248e7a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wikimedia/at-ease/zipball/013ac61929797839c80a111a3f1a4710d8248e7a",
+                "reference": "013ac61929797839c80a111a3f1a4710d8248e7a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6.99"
+            },
+            "require-dev": {
+                "jakub-onderka/php-console-highlighter": "0.3.2",
+                "jakub-onderka/php-parallel-lint": "1.0.0",
+                "mediawiki/mediawiki-codesniffer": "22.0.0",
+                "mediawiki/minus-x": "0.3.1",
+                "ockcyp/covers-validator": "0.5.1 || 0.6.1",
+                "phpunit/phpunit": "4.8.36 || ^6.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Wikimedia\\AtEase\\": "src/Wikimedia/AtEase/"
+                },
+                "files": [
+                    "src/Wikimedia/Functions.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Tim Starling",
+                    "email": "tstarling@wikimedia.org"
+                },
+                {
+                    "name": "MediaWiki developers",
+                    "email": "wikitech-l@lists.wikimedia.org"
+                }
+            ],
+            "description": "Safe replacement to @ for suppressing warnings.",
+            "homepage": "https://www.mediawiki.org/wiki/at-ease",
+            "support": {
+                "source": "https://github.com/wikimedia/at-ease/tree/master"
+            },
+            "time": "2018-10-10T15:39:06+00:00"
         },
         {
             "name": "woocommerce/action-scheduler",

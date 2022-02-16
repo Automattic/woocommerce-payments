@@ -8,6 +8,7 @@ describe( 'mapTimelineEvents', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
+			featureFlags: { capital: false },
 			zeroDecimalCurrencies: [],
 		};
 	} );
@@ -325,6 +326,35 @@ describe( 'mapTimelineEvents', () => {
 					},
 				] )
 			).toMatchSnapshot();
+		} );
+
+		test( 'formats financing paydown events', () => {
+			global.wcpaySettings.featureFlags.capital = true;
+			expect(
+				mapTimelineEvents( [
+					{
+						type: 'financing_paydown',
+						date: 1643717044,
+						amount: -11000,
+						loan_id: 'flxln_1KOKzdR4ByxURRrFX9A65q40',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'hides financing paydown events when capital is disabled', () => {
+			global.wcpaySettings.featureFlags.capital = false;
+
+			expect(
+				mapTimelineEvents( [
+					{
+						type: 'financing_paydown',
+						date: 1643717044,
+						amount: -11000,
+						loan_id: 'flxln_1KOKzdR4ByxURRrFX9A65q40',
+					},
+				] )
+			).toEqual( [] );
 		} );
 	} );
 

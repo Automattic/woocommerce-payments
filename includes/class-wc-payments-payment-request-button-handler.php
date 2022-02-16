@@ -321,9 +321,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) ) {
 			if (
-				'Apple Pay (WooCommerce Payments)' === $method_title
-				|| 'Google Pay (WooCommerce Payments)' === $method_title
-				|| 'Payment Request (WooCommerce Payments)' === $method_title
+				strpos( $method_title, 'Apple Pay' ) === 0
+				|| strpos( $method_title, 'Google Pay' ) === 0
+				|| strpos( $method_title, 'Payment Request' ) === 0
 			) {
 				return $method_title;
 			}
@@ -373,16 +373,19 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$payment_request_type = wc_clean( wp_unslash( $_POST['payment_request_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
-		if ( 'apple_pay' === $payment_request_type ) {
-			$order->set_payment_method_title( 'Apple Pay (WooCommerce Payments)' );
-			$order->save();
-		} elseif ( 'google_pay' === $payment_request_type ) {
-			$order->set_payment_method_title( 'Google Pay (WooCommerce Payments)' );
-			$order->save();
-		} else {
-			$order->set_payment_method_title( 'Payment Request (WooCommerce Payments)' );
-			$order->save();
+		$payment_method_titles = [
+			'apple_pay'  => 'Apple Pay',
+			'google_pay' => 'Google Pay',
+		];
+
+		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooCommerce Payments' );
+		if ( ! empty( $suffix ) ) {
+			$suffix = " ($suffix)";
 		}
+
+		$payment_method_title = isset( $payment_method_titles[ $payment_request_type ] ) ? $payment_method_titles[ $payment_request_type ] : 'Payment Request';
+		$order->set_payment_method_title( $payment_method_title . $suffix );
+		$order->save();
 	}
 
 	/**

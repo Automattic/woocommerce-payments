@@ -23,11 +23,12 @@
       "php": "7.*",
       "ext-json": "*",
       "automattic/jetpack-connection": "1.36.0",
-      "automattic/jetpack-config": "1.6.0",
+      "automattic/jetpack-config": "1.6.1",
       "automattic/jetpack-autoloader": "2.10.11",
       "automattic/jetpack-identity-crisis": "0.7.0",
+      "automattic/jetpack-sync": "1.29.2",
       "myclabs/php-enum": "1.7.7",
-      "woocommerce/subscriptions-core": "1.6.3"
+      "woocommerce/subscriptions-core": "1.6.4"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
@@ -40,7 +41,8 @@
       "php-stubs/woocommerce-stubs": "5.9.0",
       "rregeer/phpunit-coverage-check": "0.3.1",
       "yoast/phpunit-polyfills": "1.0.1",
-      "cweagans/composer-patches": "1.7.1"
+      "cweagans/composer-patches": "1.7.1",
+      "automattic/jetpack-changelogger": "^3.0.7"
     },
     "scripts": {
       "test": [
@@ -69,7 +71,21 @@
         "phpunit/phpunit": {
           "PHP 8.1 compatibility: globals": "tests/phpunit-patches/globals-usage-compatibility.diff"
         }
-      }
+      },
+      "changelogger": {
+            "changelog": "changelog.txt",
+            "types": {
+                "add": "Add",
+                "fix": "Fix",
+                "update": "Update",
+                "dev": "Dev",
+                "tweak": "Tweak"
+            },
+            "formatter": {
+                "filename": "bin/class-wcpay-changelog-formatter.php"
+            },
+            "changes-dir": "changelog"
+        }
     },
     "autoload": {
       "psr-4": {

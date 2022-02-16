@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 3.6.1
+Stable tag: 3.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,11 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.7.0 - 2022-xx-xx =
+= 3.8.0 - 2022-xx-xx =
+* Add - Introduce `wcpay_payment_request_payment_method_title_suffix` filter. Allows plugins to replace "(WooCommerce Payments)" suffix on title of payment request buttons.
+* Tweak - only add admin notes on non-AJAX requests
+
+= 3.7.0 - 2022-02-10 =
 * Add - Filter by currency in disputes list
 * Add - Link to customer in disputes list
 * Update - Bump minimum required version of WordPress from 5.6 to 5.7.
@@ -112,11 +116,12 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Checkout with block-based themes.
 * Add - UPE payment method - EPS.
 * Fix - Replace uses of is_ajax() with wp_doing_ajax() in subscriptions-core.
-* Improve handling of session data.
+* Update - Improve handling of session data.
+* Fix - When changing the payment method, make sure the subscription total returns $0 when `subscriptions-core` is loaded after the `woocommerce_loaded` action hook.
 
 = 3.6.1 - 2022-01-27 =
 * Fix - Remove packages not compatible with PHP 7.0
-* Security update.
+* Update - Security update.
 
 = 3.6.0 - 2022-01-20 =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
@@ -182,7 +187,6 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Capture order-related metadata not captured by mobile app for in-person payment transactions.
 * Add - REST endpoint to print IPP receipts.
 * Add - Deposit Status to Transaction export.
-
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
@@ -386,13 +390,13 @@ Please note that our support for the checkout block is still experimental and th
 * Add - When setting WooCommerce Payments up, inform if merchant business country is not supported.
 * Update - Bump minimum supported version of WooCommerce from 4.8 to 5.2.
 * Add - Introduce advance filters on deposits page.
-* Update: Prefill OAuth flow with WC store country
+* Update - Prefill OAuth flow with WC store country.
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
 * Update - Use Site Language when rendering Stripe elements.
 * Update - Use blog ID for authenticating most of the requests.
-* Fix: Misaligned columns on Deposits page.
+* Fix - Misaligned columns on Deposits page.
 * Add - Tracking for returning from OAuth connection.
 * Fix - Transactions and deposits counts on the table summary are rendered as "undefined".
 * Update - Deposit overview details.
@@ -620,7 +624,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Add logging for OAuth initialization failures
 
 = 0.9.0 - 2020-04-08 =
-* Release for Public Beta
+* Add - Release for Public Beta.
 
 = 0.8.2 - 2020-03-10 =
 * Add - Dispute file evidence upload support
@@ -631,10 +635,10 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Improve Jetpack connection checking
 
 = 0.8.1 - 2020-02-25 =
-* Update link to test card documentation
+* Update - Link to test card documentation.
 
 = 0.8.0 - 2020-02-24 =
-* First beta release
+* Add - First beta release.
 
 = 0.7.0 - 2020-02-05 =
-* Alpha release
+* Add - Alpha release.
