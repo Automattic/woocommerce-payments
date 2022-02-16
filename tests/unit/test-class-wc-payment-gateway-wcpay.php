@@ -833,19 +833,19 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$bundle_data = $this->wcpay_gateway->bundle_level3_data_from_items( $items );
 
-		$this->assertEquals( $bundle_data->product_description, '2 more items' );
+		$this->assertSame( $bundle_data->product_description, '2 more items' );
 
 		// total_unit_cost = sum( unit_cost * quantity ).
-		$this->assertEquals( $bundle_data->unit_cost, 19000 );
+		$this->assertSame( $bundle_data->unit_cost, 19000 );
 
 		// quantity of the bundle = 1.
-		$this->assertEquals( $bundle_data->quantity, 1 );
+		$this->assertSame( $bundle_data->quantity, 1 );
 
 		// total_tax_amount = sum( tax_amount ).
-		$this->assertEquals( $bundle_data->tax_amount, 1200 );
+		$this->assertSame( $bundle_data->tax_amount, 1200 );
 
 		// total_discount_amount = sum( discount_amount ).
-		$this->assertEquals( $bundle_data->discount_amount, 700 );
+		$this->assertSame( $bundle_data->discount_amount, 700 );
 	}
 
 	public function test_level3_data_bundle_for_orders_with_more_than_200_items() {
@@ -853,11 +853,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$mock_order   = $this->mock_level_3_order( '98012', true, 1, 500 );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
-		$this->assertEquals( count( $level_3_data['line_items'] ), 200 );
+		$this->assertSame( count( $level_3_data['line_items'] ), 200 );
 
 		$bundled_data = end( $level_3_data['line_items'] );
 
-		$this->assertEquals( $bundled_data->product_description, '301 more items' );
+		$this->assertSame( $bundled_data->product_description, '301 more items' );
 	}
 
 	public function test_capture_charge_success() {
