@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use Automattic\WooCommerce\Admin\Notes\Notes;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -720,7 +719,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			'is_live'                  => true,
 			'statement_descriptor'     => 'WCPAY',
 		];
-
 		add_option(
 			WC_Payments_Account::ACCOUNT_OPTION,
 			[
@@ -751,7 +749,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_note() {
-
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
@@ -774,7 +771,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_note_not_eligible() {
-
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
@@ -792,7 +788,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_reminder() {
-
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
@@ -857,7 +852,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_throws_exception() {
-
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
@@ -874,7 +868,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_capital_is_disabled() {
-
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
@@ -888,7 +881,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_returns_invalid_data() {
-
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
@@ -905,15 +897,15 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data() {
-
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
 		}
 
 		$this->enable_capital_feature();
-		$advance_amount = 12345;
-		$time           = time();
+		$advance_amount           = 12345;
+		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100 ) ) ); // Match it with note content sanitization process.
+		$time                     = time();
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_active_loan_summary' )
@@ -937,6 +929,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
+		$this->assertContains( $formatted_advance_amount, $note->get_content() );
 	}
 
 	/**
