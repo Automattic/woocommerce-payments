@@ -27,9 +27,15 @@ class Platform_Checkout_Tracker extends Tracking {
 	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payments_Http_Interface $http    A class implementing WC_Payments_Http_Interface.
+	 * @param \WC_Payments_Http_Interface $http    A class implementing WC_Payments_Http_Interface.
 	 */
 	public function __construct( $http ) {
+		/**
+		 * Tracking class expects a Jetpac\Connection\Manager instance.
+		 * We pass in WC_Payments_Http_Interface which is a wrapper around the Connection Manager.
+		 *
+		 * @psalm-suppress InvalidArgument
+		 */
 		parent::__construct( self::$prefix, $http );
 		add_action( 'wp_ajax_nopriv_jetpack_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'maybe_enqueue_tracks_scripts' ] );
