@@ -1,6 +1,6 @@
 // hook for handling API calls to get and create platform checkout user.
 const usePlatformCheckoutUser = () => {
-	const isRegisteredUser = true;
+	const isRegisteredUser = false;
 
 	return {
 		isRegisteredUser,

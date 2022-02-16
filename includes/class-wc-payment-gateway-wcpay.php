@@ -948,7 +948,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information->must_save_payment_method_to_store();
 		}
 
-		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-platform-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( ! empty( $_POST['save_user_in_platform_checkout'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$payment_information->must_save_payment_method_to_platform();
 		}
 
