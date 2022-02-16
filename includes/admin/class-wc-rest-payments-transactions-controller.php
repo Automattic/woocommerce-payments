@@ -91,9 +91,9 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_transactions_export( $request ) {
-		$filters = $this->get_transactions_filters( $request );
-
-		return $this->forward_request( 'get_transactions_export', [ $filters ] );
+		$deposit_id = $request->get_param( 'deposit_id' );
+		$filters    = $this->get_transactions_filters( $request );
+		return $this->forward_request( 'get_transactions_export', [ $filters, $deposit_id ] );
 	}
 
 	/**
