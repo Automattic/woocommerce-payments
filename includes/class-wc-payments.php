@@ -307,10 +307,9 @@ class WC_Payments {
 			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
-		} else {
-			// only load on non-admin pages.
-			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
 		}
+
+		new Platform_Checkout_Tracker( self::get_wc_payments_http() );
 
 		// Load WCPay Subscriptions.
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
