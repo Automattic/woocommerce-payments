@@ -58,12 +58,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 			);
 		}
 
-		$args['blog_id'] = apply_filters(
-			'wc_payments_blog_id_for_api',
-			$this->get_blog_id(),
-			$args['url'],
-			$args['method']
-		);
+		$args['blog_id'] = $this->get_blog_id();
 
 		if ( $use_user_token ) {
 			$args['user_id'] = $this->connection_manager->get_connection_owner_id();
