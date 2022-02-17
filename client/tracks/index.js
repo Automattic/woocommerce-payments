@@ -28,6 +28,19 @@ function recordEvent( eventName, eventProperties ) {
 	} );
 }
 
+/**
+ * Records events from buyers.
+ *
+ * @param {string}  eventName       Name of the event.
+ * @param {Object?} eventProperties Event properties.
+ */
+function recordUserEvent( eventName, eventProperties ) {
+	if ( ! window.jpTracksAJAX ) {
+		return;
+	}
+	window.jpTracksAJAX.record_ajax_event( eventName, null, eventProperties );
+}
+
 const events = {
 	CONNECT_ACCOUNT_CLICKED: 'wcpay_connect_account_clicked',
 	CONNECT_ACCOUNT_VIEW: 'page_view',
@@ -56,5 +69,6 @@ const events = {
 export default {
 	isEnabled,
 	recordEvent,
+	recordUserEvent,
 	events,
 };
