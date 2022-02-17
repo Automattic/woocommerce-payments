@@ -95,6 +95,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$payment_gateway_features = [
 			'multiple_subscriptions',
 			'subscription_cancellation',
+			'subscription_payment_method_change_admin',
+			'subscription_payment_method_change_customer',
+			'subscription_payment_method_change',
 			'subscription_reactivation',
 			'subscription_suspension',
 			'subscriptions',
@@ -106,16 +109,13 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				[
 					'subscription_amount_changes',
 					'subscription_date_changes',
-					'subscription_payment_method_change_admin',
-					'subscription_payment_method_change_customer',
-					'subscription_payment_method_change',
 				]
 			);
 		} else {
 			$payment_gateway_features[] = 'gateway_scheduled_payments';
 		}
 
-		array_push( $this->supports, $payment_gateway_features );
+		$this->supports = array_merge( $this->supports, $payment_gateway_features );
 
 		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
 		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'prepare_order_pay_page' ] );
