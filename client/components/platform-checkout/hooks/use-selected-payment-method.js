@@ -10,10 +10,23 @@ const useSelectedPaymentMethod = () => {
 			?.checked
 	);
 
-	const getWCPayCheckboxStatus = () => {
+	const [ isNewPaymentTokenChosen, setNewPaymentTokenChosen ] = useState(
+		document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
+			?.checked
+	);
+
+	const getWCPayRadioButtonStatus = () => {
 		setIsWCPayChosen(
 			document.querySelector( '#payment_method_woocommerce_payments' )
 				?.checked
+		);
+	};
+
+	const getNewPaymentTokenRadioButtonStatus = () => {
+		setNewPaymentTokenChosen(
+			document.querySelector(
+				'#wc-woocommerce_payments-payment-token-new'
+			)?.checked
 		);
 	};
 
@@ -22,14 +35,34 @@ const useSelectedPaymentMethod = () => {
 			'[type=radio][name="payment_method"]'
 		);
 		paymentMethods.forEach( ( paymentMethod ) => {
-			paymentMethod.addEventListener( 'change', getWCPayCheckboxStatus );
+			paymentMethod.addEventListener(
+				'change',
+				getWCPayRadioButtonStatus
+			);
+		} );
+
+		const paymentTokens = document.querySelectorAll(
+			'[type=radio][name="wc-woocommerce_payments-payment-token"]'
+		);
+		paymentTokens.forEach( ( paymentToken ) => {
+			paymentToken.addEventListener(
+				'change',
+				getNewPaymentTokenRadioButtonStatus
+			);
 		} );
 
 		return () => {
 			paymentMethods.forEach( ( paymentMethod ) => {
 				paymentMethod.removeEventListener(
 					'change',
-					getWCPayCheckboxStatus
+					getWCPayRadioButtonStatus
+				);
+			} );
+
+			paymentTokens.forEach( ( paymentToken ) => {
+				paymentToken.removeEventListener(
+					'change',
+					getNewPaymentTokenRadioButtonStatus
 				);
 			} );
 		};
@@ -37,6 +70,7 @@ const useSelectedPaymentMethod = () => {
 
 	return {
 		isWCPayChosen,
+		isNewPaymentTokenChosen,
 	};
 };
 

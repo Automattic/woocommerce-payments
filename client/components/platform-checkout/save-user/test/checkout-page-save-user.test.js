@@ -23,6 +23,7 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		useSelectedPaymentMethod.mockImplementation( () => ( {
 			isWCPayChosen: true,
+			isNewPaymentTokenChosen: true,
 		} ) );
 	} );
 

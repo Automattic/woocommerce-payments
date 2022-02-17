@@ -22,9 +22,12 @@ const CheckoutPageSaveUser = () => {
 	// eslint-disable-next-line no-unused-vars
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const { isRegisteredUser } = usePlatformCheckoutUser();
-	const { isWCPayChosen } = useSelectedPaymentMethod();
+	const {
+		isWCPayChosen,
+		isNewPaymentTokenChosen,
+	} = useSelectedPaymentMethod();
 
-	if ( ! isWCPayChosen || isRegisteredUser ) {
+	if ( ! isWCPayChosen || ! isNewPaymentTokenChosen || isRegisteredUser ) {
 		return null;
 	}
 
