@@ -788,36 +788,34 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 			];
 		case 'financing_paydown':
-			return wcpaySettings.featureFlags.capital
-				? [
-						getFinancingPaydownTimelineItem(
-							event,
-							formatCurrency( Math.abs( event.amount ) ),
-							[
-								createInterpolateElement(
-									sprintf(
-										__(
-											'Loan repayment: <a>Loan %s</a>',
-											'woocommerce-payments'
-										),
-										event.loan_id
-									),
-									{
-										a: (
-											<Link
-												href={
-													'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions' +
-													'&type=charge&filter=advanced&loan_id_is=' +
-													event.loan_id
-												}
-											/>
-										),
-									}
+			return [
+				getFinancingPaydownTimelineItem(
+					event,
+					formatCurrency( Math.abs( event.amount ) ),
+					[
+						createInterpolateElement(
+							sprintf(
+								__(
+									'Loan repayment: <a>Loan %s</a>',
+									'woocommerce-payments'
 								),
-							]
+								event.loan_id
+							),
+							{
+								a: (
+									<Link
+										href={
+											'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions' +
+											'&type=charge&filter=advanced&loan_id_is=' +
+											event.loan_id
+										}
+									/>
+								),
+							}
 						),
-				  ]
-				: [];
+					]
+				),
+			];
 		default:
 			return [];
 	}
