@@ -661,7 +661,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$is_platform_checkout_enabled = $request->get_param( 'is_platform_checkout_enabled' );
 
-		$this->wcpay_gateway->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
+		$this->wcpay_gateway->update_is_platform_checkout_enabled( $is_platform_checkout_enabled );
 	}
 
 	/**
