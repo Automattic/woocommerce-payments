@@ -3,6 +3,7 @@ declare const wcpaySettings: {
 	isSubscriptionsActive: boolean;
 	featureFlags: {
 		customSearch: boolean;
+		capital: boolean;
 	};
 	fraudServices: unknown[];
 	isJetpackConnected: boolean;
@@ -10,6 +11,11 @@ declare const wcpaySettings: {
 	accountStatus: {
 		error?: boolean;
 		status?: string;
+	};
+	accountLoans: {
+		has_active_loan: boolean;
+		has_past_loans: boolean;
+		loans: Array< string >;
 	};
 	connect: {
 		country: string;

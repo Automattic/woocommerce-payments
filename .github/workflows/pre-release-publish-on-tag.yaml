@@ -115,6 +115,19 @@ jobs:
           # pick anything before the first dash as a version number
           VERSION=$(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG)
 
+          # Install this dev package to gather changelog entries
+          # Using `global` to avoid including it into the release package
+          composer global require automattic/jetpack-changelogger:^3.0.7
+
+          # Gather changelog entries
+          if [[ $VERSION == "3.8.0" ]];
+          then
+            # Add "--amend" for the cut-off version before moving to Jetpack Changelogger completely.
+            ~/.composer/vendor/bin/changelogger write --use-version="$VERSION" --release-date=unreleased --amend
+          else
+            ~/.composer/vendor/bin/changelogger write --use-version="$VERSION" --release-date=unreleased
+          fi
+
           echo "Picking up changelog for version '$VERSION'..."
           if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]];
           then
