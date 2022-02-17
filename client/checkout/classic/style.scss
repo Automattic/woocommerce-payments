@@ -40,25 +40,4 @@
 	background-color: #fff;
 }
 
-/* stylelint-disable selector-id-pattern */
-#contact_details {
-	float: none;
-}
-
-#contact_details + #customer_details {
-	display: block;
-}
-/* stylelint-enable selector-id-pattern */
-
-.platform-checkout-billing-email {
-	.woocommerce-input-wrapper {
-		display: inline-block;
-		position: relative;
-		width: 100%;
-
-		.wc-block-components-spinner {
-			right: 10px;
-			width: 24px;
-		}
-	}
-}
+@import '../platform-checkout/style';
