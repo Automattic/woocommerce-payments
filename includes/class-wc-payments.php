@@ -818,6 +818,7 @@ class WC_Payments {
 			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 			add_filter( 'woocommerce_checkout_fields', [ __CLASS__, 'platform_checkout_remove_default_email_field' ], 50 );
 			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
+			add_action( 'woocommerce_checkout_update_order_meta', [ __CLASS__, 'platform_checkout_save_email_field' ], 10, 2 );
 		}
 	}
 
@@ -939,4 +940,18 @@ class WC_Payments {
 		echo '</div>';
 		echo '</div>';
 	}
+
+	/**
+	 * Updates an orders email address
+	 *
+	 * @param int $order_id WooCommerce order ID.
+	 */
+	public static function platform_checkout_save_email_field( $order_id ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$billing_email = isset( $_POST['billing_email'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_email'] ) ) : '';
+		if ( ! empty( $billing_email ) ) {
+			update_post_meta( $order_id, '_billing_email', $billing_email );
+		}
+	}
+
 }
