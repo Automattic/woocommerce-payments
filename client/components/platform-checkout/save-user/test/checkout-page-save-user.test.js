@@ -11,9 +11,13 @@ import userEvent from '@testing-library/user-event';
 import CheckoutPageSaveUser from '../checkout-page-save-user';
 import usePlatformCheckoutUser from '../../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../../hooks/use-selected-payment-method';
+import { getConfig } from 'utils/checkout';
 
 jest.mock( '../../hooks/use-platform-checkout-user', () => jest.fn() );
 jest.mock( '../../hooks/use-selected-payment-method', () => jest.fn() );
+jest.mock( 'utils/checkout', () => ( {
+	getConfig: jest.fn(),
+} ) );
 
 describe( 'CheckoutPageSaveUser', () => {
 	beforeEach( () => {
@@ -25,6 +29,10 @@ describe( 'CheckoutPageSaveUser', () => {
 			isWCPayChosen: true,
 			isNewPaymentTokenChosen: true,
 		} ) );
+
+		getConfig.mockImplementation(
+			( setting ) => 'forceNetworkSavedCards' === setting
+		);
 	} );
 
 	afterEach( () => {
@@ -52,6 +60,20 @@ describe( 'CheckoutPageSaveUser', () => {
 		usePlatformCheckoutUser.mockImplementation( () => ( {
 			isRegisteredUser: true,
 		} ) );
+
+		render( <CheckoutPageSaveUser /> );
+		expect(
+			screen.queryByText( 'Remember your details?' )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByLabelText(
+				'Save my information for faster checkouts'
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'should not render checkbox for saving Platform Checkout user when forceNetworkSavedCards is false', () => {
+		getConfig.mockImplementation( () => false );
 
 		render( <CheckoutPageSaveUser /> );
 		expect(

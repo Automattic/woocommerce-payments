@@ -15,6 +15,7 @@ import AboutPlatformCheckout from './about-platform-checkout';
 import AdditionalInformation from './additional-information';
 import PhoneNumberInput from './phone-number-input';
 import Agreement from './agreement';
+import { getConfig } from 'utils/checkout';
 import './style.scss';
 
 const CheckoutPageSaveUser = () => {
@@ -27,7 +28,12 @@ const CheckoutPageSaveUser = () => {
 		isNewPaymentTokenChosen,
 	} = useSelectedPaymentMethod();
 
-	if ( ! isWCPayChosen || ! isNewPaymentTokenChosen || isRegisteredUser ) {
+	if (
+		! getConfig( 'forceNetworkSavedCards' ) ||
+		! isWCPayChosen ||
+		! isNewPaymentTokenChosen ||
+		isRegisteredUser
+	) {
 		return null;
 	}
 
