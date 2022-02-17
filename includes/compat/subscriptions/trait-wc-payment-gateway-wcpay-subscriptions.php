@@ -92,19 +92,30 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
-		array_push(
-			$this->supports,
-			'subscriptions',
+		$payment_gateway_features = [
+			'multiple_subscriptions',
 			'subscription_cancellation',
-			'subscription_suspension',
 			'subscription_reactivation',
-			'subscription_amount_changes',
-			'subscription_date_changes',
-			'subscription_payment_method_change',
-			'subscription_payment_method_change_customer',
-			'subscription_payment_method_change_admin',
-			'multiple_subscriptions'
-		);
+			'subscription_suspension',
+			'subscriptions',
+		];
+
+		if ( $this->is_subscriptions_plugin_active() ) {
+			$payment_gateway_features = array_merge(
+				$payment_gateway_features,
+				[
+					'subscription_amount_changes',
+					'subscription_date_changes',
+					'subscription_payment_method_change_admin',
+					'subscription_payment_method_change_customer',
+					'subscription_payment_method_change',
+				]
+			);
+		} else {
+			$payment_gateway_features[] = 'gateway_scheduled_payments';
+		}
+
+		array_push( $this->supports, $payment_gateway_features );
 
 		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
 		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'prepare_order_pay_page' ] );
