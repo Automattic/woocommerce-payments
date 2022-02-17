@@ -116,6 +116,7 @@ jobs:
           VERSION=$(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG)
 
           # Install this dev package to gather changelog entries
+          # Using `global` to avoid including it into the release package
           composer global require automattic/jetpack-changelogger:^3.0.7
 
           # Gather changelog entries
