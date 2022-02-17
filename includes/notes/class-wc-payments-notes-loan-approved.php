@@ -119,6 +119,9 @@ class WC_Payments_Notes_Loan_Approved {
 			// There's something wrong with the loan information, delete the existing note, just in case of wrong information.
 			return false;
 		}
+
+		self::$loan_info['details']['currency'] = strtoupper( self::$loan_info['details']['currency'] );
+
 		return true;
 	}
 
