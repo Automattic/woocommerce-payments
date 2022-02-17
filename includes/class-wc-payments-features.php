@@ -120,6 +120,7 @@ class WC_Payments_Features {
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
 				'capital'                 => self::is_capital_enabled(),
+				'platformCheckout'        => self::is_platform_checkout_enabled(),
 			]
 		);
 	}

@@ -1,0 +1,4 @@
+Significance: major
+Type: dev
+
+Use Jetpack Changelogger to manage changelog files.

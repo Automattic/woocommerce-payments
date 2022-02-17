@@ -12,7 +12,7 @@
  * WC tested up to: 6.1.1
  * Requires at least: 5.7
  * Requires PHP: 7.0
- * Version: 3.6.1
+ * Version: 3.7.0
  *
  * @package WooCommerce\Payments
  */
@@ -90,6 +90,42 @@ function wcpay_jetpack_init() {
 			'admin_page'    => '/wp-admin/admin.php?page=wc-admin',
 			'priority'      => 5,
 		]
+	);
+
+	// When only WooCommerce Payments is active, minimize the data to send back to WPcom for supporting Woo Mobile apps.
+	$jetpack_config->ensure(
+		'sync',
+		array_merge_recursive(
+			\Automattic\Jetpack\Sync\Data_Settings::MUST_SYNC_DATA_SETTINGS,
+			[
+				'jetpack_sync_modules'           =>
+					[
+						'Automattic\\Jetpack\\Sync\\Modules\\Options',
+						'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
+					],
+				'jetpack_sync_options_whitelist' =>
+					[
+						'active_plugins',
+						'blogdescription',
+						'blogname',
+						'timezone_string',
+						'gmt_offset',
+					],
+			]
+		)
+	);
+
+	// Trigger the first Jetpack full-sync when updating from old WCPay versions,
+	// which do not have Jetpack Sync package.
+	add_action(
+		'woocommerce_woocommerce_payments_updated',
+		function () {
+			$version_check = version_compare( '3.8.0', get_option( 'woocommerce_woocommerce_payments_version' ), '>' );
+			$method_check  = method_exists( '\Automattic\Jetpack\Sync\Actions', 'do_only_first_initial_sync' );
+			if ( $version_check && $method_check ) {
+				\Automattic\Jetpack\Sync\Actions::do_only_first_initial_sync();
+			}
+		}
 	);
 }
 // Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.

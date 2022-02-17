@@ -97,6 +97,10 @@ const webpackConfig = {
 		modules: [ path.join( __dirname, 'client' ), 'node_modules' ],
 		alias: {
 			wcpay: path.resolve( __dirname, 'client' ),
+			iti: path.resolve(
+				__dirname,
+				'node_modules/intl-tel-input/build/js'
+			),
 		},
 		fallback: {
 			crypto: require.resolve( 'crypto-browserify' ),
@@ -114,6 +118,7 @@ const webpackConfig = {
 			requestToExternal( request ) {
 				switch ( request ) {
 					case '@wordpress/components':
+					case 'lodash':
 						return null;
 					case '@woocommerce/components':
 						return [ 'wc', 'components' ];
@@ -130,6 +135,7 @@ const webpackConfig = {
 			requestToHandle( request ) {
 				switch ( request ) {
 					case '@wordpress/components':
+					case 'lodash':
 						return null;
 					case '@woocommerce/components':
 						return 'wc-components';
