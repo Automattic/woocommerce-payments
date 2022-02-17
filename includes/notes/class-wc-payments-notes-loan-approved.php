@@ -50,7 +50,9 @@ class WC_Payments_Notes_Loan_Approved {
 					'Congratulations! Your capital loan has been approved and %1$s was deposited in to the bank account linked to WooCommerce Payments. You\'ll automatically repay the loan, plus a flat fee, through a fixed percentage of each WooCommerce Payments transaction.',
 					'woocommerce-payments'
 				),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( self::$loan_info['details']['advance_amount'] / 100 ) )
+				$dummy_order = wc_create_order();
+				$dummy_order->set_currency( self::$loan_info['details']['currency'] );
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( WC_Payments_Utils::interpret_stripe_amount( self::$loan_info['details']['advance_amount'], $dummy_order ) ) )
 			)
 		);
 
