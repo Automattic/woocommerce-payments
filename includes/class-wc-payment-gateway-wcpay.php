@@ -688,6 +688,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// TODO: Add support for blocks checkout.
 		if (
 			WC_Payments_Features::is_platform_checkout_enabled() &&
+			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
 			! WC_Payments_Features::is_upe_enabled() &&
 			is_checkout() &&
 			! has_block( 'woocommerce/checkout' ) &&
