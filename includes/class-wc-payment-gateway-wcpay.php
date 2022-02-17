@@ -1602,6 +1602,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Updates whether platform checkout is enabled or disabled.
+	 *
+	 * @param bool $is_platform_checkout_enabled Whether platform checkout should be enabled.
+	 */
+	public function update_is_platform_checkout_enabled( $is_platform_checkout_enabled ) {
+		$current_is_platform_checkout_enabled = 'yes' === $this->get_option( 'platform_checkout', 'no' );
+		if ( $is_platform_checkout_enabled !== $current_is_platform_checkout_enabled ) {
+			wc_admin_record_tracks_event( $is_platform_checkout_enabled ? 'platform_checkout_enabled' : 'platform_checkout_disabled' );
+			$this->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
+		}
+	}
+
+	/**
 	 * Init settings for gateways.
 	 */
 	public function init_settings() {
