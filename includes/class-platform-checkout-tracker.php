@@ -22,7 +22,7 @@ class Platform_Checkout_Tracker extends Tracking {
 	 *
 	 * @var string
 	 */
-	private static $prefix = 'platform_checkout';
+	private static $prefix = 'woocommerceanalytics';
 
 	/**
 	 * Constructor.
