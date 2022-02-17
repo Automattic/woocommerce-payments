@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7a7dc8163ec59ab1967b8dd62d66a2c4",
+    "content-hash": "2b9ceac62a5e5a60ef7b402cc89682ab",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -156,16 +156,16 @@
         },
         {
             "name": "automattic/jetpack-config",
-            "version": "v1.6.0",
+            "version": "v1.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-config.git",
-                "reference": "1d46f87df9167a03960d708ce767d0efdfc855cf"
+                "reference": "34ed249c0be9f8c871c5a28411913983fb1ce7d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/1d46f87df9167a03960d708ce767d0efdfc855cf",
-                "reference": "1d46f87df9167a03960d708ce767d0efdfc855cf",
+                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/34ed249c0be9f8c871c5a28411913983fb1ce7d7",
+                "reference": "34ed249c0be9f8c871c5a28411913983fb1ce7d7",
                 "shasum": ""
             },
             "require-dev": {
@@ -194,9 +194,9 @@
             ],
             "description": "Jetpack configuration package that initializes other packages and configures Jetpack's functionality. Can be used as a base for all variants of Jetpack package usage.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-config/tree/v1.6.0"
+                "source": "https://github.com/Automattic/jetpack-config/tree/v1.6.1"
             },
-            "time": "2022-01-04T21:11:32+00:00"
+            "time": "2022-02-09T17:56:28+00:00"
         },
         {
             "name": "automattic/jetpack-connection",
@@ -503,6 +503,52 @@
             "time": "2022-01-04T21:11:42+00:00"
         },
         {
+            "name": "automattic/jetpack-password-checker",
+            "version": "v0.2.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Automattic/jetpack-password-checker.git",
+                "reference": "f3fe0234d7f196c64f9fadb87408c74502d4de9c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Automattic/jetpack-password-checker/zipball/f3fe0234d7f196c64f9fadb87408c74502d4de9c",
+                "reference": "f3fe0234d7f196c64f9fadb87408c74502d4de9c",
+                "shasum": ""
+            },
+            "require-dev": {
+                "automattic/jetpack-changelogger": "^3.0",
+                "automattic/wordbless": "@dev",
+                "yoast/phpunit-polyfills": "1.0.3"
+            },
+            "type": "jetpack-library",
+            "extra": {
+                "autotagger": true,
+                "mirror-repo": "Automattic/jetpack-password-checker",
+                "textdomain": "jetpack-password-checker",
+                "changelogger": {
+                    "link-template": "https://github.com/Automattic/jetpack-password-checker/compare/v${old}...v${new}"
+                },
+                "branch-alias": {
+                    "dev-master": "0.2.x-dev"
+                }
+            },
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "description": "Password Checker.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-password-checker/tree/v0.2.2"
+            },
+            "time": "2022-01-25T17:38:36+00:00"
+        },
+        {
             "name": "automattic/jetpack-redirect",
             "version": "v1.7.10",
             "source": {
@@ -642,6 +688,65 @@
                 "source": "https://github.com/Automattic/jetpack-status/tree/v1.10.0"
             },
             "time": "2022-01-25T17:38:42+00:00"
+        },
+        {
+            "name": "automattic/jetpack-sync",
+            "version": "v1.29.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Automattic/jetpack-sync.git",
+                "reference": "38816b4b303a5dc6f1eb00507aa3166b3e530fe0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Automattic/jetpack-sync/zipball/38816b4b303a5dc6f1eb00507aa3166b3e530fe0",
+                "reference": "38816b4b303a5dc6f1eb00507aa3166b3e530fe0",
+                "shasum": ""
+            },
+            "require": {
+                "automattic/jetpack-connection": "^1.36",
+                "automattic/jetpack-constants": "^1.6",
+                "automattic/jetpack-heartbeat": "^1.4",
+                "automattic/jetpack-identity-crisis": "^0.7",
+                "automattic/jetpack-options": "^1.14",
+                "automattic/jetpack-password-checker": "^0.2",
+                "automattic/jetpack-roles": "^1.4",
+                "automattic/jetpack-status": "^1.10"
+            },
+            "require-dev": {
+                "automattic/jetpack-changelogger": "^3.0",
+                "automattic/wordbless": "@dev",
+                "yoast/phpunit-polyfills": "1.0.3"
+            },
+            "type": "jetpack-library",
+            "extra": {
+                "autotagger": true,
+                "mirror-repo": "Automattic/jetpack-sync",
+                "textdomain": "jetpack-sync",
+                "version-constants": {
+                    "::PACKAGE_VERSION": "src/class-package-version.php"
+                },
+                "changelogger": {
+                    "link-template": "https://github.com/Automattic/jetpack-sync/compare/v${old}...v${new}"
+                },
+                "branch-alias": {
+                    "dev-master": "1.29.x-dev"
+                }
+            },
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "description": "Everything needed to allow syncing to the WP.com infrastructure.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-sync/tree/v1.29.2"
+            },
+            "time": "2022-02-09T17:57:03+00:00"
         },
         {
             "name": "automattic/jetpack-terms-of-service",
