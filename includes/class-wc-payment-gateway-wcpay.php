@@ -1123,7 +1123,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $save_payment_method && ! $intent_failed ) {
 				try {
-					// Setup intents are currently not deserialized as payment intents.
+					// Setup intents are currently not deserialized as payment intents are, so check if it's an array first.
+					// For payment intents, we may provide a platform payment method from `$payment_information`, but we need
+					// to return a connected payment method. So we should always retrieve the payment method from the intent.
 					$payment_method_id = is_array( $intent ) ? $payment_information->get_payment_method() : $intent->get_payment_method_id();
 
 					$token = $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
