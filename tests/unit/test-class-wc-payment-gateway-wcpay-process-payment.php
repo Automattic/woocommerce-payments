@@ -997,7 +997,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->any() )
 			->method( 'create_and_confirm_intention' )
-			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), true, false, $this->anything(), $this->anything() )
+			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), true, $this->anything(), $this->anything(), $this->anything() )
 			->will( $this->returnValue( $intent ) );
 
 		$this->mock_token_service
@@ -1069,6 +1069,22 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 					}
 				)
 			);
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_save_payment_method_to_platform() {
+		$order = WC_Helper_Order::create_order();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', 'cus_1234', 'pm_56789', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+
+		$_POST['save_user_in_platform_checkout'] = 'true';
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_and_confirm_intention' )
+			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), true, $this->anything(), $this->anything() )
+			->will( $this->returnValue( $intent ) );
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
