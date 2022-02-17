@@ -587,7 +587,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! empty( $_GET['method'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			?>
 			<div
-				id="wcpay-payment-method-settings-container"
+				id="wcpay-express-checkout-settings-container"
 				data-method-id="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>"
 			></div>
 		<?php else : ?>
@@ -620,7 +620,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'locale'                    => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isUPEEnabled'              => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'       => $this->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled' => WC_Payments_Features::is_platform_checkout_enabled(),
+			'isPlatformCheckoutEnabled' => WC_Payments_Features::is_platform_checkout_enabled() && 'yes' === $this->get_option( 'platform_checkout', 'no' ),
 			'platformCheckoutHost'      => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
 		];
 	}
@@ -2134,6 +2134,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		};
 		$items_to_send = array_map( $process_item, $order_items );
 
+		if ( count( $items_to_send ) > 200 ) {
+			// If more than 200 items are present, bundle the last ones in a single item.
+			$items_to_send = array_merge(
+				array_slice( $items_to_send, 0, 199 ),
+				[ $this->bundle_level3_data_from_items( array_slice( $items_to_send, 200 ) ) ]
+			);
+		}
+
 		$level3_data = [
 			'merchant_reference' => (string) $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
 			'customer_reference' => (string) $order->get_id(),
@@ -2773,5 +2781,35 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	protected function should_bump_rate_limiter( string $error_code ): bool {
 		return in_array( $error_code, [ 'card_declined', 'incorrect_number', 'incorrect_cvc' ], true );
+	}
+
+	/**
+	 * Returns a bundle of products passed as an argument. Useful when working with Stripe's level 3 data
+	 *
+	 * @param array $items The Stripe's level 3 array of items.
+	 *
+	 * @return object A bundle of the products passed.
+	 */
+	public function bundle_level3_data_from_items( array $items ) {
+		// Total cost is the sum of each product cost * quantity.
+		$items_count = count( $items );
+		$total_cost  = array_sum(
+			array_map(
+				function( $cost, $qty ) {
+					return $cost * $qty;
+				},
+				array_column( $items, 'unit_cost' ),
+				array_column( $items, 'quantity' )
+			)
+		);
+
+		return (object) [
+			'product_code'        => (string) substr( uniqid(), 0, 26 ),
+			'product_description' => "{$items_count} more items",
+			'unit_cost'           => $total_cost,
+			'quantity'            => 1,
+			'tax_amount'          => array_sum( array_column( $items, 'tax_amount' ) ),
+			'discount_amount'     => array_sum( array_column( $items, 'discount_amount' ) ),
+		];
 	}
 }
