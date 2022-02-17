@@ -3,31 +3,32 @@
  */
 import { useEffect, useState } from 'react';
 
+const getWCPayRadioButtonStatus = () =>
+	document.querySelector( '#payment_method_woocommerce_payments' )?.checked;
+
+const getNewPaymentTokenRadioButtonStatus = () =>
+	document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
+		?.checked ||
+	! document.querySelector(
+		'[type=radio][name="wc-woocommerce_payments-payment-token"]'
+	);
+
 // hook for checking if WCPay is selected.
 const useSelectedPaymentMethod = () => {
 	const [ isWCPayChosen, setIsWCPayChosen ] = useState(
-		document.querySelector( '#payment_method_woocommerce_payments' )
-			?.checked
+		getWCPayRadioButtonStatus()
 	);
 
 	const [ isNewPaymentTokenChosen, setNewPaymentTokenChosen ] = useState(
-		document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
-			?.checked
+		getNewPaymentTokenRadioButtonStatus()
 	);
 
-	const getWCPayRadioButtonStatus = () => {
-		setIsWCPayChosen(
-			document.querySelector( '#payment_method_woocommerce_payments' )
-				?.checked
-		);
+	const updateIsWCPayChosen = () => {
+		setIsWCPayChosen( getWCPayRadioButtonStatus );
 	};
 
-	const getNewPaymentTokenRadioButtonStatus = () => {
-		setNewPaymentTokenChosen(
-			document.querySelector(
-				'#wc-woocommerce_payments-payment-token-new'
-			)?.checked
-		);
+	const updateIsNewPaymentTokenChosen = () => {
+		setNewPaymentTokenChosen( getNewPaymentTokenRadioButtonStatus );
 	};
 
 	useEffect( () => {
@@ -35,10 +36,7 @@ const useSelectedPaymentMethod = () => {
 			'[type=radio][name="payment_method"]'
 		);
 		paymentMethods.forEach( ( paymentMethod ) => {
-			paymentMethod.addEventListener(
-				'change',
-				getWCPayRadioButtonStatus
-			);
+			paymentMethod.addEventListener( 'change', updateIsWCPayChosen );
 		} );
 
 		const paymentTokens = document.querySelectorAll(
@@ -47,7 +45,7 @@ const useSelectedPaymentMethod = () => {
 		paymentTokens.forEach( ( paymentToken ) => {
 			paymentToken.addEventListener(
 				'change',
-				getNewPaymentTokenRadioButtonStatus
+				updateIsNewPaymentTokenChosen
 			);
 		} );
 
@@ -55,14 +53,14 @@ const useSelectedPaymentMethod = () => {
 			paymentMethods.forEach( ( paymentMethod ) => {
 				paymentMethod.removeEventListener(
 					'change',
-					getWCPayRadioButtonStatus
+					updateIsWCPayChosen
 				);
 			} );
 
 			paymentTokens.forEach( ( paymentToken ) => {
 				paymentToken.removeEventListener(
 					'change',
-					getNewPaymentTokenRadioButtonStatus
+					updateIsNewPaymentTokenChosen
 				);
 			} );
 		};
