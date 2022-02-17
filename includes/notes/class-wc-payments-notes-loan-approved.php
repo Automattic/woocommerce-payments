@@ -39,8 +39,10 @@ class WC_Payments_Notes_Loan_Approved {
 	 * Get the note.
 	 */
 	public static function get_note() {
-		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
-		$note       = new $note_class();
+		$note_class  = WC_Payment_Woo_Compat_Utils::get_note_class();
+		$note        = new $note_class();
+		$dummy_order = wc_create_order();
+		$dummy_order->set_currency( self::$loan_info['details']['currency'] );
 
 		$note->set_title( __( 'Your capital loan has been approved!', 'woocommerce-payments' ) );
 		$note->set_content(
@@ -50,9 +52,7 @@ class WC_Payments_Notes_Loan_Approved {
 					'Congratulations! Your capital loan has been approved and %1$s was deposited in to the bank account linked to WooCommerce Payments. You\'ll automatically repay the loan, plus a flat fee, through a fixed percentage of each WooCommerce Payments transaction.',
 					'woocommerce-payments'
 				),
-				$dummy_order = wc_create_order();
-				$dummy_order->set_currency( self::$loan_info['details']['currency'] );
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( WC_Payments_Utils::interpret_stripe_amount( self::$loan_info['details']['advance_amount'], $dummy_order ) ) )
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( WC_Payments_Utils::interpret_stripe_amount( self::$loan_info['details']['advance_amount'], $dummy_order ), [ 'currency' => self::$loan_info['details']['currency'] ] ) )
 			)
 		);
 
@@ -109,10 +109,12 @@ class WC_Payments_Notes_Loan_Approved {
 	private static function validate_inputs() {
 		// If the loan amount isn't set correctly, don't push the note, and delete the old one if exists.
 		if ( ! isset(
+			self::$loan_info['details']['currency'],
 			self::$loan_info['details']['advance_amount'],
 			self::$loan_info['details']['advance_paid_out_at']
 		)
 			|| ! is_numeric( self::$loan_info['details']['advance_amount'] )
+			|| empty( self::$loan_info['details']['currency'] )
 		) {
 			// There's something wrong with the loan information, delete the existing note, just in case of wrong information.
 			return false;

@@ -903,7 +903,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		}
 
 		$this->enable_capital_feature();
-		$advance_amount           = 12345;
+		$advance_amount           = 1234567;
 		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100 ) ) ); // Match it with note content sanitization process.
 		$time                     = time();
 		$this->mock_api_client
@@ -914,6 +914,44 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 					'details' => [
 						'advance_amount'      => $advance_amount,
 						'advance_paid_out_at' => $time,
+						'currency'            => 'USD',
+					],
+				]
+			);
+
+		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
+		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
+		$note_id    = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
+		$data_store = WC_Data_Store::load( 'admin-note' );
+		$notes      = $data_store->get_notes_with_name( $note_id );
+		$this->assertCount( 1, $notes );
+		$note      = $notes_class::get_note( $notes[0] );
+		$note_data = (array) $note->get_content_data();
+		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
+		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
+		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
+		$this->assertContains( $formatted_advance_amount, $note->get_content() );
+	}
+
+	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data_with_different_currency() {
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		$this->enable_capital_feature();
+		$advance_amount           = 1234567;
+		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100, [ 'currency' => 'CHF' ] ) ) ); // Match it with note content sanitization process.
+		$time                     = time();
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_active_loan_summary' )
+			->willReturn(
+				[
+					'details' => [
+						'advance_amount'      => $advance_amount,
+						'advance_paid_out_at' => $time,
+						'currency'            => 'CHF',
 					],
 				]
 			);
