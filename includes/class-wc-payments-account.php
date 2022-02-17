@@ -46,6 +46,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_loan_approved_inbox_note' ] );
 		add_action( self::INSTANT_DEPOSITS_REMINDER_ACTION, [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_action( self::ACCOUNT_CACHE_REFRESH_ACTION, [ $this, 'handle_account_cache_refresh' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
@@ -1124,6 +1125,43 @@ class WC_Payments_Account {
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_add_note();
 		$this->maybe_add_instant_deposit_note_reminder();
+	}
+
+	/**
+	 * Handles adding a note if the merchant has an loan approved.
+	 *
+	 * @param array $account The account data.
+	 *
+	 * @return void
+	 */
+	public function handle_loan_approved_inbox_note( $account ) {
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
+
+		// Add this notice only if capital feature is enabled.
+		if ( false === WC_Payments_Features::is_capital_enabled() ) {
+			return;
+		}
+
+		// If the account cache is empty, don't try to create an inbox note.
+		if ( empty( $account ) ) {
+			return;
+		}
+
+		// Delete the loan note when the user doesn't have an active loan.
+		if ( ! isset( $account['capital']['has_active_loan'] ) || ! $account['capital']['has_active_loan'] ) {
+			WC_Payments_Notes_Loan_Approved::possibly_delete_note();
+			return;
+		}
+
+		// Get the loan summary.
+		try {
+			$loan_details = $this->payments_api_client->get_active_loan_summary();
+		} catch ( API_Exception $ex ) {
+			return;
+		}
+
+		WC_Payments_Notes_Loan_Approved::set_loan_details( $loan_details );
+		WC_Payments_Notes_Loan_Approved::possibly_add_note();
 	}
 
 	/**
