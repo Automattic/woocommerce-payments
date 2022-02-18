@@ -297,7 +297,7 @@ class Payment_Information {
 	}
 
 	/**
-	 * Indicates whether the payment method needs to be saved to store for later usage.
+	 * Indicates whether the payment method needs to be saved to the store for later usage.
 	 *
 	 * @return bool The flag.
 	 */
@@ -306,7 +306,7 @@ class Payment_Information {
 	}
 
 	/**
-	 * Indicates whether the payment method needs to be saved to store for later usage.
+	 * Indicates whether the payment method needs to be saved to the platform for later usage.
 	 *
 	 * @return bool The flag.
 	 */
