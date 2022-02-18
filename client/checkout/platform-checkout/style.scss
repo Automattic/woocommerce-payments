@@ -32,6 +32,7 @@
 	left: 0;
 	z-index: 355000;
 	border: 0;
+	background: #fff;
 	&.open {
 		top: 0;
 	}
@@ -40,6 +41,7 @@
 @media screen and ( min-width: 768px ) {
 	.platform-checkout-sms-otp-iframe-wrapper {
 		.platform-checkout-sms-otp-iframe {
+			transition: none;
 			height: 90vh;
 			max-height: 520px;
 			position: absolute;
@@ -64,7 +66,7 @@
 			height: 100vh;
 			content: ' ';
 			display: block;
-			z-index: 555;
+			z-index: 355000;
 		}
 		&::after {
 			content: '';
@@ -77,7 +79,7 @@
 			background: transparent;
 			width: 0;
 			height: 0;
-			z-index: 5555;
+			z-index: 355001;
 			border-top: 15px solid transparent;
 			border-bottom: 15px solid transparent;
 			border-right: 15px solid #fff;
