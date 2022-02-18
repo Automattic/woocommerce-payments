@@ -666,9 +666,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param bool $force_checked True if the checkbox must be forced to "checked" state (and invisible).
 	 */
 	public function save_payment_method_checkbox( $force_checked = false ) {
-		$id = 'wc-' . $this->id . '-new-payment-method';
+		$id          = 'wc-' . $this->id . '-new-payment-method';
+		$should_hide = $force_checked || $this->should_use_stripe_platform_on_checkout_page();
 		?>
-		<div <?php echo ( $force_checked || $this->should_use_stripe_platform_on_checkout_page() ) ? 'style="display:none;"' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
+		<div <?php echo $should_hide ? 'style="display:none;"' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
 			<p class="form-row woocommerce-SavedPaymentMethods-saveNew">
 				<input id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" type="checkbox" value="true" style="width:auto;" <?php echo $force_checked ? 'checked' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?> />
 				<label for="<?php echo esc_attr( $id ); ?>" style="display:inline;">
