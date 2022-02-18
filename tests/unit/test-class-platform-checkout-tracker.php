@@ -50,6 +50,7 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 	public function test_does_track_non_admins() {
 		global $wp_roles;
 		update_option( '_wcpay_feature_platform_checkout', '1' );
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 		wp_set_current_user( 1 );
 		$this->set_is_admin( false );
 
