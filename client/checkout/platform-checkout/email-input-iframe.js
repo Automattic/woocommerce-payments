@@ -24,13 +24,18 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	);
 	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
 
+	// Maybe we could make this a configurable option defined in PHP so it could be filtered by merchants.
+	const fullScreenModalBreakpoint = 768;
+
 	// Track the current state of the header. This default
 	// value should match the default state on the platform.
 	let iframeHeaderValue = true;
 	const getWindowSize = () => {
 		if (
-			( 768 <= window.innerWidth && iframeHeaderValue ) ||
-			( 768 > window.innerWidth && ! iframeHeaderValue )
+			( fullScreenModalBreakpoint <= window.innerWidth &&
+				iframeHeaderValue ) ||
+			( fullScreenModalBreakpoint > window.innerWidth &&
+				! iframeHeaderValue )
 		) {
 			iframeHeaderValue = ! iframeHeaderValue;
 			iframe.contentWindow.postMessage(
@@ -50,10 +55,11 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		}
 	};
 	// Do this on debounced resize.
-	const debouncedGetWindowSize = debounce( getWindowSize, 100 );
+	const debouncedGetWindowSize = debounce( getWindowSize, 50 );
 
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
+		iframeHeaderValue = true;
 		getWindowSize();
 		window.addEventListener( 'resize', debouncedGetWindowSize );
 		iframe.classList.add( 'open' );
@@ -71,8 +77,11 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
 	const openIframe = ( email ) => {
-		iframe.src =
-			getConfig( 'platformCheckoutHost' ) + '/sms-otp/?email=' + email;
+		iframe.src = `${ getConfig(
+			'platformCheckoutHost'
+		) }/sms-otp/?email=${ email }&needsHeader=${
+			fullScreenModalBreakpoint > window.innerWidth
+		}`;
 		parentDiv.insertBefore( iframeWrapper, null );
 		iframe.focus();
 	};
@@ -139,12 +148,15 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				closeIframe();
 				break;
 			case 'iframe_height':
-				if ( 768 < window.innerWidth ) {
-					iframe.style.height = e.data.height + 'px';
-					iframe.style.top = Math.floor( e.data.height / -2 ) + 'px';
-				} else {
-					iframe.style.height = '';
-					iframe.style.top = '';
+				if ( 300 < e.data.height ) {
+					if ( fullScreenModalBreakpoint <= window.innerWidth ) {
+						iframe.style.height = e.data.height + 'px';
+						iframe.style.top =
+							Math.floor( e.data.height / -2 ) + 'px';
+					} else {
+						iframe.style.height = '';
+						iframe.style.top = '';
+					}
 				}
 				break;
 			default:
