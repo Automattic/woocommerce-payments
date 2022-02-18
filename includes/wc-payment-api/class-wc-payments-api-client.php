@@ -55,6 +55,7 @@ class WC_Payments_API_Client {
 	const TERMINAL_READERS_API         = 'terminal/readers';
 	const MINIMUM_RECURRING_AMOUNT_API = 'subscriptions/minimum_amount';
 	const CAPITAL_API                  = 'capital';
+	const WEBHOOK_FETCH_API            = 'webhook/events-list'; // TODO subject to change - see server PR 1633.
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1609,6 +1610,17 @@ class WC_Payments_API_Client {
 	 */
 	public function delete_terminal_location( $location_id ) {
 		return $this->request( [], self::TERMINAL_LOCATIONS_API . '/' . $location_id, self::DELETE );
+	}
+
+	/**
+	 * Retrieves the list of failed webhook events and their data.
+	 *
+	 * @return array List of failed webhook events.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_failed_webhook_events() {
+		return $this->request( [], self::WEBHOOK_FETCH_API, self::GET );
 	}
 
 	/**
