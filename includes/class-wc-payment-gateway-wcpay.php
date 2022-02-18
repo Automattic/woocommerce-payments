@@ -999,7 +999,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] ) {
 		$order                                       = $payment_information->get_order();
-		$save_payment_method                         = $payment_information->should_save_payment_method_to_store();
+		$save_payment_method_to_store                = $payment_information->should_save_payment_method_to_store();
 		$is_changing_payment_method_for_subscription = $payment_information->is_changing_payment_method_for_subscription();
 
 		$order_id = $order->get_id();
@@ -1027,7 +1027,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->update_meta_data( '_stripe_customer_id', $customer_id );
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
-		if ( ! $payment_needed && ! $save_payment_method ) {
+		if ( ! $payment_needed && ! $save_payment_method_to_store ) {
 			$order->payment_complete();
 
 			if ( $payment_information->is_using_saved_payment_method() ) {
@@ -1082,7 +1082,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_information->get_payment_method(),
 				$customer_id,
 				$payment_information->is_using_manual_capture(),
-				$save_payment_method,
+				$save_payment_method_to_store,
 				$payment_information->should_save_payment_method_to_platform(),
 				$metadata,
 				$this->get_level3_data_from_order( $order ),
@@ -1123,7 +1123,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_failed = true;
 			}
 
-			if ( $save_payment_method && ! $intent_failed ) {
+			if ( $save_payment_method_to_store && ! $intent_failed ) {
 				try {
 					// Setup intents are currently not deserialized as payment intents are, so check if it's an array first.
 					// For payment intents, we may provide a platform payment method from `$payment_information`, but we need
