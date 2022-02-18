@@ -162,8 +162,6 @@ class WC_Payments {
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 
-		self::maybe_register_platform_checkout_hooks();
-
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
 
@@ -264,6 +262,8 @@ class WC_Payments {
 		} else {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter );
 		}
+
+		self::maybe_register_platform_checkout_hooks();
 
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::$card_gateway );
@@ -749,6 +749,11 @@ class WC_Payments {
 	 * Adds WCPay notes to the WC-Admin inbox.
 	 */
 	public static function add_woo_admin_notes() {
+		// Do not try to add notes on ajax requests to improve their performance.
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
@@ -803,7 +808,10 @@ class WC_Payments {
 	 * Registers platform checkout hooks if the platform checkout feature flag is enabled.
 	 */
 	public static function maybe_register_platform_checkout_hooks() {
-		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
+		$is_platform_checkout_feature_enabled = WC_Payments_Features::is_platform_checkout_enabled(); // Feature flag.
+		$is_platform_checkout_enabled         = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
+
+		if ( $is_platform_checkout_feature_enabled && $is_platform_checkout_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
@@ -839,11 +847,12 @@ class WC_Payments {
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
-				'store_name' => get_bloginfo( 'name' ),
-				'store_logo' => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
-				'blog_id'    => Jetpack_Options::get_option( 'id' ),
-				'blog_url'   => get_site_url(),
-				'account_id' => $account_id,
+				'store_name'     => get_bloginfo( 'name' ),
+				'store_logo'     => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
+				'custom_message' => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
+				'blog_id'        => Jetpack_Options::get_option( 'id' ),
+				'blog_url'       => get_site_url(),
+				'account_id'     => $account_id,
 			],
 		];
 		$args                   = [

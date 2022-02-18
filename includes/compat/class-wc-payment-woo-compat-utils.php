@@ -10,7 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Automattic\WooCommerce\Admin\Notes\Note;
+use Automattic\WooCommerce\Admin\Notes\Notes;
 use Automattic\WooCommerce\Admin\Notes\WC_Admin_Note;
+use Automattic\WooCommerce\Admin\Notes\WC_Admin_Notes;
 
 /**
  * Util class for handling compatibilities with different versions of WooCommerce core.
@@ -26,6 +28,19 @@ class WC_Payment_Woo_Compat_Utils {
 			return Note::class;
 		} else {
 			return WC_Admin_Note::class;
+		}
+	}
+
+	/**
+	 * Return non-deprecated class for instantiating WC-Admin notes.
+	 *
+	 * @return string
+	 */
+	public static function get_notes_class() : string {
+		if ( class_exists( 'Automattic\WooCommerce\Admin\Notes\Notes' ) ) {
+			return Notes::class;
+		} else {
+			return WC_Admin_Notes::class;
 		}
 	}
 }
