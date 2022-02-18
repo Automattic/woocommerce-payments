@@ -48,6 +48,7 @@ const CheckoutPageSaveUser = () => {
 					'Save my information for faster checkouts',
 					'woocommerce-payments'
 				) }
+				value="true"
 			/>
 			{ isSaveDetailsChecked && (
 				<div
