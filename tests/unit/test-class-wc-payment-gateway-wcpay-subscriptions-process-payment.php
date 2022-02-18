@@ -184,7 +184,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 		$this->mock_token_service
 			->expects( $this->once() )
 			->method( 'add_payment_method_to_user' )
-			->with( 'pm_12345', $order->get_user() )
+			->with( $this->payment_intent->get_payment_method_id(), $order->get_user() )
 			->willReturn( $this->token );
 
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
