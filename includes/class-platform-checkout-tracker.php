@@ -39,6 +39,7 @@ class Platform_Checkout_Tracker extends Tracking {
 		parent::__construct( self::$prefix, $http );
 		add_action( 'wp_ajax_nopriv_jetpack_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'maybe_enqueue_tracks_scripts' ] );
+		add_action( 'woocommerce_add_to_cart', [ $this, 'track_add_to_cart' ], 10, 6 );
 	}
 
 	/**
@@ -123,7 +124,10 @@ class Platform_Checkout_Tracker extends Tracking {
 		}
 
 		// Don't track when platform checkout is disabled.
-		if ( ! WC_Payments_Features::is_platform_checkout_enabled() ) {
+		$gateway                              = \WC_Payments::get_gateway();
+		$is_platform_checkout_feature_enabled = WC_Payments_Features::is_platform_checkout_enabled(); // Feature flag.
+		$is_platform_checkout_enabled         = 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
+		if ( ! ( $is_platform_checkout_feature_enabled && $is_platform_checkout_enabled ) ) {
 			return false;
 		}
 
