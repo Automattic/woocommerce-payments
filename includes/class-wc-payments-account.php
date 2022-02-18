@@ -52,10 +52,8 @@ class WC_Payments_Account {
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 
-		// Add capital offer redirect if Capital is enabled.
-		if ( WC_Payments_Features::is_capital_enabled() ) {
-			add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
-		}
+		// Add capital offer redirection.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
 	}
 
 	/**
@@ -1136,11 +1134,6 @@ class WC_Payments_Account {
 	 */
 	public function handle_loan_approved_inbox_note( $account ) {
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
-
-		// Add this notice only if capital feature is enabled.
-		if ( false === WC_Payments_Features::is_capital_enabled() ) {
-			return;
-		}
 
 		// If the account cache is empty, don't try to create an inbox note.
 		if ( empty( $account ) ) {

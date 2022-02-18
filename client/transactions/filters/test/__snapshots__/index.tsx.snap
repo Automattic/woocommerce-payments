@@ -42,5 +42,15 @@ HTMLOptionsCollection [
   >
     Dispute reversal
   </option>,
+  <option
+    value="financing_payout"
+  >
+    Loan dispersement
+  </option>,
+  <option
+    value="financing_paydown"
+  >
+    Loan repayment
+  </option>,
 ]
 `;
