@@ -65,24 +65,12 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
-	public function test_maybe_redirect_to_capital_offer_will_run_if_capital_is_enabled() {
-		update_option( '_wcpay_feature_capital', '1' );
+	public function test_maybe_redirect_to_capital_offer_will_run() {
 		$wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->setConstructorArgs( [ $this->mock_api_client ] )
 			->getMock();
 
 		$this->assertNotFalse(
-			has_action( 'admin_init', [ $wcpay_account, 'maybe_redirect_to_capital_offer' ] )
-		);
-	}
-
-	public function test_maybe_redirect_to_capital_offer_will_not_run_if_capital_is_disabled() {
-		update_option( '_wcpay_feature_capital', '0' );
-		$wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setConstructorArgs( [ $this->mock_api_client ] )
-			->getMock();
-
-		$this->assertFalse(
 			has_action( 'admin_init', [ $wcpay_account, 'maybe_redirect_to_capital_offer' ] )
 		);
 	}
