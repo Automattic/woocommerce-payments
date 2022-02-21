@@ -158,11 +158,16 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
 	const openIframe = ( email ) => {
+		const urlParams = new URLSearchParams();
+		urlParams.append( 'email', email );
+		urlParams.append(
+			'needsHeader',
+			fullScreenModalBreakpoint > window.innerWidth
+		);
+
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
-		) }/sms-otp/?email=${ email }&needsHeader=${
-			fullScreenModalBreakpoint > window.innerWidth
-		}`;
+		) }/sms-otp/?${ urlParams.toString() }`;
 
 		// Insert the wrapper into the DOM.
 		parentDiv.insertBefore( iframeWrapper, null );
@@ -182,10 +187,13 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	const platformCheckoutLocateUser = ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
+		const emailParam = new URLSearchParams();
+		emailParam.append( 'email', email );
+
 		fetch(
-			getConfig( 'platformCheckoutHost' ) +
-				'/wp-json/platform-checkout/v1/user/exists?email=' +
-				email
+			`${ getConfig(
+				'platformCheckoutHost'
+			) }/wp-json/platform-checkout/v1/user/exists?${ emailParam.toString() }`
 		)
 			.then( ( response ) => response.json() )
 			.then( ( data ) => {
