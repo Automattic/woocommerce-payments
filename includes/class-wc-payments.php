@@ -223,14 +223,15 @@ class WC_Payments {
 		// Load platform checkout save user section if feature is enabled.
 		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
 			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
+			// Load platform checkout tracking.
+			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
+
 			new Platform_Checkout_Save_User();
+			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
 		}
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
-
-		// Load platform checkout tracking.
-		include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
 
 		self::$account                             = new WC_Payments_Account( self::$api_client );
 		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
@@ -309,8 +310,6 @@ class WC_Payments {
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
 		}
-
-		new Platform_Checkout_Tracker( self::get_wc_payments_http() );
 
 		// Load WCPay Subscriptions.
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
