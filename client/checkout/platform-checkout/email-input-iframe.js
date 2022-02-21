@@ -12,10 +12,13 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	const parentDiv = platformCheckoutEmailInput.parentNode;
 	spinner.classList.add( 'wc-block-components-spinner' );
 
+	// Make the iframe wrapper.
 	const iframeWrapper = document.createElement( 'div' );
 	iframeWrapper.setAttribute( 'role', 'dialog' );
 	iframeWrapper.setAttribute( 'aria-modal', 'true' );
 	iframeWrapper.classList.add( 'platform-checkout-sms-otp-iframe-wrapper' );
+
+	// Make the iframe.
 	const iframe = document.createElement( 'iframe' );
 	iframe.title = __(
 		'Platform checkout SMS code verification',
@@ -23,6 +26,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	);
 	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
 
+	// Make the iframe arrow.
 	const iframeArrow = document.createElement( 'span' );
 	iframeArrow.setAttribute( 'aria-hidden', 'true' );
 	iframeArrow.classList.add( 'arrow' );
@@ -49,25 +53,32 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				getConfig( 'platformCheckoutHost' )
 			);
 		}
+
+		// Prevent scrolling when the iframe is open.
 		document.body.style.overflow = 'hidden';
 	};
 
+	/**
+	 * Handles setting the iframe popover position based on the input field.
+	 * It tries to be positioned at the right of the input field unless the
+	 * window is too narrow, then it sticks 50px from the right edge of the
+	 * screen.
+	 */
 	const setPopoverPosition = () => {
+		// If for some reason the iframe is not loaded, just return.
 		if ( ! iframe ) {
 			return;
 		}
 
+		// If the window width is less than the breakpoint, reset the styles and return.
 		if ( fullScreenModalBreakpoint >= window.innerWidth ) {
 			iframe.style.left = '0';
 			iframe.style.right = '';
 			return;
 		}
 
-		// Get our element rects.
-		let iframeRect = iframe.getBoundingClientRect();
-
-		// Check top position.
-		if ( 0 >= iframeRect.top ) {
+		// Check if the iframe is off the top of the screen and scroll back into view.
+		if ( 0 >= iframe.getBoundingClientRect().top ) {
 			const topOffset = 50;
 			const scrollTop =
 				document.documentElement.scrollTop +
@@ -79,13 +90,15 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			} );
 		}
 
-		// Update the rects after maybe scrolling.
+		// Get references to the iframe and input field bounding rects.
 		const anchorRect = platformCheckoutEmailInput.getBoundingClientRect();
-		iframeRect = iframe.getBoundingClientRect();
+		const iframeRect = iframe.getBoundingClientRect();
 
+		// Set the iframe top.
 		iframe.style.top =
 			Math.floor( anchorRect.top - iframeRect.height / 2 ) + 'px';
-		// Arrow top is the input top plus half the input height minus the border width.
+
+		// Set the arrow top.
 		iframeArrow.style.top =
 			Math.floor(
 				anchorRect.top +
@@ -97,6 +110,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					)
 			) + 'px';
 
+		// Check if the iframe is off the right edge of the screen. If so, stick it to the right edge of the window.
 		if (
 			50 >=
 			window.innerWidth - ( anchorRect.right + iframeRect.width )
@@ -116,24 +130,31 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
+
 		getWindowSize();
 		window.addEventListener( 'resize', getWindowSize );
+
 		setPopoverPosition();
 		window.addEventListener( 'resize', setPopoverPosition );
+
 		iframe.classList.add( 'open' );
 	} );
+
+	// Add the iframe and iframe arrow to the wrapper.
 	iframeWrapper.insertBefore( iframeArrow, null );
 	iframeWrapper.insertBefore( iframe, null );
 
 	const closeIframe = () => {
-		// debouncedGetWindowSize.cancel();
 		window.removeEventListener( 'resize', getWindowSize );
 		window.removeEventListener( 'resize', setPopoverPosition );
+
 		iframeWrapper.remove();
 		iframe.classList.remove( 'open' );
 		platformCheckoutEmailInput.focus();
+
 		document.body.style.overflow = '';
 	};
+
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
 	const openIframe = ( email ) => {
@@ -142,8 +163,13 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		) }/sms-otp/?email=${ email }&needsHeader=${
 			fullScreenModalBreakpoint > window.innerWidth
 		}`;
+
+		// Insert the wrapper into the DOM.
 		parentDiv.insertBefore( iframeWrapper, null );
+
 		setPopoverPosition();
+
+		// Focus the iframe.
 		iframe.focus();
 	};
 
