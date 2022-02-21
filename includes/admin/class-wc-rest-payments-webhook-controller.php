@@ -568,4 +568,20 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		return $failure_message;
 	}
+
+	/**
+	 * Always allow access when running failed webhook events via ActionScheduler.
+	 * Otherwise, use the default check.
+	 *
+	 * @see WC_Payments_Webhook_Reliability_Service::process_event()
+	 *
+	 * @return bool
+	 */
+	public function check_permission(): bool {
+		if ( WC_Payments_Webhook_Reliability_Service::is_processing_event() ) {
+			return true;
+		}
+
+		return parent::check_permission();
+	}
 }
