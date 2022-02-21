@@ -37,8 +37,8 @@ class Platform_Checkout_Tracker extends Tracking {
 		 * @psalm-suppress InvalidArgument
 		 */
 		parent::__construct( self::$prefix, $http );
-		add_action( 'wp_ajax_nopriv_jetpack_tracks', [ $this, 'ajax_tracks' ] );
-		add_action( 'wp_enqueue_scripts', [ $this, 'maybe_enqueue_tracks_scripts' ] );
+		add_action( 'wp_ajax_platform_tracks', [ $this, 'ajax_tracks' ] );
+		add_action( 'wp_ajax_nopriv_platform_tracks', [ $this, 'ajax_tracks' ] );
 	}
 
 	/**
@@ -48,7 +48,7 @@ class Platform_Checkout_Tracker extends Tracking {
 		// Check for nonce.
 		if (
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			empty( $_REQUEST['tracksNonce'] ) || ! wp_verify_nonce( $_REQUEST['tracksNonce'], 'jp-tracks-ajax-nonce' )
+			empty( $_REQUEST['tracksNonce'] ) || ! wp_verify_nonce( $_REQUEST['tracksNonce'], 'platform_tracks_nonce' )
 		) {
 			wp_send_json_error(
 				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
@@ -68,8 +68,6 @@ class Platform_Checkout_Tracker extends Tracking {
 			$event_prop = wc_clean( wp_unslash( $_REQUEST['tracksEventProp'] ) );
 			if ( is_array( $event_prop ) ) {
 				$tracks_data = $event_prop;
-			} else {
-				$tracks_data = [ 'clicked' => $event_prop ];
 			}
 		}
 
@@ -133,19 +131,6 @@ class Platform_Checkout_Tracker extends Tracking {
 		// TODO: Don't track if jetpack_tos_agreed flag is not present.
 
 		return true;
-	}
-
-	/**
-	 * Enqueue Ajax tracking scripts if the store is trackable.
-	 *
-	 * @return void
-	 */
-	public function maybe_enqueue_tracks_scripts() {
-		if ( ! $this->should_track() ) {
-			return;
-		}
-
-		$this->enqueue_tracks_scripts( true );
 	}
 
 	/**
