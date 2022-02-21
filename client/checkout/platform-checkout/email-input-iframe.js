@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { debounce } from 'lodash';
 import { getConfig } from 'wcpay/utils/checkout';
 
 export const handlePlatformCheckoutEmailInput = ( field, api ) => {
@@ -23,6 +22,10 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		'woocommerce-payments'
 	);
 	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
+
+	const iframeArrow = document.createElement( 'span' );
+	iframeArrow.setAttribute( 'aria-hidden', 'true' );
+	iframeArrow.classList.add( 'arrow' );
 
 	// Maybe we could make this a configurable option defined in PHP so it could be filtered by merchants.
 	const fullScreenModalBreakpoint = 768;
@@ -46,29 +49,86 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				getConfig( 'platformCheckoutHost' )
 			);
 		}
-		if ( iframeHeaderValue ) {
-			document.body.style.overflow = 'hidden';
-			iframe.style.height = '';
-			iframe.style.top = '';
+		document.body.style.overflow = 'hidden';
+	};
+
+	const setPopoverPosition = () => {
+		if ( ! iframe ) {
+			return;
+		}
+
+		if ( fullScreenModalBreakpoint >= window.innerWidth ) {
+			iframe.style.left = '0';
+			iframe.style.right = '';
+			return;
+		}
+
+		// Get our element rects.
+		let iframeRect = iframe.getBoundingClientRect();
+
+		// Check top position.
+		if ( 0 >= iframeRect.top ) {
+			const topOffset = 50;
+			const scrollTop =
+				document.documentElement.scrollTop +
+				platformCheckoutEmailInput.getBoundingClientRect().top -
+				iframe.getBoundingClientRect().height / 2 -
+				topOffset;
+			window.scrollTo( {
+				top: scrollTop,
+			} );
+		}
+
+		// Update the rects after maybe scrolling.
+		const anchorRect = platformCheckoutEmailInput.getBoundingClientRect();
+		iframeRect = iframe.getBoundingClientRect();
+
+		iframe.style.top =
+			Math.floor( anchorRect.top - iframeRect.height / 2 ) + 'px';
+		// Arrow top is the input top plus half the input height minus the border width.
+		iframeArrow.style.top =
+			Math.floor(
+				anchorRect.top +
+					anchorRect.height / 2 -
+					parseFloat(
+						window.getComputedStyle( iframeArrow )[
+							'border-right-width'
+						]
+					)
+			) + 'px';
+
+		if (
+			50 >=
+			window.innerWidth - ( anchorRect.right + iframeRect.width )
+		) {
+			iframe.style.left = 'auto';
+			iframeArrow.style.left = 'auto';
+			iframe.style.right = '50px';
+			iframeArrow.style.right = `${ iframeRect.width + 50 }px`;
 		} else {
-			document.body.style.overflow = '';
+			iframe.style.left = `${ anchorRect.right + 5 }px`;
+			iframe.style.right = '';
+			iframeArrow.style.left = `${ anchorRect.right - 10 }px`;
+			iframeArrow.style.right = '';
 		}
 	};
-	// Do this on debounced resize.
-	const debouncedGetWindowSize = debounce( getWindowSize, 50 );
 
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
 		getWindowSize();
-		window.addEventListener( 'resize', debouncedGetWindowSize );
+		window.addEventListener( 'resize', getWindowSize );
+		setPopoverPosition();
+		window.addEventListener( 'resize', setPopoverPosition );
 		iframe.classList.add( 'open' );
 	} );
+	iframeWrapper.insertBefore( iframeArrow, null );
 	iframeWrapper.insertBefore( iframe, null );
 
 	const closeIframe = () => {
-		debouncedGetWindowSize.cancel();
-		window.removeEventListener( 'resize', debouncedGetWindowSize );
+		// debouncedGetWindowSize.cancel();
+		window.removeEventListener( 'resize', getWindowSize );
+		window.removeEventListener( 'resize', setPopoverPosition );
 		iframeWrapper.remove();
 		iframe.classList.remove( 'open' );
 		platformCheckoutEmailInput.focus();
@@ -83,6 +143,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			fullScreenModalBreakpoint > window.innerWidth
 		}`;
 		parentDiv.insertBefore( iframeWrapper, null );
+		setPopoverPosition();
 		iframe.focus();
 	};
 
@@ -150,9 +211,27 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			case 'iframe_height':
 				if ( 300 < e.data.height ) {
 					if ( fullScreenModalBreakpoint <= window.innerWidth ) {
+						// attach iframe to right side of platformCheckoutEmailInput.
+
 						iframe.style.height = e.data.height + 'px';
+
+						const inputRect = platformCheckoutEmailInput.getBoundingClientRect();
+
+						// iframe top is the input top minus the iframe height.
 						iframe.style.top =
-							Math.floor( e.data.height / -2 ) + 'px';
+							Math.floor( inputRect.top - e.data.height / 2 ) +
+							'px';
+						// Arrow top is the input top plus half the input height minus the border width.
+						iframeArrow.style.top =
+							Math.floor(
+								inputRect.top +
+									inputRect.height / 2 -
+									parseFloat(
+										window.getComputedStyle( iframeArrow )[
+											'border-right-width'
+										]
+									)
+							) + 'px';
 					} else {
 						iframe.style.height = '';
 						iframe.style.top = '';
