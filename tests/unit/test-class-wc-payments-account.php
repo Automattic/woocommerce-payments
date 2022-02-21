@@ -831,7 +831,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			return;
 		}
 
-		$this->enable_capital_feature();
 		$this->wcpay_account->handle_loan_approved_inbox_note( $account );
 		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
@@ -843,38 +842,16 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		];
 	}
 
-	public function enable_capital_feature() {
-		update_option( '_wcpay_feature_capital', '1' );
-	}
-
-	public function disable_capital_feature() {
-		update_option( '_wcpay_feature_capital', '0' );
-	}
-
 	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_throws_exception() {
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
 		}
 
-		$this->enable_capital_feature();
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_active_loan_summary' )
 			->willThrowException( new API_Exception( 'test_exception', 0, 400 ) );
-		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
-		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
-		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
-	}
-
-	public function test_handle_loan_approved_inbox_note_not_created_when_capital_is_disabled() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
-		$this->disable_capital_feature();
-		$this->mock_api_client->expects( $this->never() )->method( 'get_active_loan_summary' );
 		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
 		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
@@ -886,7 +863,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			return;
 		}
 
-		$this->enable_capital_feature();
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_active_loan_summary' )
@@ -902,7 +878,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			return;
 		}
 
-		$this->enable_capital_feature();
 		$advance_amount           = 1234567;
 		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100 ) ) ); // Match it with note content sanitization process.
 		$time                     = time();
@@ -939,7 +914,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			return;
 		}
 
-		$this->enable_capital_feature();
 		$advance_amount           = 1234567;
 		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100, [ 'currency' => 'CHF' ] ) ) ); // Match it with note content sanitization process.
 		$time                     = time();

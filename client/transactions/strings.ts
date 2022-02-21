@@ -5,11 +5,6 @@
  */
 import { __ } from '@wordpress/i18n';
 
-const capitalEnabled =
-	'undefined' !== typeof wcpaySettings
-		? wcpaySettings.featureFlags.capital
-		: false;
-
 // Mapping of transaction types to display string.
 export const displayType = {
 	charge: __( 'Charge', 'woocommerce-payments' ),
@@ -24,8 +19,6 @@ export const displayType = {
 	dispute: __( 'Dispute', 'woocommerce-payments' ),
 	dispute_reversal: __( 'Dispute reversal', 'woocommerce-payments' ),
 	card_reader_fee: __( 'Reader fee', 'woocommerce-payments' ),
-	...( capitalEnabled && {
-		financing_payout: __( 'Loan dispersement', 'woocommerce-payments' ),
-		financing_paydown: __( 'Loan repayment', 'woocommerce-payments' ),
-	} ),
+	financing_payout: __( 'Loan dispersement', 'woocommerce-payments' ),
+	financing_paydown: __( 'Loan repayment', 'woocommerce-payments' ),
 };
