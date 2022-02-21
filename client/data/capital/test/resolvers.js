@@ -67,7 +67,6 @@ describe( 'getActiveLoanSummary resolver', () => {
 	} );
 } );
 
-
 describe( 'getLoans resolver', () => {
 	let generator = null;
 

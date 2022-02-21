@@ -19,7 +19,8 @@ describe( 'Capital reducer tests', () => {
 		};
 		const reduced = reducer(
 			{
-				existing: 'state', shouldBe: 'preserved',
+				existing: 'state',
+				shouldBe: 'preserved',
 			},
 			{
 				type: types.SET_ACTIVE_LOAN_SUMMARY,
@@ -28,7 +29,8 @@ describe( 'Capital reducer tests', () => {
 		);
 
 		expect( reduced ).toStrictEqual( {
-			existing: 'state', shouldBe: 'preserved',
+			existing: 'state',
+			shouldBe: 'preserved',
 			summary: mockSummary,
 			summaryError: undefined,
 		} );
@@ -52,13 +54,11 @@ describe( 'Capital reducer tests', () => {
 	} );
 
 	test( 'Loans list fetch is reduced correctly', () => {
-		const mockLoansList = [
-			{ aaa: 'bbb' },
-			{ ccc: 'ddd' },
-		];
+		const mockLoansList = [ { aaa: 'bbb' }, { ccc: 'ddd' } ];
 		const reduced = reducer(
 			{
-				existing: 'state', shouldBe: 'preserved',
+				existing: 'state',
+				shouldBe: 'preserved',
 			},
 			{
 				type: types.SET_LOANS,
@@ -67,7 +67,8 @@ describe( 'Capital reducer tests', () => {
 		);
 
 		expect( reduced ).toStrictEqual( {
-			existing: 'state', shouldBe: 'preserved',
+			existing: 'state',
+			shouldBe: 'preserved',
 			loans: mockLoansList,
 			loansError: undefined,
 		} );

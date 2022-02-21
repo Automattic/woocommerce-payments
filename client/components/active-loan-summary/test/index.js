@@ -20,7 +20,7 @@ describe( 'Active loan summary', () => {
 			zeroDecimalCurrencies: [],
 			accountLoans: {
 				loans: [ 'flxln_123456|active' ],
-			}
+			},
 		};
 	} );
 	afterEach( () => {
