@@ -110,7 +110,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		if ( $this->is_subscriptions_plugin_active() ) {
 			/*
-			 * Subscription amount & date changes or only supported
+			 * Subscription amount & date changes are only supported
 			 * when WooCommerce Subscriptions is active.
 			 */
 			$payment_gateway_features = array_merge(
