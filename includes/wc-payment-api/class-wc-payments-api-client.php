@@ -2024,4 +2024,15 @@ class WC_Payments_API_Client {
 	public function get_active_loan_summary() : array {
 		return $this->request( [], self::CAPITAL_API . '/active_loan_summary', self::GET );
 	}
+
+	/**
+	 * Fetch the past and present Capital loans.
+	 *
+	 * @return array List of capital loans.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_loans() : array {
+		return $this->request( [], self::CAPITAL_API . '/loans', self::GET );
+	}
 }
