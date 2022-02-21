@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use SebastianBergmann\CodeCoverage\Util;
 use WCPay\Platform_Checkout_Tracker;
 
 /**
@@ -32,7 +31,7 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 		parent::setUp();
 
 		$this->http_client_stub = $this->getMockBuilder( WC_Payments_Http::class )->disableOriginalConstructor()->setMethods( [ 'wpcom_json_api_request_as_user' ] )->getMock();
-		$this->tracker          = new Platform_Checkout_Tracker( $this->http_client_stub );
+		$this->tracker          = new WCPay\Platform_Checkout_Tracker( $this->http_client_stub );
 	}
 
 	public function test_should_track_obeys_platform_checkou_flag() {
