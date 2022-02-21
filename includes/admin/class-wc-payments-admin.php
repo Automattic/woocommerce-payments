@@ -237,6 +237,19 @@ class WC_Payments_Admin {
 				];
 			}
 
+			if ( $this->account->get_capital()['has_previous_loans'] ) {
+				$this->admin_child_pages['wc-payments-capital'] = [
+					'id'       => 'wc-payments-capital',
+					'title'    => __( 'Capital Loans', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/loans',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 60,
+					],
+				];
+			}
+
 			/**
 			 * Please note that if any other page is registered first and it's
 			 * path is different from the $top_level_link it will make
@@ -257,7 +270,7 @@ class WC_Payments_Admin {
 						'parent' => 'wc-payments',
 						'title'  => __( 'Settings', 'woocommerce-payments' ),
 						'url'    => 'wc-settings&tab=checkout&section=woocommerce_payments',
-						'order'  => 50,
+						'order'  => 99,
 					],
 				]
 			);
