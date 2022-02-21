@@ -816,9 +816,8 @@ class WC_Payments {
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
 			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-			add_filter( 'woocommerce_checkout_fields', [ __CLASS__, 'platform_checkout_remove_default_email_field' ], 50 );
-			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
-			add_action( 'woocommerce_checkout_update_order_meta', [ __CLASS__, 'platform_checkout_save_email_field' ], 10, 2 );
+			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 10 );
+			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
 		}
 	}
 
@@ -898,22 +897,6 @@ class WC_Payments {
 	}
 
 	/**
-	 * Remove default billing email field for Platform Checkout
-	 *
-	 * @param array $fields WooCommerce checkout fields.
-	 * @return array WooCommerce checkout fields.
-	 */
-	public static function platform_checkout_remove_default_email_field( $fields ) {
-		if ( isset( $fields['billing']['billing_email'] ) ) {
-			unset( $fields['billing']['billing_email'] );
-		} else {
-			remove_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
-		}
-
-		return $fields;
-	}
-
-	/**
 	 * Adds custom email field.
 	 */
 	public static function platform_checkout_fields_before_billing_details() {
@@ -942,16 +925,19 @@ class WC_Payments {
 	}
 
 	/**
-	 * Updates an orders email address
+	 * Hide the core email field
 	 *
-	 * @param int $order_id WooCommerce order ID.
+	 * @param string $field The checkout field being filtered.
+	 * @param string $key The field key.
+	 * @param mixed  $args Field arguments.
+	 * @param string $value Field value.
 	 */
-	public static function platform_checkout_save_email_field( $order_id ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$billing_email = isset( $_POST['billing_email'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_email'] ) ) : '';
-		if ( ! empty( $billing_email ) ) {
-			update_post_meta( $order_id, '_billing_email', $billing_email );
+	public static function filter_woocommerce_form_field_platform_checkout_email( $field, $key, $args, $value ) {
+		$class = $args['class'][0];
+		if ( false === strpos( $class, 'platform-checkout-billing-email' ) ) {
+			$field = '';
 		}
+		return $field;
 	}
 
 }
