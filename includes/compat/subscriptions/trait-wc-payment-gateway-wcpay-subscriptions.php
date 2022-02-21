@@ -92,6 +92,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
+		/*
+		 * Base set of subscription features to add.
+		 * The WCPay payment gateway supports these feautres
+		 * for both WCPay Subscriptions and WooCommerce Subscriptions.
+		 */
 		$payment_gateway_features = [
 			'multiple_subscriptions',
 			'subscription_cancellation',
@@ -104,6 +109,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		];
 
 		if ( $this->is_subscriptions_plugin_active() ) {
+			/*
+			 * Subscription amount & date changes or only supported
+			 * when WooCommerce Subscriptions is active.
+			 */
 			$payment_gateway_features = array_merge(
 				$payment_gateway_features,
 				[
@@ -112,6 +121,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				]
 			);
 		} else {
+			/*
+			 * The gateway_scheduled_payments feature is only supported
+			 * for WCPay Subscriptions.
+			 */
 			$payment_gateway_features[] = 'gateway_scheduled_payments';
 		}
 
