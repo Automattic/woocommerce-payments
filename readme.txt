@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.7 or newer.
-* WooCommerce 5.9 or newer.
+* WooCommerce 6.0 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -101,6 +101,8 @@ Please note that our support for the checkout block is still experimental and th
 = 3.8.0 - 2022-xx-xx =
 * Add - Introduce `wcpay_payment_request_payment_method_title_suffix` filter. Allows plugins to replace "(WooCommerce Payments)" suffix on title of payment request buttons.
 * Tweak - only add admin notes on non-AJAX requests
+* Add - Add endpoint to retrieve a file content via API.
+* Add - Add a preview of uploaded logo and icon on terminal card reader receipt settings page.
 
 = 3.7.0 - 2022-02-10 =
 * Add - Filter by currency in disputes list
