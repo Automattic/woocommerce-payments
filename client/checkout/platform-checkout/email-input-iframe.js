@@ -93,6 +93,17 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		)
 			.then( ( response ) => response.json() )
 			.then( ( data ) => {
+				// Dispatch an event after we get the response.
+				const PlatformCheckoutUserCheckEvent = new CustomEvent(
+					'PlatformCheckoutUserCheck',
+					{
+						detail: {
+							isRegisteredUser: data[ 'user-exists' ],
+						},
+					}
+				);
+				window.dispatchEvent( PlatformCheckoutUserCheckEvent );
+
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
 				}
