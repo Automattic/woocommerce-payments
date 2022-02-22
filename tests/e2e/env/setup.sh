@@ -2,6 +2,14 @@
 
 set -e
 
+# Check for script dependencies.
+# Exit if dependencies are not met.
+if ! command -v jq &> /dev/null
+then
+    echo "The script requires jq library to be installed. For more info visit https://stedolan.github.io/jq/download/."
+    exit 1
+fi
+
 . ./tests/e2e/env/shared.sh
 
 if [[ -f "$E2E_ROOT/config/local.env" ]]; then
