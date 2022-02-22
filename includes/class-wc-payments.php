@@ -220,7 +220,7 @@ class WC_Payments {
 		}
 
 		// Load platform checkout save user section if feature is enabled.
-		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
+		if ( WC_Payments_Features::is_platform_checkout_eligible() ) {
 			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
 			new Platform_Checkout_Save_User();
 		}
@@ -808,10 +808,10 @@ class WC_Payments {
 	 * Registers platform checkout hooks if the platform checkout feature flag is enabled.
 	 */
 	public static function maybe_register_platform_checkout_hooks() {
-		$is_platform_checkout_feature_enabled = WC_Payments_Features::is_platform_checkout_enabled(); // Feature flag.
-		$is_platform_checkout_enabled         = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
+		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
+		$is_platform_checkout_enabled  = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
 
-		if ( $is_platform_checkout_feature_enabled && $is_platform_checkout_enabled ) {
+		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.

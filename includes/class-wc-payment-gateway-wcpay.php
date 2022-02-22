@@ -620,7 +620,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'locale'                    => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isUPEEnabled'              => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'       => $this->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled' => WC_Payments_Features::is_platform_checkout_enabled() && 'yes' === $this->get_option( 'platform_checkout', 'no' ),
+			'isPlatformCheckoutEnabled' => WC_Payments_Features::is_platform_checkout_eligible() && 'yes' === $this->get_option( 'platform_checkout', 'no' ),
 			'platformCheckoutHost'      => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
 		];
 	}

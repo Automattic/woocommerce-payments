@@ -73,7 +73,7 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 
 	public function test_is_platform_checkout_is_returned_as_true() {
 		update_option( '_wcpay_feature_platform_checkout', '1' );
-		$this->assertTrue( WC_Payments_Features::is_platform_checkout_enabled() );
+		$this->assertTrue( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
 
 	/**
@@ -81,12 +81,12 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 	 */
 	public function test_is_platform_checkout_is_returned_as_false_if_not_equal_1() {
 		update_option( '_wcpay_feature_platform_checkout', '0' );
-		$this->assertFalse( WC_Payments_Features::is_platform_checkout_enabled() );
+		$this->assertFalse( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
 
 	public function test_is_platform_checkout_is_returned_as_false_if_missing() {
 		delete_option( '_wcpay_feature_platform_checkout' );
-		$this->assertFalse( WC_Payments_Features::is_platform_checkout_enabled() );
+		$this->assertFalse( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
 
 	public function is_platform_checkout_falsy_value_provider() {
