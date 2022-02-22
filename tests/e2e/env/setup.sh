@@ -11,11 +11,15 @@ fi
 
 # Variables
 BLOG_ID=${E2E_BLOG_ID-111}
-IS_DEBUG_ENABLED=${DEBUG-false}
-WC_GUEST_EMAIL='guest@woocommercecoree2etestsuite.com'
-WC_CUSTOMER_EMAIL='customer@woocommercecoree2etestsuite.com'
-WC_CUSTOMER_USERNAME='customer'
-WC_CUSTOMER_PASSWORD='password'
+WC_GUEST_EMAIL=$(<"$E2E_ROOT/config/test.json" jq -r '.users.guest.email')
+WC_CUSTOMER_EMAIL=$(<"$E2E_ROOT/config/test.json" jq -r '.users.customer.email')
+WC_CUSTOMER_USERNAME=$(<"$E2E_ROOT/config/test.json" jq -r '.users.customer.username')
+WC_CUSTOMER_PASSWORD=$(<"$E2E_ROOT/config/test.json" jq -r '.users.customer.password')
+WP_ADMIN=$(<"$E2E_ROOT/config/test.json" jq -r '.users.admin.username')
+WP_ADMIN_PASSWORD=$(<"$E2E_ROOT/config/test.json" jq -r '.users.admin.password')
+WP_ADMIN_EMAIL=$(<"$E2E_ROOT/config/test.json" jq -r '.users.admin.email')
+SITE_TITLE="WooCommerce Payments E2E site"
+SITE_URL=$WP_URL
 
 # Setup WCPay local server instance.
 # Only if E2E_USE_LOCAL_SERVER is present & equals to true.
@@ -89,13 +93,6 @@ fi
 
 echo
 step "Setting up CLIENT site"
-# Need to use those credentials to comply with @woocommerce/e2e-environment
-WP_ADMIN=admin
-WP_ADMIN_PASSWORD=password
-WP_CONTAINER="wcp_e2e_wordpress"
-SITE_URL=$WP_URL
-SITE_TITLE="WooCommerce Payments E2E site"
-
 
 # Wait for containers to be started up before the setup.
 # The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
