@@ -14,8 +14,8 @@ For running E2E tests locally, create a new file named `local.env` under `tests/
 # WooCommerce Payments Dev Tools Repo
 WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git'
 
-# Optional to see verbose output
-DEBUG=true
+# Optional to see additional verbose output. Default false.
+DEBUG=false
 ```
 
 </p>
