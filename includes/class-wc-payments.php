@@ -931,6 +931,7 @@ class WC_Payments {
 	 * @param string $key The field key.
 	 * @param mixed  $args Field arguments.
 	 * @param string $value Field value.
+	 * @return string
 	 */
 	public static function filter_woocommerce_form_field_platform_checkout_email( $field, $key, $args, $value ) {
 		$class = $args['class'][0];
