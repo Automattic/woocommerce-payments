@@ -10,7 +10,7 @@ CURRENT_PHP_MAJOR_VERSION=$(php -r 'echo PHP_MAJOR_VERSION;')
 # Consider this bump when PHPUnit inside composer.json is bumped
 SUPPORTED_PHP_MAJOR_VERSION_FOR_PHPUNIT_INSTALLED_VIA_COMPOSER_JSON=7
 
-if [ $CURRENT_PHP_MAJOR_VERSION -gt SUPPORTED_PHP_MAJOR_VERSION_FOR_PHPUNIT_INSTALLED_VIA_COMPOSER_JSON ]; then
+if [ $CURRENT_PHP_MAJOR_VERSION -gt $SUPPORTED_PHP_MAJOR_VERSION_FOR_PHPUNIT_INSTALLED_VIA_COMPOSER_JSON ]; then
 	wget -O phpunit https://phar.phpunit.de/phpunit-9.phar
 	chmod +x phpunit
 	./phpunit -c phpunit.xml.dist $@
