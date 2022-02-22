@@ -227,60 +227,61 @@ else
 fi
 
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
+	WC_SUBSCRIPTIONS_PLUGIN_NAME="woocommerce-subscriptions"
+
 	echo "Install and activate the latest release of WooCommerce Subscriptions"
 	cd "$E2E_ROOT"/deps
-	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | jq -r '.tag_name')
-	WCS_LATEST_ASSET_ID=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | jq -r '.assets[0].id')
-	curl -L \
+
+	LATEST_RELEASE_ASSET_ID=$(curl -H "Authorization: token $E2E_GH_TOKEN" https://api.github.com/repos/"$WC_SUBSCRIPTIONS_REPO"/releases/latest | jq -r '.assets[0].id')
+
+	curl -LJ \
 		-H "Authorization: token $E2E_GH_TOKEN" \
-		-H 'Accept: application/octet-stream' \
-		--output "woocommerce-subscriptions-$LATEST_RELEASE.zip" \
-		"https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/assets/$WCS_LATEST_ASSET_ID"
+		-H "Accept: application/octet-stream" \
+		--output "$WC_SUBSCRIPTIONS_PLUGIN_NAME.zip" \
+		https://api.github.com/repos/"$WC_SUBSCRIPTIONS_REPO"/releases/assets/"$LATEST_RELEASE_ASSET_ID"
 
-	unzip -qq woocommerce-subscriptions-$LATEST_RELEASE.zip -d woocommerce-subscriptions-$LATEST_RELEASE
-
-	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv woocommerce-subscriptions-$LATEST_RELEASE/woocommerce-subscriptions/* "$E2E_ROOT"/deps/woocommerce-subscriptions
-
-	cli wp plugin activate woocommerce-subscriptions
-
-	rm -rf woocommerce-subscriptions-$LATEST_RELEASE
+	unzip -qq "$WC_SUBSCRIPTIONS_PLUGIN_NAME.zip"
+	cli wp plugin activate $WC_SUBSCRIPTIONS_PLUGIN_NAME
 else
 	echo "Skipping install of WooCommerce Subscriptions"
 fi
 
 if [[ ! ${SKIP_WC_ACTION_SCHEDULER_TESTS} ]]; then
+	WC_ACTION_SCHEDULER_PLUGIN_NAME="action-scheduler"
+
 	echo "Install and activate the latest release of Action Scheduler"
 	cd "$E2E_ROOT"/deps
-	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_ACTION_SCHEDULER_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
-	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_ACTION_SCHEDULER_REPO/archive/$LATEST_RELEASE.zip"
 
-	unzip -qq action-scheduler-$LATEST_RELEASE.zip
+	LATEST_RELEASE_ASSET_ID=$(curl -H "Authorization: token $E2E_GH_TOKEN" https://api.github.com/repos/"$WC_ACTION_SCHEDULER_REPO"/releases/latest | jq -r '.assets[0].id')
 
-	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv action-scheduler-$LATEST_RELEASE/* "$E2E_ROOT"/deps/action-scheduler
+	curl -LJ \
+		-H "Authorization: token $E2E_GH_TOKEN" \
+		-H "Accept: application/octet-stream" \
+		--output "$WC_ACTION_SCHEDULER_PLUGIN_NAME.zip" \
+		https://api.github.com/repos/"$WC_ACTION_SCHEDULER_REPO"/releases/assets/"$LATEST_RELEASE_ASSET_ID"
 
+	unzip -qq "$WC_ACTION_SCHEDULER_PLUGIN_NAME.zip"
 	cli wp plugin activate action-scheduler
-
-	rm -rf action-scheduler-$LATEST_RELEASE
 else
 	echo "Skipping install of Action Scheduler"
 fi
 
 if [[ ! ${SKIP_WC_BLOCKS_TESTS} ]]; then
+	WC_BLOCKS_PLUGIN_NAME="woo-gutenberg-products-block"
+
 	echo "Install and activate the latest release of WooCommerce Blocks"
 	cd "$E2E_ROOT"/deps
-	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_BLOCKS_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
-	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_BLOCKS_REPO/archive/$LATEST_RELEASE.zip"
 
-	unzip -qq woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}.zip
+	LATEST_RELEASE_ASSET_ID=$(curl -H "Authorization: token $E2E_GH_TOKEN" https://api.github.com/repos/"$WC_BLOCKS_REPO"/releases/latest | jq -r '.assets[0].id')
 
-	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}/* "$E2E_ROOT"/deps/woocommerce-gutenberg-products-block
+	curl -LJ \
+		-H "Authorization: token $E2E_GH_TOKEN" \
+		-H "Accept: application/octet-stream" \
+		--output "$WC_BLOCKS_PLUGIN_NAME.zip" \
+		https://api.github.com/repos/"$WC_BLOCKS_REPO"/releases/assets/"$LATEST_RELEASE_ASSET_ID"
 
-	cli wp plugin activate woocommerce-gutenberg-products-block
-
-	rm -rf woocommerce-gutenberg-products-block-${LATEST_RELEASE//v}
+	unzip -qq "$WC_BLOCKS_PLUGIN_NAME.zip" -d $WC_BLOCKS_PLUGIN_NAME
+	cli wp plugin activate $WC_BLOCKS_PLUGIN_NAME
 else
 	echo "Skipping install of WooCommerce Blocks"
 fi
