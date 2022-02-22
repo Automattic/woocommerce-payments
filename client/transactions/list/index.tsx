@@ -488,7 +488,7 @@ export const TransactionsList = (
 					createNotice(
 						'success',
 						__(
-							'Your export will be emailed to you.',
+							'Your export will be emailed to you.', // TODO fix the message
 							'woocommerce-payments'
 						)
 					);
