@@ -291,29 +291,25 @@ mkdir -p $WCP_ROOT/screenshots
 echo "Disabling rate limiter for card declined in E2E tests"
 cli wp option add wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
 
-if [[ "$IS_DEBUG_ENABLED" = false ]]; then
-	#Temporarily enable debugging to display output for the following commands.
-	DEBUG=true
-fi
+# Log test configuration for visibility
 echo
 echo "*******************************************************"
 echo "Current test configuration"
+echo "*******************************************************"
+
 echo
 echo "WordPress version:"
-cli wp core version
+cli_debug wp core version
 
 echo
 echo "WooCommerce version:"
-cli wp plugin get woocommerce --field=version
+cli_debug wp plugin get woocommerce --field=version
 
 echo
 echo "Docker environment:"
-cli wp cli info
-echo "*******************************************************"
-if [[ "$IS_DEBUG_ENABLED" = false ]]; then
-	#Disable debugging if temporarily enabled.
-	DEBUG=false
-fi
+cli_debug wp cli info
 
 echo
+echo "*******************************************************"
+
 step "Client site is up and running at http://${WP_URL}/wp-admin/"
