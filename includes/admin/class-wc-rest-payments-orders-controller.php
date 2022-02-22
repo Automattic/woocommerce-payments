@@ -115,7 +115,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Do not process intents that can't be captured.
 			$intent = $this->api_client->get_intent( $intent_id );
-			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture' ], true ) ) {
+			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture', 'succeeded' ], true ) ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
@@ -139,19 +139,26 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$intent->get_currency()
 			);
 
-			// Capture the intent and update the order attributes.
-			$result = $this->gateway->capture_charge( $order );
-			if ( 'succeeded' !== $result['status'] ) {
-				$http_code = $result['http_code'] ?? 502;
-				return new WP_Error(
-					'wcpay_capture_error',
-					sprintf(
+			if ( 'succeeded' === $intent->get_status() ) {
+				$result = [
+					'status' => 'succeeded',
+					'id'     => $intent->get_id(),
+				];
+			} else {
+				// Capture the intent and update the order attributes.
+				$result = $this->gateway->capture_charge( $order );
+				if ( 'succeeded' !== $result['status'] ) {
+					$http_code = $result['http_code'] ?? 502;
+					return new WP_Error(
+						'wcpay_capture_error',
+						sprintf(
 						// translators: %s: the error message.
-						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
-						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
-					),
-					[ 'status' => $http_code ]
-				);
+							__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
+							$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
+						),
+						[ 'status' => $http_code ]
+					);
+				}
 			}
 			// Store receipt generation URL for mobile applications in order meta-data.
 			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
