@@ -316,6 +316,9 @@ export const DisputeEvidencePage = ( props ) => {
 							<SelectControl
 								value={ productType }
 								onChange={ onChangeProductType }
+								data-testid={
+									'dispute-challenge-product-type-selector'
+								}
 								options={ [
 									{
 										label: __(

@@ -42,6 +42,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 			[
 				'amount_captured'        => $charge['amount_captured'] / 100,
 				'coupon_lines'           => $order_data['coupon_lines'] ?? [],
+				'branding_logo'          => $settings['branding_logo'] ?? [],
 				'business_name'          => $settings['business_name'],
 				'line_items'             => $this->format_line_items( $order_data ),
 				'order'                  => $order_data,

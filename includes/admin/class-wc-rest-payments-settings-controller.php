@@ -200,6 +200,16 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'is_platform_checkout_enabled'      => [
+						'description'       => __( 'If WooCommerce Payments platform checkout should be enabled.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'platform_checkout_custom_message'  => [
+						'description'       => __( 'Custom message to display to platform checkout customers.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
 				],
 			]
 		);
@@ -247,14 +257,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return $string_validation_result;
 		}
 
-		if ( '' === $value ) {
-			return new WP_Error(
-				'rest_invalid_pattern',
-				__( 'Error: Support email address is required!', 'woocommerce-payments' )
-			);
-		}
-
-		if ( ! is_email( $value ) ) {
+		if ( '' !== $value && ! is_email( $value ) ) {
 			return new WP_Error(
 				'rest_invalid_pattern',
 				__( 'Error: Invalid email address: ', 'woocommerce-payments' ) . $value
@@ -302,7 +305,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return $string_validation_result;
 		}
 
-		if ( '' !== $value && ! wp_http_validate_url( $value ) ) {
+		if ( '' !== $value && ! filter_var( $value, FILTER_VALIDATE_URL ) ) {
 			return new WP_Error(
 				'rest_invalid_pattern',
 				__( 'Error: Invalid business URL: ', 'woocommerce-payments' ) . $value
@@ -326,12 +329,14 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return $string_validation_result;
 		}
 
-		foreach ( $value as $field => $field_value ) {
-			if ( ! in_array( $field, [ 'city', 'country', 'line1', 'line2', 'postal_code', 'state' ], true ) ) {
-				return new WP_Error(
-					'rest_invalid_pattern',
-					__( 'Error: Invalid address format!', 'woocommerce-payments' )
-				);
+		if ( [] !== $value ) {
+			foreach ( $value as $field => $field_value ) {
+				if ( ! in_array( $field, [ 'city', 'country', 'line1', 'line2', 'postal_code', 'state' ], true ) ) {
+					return new WP_Error(
+						'rest_invalid_pattern',
+						__( 'Error: Invalid address format!', 'woocommerce-payments' )
+					);
+				}
 			}
 		}
 
@@ -375,6 +380,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_theme'      => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
 				'is_saved_cards_enabled'            => $this->wcpay_gateway->is_saved_cards_enabled(),
 				'is_card_present_eligible'          => $this->wcpay_gateway->is_card_present_eligible(),
+				'is_platform_checkout_enabled'      => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
+				'platform_checkout_custom_message'  => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 			]
 		);
 	}
@@ -397,6 +404,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_payment_request_appearance( $request );
 		$this->update_is_saved_cards_enabled( $request );
 		$this->update_account( $request );
+		$this->update_is_platform_checkout_enabled( $request );
+		$this->update_platform_checkout_custom_message( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -571,7 +580,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		};
 		$updated_fields          = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
 
-		return $this->wcpay_gateway->update_account_settings( $updated_fields );
+		$this->wcpay_gateway->update_account_settings( $updated_fields );
 	}
 
 	/**
@@ -638,5 +647,35 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_saved_cards_enabled = $request->get_param( 'is_saved_cards_enabled' );
 
 		$this->wcpay_gateway->update_option( 'saved_cards', $is_saved_cards_enabled ? 'yes' : 'no' );
+	}
+
+	/**
+	 * Updates the "platform checkout" enable/disable settings.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_platform_checkout_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_platform_checkout_enabled' ) ) {
+			return;
+		}
+
+		$is_platform_checkout_enabled = $request->get_param( 'is_platform_checkout_enabled' );
+
+		$this->wcpay_gateway->update_is_platform_checkout_enabled( $is_platform_checkout_enabled );
+	}
+
+	/**
+	 * Updates the custom message that will appear for platform checkout customers.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_platform_checkout_custom_message( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'platform_checkout_custom_message' ) ) {
+			return;
+		}
+
+		$platform_checkout_custom_message = $request->get_param( 'platform_checkout_custom_message' );
+
+		$this->wcpay_gateway->update_option( 'platform_checkout_custom_message', $platform_checkout_custom_message );
 	}
 }

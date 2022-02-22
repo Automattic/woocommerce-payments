@@ -21,6 +21,7 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
+use WCPay\Payment_Methods\Eps_Payment_Method;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -161,8 +162,6 @@ class WC_Payments {
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 
-		self::maybe_register_platform_checkout_hooks();
-
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
 
@@ -190,6 +189,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-ideal-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-becs-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-eps-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -212,10 +212,17 @@ class WC_Payments {
 		include_once __DIR__ . '/class-experimental-abtest.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
+		include_once __DIR__ . '/class-wc-payments-file-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
 			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
+		}
+
+		// Load platform checkout save user section if feature is enabled.
+		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
+			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
+			new Platform_Checkout_Save_User();
 		}
 
 		// Always load tracker to avoid class not found errors.
@@ -245,6 +252,7 @@ class WC_Payments {
 				P24_Payment_Method::class,
 				Ideal_Payment_Method::class,
 				Becs_Payment_Method::class,
+				Eps_Payment_Method::class,
 			];
 			foreach ( $payment_method_classes as $payment_method_class ) {
 				$payment_method                               = new $payment_method_class( self::$token_service );
@@ -254,6 +262,8 @@ class WC_Payments {
 		} else {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter );
 		}
+
+		self::maybe_register_platform_checkout_hooks();
 
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::$card_gateway );
@@ -607,6 +617,14 @@ class WC_Payments {
 		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client, self::$card_gateway, self::$in_person_payments_receipts_service );
 		$charges_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-files-controller.php';
+		$files_controller = new WC_REST_Payments_Files_Controller( self::$api_client );
+		$files_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-capital-controller.php';
+		$capital_controller = new WC_REST_Payments_Capital_Controller( self::$api_client );
+		$capital_controller->register_routes();
+
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
@@ -731,6 +749,11 @@ class WC_Payments {
 	 * Adds WCPay notes to the WC-Admin inbox.
 	 */
 	public static function add_woo_admin_notes() {
+		// Do not try to add notes on ajax requests to improve their performance.
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
@@ -785,11 +808,16 @@ class WC_Payments {
 	 * Registers platform checkout hooks if the platform checkout feature flag is enabled.
 	 */
 	public static function maybe_register_platform_checkout_hooks() {
-		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
+		$is_platform_checkout_feature_enabled = WC_Payments_Features::is_platform_checkout_enabled(); // Feature flag.
+		$is_platform_checkout_enabled         = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
+
+		if ( $is_platform_checkout_feature_enabled && $is_platform_checkout_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
 			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+			add_filter( 'woocommerce_checkout_fields', [ __CLASS__, 'platform_checkout_remove_default_email_field' ], 50 );
+			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
 		}
 	}
 
@@ -819,11 +847,12 @@ class WC_Payments {
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
-				'store_name' => get_bloginfo( 'name' ),
-				'store_logo' => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
-				'blog_id'    => Jetpack_Options::get_option( 'id' ),
-				'blog_url'   => get_site_url(),
-				'account_id' => $account_id,
+				'store_name'     => get_bloginfo( 'name' ),
+				'store_logo'     => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
+				'custom_message' => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
+				'blog_id'        => Jetpack_Options::get_option( 'id' ),
+				'blog_url'       => get_site_url(),
+				'account_id'     => $account_id,
 			],
 		];
 		$args                   = [
@@ -865,5 +894,49 @@ class WC_Payments {
 		);
 
 		return (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'];
+	}
+
+	/**
+	 * Remove default billing email field for Platform Checkout
+	 *
+	 * @param array $fields WooCommerce checkout fields.
+	 * @return array WooCommerce checkout fields.
+	 */
+	public static function platform_checkout_remove_default_email_field( $fields ) {
+		if ( isset( $fields['billing']['billing_email'] ) ) {
+			unset( $fields['billing']['billing_email'] );
+		} else {
+			remove_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Adds custom email field.
+	 */
+	public static function platform_checkout_fields_before_billing_details() {
+		$checkout = WC()->checkout;
+
+		echo '<div id="contact_details" class="col2-set">';
+		echo '<div class="col-1">';
+
+		echo '<h3>' . esc_html( __( 'Contact information', 'woocommerce-payments' ) ) . '</h3>';
+
+		woocommerce_form_field(
+			'billing_email',
+			[
+				'type'        => 'email',
+				'label'       => __( 'Email address', 'woocommerce-payments' ),
+				'class'       => [ 'form-row-wide platform-checkout-billing-email' ],
+				'input_class' => [ 'platform-checkout-billing-email-input' ],
+				'validate'    => [ 'email' ],
+				'required'    => true,
+			],
+			$checkout->get_value( 'billing_email' )
+		);
+
+		echo '</div>';
+		echo '</div>';
 	}
 }

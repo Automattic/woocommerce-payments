@@ -194,3 +194,13 @@ export function updatePaymentRequestLocations( locations ) {
 		payment_request_enabled_locations: [ ...locations ],
 	} );
 }
+
+export function updateIsPlatformCheckoutEnabled( isEnabled ) {
+	return updateSettingsValues( { is_platform_checkout_enabled: isEnabled } );
+}
+
+export function updatePlatformCheckoutCustomMessage( message ) {
+	return updateSettingsValues( {
+		platform_checkout_custom_message: message,
+	} );
+}

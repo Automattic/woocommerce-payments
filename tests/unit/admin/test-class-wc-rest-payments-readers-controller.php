@@ -272,9 +272,9 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway
-			->expects( $this->exactly( 4 ) )
+			->expects( $this->exactly( 5 ) )
 			->method( 'get_option' )
-			->willReturnOnConsecutiveCalls( $settings['business_name'], $settings['support_info']['address'], $settings['support_info']['phone'], $settings['support_info']['email'] );
+			->willReturnOnConsecutiveCalls( $settings['branding_logo'], $settings['business_name'], $settings['support_info']['address'], $settings['support_info']['phone'], $settings['support_info']['email'] );
 
 		$this->mock_receipts_service
 			->expects( $this->once() )
@@ -448,9 +448,9 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway
-			->expects( $this->exactly( 4 ) )
+			->expects( $this->exactly( 5 ) )
 			->method( 'get_option' )
-			->willReturnOnConsecutiveCalls( $settings['business_name'], $settings['support_info']['address'], $settings['support_info']['phone'], $settings['support_info']['email'] );
+			->willReturnOnConsecutiveCalls( $settings['branding_logo'], $settings['business_name'], $settings['support_info']['address'], $settings['support_info']['phone'], $settings['support_info']['email'] );
 
 		$this->mock_receipts_service
 			->expects( $this->once() )
@@ -505,6 +505,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 
 	private function mock_settings() {
 		return [
+			'branding_logo' => [],
 			'business_name' => 'Test Business Name',
 			'support_info'  => [
 				'address' => [],

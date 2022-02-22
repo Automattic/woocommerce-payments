@@ -39,7 +39,7 @@ export const useDepositsOverview = () =>
 		};
 	} );
 
-export const useAllDeposistsOverviews = () =>
+export const useAllDepositsOverviews = () =>
 	useSelect( ( select ) => {
 		const {
 			getAllDepositsOverviews,

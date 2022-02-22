@@ -65,9 +65,12 @@ describe( 'Disputes > Submit winning dispute', () => {
 		);
 
 		// Get the link to the dispute details
-		const disputeDetailsLink = await page.$eval(
-			'div.woocommerce-timeline-item__body a',
-			( anchor ) => anchor.getAttribute( 'href' )
+		const disputeDetailsElement = await page.$(
+			'[data-testid="view-dispute-button"]'
+		);
+		const disputeDetailsLink = await page.evaluate(
+			( anchor ) => anchor.getAttribute( 'href' ),
+			disputeDetailsElement
 		);
 
 		// Open the dispute details
@@ -92,7 +95,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 
 		// Select product type
 		await expect( page ).toSelect(
-			'select#inspector-select-control-0',
+			'[data-testid="dispute-challenge-product-type-selector"]',
 			'physical_product'
 		);
 
@@ -158,9 +161,12 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
 		// Get the link to the dispute details
-		const disputeDetailsLink = await page.$eval(
-			'div.woocommerce-timeline-item__body a',
-			( anchor ) => anchor.getAttribute( 'href' )
+		const disputeDetailsElement = await page.$(
+			'[data-testid="view-dispute-button"]'
+		);
+		const disputeDetailsLink = await page.evaluate(
+			( anchor ) => anchor.getAttribute( 'href' ),
+			disputeDetailsElement
 		);
 
 		// Open the dispute details

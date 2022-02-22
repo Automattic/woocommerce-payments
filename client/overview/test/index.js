@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -25,6 +25,9 @@ jest.mock( '@woocommerce/experimental', () => {
 	};
 } );
 jest.mock( '@woocommerce/navigation', () => ( { getQuery: jest.fn() } ) );
+
+const loanOfferErrorText =
+	'There was a problem redirecting you to the loan offer. Please check that it is not expired and try again.';
 
 describe( 'Overview page', () => {
 	beforeEach( () => {
@@ -106,6 +109,69 @@ describe( 'Overview page', () => {
 
 		expect(
 			container.querySelector( '.wcpay-jetpack-idc-notice' )
+		).toBeVisible();
+	} );
+
+	it( 'Displays the view loan error message for query param wcpay-loan-offer-error=1', () => {
+		getQuery.mockReturnValue( { 'wcpay-loan-offer-error': '1' } );
+		getTasks.mockReturnValue( [] );
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( ( content, element ) => {
+				return (
+					loanOfferErrorText === content &&
+					! element.classList.contains( 'a11y-speak-region' )
+				);
+			} )
+		).toBeVisible();
+	} );
+
+	it( 'Does not display the view loan error message when there the query parameter is not present', () => {
+		getTasks.mockReturnValue( [] );
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( ( content, element ) => {
+				return (
+					loanOfferErrorText === content &&
+					! element.classList.contains( 'a11y-speak-region' )
+				);
+			} )
+		).toBeNull();
+	} );
+
+	it( 'Does not display loan summary when there is no loan', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			accountStatus: {
+				...global.wcpaySettings.accountStatus,
+				hasActiveLoan: false,
+			},
+		};
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector( '.wcpay-loan-summary-header' )
+		).toBeNull();
+	} );
+
+	it( 'Displays loan summary when there is a loan', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			accountStatus: {
+				...global.wcpaySettings.accountStatus,
+				hasActiveLoan: true,
+			},
+		};
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector( '.wcpay-loan-summary-header' )
 		).toBeVisible();
 	} );
 } );
