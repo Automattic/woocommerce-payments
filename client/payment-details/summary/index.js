@@ -146,8 +146,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 									) }
 								</Loadable>
 							</p>
-							{ charge.paydown &&
-							wcpaySettings.featureFlags.capital ? (
+							{ charge.paydown ? (
 								<p>
 									{ `${ __(
 										'Loan repayment',
@@ -171,8 +170,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 										'woocommerce-payments'
 									) }: ` }
 									{ formatExplicitCurrency(
-										charge.paydown &&
-											wcpaySettings.featureFlags.capital
+										charge.paydown
 											? balance.net -
 													Math.abs(
 														charge.paydown.amount
