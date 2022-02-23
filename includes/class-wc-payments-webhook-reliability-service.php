@@ -76,7 +76,7 @@ class WC_Payments_Webhook_Reliability_Service {
 		try {
 			$payload = $this->payments_api_client->get_failed_webhook_events();
 
-			if ( (bool) $payload[ self::CONTINUOUS_FETCH_FLAG_EVENTS_LIST ] ?? false ) {
+			if ( $payload[ self::CONTINUOUS_FETCH_FLAG_EVENTS_LIST ] ?? false ) {
 				$this->schedule_fetch_events();
 			}
 
