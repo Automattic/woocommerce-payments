@@ -16,9 +16,10 @@ use WCPay\Logger;
  * then process them with ActionScheduler
  */
 class WC_Payments_Webhook_Reliability_Service {
-	const CONTINUOUS_FETCH_FLAG        = 'failed_webhook_count'; // TODO - maybe `failed_webhook_count` (int) or `has_more` (bool). See server PR 1633.
-	const WEBHOOK_FETCH_EVENTS_ACTION  = 'wcpay_webhook_fetch_events';
-	const WEBHOOK_PROCESS_EVENT_ACTION = 'wcpay_webhook_process_event';
+	const CONTINUOUS_FETCH_FLAG_EVENTS_LIST  = 'has_more';
+	const CONTINUOUS_FETCH_FLAG_ACCOUNT_DATA = 'has_more_failed_events'; // TODO - subject to change. See server PR 1633.
+	const WEBHOOK_FETCH_EVENTS_ACTION        = 'wcpay_webhook_fetch_events';
+	const WEBHOOK_PROCESS_EVENT_ACTION       = 'wcpay_webhook_process_event';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API.
@@ -75,9 +76,7 @@ class WC_Payments_Webhook_Reliability_Service {
 		try {
 			$payload = $this->payments_api_client->get_failed_webhook_events();
 
-			// Schedule another job to fetch remaining failed events from the WooCommerce Payments server.
-			$remaining_failed_events = (int) $payload[ self::CONTINUOUS_FETCH_FLAG ] ?? 0;
-			if ( $remaining_failed_events > 0 ) {
+			if ( (bool) $payload[ self::CONTINUOUS_FETCH_FLAG_EVENTS_LIST ] ?? false ) {
 				$this->schedule_fetch_events();
 			}
 
@@ -102,16 +101,15 @@ class WC_Payments_Webhook_Reliability_Service {
 	}
 
 	/**
-	 * During the account data refresh, check the remaining failed event count,
-	 * and schedule a job to fetch them.
+	 * During the account data refresh, check the relevant flag to remaining failed events on the WooCommerce Payments server,
+	 * and decide whether scheduling a job to fetch them.
 	 *
 	 * @param  array $account Account data retrieved from WooCommerce Payments server.
 	 *
 	 * @return void
 	 */
 	public function maybe_schedule_fetch_events( array $account ) {
-		$remaining_failed_events = (int) $account[ self::CONTINUOUS_FETCH_FLAG ] ?? 0;
-		if ( $remaining_failed_events > 0 ) {
+		if ( (bool) $account[ self::CONTINUOUS_FETCH_FLAG_ACCOUNT_DATA ] ?? false ) {
 			$this->schedule_fetch_events();
 		}
 	}
