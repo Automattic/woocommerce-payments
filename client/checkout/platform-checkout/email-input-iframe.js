@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
+import wcpayTracks from 'tracks';
 
 export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
@@ -176,6 +177,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 		// Focus the iframe.
 		iframe.focus();
+		wcpayTracks.recordUserEvent( 'platform_checkout_otp_prompt_start' );
 	};
 
 	document.addEventListener( 'keyup', ( event ) => {
@@ -246,6 +248,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 		switch ( e.data.action ) {
 			case 'redirect_to_platform_checkout':
+				wcpayTracks.recordUserEvent(
+					'platform_checkout_otp_prompt_complete'
+				);
 				api.initPlatformCheckout().then( ( response ) => {
 					window.location = response.url;
 				} );
