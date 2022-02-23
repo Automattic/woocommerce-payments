@@ -41,7 +41,7 @@ if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
 		fi
 
 		rm -rf "$SERVER_PATH"
-		git clone --depth=1 --branch ${WCP_SERVER_BRANCH-trunk} $WCP_SERVER_REPO "$SERVER_PATH"
+		git clone --depth=1 --branch "${WCP_SERVER_BRANCH-trunk}" "$WCP_SERVER_REPO" "$SERVER_PATH"
 	else
 		echo "Using cached server at ${SERVER_PATH}"
 	fi
@@ -77,7 +77,7 @@ if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	"$SERVER_PATH"/local/bin/docker-setup.sh
 
 	step "Configuring server with stripe account"
-	"$SERVER_PATH"/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID test 1 1
+	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
 fi
 
 cd "$cwd"
@@ -90,13 +90,13 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$DEV_TOOLS_PATH" ]]; then
 	fi
 
 	rm -rf "$DEV_TOOLS_PATH"
-	git clone --depth=1 --branch ${WCP_DEV_TOOLS_BRANCH-trunk} $WCP_DEV_TOOLS_REPO "$DEV_TOOLS_PATH"
+	git clone --depth=1 --branch "${WCP_DEV_TOOLS_BRANCH-trunk}" "$WCP_DEV_TOOLS_REPO" "$DEV_TOOLS_PATH"
 fi
 
 step "Starting CLIENT containers"
-redirect_output docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d wordpress
+redirect_output docker-compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d wordpress
 if [[ -z $CI ]]; then
-	docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d phpMyAdmin
+	docker-compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d phpMyAdmin
 fi
 
 echo
@@ -132,8 +132,8 @@ cli wp core install \
 	--path=/var/www/html \
 	--url="$SITE_URL" \
 	--title="$SITE_TITLE" \
-	--admin_name=${WP_ADMIN-admin} \
-	--admin_password=${WP_ADMIN_PASSWORD-password} \
+	--admin_name="${WP_ADMIN-admin}" \
+	--admin_password="${WP_ADMIN_PASSWORD-password}" \
 	--admin_email="${WP_ADMIN_EMAIL-admin@example.com}" \
 	--skip-email
 
@@ -192,13 +192,13 @@ echo "Importing some sample data..."
 cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip
 
 echo "Removing customer account if present ..."
-cli wp user delete $WC_CUSTOMER_EMAIL --yes
+cli wp user delete "$WC_CUSTOMER_EMAIL" --yes
 
 echo "Removing guest account if present ..."
-cli wp user delete $WC_GUEST_EMAIL --yes
+cli wp user delete "$WC_GUEST_EMAIL" --yes
 
 echo "Adding customer account ..."
-cli wp user create $WC_CUSTOMER_USERNAME $WC_CUSTOMER_EMAIL --role=customer --user_pass=$WC_CUSTOMER_PASSWORD
+cli wp user create "$WC_CUSTOMER_USERNAME" "$WC_CUSTOMER_EMAIL" --role=customer --user_pass="$WC_CUSTOMER_PASSWORD"
 
 # TODO: Build a zip and use it to install plugin to make sure production build is under test.
 echo "Activating the WooCommerce Payments plugin..."
@@ -214,7 +214,7 @@ else
 fi
 
 echo "Activating dev tools plugin"
-cli wp plugin activate $DEV_TOOLS_DIR
+cli wp plugin activate "$DEV_TOOLS_DIR"
 
 if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	echo "Setting redirection to local server"
@@ -225,13 +225,13 @@ if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
 
 	echo "Setting Jetpack blog_id"
-	cli wp wcpay_dev set_blog_id $BLOG_ID
+	cli wp wcpay_dev set_blog_id "$BLOG_ID"
 else
 	echo "Disabling WPCOM requests proxy"
 	cli wp option update wcpaydev_proxy 0
 
 	echo "Setting Jetpack blog_id"
-	cli wp wcpay_dev set_blog_id $BLOG_ID --blog_token=$E2E_BLOG_TOKEN --user_token=$E2E_USER_TOKEN
+	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_BLOG_TOKEN" --user_token="$E2E_USER_TOKEN"
 fi
 
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
