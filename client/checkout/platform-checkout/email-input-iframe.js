@@ -139,6 +139,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		window.addEventListener( 'resize', setPopoverPosition );
 
 		iframe.classList.add( 'open' );
+		wcpayTracks.recordUserEvent( 'platform_checkout_otp_prompt_start' );
 	} );
 
 	// Add the iframe and iframe arrow to the wrapper.
@@ -177,7 +178,6 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 		// Focus the iframe.
 		iframe.focus();
-		wcpayTracks.recordUserEvent( 'platform_checkout_otp_prompt_start' );
 	};
 
 	document.addEventListener( 'keyup', ( event ) => {
