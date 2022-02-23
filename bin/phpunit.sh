@@ -14,7 +14,7 @@ SUPPORTED_PHP_MINOR_VERSION_FOR_PHPUNIT_INSTALLED_VIA_COMPOSER_JSON=3
 if [ $CURRENT_PHP_MAJOR_VERSION -gte $SUPPORTED_PHP_MAJOR_VERSION_FOR_PHPUNIT_INSTALLED_VIA_COMPOSER_JSON -a $CURRENT_PHP_MINOR_VERSION -gte $SUPPORTED_PHP_MINOR_VERSION_FOR_PHPUNIT_INSTALLED_VIA_COMPOSER_JSON ]; then
 	./vendor/bin/phpunit $@;
 else
-	chmod +x phpunit6
-    ./phpunit6 -c phpunit.xml.dist $@
+	chmod +x ./bin/phpunit6
+    ./bin/phpunit6 -c phpunit.xml.dist $@
 fi
 
