@@ -34,8 +34,8 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->previous_user_id = get_current_user_id();
 		// Set admin as the current user.
