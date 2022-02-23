@@ -34,9 +34,6 @@ It is possible to use the live server or a local docker instance of WCPay server
 By default, the local E2E environment is configured to use WCPay local server instance. Add the following env variables to configure the local server instance.
 
 ```
-# Use WCPay server local instance (Default: true). To use live server, set value to false
-E2E_USE_LOCAL_SERVER=true
-
 # WooCommerce Payments Server Repo
 WCP_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
 
@@ -60,7 +57,7 @@ Set the value of `E2E_USE_LOCAL_SERVER` to `false` to enable live server.
 
 Once you have the blog id & tokens, add the following ev variables to your `local.env`.
 ```
-# Use WCPay server local instance (Default: true). To use live server, set value to false
+# Set local server to false for using live server. Default: true.
 E2E_USE_LOCAL_SERVER=false
 
 E2E_BLOG_TOKEN='<jetpack_blog_token>'

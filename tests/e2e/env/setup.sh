@@ -137,9 +137,9 @@ cli wp core install \
 	--admin_email="${WP_ADMIN_EMAIL-admin@example.com}" \
 	--skip-email
 
-if [[ -n "$WP_VERSION" && "$WP_VERSION" != "latest" ]]; then
+if [[ -n "$E2E_WP_VERSION" && "$E2E_WP_VERSION" != "latest" ]]; then
 	echo "Installing specified WordPress version..."
-	cli wp core update --version="$WP_VERSION" --force --quiet
+	cli wp core update --version="$E2E_WP_VERSION" --force --quiet
 else
 	echo "Updating WordPress to the latest version..."
 	cli wp core update --quiet
@@ -155,14 +155,14 @@ echo "Installing and activating Gutenberg & WordPress Importer..."
 cli wp plugin install gutenberg wordpress-importer --activate
 
 # Install WooCommerce
-if [[ -n "$WC_VERSION" && $WC_VERSION != 'latest' ]]; then
+if [[ -n "$E2E_WC_VERSION" && $E2E_WC_VERSION != 'latest' ]]; then
 	# If specified version is 'beta', fetch the latest beta version from WordPress.org API
-	if [[ $WC_VERSION == 'beta' ]]; then
-		WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | with_entries(select(.key|match("beta";"i"))) | keys[-1]' --sort-keys)
+	if [[ $E2E_WC_VERSION == 'beta' ]]; then
+		E2E_WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | with_entries(select(.key|match("beta";"i"))) | keys[-1]' --sort-keys)
 	fi
 
 	echo "Installing and activating specified WooCommerce version..."
-	cli wp plugin install woocommerce --version="$WC_VERSION" --activate
+	cli wp plugin install woocommerce --version="$E2E_WC_VERSION" --activate
 else
 	echo "Installing and activating latest WooCommerce version..."
 	cli wp plugin install woocommerce --activate
