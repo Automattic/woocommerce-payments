@@ -112,8 +112,8 @@ SKIP_WC_BLOCKS_TESTS=1
 
 To use a specific version of WordPress or WooCommerce for testing, the following env variables needs to be added to your `local.env`.
 ```
-WP_VERSION='<wordpress_version>'
-WC_VERSION='<woocommerce_version>'
+E2E_WP_VERSION='<wordpress_version>'
+E2E_WC_VERSION='<woocommerce_version>'
 ```
 
 </p>
