@@ -681,7 +681,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Whether we should use Stripe platform.
+	 * Whether we should use the platform account to initialize Stripe on the checkout page.
 	 *
 	 * @return bool
 	 */
@@ -1075,6 +1075,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
+
+			if ( ! $payment_information->is_using_saved_payment_method() && $this->should_use_stripe_platform_on_checkout_page() ) {
+				// This payment method was created under the platform account.
+				$additional_api_parameters['is_platform_payment_method'] = 'true';
+			}
 
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 			$intent = $this->payments_api_client->create_and_confirm_intention(
