@@ -104,11 +104,15 @@ class WC_Payments_Webhook_Reliability_Service {
 	 * During the account data refresh, check the relevant flag to remaining failed events on the WooCommerce Payments server,
 	 * and decide whether scheduling a job to fetch them.
 	 *
-	 * @param  array $account Account data retrieved from WooCommerce Payments server.
+	 * @param  mixed|array $account Account data retrieved from WooCommerce Payments server.
 	 *
 	 * @return void
 	 */
-	public function maybe_schedule_fetch_events( array $account ) {
+	public function maybe_schedule_fetch_events( $account ) {
+		if ( ! is_array( $account ) ) {
+			return;
+		}
+
 		if ( $account[ self::CONTINUOUS_FETCH_FLAG_ACCOUNT_DATA ] ?? false ) {
 			$this->schedule_fetch_events();
 		}
