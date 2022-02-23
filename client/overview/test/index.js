@@ -48,7 +48,6 @@ describe( 'Overview page', () => {
 			},
 			featureFlags: {
 				accountOverviewTaskList: true,
-				capital: true,
 			},
 		};
 		getQuery.mockReturnValue( {} );
@@ -144,24 +143,35 @@ describe( 'Overview page', () => {
 		).toBeNull();
 	} );
 
-	it( 'Does not display the view loan error message when Capital is disabled', () => {
+	it( 'Does not display loan summary when there is no loan', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
-			featureFlags: {},
+			accountStatus: {
+				...global.wcpaySettings.accountStatus,
+				hasActiveLoan: false,
+			},
 		};
 
-		getQuery.mockReturnValue( { 'wcpay-loan-offer-error': '1' } );
-		getTasks.mockReturnValue( [] );
-
-		render( <OverviewPage /> );
+		const { container } = render( <OverviewPage /> );
 
 		expect(
-			screen.queryByText( ( content, element ) => {
-				return (
-					loanOfferErrorText === content &&
-					! element.classList.contains( 'a11y-speak-region' )
-				);
-			} )
+			container.querySelector( '.wcpay-loan-summary-header' )
 		).toBeNull();
+	} );
+
+	it( 'Displays loan summary when there is a loan', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			accountStatus: {
+				...global.wcpaySettings.accountStatus,
+				hasActiveLoan: true,
+			},
+		};
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector( '.wcpay-loan-summary-header' )
+		).toBeVisible();
 	} );
 } );

@@ -13,6 +13,7 @@ import {
 import Gridicon from 'gridicons';
 
 import type { DisputeFileUpload } from 'wcpay/types/disputes';
+import { NAMESPACE } from 'wcpay/data/constants';
 
 export const FileUploadControl = ( {
 	field,
@@ -75,7 +76,19 @@ export const FileUploadControl = ( {
 						{ error }
 					</span>
 				) : (
-					<span className="upload-message">{ fileName }</span>
+					fileName && (
+						<img
+							src={
+								'/wp-json' +
+								NAMESPACE +
+								'/file/' +
+								fileName +
+								'?as_account=0'
+							}
+							style={ { maxWidth: 100 } }
+							alt={ fileName }
+						/>
+					)
 				) }
 
 				{ isDone && ! disabled ? (

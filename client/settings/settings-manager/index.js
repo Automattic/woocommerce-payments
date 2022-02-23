@@ -11,11 +11,9 @@ import { __ } from '@wordpress/i18n';
  */
 import AdvancedSettings from '../advanced-settings';
 import PaymentMethods from '../../payment-methods';
-import PaymentRequest from '../payment-request';
+import ExpressCheckout from '../express-checkout';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
-import ApplePayIcon from '../../gateway-icons/apple-pay';
-import GooglePayIcon from '../../gateway-icons/google-pay';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import TransactionsAndDeposits from '../transactions-and-deposits';
@@ -40,17 +38,9 @@ const PaymentMethodsDescription = () => (
 	</>
 );
 
-const PaymentRequestDescription = () => (
+const ExpressCheckoutDescription = () => (
 	<>
 		<h2>{ __( 'Express checkouts', 'woocommerce-payments' ) }</h2>
-		<ul className="settings-section__icons">
-			<li>
-				<ApplePayIcon />
-			</li>
-			<li>
-				<GooglePayIcon />
-			</li>
-		</ul>
 		<p>
 			{ __(
 				'Let your customers use their favorite express payment methods and digital wallets ' +
@@ -59,7 +49,7 @@ const PaymentRequestDescription = () => (
 			) }
 		</p>
 		<ExternalLink href="https://woocommerce.com/document/payments/apple-pay/">
-			{ __( 'How it works?', 'woocommerce-payments' ) }
+			{ __( 'Learn more', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
 );
@@ -121,10 +111,10 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</SettingsSection>
 			) }
-			<SettingsSection Description={ PaymentRequestDescription }>
+			<SettingsSection Description={ ExpressCheckoutDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<PaymentRequest />
+						<ExpressCheckout />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
