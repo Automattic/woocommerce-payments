@@ -115,7 +115,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Do not process intents that can't be captured.
 			$intent = $this->api_client->get_intent( $intent_id );
-			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture' ], true ) ) {
+			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture', 'succeeded' ], true ) ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
@@ -139,14 +139,23 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$intent->get_currency()
 			);
 
-			// Capture the intent and update the order attributes.
-			$result = $this->gateway->capture_charge( $order );
+			// Certain payments (eg. Interac) are captured on the client-side (mobile app).
+			// The client may send us the captured intent to link it to its WC order.
+			// Doing so via this endpoint is more reliable than depending on the payment_intent.succeeded event.
+			$is_intent_captured         = 'succeeded' === $intent->get_status();
+			$result_for_captured_intent = [
+				'status' => 'succeeded',
+				'id'     => $intent->get_id(),
+			];
+
+			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order );
+
 			if ( 'succeeded' !== $result['status'] ) {
 				$http_code = $result['http_code'] ?? 502;
 				return new WP_Error(
 					'wcpay_capture_error',
 					sprintf(
-						// translators: %s: the error message.
+					// translators: %s: the error message.
 						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
 						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
 					),
