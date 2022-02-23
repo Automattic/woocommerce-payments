@@ -191,7 +191,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 */
 	private function set_event_data( array $event_data ) {
 		if ( ! isset( $event_data['id'] ) ) {
-			return;
+			return false;
 		}
 
 		return set_transient( $this->get_transient_name_for_event_id( $event_data['id'] ), $event_data, DAY_IN_SECONDS );
