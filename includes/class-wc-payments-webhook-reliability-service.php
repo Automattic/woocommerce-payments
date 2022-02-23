@@ -109,7 +109,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 * @return void
 	 */
 	public function maybe_schedule_fetch_events( array $account ) {
-		if ( (bool) $account[ self::CONTINUOUS_FETCH_FLAG_ACCOUNT_DATA ] ?? false ) {
+		if ( $account[ self::CONTINUOUS_FETCH_FLAG_ACCOUNT_DATA ] ?? false ) {
 			$this->schedule_fetch_events();
 		}
 	}
