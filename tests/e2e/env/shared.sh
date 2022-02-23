@@ -30,6 +30,8 @@ cli()
 	redirect_output docker run -i --rm --user xfs --volumes-from "$WP_CONTAINER" --network container:"$WP_CONTAINER" wordpress:cli "$@"
 }
 
+# Function to log WP-CLI output without redirecting the output to /dev/null.
+# Works even when the DEBUG flag is unset or set to false
 cli_debug()
 {
 	docker run -i --rm --user xfs --volumes-from "$WP_CONTAINER" --network container:"$WP_CONTAINER" wordpress:cli "$@"
