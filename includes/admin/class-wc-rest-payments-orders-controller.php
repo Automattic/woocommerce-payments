@@ -139,26 +139,28 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$intent->get_currency()
 			);
 
-			if ( 'succeeded' === $intent->get_status() ) {
-				$result = [
-					'status' => 'succeeded',
-					'id'     => $intent->get_id(),
-				];
-			} else {
-				// Capture the intent and update the order attributes.
-				$result = $this->gateway->capture_charge( $order );
-				if ( 'succeeded' !== $result['status'] ) {
-					$http_code = $result['http_code'] ?? 502;
-					return new WP_Error(
-						'wcpay_capture_error',
-						sprintf(
-						// translators: %s: the error message.
-							__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
-							$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
-						),
-						[ 'status' => $http_code ]
-					);
-				}
+			// Certain payments (eg. Interac) are captured on the client-side (mobile app).
+			// The client may send us the captured intent to link it to its WC order.
+			// Doing so via this endpoint is more reliable than depending on the payment_intent.succeeded event.
+			$is_intent_captured         = 'succeeded' === $intent->get_status();
+			$result_for_captured_intent = [
+				'status' => 'succeeded',
+				'id'     => $intent->get_id(),
+			];
+
+			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order );
+
+			if ( 'succeeded' !== $result['status'] ) {
+				$http_code = $result['http_code'] ?? 502;
+				return new WP_Error(
+					'wcpay_capture_error',
+					sprintf(
+					// translators: %s: the error message.
+						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
+						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
+					),
+					[ 'status' => $http_code ]
+				);
 			}
 			// Store receipt generation URL for mobile applications in order meta-data.
 			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
