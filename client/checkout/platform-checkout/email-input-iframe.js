@@ -255,6 +255,11 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					window.location = response.url;
 				} );
 				break;
+			case 'otp_validation_failed':
+				wcpayTracks.recordUserEvent(
+					'platform_checkout_otp_prompt_failed'
+				);
+				break;
 			case 'close_modal':
 				closeIframe();
 				break;
