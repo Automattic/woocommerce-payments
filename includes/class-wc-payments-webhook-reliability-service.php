@@ -83,7 +83,7 @@ class WC_Payments_Webhook_Reliability_Service {
 			// Save the data, and schedule a job for each event.
 			$events = $payload['data'] ?? [];
 			foreach ( $events as $event ) {
-				$this->create_event_data( $event );
+				$this->set_event_data( $event );
 				$this->schedule_process_event( $event['id'] );
 			}
 		} catch ( \WCPay\Exceptions\API_Exception $e ) {
@@ -167,14 +167,15 @@ class WC_Payments_Webhook_Reliability_Service {
 	}
 
 	/**
-	 * Get the option name to interact with the storage.
+	 * Get the transient name to interact with the storage.
 	 *
 	 * @param  string $event_id Event ID.
 	 *
 	 * @return string
 	 */
-	private function get_option_name_id( string $event_id ): string {
-		return 'wcpay_failed_event_' . $event_id;
+	private function get_transient_name_for_event_id( string $event_id ): string {
+		// Use md5 to overcome the limit of transient name (172 characters) while Stripe event ID can be up to 255.
+		return 'wcpay_failed_event_' . md5( $event_id );
 	}
 
 	/**
@@ -182,14 +183,14 @@ class WC_Payments_Webhook_Reliability_Service {
 	 *
 	 * @param  array $event_data Event data.
 	 *
-	 * @return void
+	 * @return bool True if the value was set, false otherwise.
 	 */
-	private function create_event_data( array $event_data ) {
+	private function set_event_data( array $event_data ) {
 		if ( ! isset( $event_data['id'] ) ) {
 			return;
 		}
 
-		update_option( $this->get_option_name_id( $event_data['id'] ), $event_data, false );
+		return set_transient( $this->get_transient_name_for_event_id( $event_data['id'] ), $event_data, DAY_IN_SECONDS );
 	}
 
 	/**
@@ -197,10 +198,10 @@ class WC_Payments_Webhook_Reliability_Service {
 	 *
 	 * @param  string $event_id Event ID.
 	 *
-	 * @return bool
+	 * @return bool True if the event data is deleted, false otherwise.
 	 */
 	private function delete_event_data( string $event_id ): bool {
-		return delete_option( $this->get_option_name_id( $event_id ) );
+		return delete_transient( $this->get_transient_name_for_event_id( $event_id ) );
 	}
 
 	/**
@@ -211,7 +212,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 * @return ?array
 	 */
 	private function get_event_data( string $event_id ) {
-		$data = get_option( $this->get_option_name_id( $event_id ), false );
+		$data = get_transient( $this->get_transient_name_for_event_id( $event_id ) );
 		return false === $data ? null : $data;
 	}
 }
