@@ -146,27 +146,27 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 
 		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
 		$mock_intent
-			->expects( $this->any() )
+			->expects( $this->atLeastOnce() )
 			->method( 'get_status' )
 			->willReturn( 'succeeded' );
 		$mock_intent
-			->expects( $this->any() )
+			->expects( $this->atLeastOnce() )
 			->method( 'get_id' )
 			->willReturn( $this->mock_intent_id );
 		$mock_intent
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'get_payment_method_id' )
 			->willReturn( 'pm_mock' );
 		$mock_intent
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'get_customer_id' )
 			->willReturn( 'cus_mock' );
 		$mock_intent
-			->expects( $this->any() )
+			->expects( $this->atLeastOnce() )
 			->method( 'get_charge_id' )
 			->willReturn( 'ch_mock' );
 		$mock_intent
-			->expects( $this->any() )
+			->expects( $this->atLeastOnce() )
 			->method( 'get_currency' )
 			->willReturn( 'mok' );
 
@@ -174,10 +174,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_intent' )
 			->willReturn( $mock_intent );
-
-		$this->mock_gateway
-			->expects( $this->never() )
-			->method( 'capture_charge' );
 
 		$this->mock_gateway
 			->expects( $this->once() )
@@ -191,6 +187,19 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 				'ch_mock',
 				'mok'
 			);
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'update_order_status_from_intent' )
+			->with(
+				$this->isInstanceOf( WC_Order::class ),
+				$this->mock_intent_id,
+				'succeeded',
+				'ch_mock',
+				'mok'
+			);
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'capture_charge' );
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
@@ -227,27 +236,27 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 
 		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
 		$mock_intent
-			->expects( $this->any() )
+			->expects( $this->atLeastOnce() )
 			->method( 'get_status' )
 			->willReturn( 'succeeded' );
 		$mock_intent
-			->expects( $this->any() )
+			->expects( $this->atLeastOnce() )
 			->method( 'get_id' )
 			->willReturn( $this->mock_intent_id );
 		$mock_intent
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'get_payment_method_id' )
 			->willReturn( 'pm_mock' );
 		$mock_intent
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'get_customer_id' )
 			->willReturn( 'cus_mock' );
 		$mock_intent
-			->expects( $this->any() )
+			->expects( $this->atLeastOnce() )
 			->method( 'get_charge_id' )
 			->willReturn( 'ch_mock' );
 		$mock_intent
-			->expects( $this->any() )
+			->expects( $this->atLeastOnce() )
 			->method( 'get_currency' )
 			->willReturn( 'mok' );
 
@@ -255,10 +264,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_intent' )
 			->willReturn( $mock_intent );
-
-		$this->mock_gateway
-			->expects( $this->never() )
-			->method( 'capture_charge' );
 
 		$this->mock_gateway
 			->expects( $this->once() )
@@ -272,6 +277,19 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 				'ch_mock',
 				'mok'
 			);
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'update_order_status_from_intent' )
+			->with(
+				$this->isInstanceOf( WC_Order::class ),
+				$this->mock_intent_id,
+				'succeeded',
+				'ch_mock',
+				'mok'
+			);
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'capture_charge' );
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
