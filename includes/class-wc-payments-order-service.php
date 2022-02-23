@@ -13,6 +13,14 @@ defined( 'ABSPATH' ) || exit;
  * Class handling order functionality.
  */
 class WC_Payments_Order_Service {
+	/**
+	 * Order status constants.
+	 */
+	const STATUS_CANCELLED = 'cancelled';
+	const STATUS_COMPLETED = 'completed';
+	const STATUS_FAILED    = 'failed';
+	const STATUS_ON_HOLD   = 'on-hold';
+	const STATUS_PENDING   = 'pending';
 
 	/**
 	 * Updates an order to processing/completed status, while adding a note with a link to the transaction.
@@ -46,13 +54,13 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $message = '' ) {
-		if ( $order->has_status( [ 'failed' ] )
+		if ( $order->has_status( [ self::STATUS_FAILED ] )
 			|| 'failed' === $order->get_meta( '_intention_status' )
 			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
-		$this->update_order_status( $order, 'failed' );
+		$this->update_order_status( $order, self::STATUS_FAILED );
 		$this->add_payment_failure_note( $order, $intent_id, $charge_id, $message );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -68,12 +76,12 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_authorized( $order, $intent_id, $intent_status, $charge_id ) {
-		if ( $order->has_status( [ 'on-hold' ] )
+		if ( $order->has_status( [ self::STATUS_ON_HOLD ] )
 			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
-		$this->update_order_status( $order, 'on-hold' );
+		$this->update_order_status( $order, self::STATUS_ON_HOLD );
 		$this->add_payment_authorized_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -89,7 +97,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_started( $order, $intent_id, $intent_status, $charge_id ) {
-		if ( ! $order->has_status( [ 'pending' ] )
+		if ( ! $order->has_status( [ self::STATUS_PENDING ] )
 			|| 'requires_action' === $order->get_meta( '_intention_status' )
 			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
@@ -154,7 +162,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$this->update_order_status( $order, 'cancelled' );
+		$this->update_order_status( $order, self::STATUS_CANCELLED );
 		$this->add_capture_expired_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -174,7 +182,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$this->update_order_status( $order, 'cancelled' );
+		$this->update_order_status( $order, self::STATUS_CANCELLED );
 		$this->add_capture_cancelled_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -193,7 +201,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$this->update_order_status( $order, 'on-hold' );
+		$this->update_order_status( $order, self::STATUS_ON_HOLD );
 		$this->add_dispute_created_note( $order, $dispute_id, $reason );
 		$order->save();
 	}
@@ -222,7 +230,8 @@ class WC_Payments_Order_Service {
 				]
 			);
 		} else {
-			$this->update_order_status( $order, 'completed' );
+			// TODO: This should revert to the status the order was in before the dispute was created.
+			$this->update_order_status( $order, self::STATUS_COMPLETED );
 		}
 
 		$this->add_dispute_closed_note( $order, $dispute_id, $status );
@@ -240,7 +249,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status, $charge_id ) {
-		$this->update_order_status( $order, 'completed', $intent_id );
+		$this->update_order_status( $order, self::STATUS_COMPLETED, $intent_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -690,6 +699,10 @@ class WC_Payments_Order_Service {
 	 */
 	private function update_order_status( $order, $order_status, $intent_id = '' ) {
 		try {
+			/**
+			 * In this instance payment_complete is not an order status, but a flag to mark the order as paid. In a default WooCommerce store, the order
+			 * may move to Processing or Completed status depending on the contents of the cart, so we let WooCommerce core decide what to do.
+			 */
 			if ( 'payment_complete' === $order_status ) {
 				if ( empty( $intent_id ) ) {
 					throw new Exception( __( 'Intent id was not included for payment complete status change.', 'woocommerce-payments' ) );
