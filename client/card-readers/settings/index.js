@@ -5,6 +5,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -17,6 +18,7 @@ import BusinessDetailsSection from './sections/business-details';
 import ContactsDetailsSection from './sections/contacts-details';
 import AddressDetailsSection from './sections/address-details';
 import BrandingDetailsSection from './sections/branding-details';
+import { getAdminUrl } from 'wcpay/utils';
 
 const isBrandingEnabled = false;
 
@@ -30,6 +32,14 @@ const ReadersSettingsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
+		<Link
+			href={ getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/card-readers/preview-receipt',
+			} ) }
+		>
+			{ __( 'Preview a printed receipt', 'woocommerce-payments' ) }
+		</Link>
 	</>
 );
 
