@@ -1,0 +1,5 @@
+Significance: patch
+Type: update
+Comment: Hook user/exists endpoint to UI for saving information for platform checkout. Functionality currently behind feature flag.
+
+
