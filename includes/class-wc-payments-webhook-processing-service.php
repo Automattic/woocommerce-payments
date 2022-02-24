@@ -8,6 +8,7 @@
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
