@@ -189,7 +189,7 @@ const CapitalPage = (): JSX.Element => {
 	return (
 		<Page>
 			<TestModeNotice topic={ topics.loans } />
-			{ wcpaySettings?.accountLoans?.has_active_loan && (
+			{ wcpaySettings.accountLoans.has_active_loan && (
 				<ErrorBoundary>
 					<ActiveLoanSummary />
 				</ErrorBoundary>
