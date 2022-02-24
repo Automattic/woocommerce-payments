@@ -94,6 +94,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $token_service;
 
 	/**
+	 * WC_Payments_Order_Service instance
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	protected $order_service;
+
+	/**
 	 * WC_Payments_Action_Scheduler_Service instance for scheduling ActionScheduler jobs.
 	 *
 	 * @var WC_Payments_Action_Scheduler_Service
@@ -123,6 +130,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Payments_Token_Service            $token_service                   - Token class instance.
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
 	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Rate Limiter for failed transactions.
+	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -130,7 +138,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Customer_Service $customer_service,
 		WC_Payments_Token_Service $token_service,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
-		Session_Rate_Limiter $failed_transaction_rate_limiter = null
+		Session_Rate_Limiter $failed_transaction_rate_limiter = null,
+		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client             = $payments_api_client;
 		$this->account                         = $account;
@@ -138,6 +147,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->token_service                   = $token_service;
 		$this->action_scheduler_service        = $action_scheduler_service;
 		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
+		$this->order_service                   = $order_service;
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -839,6 +849,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
+			/**
+			 * TODO: Determine how to do this update with Order_Service.
+			 * It seems that the status only needs to change in certain instances, and within those instances the intent
+			 * information is not added to the order, as shown by tests.
+			 */
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
 				$order->update_status( 'failed' );
 			}
@@ -1071,7 +1086,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( 'requires_action' === $status && $payment_information->is_merchant_initiated() ) {
 				// Allow 3rd-party to trigger some action if needed.
 				do_action( 'woocommerce_woocommerce_payments_payment_requires_action', $order, $intent_id, $payment_method, $customer_id, $charge_id, $currency );
-				$order->update_status( 'failed' );
+				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
 			}
 		} else {
 			// For $0 orders, we need to save the payment method using a setup intent.
@@ -1135,7 +1150,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
-		$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id, $currency );
+		$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
 
 		if ( isset( $response ) ) {
 			return $response;
@@ -1277,80 +1292,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param string   $intent_id The intent ID.
 	 * @param string   $intent_status Intent status.
 	 * @param string   $charge_id Charge ID.
-	 * @param string   $currency Currency code.
 	 */
-	public function update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id, $currency ) {
-		// Get the order amount and check whether a payment was needed.
-		$amount         = $order->get_total();
-		$payment_needed = $amount > 0;
-
+	public function update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id ) {
 		switch ( $intent_status ) {
 			case 'succeeded':
-				if ( $payment_needed ) {
-					$transaction_url = $this->compose_transaction_url( $charge_id );
-					$note            = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
-							]
-						),
-						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-						$charge_id
-					);
-					$order->add_order_note( $note );
-				}
-
-				try {
-					WC_Payments_Utils::mark_payment_completed( $order, $intent_id );
-				} catch ( Exception $e ) {
-					// continue further, something unexpected happened, but we can't really do nothing with that.
-					Logger::log( 'Error when completing payment for order: ' . $e->getMessage() );
-
-					// unlock the order.
-					WC_Payments_Utils::unlock_order_payment( $order );
-				}
+				$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
 				break;
 			case 'processing':
 			case 'requires_capture':
-				$transaction_url = $this->compose_transaction_url( $charge_id );
-				$note            = sprintf(
-					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-						__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
-						[
-							'strong' => '<strong>',
-							'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
-						]
-					),
-					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-					$intent_id
-				);
-
-				$order->set_status( 'on-hold', $note );
-				$order->save();
+				$this->order_service->mark_payment_authorized( $order, $intent_id, $intent_status, $charge_id );
 				break;
 			case 'requires_action':
-				if ( $payment_needed ) {
-					// Add a note in case the customer does not complete the payment (exits the page),
-					// so the store owner has some information about what happened to create an order.
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'code'   => '<code>',
-							]
-						),
-						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-						$intent_id
-					);
-					$order->add_order_note( $note );
-				}
-
+			case 'requires_payment_method':
+				$this->order_service->mark_payment_started( $order, $intent_id, $intent_status, $charge_id );
+				break;
+			default:
+				Logger::error( 'Uncaught payment intent status of ' . $intent_status . ' passed for order id: ' . $order->get_id() );
 				break;
 		}
 	}
@@ -1953,9 +1910,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$status    = $intent->get_status();
 			$currency  = $intent->get_currency();
 			$http_code = 200;
-
-			$order->update_meta_data( '_intention_status', $status );
-			$order->save();
 		} catch ( API_Exception $e ) {
 			try {
 				$error_message = $e->getMessage();
@@ -1977,54 +1931,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		Tracker::track_admin( 'wcpay_merchant_captured_auth' );
 
-		$this->attach_exchange_info_to_order( $order, $intent->get_charge_id() );
+		// There is a possibility of the intent being null, so we need to get the charge_id safely.
+		$charge_id = ! empty( $intent ) ? $intent->get_charge_id() : $order->get_meta( '_charge_id' );
+
+		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( 'succeeded' === $status ) {
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount */
-					__(
-						'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments.',
-						'woocommerce-payments'
-					),
-					[ 'strong' => '<strong>' ]
-				),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order )
-			);
-			$order->add_order_note( $note );
-			$order->payment_complete();
-		} elseif ( ! empty( $error_message ) ) {
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the failed capture amount, %2: error message  */
-					__(
-						'A capture of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-						'woocommerce-payments'
-					),
-					[
-						'strong' => '<strong>',
-						'code'   => '<code>',
-					]
-				),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-				esc_html( $error_message )
-			);
-			$order->add_order_note( $note );
+			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $status, $charge_id );
+		} elseif ( $is_authorization_expired ) {
+			$this->order_service->mark_payment_capture_expired( $order, $intent_id, 'canceled', $charge_id );
 		} else {
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the failed capture amount */
-					__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
-					[ 'strong' => '<strong>' ]
-				),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order )
-			);
-			$order->add_order_note( $note );
-			$http_code = 502;
-		}
+			if ( ! empty( $error_message ) ) {
+				$error_message = esc_html( $error_message );
+			} else {
+				$http_code = 502;
+			}
 
-		if ( $is_authorization_expired ) {
-			WC_Payments_Utils::mark_payment_expired( $order );
+			$this->order_service->mark_payment_capture_failed( $order, $intent_id, 'requires_capture', $charge_id, $error_message );
 		}
 
 		return [
@@ -2063,17 +1986,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
-		$order->update_meta_data( '_intention_status', $status );
-		$order->save();
-
 		if ( 'canceled' === $status ) {
-			$order->update_status(
-				'cancelled',
-				WC_Payments_Utils::esc_interpolated_html(
-					__( 'Payment authorization was successfully <strong>cancelled</strong>.', 'woocommerce-payments' ),
-					[ 'strong' => '<strong>' ]
-				)
-			);
+			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status, $intent->get_charge_id() );
+			return;
 		} elseif ( ! empty( $error_message ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
@@ -2098,6 +2013,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				)
 			);
 		}
+
+		$order->update_meta_data( '_intention_status', $status );
+		$order->save();
 	}
 
 	/**
@@ -2239,110 +2157,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $amount > 0 ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
-				$intent = $this->payments_api_client->get_intent( $intent_id );
-				$status = $intent->get_status();
+				$intent    = $this->payments_api_client->get_intent( $intent_id );
+				$status    = $intent->get_status();
+				$charge_id = $intent->get_charge_id();
 
-				$this->attach_exchange_info_to_order( $order, $intent->get_charge_id() );
-
-				switch ( $status ) {
-					case 'succeeded':
-						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
-						$note            = sprintf(
-							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
-								[
-									'strong' => '<strong>',
-									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
-								]
-							),
-							WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $order->get_currency() ] ), $order ),
-							$intent->get_charge_id()
-						);
-						$order->add_order_note( $note );
-
-						// The order is successful, so update it to reflect that.
-						$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
-
-						$order->payment_complete( $intent_id );
-						break;
-					case 'processing':
-					case 'requires_capture':
-						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
-						$note            = sprintf(
-							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
-								[
-									'strong' => '<strong>',
-									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
-								]
-							),
-							WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $order->get_currency() ] ), $order ),
-							$intent_id
-						);
-						// Save the note separately because if there is no change in status
-						// then the note is not saved using WC_Order::set_status.
-						$order->add_order_note( $note );
-
-						// The order is successful, so update it to reflect that.
-						$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
-
-						$order->set_status( 'on-hold' );
-						$order->set_transaction_id( $intent_id );
-						break;
-					case 'requires_payment_method':
-						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
-						$note            = sprintf(
-							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
-								[
-									'strong' => '<strong>',
-									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
-								]
-							),
-							WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $order->get_currency() ] ), $order ),
-							$intent_id
-						);
-						// Save the note separately because if there is no change in status
-						// then the note is not saved using WC_Order::set_status.
-						$order->add_order_note( $note );
-						$order->set_status( 'failed' );
-						break;
-				}
+				$this->attach_exchange_info_to_order( $order, $charge_id );
+				$this->attach_intent_info_to_order( $order, $intent_id, $status, $intent->get_payment_method_id(), $intent->get_customer_id(), $charge_id, $intent->get_currency() );
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
-				$intent = $this->payments_api_client->get_setup_intent( $intent_id );
-				$status = $intent['status'];
-
-				switch ( $status ) {
-					case 'succeeded':
-						$order->payment_complete( $intent_id );
-						break;
-					case 'requires_payment_method':
-						$note = sprintf(
-							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-								[
-									'strong' => '<strong>',
-									'code'   => '<code>',
-								]
-							),
-							WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $order->get_currency() ] ), $order ),
-							$intent_id
-						);
-						// Save the note separately because if there is no change in status
-						// then the note is not saved using WC_Order::set_status.
-						$order->add_order_note( $note );
-						$order->set_status( 'failed' );
-						break;
-				}
+				$intent    = $this->payments_api_client->get_setup_intent( $intent_id );
+				$status    = $intent['status'];
+				$charge_id = '';
 			}
 
-			$order->update_meta_data( '_intention_status', $status );
-			$order->save();
+			switch ( $status ) {
+				case 'succeeded':
+					$this->order_service->mark_payment_completed( $order, $intent_id, $status, $charge_id );
+					break;
+				case 'processing':
+				case 'requires_capture':
+					$this->order_service->mark_payment_authorized( $order, $intent_id, $status, $charge_id );
+					break;
+				case 'requires_payment_method':
+					$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
+					break;
+			}
 
 			if ( in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				wc_reduce_stock_levels( $order_id );
