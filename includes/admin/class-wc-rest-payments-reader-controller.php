@@ -7,9 +7,10 @@
 
 use WCPay\Exceptions\API_Exception;
 
+defined( 'ABSPATH' ) || exit;
+
 require_once WCPAY_ABSPATH . 'includes/in-person-payments/class-wc-payments-printed-receipt-sample-order.php';
 
-defined( 'ABSPATH' ) || exit;
 /**
  * REST controller for reader charges.
  */
@@ -329,12 +330,10 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	 * @throws \RuntimeException Error collecting data.
 	 */
 	public function preview_print_receipt( WP_REST_Request $request ) {
-		$sample_order = new WC_Payments_Printed_Receipt_Sample_Order();
-
 		return rest_ensure_response(
 			$this->receipts_service->get_receipt_markup(
 				$this->create_print_preview_receipt_settings_data( $request->get_json_params() ),
-				$sample_order,
+				new WC_Payments_Printed_Receipt_Sample_Order(),
 				self::PREVIEW_RECEIPT_CHARGE_DATA
 			)
 		);

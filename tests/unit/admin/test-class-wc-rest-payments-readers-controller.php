@@ -292,7 +292,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 200, $response->status );
 	}
 
-	public function test_preview_print_receipt() {
+	public function test_preview_print_receipt(): void {
 		$order = new WC_Payments_Printed_Receipt_Sample_Order();
 
 		$mock_receipt = '<p>Receipt</p>';
@@ -351,7 +351,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( $mock_receipt, $response_data );
 	}
 
-	public function test_preview_print_receipt_defaults_to_wcpay_settings() {
+	public function test_preview_print_receipt_defaults_to_wcpay_settings(): void {
 		$order = new WC_Payments_Printed_Receipt_Sample_Order();
 
 		$settings     = $this->mock_settings();
@@ -411,7 +411,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( $mock_receipt, $response_data );
 	}
 
-	public function test_generate_print_receipt_invalid_payment_error() {
+	public function test_generate_print_receipt_invalid_payment_error(): void {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_intent' )
@@ -441,7 +441,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 500, $data['status'] );
 	}
 
-	public function test_generate_print_receipt_handle_api_exceptions() {
+	public function test_generate_print_receipt_handle_api_exceptions(): void {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_intent' )
@@ -471,7 +471,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 500, $data['status'] );
 	}
 
-	public function test_generate_print_receipt_order_not_found() {
+	public function test_generate_print_receipt_order_not_found(): void {
 		$payment_intent = $this->mock_payment_intent();
 
 		$charge = $this->mock_charge( '42' );
@@ -507,7 +507,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 500, $data['status'] );
 	}
 
-	public function test_generate_print_receipt_handle_settings_exception() {
+	public function test_generate_print_receipt_handle_settings_exception(): void {
 		$order = WC_Helper_Order::create_order();
 
 		$payment_intent = $this->mock_payment_intent();
@@ -546,7 +546,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 500, $data['status'] );
 	}
 
-	public function test_generate_print_receipt_handle_receipt_service_exception() {
+	public function test_generate_print_receipt_handle_receipt_service_exception(): void {
 		$order = WC_Helper_Order::create_order();
 
 		$payment_intent = $this->mock_payment_intent();
@@ -589,7 +589,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 500, $data['status'] );
 	}
 
-	private function mock_payment_intent( $status = 'succeeded' ) {
+	private function mock_payment_intent( $status = 'succeeded' ): WC_Payments_API_Intention {
 		return new WC_Payments_API_Intention(
 			'42',
 			42,
@@ -603,7 +603,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		);
 	}
 
-	private function mock_charge( string $order_id ) {
+	private function mock_charge( string $order_id ): array {
 		return [
 			'amount_captured'        => 10,
 			'order'                  => [
@@ -623,7 +623,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		];
 	}
 
-	private function mock_settings() {
+	private function mock_settings(): array {
 		return [
 			'branding_logo' => [],
 			'business_name' => 'Test Business Name',

@@ -56,8 +56,6 @@ class WC_Payments_Printed_Receipt_Sample_Order extends WC_Order {
 
 	/**
 	 * __construct
-	 *
-	 * @return void
 	 */
 	public function __construct() {
 		// noop.
@@ -68,7 +66,7 @@ class WC_Payments_Printed_Receipt_Sample_Order extends WC_Order {
 	 *
 	 * @return array
 	 */
-	public function get_data() {
+	public function get_data(): array {
 		return self::PREVIEW_RECEIPT_ORDER_DATA;
 	}
 
