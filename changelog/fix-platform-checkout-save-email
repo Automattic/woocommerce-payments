@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: This change fixes a problem with the email address not being saved in platform checkout.
+
+

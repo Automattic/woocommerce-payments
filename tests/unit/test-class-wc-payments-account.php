@@ -409,6 +409,47 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		remove_filter( 'wcpay_dev_mode', '__return_true' );
 	}
 
+	public function test_is_account_rejected_returns_true() {
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_test_',
+				'test_publishable_key'     => 'pk_live_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'status'                   => 'rejected.tos',
+			]
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_account_rejected() );
+	}
+
+	public function test_is_account_rejected_returns_false_when_not_rejected() {
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_test_',
+				'test_publishable_key'     => 'pk_live_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'status'                   => 'complete',
+			]
+		);
+
+		$this->assertFalse( $this->wcpay_account->is_account_rejected() );
+	}
+
+	public function test_is_account_rejected_returns_false_on_error() {
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_account_data' )
+			->willThrowException( new API_Exception( 'test', 'wcpay_mock', 500 ) );
+
+		$this->assertFalse( $this->wcpay_account->is_account_rejected() );
+	}
+
 	public function test_refresh_account_data_with_empty_cache() {
 		$expected_account = [
 			'account_id'               => 'acc_test',

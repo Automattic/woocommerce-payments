@@ -17,6 +17,12 @@ exports[`ReceiptSettings Readers merchant settings page snapshot test 1`] = `
         <p>
           These details will appear on printed or emailed receipts for customers that pay in person using card readers. Updating the details here will not affect any other stores settings.
         </p>
+        <a
+          data-link-type="wc-admin"
+          href="admin.php?page=wc-admin&path=%2Fpayments%2Fcard-readers%2Fpreview-receipt"
+        >
+          Preview a printed receipt
+        </a>
       </div>
       <div
         class="settings-section__controls"
