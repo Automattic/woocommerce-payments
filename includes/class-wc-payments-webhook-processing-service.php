@@ -1,113 +1,136 @@
 <?php
 /**
- * Class WC_REST_Payments_Webhook_Controller
+ * WC_Payments_Webhook_Processing_Service class
  *
- * @package WooCommerce\Payments\Admin
+ * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Payment_Method;
+use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
-use WCPay\Logger;
 
-defined( 'ABSPATH' ) || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 /**
- * REST controller for webhooks.
+ * Service to process webhook data.
  */
-class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
-
+class WC_Payments_Webhook_Processing_Service {
 	/**
-	 * Result codes for returning to the WCPay server API. They don't have any special meaning, but can will be logged
-	 * and are therefore useful when debugging how we reacted to a webhook.
-	 */
-	const RESULT_SUCCESS     = 'success';
-	const RESULT_BAD_REQUEST = 'bad_request';
-	const RESULT_ERROR       = 'error';
-
-	/**
-	 * Endpoint path.
+	 * DB wrapper.
 	 *
-	 * @var string
+	 * @var WC_Payments_DB
 	 */
-	protected $rest_base = 'payments/webhook';
+	private $wcpay_db;
 
 	/**
-	 * Webhook Processing Service.
+	 * WC Payments Account.
 	 *
-	 * @var WC_Payments_Webhook_Processing_Service
+	 * @var WC_Payments_Account
 	 */
-	private $webhook_processing_service;
+	private $account;
+
+	/**
+	 * WC Payments Remote Note Service.
+	 *
+	 * @var WC_Payments_Remote_Note_Service
+	 */
+	private $remote_note_service;
 
 	/**
 	 * WC_REST_Payments_Webhook_Controller constructor.
 	 *
-	 * @param WC_Payments_API_Client                 $api_client          WC_Payments_API_Client instance.
-	 * @param WC_Payments_Webhook_Processing_Service $webhook_processing_service WC_Payments_Webhook_Processing_Service instance.
+	 * @param WC_Payments_DB                  $wcpay_db            WC_Payments_DB instance.
+	 * @param WC_Payments_Account             $account             WC_Payments_Account instance.
+	 * @param WC_Payments_Remote_Note_Service $remote_note_service WC_Payments_Remote_Note_Service instance.
 	 */
 	public function __construct(
-		WC_Payments_API_Client $api_client,
-		WC_Payments_Webhook_Processing_Service $webhook_processing_service
+		WC_Payments_DB $wcpay_db,
+		WC_Payments_Account $account,
+		WC_Payments_Remote_Note_Service $remote_note_service
 	) {
-		parent::__construct( $api_client );
-		$this->webhook_processing_service = $webhook_processing_service;
+		$this->wcpay_db            = $wcpay_db;
+		$this->account             = $account;
+		$this->remote_note_service = $remote_note_service;
 	}
 
 	/**
-	 * Configure REST API routes.
-	 */
-	public function register_routes() {
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base,
-			[
-				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'handle_webhook' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-			]
-		);
-	}
-
-	/**
-	 * Retrieve transactions to respond with via API.
+	 * Process webhook event data.
 	 *
-	 * @param WP_REST_Request $request Full data about the request.
+	 * @param  array $event_body Body data of webhook request.
 	 *
-	 * @return WP_REST_Response
+	 * @return void
+	 *
+	 * @throws Rest_Request_Exception
 	 */
-	public function handle_webhook( $request ) {
-		$body = $request->get_json_params();
+	public function process( array $event_body ) {
 
-		try {
-			// Extract information about the webhook event.
-			$event_type = $this->webhook_processing_service->read_rest_property( $body, 'type' );
+		$event_type = $this->read_rest_property( $event_body, 'type' );
 
-			Logger::debug( 'Webhook recieved: ' . $event_type );
-			Logger::debug(
-				'Webhook body: '
-				. var_export( WC_Payments_Utils::redact_array( $body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			);
-
-			try {
-				do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $body );
-			} catch ( Exception $e ) {
-				Logger::error( $e );
-			}
-
-			$this->webhook_processing_service->process_webhook( $body );
-
-			try {
-				do_action( 'woocommerce_payments_after_webhook_delivery', $event_type, $body );
-			} catch ( Exception $e ) {
-				Logger::error( $e );
-			}
-		} catch ( Rest_Request_Exception $e ) {
-			Logger::error( $e );
-			return new WP_REST_Response( [ 'result' => self::RESULT_BAD_REQUEST ], 400 );
-		} catch ( Exception $e ) {
-			Logger::error( $e );
-			return new WP_REST_Response( [ 'result' => self::RESULT_ERROR ], 500 );
+		switch ( $event_type ) {
+			case 'charge.refund.updated':
+				$this->process_webhook_refund_updated( $event_body );
+				break;
+			case 'charge.dispute.created':
+				$this->process_webhook_dispute_created( $event_body );
+				break;
+			case 'charge.dispute.closed':
+				$this->process_webhook_dispute_closed( $event_body );
+				break;
+			case 'charge.dispute.funds_reinstated':
+			case 'charge.dispute.funds_withdrawn':
+			case 'charge.dispute.updated':
+				$this->process_webhook_dispute_updated( $event_body );
+				break;
+			case 'charge.expired':
+				$this->process_webhook_expired_authorization( $event_body );
+				break;
+			case 'account.updated':
+				$this->account->refresh_account_data();
+				break;
+			case 'wcpay.notification':
+				$note = $this->read_rest_property( $event_body, 'data' );
+				$this->remote_note_service->put_note( $note );
+				break;
+			case 'payment_intent.payment_failed':
+				$this->process_webhook_payment_intent_failed( $event_body );
+				break;
+			case 'payment_intent.succeeded':
+				$this->process_webhook_payment_intent_succeeded( $event_body );
+				break;
+			case 'invoice.upcoming':
+				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_upcoming( $event_body );
+				break;
+			case 'invoice.paid':
+				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_paid( $event_body );
+				break;
+			case 'invoice.payment_failed':
+				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_payment_failed( $event_body );
+				break;
 		}
+	}
 
-		return new WP_REST_Response( [ 'result' => self::RESULT_SUCCESS ] );
+	/**
+	 * Safely get a value from the REST request body array.
+	 *
+	 * @param array  $array Array to read from.
+	 * @param string $key   ID to fetch on.
+	 *
+	 * @return string|array|int
+	 * @throws Rest_Request_Exception Thrown if ID not set.
+	 */
+	public function read_rest_property( $array, $key ) {
+		if ( ! isset( $array[ $key ] ) ) {
+			throw new Rest_Request_Exception(
+				sprintf(
+				/* translators: %1: ID being fetched */
+					__( '%1$s not found in array', 'woocommerce-payments' ),
+					$key
+				)
+			);
+		}
+		return $array[ $key ];
 	}
 
 	/**
@@ -139,7 +162,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		if ( ! $order ) {
 			throw new Invalid_Payment_Method_Exception(
 				sprintf(
-					/* translators: %1: charge ID */
+				/* translators: %1: charge ID */
 					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
 					$charge_id
 				),
@@ -149,7 +172,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the refund amount, %2: ID of the refund */
+			/* translators: %1: the refund amount, %2: ID of the refund */
 				__( 'A refund of %1$s was <strong>unsuccessful</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
@@ -271,7 +294,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		if ( ! $order ) {
 			throw new Rest_Request_Exception(
 				sprintf(
-					/* translators: %1: charge ID */
+				/* translators: %1: charge ID */
 					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
 					$charge_id
 				)
@@ -279,7 +302,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$note = sprintf(
-			/* translators: %1: the dispute reason, %2: the dispute details URL */
+		/* translators: %1: the dispute reason, %2: the dispute details URL */
 			__( 'Payment has been disputed as %1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
 			$reason,
 			add_query_arg(
@@ -311,7 +334,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		if ( ! $order ) {
 			throw new Rest_Request_Exception(
 				sprintf(
-					/* translators: %1: charge ID */
+				/* translators: %1: charge ID */
 					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
 					$charge_id
 				)
@@ -319,7 +342,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$note = sprintf(
-			/* translators: %1: the dispute status, %2: the dispute details URL */
+		/* translators: %1: the dispute status, %2: the dispute details URL */
 			__( 'Payment dispute has been closed with status %1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
 			$status,
 			add_query_arg(
@@ -362,7 +385,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		if ( ! $order ) {
 			throw new Rest_Request_Exception(
 				sprintf(
-					/* translators: %1: charge ID */
+				/* translators: %1: charge ID */
 					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
 					$charge_id
 				)
@@ -381,7 +404,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$note = sprintf(
-			/* translators: %1: the dispute message, %2: the dispute details URL */
+		/* translators: %1: the dispute message, %2: the dispute details URL */
 			__( '%1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
 			$message,
 			add_query_arg(
@@ -391,28 +414,6 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		);
 
 		$order->add_order_note( $note );
-	}
-
-	/**
-	 * Safely get a value from the REST request body array.
-	 *
-	 * @param array  $array Array to read from.
-	 * @param string $key   ID to fetch on.
-	 *
-	 * @return string|array|int
-	 * @throws Rest_Request_Exception Thrown if ID not set.
-	 */
-	private function read_rest_property( $array, $key ) {
-		if ( ! isset( $array[ $key ] ) ) {
-			throw new Rest_Request_Exception(
-				sprintf(
-					/* translators: %1: ID being fetched */
-					__( '%1$s not found in array', 'woocommerce-payments' ),
-					$key
-				)
-			);
-		}
-		return $array[ $key ];
 	}
 
 	/**
@@ -450,7 +451,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		if ( ! $order ) {
 			throw new Invalid_Payment_Method_Exception(
 				sprintf(
-					/* translators: %1: charge ID */
+				/* translators: %1: charge ID */
 					__( 'Could not find order via intent ID: %1$s', 'woocommerce-payments' ),
 					$intent_id
 				),
