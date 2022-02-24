@@ -6,8 +6,11 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Constants\Payment_Method;
+use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
+
+// Need to use WC_Mock_Data_Store.
+require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 
 /**
  * WC_Payments_Webhook_Processing_Service unit tests.
@@ -32,6 +35,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	private $mock_remote_note_service;
 
 	/**
+	 * @var array
+	 */
+	private $event_body;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
@@ -52,6 +60,15 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
 
 		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $this->mock_db_wrapper, $account, $this->mock_remote_note_service );
+
+		// Build the event body data.
+		$event_object = [];
+
+		$event_data           = [];
+		$event_data['object'] = $event_object;
+
+		$this->event_body         = [];
+		$this->event_body['data'] = $event_data;
 	}
 
 	/**
@@ -59,16 +76,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_valid_failed_refund_webhook_sets_failed_meta() {
 		// Setup test request data.
-		$this->request_body['type']           = 'charge.refund.updated';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['data']['object'] = [
 			'status'   => 'failed',
 			'charge'   => 'test_charge_id',
 			'id'       => 'test_refund_id',
 			'amount'   => 999,
 			'currency' => 'gbp',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 
@@ -97,7 +112,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_order );
 
 		// Run the test.
-		$this->controller->handle_webhook( $this->request );
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**
@@ -105,12 +120,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_non_failed_refund_update_webhook_does_not_set_failed_meta() {
 		// Setup test request data.
-		$this->request_body['type']           = 'charge.refund.updated';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['data']['object'] = [
 			'status' => 'success',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 
@@ -125,7 +138,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->method( 'update_meta_data' );
 
 		// Run the test.
-		$this->controller->handle_webhook( $this->request );
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**
@@ -133,16 +146,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_valid_failed_refund_update_webhook() {
 		// Setup test request data.
-		$this->request_body['type']           = 'charge.refund.updated';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['data']['object'] = [
 			'status'   => 'failed',
 			'charge'   => 'test_charge_id',
 			'id'       => 'test_refund_id',
 			'amount'   => 999,
 			'currency' => 'gbp',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 
@@ -164,7 +175,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_order );
 
 		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
+		$response = $this->webhook_processing_service->process( $this->event_body );
 
 		// Check the response.
 		$response_data = $response->get_data();
@@ -178,16 +189,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_valid_failed_refund_update_webhook_non_usd() {
 		// Setup test request data.
-		$this->request_body['type']           = 'charge.refund.updated';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['data']['object'] = [
 			'status'   => 'failed',
 			'charge'   => 'test_charge_id',
 			'id'       => 'test_refund_id',
 			'amount'   => 999,
 			'currency' => 'eur',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 
@@ -209,7 +218,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_order );
 
 		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
+		$response = $this->webhook_processing_service->process( $this->event_body );
 
 		// Check the response.
 		$response_data = $response->get_data();
@@ -223,16 +232,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_valid_failed_refund_update_webhook_zero_decimal_currency() {
 		// Setup test request data.
-		$this->request_body['type']           = 'charge.refund.updated';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['data']['object'] = [
 			'status'   => 'failed',
 			'charge'   => 'test_charge_id',
 			'id'       => 'test_refund_id',
 			'amount'   => 999,
 			'currency' => 'jpy',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 
@@ -254,7 +261,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_order );
 
 		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
+		$response = $this->webhook_processing_service->process( $this->event_body );
 
 		// Check the response.
 		$response_data = $response->get_data();
@@ -268,16 +275,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_valid_failed_refund_update_webhook_with_unknown_charge_id() {
 		// Setup test request data.
-		$this->request_body['type']           = 'charge.refund.updated';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['data']['object'] = [
 			'status'   => 'failed',
 			'charge'   => 'unknown_charge_id',
 			'id'       => 'test_refund_id',
 			'amount'   => 999,
 			'currency' => 'gbp',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$this->mock_db_wrapper
 			->expects( $this->once() )
@@ -286,7 +291,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( false );
 
 		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
+		$response = $this->webhook_processing_service->process( $this->event_body );
 
 		// Check the response.
 		$response_data = $response->get_data();
@@ -300,22 +305,20 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_non_failed_refund_update_webhook() {
 		// Setup test request data.
-		$this->request_body['type']           = 'charge.refund.updated';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['data']['object'] = [
 			'status' => 'updated',
 			'charge' => 'test_charge_id',
 			'id'     => 'test_refund_id',
 			'amount' => 999,
 		];
 
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
-
 		$this->mock_db_wrapper
 			->expects( $this->never() )
 			->method( 'order_from_charge_id' );
 
 		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
+		$response = $this->webhook_processing_service->process( $this->event_body );
 
 		// Check the response.
 		$response_data = $response->get_data();
@@ -329,13 +332,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_remote_note_puts_note() {
 		// Setup test request data.
-		$this->request_body['type'] = 'wcpay.notification';
-		$this->request_body['data'] = [
+		$this->event_body['type'] = 'wcpay.notification';
+		$this->event_body['data'] = [
 			'title'   => 'test',
 			'content' => 'hello',
 		];
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
-
 		$this->mock_remote_note_service
 			->expects( $this->once() )
 			->method( 'put_note' )
@@ -346,7 +347,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$response = $this->controller->handle_webhook( $this->request );
+		$response = $this->webhook_processing_service->process( $this->event_body );
 
 		$response_data = $response->get_data();
 
@@ -359,18 +360,16 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_remote_note_fails_returns_response() {
 		// Setup test request data.
-		$this->request_body['type'] = 'wcpay.notification';
-		$this->request_body['data'] = [
+		$this->event_body['type'] = 'wcpay.notification';
+		$this->event_body['data'] = [
 			'foo' => 'bar',
 		];
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
-
 		$this->mock_remote_note_service
 			->expects( $this->once() )
 			->method( 'put_note' )
 			->willThrowException( new Invalid_Webhook_Data_Exception( 'Invalid note.' ) );
 
-		$response = $this->controller->handle_webhook( $this->request );
+		$response = $this->webhook_processing_service->process( $this->event_body );
 
 		$response_data = $response->get_data();
 
@@ -397,13 +396,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 		);
 
 		// Setup test request data.
-		$this->request_body['type'] = 'wcpay.notification';
-		$this->request_body['data'] = [
+		$this->event_body['type'] = 'wcpay.notification';
+		$this->event_body['data'] = [
 			'title'   => 'test',
 			'content' => 'hello',
 		];
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
-
 		$this->mock_remote_note_service
 			->expects( $this->once() )
 			->method( 'put_note' )
@@ -414,7 +411,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$response = $this->controller->handle_webhook( $this->request );
+		$response = $this->webhook_processing_service->process( $this->event_body );
 
 		$response_data = $response->get_data();
 
@@ -426,16 +423,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 * Tests that a payment_intent.succeeded event will complete the order.
 	 */
 	public function test_payment_intent_successful_and_completes_order() {
-		$this->request_body['type']           = 'payment_intent.succeeded';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['data']['object'] = [
 			'id'       => 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
 			'amount'   => 1500,
 			'charges'  => [],
 			'currency' => 'eur',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 
@@ -460,7 +455,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
 		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
+		$response = $this->webhook_processing_service->process( $this->event_body );
 
 		// Check the response.
 		$response_data = $response->get_data();
@@ -473,8 +468,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 * Tests that a payment_intent.succeeded event will complete the order even if the intent was not properly attached into the order.
 	 */
 	public function test_payment_intent_successful_and_completes_order_without_intent_id() {
-		$this->request_body['type']           = 'payment_intent.succeeded';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['data']['object'] = [
 			'id'       => 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
 			'amount'   => 1500,
@@ -482,8 +477,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			'currency' => 'eur',
 			'metadata' => [ 'order_id' => 'id_1323' ], // Using order_id inside of the intent metadata to find the order.
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 
@@ -514,7 +507,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
 		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
+		$response = $this->webhook_processing_service->process( $this->event_body );
 
 		// Check the response.
 		$response_data = $response->get_data();
@@ -528,16 +521,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 * if it is already completed/processed.
 	 */
 	public function test_payment_intent_successful_when_retrying() {
-		$this->request_body['type']           = 'payment_intent.succeeded';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['data']['object'] = [
 			'id'       => 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
 			'amount'   => 1500,
 			'charges'  => [],
 			'currency' => 'eur',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 
@@ -562,7 +553,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
 		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
+		$response = $this->webhook_processing_service->process( $this->event_body );
 
 		// Check the response.
 		$response_data = $response->get_data();
@@ -575,8 +566,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 * Tests that a payment_intent.succeeded event will complete the order.
 	 */
 	public function test_payment_intent_fails_and_fails_order() {
-		$this->request_body['type']           = 'payment_intent.payment_failed';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['data']['object'] = [
 			'id'       => 'pi_123123123123123', // Payment_intent's ID.
 			'object'   => 'payment_intent',
 			'amount'   => 1500,
@@ -592,8 +583,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			],
 			'currency' => 'usd',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 
@@ -642,7 +631,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_order );
 
 		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
+		$response = $this->webhook_processing_service->process( $this->event_body );
 
 		// Check the response.
 		$response_data = $response->get_data();
@@ -656,14 +645,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_dispute_created_order_note() {
 		// Setup test request data.
-		$this->request_body['type']           = 'charge.dispute.created';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'charge.dispute.created';
+		$this->event_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
 			'reason' => 'test_reason',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 		$mock_order
@@ -687,7 +674,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_order );
 
 		// Run the test.
-		$this->controller->handle_webhook( $this->request );
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**
@@ -695,14 +682,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_dispute_closed_order_note() {
 		// Setup test request data.
-		$this->request_body['type']           = 'charge.dispute.closed';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'charge.dispute.closed';
+		$this->event_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
 			'status' => 'test_status',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 		$mock_order
@@ -726,7 +711,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_order );
 
 		// Run the test.
-		$this->controller->handle_webhook( $this->request );
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**
@@ -734,13 +719,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_dispute_updated_order_note() {
 		// Setup test request data.
-		$this->request_body['type']           = 'charge.dispute.updated';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'charge.dispute.updated';
+		$this->event_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 		$mock_order
@@ -759,7 +742,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_order );
 
 		// Run the test.
-		$this->controller->handle_webhook( $this->request );
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**
@@ -767,13 +750,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_dispute_funds_withdrawn_order_note() {
 		// Setup test request data.
-		$this->request_body['type']           = 'charge.dispute.funds_withdrawn';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'charge.dispute.funds_withdrawn';
+		$this->event_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 		$mock_order
@@ -792,7 +773,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_order );
 
 		// Run the test.
-		$this->controller->handle_webhook( $this->request );
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**
@@ -800,13 +781,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_dispute_funds_reinstated_order_note() {
 		// Setup test request data.
-		$this->request_body['type']           = 'charge.dispute.funds_reinstated';
-		$this->request_body['data']['object'] = [
+		$this->event_body['type']           = 'charge.dispute.funds_reinstated';
+		$this->event_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
 		];
-
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->createMock( WC_Order::class );
 		$mock_order
@@ -825,6 +804,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( $mock_order );
 
 		// Run the test.
-		$this->controller->handle_webhook( $this->request );
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 }
