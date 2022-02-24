@@ -45,6 +45,7 @@ const columns = [
 		screenReaderLabel: __( 'Amount', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: false,
+		isNumeric: true,
 	},
 	{
 		key: 'fee_amount',
@@ -52,6 +53,7 @@ const columns = [
 		screenReaderLabel: __( 'Fixed fee', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: false,
+		isNumeric: true,
 	},
 	{
 		key: 'withhold_rate',
@@ -59,6 +61,7 @@ const columns = [
 		screenReaderLabel: __( 'Withhold rate', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: false,
+		isNumeric: true,
 	},
 	{
 		key: 'first_paydown_at',
@@ -66,6 +69,7 @@ const columns = [
 		screenReaderLabel: __( 'First paydown', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: false,
+		isNumeric: true, // Hack: this is not a numeric field, but "isNumeric" is needed for it to be right-aligned
 	},
 ];
 
