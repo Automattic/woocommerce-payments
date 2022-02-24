@@ -8,6 +8,12 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
 	const waitTime = 500;
 	const platformCheckoutEmailInput = document.querySelector( field );
+
+	// If we can't find the input, return.
+	if ( ! platformCheckoutEmailInput ) {
+		return;
+	}
+
 	const spinner = document.createElement( 'div' );
 	const parentDiv = platformCheckoutEmailInput.parentNode;
 	spinner.classList.add( 'wc-block-components-spinner' );
