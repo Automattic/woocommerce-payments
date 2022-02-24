@@ -37,16 +37,25 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	private $customer_service;
 
 	/**
+	 * WC_Payments_Order_Service instance for updating order statuses.
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
 	 * WC_Payments_REST_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WooCommerce Payments API client.
 	 * @param WC_Payment_Gateway_WCPay     $gateway          WooCommerce Payments payment gateway.
 	 * @param WC_Payments_Customer_Service $customer_service Customer class instance.
+	 * @param WC_Payments_Order_Service    $order_service    Order Service class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Customer_Service $customer_service ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service ) {
 		parent::__construct( $api_client );
 		$this->gateway          = $gateway;
 		$this->customer_service = $customer_service;
+		$this->order_service    = $order_service;
 	}
 
 	/**
@@ -122,21 +131,23 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Update the order: set the payment method and attach intent attributes.
 			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
+			$intent_id     = $intent->get_id();
+			$intent_status = $intent->get_status();
+			$charge_id     = $intent->get_charge_id();
 			$this->gateway->attach_intent_info_to_order(
 				$order,
-				$intent->get_id(),
-				$intent->get_status(),
+				$intent_id,
+				$intent_status,
 				$intent->get_payment_method_id(),
 				$intent->get_customer_id(),
-				$intent->get_charge_id(),
+				$charge_id,
 				$intent->get_currency()
 			);
 			$this->gateway->update_order_status_from_intent(
 				$order,
-				$intent->get_id(),
-				$intent->get_status(),
-				$intent->get_charge_id(),
-				$intent->get_currency()
+				$intent_id,
+				$intent_status,
+				$charge_id
 			);
 
 			// Certain payments (eg. Interac) are captured on the client-side (mobile app).
@@ -165,7 +176,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Store receipt generation URL for mobile applications in order meta-data.
 			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
 			// Actualize order status.
-			$order->update_status( 'completed' );
+			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $intent_status, $charge_id );
 
 			return rest_ensure_response(
 				[

@@ -113,6 +113,13 @@ class WC_Payments {
 	private static $in_person_payments_receipts_service;
 
 	/**
+	 * Instance of WC_Payments_Order_Service, created in init function
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private static $order_service;
+
+	/**
 	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
 	 *
 	 * @var WC_Payments_Payment_Request_Button_Handler
@@ -212,6 +219,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-experimental-abtest.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
+		include_once __DIR__ . '/class-wc-payments-order-service.php';
 		include_once __DIR__ . '/class-wc-payments-file-service.php';
 
 		// Load customer multi-currency if feature is enabled.
@@ -237,6 +245,7 @@ class WC_Payments {
 		self::$localization_service                = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
+		self::$order_service                       = new WC_Payments_Order_Service();
 
 		$card_class = CC_Payment_Gateway::class;
 		$upe_class  = UPE_Payment_Gateway::class;
@@ -258,9 +267,9 @@ class WC_Payments {
 				$payment_method                               = new $payment_method_class( self::$token_service );
 				$payment_methods[ $payment_method->get_id() ] = $payment_method;
 			}
-			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter );
+			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
 		} else {
-			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter );
+			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
 
 		self::maybe_register_platform_checkout_hooks();
@@ -590,7 +599,7 @@ class WC_Payments {
 		$conn_tokens_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
-		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway, self::$customer_service );
+		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway, self::$customer_service, self::$order_service );
 		$orders_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
@@ -598,7 +607,7 @@ class WC_Payments {
 		$timeline_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
-		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service );
+		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service );
 		$webhook_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
