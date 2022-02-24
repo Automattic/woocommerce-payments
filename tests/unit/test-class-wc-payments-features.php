@@ -14,7 +14,6 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 		'_wcpay_feature_upe'                     => 'upe',
 		'_wcpay_feature_upe_settings_preview'    => 'upeSettingsPreview',
 		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
-		'_wcpay_feature_capital'                 => 'capital',
 	];
 
 	public function tearDown() {
@@ -100,21 +99,6 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 			[ 'foo' ],
 			[ [] ],
 		];
-	}
-
-	public function test_capital_is_disabled_by_default() {
-		delete_option( '_wcpay_feature_capital' );
-		$this->assertFalse( WC_Payments_Features::is_capital_enabled() );
-	}
-
-	public function test_capital_can_be_disabled() {
-		update_option( '_wcpay_feature_capital', '0' );
-		$this->assertFalse( WC_Payments_Features::is_capital_enabled() );
-	}
-
-	public function test_capital_can_be_enabled() {
-		update_option( '_wcpay_feature_capital', '1' );
-		$this->assertTrue( WC_Payments_Features::is_capital_enabled() );
 	}
 
 	private function setup_enabled_flags( array $enabled_flags ) {
