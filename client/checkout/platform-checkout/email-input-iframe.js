@@ -139,7 +139,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		window.addEventListener( 'resize', setPopoverPosition );
 
 		iframe.classList.add( 'open' );
-		wcpayTracks.recordUserEvent( 'platform_checkout_otp_prompt_start' );
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.PLATFORM_CHECKOUT_OTP_START
+		);
 	} );
 
 	// Add the iframe and iframe arrow to the wrapper.
@@ -249,7 +251,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		switch ( e.data.action ) {
 			case 'redirect_to_platform_checkout':
 				wcpayTracks.recordUserEvent(
-					'platform_checkout_otp_prompt_complete'
+					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_COMPLETE
 				);
 				api.initPlatformCheckout().then( ( response ) => {
 					window.location = response.url;
@@ -257,7 +259,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				break;
 			case 'otp_validation_failed':
 				wcpayTracks.recordUserEvent(
-					'platform_checkout_otp_prompt_failed'
+					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_FAILED
 				);
 				break;
 			case 'close_modal':
