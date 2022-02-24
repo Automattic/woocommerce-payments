@@ -13,7 +13,9 @@ import intlTelInput from 'intl-tel-input';
 import utils from 'iti/utils';
 
 const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
-	const [ inputValue, setInputValue ] = useState( '' );
+	const [ inputValue, setInputValue ] = useState(
+		document.getElementById( 'billing_phone' ).value ?? ''
+	);
 	const [ inputInstance, setInputInstance ] = useState( null );
 
 	const handlePhoneNumberInputChange = ( value = inputValue ) => {
