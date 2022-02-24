@@ -21,3 +21,9 @@ declare const wcpaySettings: {
 		availableStates: Array< Record< string, string > >;
 	};
 };
+
+declare const wcSettings: {
+	currentUserData: {
+		email: string;
+	};
+};

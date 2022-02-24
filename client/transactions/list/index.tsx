@@ -435,8 +435,7 @@ export const TransactionsList = (
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
-		const userEmail = ''; // todo uncomment line below
-		// const userEmail = window.wcSettings.currentUserData.email;
+		const userEmail = wcSettings.currentUserData.email;
 
 		if ( 'endpoint' === downloadType ) {
 			const {
