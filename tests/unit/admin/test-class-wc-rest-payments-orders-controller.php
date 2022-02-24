@@ -206,8 +206,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 				$this->isInstanceOf( WC_Order::class ),
 				$this->mock_intent_id,
 				'succeeded',
-				'ch_mock',
-				'mok'
+				'ch_mock'
 			);
 		$this->mock_gateway
 			->expects( $this->never() )
@@ -296,8 +295,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 				$this->isInstanceOf( WC_Order::class ),
 				$this->mock_intent_id,
 				'succeeded',
-				'ch_mock',
-				'mok'
+				'ch_mock'
 			);
 		$this->mock_gateway
 			->expects( $this->never() )
