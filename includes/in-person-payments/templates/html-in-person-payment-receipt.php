@@ -63,12 +63,14 @@ function format_price_helper( array $product, string $currency ): string {
 			width: 100%;
 			border-collapse: separate;
 			border-spacing: 0 2px;
+			font-size: 10px;
 		}
 
 		.receipt__header .title {
 			font-size: 14px;
 			line-height: 17px;
 			margin-bottom: 12px;
+			margin-top: 12px;
 			font-weight: 700;
 		}
 
