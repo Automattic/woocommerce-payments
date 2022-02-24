@@ -92,7 +92,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				Logger::error( $e );
 			}
 
-			$this->webhook_processing_service->process_webhook( $body );
+			$this->webhook_processing_service->process( $body );
 
 			try {
 				do_action( 'woocommerce_payments_after_webhook_delivery', $event_type, $body );
