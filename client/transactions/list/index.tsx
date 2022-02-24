@@ -447,6 +447,7 @@ export const TransactionsList = (
 				type_is: typeIs,
 				type_is_not: typeIsNot,
 			} = params;
+			const depositId = props.depositId;
 
 			const isFiltered =
 				!! dateAfter ||
@@ -483,6 +484,7 @@ export const TransactionsList = (
 							search,
 							typeIs,
 							typeIsNot,
+							depositId,
 						} ),
 						method: 'POST',
 					} );

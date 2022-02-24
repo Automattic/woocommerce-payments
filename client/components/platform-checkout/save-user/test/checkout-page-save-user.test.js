@@ -17,9 +17,7 @@ jest.mock( '../../hooks/use-selected-payment-method', () => jest.fn() );
 
 describe( 'CheckoutPageSaveUser', () => {
 	beforeEach( () => {
-		usePlatformCheckoutUser.mockImplementation( () => ( {
-			isRegisteredUser: false,
-		} ) );
+		usePlatformCheckoutUser.mockImplementation( () => false );
 
 		useSelectedPaymentMethod.mockImplementation( () => ( {
 			isWCPayChosen: true,
@@ -48,9 +46,7 @@ describe( 'CheckoutPageSaveUser', () => {
 	} );
 
 	it( 'should not render checkbox for saving Platform Checkout user when user is already registered', () => {
-		usePlatformCheckoutUser.mockImplementation( () => ( {
-			isRegisteredUser: true,
-		} ) );
+		usePlatformCheckoutUser.mockImplementation( () => true );
 
 		render( <CheckoutPageSaveUser /> );
 		expect(

@@ -92,9 +92,10 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 */
 	public function get_transactions_export( $request ) {
 		$user_email = $request->get_param( 'user_email' );
+		$deposit_id = $request->get_param( 'deposit_id' );
 		$filters    = $this->get_transactions_filters( $request );
 
-		return $this->forward_request( 'get_transactions_export', [ $filters, $user_email ] );
+		return $this->forward_request( 'get_transactions_export', [ $filters, $user_email, $deposit_id ] );
 	}
 
 	/**
