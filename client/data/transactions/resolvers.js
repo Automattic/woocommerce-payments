@@ -19,6 +19,7 @@ import {
 import { formatDateValue } from 'utils';
 
 export const formatQueryFilters = ( query ) => ( {
+	user_email: query.userEmail,
 	match: query.match,
 	date_before: formatDateValue( query.dateBefore, true ),
 	date_after: formatDateValue( query.dateAfter ),
