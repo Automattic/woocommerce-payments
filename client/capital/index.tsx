@@ -136,7 +136,9 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 			first_paydown_at: {
 				value: loan.first_paydown_at,
 				display: clickable(
-					dateI18n( 'M j, Y', loan.first_paydown_at )
+					loan.first_paydown_at
+						? dateI18n( 'M j, Y', loan.first_paydown_at )
+						: '-'
 				),
 			},
 		} as Record<
