@@ -130,6 +130,7 @@ const BrandingFileUpload = ( props ) => {
 				error={ error }
 				onFileChange={ handleFileChange }
 				onFileRemove={ handleFileRemove }
+				hasPreview={ true }
 			/>
 		</div>
 	);

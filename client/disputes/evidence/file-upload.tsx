@@ -26,6 +26,7 @@ export const FileUploadControl = ( {
 	onFileChange,
 	onFileRemove,
 	help,
+	hasPreview,
 }: DisputeFileUpload ): JSX.Element => {
 	const hasError = ( error && 0 < error.length ) || false;
 
@@ -71,24 +72,32 @@ export const FileUploadControl = ( {
 					{ __( 'Upload file', 'woocommerce-payments' ) }
 				</FormFileUpload>
 
-				{ hasError ? (
+				{ hasError && (
 					<span className="upload-message is-destructive">
 						{ error }
 					</span>
-				) : (
-					fileName && (
-						<img
-							src={
-								'/wp-json' +
-								NAMESPACE +
-								'/file/' +
-								fileName +
-								'?as_account=0'
-							}
-							style={ { maxWidth: 100 } }
-							alt={ fileName }
-						/>
-					)
+				) }
+
+				{ ! hasError && (
+					<>
+						{ hasPreview && fileName && (
+							<img
+								src={
+									'/wp-json' +
+									NAMESPACE +
+									'/file/' +
+									fileName +
+									'?as_account=0'
+								}
+								style={ { maxWidth: 100 } }
+								alt={ fileName }
+							/>
+						) }
+
+						{ ! hasPreview && fileName && (
+							<span className="upload-message">{ fileName }</span>
+						) }
+					</>
 				) }
 
 				{ isDone && ! disabled ? (

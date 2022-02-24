@@ -99,6 +99,7 @@ export interface DisputeFileUpload {
 	onFileChange( key: string, file: File ): any;
 	onFileRemove( key: string ): any;
 	help?: string;
+	hasPreview?: boolean;
 }
 
 export interface DisputesSummary {
