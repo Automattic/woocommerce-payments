@@ -27,9 +27,7 @@ const usePlatformCheckoutUser = () => {
 		};
 	}, [] );
 
-	return {
-		isRegisteredUser,
-	};
+	return isRegisteredUser;
 };
 
 export default usePlatformCheckoutUser;
