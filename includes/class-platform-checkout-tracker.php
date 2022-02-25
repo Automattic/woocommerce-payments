@@ -39,10 +39,11 @@ class Platform_Checkout_Tracker extends Tracking {
 		parent::__construct( self::$prefix, $http );
 		add_action( 'wp_ajax_platform_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_ajax_nopriv_platform_tracks', [ $this, 'ajax_tracks' ] );
+		add_action( 'woocommerce_add_to_cart', [ $this, 'track_add_to_cart' ], 10, 6 );
 	}
 
 	/**
-	 * Override jetpack-tracking's ajax handling to use internal record_event method.
+	 * Override jetpack-tracking's ajax handling to use internal maybe_record_event method.
 	 */
 	public function ajax_tracks() {
 		// Check for nonce.
@@ -71,7 +72,7 @@ class Platform_Checkout_Tracker extends Tracking {
 			}
 		}
 
-		$this->record_event( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data );
+		$this->maybe_record_event( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data );
 
 		wp_send_json_success();
 	}
@@ -82,7 +83,7 @@ class Platform_Checkout_Tracker extends Tracking {
 	 * @param string $event name of the event.
 	 * @param array  $data array of event properties.
 	 */
-	public function record_event( $event, $data = [] ) {
+	public function maybe_record_event( $event, $data = [] ) {
 
 		if ( ! $this->should_track() ) {
 			return;
@@ -139,7 +140,7 @@ class Platform_Checkout_Tracker extends Tracking {
 	 */
 	public function track_add_to_cart() {
 		$data = [];
-		$this->record_event( 'order_checkout_start', $data );
+		$this->maybe_record_event( 'order_checkout_start', $data );
 	}
 
 }
