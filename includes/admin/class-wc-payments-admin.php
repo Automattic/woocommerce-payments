@@ -366,11 +366,11 @@ class WC_Payments_Admin {
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
 		/**
-		 * This is a work around to pass the current user's email addres to WCPay's settings until we do not need to rely
-		 * on backwards compatibility and can use `getCurrentUser` in `@wordpress/core-data`.
+		 * This is a work around to pass the current user's email address to WCPay's settings until we do not need to rely
+		 * on backwards compatibility and can use `getCurrentUser` from `@wordpress/core-data`.
 		 */
 		$current_user       = wp_get_current_user();
-		$current_user_email = $current_user && $current_user->user_email ? $current_user->user_email : null;
+		$current_user_email = $current_user && $current_user->user_email ? $current_user->user_email : get_option( 'admin_email' );
 
 		$wcpay_settings = [
 			'connectUrl'              => WC_Payments_Account::get_connect_url(),
@@ -517,6 +517,7 @@ class WC_Payments_Admin {
 	public function enqueue_payments_scripts() {
 		global $current_tab, $current_section;
 
+		// TODO: Add check to see if user can manage_woocommerce and exit early if they cannot.
 		$this->register_payments_scripts();
 
 		if ( WC_Payments_Utils::is_payments_settings_page() ) {
