@@ -365,6 +365,13 @@ class WC_Payments_Admin {
 		$error_message = get_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
+		/**
+		 * This is a work around to pass the current user's email addres to WCPay's settings until we do not need to rely
+		 * on backwards compatibility and can use `getCurrentUser` in `@wordpress/core-data`.
+		 */
+		$current_user       = wp_get_current_user();
+		$current_user_email = $current_user && $current_user->user_email ? $current_user->user_email : null;
+
 		$wcpay_settings = [
 			'connectUrl'              => WC_Payments_Account::get_connect_url(),
 			'connect'                 => [
@@ -402,6 +409,7 @@ class WC_Payments_Admin {
 				'deletedTodoTasks'       => get_option( 'woocommerce_deleted_todo_tasks', [] ),
 				'remindMeLaterTodoTasks' => get_option( 'woocommerce_remind_me_later_todo_tasks', [] ),
 			],
+			'currentUserEmail'        => $current_user_email,
 		];
 
 		wp_localize_script(
