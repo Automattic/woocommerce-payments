@@ -38,15 +38,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	private $webhook_processing_service;
 
 	/**
-	 * WC_Payments_Order_Service instance // TODO must fix this after the merge
-	 *
-	 * @var WC_Payments_Order_Service
-	 */
-	protected $order_service;
-
-	/**
 	 * WC_REST_Payments_Webhook_Controller constructor.
-	 * TODO must fix this after the merge - move $order_service.
 	 *
 	 * @param WC_Payments_API_Client                 $api_client          WC_Payments_API_Client instance.
 	 * @param WC_Payments_Webhook_Processing_Service $webhook_processing_service WC_Payments_Webhook_Processing_Service instance.
@@ -96,5 +88,4 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		return new WP_REST_Response( [ 'result' => self::RESULT_SUCCESS ] );
 	}
-	// TODO must fix this after the merge - see PR 3675 to see $order_service for this file.
 }

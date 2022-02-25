@@ -255,7 +255,7 @@ class WC_Payments {
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$order_service                       = new WC_Payments_Order_Service();
-		self::$webhook_processing_service          = new WC_Payments_Webhook_Processing_Service( self::$db_helper, self::$account, self::$remote_note_service );
+		self::$webhook_processing_service          = new WC_Payments_Webhook_Processing_Service( self::$db_helper, self::$account, self::$remote_note_service, self::$order_service );
 
 		$card_class = CC_Payment_Gateway::class;
 		$upe_class  = UPE_Payment_Gateway::class;
@@ -617,7 +617,6 @@ class WC_Payments {
 		$timeline_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
-		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service ); // TODO must fix this after the merge.
 		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$webhook_processing_service );
 		$webhook_controller->register_routes();
 
