@@ -10,6 +10,8 @@ use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 
+// TODO must fix this after the merge - check all changes related to $order_service on this file in the PR 3675.
+
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 
