@@ -31,6 +31,11 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	private $mock_remote_note_service;
 
 	/**
+	 * @var WC_Payments_Order_Service // TODO must fix this after the merge
+	 */
+	private $order_service;
+
+	/**
 	 * @var WP_REST_Request
 	 */
 	private $request;
@@ -59,6 +64,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->mock_webhook_processing_service = $this->createMock( WC_Payments_Webhook_Processing_Service::class );
 
+		// TODO must fix this after the merge. $this->order_service = new WC_Payments_Order_Service(); .
 		$this->controller = new WC_REST_Payments_Webhook_Controller( $mock_api_client, $this->mock_webhook_processing_service );
 
 		// Setup a test request.
@@ -132,4 +138,6 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 500, $response->get_status() );
 		$this->assertSame( 'error', $response_data['result'] );
 	}
+
+	// TODO must fix this after the merge - check all changes on this file in the PR 3675.
 }
