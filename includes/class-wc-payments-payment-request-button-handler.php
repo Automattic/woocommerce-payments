@@ -627,6 +627,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
 				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
 				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
+				'platform_tracker'          => wp_create_nonce( 'platform_tracks_nonce' ),
 			],
 			'checkout'           => [
 				'currency_code'     => strtolower( get_woocommerce_currency() ),
