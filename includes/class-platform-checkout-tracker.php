@@ -39,7 +39,6 @@ class Platform_Checkout_Tracker extends Tracking {
 		parent::__construct( self::$prefix, $http );
 		add_action( 'wp_ajax_platform_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_ajax_nopriv_platform_tracks', [ $this, 'ajax_tracks' ] );
-		add_action( 'woocommerce_add_to_cart', [ $this, 'track_add_to_cart' ], 10, 6 );
 	}
 
 	/**
@@ -132,15 +131,6 @@ class Platform_Checkout_Tracker extends Tracking {
 		// TODO: Don't track if jetpack_tos_agreed flag is not present.
 
 		return true;
-	}
-
-	/**
-	 * TODO: Track add to cart events.
-	 * This is just a placeholder.
-	 */
-	public function track_add_to_cart() {
-		$data = [];
-		$this->maybe_record_event( 'order_checkout_start', $data );
 	}
 
 }
