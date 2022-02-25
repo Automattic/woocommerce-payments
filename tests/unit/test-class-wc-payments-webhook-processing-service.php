@@ -7,7 +7,6 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
-use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 
 // Need to use WC_Mock_Data_Store.
@@ -70,6 +69,63 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 
 		$this->event_body         = [];
 		$this->event_body['data'] = $event_data;
+	}
+
+	/**
+	 * Test processing a webhook that requires no action.
+	 */
+	public function test_noop_webhook() {
+		// Setup test request data.
+		$this->event_body['type'] = 'unknown.webhook.event';
+
+		// Run the test.
+		$result = $this->webhook_processing_service->process( $this->event_body );
+
+		// This is to ensure that process is still gone through without any issue.
+		$this->assertNull( $result );
+	}
+
+	/**
+	 * Test a webhook with no type property.
+	 */
+	public function test_webhook_with_no_type_property() {
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'type not found in array' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Test a webhook with no object property.
+	 */
+	public function test_webhook_with_no_object_property() {
+		// Setup test request data.
+		$this->event_body['type'] = 'charge.refund.updated';
+		unset( $this->event_body['data']['object'] );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'object not found in array' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+
+	}
+
+	/**
+	 * Test a webhook with no data property.
+	 */
+	public function test_webhook_with_no_data_property() {
+		// Setup test request data.
+		$this->event_body['type'] = 'charge.refund.updated';
+		unset( $this->event_body['data'] );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'data not found in array' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**

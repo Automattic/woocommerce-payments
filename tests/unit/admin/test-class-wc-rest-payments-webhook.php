@@ -8,9 +8,6 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 
-// Need to use WC_Mock_Data_Store.
-require_once dirname( __FILE__, 2 ) . '/helpers/class-wc-mock-wc-data-store.php';
-
 /**
  * WC_REST_Payments_Webhook_Controller unit tests.
  */
@@ -94,76 +91,4 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
-	/**
-	 * Test processing a webhook that requires no action.
-	 */
-	public function test_noop_webhook() {
-		// Setup test request data.
-		$this->request_body['type'] = 'unknown.webhook.event';
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
-
-		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
-
-		// Check the response.
-		$response_data = $response->get_data();
-
-		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( [ 'result' => 'success' ], $response_data );
-	}
-
-	/**
-	 * Test a webhook with no type property.
-	 */
-	public function test_webhook_with_no_type_property() {
-		// Setup test request data.
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
-
-		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
-
-		// Check the response.
-		$response_data = $response->get_data();
-
-		$this->assertEquals( 400, $response->get_status() );
-		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
-	}
-
-	/**
-	 * Test a webhook with no object property.
-	 */
-	public function test_webhook_with_no_object_property() {
-		// Setup test request data.
-		$this->request_body['type'] = 'charge.refund.updated';
-		unset( $this->request_body['data']['object'] );
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
-
-		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
-
-		// Check the response.
-		$response_data = $response->get_data();
-
-		$this->assertEquals( 400, $response->get_status() );
-		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
-	}
-
-	/**
-	 * Test a webhook with no data property.
-	 */
-	public function test_webhook_with_no_data_property() {
-		// Setup test request data.
-		$this->request_body['type'] = 'charge.refund.updated';
-		unset( $this->request_body['data'] );
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
-
-		// Run the test.
-		$response = $this->controller->handle_webhook( $this->request );
-
-		// Check the response.
-		$response_data = $response->get_data();
-
-		$this->assertEquals( 400, $response->get_status() );
-		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
-	}
 }
