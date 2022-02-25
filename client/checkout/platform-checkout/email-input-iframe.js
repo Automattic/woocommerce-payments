@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
+import wcpayTracks from 'tracks';
 
 export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
@@ -210,6 +211,10 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
+				} else if ( 'rest_invalid_param' !== data.code ) {
+					wcpayTracks.recordUserEvent(
+						wcpayTracks.events.PLATFORM_CHECKOUT_OFFERED
+					);
 				}
 			} )
 			.finally( () => {
