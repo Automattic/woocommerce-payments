@@ -320,6 +320,16 @@ class WC_Payments_Admin {
 					'path'   => '/payments/multi-currency-setup',
 				]
 			);
+
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-card-readers-preview-receipt',
+					'parent' => 'wc-payments-card-readers',
+					'title'  => __( 'Preview a printed receipt', 'woocommerce-payments' ),
+					'path'   => '/payments/card-readers/preview-receipt',
+
+				]
+			);
 		}
 
 		wp_enqueue_style(

@@ -25,15 +25,21 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 		$this->validate_settings( $settings );
 		$this->validate_charge( $charge );
 
-		$order_data = [
-			'id'           => $order->get_id(),
-			'currency'     => $order->get_currency(),
-			'subtotal'     => $order->get_subtotal(),
-			'line_items'   => $order->get_items(),
-			'coupon_lines' => $order->get_items( 'coupon' ),
-			'tax_lines'    => $order->get_items( 'tax' ),
-			'total'        => $order->get_total(),
-		];
+		if ( $order instanceof WC_Payments_Printed_Receipt_Sample_Order ) {
+			$order_data      = $order->get_data();
+			$line_items_data = $order_data['line_items'];
+		} else {
+			$order_data      = [
+				'id'           => $order->get_id(),
+				'currency'     => $order->get_currency(),
+				'subtotal'     => $order->get_subtotal(),
+				'line_items'   => $order->get_items(),
+				'coupon_lines' => $order->get_items( 'coupon' ),
+				'tax_lines'    => $order->get_items( 'tax' ),
+				'total'        => $order->get_total(),
+			];
+			$line_items_data = $this->format_line_items( $order_data );
+		}
 
 		ob_start();
 
@@ -44,7 +50,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 				'coupon_lines'           => $order_data['coupon_lines'] ?? [],
 				'branding_logo'          => $settings['branding_logo'] ?? [],
 				'business_name'          => $settings['business_name'],
-				'line_items'             => $this->format_line_items( $order_data ),
+				'line_items'             => $line_items_data,
 				'order'                  => $order_data,
 				'payment_method_details' => $charge['payment_method_details']['card_present'],
 				'receipt'                => $charge['payment_method_details']['card_present']['receipt'],

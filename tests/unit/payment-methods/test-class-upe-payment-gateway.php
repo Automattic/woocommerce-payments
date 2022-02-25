@@ -23,6 +23,7 @@ use WC_Payments_API_Client;
 use WC_Payments_API_Intention;
 use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
+use WC_Payments_Order_Service;
 use WC_Payments;
 use WC_Customer;
 use WC_Helper_Order;
@@ -95,6 +96,13 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	 * @var Session_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_rate_limiter;
+
+	/**
+	 * WC_Payments_Order_Service.
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
 
 	/**
 	 * Array of mock UPE payment methods.
@@ -196,6 +204,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 		}
 
+		$this->order_service = new WC_Payments_Order_Service();
+
 		// Arrange: Mock UPE_Payment_Gateway so that some of its methods can be
 		// mocked, and their return values can be used for testing.
 		$this->mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
@@ -208,6 +218,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
+					$this->order_service,
 				]
 			)
 			->setMethods(

@@ -60,6 +60,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	private $mock_rate_limiter;
 
 	/**
+	 * WC_Payments_Order_Service.
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
@@ -129,6 +136,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 
+		$this->order_service = new WC_Payments_Order_Service();
+
 		$this->mock_wcpay_gateway = $this->getMockBuilder( '\WC_Payment_Gateway_WCPay' )
 			->setConstructorArgs(
 				[
@@ -138,6 +147,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
 					$this->mock_rate_limiter,
+					$this->order_service,
 				]
 			)
 			->setMethods(

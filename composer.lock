@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2b9ceac62a5e5a60ef7b402cc89682ab",
+    "content-hash": "8fc3143c967c7e23621af7232a911e2b",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -52,16 +52,16 @@
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v1.17.4",
+            "version": "v1.17.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "b486f8be634cbb17847b0a8fb174c1669abc468c"
+                "reference": "e653e30470bbc460b06446a685454a422f6d71c7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/b486f8be634cbb17847b0a8fb174c1669abc468c",
-                "reference": "b486f8be634cbb17847b0a8fb174c1669abc468c",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/e653e30470bbc460b06446a685454a422f6d71c7",
+                "reference": "e653e30470bbc460b06446a685454a422f6d71c7",
                 "shasum": ""
             },
             "require": {
@@ -99,9 +99,9 @@
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.17.4"
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.17.5"
             },
-            "time": "2022-02-09T17:56:52+00:00"
+            "time": "2022-02-16T16:10:18+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",

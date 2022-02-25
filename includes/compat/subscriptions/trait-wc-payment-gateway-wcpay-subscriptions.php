@@ -258,6 +258,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $token ) && ! WC_Payments::is_network_saved_cards_enabled() ) {
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
+			// TODO: Update to use Order_Service->mark_payment_failed.
 			$renewal_order->update_status( 'failed' );
 			return;
 		}
@@ -267,7 +268,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$this->process_payment_for_order( null, $payment_information );
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
-
+			// TODO: Update to use Order_Service->mark_payment_failed.
 			$renewal_order->update_status( 'failed' );
 
 			if ( ! empty( $payment_information ) ) {
