@@ -48,14 +48,14 @@ jobs:
     name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
-      WP_VERSION: ${{ matrix.wordpress }}
-      WC_VERSION: ${{ matrix.woocommerce }}
+      E2E_WP_VERSION: ${{ matrix.wordpress }}
+      E2E_WC_VERSION: ${{ matrix.woocommerce }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
-      # Log current test configuration
-      - name: Current Test Configuration
+      # Log workflow configuration
+      - name: Workflow Configuration
         run: |
           echo "WordPress version: ${{ matrix.wordpress }}"
           echo "WooCommerce version: ${{ matrix.woocommerce }}"
@@ -121,7 +121,6 @@ jobs:
       # Prepare test environment
       - name: Prepare test environment
         run: |
-          WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false
           npm run test:e2e-setup
 
       # Run Tests

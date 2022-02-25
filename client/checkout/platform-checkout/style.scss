@@ -32,52 +32,49 @@
 	left: 0;
 	z-index: 355000;
 	border: 0;
+	background: #fff;
 	&.open {
 		top: 0;
 	}
 }
 
+.platform-checkout-sms-otp-iframe-wrapper {
+	.arrow {
+		position: fixed;
+		top: 100%;
+	}
+}
+
 @media screen and ( min-width: 768px ) {
 	.platform-checkout-sms-otp-iframe-wrapper {
+		position: fixed;
+		background: rgba( 117, 117, 117, 0.6 );
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		content: ' ';
+		display: block;
+		z-index: 355000;
+
 		.platform-checkout-sms-otp-iframe {
+			transition: none;
 			height: 90vh;
 			max-height: 520px;
 			position: absolute;
-			left: min(
-				calc( 100% + 30px ),
-				calc( 85vw - max( 85vw - 100% - 94px, 300px ) )
-			);
-			top: -250px;
-			width: max( calc( 100vw - 100% - 94px ), 300px );
 			max-width: 374px;
 			border-radius: 8px;
-			&.open {
-				top: -45vh;
-			}
+			right: 50px;
+			left: auto;
 		}
-		&::before {
-			position: fixed;
-			background: rgba( 117, 117, 117, 0.6 );
-			top: 0;
-			left: 0;
-			width: 100vw;
-			height: 100vh;
-			content: ' ';
-			display: block;
-			z-index: 555;
-		}
-		&::after {
-			content: '';
+
+		.arrow {
 			position: absolute;
-			left: calc(
-				min( 100% + 30px, 85vw - max( 85vw - 100% - 94px, 300px ) ) -
-					15px
-			);
-			top: calc( 50% - 15px );
+			right: calc( 15px / 2 );
 			background: transparent;
 			width: 0;
 			height: 0;
-			z-index: 5555;
+			z-index: 355001;
 			border-top: 15px solid transparent;
 			border-bottom: 15px solid transparent;
 			border-right: 15px solid #fff;
