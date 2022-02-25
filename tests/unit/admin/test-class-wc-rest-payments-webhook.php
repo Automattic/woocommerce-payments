@@ -57,16 +57,9 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$account = new WC_Payments_Account( $mock_api_client );
+		$this->mock_webhook_processing_service = $this->createMock( WC_Payments_Webhook_Processing_Service::class );
 
-		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
-			->disableOriginalConstructor()
-			->setMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
-			->getMock();
-
-		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
-
-		$this->controller = new WC_REST_Payments_Webhook_Controller( $mock_api_client, $this->mock_db_wrapper, $account, $this->mock_remote_note_service );
+		$this->controller = new WC_REST_Payments_Webhook_Controller( $mock_api_client, $this->mock_webhook_processing_service );
 
 		// Setup a test request.
 		$this->request = new WP_REST_Request(
@@ -84,6 +77,8 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->request_body         = [];
 		$this->request_body['data'] = $event_data;
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
 	}
 
 	public function tearDown() {
@@ -91,4 +86,50 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
+	public function test_handle_webhook_returns_success_message() {
+		$this->mock_webhook_processing_service
+			->expects( $this->once() )
+			->method( 'process' );
+
+		// Run the test.
+		$response = $this->controller->handle_webhook( $this->request );
+
+		// Check the response.
+		$response_data = $response->get_data();
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'success', $response_data['result'] );
+	}
+
+	public function test_handle_webhook_with_invalid_data_returns_bad_request_message() {
+		$this->mock_webhook_processing_service
+			->expects( $this->once() )
+			->method( 'process' )
+			->willThrowException( new Invalid_Webhook_Data_Exception( 'message' ) );
+
+		// Run the test.
+		$response = $this->controller->handle_webhook( $this->request );
+
+		// Check the response.
+		$response_data = $response->get_data();
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'bad_request', $response_data['result'] );
+	}
+
+	public function test_handle_webhook_returns_error_message() {
+		$this->mock_webhook_processing_service
+			->expects( $this->once() )
+			->method( 'process' )
+			->willThrowException( new Exception( 'message' ) );
+
+		// Run the test.
+		$response = $this->controller->handle_webhook( $this->request );
+
+		// Check the response.
+		$response_data = $response->get_data();
+
+		$this->assertSame( 500, $response->get_status() );
+		$this->assertSame( 'error', $response_data['result'] );
+	}
 }
