@@ -10,8 +10,6 @@ use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 
-// TODO must fix this after the merge - check all changes related to $order_service on this file in the PR 3675.
-
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 
@@ -38,6 +36,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	private $mock_remote_note_service;
 
 	/**
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
 	 * @var array
 	 */
 	private $event_body;
@@ -55,6 +58,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 
 		$account = new WC_Payments_Account( $mock_api_client );
 
+		$this->order_service = new WC_Payments_Order_Service();
+
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 									->disableOriginalConstructor()
 									->setMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
@@ -62,7 +67,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
 
-		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $this->mock_db_wrapper, $account, $this->mock_remote_note_service );
+		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $this->mock_db_wrapper, $account, $this->mock_remote_note_service, $this->order_service );
 
 		// Build the event body data.
 		$event_object = [];
@@ -439,14 +444,21 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			'id'       => 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
 			'amount'   => 1500,
-			'charges'  => [],
+			'charges'  => [
+				'data' => [
+					[
+						'id' => 'py_123123123123123',
+					],
+				],
+			],
 			'currency' => 'eur',
+			'status'   => 'succeeded',
 		];
 
 		$mock_order = $this->createMock( WC_Order::class );
 
 		$mock_order
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
 			->with( [ 'processing', 'completed' ] )
 			->willReturn( false );
@@ -478,15 +490,22 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			'id'       => 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
 			'amount'   => 1500,
-			'charges'  => [],
+			'charges'  => [
+				'data' => [
+					[
+						'id' => 'py_123123123123123',
+					],
+				],
+			],
 			'currency' => 'eur',
+			'status'   => 'succeeded',
 			'metadata' => [ 'order_id' => 'id_1323' ], // Using order_id inside of the intent metadata to find the order.
 		];
 
 		$mock_order = $this->createMock( WC_Order::class );
 
 		$mock_order
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
 			->with( [ 'processing', 'completed' ] )
 			->willReturn( false );
@@ -525,8 +544,15 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			'id'       => 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
 			'amount'   => 1500,
-			'charges'  => [],
+			'charges'  => [
+				'data' => [
+					[
+						'id' => 'py_123123123123123',
+					],
+				],
+			],
 			'currency' => 'eur',
+			'status'   => 'succeeded',
 		];
 
 		$mock_order = $this->createMock( WC_Order::class );
@@ -568,6 +594,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			'charges'  => [
 				'data' => [
 					[
+						'id'                     => 'py_123123123123123',
 						'payment_method'         => 'pm_123123123123123', // Payment method ID.
 						'payment_method_details' => [
 							'type' => 'us_bank_account',
@@ -576,28 +603,31 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 				],
 			],
 			'currency' => 'usd',
+			'status'   => 'requires_payment_method',
 		];
 
 		$mock_order = $this->createMock( WC_Order::class );
 
 		$mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 2 ) )
 			->method( 'get_meta' )
 			->withConsecutive(
 				[ '_payment_method_id' ],
-				[ '_charge_id' ],
-				[ '_intent_id' ]
+				[ '_intention_status' ]
 			)
 			->willReturnOnConsecutiveCalls(
 				'pm_123123123123123',
-				'py_123123123123123',
-				'pi_123123123123123'
+				false
 			);
 
 		$mock_order
-			->expects( $this->once() )
+			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
-			->with( [ 'failed' ] )
+			->withConsecutive(
+				[ [ 'failed' ] ],
+				[ [ 'processing', 'completed' ] ],
+				[ [ 'processing', 'completed' ] ]
+			)
 			->willReturn( false );
 
 		$mock_order

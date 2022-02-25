@@ -253,7 +253,9 @@ class WC_Payments_Webhook_Processing_Service {
 		$intent_status = $intent->get_status();
 
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
-		$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id );   }
+		$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id );
+	}
+
 	/**
 	 * Process webhook for a failed payment intent.
 	 *
@@ -286,11 +288,11 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
-		$event_data    = $this->read_rest_property( $event_body, 'data' );
-		$event_object  = $this->read_rest_property( $event_data, 'object' );
-		$intent_id     = $this->read_rest_property( $event_object, 'id' );
-		$intent_status = $this->read_rest_property( $event_object, 'status' );
-		$charge_id     = $this->read_rest_property( $charges_data, 'id' );
+		$event_data    = $this->read_webhook_property( $event_body, 'data' );
+		$event_object  = $this->read_webhook_property( $event_data, 'object' );
+		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
+		$intent_status = $this->read_webhook_property( $event_object, 'status' );
+		$charge_id     = $this->read_webhook_property( $charges_data, 'id' );
 
 		$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_event( $event_body ) );  }
 
@@ -303,14 +305,14 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve intent ID to order.
 	 */
 	private function process_webhook_payment_intent_succeeded( $event_body ) {
-		$event_data    = $this->read_rest_property( $event_body, 'data' );
-		$event_object  = $this->read_rest_property( $event_data, 'object' );
-		$intent_id     = $this->read_rest_property( $event_object, 'id' );
+		$event_data    = $this->read_webhook_property( $event_body, 'data' );
+		$event_object  = $this->read_webhook_property( $event_data, 'object' );
+		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
 		$order         = $this->get_order_from_event_body_intent_id( $event_body );
-		$intent_status = $this->read_rest_property( $event_object, 'status' );
-		$event_charges = $this->read_rest_property( $event_object, 'charges' );
-		$charges_data  = $this->read_rest_property( $event_charges, 'data' );
-		$charge_id     = $this->read_rest_property( $charges_data[0], 'id' );
+		$intent_status = $this->read_webhook_property( $event_object, 'status' );
+		$event_charges = $this->read_webhook_property( $event_object, 'charges' );
+		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
+		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
 
 		$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
 	}
