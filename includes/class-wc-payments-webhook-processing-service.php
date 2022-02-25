@@ -7,7 +7,7 @@
 
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
-use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -40,7 +40,7 @@ class WC_Payments_Webhook_Processing_Service {
 	private $remote_note_service;
 
 	/**
-	 * WC_REST_Payments_Webhook_Controller constructor.
+	 * WC_Payments_Webhook_Processing_Service constructor.
 	 *
 	 * @param WC_Payments_DB                  $wcpay_db            WC_Payments_DB instance.
 	 * @param WC_Payments_Account             $account             WC_Payments_Account instance.
@@ -63,11 +63,11 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @return void
 	 *
-	 * @throws Rest_Request_Exception
+	 * @throws Invalid_Webhook_Data_Exception
 	 */
 	public function process( array $event_body ) {
 
-		$event_type = $this->read_rest_property( $event_body, 'type' );
+		$event_type = $this->read_webhook_property( $event_body, 'type' );
 
 		switch ( $event_type ) {
 			case 'charge.refund.updated':
@@ -91,7 +91,7 @@ class WC_Payments_Webhook_Processing_Service {
 				$this->account->refresh_account_data();
 				break;
 			case 'wcpay.notification':
-				$note = $this->read_rest_property( $event_body, 'data' );
+				$note = $this->read_webhook_property( $event_body, 'data' );
 				$this->remote_note_service->put_note( $note );
 				break;
 			case 'payment_intent.payment_failed':
@@ -113,17 +113,17 @@ class WC_Payments_Webhook_Processing_Service {
 	}
 
 	/**
-	 * Safely get a value from the REST request body array.
+	 * Safely get a value from the webhook event body array.
 	 *
 	 * @param array  $array Array to read from.
 	 * @param string $key   ID to fetch on.
 	 *
 	 * @return string|array|int
-	 * @throws Rest_Request_Exception Thrown if ID not set.
+	 * @throws Invalid_Webhook_Data_Exception Thrown if ID not set.
 	 */
-	public function read_rest_property( $array, $key ) {
+	public function read_webhook_property( $array, $key ) {
 		if ( ! isset( $array[ $key ] ) ) {
-			throw new Rest_Request_Exception(
+			throw new Invalid_Webhook_Data_Exception(
 				sprintf(
 				/* translators: %1: ID being fetched */
 					__( '%1$s not found in array', 'woocommerce-payments' ),
@@ -139,24 +139,24 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
-	 * @throws Rest_Request_Exception           Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception           Required parameters not found.
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_refund_updated( $event_body ) {
-		$event_data   = $this->read_rest_property( $event_body, 'data' );
-		$event_object = $this->read_rest_property( $event_data, 'object' );
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
 
-		// First, check the reason for the update. We're only interesting in a status of failed.
-		$status = $this->read_rest_property( $event_object, 'status' );
+		// First, check the reason for the update. We're only interested in a status of failed.
+		$status = $this->read_webhook_property( $event_object, 'status' );
 		if ( 'failed' !== $status ) {
 			return;
 		}
 
 		// Fetch the details of the failed refund so that we can find the associated order and write a note.
-		$charge_id = $this->read_rest_property( $event_object, 'charge' );
-		$refund_id = $this->read_rest_property( $event_object, 'id' );
-		$amount    = $this->read_rest_property( $event_object, 'amount' );
-		$currency  = $this->read_rest_property( $event_object, 'currency' );
+		$charge_id = $this->read_webhook_property( $event_object, 'charge' );
+		$refund_id = $this->read_webhook_property( $event_object, 'id' );
+		$amount    = $this->read_webhook_property( $event_object, 'amount' );
+		$currency  = $this->read_webhook_property( $event_object, 'currency' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
@@ -196,15 +196,15 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
-	 * @throws Rest_Request_Exception           Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception           Required parameters not found.
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_expired_authorization( $event_body ) {
-		$event_data   = $this->read_rest_property( $event_body, 'data' );
-		$event_object = $this->read_rest_property( $event_data, 'object' );
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
 
 		// Fetch the details of the expired auth so that we can find the associated order.
-		$charge_id = $this->read_rest_property( $event_object, 'id' );
+		$charge_id = $this->read_webhook_property( $event_object, 'id' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
@@ -228,7 +228,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
-	 * @throws Rest_Request_Exception           Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception           Required parameters not found.
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_payment_intent_failed( $event_body ) {
@@ -264,13 +264,13 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
-	 * @throws Rest_Request_Exception           Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception           Required parameters not found.
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_payment_intent_succeeded( $event_body ) {
-		$event_data   = $this->read_rest_property( $event_body, 'data' );
-		$event_object = $this->read_rest_property( $event_data, 'object' );
-		$intent_id    = $this->read_rest_property( $event_object, 'id' );
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+		$intent_id    = $this->read_webhook_property( $event_object, 'id' );
 		$order        = $this->get_order_from_event_body_intent_id( $event_body );
 
 		WC_Payments_Utils::mark_payment_completed( $order, $intent_id );
@@ -281,19 +281,19 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
-	 * @throws Rest_Request_Exception Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
 	private function process_webhook_dispute_created( $event_body ) {
-		$event_type   = $this->read_rest_property( $event_body, 'type' );
-		$event_data   = $this->read_rest_property( $event_body, 'data' );
-		$event_object = $this->read_rest_property( $event_data, 'object' );
-		$dispute_id   = $this->read_rest_property( $event_object, 'id' );
-		$charge_id    = $this->read_rest_property( $event_object, 'charge' );
-		$reason       = $this->read_rest_property( $event_object, 'reason' );
+		$event_type   = $this->read_webhook_property( $event_body, 'type' );
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
+		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
+		$reason       = $this->read_webhook_property( $event_object, 'reason' );
 		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
 
 		if ( ! $order ) {
-			throw new Rest_Request_Exception(
+			throw new Invalid_Webhook_Data_Exception(
 				sprintf(
 				/* translators: %1: charge ID */
 					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
@@ -321,19 +321,19 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
-	 * @throws Rest_Request_Exception Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
 	private function process_webhook_dispute_closed( $event_body ) {
-		$event_type   = $this->read_rest_property( $event_body, 'type' );
-		$event_data   = $this->read_rest_property( $event_body, 'data' );
-		$event_object = $this->read_rest_property( $event_data, 'object' );
-		$dispute_id   = $this->read_rest_property( $event_object, 'id' );
-		$charge_id    = $this->read_rest_property( $event_object, 'charge' );
-		$status       = $this->read_rest_property( $event_object, 'status' );
+		$event_type   = $this->read_webhook_property( $event_body, 'type' );
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
+		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
+		$status       = $this->read_webhook_property( $event_object, 'status' );
 		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
 
 		if ( ! $order ) {
-			throw new Rest_Request_Exception(
+			throw new Invalid_Webhook_Data_Exception(
 				sprintf(
 				/* translators: %1: charge ID */
 					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
@@ -373,18 +373,18 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
-	 * @throws Rest_Request_Exception Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
 	private function process_webhook_dispute_updated( $event_body ) {
-		$event_type   = $this->read_rest_property( $event_body, 'type' );
-		$event_data   = $this->read_rest_property( $event_body, 'data' );
-		$event_object = $this->read_rest_property( $event_data, 'object' );
-		$dispute_id   = $this->read_rest_property( $event_object, 'id' );
-		$charge_id    = $this->read_rest_property( $event_object, 'charge' );
+		$event_type   = $this->read_webhook_property( $event_body, 'type' );
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
+		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
 
 		if ( ! $order ) {
-			throw new Rest_Request_Exception(
+			throw new Invalid_Webhook_Data_Exception(
 				sprintf(
 				/* translators: %1: charge ID */
 					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
@@ -422,15 +422,15 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
-	 * @throws Rest_Request_Exception           Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception           Required parameters not found.
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 *
 	 * @return boolean|WC_Order|WC_Order_Refund
 	 */
 	private function get_order_from_event_body_intent_id( $event_body ) {
-		$event_data   = $this->read_rest_property( $event_body, 'data' );
-		$event_object = $this->read_rest_property( $event_data, 'object' );
-		$intent_id    = $this->read_rest_property( $event_object, 'id' );
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+		$intent_id    = $this->read_webhook_property( $event_object, 'id' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
@@ -438,7 +438,7 @@ class WC_Payments_Webhook_Processing_Service {
 		if ( ! $order ) {
 			// Retrieving order with order_id in case intent_id was not properly set.
 			Logger::debug( 'intent_id not found, using order_id to retrieve order' );
-			$metadata = $this->read_rest_property( $event_object, 'metadata' );
+			$metadata = $this->read_webhook_property( $event_object, 'metadata' );
 
 			if ( isset( $metadata['order_id'] ) ) {
 				$order_id = $metadata['order_id'];
@@ -475,10 +475,10 @@ class WC_Payments_Webhook_Processing_Service {
 	 */
 	private function get_failure_message_from_event( $event_body ):string {
 		// Get the failure code from the event body.
-		$event_data    = $this->read_rest_property( $event_body, 'data' );
-		$event_object  = $this->read_rest_property( $event_data, 'object' );
-		$event_charges = $this->read_rest_property( $event_object, 'charges' );
-		$charges_data  = $this->read_rest_property( $event_charges, 'data' );
+		$event_data    = $this->read_webhook_property( $event_body, 'data' );
+		$event_object  = $this->read_webhook_property( $event_data, 'object' );
+		$event_charges = $this->read_webhook_property( $event_object, 'charges' );
+		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
 		$failure_code  = $charges_data[0]['failure_code'] ?? '';
 
 		switch ( $failure_code ) {

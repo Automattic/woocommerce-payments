@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -78,7 +78,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		try {
 			// Extract information about the webhook event.
-			$event_type = $this->webhook_processing_service->read_rest_property( $body, 'type' );
+			$event_type = $this->webhook_processing_service->read_webhook_property( $body, 'type' );
 
 			Logger::debug( 'Webhook recieved: ' . $event_type );
 			Logger::debug(
@@ -99,7 +99,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			} catch ( Exception $e ) {
 				Logger::error( $e );
 			}
-		} catch ( Rest_Request_Exception $e ) {
+		} catch ( Invalid_Webhook_Data_Exception $e ) {
 			Logger::error( $e );
 			return new WP_REST_Response( [ 'result' => self::RESULT_BAD_REQUEST ], 400 );
 		} catch ( Exception $e ) {
