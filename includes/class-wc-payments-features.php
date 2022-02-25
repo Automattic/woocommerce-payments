@@ -76,7 +76,7 @@ class WC_Payments_Features {
 			update_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, $enabled );
 		}
 
-		return '1' === $enabled;
+		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === $enabled );
 	}
 
 	/**
