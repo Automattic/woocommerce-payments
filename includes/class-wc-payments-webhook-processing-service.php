@@ -8,6 +8,7 @@
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
+use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -103,8 +104,7 @@ class WC_Payments_Webhook_Processing_Service {
 				$this->account->refresh_account_data();
 				break;
 			case 'wcpay.notification':
-				$note = $this->read_webhook_property( $event_body, 'data' );
-				$this->remote_note_service->put_note( $note );
+				$this->process_wcpay_notification( $event_body );
 				break;
 			case 'payment_intent.payment_failed':
 				$this->process_webhook_payment_intent_failed( $event_body );
@@ -525,5 +525,26 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		return $failure_message;
+	}
+
+	/**
+	 * Process notification data.
+	 *
+	 * @param  array $event_body The event that triggered the webhook.
+	 *
+	 * @return void
+	 *
+	 * @throws Invalid_Webhook_Data_Exception When note data is not valid.
+	 */
+	private function process_wcpay_notification( array $event_body ) {
+		$note = $this->read_webhook_property( $event_body, 'data' );
+
+		// Convert exception Rest_Request_Exception to Invalid_Webhook_Data_Exception
+		// to be compatible with the expected exception in process().
+		try {
+			$this->remote_note_service->put_note( $note );
+		} catch ( Rest_Request_Exception $e ) {
+			throw new Invalid_Webhook_Data_Exception( $e->getMessage() );
+		}
 	}
 }

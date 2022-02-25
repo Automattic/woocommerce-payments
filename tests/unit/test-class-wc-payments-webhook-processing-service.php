@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
+use WCPay\Exceptions\Rest_Request_Exception;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -382,19 +383,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 		$this->mock_remote_note_service
 			->expects( $this->once() )
 			->method( 'put_note' )
-			->willThrowException( new Invalid_Webhook_Data_Exception( 'Invalid note.' ) );
+			->willThrowException( new Rest_Request_Exception( 'Invalid note.' ) );
 
-		// TODO discuss this in the PR.
-		$this->markTestSkipped(
-			'Skip for now for discussing! We may move this test to WC_REST_Payments_Webhook_Controller_Test.'
-		);
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'Invalid note.' );
 
-		$response = $this->webhook_processing_service->process( $this->event_body );
-
-		$response_data = $response->get_data();
-
-		$this->assertEquals( 400, $response->get_status() );
-		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**
