@@ -77,28 +77,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		$body = $request->get_json_params();
 
 		try {
-			// Extract information about the webhook event.
-			$event_type = $this->webhook_processing_service->read_webhook_property( $body, 'type' );
-
-			Logger::debug( 'Webhook recieved: ' . $event_type );
-			Logger::debug(
-				'Webhook body: '
-				. var_export( WC_Payments_Utils::redact_array( $body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			);
-
-			try {
-				do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $body );
-			} catch ( Exception $e ) {
-				Logger::error( $e );
-			}
-
 			$this->webhook_processing_service->process( $body );
-
-			try {
-				do_action( 'woocommerce_payments_after_webhook_delivery', $event_type, $body );
-			} catch ( Exception $e ) {
-				Logger::error( $e );
-			}
 		} catch ( Invalid_Webhook_Data_Exception $e ) {
 			Logger::error( $e );
 			return new WP_REST_Response( [ 'result' => self::RESULT_BAD_REQUEST ], 400 );

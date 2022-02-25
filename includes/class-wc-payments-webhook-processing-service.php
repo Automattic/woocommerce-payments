@@ -66,8 +66,20 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception
 	 */
 	public function process( array $event_body ) {
-
+		// Extract information about the webhook event.
 		$event_type = $this->read_webhook_property( $event_body, 'type' );
+
+		Logger::debug( 'Webhook received: ' . $event_type );
+		Logger::debug(
+			'Webhook body: '
+			. var_export( WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		);
+
+		try {
+			do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $event_body );
+		} catch ( Exception $e ) {
+			Logger::error( $e );
+		}
 
 		switch ( $event_type ) {
 			case 'charge.refund.updated':
@@ -109,6 +121,12 @@ class WC_Payments_Webhook_Processing_Service {
 			case 'invoice.payment_failed':
 				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_payment_failed( $event_body );
 				break;
+		}
+
+		try {
+			do_action( 'woocommerce_payments_after_webhook_delivery', $event_type, $event_body );
+		} catch ( Exception $e ) {
+			Logger::error( $e );
 		}
 	}
 
