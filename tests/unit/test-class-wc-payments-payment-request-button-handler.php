@@ -139,13 +139,17 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 		$mock_customer_service         = $this->createMock( WC_Payments_Customer_Service::class );
 		$mock_token_service            = $this->createMock( WC_Payments_Token_Service::class );
 		$mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
+		$mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
+		$mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 
 		return new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$mock_customer_service,
 			$mock_token_service,
-			$mock_action_scheduler_service
+			$mock_action_scheduler_service,
+			$mock_rate_limiter,
+			$mock_order_service
 		);
 	}
 

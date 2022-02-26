@@ -34,6 +34,11 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	private $mock_remote_note_service;
 
 	/**
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
 	 * @var WP_REST_Request
 	 */
 	private $request;
@@ -69,7 +74,9 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
 
-		$this->controller = new WC_REST_Payments_Webhook_Controller( $mock_api_client, $this->mock_db_wrapper, $account, $this->mock_remote_note_service );
+		$this->order_service = new WC_Payments_Order_Service();
+
+		$this->controller = new WC_REST_Payments_Webhook_Controller( $mock_api_client, $this->mock_db_wrapper, $account, $this->mock_remote_note_service, $this->order_service );
 
 		// Setup a test request.
 		$this->request = new WP_REST_Request(
@@ -544,8 +551,15 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			'id'       => 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
 			'amount'   => 1500,
-			'charges'  => [],
+			'charges'  => [
+				'data' => [
+					[
+						'id' => 'py_123123123123123',
+					],
+				],
+			],
 			'currency' => 'eur',
+			'status'   => 'succeeded',
 		];
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
@@ -553,10 +567,10 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$mock_order = $this->createMock( WC_Order::class );
 
 		$mock_order
-			->expects( $this->once() )
-			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
-			->willReturn( false );
+		->expects( $this->exactly( 2 ) )
+		->method( 'has_status' )
+		->with( [ 'processing', 'completed' ] )
+		->willReturn( false );
 
 		$mock_order
 			->expects( $this->once() )
@@ -591,8 +605,15 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			'id'       => 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
 			'amount'   => 1500,
-			'charges'  => [],
+			'charges'  => [
+				'data' => [
+					[
+						'id' => 'py_123123123123123',
+					],
+				],
+			],
 			'currency' => 'eur',
+			'status'   => 'succeeded',
 			'metadata' => [ 'order_id' => 'id_1323' ], // Using order_id inside of the intent metadata to find the order.
 		];
 
@@ -601,7 +622,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$mock_order = $this->createMock( WC_Order::class );
 
 		$mock_order
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
 			->with( [ 'processing', 'completed' ] )
 			->willReturn( false );
@@ -646,8 +667,15 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			'id'       => 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
 			'amount'   => 1500,
-			'charges'  => [],
+			'charges'  => [
+				'data' => [
+					[
+						'id' => 'py_123123123123123',
+					],
+				],
+			],
 			'currency' => 'eur',
+			'status'   => 'succeeded',
 		];
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
@@ -696,6 +724,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			'charges'  => [
 				'data' => [
 					[
+						'id'                     => 'py_123123123123123',
 						'payment_method'         => 'pm_123123123123123', // Payment method ID.
 						'payment_method_details' => [
 							'type' => 'us_bank_account',
@@ -704,6 +733,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 				],
 			],
 			'currency' => 'usd',
+			'status'   => 'requires_payment_method',
 		];
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
@@ -711,23 +741,25 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$mock_order = $this->createMock( WC_Order::class );
 
 		$mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 2 ) )
 			->method( 'get_meta' )
 			->withConsecutive(
 				[ '_payment_method_id' ],
-				[ '_charge_id' ],
-				[ '_intent_id' ]
+				[ '_intention_status' ]
 			)
 			->willReturnOnConsecutiveCalls(
 				'pm_123123123123123',
-				'py_123123123123123',
-				'pi_123123123123123'
+				false
 			);
 
 		$mock_order
-			->expects( $this->once() )
+			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
-			->with( [ 'failed' ] )
+			->withConsecutive(
+				[ [ 'failed' ] ],
+				[ [ 'processing', 'completed' ] ],
+				[ [ 'processing', 'completed' ] ]
+			)
 			->willReturn( false );
 
 		$mock_order

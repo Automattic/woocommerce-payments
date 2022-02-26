@@ -58,6 +58,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	private $mock_rate_limiter;
 
 	/**
+	 * Mock WC_Payments_Order_Service.
+	 *
+	 * @var WC_Payments_Order_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_order_service;
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
@@ -107,6 +114,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 
+		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
+
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
 		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
@@ -118,6 +127,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
 					$this->mock_rate_limiter,
+					$this->mock_order_service,
 				]
 			)
 			->setMethods(
@@ -230,29 +240,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
-		// Assert: The order note contains all the information we want:
-		// - status
-		// - intention id
-		// - amount charged.
-		$mock_order
+		// Assert: The Order_Service is called correctly.
+		$this->mock_order_service
 			->expects( $this->once() )
-			->method( 'add_order_note' )
-			->with(
-				$this->callback(
-					function( $note ) use ( $charge_id, $total ) {
-						return (
-						strpos( $note, 'successfully charged' )
-						&& strpos( $note, $charge_id )
-						&& strpos( $note, strval( $total ) )
-						);
-					}
-				)
-			);
-
-		// Assert: `payment_complete` is called.
-		$mock_order
-			->expects( $this->once() )
-			->method( 'payment_complete' );
+			->method( 'mark_payment_completed' )
+			->with( $mock_order, $intent_id, $status, $charge_id );
 
 		// Assert: empty_cart() was called.
 		$mock_cart
@@ -429,27 +421,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
-		// Assert: The order note contains all the information we want:
-		// - status
-		// - intention id
-		// - amount charged.
-		// Note that the note and the order status are updated at the same
-		// time using `set_status()`.
-		$mock_order
-			->expects( $this->exactly( 1 ) )
-			->method( 'set_status' )
-			->with(
-				'on-hold',
-				$this->callback(
-					function( $note ) use ( $intent_id, $total ) {
-						return (
-						strpos( $note, 'authorized' )
-						&& strpos( $note, $intent_id )
-						&& strpos( $note, strval( $total ) )
-						);
-					}
-				)
-			);
+		// Assert: The Order_Service is called correctly.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'mark_payment_authorized' )
+			->with( $mock_order, $intent_id, $status, $charge_id );
 
 		// Assert: Order has correct transaction ID set.
 		$mock_order
@@ -820,29 +796,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
-		// Assert: Order status was not updated.
-		$mock_order
-			->expects( $this->never() )
-			->method( 'set_status' );
-
-		// Assert: The order note contains all the information we want:
-		// - status
-		// - intention id
-		// - amount charged.
-		$mock_order
-			->expects( $this->exactly( 1 ) )
-			->method( 'add_order_note' )
-			->with(
-				$this->callback(
-					function( $note ) use ( $intent_id, $total ) {
-						return (
-						strpos( $note, 'started' )
-						&& strpos( $note, $intent_id )
-						&& strpos( $note, strval( $total ) )
-						);
-					}
-				)
-			);
+		// Assert: The Order_Service is called correctly.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'mark_payment_started' )
+			->with( $mock_order, $intent_id, $status, $charge_id );
 
 		// Assert: Order has correct transaction ID set.
 		$mock_order
