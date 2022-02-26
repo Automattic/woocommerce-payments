@@ -2117,6 +2117,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
 					$this->mock_rate_limiter,
+					$this->order_service,
 				]
 			)
 			->setMethods( [ 'should_use_stripe_platform_on_checkout_page' ] )
