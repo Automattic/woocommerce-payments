@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use PHPUnit\Framework\Constraint\TraversableContains;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -40,12 +39,14 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_http_client = $this->getMockBuilder( 'WC_Payments_Http' )
+		$this->mock_http_client = $this
+			->getMockBuilder( 'WC_Payments_Http' )
 			->disableOriginalConstructor()
 			->setMethods( [ 'get_blog_id', 'is_connected', 'remote_request' ] )
 			->getMock();
 
-		$this->mock_db_wrapper = $this->getMockBuilder( 'WC_Payments_DB' )
+		$this->mock_db_wrapper = $this
+			->getMockBuilder( 'WC_Payments_DB' )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -55,6 +56,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			$this->mock_db_wrapper
 		);
 	}
+
 
 	/**
 	 * Test a successful call to create_intention.
@@ -192,16 +194,12 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->callback(
+					function ( $data ): bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents', 'POST' );
+						return true;
+					}
+				),
 				wp_json_encode(
 					[
 						'test_mode'            => false,
@@ -467,16 +465,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->callback(
+					function ( $data ): bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345', 'POST' );
+						$this->assertSame( 'POST', $data['method'] );
+						return true;
+					}
+				),
 				wp_json_encode(
 					[
 						'test_mode'   => false,
@@ -576,16 +571,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/init',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->callback(
+					function ( $data ): bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/init', 'POST' );
+						$this->assertSame( 'POST', $data['method'] );
+						return true;
+					}
+				),
 				wp_json_encode(
 					[
 						'test_mode'           => false,
@@ -648,16 +640,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->callback(
+					function ( $data ): bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts', 'POST' );
+						$this->assertSame( 'POST', $data['method'] );
+						return true;
+					}
+				),
 				wp_json_encode(
 					array_merge(
 						[ 'test_mode' => false ],
@@ -687,16 +676,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/login_links',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->callback(
+					function ( $data ): bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/login_links', 'POST' );
+						$this->assertSame( 'POST', $data['method'] );
+						return true;
+					}
+				),
 				wp_json_encode(
 					[
 						'test_mode'    => false,
@@ -726,7 +712,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				$this->contains( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/capital_links' ),
+				$this->callback(
+					function ( $data ): bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/capital_links', 'POST' );
+						$this->assertSame( 'POST', $data['method'] );
+						return true;
+					}
+				),
 				wp_json_encode(
 					[
 						'test_mode'   => false,
@@ -758,16 +750,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/tos_agreements',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->callback(
+					function ( $data ): bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/tos_agreements', 'POST' );
+						$this->assertSame( 'POST', $data['method'] );
+						return true;
+					}
+				),
 				wp_json_encode(
 					[
 						'test_mode' => false,
@@ -852,56 +841,53 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		// Mock the HTTP client manually to assert we are sending the correct args.
 		$this->mock_http_client
-		->expects( $this->once() )
-		->method( 'remote_request' )
-		->with(
-			[
-				'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id,
-				'method'          => 'POST',
-				'headers'         => [
-					'Content-Type' => 'application/json; charset=utf-8',
-					'User-Agent'   => 'Unit Test Agent/0.1.0',
-				],
-				'timeout'         => 70,
-				'connect_timeout' => 70,
-			],
-			wp_json_encode(
-				[
-					'test_mode'   => false,
-					'amount'      => $expected_amount,
-					'currency'    => $currency_code,
-					'metadata'    => [],
-					'level3'      => [],
-					'description' => 'Online Payment for example.org',
-				]
-			),
-			true,
-			false
-		)
-		->will(
-			$this->returnValue(
-				[
-					'body'     => wp_json_encode(
-						[
-							'id'            => 'test_intention_id',
-							'amount'        => $expected_amount,
-							'created'       => 1557224304,
-							'status'        => $expected_status,
-							'charges'       => [
-								'total_count' => 0,
-								'data'        => [],
-							],
-							'client_secret' => 'test_client_secret',
-							'currency'      => 'usd',
-						]
-					),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $data ) use ( $intention_id ) : bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id, 'POST' );
+						$this->assertSame( 'POST', $data['method'] );
+						return true;
+					}
+				),
+				wp_json_encode(
+					[
+						'test_mode'   => false,
+						'amount'      => $expected_amount,
+						'currency'    => $currency_code,
+						'metadata'    => [],
+						'level3'      => [],
+						'description' => 'Online Payment for example.org',
+					]
+				),
+				true,
+				false
 			)
-		);
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode(
+							[
+								'id'            => 'test_intention_id',
+								'amount'        => $expected_amount,
+								'created'       => 1557224304,
+								'status'        => $expected_status,
+								'charges'       => [
+									'total_count' => 0,
+									'data'        => [],
+								],
+								'client_secret' => 'test_client_secret',
+								'currency'      => 'usd',
+							]
+						),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
 
 		$result = $this->payments_api_client->update_intention(
 			'test_intention_id',
@@ -951,60 +937,64 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		// Mock the HTTP client manually to assert we are sending the correct args.
 		$this->mock_http_client
-		->expects( $this->once() )
-		->method( 'remote_request' )
-		->with(
-			[
-				'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id,
-				'method'          => 'POST',
-				'headers'         => [
-					'Content-Type' => 'application/json; charset=utf-8',
-					'User-Agent'   => 'Unit Test Agent/0.1.0',
-				],
-				'timeout'         => 70,
-				'connect_timeout' => 70,
-			],
-			wp_json_encode(
-				[
-					'test_mode'            => false,
-					'amount'               => $expected_amount,
-					'currency'             => $currency_code,
-					'metadata'             => $metadata,
-					'level3'               => $level3_data,
-					'description'          => 'Online Payment for Order #' . strval( $metadata['order_id'] ) . ' for ' . str_replace( [ 'https://', 'http://' ], '', $metadata['site_url'] ),
-					'payment_method_types' => [ 'giropay' ],
-					'payment_country'      => 'US',
-					'customer'             => $customer_id,
-					'setup_future_usage'   => 'off_session',
-				]
-			),
-			true,
-			false
-		)
-		->will(
-			$this->returnValue(
-				[
-					'body'     => wp_json_encode(
-						[
-							'id'            => $intention_id,
-							'amount'        => $expected_amount,
-							'created'       => 1557224304,
-							'status'        => $expected_status,
-							'client_secret' => 'test_client_secret',
-							'currency'      => $currency_code,
-							'charges'       => [
-								'total_count' => 0,
-								'data'        => [],
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $data ) use ( $intention_id ) : bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id, 'POST' );
+						$this->assertSame( 'POST', $data['method'] );
+						return true;
+					}
+				),
+				wp_json_encode(
+					[
+						'test_mode'            => false,
+						'amount'               => $expected_amount,
+						'currency'             => $currency_code,
+						'metadata'             => $metadata,
+						'level3'               => $level3_data,
+						'description'          => 'Online Payment for Order #' . strval( $metadata['order_id'] ) . ' for ' . str_replace(
+							[
+								'https://',
+								'http://',
 							],
-						]
-					),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
+							'',
+							$metadata['site_url']
+						),
+						'payment_method_types' => [ 'giropay' ],
+						'payment_country'      => 'US',
+						'customer'             => $customer_id,
+						'setup_future_usage'   => 'off_session',
+					]
+				),
+				true,
+				false
 			)
-		);
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode(
+							[
+								'id'            => $intention_id,
+								'amount'        => $expected_amount,
+								'created'       => 1557224304,
+								'status'        => $expected_status,
+								'client_secret' => 'test_client_secret',
+								'currency'      => $currency_code,
+								'charges'       => [
+									'total_count' => 0,
+									'data'        => [],
+								],
+							]
+						),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
 
 		$result = $this->payments_api_client->update_intention(
 			$intention_id,
@@ -1032,7 +1022,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->with(
 				$this->anything(),
 				$this->callback(
-					function( $request_args_json ) use ( $expected_level3_args ) {
+					function ( $request_args_json ) use ( $expected_level3_args ) {
 						$request_args = json_decode( $request_args_json, true );
 
 						$this->assertSame( $expected_level3_args, $request_args['level3'] );
@@ -1090,14 +1080,14 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->method( 'remote_request' )
 			->with(
 				$this->callback(
-					function( $request ) {
-						return 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations' === $request['url']
-							&& 'POST' === $request['method'];
+					function ( $request ) {
+						return 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations' === $request['url'] && 'POST' === $request['method'];
 					}
 				),
 				$this->callback(
-					function( $body ) use ( $location ) {
+					function ( $body ) use ( $location ) {
 						$flags = [ 'test_mode' => false ];
+
 						return wp_json_encode( array_merge( $flags, $location ) ) === $body;
 					}
 				)
@@ -1377,7 +1367,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	 * Data provider for test_redacting_params
 	 */
 	public function redacting_params_data() {
-		$string_should_not_include_secret = function( $string ) {
+		$string_should_not_include_secret = function ( $string ) {
 			return false === strpos( $string, 'some-secret' );
 		};
 
@@ -1487,10 +1477,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$disputes_summary = $this->payments_api_client->get_disputes_summary();
 		$this->assertSame( 12, $disputes_summary['data']['count'] );
 	}
+
 	/**
 	 * Set up http mock response.
 	 *
-	 * @param int   $status_code status code for the mocked response.
+	 * @param int $status_code status code for the mocked response.
 	 * @param array $body body for the mocked response.
 	 * @param array $headers headers for the mocked response.
 	 * @param array $cookies cookies to be used in the mocked response.
@@ -1516,6 +1507,33 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Set up mock for no subscriptions for order.
+	 * Mock/validate default remote HTTP Params
+	 *
+	 * @param array $data
+	 * @param string $url
+	 * @param string $method
+	 *
 	 */
+	private function validate_default_remote_request_params( $data, $url, $method ) {
+		$this->assertIsArray( $data );
+		$this->assertCount( 5, $data );
+		$this->assertArrayHasKey( 'url', $data );
+		$this->assertSame( $url, $data['url'] );
+		$this->assertNotFalse( filter_var( $data['url'], FILTER_VALIDATE_URL ) );
+		$this->assertArrayHasKey( 'method', $data );
+		$this->assertSame( $method, $data['method'] );
+		$this->assertArrayHasKey( 'headers', $data );
+		$this->assertArrayHasKey( 'Idempotency-Key', $data['headers'] );
+		$this->assertNotEmpty( $data['headers']['Idempotency-Key'] );
+		$this->assertArrayHasKey( 'User-Agent', $data['headers'] );
+		$this->assertNotEmpty( $data['headers']['User-Agent'] );
+		$this->assertArrayHasKey( 'Content-Type', $data['headers'] );
+		$this->assertSame( 'application/json; charset=utf-8', $data['headers']['Content-Type'] );
+		$this->assertArrayHasKey( 'url', $data );
+		$this->assertArrayHasKey( 'timeout', $data );
+		$this->assertSame( 70, $data['timeout'] );
+		$this->assertArrayHasKey( 'connect_timeout', $data );
+		$this->assertSame( 70, $data['connect_timeout'] );
+
+	}
 }

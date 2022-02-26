@@ -54,7 +54,7 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 			->getMock();
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		wp_set_current_user( $this->previous_user_id );
 
 		unset( $_GET['wcpay-loan-offer'] );
@@ -62,7 +62,7 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 		remove_filter( 'wp_doing_ajax', '__return_true' );
 		remove_filter( 'wp_doing_ajax', '__return_false' );
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	public function test_maybe_redirect_to_capital_offer_will_run() {

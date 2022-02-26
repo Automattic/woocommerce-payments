@@ -946,7 +946,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertContains( $formatted_advance_amount, $note->get_content() );
+		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
 	}
 
 	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data_with_different_currency() {
@@ -982,7 +982,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertContains( $formatted_advance_amount, $note->get_content() );
+		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
 	}
 
 	/**

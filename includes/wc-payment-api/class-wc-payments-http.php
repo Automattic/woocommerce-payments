@@ -71,15 +71,6 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 			$args['url'] = implode( '?', $url );
 		}
 
-		// Generate Idempotency key for PATCH, POST and PUT requests.
-		if (
-			array_key_exists( 'method', $args ) &&
-			! in_array( $args['method'], [ 'GET', 'DELETE' ], true ) &&
-			! isset( $args['headers']['Idempotency-Key'] )
-		) {
-			$args['headers']['Idempotency-Key'] = $this->uuid();
-		}
-
 		return self::make_request( $args, $body );
 	}
 
@@ -204,17 +195,5 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	public function allowed_redirect_hosts( $hosts ) {
 		$hosts[] = 'jetpack.wordpress.com';
 		return $hosts;
-	}
-
-	/**
-	 * Returns a v4 UUID.
-	 *
-	 * @return string
-	 */
-	private function uuid() {
-		$arr    = array_values( unpack( 'N1a/n4b/N1c', random_bytes( 16 ) ) );
-		$arr[2] = ( $arr[2] & 0x0fff ) | 0x4000;
-		$arr[3] = ( $arr[3] & 0x3fff ) | 0x8000;
-		return vsprintf( '%08x-%04x-%04x-%04x-%04x%08x', $arr );
 	}
 }
