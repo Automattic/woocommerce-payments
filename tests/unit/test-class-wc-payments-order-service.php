@@ -41,8 +41,8 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->order_service = new WC_Payments_Order_Service();
 		$this->order         = WC_Helper_Order::create_order();
