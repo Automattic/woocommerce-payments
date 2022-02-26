@@ -84,7 +84,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
+		$this->mock_api_client = $this
+			->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
 			->setMethods(
 				[
@@ -153,7 +154,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->set_currency( 'USD' );
 		$order->save();
 
-		$this->mock_wcpay_account->expects( $this->once() )
+		$this->mock_wcpay_account
+			->expects( $this->once() )
 			->method( 'get_account_default_currency' )
 			->willReturn( 'usd' );
 
@@ -171,7 +173,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->set_currency( 'USD' );
 		$order->save();
 
-		$this->mock_wcpay_account->expects( $this->once() )
+		$this->mock_wcpay_account
+			->expects( $this->once() )
 			->method( 'get_account_default_currency' )
 			->willReturn( 'jpy' );
 
@@ -189,11 +192,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->set_currency( 'JPY' );
 		$order->save();
 
-		$this->mock_wcpay_account->expects( $this->once() )
+		$this->mock_wcpay_account
+			->expects( $this->once() )
 			->method( 'get_account_default_currency' )
 			->willReturn( 'usd' );
 
-		$this->mock_api_client->expects( $this->once() )
+		$this->mock_api_client
+			->expects( $this->once() )
 			->method( 'get_charge' )
 			->willReturn(
 				[
@@ -220,11 +225,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->set_currency( 'EUR' );
 		$order->save();
 
-		$this->mock_wcpay_account->expects( $this->once() )
+		$this->mock_wcpay_account
+			->expects( $this->once() )
 			->method( 'get_account_default_currency' )
 			->willReturn( 'usd' );
 
-		$this->mock_api_client->expects( $this->once() )
+		$this->mock_api_client
+			->expects( $this->once() )
 			->method( 'get_charge' )
 			->willReturn(
 				[
@@ -401,7 +408,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'invalid-amount', $result->get_error_code() );
 
-		$result = $this->wcpay_gateway->process_refund( $order_id, -5 );
+		$result = $this->wcpay_gateway->process_refund( $order_id, - 5 );
 
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'invalid-amount', $result->get_error_code() );
@@ -543,7 +550,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
 		$this->setOutputCallback(
-			function( $output ) {
+			function ( $output ) {
 				$result = preg_match_all( '/.*<input.*id="wc-woocommerce_payments-new-payment-method".*\/>.*/', $output );
 
 				$this->assertEquals( 0, $result );
@@ -555,9 +562,20 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	protected function mock_level_3_order( $shipping_postcode, $with_fee = false, $quantity = 1, $basket_size = 1 ) {
 		// Setup the item.
-		$mock_item = $this->getMockBuilder( WC_Order_Item_Product::class )
+		$mock_item = $this
+			->getMockBuilder( WC_Order_Item_Product::class )
 			->disableOriginalConstructor()
-			->setMethods( [ 'get_name', 'get_quantity', 'get_subtotal', 'get_total_tax', 'get_total', 'get_variation_id', 'get_product_id' ] )
+			->setMethods(
+				[
+					'get_name',
+					'get_quantity',
+					'get_subtotal',
+					'get_total_tax',
+					'get_total',
+					'get_variation_id',
+					'get_product_id',
+				]
+			)
 			->getMock();
 
 		$mock_item
@@ -592,7 +610,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		if ( $with_fee ) {
 			// Setup the fee.
-			$mock_fee = $this->getMockBuilder( WC_Order_Item_Fee::class )
+			$mock_fee = $this
+				->getMockBuilder( WC_Order_Item_Fee::class )
 				->disableOriginalConstructor()
 				->setMethods( [ 'get_name', 'get_quantity', 'get_total_tax', 'get_total' ] )
 				->getMock();
@@ -622,9 +641,19 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		}
 
 		// Setup the order.
-		$mock_order = $this->getMockBuilder( WC_Order::class )
+		$mock_order = $this
+			->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
-			->setMethods( [ 'get_id', 'get_items', 'get_currency', 'get_shipping_total', 'get_shipping_tax', 'get_shipping_postcode' ] )
+			->setMethods(
+				[
+					'get_id',
+					'get_items',
+					'get_currency',
+					'get_shipping_total',
+					'get_shipping_tax',
+					'get_shipping_postcode',
+				]
+			)
 			->getMock();
 
 		$mock_order
@@ -1851,8 +1880,23 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$form_fields = $this->wcpay_gateway->get_form_fields();
 
-		$this->assertEquals( [ 'default', 'buy', 'donate', 'book' ], array_keys( $form_fields['payment_request_button_type']['options'] ) );
-		$this->assertEquals( [ 'dark', 'light', 'light-outline' ], array_keys( $form_fields['payment_request_button_theme']['options'] ) );
+		$this->assertEquals(
+			[
+				'default',
+				'buy',
+				'donate',
+				'book',
+			],
+			array_keys( $form_fields['payment_request_button_type']['options'] )
+		);
+		$this->assertEquals(
+			[
+				'dark',
+				'light',
+				'light-outline',
+			],
+			array_keys( $form_fields['payment_request_button_theme']['options'] )
+		);
 	}
 
 	public function test_payment_gateway_enabled_for_supported_currency() {
@@ -1932,9 +1976,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_get_upe_enabled_payment_method_statuses_with_empty_cache() {
 		$this->mock_wcpay_account
-		->expects( $this->any() )
-		->method( 'get_cached_account_data' )
-		->willReturn( [] );
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [] );
 
 		$this->assertEquals(
 			[
@@ -1957,14 +2001,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			'sepa_debit_payments' => [],
 		];
 		$this->mock_wcpay_account
-		->expects( $this->any() )
-		->method( 'get_cached_account_data' )
-		->willReturn(
-			[
-				'capabilities'            => $caps,
-				'capability_requirements' => $cap_requirements,
-			]
-		);
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities'            => $caps,
+					'capability_requirements' => $cap_requirements,
+				]
+			);
 
 		$this->assertEquals(
 			[
@@ -1982,7 +2026,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_attach_intent_info_to_order() {
-		$order = $this->getMockBuilder( WC_Order::class )
+		$order = $this
+			->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
 			->setMethods( [ 'update_meta_data', 'save' ] )
 			->getMock();
@@ -2003,7 +2048,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_update_order_status_from_intent_success_payment_complete() {
-		$order = $this->getMockBuilder( WC_Order::class )
+		$order = $this
+			->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
 			->setMethods( [ 'update_meta_data', 'save', 'payment_complete', 'get_data_store' ] )
 			->getMock();
@@ -2016,16 +2062,15 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$charge_id     = 'ch_yyyyyyyyyyyyy';
 		$intent_status = 'succeeded';
 
-		$order->expects( $this->once() )
-			->method( 'payment_complete' )
-			->with( $intent_id );
+		$order->expects( $this->once() )->method( 'payment_complete' )->with( $intent_id );
 
 		$this->wcpay_gateway->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
 	}
 
 	public function test_update_order_status_from_intent_fails_payment_complete() {
 		// test if metadata needed for refunds is being saved despite the payment_complete method.
-		$order = $this->getMockBuilder( WC_Order::class )
+		$order = $this
+			->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
 			->setMethods( [ 'update_meta_data', 'save', 'payment_complete', 'get_data_store' ] )
 			->getMock();
@@ -2038,7 +2083,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$charge_id     = 'ch_yyyyyyyyyyyyy';
 		$intent_status = 'succeeded';
 
-		$order->expects( $this->once() )
+		$order
+			->expects( $this->once() )
 			->method( 'payment_complete' )
 			->willThrowException( new Exception( 'something went wrong' ) );
 
