@@ -49,6 +49,7 @@ describe( 'Overview page', () => {
 			featureFlags: {
 				accountOverviewTaskList: true,
 			},
+			accountLoans: {},
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );
@@ -146,9 +147,8 @@ describe( 'Overview page', () => {
 	it( 'Does not display loan summary when there is no loan', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
-			accountStatus: {
-				...global.wcpaySettings.accountStatus,
-				hasActiveLoan: false,
+			accountLoans: {
+				has_active_loan: false,
 			},
 		};
 
@@ -162,9 +162,8 @@ describe( 'Overview page', () => {
 	it( 'Displays loan summary when there is a loan', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
-			accountStatus: {
-				...global.wcpaySettings.accountStatus,
-				hasActiveLoan: true,
+			accountLoans: {
+				has_active_loan: true,
 			},
 		};
 
