@@ -22,6 +22,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
+use WCPay\Platform_Checkout_Tracker;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -239,7 +240,11 @@ class WC_Payments {
 		// Load platform checkout save user section if feature is enabled.
 		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
 			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
+			// Load platform checkout tracking.
+			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
+
 			new Platform_Checkout_Save_User();
+			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
 		}
 
 		// Always load tracker to avoid class not found errors.
