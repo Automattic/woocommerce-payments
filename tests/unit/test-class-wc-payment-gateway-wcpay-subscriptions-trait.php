@@ -17,8 +17,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Trait_Test extends WP_UnitTestCase 
 	 */
 	private $mock_wcpay_subscriptions_trait;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_wcpay_subscriptions_trait = $this->getMockForTrait(
 			WC_Payment_Gateway_WCPay_Subscriptions_Trait::class,
