@@ -54,23 +54,33 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	private $remote_note_service;
 
 	/**
+	 * WC_Payments_Order_Service instance
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	protected $order_service;
+
+	/**
 	 * WC_REST_Payments_Webhook_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client          $api_client          WC_Payments_API_Client instance.
 	 * @param WC_Payments_DB                  $wcpay_db            WC_Payments_DB instance.
 	 * @param WC_Payments_Account             $account             WC_Payments_Account instance.
 	 * @param WC_Payments_Remote_Note_Service $remote_note_service WC_Payments_Remote_Note_Service instance.
+	 * @param WC_Payments_Order_Service       $order_service       WC_Payments_Order_Service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
 		WC_Payments_DB $wcpay_db,
 		WC_Payments_Account $account,
-		WC_Payments_Remote_Note_Service $remote_note_service
+		WC_Payments_Remote_Note_Service $remote_note_service,
+		WC_Payments_Order_Service $order_service
 	) {
 		parent::__construct( $api_client );
 		$this->wcpay_db            = $wcpay_db;
 		$this->account             = $account;
 		$this->remote_note_service = $remote_note_service;
+		$this->order_service       = $order_service;
 	}
 
 	/**
@@ -257,8 +267,13 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
+		// Get the intent_id and then its status.
+		$intent_id     = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
+		$intent        = $this->api_client->get_intent( $intent_id );
+		$intent_status = $intent->get_status();
+
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
-		WC_Payments_Utils::mark_payment_expired( $order );
+		$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id );
 	}
 
 	/**
@@ -267,7 +282,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 * @param array $event_body The event that triggered the webhook.
 	 *
 	 * @throws Rest_Request_Exception           Required parameters not found.
-	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
+	 * @throws Invalid_Payment_Method_Exception When unable to resolve intent ID to order.
 	 */
 	private function process_webhook_payment_intent_failed( $event_body ) {
 		// Check to make sure we should process this according to the payment method.
@@ -283,18 +298,23 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			return;
 		}
 
-		// Get the order and make sure it is an order, it is not already in failed status, and the payment methods match.
+		// Get the order and make sure it is an order and the payment methods match.
 		$order             = $this->get_order_from_event_body_intent_id( $event_body );
 		$payment_method_id = $charges_data['payment_method'] ?? null;
 
 		if ( ! $order
-			|| $order->has_status( [ 'failed' ] )
 			|| empty( $payment_method_id )
 			|| $payment_method_id !== $order->get_meta( '_payment_method_id' ) ) {
 			return;
 		}
 
-		WC_Payments_Utils::mark_payment_failed( $order, $this->get_failure_message_from_event( $event_body ) );
+		$event_data    = $this->read_rest_property( $event_body, 'data' );
+		$event_object  = $this->read_rest_property( $event_data, 'object' );
+		$intent_id     = $this->read_rest_property( $event_object, 'id' );
+		$intent_status = $this->read_rest_property( $event_object, 'status' );
+		$charge_id     = $this->read_rest_property( $charges_data, 'id' );
+
+		$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_event( $event_body ) );
 	}
 
 	/**
@@ -303,15 +323,19 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 * @param array $event_body The event that triggered the webhook.
 	 *
 	 * @throws Rest_Request_Exception           Required parameters not found.
-	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
+	 * @throws Invalid_Payment_Method_Exception When unable to resolve intent ID to order.
 	 */
 	private function process_webhook_payment_intent_succeeded( $event_body ) {
-		$event_data   = $this->read_rest_property( $event_body, 'data' );
-		$event_object = $this->read_rest_property( $event_data, 'object' );
-		$intent_id    = $this->read_rest_property( $event_object, 'id' );
-		$order        = $this->get_order_from_event_body_intent_id( $event_body );
+		$event_data    = $this->read_rest_property( $event_body, 'data' );
+		$event_object  = $this->read_rest_property( $event_data, 'object' );
+		$intent_id     = $this->read_rest_property( $event_object, 'id' );
+		$order         = $this->get_order_from_event_body_intent_id( $event_body );
+		$intent_status = $this->read_rest_property( $event_object, 'status' );
+		$event_charges = $this->read_rest_property( $event_object, 'charges' );
+		$charges_data  = $this->read_rest_property( $event_charges, 'data' );
+		$charge_id     = $this->read_rest_property( $charges_data[0], 'id' );
 
-		WC_Payments_Utils::mark_payment_completed( $order, $intent_id );
+		$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
 	}
 
 	/**
@@ -340,18 +364,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
-		$note = sprintf(
-			/* translators: %1: the dispute reason, %2: the dispute details URL */
-			__( 'Payment has been disputed as %1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
-			$reason,
-			add_query_arg(
-				[ 'id' => $dispute_id ],
-				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
-			)
-		);
-
-		$order->add_order_note( $note );
-		$order->update_status( 'on-hold' );
+		$this->order_service->mark_payment_dispute_created( $order, $dispute_id, $reason );
 	}
 
 	/**
@@ -380,30 +393,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
-		$note = sprintf(
-			/* translators: %1: the dispute status, %2: the dispute details URL */
-			__( 'Payment dispute has been closed with status %1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
-			$status,
-			add_query_arg(
-				[ 'id' => $dispute_id ],
-				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
-			)
-		);
-
-		$order->add_order_note( $note );
-
-		if ( 'lost' === $status ) {
-			wc_create_refund(
-				[
-					'amount'     => $order->get_total(),
-					'reason'     => __( 'dispute lost', 'woocommerce-payments' ),
-					'order_id'   => $order->get_id(),
-					'line_items' => $order->get_items(),
-				]
-			);
-		} else {
-			$order->update_status( 'completed' );
-		}
+		$this->order_service->mark_payment_dispute_closed( $order, $dispute_id, $status );
 	}
 
 	/**
@@ -483,7 +473,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 * @param array $event_body The event that triggered the webhook.
 	 *
 	 * @throws Rest_Request_Exception           Required parameters not found.
-	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
+	 * @throws Invalid_Payment_Method_Exception When unable to resolve intent ID to order.
 	 *
 	 * @return boolean|WC_Order|WC_Order_Refund
 	 */
@@ -492,7 +482,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		$event_object = $this->read_rest_property( $event_data, 'object' );
 		$intent_id    = $this->read_rest_property( $event_object, 'id' );
 
-		// Look up the order related to this charge.
+		// Look up the order related to this intent.
 		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
 
 		if ( ! $order ) {
@@ -512,16 +502,13 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		if ( ! $order ) {
 			throw new Invalid_Payment_Method_Exception(
 				sprintf(
-					/* translators: %1: charge ID */
+					/* translators: %1: intent ID */
 					__( 'Could not find order via intent ID: %1$s', 'woocommerce-payments' ),
 					$intent_id
 				),
 				'order_not_found'
 			);
 		}
-
-		// Get an updated set of order properties to avoid race conditions when the server sends the paid webhook before we've finished processing the original payment request.
-		$order->get_data_store()->read( $order );
 
 		return $order;
 	}

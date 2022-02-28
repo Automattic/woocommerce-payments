@@ -46,10 +46,14 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_loan_approved_inbox_note' ] );
 		add_action( self::INSTANT_DEPOSITS_REMINDER_ACTION, [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_action( self::ACCOUNT_CACHE_REFRESH_ACTION, [ $this, 'handle_account_cache_refresh' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
+
+		// Add capital offer redirection.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
 	}
 
 	/**
@@ -111,28 +115,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the account has been rejected, assumes the value of $on_error on server error.
-	 *
-	 * @param bool $on_error Value to return on server error, defaults to false.
-	 *
-	 * @return bool True if the account is rejected, false otherwise, $on_error on error.
-	 */
-	public function is_account_rejected( bool $on_error = false ): bool {
-		try {
-			$account = $this->get_cached_account_data();
-
-			if ( empty( $account ) ) {
-				// Empty means no account, so not rejected.
-				return false;
-			}
-
-			return strpos( $account['status'], 'rejected' ) === 0;
-		} catch ( Exception $e ) {
-			return $on_error;
-		}
-	}
-
-	/**
 	 * Checks if the account is connected, throws on server error.
 	 *
 	 * @return bool      True if the account is connected, false otherwise.
@@ -146,6 +128,21 @@ class WC_Payments_Account {
 
 		// The empty array indicates that account is not connected yet.
 		return [] !== $account;
+	}
+
+	/**
+	 * Checks if the account has been rejected, assumes the value of false on any account retrieval error.
+	 * Returns false if the account is not connected.
+	 *
+	 * @return bool True if the account is connected and rejected, false otherwise or on error.
+	 */
+	public function is_account_rejected(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+
+		$account = $this->get_cached_account_data();
+		return strpos( $account['status'] ?? '', 'rejected' ) === 0;
 	}
 
 	/**
@@ -304,6 +301,20 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the current account loan data for rendering on the settings pages.
+	 *
+	 * @return array loan data.
+	 */
+	public function get_capital() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['capital'] ) && ! empty( $account['capital'] ) ? $account['capital'] : [
+			'loans'              => [],
+			'has_active_loan'    => false,
+			'has_previous_loans' => false,
+		];
+	}
+
+	/**
 	 * Gets the current account email for rendering on the settings page.
 	 *
 	 * @return string Email.
@@ -350,6 +361,46 @@ class WC_Payments_Account {
 			$filtered_services_config[ $service_id ] = apply_filters( 'wcpay_prepare_fraud_config', $config, $service_id );
 		}
 		return $filtered_services_config;
+	}
+
+	/**
+	 * Checks if the request is for the Capital view offer redirection page, and redirects to the offer if so.
+	 *
+	 * Only admins are be able to perform this action. The redirect doesn't happen if the request is an AJAX request.
+	 * This method will end execution after the redirect if the user requests and is allowed to view the loan offer.
+	 */
+	public function maybe_redirect_to_capital_offer() {
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
+		// Safety check to prevent non-admin users to be redirected to the view offer page.
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		// This is an automatic redirection page, used to authenticate users that come from the offer email. For this reason
+		// we're not using a nonce. The GET parameter accessed here is just to indicate that we should process the redirection.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['wcpay-loan-offer'] ) ) {
+			return;
+		}
+
+		$return_url  = $this->get_overview_page_url();
+		$refresh_url = add_query_arg( [ 'wcpay-loan-offer' => '' ], admin_url( 'admin.php' ) );
+
+		try {
+			$capital_link = $this->payments_api_client->get_capital_link( 'capital_financing_offer', $return_url, $refresh_url );
+
+			$this->redirect_to( $capital_link['url'] );
+		} catch ( API_Exception $e ) {
+			$error_url = add_query_arg(
+				[ 'wcpay-loan-offer-error' => '1' ],
+				self::get_overview_page_url()
+			);
+
+			$this->redirect_to( $error_url );
+		}
 	}
 
 	/**
@@ -599,6 +650,18 @@ class WC_Payments_Account {
 		// If the transient isn't set at all, we'll get false indicating that the server hasn't informed us that
 		// on-boarding has been disabled (i.e. it's enabled as far as we know).
 		return get_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
+	}
+
+	/**
+	 * Calls wp_safe_redirect and exit.
+	 *
+	 * This method will end the execution immediately after the redirection.
+	 *
+	 * @param string $location The URL to redirect to.
+	 */
+	protected function redirect_to( $location ) {
+		wp_safe_redirect( $location );
+		exit;
 	}
 
 	/**
@@ -1052,6 +1115,38 @@ class WC_Payments_Account {
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_add_note();
 		$this->maybe_add_instant_deposit_note_reminder();
+	}
+
+	/**
+	 * Handles adding a note if the merchant has an loan approved.
+	 *
+	 * @param array $account The account data.
+	 *
+	 * @return void
+	 */
+	public function handle_loan_approved_inbox_note( $account ) {
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
+
+		// If the account cache is empty, don't try to create an inbox note.
+		if ( empty( $account ) ) {
+			return;
+		}
+
+		// Delete the loan note when the user doesn't have an active loan.
+		if ( ! isset( $account['capital']['has_active_loan'] ) || ! $account['capital']['has_active_loan'] ) {
+			WC_Payments_Notes_Loan_Approved::possibly_delete_note();
+			return;
+		}
+
+		// Get the loan summary.
+		try {
+			$loan_details = $this->payments_api_client->get_active_loan_summary();
+		} catch ( API_Exception $ex ) {
+			return;
+		}
+
+		WC_Payments_Notes_Loan_Approved::set_loan_details( $loan_details );
+		WC_Payments_Notes_Loan_Approved::possibly_add_note();
 	}
 
 	/**

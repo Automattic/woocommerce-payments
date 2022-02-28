@@ -10,6 +10,7 @@ import { getQuery } from '@woocommerce/navigation';
  */
 import { filters, advancedFilters, TransactionsFilterType } from './config';
 import { formatCurrencyName } from '../../utils/currency';
+import './style.scss';
 
 interface TransactionsFiltersProps {
 	storeCurrencies?: string[];
@@ -42,13 +43,15 @@ export const TransactionsFilters = ( {
 	};
 
 	return (
-		<ReportFilters
-			filters={ populateDepositCurrencies( filters ) }
-			advancedFilters={ advancedFilters }
-			showDatePicker={ false }
-			path="/payments/transactions"
-			query={ getQuery() }
-		/>
+		<div className="woocommerce-filters-transactions">
+			<ReportFilters
+				filters={ populateDepositCurrencies( filters ) }
+				advancedFilters={ advancedFilters }
+				showDatePicker={ false }
+				path="/payments/transactions"
+				query={ getQuery() }
+			/>
+		</div>
 	);
 };
 

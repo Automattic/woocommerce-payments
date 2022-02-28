@@ -25,6 +25,8 @@ import DisputeEvidencePage from 'disputes/evidence';
 import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
 import MultiCurrencySetupPage from 'wcpay/multi-currency-setup';
 import CardReadersPage from 'card-readers';
+import CapitalPage from 'capital';
+import PreviewReceiptPage from 'card-readers/preview-receipt';
 import OverviewPage from 'overview';
 import { getTasks } from 'overview/task-list/tasks';
 
@@ -183,6 +185,28 @@ addFilter(
 				id: 'wc-payments-card-readers',
 			},
 			capability: 'manage_woocommerce',
+		} );
+		pages.push( {
+			container: CapitalPage,
+			path: '/payments/loans',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Capital Loans', 'woocommerce-payments' ),
+			],
+			navArgs: {
+				id: 'wc-payments-capital',
+			},
+			capability: 'manage_woocommerce',
+		} );
+		pages.push( {
+			container: PreviewReceiptPage,
+			path: '/payments/card-readers/preview-receipt',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Preview a printed receipt', 'woocommerce-payments' ),
+			],
 		} );
 		return pages;
 	}

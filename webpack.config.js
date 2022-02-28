@@ -18,6 +18,7 @@ const webpackConfig = {
 		settings: './client/settings/index.js',
 		'blocks-checkout': './client/checkout/blocks/index.js',
 		'upe-blocks-checkout': './client/checkout/blocks/upe.js',
+		'platform-checkout': './client/checkout/platform-checkout/index.js',
 		checkout: './client/checkout/classic/index.js',
 		upe_checkout: './client/checkout/classic/upe.js',
 		'payment-request': './client/payment-request/index.js',
@@ -96,6 +97,10 @@ const webpackConfig = {
 		modules: [ path.join( __dirname, 'client' ), 'node_modules' ],
 		alias: {
 			wcpay: path.resolve( __dirname, 'client' ),
+			iti: path.resolve(
+				__dirname,
+				'node_modules/intl-tel-input/build/js'
+			),
 		},
 		fallback: {
 			crypto: require.resolve( 'crypto-browserify' ),
@@ -113,6 +118,7 @@ const webpackConfig = {
 			requestToExternal( request ) {
 				switch ( request ) {
 					case '@wordpress/components':
+					case 'lodash':
 						return null;
 					case '@woocommerce/components':
 						return [ 'wc', 'components' ];
@@ -129,6 +135,7 @@ const webpackConfig = {
 			requestToHandle( request ) {
 				switch ( request ) {
 					case '@wordpress/components':
+					case 'lodash':
 						return null;
 					case '@woocommerce/components':
 						return 'wc-components';

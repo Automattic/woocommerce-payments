@@ -237,6 +237,19 @@ class WC_Payments_Admin {
 				];
 			}
 
+			if ( $this->account->get_capital()['has_previous_loans'] ) {
+				$this->admin_child_pages['wc-payments-capital'] = [
+					'id'       => 'wc-payments-capital',
+					'title'    => __( 'Capital Loans', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/loans',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 60,
+					],
+				];
+			}
+
 			/**
 			 * Please note that if any other page is registered first and it's
 			 * path is different from the $top_level_link it will make
@@ -257,7 +270,7 @@ class WC_Payments_Admin {
 						'parent' => 'wc-payments',
 						'title'  => __( 'Settings', 'woocommerce-payments' ),
 						'url'    => 'wc-settings&tab=checkout&section=woocommerce_payments',
-						'order'  => 50,
+						'order'  => 99,
 					],
 				]
 			);
@@ -320,6 +333,16 @@ class WC_Payments_Admin {
 					'path'   => '/payments/multi-currency-setup',
 				]
 			);
+
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-card-readers-preview-receipt',
+					'parent' => 'wc-payments-card-readers',
+					'title'  => __( 'Preview a printed receipt', 'woocommerce-payments' ),
+					'path'   => '/payments/card-readers/preview-receipt',
+
+				]
+			);
 		}
 
 		wp_enqueue_style(
@@ -375,6 +398,7 @@ class WC_Payments_Admin {
 			'isJetpackIdcActive'      => Jetpack_Identity_Crisis::has_identity_crisis(),
 			'accountStatus'           => $this->account->get_account_status_data(),
 			'accountFees'             => $this->account->get_fees(),
+			'accountLoans'            => $this->account->get_capital(),
 			'accountEmail'            => $this->account->get_account_email(),
 			'showUpdateDetailsTask'   => get_option( 'wcpay_show_update_business_details_task', 'no' ),
 			'wpcomReconnectUrl'       => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,

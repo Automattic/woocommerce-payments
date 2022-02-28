@@ -14,6 +14,7 @@ import { __ } from '@wordpress/i18n';
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
+import ActiveLoanSummary from 'components/active-loan-summary';
 import DepositsInformation from 'components/deposits-information';
 import ErrorBoundary from 'components/error-boundary';
 import TaskList from './task-list';
@@ -52,6 +53,7 @@ const OverviewPage = () => {
 		'1' === queryParams[ 'wcpay-connection-success' ];
 
 	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
+	const showLoanOfferError = '1' === queryParams[ 'wcpay-loan-offer-error' ];
 	const accountRejected = accountStatus.status.startsWith( 'rejected' );
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
@@ -105,6 +107,15 @@ const OverviewPage = () => {
 
 			<JetpackIdcNotice />
 
+			{ showLoanOfferError && (
+				<Notice status="error" isDismissible={ false }>
+					{ __(
+						'There was a problem redirecting you to the loan offer. Please check that it is not expired and try again.',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
+
 			<TestModeNotice topic={ topics.overview } />
 
 			{ ! accountRejected && (
@@ -119,6 +130,13 @@ const OverviewPage = () => {
 					accountFees={ activeAccountFees }
 				/>
 			</ErrorBoundary>
+
+			{ wcpaySettings.accountLoans.has_active_loan && (
+				<ErrorBoundary>
+					<ActiveLoanSummary />
+				</ErrorBoundary>
+			) }
+
 			{ !! accountOverviewTaskList &&
 				0 < tasks.length &&
 				! isLoading &&

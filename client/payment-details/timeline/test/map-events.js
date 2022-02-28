@@ -326,6 +326,19 @@ describe( 'mapTimelineEvents', () => {
 				] )
 			).toMatchSnapshot();
 		} );
+
+		test( 'formats financing paydown events', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						type: 'financing_paydown',
+						datetime: 1643717044,
+						amount: -11000,
+						loan_id: 'flxln_1KOKzdR4ByxURRrFX9A65q40',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
 	} );
 
 	describe( 'Multi-Currency events', () => {
