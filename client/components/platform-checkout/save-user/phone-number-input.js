@@ -83,6 +83,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 				initialCountry: 'US',
 				customPlaceholder: () => '',
 				separateDialCode: true,
+				hiddenInput: 'full',
 				utilsScript: utils,
 			} );
 			setInputInstance( iti );
@@ -113,7 +114,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 					'woocommerce-payments'
 				) }
 				label={ __( 'Mobile phone number', 'woocommerce-payments' ) }
-				name="platform_checkout_user_phone_field"
+				name="platform_checkout_user_phone_field[no-country-code]"
 				value={ inputValue }
 				onChange={ handlePhoneNumberInputChange }
 				onBlur={ handlePhoneNumberValidation }
