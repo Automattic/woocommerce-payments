@@ -174,7 +174,7 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 	}
 
 	return {
-		date: new Date( event.date * 1000 ),
+		date: new Date( event.datetime * 1000 ),
 		icon: getIcon( 'minus' ),
 		headline,
 		body,

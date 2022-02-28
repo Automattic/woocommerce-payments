@@ -27,6 +27,7 @@
       "automattic/jetpack-autoloader": "2.10.11",
       "automattic/jetpack-identity-crisis": "0.7.0",
       "automattic/jetpack-sync": "1.29.2",
+      "automattic/jetpack-tracking": "1.14.1",
       "myclabs/php-enum": "1.7.7",
       "woocommerce/subscriptions-core": "1.6.4"
     },
