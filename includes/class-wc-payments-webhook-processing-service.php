@@ -141,28 +141,6 @@ class WC_Payments_Webhook_Processing_Service {
 	}
 
 	/**
-	 * Safely get a value from the webhook event body array.
-	 *
-	 * @param array  $array Array to read from.
-	 * @param string $key   ID to fetch on.
-	 *
-	 * @return string|array|int
-	 * @throws Invalid_Webhook_Data_Exception Thrown if ID not set.
-	 */
-	public function read_webhook_property( $array, $key ) {
-		if ( ! isset( $array[ $key ] ) ) {
-			throw new Invalid_Webhook_Data_Exception(
-				sprintf(
-				/* translators: %1: ID being fetched */
-					__( '%1$s not found in array', 'woocommerce-payments' ),
-					$key
-				)
-			);
-		}
-		return $array[ $key ];
-	}
-
-	/**
 	 * Process webhook refund updated.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
@@ -425,6 +403,49 @@ class WC_Payments_Webhook_Processing_Service {
 	}
 
 	/**
+	 * Process notification data.
+	 *
+	 * @param  array $event_body The event that triggered the webhook.
+	 *
+	 * @return void
+	 *
+	 * @throws Invalid_Webhook_Data_Exception When data is not valid.
+	 */
+	private function process_wcpay_notification( array $event_body ) {
+		$note = $this->read_webhook_property( $event_body, 'data' );
+
+		// Convert exception Rest_Request_Exception to Invalid_Webhook_Data_Exception
+		// to be compatible with the expected exception in process().
+		try {
+			$this->remote_note_service->put_note( $note );
+		} catch ( Rest_Request_Exception $e ) {
+			throw new Invalid_Webhook_Data_Exception( $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Safely get a value from the webhook event body array.
+	 *
+	 * @param array  $array Array to read from.
+	 * @param string $key   ID to fetch on.
+	 *
+	 * @return string|array|int
+	 * @throws Invalid_Webhook_Data_Exception Thrown if ID not set.
+	 */
+	private function read_webhook_property( $array, $key ) {
+		if ( ! isset( $array[ $key ] ) ) {
+			throw new Invalid_Webhook_Data_Exception(
+				sprintf(
+				/* translators: %1: ID being fetched */
+					__( '%1$s not found in array', 'woocommerce-payments' ),
+					$key
+				)
+			);
+		}
+		return $array[ $key ];
+	}
+
+	/**
 	 * Gets the order related to the event intent id.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
@@ -511,26 +532,5 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		return $failure_message;
-	}
-
-	/**
-	 * Process notification data.
-	 *
-	 * @param  array $event_body The event that triggered the webhook.
-	 *
-	 * @return void
-	 *
-	 * @throws Invalid_Webhook_Data_Exception When note data is not valid.
-	 */
-	private function process_wcpay_notification( array $event_body ) {
-		$note = $this->read_webhook_property( $event_body, 'data' );
-
-		// Convert exception Rest_Request_Exception to Invalid_Webhook_Data_Exception
-		// to be compatible with the expected exception in process().
-		try {
-			$this->remote_note_service->put_note( $note );
-		} catch ( Rest_Request_Exception $e ) {
-			throw new Invalid_Webhook_Data_Exception( $e->getMessage() );
-		}
 	}
 }

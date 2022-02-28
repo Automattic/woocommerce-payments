@@ -88,7 +88,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertSame( 200, $response->get_status() );
-		$this->assertSame( 'success', $response_data['result'] );
+		$this->assertSame( [ 'result' => 'success' ], $response_data );
 	}
 
 	public function test_handle_webhook_with_invalid_data_returns_bad_request_message() {
@@ -104,7 +104,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertSame( 400, $response->get_status() );
-		$this->assertSame( 'bad_request', $response_data['result'] );
+		$this->assertSame( [ 'result' => 'bad_request' ], $response_data );
 	}
 
 	public function test_handle_webhook_returns_error_message() {
@@ -120,6 +120,6 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertSame( 500, $response->get_status() );
-		$this->assertSame( 'error', $response_data['result'] );
+		$this->assertSame( [ 'result' => 'error' ], $response_data );
 	}
 }

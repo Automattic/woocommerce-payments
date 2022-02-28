@@ -34,9 +34,11 @@ class WC_Payments_Remote_Note_Service {
 	/**
 	 * Puts the given note data in the inbox if it hasn't been added before.
 	 *
-	 * @param array $note_data Note data from the API.
+	 * @param  array $note_data  Note data from the API.
 	 *
 	 * @return bool True if the note has been added.
+	 *
+	 * @throws Rest_Request_Exception If note data is invalid.
 	 */
 	public function put_note( array $note_data ) : bool {
 		$note = $this->create_note( $note_data );

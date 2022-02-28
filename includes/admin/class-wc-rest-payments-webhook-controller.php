@@ -40,7 +40,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * WC_REST_Payments_Webhook_Controller constructor.
 	 *
-	 * @param WC_Payments_API_Client                 $api_client          WC_Payments_API_Client instance.
+	 * @param WC_Payments_API_Client                 $api_client                 WC_Payments_API_Client instance.
 	 * @param WC_Payments_Webhook_Processing_Service $webhook_processing_service WC_Payments_Webhook_Processing_Service instance.
 	 */
 	public function __construct(

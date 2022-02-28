@@ -326,7 +326,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->willReturn( false );
 
 		$this->expectException( Invalid_Payment_Method_Exception::class );
-		$this->expectExceptionMessage( 'Could not find order via charge ID: unknown_charge_i' );
+		$this->expectExceptionMessage( 'Could not find order via charge ID: unknown_charge_id' );
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
@@ -381,7 +381,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Tests that a remote note webhook handles service exceptions.
 	 */
-	public function test_remote_note_fails_returns_response() {
+	public function test_remote_note_fails_returns_expected_webhook_exception() {
 		// Setup test request data.
 		$this->event_body['type'] = 'wcpay.notification';
 		$this->event_body['data'] = [
