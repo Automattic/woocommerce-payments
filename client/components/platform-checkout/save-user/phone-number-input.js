@@ -81,9 +81,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 		if ( input ) {
 			iti = intlTelInput( input, {
 				initialCountry: 'US',
-				customPlaceholder: function ( selectedCountryPlaceholder ) {
-					return selectedCountryPlaceholder;
-				},
+				customPlaceholder: () => '',
 				separateDialCode: true,
 				utilsScript: utils,
 			} );
