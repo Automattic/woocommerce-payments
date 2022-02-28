@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Do not show multi-currency inbox note until the merchant has set up a WCPay account
