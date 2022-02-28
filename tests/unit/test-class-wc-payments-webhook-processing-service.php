@@ -67,7 +67,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
 
-		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $this->mock_db_wrapper, $account, $this->mock_remote_note_service, $this->order_service );
+		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $mock_api_client, $this->mock_db_wrapper, $account, $this->mock_remote_note_service, $this->order_service );
 
 		// Build the event body data.
 		$event_object = [];

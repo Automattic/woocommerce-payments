@@ -20,6 +20,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_Webhook_Processing_Service {
 	/**
+	 * Client for making requests to the WooCommerce Payments API
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	protected $api_client;
+
+	/**
 	 * DB wrapper.
 	 *
 	 * @var WC_Payments_DB
@@ -50,12 +57,14 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * WC_Payments_Webhook_Processing_Service constructor.
 	 *
+	 * @param WC_Payments_API_Client          $api_client          WooCommerce Payments API client.
 	 * @param WC_Payments_DB                  $wcpay_db            WC_Payments_DB instance.
 	 * @param WC_Payments_Account             $account             WC_Payments_Account instance.
 	 * @param WC_Payments_Remote_Note_Service $remote_note_service WC_Payments_Remote_Note_Service instance.
 	 * @param WC_Payments_Order_Service       $order_service       WC_Payments_Order_Service instance.
 	 */
 	public function __construct(
+		WC_Payments_API_Client $api_client,
 		WC_Payments_DB $wcpay_db,
 		WC_Payments_Account $account,
 		WC_Payments_Remote_Note_Service $remote_note_service,
@@ -65,6 +74,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->account             = $account;
 		$this->remote_note_service = $remote_note_service;
 		$this->order_service       = $order_service;
+		$this->api_client          = $api_client;
 	}
 
 	/**
