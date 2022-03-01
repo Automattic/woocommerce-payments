@@ -60,42 +60,9 @@ class WC_Payments_Webhook_Reliability_Service {
 		$this->action_scheduler_service   = $action_scheduler_service;
 		$this->webhook_processing_service = $webhook_processing_service;
 
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_schedule_fetch_events' ] );
 		add_action( self::WEBHOOK_FETCH_EVENTS_ACTION, [ $this, 'fetch_events' ] );
 		add_action( self::WEBHOOK_PROCESS_EVENT_ACTION, [ $this, 'process_event' ] );
-		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_schedule_fetch_events' ] );
-	}
-
-	/**
-	 * Fetch failed events from the WooCommerce Payments server through ActionScheduler.
-	 *
-	 * @return void
-	 */
-	public function fetch_events() {
-		try {
-			$payload = $this->payments_api_client->get_failed_webhook_events();
-
-			if ( $payload[ self::CONTINUOUS_FETCH_FLAG_EVENTS_LIST ] ?? false ) {
-				$this->schedule_fetch_events();
-			}
-
-			// Save the data, and schedule a job for each event.
-			$events = $payload['data'] ?? [];
-			foreach ( $events as $event ) {
-				$this->set_event_data( $event );
-				$this->schedule_process_event( $event['id'] );
-			}
-		} catch ( API_Exception $e ) {
-			Logger::error( 'Can not fetch events from the server with error:' . $e->getMessage() );
-		}
-	}
-
-	/**
-	 * Schedule a job to fetch failed events.
-	 *
-	 * @return void
-	 */
-	public function schedule_fetch_events() {
-		$this->action_scheduler_service->schedule_job( time(), self::WEBHOOK_FETCH_EVENTS_ACTION );
 	}
 
 	/**
@@ -117,17 +84,28 @@ class WC_Payments_Webhook_Reliability_Service {
 	}
 
 	/**
-	 * Schedule a job to process an event later.
-	 *
-	 * @param  string $event_id Event ID.
+	 * Fetch failed events from the WooCommerce Payments server through ActionScheduler.
 	 *
 	 * @return void
 	 */
-	public function schedule_process_event( string $event_id ) {
-		Logger::info( 'Start scheduling event: ' . $event_id );
-		$this->action_scheduler_service->schedule_job( time(), self::WEBHOOK_PROCESS_EVENT_ACTION, [ 'event_id' => $event_id ] );
-		Logger::info( 'Finish scheduling event: ' . $event_id );
+	public function fetch_events() {
+		try {
+			$payload = $this->payments_api_client->get_failed_webhook_events();
+		} catch ( API_Exception $e ) {
+			Logger::error( 'Can not fetch failed events from the server. Error:' . $e->getMessage() );
+			return;
+		}
 
+		if ( $payload[ self::CONTINUOUS_FETCH_FLAG_EVENTS_LIST ] ?? false ) {
+			$this->schedule_fetch_events();
+		}
+
+		// Save the data, and schedule a job for each event.
+		$events = $payload['data'] ?? [];
+		foreach ( $events as $event ) {
+			$this->set_event_data( $event );
+			$this->schedule_process_event( $event['id'] );
+		}
 	}
 
 	/**
@@ -142,7 +120,7 @@ class WC_Payments_Webhook_Reliability_Service {
 
 		$event_data = $this->get_event_data( $event_id );
 		if ( null === $event_data ) {
-			Logger::info( 'Stop processing as no available data for event: ' . $event_id );
+			Logger::error( 'Stop processing as no data available for event: ' . $event_id );
 			return;
 		}
 
@@ -152,8 +130,30 @@ class WC_Payments_Webhook_Reliability_Service {
 			$this->webhook_processing_service->process( $event_data );
 			Logger::info( 'Successfully processed event ' . $event_id );
 		} catch ( Invalid_Webhook_Data_Exception $e ) {
-			Logger::info( 'Failed processing event ' . $event_id . '. Reason: ' . $e->getMessage() );
+			Logger::error( 'Failed processing event ' . $event_id . '. Reason: ' . $e->getMessage() );
 		}
+	}
+
+	/**
+	 * Schedule a job to process an event later.
+	 *
+	 * @param  string $event_id Event ID.
+	 *
+	 * @return void
+	 */
+	private function schedule_process_event( string $event_id ) {
+		$this->action_scheduler_service->schedule_job( time(), self::WEBHOOK_PROCESS_EVENT_ACTION, [ 'event_id' => $event_id ] );
+		Logger::info( 'Successfully schedule a job to processing event: ' . $event_id );
+	}
+
+	/**
+	 * Schedule a job to fetch failed events.
+	 *
+	 * @return void
+	 */
+	private function schedule_fetch_events() {
+		$this->action_scheduler_service->schedule_job( time(), self::WEBHOOK_FETCH_EVENTS_ACTION );
+		Logger::info( 'Successfully schedule a job to fetch failed events from the server.' );
 	}
 
 	/**
