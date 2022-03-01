@@ -52,8 +52,12 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 			'form.woocommerce-checkout button[type="submit"]'
 		);
 
+		if ( ! formSubmitButton ) {
+			return;
+		}
+
 		const updateFormSubmitButton = () => {
-			if ( isValid && formSubmitButton ) {
+			if ( isValid ) {
 				formSubmitButton.removeAttribute( 'disabled' );
 			} else {
 				formSubmitButton.setAttribute( 'disabled', 'disabled' );
@@ -64,7 +68,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 
 		return () => {
 			// Clean up
-			formSubmitButton?.removeAttribute( 'disabled' );
+			formSubmitButton.removeAttribute( 'disabled' );
 		};
 	}, [ isValid ] );
 
