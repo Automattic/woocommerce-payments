@@ -12,8 +12,12 @@ import {
 } from '@wordpress/components';
 import Gridicon from 'gridicons';
 
+/**
+ * Internal dependencies.
+ */
 import type { DisputeFileUpload } from 'wcpay/types/disputes';
-import { NAMESPACE } from 'wcpay/data/constants';
+import FileUploadError from './upload-error';
+import FileUploadPreview from './preview';
 
 export const FileUploadControl = ( {
 	field,
@@ -26,7 +30,7 @@ export const FileUploadControl = ( {
 	onFileChange,
 	onFileRemove,
 	help,
-	hasPreview,
+	showPreview,
 }: DisputeFileUpload ): JSX.Element => {
 	const hasError = ( error && 0 < error.length ) || false;
 
@@ -72,32 +76,13 @@ export const FileUploadControl = ( {
 					{ __( 'Upload file', 'woocommerce-payments' ) }
 				</FormFileUpload>
 
-				{ hasError && (
-					<span className="upload-message is-destructive">
-						{ error }
-					</span>
-				) }
-
-				{ ! hasError && (
-					<>
-						{ hasPreview && fileName && (
-							<img
-								src={
-									'/wp-json' +
-									NAMESPACE +
-									'/file/' +
-									fileName +
-									'?as_account=0'
-								}
-								style={ { maxWidth: 100 } }
-								alt={ fileName }
-							/>
-						) }
-
-						{ ! hasPreview && fileName && (
-							<span className="upload-message">{ fileName }</span>
-						) }
-					</>
+				{ hasError ? (
+					<FileUploadError error={ error } />
+				) : (
+					<FileUploadPreview
+						fileName={ fileName }
+						showPreview={ showPreview }
+					/>
 				) }
 
 				{ isDone && ! disabled ? (

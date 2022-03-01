@@ -12,7 +12,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { FileUploadControl } from 'wcpay/disputes/evidence/file-upload';
+import { FileUploadControl } from 'components/file-upload';
 
 const BrandingFileUpload = ( props ) => {
 	const {
@@ -130,7 +130,7 @@ const BrandingFileUpload = ( props ) => {
 				error={ error }
 				onFileChange={ handleFileChange }
 				onFileRemove={ handleFileRemove }
-				hasPreview={ true }
+				showPreview={ true }
 			/>
 		</div>
 	);
