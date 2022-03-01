@@ -9,11 +9,28 @@ use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
 
+require_once WCPAY_ABSPATH . 'includes/in-person-payments/class-wc-payments-printed-receipt-sample-order.php';
+
 /**
  * REST controller for reader charges.
  */
 class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	const STORE_READERS_TRANSIENT_KEY = 'wcpay_store_terminal_readers';
+
+	const PREVIEW_RECEIPT_CHARGE_DATA = [
+		'amount_captured'        => 0,
+		'payment_method_details' => [
+			'card_present' => [
+				'brand'   => 'Sample',
+				'last4'   => '0000',
+				'receipt' => [
+					'application_preferred_name' => 'Sample, Receipts preview',
+					'dedicated_file_name'        => '0000',
+					'account_type'               => 'Sample',
+				],
+			],
+		],
+	];
 
 	/**
 	 * Endpoint path.
@@ -102,7 +119,16 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/receipts/(?P<payment_id>\w+)',
+			'/' . $this->rest_base . '/receipts/preview',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'preview_print_receipt' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/receipts/(?P<payment_intent_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'generate_print_receipt' ],
@@ -255,8 +281,12 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 				throw new \RuntimeException( __( 'Order not found', 'woocommerce-payments' ) );
 			}
 
+			// Retrieve branding logo file ID.
+			$branding_logo = $this->wcpay_gateway->get_option( 'account_branding_logo', '' );
+
 			/* Collect merchant settings */
 			$settings = [
+				'branding_logo' => ( ! empty( $branding_logo ) ) ? $this->api_client->get_file_contents( $branding_logo, false ) : [],
 				'business_name' => $this->wcpay_gateway->get_option( 'account_business_name' ),
 				'support_info'  => [
 					'address' => $this->wcpay_gateway->get_option( 'account_business_support_address' ),
@@ -291,5 +321,46 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			200,
 			[ 'Content-Type' => 'text/html; charset=UTF-8' ]
 		);
+	}
+	/**
+	 * Returns HTML to preview a print receipt
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_HTTP_Response|WP_Error
+	 * @throws \RuntimeException Error collecting data.
+	 */
+	public function preview_print_receipt( WP_REST_Request $request ) {
+		return rest_ensure_response(
+			$this->receipts_service->get_receipt_markup(
+				$this->create_print_preview_receipt_settings_data( $request->get_json_params() ),
+				new WC_Payments_Printed_Receipt_Sample_Order(),
+				self::PREVIEW_RECEIPT_CHARGE_DATA
+			)
+		);
+	}
+
+	/**
+	 * Creates settings data to be used on the printed receipt preview. Defaults to stored settings if one parameter is not provided.
+	 *
+	 * @param  array $receipt_settings Array of settings to use to create the receipt preview.
+	 * @return array
+	 */
+	private function create_print_preview_receipt_settings_data( array $receipt_settings ): array {
+		$support_address = empty( $receipt_settings['accountBusinessSupportAddress'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_address' ) : $receipt_settings['accountBusinessSupportAddress'];
+		return [
+			'business_name' => empty( $receipt_settings['accountBusinessName'] ) ? $this->wcpay_gateway->get_option( 'account_business_name' ) : $receipt_settings['accountBusinessName'],
+			'support_info'  => [
+				'address' => [
+					'line1'       => $support_address['line1'],
+					'line2'       => $support_address['line2'],
+					'city'        => $support_address['city'],
+					'state'       => $support_address['state'],
+					'postal_code' => $support_address['postal_code'],
+					'country'     => $support_address['country'],
+				],
+				'phone'   => empty( $receipt_settings['accountBusinessSupportPhone'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_phone' ) : $receipt_settings['accountBusinessSupportPhone'],
+				'email'   => empty( $receipt_settings['accountBusinessSupportEmail'] ) ? $this->wcpay_gateway->get_option( 'account_business_support_email' ) : $receipt_settings['accountBusinessSupportEmail'],
+			],
+		];
 	}
 }

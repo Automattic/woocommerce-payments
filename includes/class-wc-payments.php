@@ -22,6 +22,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
+use WCPay\Platform_Checkout_Tracker;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -113,6 +114,13 @@ class WC_Payments {
 	private static $in_person_payments_receipts_service;
 
 	/**
+	 * Instance of WC_Payments_Order_Service, created in init function
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private static $order_service;
+
+	/**
 	 * Instance of WC_Payments_Webhook_Reliability_Service, created in init function
 	 *
 	 * @var WC_Payments_Webhook_Reliability_Service
@@ -146,6 +154,13 @@ class WC_Payments {
 	 * @var array
 	 */
 	private static $plugin_headers = null;
+
+	/**
+	 * Instance of WC_Payments_Webhook_Processing_Service to process webhook data.
+	 *
+	 * @var WC_Payments_Webhook_Processing_Service
+	 */
+	private static $webhook_processing_service;
 
 	/**
 	 * Entry point to the initialization logic.
@@ -207,6 +222,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
+		include_once __DIR__ . '/exceptions/class-invalid-webhook-data-exception.php';
 		include_once __DIR__ . '/compat/class-wc-payment-woo-compat-utils.php';
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
@@ -219,7 +235,9 @@ class WC_Payments {
 		include_once __DIR__ . '/class-experimental-abtest.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
+		include_once __DIR__ . '/class-wc-payments-order-service.php';
 		include_once __DIR__ . '/class-wc-payments-file-service.php';
+		include_once __DIR__ . '/class-wc-payments-webhook-processing-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
 
 		// Load customer multi-currency if feature is enabled.
@@ -230,7 +248,11 @@ class WC_Payments {
 		// Load platform checkout save user section if feature is enabled.
 		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
 			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
+			// Load platform checkout tracking.
+			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
+
 			new Platform_Checkout_Save_User();
+			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
 		}
 
 		// Always load tracker to avoid class not found errors.
@@ -245,6 +267,8 @@ class WC_Payments {
 		self::$localization_service                = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
+		self::$order_service                       = new WC_Payments_Order_Service();
+		self::$webhook_processing_service          = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service );
 		self::$webhook_reliability_service         = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service );
 
 		$card_class = CC_Payment_Gateway::class;
@@ -267,9 +291,9 @@ class WC_Payments {
 				$payment_method                               = new $payment_method_class( self::$token_service );
 				$payment_methods[ $payment_method->get_id() ] = $payment_method;
 			}
-			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter );
+			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
 		} else {
-			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter );
+			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
 
 		self::maybe_register_platform_checkout_hooks();
@@ -599,7 +623,7 @@ class WC_Payments {
 		$conn_tokens_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
-		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway, self::$customer_service );
+		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway, self::$customer_service, self::$order_service );
 		$orders_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
@@ -607,7 +631,7 @@ class WC_Payments {
 		$timeline_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
-		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service );
+		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$webhook_processing_service );
 		$webhook_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
@@ -825,8 +849,8 @@ class WC_Payments {
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
 			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-			add_filter( 'woocommerce_checkout_fields', [ __CLASS__, 'platform_checkout_remove_default_email_field' ], 50 );
-			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
+			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 10 );
+			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
 		}
 	}
 
@@ -906,22 +930,6 @@ class WC_Payments {
 	}
 
 	/**
-	 * Remove default billing email field for Platform Checkout
-	 *
-	 * @param array $fields WooCommerce checkout fields.
-	 * @return array WooCommerce checkout fields.
-	 */
-	public static function platform_checkout_remove_default_email_field( $fields ) {
-		if ( isset( $fields['billing']['billing_email'] ) ) {
-			unset( $fields['billing']['billing_email'] );
-		} else {
-			remove_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 20 );
-		}
-
-		return $fields;
-	}
-
-	/**
 	 * Adds custom email field.
 	 */
 	public static function platform_checkout_fields_before_billing_details() {
@@ -948,4 +956,22 @@ class WC_Payments {
 		echo '</div>';
 		echo '</div>';
 	}
+
+	/**
+	 * Hide the core email field
+	 *
+	 * @param string $field The checkout field being filtered.
+	 * @param string $key The field key.
+	 * @param mixed  $args Field arguments.
+	 * @param string $value Field value.
+	 * @return string
+	 */
+	public static function filter_woocommerce_form_field_platform_checkout_email( $field, $key, $args, $value ) {
+		$class = $args['class'][0];
+		if ( false === strpos( $class, 'platform-checkout-billing-email' ) ) {
+			$field = '';
+		}
+		return $field;
+	}
+
 }

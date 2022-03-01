@@ -52,10 +52,8 @@ class WC_Payments_Account {
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 
-		// Add capital offer redirect if Capital is enabled.
-		if ( WC_Payments_Features::is_capital_enabled() ) {
-			add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
-		}
+		// Add capital offer redirection.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
 	}
 
 	/**
@@ -117,28 +115,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the account has been rejected, assumes the value of $on_error on server error.
-	 *
-	 * @param bool $on_error Value to return on server error, defaults to false.
-	 *
-	 * @return bool True if the account is rejected, false otherwise, $on_error on error.
-	 */
-	public function is_account_rejected( bool $on_error = false ): bool {
-		try {
-			$account = $this->get_cached_account_data();
-
-			if ( empty( $account ) ) {
-				// Empty means no account, so not rejected.
-				return false;
-			}
-
-			return strpos( $account['status'], 'rejected' ) === 0;
-		} catch ( Exception $e ) {
-			return $on_error;
-		}
-	}
-
-	/**
 	 * Checks if the account is connected, throws on server error.
 	 *
 	 * @return bool      True if the account is connected, false otherwise.
@@ -152,6 +128,21 @@ class WC_Payments_Account {
 
 		// The empty array indicates that account is not connected yet.
 		return [] !== $account;
+	}
+
+	/**
+	 * Checks if the account has been rejected, assumes the value of false on any account retrieval error.
+	 * Returns false if the account is not connected.
+	 *
+	 * @return bool True if the account is connected and rejected, false otherwise or on error.
+	 */
+	public function is_account_rejected(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+
+		$account = $this->get_cached_account_data();
+		return strpos( $account['status'] ?? '', 'rejected' ) === 0;
 	}
 
 	/**
@@ -186,7 +177,6 @@ class WC_Payments_Account {
 			'currentDeadline' => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
 			'pastDue'         => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
 			'accountLink'     => $this->get_login_url(),
-			'hasActiveLoan'   => $account['capital']['has_active_loan'] ?? false,
 		];
 	}
 
@@ -318,9 +308,9 @@ class WC_Payments_Account {
 	public function get_capital() {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['capital'] ) && ! empty( $account['capital'] ) ? $account['capital'] : [
-			'loans'             => [],
-			'has_active_loan'   => false,
-			'has_previous_loan' => false,
+			'loans'              => [],
+			'has_active_loan'    => false,
+			'has_previous_loans' => false,
 		];
 	}
 
@@ -1136,11 +1126,6 @@ class WC_Payments_Account {
 	 */
 	public function handle_loan_approved_inbox_note( $account ) {
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
-
-		// Add this notice only if capital feature is enabled.
-		if ( false === WC_Payments_Features::is_capital_enabled() ) {
-			return;
-		}
 
 		// If the account cache is empty, don't try to create an inbox note.
 		if ( empty( $account ) ) {

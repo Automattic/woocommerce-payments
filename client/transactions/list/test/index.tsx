@@ -484,6 +484,37 @@ describe( 'Transactions list', () => {
 			);
 		} );
 
+		test( 'should fetch export with deposit_id if deposits transactions page', async () => {
+			window.confirm = jest.fn( () => true );
+
+			mockUseTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 101,
+					currency: 'usd',
+					store_currencies: [ 'usd' ],
+					fees: 30,
+					total: 300,
+					net: 270,
+				},
+				isLoading: false,
+			} );
+
+			const { getByRole } = render(
+				<TransactionsList depositId="po_mock" />
+			);
+
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
+				expect( mockApiFetch ).toHaveBeenCalledWith( {
+					method: 'POST',
+					path:
+						'/wc/v3/payments/transactions/download?deposit_id=po_mock',
+				} );
+			} );
+		} );
+
 		test( 'should render expected columns in CSV when the download button is clicked', () => {
 			const { getByRole } = render( <TransactionsList /> );
 
