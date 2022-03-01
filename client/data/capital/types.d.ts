@@ -23,6 +23,21 @@ export interface Summary {
 	};
 }
 
+export interface CapitalLoan {
+	stripe_loan_id: string;
+	amount: number;
+	currency: string;
+	fee_amount: number;
+	withhold_rate: number;
+	paid_out_at: string;
+	first_paydown_at: string;
+	fully_paid_at: string | null;
+}
+
+export interface LoansList {
+	data: CapitalLoan[];
+}
+
 export interface ApiError {
 	code: string;
 }
@@ -33,9 +48,17 @@ export interface SummaryResponse {
 	summaryError?: ApiError;
 }
 
+export interface LoansResponse {
+	isLoading: boolean;
+	loans: CapitalLoan[];
+	loansError?: ApiError;
+}
+
 export interface CapitalState {
 	summary?: Summary;
 	summaryError?: ApiError;
+	loans?: CapitalLoan[];
+	loansError?: ApiError;
 }
 
 export interface State {
@@ -49,5 +72,15 @@ export interface UpdateSummaryAction {
 
 export interface ErrorSummaryAction {
 	type: ACTION_TYPES.SET_ERROR_FOR_ACTIVE_LOAN_SUMMARY;
+	error: ApiError;
+}
+
+export interface UpdateLoansAction {
+	type: ACTION_TYPES.SET_LOANS;
+	data: CapitalLoan[];
+}
+
+export interface ErrorLoansAction {
+	type: ACTION_TYPES.SET_ERROR_FOR_LOANS;
 	error: ApiError;
 }
