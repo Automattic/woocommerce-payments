@@ -9,7 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Logger;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * Improve webhook reliability by fetching failed events from the server,
@@ -36,35 +38,31 @@ class WC_Payments_Webhook_Reliability_Service {
 	private $action_scheduler_service;
 
 	/**
-	 * Flag to indicate whether ActionScheduler is running process_event().
+	 * Webhook Processing Service.
 	 *
-	 * @var bool
+	 * @var WC_Payments_Webhook_Processing_Service
 	 */
-	private static $flag_processing_event = false;
+	private $webhook_processing_service;
 
 	/**
 	 * WC_Payments_Webhook_Reliability_Service constructor.
 	 *
-	 * @param  WC_Payments_API_Client               $payments_api_client WooCommerce Payments API client.
-	 * @param  WC_Payments_Action_Scheduler_Service $action_scheduler_service Wrapper for ActionScheduler service.
+	 * @param  WC_Payments_API_Client                 $payments_api_client WooCommerce Payments API client.
+	 * @param  WC_Payments_Action_Scheduler_Service   $action_scheduler_service Wrapper for ActionScheduler service.
+	 * @param WC_Payments_Webhook_Processing_Service $webhook_processing_service WC_Payments_Webhook_Processing_Service instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Action_Scheduler_Service $action_scheduler_service ) {
-		// TODO - consider singleton?
-		$this->payments_api_client      = $payments_api_client;
-		$this->action_scheduler_service = $action_scheduler_service;
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
+		WC_Payments_Webhook_Processing_Service $webhook_processing_service
+	) {
+		$this->payments_api_client        = $payments_api_client;
+		$this->action_scheduler_service   = $action_scheduler_service;
+		$this->webhook_processing_service = $webhook_processing_service;
 
 		add_action( self::WEBHOOK_FETCH_EVENTS_ACTION, [ $this, 'fetch_events' ] );
 		add_action( self::WEBHOOK_PROCESS_EVENT_ACTION, [ $this, 'process_event' ] );
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_schedule_fetch_events' ] );
-	}
-
-	/**
-	 * Getter for $flag_processing_event.
-	 *
-	 * @return bool
-	 */
-	public static function is_processing_event(): bool {
-		return self::$flag_processing_event;
 	}
 
 	/**
@@ -86,7 +84,7 @@ class WC_Payments_Webhook_Reliability_Service {
 				$this->set_event_data( $event );
 				$this->schedule_process_event( $event['id'] );
 			}
-		} catch ( \WCPay\Exceptions\API_Exception $e ) {
+		} catch ( API_Exception $e ) {
 			Logger::error( 'Can not fetch events from the server with error:' . $e->getMessage() );
 		}
 	}
@@ -148,26 +146,14 @@ class WC_Payments_Webhook_Reliability_Service {
 			return;
 		}
 
-		/**
-		 * Build up the request to process webhook events internally.
-		 */
-		$request = new WP_REST_Request( WP_REST_Server::CREATABLE, '/wc/v3/payments/webhook' );
-		$request->set_header( 'Content-Type', 'application/json' );
-		$request->set_body( wp_json_encode( $event_data ) );
-
-		/**
-		 * Mark the flag to pass the check in the webhook controller.
-		 *
-		 * @see WC_REST_Payments_Webhook_Controller::check_permission().
-		 */
-		self::$flag_processing_event = true;
-		$response                    = rest_do_request( $request );
-		self::$flag_processing_event = false;
-
-		Logger::info( 'Processing result:' . wp_json_encode( $response->get_data() ) );
-		Logger::info( 'Finish processing event ' . $event_id );
-
 		$this->delete_event_data( $event_id );
+
+		try {
+			$this->webhook_processing_service->process( $event_data );
+			Logger::info( 'Successfully processed event ' . $event_id );
+		} catch ( Invalid_Webhook_Data_Exception $e ) {
+			Logger::info( 'Failed processing event ' . $event_id . '. Reason: ' . $e->getMessage() );
+		}
 	}
 
 	/**
