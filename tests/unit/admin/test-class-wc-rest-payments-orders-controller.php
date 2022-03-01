@@ -30,6 +30,16 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 	private $mock_gateway;
 
 	/**
+	 * @var WC_Payments_Customer_Service|MockObject
+	 */
+	private $mock_customer_service;
+
+	/**
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
 	 * @var string
 	 */
 	private $mock_intent_id = 'pi_xxxxxxxxxxxxx';
@@ -48,11 +58,13 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_gateway          = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
+		$this->order_service         = new WC_Payments_Order_Service();
 
 		$this->controller = new WC_REST_Payments_Orders_Controller(
 			$this->mock_api_client,
 			$this->mock_gateway,
-			$this->mock_customer_service
+			$this->mock_customer_service,
+			$this->order_service
 		);
 	}
 
@@ -194,8 +206,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 				$this->isInstanceOf( WC_Order::class ),
 				$this->mock_intent_id,
 				'succeeded',
-				'ch_mock',
-				'mok'
+				'ch_mock'
 			);
 		$this->mock_gateway
 			->expects( $this->never() )
@@ -284,8 +295,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 				$this->isInstanceOf( WC_Order::class ),
 				$this->mock_intent_id,
 				'succeeded',
-				'ch_mock',
-				'mok'
+				'ch_mock'
 			);
 		$this->mock_gateway
 			->expects( $this->never() )
