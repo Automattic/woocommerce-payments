@@ -233,6 +233,11 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		return pattern.test( value );
 	};
 
+	// Check the initial value of the email input and trigger input validation.
+	if ( validateEmail( platformCheckoutEmailInput.value ) ) {
+		platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+	}
+
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
 		const email = e.currentTarget.value;
 
