@@ -44,6 +44,13 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$this->mock_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->disableOriginalConstructor()
 			->getMock();
+		$this->mock_account->method( 'get_capital' )->willReturn(
+			[
+				'loans'              => [],
+				'has_active_loan'    => false,
+				'has_previous_loans' => false,
+			]
+		);
 
 		$this->payments_admin = new WC_Payments_Admin( $mock_api_client, $this->mock_gateway, $this->mock_account );
 	}

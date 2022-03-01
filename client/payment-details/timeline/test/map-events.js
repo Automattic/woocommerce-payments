@@ -332,7 +332,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						type: 'financing_paydown',
-						date: 1643717044,
+						datetime: 1643717044,
 						amount: -11000,
 						loan_id: 'flxln_1KOKzdR4ByxURRrFX9A65q40',
 					},
