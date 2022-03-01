@@ -14,7 +14,7 @@ import utils from 'iti/utils';
 
 const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 	const [ inputValue, setInputValue ] = useState(
-		document.getElementById( 'billing_phone' ).value ?? ''
+		document.getElementById( 'billing_phone' )?.value ?? ''
 	);
 	const [ inputInstance, setInputInstance ] = useState( null );
 	const [ isValid, setIsValid ] = useState( true );
@@ -47,10 +47,13 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 	};
 
 	useEffect( () => {
-		const formSubmitButton = document.getElementById( 'place_order' );
+		// const formSubmitButton = document.getElementById( 'place_order' );
+		const formSubmitButton = document.querySelector(
+			'form.woocommerce-checkout button[type="submit"]'
+		);
 
 		const updateFormSubmitButton = () => {
-			if ( isValid ) {
+			if ( isValid && formSubmitButton ) {
 				formSubmitButton.removeAttribute( 'disabled' );
 			} else {
 				formSubmitButton.setAttribute( 'disabled', 'disabled' );
@@ -61,7 +64,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 
 		return () => {
 			// Clean up
-			formSubmitButton.removeAttribute( 'disabled' );
+			formSubmitButton?.removeAttribute( 'disabled' );
 		};
 	}, [ isValid ] );
 
