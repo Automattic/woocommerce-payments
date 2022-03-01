@@ -44,6 +44,8 @@ jobs:
         exclude:
           - test_groups: 'blocks'
             test_branches: 'merchant'
+          - woocommerce: '4.8.0'
+            test_groups: 'blocks'
 
     name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
