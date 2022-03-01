@@ -9,9 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Logger;
-use WCPay\Exceptions\API_Exception;
 
 /**
  * Improve webhook reliability by fetching failed events from the server,
@@ -103,6 +103,11 @@ class WC_Payments_Webhook_Reliability_Service {
 		// Save the data, and schedule a job for each event.
 		$events = $payload['data'] ?? [];
 		foreach ( $events as $event ) {
+			if ( ! isset( $event['id'] ) ) {
+				Logger::error( 'Event ID does not exist. Event data: ' . var_export( $event, true ) ); // phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_var_export
+				break;
+			}
+
 			$this->set_event_data( $event );
 			$this->schedule_process_event( $event['id'] );
 		}
@@ -119,12 +124,13 @@ class WC_Payments_Webhook_Reliability_Service {
 		Logger::info( 'Start processing event: ' . $event_id );
 
 		$event_data = $this->get_event_data( $event_id );
+
+		$this->delete_event_data( $event_id );
+
 		if ( null === $event_data ) {
 			Logger::error( 'Stop processing as no data available for event: ' . $event_id );
 			return;
 		}
-
-		$this->delete_event_data( $event_id );
 
 		try {
 			$this->webhook_processing_service->process( $event_data );
@@ -175,7 +181,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 *
 	 * @return bool True if the value was set, false otherwise.
 	 */
-	private function set_event_data( array $event_data ) {
+	public function set_event_data( array $event_data ) {
 		if ( ! isset( $event_data['id'] ) ) {
 			return false;
 		}
@@ -190,7 +196,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 *
 	 * @return bool True if the event data is deleted, false otherwise.
 	 */
-	private function delete_event_data( string $event_id ): bool {
+	public function delete_event_data( string $event_id ): bool {
 		return delete_transient( $this->get_transient_name_for_event_id( $event_id ) );
 	}
 
@@ -201,7 +207,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 *
 	 * @return ?array
 	 */
-	private function get_event_data( string $event_id ) {
+	public function get_event_data( string $event_id ) {
 		$data = get_transient( $this->get_transient_name_for_event_id( $event_id ) );
 		return false === $data ? null : $data;
 	}
