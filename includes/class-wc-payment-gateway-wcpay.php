@@ -17,6 +17,7 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Tracker;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WC_Order;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -1856,6 +1857,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function add_order_actions( $actions ) {
 		global $theorder;
 
+		if ( ! is_object( $theorder ) ) {
+			$theorder = new WC_Order();
+		}
+
 		if ( $this->id !== $theorder->get_payment_method() ) {
 			return $actions;
 		}
@@ -1868,6 +1873,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'capture_charge'       => __( 'Capture charge', 'woocommerce-payments' ),
 			'cancel_authorization' => __( 'Cancel authorization', 'woocommerce-payments' ),
 		];
+
+		// Clear the dummy order.
+		$theorder = null;
 
 		return array_merge( $new_actions, $actions );
 	}
