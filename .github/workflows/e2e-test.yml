@@ -56,11 +56,18 @@ jobs:
       E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
-      # Set conditional ENV Variables
-      - name: Set conditional variables
-        if: ${{ matrix.woocommerce == '4.8.0' }}
+      # Conditionally skip workflow. Remove/update based on min supported WC version.
+      - name: Conditionally skip workflow
         run: |
-          echo "SKIP_WC_BLOCKS_TESTS=1" >> $GITHUB_ENV
+          if [[ $E2E_WC_VERSION == '4.8.0' ]]; then
+            echo "SKIP_WC_BLOCKS_TESTS=1" >> $GITHUB_ENV
+            if [[
+                $E2E_GROUP == 'wcpay' && $E2E_BRANCH == 'merchant' ||
+                $E2E_GROUP == 'blocks'
+            ]]; then
+                echo "SKIP_E2E_WORKFLOW=1" >> $GITHUB_ENV
+            fi
+          fi
 
       # Log workflow configuration
       - name: Workflow Configuration
