@@ -47,8 +47,8 @@ class WC_Payments_Webhook_Reliability_Service {
 	/**
 	 * WC_Payments_Webhook_Reliability_Service constructor.
 	 *
-	 * @param  WC_Payments_API_Client                 $payments_api_client WooCommerce Payments API client.
-	 * @param  WC_Payments_Action_Scheduler_Service   $action_scheduler_service Wrapper for ActionScheduler service.
+	 * @param WC_Payments_API_Client                 $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payments_Action_Scheduler_Service   $action_scheduler_service Wrapper for ActionScheduler service.
 	 * @param WC_Payments_Webhook_Processing_Service $webhook_processing_service WC_Payments_Webhook_Processing_Service instance.
 	 */
 	public function __construct(
@@ -61,7 +61,7 @@ class WC_Payments_Webhook_Reliability_Service {
 		$this->webhook_processing_service = $webhook_processing_service;
 
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_schedule_fetch_events' ] );
-		add_action( self::WEBHOOK_FETCH_EVENTS_ACTION, [ $this, 'fetch_events' ] );
+		add_action( self::WEBHOOK_FETCH_EVENTS_ACTION, [ $this, 'fetch_events_and_schedule_processing_jobs' ] );
 		add_action( self::WEBHOOK_PROCESS_EVENT_ACTION, [ $this, 'process_event' ] );
 	}
 
@@ -88,7 +88,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 *
 	 * @return void
 	 */
-	public function fetch_events() {
+	public function fetch_events_and_schedule_processing_jobs() {
 		try {
 			$payload = $this->payments_api_client->get_failed_webhook_events();
 		} catch ( API_Exception $e ) {

@@ -79,7 +79,15 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_filter( 'woocommerce_payments_account_refreshed', [ $this->webhook_reliability_service, 'maybe_schedule_fetch_events' ] ) );
-		$this->assertNotFalse( has_filter( WC_Payments_Webhook_Reliability_Service::WEBHOOK_FETCH_EVENTS_ACTION, [ $this->webhook_reliability_service, 'fetch_events' ] ) );
+		$this->assertNotFalse(
+			has_filter(
+				WC_Payments_Webhook_Reliability_Service::WEBHOOK_FETCH_EVENTS_ACTION,
+				[
+					$this->webhook_reliability_service,
+					'fetch_events_and_schedule_processing_jobs',
+				]
+			)
+		);
 		$this->assertNotFalse( has_filter( WC_Payments_Webhook_Reliability_Service::WEBHOOK_PROCESS_EVENT_ACTION, [ $this->webhook_reliability_service, 'process_event' ] ) );
 	}
 
@@ -98,7 +106,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 			->expects( $this->exactly( $will_schedule ? 1 : 0 ) )
 			->method( 'schedule_job' )
 			->with(
-				$this->isType( 'int' ),
+				$this->lessThanOrEqual( time() ),
 				WC_Payments_Webhook_Reliability_Service::WEBHOOK_FETCH_EVENTS_ACTION
 			);
 
@@ -133,7 +141,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 			->method( 'schedule_job' );
 
 		// Act.
-		$this->webhook_reliability_service->fetch_events();
+		$this->webhook_reliability_service->fetch_events_and_schedule_processing_jobs();
 	}
 
 	/**
@@ -155,11 +163,11 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 			->expects( $this->exactly( $will_schedule ? 1 : 0 ) )
 			->method( 'schedule_job' )
 			->with(
-				$this->isType( 'int' ),
+				$this->lessThanOrEqual( time() ),
 				WC_Payments_Webhook_Reliability_Service::WEBHOOK_FETCH_EVENTS_ACTION
 			);
 
-		$this->webhook_reliability_service->fetch_events();
+		$this->webhook_reliability_service->fetch_events_and_schedule_processing_jobs();
 	}
 
 	public function provider_fetch_events_schedule_next_fetch_events(): array {
@@ -173,7 +181,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Test each data is scheduled
 	 *
-	 * @param  array    $payload                        Payload from the API response.
+	 * @param  array    $payload                     Payload from the API response.
 	 * @param  string[] $expected_schedule_event_ids Event IDs will be scheduled.
 	 *
 	 * @dataProvider provider_fetch_events_save_data_and_schedule_jobs
@@ -208,7 +216,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 			);
 
 		// Act.
-		$this->webhook_reliability_service->fetch_events();
+		$this->webhook_reliability_service->fetch_events_and_schedule_processing_jobs();
 
 		// Assert save_event_data() is executed by checking the existence with get_event_data().
 		foreach ( $expected_schedule_event_ids as $event_id ) {
