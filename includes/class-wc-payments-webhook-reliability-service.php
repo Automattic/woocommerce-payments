@@ -105,7 +105,7 @@ class WC_Payments_Webhook_Reliability_Service {
 		foreach ( $events as $event ) {
 			if ( ! isset( $event['id'] ) ) {
 				Logger::error( 'Event ID does not exist. Event data: ' . var_export( $event, true ) ); // phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_var_export
-				break;
+				continue;
 			}
 
 			$this->set_event_data( $event );

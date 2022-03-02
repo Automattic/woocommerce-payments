@@ -108,7 +108,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 
 	public function provider_maybe_schedule_events(): array {
 		return [
-			'Account data has no thing'              => [ null, false ],
+			'Account data has nothing'               => [ null, false ],
 			'Account data is empty'                  => [ [], false ],
 			'Account data has schedule flag - false' => [
 				[ WC_Payments_Webhook_Reliability_Service::CONTINUOUS_FETCH_FLAG_ACCOUNT_DATA => false ],
@@ -231,7 +231,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 				2,
 			],
 			'Payload has two valid events and one event without ID' => [
-				[ 'data' => [ $event_1, $event_2, $event_without_id ] ],
+				[ 'data' => [ $event_without_id, $event_1, $event_2 ] ],
 				2,
 			],
 		];
