@@ -22,6 +22,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
+use WCPay\Platform_Checkout_Tracker;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -230,7 +231,11 @@ class WC_Payments {
 		// Load platform checkout save user section if feature is enabled.
 		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
 			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
+			// Load platform checkout tracking.
+			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
+
 			new Platform_Checkout_Save_User();
+			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
 		}
 
 		// Always load tracker to avoid class not found errors.
@@ -856,12 +861,13 @@ class WC_Payments {
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
-				'store_name'     => get_bloginfo( 'name' ),
-				'store_logo'     => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
-				'custom_message' => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
-				'blog_id'        => Jetpack_Options::get_option( 'id' ),
-				'blog_url'       => get_site_url(),
-				'account_id'     => $account_id,
+				'store_name'        => get_bloginfo( 'name' ),
+				'store_logo'        => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
+				'custom_message'    => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
+				'blog_id'           => Jetpack_Options::get_option( 'id' ),
+				'blog_url'          => get_site_url(),
+				'blog_checkout_url' => wc_get_checkout_url(),
+				'account_id'        => $account_id,
 			],
 		];
 		$args                   = [
