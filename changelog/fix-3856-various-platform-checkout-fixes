@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Updates to platform checkout functionality - currently behind feature flag.
+
+
