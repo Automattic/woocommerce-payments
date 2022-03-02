@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 3.7.0
+Stable tag: 3.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.8.0 - 2022-xx-xx =
+= 3.8.0 - 2022-03-02 =
 * Add - Add a preview of uploaded logo and icon on terminal card reader receipt settings page.
 * Add - Add endpoint to retrieve a file content via API.
 * Add - Add jetpack-sync package to support Woo Mobile.
