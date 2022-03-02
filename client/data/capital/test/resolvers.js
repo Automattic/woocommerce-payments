@@ -11,9 +11,11 @@ import { apiFetch, dispatch } from '@wordpress/data-controls';
 import {
 	updateActiveLoanSummary,
 	updateErrorForActiveLoanSummary,
+	updateLoans,
+	updateErrorForLoans,
 } from '../actions';
 
-import { getActiveLoanSummary } from '../resolvers';
+import { getActiveLoanSummary, getLoans } from '../resolvers';
 
 const summaryResponse = {
 	object: 'capital.financing_summary',
@@ -60,6 +62,44 @@ describe( 'getActiveLoanSummary resolver', () => {
 			);
 			expect( generator.next().value ).toEqual(
 				updateErrorForActiveLoanSummary( errorResponse )
+			);
+		} );
+	} );
+} );
+
+describe( 'getLoans resolver', () => {
+	let generator = null;
+
+	beforeEach( () => {
+		generator = getLoans();
+		expect( generator.next().value ).toEqual(
+			apiFetch( { path: '/wc/v3/payments/capital/loans' } )
+		);
+	} );
+
+	afterEach( () => {
+		expect( generator.next().done ).toStrictEqual( true );
+	} );
+
+	describe( 'on success', () => {
+		test( 'should update state with list of loans', () => {
+			expect( generator.next( summaryResponse ).value ).toEqual(
+				updateLoans( summaryResponse )
+			);
+		} );
+	} );
+
+	describe( 'on error', () => {
+		test( 'should update state with error on error', () => {
+			expect( generator.throw( errorResponse ).value ).toEqual(
+				dispatch(
+					'core/notices',
+					'createErrorNotice',
+					expect.any( String )
+				)
+			);
+			expect( generator.next().value ).toEqual(
+				updateErrorForLoans( errorResponse )
 			);
 		} );
 	} );
