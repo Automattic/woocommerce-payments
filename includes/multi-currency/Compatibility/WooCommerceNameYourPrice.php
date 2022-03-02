@@ -16,8 +16,7 @@ use WCPay\MultiCurrency\Utils;
  */
 class WooCommerceNameYourPrice extends BaseCompatibility {
 
-	const NYP_CURRENCY  = '_wcpay_multi_currency_nyp_currency';
-	const NYP_PROD_META = '_nyp';
+	const NYP_CURRENCY = '_wcpay_multi_currency_nyp_currency';
 
 	/**
 	 * Init the class.
@@ -133,7 +132,7 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 		}
 
 		// Check to see if the product is a NYP product.
-		if ( 'yes' === $product->get_meta( self::NYP_PROD_META ) ) {
+		if ( \WC_Name_Your_Price_Helpers::is_nyp( $product ) ) {
 			return false;
 		}
 
