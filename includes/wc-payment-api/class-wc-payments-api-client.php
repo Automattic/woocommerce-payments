@@ -54,6 +54,7 @@ class WC_Payments_API_Client {
 	const READERS_CHARGE_SUMMARY       = 'reader-charges/summary';
 	const TERMINAL_READERS_API         = 'terminal/readers';
 	const MINIMUM_RECURRING_AMOUNT_API = 'subscriptions/minimum_amount';
+	const CAPITAL_API                  = 'capital';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -605,14 +606,14 @@ class WC_Payments_API_Client {
 		$transactions = $this->request( $query, self::TRANSACTIONS_API, self::GET );
 
 		$charge_ids             = array_column( $transactions['data'], 'charge_id' );
-		$orders_with_charge_ids = $this->wcpay_db->orders_with_charge_id_from_charge_ids( $charge_ids );
+		$orders_with_charge_ids = count( $charge_ids ) ? $this->wcpay_db->orders_with_charge_id_from_charge_ids( $charge_ids ) : [];
 
 		// Add order information to each transaction available.
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
 		if ( isset( $transactions['data'] ) ) {
 			foreach ( $transactions['data'] as &$transaction ) {
 				foreach ( $orders_with_charge_ids as $order_with_charge_id ) {
-					if ( $order_with_charge_id['charge_id'] === $transaction['charge_id'] ) {
+					if ( $order_with_charge_id['charge_id'] === $transaction['charge_id'] && ! empty( $transaction['charge_id'] ) ) {
 						$transaction['order'] = $this->build_order_info( $order_with_charge_id['order'] );
 					}
 				}
@@ -627,19 +628,27 @@ class WC_Payments_API_Client {
 	/**
 	 * Initiates transactions export via API.
 	 *
-	 * @param array $filters The filters to be used in the query.
+	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $deposit_id The deposit to filter on.
 	 *
 	 * @return array Export summary
 	 *
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_transactions_export( $filters = [] ) {
+	public function get_transactions_export( $filters = [], $deposit_id = null ) {
 		// Map Order # terms to the actual charge id to be used in the server.
 		if ( ! empty( $filters['search'] ) ) {
 			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
 		}
 
-		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
+		$query = array_merge(
+			$filters,
+			[
+				'deposit_id' => $deposit_id,
+			]
+		);
+
+		return $this->request( $query, self::TRANSACTIONS_API . '/download', self::POST );
 	}
 
 	/**
@@ -821,18 +830,19 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Upload evidence and return file object.
+	 * Upload file and return file object.
 	 *
 	 * @param WP_REST_Request $request request object received.
 	 *
 	 * @return array file object.
 	 * @throws API_Exception - If request throws.
 	 */
-	public function upload_evidence( $request ) {
+	public function upload_file( $request ) {
 		$purpose     = $request->get_param( 'purpose' );
 		$file_params = $request->get_file_params();
 		$file_name   = $file_params['file']['name'];
 		$file_type   = $file_params['file']['type'];
+		$as_account  = (bool) $request->get_param( 'as_account' );
 
 		// Sometimes $file_params is empty array for large files (8+ MB).
 		$file_error = empty( $file_params ) || $file_params['file']['error'];
@@ -853,9 +863,10 @@ class WC_Payments_API_Client {
 			// phpcs:disable
 			'file'      => base64_encode( file_get_contents( $file_params['file']['tmp_name'] ) ),
 			// phpcs:enable
-			'file_name' => $file_name,
-			'file_type' => $file_type,
-			'purpose'   => $purpose,
+			'file_name'  => $file_name,
+			'file_type'  => $file_type,
+			'purpose'    => $purpose,
+			'as_account' => $as_account,
 		];
 
 		try {
@@ -867,6 +878,32 @@ class WC_Payments_API_Client {
 				$e->get_http_code()
 			);
 		}
+	}
+
+	/**
+	 * Retrieve a file content via API.
+	 *
+	 * @param string $file_id - API file id.
+	 * @param bool   $as_account - add the current account to header request.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function get_file_contents( string $file_id, bool $as_account = true ) : array {
+		return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id . '/contents', self::GET );
+	}
+
+	/**
+	 * Retrieve a file details via API.
+	 *
+	 * @param string $file_id - API file id.
+	 * @param bool   $as_account - add the current account to header request.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function get_file( string $file_id, bool $as_account = true ) : array {
+		return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id, self::GET );
 	}
 
 	/**
@@ -1983,5 +2020,27 @@ class WC_Payments_API_Client {
 			self::MINIMUM_RECURRING_AMOUNT_API . '/' . $currency,
 			self::GET
 		);
+	}
+
+	/**
+	 * Fetch the summary of the currently active Capital loan.
+	 *
+	 * @return array summary object.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_active_loan_summary() : array {
+		return $this->request( [], self::CAPITAL_API . '/active_loan_summary', self::GET );
+	}
+
+	/**
+	 * Fetch the past and present Capital loans.
+	 *
+	 * @return array List of capital loans.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_loans() : array {
+		return $this->request( [], self::CAPITAL_API . '/loans', self::GET );
 	}
 }

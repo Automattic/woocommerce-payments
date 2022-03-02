@@ -79,10 +79,14 @@ class WC_Payments_Subscription_Service {
 	 */
 	private $supports = [
 		'gateway_scheduled_payments',
-		'subscriptions',
-		'subscription_suspension',
-		'subscription_reactivation',
+		'multiple_subscriptions',
 		'subscription_cancellation',
+		'subscription_payment_method_change_admin',
+		'subscription_payment_method_change_customer',
+		'subscription_payment_method_change',
+		'subscription_reactivation',
+		'subscription_suspension',
+		'subscriptions',
 	];
 
 	/**

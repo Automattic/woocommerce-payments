@@ -16,6 +16,7 @@ import * as disputes from './disputes';
 import * as settings from './settings';
 import * as multiCurrency from './multi-currency';
 import * as readers from './card-readers';
+import * as capital from './capital';
 
 // Extracted into wrapper function to facilitate testing.
 export const initStore = () =>
@@ -29,6 +30,7 @@ export const initStore = () =>
 			settings: settings.reducer,
 			multiCurrency: multiCurrency.reducer,
 			readers: readers.reducer,
+			capital: capital.reducer,
 		} ),
 		actions: {
 			...deposits.actions,
@@ -39,6 +41,7 @@ export const initStore = () =>
 			...settings.actions,
 			...multiCurrency.actions,
 			...readers.actions,
+			...capital.actions,
 		},
 		controls,
 		selectors: {
@@ -50,6 +53,7 @@ export const initStore = () =>
 			...settings.selectors,
 			...multiCurrency.selectors,
 			...readers.selectors,
+			...capital.selectors,
 		},
 		resolvers: {
 			...deposits.resolvers,
@@ -60,5 +64,6 @@ export const initStore = () =>
 			...settings.resolvers,
 			...multiCurrency.resolvers,
 			...readers.resolvers,
+			...capital.resolvers,
 		},
 	} );
