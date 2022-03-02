@@ -131,7 +131,7 @@ const OverviewPage = () => {
 				/>
 			</ErrorBoundary>
 
-			{ wcpaySettings.accountStatus.hasActiveLoan && (
+			{ wcpaySettings.accountLoans.has_active_loan && (
 				<ErrorBoundary>
 					<ActiveLoanSummary />
 				</ErrorBoundary>
