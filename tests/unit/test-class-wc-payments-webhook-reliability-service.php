@@ -173,13 +173,13 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Test each data is scheduled
 	 *
-	 * @param  array   $payload       Payload from the API response.
-	 * @param  integer $expected_schedule_jobs Expected amount of scheduled jobs.
+	 * @param  array    $payload                        Payload from the API response.
+	 * @param  string[] $expected_schedule_event_ids Event IDs will be scheduled.
 	 *
 	 * @dataProvider provider_fetch_events_save_data_and_schedule_jobs
 	 * @return void
 	 */
-	public function test_fetch_events_save_data_and_schedule_process_jobs( $payload, $expected_schedule_jobs ) {
+	public function test_fetch_events_save_data_and_schedule_process_jobs( array $payload, array $expected_schedule_event_ids ) {
 		// Prepare.
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -187,16 +187,33 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 			->willReturn( $payload );
 
 		$this->mock_action_scheduler_service
-			->expects( $this->exactly( $expected_schedule_jobs ) )
+			->expects( $this->exactly( count( $expected_schedule_event_ids ) ) )
 			->method( 'schedule_job' )
-			->with(
-				$this->isType( 'int' ),
-				WC_Payments_Webhook_Reliability_Service::WEBHOOK_PROCESS_EVENT_ACTION,
-				$this->arrayHasKey( 'event_id' )
+			->withConsecutive(
+				...array_map(
+					function ( $event_id ) {
+						return [
+							$this->lessThanOrEqual( time() ),
+							WC_Payments_Webhook_Reliability_Service::WEBHOOK_PROCESS_EVENT_ACTION,
+							$this->callback(
+								function( $args ) use ( $event_id ) {
+									$this->assertSame( [ 'event_id' => $event_id ], $args );
+									return true;
+								}
+							),
+						];
+					},
+					$expected_schedule_event_ids
+				)
 			);
 
 		// Act.
 		$this->webhook_reliability_service->fetch_events();
+
+		// Assert save_event_data() is executed by checking the existence with get_event_data().
+		foreach ( $expected_schedule_event_ids as $event_id ) {
+			$this->assertNotNull( $this->webhook_reliability_service->get_event_data( $event_id ) );
+		}
 	}
 
 	public function provider_fetch_events_save_data_and_schedule_jobs(): array {
@@ -220,19 +237,19 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 		return [
 			'Payload has no data'          => [
 				[ 'no_data_property' => [] ],
-				0,
+				[],
 			],
 			'Payload has empty data'       => [
 				[ 'data' => [] ],
-				0,
+				[],
 			],
 			'Payload has two valid events' => [
 				[ 'data' => [ $event_1, $event_2 ] ],
-				2,
+				[ 'evt_111', 'evt_222' ],
 			],
 			'Payload has two valid events and one event without ID' => [
 				[ 'data' => [ $event_without_id, $event_1, $event_2 ] ],
-				2,
+				[ 'evt_111', 'evt_222' ],
 			],
 		];
 
