@@ -44,8 +44,6 @@ jobs:
         exclude:
           - test_groups: 'blocks'
             test_branches: 'merchant'
-          - woocommerce: '4.8.0'
-            test_groups: 'blocks'
 
     name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
@@ -155,11 +153,13 @@ jobs:
         run: npm run test:e2e
 
       # Archive screenshots if any
-      - name: Archive e2e test screenshots
+      - name: Archive e2e test screenshots & logs
         if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
             name: e2e-screenshots
-            path: tests/e2e/screenshots
+            path: |
+              tests/e2e/screenshots
+              tests/e2e/docker/wp-content/debug.log
             if-no-files-found: ignore
             retention-days: 5
