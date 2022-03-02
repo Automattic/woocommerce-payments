@@ -17,7 +17,6 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Tracker;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WC_Order;
 
 /**
  * Gateway class for WooCommerce Payments
