@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.8.1 - 2022-xx-xx =
+* Fix - Fix JavaScript error in blocks checkout and Customizer.
+
 = 3.8.0 - 2022-03-02 =
 * Add - Add a preview of uploaded logo and icon on terminal card reader receipt settings page.
 * Add - Add endpoint to retrieve a file content via API.
