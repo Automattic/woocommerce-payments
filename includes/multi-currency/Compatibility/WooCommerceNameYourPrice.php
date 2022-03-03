@@ -32,8 +32,8 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 			add_filter( 'wc_nyp_raw_suggested_price', [ $this, 'get_nyp_prices' ] );
 
 			// Maybe translate cart prices.
-			add_action( 'woocommerce_add_cart_item_data', [ $this, 'add_initial_currency' ], 10, 3 );
-			add_filter( 'woocommerce_get_cart_item_from_session', [ $this, 'convert_cart_currency' ], 10, 2 );
+			add_action( 'woocommerce_add_cart_item_data', [ $this, 'add_initial_currency' ], 20, 3 );
+			add_filter( 'woocommerce_get_cart_item_from_session', [ $this, 'convert_cart_currency' ], 20, 2 );
 			add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
 		}
 	}
@@ -99,6 +99,10 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 				// Convert entered price back to default currency.
 				$converted_price = ( (float) $cart_item['nyp_original'] ) / $nyp_currency->get_rate();
 
+				if ( ! $current_currency->get_is_default() ) {
+					$converted_price = $this->multi_currency->get_price( $converted_price, 'product' );
+				}
+
 				$cart_item['nyp'] = $converted_price;
 			}
 
@@ -138,5 +142,4 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 
 		return $return;
 	}
-
 }
