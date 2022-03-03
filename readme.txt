@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.8.2 - 2022-xx-xx =
+* Fix - Fix fatal error when a subscription renews automatically.
+
 = 3.8.1 - 2022-03-03 =
 * Fix - Fix JavaScript error in blocks checkout and Customizer.
 
