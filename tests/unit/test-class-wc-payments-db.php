@@ -19,8 +19,8 @@ class WC_Payments_DB_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->wcpay_db = new WC_Payments_DB();
 	}
