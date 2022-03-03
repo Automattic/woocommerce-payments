@@ -55,7 +55,7 @@ class WC_Payments_API_Client {
 	const TERMINAL_READERS_API         = 'terminal/readers';
 	const MINIMUM_RECURRING_AMOUNT_API = 'subscriptions/minimum_amount';
 	const CAPITAL_API                  = 'capital';
-	const WEBHOOK_FETCH_API            = 'webhook/failed_events'; // TODO subject to change - see server PR 1633.
+	const WEBHOOK_FETCH_API            = 'webhook/failed_events';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
