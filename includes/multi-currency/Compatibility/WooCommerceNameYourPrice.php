@@ -132,6 +132,11 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 			$return = false;
 		}
 
+		// Check to see if the product is a NYP product.
+		if ( \WC_Name_Your_Price_Helpers::is_nyp( $product ) ) {
+			return false;
+		}
+
 		return $return;
 	}
 
