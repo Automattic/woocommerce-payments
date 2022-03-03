@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="4.8.1@f73f2299dbc59a3e6c4d66cff4605176e728ee69">
+<files psalm-version="4.13.1@5cf660f63b548ccd4a56f62d916ee4d6028e01a3">
   <file src="includes/class-payment-information.php">
     <InvalidArgument occurrences="1">
       <code>wc_clean( $request[ $token_request_key ] )</code>
@@ -12,11 +12,6 @@
     <UndefinedMethod occurrences="1">
       <code>$intent</code>
     </UndefinedMethod>
-  </file>
-  <file src="includes/class-wc-payments-fraud-service.php">
-    <InvalidArgument occurrences="1">
-      <code>[ $this, 'get_session_id' ]</code>
-    </InvalidArgument>
   </file>
   <file src="includes/class-wc-payments-payment-request-button-handler.php">
     <UndefinedClass occurrences="3">
