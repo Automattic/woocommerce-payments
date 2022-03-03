@@ -1857,7 +1857,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		global $theorder;
 
 		if ( ! is_object( $theorder ) ) {
-			$theorder = new WC_Order();
+			return $actions;
 		}
 
 		if ( $this->id !== $theorder->get_payment_method() ) {
@@ -1872,9 +1872,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'capture_charge'       => __( 'Capture charge', 'woocommerce-payments' ),
 			'cancel_authorization' => __( 'Cancel authorization', 'woocommerce-payments' ),
 		];
-
-		// Clear the dummy order.
-		$theorder = null;
 
 		return array_merge( $new_actions, $actions );
 	}
