@@ -19,7 +19,7 @@ use WCPay\Logger;
  */
 class WC_Payments_Webhook_Reliability_Service {
 	const CONTINUOUS_FETCH_FLAG_EVENTS_LIST  = 'has_more';
-	const CONTINUOUS_FETCH_FLAG_ACCOUNT_DATA = 'has_more_failed_events'; // TODO - subject to change. See server PR 1633.
+	const CONTINUOUS_FETCH_FLAG_ACCOUNT_DATA = 'has_more_failed_events';
 	const WEBHOOK_FETCH_EVENTS_ACTION        = 'wcpay_webhook_fetch_events';
 	const WEBHOOK_PROCESS_EVENT_ACTION       = 'wcpay_webhook_process_event';
 
