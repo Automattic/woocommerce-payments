@@ -27,7 +27,7 @@ class Update_Service_Data_From_Server_Test extends WP_UnitTestCase {
 	 */
 	private $migration;
 
-	public function setUp() {
+	public function set_up() {
 		$this->account_mock = $this->getMockBuilder( \WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'get_cached_account_data', 'refresh_account_data' ] )->getMock();
 		$this->migration    = new Update_Service_Data_From_Server( $this->account_mock );
 	}

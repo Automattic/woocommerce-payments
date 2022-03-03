@@ -32,8 +32,8 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// Set the request as if the user was in the Payments onboarding page so the "wp_redirect(); exit();" code doesn't run.
 		$_GET = [
@@ -49,11 +49,11 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
 		delete_transient( WC_Payments_Account::ON_BOARDING_DISABLED_TRANSIENT );
 		unset( $_GET );
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	public function test_maybe_redirect_to_onboarding_stripe_disconnected_redirects() {
@@ -946,7 +946,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertContains( $formatted_advance_amount, $note->get_content() );
+		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
 	}
 
 	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data_with_different_currency() {
@@ -982,7 +982,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertContains( $formatted_advance_amount, $note->get_content() );
+		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
 	}
 
 	/**

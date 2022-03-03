@@ -48,8 +48,8 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
@@ -69,8 +69,8 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 		$this->initial_file_contents = file_get_contents( WCPAY_ABSPATH . '/' . $this->file_name ); // @codingStandardsIgnoreLine
 	}
 
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		$path     = untrailingslashit( ABSPATH );
 		$dir      = '.well-known';
@@ -107,7 +107,7 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 			[ $this->wc_apple_pay_registration, 'add_domain_association_rewrite_rule' ]
 		);
 
-		$this->assertInternalType( 'int', $add_rewrite_rules_callback_priority );
+		$this->assertIsInt( $add_rewrite_rules_callback_priority );
 		$this->assertLessThan(
 			10,
 			$add_rewrite_rules_callback_priority
@@ -120,6 +120,6 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 			[ $this->wc_apple_pay_registration, 'verify_domain_on_update' ]
 		);
 
-		$this->assertInternalType( 'int', $verify_callback_priority );
+		$this->assertIsInt( $verify_callback_priority );
 	}
 }
