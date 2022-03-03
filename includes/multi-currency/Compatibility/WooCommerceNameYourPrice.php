@@ -32,8 +32,8 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 			add_filter( 'wc_nyp_raw_suggested_price', [ $this, 'get_nyp_prices' ] );
 
 			// Maybe translate cart prices.
-			add_action( 'woocommerce_add_cart_item_data', [ $this, 'add_initial_currency' ], 10, 3 );
-			add_filter( 'woocommerce_get_cart_item_from_session', [ $this, 'convert_cart_currency' ], 10, 2 );
+			add_action( 'woocommerce_add_cart_item_data', [ $this, 'add_initial_currency' ], 20, 3 );
+			add_filter( 'woocommerce_get_cart_item_from_session', [ $this, 'convert_cart_currency' ], 20, 2 );
 			add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
 		}
 	}
