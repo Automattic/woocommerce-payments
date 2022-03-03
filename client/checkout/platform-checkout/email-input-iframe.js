@@ -9,6 +9,12 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
 	const waitTime = 500;
 	const platformCheckoutEmailInput = document.querySelector( field );
+
+	// If we can't find the input, return.
+	if ( ! platformCheckoutEmailInput ) {
+		return;
+	}
+
 	const spinner = document.createElement( 'div' );
 	const parentDiv = platformCheckoutEmailInput.parentNode;
 	spinner.classList.add( 'wc-block-components-spinner' );
@@ -222,13 +228,19 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	};
 
 	const validateEmail = ( value ) => {
-		const input = document.createElement( 'input' );
-		input.type = 'email';
-		input.required = true;
-		input.value = value;
-
-		return input.checkValidity() || false;
+		/* Borrowed from WooCommerce checkout.js with a slight tweak to add `{2,}` to the end and make the TLD at least 2 characters. */
+		/* eslint-disable */
+		const pattern = new RegExp(
+			/^([a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(\.[a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*|"((([ \t]*\r\n)?[ \t]+)?([\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))*(([ \t]*\r\n)?[ \t]+)?")@(([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.)+([a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[0-9a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]){2,}\.?$/i
+		);
+		/* eslint-enable */
+		return pattern.test( value );
 	};
+
+	// Check the initial value of the email input and trigger input validation.
+	if ( validateEmail( platformCheckoutEmailInput.value ) ) {
+		platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+	}
 
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
 		const email = e.currentTarget.value;
