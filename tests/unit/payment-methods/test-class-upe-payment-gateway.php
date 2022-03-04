@@ -141,8 +141,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// Arrange: Mock WC_Payments_API_Client so we can configure the
 		// return value of create_and_confirm_intention().
@@ -656,9 +656,9 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals( true, $result['payment_needed'] );
-		$this->assertRegExp( "/order_id=$order_id/", $result['redirect_url'] );
-		$this->assertRegExp( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
-		$this->assertRegExp( '/save_payment_method=no/', $result['redirect_url'] );
+		$this->assertMatchesRegularExpression( "/order_id=$order_id/", $result['redirect_url'] );
+		$this->assertMatchesRegularExpression( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
+		$this->assertMatchesRegularExpression( '/save_payment_method=no/', $result['redirect_url'] );
 	}
 
 	public function test_process_payment_passes_save_payment_method_to_store() {
@@ -712,9 +712,9 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		unset( $_POST['wc_payment_intent_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		$this->assertEquals( 'success', $result['result'] );
-		$this->assertRegExp( "/order_id=$order_id/", $result['redirect_url'] );
-		$this->assertRegExp( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
-		$this->assertRegExp( '/save_payment_method=yes/', $result['redirect_url'] );
+		$this->assertMatchesRegularExpression( "/order_id=$order_id/", $result['redirect_url'] );
+		$this->assertMatchesRegularExpression( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
+		$this->assertMatchesRegularExpression( '/save_payment_method=yes/', $result['redirect_url'] );
 	}
 
 	public function test_process_subscription_payment_passes_save_payment_method() {
@@ -768,9 +768,9 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals( true, $result['payment_needed'] );
-		$this->assertRegExp( "/order_id=$order_id/", $result['redirect_url'] );
-		$this->assertRegExp( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
-		$this->assertRegExp( '/save_payment_method=yes/', $result['redirect_url'] );
+		$this->assertMatchesRegularExpression( "/order_id=$order_id/", $result['redirect_url'] );
+		$this->assertMatchesRegularExpression( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
+		$this->assertMatchesRegularExpression( '/save_payment_method=yes/', $result['redirect_url'] );
 	}
 
 	public function test_process_payment_returns_correct_redirect_when_using_saved_payment() {
@@ -785,7 +785,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'manage_customer_details_for_order' );
 		$this->assertEquals( 'success', $result['result'] );
-		$this->assertRegExp( '/key=mock_order_key/', $result['redirect'] );
+		$this->assertMatchesRegularExpression( '/key=mock_order_key/', $result['redirect'] );
 	}
 
 	public function test_process_payment_returns_correct_redirect_when_using_payment_request() {
@@ -800,7 +800,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'manage_customer_details_for_order' );
 		$this->assertEquals( 'success', $result['result'] );
-		$this->assertRegExp( '/key=mock_order_key/', $result['redirect'] );
+		$this->assertMatchesRegularExpression( '/key=mock_order_key/', $result['redirect'] );
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -862,7 +862,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			]
 		)[0];
 
-		$this->assertContains( 'authorized', $note->content );
+		$this->assertStringContainsString( 'authorized', $note->content );
 		$this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
 		$this->assertEquals( $charge_id, $result_order->get_meta( '_charge_id', true ) );
 		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
@@ -1068,7 +1068,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			]
 		)[0];
 
-		$this->assertContains( 'authorized', $note->content );
+		$this->assertStringContainsString( 'authorized', $note->content );
 		$this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
 		$this->assertEquals( $charge_id, $result_order->get_meta( '_charge_id', true ) );
 		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
