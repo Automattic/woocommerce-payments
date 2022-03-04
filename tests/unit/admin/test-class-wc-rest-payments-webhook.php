@@ -33,8 +33,8 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// There are checks for is_admin() along with tests for test requests, this allows them to pass.
 		set_current_screen( 'admin' );
@@ -71,9 +71,9 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		set_current_screen( 'front' );
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	public function test_handle_webhook_returns_success_message() {

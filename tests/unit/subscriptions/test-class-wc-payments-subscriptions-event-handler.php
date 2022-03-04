@@ -50,8 +50,8 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup.
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_invoice_service      = $this->createMock( WC_Payments_Invoice_Service::class );
 		$this->mock_subscription_service = $this->createMock( WC_Payments_Subscription_Service::class );
