@@ -22,34 +22,4 @@ class Note_Multi_Currency_Available_Test extends WP_UnitTestCase {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 		}
 	}
-
-	public function test_get_note_without_connected_account() {
-		$account_mock = $this->createMock( WC_Payments_Account::class );
-		$account_mock->method( 'is_stripe_connected' )->willReturn( false );
-		NoteMultiCurrencyAvailable::set_account( $account_mock );
-
-		$note = NoteMultiCurrencyAvailable::get_note();
-
-		$this->assertNull( $note );
-	}
-
-	public function test_get_note_with_connected_account() {
-		$account_mock = $this->createMock( WC_Payments_Account::class );
-		$account_mock->method( 'is_stripe_connected' )->willReturn( true );
-		NoteMultiCurrencyAvailable::set_account( $account_mock );
-
-		$note = NoteMultiCurrencyAvailable::get_note();
-
-		$this->assertSame( 'Sell worldwide in multiple currencies', $note->get_title() );
-		$this->assertSame( 'Boost your international sales by allowing your customers to shop and pay in their local currency.', $note->get_content() );
-		$this->assertSame( 'info', $note->get_type() );
-		$this->assertSame( 'wc-payments-notes-multi-currency-available', $note->get_name() );
-		$this->assertSame( 'woocommerce-payments', $note->get_source() );
-
-		list( $actions ) = $note->get_actions();
-		$this->assertSame( 'wc-payments-notes-multi-currency-available', $actions->name );
-		$this->assertSame( 'Set up now', $actions->label );
-		$this->assertStringStartsWith( 'admin.php?page=wc-admin&path=/payments/multi-currency-setup', $actions->query );
-		$this->assertSame( true, $actions->primary );
-	}
 }

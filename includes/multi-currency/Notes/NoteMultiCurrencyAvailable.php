@@ -40,11 +40,6 @@ class NoteMultiCurrencyAvailable {
 	 * Get the note.
 	 */
 	public static function get_note() {
-		// Don't show the note if the merchant didn't create a WCPay account yet.
-		if ( ! self::$account->is_stripe_connected() ) {
-			return;
-		}
-
 		$note_class = \WC_Payment_Woo_Compat_Utils::get_note_class();
 		$note       = new $note_class();
 
@@ -63,6 +58,23 @@ class NoteMultiCurrencyAvailable {
 		);
 
 		return $note;
+	}
+
+	/**
+	 * Add the note if it passes predefined conditions.
+	 */
+	public static function possibly_add_note() {
+		// Don't add the note if the merchant didn't create a WCPay account yet.
+		if ( is_null( self::$account ) || ! self::$account->is_stripe_connected() ) {
+			return;
+		}
+
+		if ( ! self::can_be_added() ) {
+			return;
+		}
+
+		$note = self::get_note();
+		$note->save();
 	}
 
 	/**
