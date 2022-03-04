@@ -90,10 +90,6 @@ class Platform_Checkout_Tracker extends Tracking {
 	 */
 	public function maybe_record_event( $event, $data = [] ) {
 
-		if ( ! $this->should_track() ) {
-			return;
-		}
-
 		$user     = wp_get_current_user();
 		$site_url = get_option( 'siteurl' );
 
@@ -111,11 +107,14 @@ class Platform_Checkout_Tracker extends Tracking {
 	}
 
 	/**
-	 * Check whether tracking should be enabled.
+	 * Override parent method to omit the jetpack TOS check.
 	 *
-	 * @return bool
+	 * @param Automattic\Jetpack\Terms_Of_Service $terms_of_service A Terms_Of_Service object.
+	 * @param Automattic\Jetpack\Status           $status A Status object.
+	 *
+	 * @return boolean True if tracking should be enabled, else false.
 	 */
-	public function should_track() {
+	public function should_enable_tracking( $terms_of_service, $status ) {
 		// Track only site pages.
 		if ( is_admin() && ! wp_doing_ajax() ) {
 			return false;
@@ -133,8 +132,6 @@ class Platform_Checkout_Tracker extends Tracking {
 		if ( ! ( $is_platform_checkout_feature_enabled && $is_platform_checkout_enabled ) ) {
 			return false;
 		}
-
-		// TODO: Don't track if jetpack_tos_agreed flag is not present.
 
 		return true;
 	}
