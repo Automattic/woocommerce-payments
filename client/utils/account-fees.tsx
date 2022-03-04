@@ -222,17 +222,17 @@ export const formatAccountFeesDescription = (
 		...customFormats,
 	};
 
+	let displayFeePercentageRate = baseFee.percentage_rate;
+	if ( displayFeePercentageRate <= 0 ) {
+		displayFeePercentageRate =
+			additionalFee.percentage_rate < fxFee.percentage_rate
+				? additionalFee.percentage_rate
+				: fxFee.percentage_rate;
+	}
 	const feeDescription = sprintf(
 		formats.fee,
-		formatFee(
-			baseFee.percentage_rate +
-				additionalFee.percentage_rate +
-				fxFee.percentage_rate
-		),
-		formatCurrency(
-			baseFee.fixed_rate + additionalFee.fixed_rate + fxFee.fixed_rate,
-			baseFee.currency
-		)
+		formatFee( displayFeePercentageRate ),
+		formatCurrency( baseFee.fixed_rate )
 	);
 
 	const isFormattingWithDiscount =
@@ -281,7 +281,7 @@ export const formatAccountFeesDescription = (
 		} );
 	}
 
-	return feeDescription;
+	return sprintf( __( 'From %s', 'woocommerce-payments' ), feeDescription );
 };
 
 export const formatMethodFeesDescription = (

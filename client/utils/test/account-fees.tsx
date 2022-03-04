@@ -93,7 +93,7 @@ describe( 'Account fees utility functions', () => {
 				currency: 'USD',
 			} );
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
-				'12.3% + $4.57 per transaction'
+				'From 12.3% + $4.57 per transaction'
 			);
 		} );
 
@@ -182,7 +182,7 @@ describe( 'Account fees utility functions', () => {
 			);
 
 			expect( formatAccountFeesDescription( accountFees ) ).toEqual(
-				'12.3% + $4.57 per transaction'
+				'From 12.3% + $4.57 per transaction'
 			);
 		} );
 
@@ -221,12 +221,6 @@ describe( 'Account fees utility functions', () => {
 
 			formatAccountFeesDescription( accountFees );
 
-			// Base fee description
-			expect( formatCurrency ).toHaveBeenCalledWith(
-				accountFees.base.fixed_rate,
-				accountFees.base.currency
-			);
-
 			// Current fee description
 			expect( formatCurrency ).toHaveBeenCalledWith(
 				accountFees.base.fixed_rate * 0.9,
@@ -244,7 +238,7 @@ describe( 'Account fees utility functions', () => {
 			} );
 
 			expect( formatMethodFeesDescription( methodFees ) ).toEqual(
-				'12.3% + $4.57'
+				'From 12.3% + $4.57'
 			);
 		} );
 
