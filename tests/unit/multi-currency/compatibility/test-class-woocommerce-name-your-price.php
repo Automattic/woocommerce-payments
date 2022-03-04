@@ -41,18 +41,16 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WP_UnitTestCas
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
+		// Create the class instances needed for testing.
 		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
 		$this->mock_utils          = $this->createMock( Utils::class );
 		$this->woocommerce_nyp     = new WooCommerceNameYourPrice( $this->mock_multi_currency, $this->mock_utils );
-	}
 
-	public function tearDown() {
+		// Set is_nyp to return false by default.
 		$this->set_is_nyp( false );
-
-		parent::tearDown();
 	}
 
 	// Tests the return values for get_nyp_prices.
