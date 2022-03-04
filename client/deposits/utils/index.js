@@ -4,7 +4,7 @@
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { createInterpolateElement } from '@wordpress/element';
 
 const formatDate = ( format, date ) =>
 	dateI18n(
