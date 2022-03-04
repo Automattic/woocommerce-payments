@@ -16,7 +16,7 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
 	];
 
-	public function tearDown() {
+	public function tear_down() {
 		// Remove pre_option filters.
 		foreach ( array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) as $flag ) {
 			remove_all_filters( 'pre_option_' . $flag );

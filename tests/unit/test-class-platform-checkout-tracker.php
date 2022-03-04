@@ -27,8 +27,8 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->http_client_stub = $this->getMockBuilder( WC_Payments_Http::class )->disableOriginalConstructor()->setMethods( [ 'wpcom_json_api_request_as_user' ] )->getMock();
 		$this->tracker          = new WCPay\Platform_Checkout_Tracker( $this->http_client_stub );

@@ -76,8 +76,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 	/**
 	 * Sets up things all tests need.
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 									->disableOriginalConstructor()
@@ -124,8 +124,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 		WC()->cart->calculate_totals();
 	}
 
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
 		$this->zone->delete();

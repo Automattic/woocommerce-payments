@@ -1856,6 +1856,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function add_order_actions( $actions ) {
 		global $theorder;
 
+		if ( ! is_object( $theorder ) ) {
+			return $actions;
+		}
+
 		if ( $this->id !== $theorder->get_payment_method() ) {
 			return $actions;
 		}
