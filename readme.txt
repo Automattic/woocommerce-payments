@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 3.8.1
+Stable tag: 3.8.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,9 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 3.8.2 - 2022-03-03 =
+* Fix - Fix fatal error when a subscription renews automatically.
 
 = 3.8.1 - 2022-03-03 =
 * Fix - Fix JavaScript error in blocks checkout and Customizer.
