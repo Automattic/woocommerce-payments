@@ -7,9 +7,7 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
-use WC_Product;
 use WCPay\MultiCurrency\MultiCurrency;
-use WCPay\MultiCurrency\Utils;
 
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Name Your Price Plugin.
@@ -44,8 +42,8 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 	 * @param mixed $price   The price to be filtered.
 	 * @return mixed         The price as a string or float.
 	 */
-	public function get_nyp_prices( $price ): float {
-		return '' !== $price ? $this->multi_currency->get_price( $price, 'product' ) : $price;
+	public function get_nyp_prices( $price ) {
+		return ! $price ? $price : $this->multi_currency->get_price( $price, 'product' );
 	}
 
 	/**
@@ -87,10 +85,10 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 			// Store the original currency in $product meta.
 			$cart_item['data']->update_meta_data( self::NYP_CURRENCY, $cart_item['nyp_currency'] );
 
-			$current_currency = $this->multi_currency->get_selected_currency();
+			$selected_currency = $this->multi_currency->get_selected_currency();
 
 			// If the currency is currently the same as at time price entered, restore NYP to original value.
-			if ( $cart_item['nyp_currency'] === $current_currency->get_code() ) {
+			if ( $cart_item['nyp_currency'] === $selected_currency->get_code() ) {
 				$cart_item['nyp'] = $cart_item['nyp_original'];
 			} else {
 
@@ -99,7 +97,7 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 				// Convert entered price back to default currency.
 				$converted_price = ( (float) $cart_item['nyp_original'] ) / $nyp_currency->get_rate();
 
-				if ( ! $current_currency->get_is_default() ) {
+				if ( ! $selected_currency->get_is_default() ) {
 					$converted_price = $this->multi_currency->get_price( $converted_price, 'product' );
 				}
 
