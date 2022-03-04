@@ -109,8 +109,8 @@ class Platform_Checkout_Tracker extends Tracking {
 	/**
 	 * Override parent method to omit the jetpack TOS check.
 	 *
-	 * @param Automattic\Jetpack\Terms_Of_Service $terms_of_service A Terms_Of_Service object.
-	 * @param Automattic\Jetpack\Status           $status A Status object.
+	 * @param \Automattic\Jetpack\Terms_Of_Service $terms_of_service A Terms_Of_Service object.
+	 * @param \Automattic\Jetpack\Status           $status A Status object.
 	 *
 	 * @return boolean True if tracking should be enabled, else false.
 	 */
