@@ -121,13 +121,6 @@ class WC_Payments {
 	private static $order_service;
 
 	/**
-	 * Instance of WC_Payments_Webhook_Reliability_Service, created in init function
-	 *
-	 * @var WC_Payments_Webhook_Reliability_Service
-	 */
-	private static $webhook_reliability_service;
-
-	/**
 	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
 	 *
 	 * @var WC_Payments_Payment_Request_Button_Handler
@@ -161,6 +154,13 @@ class WC_Payments {
 	 * @var WC_Payments_Webhook_Processing_Service
 	 */
 	private static $webhook_processing_service;
+
+	/**
+	 * Instance of WC_Payments_Webhook_Reliability_Service, created in init function
+	 *
+	 * @var WC_Payments_Webhook_Reliability_Service
+	 */
+	private static $webhook_reliability_service;
 
 	/**
 	 * Entry point to the initialization logic.
