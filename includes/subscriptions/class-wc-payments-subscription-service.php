@@ -734,12 +734,20 @@ class WC_Payments_Subscription_Service {
 		$data = [];
 
 		foreach ( $subscription->get_items() as $item ) {
+			$product = $item->get_product();
+
+			// We always need a WCPay product ID for all subscription line items.
+			// If the product isn't a subscription product, calling $product_service->get_wcpay_product_id() won't create one on the fly so we need to create one manually.
+			if ( ! WC_Subscriptions_Product::is_subscription( $product ) && ! $this->product_service::has_wcpay_product_id( $product ) ) {
+				$this->product_service->create_product( $product );
+			}
+
 			$data[] = [
 				'metadata'   => $this->get_item_metadata( $item ),
 				'quantity'   => $item->get_quantity(),
 				'price_data' => $this->format_item_price_data(
 					$subscription->get_currency(),
-					$this->product_service->get_wcpay_product_id( $item->get_product() ),
+					$this->product_service->get_wcpay_product_id( $product ),
 					$item->get_subtotal() / $item->get_quantity(),
 					$subscription->get_billing_period(),
 					$subscription->get_billing_interval()
