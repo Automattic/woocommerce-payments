@@ -944,11 +944,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_country' )
-			->willReturn( 'US' );
-
 		$result = $this->wcpay_gateway->capture_charge( $order );
 
 		$notes             = wc_get_order_notes(
@@ -1019,11 +1014,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				)
 			)
 		);
-
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_country' )
-			->willReturn( 'US' );
 
 		$result = $this->wcpay_gateway->capture_charge( $order );
 
@@ -1097,11 +1087,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_country' )
-			->willReturn( 'US' );
-
 		$result = $this->wcpay_gateway->capture_charge( $order );
 
 		$note = wc_get_order_notes(
@@ -1172,11 +1157,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_country' )
-			->willReturn( 'US' );
-
 		$result = $this->wcpay_gateway->capture_charge( $order );
 
 		$note = wc_get_order_notes(
@@ -1236,11 +1216,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
 			$this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) )
 		);
-
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_country' )
-			->willReturn( 'US' );
 
 		$result = $this->wcpay_gateway->capture_charge( $order );
 
@@ -1302,11 +1277,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			$this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) )
 		);
 
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_country' )
-			->willReturn( 'US' );
-
 		$result = $this->wcpay_gateway->capture_charge( $order );
 
 		$note = wc_get_order_notes(
@@ -1367,11 +1337,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
 			$this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) )
 		);
-
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_country' )
-			->willReturn( 'US' );
 
 		$result = $this->wcpay_gateway->capture_charge( $order );
 
@@ -1455,11 +1420,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				)
 			)
 		);
-
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_country' )
-			->willReturn( 'US' );
 
 		$result = $this->wcpay_gateway->capture_charge( $order );
 

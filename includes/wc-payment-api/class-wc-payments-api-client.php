@@ -358,17 +358,15 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $intention_id - The ID of the intention to capture.
 	 * @param int    $amount       - Amount to capture.
-	 * @param array  $level3       - Level 3 data.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention capture failure.
 	 */
-	public function capture_intention( $intention_id, $amount, $level3 = [] ) {
+	public function capture_intention( $intention_id, $amount ) {
 		$request                      = [];
 		$request['amount_to_capture'] = $amount;
-		$request['level3']            = $level3;
 
-		$response_array = $this->request_with_level3_data(
+		$response_array = $this->request(
 			$request,
 			self::INTENTIONS_API . '/' . $intention_id . '/capture',
 			self::POST
