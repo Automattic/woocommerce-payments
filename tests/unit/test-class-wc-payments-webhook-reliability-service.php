@@ -50,8 +50,8 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 								->disableOriginalConstructor()
