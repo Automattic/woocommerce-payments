@@ -480,10 +480,12 @@ class WC_Payments_Account {
 	 * directly to the wcpay-connect URL because it's nonced, and the
 	 * nonce will likely be expired by the time the user follows the link.
 	 * That's why we need this middleman instead.
+	 *
+	 * @return bool True if the redirection happened, false otherwise.
 	 */
 	public function maybe_redirect_to_wcpay_connect() {
 		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
-			return;
+			return false;
 		}
 
 		$params = [
@@ -493,25 +495,26 @@ class WC_Payments_Account {
 
 		// We're not in the onboarding page, don't redirect.
 		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
-			return;
+			return false;
 		}
 
 		// We could use a value for this parameter for tracking the email that brought the user here.
-		if ( isset( $_GET['wcpay-connect-redirect'] ) ) {
-
-			// Take the user to the 'wcpay-connect' URL.
-			// We handle creating and redirecting to the account link there.
-			$connect_url = add_query_arg(
-				[
-					'wcpay-connect' => '1',
-					'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
-				],
-				admin_url( 'admin.php' )
-			);
-
-			wp_safe_redirect( $connect_url );
-			exit;
+		if ( ! isset( $_GET['wcpay-connect-redirect'] ) ) {
+			return false;
 		}
+
+		// Take the user to the 'wcpay-connect' URL.
+		// We handle creating and redirecting to the account link there.
+		$connect_url = add_query_arg(
+			[
+				'wcpay-connect' => '1',
+				'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
+			],
+			admin_url( 'admin.php' )
+		);
+
+		$this->redirect_to( $connect_url );
+		return true;
 	}
 
 	/**
