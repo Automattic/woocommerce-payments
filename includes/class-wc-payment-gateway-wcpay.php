@@ -1266,6 +1266,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
+		// If we should be creating a platform checkout customer, add the necessary customer data to the metadata.
+		$should_create_platform_customer = isset( $_POST['save_user_in_platform_checkout'] ) && '1' === $_POST['save_user_in_platform_checkout']; // phpcs:ignore WordPress.Security.NonceVerification
+		if ( $should_create_platform_customer && ! empty( $_POST['platform_checkout_user_phone_field']['full'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+				$platform_checkout_phone = sanitize_text_field( wp_unslash( $_POST['platform_checkout_user_phone_field']['full'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+				// Add the metadata.
+				$metadata['platform_checkout_first_name'] = $order->get_billing_first_name();
+				$metadata['platform_checkout_last_name']  = $order->get_billing_last_name();
+				$metadata['platform_checkout_phone']      = $platform_checkout_phone;
+				$metadata['platform_checkout_company']    = $order->get_billing_company();
+		}
+
 		return $metadata;
 	}
 
