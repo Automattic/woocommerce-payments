@@ -122,6 +122,18 @@ const ActiveLoanSummaryLoading = (): JSX.Element => {
 	);
 };
 
+const getActiveLoanId = () => {
+	for ( const i in wcpaySettings.accountLoans.loans ) {
+		const [ loanId, status ] = wcpaySettings.accountLoans.loans[ i ].split(
+			'|'
+		);
+		if ( 'active' === status ) {
+			return loanId;
+		}
+	}
+	return null;
+};
+
 const ActiveLoanSummary = (): JSX.Element => {
 	const { summary, isLoading } = useActiveLoanSummary();
 
@@ -138,12 +150,21 @@ const ActiveLoanSummary = (): JSX.Element => {
 					{ __( 'Active loan overview', 'woocommerce-payments' ) }
 				</FlexItem>
 				<FlexItem>
-					<Button
-						isLink
-						href="javascript:alert('Not implemented yet')"
-					>
-						{ __( 'View transactions', 'woocommerce-payments' ) }
-					</Button>
+					{ getActiveLoanId() && (
+						<Button
+							isLink
+							href={
+								'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions' +
+								'&type=charge&filter=advanced&loan_id_is=' +
+								getActiveLoanId()
+							}
+						>
+							{ __(
+								'View transactions',
+								'woocommerce-payments'
+							) }
+						</Button>
+					) }
 				</FlexItem>
 			</CardHeader>
 			<CardBody className="wcpay-loan-summary-body">
