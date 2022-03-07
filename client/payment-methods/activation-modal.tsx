@@ -16,15 +16,24 @@ import PaymentMethodsMap from '../payment-methods-map';
 import RequirementsMap from '../requirements-map';
 import './activation-modal.scss';
 
+interface ConfirmaPaymentMethodActivationType {
+	paymentMethod: string;
+	requirements: string[];
+	onClose: () => void;
+	onConfirmClose: () => void;
+}
+
 const ConfirmPaymentMethodActivationModal = ( {
 	paymentMethod,
 	requirements,
 	onClose,
 	onConfirmClose,
-} ) => {
+}: ConfirmaPaymentMethodActivationType ) => {
 	const requirementsToDisplay = requirements.filter( ( requirement ) => {
 		return RequirementsMap.hasOwnProperty( requirement );
 	} );
+
+	const paymentMethodInformation = PaymentMethodsMap[ paymentMethod ];
 
 	const handleConfirmationClick = () => {
 		onConfirmClose();
@@ -33,7 +42,7 @@ const ConfirmPaymentMethodActivationModal = ( {
 		<ConfirmationModal
 			title={ sprintf(
 				__( 'One more step to enable %s', 'woocommerce_payments' ),
-				PaymentMethodsMap[ paymentMethod ].label
+				paymentMethodInformation.label
 			) }
 			shouldCloseOnClickOutside={ false }
 			onRequestClose={ onClose }
@@ -50,8 +59,8 @@ const ConfirmPaymentMethodActivationModal = ( {
 			}
 		>
 			<PaymentConfirmIllustration
-				Icon={ PaymentMethodsMap[ paymentMethod ].Icon }
-				hasBorder={ 'card' !== PaymentMethodsMap[ paymentMethod ].id }
+				Icon={ paymentMethodInformation.Icon }
+				hasBorder={ 'card' !== paymentMethodInformation.id }
 			/>
 			{ 0 < requirementsToDisplay.length ? (
 				<>
@@ -61,7 +70,7 @@ const ConfirmPaymentMethodActivationModal = ( {
 								'You need to provide more information to enable %s on your checkout:',
 								'woocommerce-payments'
 							),
-							PaymentMethodsMap[ paymentMethod ].label
+							paymentMethodInformation.label
 						) }
 					</p>
 					<ul className={ 'payment-method-requirements-list' }>
@@ -80,7 +89,7 @@ const ConfirmPaymentMethodActivationModal = ( {
 							'You need to provide more information to enable %s on your checkout.',
 							'woocommerce-payments'
 						),
-						PaymentMethodsMap[ paymentMethod ].label
+						paymentMethodInformation.label
 					) }
 				</p>
 			) }
