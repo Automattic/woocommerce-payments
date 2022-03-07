@@ -9,8 +9,12 @@ import classNames from 'classnames';
  * Internal dependencies
  */
 import './styles.scss';
+import React from 'react';
 
-const PaymentConfirmIllustration = ( { hasBorder, Icon = () => null } ) => {
+const PaymentConfirmIllustration = ( {
+	hasBorder,
+	Icon = () => React.ReactNode,
+} ) => {
 	return (
 		<div className="payment-confirm-illustration__wrapper">
 			<div className="payment-confirm-illustration__illustrations">

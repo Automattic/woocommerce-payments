@@ -16,7 +16,21 @@ import P24Icon from './gateway-icons/p24';
 import IdealIcon from './gateway-icons/ideal';
 import BankDebitIcon from './gateway-icons/bank-debit';
 
-export default {
+export interface PaymentMethodInformationType {
+	id: string;
+	label: string;
+	description: string;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	Icon: () => React.ReactNode;
+	currencies: string[];
+	stripe_key: string;
+}
+
+interface PaymentMethodInformationObjectType {
+	[ key: string ]: PaymentMethodInformationType;
+}
+
+const PaymentMethodInformationObject: PaymentMethodInformationObjectType = {
 	card: {
 		id: 'card',
 		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
@@ -117,3 +131,5 @@ export default {
 		stripe_key: 'sofort_payments',
 	},
 };
+
+export default PaymentMethodInformationObject;
