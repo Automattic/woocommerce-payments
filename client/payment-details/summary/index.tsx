@@ -54,12 +54,14 @@ const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
 		wcpaySettings.isSubscriptionsActive && {
 			title: __( 'Subscription', 'woocommerce-payments' ),
 			content: charge.order?.subscriptions?.length ? (
-				charge.order.subscriptions.map( ( subscription, i, all ) => [
-					<OrderLink key={ i } order={ subscription } />,
-					i !== all.length - 1 && ', ',
-				] )
+				charge.order.subscriptions.map(
+					( subscription, i: number, all ) => [
+						<OrderLink key={ i } order={ subscription } />,
+						i !== all.length - 1 && ', ',
+					]
+				)
 			) : (
-				<OrderLink />
+				<OrderLink order={ null } />
 			),
 		},
 		{

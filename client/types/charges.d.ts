@@ -4,6 +4,20 @@
 import { BalanceTransaction } from './balance-transactions';
 import { Dispute } from './disputes';
 
+interface ChargeBillingDetails {
+	email: null | string;
+	name: null | string;
+	phone: null | string;
+	address: {
+		city: null | string;
+		country: null | string;
+		line1: null | string;
+		line2: null | string;
+		postal_code: null | string;
+		state: null | string;
+	};
+}
+
 interface ChargeRefund {
 	balance_transaction: BalanceTransaction;
 }
@@ -19,24 +33,13 @@ export interface Charge {
 	amount_refunded: number;
 	application_fee_amount: number;
 	balance_transaction: BalanceTransaction;
-	billing_details: {
-		name: string;
-		email: string;
-		address: {
-			country: string;
-		};
-	};
+	billing_details: ChargeBillingDetails;
 	captured: boolean;
 	created: number;
 	currency: string;
 	dispute?: Dispute;
 	disputed: boolean;
-	order: null | {
-		number: number;
-		url: string;
-		customer_url: string;
-		subscriptions?: Array< { number: number; url: string } >;
-	};
+	order: null | OrderDetails;
 	outcome: null | {
 		network_status: string;
 		reason: string;
