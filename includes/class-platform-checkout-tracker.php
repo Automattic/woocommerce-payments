@@ -27,11 +27,11 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 	private static $prefix = 'woocommerceanalytics';
 
 	/**
-	 * Connection manager object.
+	 * WCPay http interface.
 	 *
 	 * @var Object
 	 */
-	private $connection;
+	private $http;
 
 
 	/**
@@ -40,13 +40,8 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 	 * @param \WC_Payments_Http_Interface $http    A class implementing WC_Payments_Http_Interface.
 	 */
 	public function __construct( $http ) {
-		/**
-		 * Tracking class expects a Jetpack\Connection\Manager instance.
-		 * We pass in WC_Payments_Http_Interface which is a wrapper around the Connection Manager.
-		 *
-		 * @psalm-suppress InvalidArgument
-		 */
-		$this->connection = $http;
+
+		$this->http = $http;
 
 		add_action( 'wp_ajax_platform_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_ajax_nopriv_platform_tracks', [ $this, 'ajax_tracks' ] );
@@ -234,7 +229,7 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 
 		// Meta is set, and user is still connected.  Use WPCOM ID.
 		$wpcom_id = get_user_meta( $user_id, 'jetpack_tracks_wpcom_id', true );
-		if ( $wpcom_id && $this->connection->is_user_connected( $user_id ) ) {
+		if ( $wpcom_id && $this->http->is_user_connected( $user_id ) ) {
 			return [
 				'_ut' => 'wpcom:user_id',
 				'_ui' => $wpcom_id,
@@ -242,8 +237,8 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 		}
 
 		// User is connected, but no meta is set yet.  Use WPCOM ID and set meta.
-		if ( $this->connection->is_user_connected( $user_id ) ) {
-			$wpcom_user_data = $this->connection->get_connected_user_data( $user_id );
+		if ( $this->http->is_user_connected( $user_id ) ) {
+			$wpcom_user_data = $this->http->get_connected_user_data( $user_id );
 			update_user_meta( $user_id, 'jetpack_tracks_wpcom_id', $wpcom_user_data['ID'] );
 
 			return [
