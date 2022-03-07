@@ -13,7 +13,7 @@ import { ChargeBillingDetails } from 'wcpay/types/charges';
  */
 
 const CustomerLink = ( props: {
-	customer: ChargeBillingDetails;
+	customer: null | ChargeBillingDetails;
 } ): JSX.Element => {
 	const customer = props.customer;
 	if ( customer && customer.name ) {
