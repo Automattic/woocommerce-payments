@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix Stripe Level 3 data API limit when basket size is more than 200 items
