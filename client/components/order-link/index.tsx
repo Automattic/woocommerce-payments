@@ -10,7 +10,9 @@ import React from 'react';
  * Internal dependencies.
  */
 
-const OrderLink = ( props: { order: null | OrderDetails } ): JSX.Element => {
+const OrderLink = ( props: {
+	order: null | OrderDetails | SubscriptionDetails;
+} ): JSX.Element => {
 	const order = props.order;
 	if ( order && order.number ) {
 		return (
