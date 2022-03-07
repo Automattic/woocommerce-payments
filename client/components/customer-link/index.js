@@ -14,7 +14,7 @@ const CustomerLink = ( props ) => {
 	const { customer } = props;
 
 	if ( ( customer || {} ).name === undefined ) {
-		return '-';
+		return <>-</>;
 	}
 
 	let searchTerm = customer.name;

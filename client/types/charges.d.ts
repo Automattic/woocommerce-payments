@@ -4,24 +4,6 @@
 import { BalanceTransaction } from './balance-transactions';
 import { Dispute } from './disputes';
 
-interface BillingDetails {
-	name: string;
-	email: string;
-	address: {
-		country: string;
-	};
-}
-
-interface ChargeOutcome {
-	network_status: string;
-	reason: string;
-	risk_level: string;
-	risk_score: number;
-	rule: string;
-	seller_message: string;
-	type: string;
-}
-
 interface ChargeRefund {
 	balance_transaction: BalanceTransaction;
 }
@@ -37,13 +19,47 @@ export interface Charge {
 	amount_refunded: number;
 	application_fee_amount: number;
 	balance_transaction: BalanceTransaction;
-	billing_details: BillingDetails;
+	billing_details: {
+		name: string;
+		email: string;
+		address: {
+			country: string;
+		};
+	};
 	captured: boolean;
+	created: number;
 	currency: string;
 	dispute?: Dispute;
 	disputed: boolean;
-	outcome: ChargeOutcome;
+	order: null | {
+		number: number;
+		url: string;
+		customer_url: string;
+		subscriptions?: Array< { number: number; url: string } >;
+	};
+	outcome: null | {
+		network_status: string;
+		reason: string;
+		risk_level:
+			| 'normal'
+			| 'elevated'
+			| 'highest'
+			| 'not_assessed'
+			| 'unknown';
+		risk_score: number;
+		rule: string;
+		seller_message: string;
+		type: string;
+	};
 	paid: boolean;
+	paydown: {
+		amount: number;
+	};
+	payment_intent: null | string;
+	payment_method_details: {
+		card?: any;
+		type: 'card';
+	};
 	refunded: boolean;
 	refunds: ChargeRefunds;
 	status: string;
