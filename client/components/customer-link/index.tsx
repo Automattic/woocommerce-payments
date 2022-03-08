@@ -5,12 +5,12 @@
  */
 import { Link } from '@woocommerce/components';
 import React from 'react';
-import { getAdminUrl } from 'wcpay/utils';
-import { ChargeBillingDetails } from 'wcpay/types/charges';
 
 /**
  * Internal dependencies.
  */
+import { getAdminUrl } from 'wcpay/utils';
+import { ChargeBillingDetails } from 'wcpay/types/charges';
 
 const CustomerLink = ( props: {
 	customer: null | ChargeBillingDetails;
