@@ -21,7 +21,7 @@ export interface PaymentMethodInformationType {
 	label: string;
 	description: string;
 	// eslint-disable-next-line @typescript-eslint/naming-convention
-	Icon: () => React.ReactNode;
+	Icon: () => JSX.Element;
 	currencies: string[];
 	stripe_key: string;
 }
