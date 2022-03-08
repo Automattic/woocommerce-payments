@@ -25,14 +25,26 @@ import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
+import React from 'react';
+import { Deposit } from 'wcpay/types/deposits';
 
-const Status = ( { status } ) => (
+const Status = ( { status }: { status: string } ): JSX.Element => (
 	// Re-purpose order status indicator for deposit status.
 	<OrderStatus order={ { status } } orderStatusMap={ displayStatus } />
 );
 
 // Custom SummaryNumber with custom value className reusing @woocommerce/components styles.
-const SummaryItem = ( { label, value, valueClass, detail } ) => (
+const SummaryItem = ( {
+	label,
+	value,
+	valueClass,
+	detail,
+}: {
+	label: string;
+	value: string | JSX.Element;
+	valueClass?: string | false;
+	detail?: string;
+} ) => (
 	<li className="woocommerce-summary__item-container">
 		<div className="woocommerce-summary__item">
 			<div className="woocommerce-summary__item-label">{ label }</div>
@@ -53,8 +65,8 @@ const SummaryItem = ( { label, value, valueClass, detail } ) => (
 	</li>
 );
 
-export const DepositOverview = ( { depositId } ) => {
-	const { deposit = {}, isLoading } = useDeposit( depositId );
+export const DepositOverview = ( { depositId }: { depositId: string } ) => {
+	const { deposit = {} as Deposit, isLoading } = useDeposit( depositId );
 
 	const depositDateLabel = deposit.automatic
 		? __( 'Deposit date', 'woocommerce-payments' )
@@ -142,7 +154,11 @@ export const DepositOverview = ( { depositId } ) => {
 	);
 };
 
-export const DepositDetails = ( { query: { id: depositId } } ) => (
+export const DepositDetails = ( {
+	query: { id: depositId },
+}: {
+	query: { id: string };
+} ): JSX.Element => (
 	<Page>
 		<TestModeNotice topic={ topics.depositDetails } />
 		<ErrorBoundary>
