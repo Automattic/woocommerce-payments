@@ -2,6 +2,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import Gridicon from 'gridicons';
 import classNames from 'classnames';
 
@@ -9,7 +10,6 @@ import classNames from 'classnames';
  * Internal dependencies
  */
 import './styles.scss';
-import React from 'react';
 
 const PaymentConfirmIllustration = ( {
 	hasBorder,
