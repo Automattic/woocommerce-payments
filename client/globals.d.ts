@@ -21,3 +21,7 @@ declare const wcpaySettings: {
 		availableStates: Array< Record< string, string > >;
 	};
 };
+
+interface Window {
+	wcTracks: any;
+}

@@ -20,7 +20,8 @@ import {
  */
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { displayType, displayStatus } from '../strings';
-import { formatStringValue } from 'util';
+// import { formatStringValue } from 'util';
+import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
@@ -29,8 +30,11 @@ import DepositsFilters from '../filters';
 import DownloadButton from 'components/download-button';
 
 import './style.scss';
+import { DepositsTableHeader } from 'wcpay/types/deposits';
+import React from 'react';
+import { parseInt } from 'lodash';
 
-const getColumns = ( sortByDate ) => [
+const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 	{
 		key: 'details',
 		label: '',
@@ -90,7 +94,7 @@ export const DepositsList = () => {
 	const columns = useMemo( () => getColumns( sortByDate ), [ sortByDate ] );
 
 	const rows = deposits.map( ( deposit ) => {
-		const clickable = ( children ) => (
+		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell href={ getDetailsURL( deposit.id, 'deposits' ) }>
 				{ children }
 			</ClickableCell>
@@ -225,7 +229,7 @@ export const DepositsList = () => {
 				className="wcpay-deposits-list woocommerce-report-table"
 				title={ __( 'Deposit history', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
-				rowsPerPage={ getQuery().per_page || 25 }
+				rowsPerPage={ parseInt( getQuery().per_page ?? '' ) || 25 }
 				totalRows={ depositsSummary.count }
 				headers={ columns }
 				rows={ rows }
