@@ -19,8 +19,8 @@ class WCPay_Multi_Currency_Utils_Tests extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->utils = new WCPay\MultiCurrency\Utils();
 	}
