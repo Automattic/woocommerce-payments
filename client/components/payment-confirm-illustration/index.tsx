@@ -14,6 +14,10 @@ import './styles.scss';
 const PaymentConfirmIllustration = ( {
 	hasBorder,
 	Icon = () => <React.Fragment />,
+}: {
+	hasBorder: boolean;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	Icon: ( { className }: { className: string } ) => JSX.Element;
 } ) => {
 	return (
 		<div className="payment-confirm-illustration__wrapper">
