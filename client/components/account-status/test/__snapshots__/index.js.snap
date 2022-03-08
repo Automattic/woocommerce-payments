@@ -131,7 +131,7 @@ exports[`AccountStatus renders normal status 1`] = `
       Euro 
       (EUR) 
       <s>
-        2.9% + $0.00 per transaction
+        2.9% + €0,00 per transaction
       </s>
        2.9% + €0,30 per transaction
       <p>

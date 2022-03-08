@@ -222,6 +222,7 @@ export const formatAccountFeesDescription = (
 		...customFormats,
 	};
 
+	// Some payment methods doesn't have base percentage rate. In this case, the lowest rate will be shown as a start value
 	let displayFeePercentageRate = baseFee.percentage_rate;
 	if ( displayFeePercentageRate <= 0 ) {
 		displayFeePercentageRate =
@@ -232,9 +233,8 @@ export const formatAccountFeesDescription = (
 	const feeDescription = sprintf(
 		formats.fee,
 		formatFee( displayFeePercentageRate ),
-		formatCurrency( baseFee.fixed_rate )
+		formatCurrency( baseFee.fixed_rate, baseFee.currency )
 	);
-
 	const isFormattingWithDiscount =
 		currentFee.percentage_rate !== baseFee.percentage_rate ||
 		currentFee.fixed_rate !== baseFee.fixed_rate ||
@@ -281,7 +281,7 @@ export const formatAccountFeesDescription = (
 		} );
 	}
 
-	return sprintf( __( 'From %s', 'woocommerce-payments' ), feeDescription );
+	return feeDescription;
 };
 
 export const formatMethodFeesDescription = (
@@ -292,7 +292,7 @@ export const formatMethodFeesDescription = (
 	}
 
 	/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
-	const format = __( '%1$f%% + %2$s', 'woocommerce-payments' );
+	const format = __( 'From %1$f%% + %2$s', 'woocommerce-payments' );
 
 	return formatAccountFeesDescription( methodFees, {
 		fee: format,

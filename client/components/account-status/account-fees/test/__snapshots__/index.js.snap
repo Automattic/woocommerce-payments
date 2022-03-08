@@ -66,7 +66,7 @@ exports[`AccountFees renders discounted fee with USD volume currency and non-USD
   Pound sterling 
   (GBP) 
   <s>
-    1.4% + $0.20 per transaction
+    1.4% + £0.20 per transaction
   </s>
    0.7% + £0.10 per transaction
   <div
@@ -287,7 +287,7 @@ exports[`AccountFees renders discounted non-USD base fee 1`] = `
   Pound sterling 
   (GBP) 
   <s>
-    1.4% + $0.20 per transaction
+    1.4% + £0.20 per transaction
   </s>
    0.7% + £0.10 per transaction
   <div
@@ -415,7 +415,7 @@ exports[`AccountFees renders non-USD base fee 1`] = `
   Euro 
   (EUR) 
   <s>
-    2.9% + $0.25 per transaction
+    2.9% + €0,25 per transaction
   </s>
    2.9% + €0,30 per transaction
   <p>
