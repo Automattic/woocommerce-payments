@@ -237,6 +237,19 @@ class WC_Payments_Admin {
 				];
 			}
 
+			if ( $this->account->get_capital()['has_previous_loans'] ) {
+				$this->admin_child_pages['wc-payments-capital'] = [
+					'id'       => 'wc-payments-capital',
+					'title'    => __( 'Capital Loans', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/loans',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 60,
+					],
+				];
+			}
+
 			/**
 			 * Please note that if any other page is registered first and it's
 			 * path is different from the $top_level_link it will make
@@ -257,7 +270,7 @@ class WC_Payments_Admin {
 						'parent' => 'wc-payments',
 						'title'  => __( 'Settings', 'woocommerce-payments' ),
 						'url'    => 'wc-settings&tab=checkout&section=woocommerce_payments',
-						'order'  => 50,
+						'order'  => 99,
 					],
 				]
 			);
@@ -320,6 +333,16 @@ class WC_Payments_Admin {
 					'path'   => '/payments/multi-currency-setup',
 				]
 			);
+
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-card-readers-preview-receipt',
+					'parent' => 'wc-payments-card-readers',
+					'title'  => __( 'Preview a printed receipt', 'woocommerce-payments' ),
+					'path'   => '/payments/card-readers/preview-receipt',
+
+				]
+			);
 		}
 
 		wp_enqueue_style(
@@ -354,6 +377,13 @@ class WC_Payments_Admin {
 
 		$error_message = get_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
+
+		/**
+		 * This is a work around to pass the current user's email address to WCPay's settings until we do not need to rely
+		 * on backwards compatibility and can use `getCurrentUser` from `@wordpress/core-data`.
+		 */
+		$current_user       = wp_get_current_user();
+		$current_user_email = $current_user && $current_user->user_email ? $current_user->user_email : get_option( 'admin_email' );
 
 		$wcpay_settings = [
 			'connectUrl'              => WC_Payments_Account::get_connect_url(),
@@ -392,6 +422,7 @@ class WC_Payments_Admin {
 				'deletedTodoTasks'       => get_option( 'woocommerce_deleted_todo_tasks', [] ),
 				'remindMeLaterTodoTasks' => get_option( 'woocommerce_remind_me_later_todo_tasks', [] ),
 			],
+			'currentUserEmail'        => $current_user_email,
 		];
 
 		wp_localize_script(
@@ -499,6 +530,7 @@ class WC_Payments_Admin {
 	public function enqueue_payments_scripts() {
 		global $current_tab, $current_section;
 
+		// TODO: Add check to see if user can manage_woocommerce and exit early if they cannot.
 		$this->register_payments_scripts();
 
 		if ( WC_Payments_Utils::is_payments_settings_page() ) {

@@ -8,7 +8,7 @@ import Gridicon from 'gridicons';
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 
 /**
@@ -174,7 +174,7 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 	}
 
 	return {
-		date: new Date( event.date * 1000 ),
+		date: new Date( event.datetime * 1000 ),
 		icon: getIcon( 'minus' ),
 		headline,
 		body,

@@ -26,8 +26,8 @@ class Payment_Information_Test extends WP_UnitTestCase {
 	 */
 	private $card_token;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->card_token = WC_Helper_Token::create_token( self::TOKEN );
 	}

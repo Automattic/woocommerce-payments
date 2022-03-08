@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add wcpay_is_wcpay_subscriptions_enabled filter

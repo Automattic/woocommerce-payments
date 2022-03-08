@@ -26,8 +26,8 @@ class WCPay_Multi_Currency_Geolocation_Tests extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 		$this->geolocation               = new WCPay\MultiCurrency\Geolocation( $this->mock_localization_service );

@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Remove feature flagged code that enable platform checkout inside UPE block.

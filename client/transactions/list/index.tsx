@@ -435,6 +435,7 @@ export const TransactionsList = (
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
+		const userEmail = wcpaySettings.currentUserEmail;
 
 		if ( 'endpoint' === downloadType ) {
 			const {
@@ -446,6 +447,7 @@ export const TransactionsList = (
 				type_is: typeIs,
 				type_is_not: typeIsNot,
 			} = params;
+			const depositId = props.depositId;
 
 			const isFiltered =
 				!! dateAfter ||
@@ -474,6 +476,7 @@ export const TransactionsList = (
 						exported_transactions: exportedTransactions,
 					} = await apiFetch( {
 						path: getTransactionsCSV( {
+							userEmail,
 							dateAfter,
 							dateBefore,
 							dateBetween,
@@ -481,15 +484,19 @@ export const TransactionsList = (
 							search,
 							typeIs,
 							typeIsNot,
+							depositId,
 						} ),
 						method: 'POST',
 					} );
 
 					createNotice(
 						'success',
-						__(
-							'Your export will be emailed to you.',
-							'woocommerce-payments'
+						sprintf(
+							__(
+								'Your export will be emailed to %s',
+								'woocommerce-payments'
+							),
+							userEmail
 						)
 					);
 
