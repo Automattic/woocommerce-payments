@@ -2,6 +2,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
@@ -12,13 +13,22 @@ import interpolateComponents from 'interpolate-components';
 import PaymentDeleteIllustration from '../components/payment-delete-illustration';
 import ConfirmationModal from '../components/confirmation-modal';
 
+interface ConfirmPaymentMethodDeleteModalInput {
+	id: string;
+	label: string;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	Icon: () => JSX.Element;
+	onConfirm: () => void;
+	onCancel: () => void;
+}
+
 const ConfirmPaymentMethodDeleteModal = ( {
 	id,
 	label,
 	Icon,
 	onConfirm,
 	onCancel,
-} ) => {
+}: ConfirmPaymentMethodDeleteModalInput ) => {
 	return (
 		<ConfirmationModal
 			title={ sprintf(
