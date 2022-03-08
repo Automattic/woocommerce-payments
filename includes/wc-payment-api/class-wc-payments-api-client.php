@@ -635,26 +635,26 @@ class WC_Payments_API_Client {
 	 * Initiates transactions export via API.
 	 *
 	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $user_email The email to search for.
 	 * @param string $deposit_id The deposit to filter on.
 	 *
 	 * @return array Export summary
 	 *
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_transactions_export( $filters = [], $deposit_id = null ) {
+	public function get_transactions_export( $filters = [], $user_email = '', $deposit_id = null ) {
 		// Map Order # terms to the actual charge id to be used in the server.
 		if ( ! empty( $filters['search'] ) ) {
 			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
 		}
+		if ( ! empty( $user_email ) ) {
+			$filters['user_email'] = $user_email;
+		}
+		if ( ! empty( $deposit_id ) ) {
+			$filters['deposit_id'] = $deposit_id;
+		}
 
-		$query = array_merge(
-			$filters,
-			[
-				'deposit_id' => $deposit_id,
-			]
-		);
-
-		return $this->request( $query, self::TRANSACTIONS_API . '/download', self::POST );
+		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
 	}
 
 	/**
