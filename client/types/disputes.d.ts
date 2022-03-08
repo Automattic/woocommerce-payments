@@ -15,12 +15,6 @@ interface EvidenceDetails {
 	due_by: number;
 	submission_count: number;
 }
-interface Order {
-	customer_url: string;
-	number: string;
-	url: string;
-	subscriptions: Array< Record< string, string > >;
-}
 
 export type DisputeReason =
 	| 'bank_cannot_process'
@@ -53,7 +47,7 @@ export interface Dispute {
 	id: string;
 	evidence_details?: EvidenceDetails;
 	metadata: Record< string, any >;
-	order?: Order;
+	order: null | OrderDetails;
 	evidence: Evidence;
 	fileSize?: Record< string, number >;
 	reason: DisputeReason;
@@ -74,7 +68,7 @@ export interface CachedDispute {
 	reason: DisputeReason;
 	source: string;
 	order_number: number;
-	order?: Order;
+	order: null | OrderDetails;
 	customer_name: string;
 	customer_email: string;
 	customer_country: string;

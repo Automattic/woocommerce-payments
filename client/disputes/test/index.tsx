@@ -72,7 +72,7 @@ const mockDisputes = [
 			number: '1',
 			customer_url: 'https://shop.local',
 			url: 'http://test.local/order/1',
-		},
+		} as any,
 	} as CachedDispute,
 	{
 		// dispute without order or charge information
@@ -107,7 +107,7 @@ const mockDisputes = [
 		order: {
 			number: '3',
 			url: 'http://test.local/order/3',
-		},
+		} as any,
 	} as CachedDispute,
 ];
 
