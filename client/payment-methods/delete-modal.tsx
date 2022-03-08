@@ -28,7 +28,7 @@ const ConfirmPaymentMethodDeleteModal = ( {
 	Icon,
 	onConfirm,
 	onCancel,
-}: ConfirmPaymentMethodDeleteModalInput ) => {
+}: ConfirmPaymentMethodDeleteModalInput ): JSX.Element => {
 	return (
 		<ConfirmationModal
 			title={ sprintf(

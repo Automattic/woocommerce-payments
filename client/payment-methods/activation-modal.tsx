@@ -28,7 +28,7 @@ const ConfirmPaymentMethodActivationModal = ( {
 	requirements,
 	onClose,
 	onConfirmClose,
-}: ConfirmaPaymentMethodActivationType ) => {
+}: ConfirmaPaymentMethodActivationType ): JSX.Element => {
 	const requirementsToDisplay = requirements.filter( ( requirement ) => {
 		return RequirementsMap.hasOwnProperty( requirement );
 	} );
