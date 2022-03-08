@@ -13,7 +13,7 @@ import './styles.scss';
 
 const PaymentConfirmIllustration = ( {
 	hasBorder,
-	Icon = () => React.ReactNode,
+	Icon = () => <React.Fragment />,
 } ) => {
 	return (
 		<div className="payment-confirm-illustration__wrapper">
