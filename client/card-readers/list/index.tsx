@@ -9,8 +9,8 @@ import { Card, CardBody, CardDivider } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import SettingsSection from 'wcpay/settings//settings-section';
-import SettingsLayout from 'wcpay/settings//settings-layout';
+import SettingsSection from 'wcpay/settings/settings-section';
+import SettingsLayout from 'wcpay/settings/settings-layout';
 import LoadableSettingsSection from 'wcpay/settings//loadable-settings-section';
 import CardReaderListItem from './list-item';
 import { useReaders } from 'wcpay/data';
@@ -28,7 +28,7 @@ const ReadersListDescription = () => (
 	</>
 );
 
-const ReadersList = () => {
+const ReadersList = (): JSX.Element => {
 	const { readers, isLoading } = useReaders( 10 );
 
 	return (
@@ -48,7 +48,7 @@ const ReadersList = () => {
 							</div>
 						</CardBody>
 						<CardDivider />
-						<CardBody size={ null }>
+						<CardBody>
 							<ul>
 								{ ! isLoading &&
 									Object.entries(
