@@ -27,7 +27,7 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 	 */
 	private $payments_admin;
 
-	public function setUp() {
+	public function set_up() {
 		global $menu, $submenu;
 
 		$menu    = null;
@@ -44,14 +44,21 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$this->mock_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->disableOriginalConstructor()
 			->getMock();
+		$this->mock_account->method( 'get_capital' )->willReturn(
+			[
+				'loans'              => [],
+				'has_active_loan'    => false,
+				'has_previous_loans' => false,
+			]
+		);
 
 		$this->payments_admin = new WC_Payments_Admin( $mock_api_client, $this->mock_gateway, $this->mock_account );
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		unset( $_GET );
 		set_current_screen( 'front' );
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	public function test_it_renders_settings_badge_if_upe_settings_preview_is_enabled_and_upe_is_not() {

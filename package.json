@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "3.7.0",
+  "version": "3.8.2",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -69,8 +69,7 @@
     "debug": "^4.1.1",
     "interpolate-components": "^1.1.1",
     "intl-tel-input": "^17.0.15",
-    "lodash": "^4.17.14",
-    "wordpress-element": "npm:@wordpress/element@2.11.0"
+    "lodash": "^4.17.14"
   },
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",

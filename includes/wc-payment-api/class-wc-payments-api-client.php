@@ -170,17 +170,18 @@ class WC_Payments_API_Client {
 	/**
 	 * Create an intention, and automatically confirm it.
 	 *
-	 * @param int    $amount                 - Amount to charge.
-	 * @param string $currency_code          - Currency to charge in.
-	 * @param string $payment_method_id      - ID of payment method to process charge with.
-	 * @param string $customer_id            - ID of the customer making the payment.
-	 * @param bool   $manual_capture         - Whether to capture funds via manual action.
-	 * @param bool   $save_payment_method    - Whether to save payment method for future purchases.
-	 * @param array  $metadata               - Meta data values to be sent along with payment intent creation.
-	 * @param array  $level3                 - Level 3 data.
-	 * @param bool   $off_session            - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
-	 * @param array  $additional_parameters  - An array of any additional request parameters, particularly for additional payment methods.
-	 * @param array  $payment_methods        - An array of payment methods that might be used for the payment.
+	 * @param int    $amount                          - Amount to charge.
+	 * @param string $currency_code                   - Currency to charge in.
+	 * @param string $payment_method_id               - ID of payment method to process charge with.
+	 * @param string $customer_id                     - ID of the customer making the payment.
+	 * @param bool   $manual_capture                  - Whether to capture funds via manual action.
+	 * @param bool   $save_payment_method_to_store    - Whether to save payment method for future purchases.
+	 * @param bool   $save_payment_method_to_platform - Whether to save payment method to platform.
+	 * @param array  $metadata                        - Meta data values to be sent along with payment intent creation.
+	 * @param array  $level3                          - Level 3 data.
+	 * @param bool   $off_session                     - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
+	 * @param array  $additional_parameters           - An array of any additional request parameters, particularly for additional payment methods.
+	 * @param array  $payment_methods                 - An array of payment methods that might be used for the payment.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -191,7 +192,8 @@ class WC_Payments_API_Client {
 		$payment_method_id,
 		$customer_id,
 		$manual_capture = false,
-		$save_payment_method = false,
+		$save_payment_method_to_store = false,
+		$save_payment_method_to_platform = false,
 		$metadata = [],
 		$level3 = [],
 		$off_session = false,
@@ -220,8 +222,12 @@ class WC_Payments_API_Client {
 			$request['off_session'] = 'true';
 		}
 
-		if ( $save_payment_method ) {
+		if ( $save_payment_method_to_store ) {
 			$request['setup_future_usage'] = 'off_session';
+		}
+
+		if ( $save_payment_method_to_platform ) {
+			$request['save_payment_method_to_platform'] = 'true';
 		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
@@ -628,16 +634,24 @@ class WC_Payments_API_Client {
 	/**
 	 * Initiates transactions export via API.
 	 *
-	 * @param array $filters The filters to be used in the query.
+	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $user_email The email to search for.
+	 * @param string $deposit_id The deposit to filter on.
 	 *
 	 * @return array Export summary
 	 *
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_transactions_export( $filters = [] ) {
+	public function get_transactions_export( $filters = [], $user_email = '', $deposit_id = null ) {
 		// Map Order # terms to the actual charge id to be used in the server.
 		if ( ! empty( $filters['search'] ) ) {
 			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
+		}
+		if ( ! empty( $user_email ) ) {
+			$filters['user_email'] = $user_email;
+		}
+		if ( ! empty( $deposit_id ) ) {
+			$filters['deposit_id'] = $deposit_id;
 		}
 
 		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
@@ -2023,5 +2037,16 @@ class WC_Payments_API_Client {
 	 */
 	public function get_active_loan_summary() : array {
 		return $this->request( [], self::CAPITAL_API . '/active_loan_summary', self::GET );
+	}
+
+	/**
+	 * Fetch the past and present Capital loans.
+	 *
+	 * @return array List of capital loans.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_loans() : array {
+		return $this->request( [], self::CAPITAL_API . '/loans', self::GET );
 	}
 }
