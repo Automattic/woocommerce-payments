@@ -16,19 +16,17 @@ import PaymentMethodsMap from '../payment-methods-map';
 import RequirementsMap from '../requirements-map';
 import './activation-modal.scss';
 
-interface ConfirmaPaymentMethodActivationType {
-	paymentMethod: string;
-	requirements: string[];
-	onClose: () => void;
-	onConfirmClose: () => void;
-}
-
 const ConfirmPaymentMethodActivationModal = ( {
 	paymentMethod,
 	requirements,
 	onClose,
 	onConfirmClose,
-}: ConfirmaPaymentMethodActivationType ): JSX.Element => {
+}: {
+	paymentMethod: string;
+	requirements: string[];
+	onClose: () => void;
+	onConfirmClose: () => void;
+} ): JSX.Element => {
 	const requirementsToDisplay = requirements.filter( ( requirement ) => {
 		return RequirementsMap.hasOwnProperty( requirement );
 	} );

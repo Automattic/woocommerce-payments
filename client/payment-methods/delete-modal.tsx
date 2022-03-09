@@ -13,22 +13,20 @@ import interpolateComponents from 'interpolate-components';
 import PaymentDeleteIllustration from '../components/payment-delete-illustration';
 import ConfirmationModal from '../components/confirmation-modal';
 
-interface ConfirmPaymentMethodDeleteModalInput {
-	id: string;
-	label: string;
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	Icon: () => JSX.Element;
-	onConfirm: () => void;
-	onCancel: () => void;
-}
-
 const ConfirmPaymentMethodDeleteModal = ( {
 	id,
 	label,
 	Icon,
 	onConfirm,
 	onCancel,
-}: ConfirmPaymentMethodDeleteModalInput ): JSX.Element => {
+}: {
+	id: string;
+	label: string;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	Icon: () => JSX.Element;
+	onConfirm: () => void;
+	onCancel: () => void;
+} ): JSX.Element => {
 	return (
 		<ConfirmationModal
 			title={ sprintf(
