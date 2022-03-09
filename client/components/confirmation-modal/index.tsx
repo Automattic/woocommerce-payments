@@ -11,26 +11,18 @@ import { HorizontalRule } from '@wordpress/primitives';
  */
 import './styles.scss';
 
-interface ConfirmationModalInput {
+interface ConfirmationModalProps extends Modal.Props {
 	actions: JSX.Element;
-	className?: string;
-	title: string;
-	onRequestClose: () => void;
-	shouldCloseOnClickOutside?: boolean;
 }
 
-const ConfirmationModal: React.FunctionComponent< ConfirmationModalInput > = ( {
+const ConfirmationModal: React.FunctionComponent< ConfirmationModalProps > = ( {
 	children,
 	actions,
 	className,
-	title,
-	onRequestClose,
 	...props
 } ) => (
 	<Modal
 		className={ classNames( 'wcpay-confirmation-modal', className || '' ) }
-		title={ title }
-		onRequestClose={ onRequestClose }
 		{ ...props }
 	>
 		{ children }
