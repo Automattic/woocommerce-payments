@@ -1,6 +1,6 @@
-# Orders
+# Order
 
-The orders API allows you to perform operations such as capture a terminal payment, create an intent, create a customer, etc. for a particular order.
+The order API allows you to perform operations such as capture a terminal payment, create an intent, create a customer, etc. for a particular order.
 
 ## Create a terminal payment
 
