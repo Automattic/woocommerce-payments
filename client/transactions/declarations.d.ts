@@ -94,6 +94,7 @@ declare module '@woocommerce/components' {
 		query?: Query;
 		onQueryChange?: unknown;
 		actions?: React.ReactNode[];
+		showMenu?: boolean;
 	}
 	const TableCard: ( props: TableCardProps ) => JSX.Element;
 }

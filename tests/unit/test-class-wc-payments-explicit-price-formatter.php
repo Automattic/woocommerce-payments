@@ -79,8 +79,8 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 	 */
 	private $mock_localization_service;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_currency_settings(
 			'GBP',
@@ -104,7 +104,7 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 		$this->init_multi_currency();
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		set_current_screen( 'front' );
 		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
@@ -122,7 +122,7 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
 
 		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( WC_Payments_Multi_Currency() );
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	public function test_get_explicit_price_with_order_currency_on_backend_with_one_enabled_currency() {
