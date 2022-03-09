@@ -1267,7 +1267,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// If we should be creating a platform checkout customer, add the necessary customer data to the metadata.
-		$should_create_platform_customer = isset( $_POST['save_user_in_platform_checkout'] ) && '1' === $_POST['save_user_in_platform_checkout']; // phpcs:ignore WordPress.Security.NonceVerification
+		$should_create_platform_customer = isset( $_POST['save_user_in_platform_checkout'] ) && filter_var( wp_unslash( $_POST['save_user_in_platform_checkout'] ), FILTER_VALIDATE_BOOLEAN ); // phpcs:ignore WordPress.Security.NonceVerification
 		if ( $should_create_platform_customer && ! empty( $_POST['platform_checkout_user_phone_field']['full'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 				$platform_checkout_phone = wc_clean( wp_unslash( $_POST['platform_checkout_user_phone_field']['full'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
