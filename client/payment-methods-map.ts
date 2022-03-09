@@ -16,7 +16,7 @@ import P24Icon from './gateway-icons/p24';
 import IdealIcon from './gateway-icons/ideal';
 import BankDebitIcon from './gateway-icons/bank-debit';
 
-export interface PaymentMethodInformationType {
+export interface PaymentMethodMapEntry {
 	id: string;
 	label: string;
 	description: string;
@@ -26,11 +26,10 @@ export interface PaymentMethodInformationType {
 	stripe_key: string;
 }
 
-interface PaymentMethodInformationObjectType {
-	[ key: string ]: PaymentMethodInformationType;
-}
-
-const PaymentMethodInformationObject: PaymentMethodInformationObjectType = {
+const PaymentMethodInformationObject: Record<
+	string,
+	PaymentMethodMapEntry
+> = {
 	card: {
 		id: 'card',
 		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
