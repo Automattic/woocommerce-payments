@@ -3,11 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
-interface RequirementsInfoObjectType {
-	[ key: string ]: string;
-}
-
-const RequirementsInfoObject: RequirementsInfoObjectType = {
+const RequirementsInfoObject: Record< string, string > = {
 	'individual.id_number': __(
 		'Personal Identification Number',
 		'woocommerce-payments'
