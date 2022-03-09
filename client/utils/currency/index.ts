@@ -2,7 +2,10 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import Currency, { getCurrencyData } from '@woocommerce/currency';
+import Currency, {
+	CurrencyInterface,
+	getCurrencyData,
+} from '@woocommerce/currency';
 import { find, trimEnd, endsWith } from 'lodash';
 import {
 	CurrencyNames,
@@ -45,7 +48,7 @@ export const formatCurrencyName = ( currencyCode: string ): string =>
 export const getCurrency = (
 	currencyCode: string,
 	baseCurrencyCode: string | null = null
-): any => {
+): CurrencyInterface | null => {
 	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
 		if (
@@ -64,7 +67,7 @@ export const getCurrency = (
 				}
 			}
 		}
-		return new Currency( currency );
+		return new ( Currency as any )( currency );
 	}
 	return null;
 };
@@ -222,7 +225,7 @@ function formatExchangeRate(
 			to.currency.toUpperCase()
 		);
 	}
-	const exchangeCurrency = new Currency( {
+	const exchangeCurrency = new ( Currency as any )( {
 		...exchangeCurrencyConfig,
 		precision,
 	} );
