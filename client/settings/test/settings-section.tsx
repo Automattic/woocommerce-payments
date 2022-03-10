@@ -33,7 +33,7 @@ describe( 'SettingsSection', () => {
 
 	test( 'renders children', () => {
 		render(
-			<SettingsSection title="Foo" description="Bar">
+			<SettingsSection title="Foo">
 				<div>Baz</div>
 			</SettingsSection>
 		);

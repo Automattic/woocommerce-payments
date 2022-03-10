@@ -45,24 +45,3 @@ export interface CardReaderStats {
 	chargeError: string;
 	isLoading: boolean;
 }
-
-export interface CardReaderListItem {
-	id: string;
-	device_type: string;
-	is_active: boolean;
-}
-
-export interface CardReaderListItemProps {
-	reader: CardReaderListItem;
-}
-
-export interface CardReaderFileUploadProps {
-	fieldKey: string;
-	label: string;
-	accept: string;
-	disabled?: boolean;
-	help?: string;
-	purpose: string;
-	fileID: string;
-	updateFileID: ( id: string ) => void;
-}
