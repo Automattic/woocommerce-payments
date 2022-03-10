@@ -4,7 +4,6 @@ on:
         branches:
             - develop
             - trunk
-            - dev/hack-week-rest-api-documentation
     workflow_dispatch:
 jobs:
     build-and-deploy:
@@ -23,3 +22,4 @@ jobs:
                   NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_APIDOCS }}
                   NETLIFY_DEPLOY_TO_PROD: true
                   build_directory: 'docs/rest-api/build'
+                  install_command: 'echo null'
