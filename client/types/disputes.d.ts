@@ -90,7 +90,7 @@ export interface DisputeFileUpload {
 	isLoading: boolean;
 	accept: string;
 	error?: string;
-	onFileChange( key: string, file: File ): any;
+	onFileChange( key: string, file: File ): Promise< void >;
 	onFileRemove( key: string ): any;
 	help?: string;
 	showPreview?: boolean;

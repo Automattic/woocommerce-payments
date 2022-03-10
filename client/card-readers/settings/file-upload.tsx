@@ -13,8 +13,11 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import { FileUploadControl } from 'components/file-upload';
+import { CardReaderFileUploadProps } from 'wcpay/types/card-readers';
 
-const BrandingFileUpload = ( props ) => {
+const BrandingFileUpload: React.FunctionComponent< CardReaderFileUploadProps > = (
+	props
+) => {
 	const {
 		fieldKey,
 		label,
@@ -24,16 +27,18 @@ const BrandingFileUpload = ( props ) => {
 		purpose,
 		fileID,
 		updateFileID,
-	} = props;
+	}: CardReaderFileUploadProps = props;
 
 	const [ isLoading, setLoading ] = useState( false );
-	const [ uploadError, setUploadError ] = useState( false );
+	const [ uploadError, setUploadError ] = useState< boolean | string >(
+		false
+	);
 
 	const { createErrorNotice } = useDispatch( 'core/notices' );
 
-	const fileSizeExceeded = ( fileSize ) => {
+	const fileSizeExceeded = ( { size }: { size: number } ) => {
 		const fileSizeLimitInBytes = 510000;
-		if ( fileSizeLimitInBytes < fileSize ) {
+		if ( fileSizeLimitInBytes < size ) {
 			createErrorNotice(
 				__(
 					'The file you have attached is exceeding the maximum limit.',
@@ -45,12 +50,12 @@ const BrandingFileUpload = ( props ) => {
 		}
 	};
 
-	const handleFileChange = async ( key, file ) => {
+	const handleFileChange = async ( key: string, file: File ) => {
 		if ( ! file ) {
 			return;
 		}
 
-		if ( fileSizeExceeded( file.size ) ) {
+		if ( fileSizeExceeded( file ) ) {
 			return;
 		}
 
@@ -67,17 +72,19 @@ const BrandingFileUpload = ( props ) => {
 		body.append( 'file', file );
 		body.append( 'purpose', purpose );
 		// Interpreting as_account as Boolean false in the backend
-		body.append( 'as_account', 0 );
+		body.append( 'as_account', '0' );
 
 		try {
-			const uploadedFile = await apiFetch( {
+			const uploadedFile: any = await apiFetch( {
 				path: '/wc/v3/payments/file',
 				method: 'post',
 				body,
 			} );
 
-			// Store uploaded file ID.
-			updateFileID( uploadedFile.id );
+			if ( uploadedFile ) {
+				// Store uploaded file ID.
+				updateFileID( ( uploadedFile as any ).id );
+			}
 
 			setLoading( false );
 			setUploadError( false );
@@ -88,19 +95,19 @@ const BrandingFileUpload = ( props ) => {
 					type: key,
 				}
 			);
-		} catch ( err ) {
+		} catch ( { err } ) {
 			wcpayTracks.recordEvent( 'wcpay_merchant_settings_upload_failed', {
-				message: err.message,
+				message: ( err as Error ).message,
 			} );
 
 			// Remove file ID
 			updateFileID( '' );
 
 			setLoading( false );
-			setUploadError( err.message );
+			setUploadError( ( err as Error ).message || '' );
 
 			// Show error notice
-			createErrorNotice( err.message );
+			createErrorNotice( ( err as Error ).message );
 		}
 	};
 
@@ -111,8 +118,8 @@ const BrandingFileUpload = ( props ) => {
 		setUploadError( false );
 	};
 
-	const isDone = ! isLoading && fileID && 0 < fileID.length;
-	const error = uploadError || '';
+	const isDone = ( ! isLoading && fileID && 0 < fileID.length ) as boolean;
+	const error = ( uploadError || '' ) as string;
 
 	return (
 		<div className="wcpay-branding-upload-field__wrapper">
