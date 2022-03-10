@@ -38,7 +38,7 @@ export interface DepositsSummaryCache {
 }
 
 export interface DepositsSummary {
-	store_currencies: string;
+	store_currencies: string[];
 	count: number;
 	total: number;
 	currency: string;

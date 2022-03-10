@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { dateI18n } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
@@ -25,7 +26,6 @@ import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
-import React from 'react';
 import { CachedDeposit } from 'wcpay/types/deposits';
 
 const Status = ( { status }: { status: string } ): JSX.Element => (
