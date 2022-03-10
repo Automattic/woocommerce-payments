@@ -15,7 +15,7 @@ describe( 'SettingsSection', () => {
 	test( 'renders the Description', () => {
 		render(
 			<SettingsSection
-				Description={ () => (
+				description={ () => (
 					<>
 						<h2>Foo</h2>
 						<p>Bar</p>

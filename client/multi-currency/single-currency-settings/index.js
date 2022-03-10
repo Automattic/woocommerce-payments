@@ -185,7 +185,7 @@ const SingleCurrencySettings = () => {
 					&gt; { targetCurrency.name } ({ targetCurrency.code }){ ' ' }
 					{ targetCurrency.flag }
 				</h2>
-				<SettingsSection Description={ CurrencySettingsDescription }>
+				<SettingsSection description={ CurrencySettingsDescription }>
 					<LoadableBlock isLoading={ isLoading } numLines={ 33 }>
 						<Card
 							className={
@@ -503,7 +503,7 @@ const SingleCurrencySettings = () => {
 						</Card>
 					</LoadableBlock>
 				</SettingsSection>
-				<SettingsSection Description={ CurrencyPreviewDescription }>
+				<SettingsSection description={ CurrencyPreviewDescription }>
 					<LoadableBlock isLoading={ isLoading } numLines={ 8 }>
 						<CurrencyPreview
 							className={
