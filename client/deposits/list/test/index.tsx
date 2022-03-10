@@ -14,6 +14,12 @@ import os from 'os';
 import { DepositsList } from '../';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
+import {
+	CachedDeposit,
+	CachedDeposits,
+	DepositsSummary,
+} from 'wcpay/types/deposits';
+import React from 'react';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
@@ -37,7 +43,8 @@ const mockDeposits = [
 		amount: 2000,
 		status: 'paid',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
-	},
+		currency: 'USD',
+	} as CachedDeposit,
 	{
 		id: 'po_mock2',
 		date: '2020-01-03 17:46:02',
@@ -45,8 +52,27 @@ const mockDeposits = [
 		amount: 3000,
 		status: 'pending',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
-	},
+		currency: 'USD',
+	} as CachedDeposit,
 ];
+
+declare const global: {
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+	};
+};
+
+const mockUseDeposits = useDeposits as jest.MockedFunction<
+	typeof useDeposits
+>;
+
+const mockUseDepositsSummary = useDepositsSummary as jest.MockedFunction<
+	typeof useDepositsSummary
+>;
+
+const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
+	typeof downloadCSVFile
+>;
 
 describe( 'Deposits list', () => {
 	beforeEach( () => {
@@ -60,18 +86,19 @@ describe( 'Deposits list', () => {
 
 	// this also covers structural test for single currency.
 	test( 'renders correctly with multiple currencies', () => {
-		useDeposits.mockReturnValue( {
+		mockUseDeposits.mockReturnValue( {
 			deposits: mockDeposits,
 			depositsCount: 2,
 			isLoading: false,
 		} );
 
-		useDepositsSummary.mockReturnValue( {
+		mockUseDepositsSummary.mockReturnValue( {
 			depositsSummary: {
 				count: 2,
 				total: 5000,
 				store_currencies: [ 'usd', 'eur' ],
-			},
+				currency: 'usd',
+			} as DepositsSummary,
 			isLoading: false,
 		} );
 
@@ -80,18 +107,19 @@ describe( 'Deposits list', () => {
 	} );
 
 	test( 'renders correctly a single deposit', () => {
-		useDeposits.mockReturnValue( {
+		mockUseDeposits.mockReturnValue( {
 			deposits: mockDeposits,
 			depositsCount: 1,
 			isLoading: false,
 		} );
 
-		useDepositsSummary.mockReturnValue( {
+		mockUseDepositsSummary.mockReturnValue( {
 			depositsSummary: {
 				count: 1,
 				total: 5000,
 				store_currencies: [ 'usd' ],
-			},
+				currency: 'usd',
+			} as DepositsSummary,
 			isLoading: false,
 		} );
 
@@ -100,15 +128,15 @@ describe( 'Deposits list', () => {
 	} );
 
 	test( 'renders table summary only when the deposits summary data is available', () => {
-		useDeposits.mockReturnValue( {
+		mockUseDeposits.mockReturnValue( {
 			deposits: mockDeposits,
 			isLoading: false,
-		} );
+		} as CachedDeposits );
 
-		useDepositsSummary.mockReturnValue( {
+		mockUseDepositsSummary.mockReturnValue( {
 			depositsSummary: {
 				count: 30,
-			},
+			} as DepositsSummary,
 			isLoading: true,
 		} );
 
@@ -119,11 +147,11 @@ describe( 'Deposits list', () => {
 
 		expect( tableSummary ).toHaveLength( 0 );
 
-		useDepositsSummary.mockReturnValue( {
+		mockUseDepositsSummary.mockReturnValue( {
 			depositsSummary: {
 				count: 2,
 				total: 100,
-			},
+			} as DepositsSummary,
 			isLoading: false,
 		} );
 
@@ -137,10 +165,10 @@ describe( 'Deposits list', () => {
 
 	describe( 'Download button', () => {
 		test( 'renders when there are one or more deposits', () => {
-			useDeposits.mockReturnValue( {
+			mockUseDeposits.mockReturnValue( {
 				deposits: mockDeposits,
 				isLoading: false,
-			} );
+			} as CachedDeposits );
 
 			const { queryByRole } = render( <DepositsList /> );
 			const button = queryByRole( 'button', { name: 'Download' } );
@@ -149,10 +177,11 @@ describe( 'Deposits list', () => {
 		} );
 
 		test( 'does not render when there are no deposits', () => {
-			useDeposits.mockReturnValue( {
+			mockUseDeposits.mockReturnValue( {
 				deposits: [],
 				isLoading: false,
-			} );
+				depositsCount: 0,
+			} as CachedDeposits );
 
 			const { queryByRole } = render( <DepositsList /> );
 			const button = queryByRole( 'button', { name: 'Download' } );
@@ -163,16 +192,16 @@ describe( 'Deposits list', () => {
 
 	describe( 'CSV download', () => {
 		beforeEach( () => {
-			useDeposits.mockReturnValue( {
+			mockUseDeposits.mockReturnValue( {
 				deposits: mockDeposits,
 				depositsCount: 2,
 				isLoading: false,
 			} );
-			useDepositsSummary.mockReturnValue( {
+			mockUseDepositsSummary.mockReturnValue( {
 				depositsSummary: {
 					count: 2,
 					total: 5000,
-				},
+				} as DepositsSummary,
 				isLoading: false,
 			} );
 		} );
@@ -198,7 +227,7 @@ describe( 'Deposits list', () => {
 				'"Bank account"',
 			];
 
-			const csvContent = downloadCSVFile.mock.calls[ 0 ][ 1 ];
+			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
 			const csvHeaderRow = csvContent.split( os.EOL )[ 0 ].split( ',' );
 			expect( csvHeaderRow ).toEqual( expected );
 		} );
@@ -207,7 +236,7 @@ describe( 'Deposits list', () => {
 			const { getByRole, getAllByRole } = render( <DepositsList /> );
 			getByRole( 'button', { name: 'Download' } ).click();
 
-			const csvContent = downloadCSVFile.mock.calls[ 0 ][ 1 ];
+			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
 			const csvRows = csvContent.split( os.EOL );
 			const displayRows = getAllByRole( 'row' );
 

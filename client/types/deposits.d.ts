@@ -10,7 +10,7 @@ export interface CachedDeposits {
 	deposits: CachedDeposit[];
 	isLoading: boolean;
 	depositsCount: number;
-	depositsError: string;
+	depositsError?: string;
 }
 
 export interface CachedDeposit {
@@ -35,8 +35,19 @@ export interface DepositsSummaryCache {
 }
 
 export interface DepositsSummary {
-	store_currencies: string;
+	store_currencies: string[];
 	count: number;
 	total: number;
 	currency: string;
+}
+
+export interface Deposit {
+	automatic: boolean;
+	date: number;
+	status: string; // TODO: list statuses
+	amount: number;
+	currency: string;
+	bankAccount: string;
+	fee: number;
+	fee_percentage: number;
 }

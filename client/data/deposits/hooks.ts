@@ -11,9 +11,15 @@ import moment from 'moment';
  */
 import { STORE_NAME } from '../constants';
 import { Query } from '@woocommerce/navigation';
-import { CachedDeposits, DepositsSummaryCache } from 'wcpay/types/deposits';
+import {
+	CachedDeposits,
+	Deposit,
+	DepositsSummaryCache,
+} from 'wcpay/types/deposits';
 
-export const useDeposit = ( id: string ) =>
+export const useDeposit = (
+	id: string
+): { deposit: Deposit; isLoading: boolean } =>
 	useSelect(
 		( select ) => {
 			const { getDeposit, isResolving } = select( STORE_NAME );
