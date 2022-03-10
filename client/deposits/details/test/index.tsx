@@ -4,16 +4,20 @@
  * External dependencies
  */
 import { render } from '@testing-library/react';
+import React from 'react';
 
 /**
  * Internal dependencies
  */
 import { DepositOverview } from '../';
 import { useDeposit } from 'wcpay/data';
+import { CachedDeposit } from 'wcpay/types/deposits';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDeposit: jest.fn(),
 } ) );
+
+const mockUseDeposit = useDeposit as jest.MockedFunction< typeof useDeposit >;
 
 const mockDeposit = {
 	id: 'po_mock',
@@ -24,7 +28,13 @@ const mockDeposit = {
 	bankAccount: 'MOCK BANK •••• 1234 (USD)',
 	automatic: true,
 	fee: 30,
-	fee_percetange: 1.5,
+	fee_percentage: 1.5,
+} as CachedDeposit;
+
+declare const global: {
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+	};
 };
 
 describe( 'Deposit overview', () => {
@@ -49,7 +59,7 @@ describe( 'Deposit overview', () => {
 	} );
 
 	test( 'renders automatic deposit correctly', () => {
-		useDeposit.mockReturnValue( {
+		mockUseDeposit.mockReturnValue( {
 			deposit: mockDeposit,
 			isLoading: false,
 		} );
@@ -61,7 +71,7 @@ describe( 'Deposit overview', () => {
 	} );
 
 	test( 'renders instant deposit correctly', () => {
-		useDeposit.mockReturnValue( {
+		mockUseDeposit.mockReturnValue( {
 			deposit: { ...mockDeposit, automatic: false },
 			isLoading: false,
 		} );

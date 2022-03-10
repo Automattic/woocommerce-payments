@@ -139,7 +139,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
             <div
               class="woocommerce-summary__item-label"
             >
-              undefined% service fee
+              1.5% service fee
             </div>
             <div
               class="woocommerce-summary__item-data"

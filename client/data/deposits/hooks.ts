@@ -10,8 +10,12 @@ import moment from 'moment';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
+import { CachedDeposit } from '../../types/deposits';
+import { Query } from '@woocommerce/navigation';
 
-export const useDeposit = ( id ) =>
+export const useDeposit = (
+	id: string
+): { deposit: CachedDeposit; isLoading: boolean } =>
 	useSelect(
 		( select ) => {
 			const { getDeposit, isResolving } = select( STORE_NAME );
@@ -66,7 +70,7 @@ export const useDeposits = ( {
 	date_between: dateBetween,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
-} ) =>
+}: Query ) =>
 	useSelect(
 		( select ) => {
 			const {
@@ -77,8 +81,10 @@ export const useDeposits = ( {
 			} = select( STORE_NAME );
 
 			const query = {
-				paged: Number.isNaN( parseInt( paged, 10 ) ) ? '1' : paged,
-				perPage: Number.isNaN( parseInt( perPage, 10 ) )
+				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
+					? '1'
+					: paged,
+				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
 					? '25'
 					: perPage,
 				orderby,
@@ -125,7 +131,7 @@ export const useDepositsSummary = ( {
 	date_between: dateBetween,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
-} ) =>
+}: Query ) =>
 	useSelect(
 		( select ) => {
 			const { getDepositsSummary, isResolving } = select( STORE_NAME );
@@ -156,7 +162,7 @@ export const useDepositsSummary = ( {
 		]
 	);
 
-export const useInstantDeposit = ( transactionIds ) => {
+export const useInstantDeposit = ( transactionIds: string[] ) => {
 	const { deposit, inProgress } = useSelect( ( select ) => {
 		const { getInstantDeposit, isResolving } = select( STORE_NAME );
 
