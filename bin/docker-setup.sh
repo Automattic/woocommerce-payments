@@ -31,7 +31,7 @@ set +e
 cli wp db check --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
-	sleep 5s
+	sleep 5
 	cli wp db check --path=/var/www/html --quiet > /dev/null
 done
 
