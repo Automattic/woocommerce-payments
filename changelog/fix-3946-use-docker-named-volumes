@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Use named volumes for MySQL data and WordPress install (was mounted folders)
