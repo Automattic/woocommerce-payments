@@ -4,6 +4,7 @@ on:
         branches:
             - develop
             - trunk
+            - dev/hack-week-rest-api-documentation
     workflow_dispatch:
 
 jobs:
