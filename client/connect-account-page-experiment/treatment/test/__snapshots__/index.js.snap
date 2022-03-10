@@ -629,7 +629,7 @@ exports[`ConnectAccountPageExperimentExperiment should render correctly 1`] = `
         </div>
         <div>
           <img
-            alt="Multicurrency"
+            alt="Multi-Currency"
             src="[object Object]"
           />
           <p>
