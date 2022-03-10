@@ -7,14 +7,15 @@ import Currency, {
 	getCurrencyData,
 } from '@woocommerce/currency';
 import { find, trimEnd, endsWith } from 'lodash';
-import {
-	CurrencyNames,
-	ExchangeRateDenomination,
-} from 'wcpay/types/utils/currency';
+
+/**
+ * Internal dependencies
+ */
+import { ExchangeRateDenomination } from 'wcpay/types/utils/currency';
 
 const currencyData = getCurrencyData();
 
-const currencyNames: CurrencyNames = {
+const currencyNames: Record< string, string > = {
 	aud: __( 'Australian dollar', 'woocommerce-payments' ),
 	cad: __( 'Canadian dollar', 'woocommerce-payments' ),
 	chf: __( 'Swiss franc', 'woocommerce-payments' ),
@@ -89,7 +90,7 @@ function composeFallbackCurrency(
 	amount: number,
 	currencyCode: string,
 	isZeroDecimal: boolean
-) {
+): string {
 	try {
 		// Fallback for unsupported currencies: currency code and amount
 		return amount.toLocaleString( undefined, {
@@ -149,14 +150,17 @@ export const formatCurrency = (
  *
  * @return {string} formatted currency representation with the currency code suffix
  */
-const appendCurrencyCode = ( formatted: string, currencyCode: string ) => {
+const appendCurrencyCode = (
+	formatted: string,
+	currencyCode: string
+): string => {
 	if ( -1 === formatted.toString().indexOf( currencyCode ) ) {
 		formatted = formatted + ' ' + currencyCode;
 	}
 	return formatted;
 };
 
-function removeCurrencySymbol( formatted: string ) {
+function removeCurrencySymbol( formatted: string ): string {
 	formatted = formatted.replace( /[^0-9,.' ]/g, '' ).trim();
 	return formatted;
 }
@@ -184,7 +188,7 @@ export const formatExplicitCurrency = (
 	return appendCurrencyCode( formatted, currencyCode.toUpperCase() );
 };
 
-function trimEndingZeroes( formattedCurrencyAmount = '' ) {
+function trimEndingZeroes( formattedCurrencyAmount = '' ): string {
 	return formattedCurrencyAmount
 		.split( ' ' )
 		.map( ( chunk ) =>
@@ -196,7 +200,7 @@ function trimEndingZeroes( formattedCurrencyAmount = '' ) {
 function formatExchangeRate(
 	from: ExchangeRateDenomination,
 	to: ExchangeRateDenomination
-) {
+): string {
 	let exchangeRate =
 		'number' === typeof to.amount &&
 		'number' === typeof from.amount &&
