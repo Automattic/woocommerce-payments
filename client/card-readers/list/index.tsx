@@ -33,7 +33,7 @@ const ReadersList = (): JSX.Element => {
 
 	return (
 		<SettingsLayout displayBanner={ false }>
-			<SettingsSection Description={ ReadersListDescription }>
+			<SettingsSection description={ ReadersListDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<Card className="card-readers-list__wrapper">
 						<CardBody className="card-readers-list__header">

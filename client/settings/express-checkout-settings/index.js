@@ -107,7 +107,7 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 			</h2>
 
 			{ sections.map( ( { section, description } ) => (
-				<SettingsSection key={ section } Description={ description }>
+				<SettingsSection key={ section } description={ description }>
 					<LoadableSettingsSection numLines={ 30 }>
 						<ErrorBoundary>
 							<Controls section={ section } />
