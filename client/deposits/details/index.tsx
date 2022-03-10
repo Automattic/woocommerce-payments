@@ -26,7 +26,7 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 import React from 'react';
-import { Deposit } from 'wcpay/types/deposits';
+import { CachedDeposit } from 'wcpay/types/deposits';
 
 const Status = ( { status }: { status: string } ): JSX.Element => (
 	// Re-purpose order status indicator for deposit status.
@@ -65,8 +65,14 @@ const SummaryItem = ( {
 	</li>
 );
 
-export const DepositOverview = ( { depositId }: { depositId: string } ) => {
-	const { deposit = {} as Deposit, isLoading } = useDeposit( depositId );
+export const DepositOverview = ( {
+	depositId,
+}: {
+	depositId: string;
+} ): JSX.Element => {
+	const { deposit = {} as CachedDeposit, isLoading } = useDeposit(
+		depositId
+	);
 
 	const depositDateLabel = deposit.automatic
 		? __( 'Deposit date', 'woocommerce-payments' )

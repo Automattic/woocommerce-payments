@@ -10,12 +10,12 @@ import moment from 'moment';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
-import { Deposit } from '../../types/deposits';
+import { CachedDeposit } from '../../types/deposits';
 import { Query } from '@woocommerce/navigation';
 
 export const useDeposit = (
 	id: string
-): { deposit: Deposit; isLoading: boolean } =>
+): { deposit: CachedDeposit; isLoading: boolean } =>
 	useSelect(
 		( select ) => {
 			const { getDeposit, isResolving } = select( STORE_NAME );

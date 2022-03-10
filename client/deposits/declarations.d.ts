@@ -12,14 +12,21 @@ declare module '@woocommerce/components' {
 
 	const SummaryList: ( props: {
 		label: string;
-		children: any; // TODO: figure out this and 2 lines below.
+		children?: () => any;
 	} ) => JSX.Element;
 
-	const OrderStatus: ( props: {
+	const OrderStatus: ( {
+		order: { status },
+		className,
+		orderStatusMap,
+		labelPositionToLeft,
+	}: {
+		order: {
+			status: string;
+		};
 		className?: string;
 		// eslint-disable-next-line @typescript-eslint/ban-types
-		orderStatusMap: object;
-		// eslint-disable-next-line @typescript-eslint/ban-types
-		order: object;
+		orderStatusMap: Object;
+		labelPositionToLeft?: boolean;
 	} ) => JSX.Element;
 }
