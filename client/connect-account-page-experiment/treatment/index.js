@@ -161,7 +161,7 @@ const ConnectPageOnboardingDetails = () => {
 				<p>{ strings.detailsPayments }</p>
 			</div>
 			<div>
-				<img src={ MulticurrencyImg } alt="Multicurrency" />
+				<img src={ MulticurrencyImg } alt="Multi-Currency" />
 				<p>{ strings.detailsMulticurrency }</p>
 			</div>
 			<div>
