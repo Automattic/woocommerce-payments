@@ -3,6 +3,10 @@ version: '3'
 volumes:
   ## Kludge for not having the ./docker directory bound recursively
   dockerdirectory:
+  ## Volume for mysql data to persist across restarts
+  mysql_data:
+  ## Volume for WordPress install to persist across restarts (e.g. plugins, uploads etc)
+  wordpress_install:
 
 services:
   wordpress:
@@ -19,7 +23,7 @@ services:
     env_file:
       - default.env
     volumes:
-      - ./docker/wordpress:/var/www/html/
+      - wordpress_install:/var/www/html/
       - ./docker/logs/apache2/:/var/log/apache2
       - .:/var/www/html/wp-content/plugins/woocommerce-payments
       - ./docker/wc-payments-php.ini:/usr/local/etc/php/conf.d/wc-payments-php.ini
@@ -33,7 +37,7 @@ services:
     env_file:
       - default.env
     volumes:
-      - ./docker/data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
   phpMyAdmin:
     container_name: woocommerce_payments_phpmyadmin
     image: phpmyadmin/phpmyadmin:latest
