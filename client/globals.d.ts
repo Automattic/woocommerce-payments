@@ -20,6 +20,7 @@ declare const wcpaySettings: {
 		country: string;
 		availableStates: Array< Record< string, string > >;
 	};
+	currentUserEmail: string;
 };
 
 interface Window {

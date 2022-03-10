@@ -2,13 +2,13 @@
 
 exports[`CustomerLink renders a dash if customer name is undefined 1`] = `
 <div>
-  -
+  –
 </div>
 `;
 
 exports[`CustomerLink renders a dash if customer name is undefined 2`] = `
 <div>
-  -
+  –
 </div>
 `;
 

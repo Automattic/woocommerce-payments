@@ -10,4 +10,5 @@ export default {
 	elevated: __( 'Elevated', 'woocommerce-payments' ),
 	highest: __( 'Highest', 'woocommerce-payments' ),
 	not_assessed: __( 'N/A', 'woocommerce-payments' ),
+	unknown: __( 'N/A', 'woocommerce-payments' ),
 };

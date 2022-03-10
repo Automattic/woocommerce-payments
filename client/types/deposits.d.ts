@@ -19,6 +19,8 @@ export interface CachedDeposit {
 	type: 'deposit' | 'withdrawal';
 	amount: number;
 	currency: string;
+	fee_percentage: number;
+	fee: number;
 	status:
 		| 'paid'
 		| 'pending'
@@ -27,6 +29,7 @@ export interface CachedDeposit {
 		| 'failed'
 		| 'estimated';
 	bankAccount: string;
+	automatic: boolean;
 }
 
 export interface DepositsSummaryCache {
@@ -39,15 +42,4 @@ export interface DepositsSummary {
 	count: number;
 	total: number;
 	currency: string;
-}
-
-export interface Deposit {
-	automatic: boolean;
-	date: number;
-	status: string; // TODO: list statuses
-	amount: number;
-	currency: string;
-	bankAccount: string;
-	fee: number;
-	fee_percentage: number;
 }

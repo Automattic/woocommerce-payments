@@ -13,13 +13,13 @@ import { STORE_NAME } from '../constants';
 import { Query } from '@woocommerce/navigation';
 import {
 	CachedDeposits,
-	Deposit,
+	CachedDeposit,
 	DepositsSummaryCache,
 } from 'wcpay/types/deposits';
 
 export const useDeposit = (
 	id: string
-): { deposit: Deposit; isLoading: boolean } =>
+): { deposit: CachedDeposit; isLoading: boolean } =>
 	useSelect(
 		( select ) => {
 			const { getDeposit, isResolving } = select( STORE_NAME );
@@ -166,7 +166,7 @@ export const useDepositsSummary = ( {
 		]
 	);
 
-export const useInstantDeposit = ( transactionIds: any ) => {
+export const useInstantDeposit = ( transactionIds: string[] ) => {
 	const { deposit, inProgress } = useSelect( ( select ) => {
 		const { getInstantDeposit, isResolving } = select( STORE_NAME );
 
