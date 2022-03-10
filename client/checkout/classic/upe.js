@@ -6,7 +6,7 @@
 import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
-	PAYMENT_METHOD_NAME_UPE,
+	PAYMENT_METHOD_NAME_SEPA,
 } from '../constants.js';
 import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
@@ -697,7 +697,7 @@ jQuery( function ( $ ) {
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	const wcpayPaymentMethods = [
 		PAYMENT_METHOD_NAME_CARD,
-		PAYMENT_METHOD_NAME_UPE,
+		PAYMENT_METHOD_NAME_SEPA,
 	];
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )

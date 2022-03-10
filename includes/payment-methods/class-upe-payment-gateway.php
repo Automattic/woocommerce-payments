@@ -631,7 +631,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 
-				self::remove_upe_payment_intent_from_session();
+				static::remove_upe_payment_intent_from_session();
 
 				if ( 'requires_action' === $status ) {
 					// I don't think this case should be possible, but just in case...
@@ -659,7 +659,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
 			$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
 
-			self::remove_upe_payment_intent_from_session();
+			static::remove_upe_payment_intent_from_session();
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
@@ -685,8 +685,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['checkoutTitle']            = $this->checkout_title;
 		$payment_fields['cartContainsSubscription'] = $this->is_subscription_item_in_cart();
 		$payment_fields['logPaymentErrorNonce']     = wp_create_nonce( 'wcpay_log_payment_error_nonce' );
-		$payment_fields['upePaymentIntentData']     = WC()->session->get( self::KEY_UPE_PAYMENT_INTENT );
-		$payment_fields['upeSetupIntentData']       = WC()->session->get( self::KEY_UPE_SETUP_INTENT );
+		$payment_fields['upePaymentIntentData']     = $this->get_payment_intent_data_from_session();
+		$payment_fields['upeSetupIntentData']       = $this->get_setup_intent_data_from_session();
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
@@ -1034,8 +1034,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		foreach ( $enabled_payment_methods as $payment_method ) {
 			$settings[ $payment_method ] = [
-				'isReusable' => $this->payment_methods[ $payment_method ]->is_reusable(),
-				'title'      => $this->payment_methods[ $payment_method ]->get_title(),
+				'isReusable'           => $this->payment_methods[ $payment_method ]->is_reusable(),
+				'title'                => $this->payment_methods[ $payment_method ]->get_title(),
+				// Below properties will be populated with JS objects by upe.js.
+				'elements'             => null,
+				'upeElement'           => null,
+				'intentId'             => null,
+				'isUPEComplete'        => false,
+				'upePaymentIntentData' => $this->get_payment_intent_data_from_session(),
+				'upeSetupIntentData'   => $this->get_setup_intent_data_from_session(),
 			];
 		}
 
@@ -1092,11 +1099,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $error_message );
 
-			self::remove_upe_payment_intent_from_session();
+			static::remove_upe_payment_intent_from_session();
 
 			wp_send_json_success();
 		} catch ( Exception $e ) {
-			self::remove_upe_payment_intent_from_session();
+			static::remove_upe_payment_intent_from_session();
 
 			wp_send_json_error(
 				[
@@ -1123,7 +1130,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret;
 
-		WC()->session->set( self::KEY_UPE_PAYMENT_INTENT, $value );
+		WC()->session->set( $this->get_payment_intent_session_key(), $value );
 	}
 
 	/**
@@ -1144,13 +1151,50 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	private function add_upe_setup_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
 		$value = $intent_id . '-' . $client_secret;
 
-		WC()->session->set( self::KEY_UPE_SETUP_INTENT, $value );
+		WC()->session->set( $this->get_setup_intent_session_key(), $value );
 	}
 
 	/**
 	 * Removes the setup intent created for UPE from WC session.
 	 */
 	public function remove_upe_setup_intent_from_session() {
-		WC()->session->__unset( self::KEY_UPE_SETUP_INTENT );
+		WC()->session->__unset( $this->get_setup_intent_session_key() );
 	}
+
+	/**
+	 * Returns session key for UPE SEPA payment intents.
+	 *
+	 * @return string
+	 */
+	public function get_payment_intent_session_key() {
+		return self::KEY_UPE_PAYMENT_INTENT;
+	}
+
+	/**
+	 * Returns session key for UPE SEPA setup intents.
+	 *
+	 * @return string
+	 */
+	public function get_setup_intent_session_key() {
+		return self::KEY_UPE_SETUP_INTENT;
+	}
+
+	/**
+	 * Returns payment intent session data.
+	 *
+	 * @return string
+	 */
+	public function get_payment_intent_data_from_session() {
+		return WC()->session->get( $this->get_payment_intent_session_key() );
+	}
+
+	/**
+	 * Returns setup intent session data.
+	 *
+	 * @return string
+	 */
+	public function get_setup_intent_data_from_session() {
+		return WC()->session->get( $this->get_setup_intent_session_key() );
+	}
+
 }
