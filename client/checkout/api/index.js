@@ -227,9 +227,7 @@ export default class WCPayAPI {
 			orderId = orderIdPartials[ 0 ];
 		}
 
-		// For platform checkout we need the capability to switch up the account ID specifically for
-		// the intent confirmation step, that's why we have a new function for this here.
-		const getStripe = () => {
+		const confirmPaymentOrSetup = () => {
 			const { locale, publishableKey } = this.options;
 			const accountIdForIntentConfirmation = getConfig(
 				'accountIdForIntentConfirmation'
@@ -238,25 +236,25 @@ export default class WCPayAPI {
 			// If this is a setup intent we're not processing a platform checkout payment so we can
 			// use the regular getStripe function.
 			if ( isSetupIntent ) {
-				return this.getStripe();
+				return this.getStripe().confirmCardSetup( clientSecret );
 			}
 
+			// For platform checkout we need the capability to switch up the account ID specifically for
+			// the intent confirmation step, that's why we create a new instance of the Stripe JS here.
 			if ( accountIdForIntentConfirmation ) {
 				return this.createStripe(
 					publishableKey,
 					locale,
 					accountIdForIntentConfirmation
-				);
+				).confirmCardPayment( clientSecret );
 			}
 
 			// When not dealing with a setup intent or platform checkout we need to force an account
 			// specific request in Stripe.
-			return this.getStripe( true );
+			return this.getStripe( true ).confirmCardPayment( clientSecret );
 		};
 
-		const confirmAction = isSetupIntent
-			? getStripe().confirmCardSetup( clientSecret )
-			: getStripe().confirmCardPayment( clientSecret );
+		const confirmAction = confirmPaymentOrSetup();
 
 		const request = confirmAction
 			// ToDo: Switch to an async function once it works with webpack.
