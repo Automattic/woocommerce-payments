@@ -20,9 +20,9 @@ import AddressDetailsSection from './sections/address-details';
 import BrandingDetailsSection from './sections/branding-details';
 import { getAdminUrl } from 'wcpay/utils';
 
-const isBrandingEnabled = false;
+const isBrandingEnabled = true;
 
-const ReadersSettingsDescription = () => (
+const ReadersSettingsDescription = (): JSX.Element => (
 	<>
 		<h2>{ __( 'Card reader receipts', 'woocommerce-payments' ) }</h2>
 		<p>
@@ -43,7 +43,7 @@ const ReadersSettingsDescription = () => (
 	</>
 );
 
-const ReceiptSettings = () => {
+const ReceiptSettings = (): JSX.Element => {
 	return (
 		<SettingsLayout displayBanner={ false }>
 			<SettingsSection Description={ ReadersSettingsDescription }>

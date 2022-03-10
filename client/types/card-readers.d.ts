@@ -55,3 +55,14 @@ export interface CardReaderListItem {
 export interface CardReaderListItemProps {
 	reader: CardReaderListItem;
 }
+
+export interface CardReaderFileUploadProps {
+	fieldKey: string;
+	label: string;
+	accept: string;
+	disabled?: boolean;
+	help?: string;
+	purpose: string;
+	fileID: string;
+	updateFileID: ( id: string ) => void;
+}
