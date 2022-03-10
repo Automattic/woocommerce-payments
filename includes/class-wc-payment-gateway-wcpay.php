@@ -704,6 +704,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! WC_Payments_Features::is_upe_enabled() &&
 			is_checkout() &&
 			! has_block( 'woocommerce/checkout' ) &&
+			! is_wc_endpoint_url( 'order-pay' ) &&
 			! WC()->cart->is_empty()
 		) {
 			$cart_total = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), get_woocommerce_currency() );
