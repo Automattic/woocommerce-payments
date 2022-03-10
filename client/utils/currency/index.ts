@@ -8,10 +8,10 @@ import Currency, {
 } from '@woocommerce/currency';
 import { find, trimEnd, endsWith } from 'lodash';
 
-/**
- * Internal dependencies
- */
-import { ExchangeRateDenomination } from 'wcpay/types/utils/currency';
+interface ExchangeRateDenomination {
+	amount: number;
+	currency: string;
+}
 
 const currencyData = getCurrencyData();
 
