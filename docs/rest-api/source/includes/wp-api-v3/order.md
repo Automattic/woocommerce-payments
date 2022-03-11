@@ -2,11 +2,15 @@
 
 The order API allows you to perform operations such as capture a terminal payment, create an intent, create a customer, etc. for a particular order.
 
-## Create a terminal payment
+## Create a terminal intent
 
 Create a new in-person payment intent for the given order ID without [confirming](https://stripe.com/docs/api/payment_intents/confirm) it.
 
-Possible error codes include:
+### POST params
+
+-   payment_intent_id: string
+
+### Error codes
 
 -   `wcpay_missing_order` - Order not found
 -   `wcpay_server_error` - Unexpected server error
@@ -48,7 +52,7 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/create_termina
 
 Given an intent ID and an order ID, add the intent ID to the order and [capture](https://stripe.com/docs/api/payment_intents/capture) it.
 
-Possible error codes include:
+### Error codes
 
 -   `wcpay_missing_order` - Order not found
 -   `wcpay_refunded_order_uncapturable` - Payment cannot be captured for partially or fully refunded orders
@@ -98,7 +102,7 @@ Returns customer id from order. Create or update customer if needed.
 
 If the order is created for a registered customer, we extract it's Stripe customer ID.
 
-Possible error codes include:
+### Error codes
 
 -   `wcpay_missing_order` - Order not found
 -   `wcpay_invalid_order_status` - Invalid order status
