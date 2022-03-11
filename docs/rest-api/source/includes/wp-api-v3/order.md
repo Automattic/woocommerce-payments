@@ -4,7 +4,7 @@ The order API allows you to perform operations such as capture a terminal paymen
 
 ## Create a terminal intent
 
-Create a new in-person payment intent for the given order ID without [confirming](https://stripe.com/docs/api/payment_intents/confirm) it.
+Create a new in-person payment intent for the given order ID without confirming it.
 
 ### Error codes
 
@@ -46,7 +46,7 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/create_termina
 
 ## Capture a terminal payment
 
-Given an intent ID and an order ID, add the intent ID to the order and [capture](https://stripe.com/docs/api/payment_intents/capture) it.
+Given an intent ID and an order ID, add the intent ID to the order and capture it.
 
 ### POST params
 
@@ -99,8 +99,6 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_termin
 ## Create customer
 
 Returns customer id from order. Create or update customer if needed.
-
-If the order is created for a registered customer, we extract it's Stripe customer ID.
 
 ### Error codes
 
