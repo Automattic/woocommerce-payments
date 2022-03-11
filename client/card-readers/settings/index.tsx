@@ -46,7 +46,7 @@ const ReadersSettingsDescription = (): JSX.Element => (
 const ReceiptSettings = (): JSX.Element => {
 	return (
 		<SettingsLayout displayBanner={ false }>
-			<SettingsSection Description={ ReadersSettingsDescription }>
+			<SettingsSection description={ ReadersSettingsDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<Card className="card-readers-settings__wrapper">
 						<CardBody>

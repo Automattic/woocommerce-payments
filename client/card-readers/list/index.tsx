@@ -11,7 +11,7 @@ import { Card, CardBody, CardDivider } from '@wordpress/components';
  */
 import SettingsSection from 'wcpay/settings/settings-section';
 import SettingsLayout from 'wcpay/settings/settings-layout';
-import LoadableSettingsSection from 'wcpay/settings//loadable-settings-section';
+import LoadableSettingsSection from 'wcpay/settings/loadable-settings-section';
 import CardReaderListItem from './list-item';
 import { useReaders } from 'wcpay/data';
 
@@ -33,7 +33,7 @@ const ReadersList = (): JSX.Element => {
 
 	return (
 		<SettingsLayout displayBanner={ false }>
-			<SettingsSection Description={ ReadersListDescription }>
+			<SettingsSection description={ ReadersListDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<Card className="card-readers-list__wrapper">
 						<CardBody className="card-readers-list__header">
