@@ -9,6 +9,7 @@ on:
 
 jobs:
     build-and-deploy:
+        if: github.repository_owner == 'automattic'
         name: Build and deploy
         runs-on: ubuntu-latest
         steps:
@@ -16,12 +17,11 @@ jobs:
               uses: actions/checkout@v2
             - name: Build
               run: cd docs/rest-api && ./build.sh
-            - name: Deploy to Netlify
+            - name: Deploy to GitHub Pages
               if: success()
-              uses: jsmrcaga/action-netlify-deploy@v1.1.0
+              uses: crazy-max/ghaction-github-pages@v2
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                  NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN_APIDOCS }}
-                  NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_APIDOCS }}
-                  NETLIFY_DEPLOY_TO_PROD: true
-                  build_directory: 'docs/rest-api/build'
-                  install_command: 'echo null'
+                  target_branch: gh-pages
+                  build_dir: 'docs/rest-api/build'
