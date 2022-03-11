@@ -3,6 +3,8 @@
 /**
  * External dependencies
  */
+import { DepositsTableHeader } from 'wcpay/types/deposits';
+import React from 'react';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __, _n } from '@wordpress/i18n';
@@ -20,7 +22,6 @@ import {
  */
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { displayType, displayStatus } from '../strings';
-// import { formatStringValue } from 'util';
 import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
@@ -30,8 +31,6 @@ import DepositsFilters from '../filters';
 import DownloadButton from 'components/download-button';
 
 import './style.scss';
-import { DepositsTableHeader } from 'wcpay/types/deposits';
-import React from 'react';
 import { parseInt } from 'lodash';
 
 const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
@@ -84,7 +83,7 @@ const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 	},
 ];
 
-export const DepositsList = () => {
+export const DepositsList = (): JSX.Element => {
 	const { deposits, isLoading } = useDeposits( getQuery() );
 	const { depositsSummary, isLoading: isSummaryLoading } = useDepositsSummary(
 		getQuery()
@@ -216,7 +215,7 @@ export const DepositsList = () => {
 			generateCSVDataFromTable( csvColumns, csvRows )
 		);
 
-		window.wcTracks.recordEvent( 'wcpay_deposits_download', {
+		wcTracks.recordEvent( 'wcpay_deposits_download', {
 			exported_deposits: rows.length,
 			total_deposits: depositsSummary.count,
 		} );

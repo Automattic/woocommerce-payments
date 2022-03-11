@@ -23,6 +23,4 @@ declare const wcpaySettings: {
 	currentUserEmail: string;
 };
 
-interface Window {
-	wcTracks: any;
-}
+declare const wcTracks: any;
