@@ -699,7 +699,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function should_use_stripe_platform_on_checkout_page() {
 		// TODO: Add support for blocks checkout.
 		if (
-			WC_Payments_Features::is_platform_checkout_enabled() &&
+			WC_Payments_Features::is_platform_checkout_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
 			! WC_Payments_Features::is_upe_enabled() &&
 			is_checkout() &&
