@@ -20,8 +20,7 @@ export interface PaymentMethodMapEntry {
 	id: string;
 	label: string;
 	description: string;
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	Icon: () => JSX.Element;
+	icon: () => JSX.Element;
 	currencies: string[];
 	stripe_key: string;
 }
@@ -37,7 +36,7 @@ const PaymentMethodInformationObject: Record<
 			'Let your customers pay with major credit and debit cards without leaving your store.',
 			'woocommerce-payments'
 		),
-		Icon: CreditCardIcon,
+		icon: CreditCardIcon,
 		currencies: [],
 		stripe_key: 'card_payments',
 	},
@@ -48,7 +47,7 @@ const PaymentMethodInformationObject: Record<
 			'Bulk Electronic Clearing System — Accept secure bank transfer from Australia.',
 			'woocommerce-payments'
 		),
-		Icon: BankDebitIcon,
+		icon: BankDebitIcon,
 		currencies: [ 'AUD' ],
 		stripe_key: 'au_becs_debit_payments',
 	},
@@ -59,7 +58,7 @@ const PaymentMethodInformationObject: Record<
 			'Bancontact is a bank redirect payment method offered by more than 80% of online businesses in Belgium.',
 			'woocommerce-payments'
 		),
-		Icon: BancontactIcon,
+		icon: BancontactIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'bancontact_payments',
 	},
@@ -70,7 +69,7 @@ const PaymentMethodInformationObject: Record<
 			'Accept your payment with EPS — a common payment method in Austria.',
 			'woocommerce-payments'
 		),
-		Icon: EpsIcon,
+		icon: EpsIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'eps_payments',
 	},
@@ -81,7 +80,7 @@ const PaymentMethodInformationObject: Record<
 			'Expand your business with giropay — Germany’s second most popular payment system.',
 			'woocommerce-payments'
 		),
-		Icon: GiropayIcon,
+		icon: GiropayIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'giropay_payments',
 	},
@@ -92,7 +91,7 @@ const PaymentMethodInformationObject: Record<
 			'Expand your business with iDEAL — Netherlands’s most popular payment method.',
 			'woocommerce-payments'
 		),
-		Icon: IdealIcon,
+		icon: IdealIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'ideal_payments',
 	},
@@ -103,7 +102,7 @@ const PaymentMethodInformationObject: Record<
 			'Accept payments with Przelewy24 (P24), the most popular payment method in Poland.',
 			'woocommerce-payments'
 		),
-		Icon: P24Icon,
+		icon: P24Icon,
 		currencies: [ 'EUR', 'PLN' ],
 		stripe_key: 'p24_payments',
 	},
@@ -114,7 +113,7 @@ const PaymentMethodInformationObject: Record<
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
 			'woocommerce-payments'
 		),
-		Icon: SepaIcon,
+		icon: SepaIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'sepa_debit_payments',
 	},
@@ -125,7 +124,7 @@ const PaymentMethodInformationObject: Record<
 			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, Netherlands, and Spain.',
 			'woocommerce-payments'
 		),
-		Icon: SofortIcon,
+		icon: SofortIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'sofort_payments',
 	},

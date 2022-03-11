@@ -182,7 +182,7 @@ const PaymentMethods = () => {
 			handleDeleteModalOpen( {
 				id: itemId,
 				label: methodConfig.label,
-				Icon: methodConfig.Icon,
+				Icon: methodConfig.icon,
 			} );
 		} else {
 			completeDeleteAction( itemId );
