@@ -91,7 +91,7 @@ export interface DisputeFileUpload {
 	accept: string;
 	error?: string;
 	onFileChange( key: string, file: File ): Promise< void >;
-	onFileRemove( key: string ): any;
+	onFileRemove( key: string ): void;
 	help?: string;
 	showPreview?: boolean;
 }

@@ -13,7 +13,17 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import { FileUploadControl } from 'components/file-upload';
-import { CardReaderFileUploadProps } from 'wcpay/types/card-readers';
+
+interface CardReaderFileUploadProps {
+	fieldKey: string;
+	label: string;
+	accept: string;
+	disabled?: boolean;
+	help?: string;
+	purpose: string;
+	fileID: string;
+	updateFileID: ( id: string ) => void;
+}
 
 const BrandingFileUpload: React.FunctionComponent< CardReaderFileUploadProps > = (
 	props
@@ -36,7 +46,7 @@ const BrandingFileUpload: React.FunctionComponent< CardReaderFileUploadProps > =
 
 	const { createErrorNotice } = useDispatch( 'core/notices' );
 
-	const fileSizeExceeded = ( { size }: { size: number } ) => {
+	const fileSizeExceeded = ( size: number ) => {
 		const fileSizeLimitInBytes = 510000;
 		if ( fileSizeLimitInBytes < size ) {
 			createErrorNotice(
@@ -55,7 +65,7 @@ const BrandingFileUpload: React.FunctionComponent< CardReaderFileUploadProps > =
 			return;
 		}
 
-		if ( fileSizeExceeded( file ) ) {
+		if ( fileSizeExceeded( file.size ) ) {
 			return;
 		}
 
