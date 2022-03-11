@@ -9,7 +9,7 @@ on:
 
 jobs:
     build-and-deploy:
-        if: github.repository_owner == 'automattic'
+        if: github.repository_owner == 'Automattic'
         name: Build and deploy
         runs-on: ubuntu-latest
         steps:
