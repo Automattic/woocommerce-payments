@@ -6,10 +6,6 @@ The order API allows you to perform operations such as capture a terminal paymen
 
 Create a new in-person payment intent for the given order ID without [confirming](https://stripe.com/docs/api/payment_intents/confirm) it.
 
-### POST params
-
--   payment_intent_id: string
-
 ### Error codes
 
 -   `wcpay_missing_order` - Order not found
@@ -51,6 +47,10 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/create_termina
 ## Capture a terminal payment
 
 Given an intent ID and an order ID, add the intent ID to the order and [capture](https://stripe.com/docs/api/payment_intents/capture) it.
+
+### POST params
+
+-   payment_intent_id: string
 
 ### Error codes
 
