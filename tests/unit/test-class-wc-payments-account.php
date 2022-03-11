@@ -199,60 +199,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertFalse( WC_Payments_Account::is_on_boarding_disabled() );
 	}
 
-	public function test_maybe_redirect_to_wcpay_connect_do_redirect() {
-		// Test as an admin user.
-		wp_set_current_user( 1 );
-
-		// Set the redirection parameter.
-		$_GET['wcpay-connect-redirect'] = 1;
-
-		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
-		$mock_wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setMethods( [ 'redirect_to' ] )
-			->setConstructorArgs( [ $this->mock_api_client ] )
-			->getMock();
-
-		$mock_wcpay_account->expects( $this->once() )->method( 'redirect_to' );
-
-		$this->assertTrue( $mock_wcpay_account->maybe_redirect_to_wcpay_connect() );
-	}
-
-	public function test_maybe_redirect_to_wcpay_connect_unauthorized_user() {
-		// Test as an editor user.
-		$editor_user = $this->factory()->user->create( [ 'role' => 'editor' ] );
-		wp_set_current_user( $editor_user );
-
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_wcpay_connect() );
-	}
-
-	public function test_maybe_redirect_to_wcpay_connect_doing_ajax() {
-		// Test as an admin user.
-		wp_set_current_user( 1 );
-
-		// Set the redirection parameter.
-		$_GET['wcpay-connect-redirect'] = 1;
-
-		// Simulate we're in an AJAX request.
-		add_filter( 'wp_doing_ajax', '__return_true' );
-
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_wcpay_connect() );
-
-		// Cleaning up.
-		remove_filter( 'wp_doing_ajax', '__return_true' );
-	}
-
-	public function test_maybe_redirect_to_wcpay_connect_wrong_page() {
-		// Test as an admin user.
-		wp_set_current_user( 1 );
-
-		// Set the redirection parameter.
-		$_GET['wcpay-connect-redirect'] = 1;
-
-		$_GET['path'] = '/payments/overview';
-
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_wcpay_connect() );
-	}
-
 	public function test_try_is_stripe_connected_returns_true_when_connected() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
