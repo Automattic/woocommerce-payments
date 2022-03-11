@@ -13,7 +13,6 @@ import './styles.scss';
 
 const PaymentConfirmIllustration: React.FunctionComponent< {
 	hasBorder: boolean;
-	// eslint-disable-next-line @typescript-eslint/naming-convention
 	icon: ( { className }: { className: string } ) => JSX.Element;
 } > = ( { hasBorder, icon: Icon = () => null } ): JSX.Element => {
 	return (
