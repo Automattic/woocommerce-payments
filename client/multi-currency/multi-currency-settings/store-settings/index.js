@@ -104,7 +104,7 @@ const StoreSettings = () => {
 	return (
 		<>
 			<SettingsSection
-				Description={ StoreSettingsDescription }
+				description={ StoreSettingsDescription }
 				className={ 'multi-currency-settings-store-settings-section' }
 			>
 				<LoadableBlock isLoading={ isLoading } numLines={ 10 }>

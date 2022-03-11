@@ -15,7 +15,7 @@ describe( 'SettingsSection', () => {
 	test( 'renders the Description', () => {
 		render(
 			<SettingsSection
-				Description={ () => (
+				description={ () => (
 					<>
 						<h2>Foo</h2>
 						<p>Bar</p>
@@ -33,7 +33,7 @@ describe( 'SettingsSection', () => {
 
 	test( 'renders children', () => {
 		render(
-			<SettingsSection title="Foo" description="Bar">
+			<SettingsSection title="Foo">
 				<div>Baz</div>
 			</SettingsSection>
 		);

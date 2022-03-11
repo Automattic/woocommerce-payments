@@ -4,10 +4,19 @@
  */
 import classNames from 'classnames';
 import { __ } from '@wordpress/i18n';
+import React from 'react';
 
 /*eslint-disable camelcase*/
-const CardReaderListItem = ( { reader: { id, device_type, is_active } } ) => {
-	const status = is_active
+const CardReaderListItem: React.FunctionComponent< {
+	reader: {
+		id: string;
+		device_type: string;
+		is_active: boolean;
+	};
+} > = ( {
+	reader: { id, device_type: deviceType, is_active: isActive },
+} ): JSX.Element => {
+	const status = isActive
 		? __( 'Active', 'woocomerce-payments' )
 		: __( 'Inactive', 'woocomerce-payments' );
 
@@ -17,10 +26,10 @@ const CardReaderListItem = ( { reader: { id, device_type, is_active } } ) => {
 				<span>{ id }</span>
 			</div>
 			<div className="card-readers-item__type">
-				<span>{ device_type }</span>
+				<span>{ deviceType }</span>
 			</div>
 			<div className="card-readers-item__status">
-				<span className={ is_active ? 'active' : 'inactive' }>
+				<span className={ isActive ? 'active' : 'inactive' }>
 					{ status }
 				</span>
 			</div>
