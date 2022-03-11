@@ -57,7 +57,7 @@ const ConfirmPaymentMethodActivationModal = ( {
 			}
 		>
 			<PaymentConfirmIllustration
-				Icon={ paymentMethodInformation.Icon }
+				icon={ paymentMethodInformation.Icon }
 				hasBorder={ 'card' !== paymentMethodInformation.id }
 			/>
 			{ 0 < requirementsToDisplay.length ? (

@@ -11,14 +11,11 @@ import classNames from 'classnames';
  */
 import './styles.scss';
 
-const PaymentConfirmIllustration = ( {
-	hasBorder,
-	Icon = () => <React.Fragment />,
-}: {
+const PaymentConfirmIllustration: React.FunctionComponent< {
 	hasBorder: boolean;
 	// eslint-disable-next-line @typescript-eslint/naming-convention
-	Icon: ( { className }: { className: string } ) => JSX.Element;
-} ): JSX.Element => {
+	icon: ( { className }: { className: string } ) => JSX.Element;
+} > = ( { hasBorder, icon: Icon = () => null } ): JSX.Element => {
 	return (
 		<div className="payment-confirm-illustration__wrapper">
 			<div className="payment-confirm-illustration__illustrations">

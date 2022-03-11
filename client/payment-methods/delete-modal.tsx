@@ -50,7 +50,7 @@ const ConfirmPaymentMethodDeleteModal = ( {
 			}
 		>
 			<PaymentDeleteIllustration
-				Icon={ Icon }
+				icon={ Icon }
 				hasBorder={ 'card' !== id }
 			/>
 			<p>
