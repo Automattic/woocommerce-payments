@@ -20,6 +20,6 @@ declare const wcpaySettings: {
 		country: string;
 		availableStates: Array< Record< string, string > >;
 	};
-	accountEmail: string | null;
+	accountEmail: string;
 	currentUserEmail: string;
 };
