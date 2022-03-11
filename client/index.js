@@ -56,7 +56,7 @@ addFilter(
 
 		pages.push( {
 			container: OnboardingPage,
-			path: '/payments/connect/onboarding',
+			path: '/payments/onboarding',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
 				rootLink,
