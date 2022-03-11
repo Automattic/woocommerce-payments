@@ -20,7 +20,7 @@ import AddressDetailsSection from './sections/address-details';
 import BrandingDetailsSection from './sections/branding-details';
 import { getAdminUrl } from 'wcpay/utils';
 
-const isBrandingEnabled = true;
+const isBrandingEnabled = false;
 
 const ReadersSettingsDescription = (): JSX.Element => (
 	<>
