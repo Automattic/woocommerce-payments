@@ -48,7 +48,7 @@ const ReadersList = (): JSX.Element => {
 							</div>
 						</CardBody>
 						<CardDivider />
-						<CardBody>
+						<CardBody className="card-readers-list__body">
 							<ul>
 								{ ! isLoading &&
 									Object.entries(
