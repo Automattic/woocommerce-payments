@@ -290,7 +290,7 @@ const PaymentMethods = () => {
 				<ConfirmPaymentMethodDeleteModal
 					id={ deleteModalParams.id }
 					label={ deleteModalParams.label }
-					Icon={ deleteModalParams.Icon }
+					icon={ deleteModalParams.Icon }
 					onConfirm={ () => {
 						completeDeleteAction( deleteModalParams.id );
 					} }

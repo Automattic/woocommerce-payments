@@ -13,20 +13,13 @@ import interpolateComponents from 'interpolate-components';
 import PaymentDeleteIllustration from '../components/payment-delete-illustration';
 import ConfirmationModal from '../components/confirmation-modal';
 
-const ConfirmPaymentMethodDeleteModal = ( {
-	id,
-	label,
-	Icon,
-	onConfirm,
-	onCancel,
-}: {
+const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 	id: string;
 	label: string;
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	Icon: () => JSX.Element;
+	icon: () => JSX.Element;
 	onConfirm: () => void;
 	onCancel: () => void;
-} ): JSX.Element => {
+} > = ( { id, label, icon: Icon, onConfirm, onCancel } ): JSX.Element => {
 	return (
 		<ConfirmationModal
 			title={ sprintf(
