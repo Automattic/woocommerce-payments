@@ -172,7 +172,7 @@ export const useDepositsSummary = ( {
 
 export const useInstantDeposit = (
 	transactionIds: string[]
-): { inProgress: unknown; submit: () => void; deposit: unknown } => {
+): { inProgress: boolean; submit: () => void; deposit: unknown } => {
 	const { deposit, inProgress } = useSelect( ( select ) => {
 		const { getInstantDeposit, isResolving } = select( STORE_NAME );
 
