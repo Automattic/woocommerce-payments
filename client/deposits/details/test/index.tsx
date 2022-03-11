@@ -34,6 +34,10 @@ const mockDeposit = {
 declare const global: {
 	wcpaySettings: {
 		zeroDecimalCurrencies: string[];
+		currencyData: Record< string, any >;
+		connect: {
+			country: string;
+		};
 	};
 };
 
