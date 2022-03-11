@@ -10,11 +10,12 @@ import classNames from 'classnames';
  */
 import './settings-section.scss';
 
-const SettingsSection = ( {
-	Description = () => null,
-	children,
-	className,
-} ) => (
+const SettingsSection: React.FunctionComponent< {
+	children?: React.ReactNode;
+	className?: string;
+	description?: React.FunctionComponent;
+	title?: string;
+} > = ( { description: Description = () => null, children, className } ) => (
 	<div className={ classNames( 'settings-section', className ) }>
 		<div className="settings-section__details">
 			<Description />

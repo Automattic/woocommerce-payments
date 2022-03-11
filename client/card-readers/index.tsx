@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -15,7 +16,7 @@ import { TabPanel } from '@wordpress/components';
 
 import './style.scss';
 
-export const ConnectedReaders = () => {
+export const ConnectedReaders = (): JSX.Element => {
 	return (
 		<Page>
 			<TabPanel
