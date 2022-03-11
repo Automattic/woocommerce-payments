@@ -1,8 +1,30 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.8.0 - 2022-xx-xx =
+= 3.8.2 - 2022-03-03 =
+* Fix - Fix fatal error when a subscription renews automatically.
+
+= 3.8.1 - 2022-03-03 =
+* Fix - Fix JavaScript error in blocks checkout and Customizer.
+
+= 3.8.0 - 2022-03-02 =
+* Add - Add a preview of uploaded logo and icon on terminal card reader receipt settings page.
+* Add - Add endpoint to retrieve a file content via API.
+* Add - Add jetpack-sync package to support Woo Mobile.
+* Add - Add jetpack-tracking module to track platform-checkout events.
+* Add - Add logic and UI to accept and see information about business loans, powered by Stripe Capital.
+* Add - Add merchant branding logo to print receipt.
+* Add - Add Preview printed version of IPP receipt to Card Readers settings page.
 * Add - Introduce `wcpay_payment_request_payment_method_title_suffix` filter. Allows plugins to replace "(WooCommerce Payments)" suffix on title of payment request buttons.
-* Tweak - only add admin notes on non-AJAX requests
+* Fix - Conditionally add subscription payment gateway features.
+* Fix - Fix email download for deposit transactions.
+* Fix - Fix Stripe Level 3 data API limit when basket size is more than 200 items.
+* Fix - Styling issue in the subscription product publish modal.
+* Update - Add tracking for enabling and disabling platform checkout.
+* Update - Bump minimum required version of WooCommerce from 4.6 to 4.8.
+* Update - Enable capture terminal payment for succeeded intents.
+* Dev - Use Jetpack Changelogger to manage changelog files.
+* Tweak - Only add admin notes on non-AJAX requests.
+* Tweak - Refactor to add Order Service for updating order statuses.
 
 = 3.7.0 - 2022-02-10 =
 * Add - Filter by currency in disputes list

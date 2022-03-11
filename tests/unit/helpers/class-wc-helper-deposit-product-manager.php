@@ -1,12 +1,12 @@
 <?php
 /**
- * Product Add Ons helpers.
+ * WooCommerce Deposits helpers.
  *
  * @package WooCommerce\Payments\Tests
  */
 
 /**
- * Class WC_Product_Addons_Helper.
+ * Class WC_Deposits_Product_Manager.
  *
  * This helper class should ONLY be used for unit tests!.
  */

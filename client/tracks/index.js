@@ -2,6 +2,8 @@
  * External dependencies
  */
 import domReady from '@wordpress/dom-ready';
+import { getConfig } from 'wcpay/utils/checkout';
+import { getPaymentRequestData } from 'wcpay/payment-request/utils';
 
 /**
  * Checks if site tracking is enabled.
@@ -28,6 +30,30 @@ function recordEvent( eventName, eventProperties ) {
 	} );
 }
 
+/**
+ * Records events from buyers.
+ *
+ * @param {string}  eventName       Name of the event.
+ * @param {Object?} eventProperties Event properties.
+ */
+function recordUserEvent( eventName, eventProperties ) {
+	const nonce =
+		getConfig( 'platformTrackerNonce' ) ??
+		getPaymentRequestData( 'nonce' )?.platform_tracker;
+	const ajaxUrl =
+		getConfig( 'ajaxUrl' ) ?? getPaymentRequestData( 'ajax_url' );
+	const body = new FormData();
+
+	body.append( 'tracksNonce', nonce );
+	body.append( 'action', 'platform_tracks' );
+	body.append( 'tracksEventName', eventName );
+	body.append( 'tracksEventProp', eventProperties );
+	fetch( ajaxUrl, {
+		method: 'post',
+		body,
+	} );
+}
+
 const events = {
 	CONNECT_ACCOUNT_CLICKED: 'wcpay_connect_account_clicked',
 	CONNECT_ACCOUNT_VIEW: 'page_view',
@@ -51,10 +77,15 @@ const events = {
 		'wcpay_subscriptions_account_not_connected_product_modal_finish_setup',
 	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS:
 		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
+	PLATFORM_CHECKOUT_OFFERED: 'platform_checkout_offered',
+	PLATFORM_CHECKOUT_OTP_START: 'platform_checkout_otp_prompt_start',
+	PLATFORM_CHECKOUT_OTP_COMPLETE: 'platform_checkout_otp_prompt_complete',
+	PLATFORM_CHECKOUT_OTP_FAILED: 'platform_checkout_otp_prompt_failed',
 };
 
 export default {
 	isEnabled,
 	recordEvent,
+	recordUserEvent,
 	events,
 };

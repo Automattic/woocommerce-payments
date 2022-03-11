@@ -45,6 +45,7 @@ class WC_Payments_Account {
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_wcpay_connect' ], 12 ); // Run this after the redirect to onboarding logic.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_loan_approved_inbox_note' ] );
 		add_action( self::INSTANT_DEPOSITS_REMINDER_ACTION, [ $this, 'handle_instant_deposits_inbox_reminder' ] );
@@ -115,28 +116,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the account has been rejected, assumes the value of $on_error on server error.
-	 *
-	 * @param bool $on_error Value to return on server error, defaults to false.
-	 *
-	 * @return bool True if the account is rejected, false otherwise, $on_error on error.
-	 */
-	public function is_account_rejected( bool $on_error = false ): bool {
-		try {
-			$account = $this->get_cached_account_data();
-
-			if ( empty( $account ) ) {
-				// Empty means no account, so not rejected.
-				return false;
-			}
-
-			return strpos( $account['status'], 'rejected' ) === 0;
-		} catch ( Exception $e ) {
-			return $on_error;
-		}
-	}
-
-	/**
 	 * Checks if the account is connected, throws on server error.
 	 *
 	 * @return bool      True if the account is connected, false otherwise.
@@ -150,6 +129,21 @@ class WC_Payments_Account {
 
 		// The empty array indicates that account is not connected yet.
 		return [] !== $account;
+	}
+
+	/**
+	 * Checks if the account has been rejected, assumes the value of false on any account retrieval error.
+	 * Returns false if the account is not connected.
+	 *
+	 * @return bool True if the account is connected and rejected, false otherwise or on error.
+	 */
+	public function is_account_rejected(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+
+		$account = $this->get_cached_account_data();
+		return strpos( $account['status'] ?? '', 'rejected' ) === 0;
 	}
 
 	/**
@@ -184,7 +178,6 @@ class WC_Payments_Account {
 			'currentDeadline' => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
 			'pastDue'         => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
 			'accountLink'     => $this->get_login_url(),
-			'hasActiveLoan'   => $account['capital']['has_active_loan'] ?? false,
 		];
 	}
 
@@ -316,9 +309,9 @@ class WC_Payments_Account {
 	public function get_capital() {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['capital'] ) && ! empty( $account['capital'] ) ? $account['capital'] : [
-			'loans'             => [],
-			'has_active_loan'   => false,
-			'has_previous_loan' => false,
+			'loans'              => [],
+			'has_active_loan'    => false,
+			'has_previous_loans' => false,
 		];
 	}
 
@@ -477,6 +470,50 @@ class WC_Payments_Account {
 
 		// Redirect if not connected.
 		$this->redirect_to_onboarding_page();
+		return true;
+	}
+
+	/**
+	 * Redirects to the wcpay-connect URL, which then redirects to the KYC flow.
+	 *
+	 * This URL is used by the KYC reminder email. We can't take the merchant
+	 * directly to the wcpay-connect URL because it's nonced, and the
+	 * nonce will likely be expired by the time the user follows the link.
+	 * That's why we need this middleman instead.
+	 *
+	 * @return bool True if the redirection happened, false otherwise.
+	 */
+	public function maybe_redirect_to_wcpay_connect() {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$params = [
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+		];
+
+		// We're not in the onboarding page, don't redirect.
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return false;
+		}
+
+		// We could use a value for this parameter for tracking the email that brought the user here.
+		if ( ! isset( $_GET['wcpay-connect-redirect'] ) ) {
+			return false;
+		}
+
+		// Take the user to the 'wcpay-connect' URL.
+		// We handle creating and redirecting to the account link there.
+		$connect_url = add_query_arg(
+			[
+				'wcpay-connect' => '1',
+				'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
+			],
+			admin_url( 'admin.php' )
+		);
+
+		$this->redirect_to( $connect_url );
 		return true;
 	}
 

@@ -69,7 +69,7 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
  *
  * @return {boolean} true if currency is zero-decimal
  */
-const isZeroDecimalCurrency = ( currencyCode ) => {
+export const isZeroDecimalCurrency = ( currencyCode ) => {
 	return wcpaySettings.zeroDecimalCurrencies.includes(
 		currencyCode.toLowerCase()
 	);

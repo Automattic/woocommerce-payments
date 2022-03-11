@@ -21,6 +21,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 	 * @var array
 	 */
 	private $mock_settings = [
+		'branding_logo' => [],
 		'business_name' => 'Test Business Name',
 		'support_info'  => [
 			'address' => [],
@@ -29,8 +30,8 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 		],
 	];
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 	}
@@ -92,6 +93,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 			[ [ 'key' => 'value' ], 'Business name needs to be provided.' ],
 			[
 				[
+					'branding_logo' => [],
 					'business_name' => 'test',
 					'support_info'  => 'Test',
 				],
@@ -99,6 +101,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 			],
 			[
 				[
+					'branding_logo' => [],
 					'business_name' => 'test',
 					'support_info'  => [],
 				],
@@ -106,6 +109,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 			],
 			[
 				[
+					'branding_logo' => [],
 					'business_name' => 'test',
 					'support_info'  => [ 'line1' => '42 Some Street' ],
 				],
@@ -113,6 +117,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 			],
 			[
 				[
+					'branding_logo' => [],
 					'business_name' => 'test',
 					'support_info'  => [
 						'address' => 'Test',
@@ -123,6 +128,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 			],
 			[
 				[
+					'branding_logo' => [],
 					'business_name' => 'test',
 					'support_info'  => [
 						'address' => 'Test',
