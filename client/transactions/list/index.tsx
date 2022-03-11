@@ -276,6 +276,7 @@ export const TransactionsList = (
 		const dataType = txn.metadata ? txn.metadata.charge_type : txn.type;
 		const formatAmount = () => {
 			const amount = txn.metadata ? 0 : txn.amount;
+			const fromAmount = txn.customer_amount ? txn.customer_amount : 0;
 
 			return {
 				value: amount / 100,
@@ -283,7 +284,7 @@ export const TransactionsList = (
 					<ConvertedAmount
 						amount={ amount }
 						currency={ currency }
-						fromAmount={ amount }
+						fromAmount={ fromAmount }
 						fromCurrency={ txn.customer_currency.toUpperCase() }
 					/>
 				),
