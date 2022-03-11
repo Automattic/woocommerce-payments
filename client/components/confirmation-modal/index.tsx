@@ -22,7 +22,7 @@ const ConfirmationModal: React.FunctionComponent< ConfirmationModalProps > = ( {
 	...props
 } ) => (
 	<Modal
-		className={ classNames( 'wcpay-confirmation-modal', className || '' ) }
+		className={ classNames( 'wcpay-confirmation-modal', className ) }
 		{ ...props }
 	>
 		{ children }
