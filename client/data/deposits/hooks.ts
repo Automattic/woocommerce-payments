@@ -32,7 +32,11 @@ export const useDeposit = (
 		[ id ]
 	);
 
-export const useDepositsOverview = () =>
+export const useDepositsOverview = (): {
+	overviewError: unknown;
+	isLoading: boolean;
+	overview: unknown;
+} =>
 	useSelect( ( select ) => {
 		const {
 			getDepositsOverview,
@@ -47,7 +51,7 @@ export const useDepositsOverview = () =>
 		};
 	} );
 
-export const useAllDepositsOverviews = () =>
+export const useAllDepositsOverviews = (): AccountOverview.OverviewsResponse =>
 	useSelect( ( select ) => {
 		const {
 			getAllDepositsOverviews,
@@ -166,7 +170,9 @@ export const useDepositsSummary = ( {
 		]
 	);
 
-export const useInstantDeposit = ( transactionIds: string[] ) => {
+export const useInstantDeposit = (
+	transactionIds: string[]
+): { inProgress: unknown; submit: () => void; deposit: unknown } => {
 	const { deposit, inProgress } = useSelect( ( select ) => {
 		const { getInstantDeposit, isResolving } = select( STORE_NAME );
 
