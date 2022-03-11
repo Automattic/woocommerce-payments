@@ -14,14 +14,3 @@ export interface FetchReceiptPayload {
 	accountBusinessSupportEmail: string;
 	accountBusinessSupportPhone: string;
 }
-
-export interface CardReaderFileUploadProps {
-	fieldKey: string;
-	label: string;
-	accept: string;
-	disabled?: boolean;
-	help?: string;
-	purpose: string;
-	fileID: string;
-	updateFileID: ( id: string ) => void;
-}
