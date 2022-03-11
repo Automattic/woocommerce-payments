@@ -12,8 +12,8 @@ import classNames from 'classnames';
 import './styles.scss';
 
 const PaymentConfirmIllustration: React.FunctionComponent< {
-	hasBorder: boolean;
-	icon: ( { className }: { className: string } ) => JSX.Element;
+	hasBorder?: boolean;
+	icon?: ( { className }: { className: string } ) => JSX.Element;
 } > = ( { hasBorder, icon: Icon = () => null } ): JSX.Element => {
 	return (
 		<div className="payment-confirm-illustration__wrapper">
