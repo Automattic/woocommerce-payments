@@ -1098,12 +1098,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$additional_api_parameters['is_platform_payment_method'] = 'true';
 			}
 
-			// phpcs:ignore
-			if ( ! empty( $_POST['platform-checkout-intent'] ) ) {
+			// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
+			// for a string that will only contain latin alphanumeric characters and underscores.
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
+
+			if ( ! empty( $platform_checkout_intent_id ) ) {
 				// If the intent is included in the request use that intent.
-				// phpcs:ignore
-				$intent_id = wp_unslash( $_POST['platform-checkout-intent'] );
-				$intent    = $this->payments_api_client->get_intent( $intent_id );
+				$intent = $this->payments_api_client->get_intent( $platform_checkout_intent_id );
 			} else {
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 				$intent = $this->payments_api_client->create_and_confirm_intention(
