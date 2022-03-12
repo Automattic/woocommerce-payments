@@ -135,19 +135,23 @@ export const useAccountStatementDescriptor = () => {
 	);
 };
 
-export const useIsShortStatementEnabled = () => {
-	const { updateIsShortStatementEnabled } = useDispatch( STORE_NAME );
+export const useIsShortStatementDescriptorEnabled = () => {
+	const { updateIsShortStatementDescriptorEnabled } = useDispatch(
+		STORE_NAME
+	);
 
 	return useSelect(
 		( select ) => {
-			const { getIsShortStatementEnabled } = select( STORE_NAME );
+			const { getIsShortStatementDescriptorEnabled } = select(
+				STORE_NAME
+			);
 
 			return [
-				getIsShortStatementEnabled(),
-				updateIsShortStatementEnabled,
+				getIsShortStatementDescriptorEnabled(),
+				updateIsShortStatementDescriptorEnabled,
 			];
 		},
-		[ updateIsShortStatementEnabled ]
+		[ updateIsShortStatementDescriptorEnabled ]
 	);
 };
 

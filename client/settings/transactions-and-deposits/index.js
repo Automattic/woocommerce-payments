@@ -19,7 +19,7 @@ import CardBody from '../card-body';
 import TextLengthHelpInputWrapper from './text-length-help-input-wrapper';
 import {
 	useAccountStatementDescriptor,
-	useIsShortStatementEnabled,
+	useIsShortStatementDescriptorEnabled,
 	useShortStatementDescriptor,
 	useManualCapture,
 	useGetSavingError,
@@ -47,7 +47,7 @@ const TransactionsAndDeposits = () => {
 	const [
 		isShortStatementEnabled,
 		setIsShortStatementEnabled,
-	] = useIsShortStatementEnabled();
+	] = useIsShortStatementDescriptorEnabled();
 	const [
 		shortAccountStatementDescriptor,
 		setShortAccountStatementDescriptor,

@@ -11,7 +11,7 @@ import WCPaySettingsContext from '../../wcpay-settings-context';
 import {
 	useGetSavingError,
 	useAccountStatementDescriptor,
-	useIsShortStatementEnabled,
+	useIsShortStatementDescriptorEnabled,
 	useShortStatementDescriptor,
 	useManualCapture,
 	useSavedCards,
@@ -20,7 +20,7 @@ import {
 
 jest.mock( 'wcpay/data', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
-	useIsShortStatementEnabled: jest.fn(),
+	useIsShortStatementDescriptorEnabled: jest.fn(),
 	useShortStatementDescriptor: jest.fn(),
 	useManualCapture: jest.fn(),
 	useGetSavingError: jest.fn(),
@@ -31,7 +31,10 @@ jest.mock( 'wcpay/data', () => ( {
 describe( 'TransactionsAndDeposits', () => {
 	beforeEach( () => {
 		useAccountStatementDescriptor.mockReturnValue( [ '', jest.fn() ] );
-		useIsShortStatementEnabled.mockReturnValue( [ false, jest.fn() ] );
+		useIsShortStatementDescriptorEnabled.mockReturnValue( [
+			false,
+			jest.fn(),
+		] );
 		useShortStatementDescriptor.mockReturnValue( [ '', jest.fn() ] );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		useGetSavingError.mockReturnValue( null );
@@ -111,10 +114,10 @@ describe( 'TransactionsAndDeposits', () => {
 	} );
 
 	it( 'toggles the shortened bank statement checkbox', () => {
-		const updateIsShortStatementEnabled = jest.fn();
-		useIsShortStatementEnabled.mockReturnValue( [
+		const updateIsShortStatementDescriptorEnabled = jest.fn();
+		useIsShortStatementDescriptorEnabled.mockReturnValue( [
 			false,
-			updateIsShortStatementEnabled,
+			updateIsShortStatementDescriptorEnabled,
 		] );
 
 		render( <TransactionsAndDeposits /> );
@@ -125,11 +128,16 @@ describe( 'TransactionsAndDeposits', () => {
 			)
 		);
 
-		expect( updateIsShortStatementEnabled ).toHaveBeenCalledWith( true );
+		expect( updateIsShortStatementDescriptorEnabled ).toHaveBeenCalledWith(
+			true
+		);
 	} );
 
 	it( 'does not display shortened bank statement input if it is disabled', () => {
-		useIsShortStatementEnabled.mockReturnValue( [ false, jest.fn() ] );
+		useIsShortStatementDescriptorEnabled.mockReturnValue( [
+			false,
+			jest.fn(),
+		] );
 		expect(
 			screen.queryByLabelText( 'Shortened customer bank statement' )
 		).not.toBeInTheDocument();
@@ -137,7 +145,10 @@ describe( 'TransactionsAndDeposits', () => {
 
 	it( 'displays the length of the shortened bank statement input', () => {
 		const updateShortStatementDescriptor = jest.fn();
-		useIsShortStatementEnabled.mockReturnValue( [ true, jest.fn() ] );
+		useIsShortStatementDescriptorEnabled.mockReturnValue( [
+			true,
+			jest.fn(),
+		] );
 		useShortStatementDescriptor.mockReturnValue( [
 			'Statement',
 			updateShortStatementDescriptor,
@@ -160,7 +171,10 @@ describe( 'TransactionsAndDeposits', () => {
 	} );
 
 	it( 'displays the error message for the statement input', () => {
-		useIsShortStatementEnabled.mockReturnValue( [ true, jest.fn() ] );
+		useIsShortStatementDescriptorEnabled.mockReturnValue( [
+			true,
+			jest.fn(),
+		] );
 		useShortStatementDescriptor.mockReturnValue( [ '111', jest.fn() ] );
 		useGetSavingError.mockReturnValue( {
 			code: 'rest_invalid_param',

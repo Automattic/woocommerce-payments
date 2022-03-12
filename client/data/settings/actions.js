@@ -97,7 +97,7 @@ export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	} );
 }
 
-export function updateIsShortStatementEnabled( isEnabled ) {
+export function updateIsShortStatementDescriptorEnabled( isEnabled ) {
 	return updateSettingsValues( {
 		is_short_statement_descriptor_enabled: isEnabled,
 	} );

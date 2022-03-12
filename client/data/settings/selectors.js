@@ -43,7 +43,7 @@ export const getAccountStatementDescriptor = ( state ) => {
 	return getSettings( state ).account_statement_descriptor || '';
 };
 
-export const getIsShortStatementEnabled = ( state ) => {
+export const getIsShortStatementDescriptorEnabled = ( state ) => {
 	return getSettings( state ).is_short_statement_descriptor_enabled || false;
 };
 
