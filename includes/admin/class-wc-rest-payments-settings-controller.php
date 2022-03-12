@@ -228,7 +228,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Validate the regular statement descriptor.
 	 *
-	 * @param mixed           $value The value being validated.
+	 * @param string          $value The value being validated.
 	 * @param WP_REST_Request $request The request made.
 	 * @param string          $param The parameter name, used in error messages.
 	 * @return true|WP_Error
@@ -240,7 +240,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Validate the short statement descriptor.
 	 *
-	 * @param mixed           $value The value being validated.
+	 * @param string          $value The value being validated.
 	 * @param WP_REST_Request $request The request made.
 	 * @param string          $param The parameter name, used in error messages.
 	 * @return true|WP_Error
@@ -261,7 +261,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @since 4.7.0
 	 *
-	 * @param mixed           $value The value being validated.
+	 * @param string          $value The value being validated.
 	 * @param WP_REST_Request $request The request made.
 	 * @param string          $param The parameter name, used in error messages.
 	 * @param int             $max_length Maximum statement length.
