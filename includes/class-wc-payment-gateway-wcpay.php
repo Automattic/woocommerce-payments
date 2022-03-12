@@ -1892,7 +1892,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			throw new InvalidArgumentException(
 				sprintf(
 					/* translators: %1 field name, %2 Number of the maximum characters allowed */
-					__( '%1$s is invalid. Statement should be between 5 and %2$u characters long, contain at least a single Latin character, and not contain any of following special characters: \' " * &lt; &gt;', 'woocommerce-payments' ),
+					__( '%1$s is invalid. Statement should be between 5 and %2$u characters long, contain at least a single Latin character, and not contain any of the following special characters: \' " * &lt; &gt;', 'woocommerce-payments' ),
 					$field,
 					$max_length
 				)
