@@ -126,7 +126,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					'account_statement_descriptor'      => [
 						'description'       => __( 'WooCommerce Payments bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
 						'type'              => 'string',
-						'validate_callback' => [ $this, 'validate_regular_statement_descriptor' ],
+						'validate_callback' => [ $this, 'validate_full_statement_descriptor' ],
 					],
 					'account_business_name'             => [
 						'description' => __( 'The customer-facing business name.', 'woocommerce-payments' ),
@@ -233,7 +233,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param string          $param The parameter name, used in error messages.
 	 * @return true|WP_Error
 	 */
-	public function validate_regular_statement_descriptor( $value, $request, $param ) {
+	public function validate_full_statement_descriptor( $value, $request, $param ) {
 		return $this->validate_statement_descriptor( $value, $request, $param, 22 );
 	}
 
