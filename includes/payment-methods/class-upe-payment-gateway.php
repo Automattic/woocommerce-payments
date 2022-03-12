@@ -631,7 +631,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 
-				static::remove_upe_payment_intent_from_session();
+				self::remove_upe_payment_intent_from_session();
 
 				if ( 'requires_action' === $status ) {
 					// I don't think this case should be possible, but just in case...
@@ -659,7 +659,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
 			$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
 
-			static::remove_upe_payment_intent_from_session();
+			self::remove_upe_payment_intent_from_session();
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
@@ -1099,11 +1099,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $error_message );
 
-			static::remove_upe_payment_intent_from_session();
+			self::remove_upe_payment_intent_from_session();
 
 			wp_send_json_success();
 		} catch ( Exception $e ) {
-			static::remove_upe_payment_intent_from_session();
+			self::remove_upe_payment_intent_from_session();
 
 			wp_send_json_error(
 				[
@@ -1139,6 +1139,21 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public static function remove_upe_payment_intent_from_session() {
 		if ( isset( WC()->session ) ) {
 			WC()->session->__unset( self::KEY_UPE_PAYMENT_INTENT );
+			$payment_method_classes = [
+				CC_Payment_Method::class,
+				Bancontact_Payment_Method::class,
+				Sepa_Payment_Method::class,
+				Giropay_Payment_Method::class,
+				Sofort_Payment_Method::class,
+				P24_Payment_Method::class,
+				Ideal_Payment_Method::class,
+				Becs_Payment_Method::class,
+				Eps_Payment_Method::class,
+			];
+			foreach ( $payment_method_classes as $payment_method_class ) {
+				$payment_method = new $payment_method_class( null );
+				WC()->session->__unset( self::KEY_UPE_PAYMENT_INTENT . '_' . $payment_method->get_id() );
+			}
 		}
 	}
 
