@@ -59,13 +59,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	protected $payment_methods = [];
 
 	/**
-	 * Generic gateway title to be displayed at checkout, if more than one payment method is enabled.
-	 *
-	 * @var string
-	 */
-	protected $checkout_title;
-
-	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
@@ -90,9 +83,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service );
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
-		$this->title              = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->description        = '';
-		$this->checkout_title     = __( 'Popular payment methods', 'woocommerce-payments' );
 		$this->payment_methods    = $payment_methods;
 
 		add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
@@ -105,10 +96,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
 
 		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
-
-		if ( ! is_admin() ) {
-			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
-		}
 
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_upe_payment_intent_from_session' ], 10, 0 );
 		add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
@@ -678,11 +665,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['addPaymentReturnURL']      = wc_get_account_endpoint_url( 'payment-methods' );
 		$payment_fields['gatewayId']                = self::GATEWAY_ID;
 		$payment_fields['isCheckout']               = is_checkout();
+		$payment_fields['checkoutTitle']            = $this->title;
 		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
 		$payment_fields['saveUPEAppearanceNonce']   = wp_create_nonce( 'wcpay_save_upe_appearance_nonce' );
 		$payment_fields['testMode']                 = $this->is_in_test_mode();
 		$payment_fields['upeAppearance']            = get_transient( self::UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['checkoutTitle']            = $this->checkout_title;
 		$payment_fields['cartContainsSubscription'] = $this->is_subscription_item_in_cart();
 		$payment_fields['logPaymentErrorNonce']     = wp_create_nonce( 'wcpay_log_payment_error_nonce' );
 		$payment_fields['upePaymentIntentData']     = $this->get_payment_intent_data_from_session();
@@ -993,30 +980,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function clear_upe_appearance_transient() {
 		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
-	}
-
-	/**
-	 * Sets the title on checkout correctly before the title is displayed.
-	 *
-	 * @param string $title The title of the gateway being filtered.
-	 * @param string $id    The id of the gateway being filtered.
-	 *
-	 * @return string Filtered gateway title.
-	 */
-	public function maybe_filter_gateway_title( $title, $id ) {
-		if ( self::GATEWAY_ID === $id && $this->title === $title ) {
-			$title                   = $this->checkout_title;
-			$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout();
-
-			if ( 1 === count( $enabled_payment_methods ) ) {
-				$title = $this->payment_methods[ $enabled_payment_methods[0] ]->get_title();
-			}
-
-			if ( 0 === count( $enabled_payment_methods ) ) {
-				$title = $this->payment_methods['card']->get_title();
-			}
-		}
-		return $title;
 	}
 
 	/**

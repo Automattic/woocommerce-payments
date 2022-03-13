@@ -8,7 +8,7 @@ import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_SEPA,
 } from '../constants.js';
-import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
+import { getConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
@@ -371,11 +371,6 @@ jQuery( function ( $ ) {
 		} );
 	};
 
-	const renameGatewayTitle = () =>
-		$( 'label[for=payment_method_woocommerce_payments]' ).text(
-			getCustomGatewayTitle( paymentMethodsConfig )
-		);
-
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
@@ -392,7 +387,6 @@ jQuery( function ( $ ) {
 			} else {
 				mountUPEElement();
 			}
-			renameGatewayTitle();
 		}
 	} );
 
@@ -406,8 +400,6 @@ jQuery( function ( $ ) {
 			isUPEEnabled &&
 			! upeElement
 		) {
-			renameGatewayTitle();
-
 			// We use a setup intent if we are on the screens to add a new payment method or to change a subscription payment.
 			const useSetUpIntent =
 				$( 'form#add_payment_method' ).length || isChangingPayment;

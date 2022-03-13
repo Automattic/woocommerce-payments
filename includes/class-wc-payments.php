@@ -19,7 +19,7 @@ use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
-use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WCPay\Payment_Methods\UPE_Single_Method_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
@@ -194,6 +194,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
+		include_once __DIR__ . '/payment-methods/class-upe-single-method-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
@@ -263,26 +264,12 @@ class WC_Payments {
 		self::$webhook_processing_service          = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service );
 
 		$card_class = CC_Payment_Gateway::class;
-		$upe_class  = UPE_Payment_Gateway::class;
+		$upe_class  = UPE_Single_Method_Payment_Gateway::class;
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
-			$payment_methods        = [];
-			$payment_method_classes = [
-				CC_Payment_Method::class,
-				Bancontact_Payment_Method::class,
-				Sepa_Payment_Method::class,
-				Giropay_Payment_Method::class,
-				Sofort_Payment_Method::class,
-				P24_Payment_Method::class,
-				Ideal_Payment_Method::class,
-				Becs_Payment_Method::class,
-				Eps_Payment_Method::class,
-			];
-			foreach ( $payment_method_classes as $payment_method_class ) {
-				$payment_method                               = new $payment_method_class( self::$token_service );
-				$payment_methods[ $payment_method->get_id() ] = $payment_method;
-			}
-			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
+			$card_payment_method = new CC_Payment_Method( self::$token_service );
+			$payment_methods     = [ $card_payment_method->get_id() => $card_payment_method ];
+			self::$card_gateway  = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
 		} else {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
