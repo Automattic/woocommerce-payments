@@ -960,7 +960,7 @@ class WC_Payments {
 	 */
 	public static function filter_woocommerce_form_field_platform_checkout_email( $field, $key, $args, $value ) {
 		$class = $args['class'][0];
-		if ( false === strpos( $class, 'platform-checkout-billing-email' ) && ( is_checkout() || is_checkout_pay_page() ) ) {
+		if ( false === strpos( $class, 'platform-checkout-billing-email' ) && is_checkout() && ! is_checkout_pay_page() ) {
 			$field = '';
 		}
 		return $field;
