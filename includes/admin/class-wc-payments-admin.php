@@ -166,6 +166,18 @@ class WC_Payments_Admin {
 				],
 			]
 		);
+		wc_admin_register_page(
+			[
+				'id'       => 'wc-payments-onboarding',
+				'title'    => __( 'Onboarding', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/onboarding',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 10,
+				],
+			]
+		);
 		wp_enqueue_style(
 			'wcpay-admin-css',
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
@@ -341,6 +353,19 @@ class WC_Payments_Admin {
 					'title'  => __( 'Preview a printed receipt', 'woocommerce-payments' ),
 					'path'   => '/payments/card-readers/preview-receipt',
 
+				]
+			);
+
+			wc_admin_register_page(
+				[
+					'id'       => 'wc-payments-onboarding',
+					'title'    => __( 'Onboarding', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/onboarding',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 10,
+					],
 				]
 			);
 		}
