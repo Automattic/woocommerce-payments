@@ -55,6 +55,7 @@ class WC_Payments_API_Client {
 	const TERMINAL_READERS_API         = 'terminal/readers';
 	const MINIMUM_RECURRING_AMOUNT_API = 'subscriptions/minimum_amount';
 	const CAPITAL_API                  = 'capital';
+	const WEBHOOK_FETCH_API            = 'webhook/failed_events';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1626,6 +1627,17 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Retrieves the list of failed webhook events and their data.
+	 *
+	 * @return array List of failed webhook events.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_failed_webhook_events() {
+		return $this->request( [], self::WEBHOOK_FETCH_API, self::POST );
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -1805,6 +1817,10 @@ class WC_Payments_API_Client {
 					$response_code
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
+				if ( isset( $response_body['error']['decline_code'] ) && 'fraudulent' === $response_body['error']['decline_code'] ) {
+					WC()->cart->empty_cart();
+					WC()->session->set( 'reload_checkout', true );
+				}
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;

@@ -854,6 +854,7 @@ class MultiCurrency {
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			NoteMultiCurrencyAvailable::set_account( WC_Payments::get_account_service() );
 			NoteMultiCurrencyAvailable::possibly_add_note();
 		}
 	}
