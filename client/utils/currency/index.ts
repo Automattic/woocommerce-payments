@@ -2,12 +2,20 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import Currency, { getCurrencyData } from '@woocommerce/currency';
+import Currency, {
+	CurrencyInterface,
+	getCurrencyData,
+} from '@woocommerce/currency';
 import { find, trimEnd, endsWith } from 'lodash';
+
+interface ExchangeRateDenomination {
+	amount: number;
+	currency: string;
+}
 
 const currencyData = getCurrencyData();
 
-const currencyNames = {
+const currencyNames: Record< string, string > = {
 	aud: __( 'Australian dollar', 'woocommerce-payments' ),
 	cad: __( 'Canadian dollar', 'woocommerce-payments' ),
 	chf: __( 'Swiss franc', 'woocommerce-payments' ),
@@ -27,7 +35,7 @@ const currencyNames = {
  *
  * @return {string} formatted and translated currency name
  */
-export const formatCurrencyName = ( currencyCode ) =>
+export const formatCurrencyName = ( currencyCode: string ): string =>
 	currencyNames[ currencyCode.toLowerCase() ] || currencyCode.toUpperCase();
 
 /**
@@ -38,7 +46,10 @@ export const formatCurrencyName = ( currencyCode ) =>
  *
  * @return {Currency|null} Currency object
  */
-export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
+export const getCurrency = (
+	currencyCode: string,
+	baseCurrencyCode: string | null = null
+): CurrencyInterface | null => {
 	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
 		if (
@@ -57,7 +68,7 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 				}
 			}
 		}
-		return new Currency( currency );
+		return new ( Currency as any )( currency );
 	}
 	return null;
 };
@@ -69,11 +80,33 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
  *
  * @return {boolean} true if currency is zero-decimal
  */
-export const isZeroDecimalCurrency = ( currencyCode ) => {
+export const isZeroDecimalCurrency = ( currencyCode: string ): boolean => {
 	return wcpaySettings.zeroDecimalCurrencies.includes(
 		currencyCode.toLowerCase()
 	);
 };
+
+function composeFallbackCurrency(
+	amount: number,
+	currencyCode: string,
+	isZeroDecimal: boolean
+): string {
+	try {
+		// Fallback for unsupported currencies: currency code and amount
+		return amount.toLocaleString( undefined, {
+			style: 'currency',
+			currency: currencyCode,
+			currencyDisplay: 'narrowSymbol',
+			dummy: isZeroDecimal,
+		} as Intl.NumberFormatOptions );
+	} catch ( error ) {
+		return sprintf(
+			isZeroDecimal ? '%s %i' : '%s %.2f',
+			currencyCode.toUpperCase(),
+			amount
+		);
+	}
+}
 
 /**
  * Formats amount according to the given currency.
@@ -85,10 +118,10 @@ export const isZeroDecimalCurrency = ( currencyCode ) => {
  * @return {string} formatted currency representation
  */
 export const formatCurrency = (
-	amount,
+	amount: number,
 	currencyCode = 'USD',
-	baseCurrencyCode = null
-) => {
+	baseCurrencyCode: string | null = null
+): string => {
 	// Normalize amount with respect to zer decimal currencies and provided data formats
 	const isZeroDecimal = isZeroDecimalCurrency( currencyCode );
 	if ( ! isZeroDecimal ) {
@@ -117,12 +150,20 @@ export const formatCurrency = (
  *
  * @return {string} formatted currency representation with the currency code suffix
  */
-const appendCurrencyCode = ( formatted, currencyCode ) => {
+const appendCurrencyCode = (
+	formatted: string,
+	currencyCode: string
+): string => {
 	if ( -1 === formatted.toString().indexOf( currencyCode ) ) {
 		formatted = formatted + ' ' + currencyCode;
 	}
 	return formatted;
 };
+
+function removeCurrencySymbol( formatted: string ): string {
+	formatted = formatted.replace( /[^0-9,.' ]/g, '' ).trim();
+	return formatted;
+}
 
 /**
  * Formats amount according to the given currency.
@@ -135,11 +176,11 @@ const appendCurrencyCode = ( formatted, currencyCode ) => {
  * @return {string} formatted currency representation
  */
 export const formatExplicitCurrency = (
-	amount,
+	amount: number,
 	currencyCode = 'USD',
 	skipSymbol = false,
-	baseCurrencyCode = null
-) => {
+	baseCurrencyCode: string | null = null
+): string => {
 	let formatted = formatCurrency( amount, currencyCode, baseCurrencyCode );
 	if ( skipSymbol ) {
 		formatted = removeCurrencySymbol( formatted );
@@ -147,36 +188,19 @@ export const formatExplicitCurrency = (
 	return appendCurrencyCode( formatted, currencyCode.toUpperCase() );
 };
 
-/**
- * Formats exchange rate string from one currency to another.
- *
- * @param {Object} from          Source currency and amount for exchange rate calculation.
- * @param {string} from.currency Source currency code.
- * @param {number} from.amount   Source amount.
- * @param {Object} to            Target currency and amount for exchange rate calculation.
- * @param {string} to.currency   Target currency code.
- * @param {number} to.amount     Target amount.
- *
- * @return {string?} formatted string like `€1,00 → $1,19: $29.99`.
- *
- * */
-export const formatFX = ( from, to ) => {
-	if ( ! from.currency || ! to.currency ) {
-		return;
-	}
+function trimEndingZeroes( formattedCurrencyAmount = '' ): string {
+	return formattedCurrencyAmount
+		.split( ' ' )
+		.map( ( chunk ) =>
+			endsWith( chunk, '0' ) ? trimEnd( chunk, '0' ) : chunk
+		)
+		.join( ' ' );
+}
 
-	const fromAmount = isZeroDecimalCurrency( from.currency ) ? 1 : 100;
-	return `${ formatExplicitCurrency(
-		fromAmount,
-		from.currency,
-		true
-	) } → ${ formatExchangeRate( from, to ) }: ${ formatExplicitCurrency(
-		Math.abs( to.amount ),
-		to.currency
-	) }`;
-};
-
-function formatExchangeRate( from, to ) {
+function formatExchangeRate(
+	from: ExchangeRateDenomination,
+	to: ExchangeRateDenomination
+): string {
 	let exchangeRate =
 		'number' === typeof to.amount &&
 		'number' === typeof from.amount &&
@@ -205,7 +229,7 @@ function formatExchangeRate( from, to ) {
 			to.currency.toUpperCase()
 		);
 	}
-	const exchangeCurrency = new Currency( {
+	const exchangeCurrency = new ( Currency as any )( {
 		...exchangeCurrencyConfig,
 		precision,
 	} );
@@ -219,34 +243,34 @@ function formatExchangeRate( from, to ) {
 	);
 }
 
-function removeCurrencySymbol( formatted ) {
-	formatted = formatted.replace( /[^0-9,.' ]/g, '' ).trim();
-	return formatted;
-}
-
-function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
-	try {
-		// Fallback for unsupported currencies: currency code and amount
-		return amount.toLocaleString( undefined, {
-			style: 'currency',
-			currency: currencyCode,
-			currencyDisplay: 'narrowSymbol',
-			dummy: isZeroDecimal,
-		} );
-	} catch ( error ) {
-		return sprintf(
-			isZeroDecimal ? '%s %i' : '%s %.2f',
-			currencyCode.toUpperCase(),
-			amount
-		);
+/**
+ * Formats exchange rate string from one currency to another.
+ *
+ * @param {Object} from          Source currency and amount for exchange rate calculation.
+ * @param {string} from.currency Source currency code.
+ * @param {number} from.amount   Source amount.
+ * @param {Object} to            Target currency and amount for exchange rate calculation.
+ * @param {string} to.currency   Target currency code.
+ * @param {number} to.amount     Target amount.
+ *
+ * @return {string?} formatted string like `€1,00 → $1,19: $29.99`.
+ *
+ * */
+export const formatFX = (
+	from: ExchangeRateDenomination,
+	to: ExchangeRateDenomination
+): string | undefined => {
+	if ( ! from.currency || ! to.currency ) {
+		return;
 	}
-}
 
-function trimEndingZeroes( formattedCurrencyAmount = '' ) {
-	return formattedCurrencyAmount
-		.split( ' ' )
-		.map( ( chunk ) =>
-			endsWith( chunk, '0' ) ? trimEnd( chunk, '0' ) : chunk
-		)
-		.join( ' ' );
-}
+	const fromAmount = isZeroDecimalCurrency( from.currency ) ? 1 : 100;
+	return `${ formatExplicitCurrency(
+		fromAmount,
+		from.currency,
+		true
+	) } → ${ formatExchangeRate( from, to ) }: ${ formatExplicitCurrency(
+		Math.abs( to.amount ),
+		to.currency
+	) }`;
+};

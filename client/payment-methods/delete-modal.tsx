@@ -2,6 +2,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
@@ -12,13 +13,13 @@ import interpolateComponents from 'interpolate-components';
 import PaymentDeleteIllustration from '../components/payment-delete-illustration';
 import ConfirmationModal from '../components/confirmation-modal';
 
-const ConfirmPaymentMethodDeleteModal = ( {
-	id,
-	label,
-	Icon,
-	onConfirm,
-	onCancel,
-} ) => {
+const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
+	id: string;
+	label: string;
+	icon: () => JSX.Element;
+	onConfirm: () => void;
+	onCancel: () => void;
+} > = ( { id, label, icon: Icon, onConfirm, onCancel } ): JSX.Element => {
 	return (
 		<ConfirmationModal
 			title={ sprintf(
@@ -42,7 +43,7 @@ const ConfirmPaymentMethodDeleteModal = ( {
 			}
 		>
 			<PaymentDeleteIllustration
-				Icon={ Icon }
+				icon={ Icon }
 				hasBorder={ 'card' !== id }
 			/>
 			<p>
