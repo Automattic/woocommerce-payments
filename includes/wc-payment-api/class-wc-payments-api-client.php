@@ -55,6 +55,7 @@ class WC_Payments_API_Client {
 	const TERMINAL_READERS_API         = 'terminal/readers';
 	const MINIMUM_RECURRING_AMOUNT_API = 'subscriptions/minimum_amount';
 	const CAPITAL_API                  = 'capital';
+	const WEBHOOK_FETCH_API            = 'webhook/failed_events';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -635,26 +636,26 @@ class WC_Payments_API_Client {
 	 * Initiates transactions export via API.
 	 *
 	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $user_email The email to search for.
 	 * @param string $deposit_id The deposit to filter on.
 	 *
 	 * @return array Export summary
 	 *
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_transactions_export( $filters = [], $deposit_id = null ) {
+	public function get_transactions_export( $filters = [], $user_email = '', $deposit_id = null ) {
 		// Map Order # terms to the actual charge id to be used in the server.
 		if ( ! empty( $filters['search'] ) ) {
 			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
 		}
+		if ( ! empty( $user_email ) ) {
+			$filters['user_email'] = $user_email;
+		}
+		if ( ! empty( $deposit_id ) ) {
+			$filters['deposit_id'] = $deposit_id;
+		}
 
-		$query = array_merge(
-			$filters,
-			[
-				'deposit_id' => $deposit_id,
-			]
-		);
-
-		return $this->request( $query, self::TRANSACTIONS_API . '/download', self::POST );
+		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
 	}
 
 	/**
@@ -1623,6 +1624,17 @@ class WC_Payments_API_Client {
 	 */
 	public function delete_terminal_location( $location_id ) {
 		return $this->request( [], self::TERMINAL_LOCATIONS_API . '/' . $location_id, self::DELETE );
+	}
+
+	/**
+	 * Retrieves the list of failed webhook events and their data.
+	 *
+	 * @return array List of failed webhook events.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_failed_webhook_events() {
+		return $this->request( [], self::WEBHOOK_FETCH_API, self::POST );
 	}
 
 	/**
