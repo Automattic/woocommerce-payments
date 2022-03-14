@@ -271,11 +271,15 @@ export default class WCPayAPI {
 	/**
 	 * Creates a setup intent without confirming it.
 	 *
+	 * @param {string} paymentMethodType Stripe payment method type ID.
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	initSetupIntent() {
+	initSetupIntent( paymentMethodType ) {
 		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_setup_intent' ),
+			buildAjaxURL(
+				getConfig( 'wcAjaxUrl' ),
+				`init_setup_intent_${ paymentMethodType }`
+			),
 			{ _ajax_nonce: getConfig( 'createSetupIntentNonce' ) }
 		).then( ( response ) => {
 			if ( ! response.success ) {
@@ -322,13 +326,17 @@ export default class WCPayAPI {
 	/**
 	 * Creates an intent based on a payment method.
 	 *
+	 * @param {string} paymentMethodType Stripe payment method type ID.
 	 * @param {int} orderId The id of the order if creating the intent on Order Pay page.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	createIntent( orderId ) {
+	createIntent( paymentMethodType, orderId ) {
 		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'create_payment_intent' ),
+			buildAjaxURL(
+				getConfig( 'wcAjaxUrl' ),
+				`create_payment_intent_${ paymentMethodType }`
+			),
 			{
 				wcpay_order_id: orderId,
 				_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),

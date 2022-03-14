@@ -658,8 +658,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['upeAppearance']            = get_transient( self::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['cartContainsSubscription'] = $this->is_subscription_item_in_cart();
 		$payment_fields['logPaymentErrorNonce']     = wp_create_nonce( 'wcpay_log_payment_error_nonce' );
-		$payment_fields['upePaymentIntentData']     = $this->get_payment_intent_data_from_session();
-		$payment_fields['upeSetupIntentData']       = $this->get_setup_intent_data_from_session();
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
@@ -1000,13 +998,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$settings[ $payment_method ] = [
 				'isReusable'           => $this->payment_methods[ $payment_method ]->is_reusable(),
 				'title'                => $this->payment_methods[ $payment_method ]->get_title(),
-				'upePaymentIntentData' => $this->get_payment_intent_data_from_session(),
-				'upeSetupIntentData'   => $this->get_setup_intent_data_from_session(),
-				// Below properties will be populated with JS objects by upe.js.
-				'elements'             => null,
-				'upeElement'           => null,
-				'paymentIntentId'      => null,
-				'isUPEComplete'        => false,
+				'upePaymentIntentData' => $this->get_payment_intent_data_from_session( $payment_method ),
+				'upeSetupIntentData'   => $this->get_setup_intent_data_from_session( $payment_method ),
 			];
 		}
 
@@ -1143,37 +1136,47 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Returns session key for UPE SEPA payment intents.
 	 *
+	 * @param string $payment_method Stripe payment method.
 	 * @return string
 	 */
-	public function get_payment_intent_session_key() {
-		return self::KEY_UPE_PAYMENT_INTENT;
+	public function get_payment_intent_session_key( $payment_method = false ) {
+		if ( false === $payment_method ) {
+			$payment_method = $this->stripe_id;
+		}
+		return self::KEY_UPE_PAYMENT_INTENT . '_' . $payment_method;
 	}
 
 	/**
 	 * Returns session key for UPE SEPA setup intents.
 	 *
+	 * @param string $payment_method Stripe payment method.
 	 * @return string
 	 */
-	public function get_setup_intent_session_key() {
-		return self::KEY_UPE_SETUP_INTENT;
+	public function get_setup_intent_session_key( $payment_method = false ) {
+		if ( false === $payment_method ) {
+			$payment_method = $this->stripe_id;
+		}
+		return self::KEY_UPE_SETUP_INTENT . '_' . $payment_method;
 	}
 
 	/**
 	 * Returns payment intent session data.
 	 *
+	 * @param string $payment_method Stripe payment method.
 	 * @return string
 	 */
-	public function get_payment_intent_data_from_session() {
-		return WC()->session->get( $this->get_payment_intent_session_key() );
+	public function get_payment_intent_data_from_session( $payment_method = false ) {
+		return WC()->session->get( $this->get_payment_intent_session_key( $payment_method ) );
 	}
 
 	/**
 	 * Returns setup intent session data.
 	 *
+	 * @param string $payment_method Stripe payment method.
 	 * @return string
 	 */
-	public function get_setup_intent_data_from_session() {
-		return WC()->session->get( $this->get_setup_intent_session_key() );
+	public function get_setup_intent_data_from_session( $payment_method = false ) {
+		return WC()->session->get( $this->get_setup_intent_session_key( $payment_method ) );
 	}
 
 }

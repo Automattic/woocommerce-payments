@@ -55,16 +55,16 @@ class UPE_Single_Method_Payment_Gateway extends UPE_Payment_Gateway {
 		$this->stripe_id = $payment_method->get_id();
 		$this->title     = $payment_method->get_title();
 
+		add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
+		add_action( "wc_ajax_wcpay_update_payment_inten_ $this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
+		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
+
 		if ( 'card' !== $this->stripe_id ) {
 			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
 			$this->method_title = "WooCommerce Payments ($this->title)";
 		} else {
 			// Only add these filters once.
-			add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
-			add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
-			add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
 			add_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] );
-
 			add_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
 			add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
 			add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
@@ -80,41 +80,4 @@ class UPE_Single_Method_Payment_Gateway extends UPE_Payment_Gateway {
 		}
 	}
 
-	/**
-	 * Adds the id and client secret of payment intent needed to mount the UPE element in frontend to WC session.
-	 *
-	 * @param string $intent_id     The payment intent id.
-	 * @param string $client_secret The payment intent client secret.
-	 */
-	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
-		$cart_hash = 'undefined';
-
-		if ( isset( $_COOKIE['woocommerce_cart_hash'] ) ) {
-			$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE['woocommerce_cart_hash'] ) );
-		}
-
-		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret;
-
-		WC()->session->set( self::KEY_UPE_PAYMENT_INTENT, $value );
-	}
-
-	/**
-	 * Returns session key for UPE SEPA payment intents.
-	 * Overrides parent.
-	 *
-	 * @return string
-	 */
-	public function get_payment_intent_session_key() {
-		return self::KEY_UPE_PAYMENT_INTENT . '_' . $this->stripe_id;
-	}
-
-	/**
-	 * Returns session key for UPE SEPA setup intents.
-	 * Overrides parent.
-	 *
-	 * @return string
-	 */
-	public function get_setup_intent_session_key() {
-		return self::KEY_UPE_SETUP_INTENT . '_' . $this->stripe_id;
-	}
 }
