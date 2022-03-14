@@ -2,6 +2,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import Gridicon from 'gridicons';
 import classNames from 'classnames';
 
@@ -10,7 +11,10 @@ import classNames from 'classnames';
  */
 import './styles.scss';
 
-const PaymentDeleteIllustration = ( { hasBorder, Icon = () => null } ) => {
+const PaymentDeleteIllustration: React.FunctionComponent< {
+	hasBorder?: boolean;
+	icon?: ( { className }: { className: string } ) => JSX.Element;
+} > = ( { hasBorder, icon: Icon = () => null } ): JSX.Element => {
 	return (
 		<div className="payment-delete-illustration__wrapper">
 			<div className="payment-delete-illustration__illustrations">

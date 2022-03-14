@@ -11,7 +11,16 @@ import { HorizontalRule } from '@wordpress/primitives';
  */
 import './styles.scss';
 
-const ConfirmationModal = ( { children, actions, className, ...props } ) => (
+interface ConfirmationModalProps extends Modal.Props {
+	actions: JSX.Element;
+}
+
+const ConfirmationModal: React.FunctionComponent< ConfirmationModalProps > = ( {
+	children,
+	actions,
+	className,
+	...props
+} ) => (
 	<Modal
 		className={ classNames( 'wcpay-confirmation-modal', className ) }
 		{ ...props }
