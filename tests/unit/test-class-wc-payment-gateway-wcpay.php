@@ -1817,37 +1817,55 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	 *
 	 * @dataProvider account_statement_descriptor_validation_provider
 	 */
-	public function test_validate_account_statement_descriptor_field( $is_valid, $value, $expected = null ) {
-		$key = 'account_statement_descriptor';
+	public function test_validate_account_statement_descriptor_fields( $is_valid, $key, $value, $max_length, $expected = null ) {
 		if ( $is_valid ) {
-			$validated_value = $this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value );
+			$validated_value = $this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value, $max_length );
 			$this->assertEquals( $expected ?? $value, $validated_value );
 		} else {
-			$this->expectExceptionMessage( 'Customer bank statement is invalid.' );
-			$this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value );
+			$message = 'account_statement_descriptor' === $key ? 'Customer bank statement' : 'Shortened customer bank statement';
+			$this->expectExceptionMessage( $message . ' is invalid.' );
+			$this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value, $max_length );
 		}
 	}
 
 	public function account_statement_descriptor_validation_provider() {
 		return [
-			'valid'          => [ true, 'WCPAY dev' ],
-			'allow_digits'   => [ true, 'WCPay dev 2020' ],
-			'allow_special'  => [ true, 'WCPay-Dev_2020' ],
-			'allow_amp'      => [ true, 'WCPay&Dev_2020' ],
-			'strip_slashes'  => [ true, 'WCPay\\\\Dev_2020', 'WCPay\\Dev_2020' ],
-			'allow_long_amp' => [ true, 'aaaaaaaaaaaaaaaaaaa&aa' ],
-			'trim_valid'     => [ true, '   good_descriptor  ', 'good_descriptor' ],
-			'empty'          => [ false, '' ],
-			'short'          => [ false, 'WCP' ],
-			'long'           => [ false, 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev' ],
-			'no_*'           => [ false, 'WCPay * dev' ],
-			'no_sqt'         => [ false, 'WCPay \'dev\'' ],
-			'no_dqt'         => [ false, 'WCPay "dev"' ],
-			'no_lt'          => [ false, 'WCPay<dev' ],
-			'no_gt'          => [ false, 'WCPay>dev' ],
-			'req_latin'      => [ false, 'дескриптор' ],
-			'req_letter'     => [ false, '123456' ],
-			'trim_too_short' => [ false, '  aaa    ' ],
+			'valid'                  => [ true, 'account_statement_descriptor', 'WCPAY dev', 22 ],
+			'allow_digits'           => [ true, 'account_statement_descriptor', 'WCPay dev 2020', 22 ],
+			'allow_special'          => [ true, 'account_statement_descriptor', 'WCPay-Dev_2020', 22 ],
+			'allow_amp'              => [ true, 'account_statement_descriptor', 'WCPay&Dev_2020', 22 ],
+			'strip_slashes'          => [ true, 'account_statement_descriptor', 'WCPay\\\\Dev_2020', 22, 'WCPay\\Dev_2020' ],
+			'allow_long_amp'         => [ true, 'account_statement_descriptor', 'aaaaaaaaaaaaaaaaaaa&aa', 22 ],
+			'trim_valid'             => [ true, 'account_statement_descriptor', '   good_descriptor  ', 22, 'good_descriptor' ],
+			'empty'                  => [ false, 'account_statement_descriptor', '', 22 ],
+			'short'                  => [ false, 'account_statement_descriptor', 'WCP', 22 ],
+			'long'                   => [ false, 'account_statement_descriptor', 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev', 22 ],
+			'no_*'                   => [ false, 'account_statement_descriptor', 'WCPay * dev', 22 ],
+			'no_sqt'                 => [ false, 'account_statement_descriptor', 'WCPay \'dev\'', 22 ],
+			'no_dqt'                 => [ false, 'account_statement_descriptor', 'WCPay "dev"', 22 ],
+			'no_lt'                  => [ false, 'account_statement_descriptor', 'WCPay<dev', 22 ],
+			'no_gt'                  => [ false, 'account_statement_descriptor', 'WCPay>dev', 22 ],
+			'req_latin'              => [ false, 'account_statement_descriptor', 'дескриптор', 22 ],
+			'req_letter'             => [ false, 'account_statement_descriptor', '123456', 22 ],
+			'trim_too_short'         => [ false, 'account_statement_descriptor', '  aaa    ', 22 ],
+			'valid (short)'          => [ true, 'short_statement_descriptor', 'WCPAY dev', 10 ],
+			'allow_digits (short)'   => [ true, 'short_statement_descriptor', 'WCPay 2020', 10 ],
+			'allow_special (short)'  => [ true, 'short_statement_descriptor', 'WCPay-_202', 10 ],
+			'allow_amp (short)'      => [ true, 'short_statement_descriptor', 'WCPay&_202', 10 ],
+			'strip_slashes (short)'  => [ true, 'short_statement_descriptor', 'WCPay\\\\D_20', 10, 'WCPay\\D_20' ],
+			'allow_long_amp (short)' => [ true, 'short_statement_descriptor', 'aaaaaaaa&a', 10 ],
+			'trim_valid (short)'     => [ true, 'short_statement_descriptor', '   good_d ', 10, 'good_d' ],
+			'empty (short)'          => [ false, 'short_statement_descriptor', '', 10 ],
+			'short (short)'          => [ false, 'short_statement_descriptor', 'WCP', 10 ],
+			'long (short)'           => [ false, 'short_statement_descriptor', 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev', 10 ],
+			'no_* (short)'           => [ false, 'short_statement_descriptor', 'WCPay * de', 10 ],
+			'no_sqt (short)'         => [ false, 'short_statement_descriptor', 'WCPay \'d\'', 10 ],
+			'no_dqt (short)'         => [ false, 'short_statement_descriptor', 'WCPay "de"', 10 ],
+			'no_lt (short)'          => [ false, 'short_statement_descriptor', 'WCPay<dev', 10 ],
+			'no_gt (short)'          => [ false, 'short_statement_descriptor', 'WCPay>dev', 10 ],
+			'req_latin (short)'      => [ false, 'short_statement_descriptor', 'дескриптор', 10 ],
+			'req_letter (short)'     => [ false, 'short_statement_descriptor', '123456', 10 ],
+			'trim_too_short (short)' => [ false, 'short_statement_descriptor', '  aaa    ', 10 ],
 		];
 	}
 
