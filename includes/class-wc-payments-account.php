@@ -498,10 +498,11 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		$redirect_param = filter_input( INPUT_GET, 'wcpay-connect-redirect', FILTER_SANITIZE_STRING );
-		if ( ! $redirect_param ) {
+		if ( ! isset( $_GET['wcpay-connect-redirect'] ) ) {
 			return false;
 		}
+
+		$redirect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect-redirect'] ) );
 
 		// Let's record in Tracks merchants returning via the KYC reminder email.
 		$track_props = [
