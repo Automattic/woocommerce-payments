@@ -7,6 +7,14 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_API_Client;
+use WC_Payments_Account;
+use WC_Payments_Customer_Service;
+use WC_Payments_Token_Service;
+use WC_Payments_Action_Scheduler_Service;
+use Session_Rate_Limiter;
+use WC_Payments_Order_Service;
+
 /**
  * Utility functions for UPE payment gateways
  */

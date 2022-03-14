@@ -97,6 +97,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
 
+		if ( is_admin() ) {
+			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
+		}
+
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_upe_payment_intent_from_session' ], 10, 0 );
 		add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
 	}
@@ -980,6 +984,21 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function clear_upe_appearance_transient() {
 		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
+	}
+
+	/**
+	 * Sets the title on checkout correctly before the title is displayed.
+	 *
+	 * @param string $title The title of the gateway being filtered.
+	 * @param string $id    The id of the gateway being filtered.
+	 *
+	 * @return string Filtered gateway title.
+	 */
+	public function maybe_filter_gateway_title( $title, $id ) {
+		if ( self::GATEWAY_ID === $id && $this->title === $title ) {
+			$title = $this->method_title;
+		}
+		return $title;
 	}
 
 	/**

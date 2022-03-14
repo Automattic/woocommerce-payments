@@ -194,8 +194,8 @@ class WC_Payments {
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-upe-single-method-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
+		include_once __DIR__ . '/payment-methods/class-upe-single-method-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
@@ -268,8 +268,7 @@ class WC_Payments {
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$card_payment_method = new CC_Payment_Method( self::$token_service );
-			$payment_methods     = [ $card_payment_method->get_id() => $card_payment_method ];
-			self::$card_gateway  = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
+			self::$card_gateway  = new $upe_class( $card_payment_method, self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		} else {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
