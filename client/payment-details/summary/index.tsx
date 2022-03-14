@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Card, CardBody, CardFooter } from '@wordpress/components';
 import moment from 'moment';
-import { get } from 'lodash';
+import React from 'react';
 
 /**
  * Internal dependencies.
@@ -22,6 +22,7 @@ import OrderLink from 'components/order-link';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
 import './style.scss';
+import { Charge } from 'wcpay/types/charges';
 
 const placeholderValues = {
 	amount: 0,
@@ -31,7 +32,7 @@ const placeholderValues = {
 	refunded: null,
 };
 
-const composePaymentSummaryItems = ( { charge } ) =>
+const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
 	[
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
@@ -52,17 +53,14 @@ const composePaymentSummaryItems = ( { charge } ) =>
 		},
 		wcpaySettings.isSubscriptionsActive && {
 			title: __( 'Subscription', 'woocommerce-payments' ),
-			content:
-				charge.order && charge.order.subscriptions.length ? (
-					charge.order.subscriptions.map(
-						( subscription, i, all ) => [
-							<OrderLink key={ i } order={ subscription } />,
-							i !== all.length - 1 && ', ',
-						]
-					)
-				) : (
-					<OrderLink />
-				),
+			content: charge.order?.subscriptions?.length ? (
+				charge.order.subscriptions.map( ( subscription, i, all ) => [
+					<OrderLink key={ i } order={ subscription } />,
+					i !== all.length - 1 && ', ',
+				] )
+			) : (
+				<OrderLink order={ null } />
+			),
 		},
 		{
 			title: __( 'Payment method', 'woocommerce-payments' ),
@@ -74,11 +72,19 @@ const composePaymentSummaryItems = ( { charge } ) =>
 		},
 		{
 			title: __( 'Risk evaluation', 'woocommerce-payments' ),
-			content: riskMappings[ get( charge, 'outcome.risk_level' ) ] || '–',
+			content: charge.outcome?.risk_level
+				? riskMappings[ charge.outcome.risk_level ]
+				: '–',
 		},
 	].filter( Boolean );
 
-const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
+const PaymentDetailsSummary = ( {
+	charge,
+	isLoading,
+}: {
+	charge: Charge;
+	isLoading: boolean;
+} ): JSX.Element => {
 	const balance = charge.amount
 		? getChargeAmounts( charge )
 		: placeholderValues;
