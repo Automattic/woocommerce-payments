@@ -498,10 +498,17 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// We could use a value for this parameter for tracking the email that brought the user here.
-		if ( ! isset( $_GET['wcpay-connect-redirect'] ) ) {
+		$redirect_param = filter_input( INPUT_GET, 'wcpay-connect-redirect', FILTER_SANITIZE_STRING );
+		if ( ! $redirect_param ) {
 			return false;
 		}
+
+		// Let's record in Tracks merchants returning via the KYC reminder email.
+		$track_props = [
+			'type'          => 'initial' === $redirect_param ? 'initial' : 'follow',
+			'follow_number' => in_array( $redirect_param, [ '1', '2', '3', '4' ], true ) ? $redirect_param : '0',
+		];
+		wc_admin_record_tracks_event( 'wcpay_kyc_reminder_merchant_returned', $track_props );
 
 		// Take the user to the 'wcpay-connect' URL.
 		// We handle creating and redirecting to the account link there.
