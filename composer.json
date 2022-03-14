@@ -76,8 +76,7 @@
                 "add": "Add",
                 "fix": "Fix",
                 "update": "Update",
-                "dev": "Dev",
-                "tweak": "Tweak"
+                "dev": "Dev"
             },
             "formatter": {
                 "filename": "bin/class-wcpay-changelog-formatter.php"
