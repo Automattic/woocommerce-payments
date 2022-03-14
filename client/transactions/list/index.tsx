@@ -276,6 +276,7 @@ export const TransactionsList = (
 		const dataType = txn.metadata ? txn.metadata.charge_type : txn.type;
 		const formatAmount = () => {
 			const amount = txn.metadata ? 0 : txn.amount;
+			const fromAmount = txn.customer_amount ? txn.customer_amount : 0;
 
 			return {
 				value: amount / 100,
@@ -283,7 +284,7 @@ export const TransactionsList = (
 					<ConvertedAmount
 						amount={ amount }
 						currency={ currency }
-						fromAmount={ amount }
+						fromAmount={ fromAmount }
 						fromCurrency={ txn.customer_currency.toUpperCase() }
 					/>
 				),
@@ -435,6 +436,7 @@ export const TransactionsList = (
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
+		const userEmail = wcpaySettings.currentUserEmail;
 
 		if ( 'endpoint' === downloadType ) {
 			const {
@@ -475,6 +477,7 @@ export const TransactionsList = (
 						exported_transactions: exportedTransactions,
 					} = await apiFetch( {
 						path: getTransactionsCSV( {
+							userEmail,
 							dateAfter,
 							dateBefore,
 							dateBetween,
@@ -489,9 +492,12 @@ export const TransactionsList = (
 
 					createNotice(
 						'success',
-						__(
-							'Your export will be emailed to you.',
-							'woocommerce-payments'
+						sprintf(
+							__(
+								'Your export will be emailed to %s',
+								'woocommerce-payments'
+							),
+							userEmail
 						)
 					);
 
