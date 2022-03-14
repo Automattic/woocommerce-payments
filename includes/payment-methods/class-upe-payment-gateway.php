@@ -840,14 +840,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->tokenization_script();
 				$this->saved_payment_methods();
 			}
+
+			$element_id = "$this->id-$this->stripe_id";
 			?>
 
-			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
-				<div id="wcpay-upe-element"></div>
+			<fieldset id="wc-<?php echo esc_attr( $element_id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
+				<div id="wcpay-<?php echo esc_attr( $element_id ); ?>-upe-element"></div>
 				<div id="wcpay-upe-errors" role="alert"></div>
-				<input id="wcpay-payment-method-upe" type="hidden" name="wcpay-payment-method-upe" />
-				<input id="wcpay_selected_upe_payment_type" type="hidden" name="wcpay_selected_upe_payment_type" />
-				<input id="wcpay_payment_country" type="hidden" name="wcpay_payment_country" />
+				<input id="wcpay-payment-method-upe-<?php echo esc_attr( $this->stripe_id ); ?>" type="hidden" name="wcpay-payment-method-upe-<?php echo esc_attr( $this->stripe_id ); ?>" />
+				<input id="wcpay_selected_upe_<?php echo esc_attr( $this->stripe_id ); ?>_payment_type" type="hidden" name="wcpay_selected_upe_<?php echo esc_attr( $this->stripe_id ); ?>_payment_type" />
+				<input id="wcpay_upe_<?php echo esc_attr( $this->stripe_id ); ?>payment_country" type="hidden" name="wcpay_upe_<?php echo esc_attr( $this->stripe_id ); ?>payment_country" />
 
 			<?php
 			$methods_enabled_for_saved_payments = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );

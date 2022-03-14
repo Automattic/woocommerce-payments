@@ -21,6 +21,13 @@ use WC_Payments_Order_Service;
 class UPE_Single_Method_Payment_Gateway extends UPE_Payment_Gateway {
 
 	/**
+	 * Stripe payment method type ID.
+	 *
+	 * @var string
+	 */
+	protected $stripe_id;
+
+	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param UPE_Payment_Method                   $payment_method                  - Specific UPE_Payment_Method instance for class.
@@ -48,16 +55,10 @@ class UPE_Single_Method_Payment_Gateway extends UPE_Payment_Gateway {
 		$this->stripe_id = $payment_method->get_id();
 		$this->title     = $payment_method->get_title();
 		if ( 'card' !== $this->stripe_id ) {
+			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
 			$this->method_title = "WooCommerce Payments ($this->title)";
 		}
 	}
-
-	/**
-	 * Stripe ID
-	 *
-	 * @var string
-	 */
-	protected $stripe_id;
 
 	/**
 	 * Adds the id and client secret of payment intent needed to mount the UPE element in frontend to WC session.
