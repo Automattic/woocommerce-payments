@@ -25,6 +25,16 @@ jQuery( function ( $ ) {
 	const upePaymentIntentData = getConfig( 'upePaymentIntentData' );
 	const upeSetupIntentData = getConfig( 'upeSetupIntentData' );
 
+	const upeConfig = {};
+	for ( const paymentMethodType in paymentMethodsConfig ) {
+		upeConfig[ paymentMethodType ] = {
+			elements: null,
+			upeElement: null,
+			paymentIntentId: null,
+			isUPEComplete: null,
+		};
+	}
+
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
 		return;
@@ -109,10 +119,6 @@ jQuery( function ( $ ) {
 			$( '#wcpay-hidden-div' ).remove();
 		},
 	};
-	let elements = null;
-	let upeElement = null;
-	let paymentIntentId = null;
-	let isUPEComplete = false;
 	const hiddenBillingFields = {
 		name:
 			enabledBillingFields.includes( 'billing_first_name' ) ||
@@ -213,32 +219,6 @@ jQuery( function ( $ ) {
 		$( document.body ).trigger( 'checkout_error' );
 	};
 
-	// Show or hide save payment information checkbox
-	const showNewPaymentMethodCheckbox = ( show = true ) => {
-		if ( show ) {
-			$( '.woocommerce-SavedPaymentMethods-saveNew' ).show();
-		} else {
-			$( '.woocommerce-SavedPaymentMethods-saveNew' ).hide();
-			$( 'input#wc-woocommerce_payments-new-payment-method' ).prop(
-				'checked',
-				false
-			);
-			$( 'input#wc-woocommerce_payments-new-payment-method' ).trigger(
-				'change'
-			);
-		}
-	};
-
-	// Set the selected UPE payment type field
-	const setSelectedUPEPaymentType = ( paymentType ) => {
-		$( '#wcpay_selected_upe_payment_type' ).val( paymentType );
-	};
-
-	// Set the payment country field
-	const setPaymentCountry = ( country ) => {
-		$( '#wcpay_payment_country' ).val( country );
-	};
-
 	/**
 	 * Converts form fields object into Stripe `billing_details` object.
 	 *
@@ -266,10 +246,14 @@ jQuery( function ( $ ) {
 	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
-	 * @param {boolean} isSetupIntent {Boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
+	 * @param {string} paymentMethodType Stripe payment method type.
+	 * @param {object} upeDOMElement DOM element or HTML selector to use to mount UPE payment element.
+	 * @param {boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
 	 */
-	const mountUPEElement = async function ( isSetupIntent = false ) {
+	const mountUPEElement = async function ( paymentMethodType, upeDOMElement, isSetupIntent = false ) {
 		// Do not mount UPE twice.
+		let upeElement = upeConfig[ paymentMethodType ].upeElement;
+		const paymentIntentId = upeConfig[ paymentMethodType ].paymentIntentId;
 		if ( upeElement || paymentIntentId ) {
 			return;
 		}
@@ -297,7 +281,7 @@ jQuery( function ( $ ) {
 			? getSetupIntentFromSession()
 			: getPaymentIntentFromSession();
 
-		const $upeContainer = $( '#wcpay-upe-element' );
+		const $upeContainer = $( upeDOMElement );
 		blockUI( $upeContainer );
 
 		if ( ! intentId ) {
@@ -324,7 +308,7 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		paymentIntentId = intentId;
+		upeConfig[ paymentMethodType ].paymentIntentId = intentId;
 
 		let appearance = getConfig( 'upeAppearance' );
 
@@ -335,11 +319,12 @@ jQuery( function ( $ ) {
 			api.saveUPEAppearance( appearance );
 		}
 
-		elements = api.getStripe().elements( {
+		const elements = api.getStripe().elements( {
 			clientSecret,
 			appearance,
 			fonts: getFontRulesFromPage(),
 		} );
+		upeConfig[ paymentMethodType ].elements = elements;
 
 		const upeSettings = {};
 		if ( getConfig( 'cartContainsSubscription' ) ) {
@@ -358,16 +343,15 @@ jQuery( function ( $ ) {
 				googlePay: 'never',
 			},
 		} );
-		upeElement.mount( '#wcpay-upe-element' );
+		upeElement.mount( upeDOMElement );
 		unblockUI( $upeContainer );
 		upeElement.on( 'change', ( event ) => {
 			const selectedUPEPaymentType = event.value.type;
-			const isPaymentMethodReusable =
-				paymentMethodsConfig[ selectedUPEPaymentType ].isReusable;
-			showNewPaymentMethodCheckbox( isPaymentMethodReusable );
-			setSelectedUPEPaymentType( selectedUPEPaymentType );
-			setPaymentCountry( event.value.country );
-			isUPEComplete = event.complete;
+			// const isPaymentMethodReusable =
+			// 	paymentMethodsConfig[ selectedUPEPaymentType ].isReusable;
+			// showNewPaymentMethodCheckbox( isPaymentMethodReusable );
+			// setPaymentCountry( event.value.country );
+			upeConfig[ selectedUPEPaymentType ].isUPEComplete = event.complete;
 		} );
 	};
 
@@ -378,14 +362,21 @@ jQuery( function ( $ ) {
 		// If the card element selector doesn't exist, then do nothing (for example, when a 100% discount coupon is applied).
 		// We also don't re-mount if already mounted in DOM.
 		if (
-			$( '#wcpay-upe-element' ).length &&
-			! $( '#wcpay-upe-element' ).children().length &&
+			$( '.wcpay-upe-element' ).length &&
+			! $( '.wcpay-upe-element' ).children().length &&
 			isUPEEnabled
 		) {
-			if ( upeElement ) {
-				upeElement.mount( '#wcpay-upe-element' );
-			} else {
-				mountUPEElement();
+			const upeDOMElements = $( '.wcpay-upe-element' );
+			for ( let i=0; i<upeDOMElements.length; i++ ) {
+				const upeDOMElement = upeDOMElements[i];
+				const paymentMethodType = $( upeDOMElement ).attr( 'data-payment-method-type' );
+
+				const upeElement = upeConfig[ paymentMethodType ].upeElement;
+				if ( upeElement ) {
+					upeElement.mount( upeDOMElement );
+				} else {
+					mountUPEElement( paymentMethodType, upeDOMElement );
+				}
 			}
 		}
 	} );

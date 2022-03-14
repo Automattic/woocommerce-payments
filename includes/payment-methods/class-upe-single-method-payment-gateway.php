@@ -54,9 +54,29 @@ class UPE_Single_Method_Payment_Gateway extends UPE_Payment_Gateway {
 
 		$this->stripe_id = $payment_method->get_id();
 		$this->title     = $payment_method->get_title();
+
 		if ( 'card' !== $this->stripe_id ) {
 			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
 			$this->method_title = "WooCommerce Payments ($this->title)";
+		} else {
+			// Only add these filters once.
+			add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
+			add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
+			add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
+			add_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] );
+
+			add_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
+			add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
+			add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
+
+			add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
+
+			add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_upe_payment_intent_from_session' ], 10, 0 );
+			add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
+
+			if ( is_admin() ) {
+				add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
+			}
 		}
 	}
 

@@ -85,24 +85,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 		$this->description        = '';
 		$this->payment_methods    = $payment_methods;
-
-		add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
-		add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
-		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
-		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] );
-
-		add_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
-		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
-		add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
-
-		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
-
-		if ( is_admin() ) {
-			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
-		}
-
-		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_upe_payment_intent_from_session' ], 10, 0 );
-		add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
 	}
 
 	/**
@@ -840,16 +822,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->tokenization_script();
 				$this->saved_payment_methods();
 			}
-
-			$element_id = "$this->id-$this->stripe_id";
 			?>
 
-			<fieldset id="wc-<?php echo esc_attr( $element_id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
-				<div id="wcpay-<?php echo esc_attr( $element_id ); ?>-upe-element"></div>
-				<div id="wcpay-upe-errors" role="alert"></div>
-				<input id="wcpay-payment-method-upe-<?php echo esc_attr( $this->stripe_id ); ?>" type="hidden" name="wcpay-payment-method-upe-<?php echo esc_attr( $this->stripe_id ); ?>" />
-				<input id="wcpay_selected_upe_<?php echo esc_attr( $this->stripe_id ); ?>_payment_type" type="hidden" name="wcpay_selected_upe_<?php echo esc_attr( $this->stripe_id ); ?>_payment_type" />
-				<input id="wcpay_upe_<?php echo esc_attr( $this->stripe_id ); ?>payment_country" type="hidden" name="wcpay_upe_<?php echo esc_attr( $this->stripe_id ); ?>payment_country" />
+			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
+				<div class="wcpay-upe-element" data-payment-method-type="<?php echo esc_attr( $this->stripe_id ); ?>"></div>
+				<div class="wcpay-upe-errors" role="alert"></div>
+				<input class="wcpay-payment-method-upe" type="hidden" name="wcpay-payment-method-upe" />
+				<!-- <input id="wcpay_selected_upe_payment_type" type="hidden" name="wcpay_selected_upe_payment_type" /> -->
+				<!-- <input id="wcpay_payment_country" type="hidden" name="wcpay_payment_country" /> -->
 
 			<?php
 			$methods_enabled_for_saved_payments = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );
@@ -1020,13 +1000,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$settings[ $payment_method ] = [
 				'isReusable'           => $this->payment_methods[ $payment_method ]->is_reusable(),
 				'title'                => $this->payment_methods[ $payment_method ]->get_title(),
+				'upePaymentIntentData' => $this->get_payment_intent_data_from_session(),
+				'upeSetupIntentData'   => $this->get_setup_intent_data_from_session(),
 				// Below properties will be populated with JS objects by upe.js.
 				'elements'             => null,
 				'upeElement'           => null,
-				'intentId'             => null,
+				'paymentIntentId'      => null,
 				'isUPEComplete'        => false,
-				'upePaymentIntentData' => $this->get_payment_intent_data_from_session(),
-				'upeSetupIntentData'   => $this->get_setup_intent_data_from_session(),
 			];
 		}
 
