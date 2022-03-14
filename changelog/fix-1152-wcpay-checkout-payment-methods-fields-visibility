@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Improve visibility of checkout fields for WCPay payment options on a darker theme
