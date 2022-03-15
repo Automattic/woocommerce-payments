@@ -1658,6 +1658,8 @@ class WC_Payments_API_Client {
 			]
 		);
 
+		$params = apply_filters( 'wcpay_api_request_params', $params, $api, $method );
+
 		// Build the URL we want to send the URL to.
 		$url = self::ENDPOINT_BASE;
 		if ( $is_site_specific ) {
