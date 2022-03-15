@@ -1,0 +1,26 @@
+name: Deploy REST API docs
+on:
+    push:
+        branches:
+            - develop
+            - trunk
+    workflow_dispatch:
+
+jobs:
+    build-and-deploy:
+        if: github.repository_owner == 'Automattic'
+        name: Build and deploy
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+            - name: Build
+              run: cd docs/rest-api && ./build.sh
+            - name: Deploy to GitHub Pages
+              if: success()
+              uses: crazy-max/ghaction-github-pages@v2
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  target_branch: gh-pages
+                  build_dir: 'docs/rest-api/build'
