@@ -656,7 +656,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
 			// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
-			$status    = $status ?? 'failed';
+			$status    = $status ?? null;
 			$charge_id = $charge_id ?? null;
 
 			/* translators: localized exception message */
