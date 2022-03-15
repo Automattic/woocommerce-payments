@@ -704,6 +704,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! WC_Payments_Features::is_upe_enabled() &&
 			is_checkout() &&
 			! has_block( 'woocommerce/checkout' ) &&
+			! is_wc_endpoint_url( 'order-pay' ) &&
 			! WC()->cart->is_empty()
 		) {
 			$cart_total = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), get_woocommerce_currency() );
@@ -817,7 +818,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<div id="wcpay-card-element"></div>
 				<div id="wcpay-errors" role="alert"></div>
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
-
+				<input type="hidden" name="wcpay-is-platform-payment-method" value="<?php echo esc_attr( $this->should_use_stripe_platform_on_checkout_page() ); ?>" />
 			<?php
 			if ( $this->is_saved_cards_enabled() ) {
 				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
@@ -1092,7 +1093,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 
-			if ( ! $payment_information->is_using_saved_payment_method() && $this->should_use_stripe_platform_on_checkout_page() ) {
+			// Make sure the payment method being charged was created in the platform.
+			if (
+				! $payment_information->is_using_saved_payment_method() &&
+				$this->should_use_stripe_platform_on_checkout_page() &&
+				// This flag is useful to differentiate between PRB, blocks and shortcode checkout, since this endpoint is being used for all of them.
+				! empty( $_POST['wcpay-is-platform-payment-method'] ) && // phpcs:ignore WordPress.Security.NonceVerification
+				filter_var( $_POST['wcpay-is-platform-payment-method'], FILTER_VALIDATE_BOOLEAN ) // phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			) {
 				// This payment method was created under the platform account.
 				$additional_api_parameters['is_platform_payment_method'] = 'true';
 			}
@@ -1863,18 +1871,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Validates statement descriptor value
 	 *
-	 * @param  string $key Field key.
+	 * @param  string $param Param name.
 	 * @param  string $value Posted Value.
+	 * @param  int    $max_length Maximum statement length.
 	 *
 	 * @return string                   Sanitized statement descriptor.
 	 * @throws InvalidArgumentException When statement descriptor is invalid.
 	 */
-	public function validate_account_statement_descriptor_field( $key, $value ) {
+	public function validate_account_statement_descriptor_field( $param, $value, $max_length ) {
 		// Since the value is escaped, and we are saving in a place that does not require escaping, apply stripslashes.
 		$value = trim( stripslashes( $value ) );
+		$field = __( 'Customer bank statement', 'woocommerce-payments' );
+
+		if ( 'short_statement_descriptor' === $param ) {
+			$field = __( 'Shortened customer bank statement', 'woocommerce-payments' );
+		}
 
 		// Validation can be done with a single regex but splitting into multiple for better readability.
-		$valid_length   = '/^.{5,22}$/';
+		$valid_length   = '/^.{5,' . $max_length . '}$/u';
 		$has_one_letter = '/^.*[a-zA-Z]+/';
 		$no_specials    = '/^[^*"\'<>]*$/';
 
@@ -1883,7 +1897,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! preg_match( $has_one_letter, $value ) ||
 			! preg_match( $no_specials, $value )
 		) {
-			throw new InvalidArgumentException( __( 'Customer bank statement is invalid. Statement should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ) );
+			throw new InvalidArgumentException(
+				sprintf(
+					/* translators: %1 field name, %2 Number of the maximum characters allowed */
+					__( '%1$s is invalid. Statement should be between 5 and %2$u characters long, contain at least a single Latin character, and not contain any of the following special characters: \' " * &lt; &gt;', 'woocommerce-payments' ),
+					$field,
+					$max_length
+				)
+			);
 		}
 
 		return $value;
