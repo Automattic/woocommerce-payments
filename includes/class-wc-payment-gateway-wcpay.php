@@ -704,6 +704,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! WC_Payments_Features::is_upe_enabled() &&
 			is_checkout() &&
 			! has_block( 'woocommerce/checkout' ) &&
+			! is_wc_endpoint_url( 'order-pay' ) &&
 			! WC()->cart->is_empty()
 		) {
 			$cart_total = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), get_woocommerce_currency() );
@@ -817,7 +818,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<div id="wcpay-card-element"></div>
 				<div id="wcpay-errors" role="alert"></div>
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
-
+				<input type="hidden" name="wcpay-is-platform-payment-method" value="<?php echo esc_attr( $this->should_use_stripe_platform_on_checkout_page() ); ?>" />
 			<?php
 			if ( $this->is_saved_cards_enabled() ) {
 				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
@@ -1092,7 +1093,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 
-			if ( ! $payment_information->is_using_saved_payment_method() && $this->should_use_stripe_platform_on_checkout_page() ) {
+			// Make sure the payment method being charged was created in the platform.
+			if (
+				! $payment_information->is_using_saved_payment_method() &&
+				$this->should_use_stripe_platform_on_checkout_page() &&
+				// This flag is useful to differentiate between PRB, blocks and shortcode checkout, since this endpoint is being used for all of them.
+				! empty( $_POST['wcpay-is-platform-payment-method'] ) && // phpcs:ignore WordPress.Security.NonceVerification
+				filter_var( $_POST['wcpay-is-platform-payment-method'], FILTER_VALIDATE_BOOLEAN ) // phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			) {
 				// This payment method was created under the platform account.
 				$additional_api_parameters['is_platform_payment_method'] = 'true';
 			}
@@ -1266,7 +1274,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
-		return $metadata;
+		return apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
 	}
 
 	/**
