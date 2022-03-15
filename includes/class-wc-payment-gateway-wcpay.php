@@ -1479,7 +1479,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
 					/* translators: %1: the successfully charged amount, %2: refund id, %3: reason */
-					__( 'A refund of %1$s was successfully processed using WooCommerce Payments (<code>%2$s</code>). Reason: %2$s', 'woocommerce-payments' ),
+					__( 'A refund of %1$s was successfully processed using WooCommerce Payments (<code>%2$s</code>). Reason: %3$s', 'woocommerce-payments' ),
 					[
 						'code' => '<code>',
 					]
