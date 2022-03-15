@@ -64,8 +64,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		require_once __DIR__ . '/../helpers/class-wc-blocks-rest-api-registration-preventer.php';
 		WC_Blocks_REST_API_Registration_Preventer::prevent();
@@ -146,8 +146,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			);
 	}
 
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
 	}
@@ -214,6 +214,16 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->gateway->disable();
 		$response = $this->controller->get_settings();
 		$this->assertFalse( $response->get_data()['is_wcpay_enabled'] );
+	}
+
+	public function test_get_settings_returns_is_short_statement_descriptor_enabled() {
+		$response = $this->upe_controller->get_settings();
+		$this->assertEquals( false, $response->get_data()['is_short_statement_descriptor_enabled'] );
+	}
+
+	public function test_get_settings_returns_short_statement_descriptor() {
+		$response = $this->upe_controller->get_settings();
+		$this->assertEquals( '', $response->get_data()['short_statement_descriptor'] );
 	}
 
 	public function test_get_settings_fails_if_user_cannot_manage_woocommerce() {
@@ -499,6 +509,49 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->controller->update_settings( $request );
 
 		$this->assertEquals( 'no', $this->gateway->get_option( 'saved_cards' ) );
+	}
+
+	public function test_update_settings_enables_is_short_statement_descriptor_enabled() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_short_statement_descriptor_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'yes', $this->gateway->get_option( 'is_short_statement_descriptor_enabled' ) );
+	}
+
+	public function test_update_settings_disables_is_short_statement_descriptor_enabled() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_short_statement_descriptor_enabled', false );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'no', $this->gateway->get_option( 'is_short_statement_descriptor_enabled' ) );
+	}
+
+	public function test_update_settings_does_not_save_short_statement_descriptor_if_short_descriptor_is_disabled() {
+		$this->assertEquals( false, $this->gateway->get_option( 'is_short_statement_descriptor_enabled' ) );
+		$this->assertEquals( '', $this->gateway->get_option( 'short_statement_descriptor' ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'short_statement_descriptor', 'foobar' );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( '', $this->gateway->get_option( 'short_statement_descriptor' ) );
+	}
+
+	public function test_update_settings_saves_short_statement_descriptor() {
+		$this->assertEquals( false, $this->gateway->get_option( 'is_short_statement_descriptor_enabled' ) );
+		$this->assertEquals( '', $this->gateway->get_option( 'short_statement_descriptor' ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_short_statement_descriptor_enabled', true );
+		$request->set_param( 'short_statement_descriptor', 'foobar' );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'foobar', $this->gateway->get_option( 'short_statement_descriptor' ) );
 	}
 
 	/**

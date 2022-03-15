@@ -42,8 +42,8 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->user_id = get_current_user_id();
 		wp_set_current_user( 1 );
@@ -57,9 +57,9 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Post-test teardown
 	 */
-	public function tearDown() {
+	public function tear_down() {
 		wp_set_current_user( $this->user_id );
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	/**

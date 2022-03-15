@@ -41,8 +41,8 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->order_service = new WC_Payments_Order_Service();
 		$this->order         = WC_Helper_Order::create_order();
@@ -128,9 +128,9 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'Pending payment to Processing', $notes[1]->content );
-		$this->assertContains( 'successfully charged</strong> using WooCommerce Payments', $notes[0]->content );
-		$this->assertContains( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">py_123', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to Processing', $notes[1]->content );
+		$this->assertStringContainsString( 'successfully charged</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">py_123', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -155,10 +155,10 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'Pending payment to Failed', $notes[1]->content );
-		$this->assertContains( 'failed</strong> using WooCommerce Payments', $notes[0]->content );
-		$this->assertContains( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
-		$this->assertContains( 'This is the test failed message.', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to Failed', $notes[1]->content );
+		$this->assertStringContainsString( 'failed</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
+		$this->assertStringContainsString( 'This is the test failed message.', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -223,9 +223,9 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'Pending payment to On hold', $notes[1]->content );
-		$this->assertContains( 'authorized</strong> using WooCommerce Payments', $notes[0]->content );
-		$this->assertContains( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
+		$this->assertStringContainsString( 'authorized</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -270,8 +270,8 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'started</strong> using WooCommerce Payments', $notes[0]->content );
-		$this->assertContains( 'Payments (<code>pi_123</code>)', $notes[0]->content );
+		$this->assertStringContainsString( 'started</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'Payments (<code>pi_123</code>)', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -336,9 +336,9 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'Pending payment to Processing', $notes[1]->content );
-		$this->assertContains( 'successfully captured</strong> using WooCommerce Payments', $notes[0]->content );
-		$this->assertContains( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">py_123', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to Processing', $notes[1]->content );
+		$this->assertStringContainsString( 'successfully captured</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">py_123', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -362,8 +362,8 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'failed</strong> to complete using WooCommerce Payments', $notes[0]->content );
-		$this->assertContains( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
+		$this->assertStringContainsString( 'failed</strong> to complete using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -387,8 +387,8 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'failed</strong> to complete using WooCommerce Payments', $notes[0]->content );
-		$this->assertContains( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
+		$this->assertStringContainsString( 'failed</strong> to complete using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -413,9 +413,9 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'Pending payment to Cancelled', $notes[1]->content );
-		$this->assertContains( 'Payment authorization has <strong>expired</strong>', $notes[0]->content );
-		$this->assertContains( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to Cancelled', $notes[1]->content );
+		$this->assertStringContainsString( 'Payment authorization has <strong>expired</strong>', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -440,8 +440,8 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'Pending payment to Cancelled', $notes[1]->content );
-		$this->assertContains( 'Payment authorization was successfully <strong>cancelled</strong>', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to Cancelled', $notes[1]->content );
+		$this->assertStringContainsString( 'Payment authorization was successfully <strong>cancelled</strong>', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -464,9 +464,9 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'Pending payment to On hold', $notes[1]->content );
-		$this->assertContains( 'Payment has been disputed as product_not_received', $notes[0]->content );
-		$this->assertContains( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
+		$this->assertStringContainsString( 'Payment has been disputed as product_not_received', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 	}
 
 	/**
@@ -486,9 +486,9 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'Pending payment to Completed', $notes[1]->content );
-		$this->assertContains( 'Payment dispute has been closed with status won', $notes[0]->content );
-		$this->assertContains( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to Completed', $notes[1]->content );
+		$this->assertStringContainsString( 'Payment dispute has been closed with status won', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 	}
 
 	/**
@@ -509,9 +509,9 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'On hold to Refunded', $notes[1]->content );
-		$this->assertContains( 'Payment dispute has been closed with status lost', $notes[0]->content );
-		$this->assertContains( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+		$this->assertStringContainsString( 'On hold to Refunded', $notes[1]->content );
+		$this->assertStringContainsString( 'Payment dispute has been closed with status lost', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Check for created refund, and the amount is correct.
 		$refunds = $this->order->get_refunds();
@@ -538,7 +538,7 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertContains( 'Pending payment to Completed', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to Completed', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
