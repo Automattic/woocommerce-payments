@@ -351,6 +351,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+
+		add_action( 'woocommerce_after_order_refund_object_save', [ $this, 'add_refund_id_to_order_meta' ], 10, 2 );
 	}
 
 	/**
