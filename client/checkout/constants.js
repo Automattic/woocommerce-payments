@@ -1,6 +1,6 @@
 export const PAYMENT_METHOD_NAME_CARD = 'woocommerce_payments';
 export const PAYMENT_METHOD_NAME_BANCONTACT = 'woocommerce_payments_bancontact';
-export const PAYMENT_METHOD_NAME_BECS = 'woocommerce_payments_becs';
+export const PAYMENT_METHOD_NAME_BECS = 'woocommerce_payments_au_becs_debit';
 export const PAYMENT_METHOD_NAME_EPS = 'woocommerce_payments_eps';
 export const PAYMENT_METHOD_NAME_GIROPAY = 'woocommerce_payments_giropay';
 export const PAYMENT_METHOD_NAME_IDEAL = 'woocommerce_payments_ideal';
