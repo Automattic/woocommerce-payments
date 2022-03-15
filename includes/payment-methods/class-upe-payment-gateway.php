@@ -869,9 +869,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
 				<div class="wcpay-upe-element" data-payment-method-type="<?php echo esc_attr( $this->stripe_id ); ?>"></div>
-				<!-- <div class="wcpay-upe-errors" role="alert"></div> -->
-				<!-- <input class="wcpay-payment-method-upe" type="hidden" name="wcpay-payment-method-upe" /> -->
-
 			<?php
 			$is_enabled_for_saved_payments = $this->is_enabled_for_saved_payments();
 			if ( $this->is_saved_cards_enabled() && $is_enabled_for_saved_payments ) {
