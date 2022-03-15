@@ -21,6 +21,7 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 		foreach ( array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) as $flag ) {
 			remove_all_filters( 'pre_option_' . $flag );
 		}
+		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
 	}
 
 	/**
@@ -72,33 +73,18 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_platform_checkout_is_returned_as_true() {
-		update_option( '_wcpay_feature_platform_checkout', '1' );
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => true ] ] );
 		$this->assertTrue( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
 
-	/**
-	 * @dataProvider is_platform_checkout_falsy_value_provider
-	 */
 	public function test_is_platform_checkout_is_returned_as_false_if_not_equal_1() {
-		update_option( '_wcpay_feature_platform_checkout', '0' );
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => false ] ] );
 		$this->assertFalse( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
 
 	public function test_is_platform_checkout_is_returned_as_false_if_missing() {
-		delete_option( '_wcpay_feature_platform_checkout' );
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [] ] );
 		$this->assertFalse( WC_Payments_Features::is_platform_checkout_eligible() );
-	}
-
-	public function is_platform_checkout_falsy_value_provider() {
-		return [
-			[ '0' ],
-			[ 0 ],
-			[ null ],
-			[ false ],
-			'(bool) true is not strictly equal to (int) 1' => [ true ],
-			[ 'foo' ],
-			[ [] ],
-		];
 	}
 
 	private function setup_enabled_flags( array $enabled_flags ) {

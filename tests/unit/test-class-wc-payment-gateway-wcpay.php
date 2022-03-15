@@ -2166,7 +2166,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_platform_checkout_is_returned_as_true() {
-		update_option( '_wcpay_feature_platform_checkout', '1' );
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => true ] ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertTrue( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
@@ -2195,11 +2195,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertTrue( $mock_wcpay_gateway->get_payment_fields_js_config()['forceNetworkSavedCards'] );
 	}
 
-	/**
-	 * @dataProvider is_platform_checkout_falsy_value_provider
-	 */
 	public function test_is_platform_checkout_is_returned_as_false_if_feature_flag_is_not_equal_1() {
-		update_option( '_wcpay_feature_platform_checkout', '0' );
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => false ] ] );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
@@ -2209,19 +2206,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_platform_checkout_is_returned_as_false_if_missing() {
-		delete_option( '_wcpay_feature_platform_checkout' );
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [] ] );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
-	}
-
-	public function is_platform_checkout_falsy_value_provider() {
-		return [
-			[ '0' ],
-			[ 0 ],
-			[ null ],
-			[ false ],
-			'(bool) true is not strictly equal to (int) 1' => [ true ],
-			[ 'foo' ],
-			[ [] ],
-		];
 	}
 }
