@@ -1465,15 +1465,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( empty( $reason ) ) {
 			$note = sprintf(
-				/* translators: %1: the successfully charged amount */
-				__( 'A refund of %1$s was successfully processed using WooCommerce Payments.', 'woocommerce-payments' ),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order )
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the successfully charged amount, %2: refund id */
+					__( 'A refund of %1$s was successfully processed using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
+				$refund['id']
 			);
 		} else {
 			$note = sprintf(
-				/* translators: %1: the successfully charged amount, %2: reason */
-				__( 'A refund of %1$s was successfully processed using WooCommerce Payments. Reason: %2$s', 'woocommerce-payments' ),
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the successfully charged amount, %2: refund id, %3: reason */
+					__( 'A refund of %1$s was successfully processed using WooCommerce Payments (<code>%2$s</code>). Reason: %2$s', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
 				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
+				$refund['id'],
 				$reason
 			);
 		}
