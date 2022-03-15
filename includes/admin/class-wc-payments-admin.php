@@ -385,6 +385,20 @@ class WC_Payments_Admin {
 		$current_user       = wp_get_current_user();
 		$current_user_email = $current_user && $current_user->user_email ? $current_user->user_email : get_option( 'admin_email' );
 
+		$locale_info   = include WC()->plugin_path() . '/i18n/locale-info.php';
+		$currency_data = [];
+
+		foreach ( $locale_info as $key => $value ) {
+			$currency_data[ $key ] = [
+				'code'              => $value['currency_code'],
+				'symbol'            => $value['short_symbol'],
+				'symbolPosition'    => $value['currency_pos'],
+				'thousandSeparator' => $value['thousand_sep'],
+				'decimalSeparator'  => $value['decimal_sep'],
+				'precision'         => $value['num_decimals'],
+			];
+		}
+
 		$wcpay_settings = [
 			'connectUrl'              => WC_Payments_Account::get_connect_url(),
 			'connect'                 => [
@@ -423,6 +437,7 @@ class WC_Payments_Admin {
 				'remindMeLaterTodoTasks' => get_option( 'woocommerce_remind_me_later_todo_tasks', [] ),
 			],
 			'currentUserEmail'        => $current_user_email,
+			'currencyData'            => $currency_data,
 		];
 
 		wp_localize_script(
