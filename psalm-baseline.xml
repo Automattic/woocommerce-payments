@@ -26,6 +26,15 @@
       <code>\WC_Product_Addons_Helper</code>
     </UndefinedClass>
   </file>
+  <file src="includes/multi-currency/Compatibility/WooCommerceNameYourPrice.php">
+    <UndefinedClass occurrences="2">
+      <code>\WC_Name_Your_Price_Helpers</code>
+      <code>\WC_Name_Your_Price_Helpers</code>
+    </UndefinedClass>
+    <UndefinedFunction occurrences="1">
+      <code>WC_Name_Your_Price()</code>
+    </UndefinedFunction>
+  </file>
   <file src="includes/wc-payment-api/class-wc-payments-http.php">
     <InvalidReturnStatement occurrences="1">
       <code>Automattic\Jetpack\Connection\Client::wpcom_json_api_request_as_user( $path, $version, $args, $body, $base_api_path )</code>
