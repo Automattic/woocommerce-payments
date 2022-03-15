@@ -19,7 +19,7 @@ use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
-use WCPay\Payment_Methods\UPE_Single_Method_Payment_Gateway;
+use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
@@ -156,6 +156,20 @@ class WC_Payments {
 	private static $webhook_processing_service;
 
 	/**
+	 * Maps all availabled Stripe payment method IDs to UPE Payment Method instances.
+	 *
+	 * @var array
+	 */
+	private static $upe_payment_method_map = [];
+
+	/**
+	 * Maps all availabled Stripe payment method IDs to UPE Payment Gateway instances.
+	 *
+	 * @var array
+	 */
+	private static $upe_payment_gateway_map = [];
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -195,7 +209,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-upe-single-method-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
@@ -264,11 +277,26 @@ class WC_Payments {
 		self::$webhook_processing_service          = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service );
 
 		$card_class = CC_Payment_Gateway::class;
-		$upe_class  = UPE_Single_Method_Payment_Gateway::class;
+		$upe_class  = UPE_Payment_Gateway::class;
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
-			$card_payment_method = new CC_Payment_Method( self::$token_service );
-			self::$card_gateway  = new $upe_class( $card_payment_method, self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
+			$payment_method_classes = [
+				CC_Payment_Method::class,
+				Bancontact_Payment_Method::class,
+				Sepa_Payment_Method::class,
+				Giropay_Payment_Method::class,
+				Sofort_Payment_Method::class,
+				P24_Payment_Method::class,
+				Ideal_Payment_Method::class,
+				Becs_Payment_Method::class,
+				Eps_Payment_Method::class,
+			];
+			foreach ( $payment_method_classes as $class ) {
+				$payment_method = new $class( self::$token_service );
+				self::$upe_payment_method_map[ $payment_method->get_id() ]  = $payment_method;
+				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, self::$failed_transaction_rate_limiter, self::$order_service );
+			}
+			self::$card_gateway = self::get_payment_gateway_by_id( 'card' );
 		} else {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
@@ -396,6 +424,17 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
+
+		if ( WC_Payments_Features::is_upe_enabled() ) {
+			foreach ( self::$card_gateway->get_payment_method_ids_enabled_at_checkout() as $payment_method_id ) {
+				if ( 'card' === $payment_method_id ) {
+					continue;
+				}
+				$payment_method = self::get_payment_method_by_id( $payment_method_id );
+				$upe_gateway    = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, self::$failed_transaction_rate_limiter, self::$order_service );
+				$gateways[]     = $upe_gateway;
+			}
+		}
 
 		return $gateways;
 	}
@@ -657,6 +696,41 @@ class WC_Payments {
 			return (string) filemtime( WCPAY_ABSPATH . trim( $file, '/' ) );
 		}
 		return WCPAY_VERSION_NUMBER;
+	}
+
+	/**
+	 * Returns payment method instance by Stripe ID.
+	 *
+	 * @param string $payment_method_id Stripe payment method type ID.
+	 * @return UPE_Payment_Method Matching UPE Payment Method instance.
+	 */
+	public static function get_payment_method_by_id( $payment_method_id ) {
+		if ( ! isset( self::$upe_payment_method_map[ $payment_method_id ] ) ) {
+			return false;
+		}
+		return self::$upe_payment_method_map[ $payment_method_id ];
+	}
+
+	/**
+	 * Returns payment gateway instance by Stripe ID.
+	 *
+	 * @param string $payment_method_id Stripe payment method type ID.
+	 * @return UPE_Payment_Gateway Matching UPE Payment Gateway instance.
+	 */
+	public static function get_payment_gateway_by_id( $payment_method_id ) {
+		if ( ! isset( self::$upe_payment_gateway_map[ $payment_method_id ] ) ) {
+			return false;
+		}
+		return self::$upe_payment_gateway_map[ $payment_method_id ];
+	}
+
+	/**
+	 * Returns Payment Method map.
+	 *
+	 * @return array
+	 */
+	public static function get_payment_method_map() {
+		return self::$upe_payment_method_map;
 	}
 
 	/**

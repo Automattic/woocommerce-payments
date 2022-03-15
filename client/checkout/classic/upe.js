@@ -6,7 +6,14 @@
 import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
+	PAYMENT_METHOD_NAME_BANCONTACT,
+	PAYMENT_METHOD_NAME_BECS,
+	PAYMENT_METHOD_NAME_EPS,
+	PAYMENT_METHOD_NAME_GIROPAY,
+	PAYMENT_METHOD_NAME_IDEAL,
+	PAYMENT_METHOD_NAME_P24,
 	PAYMENT_METHOD_NAME_SEPA,
+	PAYMENT_METHOD_NAME_SOFORT,
 } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
@@ -30,6 +37,7 @@ jQuery( function ( $ ) {
 			upeElement: null,
 			paymentIntentId: null,
 			isUPEComplete: null,
+			country: null,
 		};
 	}
 
@@ -378,7 +386,8 @@ jQuery( function ( $ ) {
 		unblockUI( $upeContainer );
 		upeElement.on( 'change', ( event ) => {
 			const selectedUPEPaymentType = event.value.type;
-			// setPaymentCountry( event.value.country );
+			gatewayUPEComponents[ selectedUPEPaymentType ].country =
+				event.value.country;
 			gatewayUPEComponents[ selectedUPEPaymentType ].isUPEComplete =
 				event.complete;
 		} );
@@ -402,7 +411,6 @@ jQuery( function ( $ ) {
 				const paymentMethodType = $( upeDOMElement ).attr(
 					'data-payment-method-type'
 				);
-
 				const upeElement =
 					gatewayUPEComponents[ paymentMethodType ].upeElement;
 				if ( upeElement ) {
@@ -595,6 +603,8 @@ jQuery( function ( $ ) {
 		}, {} );
 		try {
 			const upeComponents = gatewayUPEComponents[ paymentMethodType ];
+			console.log( upeComponents );
+			formFields.wcpay_payment_country = upeComponents.country;
 			const response = await api.processCheckout(
 				upeComponents.paymentIntentId,
 				formFields
@@ -742,7 +752,14 @@ jQuery( function ( $ ) {
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	const wcpayPaymentMethods = [
 		PAYMENT_METHOD_NAME_CARD,
+		PAYMENT_METHOD_NAME_BANCONTACT,
+		PAYMENT_METHOD_NAME_BECS,
+		PAYMENT_METHOD_NAME_EPS,
+		PAYMENT_METHOD_NAME_GIROPAY,
+		PAYMENT_METHOD_NAME_IDEAL,
+		PAYMENT_METHOD_NAME_P24,
 		PAYMENT_METHOD_NAME_SEPA,
+		PAYMENT_METHOD_NAME_SOFORT,
 	];
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
