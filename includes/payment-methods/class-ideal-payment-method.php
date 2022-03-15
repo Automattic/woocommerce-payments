@@ -26,4 +26,13 @@ class Ideal_Payment_Method extends UPE_Payment_Method {
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR' ];
 	}
+
+	/**
+	 * Returns testing credentials to be printed at checkout in test mode.
+	 *
+	 * @return string|bool
+	 */
+	public function get_testing_instructions() {
+		return false;
+	}
 }

@@ -140,4 +140,11 @@ abstract class UPE_Payment_Method {
 	public function get_payment_token_for_user( $user, $payment_method_id ) {
 		return $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
 	}
+
+	/**
+	 * Returns testing credentials to be printed at checkout in test mode.
+	 *
+	 * @return string|bool
+	 */
+	abstract public function get_testing_instructions();
 }
