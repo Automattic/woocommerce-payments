@@ -4,6 +4,8 @@ The order API allows you to perform operations such as capture a terminal paymen
 
 ## Create a terminal intent
 
+_@since v3.5.0_
+
 Create a new in-person payment intent for the given order ID without confirming it.
 
 ### Error codes
@@ -45,6 +47,8 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/create_termina
 ```
 
 ## Capture a terminal payment
+
+_@since v2.4.0_
 
 Given an intent ID and an order ID, add the intent ID to the order and capture it.
 
@@ -97,6 +101,8 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_termin
 ```
 
 ## Create customer
+
+_@since v2.8.0_
 
 Returns customer id from order. Create or update customer if needed.
 
