@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 //  import { useEffect, useContext } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { SelectControl } from '@wordpress/components';
+import { SelectControl, Card, CardBody } from '@wordpress/components';
 // import { useDispatch } from '@wordpress/data';
 
 /**
@@ -13,7 +13,19 @@ import { SelectControl } from '@wordpress/components';
 import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
 
 const AddBusinessInfo = () => {
-	const [ country, businessType, setCountry, setBusinessType ] = useState();
+	const { countries } = wcSettings;
+
+	const {
+		connect: { country },
+	} = wcpaySettings;
+
+	const allCountries = Object.keys( countries ).map( ( countryCode ) => {
+		return { label: countries[ countryCode ], value: countryCode };
+	} );
+
+	// const wcpayEnabledCountries = Object.values( availableCountries ).sort();
+
+	const [ businessType, setCountry, setBusinessType ] = useState();
 
 	return (
 		<WizardTaskItem
@@ -23,25 +35,22 @@ const AddBusinessInfo = () => {
 				'Tell us more about your business',
 				'woocommerce-payments'
 			) }
-			visibleDescription={ __(
-				"Preview the details we'll require to verify your business and enable deposits.",
-				'woocommerce-payments'
-			) }
 		>
+			<p className="wcpay-wizard-task__description-element subheading is-muted-color">
+				{ __(
+					"Preview the details we'll require to verify your business and enable despoits.",
+					'woocommerce-payments'
+				) }
+			</p>
+
 			<SelectControl
 				label={ __( 'Country', 'woocommerce-payments' ) }
 				value={ country }
 				onChange={ ( value ) => setCountry( value ) }
-				options={ [
-					{ label: 'United States', value: 'US' },
-					{
-						label: 'United Kingdom',
-						value: 'UK',
-					},
-				] }
+				options={ allCountries }
 			/>
 
-			<p>
+			<p className="wcpay-wizard-task__description-element is-muted-color">
 				{ __(
 					'The primary country where your business operates',
 					'woocommerce-payments'
@@ -64,6 +73,19 @@ const AddBusinessInfo = () => {
 					},
 				] }
 			/>
+
+			<Card size="large" className="wcpay-required-info-card">
+				<CardBody>
+					<p>
+						<b>
+							{ __(
+								"To verify your details, we'll require:",
+								'woocommerce-payments'
+							) }
+						</b>
+					</p>
+				</CardBody>
+			</Card>
 		</WizardTaskItem>
 	);
 };

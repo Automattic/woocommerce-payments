@@ -13,11 +13,13 @@ import WizardTask from 'wcpay/additional-methods-setup/wizard/task';
 import AddBusinessInfo from './add-business-info-task';
 import SetupComplete from './setup-complete-task';
 
+import './index.scss';
+
 const OnboardingPage = () => {
 	return (
 		<Card
 			size="large"
-			className="woocommerce-onboarding-card woocommerce-homescreen-card"
+			className="wcpay-onboarding-card wcpay-homescreen-card"
 		>
 			<CardBody>
 				<Wizard defaultActiveTask="complete-business-info">

@@ -8,6 +8,8 @@ import { Button } from '@wordpress/components';
 import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
 
 const SetupComplete = () => {
+	const { connectUrl } = wcpaySettings;
+
 	return (
 		<WizardTaskItem
 			index={ 2 }
@@ -18,7 +20,7 @@ const SetupComplete = () => {
 		>
 			<div className="setup-complete-task__buttons">
 				{ /* Todo: make this link go to the onboarding */ }
-				<Button href="admin.php?page=wc-admin" isPrimary>
+				<Button href={ connectUrl } isPrimary>
 					{ __( 'Connect', 'woocommerce-payments' ) }
 				</Button>
 			</div>
