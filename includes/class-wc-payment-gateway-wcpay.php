@@ -2348,7 +2348,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param  string   $payment_method Payment method being used.
 	 * @param  WC_Order $order WC Order.
 	 *
-	 * @return string                   Statement descriptor.
+	 * @return string|null Statement descriptor.
 	 */
 	public function get_statement_descriptor( $payment_method, $order ) {
 		$full_statement_descriptor             = $this->get_account_statement_descriptor();
