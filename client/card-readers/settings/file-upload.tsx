@@ -37,7 +37,7 @@ const BrandingFileUpload: React.FunctionComponent< CardReaderFileUploadProps > =
 		purpose,
 		fileID,
 		updateFileID,
-	}: CardReaderFileUploadProps = props;
+	} = props;
 
 	const [ isLoading, setLoading ] = useState( false );
 	const [ uploadError, setUploadError ] = useState< boolean | string >(
@@ -85,7 +85,7 @@ const BrandingFileUpload: React.FunctionComponent< CardReaderFileUploadProps > =
 		body.append( 'as_account', '0' );
 
 		try {
-			const uploadedFile: any = await apiFetch( {
+			const uploadedFile: unknown = await apiFetch( {
 				path: '/wc/v3/payments/file',
 				method: 'post',
 				body,
