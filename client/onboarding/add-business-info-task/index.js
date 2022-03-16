@@ -72,7 +72,13 @@ const AddBusinessInfo = () => {
 						value: 'nonprofit_organisation',
 					},
 				] }
-			/>
+			>
+				<option value="individual">Individual</option>
+				<option value="company">Company</option>
+				<option value="non_profit_organisation">
+					Non-Profit Organisation
+				</option>
+			</SelectControl>
 
 			<Card size="large" className="wcpay-required-info-card">
 				<CardBody>
