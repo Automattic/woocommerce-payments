@@ -1499,7 +1499,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'order'   => 'DESC',
 			]
 		);
-		if ( ! empty( $wc_refunds ) ) {
+		if ( is_array( $wc_refunds ) && ! empty( $wc_refunds ) ) {
 			$wc_last_refund = $wc_refunds[0];
 			$wc_last_refund->update_meta_data( '_wcpay_refund_id', $refund['id'] );
 			$wc_last_refund->save_meta_data();
