@@ -907,6 +907,8 @@ class WC_Payments {
 
 	/**
 	 * Registers platform checkout hooks if the platform checkout feature flag is enabled.
+	 *
+	 * @return void
 	 */
 	public static function maybe_register_platform_checkout_hooks() {
 		$is_platform_checkout_feature_enabled = WC_Payments_Features::is_platform_checkout_enabled(); // Feature flag.

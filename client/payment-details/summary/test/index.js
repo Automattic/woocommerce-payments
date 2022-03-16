@@ -55,6 +55,16 @@ describe( 'PaymentDetailsSummary', () => {
 		global.wcpaySettings = {
 			isSubscriptionsActive: false,
 			zeroDecimalCurrencies: [],
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
 		};
 	} );
 
