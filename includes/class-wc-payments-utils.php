@@ -913,7 +913,6 @@ class WC_Payments_Utils {
 	 *
 	 * Stripe requires max of 22 characters and no special characters.
 	 *
-	 * @since 4.0.0
 	 * @param string $statement_descriptor Statement descriptor.
 	 * @return string $statement_descriptor Sanitized statement descriptor
 	 */
