@@ -439,9 +439,8 @@ class WC_Payments {
 				if ( 'card' === $payment_method_id ) {
 					continue;
 				}
-				$payment_method = self::get_payment_method_by_id( $payment_method_id );
-				$upe_gateway    = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, self::$failed_transaction_rate_limiter, self::$order_service );
-				$gateways[]     = $upe_gateway;
+				$upe_gateway = self::get_payment_gateway_by_id( $payment_method_id );
+				$gateways[]  = $upe_gateway;
 			}
 		}
 

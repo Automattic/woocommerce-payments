@@ -926,7 +926,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				// force_currency_check = 1 is_admin = 1 currency_is_checked = 1.
 
 				$skip_currency_check       = ! $force_currency_check && is_admin();
-				$processing_payment_method = $this->payment_method;
+				$processing_payment_method = WC_Payments::get_payment_method_by_id( $payment_method_id );
 				if ( $processing_payment_method->is_enabled_at_checkout() && ( $skip_currency_check || $processing_payment_method->is_currency_valid() ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
 					if ( 'active' === $status ) {
