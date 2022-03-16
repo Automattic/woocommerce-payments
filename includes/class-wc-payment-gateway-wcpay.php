@@ -623,6 +623,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'createSetupIntentNonce'    => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 			'createPaymentIntentNonce'  => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
 			'updatePaymentIntentNonce'  => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
+			'saveUPEAppearanceNonce'    => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
+			'logPaymentErrorNonce'      => wp_create_nonce( 'wcpay_log_payment_error_nonce' ),
 			'genericErrorMessage'       => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'             => $this->account->get_fraud_services_config(),
 			'features'                  => $this->supports,

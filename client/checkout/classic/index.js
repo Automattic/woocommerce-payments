@@ -4,13 +4,7 @@
  * Internal dependencies
  */
 import './style.scss';
-import {
-	PAYMENT_METHOD_NAME_BECS,
-	PAYMENT_METHOD_NAME_CARD,
-	PAYMENT_METHOD_NAME_GIROPAY,
-	PAYMENT_METHOD_NAME_SEPA,
-	PAYMENT_METHOD_NAME_SOFORT,
-} from '../constants.js';
+import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
 import WCPayAPI from './../api';
@@ -470,30 +464,13 @@ jQuery( function ( $ ) {
 	}
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
-	const wcpayPaymentMethods = [
-		PAYMENT_METHOD_NAME_BECS,
-		PAYMENT_METHOD_NAME_CARD,
-		PAYMENT_METHOD_NAME_GIROPAY,
-		PAYMENT_METHOD_NAME_SEPA,
-		PAYMENT_METHOD_NAME_SOFORT,
-	];
+	const wcpayPaymentMethods = [ PAYMENT_METHOD_NAME_CARD ];
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
 		if ( ! isUsingSavedPaymentMethod() ) {
-			let paymentMethodDetails = cardPayment;
-			if ( isWCPaySepaChosen() ) {
-				paymentMethodDetails = sepaPayment;
-			} else if ( isWCPayGiropayChosen() ) {
-				paymentMethodDetails = giropayPayment;
-			} else if ( isWCPaySofortChosen() ) {
-				sofortPayment.sofort = {
-					country: $( '#billing_country' ).val(),
-				};
-				paymentMethodDetails = sofortPayment;
-			}
-
+			const paymentMethodDetails = cardPayment;
 			return handlePaymentMethodCreation(
 				$( this ),
 				handleOrderPayment,

@@ -30,11 +30,18 @@ use WCPay\Platform_Checkout_Tracker;
 class WC_Payments {
 
 	/**
-	 * Instance of WC_Payment_Gateway_WCPay, created in init function.
+	 * Main payment gateway controller instance, created in init function.
+	 *
+	 * @var WC_Payment_Gateway_WCPay|UPE_Payment_Gateway
+	 */
+	private static $card_gateway;
+
+	/**
+	 * Instance of WC_Payment_Gateway_WCPay to register as payment gateway.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
 	 */
-	private static $card_gateway;
+	private static $legacy_card_gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -288,6 +295,8 @@ class WC_Payments {
 		$card_class = CC_Payment_Gateway::class;
 		$upe_class  = UPE_Payment_Gateway::class;
 
+		self::$legacy_card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
+
 		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$payment_method_classes = [
 				CC_Payment_Method::class,
@@ -307,7 +316,7 @@ class WC_Payments {
 			}
 			self::$card_gateway = self::get_payment_gateway_by_id( 'card' );
 		} else {
-			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
+			self::$card_gateway = self::$legacy_card_gateway;
 		}
 
 		self::maybe_register_platform_checkout_hooks();
@@ -432,7 +441,7 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooCommerce Payments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		$gateways[] = self::$card_gateway;
+		$gateways[] = self::$legacy_card_gateway;
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
 			foreach ( self::$card_gateway->get_payment_method_ids_enabled_at_checkout() as $payment_method_id ) {
@@ -451,13 +460,13 @@ class WC_Payments {
 	 * Called on Payments setting page.
 	 *
 	 * Remove all WCPay gateways except CC one. Comparison is done against
-	 * $self::card_gateway because it should be the same instance as
+	 * $self::legacy_card_gateway because it should be the same instance as
 	 * registered with WooCommerce and class can change depending on
 	 * environment (see `init` method where $card_gateway is set).
 	 */
 	public static function hide_gateways_on_settings_page() {
 		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
-			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && $payment_gateway !== self::$card_gateway ) {
+			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && $payment_gateway !== self::$legacy_card_gateway ) {
 				unset( WC()->payment_gateways->payment_gateways[ $index ] );
 			}
 		}

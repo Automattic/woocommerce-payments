@@ -697,11 +697,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['isCheckout']               = is_checkout();
 		$payment_fields['checkoutTitle']            = $this->title;
 		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
-		$payment_fields['saveUPEAppearanceNonce']   = wp_create_nonce( 'wcpay_save_upe_appearance_nonce' );
 		$payment_fields['testMode']                 = $this->is_in_test_mode();
 		$payment_fields['upeAppearance']            = get_transient( self::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['cartContainsSubscription'] = $this->is_subscription_item_in_cart();
-		$payment_fields['logPaymentErrorNonce']     = wp_create_nonce( 'wcpay_log_payment_error_nonce' );
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
@@ -822,7 +820,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			add_action(
 				'wp_footer',
 				function() use ( $payment_fields ) {
-					wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $payment_fields );
+					wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
 				}
 			);
 
