@@ -13,6 +13,56 @@ describe( 'Currency utilities', () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [ 'vnd', 'jpy' ],
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				JP: {
+					code: 'JPY',
+					symbol: '¥',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 0,
+				},
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'right_space',
+					thousandSeparator: ' ',
+					decimalSeparator: ',',
+					precision: 2,
+				},
+				GB: {
+					code: 'GBP',
+					symbol: '£',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				IN: {
+					code: 'INR',
+					symbol: '₹',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				RU: {
+					code: 'RUB',
+					symbol: '₽',
+					symbolPosition: 'right_space',
+					thousandSeparator: ' ',
+					decimalSeparator: ',',
+					precision: 2,
+				},
+			},
 		};
 	} );
 
