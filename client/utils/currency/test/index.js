@@ -96,4 +96,16 @@ describe( 'Currency utilities', () => {
 			expect( utils.formatFX( source, target ) ).toBe( expected );
 		}
 	);
+
+	test( 'getCurrency with baseCurrencyCode should not use store country currency', () => {
+		expect( utils.formatCurrency( 100000, 'USD', 'EUR' ) ).toEqual(
+			'1 000,00&nbsp;$'
+		);
+	} );
+
+	test( 'getCurrency without baseCurrencyCode should use store country currency', () => {
+		global.wcpaySettings.connect.country = 'IN';
+
+		expect( utils.formatCurrency( 100000, 'EUR' ) ).toEqual( '€1,000.00' );
+	} );
 } );
