@@ -352,7 +352,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
-		add_action( 'woocommerce_after_order_refund_object_save', [ $this, 'add_refund_id_to_order_meta' ], 10, 2 );
 	}
 
 	/**
@@ -2729,24 +2728,5 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'tax_amount'          => array_sum( array_column( $items, 'tax_amount' ) ),
 			'discount_amount'     => array_sum( array_column( $items, 'discount_amount' ) ),
 		];
-	}
-
-	/**
-	 * Adds refund id to order meta for handling failed refunds.
-	 *
-	 * @param WC_Order_Refund $refund WC Order Refund object.
-	 * @param WC_Data_Store   $store WC Data Store object.
-	 */
-	public function add_refund_id_to_order_meta( $refund, $store ) {
-		$refund_id       = $refund->get_id();
-		$parent_order_id = $refund->get_parent_id();
-
-		$order = wc_get_order( absint( $parent_order_id ) );
-		if ( ! is_object( $order ) ) {
-			return;
-		}
-
-		$order->update_meta_data( '_wcpay_active_refund_id', $refund_id );
-		$order->save_meta_data();
 	}
 }
