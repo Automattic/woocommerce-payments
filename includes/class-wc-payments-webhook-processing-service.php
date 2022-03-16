@@ -203,8 +203,11 @@ class WC_Payments_Webhook_Processing_Service {
 			$refund_id
 		);
 
-		// Delete refund based on WCPay refund id.
-		/** @var $wc_refunds WC_Order_Refund[] */
+		/**
+		 * Get refunds from order and delete refund if matches wcpay refund id.
+		 *
+		 * @var $wc_refunds WC_Order_Refund[]
+		 * */
 		$wc_refunds = $order->get_refunds();
 		if ( ! empty( $wc_refunds ) ) {
 			foreach ( $wc_refunds as $wc_refund ) {
