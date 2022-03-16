@@ -2345,7 +2345,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Get the statement descriptor value considering the payment methods.
 	 *
-	 * @param  array    $payment_method Payment method being used.
+	 * @param  string   $payment_method Payment method being used.
 	 * @param  WC_Order $order WC Order.
 	 *
 	 * @return string                   Statement descriptor.
