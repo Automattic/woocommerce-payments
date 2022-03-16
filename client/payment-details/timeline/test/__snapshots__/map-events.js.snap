@@ -39,7 +39,7 @@ Array [
       "Net deposit: $20.97 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "A payment of €18,00 EUR was successfully charged.",
+    "headline": "A payment of 18,00&nbsp;€ EUR was successfully charged.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -83,12 +83,12 @@ Array [
   Object {
     "body": Array [
       "1,00 EUR → 1.19944 USD: $21.59 USD",
-      "Fee: €0,52",
+      "Fee: 0,52&nbsp;€",
       undefined,
       "Net deposit: $20.97 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "A payment of €18,00 EUR was successfully charged.",
+    "headline": "A payment of 18,00&nbsp;€ EUR was successfully charged.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -112,7 +112,7 @@ Array [
   },
   Object {
     "body": Array [
-      "Disputed amount: €18,00",
+      "Disputed amount: 18,00&nbsp;€",
       "1,00 EUR → 1.2 USD: $21.60 USD",
       "Fee: $15.00",
     ],
@@ -219,7 +219,7 @@ Array [
       "1,00 EUR → 1.20222 USD: $21.64 USD",
     ],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "A payment of €18,00 EUR was successfully refunded.",
+    "headline": "A payment of 18,00&nbsp;€ EUR was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -256,7 +256,7 @@ Array [
       "1,00 EUR → 1.2 USD: $6.00 USD",
     ],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "A payment of €5,00 EUR was successfully refunded.",
+    "headline": "A payment of 5,00&nbsp;€ EUR was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"
