@@ -221,6 +221,11 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		// Do not process further if a new note is not added, i.e. we processed the same data before.
+		if ( ! $this->add_dispute_closed_note( $order, $dispute_id, $status ) ) {
+			return;
+		}
+
 		if ( 'lost' === $status ) {
 			wc_create_refund(
 				[
@@ -235,7 +240,6 @@ class WC_Payments_Order_Service {
 			$this->update_order_status( $order, self::STATUS_COMPLETED );
 		}
 
-		$this->add_dispute_closed_note( $order, $dispute_id, $status );
 		$order->save();
 	}
 
@@ -529,7 +533,7 @@ class WC_Payments_Order_Service {
 	 * @param string   $dispute_id The ID of the dispute associated with this order.
 	 * @param string   $status     The status of the dispute.
 	 *
-	 * @return void
+	 * @return bool True if the note is added, false otherwise.
 	 */
 	private function add_dispute_closed_note( $order, $dispute_id, $status ) {
 		$dispute_url = $this->compose_dispute_url( $dispute_id );
@@ -544,7 +548,7 @@ class WC_Payments_Order_Service {
 			$status
 		);
 
-		$order->add_order_note( $note );
+		return $this->add_unique_note( $order, $note );
 	}
 
 	/**
