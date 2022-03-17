@@ -162,9 +162,11 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$this->update_order_status( $order, self::STATUS_CANCELLED );
-		$this->add_capture_expired_note( $order, $intent_id, $charge_id );
-		$this->complete_order_processing( $order, $intent_status );
+		// Do not process further if a new note is not added, i.e. we processed the same data before.
+		if ( $this->add_capture_expired_note( $order, $intent_id, $charge_id ) ) {
+			$this->update_order_status( $order, self::STATUS_CANCELLED );
+			$this->complete_order_processing( $order, $intent_status );
+		}
 	}
 
 	/**
@@ -466,7 +468,7 @@ class WC_Payments_Order_Service {
 	 * @param string   $intent_id The ID of the intent associated with this order.
 	 * @param string   $charge_id The charge ID related to the intent/order.
 	 *
-	 * @return void
+	 * @return bool True if the note is added, false otherwise.
 	 */
 	private function add_capture_expired_note( $order, $intent_id, $charge_id ) {
 		$transaction_url = $this->compose_transaction_url( $charge_id );
@@ -482,7 +484,7 @@ class WC_Payments_Order_Service {
 			$intent_id
 		);
 
-		$order->add_order_note( $note );
+		return $this->add_unique_note( $order, $note );
 	}
 
 	/**
