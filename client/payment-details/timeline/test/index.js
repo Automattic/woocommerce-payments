@@ -21,6 +21,16 @@ describe( 'PaymentDetailsTimeline', () => {
 				paymentTimeline: true,
 			},
 			zeroDecimalCurrencies: [],
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
 		};
 	} );
 

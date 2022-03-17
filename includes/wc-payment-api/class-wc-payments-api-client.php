@@ -1817,10 +1817,6 @@ class WC_Payments_API_Client {
 					$response_code
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
-				if ( isset( $response_body['error']['decline_code'] ) && 'fraudulent' === $response_body['error']['decline_code'] ) {
-					WC()->cart->empty_cart();
-					WC()->session->set( 'reload_checkout', true );
-				}
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;

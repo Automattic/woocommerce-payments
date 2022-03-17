@@ -839,6 +839,8 @@ class WC_Payments {
 
 	/**
 	 * Registers platform checkout hooks if the platform checkout feature flag is enabled.
+	 *
+	 * @return void
 	 */
 	public static function maybe_register_platform_checkout_hooks() {
 		$is_platform_checkout_feature_enabled = WC_Payments_Features::is_platform_checkout_enabled(); // Feature flag.
@@ -977,7 +979,7 @@ class WC_Payments {
 	 */
 	public static function filter_woocommerce_form_field_platform_checkout_email( $field, $key, $args, $value ) {
 		$class = $args['class'][0];
-		if ( false === strpos( $class, 'platform-checkout-billing-email' ) ) {
+		if ( false === strpos( $class, 'platform-checkout-billing-email' ) && is_checkout() && ! is_checkout_pay_page() ) {
 			$field = '';
 		}
 		return $field;
