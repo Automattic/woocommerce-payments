@@ -280,7 +280,7 @@ class WC_Payments_Order_Service {
 			}
 		}
 
-		$this->add_order_note( $note_content );
+		$order->add_order_note( $note_content );
 		return true;
 	}
 
