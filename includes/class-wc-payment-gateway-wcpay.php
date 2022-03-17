@@ -634,6 +634,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
+			'isFraudProtectionEnabled'       => false,
 		];
 	}
 

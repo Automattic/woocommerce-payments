@@ -22,6 +22,7 @@ import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
 import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
+import { getConfig } from 'utils/checkout';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -145,13 +146,15 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SettingsSection Description={ FraudPreventionDescription }>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<FraudPrevention />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
+			{ getConfig( 'ajaxUrl' ) && (
+				<SettingsSection Description={ FraudPreventionDescription }>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<FraudPrevention />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+			) }
 			<AdvancedSettings />
 			<SaveSettingsSection />
 		</SettingsLayout>
