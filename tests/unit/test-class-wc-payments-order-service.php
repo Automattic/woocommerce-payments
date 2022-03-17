@@ -413,9 +413,9 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to Cancelled', $notes[1]->content );
-		$this->assertStringContainsString( 'Payment authorization has <strong>expired</strong>', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to Cancelled', $notes[0]->content );
+		$this->assertStringContainsString( 'Payment authorization has <strong>expired</strong>', $notes[1]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=py_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[1]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -464,9 +464,9 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
-		$this->assertStringContainsString( 'Payment has been disputed as product_not_received', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to On hold', $notes[0]->content );
+		$this->assertStringContainsString( 'Payment has been disputed as product_not_received', $notes[1]->content );
+		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[1]->content );
 	}
 
 	/**
@@ -486,9 +486,9 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to Completed', $notes[1]->content );
-		$this->assertStringContainsString( 'Payment dispute has been closed with status won', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to Completed', $notes[0]->content );
+		$this->assertStringContainsString( 'Payment dispute has been closed with status won', $notes[1]->content );
+		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[1]->content );
 	}
 
 	/**
@@ -509,9 +509,9 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'On hold to Refunded', $notes[1]->content );
-		$this->assertStringContainsString( 'Payment dispute has been closed with status lost', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+		$this->assertStringContainsString( 'On hold to Refunded', $notes[0]->content );
+		$this->assertStringContainsString( 'Payment dispute has been closed with status lost', $notes[1]->content );
+		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[1]->content );
 
 		// Assert: Check for created refund, and the amount is correct.
 		$refunds = $this->order->get_refunds();
