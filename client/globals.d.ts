@@ -24,3 +24,5 @@ declare const wcpaySettings: {
 	currentUserEmail: string;
 	zeroDecimalCurrencies: string[];
 };
+
+declare const wcTracks: any;

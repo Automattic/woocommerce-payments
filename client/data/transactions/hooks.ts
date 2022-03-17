@@ -48,7 +48,7 @@ export interface Transaction {
 
 interface Transactions {
 	transactions: Transaction[];
-	transactionsError: unknown;
+	transactionsError?: string;
 	isLoading: boolean;
 }
 interface TransactionsSummary {

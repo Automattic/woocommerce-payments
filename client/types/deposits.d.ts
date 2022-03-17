@@ -10,7 +10,7 @@ export interface CachedDeposits {
 	deposits: CachedDeposit[];
 	isLoading: boolean;
 	depositsCount: number;
-	depositsError: string;
+	depositsError?: string;
 }
 
 export interface CachedDeposit {
