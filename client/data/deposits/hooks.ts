@@ -10,8 +10,12 @@ import moment from 'moment';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
-import { CachedDeposit } from '../../types/deposits';
 import { Query } from '@woocommerce/navigation';
+import {
+	CachedDeposits,
+	CachedDeposit,
+	DepositsSummaryCache,
+} from 'wcpay/types/deposits';
 
 export const useDeposit = (
 	id: string
@@ -28,7 +32,11 @@ export const useDeposit = (
 		[ id ]
 	);
 
-export const useDepositsOverview = () =>
+export const useDepositsOverview = (): {
+	overviewError: unknown;
+	isLoading: boolean;
+	overview: unknown;
+} =>
 	useSelect( ( select ) => {
 		const {
 			getDepositsOverview,
@@ -43,7 +51,7 @@ export const useDepositsOverview = () =>
 		};
 	} );
 
-export const useAllDepositsOverviews = () =>
+export const useAllDepositsOverviews = (): AccountOverview.OverviewsResponse =>
 	useSelect( ( select ) => {
 		const {
 			getAllDepositsOverviews,
@@ -70,7 +78,7 @@ export const useDeposits = ( {
 	date_between: dateBetween,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
-}: Query ) =>
+}: Query ): CachedDeposits =>
 	useSelect(
 		( select ) => {
 			const {
@@ -131,7 +139,7 @@ export const useDepositsSummary = ( {
 	date_between: dateBetween,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
-}: Query ) =>
+}: Query ): DepositsSummaryCache =>
 	useSelect(
 		( select ) => {
 			const { getDepositsSummary, isResolving } = select( STORE_NAME );
@@ -162,7 +170,9 @@ export const useDepositsSummary = ( {
 		]
 	);
 
-export const useInstantDeposit = ( transactionIds: string[] ) => {
+export const useInstantDeposit = (
+	transactionIds: string[]
+): { inProgress: boolean; submit: () => void; deposit: unknown } => {
 	const { deposit, inProgress } = useSelect( ( select ) => {
 		const { getInstantDeposit, isResolving } = select( STORE_NAME );
 
