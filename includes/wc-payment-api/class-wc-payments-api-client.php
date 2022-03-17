@@ -1819,7 +1819,7 @@ class WC_Payments_API_Client {
 			} elseif ( isset( $response_body['error'] ) ) {
 				if ( isset( $response_body['error']['decline_code'] ) && 'fraudulent' === $response_body['error']['decline_code'] ) {
 					// TODO: Check if fraud protection option is enabled.
-					WC()->session->set( 'wcpay-fraud-token', wp_generate_password() );
+					WC()->session->set( 'wcpay-fraud-protection-token', wp_generate_password() );
 					WC()->session->set( 'reload_checkout', true );
 				}
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
