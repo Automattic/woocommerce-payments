@@ -201,9 +201,10 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$this->update_order_status( $order, self::STATUS_ON_HOLD );
-		$this->add_dispute_created_note( $order, $dispute_id, $reason );
-		$order->save();
+		if ( $this->add_dispute_created_note( $order, $dispute_id, $reason ) ) {
+			$this->update_order_status( $order, self::STATUS_ON_HOLD );
+			$order->save();
+		}
 	}
 
 	/**
@@ -251,6 +252,30 @@ class WC_Payments_Order_Service {
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status, $charge_id ) {
 		$this->update_order_status( $order, self::STATUS_COMPLETED, $intent_id );
 		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Only add a note if it does not exist in the provided order.
+	 *
+	 * @param WC_Order $order        The order object to add the note.
+	 * @param string   $note_content Note content.
+	 *
+	 * @return bool true if the note is added, false if the note exists.
+	 */
+	public function add_unique_note( WC_Order $order, string $note_content ): bool {
+		// Get current notes of the order.
+		$current_notes = wc_get_order_notes(
+			[ 'order_id' => $order->get_id() ]
+		);
+
+		foreach ( $current_notes as $current_note ) {
+			if ( $current_note->content === $note_content ) {
+				return false;
+			}
+		}
+
+		$this->add_order_note( $note_content );
+		return true;
 	}
 
 	/**
@@ -479,7 +504,7 @@ class WC_Payments_Order_Service {
 	 * @param string   $dispute_id The ID of the dispute associated with this order.
 	 * @param string   $reason     The reason for the dispute.
 	 *
-	 * @return void
+	 * @return bool True if the note is added, false otherwise.
 	 */
 	private function add_dispute_created_note( $order, $dispute_id, $reason ) {
 		$dispute_url = $this->compose_dispute_url( $dispute_id );
@@ -494,7 +519,7 @@ class WC_Payments_Order_Service {
 			$reason
 		);
 
-		$order->add_order_note( $note );
+		return $this->add_unique_note( $order, $note );
 	}
 
 	/**
