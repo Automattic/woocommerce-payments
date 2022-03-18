@@ -162,11 +162,15 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		// Do not process further if a new note is not added, i.e. we processed the same data before.
-		if ( $this->add_capture_expired_note( $order, $intent_id, $charge_id ) ) {
-			$this->update_order_status( $order, self::STATUS_CANCELLED );
-			$this->complete_order_processing( $order, $intent_status );
+		$note = $this->generate_capture_expired_note( $intent_id, $charge_id );
+
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
 		}
+
+		$this->update_order_status( $order, self::STATUS_CANCELLED );
+		$order->add_order_note( $note );
+		$this->complete_order_processing( $order, $intent_status );
 	}
 
 	/**
@@ -203,10 +207,16 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		if ( $this->add_dispute_created_note( $order, $dispute_id, $reason ) ) {
-			$this->update_order_status( $order, self::STATUS_ON_HOLD );
-			$order->save();
+		$note = $this->generate_dispute_created_note( $dispute_id, $reason );
+
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
 		}
+
+		$this->update_order_status( $order, self::STATUS_ON_HOLD );
+		$order->add_order_note( $note );
+		$order->save();
+
 	}
 
 	/**
@@ -223,8 +233,9 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		// Do not process further if a new note is not added, i.e. we processed the same data before.
-		if ( ! $this->add_dispute_closed_note( $order, $dispute_id, $status ) ) {
+		$note = $this->generate_dispute_closed_note( $dispute_id, $status );
+
+		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
 
@@ -242,6 +253,7 @@ class WC_Payments_Order_Service {
 			$this->update_order_status( $order, self::STATUS_COMPLETED );
 		}
 
+		$order->add_order_note( $note );
 		$order->save();
 	}
 
@@ -261,14 +273,14 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Only add a note if it does not exist in the provided order.
+	 * Check if a note content has already existed in the order.
 	 *
 	 * @param WC_Order $order        The order object to add the note.
 	 * @param string   $note_content Note content.
 	 *
-	 * @return bool true if the note is added, false if the note exists.
+	 * @return bool true if the note content exists, false otherwise.
 	 */
-	public function add_unique_note( WC_Order $order, string $note_content ): bool {
+	public function order_note_exists( WC_Order $order, string $note_content ): bool {
 		// Get current notes of the order.
 		$current_notes = wc_get_order_notes(
 			[ 'order_id' => $order->get_id() ]
@@ -276,12 +288,11 @@ class WC_Payments_Order_Service {
 
 		foreach ( $current_notes as $current_note ) {
 			if ( $current_note->content === $note_content ) {
-				return false;
+				return true;
 			}
 		}
 
-		$order->add_order_note( $note_content );
-		return true;
+		return false;
 	}
 
 	/**
@@ -462,17 +473,17 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Adds the expired order note.
+	 * Get content for the capture expired note.
 	 *
-	 * @param WC_Order $order     Order object.
-	 * @param string   $intent_id The ID of the intent associated with this order.
-	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @param string $intent_id The ID of the intent associated with this order.
+	 * @param string $charge_id The charge ID related to the intent/order.
 	 *
-	 * @return bool True if the note is added, false otherwise.
+	 * @return string Note content.
 	 */
-	private function add_capture_expired_note( $order, $intent_id, $charge_id ) {
+	private function generate_capture_expired_note( $intent_id, $charge_id ) {
 		$transaction_url = $this->compose_transaction_url( $charge_id );
-		$note            = sprintf(
+
+		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 				__( 'Payment authorization has <strong>expired</strong> (<a>%1$s</a>).', 'woocommerce-payments' ),
@@ -484,7 +495,6 @@ class WC_Payments_Order_Service {
 			$intent_id
 		);
 
-		return $this->add_unique_note( $order, $note );
 	}
 
 	/**
@@ -504,17 +514,17 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Adds the dispute created order note.
+	 * Get content for the dispute created order note.
 	 *
-	 * @param WC_Order $order      Order object.
-	 * @param string   $dispute_id The ID of the dispute associated with this order.
-	 * @param string   $reason     The reason for the dispute.
+	 * @param string $dispute_id The ID of the dispute associated with this order.
+	 * @param string $reason     The reason for the dispute.
 	 *
-	 * @return bool True if the note is added, false otherwise.
+	 * @return string Note content.
 	 */
-	private function add_dispute_created_note( $order, $dispute_id, $reason ) {
+	private function generate_dispute_created_note( $dispute_id, $reason ) {
 		$dispute_url = $this->compose_dispute_url( $dispute_id );
-		$note        = sprintf(
+
+		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the dispute reason */
 				__( 'Payment has been disputed as %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
@@ -524,22 +534,19 @@ class WC_Payments_Order_Service {
 			),
 			$reason
 		);
-
-		return $this->add_unique_note( $order, $note );
 	}
 
 	/**
-	 * Adds the dispute closed order note.
+	 * Get content for the dispute closed order note.
 	 *
-	 * @param WC_Order $order      Order object.
-	 * @param string   $dispute_id The ID of the dispute associated with this order.
-	 * @param string   $status     The status of the dispute.
+	 * @param string $dispute_id The ID of the dispute associated with this order.
+	 * @param string $status     The status of the dispute.
 	 *
-	 * @return bool True if the note is added, false otherwise.
+	 * @return string Note content.
 	 */
-	private function add_dispute_closed_note( $order, $dispute_id, $status ) {
+	private function generate_dispute_closed_note( $dispute_id, $status ) {
 		$dispute_url = $this->compose_dispute_url( $dispute_id );
-		$note        = sprintf(
+		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the dispute status */
 				__( 'Payment dispute has been closed with status %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
@@ -549,8 +556,6 @@ class WC_Payments_Order_Service {
 			),
 			$status
 		);
-
-		return $this->add_unique_note( $order, $note );
 	}
 
 	/**

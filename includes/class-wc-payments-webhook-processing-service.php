@@ -409,7 +409,11 @@ class WC_Payments_Webhook_Processing_Service {
 			)
 		);
 
-		$this->order_service->add_unique_note( $order, $note );
+		if ( $this->order_service->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		$order->add_order_note( $note );
 	}
 
 	/**
