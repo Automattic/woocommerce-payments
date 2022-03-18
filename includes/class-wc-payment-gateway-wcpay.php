@@ -616,23 +616,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_payment_fields_js_config() {
 		return [
-			'publishableKey'            => $this->account->get_publishable_key( $this->is_in_test_mode() ),
-			'accountId'                 => $this->account->get_stripe_account_id(),
-			'ajaxUrl'                   => admin_url( 'admin-ajax.php' ),
-			'wcAjaxUrl'                 => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'createSetupIntentNonce'    => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'createPaymentIntentNonce'  => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
-			'updatePaymentIntentNonce'  => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
-			'genericErrorMessage'       => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
-			'fraudServices'             => $this->account->get_fraud_services_config(),
-			'features'                  => $this->supports,
-			'forceNetworkSavedCards'    => WC_Payments::is_network_saved_cards_enabled() || $this->should_use_stripe_platform_on_checkout_page(),
-			'locale'                    => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-			'isUPEEnabled'              => WC_Payments_Features::is_upe_enabled(),
-			'isSavedCardsEnabled'       => $this->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled' => WC_Payments_Features::is_platform_checkout_eligible() && 'yes' === $this->get_option( 'platform_checkout', 'no' ),
-			'platformCheckoutHost'      => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
-			'platformTrackerNonce'      => wp_create_nonce( 'platform_tracks_nonce' ),
+			'publishableKey'                 => $this->account->get_publishable_key( $this->is_in_test_mode() ),
+			'accountId'                      => $this->account->get_stripe_account_id(),
+			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
+			'wcAjaxUrl'                      => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'createSetupIntentNonce'         => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
+			'createPaymentIntentNonce'       => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
+			'updatePaymentIntentNonce'       => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
+			'genericErrorMessage'            => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
+			'fraudServices'                  => $this->account->get_fraud_services_config(),
+			'features'                       => $this->supports,
+			'forceNetworkSavedCards'         => WC_Payments::is_network_saved_cards_enabled() || $this->should_use_stripe_platform_on_checkout_page(),
+			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
+			'isSavedCardsEnabled'            => $this->is_saved_cards_enabled(),
+			'isPlatformCheckoutEnabled'      => WC_Payments_Features::is_platform_checkout_eligible() && 'yes' === $this->get_option( 'platform_checkout', 'no' ),
+			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
+			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
+			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 		];
 	}
 
@@ -1105,21 +1106,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$additional_api_parameters['is_platform_payment_method'] = 'true';
 			}
 
-			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
-			$intent = $this->payments_api_client->create_and_confirm_intention(
-				$converted_amount,
-				$currency,
-				$payment_information->get_payment_method(),
-				$customer_id,
-				$payment_information->is_using_manual_capture(),
-				$save_payment_method_to_store,
-				$payment_information->should_save_payment_method_to_platform(),
-				$metadata,
-				$this->get_level3_data_from_order( $order ),
-				$payment_information->is_merchant_initiated(),
-				$additional_api_parameters,
-				$payment_methods
-			);
+			// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
+			// for a string that will only contain latin alphanumeric characters and underscores.
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
+
+			if ( ! empty( $platform_checkout_intent_id ) ) {
+				// If the intent is included in the request use that intent.
+				$intent = $this->payments_api_client->get_intent( $platform_checkout_intent_id );
+			} else {
+				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
+				$intent = $this->payments_api_client->create_and_confirm_intention(
+					$converted_amount,
+					$currency,
+					$payment_information->get_payment_method(),
+					$customer_id,
+					$payment_information->is_using_manual_capture(),
+					$save_payment_method_to_store,
+					$payment_information->should_save_payment_method_to_platform(),
+					$metadata,
+					$this->get_level3_data_from_order( $order ),
+					$payment_information->is_merchant_initiated(),
+					$additional_api_parameters,
+					$payment_methods
+				);
+			}
 
 			$intent_id     = $intent->get_id();
 			$status        = $intent->get_status();
@@ -2207,6 +2218,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			$payment_method_id = isset( $_POST['payment_method_id'] ) ? wc_clean( wp_unslash( $_POST['payment_method_id'] ) ) : '';
+			if ( 'null' === $payment_method_id ) {
+				$payment_method_id = '';
+			}
 
 			// Check that the intent saved in the order matches the intent used as part of the
 			// authentication process. The ID of the intent used is sent with
