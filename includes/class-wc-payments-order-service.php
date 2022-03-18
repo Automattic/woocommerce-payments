@@ -37,8 +37,14 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		$note = $this->generate_payment_success_note( $intent_id, $charge_id, $this->get_order_amount( $order ) );
+
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
 		$this->update_order_status( $order, 'payment_complete', $intent_id );
-		$this->add_payment_success_note( $order, $intent_id, $charge_id );
+		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -302,23 +308,17 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Adds the success order note, if needed.
+	 * Get content for the success order note.
 	 *
-	 * @param WC_Order $order     Order object.
-	 * @param string   $intent_id The ID of the intent associated with this order.
-	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @param string $intent_id        The ID of the intent associated with this order.
+	 * @param string $charge_id        The charge ID related to the intent/order.
+	 * @param string $formatted_amount The formatted order total.
 	 *
-	 * @return void
+	 * @return string Note content.
 	 */
-	private function add_payment_success_note( $order, $intent_id, $charge_id ) {
-		$payment_needed = $order->get_total() > 0;
-
-		if ( ! $payment_needed ) {
-			return;
-		}
-
+	private function generate_payment_success_note( $intent_id, $charge_id, $formatted_amount ) {
 		$transaction_url = $this->compose_transaction_url( $charge_id );
-		$note            = sprintf(
+		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
 				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
@@ -327,11 +327,10 @@ class WC_Payments_Order_Service {
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			$this->get_order_amount( $order ),
+			$formatted_amount,
 			$charge_id
 		);
 
-		$order->add_order_note( $note );
 	}
 
 	/**
