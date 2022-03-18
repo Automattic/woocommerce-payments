@@ -159,7 +159,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				'id'     => $intent->get_id(),
 			];
 
-			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order );
+			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false );
 
 			if ( 'succeeded' !== $result['status'] ) {
 				$http_code = $result['http_code'] ?? 502;
