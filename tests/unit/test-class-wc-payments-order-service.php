@@ -543,4 +543,25 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
 	}
+
+	/**
+	 * @dataProvider provider_order_note_exists
+	 */
+	public function test_order_note_exists( array $notes, string $note_to_check, bool $expected ) {
+
+		foreach ( $notes as $note ) {
+			$this->order->add_order_note( $note );
+		}
+
+		$this->assertSame( $expected, $this->order_service->order_note_exists( $this->order, $note_to_check ) );
+	}
+
+	public function provider_order_note_exists(): array {
+		return [
+			'Note does not exist'                        => [ [ 'note 1', 'note 2' ], 'check_string', false ],
+			'Note does not exist when order has no note' => [ [], 'check_string', false ],
+			'Note exists at the beginning'               => [ [ 'check_string', 'note 1', 'note 2' ], 'check_string', true ],
+			'Note exists at the end'                     => [ [ 'note 1', 'note 2', 'check_string' ], 'check_string', true ],
+		];
+	}
 }
