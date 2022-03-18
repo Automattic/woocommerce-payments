@@ -54,6 +54,26 @@ new WordPressExternalDependenciesPlugin( {
 
 When running webpack `index.asset.php` will be created, listing all the needed dependencies. More info can be found here: https://wordpress.org/gutenberg/handbook/designers-developers/developers/packages/packages-dependency-extraction-webpack-plugin/.
 
+## Changelog entries
+
+In order to add a changelog entry, please run following command (it'll guide you with necessary steps): `npm run changelog`.
+
+Types of changes:
+
+- Add: new features, endpoints, UI elements and pages.
+- Update: changes in features, endpoints, UI elements and pages.
+- Fix: bug-fixes.
+- Dev:
+  - dev tools and dev experience changes (non-functional).
+  - WP/WC/PHP versions bumps.
+  - dependency versions bumps.
+  - PHP notices/warnings fixes.
+
+What to mention:
+
+Ideally, all merged PRs should be reflected in the changelog. A special case is functionality hidden behind feature flags: such features should be mentioned when released.
+The entry should clarify which project or which core component is affected and a brief summary of changes.
+
 ## Docker Local Setup
 
 Docker can be used to setup a local development environment:
