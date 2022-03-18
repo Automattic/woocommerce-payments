@@ -72,17 +72,17 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_customer_multi_currency_enabled() );
 	}
 
-	public function test_is_platform_checkout_is_returned_as_true() {
+	public function test_is_platform_checkout_eligible_returns_true() {
 		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => true ] ] );
 		$this->assertTrue( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
 
-	public function test_is_platform_checkout_is_returned_as_false_if_not_equal_1() {
+	public function test_is_platform_checkout_eligible_returns_false() {
 		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => false ] ] );
 		$this->assertFalse( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
 
-	public function test_is_platform_checkout_is_returned_as_false_if_missing() {
+	public function test_is_platform_checkout_eligible_returns_false_if_account_missing() {
 		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [] ] );
 		$this->assertFalse( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
