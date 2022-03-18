@@ -60,8 +60,14 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		$note = $this->generate_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
+
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
 		$this->update_order_status( $order, self::STATUS_FAILED );
-		$this->add_payment_failure_note( $order, $intent_id, $charge_id, $message );
+		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -329,16 +335,16 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Adds the failure order note and additional message, if included.
+	 * Get content for the failure order note and additional message, if included.
 	 *
-	 * @param WC_Order $order     Order object.
-	 * @param string   $intent_id The ID of the intent associated with this order.
-	 * @param string   $charge_id The charge ID related to the intent/order.
-	 * @param string   $message   Optional message to add to the note.
+	 * @param string $intent_id        The ID of the intent associated with this order.
+	 * @param string $charge_id        The charge ID related to the intent/order.
+	 * @param string $message          Optional message to add to the note.
+	 * @param string $formatted_amount The formatted order total.
 	 *
-	 * @return void
+	 * @return string Note content.
 	 */
-	private function add_payment_failure_note( $order, $intent_id, $charge_id, $message ) {
+	private function generate_payment_failure_note( $intent_id, $charge_id, $message, $formatted_amount ) {
 		$transaction_url = $this->compose_transaction_url( $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
@@ -349,7 +355,7 @@ class WC_Payments_Order_Service {
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			$this->get_order_amount( $order ),
+			$formatted_amount,
 			$intent_id
 		);
 
@@ -357,7 +363,7 @@ class WC_Payments_Order_Service {
 			$note .= ' ' . $message;
 		}
 
-		$order->add_order_note( $note );
+		return $note;
 	}
 
 	/**
