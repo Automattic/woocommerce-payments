@@ -1,14 +1,18 @@
+/** @format */
+
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 
 import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
+import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
 
 const SetupComplete = () => {
 	const { connectUrl } = wcpaySettings;
+	const { setCompleted } = useContext( WizardTaskContext );
 
 	return (
 		<WizardTaskItem
@@ -18,9 +22,13 @@ const SetupComplete = () => {
 				'woocommerce-payments'
 			) }
 		>
-			<div className="setup-complete-task__buttons">
-				{ /* Todo: make this link go to the onboarding */ }
-				<Button href={ connectUrl } isPrimary>
+			<div className="wcpay-onboarding-setup-complete-task__buttons">
+				{ /* Todo: pass the selected form parameters to the onboarding. */ }
+				<Button
+					href={ connectUrl }
+					isPrimary
+					onClick={ () => setCompleted( true, 'setup-complete' ) }
+				>
 					{ __( 'Connect', 'woocommerce-payments' ) }
 				</Button>
 			</div>

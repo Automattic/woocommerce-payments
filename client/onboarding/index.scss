@@ -1,3 +1,20 @@
 .wcpay-wizard-task__description-element.subheading {
 	font-size: 0.9rem;
 }
+
+.wcpay-onboarding-select-business-types {
+	margin-bottom: 8px;
+
+	& button.components-custom-select-control__button {
+		width: 100%;
+		font-size: 17px;
+
+		@media ( min-width: 600px ) {
+			font-size: 14px;
+		}
+	}
+}
+
+.wcpay-onboarding-setup-complete-task__buttons {
+	margin-top: 1rem;
+}
