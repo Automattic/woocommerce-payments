@@ -13,7 +13,6 @@ use WCPay\Payment_Information;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
-require_once dirname( __FILE__ ) . '/helpers/class-wc-helper-order.php';
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -1379,8 +1378,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$note = wc_get_order_notes(
 			[
 				'order_id' => $order->get_id(),
+				'limit'    => 1,
 			]
-		)[1];
+		)[0];
 
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
