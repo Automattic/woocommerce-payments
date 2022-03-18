@@ -326,7 +326,7 @@ class WC_Payments {
 		WC_Payments_Explicit_Price_Formatter::init();
 
 		// Add admin screens.
-		if ( is_admin() ) {
+		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$api_client, self::$card_gateway, self::$account );
 
