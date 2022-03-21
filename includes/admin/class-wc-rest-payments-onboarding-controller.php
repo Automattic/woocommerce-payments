@@ -25,7 +25,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/payments/onboarding/busienss_types',
+			"/{$this->rest_base}/business_types",
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_business_types' ],
@@ -45,6 +45,6 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 		$business_types = WC_Payments::get_onboarding_service()->get_cached_business_types();
 
 		// TODO: What should we return in the case of a failure?
-		return rest_ensure_response( $business_types );
+		return rest_ensure_response( [ 'data' => $business_types ] );
 	}
 }

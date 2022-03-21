@@ -32,7 +32,7 @@ const AddBusinessInfo = () => {
 		}
 	);
 
-	// const [ country, setCountry ] = useState( country );
+	const [ businessCountry, setBusinessCountry ] = useState( country );
 	const [ businessType, setBusinessType ] = useState();
 	const [ businessStructure, setBusinessStructure ] = useState();
 	const [ displayStructures, setDisplayStructures ] = useState( false );
@@ -45,9 +45,9 @@ const AddBusinessInfo = () => {
 		setDisplayStructures( true );
 	};
 
-	const setCountry = () => {
+	const handleBusinessCountryUpdate = ( countryVal ) => {
 		// TODO: Update the business type display based on whatever is selected here.
-		// console.log( countryCode );
+		setBusinessCountry( countryVal );
 		setCompleted( true );
 	};
 
@@ -75,8 +75,8 @@ const AddBusinessInfo = () => {
 
 			<SelectControl
 				label={ __( 'Country', 'woocommerce-payments' ) }
-				value={ country }
-				onChange={ ( value ) => setCountry( value ) }
+				value={ businessCountry }
+				onChange={ ( value ) => handleBusinessCountryUpdate( value ) }
 				options={ countries }
 			/>
 
