@@ -21,6 +21,9 @@ describe( 'PaymentDetailsTimeline', () => {
 				paymentTimeline: true,
 			},
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
 			currencyData: {
 				US: {
 					code: 'USD',
