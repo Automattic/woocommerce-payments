@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Sets up subscriptions integration with the Mini Cart Block and adds new hook to filter compatible blocks.

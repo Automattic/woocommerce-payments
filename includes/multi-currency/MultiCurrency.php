@@ -200,7 +200,7 @@ class MultiCurrency {
 		$this->compatibility           = new Compatibility( $this, $this->utils );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
 
-		if ( is_admin() ) {
+		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 			add_action( 'admin_head', [ $this, 'set_client_format_and_rounding_precision' ] );
@@ -854,6 +854,7 @@ class MultiCurrency {
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			NoteMultiCurrencyAvailable::set_account( WC_Payments::get_account_service() );
 			NoteMultiCurrencyAvailable::possibly_add_note();
 		}
 	}

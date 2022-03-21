@@ -32,6 +32,7 @@
 			"typescript": {}
 		}
 	},
+	"ignorePatterns": [ "docs/rest-api/source/**/*.js" ],
 	"rules": {
 		"camelcase": [
 			"error",

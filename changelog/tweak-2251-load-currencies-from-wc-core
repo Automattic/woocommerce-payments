@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Load currencies from WooCommerce core.

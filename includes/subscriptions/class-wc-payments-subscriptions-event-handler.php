@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 
 /**
  * Subscriptions Event/Webhook Handler class
@@ -49,7 +49,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 	 *
 	 * @param array $body The event body that triggered the webhook.
 	 *
-	 * @throws Rest_Request_Exception Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
 	public function handle_invoice_upcoming( array $body ) {
 		$event_object          = $this->get_event_property( $body, [ 'data', 'object' ] );
@@ -60,7 +60,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$subscription          = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
 
 		if ( ! $subscription ) {
-			throw new Rest_Request_Exception( __( 'Cannot find subscription to handle the "invoice.upcoming" event.', 'woocommerce-payments' ) );
+			throw new Invalid_Webhook_Data_Exception( __( 'Cannot find subscription to handle the "invoice.upcoming" event.', 'woocommerce-payments' ) );
 		}
 
 		$wcpay_subscription = $this->subscription_service->get_wcpay_subscription( $subscription );
@@ -87,7 +87,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 	 *
 	 * @param array $body The event body that triggered the webhook.
 	 *
-	 * @throws Rest_Request_Exception Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
 	public function handle_invoice_paid( array $body ) {
 		$event_data            = $this->get_event_property( $body, 'data' );
@@ -97,7 +97,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$subscription          = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
 
 		if ( ! $subscription ) {
-			throw new Rest_Request_Exception( __( 'Cannot find subscription for the incoming "invoice.paid" event.', 'woocommerce-payments' ) );
+			throw new Invalid_Webhook_Data_Exception( __( 'Cannot find subscription for the incoming "invoice.paid" event.', 'woocommerce-payments' ) );
 		}
 
 		// This incoming invoice.paid event is linked to the subscription parent invoice and can be ignored.
@@ -111,7 +111,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 			$order = wcs_create_renewal_order( $subscription );
 
 			if ( is_wp_error( $order ) ) {
-				throw new Rest_Request_Exception( __( 'Unable to generate renewal order for subscription on the "invoice.paid" event.', 'woocommerce-payments' ) );
+				throw new Invalid_Webhook_Data_Exception( __( 'Unable to generate renewal order for subscription on the "invoice.paid" event.', 'woocommerce-payments' ) );
 			} else {
 				$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 				$this->invoice_service->set_order_invoice_id( $order, $wcpay_invoice_id );
@@ -136,7 +136,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 	 *
 	 * @param array $body The event body that triggered the webhook.
 	 *
-	 * @throws Rest_Request_Exception Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
 	public function handle_invoice_payment_failed( array $body ) {
 		$event_data            = $this->get_event_property( $body, 'data' );
@@ -147,7 +147,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$subscription          = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
 
 		if ( ! $subscription ) {
-			throw new Rest_Request_Exception( __( 'Cannot find subscription for the incoming "invoice.upcoming" event.', 'woocommerce-payments' ) );
+			throw new Invalid_Webhook_Data_Exception( __( 'Cannot find subscription for the incoming "invoice.upcoming" event.', 'woocommerce-payments' ) );
 		}
 
 		$order = wc_get_order( WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id ) );
@@ -156,7 +156,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 			$order = wcs_create_renewal_order( $subscription );
 
 			if ( is_wp_error( $order ) ) {
-				throw new Rest_Request_Exception( __( 'Unable to generate renewal order for subscription to record the incoming "invoice.payment_failed" event.', 'woocommerce-payments' ) );
+				throw new Invalid_Webhook_Data_Exception( __( 'Unable to generate renewal order for subscription to record the incoming "invoice.payment_failed" event.', 'woocommerce-payments' ) );
 			} else {
 				$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 				$this->invoice_service->set_order_invoice_id( $order, $wcpay_invoice_id );
@@ -186,7 +186,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 	 *
 	 * @return mixed
 	 *
-	 * @throws Rest_Request_Exception Event data not found by key.
+	 * @throws Invalid_Webhook_Data_Exception Event data not found by key.
 	 */
 	private function get_event_property( array $event_data, $key ) {
 		$keys = is_array( $key ) ? $key : [ $key ];
@@ -195,7 +195,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		foreach ( $keys as $k ) {
 			if ( ! isset( $data[ $k ] ) ) {
 				// Translators: %s Property name not found in event data array.
-				throw new Rest_Request_Exception( sprintf( __( '%s not found in array', 'woocommerce-payments' ), $k ) );
+				throw new Invalid_Webhook_Data_Exception( sprintf( __( '%s not found in array', 'woocommerce-payments' ), $k ) );
 			}
 
 			$data = $data[ $k ];

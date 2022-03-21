@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Don't anonymize new subscriptions related to old subscriptions via a resubscribe relationship

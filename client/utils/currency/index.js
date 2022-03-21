@@ -2,10 +2,8 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import Currency, { getCurrencyData } from '@woocommerce/currency';
+import Currency from '@woocommerce/currency';
 import { find, trimEnd, endsWith } from 'lodash';
-
-const currencyData = getCurrencyData();
 
 const currencyNames = {
 	aud: __( 'Australian dollar', 'woocommerce-payments' ),
@@ -39,6 +37,8 @@ export const formatCurrencyName = ( currencyCode ) =>
  * @return {Currency|null} Currency object
  */
 export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
+	const { currencyData } = wcpaySettings;
+
 	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
 		if (
@@ -96,6 +96,7 @@ export const formatCurrency = (
 	}
 
 	const currency = getCurrency( currencyCode, baseCurrencyCode );
+
 	if ( null === currency ) {
 		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
 	}
@@ -177,6 +178,8 @@ export const formatFX = ( from, to ) => {
 };
 
 function formatExchangeRate( from, to ) {
+	const { currencyData } = wcpaySettings;
+
 	let exchangeRate =
 		'number' === typeof to.amount &&
 		'number' === typeof from.amount &&
