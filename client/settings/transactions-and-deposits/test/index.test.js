@@ -11,8 +11,6 @@ import WCPaySettingsContext from '../../wcpay-settings-context';
 import {
 	useGetSavingError,
 	useAccountStatementDescriptor,
-	useIsShortStatementDescriptorEnabled,
-	useShortStatementDescriptor,
 	useManualCapture,
 	useSavedCards,
 	useCardPresentEligible,
@@ -20,8 +18,6 @@ import {
 
 jest.mock( 'wcpay/data', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
-	useIsShortStatementDescriptorEnabled: jest.fn(),
-	useShortStatementDescriptor: jest.fn(),
 	useManualCapture: jest.fn(),
 	useGetSavingError: jest.fn(),
 	useSavedCards: jest.fn(),
@@ -31,11 +27,6 @@ jest.mock( 'wcpay/data', () => ( {
 describe( 'TransactionsAndDeposits', () => {
 	beforeEach( () => {
 		useAccountStatementDescriptor.mockReturnValue( [ '', jest.fn() ] );
-		useIsShortStatementDescriptorEnabled.mockReturnValue( [
-			false,
-			jest.fn(),
-		] );
-		useShortStatementDescriptor.mockReturnValue( [ '', jest.fn() ] );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		useGetSavingError.mockReturnValue( null );
 		useSavedCards.mockReturnValue( [ false, jest.fn() ] );
@@ -72,7 +63,7 @@ describe( 'TransactionsAndDeposits', () => {
 
 		expect( screen.getByText( '14 / 22' ) ).toBeInTheDocument();
 
-		fireEvent.change( screen.getByLabelText( 'Full bank statement' ), {
+		fireEvent.change( screen.getByLabelText( 'Customer bank statement' ), {
 			target: { value: 'New Statement Name' },
 		} );
 
@@ -109,99 +100,6 @@ describe( 'TransactionsAndDeposits', () => {
 		expect(
 			screen.getByText(
 				`Customer bank statement is invalid. It should not contain special characters: ' " * < >`
-			)
-		).toBeInTheDocument();
-	} );
-
-	it( 'toggles the shortened bank statement checkbox', () => {
-		const updateIsShortStatementDescriptorEnabled = jest.fn();
-		useIsShortStatementDescriptorEnabled.mockReturnValue( [
-			false,
-			updateIsShortStatementDescriptorEnabled,
-		] );
-
-		render( <TransactionsAndDeposits /> );
-
-		fireEvent.click(
-			screen.getByLabelText(
-				'Add customer order number to the bank statement'
-			)
-		);
-
-		expect( updateIsShortStatementDescriptorEnabled ).toHaveBeenCalledWith(
-			true
-		);
-	} );
-
-	it( 'does not display shortened bank statement input if it is disabled', () => {
-		useIsShortStatementDescriptorEnabled.mockReturnValue( [
-			false,
-			jest.fn(),
-		] );
-		expect(
-			screen.queryByLabelText( 'Shortened customer bank statement' )
-		).not.toBeInTheDocument();
-	} );
-
-	it( 'displays the length of the shortened bank statement input', () => {
-		const updateShortStatementDescriptor = jest.fn();
-		useIsShortStatementDescriptorEnabled.mockReturnValue( [
-			true,
-			jest.fn(),
-		] );
-		useShortStatementDescriptor.mockReturnValue( [
-			'Statement',
-			updateShortStatementDescriptor,
-		] );
-
-		render( <TransactionsAndDeposits /> );
-
-		expect( screen.getByText( '9 / 10' ) ).toBeInTheDocument();
-
-		fireEvent.change(
-			screen.getByLabelText( 'Shortened customer bank statement' ),
-			{
-				target: { value: 'New Stmnt' },
-			}
-		);
-
-		expect( updateShortStatementDescriptor ).toHaveBeenCalledWith(
-			'New Stmnt'
-		);
-	} );
-
-	it( 'displays the error message for the statement input', () => {
-		useIsShortStatementDescriptorEnabled.mockReturnValue( [
-			true,
-			jest.fn(),
-		] );
-		useShortStatementDescriptor.mockReturnValue( [ '111', jest.fn() ] );
-		useGetSavingError.mockReturnValue( {
-			code: 'rest_invalid_param',
-			message: 'Invalid parameter(s): short_statement_descriptor',
-			data: {
-				status: 400,
-				params: {
-					short_statement_descriptor:
-						'Shortened customer bank statement is invalid. It should not contain special characters: \' " * &lt; &gt;',
-				},
-				details: {
-					short_statement_descriptor: {
-						code: 'rest_invalid_pattern',
-						message:
-							'Shortened customer bank statement is invalid. It should not contain special characters: \' " * &lt; &gt;',
-						data: null,
-					},
-				},
-			},
-		} );
-
-		render( <TransactionsAndDeposits /> );
-
-		expect( screen.getByText( '3 / 10' ) ).toBeInTheDocument();
-		expect(
-			screen.getByText(
-				`Shortened customer bank statement is invalid. It should not contain special characters: ' " * < >`
 			)
 		).toBeInTheDocument();
 	} );

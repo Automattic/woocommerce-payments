@@ -588,9 +588,9 @@ export default class WCPayAPI {
 
 	initPlatformCheckout() {
 		return this.request(
-			getPaymentRequestAjaxURL( 'init_platform_checkout' ),
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_platform_checkout' ),
 			{
-				_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
+				_wpnonce: getConfig( 'initPlatformCheckoutNonce' ),
 			}
 		);
 	}
