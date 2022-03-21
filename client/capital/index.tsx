@@ -141,7 +141,7 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 			withhold_rate: {
 				value: loan.withhold_rate,
 				display: clickable(
-					( loan.withhold_rate * 100 ).toPrecision( 2 ) + '%'
+					+( loan.withhold_rate * 100 ).toFixed( 2 ) + '%'
 				),
 			},
 			first_paydown_at: {
