@@ -1,0 +1,45 @@
+/**
+ * External dependencies
+ */
+import React from 'react';
+
+/**
+ * Internal dependencies
+ */
+import { groups, requirements } from './strings';
+import RequirementGroup from './group';
+import { individual, mapToList, taxKeys } from './keymap';
+
+interface IndividualRequirementsProps {
+	keys: string[];
+}
+
+const IndividualRequirements = ( {
+	keys,
+}: IndividualRequirementsProps ): JSX.Element => {
+	const personalList = mapToList( keys, individual );
+	const hasTax = keys.some( ( key ) => taxKeys.includes( key ) );
+
+	return (
+		<>
+			<RequirementGroup
+				icon={ 'user' }
+				headline={ groups.personalDetails }
+				subline={ personalList }
+			/>
+			{ hasTax && (
+				<RequirementGroup
+					icon={ 'institution' }
+					headline={ groups.taxInfo }
+					subline={ requirements.ssn }
+				/>
+			) }
+			<RequirementGroup
+				icon={ 'credit-card' }
+				headline={ groups.bankDetails }
+			/>
+		</>
+	);
+};
+
+export default IndividualRequirements;
