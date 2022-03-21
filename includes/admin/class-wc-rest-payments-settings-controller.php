@@ -431,7 +431,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_card_present_eligible'              => $this->wcpay_gateway->is_card_present_eligible(),
 				'is_platform_checkout_enabled'          => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'platform_checkout_custom_message'      => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
-				'is_fraud_prevention_enabled'           => $this->wcpay_gateway->get_option( 'is_fraud_prevention_enabled' ),
+				'is_fraud_prevention_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'is_fraud_prevention_enabled' ),
 			]
 		);
 	}
