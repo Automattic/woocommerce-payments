@@ -20,9 +20,9 @@ import { CapitalLoan } from 'data/capital/types';
 import ClickableCell from 'components/clickable-cell';
 import Chip from 'components/chip';
 import { useLoans } from 'wcpay/data';
+import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
-import { getAdminUrl } from 'wcpay/utils';
 
 const columns = [
 	{
@@ -95,12 +95,13 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 	loans.map( ( loan ) => {
 		const clickable = ( children: React.ReactNode ) => (
 			<ClickableCell
-				href={
-					getAdminUrl() +
-					'?page=wc-admin&path=%2Fpayments%2Ftransactions' +
-					'&type=charge&filter=advanced&loan_id_is=' +
-					loan.stripe_loan_id
-				}
+				href={ getAdminUrl( {
+					page: 'wc-admin',
+					path: '/payments/transactions',
+					type: 'charge',
+					filter: 'advanced',
+					loan_id_is: loan.stripe_loan_id,
+				} ) }
 			>
 				{ children }
 			</ClickableCell>
