@@ -24,7 +24,7 @@ const FraudPrevention = () => {
 					checked={ isFraudProtectionEnabled }
 					onChange={ setIsFraudProtectionEnabled }
 					label={ __(
-						'Enable fraud protection',
+						'Enable fraud prevention',
 						'woocommerce-payments'
 					) }
 					help={ __(
