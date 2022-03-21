@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Refactor the processing part of Webhook Controller to a separate service.

@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Redirect merchants to the onboarding flow when a URL parameter is present

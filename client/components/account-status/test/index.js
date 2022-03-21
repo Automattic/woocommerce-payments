@@ -12,7 +12,19 @@ import StatusChip from '../status-chip';
 
 describe( 'AccountStatus', () => {
 	beforeEach( () => {
-		global.wcpaySettings = { zeroDecimalCurrencies: [] };
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			currencyData: {
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'right_space',
+					thousandSeparator: ' ',
+					decimalSeparator: ',',
+					precision: 2,
+				},
+			},
+		};
 	} );
 
 	test( 'renders error status', () => {

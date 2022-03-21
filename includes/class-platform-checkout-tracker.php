@@ -31,7 +31,7 @@ class Platform_Checkout_Tracker extends Tracking {
 	 */
 	public function __construct( $http ) {
 		/**
-		 * Tracking class expects a Jetpac\Connection\Manager instance.
+		 * Tracking class expects a Jetpack\Connection\Manager instance.
 		 * We pass in WC_Payments_Http_Interface which is a wrapper around the Connection Manager.
 		 *
 		 * @psalm-suppress InvalidArgument
@@ -39,6 +39,12 @@ class Platform_Checkout_Tracker extends Tracking {
 		parent::__construct( self::$prefix, $http );
 		add_action( 'wp_ajax_platform_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_ajax_nopriv_platform_tracks', [ $this, 'ajax_tracks' ] );
+
+		// Actions that should result in recorded Tracks events.
+		add_action( 'woocommerce_after_checkout_form', [ $this, 'checkout_start' ] );
+		add_action( 'woocommerce_blocks_enqueue_checkout_block_scripts_after', [ $this, 'checkout_start' ] );
+		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
+		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
 	}
 
 	/**
@@ -131,6 +137,25 @@ class Platform_Checkout_Tracker extends Tracking {
 		// TODO: Don't track if jetpack_tos_agreed flag is not present.
 
 		return true;
+	}
+
+	/**
+	 * Record a Tracks event that the checkout has started.
+	 */
+	public function checkout_start() {
+		$this->maybe_record_event( 'order_checkout_start' );
+	}
+
+	/**
+	 * Record a Tracks event that the order has been processed.
+	 */
+	public function checkout_order_processed() {
+		$this->maybe_record_event(
+			'order_checkout_complete',
+			[
+				'source' => isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) ? 'platform' : 'standard',
+			]
+		);
 	}
 
 }

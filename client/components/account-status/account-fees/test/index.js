@@ -15,7 +15,35 @@ describe( 'AccountFees', () => {
 	};
 
 	beforeEach( () => {
-		global.wcpaySettings = { zeroDecimalCurrencies: [] };
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'right_space',
+					thousandSeparator: ' ',
+					decimalSeparator: ',',
+					precision: 2,
+				},
+				GB: {
+					code: 'GBP',
+					symbol: '£',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
 	} );
 
 	test( 'renders normal base fee', () => {

@@ -9,7 +9,7 @@ import { render, fireEvent } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { FileUploadControl } from '../file-upload';
+import { FileUploadControl } from 'components/file-upload';
 import type { DisputeFileUpload } from 'wcpay/types/disputes';
 
 describe( 'FileUploadControl', () => {
