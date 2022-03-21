@@ -852,9 +852,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 'cus_new', $result_order->get_meta( '_stripe_customer_id' ) );
 	}
 
-	/**
-	 * @expectedDeprecated create_customer
-	 */
 	public function test_create_terminal_intent_success() {
 		$order = $this->create_mock_order();
 
