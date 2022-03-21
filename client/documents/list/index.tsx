@@ -4,8 +4,6 @@
  * External dependencies
  */
 import React from 'react';
-import { useDispatch } from '@wordpress/data';
-import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __, _n } from '@wordpress/i18n';
 import moment from 'moment';
@@ -24,10 +22,6 @@ import { useDocuments, useDocumentsSummary } from 'data/index';
 import './style.scss';
 import DocumentsFilters from '../filters';
 import Page from '../../components/page';
-
-interface DocumentsListProps {
-	depositId?: string;
-}
 
 interface Column extends TableCardColumn {
 	key:
@@ -75,9 +69,7 @@ const getColumns = (): Column[] =>
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
-export const DocumentsList = (
-	props: DocumentsListProps
-): JSX.Element => {
+export const DocumentsList = (): JSX.Element => {
 	const { documents, isLoading } = useDocuments( getQuery() );
 	const {
 		documentsSummary,
