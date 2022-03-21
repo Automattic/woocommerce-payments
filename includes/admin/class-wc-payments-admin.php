@@ -120,6 +120,19 @@ class WC_Payments_Admin {
 				],
 			],
 		];
+
+		if ( WC_Payments_Features::is_documents_section_enabled() ) {
+			$this->admin_child_pages['wc-payments-documents'] = [
+				'id'       => 'wc-payments-documents',
+				'title'    => __( 'Documents', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/documents',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 50,
+				],
+			];
+		}
 	}
 
 	/**
