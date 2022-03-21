@@ -19,7 +19,7 @@ class WC_Payments_Admin {
 	 *
 	 * @var string
 	 */
-	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>';
+	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1"><span class="plugin-count">1</span></span>';
 
 	/**
 	 * Option name used to hide Card Readers page behind a feature flag.
