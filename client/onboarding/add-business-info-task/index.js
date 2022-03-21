@@ -15,10 +15,13 @@ import { SelectControl, Card, CardBody } from '@wordpress/components';
 import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
 import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
 import OnboardingSelectControl from 'wcpay/components/onboarding-select-control';
+// import { useBusinessTypes } from 'wcpay/data/onboarding';
+import strings from '../strings';
 
 const AddBusinessInfo = () => {
 	const { setCompleted } = useContext( WizardTaskContext );
-
+	// const { businessTypes, isLoading } = useBusinessTypes();
+	const isLoading = false;
 	const {
 		connect: { availableCountries, country },
 	} = wcpaySettings;
@@ -61,16 +64,12 @@ const AddBusinessInfo = () => {
 		<WizardTaskItem
 			className="complete-business-info-task"
 			index={ 1 }
-			title={ __(
-				'Tell us more about your business',
-				'woocommerce-payments'
-			) }
+			title={ strings.onboarding.heading }
 		>
+			{ isLoading ? <p>Loading...</p> : '' }
+
 			<p className="wcpay-wizard-task__description-element subheading is-muted-color">
-				{ __(
-					"Preview the details we'll require to verify your business and enable despoits.",
-					'woocommerce-payments'
-				) }
+				{ strings.onboarding.description }
 			</p>
 
 			<SelectControl
@@ -81,10 +80,7 @@ const AddBusinessInfo = () => {
 			/>
 
 			<p className="wcpay-wizard-task__description-element is-muted-color">
-				{ __(
-					'The primary country where your business operates',
-					'woocommerce-payments'
-				) }
+				{ strings.onboarding.countryDescription }
 			</p>
 
 			<OnboardingSelectControl

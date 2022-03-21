@@ -43,7 +43,7 @@ class WC_Payments_Onboarding_Service {
 	 * @return array|bool Business types, or false if failed to retrieve.
 	 */
 	public function get_cached_business_types( bool $force_refresh = false ) {
-		if ( $this->payments_api_client->is_server_connected() ) {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
 

@@ -121,6 +121,13 @@ class WC_Payments {
 	private static $order_service;
 
 	/**
+	 * Instance of WC_Payments_Onboarding_Service, created in init function
+	 *
+	 * @var WC_Payments_Onboarding_Service
+	 */
+	private static $onboarding_service;
+
+	/**
 	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
 	 *
 	 * @var WC_Payments_Payment_Request_Button_Handler
@@ -232,6 +239,7 @@ class WC_Payments {
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
+		include_once __DIR__ . '/class-wc-payments-onboarding-service.php';
 		include_once __DIR__ . '/class-experimental-abtest.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
@@ -270,6 +278,7 @@ class WC_Payments {
 		self::$order_service                       = new WC_Payments_Order_Service();
 		self::$webhook_processing_service          = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service );
 		self::$webhook_reliability_service         = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
+		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client );
 
 		$card_class = CC_Payment_Gateway::class;
 		$upe_class  = UPE_Payment_Gateway::class;
@@ -658,6 +667,10 @@ class WC_Payments {
 		$capital_controller = new WC_REST_Payments_Capital_Controller( self::$api_client );
 		$capital_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-onboarding-controller.php';
+		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client );
+		$onboarding_controller->register_routes();
+
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
@@ -734,6 +747,15 @@ class WC_Payments {
 	 */
 	public static function get_customer_service(): WC_Payments_Customer_Service {
 		return self::$customer_service;
+	}
+
+	/**
+	 * Returns the WC_Payments_Onboarding_Service instance
+	 *
+	 * @return WC_Payments_Onboarding_Service The Onboarding service instance.
+	 */
+	public static function get_onboarding_service(): WC_Payments_Onboarding_Service {
+		return self::$onboarding_service;
 	}
 
 	/**

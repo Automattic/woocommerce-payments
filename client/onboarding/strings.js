@@ -14,6 +14,25 @@ export default {
 	learnMore: __( 'Learn more', 'woocommerce-payments' ),
 
 	onboarding: {
-		heading: __( 'Hello from the onboarding page', 'woocommerce-payments' ),
+		heading: __(
+			'Tell us more about your business',
+			'woocommerce-payments'
+		),
+		description: __(
+			"Preview the details we'll require to verify your business and enable despoits.",
+			'woocommerce-payments'
+		),
+
+		countryDescription: __(
+			'The primary country where your business operates',
+			'woocommerce-payments'
+		),
+	},
+
+	businessTypes: {
+		individual: __( 'Individual', 'woocommerce-payments' ),
+		company: __( 'Company', 'woocommerce-payments' ),
+		non_profit: __( 'Non-Profit', 'woocommerce-payments' ),
+		government_entity: __( 'Government Entity', 'woocommerce-payments' ),
 	},
 };
