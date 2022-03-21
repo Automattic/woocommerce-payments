@@ -852,7 +852,7 @@ class WC_Payments {
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
 			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 10 );
+			add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], -50 );
 			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
 		}
 	}
@@ -946,11 +946,11 @@ class WC_Payments {
 	public static function platform_checkout_fields_before_billing_details() {
 		$checkout = WC()->checkout;
 
-		echo '<div id="contact_details" class="col2-set">';
-		echo '<div class="col-1">';
+		echo '<div class="woocommerce-billing-fields" id="contact_details">';
 
 		echo '<h3>' . esc_html( __( 'Contact information', 'woocommerce-payments' ) ) . '</h3>';
 
+		echo '<div class="woocommerce-billing-fields__field-wrapper">';
 		woocommerce_form_field(
 			'billing_email',
 			[
@@ -966,6 +966,10 @@ class WC_Payments {
 
 		echo '</div>';
 		echo '</div>';
+
+		// Ensure WC Blocks styles are enqueued so the spinner will show.
+		// This style is not enqueued be default when using a block theme and classic checkout.
+		wp_enqueue_style( 'wc-blocks-style' );
 	}
 
 	/**
