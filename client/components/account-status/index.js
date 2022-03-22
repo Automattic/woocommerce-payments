@@ -23,7 +23,6 @@ import PaymentsStatus from 'components/payments-status';
 import StatusChip from './status-chip';
 import './style.scss';
 import './shared.scss';
-import { getAdminUrl } from 'wcpay/utils';
 
 const AccountStatusCard = ( props ) => {
 	const { title, children, value } = props;
@@ -59,12 +58,6 @@ const AccountStatusError = () => {
 const AccountStatusDetails = ( props ) => {
 	const { accountStatus, accountFees } = props;
 
-	// TODO: Remove later.
-	const onboardingUrl = getAdminUrl( {
-		page: 'wc-admin',
-		path: '/payments/onboarding',
-	} );
-
 	const cardTitle = (
 		<>
 			<FlexItem className={ 'account-details' }>
@@ -76,11 +69,6 @@ const AccountStatusDetails = ( props ) => {
 			<FlexItem className={ 'edit-details' }>
 				<Button isLink href={ accountStatus.accountLink }>
 					{ __( 'Edit details', 'woocommerce-payments' ) }
-				</Button>
-			</FlexItem>
-			<FlexItem className={ 'onboarding-link' }>
-				<Button isLink href={ onboardingUrl }>
-					{ __( 'Onboard', 'woocommerce-payments' ) }
 				</Button>
 			</FlexItem>
 		</>
