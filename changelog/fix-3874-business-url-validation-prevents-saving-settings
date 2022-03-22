@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Remove account business URL validation to allow values without http/s:// prefix.
