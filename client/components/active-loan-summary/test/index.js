@@ -21,6 +21,19 @@ describe( 'Active loan summary', () => {
 			accountLoans: {
 				loans: [ 'flxln_123456|active' ],
 			},
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
 		};
 	} );
 	afterEach( () => {

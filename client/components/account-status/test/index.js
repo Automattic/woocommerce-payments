@@ -14,6 +14,9 @@ describe( 'AccountStatus', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'FR',
+			},
 			currencyData: {
 				FR: {
 					code: 'EUR',
