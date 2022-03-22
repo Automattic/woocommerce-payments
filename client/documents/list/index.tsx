@@ -128,6 +128,7 @@ export const DocumentsList = (): JSX.Element => {
 						href={ getViewDocumentUrl( document.document_id ) }
 						rel="noopener noreferrer"
 						target="_blank"
+						style={ { display: 'inline' } }
 					>
 						{ __( 'Download', 'woocommerce-payments' ) }
 					</a>
