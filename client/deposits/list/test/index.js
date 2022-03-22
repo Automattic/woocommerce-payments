@@ -55,7 +55,22 @@ describe( 'Deposits list', () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
-		global.wcpaySettings = { zeroDecimalCurrencies: [] };
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
 	} );
 
 	// this also covers structural test for single currency.
