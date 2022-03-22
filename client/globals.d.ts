@@ -23,6 +23,7 @@ declare const wcpaySettings: {
 	accountEmail: string;
 	currentUserEmail: string;
 	zeroDecimalCurrencies: string[];
+	viewDocumentNonce: string;
 };
 
 declare const wcTracks: any;

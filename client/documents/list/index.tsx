@@ -18,6 +18,7 @@ import { Document, useDocuments, useDocumentsSummary } from 'data/index';
 import './style.scss';
 import DocumentsFilters from '../filters';
 import Page from '../../components/page';
+import { getViewDocumentUrl } from 'wcpay/utils';
 
 interface Column extends TableCardColumn {
 	key: 'date' | 'type' | 'description' | 'download';
@@ -121,8 +122,16 @@ export const DocumentsList = (): JSX.Element => {
 				display: getDocumentDescription( document ),
 			},
 			download: {
-				value: 'Download',
-				display: 'Download',
+				value: getViewDocumentUrl( document.document_id ),
+				display: (
+					<a
+						href={ getViewDocumentUrl( document.document_id ) }
+						rel="noopener noreferrer"
+						target="_blank"
+					>
+						{ __( 'Download', 'woocommerce-payments' ) }
+					</a>
+				),
 			},
 		};
 

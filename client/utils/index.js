@@ -23,6 +23,20 @@ export const isInTestMode = ( fallback = false ) => {
 export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
 
 /**
+ * Returns the URL to view a WooCommerce Payments document.
+ *
+ * @param {string} documentId The document ID.
+ *
+ * @return {string} The URL to view the document.
+ */
+export const getViewDocumentUrl = ( documentId ) => {
+	return getAdminUrl( {
+		'wcpay-view-document': documentId,
+		_wpnonce: wcpaySettings.viewDocumentNonce,
+	} );
+};
+
+/**
  * Returns the URL to the WooCommerce Payments settings.
  *
  * @return {string} URL to the WooCommerce Payments settings menu.
