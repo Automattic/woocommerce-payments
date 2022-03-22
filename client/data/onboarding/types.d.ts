@@ -6,13 +6,11 @@
 import ACTION_TYPES from './action-types';
 
 export interface Country {
-	country_code: string;
-	types: BusinessType[];
+	[ country_code: string ]: BusinessType[];
 }
 
 export interface BusinessType {
-	type: string;
-	structures: BusinessStructure[];
+	[ structure: string ]: BusinessStructure[];
 }
 
 export interface BusinessStructure {

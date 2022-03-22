@@ -4,10 +4,8 @@
  * External dependencies
  */
 import React, { useState, useContext } from 'react';
-//  import { useEffect, useContext } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { SelectControl, Card, CardBody } from '@wordpress/components';
-// import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -39,25 +37,14 @@ const AddBusinessInfo = () => {
 	const [ businessStructure, setBusinessStructure ] = useState();
 	const [ displayStructures, setDisplayStructures ] = useState( false );
 
-	let businessTypeSelectValues = [];
-	let businessStructureSelectValues = [];
-
 	const getBusinessTypesForCountry = ( countryCode ) => {
 		if ( isLoading || ! businessTypes.hasOwnProperty( 'data' ) ) {
 			return false;
 		}
 
-		let result = false;
-
-		// TODO: It's probably better if this is an object where the country codes are keys, makes it easier to traverse.
-		businessTypes.data.forEach( ( element ) => {
-			if ( element.country_code === countryCode ) {
-				result = element;
-			}
-		} );
-
-		// Return false if the country isn't in our array.
-		return result;
+		return businessTypes.data.hasOwnProperty( countryCode )
+			? businessTypes.data[ countryCode ]
+			: false;
 	};
 
 	const formatBusinessTypes = ( countryCode ) => {
@@ -67,17 +54,11 @@ const AddBusinessInfo = () => {
 			return [];
 		}
 
-		const arr = [];
-
-		businessTypeData.types.forEach( ( element ) => {
-			arr.push( {
-				name: strings.businessTypes[ element.type ],
-				description: 'The description should be populated here',
-				key: element.type,
-			} );
-		} );
-
-		businessTypeSelectValues = arr;
+		return Object.keys( businessTypeData ).map( ( key ) => ( {
+			name: strings.businessTypes[ key ],
+			description: 'Test',
+			key: key,
+		} ) );
 	};
 
 	const shouldDisplayStructures = ( countryCode, type ) => {
@@ -87,15 +68,9 @@ const AddBusinessInfo = () => {
 			return false;
 		}
 
-		let structures = [];
-
-		businessTypeData.types.forEach( ( element ) => {
-			if ( element.type === type ) {
-				structures = element.structures;
-			}
-		} );
-
-		return 0 < structures.length;
+		return businessTypeData.hasOwnProperty( type )
+			? 0 < businessTypeData[ type ].length
+			: false;
 	};
 
 	const formatBusinessStructures = ( countryCode, type ) => {
@@ -105,29 +80,12 @@ const AddBusinessInfo = () => {
 			return false;
 		}
 
-		let structures = [];
-
-		businessTypeData.types.forEach( ( element ) => {
-			if ( element.type === type ) {
-				structures = element.structures;
-			}
-		} );
-
-		const arr = [];
-
-		structures.forEach( ( el ) => {
-			arr.push( {
-				label: el.label,
-				key: el.key,
-			} );
-		} );
-
-		businessStructureSelectValues = structures;
+		return businessTypeData.hasOwnProperty( type )
+			? businessTypeData[ type ]
+			: [];
 	};
 
 	const handleBusinessTypeUpdate = ( type ) => {
-		// TODO: first, check if this particular country/business type combo needs to show the structure select - then show it.
-		// TODO: Only set completed if we need to - otherwise, do this on the setBusinessStructure.
 		setBusinessType( type );
 
 		if ( shouldDisplayStructures( businessCountry, type ) ) {
@@ -139,16 +97,15 @@ const AddBusinessInfo = () => {
 		}
 	};
 
-	const handleBusinessCountryUpdate = ( countryVal ) => {
-		setBusinessCountry( countryVal );
-		formatBusinessTypes( countryVal );
-		setCompleted( false );
-	};
-
 	const handleBusinessStructureUpdate = ( structure ) => {
-		// TODO: Mark setCompleted as true, show the verification requirements.
 		setBusinessStructure( structure );
 		setCompleted( true );
+	};
+
+	const handleBusinessCountryUpdate = ( countryCode ) => {
+		setBusinessCountry( countryCode );
+		formatBusinessTypes( countryCode );
+		setCompleted( false );
 	};
 
 	return (
@@ -180,7 +137,7 @@ const AddBusinessInfo = () => {
 					label={ __( 'Business type', 'woocommerce-payments' ) }
 					value={ businessType }
 					onChange={ ( value ) => handleBusinessTypeUpdate( value ) }
-					options={ businessTypeSelectValues }
+					options={ formatBusinessTypes( businessCountry ) }
 				/>
 			) }
 
@@ -191,7 +148,7 @@ const AddBusinessInfo = () => {
 					onChange={ ( value ) =>
 						handleBusinessStructureUpdate( value )
 					}
-					options={ businessStructureSelectValues }
+					options={ formatBusinessStructures( businessCountry ) }
 				/>
 			) : null }
 

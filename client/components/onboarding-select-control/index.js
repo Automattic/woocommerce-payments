@@ -7,6 +7,7 @@ import { Button } from '@wordpress/components';
 import { Icon, check, chevronDown } from '@wordpress/icons';
 import { useCallback } from '@wordpress/element';
 import classNames from 'classnames';
+// import { __, sprintf } from '@wordpress/i18n';
 import { useSelect } from 'downshift';
 
 /**
