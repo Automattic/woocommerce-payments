@@ -623,6 +623,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'createSetupIntentNonce'         => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 			'createPaymentIntentNonce'       => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
 			'updatePaymentIntentNonce'       => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
+			'initPlatformCheckoutNonce'      => wp_create_nonce( 'wcpay_init_platform_checkout_nonce' ),
 			'genericErrorMessage'            => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'                  => $this->account->get_fraud_services_config(),
 			'features'                       => $this->supports,
@@ -1254,7 +1255,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Prepares Stripe metadata for a given order.
+	 * Prepares Stripe metadata for a given order. The metadata later injected into intents, and
+	 * used in transactions listing/details. If merchant connects an account to new store, listing/details
+	 * keeps working even if orders are not available anymore - the metadata provides needed details.
 	 *
 	 * @param WC_Order     $order        Order being processed.
 	 * @param Payment_Type $payment_type Enum stating whether payment is single or recurring.
@@ -1882,24 +1885,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Validates statement descriptor value
 	 *
-	 * @param  string $param Param name.
+	 * @param  string $key Field key.
 	 * @param  string $value Posted Value.
-	 * @param  int    $max_length Maximum statement length.
 	 *
 	 * @return string                   Sanitized statement descriptor.
 	 * @throws InvalidArgumentException When statement descriptor is invalid.
 	 */
-	public function validate_account_statement_descriptor_field( $param, $value, $max_length ) {
+	public function validate_account_statement_descriptor_field( $key, $value ) {
 		// Since the value is escaped, and we are saving in a place that does not require escaping, apply stripslashes.
 		$value = trim( stripslashes( $value ) );
-		$field = __( 'Customer bank statement', 'woocommerce-payments' );
-
-		if ( 'short_statement_descriptor' === $param ) {
-			$field = __( 'Shortened customer bank statement', 'woocommerce-payments' );
-		}
 
 		// Validation can be done with a single regex but splitting into multiple for better readability.
-		$valid_length   = '/^.{5,' . $max_length . '}$/u';
+		$valid_length   = '/^.{5,22}$/';
 		$has_one_letter = '/^.*[a-zA-Z]+/';
 		$no_specials    = '/^[^*"\'<>]*$/';
 
@@ -1908,14 +1905,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! preg_match( $has_one_letter, $value ) ||
 			! preg_match( $no_specials, $value )
 		) {
-			throw new InvalidArgumentException(
-				sprintf(
-					/* translators: %1 field name, %2 Number of the maximum characters allowed */
-					__( '%1$s is invalid. Statement should be between 5 and %2$u characters long, contain at least a single Latin character, and not contain any of the following special characters: \' " * &lt; &gt;', 'woocommerce-payments' ),
-					$field,
-					$max_length
-				)
-			);
+			throw new InvalidArgumentException( __( 'Customer bank statement is invalid. Statement should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ) );
 		}
 
 		return $value;
