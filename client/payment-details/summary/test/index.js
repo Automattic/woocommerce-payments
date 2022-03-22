@@ -55,6 +55,9 @@ describe( 'PaymentDetailsSummary', () => {
 		global.wcpaySettings = {
 			isSubscriptionsActive: false,
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
 			currencyData: {
 				US: {
 					code: 'USD',
