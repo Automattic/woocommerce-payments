@@ -34,12 +34,7 @@ export const filters: [ DocumentsFilterType ] = [
 	{
 		label: __( 'Show', 'woocommerce-payments' ),
 		param: 'filter',
-		staticParams: [
-			'paged',
-			'per_page',
-			'orderby',
-			'order',
-		],
+		staticParams: [ 'paged', 'per_page', 'orderby', 'order' ],
 		showFilters: () => true,
 		filters: [
 			{
@@ -57,10 +52,7 @@ export const filters: [ DocumentsFilterType ] = [
 /*eslint-disable max-len*/
 export const advancedFilters = {
 	/** translators: A sentence describing filters for Documents. */
-	title: __(
-		'Documents match {{select /}} filters',
-		'woocommerce-payments'
-	),
+	title: __( 'Documents match {{select /}} filters', 'woocommerce-payments' ),
 	filters: {
 		date: {
 			labels: {
@@ -78,10 +70,7 @@ export const advancedFilters = {
 					'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
 					'woocommerce-payments'
 				),
-				filter: __(
-					'Select a document date',
-					'woocommerce-payments'
-				),
+				filter: __( 'Select a document date', 'woocommerce-payments' ),
 			},
 			rules: [
 				{
@@ -117,20 +106,13 @@ export const advancedFilters = {
 					'{{title}}Type{{/title}} {{rule /}} {{filter /}}',
 					'woocommerce-payments'
 				),
-				filter: __(
-					'Select a document type',
-					'woocommerce-payments'
-				),
+				filter: __( 'Select a document type', 'woocommerce-payments' ),
 			},
 			rules: [
 				{
 					value: 'is',
 					/* translators: Sentence fragment, logical, "Is" refers to searching for documents matching a chosen document type. */
-					label: _x(
-						'Is',
-						'document type',
-						'woocommerce-payments'
-					),
+					label: _x( 'Is', 'document type', 'woocommerce-payments' ),
 				},
 				{
 					value: 'is_not',

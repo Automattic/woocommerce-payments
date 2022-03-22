@@ -214,7 +214,10 @@ addFilter(
 				container: DocumentsPage,
 				path: '/payments/documents',
 				wpOpenMenu: menuID,
-				breadcrumbs: [ rootLink, __( 'Documents', 'woocommerce-payments' ) ],
+				breadcrumbs: [
+					rootLink,
+					__( 'Documents', 'woocommerce-payments' ),
+				],
 				navArgs: {
 					id: 'wc-payments-documents',
 				},

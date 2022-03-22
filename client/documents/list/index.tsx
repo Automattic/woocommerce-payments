@@ -7,14 +7,9 @@ import React from 'react';
 import { dateI18n } from '@wordpress/date';
 import { __, _n } from '@wordpress/i18n';
 import moment from 'moment';
-import {
-	TableCard,
-	TableCardColumn,
-} from '@woocommerce/components';
-import {
-	onQueryChange,
-	getQuery,
-} from '@woocommerce/navigation';
+import { TableCard, TableCardColumn } from '@woocommerce/components';
+import { onQueryChange, getQuery } from '@woocommerce/navigation';
+
 /**
  * Internal dependencies
  */
@@ -24,11 +19,7 @@ import DocumentsFilters from '../filters';
 import Page from '../../components/page';
 
 interface Column extends TableCardColumn {
-	key:
-		| 'date'
-		| 'type'
-		| 'description'
-		| 'download';
+	key: 'date' | 'type' | 'description' | 'download';
 	visible?: boolean;
 	cellClassName?: string;
 }
@@ -113,8 +104,7 @@ export const DocumentsList = (): JSX.Element => {
 	// initializing summary with undefined as we don't want to render the TableSummary component unless we have the data
 	let summary;
 	const isDocumentsSummaryDataLoaded =
-		documentsSummary.count !== undefined &&
-		false === isSummaryLoading;
+		documentsSummary.count !== undefined && false === isSummaryLoading;
 
 	// Generate summary only if the data has been loaded
 	if ( isDocumentsSummaryDataLoaded ) {
