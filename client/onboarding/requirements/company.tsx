@@ -18,12 +18,10 @@ interface CompanyRequirementsProps {
 const CompanyDetails = ( { keys }: CompanyRequirementsProps ): JSX.Element => {
 	const details = [];
 
-	if ( keys.some( ( key ) => key.includes( 'owners.' ) ) )
-		details.push( groups.owner );
-	if ( keys.some( ( key ) => key.includes( 'directors.' ) ) )
-		details.push( groups.director );
-	if ( keys.some( ( key ) => key.includes( 'executives.' ) ) )
-		details.push( groups.executive );
+	const keysList = keys.join();
+	if ( keysList.includes( 'owners.' ) ) details.push( groups.owner );
+	if ( keysList.includes( 'directors.' ) ) details.push( groups.director );
+	if ( keysList.includes( 'executives.' ) ) details.push( groups.executive );
 
 	if ( details.length === 0 ) return <></>;
 
