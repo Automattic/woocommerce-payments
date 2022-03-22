@@ -10,7 +10,7 @@ import IndividualRequirements from './individual';
 import CompanyRequirements from './company';
 
 interface RequirementsProps {
-	type: 'individual' | 'company' | 'non_profit';
+	type: 'individual' | 'company' | 'non_profit' | 'government_entity';
 	keys: string[];
 }
 
