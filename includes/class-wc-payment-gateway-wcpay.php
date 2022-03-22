@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -826,15 +827,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			?>
 
 			</fieldset>
-			<?php
-			// TODO: Check if fraud protection option is enabled.
-			$fraud_protection_token = WC()->session->get( 'wcpay-fraud-protection-token' );
-			if ( ! $fraud_protection_token ) {
-				$fraud_protection_token = wp_generate_password();
-				WC()->session->set( 'wcpay-fraud-protection-token', $fraud_protection_token );
-			}
-			?>
-			<input type="hidden" id="wcpay-fraud-protection-token" name="wcpay-fraud-protection-token" value="<?php echo esc_attr( $fraud_protection_token ); ?>">
+
+
+			<?php if ( Fraud_Prevention_Service::instance()->is_enabled() ) : ?>
+				<input type="hidden" id="wcpay-fraud-prevention-token" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::instance()->get_token() ); ?>">
+			<?php endif; ?>
+
 			<?php
 
 			do_action( 'wcpay_payment_fields_wcpay', $this->id );
@@ -872,14 +870,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
-			// TODO: Read from saved settings.
-			$fraud_protection_enabled = true;
-			if ( $fraud_protection_enabled ) {
+			$fraud_prevention_service = Fraud_Prevention_Service::instance();
+			if ( $fraud_prevention_service->is_enabled() ) {
 				// phpcs:ignore WordPress.Security.NonceVerification.Missing
-				if ( ! isset( $_POST['wcpay-fraud-protection-token'] ) || WC()->session->get( 'wcpay-fraud-protection-token' ) !== $_POST['wcpay-fraud-protection-token'] ) {
+				if ( ! $fraud_prevention_service->verify_token( $_POST ) ) {
 					throw new Process_Payment_Exception(
 						__( 'Your payment was not processed.', 'woocommerce-payments' ),
-						'fraud_protection_enabled'
+						'fraud_prevention_enabled'
 					);
 				}
 			}

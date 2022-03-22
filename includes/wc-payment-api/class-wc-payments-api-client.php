@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 
@@ -1818,9 +1819,11 @@ class WC_Payments_API_Client {
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
 				if ( isset( $response_body['error']['decline_code'] ) && 'fraudulent' === $response_body['error']['decline_code'] ) {
-					// TODO: Check if fraud protection option is enabled.
-					WC()->session->set( 'wcpay-fraud-protection-token', wp_generate_password() );
-					WC()->session->set( 'reload_checkout', true );
+					$fraud_prevention_service = Fraud_Prevention_Service::instance();
+					if ( $fraud_prevention_service->is_enabled() ) {
+						$fraud_prevention_service->regenerate_token();
+						WC()->session->set( 'reload_checkout', true );
+					}
 				}
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
