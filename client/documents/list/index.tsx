@@ -18,7 +18,7 @@ import { Document, useDocuments, useDocumentsSummary } from 'data/index';
 import './style.scss';
 import DocumentsFilters from '../filters';
 import Page from '../../components/page';
-import { getViewDocumentUrl } from 'wcpay/utils';
+import { getDocumentUrl } from 'wcpay/utils';
 
 interface Column extends TableCardColumn {
 	key: 'date' | 'type' | 'description' | 'download';
@@ -122,10 +122,10 @@ export const DocumentsList = (): JSX.Element => {
 				display: getDocumentDescription( document ),
 			},
 			download: {
-				value: getViewDocumentUrl( document.document_id ),
+				value: getDocumentUrl( document.document_id ),
 				display: (
 					<a
-						href={ getViewDocumentUrl( document.document_id ) }
+						href={ getDocumentUrl( document.document_id ) }
 						rel="noopener noreferrer"
 						target="_blank"
 						style={ { display: 'inline' } }

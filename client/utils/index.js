@@ -5,6 +5,7 @@ import { addQueryArgs } from '@wordpress/url';
 import { capitalize } from 'lodash';
 import moment from 'moment';
 import { dateI18n } from '@wordpress/date';
+import { NAMESPACE } from 'wcpay/data/constants';
 
 /**
  * Returns true if WooCommerce Payments is in test mode, false otherwise.
@@ -29,11 +30,15 @@ export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
  *
  * @return {string} The URL to view the document.
  */
-export const getViewDocumentUrl = ( documentId ) => {
-	return getAdminUrl( {
-		'wcpay-view-document': documentId,
-		_wpnonce: wcpaySettings.viewDocumentNonce,
-	} );
+export const getDocumentUrl = ( documentId ) => {
+	// Remove trailing slash from wpApiSettings.root since NAMESPACE already includes it.
+	const baseUrl = `${ wpApiSettings.root.replace( /\/$/, '' ) }`;
+	return addQueryArgs(
+		`${ baseUrl }${ NAMESPACE }/documents/${ documentId }`,
+		{
+			_wpnonce: wpApiSettings.nonce,
+		}
+	);
 };
 
 /**
