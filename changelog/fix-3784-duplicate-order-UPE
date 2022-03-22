@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed failed order getting updated on successful payment in UPE

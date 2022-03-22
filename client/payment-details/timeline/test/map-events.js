@@ -9,6 +9,35 @@ describe( 'mapTimelineEvents', () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'right_space',
+					thousandSeparator: ' ',
+					decimalSeparator: ',',
+					precision: 2,
+				},
+				GB: {
+					code: 'GBP',
+					symbol: '£',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
 		};
 	} );
 
@@ -426,6 +455,8 @@ describe( 'mapTimelineEvents', () => {
 		} );
 
 		test( 'formats partial_refund events', () => {
+			global.wcpaySettings.connect.country = 'FR';
+
 			expect(
 				mapTimelineEvents( [
 					{
@@ -448,6 +479,8 @@ describe( 'mapTimelineEvents', () => {
 		} );
 
 		test( 'formats full_refund events', () => {
+			global.wcpaySettings.connect.country = 'FR';
+
 			expect(
 				mapTimelineEvents( [
 					{

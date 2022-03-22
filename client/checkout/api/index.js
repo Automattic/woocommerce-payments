@@ -27,6 +27,19 @@ export default class WCPayAPI {
 		this.request = request;
 	}
 
+	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
+		const options = { locale };
+
+		if ( accountId ) {
+			options.stripeAccount = accountId;
+		}
+		if ( betas ) {
+			options.betas = betas;
+		}
+
+		return new Stripe( publishableKey, options );
+	}
+
 	/**
 	 * Generates a new instance of Stripe.
 	 *
@@ -44,23 +57,28 @@ export default class WCPayAPI {
 
 		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
 			if ( ! this.stripePlatform ) {
-				this.stripePlatform = new Stripe( publishableKey, { locale } );
+				this.stripePlatform = this.createStripe(
+					publishableKey,
+					locale
+				);
 			}
 			return this.stripePlatform;
 		}
 
 		if ( ! this.stripe ) {
 			if ( isUPEEnabled ) {
-				this.stripe = new Stripe( publishableKey, {
-					stripeAccount: accountId,
-					betas: [ 'card_country_event_beta_1' ],
+				this.stripe = this.createStripe(
+					publishableKey,
 					locale,
-				} );
+					accountId,
+					[ 'card_country_event_beta_1' ]
+				);
 			} else {
-				this.stripe = new Stripe( publishableKey, {
-					stripeAccount: accountId,
+				this.stripe = this.createStripe(
+					publishableKey,
 					locale,
-				} );
+					accountId
+				);
 			}
 		}
 		return this.stripe;
@@ -209,9 +227,34 @@ export default class WCPayAPI {
 			orderId = orderIdPartials[ 0 ];
 		}
 
-		const confirmAction = isSetupIntent
-			? this.getStripe().confirmCardSetup( clientSecret )
-			: this.getStripe( true ).confirmCardPayment( clientSecret );
+		const confirmPaymentOrSetup = () => {
+			const { locale, publishableKey } = this.options;
+			const accountIdForIntentConfirmation = getConfig(
+				'accountIdForIntentConfirmation'
+			);
+
+			// If this is a setup intent we're not processing a platform checkout payment so we can
+			// use the regular getStripe function.
+			if ( isSetupIntent ) {
+				return this.getStripe().confirmCardSetup( clientSecret );
+			}
+
+			// For platform checkout we need the capability to switch up the account ID specifically for
+			// the intent confirmation step, that's why we create a new instance of the Stripe JS here.
+			if ( accountIdForIntentConfirmation ) {
+				return this.createStripe(
+					publishableKey,
+					locale,
+					accountIdForIntentConfirmation
+				).confirmCardPayment( clientSecret );
+			}
+
+			// When not dealing with a setup intent or platform checkout we need to force an account
+			// specific request in Stripe.
+			return this.getStripe( true ).confirmCardPayment( clientSecret );
+		};
+
+		const confirmAction = confirmPaymentOrSetup();
 
 		const request = confirmAction
 			// ToDo: Switch to an async function once it works with webpack.
@@ -545,9 +588,9 @@ export default class WCPayAPI {
 
 	initPlatformCheckout() {
 		return this.request(
-			getPaymentRequestAjaxURL( 'init_platform_checkout' ),
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_platform_checkout' ),
 			{
-				_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
+				_wpnonce: getConfig( 'initPlatformCheckoutNonce' ),
 			}
 		);
 	}
