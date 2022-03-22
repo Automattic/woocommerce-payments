@@ -15,13 +15,12 @@ import { SelectControl, Card, CardBody } from '@wordpress/components';
 import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
 import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
 import OnboardingSelectControl from 'wcpay/components/onboarding-select-control';
-// import { useBusinessTypes } from 'wcpay/data/onboarding';
+import { useBusinessTypes } from 'wcpay/data/onboarding';
 import strings from '../strings';
 
 const AddBusinessInfo = () => {
 	const { setCompleted } = useContext( WizardTaskContext );
-	// const { businessTypes, isLoading } = useBusinessTypes();
-	const isLoading = false;
+	const { isLoading } = useBusinessTypes();
 	const {
 		connect: { availableCountries, country },
 	} = wcpaySettings;
@@ -51,6 +50,7 @@ const AddBusinessInfo = () => {
 	const handleBusinessCountryUpdate = ( countryVal ) => {
 		// TODO: Update the business type display based on whatever is selected here.
 		setBusinessCountry( countryVal );
+
 		setCompleted( true );
 	};
 
@@ -89,8 +89,8 @@ const AddBusinessInfo = () => {
 				value={ businessType }
 				onChange={ ( value ) => handleBusinessTypeUpdate( value ) }
 				options={
-					// TODO: this should be a variable updated when the country is changed.
-					[
+					! isLoading && [
+						// TODO: this should be a variable updated when the country is changed.
 						{
 							name: 'Individual',
 							description:
