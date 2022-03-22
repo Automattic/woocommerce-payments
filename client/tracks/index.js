@@ -2,6 +2,8 @@
  * External dependencies
  */
 import domReady from '@wordpress/dom-ready';
+import { getConfig } from 'wcpay/utils/checkout';
+import { getPaymentRequestData } from 'wcpay/payment-request/utils';
 
 /**
  * Checks if site tracking is enabled.
@@ -25,6 +27,30 @@ function recordEvent( eventName, eventProperties ) {
 		const recordFunction =
 			window.wc?.tracks?.recordEvent ?? window.wcTracks.recordEvent;
 		recordFunction( eventName, eventProperties );
+	} );
+}
+
+/**
+ * Records events from buyers.
+ *
+ * @param {string}  eventName       Name of the event.
+ * @param {Object?} eventProperties Event properties.
+ */
+function recordUserEvent( eventName, eventProperties ) {
+	const nonce =
+		getConfig( 'platformTrackerNonce' ) ??
+		getPaymentRequestData( 'nonce' )?.platform_tracker;
+	const ajaxUrl =
+		getConfig( 'ajaxUrl' ) ?? getPaymentRequestData( 'ajax_url' );
+	const body = new FormData();
+
+	body.append( 'tracksNonce', nonce );
+	body.append( 'action', 'platform_tracks' );
+	body.append( 'tracksEventName', eventName );
+	body.append( 'tracksEventProp', eventProperties );
+	fetch( ajaxUrl, {
+		method: 'post',
+		body,
 	} );
 }
 
@@ -56,5 +82,6 @@ const events = {
 export default {
 	isEnabled,
 	recordEvent,
+	recordUserEvent,
 	events,
 };

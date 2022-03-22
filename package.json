@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -58,7 +58,8 @@
     "tube:start": "./docker/bin/jt/tunnel.sh",
     "tube:stop": "./docker/bin/jt/tunnel.sh break",
     "psalm": "./bin/run-psalm.sh",
-    "xdebug:toggle": "docker-compose exec -u root wordpress /var/www/html/wp-content/plugins/woocommerce-payments/bin/xdebug-toggle.sh"
+    "xdebug:toggle": "docker-compose exec -u root wordpress /var/www/html/wp-content/plugins/woocommerce-payments/bin/xdebug-toggle.sh",
+    "changelog": "./vendor/bin/changelogger add"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "1.4.1",
@@ -67,6 +68,7 @@
     "@woocommerce/explat": "^1.0.1",
     "debug": "^4.1.1",
     "interpolate-components": "^1.1.1",
+    "intl-tel-input": "^17.0.15",
     "lodash": "^4.17.14",
     "wordpress-element": "npm:@wordpress/element@2.11.0"
   },

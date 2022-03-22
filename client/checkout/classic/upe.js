@@ -12,9 +12,8 @@ import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import { getTerms } from '../utils/upe';
-import { getCookieValue } from '../../utils';
-import { handlePlatformCheckoutEmailInput } from '../utils/platform-checkout';
+import { getTerms, getCookieValue } from '../utils/upe';
+import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -24,9 +23,8 @@ jQuery( function ( $ ) {
 	const isUPEEnabled = getConfig( 'isUPEEnabled' );
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 	const enabledBillingFields = getConfig( 'enabledBillingFields' );
-	const cookieCartHash = getConfig( 'cookieCartHash' );
-	const cookieUPEPaymentIntent = getConfig( 'cookieUPEPaymentIntent' );
-	const cookieUPESetupIntent = getConfig( 'cookieUPESetupIntent' );
+	const upePaymentIntentData = getConfig( 'upePaymentIntentData' );
+	const upeSetupIntentData = getConfig( 'upeSetupIntentData' );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -297,8 +295,8 @@ jQuery( function ( $ ) {
 		}
 
 		let { intentId, clientSecret } = isSetupIntent
-			? getSetupIntentFromCookie()
-			: getPaymentIntentFromCookie();
+			? getSetupIntentFromSession()
+			: getPaymentIntentFromSession();
 
 		const $upeContainer = $( '#wcpay-upe-element' );
 		blockUI( $upeContainer );
@@ -666,13 +664,16 @@ jQuery( function ( $ ) {
 	 *
 	 * @return {Object} The intent id and client secret required for mounting the UPE element.
 	 */
-	function getPaymentIntentFromCookie() {
-		const cartHash = getCookieValue( cookieCartHash );
-		const cookieVal = getCookieValue( cookieUPEPaymentIntent );
+	function getPaymentIntentFromSession() {
+		const cartHash = getCookieValue( 'woocommerce_cart_hash' );
 
-		if ( cartHash && cookieVal && cookieVal.startsWith( cartHash ) ) {
-			const intentId = cookieVal.split( '-' )[ 1 ];
-			const clientSecret = cookieVal.split( '-' )[ 2 ];
+		if (
+			cartHash &&
+			upePaymentIntentData &&
+			upePaymentIntentData.startsWith( cartHash )
+		) {
+			const intentId = upePaymentIntentData.split( '-' )[ 1 ];
+			const clientSecret = upePaymentIntentData.split( '-' )[ 2 ];
 			return { intentId, clientSecret };
 		}
 
@@ -684,12 +685,10 @@ jQuery( function ( $ ) {
 	 *
 	 * @return {Object} The intent id and client secret required for mounting the UPE element.
 	 */
-	function getSetupIntentFromCookie() {
-		const cookieVal = getCookieValue( cookieUPESetupIntent );
-
-		if ( cookieVal ) {
-			const intentId = cookieVal.split( '-' )[ 0 ];
-			const clientSecret = cookieVal.split( '-' )[ 1 ];
+	function getSetupIntentFromSession() {
+		if ( upeSetupIntentData ) {
+			const intentId = upeSetupIntentData.split( '-' )[ 0 ];
+			const clientSecret = upeSetupIntentData.split( '-' )[ 1 ];
 			return { intentId, clientSecret };
 		}
 
@@ -773,6 +772,6 @@ jQuery( function ( $ ) {
 		}
 	} );
 	if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
-		handlePlatformCheckoutEmailInput( '#billing_email' );
+		handlePlatformCheckoutEmailInput( '#billing_email', api );
 	}
 } );

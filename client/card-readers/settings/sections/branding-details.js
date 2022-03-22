@@ -84,7 +84,7 @@ const BrandingDetailsSection = () => {
 					'woocommerce-payments'
 				) }
 				purpose="business_icon"
-				value={ getAccountBrandingIcon }
+				fileID={ getAccountBrandingIcon }
 				updateFileID={ setAccountBrandingIcon }
 			/>
 
