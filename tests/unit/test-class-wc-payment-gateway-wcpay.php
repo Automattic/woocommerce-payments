@@ -2228,6 +2228,30 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertTrue( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
+	public function test_force_network_saved_cards_is_returned_as_true_if_should_use_stripe_platform() {
+		$mock_wcpay_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->mock_rate_limiter,
+					$this->order_service,
+				]
+			)
+			->setMethods( [ 'should_use_stripe_platform_on_checkout_page' ] )
+			->getMock();
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'should_use_stripe_platform_on_checkout_page' )
+			->willReturn( true );
+
+		$this->assertTrue( $mock_wcpay_gateway->get_payment_fields_js_config()['forceNetworkSavedCards'] );
+	}
+
 	/**
 	 * @dataProvider is_platform_checkout_falsy_value_provider
 	 */

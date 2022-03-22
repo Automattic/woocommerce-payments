@@ -21,6 +21,7 @@ import { dateI18n } from '@wordpress/date';
 import { formatExplicitCurrency } from 'utils/currency';
 import Loadable from 'components/loadable';
 import { useActiveLoanSummary } from 'wcpay/data';
+import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
 
@@ -153,11 +154,13 @@ const ActiveLoanSummary = (): JSX.Element => {
 					{ getActiveLoanId() && (
 						<Button
 							isLink
-							href={
-								'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions' +
-								'&type=charge&filter=advanced&loan_id_is=' +
-								getActiveLoanId()
-							}
+							href={ getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/transactions',
+								type: 'charge',
+								filter: 'advanced',
+								loan_id_is: getActiveLoanId(),
+							} ) }
 						>
 							{ __(
 								'View transactions',

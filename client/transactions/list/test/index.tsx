@@ -69,6 +69,20 @@ declare const global: {
 			customSearch: boolean;
 		};
 		zeroDecimalCurrencies: string[];
+		currentUserEmail: string;
+		connect: {
+			country: string;
+		};
+		currencyData: {
+			[ key: string ]: {
+				code: string;
+				symbol: string;
+				symbolPosition: string;
+				thousandSeparator: string;
+				decimalSeparator: string;
+				precision: number;
+			};
+		};
 	};
 };
 
@@ -152,6 +166,20 @@ describe( 'Transactions list', () => {
 			},
 			isSubscriptionsActive: false,
 			zeroDecimalCurrencies: [],
+			currentUserEmail: 'mock@example.com',
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
 		};
 	} );
 
@@ -434,6 +462,7 @@ describe( 'Transactions list', () => {
 			} );
 		} );
 
+		// Test also makes sure that the currentUserEmail is included in the path in the API call.
 		test( 'should fetch export after confirmation when download button is selected for unfiltered exports larger than 10000.', async () => {
 			window.confirm = jest.fn( () => true );
 			mockUseTransactionsSummary.mockReturnValue( {
@@ -456,7 +485,8 @@ describe( 'Transactions list', () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
-					path: '/wc/v3/payments/transactions/download?',
+					path:
+						'/wc/v3/payments/transactions/download?user_email=mock%40example.com',
 				} );
 			} );
 		} );
@@ -484,6 +514,7 @@ describe( 'Transactions list', () => {
 			);
 		} );
 
+		// Test also makes sure that the currentUserEmail is included in the path in the API call.
 		test( 'should fetch export with deposit_id if deposits transactions page', async () => {
 			window.confirm = jest.fn( () => true );
 
@@ -510,7 +541,7 @@ describe( 'Transactions list', () => {
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
 					path:
-						'/wc/v3/payments/transactions/download?deposit_id=po_mock',
+						'/wc/v3/payments/transactions/download?user_email=mock%40example.com&deposit_id=po_mock',
 				} );
 			} );
 		} );

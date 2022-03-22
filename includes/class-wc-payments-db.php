@@ -92,7 +92,7 @@ class WC_Payments_DB {
 		// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
 		$order_id = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT DISTINCT ID FROM $wpdb->posts as posts LEFT JOIN $wpdb->postmeta as meta ON posts.ID = meta.post_id WHERE meta.meta_key = %s AND meta.meta_value = %s",
+				"SELECT DISTINCT MAX(ID) FROM $wpdb->posts as posts LEFT JOIN $wpdb->postmeta as meta ON posts.ID = meta.post_id WHERE meta.meta_key = %s AND meta.meta_value = %s",
 				$meta_key,
 				$meta_value
 			)

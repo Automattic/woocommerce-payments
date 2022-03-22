@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Add all subscription line items not just subscription products when creating WCPay Subscriptions.
