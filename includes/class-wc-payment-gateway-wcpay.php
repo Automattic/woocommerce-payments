@@ -1512,17 +1512,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Get the last created WC refund from order and save WCPay refund id as meta.
-		$wc_refunds = wc_get_orders(
-			[
-				'type'    => 'shop_order_refund',
-				'parent'  => $order_id,
-				'limit'   => 1,
-				'orderby' => 'date',
-				'order'   => 'DESC',
-			]
-		);
-		if ( is_array( $wc_refunds ) && ! empty( $wc_refunds ) ) {
-			$wc_last_refund = $wc_refunds[0];
+		$wcpay_db       = new WC_Payments_DB();
+		$wc_last_refund = $wcpay_db->last_refund_from_order_id( $order_id );
+		if ( $wc_last_refund ) {
 			$wc_last_refund->update_meta_data( '_wcpay_refund_id', $refund['id'] );
 			$wc_last_refund->save_meta_data();
 		}
