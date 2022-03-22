@@ -22,13 +22,12 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Platform_Checkout_Tracker;
+use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
  */
 class WC_Payments {
-
 	/**
 	 * Instance of WC_Payment_Gateway_WCPay, created in init function.
 	 *
@@ -239,6 +238,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-file-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-processing-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
+		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -246,13 +246,15 @@ class WC_Payments {
 		}
 
 		// Load platform checkout save user section if feature is enabled.
-		if ( WC_Payments_Features::is_platform_checkout_eligible() ) {
+		$platform_checkout_util = new Platform_Checkout_Utilities();
+		// if ( WC_Payments_Features::is_platform_checkout_eligible() ) {
+		if ( $platform_checkout_util->is_platform_checkout_enabled() ) {
 			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
 			// Load platform checkout tracking.
 			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
 
 			new Platform_Checkout_Save_User();
-			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
+			new WCPay\Platform_Checkout_Tracker( self::get_wc_payments_http() );
 		}
 
 		// Always load tracker to avoid class not found errors.
@@ -843,10 +845,11 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function maybe_register_platform_checkout_hooks() {
-		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
-		$is_platform_checkout_enabled  = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
+		// $is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
+		// $is_platform_checkout_enabled  = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
+		$platform_checkout_util = new Platform_Checkout_Utilities();
 
-		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
+		if ( $platform_checkout_util->is_platform_checkout_enabled( self::get_gateway() ) ) {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
