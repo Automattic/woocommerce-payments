@@ -21,6 +21,19 @@ const mockUseDispute = useDispute as jest.MockedFunction< typeof useDispute >;
 declare const global: {
 	wcpaySettings: {
 		zeroDecimalCurrencies: string[];
+		connect: {
+			country: string;
+		};
+		currencyData: {
+			[ key: string ]: {
+				code: string;
+				symbol: string;
+				symbolPosition: string;
+				thousandSeparator: string;
+				decimalSeparator: string;
+				precision: number;
+			};
+		};
 	};
 };
 
@@ -28,6 +41,19 @@ describe( 'Dispute details screen', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
 		};
 	} );
 

@@ -15,7 +15,38 @@ describe( 'AccountFees', () => {
 	};
 
 	beforeEach( () => {
-		global.wcpaySettings = { zeroDecimalCurrencies: [] };
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'right_space',
+					thousandSeparator: ' ',
+					decimalSeparator: ',',
+					precision: 2,
+				},
+				GB: {
+					code: 'GBP',
+					symbol: '£',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
 	} );
 
 	test( 'renders normal base fee', () => {
@@ -45,6 +76,8 @@ describe( 'AccountFees', () => {
 	} );
 
 	test( 'renders non-USD base fee', () => {
+		global.wcpaySettings.connect.country = 'FR';
+
 		const { container: accountFees } = renderAccountFees( [
 			{
 				payment_method: 'card',
@@ -96,6 +129,8 @@ describe( 'AccountFees', () => {
 	} );
 
 	test( 'renders discounted non-USD base fee', () => {
+		global.wcpaySettings.connect.country = 'UK';
+
 		const { container: accountFees } = renderAccountFees( [
 			{
 				payment_method: 'card',

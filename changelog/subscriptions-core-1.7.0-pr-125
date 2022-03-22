@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Subscription token notices that appear on the My account > Payment methods page should be translatable.
