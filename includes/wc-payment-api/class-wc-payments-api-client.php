@@ -1677,6 +1677,35 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Request a document from the server and returns the full response.
+	 *
+	 * @param string $document_id The document's ID.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function get_document( $document_id ) {
+		// Build the document URL.
+		$url = sprintf(
+			'%s/documents/%s?%s',
+			self::ENDPOINT_BASE . '/' . self::ENDPOINT_SITE_FRAGMENT . '/' . self::ENDPOINT_REST_BASE,
+			$document_id,
+			http_build_query( [ 'test_mode' => WC_Payments::get_gateway()->is_in_test_mode() ] )
+		);
+
+		return $this->http_client->remote_request(
+			[
+				'url'             => $url,
+				'method'          => self::GET,
+				'headers'         => apply_filters( 'wcpay_api_request_headers', [ 'User-Agent' => $this->user_agent ] ),
+				'timeout'         => self::API_TIMEOUT_SECONDS,
+				'connect_timeout' => self::API_TIMEOUT_SECONDS,
+			]
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.

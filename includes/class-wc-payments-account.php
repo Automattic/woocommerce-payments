@@ -55,6 +55,9 @@ class WC_Payments_Account {
 
 		// Add capital offer redirection.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
+
+		// Add document load action.
+		add_action( 'admin_init', [ $this, 'maybe_load_document' ] );
 	}
 
 	/**
@@ -402,6 +405,41 @@ class WC_Payments_Account {
 
 			$this->redirect_to( $error_url );
 		}
+	}
+
+	/**
+	 * Checks if the request is for viewing a WooCommerce Payments Document and loads the file if so.
+	 *
+	 * Only admins are be able to perform this action. No files are loaded if the request is an AJAX request.
+	 */
+	public function maybe_load_document() {
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
+		// Safety check to prevent non-admin users to view documents.
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		// Stop processing this if we're not accessing a file.
+		if ( ! isset( $_GET['wcpay-view-document'] ) || ! check_admin_referer( 'wcpay-view-document' ) ) {
+			return;
+		}
+
+		$response = $this->payments_api_client->get_document( sanitize_text_field( wp_unslash( $_GET['wcpay-view-document'] ) ) );
+
+		// Set the headers to match what was returned from the server.
+		if ( ! headers_sent() ) {
+			nocache_headers();
+			status_header( $response['response']['code'], $response['response']['message'] ?? '' );
+			header( 'Content-Type: ' . $response['headers']['content-type'] );
+			header( 'Content-Disposition: ' . $response['headers']['content-disposition'] ?? '' );
+		}
+
+		// We should output the server's file without escaping.
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $response['body'];
 	}
 
 	/**
