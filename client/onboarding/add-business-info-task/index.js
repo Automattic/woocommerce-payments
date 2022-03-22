@@ -20,7 +20,7 @@ import strings from '../strings';
 
 const AddBusinessInfo = () => {
 	const { setCompleted } = useContext( WizardTaskContext );
-	const { isLoading } = useBusinessTypes();
+	const { businessTypes, isLoading } = useBusinessTypes();
 	const {
 		connect: { availableCountries, country },
 	} = wcpaySettings;
@@ -39,25 +39,116 @@ const AddBusinessInfo = () => {
 	const [ businessStructure, setBusinessStructure ] = useState();
 	const [ displayStructures, setDisplayStructures ] = useState( false );
 
+	let businessTypeSelectValues = [];
+	let businessStructureSelectValues = [];
+
+	const getBusinessTypesForCountry = ( countryCode ) => {
+		if ( isLoading || ! businessTypes.hasOwnProperty( 'data' ) ) {
+			return false;
+		}
+
+		let result = false;
+
+		// TODO: It's probably better if this is an object where the country codes are keys, makes it easier to traverse.
+		businessTypes.data.forEach( ( element ) => {
+			if ( element.country_code === countryCode ) {
+				result = element;
+			}
+		} );
+
+		// Return false if the country isn't in our array.
+		return result;
+	};
+
+	const formatBusinessTypes = ( countryCode ) => {
+		const businessTypeData = getBusinessTypesForCountry( countryCode );
+
+		if ( isLoading || ! businessTypeData ) {
+			return [];
+		}
+
+		const arr = [];
+
+		businessTypeData.types.forEach( ( element ) => {
+			arr.push( {
+				name: strings.businessTypes[ element.type ],
+				description: 'The description should be populated here',
+				key: element.type,
+			} );
+		} );
+
+		businessTypeSelectValues = arr;
+	};
+
+	const shouldDisplayStructures = ( countryCode, type ) => {
+		const businessTypeData = getBusinessTypesForCountry( countryCode );
+
+		if ( isLoading || ! businessTypeData ) {
+			return false;
+		}
+
+		let structures = [];
+
+		businessTypeData.types.forEach( ( element ) => {
+			if ( element.type === type ) {
+				structures = element.structures;
+			}
+		} );
+
+		return 0 < structures.length;
+	};
+
+	const formatBusinessStructures = ( countryCode, type ) => {
+		const businessTypeData = getBusinessTypesForCountry( countryCode );
+
+		if ( isLoading || ! businessTypeData ) {
+			return false;
+		}
+
+		let structures = [];
+
+		businessTypeData.types.forEach( ( element ) => {
+			if ( element.type === type ) {
+				structures = element.structures;
+			}
+		} );
+
+		const arr = [];
+
+		structures.forEach( ( el ) => {
+			arr.push( {
+				label: el.label,
+				key: el.key,
+			} );
+		} );
+
+		businessStructureSelectValues = structures;
+	};
+
 	const handleBusinessTypeUpdate = ( type ) => {
 		// TODO: first, check if this particular country/business type combo needs to show the structure select - then show it.
 		// TODO: Only set completed if we need to - otherwise, do this on the setBusinessStructure.
 		setBusinessType( type );
-		setCompleted( true, 'setup-complete' );
-		setDisplayStructures( true );
+
+		if ( shouldDisplayStructures( businessCountry, type ) ) {
+			formatBusinessStructures( businessCountry, type );
+			setDisplayStructures( true );
+		} else {
+			setDisplayStructures( false );
+			setCompleted( true );
+		}
 	};
 
 	const handleBusinessCountryUpdate = ( countryVal ) => {
-		// TODO: Update the business type display based on whatever is selected here.
 		setBusinessCountry( countryVal );
-
-		setCompleted( true );
+		formatBusinessTypes( countryVal );
+		setCompleted( false );
 	};
 
 	const handleBusinessStructureUpdate = ( structure ) => {
 		// TODO: Mark setCompleted as true, show the verification requirements.
 		setBusinessStructure( structure );
-		setCompleted( true, 'setup-complete' );
+		setCompleted( true );
 	};
 
 	return (
@@ -83,35 +174,15 @@ const AddBusinessInfo = () => {
 				{ strings.onboarding.countryDescription }
 			</p>
 
-			<OnboardingSelectControl
-				className="wcpay-onboarding-select-business-types"
-				label={ __( 'Business type', 'woocommerce-payments' ) }
-				value={ businessType }
-				onChange={ ( value ) => handleBusinessTypeUpdate( value ) }
-				options={
-					! isLoading && [
-						// TODO: this should be a variable updated when the country is changed.
-						{
-							name: 'Individual',
-							description:
-								'Select if you run your own business as an individual and are self-employed',
-							key: 'individual',
-						},
-						{
-							name: 'Company',
-							description:
-								'Select if you filed documentation to register your business with a government entity',
-							key: 'company',
-						},
-						{
-							name: 'Non-profit Organisation',
-							description:
-								'Select if you have been granted tax-exempt status by the Internal Revenue Service (IRS)',
-							key: 'nonprofit_organisation',
-						},
-					]
-				}
-			/>
+			{ isLoading ? null : (
+				<OnboardingSelectControl
+					className="wcpay-onboarding-select-business-types"
+					label={ __( 'Business type', 'woocommerce-payments' ) }
+					value={ businessType }
+					onChange={ ( value ) => handleBusinessTypeUpdate( value ) }
+					options={ businessTypeSelectValues }
+				/>
+			) }
 
 			{ displayStructures ? (
 				<SelectControl
@@ -120,12 +191,7 @@ const AddBusinessInfo = () => {
 					onChange={ ( value ) =>
 						handleBusinessStructureUpdate( value )
 					}
-					options={ [
-						{
-							label: 'Test',
-							value: 'Test 123',
-						},
-					] }
+					options={ businessStructureSelectValues }
 				/>
 			) : null }
 
