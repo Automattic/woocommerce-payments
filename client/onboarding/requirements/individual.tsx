@@ -8,7 +8,7 @@ import React from 'react';
  */
 import { groups, requirements } from './strings';
 import RequirementGroup from './group';
-import { individual, mapToList, taxKeys } from './keymap';
+import { individual, mapToList, individualTaxKeys } from './keymap';
 
 interface IndividualRequirementsProps {
 	keys: string[];
@@ -18,7 +18,7 @@ const IndividualRequirements = ( {
 	keys,
 }: IndividualRequirementsProps ): JSX.Element => {
 	const personalList = mapToList( keys, individual );
-	const hasTax = keys.some( ( key ) => taxKeys.includes( key ) );
+	const hasTax = keys.some( ( key ) => individualTaxKeys.includes( key ) );
 
 	return (
 		<>
