@@ -1,6 +1,7 @@
 /**
  * Internal dependencies
  */
+import { joinWithConjunction } from 'utils/strings';
 import { requirements } from './strings';
 
 interface KeyMap {
@@ -56,11 +57,11 @@ export const companyDetails: KeyMap = {
 };
 
 export const mapToList = ( keys: string[], map: KeyMap ): string => {
-	const list = new Set();
+	const list: Set< string > = new Set();
 
 	for ( const key in map ) {
 		if ( keys.includes( key ) ) list.add( map[ key ] );
 	}
 
-	return Array.from( list ).join( ', ' );
+	return joinWithConjunction( Array.from( list ) );
 };

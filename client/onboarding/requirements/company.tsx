@@ -9,6 +9,7 @@ import React from 'react';
 import { groups } from './strings';
 import RequirementGroup from './group';
 import { representative, mapToList, company, companyDetails } from './keymap';
+import { joinWithConjunction } from 'utils/strings';
 
 interface CompanyRequirementsProps {
 	keys: string[];
@@ -26,7 +27,7 @@ const CompanyDetails = ( { keys }: CompanyRequirementsProps ): JSX.Element => {
 
 	if ( details.length === 0 ) return <></>;
 
-	const headline = `${ groups.company } ${ details.join( ', ' ) }`;
+	const headline = `${ groups.company } ${ joinWithConjunction( details ) }`;
 	const subline = mapToList( keys, companyDetails );
 
 	return (
