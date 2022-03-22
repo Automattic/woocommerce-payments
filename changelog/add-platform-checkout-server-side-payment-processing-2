@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Allow handling of previously paid for payment intents via the Checkout Store API
