@@ -14,7 +14,7 @@ describe( 'Utilities', () => {
 
 	test( 'document url matches the expected URL', () => {
 		global.wpApiSettings = {
-			root: 'https://root-site/wp-json',
+			root: 'https://root-site/wp-json/',
 			nonce: 'randomNonce',
 		};
 
