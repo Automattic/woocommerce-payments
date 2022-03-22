@@ -284,6 +284,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 	}
 
+	/**
+	 * Test saving WCPay refund id to WC Refund meta and WC Order Note.
+	 */
 	public function test_process_refund_save_wcpay_refund_id_to_refund_meta_and_order_note() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
