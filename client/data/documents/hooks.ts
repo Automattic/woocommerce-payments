@@ -33,27 +33,23 @@ interface DocumentsSummary {
 	isLoading: boolean;
 }
 
-export const useDocuments = (
-	{
-		paged,
-		per_page: perPage,
-		orderby,
-		order,
-		match,
-		date_before: dateBefore,
-		date_after: dateAfter,
-		date_between: dateBetween,
-		type_is: typeIs,
-		type_is_not: typeIsNot,
-	}: Query
-): Documents =>
+export const useDocuments = ( {
+	paged,
+	per_page: perPage,
+	orderby,
+	order,
+	match,
+	date_before: dateBefore,
+	date_after: dateAfter,
+	date_between: dateBetween,
+	type_is: typeIs,
+	type_is_not: typeIsNot,
+}: Query ): Documents =>
 	useSelect(
 		( select ) => {
-			const {
-				getDocuments,
-				getDocumentsError,
-				isResolving,
-			} = select( STORE_NAME );
+			const { getDocuments, getDocumentsError, isResolving } = select(
+				STORE_NAME
+			);
 
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
@@ -96,21 +92,17 @@ export const useDocuments = (
 		]
 	);
 
-export const useDocumentsSummary = (
-	{
-		match,
-		date_before: dateBefore,
-		date_after: dateAfter,
-		date_between: dateBetween,
-		type_is: typeIs,
-		type_is_not: typeIsNot,
-	}: Query
-): DocumentsSummary =>
+export const useDocumentsSummary = ( {
+	match,
+	date_before: dateBefore,
+	date_after: dateAfter,
+	date_between: dateBetween,
+	type_is: typeIs,
+	type_is_not: typeIsNot,
+}: Query ): DocumentsSummary =>
 	useSelect(
 		( select ) => {
-			const { getDocumentsSummary, isResolving } = select(
-				STORE_NAME
-			);
+			const { getDocumentsSummary, isResolving } = select( STORE_NAME );
 
 			const query = {
 				match,

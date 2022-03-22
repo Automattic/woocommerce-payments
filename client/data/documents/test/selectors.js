@@ -126,10 +126,7 @@ describe( 'Documents selectors', () => {
 
 	test( 'Returns empty documents summary error when error is empty', () => {
 		expect(
-			getDocumentsSummaryError(
-				emptySummaryErrorState,
-				mockSummaryQuery
-			)
+			getDocumentsSummaryError( emptySummaryErrorState, mockSummaryQuery )
 		).toStrictEqual( {} );
 	} );
 

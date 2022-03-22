@@ -14,6 +14,7 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 		'_wcpay_feature_upe'                     => 'upe',
 		'_wcpay_feature_upe_settings_preview'    => 'upeSettingsPreview',
 		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
+		'_wcpay_feature_documents'               => 'documents',
 	];
 
 	public function tear_down() {

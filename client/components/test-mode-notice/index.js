@@ -46,6 +46,7 @@ const detailsTopics = [
 	topics.paymentDetails,
 	topics.disputeDetails,
 	topics.depositDetails,
+	topics.documentDetails,
 ];
 
 /**

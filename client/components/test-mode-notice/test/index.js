@@ -26,11 +26,13 @@ describe( 'Test mode notification', () => {
 		topics.transactions,
 		topics.deposits,
 		topics.disputes,
+		topics.documents,
 	];
 	const detailsTopics = [
 		topics.depositDetails,
 		topics.disputeDetails,
 		topics.paymentDetails,
+		topics.documentDetails,
 	];
 	const allTopics = [ ...listTopics, ...detailsTopics ];
 
