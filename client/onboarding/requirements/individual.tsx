@@ -6,8 +6,8 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import { groups, requirements } from './strings';
 import RequirementGroup from './group';
+import { groups, requirements } from './strings';
 import { individual, mapToList, individualTaxKeys } from './keymap';
 
 interface IndividualRequirementsProps {

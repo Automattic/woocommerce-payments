@@ -7,6 +7,7 @@ import Gridicon from 'gridicons';
 /**
  * Internal dependencies
  */
+import './style.scss';
 
 interface RequirementGroupProps {
 	icon: string;
@@ -20,11 +21,10 @@ const RequirementGroup = ( {
 	subline,
 }: RequirementGroupProps ): JSX.Element => {
 	return (
-		<div>
-			<p>
-				<Gridicon icon={ icon } /> { headline }
-			</p>
-			{ subline && <pre>{ subline }</pre> }
+		<div className="onboarding__requirement-group">
+			<Gridicon icon={ icon } size={ 18 } />
+			<div className="headline">{ headline }</div>
+			{ subline && <div className="subline">{ subline }</div> }
 		</div>
 	);
 };
