@@ -81,10 +81,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
-		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
+		$this->mock_api_client = $this
+			->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
 			->setMethods(
 				[
@@ -134,8 +135,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	/**
 	 * Post-test teardown
 	 */
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
 		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
@@ -153,7 +154,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->set_currency( 'USD' );
 		$order->save();
 
-		$this->mock_wcpay_account->expects( $this->once() )
+		$this->mock_wcpay_account
+			->expects( $this->once() )
 			->method( 'get_account_default_currency' )
 			->willReturn( 'usd' );
 
@@ -171,7 +173,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->set_currency( 'USD' );
 		$order->save();
 
-		$this->mock_wcpay_account->expects( $this->once() )
+		$this->mock_wcpay_account
+			->expects( $this->once() )
 			->method( 'get_account_default_currency' )
 			->willReturn( 'jpy' );
 
@@ -189,11 +192,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->set_currency( 'JPY' );
 		$order->save();
 
-		$this->mock_wcpay_account->expects( $this->once() )
+		$this->mock_wcpay_account
+			->expects( $this->once() )
 			->method( 'get_account_default_currency' )
 			->willReturn( 'usd' );
 
-		$this->mock_api_client->expects( $this->once() )
+		$this->mock_api_client
+			->expects( $this->once() )
 			->method( 'get_charge' )
 			->willReturn(
 				[
@@ -220,11 +225,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->set_currency( 'EUR' );
 		$order->save();
 
-		$this->mock_wcpay_account->expects( $this->once() )
+		$this->mock_wcpay_account
+			->expects( $this->once() )
 			->method( 'get_account_default_currency' )
 			->willReturn( 'usd' );
 
-		$this->mock_api_client->expects( $this->once() )
+		$this->mock_api_client
+			->expects( $this->once() )
 			->method( 'get_charge' )
 			->willReturn(
 				[
@@ -317,8 +324,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$latest_wcpay_note = $notes[0];
 
 		$this->assertTrue( $result );
-		$this->assertContains( 'successfully processed', $latest_wcpay_note->content );
-		$this->assertContains( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_process_refund_with_reason_non_usd() {
@@ -360,9 +367,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		);
 		$latest_wcpay_note = $notes[0];
 
-		$this->assertContains( 'successfully processed', $latest_wcpay_note->content );
-		$this->assertContains( 'some reason', $latest_wcpay_note->content );
-		$this->assertContains( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
+		$this->assertStringContainsString( 'some reason', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 		$this->assertTrue( $result );
 	}
 
@@ -401,7 +408,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'invalid-amount', $result->get_error_code() );
 
-		$result = $this->wcpay_gateway->process_refund( $order_id, -5 );
+		$result = $this->wcpay_gateway->process_refund( $order_id, - 5 );
 
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'invalid-amount', $result->get_error_code() );
@@ -527,9 +534,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'wcpay_edit_order_refund_failure', $result->get_error_code() );
 		$this->assertEquals( 'Test message', $result->get_error_message() );
-		$this->assertContains( 'failed to complete', $latest_wcpay_note->content );
-		$this->assertContains( 'Test message', $latest_wcpay_note->content );
-		$this->assertContains( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( 'failed to complete', $latest_wcpay_note->content );
+		$this->assertStringContainsString( 'Test message', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_payment_fields_outputs_fields() {
@@ -543,7 +550,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
 		$this->setOutputCallback(
-			function( $output ) {
+			function ( $output ) {
 				$result = preg_match_all( '/.*<input.*id="wc-woocommerce_payments-new-payment-method".*\/>.*/', $output );
 
 				$this->assertEquals( 0, $result );
@@ -555,9 +562,20 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	protected function mock_level_3_order( $shipping_postcode, $with_fee = false, $quantity = 1, $basket_size = 1 ) {
 		// Setup the item.
-		$mock_item = $this->getMockBuilder( WC_Order_Item_Product::class )
+		$mock_item = $this
+			->getMockBuilder( WC_Order_Item_Product::class )
 			->disableOriginalConstructor()
-			->setMethods( [ 'get_name', 'get_quantity', 'get_subtotal', 'get_total_tax', 'get_total', 'get_variation_id', 'get_product_id' ] )
+			->setMethods(
+				[
+					'get_name',
+					'get_quantity',
+					'get_subtotal',
+					'get_total_tax',
+					'get_total',
+					'get_variation_id',
+					'get_product_id',
+				]
+			)
 			->getMock();
 
 		$mock_item
@@ -592,7 +610,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		if ( $with_fee ) {
 			// Setup the fee.
-			$mock_fee = $this->getMockBuilder( WC_Order_Item_Fee::class )
+			$mock_fee = $this
+				->getMockBuilder( WC_Order_Item_Fee::class )
 				->disableOriginalConstructor()
 				->setMethods( [ 'get_name', 'get_quantity', 'get_total_tax', 'get_total' ] )
 				->getMock();
@@ -622,9 +641,19 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		}
 
 		// Setup the order.
-		$mock_order = $this->getMockBuilder( WC_Order::class )
+		$mock_order = $this
+			->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
-			->setMethods( [ 'get_id', 'get_items', 'get_currency', 'get_shipping_total', 'get_shipping_tax', 'get_shipping_postcode' ] )
+			->setMethods(
+				[
+					'get_id',
+					'get_items',
+					'get_currency',
+					'get_shipping_total',
+					'get_shipping_tax',
+					'get_shipping_postcode',
+				]
+			)
 			->getMock();
 
 		$mock_order
@@ -940,8 +969,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$result
 		);
-		$this->assertContains( 'successfully captured', $latest_wcpay_note->content );
-		$this->assertContains( wc_price( $order->get_total() ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( 'successfully captured', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( $order->get_total() ), $latest_wcpay_note->content );
 		$this->assertEquals( 'succeeded', $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( 'processing', $order->get_status() );
 	}
@@ -1018,8 +1047,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$result
 		);
-		$this->assertContains( 'successfully captured', $latest_wcpay_note->content );
-		$this->assertContains( $note_currency, $latest_wcpay_note->content );
+		$this->assertStringContainsString( 'successfully captured', $latest_wcpay_note->content );
+		$this->assertStringContainsString( $note_currency, $latest_wcpay_note->content );
 		$this->assertEquals( 'succeeded', $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( 'processing', $order->get_status() );
 	}
@@ -1092,8 +1121,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$result
 		);
-		$this->assertContains( 'failed', $note->content );
-		$this->assertContains( wc_price( $order->get_total() ), $note->content );
+		$this->assertStringContainsString( 'failed', $note->content );
+		$this->assertStringContainsString( wc_price( $order->get_total() ), $note->content );
 		$this->assertEquals( 'requires_capture', $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( 'on-hold', $order->get_status() );
 	}
@@ -1169,8 +1198,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$result
 		);
-		$this->assertContains( 'failed', $note->content );
-		$this->assertContains( $note_currency, $note->content );
+		$this->assertStringContainsString( 'failed', $note->content );
+		$this->assertStringContainsString( $note_currency, $note->content );
 		$this->assertEquals( 'requires_capture', $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( 'on-hold', $order->get_status() );
 	}
@@ -1232,9 +1261,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$result
 		);
-		$this->assertContains( 'failed', $note->content );
-		$this->assertContains( 'test exception', $note->content );
-		$this->assertContains( wc_price( $order->get_total() ), $note->content );
+		$this->assertStringContainsString( 'failed', $note->content );
+		$this->assertStringContainsString( 'test exception', $note->content );
+		$this->assertStringContainsString( wc_price( $order->get_total() ), $note->content );
 		$this->assertEquals( 'requires_capture', $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( 'on-hold', $order->get_status() );
 	}
@@ -1299,9 +1328,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$result
 		);
-		$this->assertContains( 'failed', $note->content );
-		$this->assertContains( 'test exception', $note->content );
-		$this->assertContains( $note_currency, $note->content );
+		$this->assertStringContainsString( 'failed', $note->content );
+		$this->assertStringContainsString( 'test exception', $note->content );
+		$this->assertStringContainsString( $note_currency, $note->content );
 		$this->assertEquals( 'requires_capture', $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( 'on-hold', $order->get_status() );
 	}
@@ -1363,7 +1392,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$result
 		);
-		$this->assertContains( 'expired', $note->content );
+		$this->assertStringContainsString( 'expired', $note->content );
 		$this->assertEquals( 'canceled', $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( 'cancelled', $order->get_status() );
 	}
@@ -1451,8 +1480,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$result
 		);
-		$this->assertContains( 'successfully captured', $note->content );
-		$this->assertContains( wc_price( $order->get_total() ), $note->content );
+		$this->assertStringContainsString( 'successfully captured', $note->content );
+		$this->assertStringContainsString( wc_price( $order->get_total() ), $note->content );
 		$this->assertSame( $order->get_meta( '_intention_status', true ), 'succeeded' );
 		$this->assertSame( $order->get_status(), 'processing' );
 	}
@@ -1499,7 +1528,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			]
 		)[0];
 
-		$this->assertContains( 'cancelled', $note->content );
+		$this->assertStringContainsString( 'cancelled', $note->content );
 		$this->assertEquals( 'cancelled', $order->get_status() );
 	}
 
@@ -1533,8 +1562,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			]
 		)[0];
 
-		$this->assertContains( 'failed', $note->content );
-		$this->assertContains( 'test exception', $note->content );
+		$this->assertStringContainsString( 'failed', $note->content );
+		$this->assertStringContainsString( 'test exception', $note->content );
 		$this->assertEquals( 'on-hold', $order->get_status() );
 	}
 
@@ -1851,8 +1880,23 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$form_fields = $this->wcpay_gateway->get_form_fields();
 
-		$this->assertEquals( [ 'default', 'buy', 'donate', 'book' ], array_keys( $form_fields['payment_request_button_type']['options'] ) );
-		$this->assertEquals( [ 'dark', 'light', 'light-outline' ], array_keys( $form_fields['payment_request_button_theme']['options'] ) );
+		$this->assertEquals(
+			[
+				'default',
+				'buy',
+				'donate',
+				'book',
+			],
+			array_keys( $form_fields['payment_request_button_type']['options'] )
+		);
+		$this->assertEquals(
+			[
+				'dark',
+				'light',
+				'light-outline',
+			],
+			array_keys( $form_fields['payment_request_button_theme']['options'] )
+		);
 	}
 
 	public function test_payment_gateway_enabled_for_supported_currency() {
@@ -1932,9 +1976,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_get_upe_enabled_payment_method_statuses_with_empty_cache() {
 		$this->mock_wcpay_account
-		->expects( $this->any() )
-		->method( 'get_cached_account_data' )
-		->willReturn( [] );
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [] );
 
 		$this->assertEquals(
 			[
@@ -1957,14 +2001,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			'sepa_debit_payments' => [],
 		];
 		$this->mock_wcpay_account
-		->expects( $this->any() )
-		->method( 'get_cached_account_data' )
-		->willReturn(
-			[
-				'capabilities'            => $caps,
-				'capability_requirements' => $cap_requirements,
-			]
-		);
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities'            => $caps,
+					'capability_requirements' => $cap_requirements,
+				]
+			);
 
 		$this->assertEquals(
 			[
@@ -1982,7 +2026,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_attach_intent_info_to_order() {
-		$order = $this->getMockBuilder( WC_Order::class )
+		$order = $this
+			->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
 			->setMethods( [ 'update_meta_data', 'save' ] )
 			->getMock();
@@ -2003,7 +2048,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_update_order_status_from_intent_success_payment_complete() {
-		$order = $this->getMockBuilder( WC_Order::class )
+		$order = $this
+			->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
 			->setMethods( [ 'update_meta_data', 'save', 'payment_complete', 'get_data_store' ] )
 			->getMock();
@@ -2016,16 +2062,15 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$charge_id     = 'ch_yyyyyyyyyyyyy';
 		$intent_status = 'succeeded';
 
-		$order->expects( $this->once() )
-			->method( 'payment_complete' )
-			->with( $intent_id );
+		$order->expects( $this->once() )->method( 'payment_complete' )->with( $intent_id );
 
 		$this->wcpay_gateway->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
 	}
 
 	public function test_update_order_status_from_intent_fails_payment_complete() {
 		// test if metadata needed for refunds is being saved despite the payment_complete method.
-		$order = $this->getMockBuilder( WC_Order::class )
+		$order = $this
+			->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
 			->setMethods( [ 'update_meta_data', 'save', 'payment_complete', 'get_data_store' ] )
 			->getMock();
@@ -2038,7 +2083,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$charge_id     = 'ch_yyyyyyyyyyyyy';
 		$intent_status = 'succeeded';
 
-		$order->expects( $this->once() )
+		$order
+			->expects( $this->once() )
 			->method( 'payment_complete' )
 			->willThrowException( new Exception( 'something went wrong' ) );
 
@@ -2101,39 +2147,48 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertSame( 'Intent creation failed with the following message: test exception', $result->get_error_message() );
 	}
 
-	public function test_is_platform_checkout_is_returned_as_true() {
-		update_option( '_wcpay_feature_platform_checkout', '1' );
+	public function test_is_platform_checkout_enabled_returns_true() {
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => true ] ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertTrue( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
-	/**
-	 * @dataProvider is_platform_checkout_falsy_value_provider
-	 */
-	public function test_is_platform_checkout_is_returned_as_false_if_feature_flag_is_not_equal_1() {
-		update_option( '_wcpay_feature_platform_checkout', '0' );
+	public function test_force_network_saved_cards_is_returned_as_true_if_should_use_stripe_platform() {
+		$mock_wcpay_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->mock_rate_limiter,
+					$this->order_service,
+				]
+			)
+			->setMethods( [ 'should_use_stripe_platform_on_checkout_page' ] )
+			->getMock();
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'should_use_stripe_platform_on_checkout_page' )
+			->willReturn( true );
+
+		$this->assertTrue( $mock_wcpay_gateway->get_payment_fields_js_config()['forceNetworkSavedCards'] );
+	}
+
+	public function test_is_platform_checkout_enabled_returns_false_if_ineligible() {
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => false ] ] );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
-	public function test_is_platform_checkout_is_returned_as_option_is_not_equal_1() {
+	public function test_is_platform_checkout_enabled_returns_false_if_ineligible_and_enabled() {
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
-	public function test_is_platform_checkout_is_returned_as_false_if_missing() {
-		delete_option( '_wcpay_feature_platform_checkout' );
+	public function test_is_platform_checkout_enabled_returns_false_if_account_missing() {
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [] ] );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
-	}
-
-	public function is_platform_checkout_falsy_value_provider() {
-		return [
-			[ '0' ],
-			[ 0 ],
-			[ null ],
-			[ false ],
-			'(bool) true is not strictly equal to (int) 1' => [ true ],
-			[ 'foo' ],
-			[ [] ],
-		];
 	}
 }

@@ -148,6 +148,12 @@ fi
 echo "Updating the WordPress database..."
 cli wp core update-db --quiet
 
+# Disable displaying errors & log to file with WP_DEBUG when DEBUG flag is not present or false.
+if [[ "$DEBUG" != true ]]; then
+	cli wp config set WP_DEBUG_DISPLAY false --raw
+	cli wp config set WP_DEBUG_LOG true --raw
+fi
+
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
 

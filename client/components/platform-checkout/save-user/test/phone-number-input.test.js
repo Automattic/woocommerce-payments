@@ -43,7 +43,7 @@ describe( 'PhoneNumberInput', () => {
 
 		expect( handlePhoneNumberChangeMock ).not.toHaveBeenCalled();
 
-		const input = screen.queryByPlaceholderText( '201-555-0123' ); // placeholder number for us
+		const input = screen.queryByLabelText( 'Mobile phone number' ); // The label text for our input.
 		fireEvent.change( input, { target: { value: '201' } } );
 
 		expect( handlePhoneNumberChangeMock ).toHaveBeenCalledWith( '+1201' );

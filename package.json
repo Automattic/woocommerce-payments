@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "3.7.0",
+  "version": "3.9.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -69,8 +69,7 @@
     "debug": "^4.1.1",
     "interpolate-components": "^1.1.1",
     "intl-tel-input": "^17.0.15",
-    "lodash": "^4.17.14",
-    "wordpress-element": "npm:@wordpress/element@2.11.0"
+    "lodash": "^4.17.14"
   },
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",
@@ -116,8 +115,8 @@
     "@wordpress/scripts": "12.4.0",
     "archiver": "5.2.0",
     "babel-loader": "8.2.2",
+    "chalk": "4.1.2",
     "classnames": "2.3.1",
-    "colors": "1.4.0",
     "config": "3.3.6",
     "core-js": "3.9.0",
     "crypto-browserify": "3.12.0",

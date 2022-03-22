@@ -296,31 +296,13 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			];
 
 			/* Generate receipt */
-			$receipt_data = $this->receipts_service->get_receipt_markup( $settings, $order, $charge );
+			$response = $this->receipts_service->get_receipt_markup( $settings, $order, $charge );
 		} catch ( \Throwable $e ) {
 			$error_status_code = $e instanceof API_Exception ? $e->get_http_code() : 500;
-			return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', $e->getMessage(), [ 'status' => $error_status_code ] ) );
+			$response          = new WP_Error( 'generate_print_receipt_error', $e->getMessage(), [ 'status' => $error_status_code ] );
 		}
 
-		/**
-		 * WP_REST_Server will convert the response data to JSON prior to output it.
-		 * Using this filter to prevent it, and output the data from WP_HTTP_Response instead.
-		 */
-		add_filter(
-			'rest_pre_serve_request',
-			function ( bool $served, WP_HTTP_Response $response ) : bool {
-				echo $response->get_data(); // @codingStandardsIgnoreLine
-				return true;
-			},
-			10,
-			2
-		);
-
-		return new WP_HTTP_Response(
-			$receipt_data,
-			200,
-			[ 'Content-Type' => 'text/html; charset=UTF-8' ]
-		);
+		return rest_ensure_response( $response );
 	}
 	/**
 	 * Returns HTML to preview a print receipt

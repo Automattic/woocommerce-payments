@@ -193,10 +193,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Returns customer id from order. Create or update customer if needed.
 	 *
+	 * @deprecated 3.9.0
+	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function create_customer( $request ) {
+		wc_deprecated_function( __FUNCTION__, '3.9.0' );
 		try {
 			$order_id = $request['order_id'];
 
