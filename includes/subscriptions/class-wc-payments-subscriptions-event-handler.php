@@ -119,7 +119,22 @@ class WC_Payments_Subscriptions_Event_Handler {
 		}
 
 		if ( $order->needs_payment() ) {
+			/*
+			 * Temporarily place the subscription on-hold to imitate the normal subscription renewal flow.
+			 * This ensures the downstream effects take place, e.g. a payment status order note is added and the
+			 * 'woocommerce_subscription_payment_complete' action is fired.
+			 */
+			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			$subscription->update_status( 'on-hold' );
+			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+
+			/*
+			 * Remove the reactivate_subscription callback that occurs when a subscription transitions from on-hold to active.
+			 * The WCPay subscription will remain active throughout this process and does not need to be reactivated.
+			 */
+			remove_action( 'woocommerce_subscription_status_on-hold_to_active', [ $this->subscription_service, 'reactivate_subscription' ] );
 			$order->payment_complete();
+			add_action( 'woocommerce_subscription_status_on-hold_to_active', [ $this->subscription_service, 'reactivate_subscription' ] );
 		}
 
 		if ( isset( $event_object['payment_intent'] ) ) {
