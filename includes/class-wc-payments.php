@@ -245,17 +245,8 @@ class WC_Payments {
 			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 		}
 
-		// Load platform checkout save user section if feature is enabled.
-		$platform_checkout_util = new Platform_Checkout_Utilities();
-		// if ( WC_Payments_Features::is_platform_checkout_eligible() ) {
-		if ( $platform_checkout_util->is_platform_checkout_enabled() ) {
-			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
-			// Load platform checkout tracking.
-			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
-
-			new Platform_Checkout_Save_User();
-			new WCPay\Platform_Checkout_Tracker( self::get_wc_payments_http() );
-		}
+		// // Load platform checkout save user section if feature is enabled.
+		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_platform_checkout' ] );
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
@@ -297,8 +288,6 @@ class WC_Payments {
 		} else {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
-
-		self::maybe_register_platform_checkout_hooks();
 
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::$card_gateway );
@@ -840,24 +829,18 @@ class WC_Payments {
 	}
 
 	/**
-	 * Registers platform checkout hooks if the platform checkout feature flag is enabled.
+	 * Registers platform checkout hooks.
 	 *
 	 * @return void
 	 */
 	public static function maybe_register_platform_checkout_hooks() {
-		// $is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
-		// $is_platform_checkout_enabled  = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
-		$platform_checkout_util = new Platform_Checkout_Utilities();
-
-		if ( $platform_checkout_util->is_platform_checkout_enabled( self::get_gateway() ) ) {
-			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
-			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
-			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
-			// Disable nonce checks for API calls. TODO This should be changed.
-			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-			add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], -50 );
-			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
-		}
+		add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
+		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
+		add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
+		// Disable nonce checks for API calls. TODO This should be changed.
+		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], -50 );
+		add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
 	}
 
 	/**
@@ -992,4 +975,23 @@ class WC_Payments {
 		return $field;
 	}
 
+	/**
+	 * Register platform checkout hooks and scripts if feature is available.
+	 *
+	 * @return void
+	 */
+	public static function init_platform_checkout() {
+		// Load platform checkout save user section if feature is enabled.
+		$platform_checkout_util = new Platform_Checkout_Utilities();
+		if ( $platform_checkout_util->should_enable_platform_checkout( self::get_gateway() ) ) {
+			self::maybe_register_platform_checkout_hooks();
+
+			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
+			// Load platform checkout tracking.
+			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
+
+			new Platform_Checkout_Save_User();
+			new WCPay\Platform_Checkout_Tracker( self::get_wc_payments_http() );
+		}
+	}
 }
