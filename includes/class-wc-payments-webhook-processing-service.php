@@ -213,7 +213,9 @@ class WC_Payments_Webhook_Processing_Service {
 			foreach ( $wc_refunds as $wc_refund ) {
 				$wcpay_refund_id = $wc_refund->get_meta( '_wcpay_refund_id', true );
 				if ( $refund_id === $wcpay_refund_id ) {
+					// Delete WC Refund & set order status to failed.
 					$wc_refund->delete();
+					$order->update_status( 'failed' );
 					break;
 				}
 			}
