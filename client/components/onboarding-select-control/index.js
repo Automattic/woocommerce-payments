@@ -15,7 +15,7 @@ import { Button } from '@wordpress/components';
 import { Icon, check, chevronDown } from '@wordpress/icons';
 import { useCallback } from '@wordpress/element';
 import classNames from 'classnames';
-// import { __, sprintf } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { useSelect } from 'downshift';
 
 /**
@@ -65,7 +65,7 @@ const stateReducer = (
 export default function OnboardingSelectControl( {
 	className,
 	label,
-	// describedBy,
+	describedBy,
 	options: items,
 	onChange: onSelectedItemChange,
 	value: _selectedItem,
@@ -89,18 +89,18 @@ export default function OnboardingSelectControl( {
 		stateReducer,
 	} );
 
-	// function getDescribedBy() {
-	// 	if ( describedBy ) {
-	// 		return describedBy;
-	// 	}
+	function getDescribedBy() {
+		if ( describedBy ) {
+			return describedBy;
+		}
 
-	// 	if ( ! selectedItem ) {
-	// 		return __( 'No selection' );
-	// 	}
+		if ( ! selectedItem ) {
+			return __( 'No selection' );
+		}
 
-	// 	// translators: %s: The selected option.
-	// 	return sprintf( __( 'Currently selected: %s' ), selectedItem.name );
-	// }
+		// translators: %s: The selected option.
+		return sprintf( __( 'Currently selected: %s' ), selectedItem.name );
+	}
 
 	const menuProps = getMenuProps( {
 		className: 'components-custom-select-control__menu',
@@ -143,9 +143,9 @@ export default function OnboardingSelectControl( {
 					// This is needed because some speech recognition software don't support `aria-labelledby`.
 					'aria-label': label,
 					'aria-labelledby': undefined,
+					'aria-describedby': getDescribedBy(),
 					className: 'components-custom-select-control__button',
 					isSmall: true,
-					// describedBy: getDescribedBy(),
 				} ) }
 			>
 				{ itemToString( selectedItem ) }
