@@ -136,7 +136,9 @@ const AddBusinessInfo = () => {
 					className="wcpay-onboarding-select-business-types"
 					label={ __( 'Business type', 'woocommerce-payments' ) }
 					value={ businessType }
-					onChange={ ( value ) => handleBusinessTypeUpdate( value ) }
+					onChange={ ( { selectedItem } ) =>
+						handleBusinessTypeUpdate( selectedItem )
+					}
 					options={ formatBusinessTypes( businessCountry ) }
 				/>
 			) }
