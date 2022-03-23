@@ -22,6 +22,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
+use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 
 /**
@@ -991,7 +992,7 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
 
 			new Platform_Checkout_Save_User();
-			new WCPay\Platform_Checkout_Tracker( self::get_wc_payments_http() );
+			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
 		}
 	}
 }
