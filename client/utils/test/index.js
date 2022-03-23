@@ -13,13 +13,8 @@ describe( 'Utilities', () => {
 	} );
 
 	test( 'document url matches the expected URL', () => {
-		global.wpApiSettings = {
-			root: 'https://root-site/wp-json/',
-			nonce: 'randomNonce',
-		};
-
 		expect( getDocumentUrl( 'documentID' ) ).toEqual(
-			'https://root-site/wp-json/wc/v3/payments/documents/documentID?_wpnonce=randomNonce'
+			'https://site.com/wp-json/wc/v3/payments/documents/documentID?_wpnonce=random_wp_rest_nonce'
 		);
 	} );
 } );
