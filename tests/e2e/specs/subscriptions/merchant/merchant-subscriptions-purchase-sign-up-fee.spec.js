@@ -86,7 +86,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await expect( page ).toMatchElement(
 				'li.woocommerce-timeline-item',
 				{
-					text: 'A payment of $11.98 was successfully charged.',
+					text:
+						'A payment of $ 11.98 was successfully charged using WooCommerce Payments',
 				}
 			);
 		} );
