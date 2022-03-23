@@ -17,6 +17,9 @@ describe( 'AccountFees', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
 			currencyData: {
 				US: {
 					code: 'USD',
@@ -73,6 +76,8 @@ describe( 'AccountFees', () => {
 	} );
 
 	test( 'renders non-USD base fee', () => {
+		global.wcpaySettings.connect.country = 'FR';
+
 		const { container: accountFees } = renderAccountFees( [
 			{
 				payment_method: 'card',
@@ -124,6 +129,8 @@ describe( 'AccountFees', () => {
 	} );
 
 	test( 'renders discounted non-USD base fee', () => {
+		global.wcpaySettings.connect.country = 'UK';
+
 		const { container: accountFees } = renderAccountFees( [
 			{
 				payment_method: 'card',
