@@ -37,17 +37,25 @@ export const formatCurrencyName = ( currencyCode ) =>
  * @return {Currency|null} Currency object
  */
 export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
-	const { currencyData } = wcpaySettings;
+	const {
+		currencyData,
+		connect: { country = 'US' },
+	} = wcpaySettings;
 
 	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
 		if (
-			null !== baseCurrencyCode &&
-			baseCurrencyCode.toUpperCase() !== currencyCode.toUpperCase()
+			( null !== baseCurrencyCode &&
+				baseCurrencyCode.toUpperCase() !==
+					currencyCode.toUpperCase() ) ||
+			currencyData[ country ]
 		) {
-			const baseCurrency = find( currencyData, {
-				code: baseCurrencyCode.toUpperCase(),
-			} );
+			const baseCurrency = baseCurrencyCode
+				? find( currencyData, {
+						code: baseCurrencyCode.toUpperCase(),
+				  } )
+				: currencyData[ country ];
+
 			if ( baseCurrency ) {
 				currency.decimalSeparator = baseCurrency.decimalSeparator;
 				currency.thousandSeparator = baseCurrency.thousandSeparator;
