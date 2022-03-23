@@ -16,7 +16,7 @@ const WcpayCardBody = ( {
 }: {
 	className?: string;
 	children?: JSX.Element;
-} ) => (
+} ): JSX.Element => (
 	<CardBody
 		className={ classNames( 'wcpay-card-body', className ) }
 		{ ...props }

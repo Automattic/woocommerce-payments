@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CheckboxControl } from '@wordpress/components';
 
@@ -11,7 +11,7 @@ import { Card, CheckboxControl } from '@wordpress/components';
 import CardBody from '../card-body';
 import { useFraudProtection } from '../../data';
 
-const FraudPrevention = () => {
+const FraudPrevention = (): JSX.Element => {
 	const [ isFraudProtectionEnabled, setIsFraudProtectionEnabled ]: [
 		boolean,
 		( newState: boolean ) => void
