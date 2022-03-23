@@ -134,7 +134,7 @@ exports[`Documents list renders correctly 1`] = `
               <tr>
                 <th
                   aria-sort="descending"
-                  class="woocommerce-table__header date-time is-left-aligned is-sortable is-sorted"
+                  class="woocommerce-table__header date is-left-aligned is-sortable is-sorted"
                   role="columnheader"
                   scope="col"
                 >
@@ -159,7 +159,7 @@ exports[`Documents list renders correctly 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Date / Time
+                      Date
                     </span>
                     <span
                       class="screen-reader-text"
@@ -191,132 +191,80 @@ exports[`Documents list renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
+                  class="woocommerce-table__header"
                   role="columnheader"
                   scope="col"
                 >
-                  <button
-                    aria-describedby="header-0-2"
-                    class="components-button"
-                    type="button"
+                  <span
+                    aria-hidden="true"
                   >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Description
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Description
-                    </span>
-                  </button>
+                    Description
+                  </span>
                   <span
                     class="screen-reader-text"
-                    id="header-0-2"
                   >
-                    Sort by Description in descending order
+                    Description
                   </span>
                 </th>
                 <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
+                  class="woocommerce-table__header"
                   role="columnheader"
                   scope="col"
                 >
-                  <button
-                    aria-describedby="header-0-3"
-                    class="components-button"
-                    type="button"
+                  <span
+                    aria-hidden="true"
                   >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Download
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Download
-                    </span>
-                  </button>
+                    Download
+                  </span>
                   <span
                     class="screen-reader-text"
-                    id="header-0-3"
                   >
-                    Sort by Download in descending order
+                    Download
                   </span>
                 </th>
               </tr>
               <tr>
                 <th
-                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  class="woocommerce-table__item date is-left-aligned is-sorted"
                   scope="row"
                 >
-                  Jan 2, 2020 / 12:46PM
+                  Jan 2, 2020
                 </th>
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  test_document
+                  Test Document
                 </td>
                 <td
-                  class="woocommerce-table__item is-numeric"
+                  class="woocommerce-table__item"
                 >
-                  description
+                  This is a test document.
                 </td>
                 <td
-                  class="woocommerce-table__item is-numeric"
+                  class="woocommerce-table__item"
                 >
                   download
                 </td>
               </tr>
               <tr>
                 <th
-                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  class="woocommerce-table__item date is-left-aligned is-sorted"
                   scope="row"
                 >
-                  Jan 4, 2020 / 11:22PM
+                  Jan 4, 2020
                 </th>
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  test_document
+                  Test Document
                 </td>
                 <td
-                  class="woocommerce-table__item is-numeric"
+                  class="woocommerce-table__item"
                 >
-                  description
+                  This is a test document.
                 </td>
                 <td
-                  class="woocommerce-table__item is-numeric"
+                  class="woocommerce-table__item"
                 >
                   download
                 </td>
@@ -482,7 +430,7 @@ exports[`Documents list renders table summary only when the documents summary da
               <tr>
                 <th
                   aria-sort="descending"
-                  class="woocommerce-table__header date-time is-left-aligned is-sortable is-sorted"
+                  class="woocommerce-table__header date is-left-aligned is-sortable is-sorted"
                   role="columnheader"
                   scope="col"
                 >
@@ -507,7 +455,7 @@ exports[`Documents list renders table summary only when the documents summary da
                     <span
                       aria-hidden="true"
                     >
-                      Date / Time
+                      Date
                     </span>
                     <span
                       class="screen-reader-text"
@@ -539,132 +487,80 @@ exports[`Documents list renders table summary only when the documents summary da
                   </span>
                 </th>
                 <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
+                  class="woocommerce-table__header"
                   role="columnheader"
                   scope="col"
                 >
-                  <button
-                    aria-describedby="header-7-2"
-                    class="components-button"
-                    type="button"
+                  <span
+                    aria-hidden="true"
                   >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Description
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Description
-                    </span>
-                  </button>
+                    Description
+                  </span>
                   <span
                     class="screen-reader-text"
-                    id="header-7-2"
                   >
-                    Sort by Description in descending order
+                    Description
                   </span>
                 </th>
                 <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
+                  class="woocommerce-table__header"
                   role="columnheader"
                   scope="col"
                 >
-                  <button
-                    aria-describedby="header-7-3"
-                    class="components-button"
-                    type="button"
+                  <span
+                    aria-hidden="true"
                   >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Download
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Download
-                    </span>
-                  </button>
+                    Download
+                  </span>
                   <span
                     class="screen-reader-text"
-                    id="header-7-3"
                   >
-                    Sort by Download in descending order
+                    Download
                   </span>
                 </th>
               </tr>
               <tr>
                 <th
-                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  class="woocommerce-table__item date is-left-aligned is-sorted"
                   scope="row"
                 >
-                  Jan 2, 2020 / 12:46PM
+                  Jan 2, 2020
                 </th>
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  test_document
+                  Test Document
                 </td>
                 <td
-                  class="woocommerce-table__item is-numeric"
+                  class="woocommerce-table__item"
                 >
-                  description
+                  This is a test document.
                 </td>
                 <td
-                  class="woocommerce-table__item is-numeric"
+                  class="woocommerce-table__item"
                 >
                   download
                 </td>
               </tr>
               <tr>
                 <th
-                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  class="woocommerce-table__item date is-left-aligned is-sorted"
                   scope="row"
                 >
-                  Jan 4, 2020 / 11:22PM
+                  Jan 4, 2020
                 </th>
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  test_document
+                  Test Document
                 </td>
                 <td
-                  class="woocommerce-table__item is-numeric"
+                  class="woocommerce-table__item"
                 >
-                  description
+                  This is a test document.
                 </td>
                 <td
-                  class="woocommerce-table__item is-numeric"
+                  class="woocommerce-table__item"
                 >
                   download
                 </td>

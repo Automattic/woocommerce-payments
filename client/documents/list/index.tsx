@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { dateI18n } from '@wordpress/date';
-import { __, _n } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
@@ -13,7 +13,8 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { useDocuments, useDocumentsSummary } from 'data/index';
+import { displayType } from 'documents/strings';
+import { Document, useDocuments, useDocumentsSummary } from 'data/index';
 import './style.scss';
 import DocumentsFilters from '../filters';
 import Page from '../../components/page';
@@ -28,12 +29,12 @@ const getColumns = (): Column[] =>
 	[
 		{
 			key: 'date',
-			label: __( 'Date / Time', 'woocommerce-payments' ),
+			label: __( 'Date', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',
-			cellClassName: 'date-time',
+			cellClassName: 'date',
 			isSortable: true,
 			defaultSort: true,
 		},
@@ -48,17 +49,41 @@ const getColumns = (): Column[] =>
 			key: 'description',
 			label: __( 'Description', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Description', 'woocommerce-payments' ),
-			isNumeric: true,
-			isSortable: true,
 		},
 		{
 			key: 'download',
 			label: __( 'Download', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Download', 'woocommerce-payments' ),
-			isNumeric: true,
-			isSortable: true,
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
+
+const getDocumentDescription = ( document: Document ) => {
+	switch ( document.type ) {
+		case 'test_document':
+			if ( document.period_from && document.period_to ) {
+				return sprintf(
+					__(
+						'This is a test document for %s to %s.',
+						'woocommerce-payments'
+					),
+					dateI18n(
+						'M j, Y',
+						moment.utc( document.period_from ).local().toISOString()
+					),
+					dateI18n(
+						'M j, Y',
+						moment.utc( document.period_to ).local().toISOString()
+					)
+				);
+			}
+			return __( 'This is a test document.', 'woocommerce-payments' );
+			break;
+
+		default:
+			return __( 'Unknown document type', 'woocommerce-payments' );
+			break;
+	}
+};
 
 export const DocumentsList = (): JSX.Element => {
 	const { documents, isLoading } = useDocuments( getQuery() );
@@ -71,22 +96,25 @@ export const DocumentsList = (): JSX.Element => {
 
 	const totalRows = documentsSummary.count || 0;
 	const rows = documents.map( ( document ) => {
+		const documentType =
+			displayType[ document.type ] ??
+			__( 'Unknown document type', 'woocommerce-payments' );
 		// Map document into table row.
 		const data = {
 			date: {
 				value: document.date,
 				display: dateI18n(
-					'M j, Y / g:iA',
+					'M j, Y',
 					moment.utc( document.date ).local().toISOString()
 				),
 			},
 			type: {
-				value: document.type,
-				display: document.type,
+				value: documentType,
+				display: documentType,
 			},
 			description: {
-				value: document.description,
-				display: document.description,
+				value: getDocumentDescription( document ),
+				display: getDocumentDescription( document ),
 			},
 			download: {
 				value: document.download,
