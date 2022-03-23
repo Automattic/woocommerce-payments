@@ -830,18 +830,23 @@ class WC_Payments {
 	}
 
 	/**
-	 * Registers platform checkout hooks.
+	 * Registers platform checkout hooks if the platform checkout feature flag is enabled.
 	 *
 	 * @return void
 	 */
 	public static function maybe_register_platform_checkout_hooks() {
-		add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
-		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
-		add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
-		// Disable nonce checks for API calls. TODO This should be changed.
-		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-		add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], -50 );
-		add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
+		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
+		$is_platform_checkout_enabled  = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
+
+		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
+			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
+			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
+			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
+			// Disable nonce checks for API calls. TODO This should be changed.
+			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+			add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], -50 );
+			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
+		}
 	}
 
 	/**
