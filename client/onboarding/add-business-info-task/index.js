@@ -13,6 +13,7 @@ import { SelectControl, Card, CardBody } from '@wordpress/components';
 import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
 import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
 import OnboardingSelectControl from 'wcpay/components/onboarding-select-control';
+import { LoadableBlock } from 'wcpay/components/loadable';
 import { useBusinessTypes } from 'wcpay/data/onboarding';
 import strings from '../strings';
 
@@ -33,9 +34,12 @@ const AddBusinessInfo = () => {
 	);
 
 	const [ businessCountry, setBusinessCountry ] = useState( country );
-	const [ businessType, setBusinessType ] = useState();
+	const [ businessType, setBusinessType ] = useState( '' );
 	const [ businessStructure, setBusinessStructure ] = useState();
 	const [ displayStructures, setDisplayStructures ] = useState( false );
+	const [ displayVerificationCard, setDisplayVerificationCard ] = useState(
+		false
+	);
 
 	const getBusinessTypesForCountry = ( countryCode ) => {
 		if ( isLoading || ! businessTypes.hasOwnProperty( 'data' ) ) {
@@ -88,11 +92,13 @@ const AddBusinessInfo = () => {
 	const handleBusinessTypeUpdate = ( type ) => {
 		setBusinessType( type );
 
-		if ( shouldDisplayStructures( businessCountry, type ) ) {
-			formatBusinessStructures( businessCountry, type );
+		if ( shouldDisplayStructures( businessCountry, type.key ) ) {
+			formatBusinessStructures( businessCountry, type.key );
 			setDisplayStructures( true );
+			setCompleted( false );
 		} else {
 			setDisplayStructures( false );
+			setDisplayVerificationCard( true );
 			setCompleted( true );
 		}
 	};
@@ -106,6 +112,9 @@ const AddBusinessInfo = () => {
 		setBusinessCountry( countryCode );
 		formatBusinessTypes( countryCode );
 		setCompleted( false );
+		// TODO: put these calls in some resetState function or something similar.
+		setDisplayStructures( false );
+		setDisplayVerificationCard( false );
 	};
 
 	return (
@@ -114,24 +123,23 @@ const AddBusinessInfo = () => {
 			index={ 1 }
 			title={ strings.onboarding.heading }
 		>
-			{ isLoading ? <p>Loading...</p> : '' }
-
 			<p className="wcpay-wizard-task__description-element subheading is-muted-color">
 				{ strings.onboarding.description }
 			</p>
+			<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+				<SelectControl
+					label={ __( 'Country', 'woocommerce-payments' ) }
+					value={ businessCountry }
+					onChange={ ( value ) =>
+						handleBusinessCountryUpdate( value )
+					}
+					options={ countries }
+				/>
 
-			<SelectControl
-				label={ __( 'Country', 'woocommerce-payments' ) }
-				value={ businessCountry }
-				onChange={ ( value ) => handleBusinessCountryUpdate( value ) }
-				options={ countries }
-			/>
+				<p className="wcpay-wizard-task__description-element is-muted-color">
+					{ strings.onboarding.countryDescription }
+				</p>
 
-			<p className="wcpay-wizard-task__description-element is-muted-color">
-				{ strings.onboarding.countryDescription }
-			</p>
-
-			{ isLoading ? null : (
 				<OnboardingSelectControl
 					className="wcpay-onboarding-select-business-types"
 					label={ __( 'Business type', 'woocommerce-payments' ) }
@@ -141,31 +149,36 @@ const AddBusinessInfo = () => {
 					}
 					options={ formatBusinessTypes( businessCountry ) }
 				/>
+
+				{ displayStructures && (
+					<SelectControl
+						label={ __(
+							'Business structure',
+							'woocommerce-payments'
+						) }
+						value={ businessStructure }
+						onChange={ ( value ) =>
+							handleBusinessStructureUpdate( value )
+						}
+						options={ formatBusinessStructures( businessCountry ) }
+					/>
+				) }
+			</LoadableBlock>
+
+			{ displayVerificationCard && (
+				<Card size="large" className="wcpay-required-info-card">
+					<CardBody>
+						<p>
+							<b>
+								{ __(
+									"To verify your details, we'll require:",
+									'woocommerce-payments'
+								) }
+							</b>
+						</p>
+					</CardBody>
+				</Card>
 			) }
-
-			{ displayStructures ? (
-				<SelectControl
-					label={ __( 'Business structure', 'woocommerce-payments' ) }
-					value={ businessStructure }
-					onChange={ ( value ) =>
-						handleBusinessStructureUpdate( value )
-					}
-					options={ formatBusinessStructures( businessCountry ) }
-				/>
-			) : null }
-
-			<Card size="large" className="wcpay-required-info-card">
-				<CardBody>
-					<p>
-						<b>
-							{ __(
-								"To verify your details, we'll require:",
-								'woocommerce-payments'
-							) }
-						</b>
-					</p>
-				</CardBody>
-			</Card>
 		</WizardTaskItem>
 	);
 };
