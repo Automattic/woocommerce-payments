@@ -845,11 +845,13 @@ const mapEventToTimelineItems = ( event ) => {
 							{
 								a: (
 									<Link
-										href={
-											'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions' +
-											'&type=charge&filter=advanced&loan_id_is=' +
-											event.loan_id
-										}
+										href={ getAdminUrl( {
+											page: 'wc-admin',
+											path: '/payments/transactions',
+											type: 'charge',
+											filter: 'advanced',
+											loan_id_is: event.loan_id,
+										} ) }
 									/>
 								),
 							}
