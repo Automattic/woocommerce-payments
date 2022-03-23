@@ -17,6 +17,77 @@ import { LoadableBlock } from 'wcpay/components/loadable';
 import { useBusinessTypes } from 'wcpay/data/onboarding';
 import strings from '../strings';
 
+const getBusinessTypesForCountry = (
+	countryCode,
+	businessTypes,
+	isLoading
+) => {
+	if ( isLoading || ! businessTypes.hasOwnProperty( 'data' ) ) {
+		return false;
+	}
+
+	return businessTypes.data.hasOwnProperty( countryCode )
+		? businessTypes.data[ countryCode ]
+		: false;
+};
+
+const formatBusinessTypes = ( countryCode, businessTypes, isLoading ) => {
+	const businessTypeData = getBusinessTypesForCountry(
+		countryCode,
+		businessTypes
+	);
+
+	if ( isLoading || ! businessTypeData ) {
+		return [];
+	}
+
+	return Object.keys( businessTypeData ).map( ( key ) => ( {
+		name: strings.businessTypes[ key ],
+		description: 'Test',
+		key: key,
+	} ) );
+};
+
+const shouldDisplayStructures = (
+	countryCode,
+	type,
+	businessTypes,
+	isLoading
+) => {
+	const businessTypeData = getBusinessTypesForCountry(
+		countryCode,
+		businessTypes
+	);
+
+	if ( isLoading || ! businessTypeData ) {
+		return false;
+	}
+
+	return businessTypeData.hasOwnProperty( type )
+		? 0 < businessTypeData[ type ].length
+		: false;
+};
+
+const formatBusinessStructures = (
+	countryCode,
+	type,
+	businessTypes,
+	isLoading
+) => {
+	const businessTypeData = getBusinessTypesForCountry(
+		countryCode,
+		businessTypes
+	);
+
+	if ( isLoading || ! businessTypeData ) {
+		return false;
+	}
+
+	return businessTypeData.hasOwnProperty( type )
+		? businessTypeData[ type ]
+		: [];
+};
+
 const AddBusinessInfo = () => {
 	const { setCompleted } = useContext( WizardTaskContext );
 	const { businessTypes, isLoading } = useBusinessTypes();
@@ -41,59 +112,23 @@ const AddBusinessInfo = () => {
 		false
 	);
 
-	const getBusinessTypesForCountry = ( countryCode ) => {
-		if ( isLoading || ! businessTypes.hasOwnProperty( 'data' ) ) {
-			return false;
-		}
-
-		return businessTypes.data.hasOwnProperty( countryCode )
-			? businessTypes.data[ countryCode ]
-			: false;
-	};
-
-	const formatBusinessTypes = ( countryCode ) => {
-		const businessTypeData = getBusinessTypesForCountry( countryCode );
-
-		if ( isLoading || ! businessTypeData ) {
-			return [];
-		}
-
-		return Object.keys( businessTypeData ).map( ( key ) => ( {
-			name: strings.businessTypes[ key ],
-			description: 'Test',
-			key: key,
-		} ) );
-	};
-
-	const shouldDisplayStructures = ( countryCode, type ) => {
-		const businessTypeData = getBusinessTypesForCountry( countryCode );
-
-		if ( isLoading || ! businessTypeData ) {
-			return false;
-		}
-
-		return businessTypeData.hasOwnProperty( type )
-			? 0 < businessTypeData[ type ].length
-			: false;
-	};
-
-	const formatBusinessStructures = ( countryCode, type ) => {
-		const businessTypeData = getBusinessTypesForCountry( countryCode );
-
-		if ( isLoading || ! businessTypeData ) {
-			return false;
-		}
-
-		return businessTypeData.hasOwnProperty( type )
-			? businessTypeData[ type ]
-			: [];
-	};
-
 	const handleBusinessTypeUpdate = ( type ) => {
 		setBusinessType( type );
 
-		if ( shouldDisplayStructures( businessCountry, type.key ) ) {
-			formatBusinessStructures( businessCountry, type.key );
+		if (
+			shouldDisplayStructures(
+				businessCountry,
+				type.key,
+				businessTypes,
+				isLoading
+			)
+		) {
+			formatBusinessStructures(
+				businessCountry,
+				type.key,
+				businessTypes,
+				isLoading
+			);
 			setDisplayStructures( true );
 			setCompleted( false );
 		} else {
@@ -110,7 +145,7 @@ const AddBusinessInfo = () => {
 
 	const handleBusinessCountryUpdate = ( countryCode ) => {
 		setBusinessCountry( countryCode );
-		formatBusinessTypes( countryCode );
+		formatBusinessTypes( countryCode, businessTypes, isLoading );
 		setCompleted( false );
 		// TODO: put these calls in some resetState function or something similar.
 		setDisplayStructures( false );
@@ -147,7 +182,11 @@ const AddBusinessInfo = () => {
 					onChange={ ( { selectedItem } ) =>
 						handleBusinessTypeUpdate( selectedItem )
 					}
-					options={ formatBusinessTypes( businessCountry ) }
+					options={ formatBusinessTypes(
+						businessCountry,
+						businessTypes,
+						isLoading
+					) }
 				/>
 
 				{ displayStructures && (
@@ -160,7 +199,12 @@ const AddBusinessInfo = () => {
 						onChange={ ( value ) =>
 							handleBusinessStructureUpdate( value )
 						}
-						options={ formatBusinessStructures( businessCountry ) }
+						options={ formatBusinessStructures(
+							businessCountry,
+							businessType.key,
+							businessTypes,
+							isLoading
+						) }
 					/>
 				) }
 			</LoadableBlock>
