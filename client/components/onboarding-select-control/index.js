@@ -1,6 +1,14 @@
 /** @format */
 
 /**
+ * This is a copy of the CustomSelectControl component, found here:
+ * https://github.com/WordPress/gutenberg/tree/7aa042605ff42bb437e650c39132c0aa8eb4ef95/packages/components/src/custom-select-control
+ *
+ * It has been modified to support a description field underneath each option in the select, a functionality
+ * that was not possible within the current implementation of CustomSelectControl.
+ */
+
+/**
  * External Dependencies
  */
 import { Button } from '@wordpress/components';
