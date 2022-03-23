@@ -142,6 +142,7 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - REST API documentation
 * Dev - Unit test support for PHP 8 and upgrade PHPUnit version to 9.5.14
 * Dev - Updated contribution notes (how to add a changelog)
+* Dev - Skip e2e tests if WC version is 5.0.0 because of WooCommerce Checkout Blocks minimum WC Required version
 
 = 3.8.2 - 2022-03-03 =
 * Fix - Fix fatal error when a subscription renews automatically.

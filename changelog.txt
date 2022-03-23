@@ -42,6 +42,7 @@
 * Dev - Refactor the processing part of Webhook Controller to a separate service.
 * Dev - Remove type "Tweak" from the list of changelog types.
 * Dev - REST API documentation
+* Dev - Skip e2e tests if WC version is 5.0.0 because of WooCommerce Checkout Blocks minimum WC Required version
 * Dev - Unit test support for PHP 8 and upgrade PHPUnit version to 9.5.14
 * Dev - Updated contribution notes (how to add a changelog)
 

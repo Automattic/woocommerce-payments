@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Skip e2e tests if WC version is 5.0.0 because of WooCommerce Checkout Blocks minimum WC Required version
