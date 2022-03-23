@@ -210,7 +210,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'order_from_charge_id' )
 			->with( 'test_charge_id' )
-			->willReturn( $mock_refund_1 );
+			->willReturn( $mock_order );
 
 		$mock_refund_1
 			->expects( $this->never() )
