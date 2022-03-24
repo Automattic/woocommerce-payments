@@ -40,8 +40,8 @@ const getColumns = (): Column[] =>
 		},
 		{
 			key: 'type',
-			label: __( 'Type', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Type', 'woocommerce-payments' ),
+			label: __( 'Format', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Format', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 		},
@@ -52,8 +52,10 @@ const getColumns = (): Column[] =>
 		},
 		{
 			key: 'download',
-			label: __( 'Download', 'woocommerce-payments' ),
+			label: '',
 			screenReaderLabel: __( 'Download', 'woocommerce-payments' ),
+			isLeftAligned: false,
+			isNumeric: true,
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
@@ -63,7 +65,7 @@ const getDocumentDescription = ( document: Document ) => {
 			if ( document.period_from && document.period_to ) {
 				return sprintf(
 					__(
-						'This is a test document for %s to %s.',
+						'This is a test document for %s to %s',
 						'woocommerce-payments'
 					),
 					dateI18n(
@@ -76,7 +78,7 @@ const getDocumentDescription = ( document: Document ) => {
 					)
 				);
 			}
-			return __( 'This is a test document.', 'woocommerce-payments' );
+			return __( 'This is a test document', 'woocommerce-payments' );
 			break;
 
 		default:
@@ -117,8 +119,8 @@ export const DocumentsList = (): JSX.Element => {
 				display: getDocumentDescription( document ),
 			},
 			download: {
-				value: document.download,
-				display: document.download,
+				value: 'Download',
+				display: 'Download',
 			},
 		};
 

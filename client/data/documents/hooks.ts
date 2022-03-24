@@ -14,9 +14,7 @@ import { STORE_NAME } from '../constants';
 export interface Document {
 	document_id: string;
 	date: string;
-	type: 'test_document'; // TODO: Define proper document types.
-	description: 'description';
-	download: 'download';
+	type: 'test_document';
 	period_from: string;
 	period_to: string;
 }
