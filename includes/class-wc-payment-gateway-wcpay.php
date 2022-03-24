@@ -830,7 +830,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 
 			<?php if ( Fraud_Prevention_Service::instance()->is_enabled() ) : ?>
-				<input type="hidden" id="wcpay-fraud-prevention-token" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::instance()->get_token() ); ?>">
+				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::instance()->get_token() ); ?>">
 			<?php endif; ?>
 
 			<?php
@@ -871,14 +871,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		try {
 			$fraud_prevention_service = Fraud_Prevention_Service::instance();
-			if ( $fraud_prevention_service->is_enabled() ) {
-				// phpcs:ignore WordPress.Security.NonceVerification.Missing
-				if ( ! $fraud_prevention_service->verify_token( $_POST ) ) {
-					throw new Process_Payment_Exception(
-						__( 'Your payment was not processed.', 'woocommerce-payments' ),
-						'fraud_prevention_enabled'
-					);
-				}
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
+				throw new Process_Payment_Exception(
+					__( 'Your payment was not processed.', 'woocommerce-payments' ),
+					'fraud_prevention_enabled'
+				);
 			}
 
 			if ( $this->failed_transaction_rate_limiter->is_limited() ) {

@@ -47,14 +47,20 @@ class Fraud_Prevention_Service {
 	 */
 	public static function instance( $session = null ) {
 		if ( null === self::$instance ) {
-			if ( ! $session ) {
-				$session = WC()->session;
-			}
-
-			self::$instance = new self( $session );
+			self::$instance = new self( $session ?? WC()->session );
 		}
 
 		return self::$instance;
+	}
+
+	/**
+	 * Sets a instance to be used in request cycle.
+	 * Introduced primarily for supporting unit tests.
+	 *
+	 * @param Fraud_Prevention_Service|null $instance Instance of self.
+	 */
+	public static function set_instance( self $instance = null ) {
+		self::$instance = $instance;
 	}
 
 	/**
@@ -90,17 +96,17 @@ class Fraud_Prevention_Service {
 	 */
 	public function regenerate_token(): string {
 		$token = wp_generate_password();
-		WC()->session->set( self::TOKEN_NAME, $token );
+		$this->session->set( self::TOKEN_NAME, $token );
 		return $token;
 	}
 
 	/**
 	 * Verifies the token against POST data.
 	 *
-	 * @param array $post_data Global $_POST array.
+	 * @param string|null $token Token sent in request.
 	 * @return bool
 	 */
-	public function verify_token( array $post_data ): bool {
-		return isset( $post_data['wcpay-fraud-prevention-token'] ) && $this->session->get( self::TOKEN_NAME ) === $post_data['wcpay-fraud-prevention-token'];
+	public function verify_token( string $token = null ): bool {
+		return ! is_null( $token ) && $this->session->get( self::TOKEN_NAME ) === $token;
 	}
 }

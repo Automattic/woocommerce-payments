@@ -9,6 +9,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Constants\Payment_Type;
+use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Information;
 
 // Need to use WC_Mock_Data_Store.
@@ -1990,6 +1992,50 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
 			throw $e;
 		}
+	}
+
+	public function test_process_payment_rejects_if_missing_fraud_prevention_token() {
+		$order = WC_Helper_Order::create_order();
+
+		$fraud_prevention_service_mock = $this->getMockBuilder( Fraud_Prevention_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Your payment was not processed.' );
+		$this->wcpay_gateway->process_payment( $order );
+	}
+
+	public function test_process_payment_rejects_if_invalid_fraud_prevention_token() {
+		$order = WC_Helper_Order::create_order();
+
+		$fraud_prevention_service_mock = $this->getMockBuilder( Fraud_Prevention_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'incorrect-token' )
+			->willReturn( false );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'incorrect-token';
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Your payment was not processed.' );
+		$this->wcpay_gateway->process_payment( $order );
 	}
 
 	public function test_get_upe_enabled_payment_method_statuses_with_empty_cache() {
