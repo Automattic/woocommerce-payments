@@ -209,6 +209,10 @@ install_woocommerce() {
 			WC_INSTALL_EXTRA+=" --version=$WC_VERSION"
 		fi
 		wp plugin install woocommerce --activate$WC_INSTALL_EXTRA
+
+		# Work around to get database tables installed for WC 6.4.0-beta
+		# See https://github.com/woocommerce/woocommerce-admin/pull/8384
+		wp cron event run --due-now
 	fi
 }
 
