@@ -9,6 +9,9 @@ describe( 'mapTimelineEvents', () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
 			currencyData: {
 				US: {
 					code: 'USD',
@@ -468,6 +471,8 @@ describe( 'mapTimelineEvents', () => {
 		} );
 
 		test( 'formats partial_refund events', () => {
+			global.wcpaySettings.connect.country = 'FR';
+
 			expect(
 				mapTimelineEvents( [
 					{
@@ -490,6 +495,8 @@ describe( 'mapTimelineEvents', () => {
 		} );
 
 		test( 'formats full_refund events', () => {
+			global.wcpaySettings.connect.country = 'FR';
+
 			expect(
 				mapTimelineEvents( [
 					{
