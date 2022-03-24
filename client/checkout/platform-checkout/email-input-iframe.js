@@ -273,7 +273,11 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_COMPLETE
 				);
 				api.initPlatformCheckout().then( ( response ) => {
-					window.location = response.url;
+					if ( 'success' === response.result ) {
+						window.location = response.url;
+					} else {
+						closeIframe();
+					}
 				} );
 				break;
 			case 'otp_validation_failed':
