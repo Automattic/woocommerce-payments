@@ -33,6 +33,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	);
 	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
 
+	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
+	iframe.classList.add( 'intrinsic-ignore' );
+
 	// Make the iframe arrow.
 	const iframeArrow = document.createElement( 'span' );
 	iframeArrow.setAttribute( 'aria-hidden', 'true' );
@@ -220,6 +223,10 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
+				} else if ( 'rest_invalid_param' !== data.code ) {
+					wcpayTracks.recordUserEvent(
+						wcpayTracks.events.PLATFORM_CHECKOUT_OFFERED
+					);
 				}
 			} )
 			.finally( () => {

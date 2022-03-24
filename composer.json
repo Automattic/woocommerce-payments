@@ -29,7 +29,7 @@
       "automattic/jetpack-sync": "1.29.2",
       "automattic/jetpack-tracking": "1.14.1",
       "myclabs/php-enum": "1.7.7",
-      "woocommerce/subscriptions-core": "1.6.4"
+      "woocommerce/subscriptions-core": "1.7.0"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
@@ -76,8 +76,7 @@
                 "add": "Add",
                 "fix": "Fix",
                 "update": "Update",
-                "dev": "Dev",
-                "tweak": "Tweak"
+                "dev": "Dev"
             },
             "formatter": {
                 "filename": "bin/class-wcpay-changelog-formatter.php"

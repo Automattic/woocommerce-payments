@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fixed bash warning when running tests locally
