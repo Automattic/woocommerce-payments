@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.9.0 - 2022-xx-xx =
+= 3.9.0 - 2022-03-24 =
 * Add - Add compatibility between Multi-Currency and WooCommerce Name Your Price.
 * Add - Add wcpay_is_wcpay_subscriptions_enabled filter
 * Add - Add Webhook_Reliability service to fetch and process failed webhook events.
