@@ -35,7 +35,7 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 	}
 
 	public function test_tracks_obeys_platform_checkout_flag() {
-    $this->set_is_platform_checkout_eligible( false );
+		$this->set_is_platform_checkout_eligible( false );
 		$this->assertFalse( $this->tracker->should_enable_tracking( null, null ) );
 	}
 
