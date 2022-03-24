@@ -385,16 +385,22 @@ class WC_Payments_Admin {
 		$current_user       = wp_get_current_user();
 		$current_user_email = $current_user && $current_user->user_email ? $current_user->user_email : get_option( 'admin_email' );
 
-		$locale_info   = include WC()->plugin_path() . '/i18n/locale-info.php';
+		if ( version_compare( WC_VERSION, '6.0', '<' ) ) {
+			$path = WCPAY_ABSPATH . 'i18n/locale-info.php';
+		} else {
+			$path = WC()->plugin_path() . '/i18n/locale-info.php';
+		}
+
+		$locale_info   = include $path;
 		$currency_data = [];
 
 		foreach ( $locale_info as $key => $value ) {
 			$currency_data[ $key ] = [
-				'code'              => $value['currency_code'],
-				'symbol'            => $value['short_symbol'],
-				'symbolPosition'    => $value['currency_pos'],
-				'thousandSeparator' => $value['thousand_sep'],
-				'decimalSeparator'  => $value['decimal_sep'],
+				'code'              => $value['currency_code'] ?? '',
+				'symbol'            => $value['short_symbol'] ?? '',
+				'symbolPosition'    => $value['currency_pos'] ?? '',
+				'thousandSeparator' => $value['thousand_sep'] ?? '',
+				'decimalSeparator'  => $value['decimal_sep'] ?? '',
 				'precision'         => $value['num_decimals'],
 			];
 		}
