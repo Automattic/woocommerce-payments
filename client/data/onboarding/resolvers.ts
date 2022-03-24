@@ -21,7 +21,7 @@ export function* getBusinessTypes(): unknown {
 
 	try {
 		const result = yield apiFetch( { path } );
-		yield updateBusinessTypes( result as Country[] );
+		yield updateBusinessTypes( result.data as Country[] );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',

@@ -3,155 +3,48 @@
 /**
  * External dependencies
  */
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
-import { SelectControl, Card, CardBody } from '@wordpress/components';
+import { Card, CardBody, CustomSelectControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
-import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
-import OnboardingSelectControl from 'wcpay/components/onboarding-select-control';
-import { LoadableBlock } from 'wcpay/components/loadable';
-import { useBusinessTypes } from 'wcpay/data/onboarding';
+import WizardTaskItem from 'additional-methods-setup/wizard/task-item';
+import WizardTaskContext from 'additional-methods-setup/wizard/task/context';
+import OnboardingSelectControl from 'components/onboarding-select-control';
+import { LoadableBlock } from 'components/loadable';
+import { useBusinessTypes } from 'data/onboarding';
 import strings from '../strings';
 
-const getBusinessTypesForCountry = (
-	countryCode,
-	businessTypes,
-	isLoading
-) => {
-	if ( isLoading || ! businessTypes.hasOwnProperty( 'data' ) ) {
-		return false;
-	}
-
-	return businessTypes.data.hasOwnProperty( countryCode )
-		? businessTypes.data[ countryCode ]
-		: false;
-};
-
-const formatBusinessTypes = ( countryCode, businessTypes, isLoading ) => {
-	const businessTypeData = getBusinessTypesForCountry(
-		countryCode,
-		businessTypes
-	);
-
-	if ( isLoading || ! businessTypeData ) {
-		return [];
-	}
-
-	return Object.keys( businessTypeData ).map( ( key ) => ( {
-		name: strings.businessTypes[ key ],
-		description: 'Test',
-		key: key,
-	} ) );
-};
-
-const shouldDisplayStructures = (
-	countryCode,
-	type,
-	businessTypes,
-	isLoading
-) => {
-	const businessTypeData = getBusinessTypesForCountry(
-		countryCode,
-		businessTypes
-	);
-
-	if ( isLoading || ! businessTypeData ) {
-		return false;
-	}
-
-	return businessTypeData.hasOwnProperty( type )
-		? 0 < businessTypeData[ type ].length
-		: false;
-};
-
-const formatBusinessStructures = (
-	countryCode,
-	type,
-	businessTypes,
-	isLoading
-) => {
-	const businessTypeData = getBusinessTypesForCountry(
-		countryCode,
-		businessTypes
-	);
-
-	if ( isLoading || ! businessTypeData ) {
-		return false;
-	}
-
-	return businessTypeData.hasOwnProperty( type )
-		? businessTypeData[ type ]
-		: [];
-};
-
 const AddBusinessInfo = () => {
-	const { setCompleted } = useContext( WizardTaskContext );
+	const { isCompleted } = useContext( WizardTaskContext );
 	const { businessTypes, isLoading } = useBusinessTypes();
-	const {
-		connect: { availableCountries, country },
-	} = wcpaySettings;
 
-	const countries = Object.keys( availableCountries ).map(
-		( countryCode ) => {
-			return {
-				label: availableCountries[ countryCode ],
-				value: countryCode,
-			};
-		}
+	const accountCountry = businessTypes.find(
+		( b ) => b.key === wcpaySettings.connect.country
 	);
+	const [ businessCountry, setBusinessCountry ] = useState( null );
+	const [ businessType, setBusinessType ] = useState( null );
+	const [ businessStructure, setBusinessStructure ] = useState( null );
 
-	const [ businessCountry, setBusinessCountry ] = useState( country );
-	const [ businessType, setBusinessType ] = useState( '' );
-	const [ businessStructure, setBusinessStructure ] = useState();
-	const [ displayStructures, setDisplayStructures ] = useState( false );
-	const [ displayVerificationCard, setDisplayVerificationCard ] = useState(
-		false
-	);
+	useEffect( () => {
+		setBusinessCountry( accountCountry );
+	}, [ accountCountry ] );
+
+	const handleBusinessCountryUpdate = ( country ) => {
+		setBusinessCountry( country );
+	};
 
 	const handleBusinessTypeUpdate = ( type ) => {
 		setBusinessType( type );
-
-		if (
-			shouldDisplayStructures(
-				businessCountry,
-				type.key,
-				businessTypes,
-				isLoading
-			)
-		) {
-			formatBusinessStructures(
-				businessCountry,
-				type.key,
-				businessTypes,
-				isLoading
-			);
-			setDisplayStructures( true );
-			setCompleted( false );
-		} else {
-			setDisplayStructures( false );
-			setDisplayVerificationCard( true );
-			setCompleted( true );
-		}
 	};
 
 	const handleBusinessStructureUpdate = ( structure ) => {
 		setBusinessStructure( structure );
-		setCompleted( true );
 	};
 
-	const handleBusinessCountryUpdate = ( countryCode ) => {
-		setBusinessCountry( countryCode );
-		formatBusinessTypes( countryCode, businessTypes, isLoading );
-		setCompleted( false );
-		// TODO: put these calls in some resetState function or something similar.
-		setDisplayStructures( false );
-		setDisplayVerificationCard( false );
-	};
-
+	// if ( businessType ) console.log( businessType );
 	return (
 		<WizardTaskItem
 			className="complete-business-info-task"
@@ -162,54 +55,46 @@ const AddBusinessInfo = () => {
 				{ strings.onboarding.description }
 			</p>
 			<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-				<SelectControl
+				<CustomSelectControl
+					className="wcpay-onboarding-select"
 					label={ __( 'Country', 'woocommerce-payments' ) }
 					value={ businessCountry }
-					onChange={ ( value ) =>
-						handleBusinessCountryUpdate( value )
-					}
-					options={ countries }
-				/>
-
-				<p className="wcpay-wizard-task__description-element is-muted-color">
-					{ strings.onboarding.countryDescription }
-				</p>
-
-				<OnboardingSelectControl
-					className="wcpay-onboarding-select-business-types"
-					label={ __( 'Business type', 'woocommerce-payments' ) }
-					value={ businessType }
 					onChange={ ( { selectedItem } ) =>
-						handleBusinessTypeUpdate( selectedItem )
+						handleBusinessCountryUpdate( selectedItem )
 					}
-					options={ formatBusinessTypes(
-						businessCountry,
-						businessTypes,
-						isLoading
-					) }
+					options={ businessTypes }
 				/>
-
-				{ displayStructures && (
-					<SelectControl
+				{ businessCountry && (
+					<OnboardingSelectControl
+						className="wcpay-onboarding-select"
+						label={ __( 'Business type', 'woocommerce-payments' ) }
+						value={ businessType }
+						onChange={ ( { selectedItem } ) =>
+							handleBusinessTypeUpdate( selectedItem )
+						}
+						options={ businessCountry.types }
+					/>
+				) }
+				{ businessType && (
+					<CustomSelectControl
+						className="wcpay-onboarding-select"
 						label={ __(
-							'Business structure',
+							'Business Structure',
 							'woocommerce-payments'
 						) }
 						value={ businessStructure }
-						onChange={ ( value ) =>
-							handleBusinessStructureUpdate( value )
+						onChange={ ( { selectedItem } ) =>
+							handleBusinessStructureUpdate( selectedItem )
 						}
-						options={ formatBusinessStructures(
-							businessCountry,
-							businessType.key,
-							businessTypes,
-							isLoading
-						) }
+						options={ businessType.structures }
 					/>
 				) }
+				<p className="wcpay-wizard-task__description-element is-muted-color">
+					{ strings.onboarding.countryDescription }
+				</p>
 			</LoadableBlock>
 
-			{ displayVerificationCard && (
+			{ isCompleted && (
 				<Card size="large" className="wcpay-required-info-card">
 					<CardBody>
 						<p>

@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Logger;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -43,8 +45,6 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 */
 	public function get_business_types( $request ) {
 		$business_types = WC_Payments::get_onboarding_service()->get_cached_business_types();
-
-		// TODO: What should we return in the case of a failure?
 		return rest_ensure_response( [ 'data' => $business_types ] );
 	}
 }
