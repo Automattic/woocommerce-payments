@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-When there is only one Shipping Method available in the recurring shipping package, make sure that this method is treated as selected in the current session and the `woocommerce_after_shipping_rate` action runs.
